@@ -172,7 +172,7 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 		if(setRevision(ureq, revCmpName, iteration)) {
 			revisionStepNames.add(revCmpName);
 		}
-		//corrections;
+		//corrections
 		String correctionCmpName = "corrections-" + iteration;
 		if(setCorrections(ureq, correctionCmpName, iteration)) {
 			revisionStepNames.add(correctionCmpName);
@@ -192,12 +192,17 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 		}
 		
 		Date deadline = task == null ? null : task.getRevisionsDueDate();
+		int minDocs = gtaNode.getModuleConfiguration().getIntegerSafe(GTACourseNode.GTASK_MIN_REVISED_DOCS, -1);
+		if(minDocs == -1) {
+			minDocs = gtaNode.getModuleConfiguration().getIntegerSafe(GTACourseNode.GTASK_MIN_SUBMITTED_DOCS, -1);
+		}
+		
 		int maxDocs = gtaNode.getModuleConfiguration().getIntegerSafe(GTACourseNode.GTASK_MAX_REVISED_DOCS, -1);
 		if(maxDocs == -1) {
 			maxDocs = gtaNode.getModuleConfiguration().getIntegerSafe(GTACourseNode.GTASK_MAX_SUBMITTED_DOCS, -1);
 		}
-		uploadRevisionsCtrl = new SubmitDocumentsController(ureq, getWindowControl(), task, documentsDir, documentsContainer, maxDocs,
-				gtaNode, courseEnv, assessedUserCourseEnv.isCourseReadOnly(), deadline, "document");
+		uploadRevisionsCtrl = new SubmitDocumentsController(ureq, getWindowControl(), task, documentsDir, documentsContainer,
+				minDocs, maxDocs, gtaNode, courseEnv, assessedUserCourseEnv.isCourseReadOnly(), deadline, "document");
 		listenTo(uploadRevisionsCtrl);
 		mainVC.put("uploadRevisions", uploadRevisionsCtrl.getInitialComponent());
 		
@@ -304,11 +309,19 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 		String text;
 		File[] submittedDocuments;
 		VFSContainer documentsContainer;
+		
+		int minDocs = gtaNode.getModuleConfiguration().getIntegerSafe(GTACourseNode.GTASK_MIN_REVISED_DOCS, -1);
+		if(minDocs == -1) {
+			minDocs = gtaNode.getModuleConfiguration().getIntegerSafe(GTACourseNode.GTASK_MIN_SUBMITTED_DOCS, -1);
+		}
 		if(GTAType.group.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
 			documentsContainer = gtaManager.getRevisedDocumentsContainer(courseEnv, gtaNode, iteration, assessedGroup);
 			File documentsDir = gtaManager.getRevisedDocumentsDirectory(courseEnv, gtaNode, iteration, assessedGroup);
 			submittedDocuments = documentsDir.listFiles(new SystemFilenameFilter(true, false));
-			if(submittedDocuments.length == 0) {
+			if(minDocs > 0 && submittedDocuments.length < minDocs) {
+				showWarning("error.min.documents", new String[]{ Integer.toString(minDocs), Integer.toString(submittedDocuments.length) });
+				return;
+			} else if(submittedDocuments.length == 0) {
 				text = "<div class='o_warning'>" + translate("run.submit.revision.confirm.warning.group", new String[]{ StringHelper.escapeHtml(assessedGroup.getName()) }) + "</div>";
 			} else {
 				text = translate("run.submit.revision.confirm.group", new String[]{ StringHelper.escapeHtml(assessedGroup.getName()) });
@@ -317,7 +330,10 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 			documentsContainer = gtaManager.getRevisedDocumentsContainer(courseEnv, gtaNode, iteration, getIdentity());
 			File documentsDir = gtaManager.getRevisedDocumentsDirectory(courseEnv, gtaNode, iteration, getIdentity());
 			submittedDocuments = documentsDir.listFiles(new SystemFilenameFilter(true, false));
-			if(submittedDocuments.length == 0) {
+			if(minDocs > 0 && submittedDocuments.length < minDocs) {
+				showWarning("error.min.documents", new String[]{ Integer.toString(minDocs), Integer.toString(submittedDocuments.length) });
+				return;
+			} else if(submittedDocuments.length == 0) {
 				text = "<div class='o_warning'>" + translate("run.submit.revision.confirm.warning") + "</div>";
 			} else {
 				text = translate("run.submit.revision.confirm");
@@ -344,7 +360,7 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 		}
 		
 		int numOfDocs = submittedDocuments == null ? 0 : submittedDocuments.length;
-		assignedTask = gtaManager.submitRevisions(assignedTask, gtaNode, numOfDocs, Role.user);
+		assignedTask = gtaManager.submitRevisions(assignedTask, gtaNode, numOfDocs, getIdentity(), Role.user);
 		gtaManager.log("Revision", "revision submitted", assignedTask,
 				getIdentity(), getIdentity(), assessedGroup, courseEnv, gtaNode, Role.user);
 		
@@ -364,7 +380,6 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 		} else {
 			courseAssessmentService.incrementAttempts(gtaNode, assessedUserCourseEnv, Role.user);
 		}
-		
 		//do send e-mail
 		if(config.getBooleanSafe(GTACourseNode.GTASK_SUBMISSION_MAIL_CONFIRMATION)) {
 			doSubmissionEmail(iteration);

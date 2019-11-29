@@ -80,6 +80,11 @@ public class StackedBusinessWindowControl implements WindowControl {
 	}
 
 	@Override
+	public boolean removeModalDialog(Component comp) {
+		return origWControl.removeModalDialog(comp);
+	}
+
+	@Override
 	public void pushAsCallout(Component comp, String targetId, CalloutSettings settings) {
 		origWControl.pushAsCallout(comp, targetId, settings);
 	}

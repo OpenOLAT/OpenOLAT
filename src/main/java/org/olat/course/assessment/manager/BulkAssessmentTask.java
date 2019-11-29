@@ -463,15 +463,15 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 			log.error("GTA Task is null by bulk assessment for: " + identity + " in entry:" + entry + " " + courseNode.getIdent());
 		} else if(status == TaskProcess.correction) {
 			int iteration = gtaTask.getRevisionLoop() <= 0 ? 1 : gtaTask.getRevisionLoop() + 1;
-			gtaManager.updateTask(gtaTask, status, iteration, courseNode, Role.auto);
+			gtaManager.updateTask(gtaTask, status, iteration, courseNode, false, null, Role.auto);
 		} else if(status == TaskProcess.grading && acceptSubmission) {
 			if(gtaTask.getTaskStatus() == TaskProcess.review
 					|| gtaTask.getTaskStatus() == TaskProcess.correction
 					|| gtaTask.getTaskStatus() == TaskProcess.revision) {
-				gtaTask = gtaManager.reviewedTask(gtaTask, courseNode, Role.auto);
+				gtaTask = gtaManager.reviewedTask(gtaTask, courseNode, null, Role.auto);
 			}
 			TaskProcess nextStep = gtaManager.nextStep(status, courseNode);
-			gtaManager.updateTask(gtaTask, nextStep, courseNode, Role.auto);
+			gtaManager.updateTask(gtaTask, nextStep, courseNode, false, null, Role.auto);
 		}
 	}
 	

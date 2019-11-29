@@ -19,6 +19,7 @@
  */
 package org.olat.modules.forms.ui.model;
 
+import org.olat.core.gui.UserRequest;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.resource.accesscontrol.ui.FormController;
@@ -35,9 +36,9 @@ public interface EvaluationFormResponseController extends FormController {
 	
 	public boolean hasResponse();
 	
-	public void initResponse(EvaluationFormSession session, EvaluationFormResponses responses);
+	public void initResponse(UserRequest ureq, EvaluationFormSession session, EvaluationFormResponses responses);
 	
-	public void saveResponse(EvaluationFormSession session);
+	public void saveResponse(UserRequest ureq, EvaluationFormSession session);
 
 	public Progress getProgress();
 	

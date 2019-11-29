@@ -472,7 +472,7 @@ public class SystemRolesAndRightsController extends FormBasicController {
 	}
 	
 	private void doAddToOrganisation(UserRequest ureq) {
-		if(selectOrganisationCtrl != null) return;
+		if(guardModalController(selectOrganisationCtrl)) return;
 		
 		List<Organisation> upgradeableToOrganisations = new ArrayList<>(manageableOrganisations);
 		upgradeableToOrganisations.removeAll(organisations);

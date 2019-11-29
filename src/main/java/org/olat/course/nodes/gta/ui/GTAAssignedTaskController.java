@@ -172,7 +172,7 @@ public class GTAAssignedTaskController extends BasicController {
 	}
 	
 	private void doPreview(UserRequest ureq) {
-		if(viewTaskCtrl != null) return;
+		if(guardModalController(viewTaskCtrl)) return;
 		
 		VFSContainer tasksContainer = gtaManager.getTasksContainer(courseEnv, gtaNode);
 		viewTaskCtrl = new SinglePageController(ureq, getWindowControl(), tasksContainer, taskFile.getName(),

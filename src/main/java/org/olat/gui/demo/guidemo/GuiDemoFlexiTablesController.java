@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
@@ -40,14 +41,12 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.MultipleSelectionElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
-import org.olat.core.gui.components.table.BaseTableDataModelWithoutFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -63,7 +62,7 @@ import org.olat.core.gui.translator.Translator;
  */
 public class GuiDemoFlexiTablesController extends FormBasicController {
 	
-	private FlexiTableDataModel<Row> tableDataModel;
+	private SampleFlexiTableModel tableDataModel;
 	
 	public GuiDemoFlexiTablesController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "flexitable");
@@ -86,25 +85,26 @@ public class GuiDemoFlexiTablesController extends FormBasicController {
     // column 7 : Link
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("guidemo.table.header7", 6));
 
-		tableDataModel = new FlexiTableDataModelImpl<>(new SampleFlexiTableModel(formLayout), tableColumnModel);
-		uifactory.addTableElement(getWindowControl(), "gui-demo", tableDataModel, getTranslator(), formLayout);
+		tableDataModel = new SampleFlexiTableModel(tableColumnModel);
+		int iEntries = 50;
+		List<Row> entries = new ArrayList<>(iEntries);
+		for (int i=0; i < iEntries; i++) {
+			entries.add(new Row(i, formLayout));
+		}
+		tableDataModel.setObjects(entries);
+		
+		uifactory.addTableElement(getWindowControl(), "gui-demo", tableDataModel, 24, true, getTranslator(), formLayout);
 		uifactory.addFormSubmitButton("ok", formLayout);
 	}
 	
+	@Override
 	protected void doDispose() {
 		//
 	}
-
-	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean isInputValid = true;
-		//do some validation here
-		return isInputValid && super.validateFormLogic(ureq);			
-	}
 	
 	@Override
-	protected void formInnerEvent(UserRequest ureq, org.olat.core.gui.components.form.flexible.FormItem source, FormEvent event) {
-		System.out.println("TEST formInnerEvent");
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		logInfo("TEST formInnerEvent");
 	}
 	
 	@Override
@@ -112,7 +112,7 @@ public class GuiDemoFlexiTablesController extends FormBasicController {
 		Object obj = tableDataModel.getValueAt(0, 2);
 		if(obj instanceof MultipleSelectionElement) {
 			MultipleSelectionElement selection = (MultipleSelectionElement)obj;
-			System.out.println(selection.getSelectedKeys());
+			logInfo(selection.getSelectedKeys().toString());
 			
 		}
 		fireEvent(ureq, Event.DONE_EVENT);  
@@ -127,28 +127,15 @@ public class GuiDemoFlexiTablesController extends FormBasicController {
 	 * Example legacy (non-flexi-table) table-model.
 	 * @author guretzki
 	 */
-	private class SampleFlexiTableModel extends BaseTableDataModelWithoutFilter<Row> {
-		private final int COLUMN_COUNT = 7;
-		private final List<Row> entries;
+	private class SampleFlexiTableModel extends DefaultFlexiTableDataModel<Row> {
 
-		public SampleFlexiTableModel(FormItemContainer formContainer) {
-			int iEntries = 50;
-			entries = new ArrayList<>(iEntries);
-			for (int i=0; i < iEntries; i++) {
-				entries.add(new Row(i, formContainer));
-			}
+		public SampleFlexiTableModel(FlexiTableColumnModel tableColumnModel) {
+			super(tableColumnModel);
 		}
 
-		public int getColumnCount() {
-			return COLUMN_COUNT;
-		}
-
-		public int getRowCount() {
-			return entries.size();
-		}
-
+		@Override
 		public Object getValueAt(int row, int col) {
-			Row entry = entries.get(row);
+			Row entry = getObject(row);
 			switch(col) {
 				case 0: return entry.getCol1();
 				case 1: return entry.getCol2();
@@ -159,6 +146,11 @@ public class GuiDemoFlexiTablesController extends FormBasicController {
 				case 6: return entry.getCol7();
 				default: return entry;
 			}
+		}
+
+		@Override
+		public DefaultFlexiTableDataModel<Row> createCopyWithEmptyList() {
+			return new SampleFlexiTableModel(getTableColumnModel());
 		}
 	}
 	

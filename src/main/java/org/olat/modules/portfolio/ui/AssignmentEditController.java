@@ -520,7 +520,7 @@ public class AssignmentEditController extends FormBasicController {
 	}
 	
 	private void doSelectForm(UserRequest ureq) {
-		if(searchFormCtrl != null) return;
+		if(guardModalController(searchFormCtrl)) return;
 
 		searchFormCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, 
 					EvaluationFormResource.TYPE_NAME, translate("select.form"));

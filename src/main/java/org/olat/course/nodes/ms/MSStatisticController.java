@@ -116,7 +116,8 @@ public class MSStatisticController extends FormBasicController {
 		ModuleConfiguration config = courseNode.getModuleConfiguration();
 		String scoreConfig = config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE);
 		this.sum = MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_SUM.equals(scoreConfig);
-		String scaleConfig = config.getStringValue(MSCourseNode.CONFIG_KEY_EVAL_FORM_SCALE);
+		String scaleConfig = config.getStringValue(MSCourseNode.CONFIG_KEY_EVAL_FORM_SCALE,
+				MSCourseNode.CONFIG_DEFAULT_EVAL_FORM_SCALE);
 		this.scale = Float.parseFloat(scaleConfig);
 		
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());

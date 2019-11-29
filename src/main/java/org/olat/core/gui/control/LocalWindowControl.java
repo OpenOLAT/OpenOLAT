@@ -66,6 +66,15 @@ public class LocalWindowControl implements WindowControl {
 	}
 
 	@Override
+	public boolean removeModalDialog(Component comp) {
+		boolean removed = origWControl.removeModalDialog(comp);
+		if(removed) {
+			localHeight--;
+		}
+		return removed;
+	}
+
+	@Override
 	public void pushAsCallout(Component comp, String targetId, CalloutSettings settings) {
 		origWControl.pushAsCallout(comp, targetId, settings);
 		localHeight++;

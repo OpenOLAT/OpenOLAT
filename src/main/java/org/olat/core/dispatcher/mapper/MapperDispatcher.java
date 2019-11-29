@@ -97,19 +97,23 @@ public class MapperDispatcher implements Dispatcher {
 			//an anonymous mapper?
 			m = mapperService.getMapperById(null, smappath);
 			if(m == null) {
-				log.warn("Call to mapped resource, but mapper does not exist for path::" + smappath);
+				log.warn("Call to mapped resource, but mapper does not exist for path::{}", smappath);
 				hres.setStatus(HttpServletResponse.SC_NOT_FOUND);
 				return;
 			}
 		}
 		String mod = slashPos > 0 ? subInfo.substring(slashPos) : "";
 		if (mod.indexOf("..") != -1) {
-			log.warn("Illegal mapper path::" + mod + " contains '..'");
+			log.warn("Illegal mapper path::{} contains '..'", mod);
 			hres.setStatus(HttpServletResponse.SC_FORBIDDEN);
 			return;
 		}
 		// /bla/blu.html
 		MediaResource mr = m.handle(mod, hreq);
-		ServletUtil.serveResource(hreq, hres, mr);
+		if(mr != null) {
+			ServletUtil.serveResource(hreq, hres, mr);
+		} else {
+			hres.setStatus(HttpServletResponse.SC_NO_CONTENT);
+		}
 	}
 }

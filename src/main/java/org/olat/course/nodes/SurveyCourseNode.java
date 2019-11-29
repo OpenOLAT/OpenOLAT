@@ -203,14 +203,14 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	public void updateModuleConfigDefaults(boolean isNewNode) {
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
-			config.setBooleanEntry(CONFIG_KEY_EXECUTION_BY_OWNER, true);
-			config.setBooleanEntry(CONFIG_KEY_EXECUTION_BY_COACH, true);
+			config.setBooleanEntry(CONFIG_KEY_EXECUTION_BY_OWNER, false);
+			config.setBooleanEntry(CONFIG_KEY_EXECUTION_BY_COACH, false);
 			config.setBooleanEntry(CONFIG_KEY_EXECUTION_BY_PARTICIPANT, true);
-			config.setBooleanEntry(CONFIG_KEY_EXECUTION_BY_GUEST, true);
-			config.setBooleanEntry(CONFIG_KEY_REPORT_FOR_OWNER, true);
+			config.setBooleanEntry(CONFIG_KEY_EXECUTION_BY_GUEST, false);
+			config.setBooleanEntry(CONFIG_KEY_REPORT_FOR_OWNER, false);
 			config.setBooleanEntry(CONFIG_KEY_REPORT_FOR_COACH, true);
-			config.setBooleanEntry(CONFIG_KEY_REPORT_FOR_PARTICIPANT, true);
-			config.setBooleanEntry(CONFIG_KEY_REPORT_FOR_GUEST, true);
+			config.setBooleanEntry(CONFIG_KEY_REPORT_FOR_PARTICIPANT, false);
+			config.setBooleanEntry(CONFIG_KEY_REPORT_FOR_GUEST, false);
 		}
 		config.setConfigurationVersion(CURRENT_VERSION);
 	}
@@ -234,7 +234,7 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 			RepositoryEntry re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
 				rie.getDescription(), false, organisation, locale, rie.importGetExportedFile(), null);
 			setEvaluationFormReference(re, getModuleConfiguration());
-			postImportCopy(course);
+			postImportCopy(course, getIdent());
 		} else {
 			removeEvaluationFormReference(getModuleConfiguration());
 		}
@@ -243,21 +243,21 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse) {
 		super.postCopy(envMapper, processType, course, sourceCrourse);
-		postImportCopy(course);
+		postImportCopy(course, getIdent());
 	}
 	
 	@Override
 	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course, Identity author) {
 		CourseNode copyInstance = super.createInstanceForCopy(isNewTitle, course, author);
-		postImportCopy(course);
+		postImportCopy(course, copyInstance.getIdent());
 		return copyInstance;
 	}
 
-	private void postImportCopy(ICourse course) {
+	private void postImportCopy(ICourse course, String nodeIdent) {
 		RepositoryEntry ores = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
 		EvaluationFormManager evaluationFormManager = CoreSpringFactory.getImpl(EvaluationFormManager.class);
 		RepositoryEntry formEntry = getEvaluationForm(getModuleConfiguration());
-		EvaluationFormSurveyIdentifier surveyIdent = of(ores, getIdent());
+		EvaluationFormSurveyIdentifier surveyIdent = of(ores, nodeIdent);
 		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(surveyIdent);
 		if (survey == null) {
 			survey = evaluationFormManager.createSurvey(surveyIdent, formEntry);

@@ -57,12 +57,15 @@ public interface WindowControl {
 	 */
 	public void pushAsModalDialog(Component comp);
 	
+	public boolean removeModalDialog(Component comp);
+	
 	/**
 	 * 
 	 * @param comp
 	 * @param targetId
 	 */
 	public void pushAsCallout(Component comp, String targetId, CalloutSettings settings);
+	
 
 	/**
 	 * Push a controller to full screen mode.
@@ -90,11 +93,6 @@ public interface WindowControl {
 	 * @param string
 	 */
 	public void setWarning(String string);
-	
-	//brasato:: discuss if getDTabs should be via getService or as an attribute
-	//on the windows.getWindows(ureq).getAttribute("DTabs")
-	//public Object getService(Class interfaceClass);
-	
 	
 	/**
 	 * 

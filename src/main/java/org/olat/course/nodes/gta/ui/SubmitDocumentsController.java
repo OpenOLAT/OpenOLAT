@@ -101,6 +101,7 @@ class SubmitDocumentsController extends FormBasicController implements Activatea
 	private SinglePageController viewDocCtrl;
 	private DocEditorFullscreenController docEditorCtrl;
 	
+	private final int minDocs;
 	private final int maxDocs;
 	private final String docI18nKey;
 	private final Task assignedTask;
@@ -122,12 +123,13 @@ class SubmitDocumentsController extends FormBasicController implements Activatea
 	private VFSRepositoryService vfsRepositoryService;
 	
 	public SubmitDocumentsController(UserRequest ureq, WindowControl wControl, Task assignedTask,
-			File documentsDir, VFSContainer documentsContainer, int maxDocs, GTACourseNode cNode,
+			File documentsDir, VFSContainer documentsContainer, int minDocs, int maxDocs, GTACourseNode cNode,
 			CourseEnvironment courseEnv, boolean readOnly, Date deadline, String docI18nKey) {
 		super(ureq, wControl, "documents");
 		this.assignedTask = assignedTask;
 		this.documentsDir = documentsDir;
 		this.documentsContainer = documentsContainer;
+		this.minDocs = minDocs;
 		this.maxDocs = maxDocs;
 		this.docI18nKey = docI18nKey;
 		this.deadline = deadline;
@@ -223,8 +225,18 @@ class SubmitDocumentsController extends FormBasicController implements Activatea
 		}
 		model.setObjects(docList);
 		tableEl.reset();
+		updateWarnings();
 		
-		if(maxDocs > 0 && docList.size() >= maxDocs) {
+		
+		flc.contextPut("hasDocuments", Boolean.valueOf(hasUploadDocuments()));
+	}
+	
+	private void updateWarnings() {
+		if(minDocs > 0 && model.getRowCount() < minDocs) {
+			String msg = translate("error.min.documents", new String[]{ Integer.toString(minDocs) });
+			flc.contextPut("minDocsWarning", msg);
+			flc.contextRemove("maxDocsWarning");
+		} else if(maxDocs > 0 && model.getRowCount() >= maxDocs) {
 			if(uploadDocButton != null) {
 				uploadDocButton.setEnabled(false);
 			}
@@ -233,6 +245,7 @@ class SubmitDocumentsController extends FormBasicController implements Activatea
 			}
 			String msg = translate("error.max.documents", new String[]{ Integer.toString(maxDocs)});
 			flc.contextPut("maxDocsWarning", msg);
+			flc.contextRemove("minDocsWarning");
 		} else {
 			if(uploadDocButton != null) {
 				uploadDocButton.setEnabled(true);
@@ -240,10 +253,9 @@ class SubmitDocumentsController extends FormBasicController implements Activatea
 			if(createDocButton != null) {
 				createDocButton.setEnabled(true);
 			}
-			flc.contextPut("maxDocsWarning", Boolean.FALSE);
+			flc.contextRemove("maxDocsWarning");
+			flc.contextRemove("minDocsWarning");
 		}
-		
-		flc.contextPut("hasDocuments", Boolean.valueOf(hasUploadDocuments()));
 	}
 	
 	@Override
@@ -301,6 +313,7 @@ class SubmitDocumentsController extends FormBasicController implements Activatea
 				gtaManager.markNews(courseEnv, gtaNode);
 				doOpen(ureq, filename, EDIT);
 				updateModel(ureq);
+				updateWarnings();
 			} 
 			checkDeadline(ureq);
 		} else if (source == docEditorCtrl) {
@@ -309,6 +322,7 @@ class SubmitDocumentsController extends FormBasicController implements Activatea
 				gtaManager.markNews(courseEnv, gtaNode);
 			}
 			updateModel(ureq);
+			updateWarnings();
 			cleanUp();
 			checkDeadline(ureq);
 			addToHistory(ureq, this);
@@ -386,7 +400,7 @@ class SubmitDocumentsController extends FormBasicController implements Activatea
 	}
 	
 	private void doView(UserRequest ureq, String filename) {
-		if(viewDocCtrl != null) return;
+		if(guardModalController(viewDocCtrl)) return;
 		
 		viewDocCtrl = new SinglePageController(ureq, getWindowControl(), documentsContainer, filename, false);
 		listenTo(viewDocCtrl);
@@ -409,6 +423,7 @@ class SubmitDocumentsController extends FormBasicController implements Activatea
 			document.delete();
 		}
 		updateModel(ureq);
+		updateWarnings();
 	}
 	
 	private void doOpen(UserRequest ureq, String filename, Mode mode) {
@@ -460,10 +475,11 @@ class SubmitDocumentsController extends FormBasicController implements Activatea
 			showError("");
 		}
 		updateModel(ureq);
+		updateWarnings();
 	}
 	
 	private void doOpenDocumentUpload(UserRequest ureq) {
-		if(uploadCtrl != null) return;
+		if(guardModalController(uploadCtrl)) return;
 		
 		if(maxDocs > 0 && maxDocs <= model.getRowCount()) {
 			showWarning("error.max.documents");

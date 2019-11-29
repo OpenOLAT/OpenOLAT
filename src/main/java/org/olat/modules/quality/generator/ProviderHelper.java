@@ -52,6 +52,10 @@ public class ProviderHelper {
 
 	public static Date addDays(Date date, String daysToAdd) {
 		int days = Integer.parseInt(daysToAdd);
+		return addDays(date, days);
+	}
+
+	public static Date addDays(Date date, int days) {
 		Calendar c = Calendar.getInstance();
 		c.setTime(date);
 		c.add(Calendar.DATE, days);
@@ -60,6 +64,10 @@ public class ProviderHelper {
 	
 	public static Date addHours(Date date, String hoursToAdd) {
 		int hours = Integer.parseInt(hoursToAdd);
+		return addHours(date, hours);
+	}
+	
+	public static Date addHours(Date date, int hours) {
 		Calendar c = Calendar.getInstance();
 		c.setTime(date);
 		c.add(Calendar.HOUR, hours);

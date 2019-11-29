@@ -114,18 +114,20 @@ public abstract class ItemFormController extends FormBasicController {
 		title.setNotEmptyCheck("feed.form.field.is_mandatory");
 
 		description = uifactory.addRichTextElementForStringData("description", "feed.form.description", item.getDescription(), 12, -1,
-				false, baseDir, null, formLayout, ureq.getUserSession(), getWindowControl());
+				true, baseDir, null, formLayout, ureq.getUserSession(), getWindowControl());
 		RichTextConfiguration descRichTextConfig = description.getEditorConfiguration();
 		// set upload dir to the media dir
 		descRichTextConfig.setFileBrowserUploadRelPath("media");
+		descRichTextConfig.setPathInStatusBar(false);
 		// disable XSS unsave buttons for movie (no media in standard profile)
 		descRichTextConfig.disableMedia();
 
-		content = uifactory.addRichTextElementForStringData("content", "feed.form.content", item.getContent(), 18, -1, false,
+		content = uifactory.addRichTextElementForStringData("content", "feed.form.content", item.getContent(), 18, -1, true,
 				baseDir, null, formLayout, ureq.getUserSession(), getWindowControl());
 		RichTextConfiguration richTextConfig = content.getEditorConfiguration();
 		// set upload dir to the media dir
 		richTextConfig.setFileBrowserUploadRelPath("media");
+		richTextConfig.setPathInStatusBar(false);
 		// disable XSS unsave buttons for movie (no media in standard profile)
 		richTextConfig.disableMedia();
 		content.setVisible(hasContent());

@@ -219,7 +219,7 @@ public class AuthoringEnvPage {
 	}
 	
 	public void editResource(String title) {
-		By editBy = By.xpath("//div[contains(@class,'o_coursetable')]//tr[//a[contains(text(),'" + title + "')]]//a[contains(@href,'edit')]");
+		By editBy = By.xpath("//div[contains(@class,'o_coursetable')]//tr[//a[contains(text(),'" + title + "')]]//a[contains(@onclick,'edit')]");
 		browser.findElement(editBy).click();
 		OOGraphene.waitBusy(browser);
 	}

@@ -32,10 +32,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -164,6 +167,18 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		// initialize timezone
 		tz = calendarModule.getDefaultTimeZone();
 		calendarCache = CoordinatorManager.getInstance().getCoordinator().getCacher().getCache(CalendarManager.class.getSimpleName(), "calendar");
+	}
+	
+	@Override
+	public URLConnection getURLConnection(String url) {
+		try {
+			URLConnection conn = new URL(url).openConnection();
+			conn.setConnectTimeout(15000);
+			return conn;
+		} catch (IOException e) {
+			log.error("Cannot open URL connection for: {}", url, e);
+			return null;
+		}
 	}
 	
 	/**
@@ -1329,8 +1344,8 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	}
 	
 	private final boolean isInRange(Date from, Date to, KalendarEvent event) {
-		Date end = event.getEnd();
 		Date begin = event.getBegin();
+		Date end = CalendarUtils.endOf(event);
 
 		if(begin != null && end != null) {
 			if(from.compareTo(begin) <= 0 && to.compareTo(end) >= 0) {

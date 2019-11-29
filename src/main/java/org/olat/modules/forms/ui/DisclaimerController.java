@@ -125,14 +125,14 @@ public class DisclaimerController extends FormBasicController implements Evaluat
 	}
 
 	@Override
-	public void initResponse(EvaluationFormSession session, EvaluationFormResponses responses) {
+	public void initResponse(UserRequest ureq, EvaluationFormSession session, EvaluationFormResponses responses) {
 		response = responses.getResponse(session, disclaimer.getId());
 		boolean accepted = response != null && ACCEPTED_DB_KEY.equals(response.getStringuifiedResponse());
 		agreementEl.select(ACCEPTED_KEY, accepted);
 	}
 
 	@Override
-	public void saveResponse(EvaluationFormSession session) {
+	public void saveResponse(UserRequest ureq, EvaluationFormSession session) {
 		boolean accepted = agreementEl.isAtLeastSelected(1);
 		if (accepted && response == null) {
 			response = evaluationFormManager.createStringResponse(disclaimer.getId(), session, ACCEPTED_DB_KEY);

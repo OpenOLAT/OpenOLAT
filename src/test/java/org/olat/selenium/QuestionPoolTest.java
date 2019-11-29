@@ -224,11 +224,13 @@ public class QuestionPoolTest extends Deployments {
 		questionPool
 			.selectMyQuestions()
 			.newQuestion(questionTitle, QTI21QuestionType.mc)
-			.metadata().openGeneral()
+			.metadata()
+			.openGeneral()
 			.setGeneralMetadata("New topic", "One for question pool", "Primary School",
 					"Interessant", "Add. infos", "Wide coverage", "formative")
 			.saveGeneralMetadata();
 		
+		// open quick view
 		questionPool	
 			.clickToolbarBack()
 			.assertQuestionInList(questionTitle, QTI21QuestionType.mc.name())
@@ -242,8 +244,55 @@ public class QuestionPoolTest extends Deployments {
 			.assertAdditionalInfos("Add. infos")
 			.assertCoverage("Wide coverage")
 			.assertAssessmentType("formative");
+	}
+	
+	/**
+	 * An author create a QTI 2.1 question, a fill in blank,
+	 * and fill the item analyze metadata. Go back in list and check
+	 * that the metadata are there.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void questionPoolItemAnalyseMetadata()
+	throws IOException, URISyntaxException {
+		// The author create a new question with metadata
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor("Lili");
+
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage
+			.loginAs(author.getLogin(), author.getPassword())
+			.resume();
+		
+		String questionTitle = "MetaMC-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		QuestionPoolPage questionPool = navBar.assertOnNavigationPage()
+			.openQuestionPool();
+		questionPool
+			.selectMyQuestions()
+			.newQuestion(questionTitle, QTI21QuestionType.fib)
+			.metadata()
+			.openItemAnalyse()
+			.setLearningTime(1, 5, 3, 35)
+			.setItemAnalyse(0.5d, 0.3d, -0.7d, 2, 3)
+			.saveItemAnalyse();
 		
 		// open quick view
+		questionPool	
+			.clickToolbarBack()
+			.assertQuestionInList(questionTitle, QTI21QuestionType.fib.name())
+			.openQuickView(questionTitle)
+			.metadata()
+			.openItemAnalyse()
+			.assertLearningTime(1, 5, 3, 35)
+			.assertDifficulty(0.5d)
+			.assertStandardDeviation(0.3d)
+			.assertDiscriminationIndex(-0.7d)
+			.assertDistractors(2)
+			.assertUsage(3);
 	}
 
 }

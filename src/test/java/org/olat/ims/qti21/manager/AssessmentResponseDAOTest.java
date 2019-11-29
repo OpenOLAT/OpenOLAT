@@ -19,6 +19,8 @@
  */
 package org.olat.ims.qti21.manager;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.Assert;
@@ -75,8 +77,56 @@ public class AssessmentResponseDAOTest extends OlatTestCase {
 		Assert.assertNotNull(itemSession);
 		AssessmentResponse response = responseDao.createAssessmentResponse(testSession, itemSession, responseIdentifier, ResponseLegality.VALID, ResponseDataType.FILE);
 		Assert.assertNotNull(response);
+		response.setStringuifiedResponse("Hello QTI 2.1");
+		responseDao.save(Collections.singletonList(response));
 		dbInstance.commit();
 	}
 	
+	@Test
+	public void loadResponse_itemSession() {
+		// prepare a test and a user
+		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("response-session-2");
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, "-", Boolean.FALSE, testEntry);
+		dbInstance.commit();
 
+		//make test, item and response
+		String itemIdentifier = UUID.randomUUID().toString();
+		String responseIdentifier = UUID.randomUUID().toString();
+		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, testEntry, "_", assessmentEntry, assessedIdentity, null, true);
+		AssessmentItemSession itemSession = itemSessionDao.createAndPersistAssessmentItemSession(testSession, null, itemIdentifier);
+		AssessmentResponse response = responseDao.createAssessmentResponse(testSession, itemSession, responseIdentifier, ResponseLegality.VALID, ResponseDataType.FILE);
+		response.setStringuifiedResponse("Hello QTI 2.1");
+		responseDao.save(Collections.singletonList(response));
+		dbInstance.commit();
+		
+		List<AssessmentResponse> loadedResponses = responseDao.getResponses(itemSession);
+		Assert.assertNotNull(loadedResponses);
+		Assert.assertEquals(1, loadedResponses.size());
+		Assert.assertEquals(response, loadedResponses.get(0));
+	}
+	
+	@Test
+	public void loadResponse_testSession() {
+		// prepare a test and a user
+		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("response-session-3");
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, "-", Boolean.FALSE, testEntry);
+		dbInstance.commit();
+
+		//make test, item and response
+		String itemIdentifier = UUID.randomUUID().toString();
+		String responseIdentifier = UUID.randomUUID().toString();
+		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, testEntry, "_", assessmentEntry, assessedIdentity, null, true);
+		AssessmentItemSession itemSession = itemSessionDao.createAndPersistAssessmentItemSession(testSession, null, itemIdentifier);
+		AssessmentResponse response = responseDao.createAssessmentResponse(testSession, itemSession, responseIdentifier, ResponseLegality.VALID, ResponseDataType.FILE);
+		response.setStringuifiedResponse("Hello QTI 2.1");
+		responseDao.save(Collections.singletonList(response));
+		dbInstance.commit();
+		
+		List<AssessmentResponse> loadedResponses = responseDao.getResponses(testSession);
+		Assert.assertNotNull(loadedResponses);
+		Assert.assertEquals(1, loadedResponses.size());
+		Assert.assertEquals(response, loadedResponses.get(0));
+	}
 }

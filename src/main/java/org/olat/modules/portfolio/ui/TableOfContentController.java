@@ -730,7 +730,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	}
 	
 	private void doEditSection(UserRequest ureq, SectionRow sectionRow) {
-		if(editSectionCtrl != null) return;
+		if(guardModalController(editSectionCtrl)) return;
 		
 		editSectionCtrl = new SectionEditController(ureq, getWindowControl(), sectionRow.getSection(), secCallback);
 		editSectionCtrl.setUserObject(sectionRow);
@@ -743,7 +743,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	}
 	
 	private void doCreateNewSection(UserRequest ureq) {
-		if(newSectionCtrl != null) return;
+		if(guardModalController(newSectionCtrl)) return;
 		
 		newSectionCtrl = new SectionEditController(ureq, getWindowControl(), binder, secCallback);
 		listenTo(newSectionCtrl);
@@ -755,7 +755,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	}
 	
 	private void doCreateNewAssignment(UserRequest ureq) {
-		if(newAssignmentCtrl != null) return;
+		if(guardModalController(newAssignmentCtrl)) return;
 
 		newAssignmentCtrl = new AssignmentEditController(ureq, getWindowControl(), binder);
 		listenTo(newAssignmentCtrl);
@@ -841,7 +841,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	}
 	
 	private void doCreateNewEntry(UserRequest ureq) {
-		if(newPageCtrl != null) return;
+		if(guardModalController(newPageCtrl)) return;
 		
 		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), secCallback, binder, false, (Section)null, true);
 		listenTo(newPageCtrl);
@@ -853,7 +853,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	}
 	
 	private void doEditBinderMetadata(UserRequest ureq) {
-		if(binderMetadataCtrl != null) return;
+		if(guardModalController(binderMetadataCtrl)) return;
 		
 		Binder reloadedBinder = portfolioService.getBinderByKey(binder.getKey());
 		binderMetadataCtrl = new BinderMetadataEditController(ureq, getWindowControl(), reloadedBinder);
@@ -866,7 +866,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	}
 	
 	private void doOverrideDatesSection(UserRequest ureq, SectionRow sectionRow) {
-		if(editSectionDatesCtrl != null) return;
+		if(guardModalController(editSectionDatesCtrl)) return;
 		
 		editSectionDatesCtrl = new SectionDatesEditController(ureq, getWindowControl(), sectionRow.getSection());
 		editSectionDatesCtrl.setUserObject(sectionRow);
@@ -918,7 +918,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	}
 	
 	private void doConfirmMoveToTrashBinder(UserRequest ureq) {
-		if(moveBinderToTrashCtrl != null) return;
+		if(guardModalController(moveBinderToTrashCtrl)) return;
 		
 		BinderStatistics stats = portfolioService.getBinderStatistics(binder);
 		moveBinderToTrashCtrl = new ConfirmMoveBinderToTrashController(ureq, getWindowControl(), stats);
@@ -949,7 +949,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	}
 	
 	private void doConfirmDeleteBinder(UserRequest ureq) {
-		if(moveBinderToTrashCtrl != null) return;
+		if(guardModalController(moveBinderToTrashCtrl)) return;
 		
 		BinderStatistics stats = portfolioService.getBinderStatistics(binder);
 		deleteBinderCtrl = new ConfirmDeleteBinderController(ureq, getWindowControl(), stats);

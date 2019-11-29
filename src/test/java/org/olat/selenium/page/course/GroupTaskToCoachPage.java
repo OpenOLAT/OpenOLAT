@@ -47,7 +47,7 @@ public class GroupTaskToCoachPage {
 	
 	public GroupTaskToCoachPage selectBusinessGroupToCoach(String name) {
 		By tableRowBy = By.cssSelector(".table tr");
-		By selectLinkBy = By.xpath("//td//a[contains(@href,'select')]");
+		By selectLinkBy = By.xpath("//td//a[contains(@onclick,'select')]");
 		
 		List<WebElement> rows = browser.findElements(tableRowBy);
 		WebElement selectLinkEl = null;
@@ -63,7 +63,7 @@ public class GroupTaskToCoachPage {
 	}
 	
 	public GroupTaskToCoachPage selectIdentityToCoach(UserVO user) {
-		By selectLinkBy = By.xpath("//table[contains(@class,'table')]//td//a[contains(@href,'firstName')][contains(text(),'" + user.getFirstName() + "')]");
+		By selectLinkBy = By.xpath("//table[contains(@class,'table')]//td//a[contains(@onclick,'firstName')][contains(text(),'" + user.getFirstName() + "')]");
 		browser.findElement(selectLinkBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
@@ -111,7 +111,7 @@ public class GroupTaskToCoachPage {
 	public GroupTaskToCoachPage confirm() {
 		OOGraphene.waitBusyAndScrollTop(browser);
 		OOGraphene.waitModalDialog(browser);
-		By yes = By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@href,'link_0')]");
+		By yes = By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@onclick,'link_0')]");
 		browser.findElement(yes).click();
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);

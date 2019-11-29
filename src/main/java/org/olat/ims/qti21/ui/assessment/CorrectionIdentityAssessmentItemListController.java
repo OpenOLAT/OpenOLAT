@@ -316,7 +316,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 	
 	
 	private void doConfirmSaveTests(UserRequest ureq) {
-		if(confirmSaveTestCtrl != null) return;
+		if(guardModalController(confirmSaveTestCtrl)) return;
 		
 		int notCorrectedQuestions = 0;
 		List<CorrectionIdentityAssessmentItemRow> rows = tableModel.getObjects();

@@ -24,11 +24,41 @@ objectClass: inetOrgPerson
 objectClass: top
 cn: Maurus Rohrer
 givenname: Maurus
-labeleduri: http://www.olat.org/maurus
-mail: mrohrer@olat.org
+labeleduri: https://www.openolat.com/maurus
+mail: mrohrer@openolat.com
 o: Informatik
 sn: Rohrer
 uid: mrohrer
+userPassword: olat
+modifyTimestamp: 20100630180000Z
+
+dn: uid=hadigest,ou=person,dc=olattest,dc=org
+objectClass: organizationalPerson
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: top
+cn: HA1 Digest
+givenname: Digest
+labeleduri: https://www.openolat.com/digest
+mail: ha1digest@openolat.com
+o: Informatik
+sn: Digest
+uid: hadigest
+userPassword: olat
+modifyTimestamp: 20100630180000Z
+
+dn: uid=updateme,ou=person,dc=olattest,dc=org
+objectClass: organizationalPerson
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: top
+cn: John Doe
+givenname: John
+labeleduri: https://www.openolat.com/smith
+mail: john.doe@openolat.com
+o: Informatik
+sn: Doe
+uid: updateme
 userPassword: olat
 modifyTimestamp: 20100630180000Z
 
@@ -39,8 +69,8 @@ objectClass: inetOrgPerson
 objectClass: top
 cn: LDAP Test
 givenname: Test
-labeleduri: http://www.olat.org
-mail: test@test.com
+labeleduri: https://www.openolat.com
+mail: test@openolat.com
 o: Informatik
 sn: Test
 uid: test
@@ -53,8 +83,8 @@ objectClass: inetOrgPerson
 objectClass: top
 cn: Heidi Alpen
 givenname: Heidi
-labeleduri: http://www.olat.org
-mail: halpen@olat.org
+labeleduri: https://www.openolat.com
+mail: halpen@openolat.com
 o: Bauer
 sn: Alpen
 uid: halpen
@@ -67,8 +97,8 @@ objectClass: inetOrgPerson
 objectClass: top
 cn: Klaus Meier
 givenname: Klaus
-labeleduri: http://www.olat.org
-mail: kmeier@olat.org
+labeleduri: https://www.openolat.com
+mail: kmeier@openolat.com
 o: Informatik
 sn: Meier
 uid: kmeier
@@ -81,8 +111,8 @@ objectClass: inetOrgPerson
 objectClass: top
 cn:: SGFucyBDaGFzcGVyIEjCuHJsaW1hbm4=
 givenname: Hans Chasper
-labeleduri: http://www.olat.org/huerlimann
-mail: hhuerlimann@olat.org
+labeleduri: https://www.openolat.com/huerlimann
+mail: hhuerlimann@openolat.com
 o: Forschung
 sn:: SMK4cmxpbWFubg==
 uid: hhuerlimann
@@ -96,10 +126,11 @@ objectClass: inetOrgPerson
 objectClass: top
 cn:: SGFucyBDaGFzcGVyIEjCuHJsaW1hbm4=
 givenname: Krass Geil
-labeleduri: http://www.olat.org/krass
+labeleduri: https://www.openolat.com/krass
 o: Forschung
 sn:: SMK4cmxpbWFubg==
 uid: krass
 userpassword:: e1NIQX1SWEhpU0lWZGN1SU1EdVNiVCtaaFpOcWFwYWs9
 modifyTimestamp: 20100630180000Z
+
 

@@ -38,7 +38,8 @@ import org.olat.modules.ModuleConfiguration;
  *
  */
 public class GTARevisionAndCorrectionEditController extends FormBasicController {
-	
+
+	private TextElement minNumberOfDocsEl;
 	private TextElement maxNumberOfDocsEl;
 	
 	private final ModuleConfiguration config;
@@ -60,8 +61,9 @@ public class GTARevisionAndCorrectionEditController extends FormBasicController 
 		configCont.setFormContextHelp("Three Steps to Your Task#_task_configuration");
 		formLayout.add(configCont);
 
+		minNumberOfDocsEl = uifactory.addTextElement("min.documents", "min.documents", 5, "", configCont);
 		maxNumberOfDocsEl = uifactory.addTextElement("max.documents", "max.documents", 5, "", configCont);
-		updateDefaultMaximumNumberOfDocuments();
+		updateDefaultNumbersOfDocuments();
 		
 		//save
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -71,17 +73,22 @@ public class GTARevisionAndCorrectionEditController extends FormBasicController 
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
-	public void updateDefaultMaximumNumberOfDocuments() {
-		int maxDocs = config.getIntegerSafe(GTACourseNode.GTASK_MAX_REVISED_DOCS, -1);
+	public void updateDefaultNumbersOfDocuments() {
+		updateDefaultNumbersOfDocuments(minNumberOfDocsEl, GTACourseNode.GTASK_MIN_REVISED_DOCS, GTACourseNode.GTASK_MIN_SUBMITTED_DOCS);
+		updateDefaultNumbersOfDocuments(maxNumberOfDocsEl, GTACourseNode.GTASK_MAX_REVISED_DOCS, GTACourseNode.GTASK_MAX_SUBMITTED_DOCS);
+	}
+	
+	private void updateDefaultNumbersOfDocuments(TextElement numberEl, String configKey, String fallbackConfigKey) {
+		int maxDocs = config.getIntegerSafe(configKey, -1);
 		String maxVal = "";
 		if(maxDocs == -1) {
 			// !this only works because there is not another configuration in the controller
-			maxDocs = config.getIntegerSafe(GTACourseNode.GTASK_MAX_SUBMITTED_DOCS, -1);
+			maxDocs = config.getIntegerSafe(fallbackConfigKey, -1);
 		}
 		if(maxDocs > 0) {
 			maxVal = Integer.toString(maxDocs);
 		}
-		maxNumberOfDocsEl.setValue(maxVal);
+		numberEl.setValue(maxVal);
 	}
 	
 	@Override
@@ -91,41 +98,60 @@ public class GTARevisionAndCorrectionEditController extends FormBasicController 
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+
+		allOk &= validateNumberOfDocuments(minNumberOfDocsEl);
+		allOk &= validateNumberOfDocuments(maxNumberOfDocsEl);
+		
+		if(allOk && StringHelper.isLong(minNumberOfDocsEl.getValue()) && StringHelper.isLong(maxNumberOfDocsEl.getValue())
+				&& Long.parseLong(minNumberOfDocsEl.getValue()) > Long.parseLong(maxNumberOfDocsEl.getValue())) {
+			maxNumberOfDocsEl.setErrorKey("error.max.smaller.than.min.documents", null);
+			allOk &= false;	
+		}
+		
+		return allOk;
+	}
+	
+	private boolean validateNumberOfDocuments(TextElement numberEl) {
 		boolean allOk = true;
 		
-		maxNumberOfDocsEl.clearError();
-		String maxVal = maxNumberOfDocsEl.getValue();
+		numberEl.clearError();
+		String maxVal = numberEl.getValue();
 		if(StringHelper.containsNonWhitespace(maxVal)) {
 			try {
 				int val = Integer.parseInt(maxVal);
 				if(val <= 0 || val > 12) {
-					maxNumberOfDocsEl.setErrorKey("error.number.format", null);
+					numberEl.setErrorKey("error.number.format", null);
 					allOk &= false;
 				}
 			} catch (NumberFormatException e) {
 				//can happen
 				allOk &= false;
-				maxNumberOfDocsEl.setErrorKey("error.number.format", null);
+				numberEl.setErrorKey("error.number.format", null);
 			}
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		String maxVal = maxNumberOfDocsEl.getValue();
-		if(StringHelper.isLong(maxVal)) {
+		setNumberOfDocuments(minNumberOfDocsEl, GTACourseNode.GTASK_MIN_REVISED_DOCS);
+		setNumberOfDocuments(maxNumberOfDocsEl, GTACourseNode.GTASK_MAX_REVISED_DOCS);
+		fireEvent(ureq, Event.DONE_EVENT);
+	}
+	
+	private void setNumberOfDocuments(TextElement numberEl, String configKey) {
+		String number = numberEl.getValue();
+		if(StringHelper.isLong(number)) {
 			try {
-				int val = Integer.parseInt(maxVal);
-				config.setIntValue(GTACourseNode.GTASK_MAX_REVISED_DOCS, val);
+				int val = Integer.parseInt(number);
+				config.setIntValue(configKey, val);
 			} catch (NumberFormatException e) {
 				//can happen
 			}
 		} else {
-			config.remove(GTACourseNode.GTASK_MAX_REVISED_DOCS);
+			config.remove(configKey);
 		}
-
-		fireEvent(ureq, Event.DONE_EVENT);
 	}
 }

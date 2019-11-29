@@ -133,7 +133,7 @@ public class EfficiencyStatementPage {
 		if(courseTitle.length() > 25) {
 			courseTitle = courseTitle.substring(0, 25);
 		}
-		By courseCertificateBy = By.xpath("//div[contains(@class,'o_sel_certificates_table')]//table//tr[td[contains(text(),'" + courseTitle + "')]]/td//a[contains(@href,'cmd.show')]");
+		By courseCertificateBy = By.xpath("//div[contains(@class,'o_sel_certificates_table')]//table//tr[td[contains(text(),'" + courseTitle + "')]]/td//a[contains(@onclick,'cmd.show')]");
 		OOGraphene.waitElement(courseCertificateBy, browser);
 		browser.findElement(courseCertificateBy).click();
  		OOGraphene.waitBusy(browser);
@@ -151,7 +151,7 @@ public class EfficiencyStatementPage {
 		if(courseTitle.length() > 25) {
 			courseTitle = courseTitle.substring(0, 25);
 		}
-		By collectBy = By.xpath("//div[contains(@class,'o_sel_certificates_table')]//table//tr[td[contains(text(),'" + courseTitle + "')]]/td/a[contains(@href,'cmd.MEDIA')][i[contains(@class,'o_icon_eportfolio_add')]]");
+		By collectBy = By.xpath("//div[contains(@class,'o_sel_certificates_table')]//table//tr[td[contains(text(),'" + courseTitle + "')]]/td/a[contains(@onclick,'cmd.MEDIA')][i[contains(@class,'o_icon_eportfolio_add')]]");
 		OOGraphene.waitElement(collectBy, browser);
 		OOGraphene.scrollTo(collectBy, browser);
 		browser.findElement(collectBy).click();

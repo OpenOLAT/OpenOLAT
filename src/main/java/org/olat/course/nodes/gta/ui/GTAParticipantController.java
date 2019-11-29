@@ -221,9 +221,9 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	private Task assignTaskAutomatically(UserRequest ureq, Task assignedTask) {
 		AssignmentResponse response;
 		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
-			response = gtaManager.assignTaskAutomatically(taskList, assessedGroup, courseEnv, gtaNode);
+			response = gtaManager.assignTaskAutomatically(taskList, assessedGroup, courseEnv, gtaNode, getIdentity());
 		} else {
-			response = gtaManager.assignTaskAutomatically(taskList, assessedIdentity, courseEnv, gtaNode);
+			response = gtaManager.assignTaskAutomatically(taskList, assessedIdentity, courseEnv, gtaNode, getIdentity());
 		}
 		
 		if(response == null || response.getStatus() == AssignmentResponse.Status.error) {
@@ -305,9 +305,10 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		
 		DueDate dueDate = getSubmissionDueDate(task);
 		Date deadline = dueDate == null ? null : dueDate.getDueDate();
+		int minDocs = config.getIntegerSafe(GTACourseNode.GTASK_MIN_SUBMITTED_DOCS, -1);
 		int maxDocs = config.getIntegerSafe(GTACourseNode.GTASK_MAX_SUBMITTED_DOCS, -1);
-		submitDocCtrl = new SubmitDocumentsController(ureq, getWindowControl(), task, documentsDir, documentsContainer, maxDocs,
-				gtaNode, courseEnv, userCourseEnv.isCourseReadOnly(), deadline, "document");
+		submitDocCtrl = new SubmitDocumentsController(ureq, getWindowControl(), task, documentsDir, documentsContainer,
+				minDocs, maxDocs, gtaNode, courseEnv, userCourseEnv.isCourseReadOnly(), deadline, "document");
 		listenTo(submitDocCtrl);
 		mainVC.put("submitDocs", submitDocCtrl.getInitialComponent());
 		
@@ -344,11 +345,16 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		String text;
 		File[] submittedDocuments;
 		VFSContainer documentsContainer;
+		
+		int minDocs = config.getIntegerSafe(GTACourseNode.GTASK_MIN_SUBMITTED_DOCS, -1);
 		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
 			documentsContainer = gtaManager.getSubmitContainer(courseEnv, gtaNode, assessedGroup);
 			File documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedGroup);
 			submittedDocuments = documentsDir.listFiles(new SystemFilenameFilter(true, false));
-			if(submittedDocuments.length == 0) {
+			if(minDocs > 0 && submittedDocuments.length < minDocs) {
+				showWarning("error.min.documents", new String[]{ Integer.toString(minDocs), Integer.toString(submittedDocuments.length) });
+				return;
+			} else if(submittedDocuments.length == 0) {
 				text = "<div class='o_warning'>" + translate("run.submit.confirm.warning.group", new String[]{ StringHelper.escapeHtml(assessedGroup.getName()) }) + "</div>";
 			} else {
 				text = translate("run.submit.confirm.group", new String[]{ StringHelper.escapeHtml(assessedGroup.getName()) });
@@ -357,7 +363,10 @@ public class GTAParticipantController extends GTAAbstractController implements A
 			documentsContainer = gtaManager.getSubmitContainer(courseEnv, gtaNode, getIdentity());
 			File documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, getIdentity());
 			submittedDocuments = documentsDir.listFiles(new SystemFilenameFilter(true, false));
-			if(submittedDocuments.length == 0) {
+			if(minDocs > 0 && submittedDocuments.length < minDocs) {
+				showWarning("error.min.documents", new String[]{ Integer.toString(minDocs), Integer.toString(submittedDocuments.length) });
+				return;
+			} else if(submittedDocuments.length == 0) {
 				text = "<div class='o_warning'>" + translate("run.submit.confirm.warning") + "</div>";
 			} else {
 				text = translate("run.submit.confirm");
@@ -379,7 +388,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 			TaskProcess firstStep = gtaManager.firstStep(gtaNode);
 			task = gtaManager.createTask(null, taskList, firstStep, assessedGroup, assessedIdentity, gtaNode);
 		}
-		task = gtaManager.submitTask(task, gtaNode, numOfDocs, Role.user);
+		task = gtaManager.submitTask(task, gtaNode, numOfDocs, getIdentity(), Role.user);
 		showInfo("run.documents.successfully.submitted");
 		
 		TaskMultiUserEvent event = new TaskMultiUserEvent(TaskMultiUserEvent.SUMBIT_TASK,
@@ -392,7 +401,6 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		
 		cleanUpProcess();
 		process(ureq);
-		doUpdateAttempts();
 
 		//do send e-mail
 		if(config.getBooleanSafe(GTACourseNode.GTASK_SUBMISSION_MAIL_CONFIRMATION)) {
@@ -425,7 +433,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	}
 	
 	private void doConfirmResetTask(UserRequest ureq, Task task) {
-		if(confirmResetTaskCtrl != null) return;
+		if(guardModalController(confirmResetTaskCtrl)) return;
 		confirmResetTaskCtrl = new ConfirmResetTaskController(ureq, getWindowControl(), task, gtaNode, courseEnv);
 		listenTo(confirmResetTaskCtrl);
 		

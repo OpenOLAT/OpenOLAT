@@ -77,14 +77,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class GTACoachRevisionAndCorrectionsController extends BasicController implements Activateable2 {
 	
 	private final VelocityContainer mainVC;
-	private Link returnToRevisionsButton, closeRevisionsButton, collectButton;
+	private Link collectButton;
+	private Link closeRevisionsButton;
+	private Link returnToRevisionsButton;
 	
 	private CloseableModalController cmc;
 	private Map<Integer,DirectoryController> loopToRevisionCtrl = new HashMap<>();
-	//private DirectoryController revisionsCtrl, correctionsCtrl;
 	private SubmitDocumentsController uploadCorrectionsCtrl;
 	private ConfirmRevisionsController confirmReturnToRevisionsCtrl;
-	private DialogBoxController confirmCloseRevisionProcessCtrl, confirmCollectCtrl;
+	private DialogBoxController confirmCollectCtrl;
+	private DialogBoxController confirmCloseRevisionProcessCtrl;
 	
 	private Task assignedTask;
 	private final int currentIteration;
@@ -95,7 +97,6 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 	private final CourseEnvironment courseEnv;
 	private final UserCourseEnvironment coachCourseEnv;
 	private final OLATResourceable taskListEventResource;
-	private final UserCourseEnvironment assessedUserCourseEnv;
 	
 	@Autowired
 	private GTAManager gtaManager;
@@ -108,7 +109,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 	
 	public GTACoachRevisionAndCorrectionsController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv,
 			Task assignedTask, GTACourseNode gtaNode, UserCourseEnvironment coachCourseEnv, BusinessGroup assessedGroup,
-			Identity assessedIdentity, UserCourseEnvironment assessedUserCourseEnv, OLATResourceable taskListEventResource) {
+			Identity assessedIdentity, OLATResourceable taskListEventResource) {
 		super(ureq, wControl);
 		this.gtaNode = gtaNode;
 		this.courseEnv = courseEnv;
@@ -116,7 +117,6 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 		this.assessedGroup = assessedGroup;
 		this.coachCourseEnv = coachCourseEnv;
 		this.assessedIdentity = assessedIdentity;
-		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		this.taskListEventResource = taskListEventResource;
 		this.businessGroupTask = GTAType.group.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE));
 		currentIteration = assignedTask.getRevisionLoop();
@@ -170,12 +170,12 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 	}
 	
 	private void setRevisionIteration(UserRequest ureq, int iteration, List<String> revisionStepNames) {
-		//revisions
+		// revisions
 		String revCmpName = "revisions-" + iteration;
 		if(setRevisions(ureq, revCmpName, iteration)) {
 			revisionStepNames.add(revCmpName);
 		}
-		//corrections;
+		// corrections
 		String correctionCmpName = "corrections-" + iteration;
 		if(setCorrections(ureq, correctionCmpName, iteration)) {
 			revisionStepNames.add(correctionCmpName);
@@ -253,8 +253,8 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 			documentsContainer = gtaManager.getRevisedDocumentsCorrectionsContainer(courseEnv, gtaNode, iteration, assessedIdentity);
 		}
 		
-		uploadCorrectionsCtrl = new SubmitDocumentsController(ureq, getWindowControl(), task, documentsDir, documentsContainer, -1,
-				gtaNode, courseEnv, coachCourseEnv.isCourseReadOnly(), null, "coach.document");
+		uploadCorrectionsCtrl = new SubmitDocumentsController(ureq, getWindowControl(), task, documentsDir, documentsContainer,
+				-1, -1, gtaNode, courseEnv, coachCourseEnv.isCourseReadOnly(), null, "coach.document");
 		listenTo(uploadCorrectionsCtrl);
 		mainVC.put("uploadCorrections", uploadCorrectionsCtrl.getInitialComponent());
 
@@ -333,7 +333,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 	}
 	
 	private void doConfirmReturnToRevisions(UserRequest ureq) {
-		if(confirmReturnToRevisionsCtrl != null) return;
+		if(guardModalController(confirmReturnToRevisionsCtrl)) return;
 		
 		confirmReturnToRevisionsCtrl = new ConfirmRevisionsController(ureq, getWindowControl(), assignedTask,
 				assessedIdentity, assessedGroup, gtaNode, courseEnv);
@@ -379,7 +379,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 	}
 	
 	private void doCollect() {
-		assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.correction, gtaNode, Role.coach);
+		assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.correction, gtaNode, true, getIdentity(), Role.coach);
 		gtaManager.log("Collect revision", "revision collected", assignedTask,
 				getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach);
 
@@ -391,6 +391,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 				courseAssessmentService.incrementAttempts(gtaNode, userCourseEnv, Role.coach);
 			}
 		} else {
+			UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
 			courseAssessmentService.incrementAttempts(gtaNode, assessedUserCourseEnv, Role.coach);
 		}
 		
@@ -401,7 +402,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 	}
 	
 	private void doReturnToRevisions(Task task) {
-		assignedTask = gtaManager.updateTask(task, TaskProcess.revision, currentIteration + 1, gtaNode, Role.coach);
+		assignedTask = gtaManager.updateTask(task, TaskProcess.revision, currentIteration + 1, gtaNode, false, getIdentity(), Role.coach);
 		gtaManager.log("Revision", "need another revision", assignedTask,
 				getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach);
 	}
@@ -414,7 +415,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 	}
 	
 	private void doCloseRevisionProcess() {
-		assignedTask = gtaManager.reviewedTask(assignedTask, gtaNode, Role.coach);
+		assignedTask = gtaManager.reviewedTask(assignedTask, gtaNode, getIdentity(), Role.coach);
 		gtaManager.log("Revision", "close revision", assignedTask,
 				getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach);
 	}

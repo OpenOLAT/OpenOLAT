@@ -135,7 +135,7 @@ public class TextInputController extends FormBasicController implements Evaluati
 	}
 
 	@Override
-	public void initResponse(EvaluationFormSession session, EvaluationFormResponses responses) {
+	public void initResponse(UserRequest ureq, EvaluationFormSession session, EvaluationFormResponses responses) {
 		response = responses.getResponse(session, textInput.getId());
 		if (response != null) {
 			if (singleRow) {
@@ -147,7 +147,7 @@ public class TextInputController extends FormBasicController implements Evaluati
 	}
 
 	@Override
-	public void saveResponse(EvaluationFormSession session) {
+	public void saveResponse(UserRequest ureq, EvaluationFormSession session) {
 		String valueToSave = getValueToSave();
 		if (StringHelper.containsNonWhitespace(valueToSave)) {
 			if (textInput.isNumeric()) {

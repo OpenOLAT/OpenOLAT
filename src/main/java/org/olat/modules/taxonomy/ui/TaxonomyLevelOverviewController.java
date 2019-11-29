@@ -219,7 +219,7 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 	}
 	
 	private void doMove(UserRequest ureq) {
-		if(moveLevelCtrl != null) return;
+		if(guardModalController(moveLevelCtrl)) return;
 		
 		taxonomyLevel = taxonomyService.getTaxonomyLevel(taxonomyLevel);
 		Taxonomy taxonomy = taxonomyLevel.getTaxonomy();
@@ -234,7 +234,7 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 	}
 	
 	private void doCreateTaxonomyLevel(UserRequest ureq) {
-		if(createTaxonomyLevelCtrl != null) return;
+		if(guardModalController(createTaxonomyLevelCtrl)) return;
 		
 		taxonomyLevel = taxonomyService.getTaxonomyLevel(taxonomyLevel);
 		Taxonomy taxonomy = taxonomyLevel.getTaxonomy();

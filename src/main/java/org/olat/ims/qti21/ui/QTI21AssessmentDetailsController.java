@@ -520,7 +520,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	}
 
 	private void doOpenResult(UserRequest ureq, AssessmentTestSession session) {
-		if(resultCtrl != null) return;
+		if(guardModalController(resultCtrl)) return;
 		
 		//reload it to prevent lazy loading issues
 		session = qtiService.getAssessmentTestSession(session.getKey());

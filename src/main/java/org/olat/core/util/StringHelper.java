@@ -51,6 +51,7 @@ import org.olat.core.logging.AssertException;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.impl.HtmlScanner;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
 import org.olat.user.UserManager;
 
@@ -624,5 +625,20 @@ public class StringHelper {
 		Collections.sort(rv);
 		
 		return formatAsCSVString(rv);
+	}
+
+	public static String truncateText(String text) {
+		String shortenedText = "";
+		if (text != null) {
+			String shortText = FilterFactory.getHtmlTagsFilter().filter(text);
+			if(shortText.length() > 255) {
+				shortenedText = shortText.substring(0, 255);
+			} else {
+				shortenedText = shortText;
+			}
+		} else {
+			shortenedText = "";
+		}
+		return shortenedText;
 	}
 }

@@ -629,7 +629,7 @@ public class BinderPageListController extends AbstractPageListController {
 	}
 	
 	private void doCreateNewSection(UserRequest ureq) {
-		if(newSectionCtrl != null) return;
+		if(guardModalController(newSectionCtrl)) return;
 		
 		newSectionCtrl = new SectionEditController(ureq, getWindowControl(), binder, secCallback);
 		listenTo(newSectionCtrl);
@@ -641,7 +641,7 @@ public class BinderPageListController extends AbstractPageListController {
 	}
 	
 	private void doCreateNewPage(UserRequest ureq, Section preSelectedSection) {
-		if(newPageCtrl != null) return;
+		if(guardModalController(newPageCtrl)) return;
 		
 		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), secCallback, binder, false, preSelectedSection, true);
 		listenTo(newPageCtrl);
@@ -653,7 +653,7 @@ public class BinderPageListController extends AbstractPageListController {
 	}
 	
 	private void doCreateNewAssignment(UserRequest ureq) {
-		if(newAssignmentCtrl != null) return;
+		if(guardModalController(newAssignmentCtrl)) return;
 
 		newAssignmentCtrl = new AssignmentEditController(ureq, getWindowControl(), binder);
 		listenTo(newAssignmentCtrl);
@@ -665,7 +665,7 @@ public class BinderPageListController extends AbstractPageListController {
 	}
 	
 	private void doCreateNewAssignment(UserRequest ureq, Section section) {
-		if(newAssignmentCtrl != null) return;
+		if(guardModalController(newAssignmentCtrl)) return;
 		
 		newAssignmentCtrl = new AssignmentEditController(ureq, getWindowControl(), section);
 		listenTo(newAssignmentCtrl);

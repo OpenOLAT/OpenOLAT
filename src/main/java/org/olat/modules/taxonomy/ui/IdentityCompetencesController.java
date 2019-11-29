@@ -198,7 +198,7 @@ public class IdentityCompetencesController extends FormBasicController implement
 	}
 	
 	private void doSelectTaxonomyLevelsToAdd(UserRequest ureq, TaxonomyCompetenceTypes comptenceType) {
-		if(levelsSearchCtrl != null) return;
+		if(guardModalController(levelsSearchCtrl)) return;
 		
 		levelsSearchCtrl = new SelectTaxonomyLevelController(ureq, getWindowControl(), comptenceType);
 		listenTo(levelsSearchCtrl);

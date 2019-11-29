@@ -85,7 +85,7 @@ public class CloseableModalController extends DefaultController {
 		 this(wControl, closeButtonText, modalContent, displayAsOverlay, title, true);
 	}
 
-	public CloseableModalController(WindowControl wControl, String closeButtonText, Component modalContent, boolean showCloseIcon) {
+	private CloseableModalController(WindowControl wControl, String closeButtonText, Component modalContent, boolean showCloseIcon) {
 		 this(wControl, closeButtonText, modalContent, true, null, showCloseIcon);
 	}
 
@@ -181,10 +181,8 @@ public class CloseableModalController extends DefaultController {
 		getWindowControl().pop();
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
-		//
+		getWindowControl().removeModalDialog(myContent);
 	}
 }

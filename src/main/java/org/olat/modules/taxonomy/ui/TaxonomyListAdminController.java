@@ -292,7 +292,7 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 	}
 	
 	private void doCreateTaxonomy(UserRequest ureq) {
-		if(editTaxonomyCtrl != null) return;
+		if(guardModalController(editTaxonomyCtrl)) return;
 		
 		editTaxonomyCtrl = new EditTaxonomyController(ureq, getWindowControl(), null);
 		listenTo(editTaxonomyCtrl);

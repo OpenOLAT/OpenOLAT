@@ -146,7 +146,7 @@ public class MultipleChoiceController extends FormBasicController implements Eva
 	}
 
 	@Override
-	public void initResponse(EvaluationFormSession session, EvaluationFormResponses responses) {
+	public void initResponse(UserRequest ureq, EvaluationFormSession session, EvaluationFormResponses responses) {
 		multipleChoiceResponses = responses.getResponses(session, multipleChoice.getId());
 		for (EvaluationFormResponse response: multipleChoiceResponses) {
 			String key = response.getStringuifiedResponse();
@@ -161,7 +161,7 @@ public class MultipleChoiceController extends FormBasicController implements Eva
 	}
 
 	@Override
-	public void saveResponse(EvaluationFormSession session) {
+	public void saveResponse(UserRequest ureq, EvaluationFormSession session) {
 		evaluationFormManager.deleteResponses(multipleChoiceResponses);
 
 		Collection<String> selectedChoises = new ArrayList<>(multipleChoiceEl.getSelectedKeys());

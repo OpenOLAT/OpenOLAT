@@ -49,7 +49,7 @@ public class EnrollmentPage {
 	}
 	
 	public EnrollmentPage assertNoEnrollmentAllowed(){
-		By enrollBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr//td//a[contains(@href,'cmd.enroll.in.group')]");
+		By enrollBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr//td//a[contains(@onclick,'cmd.enroll.in.group')]");
 		List<WebElement> pageEls = browser.findElements(enrollBy);
 		Assert.assertTrue(pageEls.isEmpty());
 		return this;
@@ -60,7 +60,7 @@ public class EnrollmentPage {
 	 * @return
 	 */
 	public EnrollmentPage enrollNoWait() {
-		By enrollBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr//td//a[contains(@href,'cmd.enroll.in.group')]");
+		By enrollBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr//td//a[contains(@onclick,'cmd.enroll.in.group')]");
 		List<WebElement> pageEls = browser.findElements(enrollBy);
 		if(pageEls.size() > 0) {
 			pageEls.get(0).click();
@@ -75,7 +75,7 @@ public class EnrollmentPage {
 	 */
 	public EnrollmentPage multiEnroll(int enrollCount) {
 		for(int i = 1;i<=enrollCount; i++){
-			WebElement selectLink = browser.findElement(By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr["+i+"]//td//a[contains(@href,'cmd.enroll.in.group')]"));
+			WebElement selectLink = browser.findElement(By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr["+i+"]//td//a[contains(@onclick,'cmd.enroll.in.group')]"));
 			selectLink.click();
 			OOGraphene.waitBusy(browser);
 		}
@@ -91,7 +91,7 @@ public class EnrollmentPage {
 	public boolean hasError() {
 		OOGraphene.waitBusy(browser);
 		By errorMsgBy = By.cssSelector("div.modal-body.alert.alert-danger");
-		By cancelBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr//td//a[contains(@href,'cmd.enrolled.cancel')]");
+		By cancelBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr//td//a[contains(@onclick,'cmd.enrolled.cancel')]");
 		
 		List<WebElement> errorEls = browser.findElements(errorMsgBy);
 		List<WebElement> cancelLinkEls = browser.findElements(cancelBy);

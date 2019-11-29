@@ -126,10 +126,10 @@ public class AboutController extends BasicController {
 	 * @param withBuildInfo true: add build info to hover title (if available); false no build info
 	 * @return
 	 */
-	public static final Link aboutLinkFactory(Locale locale, Controller listener, boolean withIcon, boolean withBuildInfo) {
+	public static final Link aboutLinkFactory(String id, Locale locale, Controller listener, boolean withIcon, boolean withBuildInfo) {
 		Translator aboutTrans = Util.createPackageTranslator(AboutController.class, locale);
 		Link aboutLink = LinkFactory
-				.createLink("menu.about", "menu.about", "about", "menu.about", aboutTrans, null, listener, Link.LINK + Link.NONTRANSLATED);
+				.createLink(id, "menu.about", "about", "menu.about", aboutTrans, null, listener, Link.LINK + Link.NONTRANSLATED);
 		aboutLink.setCustomDisplayText(aboutTrans.translate("menu.about"));
 		if (withIcon) {			
 			aboutLink.setIconLeftCSS("o_icon o_icon_openolat o_icon-fw");

@@ -186,7 +186,7 @@ public class AdobeConnectEditMeetingsController extends FormBasicController {
 	}
 
 	private void doAddMeeting(UserRequest ureq) {
-		if(editMeetingCtlr != null) return;
+		if(guardModalController(editMeetingCtlr)) return;
 		
 		editMeetingCtlr = new EditAdobeConnectMeetingController(ureq, getWindowControl(), entry, subIdent, businessGroup, configuration);
 		listenTo(editMeetingCtlr);
@@ -198,7 +198,7 @@ public class AdobeConnectEditMeetingsController extends FormBasicController {
 	}
 	
 	private void doEditMeeting(UserRequest ureq, AdobeConnectMeeting meeting) {
-		if(editMeetingCtlr != null) return;
+		if(guardModalController(editMeetingCtlr)) return;
 		
 		editMeetingCtlr = new EditAdobeConnectMeetingController(ureq, getWindowControl(), meeting, configuration);
 		listenTo(editMeetingCtlr);

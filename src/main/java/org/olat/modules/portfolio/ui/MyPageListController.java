@@ -210,7 +210,7 @@ public class MyPageListController extends AbstractPageListController {
 	}
 	
 	protected void doCreateNewPage(UserRequest ureq) {
-		if(newPageCtrl != null) return;
+		if(guardModalController(newPageCtrl)) return;
 		
 		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), secCallback, null, true, (Section)null, true);
 		listenTo(newPageCtrl);

@@ -146,7 +146,7 @@ public class EditMultipleDueDatesController extends FormBasicController {
 					&& dueDates.getSubmissionDueDate().after(ureq.getRequestTimestamp())) {
 				TaskProcess submit = gtaManager.previousStep(TaskProcess.review, gtaNode);//only submit allowed
 				if(submit == TaskProcess.submit) {
-					task = gtaManager.updateTask(task, submit, gtaNode, Role.coach);
+					task = gtaManager.updateTask(task, submit, gtaNode, false, getIdentity(), Role.coach);
 					gtaManager.log("Back to submission", "revert status of task back to submission", task,
 							getIdentity(), task.getIdentity(), task.getBusinessGroup(), courseEnv, gtaNode, Role.coach);
 				}

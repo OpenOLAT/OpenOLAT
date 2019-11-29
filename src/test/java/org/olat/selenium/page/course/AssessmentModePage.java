@@ -22,7 +22,6 @@ package org.olat.selenium.page.course;
 import java.util.Date;
 import java.util.List;
 
-import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -109,24 +108,9 @@ public class AssessmentModePage {
 	 * @return
 	 */
 	public AssessmentModePage start(String name) {
-		WebElement startEl = null;
-		By rowBy = By.cssSelector("fieldset.o_sel_assessment_mode_list table.table>tbody>tr");
-		By linkBy = By.cssSelector("td a");
-		List<WebElement> rowList = browser.findElements(rowBy);
-		for(WebElement row:rowList) {
-			if(row.getText().contains(name)) {
-				List<WebElement> linksEl = row.findElements(linkBy);
-				for(WebElement linkEl:linksEl) {
-					String href = linkEl.getAttribute("href");
-					if(href != null && href.contains(",'start',")) {
-						startEl = linkEl;
-					}
-				}
-			}
-		}
-		
-		Assert.assertNotNull(startEl);
-		startEl.click();
+		By startBy = By.xpath("//fieldset[contains(@class,'o_sel_assessment_mode_list')]//table//tr/td/a[contains(@onclick,'start')]");
+		OOGraphene.waitElement(startBy, browser);
+		browser.findElement(startBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -159,24 +143,9 @@ public class AssessmentModePage {
 	 * @return
 	 */
 	public AssessmentModePage stop(String name) {
-		WebElement startEl = null;
-		By rowBy = By.cssSelector("fieldset.o_sel_assessment_mode_list table.table>tbody>tr");
-		By linkBy = By.cssSelector("td a");
-		List<WebElement> rowList = browser.findElements(rowBy);
-		for(WebElement row:rowList) {
-			if(row.getText().contains(name)) {
-				List<WebElement> linksEl = row.findElements(linkBy);
-				for(WebElement linkEl:linksEl) {
-					String href = linkEl.getAttribute("href");
-					if(href != null && href.contains(",'stop',")) {
-						startEl = linkEl;
-					}
-				}
-			}
-		}
-		
-		Assert.assertNotNull(startEl);
-		startEl.click();
+		By stopBy = By.xpath("//fieldset[contains(@class,'o_sel_assessment_mode_list')]//table//tr/td/a[contains(@onclick,'stop')]");
+		OOGraphene.waitElement(stopBy, browser);
+		browser.findElement(stopBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

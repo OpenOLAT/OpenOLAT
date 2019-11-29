@@ -65,6 +65,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
@@ -175,8 +176,7 @@ public class CoursesWebService {
 			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CourseVO.class))) }) })
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCourseList(@QueryParam("start") @DefaultValue("0") Integer start,
-			@QueryParam("limit") @DefaultValue("25") Integer limit,
-			@QueryParam("managed") Boolean managed,
+			@QueryParam("limit") Integer limit, @QueryParam("managed") Boolean managed,
 			@QueryParam("externalId") String externalId, @QueryParam("externalRef") String externalRef,
 			@QueryParam("repositoryEntryKey") String repositoryEntryKey,
 			@Context HttpServletRequest httpRequest, @Context Request request) {
@@ -195,7 +195,7 @@ public class CoursesWebService {
 			try {
 				params.setRepositoryEntryKeys(Collections.singletonList(Long.valueOf(repositoryEntryKey)));
 			} catch (NumberFormatException e) {
-				log.error("Cannot parse the following repository entry key: " + repositoryEntryKey);
+				log.error("Cannot parse the following repository entry key: {}", repositoryEntryKey);
 			}
 		}
 
@@ -221,12 +221,14 @@ public class CoursesWebService {
 		for (RepositoryEntry repoEntry : repoEntries) {
 			try {
 				ICourse course = loadCourse(repoEntry.getOlatResource().getResourceableId());
-				voList.add(ObjectFactory.get(repoEntry, course));
-				if(count++ % 33 == 0) {
-					dbInstance.commitAndCloseSession();
+				if(course != null) {
+					voList.add(ObjectFactory.get(repoEntry, course));
+					if(count++ % 33 == 0) {
+						dbInstance.commitAndCloseSession();
+					}
 				}
 			} catch (Exception e) {
-				log.error("Cannot load the course with this repository entry: " + repoEntry, e);
+				log.error("Cannot load the course with this repository entry: {}", repoEntry, e);
 			}
 		}
 
@@ -464,8 +466,11 @@ public class CoursesWebService {
 	public static ICourse loadCourse(Long courseId) {
 		try {
 			return CourseFactory.loadCourse(courseId);
+		} catch(CorruptedCourseException ex) {
+			log.error("Corrupted course with id: {}", courseId);
+			return null;
 		} catch(Exception ex) {
-			log.error("cannot load course with id: " + courseId, ex);
+			log.error("cannot load course with id: {}", courseId, ex);
 			return null;
 		}
 	}
@@ -473,7 +478,7 @@ public class CoursesWebService {
 	private ICourse importCourse(UserRequest ureq, Identity identity, File fCourseImportZIP, String displayName,
 			String softKey, RepositoryEntryStatusEnum status, boolean allUsers, boolean guests, Long organisationKey) {
 
-		log.info("REST Import course " + displayName + " START");
+		log.info("REST Import course {} START", displayName);
 		if(!StringHelper.containsNonWhitespace(displayName)) {
 			displayName = "import-" + UUID.randomUUID();
 		}
@@ -501,13 +506,13 @@ public class CoursesWebService {
 			re.setSoftkey(softKey);
 			re = repositoryService.update(re);
 		}
-		log.info("REST Import course " + displayName + " END");
+		log.info("REST Import course {} END", displayName);
 
 		//publish
-		log.info("REST Publish course " + displayName + " START");
+		log.info("REST Publish course {} START", displayName);
 		ICourse course = CourseFactory.loadCourse(re);
 		CourseFactory.publishCourse(course, status, allUsers, guests, identity, ureq.getLocale());
-		log.info("REST Publish course " + displayName + " END");
+		log.info("REST Publish course {} END", displayName);
 		return course;
 	}
 
@@ -522,7 +527,7 @@ public class CoursesWebService {
 			src = repositoryManager.lookupRepositoryEntry(copyFrom, false);
 		}
 		if(src == null) {
-			log.warn("Cannot find course to copy from: " + copyFrom);
+			log.warn("Cannot find course to copy from: {}", copyFrom);
 			return null;
 		}
 		OLATResource originalOres = olatResourceManager.findResourceable(src.getOlatResource());

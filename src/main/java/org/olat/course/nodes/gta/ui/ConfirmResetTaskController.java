@@ -93,7 +93,7 @@ public class ConfirmResetTaskController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		task = gtaManager.resetTask(task, gtaNode, courseEnv);
+		task = gtaManager.resetTask(task, gtaNode, courseEnv, getIdentity());
 		gtaManager.log("Reset task", "reset task", task, getIdentity(), getIdentity(), null, courseEnv, gtaNode, Role.coach);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
@@ -101,7 +101,7 @@ public class ConfirmResetTaskController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(dontResetButton == source) {
-			task = gtaManager.resetTaskRefused(task, gtaNode);
+			task = gtaManager.resetTaskRefused(task, gtaNode, getIdentity());
 			gtaManager.log("Refuse reset task", "refuse reset task", task, getIdentity(), getIdentity(), null, courseEnv, gtaNode, Role.coach);
 			fireEvent(ureq, Event.DONE_EVENT);
 		}

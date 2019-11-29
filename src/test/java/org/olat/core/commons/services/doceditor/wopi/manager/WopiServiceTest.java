@@ -206,7 +206,7 @@ public class WopiServiceTest extends OlatTestCase {
 	}
 
 	private VFSMetadata randomMetadata() {
-		return vfsMetadataDAO.createMetadata(random(), random(), random(), new Date(), 1000l, false, "", "file", null);
+		return vfsMetadataDAO.createMetadata(random(), random(), random(), new Date(), 1000l, false, "file://" + random(), "file", null);
 	}
 
 }

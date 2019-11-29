@@ -52,6 +52,7 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 	private String linkCSS;
 	private String linkTitle;
 	private boolean newWindow = false;
+	private boolean dirtyCheck = true;
 	private FlexiCellRenderer labelDelegate;
 	
 	public StaticFlexiCellRenderer(String label, String action) {
@@ -144,6 +145,14 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 		this.newWindow = newWindow;
 	}
 
+	public boolean isDirtyCheck() {
+		return dirtyCheck;
+	}
+
+	public void setDirtyCheck(boolean dirtyCheck) {
+		this.dirtyCheck = dirtyCheck;
+	}
+
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
 			FlexiTableComponent source, URLBuilder ubu, Translator translator) {
@@ -154,8 +163,9 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 			String id = source.getFormDispatchId();
 			Form rootForm = ftE.getRootForm();
 			NameValuePair pair = new NameValuePair(cellAction, Integer.toString(row));
-			String jsCode;
+			
 			if(newWindow) {
+				String jsCode;
 				URLBuilder subu = ubu.createCopyFor(ftE.getRootForm().getInitialComponent());
 				try(StringOutput href = new StringOutput()) {
 					href.append("o_openTab('");
@@ -169,10 +179,12 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 					log.error("", e);
 					jsCode = "";
 				}
+				target.append("<a href=\"javascript:").append(jsCode).append(";\"");
 			} else {
-				jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, true, true, pair);
+				String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, dirtyCheck, true, false, pair);
+				target.append("<a href=\"javascript:;\" onclick=\"").append(jsCode).append(";\"");
 			}
-			target.append("<a href=\"javascript:").append(jsCode).append(";\"");
+			
 			if(StringHelper.containsNonWhitespace(linkTitle)) {
 				target.append(" title=\"").appendHtmlEscaped(linkTitle).append("\"");
 			}

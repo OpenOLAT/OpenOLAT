@@ -19,12 +19,14 @@
  */
 package org.olat.modules.video.ui;
 
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.http.client.utils.URIBuilder;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ReadOnlyCommentsSecurityCallback;
@@ -348,6 +350,27 @@ public class VideoDisplayController extends BasicController {
 	}
 	
 	private void loadVideo(UserRequest ureq, String url, VideoFormat format) {
+		mainVC.contextPut("externalUrlOriginal", url);
+		if (VideoFormat.vimeo.equals(format)) {
+			URIBuilder uriBuilder;
+			try {
+				uriBuilder = new URIBuilder(url);
+				// Vimeo allows removing the controls when using the payed service. It ignores the parameter
+				// for the free service, so it is save to use it. We use the URIBuilder method in case the
+				// user already added that parameter or if he uses some other parameters
+				uriBuilder.setParameter("controls", "0");
+				// Check if this is a Vimeo with the settings "Only people with the private link". In this case 
+				// the second parameter needs to be removed for mediaelementjs to work properly.
+				// Example: https://vimeo.com/123922956/05ad0e2cbf
+				if (uriBuilder.getPathSegments().size() == 2) {
+					uriBuilder.setPath(uriBuilder.getPathSegments().get(0));
+				}
+				url = uriBuilder.build().toString();
+			} catch (URISyntaxException e) {
+				logWarn("Error while parsing URL from external video source URL::" + url, e);
+			}			
+		}
+	    
 		mainVC.contextPut("externalUrl", url);
 		mainVC.contextPut("sourceType", format.mimeType());
 

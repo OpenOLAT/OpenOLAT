@@ -120,7 +120,7 @@ public class OrganisationAdminConfigrationController extends FormBasicController
 	}
 	
 	private void doConfirmMigration(UserRequest ureq) {
-		if(migratorCtrl != null) return;
+		if(guardModalController(migratorCtrl)) return;
 		
 		migratorCtrl = new InstitutionMigratorController(ureq, getWindowControl());
 		listenTo(migratorCtrl);

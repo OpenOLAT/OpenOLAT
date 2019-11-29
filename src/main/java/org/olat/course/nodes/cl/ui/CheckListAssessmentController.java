@@ -482,7 +482,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 	}
 	
 	private void doOpenBoxAssessment(UserRequest ureq) {
-		if(boxAssessmentCtrl != null) return;
+		if(guardModalController(boxAssessmentCtrl)) return;
 
 		List<CheckListAssessmentRow> rows = model.getObjects();
 		boxAssessmentCtrl = new CheckboxAssessmentController(ureq, getWindowControl(), checkboxList, rows,
@@ -630,7 +630,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 	}
 	
 	private void doOpenEdit(UserRequest ureq, CheckListAssessmentRow row) {
-		if(editCtrl != null) return;
+		if(guardModalController(editCtrl)) return;
 		
 		ICourse course = CourseFactory.loadCourse(courseOres);
 		Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());

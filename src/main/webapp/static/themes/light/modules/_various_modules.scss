@@ -510,6 +510,12 @@ div.o_assessment_mode_row {
 		border-left: 3px solid $o-assessment-mode-today-border-color;
 		background-color: $o-assessment-mode-today-bg;
 	}
+	
+	&.o_assessment_end_soon.o_assessment_today {
+		padding: 0 20px 0 12px;
+		border-left: 3px solid $o-assessment-mode-end-soon-border-color;
+		background-color: $o-assessment-mode-end-soon-bg;
+	}
 }
 
 /* vitero */

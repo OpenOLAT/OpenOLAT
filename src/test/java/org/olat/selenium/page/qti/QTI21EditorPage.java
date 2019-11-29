@@ -89,8 +89,8 @@ public class QTI21EditorPage {
 	public QTI21EditorPage deleteNode() {
 		openChangeMenu();
 		
-		By importBy = By.xpath("//ul[contains(@class,'o_sel_qti_change_node')]//a[contains(@onclick,'tools.delete')]");
-		browser.findElement(importBy).click();
+		By deleteNodeBy = By.xpath("//ul[contains(@class,'o_sel_qti_change_node')]//a[contains(@onclick,'tools.delete')]");
+		browser.findElement(deleteNodeBy).click();
 		OOGraphene.waitModalDialog(browser);
 		
 		confirm();
@@ -180,7 +180,7 @@ public class QTI21EditorPage {
 	}
 	
 	public QTI21EditorPage confirm() {
-		By yesBy = By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@href,'link_0')]");
+		By yesBy = By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@onclick,'link_0')]");
 		browser.findElement(yesBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;

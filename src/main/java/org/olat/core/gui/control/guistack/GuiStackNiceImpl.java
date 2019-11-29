@@ -125,13 +125,24 @@ public class GuiStackNiceImpl implements GuiStack {
 		// - solution c is a safe and easy way to allow dispatching (only in case a mediaresource is returned as a result of the dispatching) even
 		// if parent elements are not enabled
 		
-		// proposal: fix for 5.1.0 with solution c; for 5.0.1 the uncommenting of the line below is okay.
-		//if (modalLayers == 0) panel.setEnabled(false);
+		
 		modalLayers++;
 	}
 	
-	
-	
+	@Override
+	public boolean removeModalDialog(Component content) {
+		Component insetCmp = modalPanel.getContent();
+		if(insetCmp instanceof VelocityContainer) {
+			VelocityContainer inset = (VelocityContainer)insetCmp;
+			Component modalContent = inset.getComponent("cont");
+			if(modalContent == content) {
+				popContent();
+				return true;
+			}
+		}
+		return false;
+	}
+
 	@Override
 	public void pushCallout(Component content, String targetId, CalloutSettings settings) {
 		// wrap the component into a modal foreground dialog with alpha-blended-background

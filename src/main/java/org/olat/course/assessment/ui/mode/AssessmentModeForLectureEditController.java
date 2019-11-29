@@ -402,7 +402,7 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 	}
 	
 	private void doChooseElements(UserRequest ureq) {
-		if(chooseElementsCtrl != null) return;
+		if(guardModalController(chooseElementsCtrl)) return;
 
 		chooseElementsCtrl = new ChooseElementsController(ureq, getWindowControl(), elementKeys, courseOres);
 		listenTo(chooseElementsCtrl);

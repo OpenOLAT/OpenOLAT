@@ -27,7 +27,6 @@ import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.firefox.FirefoxDriver;
 
 /**
  * Drive the group task course element.
@@ -82,7 +81,7 @@ public class GroupTaskPage {
 	}
 	
 	public GroupTaskPage selectTask(int pos) {
-		By taskBy = By.xpath("//div[@id='o_step_assignement_content']//table//td//a[contains(@href,'select')]");
+		By taskBy = By.xpath("//div[@id='o_step_assignement_content']//table//td//a[contains(@onclick,'select')]");
 		List<WebElement> assignementEls = browser.findElements(taskBy);
 		Assert.assertTrue(pos < assignementEls.size());
 		assignementEls.get(pos).click();
@@ -91,7 +90,7 @@ public class GroupTaskPage {
 	}
 	
 	public GroupTaskPage selectTask(String name) {
-		By taskBy = By.xpath("//div[@id='o_step_assignement_content']//table//tr[td[contains(text(),'" + name + "')]]/td//a[contains(@href,'select')]");
+		By taskBy = By.xpath("//div[@id='o_step_assignement_content']//table//tr[td[contains(text(),'" + name + "')]]/td//a[contains(@onclick,'select')]");
 		OOGraphene.clickAndWait(taskBy, browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
@@ -113,16 +112,15 @@ public class GroupTaskPage {
 	 * @param submitBy The step to move by
 	 */
 	private void moveToSubmit(By submitBy) {
-		if(browser instanceof FirefoxDriver) {
-			OOGraphene.waitElement(submitBy, browser);
-			OOGraphene.waitingALittleLonger();
-			OOGraphene.moveTo(submitBy, browser);
-		}
+		OOGraphene.waitElement(submitBy, browser);
+		OOGraphene.moveTo(submitBy, browser);
+		OOGraphene.waitingALittleLonger();
 	}
 	
 	private GroupTaskPage uploadFile(String stepId, File file) {
 		By uploadButtonBy = By.cssSelector("#" + stepId + " .o_sel_course_gta_submit_file");
-		OOGraphene.moveAndClick(uploadButtonBy, browser);
+		OOGraphene.waitElement(uploadButtonBy, browser);
+		browser.findElement(uploadButtonBy).click();
 		OOGraphene.waitBusyAndScrollTop(browser);
 		OOGraphene.waitModalDialog(browser);
 		

@@ -73,17 +73,9 @@ implements SortableFlexiTableDataModel<AssessedBusinessGroup> {
 				val.setGreen(row.getNumOfPassed());
 				return val;
 			}
-			case averageScore: {
-				if(row.getNumOfParticipants() == row.getNumOfNotAttempted()) {
-					return null;
-				}
-				if(row.getAverageScore() == 0.0) {
-					return null;
-				}
-				return row.getAverageScore();
-			}
+			case averageScore: return row.isHasScore() ? row.getAverageScore() : null;
+			default: return "ERROR";
 		}
-		return null;
 	}
 
 	@Override

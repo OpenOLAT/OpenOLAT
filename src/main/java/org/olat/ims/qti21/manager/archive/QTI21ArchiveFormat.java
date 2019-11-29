@@ -37,6 +37,7 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -260,14 +261,13 @@ public class QTI21ArchiveFormat {
 		
 		//content
 		final List<AssessmentTestSession> sessions = testSessionDao.getTestSessionsOfResponse(searchParams);
-		final List<AssessmentResponse> responses = responseDao.getResponse(searchParams);
 		try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(exportStream, 1)) {
 			//headers
 			OpenXMLWorksheet exportSheet = workbook.nextWorksheet();
 			exportSheet.setHeaderRows(2);
 			writeHeaders_1(exportSheet, workbook);
 			writeHeaders_2(exportSheet, workbook);
-			writeData(sessions, responses, exportSheet, workbook);
+			writeData(sessions, exportSheet, workbook);
 		} catch(Exception e) {
 			log.error("", e);
 		}
@@ -290,18 +290,17 @@ public class QTI21ArchiveFormat {
 		}
 		
 		//content
-		final List<AssessmentTestSession> sessions = testSessionDao.getTestSessionsOfResponse(searchParams);
-		final List<AssessmentResponse> responses = responseDao.getResponse(searchParams);
 		return new OpenXMLWorkbookResource(label) {
 			@Override
 			protected void generate(OutputStream out) {
+				final List<AssessmentTestSession> sessions = testSessionDao.getTestSessionsOfResponse(searchParams);
 				try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
 					//headers
 					OpenXMLWorksheet exportSheet = workbook.nextWorksheet();
 					exportSheet.setHeaderRows(2);
 					writeHeaders_1(exportSheet, workbook);
 					writeHeaders_2(exportSheet, workbook);
-					writeData(sessions, responses, exportSheet, workbook);
+					writeData(sessions, exportSheet, workbook);
 				} catch (Exception e) {
 					log.error("", e);
 				}
@@ -463,30 +462,22 @@ public class QTI21ArchiveFormat {
 	 * @param exportSheet
 	 * @param workbook
 	 */
-	private void writeData(List<AssessmentTestSession> sessions, List<AssessmentResponse> responses, OpenXMLWorksheet exportSheet, OpenXMLWorkbook workbook) {
+	private void writeData(List<AssessmentTestSession> sessions, OpenXMLWorksheet exportSheet, OpenXMLWorkbook workbook) {
 		int numOfSessions = sessions.size();
-		Map<AssessmentTestSession, SessionResponses> sessionToResponses = new HashMap<>();
 		for(int i=0; i<numOfSessions; i++) {
 			AssessmentTestSession testSession = sessions.get(i);
-			sessionToResponses.put(testSession, new SessionResponses(testSession));
-		}
-
-		int numOfResponses = responses.size();
-		for(int j=0; j<numOfResponses; j++) {
-			AssessmentResponse response = responses.get(j);
+			SessionResponses sessionResponses = new SessionResponses(testSession);
+			List<AssessmentResponse> responses = responseDao.getResponses(testSession);
 			
-			AssessmentItemSession itemSession = response.getAssessmentItemSession();
-			AssessmentTestSession responseTestSession = itemSession.getAssessmentTestSession();
-			SessionResponses sessionResponses = sessionToResponses.get(responseTestSession);
-			if(sessionResponses != null) {
+			for(AssessmentResponse response:responses) {
+				AssessmentItemSession itemSession = response.getAssessmentItemSession();
 				sessionResponses.addResponse(itemSession, response);
 			}
-		}
-		
-		for(int i=0; i<numOfSessions; i++) {
-			AssessmentTestSession testSession = sessions.get(i);
-			SessionResponses sessionResponses = sessionToResponses.get(testSession);
 			writeDataRow(i + 1, sessionResponses, exportSheet, workbook);
+			
+			if(i % 25 == 0) {
+				DBFactory.getInstance().commitAndCloseSession();
+			}
 		}
 	}
 	
@@ -722,7 +713,7 @@ public class QTI21ArchiveFormat {
 			List<AssessmentResponse> itemResponses = responsesMap.get(itemRefIdentifier);
 			
 			AssessmentResponse response = null;
-			if(itemResponses != null && itemResponses.size() > 0) {
+			if(itemResponses != null && !itemResponses.isEmpty()) {
 				for(AssessmentResponse itemResponse:itemResponses) {
 					if(responseIdentifierStr.equals(itemResponse.getResponseIdentifier())) {
 						response = itemResponse;

@@ -273,7 +273,7 @@ public class VideoChapterEditController extends BasicController {
 		}
 	
 		private void doEditChapter(UserRequest ureq, VideoChapterTableRow videoChapterTableRow, boolean chapterExists) {
-			if(chapterEditCtr != null) return;
+			if(guardModalController(chapterEditCtr)) return;
 
 			chapterEditCtr = new ChapterEditController(ureq, getWindowControl(), videoChapterTableRow, 
 					chapterExists, tableModel.getObjects(), durationInSeconds); 

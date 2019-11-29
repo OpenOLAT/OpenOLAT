@@ -95,7 +95,8 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 
 	private FlexiTableElement table;
 	private GroupAssessmentModel model;
-	private FormLink assessmentFormButton, reopenButton;
+	private FormLink reopenButton;
+	private FormLink assessmentFormButton;
 	
 	private CloseableModalController cmc;
 	private GroupAssessmentController assessmentCtrl;
@@ -108,7 +109,9 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 	private final CourseEnvironment courseEnv;
 	private final AssessmentManager assessmentManager;
 	private final UserCourseEnvironment coachCourseEnv;
-	private final boolean withScore, withPassed, withComment;
+	private final boolean withScore;
+	private final boolean withPassed;
+	private final boolean withComment;
 	
 	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
@@ -324,12 +327,12 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 		if(assignedTask == null) {
 			assignedTask = gtaManager.createTask(null, taskList, TaskProcess.graded, assessedGroup, null, gtaNode);
 		} else {
-			assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.graded, gtaNode, Role.coach);
+			assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.graded, gtaNode, false, getIdentity(), Role.coach);
 		}
 	}
 	
 	private void doReopenAssessment(UserRequest ureq) {
-		assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.grading, gtaNode, Role.coach);
+		assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.grading, gtaNode, false, getIdentity(), Role.coach);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	

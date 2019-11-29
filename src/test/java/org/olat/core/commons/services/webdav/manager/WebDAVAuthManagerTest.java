@@ -23,12 +23,15 @@ import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.Encoder;
+import org.olat.login.auth.OLATAuthManager;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.olat.user.UserManager;
@@ -50,6 +53,8 @@ public class WebDAVAuthManagerTest extends OlatTestCase {
 	private BaseSecurity securityManager;
 	@Autowired
 	private WebDAVAuthManager webdavAuthManager;
+	@Autowired
+	private UserDeletionManager userDeletionManager;
 	
 	@Test
 	public void updatePassword() {
@@ -112,5 +117,41 @@ public class WebDAVAuthManagerTest extends OlatTestCase {
 		//check the connection is clean
 		dbInstance.commit();
 	}
+	
+	/**
+	 * this reproduce the workflow of a LDAP login where someone switch
+	 * the email addresses of users without updating their HA1-E credentials.
+	 * 
+	 */
+	@Test
+	public void updatePassword_wrongHA1Email() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("email-thief-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("email-thief-1");
+		
+		String emailId1 = id1.getUser().getEmail();
+		String emailId2 = id2.getUser().getEmail();
+		
+		// update  passwords
+		webdavAuthManager.upgradePassword(id1, id1.getName(), "secret");
+		webdavAuthManager.upgradePassword(id2, id2.getName(), "secret");
+		dbInstance.commitAndCloseSession();
+		
+		// reproduce switch of email adress
+		id1.getUser().setProperty(UserConstants.EMAIL, emailId2);
+		id2.getUser().setProperty(UserConstants.EMAIL, emailId1);
+		userManager.updateUserFromIdentity(id1);
+		userManager.updateUserFromIdentity(id2);
+		dbInstance.commitAndCloseSession();
 
+		Identity reloadedId1 = userManager.findUniqueIdentityByEmail(emailId2);
+		Assert.assertEquals(id1, reloadedId1);
+
+		CoreSpringFactory.getImpl(OLATAuthManager.class)
+			.synchronizeOlatPasswordAndUsername(id2, id2, emailId2, "new-secret");
+		
+		// simulate login error
+		id2 = userDeletionManager.setIdentityAsActiv(id2);
+		Assert.assertNotNull(id2);
+		dbInstance.commit();
+	}
 }

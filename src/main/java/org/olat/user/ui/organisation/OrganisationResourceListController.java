@@ -216,7 +216,7 @@ public class OrganisationResourceListController extends FormBasicController impl
 	}
 	
 	private void doChooseResources(UserRequest ureq) {
-		if(repoSearchCtr != null) return;
+		if(guardModalController(repoSearchCtr)) return;
 		
 		repoSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq,
 				new String[]{ CourseModule.getCourseTypeName() }, null,

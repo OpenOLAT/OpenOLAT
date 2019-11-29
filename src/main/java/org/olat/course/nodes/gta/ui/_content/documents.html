@@ -1,10 +1,12 @@
-#if($maxDocsWarning && !$maxDocsWarning.isEmpty())
+#if($r.isNotEmpty($minDocsWarning))
+	<div class="o_warning">$minDocsWarning</div>
+#end
+#if($r.isNotEmpty($maxDocsWarning))
 	<div class="o_warning">$maxDocsWarning</div>
 #end
 #if($hasDocuments)
 	$r.render("table")
 #end
-
 #if($r.visible("upload.document") || $r.visible("open.editor"))
 <div class="panel panel-placeholder">
 	<div class="panel-body">

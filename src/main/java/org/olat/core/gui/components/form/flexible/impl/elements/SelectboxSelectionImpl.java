@@ -143,7 +143,7 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 	}
 	
 	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.SelectionContainer#getKey(int)
+	 * @see org.olat.core.gui.components.form.flexible.elements.SelectionContainer#getCurriculumKey(int)
 	 */
 	@Override
 	public String getKey(int which) {

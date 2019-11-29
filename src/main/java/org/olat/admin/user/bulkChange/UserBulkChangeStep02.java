@@ -39,11 +39,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
-import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
@@ -172,7 +169,7 @@ class UserBulkChangeStep02 extends BasicStep {
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "table.role.removed", colPos++, false, null, FlexiColumnModel.ALIGNMENT_LEFT, textRenderer));
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "table.role.status", colPos++, false, null, FlexiColumnModel.ALIGNMENT_LEFT, textRenderer));
 
-			FlexiTableDataModel<List<String>> tableDataModel = new FlexiTableDataModelImpl<>(new OverviewModel(mergedDataChanges, colPos), tableColumnModel);
+			OverviewModel tableDataModel = new OverviewModel(mergedDataChanges, tableColumnModel);
 			uifactory.addTableElement(getWindowControl(), "newUsers", tableDataModel, getTranslator(), formLayoutVertical);
 
 			Set<Long> allGroups = new HashSet<>(); 
@@ -192,9 +189,7 @@ class UserBulkChangeStep02 extends BasicStep {
 				groupColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("send.email", 3));
 
 				List<BusinessGroup> groups = businessGroupService.loadBusinessGroups(allGroups);
-				TableDataModel<BusinessGroup> model = new GroupAddOverviewModel(groups, ownGroups, partGroups, mailGroups, getTranslator()); 
-				FlexiTableDataModel<BusinessGroup> groupDataModel = new FlexiTableDataModelImpl<>(model, groupColumnModel);
-				
+				GroupAddOverviewModel groupDataModel = new GroupAddOverviewModel(groups, ownGroups, partGroups, mailGroups, getTranslator(), groupColumnModel); 
 				uifactory.addTableElement(getWindowControl(), "groupOverview", groupDataModel, getTranslator(), formLayout);
 			}
 		}

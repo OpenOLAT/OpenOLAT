@@ -146,11 +146,13 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 
 	public static final String GTASK_EXTERNAL_EDITOR = "grouptask.external.editor";
 	public static final String GTASK_EMBBEDED_EDITOR = "grouptask.embbeded.editor";
+	public static final String GTASK_MIN_SUBMITTED_DOCS = "grouptask.min.submitted.docs";
 	public static final String GTASK_MAX_SUBMITTED_DOCS = "grouptask.max.submitted.docs";
 	
 	public static final String GTASK_SUBMISSION_TEXT = "grouptask.submission.text";
 	public static final String GTASK_SUBMISSION_MAIL_CONFIRMATION = "grouptask.submission.mail.confirmation";
-	
+
+	public static final String GTASK_MIN_REVISED_DOCS = "grouptask.min.revised.docs";
 	public static final String GTASK_MAX_REVISED_DOCS = "grouptask.max.revised.docs";
 	
 	public static final String GTASK_SOLUTIONS = "grouptask.solutions";
@@ -201,10 +203,11 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 			config.setBooleanEntry(GTASK_SAMPLE_SOLUTION, true);
 			config.setBooleanEntry(GTASK_GRADING, true);
 			//editors
-			config.setBooleanEntry(GTACourseNode.GTASK_EXTERNAL_EDITOR, true);
-			config.setBooleanEntry(GTACourseNode.GTASK_EMBBEDED_EDITOR, true);
+			config.setBooleanEntry(GTASK_EXTERNAL_EDITOR, true);
+			config.setBooleanEntry(GTASK_EMBBEDED_EDITOR, true);
+			config.setIntValue(GTASK_MIN_SUBMITTED_DOCS, 1);
 			//reuse tasks
-			config.setStringValue(GTACourseNode.GTASK_SAMPLING, GTACourseNode.GTASK_SAMPLING_REUSE);
+			config.setStringValue(GTASK_SAMPLING, GTASK_SAMPLING_REUSE);
 			//configure grading
 			config.set(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD, Boolean.FALSE);
 			config.set(MSCourseNode.CONFIG_KEY_SCORE_MIN, Float.valueOf(0.0f));

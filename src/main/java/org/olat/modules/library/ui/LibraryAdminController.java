@@ -215,7 +215,7 @@ public class LibraryAdminController extends FormBasicController {
 	 * @param ureq
 	 */
 	private void doDisplaySearchController(UserRequest ureq) {
-		if(chooseFolderCtr != null) return;
+		if(guardModalController(chooseFolderCtr)) return;
 		
 		String choose = translate("library.catalog.choose.folder.link");
 		chooseFolderCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq, SharedFolderFileResource.TYPE_NAME, choose);

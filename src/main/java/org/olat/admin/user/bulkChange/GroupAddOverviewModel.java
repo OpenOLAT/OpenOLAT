@@ -22,7 +22,8 @@ package org.olat.admin.user.bulkChange;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.gui.components.table.DefaultTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.group.BusinessGroup;
@@ -36,24 +37,21 @@ import org.olat.group.BusinessGroup;
  * Initial Date:  09.05.2011 <br>
  * @author Roman Haag, frentix GmbH, roman.haag@frentix.com
  */
-public class GroupAddOverviewModel extends DefaultTableDataModel<BusinessGroup> {
+public class GroupAddOverviewModel extends DefaultFlexiTableDataModel<BusinessGroup> {
 
 	private Translator translator;
 	private List<Long> mailGroupIDs;
 	private List<Long> ownGroupIDs;
 	private List<Long> partGroupIDs;
 
-	public GroupAddOverviewModel(List<BusinessGroup> allGroupIDs, List<Long> ownGroupIDs, List<Long> partGroupIDs, List<Long> mailGroups, Translator trans) {
-		super(allGroupIDs);
+	public GroupAddOverviewModel(List<BusinessGroup> allGroupIDs, List<Long> ownGroupIDs, List<Long> partGroupIDs, List<Long> mailGroups,
+			Translator trans, FlexiTableColumnModel columnModel) {
+		super(columnModel);
+		setObjects(allGroupIDs);
 		this.translator = trans;
 		this.ownGroupIDs = ownGroupIDs;
 		this.partGroupIDs = partGroupIDs;
 		this.mailGroupIDs = mailGroups;
-	}
-
-	@Override
-	public int getColumnCount() {
-		return 5;
 	}
 
 	@Override
@@ -93,6 +91,6 @@ public class GroupAddOverviewModel extends DefaultTableDataModel<BusinessGroup> 
 
 	@Override
 	public GroupAddOverviewModel createCopyWithEmptyList() {
-		return new GroupAddOverviewModel(new ArrayList<BusinessGroup>(), ownGroupIDs, partGroupIDs, mailGroupIDs, translator);
+		return new GroupAddOverviewModel(new ArrayList<>(), ownGroupIDs, partGroupIDs, mailGroupIDs, translator, getTableColumnModel());
 	}
 }

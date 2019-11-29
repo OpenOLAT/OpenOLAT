@@ -25,7 +25,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -45,6 +44,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 /**
 *
 * @author Fabian Kiefer, fabian.kiefer@frentix.com, http://www.frentix.com
@@ -53,33 +53,34 @@ import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 public class PFPeekviewController extends BasicController implements Controller {
 	
 	// comparator to sort the messages list by creation date
-	private static final Comparator<VFSLeaf> dateSortingComparator = new Comparator<VFSLeaf>(){
-		public int compare(final VFSLeaf leaf1, final VFSLeaf leaf2) {
-			return Long.valueOf(leaf2.getLastModified()).compareTo(leaf1.getLastModified()); //last first
-		}};
+	private static final Comparator<VFSLeaf> dateSortingComparator = (leaf1, leaf2) ->
+		 Long.compare(leaf2.getLastModified(), leaf1.getLastModified()); //last first
 	// the current course node id
 	private final String nodeId;
 
 	private static final VFSItemFilter attachmentExcludeFilter = new VFSSystemItemFilter();
 
-	public PFPeekviewController(UserRequest ureq, WindowControl wControl, VFSContainer rootFolder, String nodeId, int itemsToDisplay) {
+	@Autowired
+	private FolderModule folderModule;
+	
+	public PFPeekviewController(UserRequest ureq, WindowControl wControl, List<VFSContainer> folders, String nodeId, int itemsToDisplay) {
 		super(ureq, wControl);
 		this.nodeId = nodeId;		
 
 		VelocityContainer peekviewVC = createVelocityContainer("peekview");
 		// add items, only as many as configured
 		List<VFSLeaf> allLeafs = new ArrayList<>();
-		addItems(rootFolder, allLeafs);
+		for(VFSContainer rootFolder:folders) {
+			addItems(rootFolder, allLeafs);
+		}
+		
 		// Sort messages by last modified date
 		Collections.sort(allLeafs, dateSortingComparator);
-		boolean forceDownload = CoreSpringFactory.getImpl(FolderModule.class).isForceDownload();
+		boolean forceDownload = folderModule.isForceDownload();
 		
 		// only take the configured amount of messages
 		List<VFSLeaf> leafs = new ArrayList<>();
-		for (int i = 0; i < allLeafs.size(); i++) {
-			if (leafs.size() == itemsToDisplay) {
-				break;
-			}
+		for (int i = 0; i<allLeafs.size() && i<itemsToDisplay; i++) {
 			VFSLeaf leaf = allLeafs.get(i);
 			leafs.add(leaf);
 			// add link to item
@@ -90,8 +91,6 @@ public class PFPeekviewController extends BasicController implements Controller 
 						CSSHelper.createFiletypeIconCssClassFor(leaf.getName()));
 				dlComp.setElementCssClass("o_gotoNode");
 				peekviewVC.put("nodeLinkDL_"+(i+1),dlComp);
-			} else {
-				// hu? don't konw how to work with non-local impls
 			}
 		}
 		peekviewVC.contextPut("leafs", leafs);
@@ -124,15 +123,10 @@ public class PFPeekviewController extends BasicController implements Controller 
 		// exclude files which are also excluded in FolderComponent
 		for (VFSItem vfsItem : container.getItems(attachmentExcludeFilter)) {
 			if (vfsItem instanceof VFSLeaf) {
-				// add leaf to our list
-				VFSLeaf leaf = (VFSLeaf) vfsItem;
-				allLeafs.add(leaf);
+				allLeafs.add((VFSLeaf)vfsItem);
 			} else if (vfsItem instanceof VFSContainer) {
 				// do it recursively for all children
-				VFSContainer childContainer = (VFSContainer) vfsItem;
-				addItems(childContainer, allLeafs);
-			} else {
-				// hu?
+				addItems((VFSContainer)vfsItem, allLeafs);
 			}
 		}
 	}

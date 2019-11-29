@@ -299,7 +299,7 @@ public class UserAdminController extends BasicController implements Activateable
 	}
 	
 	private void doExportData(UserRequest ureq) {
-		if(exportDataCtrl != null) return;
+		if(guardModalController(exportDataCtrl)) return;
 		
 		exportDataCtrl = new UserDataExportController(ureq, getWindowControl(), editedIdentity);
 		listenTo(exportDataCtrl);

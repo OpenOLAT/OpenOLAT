@@ -153,7 +153,7 @@ public class QuotaController extends BasicController {
 	}
 	
 	private void doEditQuota(UserRequest ureq, Quota q) {
-		if(quotaEditCtr != null) return;
+		if(guardModalController(quotaEditCtr)) return;
 		
 		quotaEditCtr = new GenericQuotaEditController(ureq, getWindowControl(), q, false);
 		listenTo(quotaEditCtr);
@@ -164,7 +164,7 @@ public class QuotaController extends BasicController {
 	}
 	
 	private void doAddQuota(UserRequest ureq) {
-		if(quotaEditCtr != null) return;
+		if(guardModalController(quotaEditCtr)) return;
 		
 		// start edit workflow in dedicated quota edit controller
 		removeAsListenerAndDispose(quotaEditCtr);

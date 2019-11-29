@@ -133,7 +133,7 @@ public class GoToRecordingsController extends FormBasicController {
 	}
 
 	private void doView(UserRequest ureq, GoToRecordingsG2T recording) {
-		if(recordingController != null) return;
+		if(guardModalController(recordingController)) return;
 		
 		recordingController = new GoToRecordingController(ureq, getWindowControl(), recording);
 		listenTo(recordingController);

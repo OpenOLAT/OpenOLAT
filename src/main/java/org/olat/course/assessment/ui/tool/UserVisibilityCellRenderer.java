@@ -19,11 +19,8 @@
  */
 package org.olat.course.assessment.ui.tool;
 
-import java.util.Locale;
-
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
-import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
@@ -35,32 +32,32 @@ import org.olat.core.gui.translator.Translator;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class UserVisibilityCellRenderer implements FlexiCellRenderer, CustomCellRenderer {
+public class UserVisibilityCellRenderer implements FlexiCellRenderer {
 	
 	private final Translator translator;
 	
 	public UserVisibilityCellRenderer(Translator translator) {
 		this.translator = translator;
 	}
-	
-	@Override
-	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
-		render(renderer, sb, val, -1, null, null, renderer.getTranslator());
-	}
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue,
 			int row, FlexiTableComponent source, URLBuilder ubu, Translator trans) {
 		if(cellValue instanceof Boolean) {
-			target.append("<i class='o_icon o_icon-fw ");
-			if(((Boolean)cellValue).booleanValue()) {
-				String title = translator.translate("user.visibility.visible.tooltip");
-				target.append("o_icon_results_visible' title=\"").append(title).append("\"");
+			if(renderer == null) {
+				String val = ((Boolean)cellValue).booleanValue() ? translator.translate("yes") : translator.translate("no");
+				target.append(val);
 			} else {
-				String title = translator.translate("user.visibility.hidden.tooltip");
-				target.append("o_icon_results_hidden' title=\"").append(title).append("\"");
+				target.append("<i class='o_icon o_icon-fw ");
+				if(((Boolean)cellValue).booleanValue()) {
+					String title = translator.translate("user.visibility.visible.tooltip");
+					target.append("o_icon_results_visible' title=\"").append(title).append("\"");
+				} else {
+					String title = translator.translate("user.visibility.hidden.tooltip");
+					target.append("o_icon_results_hidden' title=\"").append(title).append("\"");
+				}
+				target.append("> </i>");
 			}
-			target.append("> </i>");
 		}
 	}
 }

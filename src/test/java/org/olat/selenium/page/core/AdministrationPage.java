@@ -106,7 +106,7 @@ public class AdministrationPage {
 		emptyLink.click();
 		OOGraphene.waitBusy(browser);
 		//confirm
-		WebElement yesLink = browser.findElement(By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@href,'link_0')]"));
+		WebElement yesLink = browser.findElement(By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@onclick,'link_0')]"));
 		yesLink.click();
 		OOGraphene.waitBusy(browser);
 		return this;

@@ -264,7 +264,7 @@ public class CheckListBoxListEditController extends FormBasicController {
 	}
 
 	private void doOpenEdit(UserRequest ureq, Checkbox checkbox, boolean newCheckbox, String title) {
-		if(editCtrl != null) return;
+		if(guardModalController(editCtrl)) return;
 		
 		Boolean hasScore = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
 		boolean withScore = (hasScore == null || hasScore.booleanValue());	

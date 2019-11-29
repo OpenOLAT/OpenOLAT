@@ -232,7 +232,7 @@ public class ListRenderer {
 		canWrite = canWrite && !(fc.getCurrentContainer() instanceof VirtualContainer);
 		boolean isAbstract = (child instanceof AbstractVirtualContainer);
 
-		int revisionNr = 0;
+		long revisionNr = 0l;
 		boolean canVersion = false;// more are version visible
 		if(canContainerVersion && vfsVersionModule.isEnabled() && child.canVersion() == VFSConstants.YES) {
 			revisionNr = metadata == null ? 0 : metadata.getRevisionNr();

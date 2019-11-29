@@ -22,9 +22,7 @@ package org.olat.course.nodes.gta.ui;
 import java.io.File;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
@@ -214,7 +212,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 		if(submit) {
 			task = stepSubmit(ureq, task);
 		} else if(task != null && task.getTaskStatus() == TaskProcess.submit) {
-			task = gtaManager.nextStep(task, gtaNode, Role.auto);
+			task = gtaManager.nextStep(task, gtaNode, false, null, Role.auto);
 		}
 		
 		boolean reviewAndCorrection = config.getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION);
@@ -222,7 +220,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 		if(reviewAndCorrection) {
 			task = stepReviewAndCorrection(ureq, task);
 		} else if(task != null && task.getTaskStatus() == TaskProcess.review) {
-			task = gtaManager.nextStep(task, gtaNode, Role.auto);
+			task = gtaManager.nextStep(task, gtaNode, false, null, Role.auto);
 		}
 		
 		boolean revision = config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD);
@@ -230,7 +228,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 		if(reviewAndCorrection && revision) {
 			task = stepRevision(ureq, task);
 		} else if(task != null && (task.getTaskStatus() == TaskProcess.revision || task.getTaskStatus() == TaskProcess.correction)) {
-			task = gtaManager.nextStep(task, gtaNode, Role.auto);
+			task = gtaManager.nextStep(task, gtaNode, false, null, Role.auto);
 		}
 		
 		boolean solution = config.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION);
@@ -238,7 +236,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 		if(solution) {
 			stepSolution(ureq, task);
 		} else if(task != null && task.getTaskStatus() == TaskProcess.solution) {
-			task = gtaManager.nextStep(task, gtaNode, Role.auto);
+			task = gtaManager.nextStep(task, gtaNode, false, null, Role.auto);
 		}
 		
 		boolean grading = config.getBooleanSafe(GTACourseNode.GTASK_GRADING);
@@ -246,7 +244,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 		if(grading) {
 			stepGrading(ureq, task);
 		} else if(task != null && task.getTaskStatus() == TaskProcess.grading) {
-			task = gtaManager.nextStep(task, gtaNode, Role.auto);
+			task = gtaManager.nextStep(task, gtaNode, false, null, Role.auto);
 		}
 		
 		mainVC.contextPut("changelogconfig", courseModule.isDisplayChangeLog());
@@ -305,7 +303,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 				if(assignedTask != null && StringHelper.containsNonWhitespace(assignedTask.getTaskName())
 						&& assignedTask.getTaskStatus() == TaskProcess.assignment && date.compareTo(new Date()) < 0) {
 					//push to the next step if the task is blocked in assignment (it's a security)
-					assignedTask = gtaManager.nextStep(assignedTask, gtaNode, Role.auto);
+					assignedTask = gtaManager.nextStep(assignedTask, gtaNode, false, null, Role.auto);
 				}
 			} else if(dueDate.getMessageKey() != null) {
 				mainVC.contextPut("assignmentDueDateMsg", translate(dueDate.getMessageKey(), dueDate.getMessageArg()));
@@ -367,8 +365,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 					//push to the next step
 					int numOfDocs = getNumberOfSubmittedDocuments();
 					if (numOfDocs > 0 || getDoer() != Role.coach) {
-						assignedTask = gtaManager.submitTask(assignedTask, gtaNode, numOfDocs, Role.auto);
-						doUpdateAttempts();
+						assignedTask = gtaManager.submitTask(assignedTask, gtaNode, numOfDocs, null, Role.auto);
 						if (numOfDocs > 0) {
 							showInfo("info.task.collected");
 						}
@@ -417,8 +414,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 					&& date.compareTo(new Date()) < 0) {
 				//push to the next step
 				int numOfDocs = getNumberOfRevisionDocuments(assignedTask);
-				assignedTask = gtaManager.submitRevisions(assignedTask, gtaNode, numOfDocs, Role.auto);
-				doUpdateAttempts();
+				assignedTask = gtaManager.submitRevisions(assignedTask, gtaNode, numOfDocs, null, Role.auto);
 			}
 		}
 		return assignedTask;
@@ -481,6 +477,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 		}
 	}
 	
+	/*
 	protected void doUpdateAttempts() {
 		Role by = getDoer();
 		if(businessGroupTask) {
@@ -494,7 +491,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 			UserCourseEnvironment assessedUserCourseEnv = getAssessedUserCourseEnvironment();
 			courseAssessmentService.incrementAttempts(gtaNode, assessedUserCourseEnv, by);
 		}
-	}
+	}*/
 	
 	protected UserCourseEnvironment getAssessedUserCourseEnvironment() {
 		if(userCourseEnv == null) {

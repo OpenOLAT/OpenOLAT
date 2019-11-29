@@ -76,9 +76,6 @@ public class GuiDemoFlexiForm extends FormBasicController {
 		// but typically initForm(..) is the last call in the constructor.
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		// cleanup tempt files
@@ -86,10 +83,7 @@ public class GuiDemoFlexiForm extends FormBasicController {
 			tmpFile.delete();
 		}
 	}
-	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
+
 	@Override
 	protected void formOK(UserRequest ureq) {
 		// this method is called if the form has validated
@@ -118,10 +112,6 @@ public class GuiDemoFlexiForm extends FormBasicController {
 		initialPanel.pushContent(confirm);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		/*
@@ -147,8 +137,7 @@ public class GuiDemoFlexiForm extends FormBasicController {
 		lastName.setPlaceholderText("Muster");
 		lastName.setHelpUrl("https://en.wikipedia.org/wiki/Family_name");
 
-		fileElement = uifactory.addFileElement(getWindowControl(), "file", formLayout);
-		fileElement.setLabel("guidemo.flexi.form.file", null);
+		fileElement = uifactory.addFileElement(getWindowControl(), "file", "guidemo.flexi.form.file", formLayout);
 		fileElement.setMaxUploadSizeKB(500, "guidemo.flexi.form.filetobig", null);
 		Set<String> mimeTypes = new HashSet<>();
 		mimeTypes.add("image/*");

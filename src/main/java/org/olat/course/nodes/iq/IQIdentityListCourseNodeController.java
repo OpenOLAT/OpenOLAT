@@ -408,7 +408,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	}
 	
 	private void doValidateSignature(UserRequest ureq) {
-		if(validationCtrl != null) return;
+		if(guardModalController(validationCtrl)) return;
 		
 		validationCtrl = new ValidationXmlSignatureController(ureq, getWindowControl());
 		listenTo(validationCtrl);

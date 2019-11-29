@@ -155,12 +155,12 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 	public List<AssessedBusinessGroup> getBusinessGroupStatistics(Identity coach, SearchAssessedIdentityParams params) {
 		RepositoryEntry courseEntry = params.getEntry();
 
-		StringBuilder sf = new StringBuilder();
+		QueryBuilder sf = new QueryBuilder();
 		sf.append("select bgi.key, bgi.name, baseGroup.key,")
 		  .append(" avg(aentry.score) as scoreAverage,")
+		  .append(" sum(case when aentry.score is not null then 1 else 0 end) as numOfScore,")
 		  .append(" sum(case when aentry.passed=true then 1 else 0 end) as numOfPassed,")
 		  .append(" sum(case when aentry.passed=false then 1 else 0 end) as numOfFailed,")
-		  .append(" sum(case when (aentry.status is null or not(aentry.status='").append(AssessmentEntryStatus.notStarted.name()).append("') or aentry.passed is null) then 1 else 0 end) as numOfNotAttempted,")
 		  .append(" (select count(gmember.key) from bgroupmember as gmember")
 		  .append("   where gmember.group.key=baseGroup.key and gmember.role='").append(GroupRoles.participant.name()).append("'")
 		  .append(" ) as numOfParticipants")
@@ -170,18 +170,14 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		  .append(" left join baseGroup.members as bmember on (bmember.role='").append(GroupRoles.participant.name()).append("')")
 		  .append(" left join assessmententry as aentry on (bmember.identity.key=aentry.identity.key and rel.entry.key = aentry.repositoryEntry.key)");
 
-		boolean where = false;
 		if(!params.isAdmin()) {
-			where = PersistenceHelper.appendAnd(sf, where);
-			sf.append(" bgi.key in (:groupKeys)");
+			sf.and().append(" bgi.key in (:groupKeys)");
 		}
 		if(params.getSubIdent() != null) {
-			where = PersistenceHelper.appendAnd(sf, where);
-			sf.append(" aentry.subIdent=:subIdent");
+			sf.and().append(" aentry.subIdent=:subIdent");
 		}
 		if(params.getReferenceEntry() != null) {
-			where = PersistenceHelper.appendAnd(sf, where);
-			sf.append(" aentry.referenceEntry.key=:referenceKey");
+			sf.and().append(" aentry.referenceEntry.key=:referenceKey");
 		}
 		sf.append(" group by bgi.key, bgi.name, baseGroup.key");
 
@@ -200,18 +196,17 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		
 		List<Object[]> results = stats.getResultList();
 		List<AssessedBusinessGroup> rows = new ArrayList<>(results.size());
+		
 		for(Object[] result:results) {
 			Long key = (Long)result[0];
 			String name = (String)result[1];
 			double averageScore = result[3] == null ? 0.0d : ((Number)result[3]).doubleValue();
-			int numOfPassed = result[4] == null ? 0 : ((Number)result[4]).intValue();
-			int numOfFailed = result[5] == null ? 0  : ((Number)result[5]).intValue();
-			int numOfNotAttempted = result[6] == null ? 0 : ((Number)result[6]).intValue();
+			int numOfScores = result[4] == null ? 0 : ((Number)result[4]).intValue();
+			int numOfPassed = result[5] == null ? 0 : ((Number)result[5]).intValue();
+			int numOfFailed = result[6] == null ? 0  : ((Number)result[6]).intValue();
 			int numOfParticipants = result[7] == null ? 0 : ((Number)result[7]).intValue();
-
-			rows.add(new AssessedBusinessGroup(key, name, averageScore,
-					numOfPassed, numOfFailed, numOfNotAttempted,
-					numOfParticipants));
+			rows.add(new AssessedBusinessGroup(key, name, averageScore, numOfScores > 0,
+					numOfPassed, numOfFailed, numOfParticipants));
 		}
 		return rows;
 	}

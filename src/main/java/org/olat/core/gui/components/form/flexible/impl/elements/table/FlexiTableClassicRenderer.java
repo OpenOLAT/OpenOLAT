@@ -80,7 +80,7 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements Co
 	
 	private void renderHeader(StringOutput sb, FlexiTableComponent ftC, FlexiColumnModel fcm, Translator translator) {
 		String header = getHeader(fcm, translator);
-		sb.append("<th");
+		sb.append("<th scope='col'");
 		if (fcm.getSortKey() != null || fcm.getHeaderAlignment() != null) {
 			sb.append(" class='");
 			// append sort key to make column width set via css
@@ -340,7 +340,7 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements Co
 					Object cellValue = columnIndex >= 0 ? footerDataModel.getFooterValueAt(columnIndex) : null;
 					if(cellValue == null && !footerHeader) {
 						String header = footerDataModel.getFooterHeader();
-						target.append("<th>");
+						target.append("<th scope='row'>");
 						if(header != null) {
 							target.append(header);
 						}

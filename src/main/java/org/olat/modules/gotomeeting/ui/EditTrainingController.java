@@ -262,7 +262,7 @@ public class EditTrainingController extends FormBasicController {
 	}
 	
 	private void doAddPersonalAccount(UserRequest ureq) {
-		if(addOrganizerController != null) return;
+		if(guardModalController(addOrganizerController)) return;
 		
 		addOrganizerController = new LoginOrganizerController(ureq, getWindowControl(), getIdentity());
 		listenTo(addOrganizerController);

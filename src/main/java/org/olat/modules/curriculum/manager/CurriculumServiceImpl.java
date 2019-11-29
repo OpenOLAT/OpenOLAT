@@ -288,6 +288,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
+	public boolean hasCurriculums(IdentityRef identity) {
+		return curriculumDao.hasMyCurriculums(identity);
+	}
+
+	@Override
 	public List<CurriculumRef> getMyActiveCurriculumRefs(Identity identity) {
 		List<Long> curriculumKeys = curriculumDao.getMyActiveCurriculumKeys(identity);
 		return curriculumKeys.stream().map(CurriculumRefImpl::new).collect(Collectors.toList());

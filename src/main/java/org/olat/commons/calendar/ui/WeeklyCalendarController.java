@@ -758,7 +758,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	 * @param kalendarWrapper
 	 */
 	private void pushEditEventController(UserRequest ureq, KalendarEvent kalendarEvent, KalendarRenderWrapper kalendarWrapper) {
-		if(editController != null) return;
+		if(guardModalController(editController)) return;
 		
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(editController);
@@ -789,7 +789,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	}
 	
 	private void pushAddEventController(CalendarGUIAddEvent addEvent, UserRequest ureq) {
-		if(editController != null || ureq.getUserSession().getRoles().isGuestOnly()) {
+		if(guardModalController(editController) || ureq.getUserSession().getRoles().isGuestOnly()) {
 			return;
 		}
 		removeAsListenerAndDispose(cmc);

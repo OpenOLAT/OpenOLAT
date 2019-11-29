@@ -751,7 +751,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 	
 	private void doImport(UserRequest ureq) {
-		if(importCtrl != null) return;
+		if(guardModalController(importCtrl)) return;
 
 		removeAsListenerAndDispose(importCtrl);
 		importCtrl = new ImportRepositoryEntryController(ureq, getWindowControl());
@@ -766,7 +766,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 	
 	private void doImportUrl(UserRequest ureq) {
-		if(importUrlCtrl != null) return;
+		if(guardModalController(importUrlCtrl)) return;
 
 		removeAsListenerAndDispose(importUrlCtrl);
 		importUrlCtrl = new ImportURLRepositoryEntryController(ureq, getWindowControl());
@@ -781,7 +781,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 	
 	private void doCreate(UserRequest ureq, RepositoryHandler handler) {
-		if(createCtrl != null) return;
+		if(guardModalController(createCtrl)) return;
 
 		removeAsListenerAndDispose(createCtrl);
 		createCtrl = handler.createCreateRepositoryEntryController(ureq, getWindowControl());
@@ -880,7 +880,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 	
 	private void doSendMail(UserRequest ureq, List<AuthoringEntryRow> rows) {
-		if(sendMailCtrl != null) return;
+		if(guardModalController(sendMailCtrl)) return;
 
 		removeAsListenerAndDispose(userSearchCtr);
 		sendMailCtrl = new SendMailController(ureq, getWindowControl(), rows);
@@ -894,7 +894,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 	
 	private void doAddOwners(UserRequest ureq, List<AuthoringEntryRow> rows) {
-		if(userSearchCtr != null) return;
+		if(guardModalController(userSearchCtr)) return;
 		
 		List<AuthoringEntryRow> manageableRows = new ArrayList<>(rows.size());
 		for(AuthoringEntryRow row:rows) {

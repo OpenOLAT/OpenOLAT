@@ -610,7 +610,7 @@ public class DataCollectionConfigurationController extends FormBasicController {
 	private void doSelectFormEntry(UserRequest ureq) {
 		formSearchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq,
 				EvaluationFormResource.TYPE_NAME, translate("data.collection.form.select"));
-		this.listenTo(formSearchCtrl);
+		listenTo(formSearchCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				formSearchCtrl.getInitialComponent(), true, translate("data.collection.form.select"));

@@ -89,11 +89,11 @@ create table o_ac_checkout_transaction (
    p_success_uuid varchar(64) not null,
    p_cancel_uuid varchar(64) not null,
    p_order_nr varchar(64) not null,
-   p_order_id NUMBER(21,20) not null,
+   p_order_id NUMBER(20) not null,
    p_order_part_id number(20) not null,
    p_method_id number(20) not null,
    p_amount_currency_code varchar(3) not null,
-   p_amount_amount decimal(12,4) not null,
+   p_amount_amount DECIMAL not null,
    p_status varchar(32) not null,
    p_paypal_order_id varchar(64),
    p_paypal_order_status varchar(64),
@@ -101,7 +101,7 @@ create table o_ac_checkout_transaction (
    p_paypal_authorization_id varchar(64),
    p_paypal_capture_id varchar(64),
    p_capture_currency_code varchar(3),
-   p_capture_amount NUMBER (21,20),
+   p_capture_amount DECIMAL,
    p_paypal_invoice_id varchar(64),
    primary key (id)
 );

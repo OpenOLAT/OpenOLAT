@@ -53,6 +53,7 @@ import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -187,7 +188,13 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 		long endTime = CalendarUtils.endOfDay(mode.getEnd()).getTime();
 		long todayTime = today.getTime();
 		boolean isToday = startTime <= todayTime && endTime >= todayTime;
-		AssessmentModeOverviewRow row = new AssessmentModeOverviewRow(mode, isToday);
+
+		Calendar cal = Calendar.getInstance();
+		long now = cal.getTimeInMillis();
+		cal.setTime(mode.getEnd());
+		boolean endSoon = ((cal.getTimeInMillis() - now) < (5l * 60l * 1000l))
+				&& (mode.getStatus() == Status.assessment || mode.getStatus() == Status.followup);
+		AssessmentModeOverviewRow row = new AssessmentModeOverviewRow(mode, isToday, endSoon);
 		
 		LectureBlock block = mode.getLectureBlock();
 		boolean allowToStartStop = assessmentCallback.canStartStopAllAssessments()

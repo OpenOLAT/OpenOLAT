@@ -99,7 +99,7 @@ public class BindersPage {
 	}
 	
 	public BindersPage restoreBinder(String title) {
-		By restoreBy = By.xpath("//table//tr[td/a[contains(text(),'" + title + "')]]/td/a[contains(@href,'restore')]");
+		By restoreBy = By.xpath("//table//tr[td/a[contains(text(),'" + title + "')]]/td/a[contains(@onclick,'restore')]");
 		browser.findElement(restoreBy).click();
 		OOGraphene.waitBusy(browser);
 		

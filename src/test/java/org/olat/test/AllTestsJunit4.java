@@ -248,6 +248,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.quality.generator.manager.titlecreator.RepositoryEntryHandlerTest.class,
 	org.olat.modules.quality.generator.manager.titlecreator.UserHandlerTest.class,
 	org.olat.modules.quality.generator.provider.course.manager.CourseProviderDAOTest.class,
+	org.olat.modules.quality.generator.provider.course.CourseProviderTest.class,
 	org.olat.modules.quality.generator.provider.courselectures.manager.CourseLecturesProviderDAOTest.class,
 	org.olat.modules.quality.generator.provider.curriculumelement.manager.CurriculumElementProviderDAOTest.class,
 	org.olat.modules.quality.manager.AudiencelessQualityContextBuilderTest.class,
@@ -355,6 +356,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.qpool.manager.QuestionItemAuditLogDAOTest.class,
 	org.olat.login.oauth.OAuthDispatcherTest.class,
 	org.olat.ldap.LDAPLoginTest.class,
+	org.olat.ldap.manager.LDAPLoginManagerTest.class,
 	org.olat.core.commons.services.mark.MarksTest.class,
 	org.olat.test.SpringInitDestroyVerficationTest.class,
 	//org.olat.course.statistic.weekly.TestWeeklyStatisticManager_fillGaps.class, don't know what it tests

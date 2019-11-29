@@ -41,7 +41,7 @@ public class LecturesRepositoryPage {
 	}
 	
 	public TeacherRollCallPage openRollCall(String lectureBlockTitle) {
-		By selectBy = By.xpath("//table//tr[td[contains(text(),'" + lectureBlockTitle + "')]]/td/a[contains(@href,'details')]");
+		By selectBy = By.xpath("//table//tr[td[contains(text(),'" + lectureBlockTitle + "')]]/td/a[contains(@onclick,'details')]");
 		browser.findElement(selectBy).click();
 		return new TeacherRollCallPage(browser)
 				.assertOnRollCall();

@@ -148,7 +148,7 @@ public class GroupsPage {
 	}
 	
 	public GroupsPage deleteGroup(String name) {
-		By groupNameBy = By.xpath("//table//td[//a[text()[contains(.,'" + name+ "')]]]//a[contains(@href,'bgTblDelete')]");
+		By groupNameBy = By.xpath("//table//td[//a[text()[contains(.,'" + name+ "')]]]//a[contains(@onclick,'bgTblDelete')]");
 		browser.findElement(groupNameBy).click();
 		OOGraphene.waitBusy(browser);
 		

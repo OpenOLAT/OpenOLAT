@@ -119,23 +119,27 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 	}
 	
 	/**
-	 * Always visible
+	 * Always visible but not exportable.
+	 * 
 	 * @param headerKey
 	 * @param label
 	 * @param action
 	 */
 	public DefaultFlexiColumnModel(String headerKey, String label, String action) {
 		this(headerKey, label, action, false);
+		this.exportable = false;
 	}
 	
 	/**
-	 * Always visible
+	 * Always visible but not exportable.
+	 * 
 	 * @param headerKey
 	 * @param label
 	 * @param action
 	 */
 	public DefaultFlexiColumnModel(String headerKey, String label, String action, boolean newWindow) {
 		this(true, true, headerKey, null, -1, action, false, null, FlexiColumnModel.ALIGNMENT_LEFT, new StaticFlexiCellRenderer(label, action, newWindow));
+		this.exportable = false;
 	}
 	
 	public DefaultFlexiColumnModel(String headerKey, int columnIndex, boolean sortable, String sortKey) {

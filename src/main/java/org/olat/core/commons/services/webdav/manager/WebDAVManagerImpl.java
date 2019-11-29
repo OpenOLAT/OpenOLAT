@@ -209,7 +209,7 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 					cacheKey = digestAuth.getUsername();
 					usess = timedSessionCache.get(new CacheKey(remoteAddr, digestAuth.getUsername()));
 
-					log.info("Digest authentication: {}", getHttpSessionId(request));
+					log.debug("Digest authentication: {}", getHttpSessionId(request));
 					if (usess == null || !usess.isAuthenticated()) {
 						usess = handleDigestAuthentication(digestAuth, request);
 					}

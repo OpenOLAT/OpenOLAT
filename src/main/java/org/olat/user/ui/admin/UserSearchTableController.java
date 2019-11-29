@@ -404,7 +404,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 	}
 	
 	private void doMail(UserRequest ureq) {
-		if(contactCtr != null) return;
+		if(guardModalController(contactCtr)) return;
 		
 		List<Identity> identities = getSelectedIdentitiesWithWarning();
 		if(identities.isEmpty()) {

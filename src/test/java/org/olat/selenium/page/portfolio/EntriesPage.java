@@ -103,7 +103,7 @@ public class EntriesPage {
 	}
 	
 	public EntriesPage restore(String title, String binder, String section) {
-		By restoreBy = By.xpath("//table//tr[td/a/span[contains(text(),'" + title + "')]]/td/a[contains(@href,'restore')]");
+		By restoreBy = By.xpath("//table//tr[td/a/span[contains(text(),'" + title + "')]]/td/a[contains(@onclick,'restore')]");
 		browser.findElement(restoreBy).click();
 		OOGraphene.waitModalDialog(browser);
 		

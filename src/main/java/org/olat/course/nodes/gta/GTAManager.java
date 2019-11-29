@@ -281,7 +281,7 @@ public interface GTAManager {
 	 */
 	public Task persistTask(Task task);
 	
-	public Task nextStep(Task task, GTACourseNode cNode, Role by);
+	public Task nextStep(Task task, GTACourseNode cNode, boolean incrementUserAttempts, Identity doerIdentity, Role by);
 	
 	
 
@@ -308,13 +308,25 @@ public interface GTAManager {
 	
 	public List<String> getAssignedTasks(TaskList taskList);
 	
-	public AssignmentResponse selectTask(Identity identity, TaskList taskList, GTACourseNode cNode, File task);
+	/**
+	 * Select a task.
+	 * 
+	 * @param identity The assessed identity
+	 * @param taskList The course element's task
+	 * @param cNode The course node
+	 * @param task The document's task
+	 * @param doerIdentity The user which does the operation
+	 * @return
+	 */
+	public AssignmentResponse selectTask(Identity identity, TaskList taskList, GTACourseNode cNode, File task, Identity doerIdentity);
 	
-	public AssignmentResponse selectTask(BusinessGroup group, TaskList taskList, GTACourseNode cNode, File task);
+	public AssignmentResponse selectTask(BusinessGroup group, TaskList taskList, GTACourseNode cNode, File task, Identity doerIdentity);
 	
-	public AssignmentResponse assignTaskAutomatically(TaskList taskList, BusinessGroup assessedGroup, CourseEnvironment courseEnv, GTACourseNode cNode);
+	public AssignmentResponse assignTaskAutomatically(TaskList taskList, BusinessGroup assessedGroup, CourseEnvironment courseEnv,
+			GTACourseNode cNode, Identity doerIdentity);
 
-	public AssignmentResponse assignTaskAutomatically(TaskList taskList, Identity assessedIdentity, CourseEnvironment courseEnv, GTACourseNode cNode);
+	public AssignmentResponse assignTaskAutomatically(TaskList taskList, Identity assessedIdentity, CourseEnvironment courseEnv,
+			GTACourseNode cNode, Identity doerIdentity);
 
 	public boolean isDueDateEnabled(GTACourseNode cNode);
 	
@@ -345,31 +357,61 @@ public interface GTAManager {
 	
 	public TaskProcess nextStep(TaskProcess currentStep, GTACourseNode cNode);
 
-	public Task collectTask(Task task, GTACourseNode cNode, int numOfDocs);
+	/**
+	 * Collect the task, increment number of attempts.
+	 * 
+	 * @param task The task
+	 * @param cNode The course node
+	 * @param numOfDocs The number of documents
+	 * @param doerIdentity The user which do the operation
+	 * @return The updatet task
+	 */
+	public Task collectTask(Task task, GTACourseNode cNode, int numOfDocs, Identity doerIdentity);
 	
 	/**
 	 * Task is reviewed and accepted.
+	 * 
 	 * @param task
 	 * @param cNode
-	 * @return
+	 * @return The updated task
 	 */
-	public Task reviewedTask(Task task, GTACourseNode cNode, Role by);
+	public Task reviewedTask(Task task, GTACourseNode cNode, Identity doerIdentity, Role by);
 	
-	public Task updateTask(Task task, TaskProcess newStatus, GTACourseNode cNode, Role by);
+	public Task updateTask(Task task, TaskProcess newStatus, GTACourseNode cNode, boolean incrementUserAttempts, Identity doerIdentity, Role by);
 	
 	public TaskDueDate updateTaskDueDate(TaskDueDate taskDueDate);
 	
-	public Task submitTask(Task task, GTACourseNode cNode, int numOfDocs, Role by);
+	/**
+	 * Submit the task to coach. The operation increments the number of attempts.
+	 * 
+	 * @param task The task
+	 * @param cNode The course node
+	 * @param numOfDocs The number of documents
+	 * @param doerIdentity The user who does the operation
+	 * @param by The role of the user who does the operation
+	 * @return The updated task
+	 */
+	public Task submitTask(Task task, GTACourseNode cNode, int numOfDocs, Identity doerIdentity, Role by);
 	
-	public Task submitRevisions(Task task, GTACourseNode cNode, int numOfDocs, Role by);
+	/**
+	 * Submit a revision. The operation increments the number of attempts.
+	 * 
+	 * @param task The task
+	 * @param cNode The course node
+	 * @param numOfDocs The number of documents
+	 * @param doerIdentity The user who does the operation
+	 * @param by The role of the user who does the operation
+	 * @return
+	 */
+	public Task submitRevisions(Task task, GTACourseNode cNode, int numOfDocs, Identity doerIdentity, Role by);
 	
-	public Task updateTask(Task task, TaskProcess newStatus, int iteration, GTACourseNode cNode, Role by);
+	public Task updateTask(Task task, TaskProcess newStatus, int iteration, GTACourseNode cNode, boolean incrementUserAttempts, Identity doerIdentity, Role by);
 	
 	public Task allowResetTask(Task task, Identity allower, GTACourseNode cNode);
 	
-	public Task resetTask(Task task, GTACourseNode cNode, CourseEnvironment courseEnv);
+	public Task resetTask(Task task, GTACourseNode cNode, CourseEnvironment courseEnv, Identity doerIdentity);
 	
-	public Task resetTaskRefused(Task task, GTACourseNode cNode);
+	public Task resetTaskRefused(Task task, GTACourseNode cNode, Identity doerIdentity);
 	
 	public boolean toggleMark(RepositoryEntry entry, GTACourseNode gtaNode, Identity marker, Identity participant);
 

@@ -251,7 +251,7 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 	}
 	
 	private void doCreateOrganisation(UserRequest ureq) {
-		if(newOrganisationCtrl != null) return;
+		if(guardModalController(newOrganisationCtrl)) return;
 
 		newOrganisationCtrl = new EditOrganisationController(ureq, getWindowControl(), null);
 		listenTo(newOrganisationCtrl);
@@ -262,7 +262,7 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 	}
 	
 	private void doCreateOrganisation(UserRequest ureq, Organisation parentOrganisation) {
-		if(newOrganisationCtrl != null) return;
+		if(guardModalController(newOrganisationCtrl)) return;
 
 		newOrganisationCtrl = new EditOrganisationController(ureq, getWindowControl(), null, parentOrganisation);
 		listenTo(newOrganisationCtrl);
@@ -292,7 +292,7 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 	}
 	
 	private void doMove(UserRequest ureq, Organisation organisation) {
-		if(moveCtrl != null) return;
+		if(guardModalController(moveCtrl)) return;
 		
 		moveCtrl = new MoveOrganisationController(ureq, getWindowControl(), Collections.singletonList(organisation));
 		listenTo(moveCtrl);
@@ -315,7 +315,7 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 	}
 	
 	private void doConfirmDelete(UserRequest ureq, OrganisationRow row) {
-		if(confirmDeleteCtrl != null) return;
+		if(guardModalController(confirmDeleteCtrl)) return;
 		
 		confirmDeleteCtrl = new ConfirmOrganisationDeleteController(ureq, getWindowControl(), row);
 		listenTo(confirmDeleteCtrl);
