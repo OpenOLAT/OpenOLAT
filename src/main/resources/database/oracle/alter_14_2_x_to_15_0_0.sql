@@ -9,6 +9,11 @@ alter table o_as_entry add a_last_visit date;
 alter table o_as_entry add a_num_visits number(20);
 alter table o_as_entry add a_entry_root number;
 
+-- Curriculum
+alter table o_cur_element_type add c_learning_progress varchar(16);
+alter table o_cur_curriculum_element add c_learning_progress varchar(16);
+
+
 -- Forum
 alter table o_forum add f_refresname varchar(50);
 alter table o_forum add f_refresid number(20);
