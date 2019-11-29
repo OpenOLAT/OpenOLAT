@@ -30,6 +30,7 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRefs;
@@ -52,8 +53,9 @@ public class CurriculumXStreamTest extends OlatTestCase {
 	@Test
 	public void toStream() {
 		Curriculum curriculum = curriculumService.createCurriculum("CUR-XSTREAM-1", "My Curriculum 1", "Short desc.", null);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-1", "1. Element",  CurriculumElementStatus.active,
-				new Date(), new Date(), null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-1", "1. Element",
+				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 
 		Curriculum loadedCurriculum = curriculumService.getCurriculum(curriculum);

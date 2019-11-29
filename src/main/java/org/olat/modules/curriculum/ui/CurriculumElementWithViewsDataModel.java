@@ -112,6 +112,7 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 			case details: return curriculum.getDetailsLink();
 			case start: return curriculum.getStartLink();
 			case calendars: return curriculum.getCalendarsLink();
+			case completion: return curriculum.getCompletionItem();
 			default: return "ERROR";
 		}
 	}
@@ -127,6 +128,7 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 		identifier("table.header.curriculum.element.identifier"),
 		mark("table.header.mark"),
 		select("table.header.displayName"),
+		completion("table.header.completion"),
 		details("table.header.details"),
 		start("table.header.start"),
 		calendars("table.header.calendars");

@@ -42,6 +42,7 @@ import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
+import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
 
 /**
@@ -86,6 +87,8 @@ public class CurriculumElementTypeImpl implements Persistable, CurriculumElement
 	private String calendarsEnabledString;
 	@Column(name="c_lectures", nullable=true, insertable=true, updatable=true)
 	private String lecturesEnabledString;
+	@Column(name="c_learning_progress", nullable=true, insertable=true, updatable=true)
+	private String learningProgressEnabledString;
 	
 	@OneToMany(targetEntity=CurriculumElementTypeToTypeImpl.class, fetch=FetchType.LAZY,
 			orphanRemoval=true, cascade={CascadeType.PERSIST, CascadeType.REMOVE})
@@ -213,6 +216,29 @@ public class CurriculumElementTypeImpl implements Persistable, CurriculumElement
 			lecturesEnabledString = null;
 		} else {
 			lecturesEnabledString = lectures.name();
+		}
+	}
+	
+	public String getLearningProgressEnabled() {
+		return learningProgressEnabledString;
+	}
+
+	public void setLearningProgressEnabled(String learningProgressEnabledString) {
+		this.learningProgressEnabledString = learningProgressEnabledString;
+	}
+
+	@Override
+	public CurriculumLearningProgress getLearningProgress() {
+		return StringHelper.containsNonWhitespace(learningProgressEnabledString)
+				? CurriculumLearningProgress.valueOf(learningProgressEnabledString): CurriculumLearningProgress.disabled;
+	}
+
+	@Override
+	public void setLearningProgress(CurriculumLearningProgress learningProgress) {
+		if(learningProgress == null) {
+			learningProgressEnabledString = null;
+		} else {
+			learningProgressEnabledString = learningProgress.name();
 		}
 	}
 

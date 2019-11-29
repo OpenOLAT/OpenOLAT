@@ -38,6 +38,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementToTaxonomyLevel;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeManagedFlag;
+import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRef;
@@ -65,8 +66,8 @@ public class CurriculumXStream {
 		XStream.setupDefaultSecurity(xstream);
 		Class<?>[] types = new Class[] {
 				Curriculum.class, CurriculumImpl.class, CurriculumElement.class, CurriculumElementImpl.class,
-				CurriculumElementType.class, CurriculumElementTypeImpl.class,
-				CurriculumElementTypeManagedFlag.class, CurriculumLectures.class, CurriculumCalendars.class,
+				CurriculumElementType.class, CurriculumElementTypeImpl.class, CurriculumElementTypeManagedFlag.class,
+				CurriculumLectures.class, CurriculumCalendars.class, CurriculumLearningProgress.class,
 				CurriculumElementToTaxonomyLevel.class, CurriculumElementToTaxonomyLevelImpl.class,
 				CurriculumElementToRepositoryEntryRef.class, CurriculumElementToRepositoryEntryRefs.class,
 				Hashtable.class, HashMap.class

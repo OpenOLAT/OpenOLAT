@@ -33,6 +33,7 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumDAO;
@@ -67,14 +68,18 @@ public class CurriculumElementViewsRowComparatorTest extends OlatTestCase {
 	@Test
 	public void testCurriculumElementActiveInactive() {
 		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1", "Curriculum for element", "Curriculum", null);
-		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-1", "1. Element", CurriculumElementStatus.inactive,
-				new Date(), new Date(), null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
-		CurriculumElement element2 = curriculumElementDao.createCurriculumElement("Element-1", "2. Element", CurriculumElementStatus.inactive,
-				new Date(), new Date(), null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
-		CurriculumElement element3 = curriculumElementDao.createCurriculumElement("Element-1", "3. Element", CurriculumElementStatus.active,
-				new Date(), new Date(), null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
-		CurriculumElement element4 = curriculumElementDao.createCurriculumElement("Element-1", "4. Element", CurriculumElementStatus.active,
-				new Date(), new Date(), null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-1", "1. Element",
+				CurriculumElementStatus.inactive, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element2 = curriculumElementDao.createCurriculumElement("Element-1", "2. Element",
+				CurriculumElementStatus.inactive, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element3 = curriculumElementDao.createCurriculumElement("Element-1", "3. Element",
+				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element4 = curriculumElementDao.createCurriculumElement("Element-1", "4. Element",
+				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 		
 		CurriculumElementWithViewsRow row1 = new CurriculumElementWithViewsRow(element1, null, 0);
@@ -105,8 +110,9 @@ public class CurriculumElementViewsRowComparatorTest extends OlatTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("sort-cur-el");
 
 		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1", "Curriculum for element", "Curriculum", null);
-		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-1", "1. Element", CurriculumElementStatus.inactive,
-				new Date(), new Date(), null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-1", "1. Element",
+				CurriculumElementStatus.inactive, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 
 		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(author, "1 course", RepositoryEntryStatusEnum.closed, false, false);
@@ -148,8 +154,9 @@ public class CurriculumElementViewsRowComparatorTest extends OlatTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("sort-cur-el");
 
 		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1", "Curriculum for element", "Curriculum", null);
-		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-1", "1. Element", CurriculumElementStatus.inactive,
-				new Date(), new Date(), null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-1", "1. Element",
+				CurriculumElementStatus.inactive, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 
 		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(author, "1 course", RepositoryEntryStatusEnum.closed, false, false);
@@ -203,14 +210,18 @@ public class CurriculumElementViewsRowComparatorTest extends OlatTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("sort-cur-el");
 
 		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1", "Curriculum for element", "Curriculum", null);
-		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-1", "1. Element", CurriculumElementStatus.inactive,
-				new Date(), new Date(), null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
-		CurriculumElement element2 = curriculumElementDao.createCurriculumElement("Element-2", "2. Element", CurriculumElementStatus.inactive,
-				new Date(), new Date(), null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
-		CurriculumElement element3 = curriculumElementDao.createCurriculumElement("Element-3", "3. Element", CurriculumElementStatus.active,
-				new Date(), new Date(), null, null, CurriculumCalendars.disabled, CurriculumLectures.enabled, curriculum);
-		CurriculumElement element4 = curriculumElementDao.createCurriculumElement("Element-4", "4. Element", CurriculumElementStatus.active,
-				new Date(), new Date(), null, null, CurriculumCalendars.disabled, CurriculumLectures.enabled, curriculum);
+		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-1", "1. Element",
+				CurriculumElementStatus.inactive, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element2 = curriculumElementDao.createCurriculumElement("Element-2", "2. Element",
+				CurriculumElementStatus.inactive, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element3 = curriculumElementDao.createCurriculumElement("Element-3", "3. Element",
+				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element4 = curriculumElementDao.createCurriculumElement("Element-4", "4. Element",
+				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 
 		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(author, "1 course", RepositoryEntryStatusEnum.closed, false, false);

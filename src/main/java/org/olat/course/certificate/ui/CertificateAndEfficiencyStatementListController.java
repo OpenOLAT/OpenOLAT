@@ -244,7 +244,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				.filter(key -> key != null)
 				.collect(Collectors.toList());
 		Map<Long, Double> courseEntryKeysToCompletion = assessmentService
-				.loadEntryRootCompletions(assessedIdentity, courseEntryKeys).stream()
+				.loadAvgCompletionsByRepositoryEntries(assessedIdentity, courseEntryKeys).stream()
 				.collect(Collectors.toMap(
 						AssessmentEntryCompletion::getKey,
 						AssessmentEntryCompletion::getCompletion));

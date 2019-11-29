@@ -191,9 +191,10 @@ public class CurriculumImportHandler {
 		
 		CurriculumElementType elementType = findType(archivedElement.getType(), elementTypes);
 		
-		CurriculumElement element = curriculumService.createCurriculumElement(archivedElement.getIdentifier(), archivedElement.getDisplayName(), archivedElement.getElementStatus(),
-				archivedElement.getBeginDate(), archivedElement.getEndDate(), parentElement, elementType,
-				archivedElement.getCalendars(), archivedElement.getLectures(), curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement(archivedElement.getIdentifier(),
+				archivedElement.getDisplayName(), archivedElement.getElementStatus(), archivedElement.getBeginDate(),
+				archivedElement.getEndDate(), parentElement, elementType, archivedElement.getCalendars(),
+				archivedElement.getLectures(), archivedElement.getLearningProgress(), curriculum);
 		element.setElementStatus(archivedElement.getElementStatus());
 		
 		archiveKeyToCurriculumElements.put(archivedElement.getKey(), element);

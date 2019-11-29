@@ -28,6 +28,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
 
 /**
@@ -52,6 +53,7 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 	private final FormLink resourcesLink;
 	private FormLink lecturesLink;
 	private FormLink calendarsLink;
+	private FormLink learningProgressLink;
 	
 	private boolean acceptedByFilter = true;
 	
@@ -138,6 +140,10 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 	public boolean isLecturesEnabled() {
 		return CurriculumLectures.isEnabled(element, elementType);
 	}
+	
+	public boolean isLearningProgressEnabled() {
+		return CurriculumLearningProgress.isEnabled(element, elementType);
+	}
 
 	public boolean isAcceptedByFilter() {
 		return acceptedByFilter;
@@ -222,6 +228,14 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 
 	public void setLecturesLink(FormLink lecturesLink) {
 		this.lecturesLink = lecturesLink;
+	}
+
+	public FormLink getLearningProgressLink() {
+		return learningProgressLink;
+	}
+
+	public void setLearningProgressLink(FormLink learningProgressLink) {
+		this.learningProgressLink = learningProgressLink;
 	}
 
 	@Override

@@ -284,7 +284,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 			}
 		}
 		
-		List<AssessmentEntryCompletion> completions = assessmentService.loadEntryRootCompletions(statementOwner,
+		List<AssessmentEntryCompletion> completions = assessmentService.loadAvgCompletionsByRepositoryEntries(statementOwner,
 				Collections.singletonList(courseRepoEntry.getKey()));
 		if (!completions.isEmpty()) {
 			Double completion = completions.get(0).getCompletion();

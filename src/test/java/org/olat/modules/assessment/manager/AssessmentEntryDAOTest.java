@@ -36,8 +36,10 @@ import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
@@ -45,7 +47,17 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentEntryCompletion;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumCalendars;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumLearningProgress;
+import org.olat.modules.curriculum.CurriculumLectures;
+import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.RepositoryService;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,6 +79,12 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 	private AssessmentEntryDAO assessmentEntryDao;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private CurriculumService curriculumService;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	@Test
 	public void createAssessmentEntry() {
@@ -534,7 +552,7 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		List<Long> entryKeys = Arrays.asList(entry1.getKey(), entry2.getKey());
-		List<AssessmentEntryCompletion> completions = assessmentEntryDao.loadEntryRootCompletions(assessedIdentity, entryKeys);
+		List<AssessmentEntryCompletion> completions = assessmentEntryDao.loadAvgCompletionsByRepositoryEntries(assessedIdentity, entryKeys);
 		
 		Assert.assertEquals(2, completions.size());
 		Map<Long, Double> keysToCompletion = completions.stream()
@@ -577,13 +595,86 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		List<Long> identityKeys = Arrays.asList(assessedIdentity1.getKey(), assessedIdentity2.getKey());
-		List<AssessmentEntryCompletion> completions = assessmentEntryDao.loadEntryRootCompletions(entry1, identityKeys);
+		List<AssessmentEntryCompletion> completions = assessmentEntryDao.loadAvgCompletionsByIdentities(entry1, identityKeys);
 		
 		Assert.assertEquals(2, completions.size());
 		Map<Long, Double> keysToCompletion = completions.stream()
 				.collect(Collectors.toMap(AssessmentEntryCompletion::getKey, AssessmentEntryCompletion::getCompletion));
 		Assert.assertEquals(1, keysToCompletion.get(assessedIdentity1.getKey()).intValue());
 		Assert.assertEquals(0, keysToCompletion.get(assessedIdentity2.getKey()).intValue());
+	}
+	
+	@Test
+	public void getEntryRootCompleionsByCurriculumElement() {
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-18a");
+		Identity assessedIdentityOther = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-18b");
+		RepositoryEntry entry1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry entry2 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry entry3 = JunitTestHelper.createAndPersistRepositoryEntry();
+		//exclude deleted courses
+		RepositoryEntry entry4 = JunitTestHelper.createAndPersistRepositoryEntry();
+		entry4.setEntryStatus(RepositoryEntryStatusEnum.trash);
+		entry4 = repositoryService.update(entry4);
+		RepositoryEntry entryOther = JunitTestHelper.createAndPersistRepositoryEntry();
+		
+		Organisation organisation = organisationService.getDefaultOrganisation();
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), random(), organisation);
+		CurriculumElement curEle1 = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addRepositoryEntry(curEle1, entry1, false);
+		curriculumService.addRepositoryEntry(curEle1, entry2, false);
+		curriculumService.addRepositoryEntry(curEle1, entry4, false);
+		curriculumService.addMember(curEle1, assessedIdentity, CurriculumRoles.participant);
+		curriculumService.addMember(curEle1, assessedIdentityOther, CurriculumRoles.participant);
+		
+		CurriculumElement curEle12 = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, null, null, curEle1, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addRepositoryEntry(curEle12, entry1, false);
+		curriculumService.addRepositoryEntry(curEle12, entry3, false);
+		curriculumService.addMember(curEle12, assessedIdentity, CurriculumRoles.participant);
+
+		AssessmentEntry nodeAssessment1Root = assessmentEntryDao.createAssessmentEntry(assessedIdentity, null, entry1,
+				random(), Boolean.TRUE, null);
+		nodeAssessment1Root.setCompletion(1.0);
+		assessmentEntryDao.updateAssessmentEntry(nodeAssessment1Root);
+		AssessmentEntry nodeAssessment2Root = assessmentEntryDao.createAssessmentEntry(assessedIdentity, null, entry2,
+				random(), Boolean.TRUE, null);
+		nodeAssessment2Root.setCompletion(0.2);
+		assessmentEntryDao.updateAssessmentEntry(nodeAssessment2Root);
+		AssessmentEntry nodeAssessment3Root = assessmentEntryDao.createAssessmentEntry(assessedIdentity, null, entry3,
+				random(), Boolean.TRUE, null);
+		nodeAssessment3Root.setCompletion(0.3);
+		assessmentEntryDao.updateAssessmentEntry(nodeAssessment3Root);
+		AssessmentEntry nodeAssessment4Root = assessmentEntryDao.createAssessmentEntry(assessedIdentity, null, entry4,
+				random(), Boolean.TRUE, null);
+		nodeAssessment4Root.setCompletion(1.0);
+		assessmentEntryDao.updateAssessmentEntry(nodeAssessment4Root);
+		// not entry root
+		AssessmentEntry nodeAssessment1Child = assessmentEntryDao.createAssessmentEntry(assessedIdentity, null, entry2,
+				random(), Boolean.FALSE, null);
+		nodeAssessment1Child.setCompletion(1.1);
+		assessmentEntryDao.updateAssessmentEntry(nodeAssessment1Child);
+		// other identity
+		AssessmentEntry nodeAssessment1OtherIdent = assessmentEntryDao.createAssessmentEntry(assessedIdentityOther, null,
+				entry2, random(), Boolean.TRUE, null);
+		nodeAssessment1OtherIdent.setCompletion(1.2);
+		assessmentEntryDao.updateAssessmentEntry(nodeAssessment1OtherIdent);
+		// other repository entry
+		AssessmentEntry nodeAssessment1OtherRepo = assessmentEntryDao.createAssessmentEntry(assessedIdentity, null,
+				entryOther, random(), Boolean.TRUE, null);
+		nodeAssessment1OtherRepo.setCompletion(1.3);
+		assessmentEntryDao.updateAssessmentEntry(nodeAssessment1OtherRepo);
+		dbInstance.commitAndCloseSession();
+		
+		List<Long> curEleKeys = Arrays.asList(curEle1.getKey());
+		List<AssessmentEntryCompletion> completions = assessmentEntryDao.loadAvgCompletionsByCurriculumElements(assessedIdentity, curEleKeys);
+		
+		Assert.assertEquals(1, completions.size());
+		Map<Long, Double> keysToCompletion = completions.stream()
+				.collect(Collectors.toMap(AssessmentEntryCompletion::getKey, AssessmentEntryCompletion::getCompletion));
+		Assert.assertEquals(0.5, keysToCompletion.get(curEle1.getKey()).doubleValue(), 0.00001);
 	}
 	
 	@Test

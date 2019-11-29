@@ -55,6 +55,7 @@ import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementToTaxonomyLevel;
 import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
@@ -115,10 +116,12 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Organisation organisation = organisationService.createOrganisation("Curriculum org.", "curr-org", "", defOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
-		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-1", "Element 1", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
-		CurriculumElement element1_1 = curriculumService.createCurriculumElement("Element-1.1", "Element 1.1", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-1", "Element 1",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element1_1 = curriculumService.createCurriculumElement("Element-1.1", "Element 1.1",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection();
@@ -151,8 +154,9 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Organisation organisation = organisationService.createOrganisation("Curriculum org.", "curr-org", "", defOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-1", "Element 1", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-1", "Element 1",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection();
@@ -174,14 +178,18 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Organisation organisation = organisationService.createOrganisation("Curriculum org.", "curr-org", "", defOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-1", "Element 1", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
-		CurriculumElement element_1 = curriculumService.createCurriculumElement("Element-1.1", "Element 1.1", CurriculumElementStatus.active,
-				null, null, element, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
-		CurriculumElement element_2 = curriculumService.createCurriculumElement("Element-1.2", "Element 1.2", CurriculumElementStatus.active,
-				null, null, element, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
-		CurriculumElement element_3 = curriculumService.createCurriculumElement("Element-1.3", "Element 1.3", CurriculumElementStatus.active,
-				null, null, element, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-1", "Element 1",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element_1 = curriculumService.createCurriculumElement("Element-1.1", "Element 1.1",
+				CurriculumElementStatus.active, null, null, element, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element_2 = curriculumService.createCurriculumElement("Element-1.2", "Element 1.2",
+				CurriculumElementStatus.active, null, null, element, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element_3 = curriculumService.createCurriculumElement("Element-1.3", "Element 1.3",
+				CurriculumElementStatus.active, null, null, element, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection();
@@ -222,8 +230,9 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Organisation organisation = organisationService.createOrganisation("Curriculum org.", "curr-org", "", defOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
-		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-3", "Element 3", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-3", "Element 3",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 		
 		CurriculumElementVO vo = new CurriculumElementVO();
@@ -279,8 +288,9 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 2 ", "REST-p-2-organisation", "", defOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-5", "Element 5", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-5", "Element 5",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		CurriculumElementType type = curriculumService.createCurriculumElementType("TYPE-2", "Type 2", "", "");
 		dbInstance.commitAndCloseSession();
 		
@@ -340,11 +350,13 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 25", "REST-p-25-organisation", "", defOrganisation, null);
 		Curriculum sourceCurriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Source Curriculum", "A source curriculum", organisation);
 		Curriculum targetCurriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Target Curriculum", "A target curriculum", organisation);
-		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-25", "Element2 5", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, sourceCurriculum);
-		CurriculumElement element1_1 = curriculumService.createCurriculumElement("Element-25-1", "Element 25-1", CurriculumElementStatus.active,
-				null, null, element1, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, sourceCurriculum);
-		
+		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-25", "Element2 5",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, sourceCurriculum);
+		CurriculumElement element1_1 = curriculumService.createCurriculumElement("Element-25-1", "Element 25-1",
+				CurriculumElementStatus.active, null, null, element1, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, sourceCurriculum);
+
 		dbInstance.commitAndCloseSession();
 		
 		CurriculumElementVO vo = new CurriculumElementVO();
@@ -408,10 +420,12 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", defOrganisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-5", "Element 5", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
-		CurriculumElement element_1 = curriculumService.createCurriculumElement("Element-5.1", "Element 5.1", CurriculumElementStatus.active,
-				null, null, element, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-5", "Element 5",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element_1 = curriculumService.createCurriculumElement("Element-5.1", "Element 5.1",
+				CurriculumElementStatus.active, null, null, element, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 		
 		CurriculumElementVO vo = new CurriculumElementVO();
@@ -442,8 +456,9 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 2 ", "REST-p-2-organisation", "", defOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-6", "Element 6", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-6", "Element 6",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 		
 		CurriculumElementVO vo = CurriculumElementVO.valueOf(element);
@@ -487,12 +502,15 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 2 ", "REST-p-2-organisation", "", defOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
-		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-8", "Element 8",  CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
-		CurriculumElement element1_1 = curriculumService.createCurriculumElement("Element-8.1", "Element 8.1", CurriculumElementStatus.active,
-				null, null, element1, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
-		CurriculumElement element2 = curriculumService.createCurriculumElement("Element-9", "Element 9", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-8", "Element 8",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element1_1 = curriculumService.createCurriculumElement("Element-8.1", "Element 8.1",
+				CurriculumElementStatus.active, null, null, element1, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element2 = curriculumService.createCurriculumElement("Element-9", "Element 9",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 		
 		
@@ -528,9 +546,11 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 2 ", "REST-p-2-organisation", "", defOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-10", "Element 10", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
-		Curriculum otherCurriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-10", "Element 10",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		Curriculum otherCurriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum",
+				"A curriculum accessible by REST API for elemets", organisation);
 		dbInstance.commitAndCloseSession();
 		
 		// other administration organisation
@@ -562,8 +582,9 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 4", "REST-p-4-organisation", "", defOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-11", "Element 11", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-11", "Element 11",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("rest-auth-1");
 		RepositoryEntry course = JunitTestHelper.createRandomRepositoryEntry(author);
@@ -592,8 +613,9 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 4", "REST-p-4-organisation", "", defOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-11", "Element 11", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-11", "Element 11",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("rest-auth-1");
 		RepositoryEntry course = JunitTestHelper.createRandomRepositoryEntry(author);
@@ -626,8 +648,9 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 4", "REST-p-4-organisation", "", defOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-11", "Element 11", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-11", "Element 11",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("rest-auth-1");
 		RepositoryEntry course = JunitTestHelper.createRandomRepositoryEntry(author);
@@ -662,8 +685,9 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 4", "REST-p-4-organisation", "", defOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-11", "Element 11", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-11", "Element 11",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection();
@@ -702,8 +726,9 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 5", "REST-p-5-organisation", "", defOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-12", "Element 12", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-12", "Element 12",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commit();
 		
 		RestConnection conn = new RestConnection();
@@ -741,8 +766,9 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 5", "REST-p-5-organisation", "", defOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-12", "Element 12", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-12", "Element 12",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commit();
 		
 		RestConnection conn = new RestConnection();
@@ -772,8 +798,9 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 8", "REST-p-8-organisation", "", defOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-14", "Element 14", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-14", "Element 14",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commit();
 		
 		RestConnection conn = new RestConnection();
@@ -802,8 +829,9 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 8", "REST-p-8-organisation", "", defOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-14", "Element 14", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-14", "Element 14",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commit();
 		
 		RestConnection conn = new RestConnection();
@@ -833,8 +861,9 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 9", "REST-p-9-organisation", "", defOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-15", "Element 15", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-15", "Element 15",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commit();
 		
 		RestConnection conn = new RestConnection();
@@ -863,8 +892,9 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 10", "REST-p-10-organisation", "", defOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-16", "Element 16", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-16", "Element 16",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commit();
 		
 		RestConnection conn = new RestConnection();
@@ -893,8 +923,9 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 10", "REST-p-10-organisation", "", defOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-16", "Element 16", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-16", "Element 16",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commit();
 		
 		RestConnection conn = new RestConnection();
@@ -923,8 +954,9 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 10", "REST-p-10-organisation", "", defOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-16", "Element 16", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-16", "Element 16",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commit();
 		
 		RestConnection conn = new RestConnection();
@@ -953,8 +985,9 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-1");
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 5", "REST-p-5-organisation", "", defOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-12", "Element 12", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-12", "Element 12",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commit();
 		
 		RestConnection conn = new RestConnection();
@@ -989,8 +1022,9 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-11");
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 11", "REST-p-11-organisation", "", defOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-17", "Element 17", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-17", "Element 17",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commit();
 		
 		RestConnection conn = new RestConnection();
@@ -1017,8 +1051,9 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-12");
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 12", "REST-p-12-organisation", "", defOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-18", "Element 18", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-18", "Element 18",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commit();
 		
 		RestConnection conn = new RestConnection();
@@ -1045,8 +1080,9 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Identity masterCoach = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-21");
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 21", "REST-p-21-organisation", "", defOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-22", "Element 22", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-22", "Element 22",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commit();
 		
 		RestConnection conn = new RestConnection();
@@ -1074,8 +1110,9 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-14");
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 13", "REST-p-13-organisation", "", defOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-18", "Element 18", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-18", "Element 18",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commit();
 		
 		RestConnection conn = new RestConnection();
@@ -1107,8 +1144,9 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Identity coach2 = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-16");
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 16", "REST-p-16-organisation", "", defOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-20", "Element 20", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-20", "Element 20",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commit();
 		
 		RestConnection conn = new RestConnection();
@@ -1140,8 +1178,9 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Identity masterCoach2 = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-24");
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 25", "REST-p-25-organisation", "", defOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-26", "Element 26", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-26", "Element 26",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commit();
 		
 		RestConnection conn = new RestConnection();
@@ -1173,8 +1212,9 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-1");
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 5", "REST-p-5-organisation", "", defOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-12", "Element 12", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-12", "Element 12",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commit();
 		
 		RestConnection conn = new RestConnection();
@@ -1205,8 +1245,9 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-22");
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 21", "REST-p-21-organisation", "", defOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-21", "Element 21", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-21", "Element 21",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commit();
 		
 		RestConnection conn = new RestConnection();
@@ -1238,8 +1279,9 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-24");
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 24", "REST-p-24-organisation", "", defOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-24", "Element 24", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-24", "Element 24",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commit();
 		
 		RestConnection conn = new RestConnection();
@@ -1271,8 +1313,9 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Identity mastercoach = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-31");
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 32", "REST-p-32-organisation", "", defOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-33", "Element 33", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-33", "Element 33",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commit();
 		
 		RestConnection conn = new RestConnection();
@@ -1305,8 +1348,9 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 	throws IOException, URISyntaxException {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", defOrganisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-24", "Element 24", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-24", "Element 24",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commit();
 
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-350", "Leveled taxonomy", null, null);
@@ -1333,9 +1377,10 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 	throws IOException, URISyntaxException {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", defOrganisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-24", "Element 24", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
-		
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-24", "Element 24",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-351", "Leveled taxonomy", null, null);
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
 		dbInstance.commitAndCloseSession();
@@ -1364,9 +1409,10 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 	throws IOException, URISyntaxException {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", defOrganisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-24", "Element 24", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
-		
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-24", "Element 24",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-352", "Leveled taxonomy", null, null);
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
 		curriculumElementToTaxonomyLevelDao.createRelation(element, level);
@@ -1400,9 +1446,10 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 	throws IOException, URISyntaxException {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", defOrganisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-30", "Element 24", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
-		
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-30", "Element 24",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-353", "Leveled taxonomy", null, null);
 		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("ID-Level-1", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
 		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("ID-Level-2", "My second taxonomy level", "A basic level", null, null, null, null, taxonomy);

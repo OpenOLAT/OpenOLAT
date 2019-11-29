@@ -47,6 +47,7 @@ import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeRef;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
+import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
@@ -78,6 +79,14 @@ public class EditCurriculumElementController extends FormBasicController {
 			CurriculumLectures.enabled.name(), CurriculumLectures.disabled.name(), CurriculumLectures.inherited.name()
 		};
 	
+	private static final String[] learningProgressKeys = new String[] {
+			CurriculumLearningProgress.enabled.name(), CurriculumLearningProgress.disabled.name()
+		};
+	
+	private static final String[] learningProgressTypedKeys = new String[] {
+			CurriculumLearningProgress.enabled.name(), CurriculumLearningProgress.disabled.name(), CurriculumLearningProgress.inherited.name()
+		};
+	
 	private static final String[] statusKey = new String[] {
 			CurriculumElementStatus.active.name(), CurriculumElementStatus.inactive.name(), CurriculumElementStatus.deleted.name()
 		};
@@ -91,6 +100,7 @@ public class EditCurriculumElementController extends FormBasicController {
 	private SingleSelection statusEl;
 	private SingleSelection lecturesEnabledEl;
 	private SingleSelection calendarsEnabledEl;
+	private SingleSelection learningProgressEnabledEl;
 	private SingleSelection curriculumElementTypeEl;
 	
 	private Curriculum curriculum;
@@ -213,6 +223,11 @@ public class EditCurriculumElementController extends FormBasicController {
 		CurriculumLectures lecturesEnabled =  element == null ? CurriculumLectures.inherited : element.getLectures();
 		updateLecturesEnabled(lecturesEnabled, elementType);
 		
+		learningProgressEnabledEl = uifactory.addRadiosHorizontal("type.learning.progress.enabled", formLayout, new String[0], new String[0]);
+		learningProgressEnabledEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.learningProgress) && canEdit);
+		CurriculumLearningProgress learningProgressEnabled =  element == null ? CurriculumLearningProgress.inherited : element.getLearningProgress();
+		updateLearningProgressEnabled(learningProgressEnabled, elementType);
+		
 		List<TaxonomyLevel> levels = curriculumService.getTaxonomy(element);
 		if(!levels.isEmpty()) {
 			StringBuilder sb = new StringBuilder();
@@ -307,6 +322,37 @@ public class EditCurriculumElementController extends FormBasicController {
 		}
 	}
 	
+	private void updateLearningProgressEnabled(CurriculumLearningProgress preferedEnabled, CurriculumElementType selectedType) {
+		if(curriculumElementTypeEl.getSelected() == 0) {
+			String[] onValues = new String[] {
+					translate("type.learning.progress.enabled.enabled"), translate("type.learning.progress.enabled.disabled")
+			};
+			learningProgressEnabledEl.setKeysAndValues(learningProgressKeys, onValues, null);
+			
+			if(preferedEnabled == CurriculumLearningProgress.enabled || preferedEnabled == CurriculumLearningProgress.disabled) {
+				learningProgressEnabledEl.select(preferedEnabled.name(), true);
+			} else {
+				learningProgressEnabledEl.select(CurriculumLearningProgress.disabled.name(), true);
+			}
+		} else {
+			String typeVal = null;
+			if(selectedType == null) {
+				typeVal = "???";
+			} else if(selectedType.getLearningProgress() == CurriculumLearningProgress.enabled) {
+				typeVal = translate("type.learning.progress.enabled.enabled");
+			} else if(selectedType.getLearningProgress() == CurriculumLearningProgress.disabled) {
+				typeVal = translate("type.learning.progress.enabled.disabled");
+			}
+
+			String[] onValues = new String[] {
+					translate("type.learning.progress.enabled.enabled"), translate("type.learning.progress.enabled.disabled"),
+					translate("type.learning.progress.enabled.inherited", new String[] { typeVal })
+			};
+			learningProgressEnabledEl.setKeysAndValues(learningProgressTypedKeys, onValues, null);
+			learningProgressEnabledEl.select(preferedEnabled.name(), true);
+		}
+	}
+	
 	private List<CurriculumElementType> getTypes() {
 		List<CurriculumElementType> types;
 		if(element != null) {
@@ -377,6 +423,12 @@ public class EditCurriculumElementController extends FormBasicController {
 			allOk &= false;
 		}
 		
+		learningProgressEnabledEl.clearError();
+		if(!learningProgressEnabledEl.isOneSelected()) {
+			learningProgressEnabledEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
 		statusEl.clearError();
 		if(!statusEl.isOneSelected()) {
 			statusEl.setErrorKey("form.legende.mandatory", null);
@@ -391,11 +443,12 @@ public class EditCurriculumElementController extends FormBasicController {
 		CurriculumElementType elementType = getSelectedType();
 		CurriculumLectures lectures = CurriculumLectures.valueOf(lecturesEnabledEl.getSelectedKey());
 		CurriculumCalendars calendars = CurriculumCalendars.valueOf(calendarsEnabledEl.getSelectedKey());
+		CurriculumLearningProgress learningProgress = CurriculumLearningProgress.valueOf(learningProgressEnabledEl.getSelectedKey());
 		CurriculumElementStatus status = CurriculumElementStatus.valueOf(statusEl.getSelectedKey());
 		if(element == null) {
 			//create a new one
 			element = curriculumService.createCurriculumElement(identifierEl.getValue(), displayNameEl.getValue(),
-					status, beginEl.getDate(), endEl.getDate(), parentElement, elementType, calendars, lectures, curriculum);
+					status, beginEl.getDate(), endEl.getDate(), parentElement, elementType, calendars, lectures, learningProgress, curriculum);
 		} else {
 			element = curriculumService.getCurriculumElement(element);
 			element.setIdentifier(identifierEl.getValue());
@@ -406,6 +459,7 @@ public class EditCurriculumElementController extends FormBasicController {
 			element.setType(elementType);
 			element.setCalendars(calendars);
 			element.setLectures(lectures);
+			element.setLearningProgress(learningProgress);
 			element.setElementStatus(status);
 			element = curriculumService.updateCurriculumElement(element);
 		}
@@ -434,6 +488,10 @@ public class EditCurriculumElementController extends FormBasicController {
 			if(lecturesEnabledEl.isOneSelected()) {
 				CurriculumLectures enabled = CurriculumLectures.valueOf(lecturesEnabledEl.getSelectedKey());
 				updateLecturesEnabled(enabled, elementType);
+			}
+			if(learningProgressEnabledEl.isOneSelected()) {
+				CurriculumLearningProgress enabled = CurriculumLearningProgress.valueOf(learningProgressEnabledEl.getSelectedKey());
+				updateLearningProgressEnabled(enabled, elementType);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);

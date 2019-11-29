@@ -227,7 +227,7 @@ public interface CurriculumService {
 	public CurriculumElement createCurriculumElement(String identifier, String displayName,
 			CurriculumElementStatus status, Date beginDate, Date endDate,
 			CurriculumElementRef parent, CurriculumElementType elementType, CurriculumCalendars calendars,
-			CurriculumLectures lectures, Curriculum curriculum);
+			CurriculumLectures lectures, CurriculumLearningProgress learningProgress, Curriculum curriculum);
 	
 	/**
 	 * 

@@ -52,6 +52,7 @@ import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementToTaxonomyLevel;
 import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
 
 /**
@@ -98,6 +99,8 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	private String calendarsEnabledString;
 	@Column(name="c_lectures", nullable=true, insertable=true, updatable=true)
 	private String lecturesEnabledString;
+	@Column(name="c_learning_progress", nullable=true, insertable=true, updatable=true)
+	private String learningProgressEnabledString;
 	
 	@Column(name="c_status", nullable=true, insertable=true, updatable=true)
 	private String status;
@@ -232,6 +235,7 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 			calendarsEnabledString = calendars.name();
 		}
 	}
+	
 	public String getLecturesEnabled() {
 		return lecturesEnabledString;
 	}
@@ -259,6 +263,36 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 			lecturesEnabledString = null;
 		} else {
 			lecturesEnabledString = lectures.name();
+		}
+	}
+	
+	public String getLearningProgressEnabled() {
+		return learningProgressEnabledString;
+	}
+
+	public void setLearningProgressEnabled(String learningProgressEnabledString) {
+		this.learningProgressEnabledString = learningProgressEnabledString;
+	}
+
+	@Override
+	public CurriculumLearningProgress getLearningProgress() {
+		CurriculumLearningProgress enabled;
+		if(StringHelper.containsNonWhitespace(learningProgressEnabledString)) {
+			enabled = CurriculumLearningProgress.valueOf(learningProgressEnabledString);
+		} else if(this.type != null) {
+			enabled = CurriculumLearningProgress.inherited;
+		} else {
+			enabled = CurriculumLearningProgress.disabled;
+		}
+		return enabled;
+	}
+
+	@Override
+	public void setLearningProgress(CurriculumLearningProgress learningProgress) {
+		if(learningProgress == null) {
+			learningProgressEnabledString = null;
+		} else {
+			learningProgressEnabledString = learningProgress.name();
 		}
 	}
 
@@ -356,6 +390,7 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	
 	
 
+	@Override
 	public Long getPosCurriculum() {
 		return posCurriculum;
 	}

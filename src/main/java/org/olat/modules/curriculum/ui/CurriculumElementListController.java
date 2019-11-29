@@ -22,6 +22,7 @@ package org.olat.modules.curriculum.ui;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -53,6 +54,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
+import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -67,6 +70,8 @@ import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CorruptedCourseException;
+import org.olat.modules.assessment.AssessmentEntryCompletion;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumElementWithView;
@@ -138,6 +143,8 @@ public class CurriculumElementListController extends FormBasicController impleme
 	private CurriculumService curriculumService;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private AssessmentService assessmentService;
 	
 	public CurriculumElementListController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			Identity assessedIdentity, CurriculumRef curriculum, CurriculumSecurityCallback secCallback) {
@@ -171,6 +178,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.mark));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.details));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.completion));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.calendars));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.start));
 		
@@ -312,11 +320,13 @@ public class CurriculumElementListController extends FormBasicController impleme
 		Collections.sort(rows, new CurriculumElementViewsRowComparator(getLocale()));
 		
 		removeByPermissions(rows);
-
+		
+		forgeCompletions(rows);
+		
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
-	
+
 	private void removeByPermissions(List<CurriculumElementWithViewsRow> rows) {
 		// propagate the member marker along the parent line
 		for(CurriculumElementWithViewsRow row:rows) {
@@ -424,6 +434,37 @@ public class CurriculumElementListController extends FormBasicController impleme
 			calendarLink.setUserObject(row);
 			row.setCalendarsLink(calendarLink);
 		}
+	}
+	
+	private void forgeCompletions(List<CurriculumElementWithViewsRow> rows) {
+		Map<Long, Double> completions = loadCurriculumElementCompletions(rows);
+		
+		for (CurriculumElementWithViewsRow row : rows) {
+			Double completion = row.isRepositoryEntryOnly()
+					? row.getRepositoryEntryCompletion()
+					: completions.get(row.getKey());
+			if (completion != null) {
+				ProgressBarItem completionItem = new ProgressBarItem("completion_" + row.getKey(), 100,
+						completion.floatValue(), Float.valueOf(1), null);
+				completionItem.setWidthInPercent(true);
+				completionItem.setLabelAlignment(LabelAlignment.none);
+				row.setCompletionItem(completionItem);
+			}
+		}
+	}
+
+	private Map<Long, Double> loadCurriculumElementCompletions(List<CurriculumElementWithViewsRow> rows) {
+		List<Long> curEleLearningProgressKeys = rows.stream()
+				.filter(CurriculumElementWithViewsRow::isLearningProgressEnabled)
+				.map(CurriculumElementWithViewsRow::getKey)
+				.collect(Collectors.toList());
+		List<AssessmentEntryCompletion> loadAvgCompletionsByCurriculumElements = assessmentService
+				.loadAvgCompletionsByCurriculumElements(assessedIdentity, curEleLearningProgressKeys);
+		Map<Long, Double> completions = new HashMap<>();
+		for (AssessmentEntryCompletion completion : loadAvgCompletionsByCurriculumElements) {
+			completions.put(completion.getKey(), completion.getCompletion());
+		}
+		return completions;
 	}
 
 	@Override

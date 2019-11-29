@@ -258,7 +258,7 @@ public class CourseController extends FormBasicController implements Activateabl
 		
 		ConcurrentMap<IdentityRepositoryEntryKey, Double> completionsMap = new ConcurrentHashMap<>();
 		List<Long> identityKeys = entries.stream().map(EfficiencyStatementEntry::getIdentityKey).collect(Collectors.toList());
-		List<AssessmentEntryCompletion> completions = assessmentService.loadEntryRootCompletions(course, identityKeys);
+		List<AssessmentEntryCompletion> completions = assessmentService.loadAvgCompletionsByIdentities(course, identityKeys);
 		for (AssessmentEntryCompletion completion : completions) {
 			IdentityRepositoryEntryKey key = new IdentityRepositoryEntryKey(completion.getKey(), course.getKey());
 			completionsMap.put(key, completion.getCompletion());

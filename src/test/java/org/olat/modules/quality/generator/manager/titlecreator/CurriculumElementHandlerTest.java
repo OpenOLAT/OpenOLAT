@@ -32,6 +32,7 @@ import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.quality.generator.TitleCreator;
@@ -97,8 +98,9 @@ public class CurriculumElementHandlerTest extends OlatTestCase {
 		String value = random();
 		Organisation organisation = organisationService.getDefaultOrganisation();
 		Curriculum curriculum = curriculumService.createCurriculum(random(), value, null, organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		String template = "$" + CurriculumElementHandler.CURRICULUM_DISPLAY_NAME;
 		
 		String merged = titleCreator.merge(template, asList(element));
@@ -135,8 +137,9 @@ public class CurriculumElementHandlerTest extends OlatTestCase {
 	private CurriculumElement createCurriculumElement() {
 		Organisation organisation = organisationService.getDefaultOrganisation();
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, organisation);
-		return curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		return curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active, null, null,
+				null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled,
+				CurriculumLearningProgress.disabled, curriculum);
 	}
 	
 	private String random() {

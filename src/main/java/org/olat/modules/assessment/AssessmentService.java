@@ -80,9 +80,11 @@ public interface AssessmentService {
 	
 	public List<AssessmentEntry> loadAssessmentEntries(BusinessGroup assessedGroup, RepositoryEntry entry, String subIdent);
 
-	public List<AssessmentEntryCompletion> loadEntryRootCompletions(Identity assessedIdentity, Collection<Long> entryKeys);
+	public List<AssessmentEntryCompletion> loadAvgCompletionsByRepositoryEntries(Identity assessedIdentity, Collection<Long> entryKeys);
 	
-	public List<AssessmentEntryCompletion> loadEntryRootCompletions(RepositoryEntry entry, List<Long> identityKeys);
+	public List<AssessmentEntryCompletion> loadAvgCompletionsByIdentities(RepositoryEntry entry, Collection<Long> identityKeys);
+	
+	public List<AssessmentEntryCompletion> loadAvgCompletionsByCurriculumElements(Identity assessedIdentity, Collection<Long> curEleKeys);
 
 	public void setLastVisit(AssessmentEntry nodeAssessment, Date lastVisit);
 

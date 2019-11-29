@@ -106,12 +106,18 @@ public class AssessmentServiceImpl implements AssessmentService, UserDataDeletab
 	}
 
 	@Override
-	public List<AssessmentEntryCompletion> loadEntryRootCompletions(Identity assessedIdentity, Collection<Long> entryKeys) {
-		return assessmentEntryDao.loadEntryRootCompletions(assessedIdentity, entryKeys);
+	public List<AssessmentEntryCompletion> loadAvgCompletionsByRepositoryEntries(Identity assessedIdentity, Collection<Long> entryKeys) {
+		return assessmentEntryDao.loadAvgCompletionsByRepositoryEntries(assessedIdentity, entryKeys);
 	}
 	@Override
-	public List<AssessmentEntryCompletion> loadEntryRootCompletions(RepositoryEntry entry, List<Long> identityKeys) {
-		return assessmentEntryDao.loadEntryRootCompletions(entry, identityKeys);
+	public List<AssessmentEntryCompletion> loadAvgCompletionsByIdentities(RepositoryEntry entry, Collection<Long> identityKeys) {
+		return assessmentEntryDao.loadAvgCompletionsByIdentities(entry, identityKeys);
+	}
+
+	@Override
+	public List<AssessmentEntryCompletion> loadAvgCompletionsByCurriculumElements(Identity assessedIdentity,
+			Collection<Long> curEleKeys) {
+		return assessmentEntryDao.loadAvgCompletionsByCurriculumElements(assessedIdentity, curEleKeys);
 	}
 
 	@Override

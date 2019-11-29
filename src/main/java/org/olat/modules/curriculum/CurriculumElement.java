@@ -70,6 +70,13 @@ public interface CurriculumElement extends CurriculumElementShort, CreateInfo, M
 	
 	public void setLectures(CurriculumLectures lectures);
 	
+	/**
+	 * @return true if learning progress aggregation is available at this level of the curriculum
+	 */
+	public CurriculumLearningProgress getLearningProgress();
+	
+	public void setLearningProgress(CurriculumLearningProgress learningProgress);
+	
 	public CurriculumElementStatus getElementStatus();
 	
 	public void setElementStatus(CurriculumElementStatus status);

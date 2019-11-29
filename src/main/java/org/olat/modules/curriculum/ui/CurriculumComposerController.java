@@ -200,6 +200,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.numOfOwners, "members"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.calendars));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.lectures));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.learningProgress));
 
 		DefaultFlexiColumnModel zoomColumn = new DefaultFlexiColumnModel("zoom", translate("zoom"), "tt-focus");
 		zoomColumn.setExportable(false);
@@ -331,6 +332,13 @@ public class CurriculumComposerController extends FormBasicController implements
 			lecturesLink.setIconLeftCSS("o_icon o_icon_lecture o_icon-fw");
 			row.setLecturesLink(lecturesLink);
 			lecturesLink.setUserObject(row);
+		}
+
+		if(row.isLearningProgressEnabled()) {
+			FormLink learningProgressLink = uifactory.addFormLink("lp_" + (++counter), "learning.progress", "learning.progress", null, null, Link.LINK);
+			learningProgressLink.setIconLeftCSS("o_icon o_CourseModule_icon o_icon-fw");
+			row.setLearningProgressLink(learningProgressLink);
+			learningProgressLink.setUserObject(row);
 		}
 		
 		return row;

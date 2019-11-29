@@ -55,5 +55,6 @@ public interface CurriculumSecurityCallback {
 	
 	public boolean canViewAllLectures();
 	
+	public boolean canViewAllLearningProgress();
 
 }

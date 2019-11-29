@@ -67,6 +67,7 @@ public class CurriculumElementRepositoryEntryViews implements CurriculumElementW
 		return curriculumElementType;
 	}
 
+	@Override
 	public List<RepositoryEntryMyView> getEntries() {
 		return entries;
 	}

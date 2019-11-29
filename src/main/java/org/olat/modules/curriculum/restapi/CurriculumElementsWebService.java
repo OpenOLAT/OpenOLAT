@@ -313,9 +313,9 @@ public class CurriculumElementsWebService {
 		boolean move = false;
 		boolean moveAsCurriculumRoot = false;
 		if(curriculumElement.getKey() == null) {
-			elementToSave = curriculumService.createCurriculumElement(curriculumElement.getIdentifier(), curriculumElement.getDisplayName(),
-					null, curriculumElement.getBeginDate(), curriculumElement.getEndDate(), parentElement, type,
-					null, null, curriculum);
+			elementToSave = curriculumService.createCurriculumElement(curriculumElement.getIdentifier(),
+					curriculumElement.getDisplayName(), null, curriculumElement.getBeginDate(),
+					curriculumElement.getEndDate(), parentElement, type, null, null, null, curriculum);
 		} else {
 			elementToSave = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElement.getKey()));
 			elementToSave.setDisplayName(curriculumElement.getDisplayName());

@@ -38,6 +38,7 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.lecture.LectureBlock;
@@ -206,10 +207,12 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
 		Organisation organisation = organisationService.createOrganisation("org", "Org", null, null, null);
 		Curriculum curriculum = curriculumService.createCurriculum("Curriculum", "Curriculum", null, organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element", "Element",  CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
-		CurriculumElement otherElement = curriculumService.createCurriculumElement("Element", "Element",  CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element", "Element",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement otherElement = curriculumService.createCurriculumElement("Element", "Element",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		RepositoryEntry course1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry course2 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry otherCourse = JunitTestHelper.createAndPersistRepositoryEntry();

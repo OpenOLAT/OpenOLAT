@@ -54,6 +54,7 @@ import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
@@ -82,10 +83,10 @@ public class CurriculumElementDAO {
 	@Autowired
 	private GroupDAO groupDao;
 	
-	public CurriculumElement createCurriculumElement(String identifier, String displayName, CurriculumElementStatus status,
-			Date beginDate, Date endDate,
-			CurriculumElementRef parentRef, CurriculumElementType elementType,
-			CurriculumCalendars calendars, CurriculumLectures lectures,  Curriculum curriculum) {
+	public CurriculumElement createCurriculumElement(String identifier, String displayName,
+			CurriculumElementStatus status, Date beginDate, Date endDate, CurriculumElementRef parentRef,
+			CurriculumElementType elementType, CurriculumCalendars calendars, CurriculumLectures lectures,
+			CurriculumLearningProgress learningProgress, Curriculum curriculum) {
 		CurriculumElementImpl element = new CurriculumElementImpl();
 		element.setCreationDate(new Date());
 		element.setLastModified(element.getCreationDate());
@@ -97,6 +98,7 @@ public class CurriculumElementDAO {
 		element.setType(elementType);
 		element.setCalendars(calendars);
 		element.setLectures(lectures);
+		element.setLearningProgress(learningProgress);
 		if(status == null) {
 			element.setStatus(CurriculumElementStatus.active.name());
 		} else {

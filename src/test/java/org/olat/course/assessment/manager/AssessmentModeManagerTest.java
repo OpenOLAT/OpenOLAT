@@ -46,6 +46,7 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
@@ -787,8 +788,10 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-32");
 		
 		Curriculum curriculum = curriculumService.createCurriculum("cur-as-mode-1", "Curriculum for assessment", "Curriculum", null);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for assessment",  CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel",
+				"Element for assessment", CurriculumElementStatus.active, null, null, null, null,
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
+				curriculum);
 		dbInstance.commit();
 		curriculumService.addRepositoryEntry(element, entry, false);
 		curriculumService.addMember(element, participant, CurriculumRoles.participant);
@@ -831,8 +834,10 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-37");
 		
 		Curriculum curriculum = curriculumService.createCurriculum("cur-as-mode-2", "Curriculum for assessment", "Curriculum", null);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for assessment",  CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel",
+				"Element for assessment", CurriculumElementStatus.active, null, null, null, null,
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
+				curriculum);
 		dbInstance.commit();
 		curriculumService.addRepositoryEntry(element, entry, false);
 		curriculumService.addMember(element, participant, CurriculumRoles.participant);
@@ -954,8 +959,10 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		Identity coach1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-39");
 		
 		Curriculum curriculum = curriculumService.createCurriculum("cur-as-mode-3", "Curriculum for assessment", "Curriculum", null);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for assessment",  CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel",
+				"Element for assessment", CurriculumElementStatus.active, null, null, null, null,
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
+				curriculum);
 		dbInstance.commit();
 		curriculumService.addRepositoryEntry(element, entry, false);
 		curriculumService.addMember(element, participant1, CurriculumRoles.participant);

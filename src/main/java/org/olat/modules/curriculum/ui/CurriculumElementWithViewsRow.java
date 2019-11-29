@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
+import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
@@ -35,6 +36,7 @@ import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementWithView;
+import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.ui.PriceMethod;
@@ -82,6 +84,7 @@ public class CurriculumElementWithViewsRow implements CurriculumElementWithView,
 	private FormLink markLink;
 	private FormLink selectLink;
 	private FormLink calendarsLink;
+	private ProgressBarItem completionItem;
 	
 	public CurriculumElementWithViewsRow(CurriculumElement element, CurriculumElementMembership curriculumMembership, int myEntryCount) {
 		this.element = element;
@@ -203,6 +206,18 @@ public class CurriculumElementWithViewsRow implements CurriculumElementWithView,
 				enabled = true;
 			} else if(element.getCalendars() == CurriculumCalendars.inherited && elementType != null) {
 				enabled = elementType.getCalendars() == CurriculumCalendars.enabled;
+			}
+		}
+		return enabled;
+	}
+	
+	public boolean isLearningProgressEnabled() {
+		boolean enabled = false;
+		if(element != null) {
+			if(element.getLearningProgress() == CurriculumLearningProgress.enabled) {
+				enabled = true;
+			} else if(element.getLearningProgress() == CurriculumLearningProgress.inherited && elementType != null) {
+				enabled = elementType.getLearningProgress() == CurriculumLearningProgress.enabled;
 			}
 		}
 		return enabled;
@@ -359,6 +374,10 @@ public class CurriculumElementWithViewsRow implements CurriculumElementWithView,
 				? false : !repositoryEntry.getPassed().booleanValue();
 	}
 	
+	public Double getRepositoryEntryCompletion() {
+		return repositoryEntry != null? repositoryEntry.getCompletion(): null;
+	}
+	
 	public OLATResourceable getRepositoryEntryResourceable() {
 		return repositoryEntry;
 	}
@@ -391,6 +410,7 @@ public class CurriculumElementWithViewsRow implements CurriculumElementWithView,
 		return curriculumMembership;
 	}
 
+	@Override
 	public boolean isCurriculumMember() {
 		return curriculumMember;
 	}
@@ -501,6 +521,18 @@ public class CurriculumElementWithViewsRow implements CurriculumElementWithView,
 	public String getCalendarsLinkName() {
 		return calendarsLink == null ? null : calendarsLink.getComponent().getComponentName();
 	}
+	
+	public ProgressBarItem getCompletionItem() {
+		return completionItem;
+	}
+	
+	public void setCompletionItem(ProgressBarItem completionItem) {
+		this.completionItem = completionItem;
+	}
+	
+	public String getCompletionItemName() {
+		return completionItem == null ? null : completionItem.getComponent().getComponentName();
+	}
 
 	@Override
 	public String getCrump() {
@@ -541,4 +573,5 @@ public class CurriculumElementWithViewsRow implements CurriculumElementWithView,
 		
 		return sb.toString();
 	}
+
 }

@@ -32,6 +32,7 @@ import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
@@ -82,8 +83,9 @@ public class CurriculumServiceTest extends OlatTestCase {
 	@Test
 	public void getCurriculumElements() {
 		Curriculum curriculum = curriculumService.createCurriculum("CUR-2", "Curriculum 2", "Curriculum", null);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-auth");
 		RepositoryEntry publishedEntry = JunitTestHelper.createRandomRepositoryEntry(author);
 		RepositoryEntry reviewedEntry = JunitTestHelper.createRandomRepositoryEntry(author);

@@ -83,7 +83,7 @@
 			&nbsp;## strange bug, add padding when empty
 		</div>
 		<div class="o_curriculum_entry_desc">$row.shortenedDescription</div>		
-		#if($row.passed || $row.failed)
+		#if($row.passed || $row.failed || $row.completionItem)
 		<div class="o_user_state small">
 				<div class="o_state">
 				#if($row.passed)
@@ -99,7 +99,12 @@
 						$r.translate("details.label.score")
 					</span>
 				</div> 
-				#end				
+				#end
+				#if($row.completionItemName)
+				<div class="o_completion">
+					$r.render($row.getCompletionItemName())
+				</div>
+				#end
 		</div>
 		#end
 

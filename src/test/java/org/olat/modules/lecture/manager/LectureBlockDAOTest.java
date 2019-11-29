@@ -45,6 +45,7 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
@@ -552,8 +553,9 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		
 		String elementId = UUID.randomUUID().toString();
 		Curriculum curriculum = curriculumService.createCurriculum("Lectures-cur-1", "Curriculum with lectures 2", "Curriculum", null);
-		CurriculumElement element = curriculumService.createCurriculumElement(elementId, "Element for relation", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.enabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement(elementId, "Element for relation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum);
 		curriculumService.addRepositoryEntry(element, entry, false);
 		curriculumService.addMember(element, participant, CurriculumRoles.participant);
 		lectureService.save(lectureBlock, Collections.singletonList(element.getGroup()));
@@ -582,8 +584,9 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		
 		String elementId = UUID.randomUUID().toString();
 		Curriculum curriculum = curriculumService.createCurriculum("Lectures-cur-2", "Curriculum with lectures 2", "Curriculum", null);
-		CurriculumElement element = curriculumService.createCurriculumElement(elementId, "Element for relation", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.enabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement(elementId, "Element for relation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum);
 		curriculumService.addRepositoryEntry(element, entry, false);
 		dbInstance.commitAndCloseSession();
 
@@ -607,8 +610,9 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		
 		String elementId = UUID.randomUUID().toString();
 		Curriculum curriculum = curriculumService.createCurriculum("Lectures-cur-1", "Curriculum with lectures 2", "Curriculum", null);
-		CurriculumElement element = curriculumService.createCurriculumElement(elementId, "Element for relation", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.enabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement(elementId, "Element for relation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum);
 		curriculumService.addRepositoryEntry(element, entry, false);
 		dbInstance.commit();
 		curriculumService.addMember(element, masterCoach, CurriculumRoles.mastercoach);
@@ -641,8 +645,9 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		String elementId = UUID.randomUUID().toString();
 		Organisation curOrganisation = organisationService.createOrganisation("cur-lecture", "cur-lecture", null, null, null);
 		Curriculum curriculum = curriculumService.createCurriculum("Lectures-cur-1", "Curriculum with lectures 2", "Curriculum", curOrganisation);
-		CurriculumElement element = curriculumService.createCurriculumElement(elementId, "Element for relation", CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.enabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement(elementId, "Element for relation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum);
 		curriculumService.addRepositoryEntry(element, entry, false);
 		dbInstance.commit();
 		organisationService.addMember(curOrganisation, lectureManager, OrganisationRoles.lecturemanager);

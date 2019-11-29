@@ -35,9 +35,11 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentEntryCompletion;
 import org.olat.modules.assessment.model.AssessmentEntryImpl;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.vitero.model.GroupRole;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -319,7 +321,7 @@ public class AssessmentEntryDAO {
 				.getResultList();
 	}
 
-	public List<AssessmentEntryCompletion> loadEntryRootCompletions(Identity assessedIdentity, Collection<Long> entryKeys) {
+	public List<AssessmentEntryCompletion> loadAvgCompletionsByRepositoryEntries(Identity assessedIdentity, Collection<Long> entryKeys) {
 		if (assessedIdentity == null || entryKeys == null || entryKeys.isEmpty()) return Collections.emptyList();
 		
 		QueryBuilder sb = new QueryBuilder();
@@ -338,7 +340,7 @@ public class AssessmentEntryDAO {
 				.getResultList();
 	}
 
-	public List<AssessmentEntryCompletion> loadEntryRootCompletions(RepositoryEntry entry, List<Long> identityKeys) {
+	public List<AssessmentEntryCompletion> loadAvgCompletionsByIdentities(RepositoryEntry entry, Collection<Long> identityKeys) {
 		if (entry == null || identityKeys == null || identityKeys.isEmpty()) return Collections.emptyList();
 		
 		QueryBuilder sb = new QueryBuilder();
@@ -354,6 +356,43 @@ public class AssessmentEntryDAO {
 				.createQuery(sb.toString(), AssessmentEntryCompletion.class)
 				.setParameter("entryKey", entry.getKey())
 				.setParameter("identityKeys", identityKeys)
+				.getResultList();
+	}
+	
+	public List<AssessmentEntryCompletion> loadAvgCompletionsByCurriculumElements(Identity assessedIdentity, Collection<Long> curriculumElementKeys) {
+		if (assessedIdentity == null || curriculumElementKeys == null || curriculumElementKeys.isEmpty()) return Collections.emptyList();
+		
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select new org.olat.modules.assessment.model.AssessmentEntryCompletionImpl(");
+		sb.append("       el.key ");
+		sb.append("     , (select avg(ae2.completion) ");
+		sb.append("          from assessmententry ae2");
+		sb.append("         where ae2.key in (");
+		sb.append("               select distinct ae.key");
+		sb.append("                 from assessmententry ae");
+		sb.append("                    , repositoryentry re");
+		sb.append("                    , repoentrytogroup reToGroup");
+		sb.append("                    , bgroupmember participants");
+		sb.append("                    , curriculumelement el");
+		sb.append("                where ae.entryRoot = true");
+		sb.append("                  and ae.identity.key = participants.identity.key");
+		sb.append("                  and ae.repositoryEntry.key = reToGroup.entry.key");
+		sb.append("                  and re.key = reToGroup.entry.key");
+		sb.append("                  and re.status ").in(RepositoryEntryStatusEnum.preparationToClosed());
+		sb.append("                  and participants.role = '").append(CurriculumRoles.participant.name()).append("'");
+		sb.append("                  and participants.identity.key = :identityKey");
+		sb.append("                  and reToGroup.group.key = participants.group.key");
+		sb.append("                  and el.group.key = reToGroup.group.key");
+		sb.append("                )");
+		sb.append("       )");
+		sb.append("     )");
+		sb.append("  from curriculumelement el");
+		sb.append(" where el.key in (:elKeys)");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentEntryCompletion.class)
+				.setParameter("identityKey", assessedIdentity.getKey())
+				.setParameter("elKeys", curriculumElementKeys)
 				.getResultList();
 	}
 	

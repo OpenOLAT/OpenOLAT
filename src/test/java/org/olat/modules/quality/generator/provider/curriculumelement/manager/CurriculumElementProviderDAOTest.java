@@ -37,6 +37,7 @@ import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.quality.QualityService;
@@ -74,8 +75,9 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null, null);
 		CurriculumElementType ceType = curriculumService.createCurriculumElementType(random(), random(), null, null);
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, organisation);
-		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active,
-				oneDayAgo(), inOneDay(), null, ceType, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, oneDayAgo(), inOneDay(), null, ceType, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 
 		SearchParameters searchParams = new SearchParameters();
@@ -89,13 +91,15 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null, null);
 		List<Organisation> organisations = Collections.singletonList(organisation);
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, organisation);
-		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active,
-				oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		QualityGenerator generator = generatorService.createGenerator(random(), organisations);
 		dbInstance.commitAndCloseSession();
 
-		CurriculumElement curriculumElementCreated = curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active,
-				oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement curriculumElementCreated = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		qualityService.createDataCollection(organisations, formEntry, generator, curriculumElementCreated.getKey());
 		dbInstance.commitAndCloseSession();
@@ -111,23 +115,29 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 	public void shouldFilterByOrganisation() {
 		Organisation organisationSuper = organisationService.createOrganisation(random(), random(), null, null, null);
 		Curriculum curriculumSuper = curriculumService.createCurriculum(random(), random(), null, organisationSuper);
-		CurriculumElement curriculumElementSuperOrg = curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active,
-				oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculumSuper);
-		
-		Organisation organisation = organisationService.createOrganisation(random(), random(), null, organisationSuper, null);
+		CurriculumElement curriculumElementSuperOrg = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculumSuper);
+
+		Organisation organisation = organisationService.createOrganisation(random(), random(), null, organisationSuper,
+				null);
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, organisation);
-		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active,
-				oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
-		
-		Organisation organisationSub = organisationService.createOrganisation(random(), random(), null, organisation, null);
+		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+
+		Organisation organisationSub = organisationService.createOrganisation(random(), random(), null, organisation,
+				null);
 		Curriculum curriculumSubOrg = curriculumService.createCurriculum(random(), random(), null, organisationSub);
-		CurriculumElement curriculumElementSubOrg = curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active,
-				oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculumSubOrg);
+		CurriculumElement curriculumElementSubOrg = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculumSubOrg);
 
 		Organisation otherOrganisation = organisationService.createOrganisation(random(), random(), null, null, null);
 		Curriculum otherCurriculum = curriculumService.createCurriculum(random(), random(), null, otherOrganisation);
-		CurriculumElement otherCurriculumElement = curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active,
-				oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, otherCurriculum);
+		CurriculumElement otherCurriculumElement = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, otherCurriculum);
 		dbInstance.commitAndCloseSession();
 
 		SearchParameters searchParams = new SearchParameters();
@@ -144,13 +154,17 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null, null);
 		CurriculumElementType ceType = curriculumService.createCurriculumElementType(random(), random(), null, null);
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, organisation);
-		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active,
-				oneDayAgo(), inOneDay(), null, ceType, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, oneDayAgo(), inOneDay(), null, ceType, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 
-		CurriculumElementType otherCeType  = curriculumService.createCurriculumElementType(random(), random(), null, null);
-		CurriculumElement otherCurriculumElement = curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active,
-				oneDayAgo(), inOneDay(), null, otherCeType, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElementType otherCeType = curriculumService.createCurriculumElementType(random(), random(), null,
+				null);
+		CurriculumElement otherCurriculumElement = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, oneDayAgo(), inOneDay(), null, otherCeType,
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
+				curriculum);
 		dbInstance.commitAndCloseSession();
 
 		SearchParameters searchParams = new SearchParameters();
@@ -166,12 +180,15 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, organisation);
 		dbInstance.commitAndCloseSession();
 
-		CurriculumElement curriculumElement1 = curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active,
-				oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
-		CurriculumElement curriculumElement2 = curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active,
-				oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
-		CurriculumElement otherCurriculumElement = curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active,
-				oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement curriculumElement1 = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement curriculumElement2 = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement otherCurriculumElement = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 
 		SearchParameters searchParams = new SearchParameters();
@@ -189,14 +206,18 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, organisation);
 		dbInstance.commitAndCloseSession();
 
-		CurriculumElement beginBeforeFrom = curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active,
-				oneYearAgo(), oneYearAgo(), null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
-		CurriculumElement beginBetweenFromAndTo = curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active,
-				oneDayAgo(), oneDayAgo(), null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
-		CurriculumElement beginAfterTo = curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active,
-				inOneDay(), inOneDay(), null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
-		CurriculumElement beginNull = curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement beginBeforeFrom = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, oneYearAgo(), oneYearAgo(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement beginBetweenFromAndTo = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, oneDayAgo(), oneDayAgo(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement beginAfterTo = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, inOneDay(), inOneDay(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement beginNull = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		beginAfterTo.setBeginDate(inOneDay());
 		dbInstance.commitAndCloseSession();
 
@@ -215,14 +236,18 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, organisation);
 		dbInstance.commitAndCloseSession();
 
-		CurriculumElement endBeforeFrom = curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active,
-				oneYearAgo(), oneYearAgo(), null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
-		CurriculumElement endBetweenFromAndTo = curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active,
-				oneDayAgo(), oneDayAgo(), null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
-		CurriculumElement endAfterTo = curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active,
-				inOneDay(), inOneDay(), null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
-		CurriculumElement endNull = curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active,
-				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement endBeforeFrom = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, oneYearAgo(), oneYearAgo(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement endBetweenFromAndTo = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, oneDayAgo(), oneDayAgo(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement endAfterTo = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, inOneDay(), inOneDay(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement endNull = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		endAfterTo.setBeginDate(inOneDay());
 		dbInstance.commitAndCloseSession();
 
@@ -239,16 +264,19 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 	public void shouldFilterActiveOnly() {
 		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null, null);
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, organisation);
-		CurriculumElement active = curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active,
-				oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement active = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 
-		CurriculumElement inactive = curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active,
-				oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement inactive = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		inactive.setElementStatus(CurriculumElementStatus.inactive);
 		inactive = curriculumService.updateCurriculumElement(inactive);
-		CurriculumElement deleted = curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active,
-				oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement deleted = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		deleted.setElementStatus(CurriculumElementStatus.deleted);
 		deleted = curriculumService.updateCurriculumElement(deleted);
 		dbInstance.commitAndCloseSession();

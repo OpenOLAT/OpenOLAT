@@ -77,6 +77,11 @@ public class CurriculumSecurityCallbackFactory {
 		public boolean canViewAllLectures() {
 			return true;
 		}
+
+		@Override
+		public boolean canViewAllLearningProgress() {
+			return true;
+		}
 	}
 	
 	private static class DefaultCurriculumSecurityCallback implements CurriculumSecurityCallback {
@@ -156,6 +161,11 @@ public class CurriculumSecurityCallbackFactory {
 
 		@Override
 		public boolean canViewAllLectures() {
+			return admin;
+		}
+
+		@Override
+		public boolean canViewAllLearningProgress() {
 			return admin;
 		}
 	}

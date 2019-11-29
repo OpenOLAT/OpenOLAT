@@ -50,6 +50,7 @@ import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.forms.EvaluationFormManager;
@@ -805,10 +806,12 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		CurriculumElementType type1 = curriculumService.createCurriculumElementType("a", "b", null, null);
 		CurriculumElementType type2 = curriculumService.createCurriculumElementType("a", "b", null, null);
 		Curriculum curriculum = qualityTestHelper.createCurriculum();
-		CurriculumElement element1 = curriculumService.createCurriculumElement("el", "Element",  CurriculumElementStatus.active,
-				null, null, null, type1, disabled, CurriculumLectures.disabled, curriculum);
-		CurriculumElement element2 = curriculumService.createCurriculumElement("el", "Element",  CurriculumElementStatus.active,
-				null, null, null, type2, disabled, CurriculumLectures.disabled, curriculum);;
+		CurriculumElement element1 = curriculumService.createCurriculumElement("el", "Element",
+				CurriculumElementStatus.active, null, null, null, type1, disabled, CurriculumLectures.disabled,
+				CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element2 = curriculumService.createCurriculumElement("el", "Element",
+				CurriculumElementStatus.active, null, null, null, type2, disabled, CurriculumLectures.disabled,
+				CurriculumLearningProgress.disabled, curriculum);
 		// Participation with curriculum element of type1
 		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
 		List<EvaluationFormParticipation> participations1 = qualityService.addParticipations(dc1, Collections.singletonList(executor));
@@ -1696,8 +1699,9 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		Curriculum curriculum = qualityTestHelper.createCurriculum();
 		CurriculumElement element1 = qualityTestHelper.createCurriculumElement();
 		CurriculumElement element2 = qualityTestHelper.createCurriculumElement();
-		CurriculumElement subElement = curriculumService.createCurriculumElement("el", "Element", CurriculumElementStatus.active,
-				null, null, element1, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement subElement = curriculumService.createCurriculumElement("el", "Element",
+				CurriculumElementStatus.active, null, null, element1, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		CurriculumElement otherElement = qualityTestHelper.createCurriculumElement();
 		// Participation with curriculum element
 		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
@@ -1741,8 +1745,9 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		Curriculum curriculum = qualityTestHelper.createCurriculum();
 		CurriculumElement element1 = qualityTestHelper.createCurriculumElement();
 		CurriculumElement element2 = qualityTestHelper.createCurriculumElement();
-		CurriculumElement subElement = curriculumService.createCurriculumElement("el", "Element",  CurriculumElementStatus.active,
-				null, null, element1, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement subElement = curriculumService.createCurriculumElement("el", "Element",
+				CurriculumElementStatus.active, null, null, element1, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		CurriculumElement otherElement = qualityTestHelper.createCurriculumElement();
 		// Participation with curriculum element
 		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
@@ -1786,14 +1791,19 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		CurriculumElementType type = curriculumService.createCurriculumElementType("a", "b", null, null);
 		CurriculumElementType typeOther = curriculumService.createCurriculumElementType("y", "z", null, null);
 		Curriculum curriculum = qualityTestHelper.createCurriculum();
-		CurriculumElement element1 = curriculumService.createCurriculumElement("el", "Element",  CurriculumElementStatus.active,
-				null, null, null, type, disabled, CurriculumLectures.disabled, curriculum);
-		CurriculumElement element2 = curriculumService.createCurriculumElement("el", "Element",  CurriculumElementStatus.active,
-				null, null, null, type, disabled, CurriculumLectures.disabled, curriculum);;
-		CurriculumElement elementNull = curriculumService.createCurriculumElement("el", "Element",  CurriculumElementStatus.active,
-				null, null, null, null, disabled, CurriculumLectures.disabled, curriculum);
-		CurriculumElement elementOther = curriculumService.createCurriculumElement("el", "Element",  CurriculumElementStatus.active,
-				null, null, null, typeOther, disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element1 = curriculumService.createCurriculumElement("el", "Element",
+				CurriculumElementStatus.active, null, null, null, type, disabled, CurriculumLectures.disabled,
+				CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element2 = curriculumService.createCurriculumElement("el", "Element",
+				CurriculumElementStatus.active, null, null, null, type, disabled, CurriculumLectures.disabled,
+				CurriculumLearningProgress.disabled, curriculum);
+		;
+		CurriculumElement elementNull = curriculumService.createCurriculumElement("el", "Element",
+				CurriculumElementStatus.active, null, null, null, null, disabled, CurriculumLectures.disabled,
+				CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement elementOther = curriculumService.createCurriculumElement("el", "Element",
+				CurriculumElementStatus.active, null, null, null, typeOther, disabled, CurriculumLectures.disabled,
+				CurriculumLearningProgress.disabled, curriculum);
 		// Participation with curriculum element of type
 		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
 		List<EvaluationFormParticipation> participations1 = qualityService.addParticipations(dc1, Collections.singletonList(executor));

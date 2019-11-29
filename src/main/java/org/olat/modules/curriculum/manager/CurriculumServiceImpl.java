@@ -58,6 +58,7 @@ import org.olat.modules.curriculum.CurriculumElementToTaxonomyLevel;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeRef;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
+import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
@@ -293,14 +294,15 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
-	public CurriculumElement createCurriculumElement(String identifier, String displayName,  CurriculumElementStatus status,
-			Date beginDate, Date endDate, CurriculumElementRef parentRef, CurriculumElementType elementType,
-			CurriculumCalendars calendars, CurriculumLectures lectures, Curriculum curriculum) {
-		if(parentRef == null) {
+	public CurriculumElement createCurriculumElement(String identifier, String displayName,
+			CurriculumElementStatus status, Date beginDate, Date endDate, CurriculumElementRef parentRef,
+			CurriculumElementType elementType, CurriculumCalendars calendars, CurriculumLectures lectures,
+			CurriculumLearningProgress learningProgress, Curriculum curriculum) {
+		if (parentRef == null) {
 			curriculum = getCurriculum(curriculum);
 		}
 		CurriculumElement element = curriculumElementDao.createCurriculumElement(identifier, displayName, status,
-				beginDate, endDate, parentRef, elementType, calendars, lectures, curriculum);
+				beginDate, endDate, parentRef, elementType, calendars, lectures, learningProgress, curriculum);
 		if(element.getParent() != null) {
 			Group organisationGroup = element.getGroup();
 			List<GroupMembership> memberships = groupDao.getMemberships(element.getParent().getGroup());
@@ -338,7 +340,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		
 		CurriculumElement clone = curriculumElementDao.createCurriculumElement(identifier, displayName, CurriculumElementStatus.active,
 				beginDate, endDate, parentElement, elementToClone.getType(), elementToClone.getCalendars(), elementToClone.getLectures(),
-				curriculum);
+				elementToClone.getLearningProgress(), curriculum);
 		
 		if(settings.getCopyResources() == CopyResources.relation) {
 			List<RepositoryEntry> entries = getRepositoryEntries(elementToClone);

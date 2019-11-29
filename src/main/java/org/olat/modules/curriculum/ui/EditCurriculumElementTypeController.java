@@ -39,6 +39,7 @@ import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
+import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementTypeRefImpl;
@@ -61,6 +62,7 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 	private MultipleSelectionElement allowedSubTypesEl;
 	private MultipleSelectionElement lecturesEnabledEl;
 	private MultipleSelectionElement calendarsEnabledEl;
+	private MultipleSelectionElement learningProgressEnabledEl;
 	
 	private CurriculumElementType curriculumElementType;
 	
@@ -103,12 +105,17 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		CurriculumCalendars calendarsEnabled =  curriculumElementType == null ? null : curriculumElementType.getCalendars();
 		calendarsEnabledEl.select(onKeys[0], calendarsEnabled == CurriculumCalendars.enabled);
 		
-		
 		String[] onLecturesValues = new String[] { translate("type.lectures.enabled.on") };
 		lecturesEnabledEl = uifactory.addCheckboxesHorizontal("type.lectures.enabled", formLayout, onKeys, onLecturesValues);
 		lecturesEnabledEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.lectures));
 		CurriculumLectures lecturesEnabled =  curriculumElementType == null ? null : curriculumElementType.getLectures();
 		lecturesEnabledEl.select(onKeys[0], lecturesEnabled == CurriculumLectures.enabled);
+		
+		String[] onLearningProgressValues = new String[] { translate("type.learning.progress.enabled.on") };
+		learningProgressEnabledEl = uifactory.addCheckboxesHorizontal("type.learning.progress.enabled", formLayout, onKeys, onLearningProgressValues);
+		learningProgressEnabledEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.learningProgress));
+		CurriculumLearningProgress learningProgressEnabled =  curriculumElementType == null ? null : curriculumElementType.getLearningProgress();
+		learningProgressEnabledEl.select(onKeys[0], learningProgressEnabled == CurriculumLearningProgress.enabled);
 		
 		List<CurriculumElementType> types = curriculumService.getCurriculumElementTypes();
 		types.remove(curriculumElementType);
@@ -180,6 +187,11 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 			curriculumElementType.setLectures(CurriculumLectures.enabled);
 		} else {
 			curriculumElementType.setLectures(CurriculumLectures.disabled);
+		}
+		if(learningProgressEnabledEl.isAtLeastSelected(1)) {
+			curriculumElementType.setLearningProgress(CurriculumLearningProgress.enabled);
+		} else {
+			curriculumElementType.setLearningProgress(CurriculumLearningProgress.disabled);
 		}
 
 		Collection<String> selectedAllowedSubTypeKeys = allowedSubTypesEl.getSelectedKeys();

@@ -66,6 +66,13 @@ public interface CurriculumElementType extends CurriculumElementTypeRef, CreateI
 	
 	public void setLectures(CurriculumLectures lectures);
 	
+	/**
+	 * @return true if learning progress aggregation is available for curriculum elements of this type.
+	 */
+	public CurriculumLearningProgress getLearningProgress();
+	
+	public void setLearningProgress(CurriculumLearningProgress learningProgress);
+	
 	public CurriculumElementTypeManagedFlag[] getManagedFlags();
 	
 	public void setManagedFlags(CurriculumElementTypeManagedFlag[] flags);
