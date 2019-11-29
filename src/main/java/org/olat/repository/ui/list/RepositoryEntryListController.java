@@ -76,7 +76,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CorruptedCourseException;
-import org.olat.modules.assessment.ui.component.LearningProgressCellRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
@@ -202,10 +201,9 @@ public class RepositoryEntryListController extends FormBasicController
 				true, OrderBy.location.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.details.i18nKey(), Cols.details.ordinal(), false, null));
 		if(!guestOnly) {
-			DefaultFlexiColumnModel learningProgressColumnModel = new DefaultFlexiColumnModel(Cols.completion.i18nKey(),
+			DefaultFlexiColumnModel completionColumnModel = new DefaultFlexiColumnModel(Cols.completion.i18nKey(),
 					Cols.completion.ordinal(), true, OrderBy.completion.name());
-			learningProgressColumnModel.setCellRenderer(new LearningProgressCellRenderer(getLocale()));
-			columnsModel.addFlexiColumnModel(learningProgressColumnModel);
+			columnsModel.addFlexiColumnModel(completionColumnModel);
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.start.i18nKey(), Cols.start.ordinal()));
 		if(repositoryModule.isRatingEnabled()) {
