@@ -44,6 +44,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.io.SystemFilenameFilter;
@@ -62,6 +63,7 @@ import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskHelper;
 import org.olat.course.nodes.gta.TaskHelper.FilesLocked;
 import org.olat.course.nodes.gta.TaskProcess;
+import org.olat.course.nodes.gta.TaskRevision;
 import org.olat.course.nodes.gta.model.DueDate;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.course.nodes.gta.ui.events.SubmitEvent;
@@ -71,6 +73,7 @@ import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.Role;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -105,6 +108,8 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	private List<BusinessGroup> myGroups;
 	private boolean optionalTaskRefused = false;
 	
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private MailManager mailManager;
 
@@ -441,8 +446,8 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	}
 	
 	@Override
-	protected Task stepReviewAndCorrection(UserRequest ureq, Task assignedTask) {
-		assignedTask = super.stepReviewAndCorrection(ureq, assignedTask);
+	protected Task stepReviewAndCorrection(UserRequest ureq, Task assignedTask, List<TaskRevision> taskRevisions) {
+		assignedTask = super.stepReviewAndCorrection(ureq, assignedTask, taskRevisions);
 		
 		mainVC.contextPut("review", Boolean.FALSE);
 		if(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
@@ -451,23 +456,23 @@ public class GTAParticipantController extends GTAAbstractController implements A
 				mainVC.contextPut("reviewCssClass", "");
 			} else if(assignedTask.getTaskStatus() == TaskProcess.review) {
 				mainVC.contextPut("reviewCssClass", "o_active");
-				setReviews(ureq, true, false);
+				setReviews(ureq, taskRevisions, true, false);
 			} else {
 				mainVC.contextPut("reviewCssClass", "o_done");
-				setReviews(ureq, false, (assignedTask.getRevisionLoop() > 0));
+				setReviews(ureq, taskRevisions, false, (assignedTask.getRevisionLoop() > 0));
 			}
 		} else if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.review) {
 			mainVC.contextPut("reviewCssClass", "o_active");
-			setReviews(ureq, true, false);
+			setReviews(ureq, taskRevisions, true, false);
 		} else {
 			mainVC.contextPut("reviewCssClass", "o_done");
-			setReviews(ureq, false, false);
+			setReviews(ureq, taskRevisions, false, false);
 		}
 		
 		return assignedTask;
 	}
 	
-	private void setReviews(UserRequest ureq, boolean waiting, boolean hasRevisions) {
+	private void setReviews(UserRequest ureq,List<TaskRevision> taksRevisions, boolean waiting, boolean hasRevisions) {
 		File documentsDir;
 		VFSContainer documentsContainer = null;
 		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
@@ -494,11 +499,22 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		}
 		
 		mainVC.contextPut("reviewMessage", msg);
+		
+		if(!waiting) {
+			TaskRevision taskRevision = getTaskRevision(taksRevisions, TaskProcess.correction, 0);
+			if(taskRevision != null && StringHelper.containsNonWhitespace(taskRevision.getComment())) {
+				mainVC.contextPut("correctionMessage", taskRevision.getComment());
+				String commentator = userManager.getUserDisplayName(taskRevision.getCommentAuthor());
+				String commentDate = Formatter.getInstance(getLocale()).formatDate(taskRevision.getCommentLastModified());
+				String infos = translate("run.corrections.comment.infos", new String[] { commentDate, commentator });
+				mainVC.contextPut("correctionMessageInfos", infos);
+			}
+		}
 	}
 
 	@Override
-	protected Task stepRevision(UserRequest ureq, Task assignedTask) {
-		assignedTask = super.stepRevision(ureq, assignedTask);
+	protected Task stepRevision(UserRequest ureq, Task assignedTask, List<TaskRevision> taskRevisions) {
+		assignedTask = super.stepRevision(ureq, assignedTask, taskRevisions);
 
 		if(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)
@@ -509,26 +525,26 @@ public class GTAParticipantController extends GTAAbstractController implements A
 				mainVC.contextPut("revisionCssClass", "");
 			} else if(assignedTask.getTaskStatus() == TaskProcess.revision || assignedTask.getTaskStatus() == TaskProcess.correction) {
 				mainVC.contextPut("revisionCssClass", "o_active");
-				setRevisionsAndCorrections(ureq, assignedTask);
+				setRevisionsAndCorrections(ureq, assignedTask, taskRevisions);
 			} else {
 				mainVC.contextPut("revisionCssClass", "o_done");
-				setRevisionsAndCorrections(ureq, assignedTask);
+				setRevisionsAndCorrections(ureq, assignedTask, taskRevisions);
 			}
 		} else if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.revision || assignedTask.getTaskStatus() == TaskProcess.correction) {
 			mainVC.contextPut("revisionCssClass", "o_active");
-			setRevisionsAndCorrections(ureq, assignedTask);
+			setRevisionsAndCorrections(ureq, assignedTask, taskRevisions);
 		} else {
 			mainVC.contextPut("revisionCssClass", "o_done");
-			setRevisionsAndCorrections(ureq, assignedTask);
+			setRevisionsAndCorrections(ureq, assignedTask, taskRevisions);
 		}
 		
 		return assignedTask;
 	}
 	
-	private void setRevisionsAndCorrections(UserRequest ureq, Task task) {
+	private void setRevisionsAndCorrections(UserRequest ureq, Task task, List<TaskRevision> taskRevisions) {
 		if(task.getRevisionLoop() > 0) {
 			revisionDocumentsCtrl = new GTAParticipantRevisionAndCorrectionsController(ureq, getWindowControl(), 
-					userCourseEnv, task, gtaNode, assessedGroup, taskListEventResource);
+					userCourseEnv, task, taskRevisions, gtaNode, assessedGroup, taskListEventResource);
 			listenTo(revisionDocumentsCtrl);
 			mainVC.put("revisionDocs", revisionDocumentsCtrl.getInitialComponent());
 			

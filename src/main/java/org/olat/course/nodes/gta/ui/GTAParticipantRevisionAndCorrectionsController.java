@@ -45,6 +45,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.io.SystemFilenameFilter;
@@ -62,6 +63,7 @@ import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskHelper;
 import org.olat.course.nodes.gta.TaskHelper.FilesLocked;
 import org.olat.course.nodes.gta.TaskProcess;
+import org.olat.course.nodes.gta.TaskRevision;
 import org.olat.course.nodes.gta.ui.events.SubmitEvent;
 import org.olat.course.nodes.gta.ui.events.TaskMultiUserEvent;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -70,6 +72,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -88,6 +91,7 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 	private final Map<Integer,DirectoryController> revisionLoopToCorrectionsCtrl = new HashMap<>();
 	
 	private Task assignedTask;
+	private List<TaskRevision> taskRevisions;
 	private final boolean businessGroupTask;
 	private final GTACourseNode gtaNode;
 	private final ModuleConfiguration config;
@@ -101,10 +105,12 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 	@Autowired
 	private MailManager mailManager;
 	@Autowired
+	private UserManager userManager;
+	@Autowired
 	private BusinessGroupService businessGroupService;
 	
 	public GTAParticipantRevisionAndCorrectionsController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment assessedUserCourseEnv,Task assignedTask,
+			UserCourseEnvironment assessedUserCourseEnv, Task assignedTask, List<TaskRevision> taskRevisions,
 			GTACourseNode gtaNode, BusinessGroup assessedGroup, OLATResourceable taskListEventResource) {
 		super(ureq, wControl);
 		this.gtaNode = gtaNode;
@@ -112,6 +118,7 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 		courseEnv = assessedUserCourseEnv.getCourseEnvironment();
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		this.assignedTask = assignedTask;
+		this.taskRevisions = taskRevisions;
 		this.assessedGroup = assessedGroup;
 		this.taskListEventResource = taskListEventResource;
 		businessGroupTask = GTAType.group.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE));
@@ -137,7 +144,7 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 	}
 	
 	private void initRevisionProcess(UserRequest ureq) {
-		List<String> revisionStepNames = new ArrayList<>();
+		List<Step> revisionStepNames = new ArrayList<>();
 		mainVC.contextPut("previousRevisions", revisionStepNames);
 		
 		if(assignedTask.getRevisionLoop() > 1) {
@@ -153,21 +160,21 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 			setUploadRevision(ureq, assignedTask);
 		} else if(status == TaskProcess.correction) {
 			//coach can return some corrections
-			setRevision(ureq, "revisions", assignedTask.getRevisionLoop());
-			setCorrections(ureq, "corrections", assignedTask.getRevisionLoop());
+			setRevision(ureq, new Step("revisions"), assignedTask.getRevisionLoop());
+			setCorrections(ureq, new Step("corrections"), assignedTask.getRevisionLoop());
 		} else {
 			int lastRevision = assignedTask.getRevisionLoop();
 			setRevisionIteration(ureq, lastRevision, revisionStepNames);
 		}
 	}
 	
-	private void setRevisionIteration(UserRequest ureq, int iteration, List<String> revisionStepNames) {
-		String revCmpName = "revisions-" + iteration;
+	private void setRevisionIteration(UserRequest ureq, int iteration, List<Step> revisionStepNames) {
+		Step revCmpName = new Step("revisions-" + iteration);
 		if(setRevision(ureq, revCmpName, iteration)) {
 			revisionStepNames.add(revCmpName);
 		}
 		//corrections
-		String correctionCmpName = "corrections-" + iteration;
+		Step correctionCmpName = new Step("corrections-" + iteration);
 		if(setCorrections(ureq, correctionCmpName, iteration)) {
 			revisionStepNames.add(correctionCmpName);
 		}
@@ -207,7 +214,7 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 		submitRevisionButton.setVisible(!assessedUserCourseEnv.isCourseReadOnly());
 	}
 	
-	private boolean setRevision(UserRequest ureq, String cmpName, int iteration) {
+	private boolean setRevision(UserRequest ureq, Step step, int iteration) {
 		File documentsDir;
 		VFSContainer documentsContainer = null;
 		if(businessGroupTask) {
@@ -223,12 +230,12 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 			DirectoryController revisionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer,
 					"run.revised.description", "bulk.submitted.revisions", "revisions.zip");
 			listenTo(revisionsCtrl);
-			mainVC.put(cmpName, revisionsCtrl.getInitialComponent());
+			mainVC.put(step.getCmpName(), revisionsCtrl.getInitialComponent());
 		}
 		return hasDocument;
 	}
 	
-	private boolean setCorrections(UserRequest ureq, String cmpName, int iteration) {
+	private boolean setCorrections(UserRequest ureq, Step step, int iteration) {
 		File documentsDir;
 		VFSContainer documentsContainer = null;
 		if(businessGroupTask) {
@@ -244,9 +251,20 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 			DirectoryController correctionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer,
 					"run.corrections.description", "bulk.review", "review");
 			listenTo(correctionsCtrl);
-			mainVC.put(cmpName, correctionsCtrl.getInitialComponent());
+			mainVC.put(step.getCmpName(), correctionsCtrl.getInitialComponent());
 			revisionLoopToCorrectionsCtrl.put(iteration, correctionsCtrl);
 		}
+		
+		TaskRevision taskRevision = GTAAbstractController.getTaskRevision(taskRevisions, TaskProcess.revision, iteration);
+		if(taskRevision != null && StringHelper.containsNonWhitespace(taskRevision.getComment())) {
+			String commentator = userManager.getUserDisplayName(taskRevision.getCommentAuthor());
+			String commentDate = Formatter.getInstance(getLocale()).formatDate(taskRevision.getCommentLastModified());
+			String infos = translate("run.corrections.comment.infos", new String[] { commentDate, commentator });
+			step.setComment(taskRevision.getComment());
+			step.setCommentInfos(infos);
+			hasDocument |= true;
+		}
+		
 		return hasDocument;
 	}
 
@@ -390,6 +408,41 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 			MailerResult result = new MailerResult();
 			MailBundle[] bundles = mailManager.makeMailBundles(context, recipientsTO, template, null, UUID.randomUUID().toString(), result);
 			mailManager.sendMessage(bundles);
+		}
+	}
+	
+	public class Step {
+		
+		private final String cmpName;
+		private String comment;
+		private String commentInfos;
+		
+		public Step(String cmpName) {
+			this.cmpName = cmpName;
+		}
+
+		public String getCmpName() {
+			return cmpName;
+		}
+		
+		public boolean hasComment() {
+			return StringHelper.containsNonWhitespace(comment);
+		}
+
+		public String getComment() {
+			return comment;
+		}
+
+		public void setComment(String comment) {
+			this.comment = comment;
+		}
+
+		public String getCommentInfos() {
+			return commentInfos;
+		}
+
+		public void setCommentInfos(String commentInfos) {
+			this.commentInfos = commentInfos;
 		}
 	}
 }

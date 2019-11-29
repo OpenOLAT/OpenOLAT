@@ -2312,6 +2312,20 @@ create table o_gta_task (
    primary key (id)
 );
 
+create table o_gta_task_revision (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   g_status varchar(36) not null,
+   g_rev_loop mediumint not null default 0,
+   g_date timestamp,
+   g_rev_comment mediumtext,
+   g_rev_comment_lastmodified datetime,
+   fk_task bigint not null,
+   fk_comment_author bigint,
+   primary key (id)
+);
+
 create table o_gta_task_revision_date (
   id bigint not null auto_increment,
   creationdate datetime not null,
@@ -3222,6 +3236,7 @@ alter table o_cl_checkbox ENGINE = InnoDB;
 alter table o_cl_check ENGINE = InnoDB;
 alter table o_gta_task_list ENGINE = InnoDB;
 alter table o_gta_task ENGINE = InnoDB;
+alter table o_gta_task_revision ENGINE = InnoDB;
 alter table o_gta_task_revision_date ENGINE = InnoDB;
 alter table o_gta_mark ENGINE = InnoDB;
 alter table o_cer_template ENGINE = InnoDB;
@@ -3520,6 +3535,9 @@ alter table o_gta_task add constraint gtask_to_bgroup_idx foreign key (fk_busine
 alter table o_gta_task add constraint gtaskreset_to_allower_idx foreign key (fk_allow_reset_identity) references o_bs_identity (id);
 
 alter table o_gta_task_list add constraint gta_list_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+
+alter table o_gta_task_revision add constraint task_rev_to_task_idx foreign key (fk_task) references o_gta_task (id);
+alter table o_gta_task_revision add constraint task_rev_to_ident_idx foreign key (fk_comment_author) references o_bs_identity (id);
 
 alter table o_gta_task_revision_date add constraint gtaskrev_to_task_idx foreign key (fk_task) references o_gta_task (id);
 

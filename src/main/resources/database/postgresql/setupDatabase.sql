@@ -2338,6 +2338,20 @@ create table o_gta_task (
    primary key (id)
 );
 
+create table o_gta_task_revision (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   g_status varchar(36) not null,
+   g_rev_loop int4 not null default 0,
+   g_date timestamp,
+   g_rev_comment text,
+   g_rev_comment_lastmodified timestamp,
+   fk_task int8 not null,
+   fk_comment_author int8,
+   primary key (id)
+);
+
 create table o_gta_task_revision_date (
   id bigserial not null,
   creationdate timestamp not null,
@@ -3422,6 +3436,11 @@ create index idx_gtaskreset_to_allower_idx on o_gta_task (fk_allow_reset_identit
 
 alter table o_gta_task_list add constraint gta_list_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 create index idx_gta_list_to_repo_entry_idx on o_gta_task_list (fk_entry);
+
+alter table o_gta_task_revision add constraint task_rev_to_task_idx foreign key (fk_task) references o_gta_task (id);
+create index idx_task_rev_to_task_idx on o_gta_task_revision (fk_task);
+alter table o_gta_task_revision add constraint task_rev_to_ident_idx foreign key (fk_comment_author) references o_bs_identity (id);
+create index idx_task_rev_to_ident_idx on o_gta_task_revision (fk_comment_author);
 
 alter table o_gta_task_revision_date add constraint gtaskrev_to_task_idx foreign key (fk_task) references o_gta_task (id);
 create index idx_gtaskrev_to_task_idx on o_gta_task_revision_date (fk_task);

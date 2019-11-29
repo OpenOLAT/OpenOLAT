@@ -22,6 +22,7 @@ package org.olat.course.nodes.gta.ui;
 import java.io.File;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
@@ -51,6 +52,7 @@ import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskProcess;
+import org.olat.course.nodes.gta.TaskRevision;
 import org.olat.course.nodes.gta.model.DueDate;
 import org.olat.course.nodes.gta.ui.events.TaskMultiUserEvent;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -187,6 +189,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 		} else {
 			task = gtaManager.getTask(assessedIdentity, taskList);
 		}
+		List<TaskRevision> taskRevisions = gtaManager.getTaskRevisions(task);
 		
 		if (withSubscription && subsContext != null) {
 			ContextualSubscriptionController contextualSubscriptionCtr = new ContextualSubscriptionController(ureq, getWindowControl(), subsContext, publisherData);
@@ -215,7 +218,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 		boolean reviewAndCorrection = config.getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION);
 		mainVC.contextPut("reviewAndCorrectionEnabled", reviewAndCorrection);
 		if(reviewAndCorrection) {
-			task = stepReviewAndCorrection(ureq, task);
+			task = stepReviewAndCorrection(ureq, task, taskRevisions);
 		} else if(task != null && task.getTaskStatus() == TaskProcess.review) {
 			task = gtaManager.nextStep(task, gtaNode, false, null, Role.auto);
 		}
@@ -223,7 +226,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 		boolean revision = config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD);
 		mainVC.contextPut("revisionEnabled", reviewAndCorrection && revision);
 		if(reviewAndCorrection && revision) {
-			task = stepRevision(ureq, task);
+			task = stepRevision(ureq, task, taskRevisions);
 		} else if(task != null && (task.getTaskStatus() == TaskProcess.revision || task.getTaskStatus() == TaskProcess.correction)) {
 			task = gtaManager.nextStep(task, gtaNode, false, null, Role.auto);
 		}
@@ -397,11 +400,13 @@ public abstract class GTAAbstractController extends BasicController implements G
 		return submittedDocuments == null ? 0 : submittedDocuments.length;
 	}
 	
-	protected Task stepReviewAndCorrection(@SuppressWarnings("unused")UserRequest ureq, Task assignedTask) {
+	protected Task stepReviewAndCorrection(@SuppressWarnings("unused")UserRequest ureq,
+			Task assignedTask, @SuppressWarnings("unused")List<TaskRevision> taskRevisions) {
 		return assignedTask;
 	}
 	
-	protected Task stepRevision(@SuppressWarnings("unused")UserRequest ureq, Task assignedTask) {
+	protected Task stepRevision(@SuppressWarnings("unused")UserRequest ureq,
+			Task assignedTask, @SuppressWarnings("unused")List<TaskRevision> taskRevisions) {
 		// need an instantiated to go further (import for optional tasks)
 		if(assignedTask != null && assignedTask.getRevisionsDueDate() != null) {
 			Date date =  assignedTask.getRevisionsDueDate();
@@ -474,21 +479,17 @@ public abstract class GTAAbstractController extends BasicController implements G
 		}
 	}
 	
-	/*
-	protected void doUpdateAttempts() {
-		Role by = getDoer();
-		if(businessGroupTask) {
-			List<Identity> identities = businessGroupService.getMembers(assessedGroup, GroupRoles.participant.name());
-			ICourse course = CourseFactory.loadCourse(courseEnv.getCourseGroupManager().getCourseEntry());
-			for(Identity identity:identities) {
-				UserCourseEnvironment uce = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
-				gtaNode.incrementUserAttempts(uce, by);
+	protected static final TaskRevision getTaskRevision(List<TaskRevision> revisionList, TaskProcess status, int revisionLoop) {
+		TaskRevision revision = null;
+		if(revisionList != null && !revisionList.isEmpty()) {
+			for(TaskRevision taskRevision:revisionList) {
+				if(status.equals(taskRevision.getTaskStatus()) && revisionLoop == taskRevision.getRevisionLoop()) {
+					revision = taskRevision;
+				}	
 			}
-		} else {
-			UserCourseEnvironment assessedUserCourseEnv = getAssessedUserCourseEnvironment();
-			gtaNode.incrementUserAttempts(assessedUserCourseEnv, by);
 		}
-	}*/
+		return revision;
+	}
 	
 	protected UserCourseEnvironment getAssessedUserCourseEnvironment() {
 		if(userCourseEnv == null) {

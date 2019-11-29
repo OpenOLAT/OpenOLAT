@@ -40,6 +40,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.io.SystemFilenameFilter;
@@ -51,11 +52,14 @@ import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskHelper;
-import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskHelper.FilesLocked;
+import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskProcess;
+import org.olat.course.nodes.gta.TaskRevision;
 import org.olat.course.nodes.gta.model.DueDate;
 import org.olat.course.nodes.gta.model.TaskDefinition;
+import org.olat.course.nodes.gta.ui.events.NeedRevisionEvent;
+import org.olat.course.nodes.gta.ui.events.ReviewedEvent;
 import org.olat.course.nodes.gta.ui.events.SubmitEvent;
 import org.olat.course.nodes.gta.ui.events.TaskMultiUserEvent;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -89,8 +93,10 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	private ContactFormController emailController;
 	private CloseableModalController cmc;
 
-	private Link reviewedButton, needRevisionsButton, emailLink, collectSubmissionsLink, backToSubmissionLink, resetTaskButton;
-	
+	private Link emailLink;
+	private Link resetTaskButton;
+	private Link backToSubmissionLink;
+	private Link collectSubmissionsLink;
 	
 	private final boolean isAdmin;
 	private final boolean withReset;
@@ -138,20 +144,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	@Override
 	protected void initContainer(UserRequest ureq) {
 		mainVC = createVelocityContainer("coach");
-		
-		reviewedButton = LinkFactory.createCustomLink("coach.reviewed.button", "reviewed", "coach.reviewed.button", Link.BUTTON, mainVC, this);
-		reviewedButton.setElementCssClass("o_sel_course_gta_reviewed");
-		reviewedButton.setIconLeftCSS("o_icon o_icon_accepted");
-		reviewedButton.setPrimary(true);
-		reviewedButton.setVisible(!coachCourseEnv.isCourseReadOnly());
-		if(config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)) {
-			needRevisionsButton = LinkFactory.createCustomLink("coach.need.revision.button", "need-revision", "coach.need.revision.button", Link.BUTTON, mainVC, this);
-			needRevisionsButton.setElementCssClass("o_sel_course_gta_need_revision");
-			needRevisionsButton.setPrimary(true);
-			needRevisionsButton.setVisible(!coachCourseEnv.isCourseReadOnly());
-			needRevisionsButton.setIconLeftCSS("o_icon o_icon_rejected");
-		}
-	
+
 		if(withTitle) {
 			if(assessedGroup != null) {
 				mainVC.contextPut("groupName", assessedGroup.getName());
@@ -280,13 +273,8 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	}
 	
 	@Override
-	protected Task stepReviewAndCorrection(UserRequest ureq, Task assignedTask) {
-		assignedTask = super.stepReviewAndCorrection(ureq, assignedTask);
-		
-		reviewedButton.setVisible(false);
-		if(needRevisionsButton != null) {
-			needRevisionsButton.setVisible(false);
-		}
+	protected Task stepReviewAndCorrection(UserRequest ureq, Task assignedTask, List<TaskRevision> taskRevisions) {
+		assignedTask = super.stepReviewAndCorrection(ureq, assignedTask, taskRevisions);
 		
 		mainVC.contextPut("review", Boolean.FALSE);
 		if(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
@@ -295,23 +283,22 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 				mainVC.contextPut("reviewCssClass", "");
 			} else if(assignedTask.getTaskStatus() == TaskProcess.review) {
 				mainVC.contextPut("reviewCssClass", "o_active");
-				setUploadCorrections(ureq, assignedTask);
+				setUploadCorrections(ureq, assignedTask, taskRevisions);
 			} else {
 				mainVC.contextPut("reviewCssClass", "o_done");
-				setCorrections(ureq, (assignedTask.getRevisionLoop() > 0));
+				setCorrections(ureq, (assignedTask.getRevisionLoop() > 0), taskRevisions);
 			}
 		} else if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.review) {
 			mainVC.contextPut("reviewCssClass", "o_active");
-			setUploadCorrections(ureq, assignedTask);
+			setUploadCorrections(ureq, assignedTask, taskRevisions);
 		} else {
 			mainVC.contextPut("reviewCssClass", "o_done");
-			setCorrections(ureq, false);
+			setCorrections(ureq, false, taskRevisions);
 		}
-		
 		return assignedTask;
 	}
 	
-	private void setUploadCorrections(UserRequest ureq, Task task) {
+	private void setUploadCorrections(UserRequest ureq, Task task, List<TaskRevision> taskRevisions) {
 		File documentsDir;
 		VFSContainer documentsContainer;
 		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
@@ -322,18 +309,14 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			documentsContainer = gtaManager.getCorrectionContainer(courseEnv, gtaNode, assessedIdentity);
 		}
 		
-		submitCorrectionsCtrl = new SubmitDocumentsController(ureq, getWindowControl(), task, documentsDir, documentsContainer, -1, -1,
-				gtaNode, courseEnv, coachCourseEnv.isCourseReadOnly(), null, "coach.document");
+		TaskRevision taskRevision = getTaskRevision(taskRevisions, TaskProcess.review, 0);
+		submitCorrectionsCtrl = new CoachSubmitCorrectionsController(ureq, getWindowControl(), task,taskRevision, assessedIdentity, assessedGroup,
+				documentsDir, documentsContainer, gtaNode, courseEnv, coachCourseEnv.isCourseReadOnly(), null, "coach.document");
 		listenTo(submitCorrectionsCtrl);
-		mainVC.put("corrections", submitCorrectionsCtrl.getInitialComponent());
-		
-		reviewedButton.setVisible(!coachCourseEnv.isCourseReadOnly());
-		if(config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)) {
-			needRevisionsButton.setVisible(!coachCourseEnv.isCourseReadOnly());
-		}
+		mainVC.put("corrections", submitCorrectionsCtrl.getInitialComponent());	
 	}
 	
-	private void setCorrections(UserRequest ureq, boolean hasRevisions) {
+	private void setCorrections(UserRequest ureq, boolean hasRevisions, List<TaskRevision> taskRevisions) {
 		File documentsDir;
 		VFSContainer documentsContainer;
 		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
@@ -356,11 +339,20 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			String msg = "<i class='o_icon o_icon_ok'> </i> " + translate("coach.corrections.closed");
 			TextFactory.createTextComponentFromString("corrections", msg, null, true, mainVC);			
 		}
+		
+		TaskRevision taskRevision = getTaskRevision(taskRevisions, TaskProcess.correction, 0);
+		if(taskRevision != null && StringHelper.containsNonWhitespace(taskRevision.getComment())) {
+			String commentator = userManager.getUserDisplayName(taskRevision.getCommentAuthor());
+			String commentDate = Formatter.getInstance(getLocale()).formatDate(taskRevision.getCommentLastModified());
+			String infos = translate("run.corrections.comment.infos", new String[] { commentDate, commentator });
+			mainVC.contextPut("correctionMessage", taskRevision.getComment());
+			mainVC.contextPut("correctionMessageInfos", infos);
+		}
 	}
 	
 	@Override
-	protected Task stepRevision(UserRequest ureq, Task assignedTask) {
-		assignedTask = super.stepRevision(ureq, assignedTask);
+	protected Task stepRevision(UserRequest ureq, Task assignedTask, List<TaskRevision> taskRevisions) {
+		assignedTask = super.stepRevision(ureq, assignedTask, taskRevisions);
 		
 		boolean revisions = false;
 		
@@ -392,10 +384,10 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		if(revisions) {
 			if(GTAType.individual.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
 				revisionDocumentsCtrl = new GTACoachRevisionAndCorrectionsController(ureq, getWindowControl(),
-					courseEnv, assignedTask, gtaNode, coachCourseEnv, null, assessedIdentity, taskListEventResource);
+					courseEnv, assignedTask, taskRevisions, gtaNode, coachCourseEnv, null, assessedIdentity, taskListEventResource);
 			} else {
 				revisionDocumentsCtrl = new GTACoachRevisionAndCorrectionsController(ureq, getWindowControl(),
-					courseEnv, assignedTask, gtaNode, coachCourseEnv, assessedGroup, null, taskListEventResource);
+					courseEnv, assignedTask, taskRevisions, gtaNode, coachCourseEnv, assessedGroup, null, taskListEventResource);
 			}
 			listenTo(revisionDocumentsCtrl);
 			mainVC.put("revisionDocs", revisionDocumentsCtrl.getInitialComponent());
@@ -536,17 +528,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(reviewedButton == source) {
-			if(submitCorrectionsCtrl != null) {
-				Task assignedTask = submitCorrectionsCtrl.getAssignedTask();
-				doConfirmReviewDocument(ureq, assignedTask);
-			}
-		} else if(needRevisionsButton == source) {
-			if(submitCorrectionsCtrl != null) {
-				Task assignedTask = submitCorrectionsCtrl.getAssignedTask();
-				doConfirmRevisions(ureq, assignedTask);
-			}
-		} else if (emailLink == source) {
+		if (emailLink == source) {
 			doOpenMailForm(ureq);
 		} else if(collectSubmissionsLink == source) {
 			doConfirmCollectTask(ureq, (Task)collectSubmissionsLink.getUserObject());
@@ -570,6 +552,12 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 				Task assignedTask = submitCorrectionsCtrl.getAssignedTask();
 				gtaManager.log("Corrections", (SubmitEvent)event, assignedTask,
 						getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach);
+			} else if(event instanceof ReviewedEvent) {
+				Task assignedTask = submitCorrectionsCtrl.getAssignedTask();
+				doConfirmReviewDocument(ureq, assignedTask);
+			} else if(event instanceof NeedRevisionEvent) {
+				Task assignedTask = submitCorrectionsCtrl.getAssignedTask();
+				doConfirmRevisions(ureq, assignedTask);
 			}
 		} else if(confirmReviewDocumentCtrl == source) {
 			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {

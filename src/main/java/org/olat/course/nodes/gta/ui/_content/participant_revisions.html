@@ -1,5 +1,13 @@
 #foreach($previousRevision in $previousRevisions)
-	$r.render($previousRevision)
+	#if(${previousRevision.hasComment()})
+	<div class="o_note">
+		<h5>$r.translate("run.coach.corrections.revs.comment")</strong> <small>$r.escapeHtml($previousRevision.commentInfos)</small></h5>
+		<p>$r.xssScan($previousRevision.comment)</p>
+	</div> 
+	#end
+	#if($r.available($previousRevision.cmpName))
+		$r.render($previousRevision.cmpName)
+	#end
 #end
 
 #if($r.available("uploadRevisions"))
