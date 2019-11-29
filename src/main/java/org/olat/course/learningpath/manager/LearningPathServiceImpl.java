@@ -72,6 +72,7 @@ public class LearningPathServiceImpl implements LearningPathService {
 		course = CourseFactory.openCourseEditSession(course.getResourceableId());
 		
 		course.getCourseConfig().setNodeAccessType(LearningPathNodeAccessProvider.TYPE);
+		CourseFactory.setCourseConfig(course.getResourceableId(), course.getCourseConfig());
 		
 		TreeVisitor tv = new TreeVisitor(new PostMigrationVisitor(registry), course.getEditorTreeModel().getRootNode(), true);
 		tv.visitAll();
