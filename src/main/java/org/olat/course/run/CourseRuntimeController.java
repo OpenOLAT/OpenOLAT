@@ -100,7 +100,7 @@ import org.olat.course.editor.EditorMainController;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
-import org.olat.course.learningpath.ui.IdentityOverviewController;
+import org.olat.course.learningpath.ui.LearningPathListController;
 import org.olat.course.member.MembersManagementMainController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ENCourseNode;
@@ -180,7 +180,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		//my course
 		efficiencyStatementsLink, noteLink, leaveLink,
 		//course tools
-		learninPathLink, calendarLink, chatLink, participantListLink, participantInfoLink, blogLink, forumLink, documentsLink,
+		learningPathLink, calendarLink, chatLink, participantListLink, participantInfoLink, blogLink, forumLink, documentsLink,
 		emailLink, searchLink,
 		//glossary
 		openGlossaryLink, enableGlossaryLink, lecturesLink;
@@ -797,9 +797,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			toolbarPanel.addTool(detailsLink);
 		}
 		
-		if(!assessmentLock && !isGuestOnly && LearningPathNodeAccessProvider.TYPE.equals(cc.getNodeAccessType().getType())) {
-			learninPathLink = LinkFactory.createToolLink("learningPath", translate("command.learning.path"), this, "o_icon_learning_path");
-			toolbarPanel.addTool(learninPathLink);
+		if (!assessmentLock && !isGuestOnly
+				&& LearningPathNodeAccessProvider.TYPE.equals(cc.getNodeAccessType().getType())
+				&& userCourseEnv.isParticipant()) {
+			learningPathLink = LinkFactory.createToolLink("learningPath", translate("command.learning.path"), this, "o_icon_learning_path");
+			toolbarPanel.addTool(learningPathLink);
 		}
 		
 		boolean calendarIsEnabled =  !assessmentLock && !isGuestOnly && calendarModule.isEnabled()
@@ -980,7 +982,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			doForum(ureq);
 		} else if(documentsLink == source) {
 			doDocuments(ureq);
-		} else if(learninPathLink == source) {
+		} else if(learningPathLink == source) {
 			doLearningPath(ureq);
 		} else if(calendarLink == source) {
 			launchCalendar(ureq);
@@ -1154,7 +1156,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			} else if("Infos".equalsIgnoreCase(type)) {
 				doDetails(ureq);
 			} else if("LearningPath".equalsIgnoreCase(type)) {
-				if (learninPathLink != null && learninPathLink.isVisible()) {
+				if (learningPathLink != null && learningPathLink.isVisible()) {
 					doLearningPath(ureq);
 				}
 			} else if("Settings".equalsIgnoreCase(type) || "EditDescription".equalsIgnoreCase(type)) {
@@ -1704,13 +1706,13 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(delayedClose == Delayed.learningPath || requestForClose(ureq)) {
 			OLATResourceable ores = OresHelper.createOLATResourceableType("LearningPath");
 			WindowControl swControl = addToHistory(ureq, ores, null);
-			IdentityOverviewController identityOverviewCtrl = new IdentityOverviewController(ureq, swControl,
+			LearningPathListController learningPathCtrl = new LearningPathListController(ureq, swControl,
 					toolbarPanel, getUserCourseEnvironment());
 			
-			listenTo(identityOverviewCtrl);
-			pushController(ureq, translate("command.learning.path"), identityOverviewCtrl);
-			currentToolCtr = identityOverviewCtrl;
-			setActiveTool(learninPathLink);
+			listenTo(learningPathCtrl);
+			pushController(ureq, translate("command.learning.path"), learningPathCtrl);
+			currentToolCtr = learningPathCtrl;
+			setActiveTool(learningPathLink);
 		} else {
 			delayedClose = Delayed.learningPath;
 		}

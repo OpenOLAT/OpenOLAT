@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -31,16 +32,27 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellR
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.TooledController;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.helpers.Settings;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.assessment.IndentedNodeRenderer;
 import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
 import org.olat.course.learningpath.manager.LearningPathCourseTreeModelBuilder;
 import org.olat.course.learningpath.ui.LearningPathDataModel.LearningPathCols;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentService;
+import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -48,16 +60,25 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class LearningPathListController extends FormBasicController {
+public class LearningPathListController extends FormBasicController implements TooledController {
 
+	private final TooledStackedPanel stackPanel;
 	private FlexiTableElement tableEl;
 	private LearningPathDataModel dataModel;
+	private Link resetStatusLink;
 	
 	private final UserCourseEnvironment userCourseEnv;
+	private final RepositoryEntry courseEntry;
 	
-	public LearningPathListController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv) {
+	@Autowired
+	private AssessmentService assessmentService;
+	
+	public LearningPathListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.userCourseEnv = userCourseEnv;
+		this.stackPanel = stackPanel;
+		this.courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		initForm(ureq);
 	}
 	
@@ -92,6 +113,16 @@ public class LearningPathListController extends FormBasicController {
 		tableEl.setNumOfRowsEnabled(false);
 		
 		loadModel();
+	}
+	
+	@Override
+	public void initTools() {
+		// Never enable this function in a productive environment. It may lead to corrupt data.
+		if (Settings.isDebuging()) {
+			resetStatusLink = LinkFactory.createToolLink("reset.all.status", translate("reset.all.status"), this);
+			resetStatusLink.setIconLeftCSS("o_icon o_icon-lg o_icon_exclamation");
+			stackPanel.addTool(resetStatusLink, Align.right);
+		}
 	}
 
 	void loadModel() {
@@ -132,6 +163,24 @@ public class LearningPathListController extends FormBasicController {
 		LearningPathRow row = new LearningPathRow(treeNode);
 		row.setParent(parent);
 		return row;
+	}
+	
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if (source == resetStatusLink) {
+			doResetStatus();
+		}
+	}
+
+	private void doResetStatus() {
+		List<AssessmentEntry> assessmentEntries = assessmentService.loadAssessmentEntriesByAssessedIdentity(getIdentity(), courseEntry);
+		for (AssessmentEntry assessmentEntry : assessmentEntries) {
+			assessmentEntry.setFullyAssessed(null);
+			assessmentEntry.setAssessmentStatus(null);
+			assessmentService.updateAssessmentEntry(assessmentEntry);
+		}
+		userCourseEnv.getScoreAccounting().evaluateAll(true);
+		loadModel();
 	}
 
 	@Override
