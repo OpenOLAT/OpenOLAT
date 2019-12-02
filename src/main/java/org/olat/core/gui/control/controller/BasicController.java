@@ -84,15 +84,7 @@ public abstract class BasicController extends DefaultController {
 	 * @param wControl
 	 */
 	protected BasicController(UserRequest ureq, WindowControl wControl) {
-		super(wControl);
-		setLocale(ureq.getLocale());
-		identity = ureq.getIdentity();
-		
-		Class<?> cl = this.getClass();
-		translator = Util.createPackageTranslator(cl, getLocale());
-		fallbackTranslator = null;
-		velocity_root = Util.getPackageVelocityRoot(cl);
-		logger = Tracing.createLoggerFor(cl);
+		this(ureq, wControl, null);
 	}
 	
 	/**
@@ -112,9 +104,6 @@ public abstract class BasicController extends DefaultController {
 		super(wControl);
 		setLocale(ureq.getLocale());
 		identity = ureq.getIdentity();
-		if (fallBackTranslator == null) {
-			throw new AssertException("please provide a fall translator if using this constructor!!");
-		}
 
 		Class<?> cl = this.getClass();
 		fallbackTranslator = fallBackTranslator;
