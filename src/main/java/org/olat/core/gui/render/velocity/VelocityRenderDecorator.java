@@ -696,7 +696,7 @@ public class VelocityRenderDecorator implements Closeable {
 	 * @return
 	 */
 	public String translate(String key) {
-		Translator trans = renderer.getTranslator();
+		Translator trans = vc.getTranslator();
 		if (trans == null) return "{Translator is null: key_to_translate=" + key + "}";
 		String res = trans.translate(key);
 		if (res == null) return "?? key not found to translate: key_to_translate=" + key + " / trans info:" + trans + "}";
