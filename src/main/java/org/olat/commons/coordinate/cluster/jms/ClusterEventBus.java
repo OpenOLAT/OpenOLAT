@@ -467,7 +467,11 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 			log.warn("Exception in stop ClusteredSearchProvider, ",e);
 		}
 	}
-	
+
+	public ClusterConfig getClusterConfig() {
+		return clusterConfig;
+	}
+
 	/**
 	 * [used by spring]
 	 */
