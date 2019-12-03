@@ -313,7 +313,7 @@ public class ScoreAccounting {
 					lifecycle.getValidTo();//
 				}
 				return lifecycle;
-			} catch (LazyInitializationException e) {
+			} catch (LazyInitializationException | NullPointerException e) {
 				//OO-2667: only seen in 1 instance but as it's a critical place, secure the system
 				RepositoryEntry reloadedEntry = CoreSpringFactory.getImpl(RepositoryService.class)
 						.loadByKey(cgm.getCourseEntry().getKey());
