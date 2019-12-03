@@ -66,11 +66,6 @@ public class ConditionNodeAccessProvider implements NodeAccessProvider {
 	}
 
 	@Override
-	public boolean isCourseLearningProgressSupported() {
-		return false;
-	}
-
-	@Override
 	public boolean isGuestSupported() {
 		return true;
 	}

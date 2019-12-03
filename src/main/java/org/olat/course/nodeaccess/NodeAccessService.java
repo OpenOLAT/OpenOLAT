@@ -49,8 +49,6 @@ public interface NodeAccessService {
 
 	public boolean isSupported(NodeAccessType type, CourseNode courseNode);
 	
-	public boolean isCourseLearningProgressSupported(NodeAccessType type);
-
 	/**
 	 * @param type
 	 * @return if this type supports guest access

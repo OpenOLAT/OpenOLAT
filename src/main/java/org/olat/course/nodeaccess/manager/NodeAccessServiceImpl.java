@@ -87,11 +87,6 @@ public class NodeAccessServiceImpl implements NodeAccessService, NodeVisitedList
 	}
 
 	@Override
-	public boolean isCourseLearningProgressSupported(NodeAccessType type) {
-		return getNodeAccessProvider(type).isCourseLearningProgressSupported();
-	}
-
-	@Override
 	public boolean isGuestSupported(NodeAccessType type) {
 		return getNodeAccessProvider(type).isGuestSupported();
 	}

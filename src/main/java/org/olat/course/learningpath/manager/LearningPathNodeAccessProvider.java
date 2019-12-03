@@ -81,11 +81,6 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider {
 	}
 
 	@Override
-	public boolean isCourseLearningProgressSupported() {
-		return true;
-	}
-
-	@Override
 	public boolean isGuestSupported() {
 		return false;
 	}
