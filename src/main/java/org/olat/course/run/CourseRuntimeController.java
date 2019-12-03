@@ -100,6 +100,7 @@ import org.olat.course.editor.EditorMainController;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.learningpath.ui.LearningPathIdentityListController;
 import org.olat.course.learningpath.ui.LearningPathListController;
 import org.olat.course.member.MembersManagementMainController;
 import org.olat.course.nodes.CourseNode;
@@ -179,9 +180,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		assessmentModeLink, lifeCycleChangeLink,
 		//my course
 		efficiencyStatementsLink, noteLink, leaveLink,
-		//course tools
-		learningPathLink, calendarLink, chatLink, participantListLink, participantInfoLink, blogLink, forumLink, documentsLink,
-		emailLink, searchLink,
+		// course tools
+		learningPathLink, learningPathsLink, calendarLink, chatLink, participantListLink, participantInfoLink,
+		blogLink, forumLink, documentsLink, emailLink, searchLink,
 		//glossary
 		openGlossaryLink, enableGlossaryLink, lecturesLink;
 	private Link currentUserCountLink;
@@ -798,10 +799,21 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 		
 		if (!assessmentLock && !isGuestOnly
-				&& LearningPathNodeAccessProvider.TYPE.equals(cc.getNodeAccessType().getType())
-				&& userCourseEnv.isParticipant()) {
+				&& LearningPathNodeAccessProvider.TYPE.equals(cc.getNodeAccessType().getType())) {
 			learningPathLink = LinkFactory.createToolLink("learningPath", translate("command.learning.path"), this, "o_icon_learning_path");
 			toolbarPanel.addTool(learningPathLink);
+		}
+		if (learningPathLink != null) {
+			learningPathLink.setVisible(userCourseEnv.isParticipant());
+		}
+		
+		if (!assessmentLock && !isGuestOnly
+				&& LearningPathNodeAccessProvider.TYPE.equals(cc.getNodeAccessType().getType())) {
+			learningPathsLink = LinkFactory.createToolLink("learningPaths", translate("command.learning.paths"), this, "o_icon_learning_path");
+			toolbarPanel.addTool(learningPathsLink);
+		}
+		if (learningPathsLink != null) {
+			learningPathsLink.setVisible(userCourseEnv.isCoach() || userCourseEnv.isAdmin());
 		}
 		
 		boolean calendarIsEnabled =  !assessmentLock && !isGuestOnly && calendarModule.isEnabled()
@@ -984,6 +996,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			doDocuments(ureq);
 		} else if(learningPathLink == source) {
 			doLearningPath(ureq);
+		} else if(learningPathsLink == source) {
+			doLearningPaths(ureq);
 		} else if(calendarLink == source) {
 			launchCalendar(ureq);
 		} else if(chatLink == source) {
@@ -1073,6 +1087,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 						case assessmentTool: doAssessmentTool(ureq); break;
 						case reminders: doReminders(ureq); break;
 						case learningPath: doLearningPath(ureq); break;
+						case learningPaths: doLearningPaths(ureq); break;
 						case lecturesAdmin: doLecturesAdmin(ureq); break;
 						case lectures: doLectures(ureq); break;
 						case courseAreas: doCourseAreas(ureq); break;
@@ -1158,6 +1173,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			} else if("LearningPath".equalsIgnoreCase(type)) {
 				if (learningPathLink != null && learningPathLink.isVisible()) {
 					doLearningPath(ureq);
+				}
+			} else if("LearningPaths".equalsIgnoreCase(type)) {
+				if (learningPathsLink != null && learningPathsLink.isVisible()) {
+					Activateable2 leanringPaths = doLearningPaths(ureq);
+					if (leanringPaths != null) {
+						List<ContextEntry> subEntries = entries.subList(1, entries.size());
+						leanringPaths.activate(ureq, subEntries, entries.get(0).getTransientState());
+					}
 				}
 			} else if("Settings".equalsIgnoreCase(type) || "EditDescription".equalsIgnoreCase(type)) {
 				List<ContextEntry> subEntries = entries.subList(1, entries.size());
@@ -1718,6 +1741,23 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 	}
 	
+	private Activateable2 doLearningPaths(UserRequest ureq) {
+		if(delayedClose == Delayed.learningPaths || requestForClose(ureq)) {
+			OLATResourceable ores = OresHelper.createOLATResourceableType("LearningPaths");
+			WindowControl swControl = addToHistory(ureq, ores, null);
+			LearningPathIdentityListController learningPathIdentityListCtrl = new LearningPathIdentityListController(ureq, swControl,
+					toolbarPanel, getUserCourseEnvironment());
+			
+			listenTo(learningPathIdentityListCtrl);
+			pushController(ureq, translate("command.learning.paths"), learningPathIdentityListCtrl);
+			currentToolCtr = learningPathIdentityListCtrl;
+			setActiveTool(learningPathsLink);
+			return learningPathIdentityListCtrl;
+		}
+		delayedClose = Delayed.learningPaths;
+		return null;
+	}
+	
 	private void launchChat(UserRequest ureq) {
 		boolean vip = reSecurity.isCoach() || reSecurity.isEntryAdmin();
 		ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
@@ -2160,6 +2200,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		details,
 		settings,
 		learningPath,
+		learningPaths,
 		efficiencyStatements,
 		members,
 		orders,

@@ -519,7 +519,7 @@ public class RepositoryEntryRelationDAO {
 
 	public List<Identity> getCoachedParticipants(IdentityRef coach, RepositoryEntryRef re) {
 		StringBuilder sb = new StringBuilder(512);
-		sb.append("select ident");
+		sb.append("select distinct ident");
 		sb.append(" from repositoryentry as v")
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
@@ -527,7 +527,8 @@ public class RepositoryEntryRelationDAO {
 		  .append(" inner join memberships.identity as ident")
 		  .append(" inner join fetch ident.user as identUser")
 		  .append(" inner join baseGroup.members as coaches")
-		  .append(" where v.key=:repoKey and memberships.role=:role and coaches.identity.key=:coachKey");
+		  .append(" where v.key=:repoKey and memberships.role=:role and coaches.identity.key=:coachKey")
+		  .append(" and coaches.role='").append(GroupRoles.coach.name()).append("'");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
 				.setParameter("repoKey", re.getKey())

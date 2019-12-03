@@ -261,7 +261,10 @@ public class CourseController extends FormBasicController implements Activateabl
 		List<AssessmentEntryCompletion> completions = assessmentService.loadAvgCompletionsByIdentities(course, identityKeys);
 		for (AssessmentEntryCompletion completion : completions) {
 			IdentityRepositoryEntryKey key = new IdentityRepositoryEntryKey(completion.getKey(), course.getKey());
-			completionsMap.put(key, completion.getCompletion());
+			if (completion.getCompletion() != null) {
+				completionsMap.put(key, completion.getCompletion());
+				
+			}
 		}
 		
 		model.setObjects(entries, certificateMap, completionsMap, null);

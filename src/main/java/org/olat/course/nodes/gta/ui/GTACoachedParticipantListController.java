@@ -23,11 +23,10 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -132,9 +131,9 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		this.coachCourseEnv = coachCourseEnv;
 		this.markedOnly = markedOnly;
 
-		assessableIdentities = new ArrayList<>();
-		collectIdentities(participant ->
-				assessableIdentities.add(new UserPropertiesRow(participant, userPropertyHandlers, getLocale())));
+		assessableIdentities = getAssessableIdentities().stream()
+				.map(participant -> new UserPropertiesRow(participant, userPropertyHandlers, getLocale()))
+				.collect(Collectors.toList());
 		
 		initForm(ureq);
 		updateModel(ureq);
@@ -152,29 +151,12 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	}
 	
 	public List<Identity> getAssessableIdentities() {
-		List<Identity> identities = new ArrayList<>();
-		collectIdentities(participant -> identities.add(participant));
-		return identities;
-	}
-	
-	private void collectIdentities(Consumer<Identity> participantCollector) {
 		CourseGroupManager cgm = coachCourseEnv.getCourseEnvironment().getCourseGroupManager();
 		RepositoryEntry re = cgm.getCourseEntry();
-
-		List<Identity> participants;
-		if(coachCourseEnv.isAdmin()) {
-			participants = repositoryService.getMembers(re, RepositoryEntryRelationType.all, GroupRoles.participant.name());
-		} else {
-			participants = repositoryService.getCoachedParticipants(getIdentity(), re);
-		}
 		
-		Set<Identity> duplicateKiller = new HashSet<>();
-		for(Identity participant:participants) {
-			if(!duplicateKiller.contains(participant)) {
-				participantCollector.accept(participant);
-				duplicateKiller.add(participant);
-			}
-		}
+		return coachCourseEnv.isAdmin()
+				? repositoryService.getMembers(re, RepositoryEntryRelationType.all, GroupRoles.participant.name())
+				: repositoryService.getCoachedParticipants(getIdentity(), re);
 	}
 
 	@Override
