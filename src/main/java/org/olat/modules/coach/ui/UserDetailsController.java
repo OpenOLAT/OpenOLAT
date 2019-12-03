@@ -43,10 +43,12 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.course.CorruptedCourseException;
+import org.olat.course.CourseFactory;
 import org.olat.course.assessment.EfficiencyStatement;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.ui.tool.AssessmentIdentityCourseController;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
@@ -156,7 +158,8 @@ public class UserDetailsController extends BasicController implements Activateab
 	
 	private UserCourseEnvironment loadUserCourseEnvironment(UserRequest ureq, RepositoryEntry entry) {
 		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, entry);
-		return new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), null, getWindowControl(),
+		CourseEnvironment courseEnvironment = CourseFactory.loadCourse(entry).getCourseEnvironment();
+		return new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), courseEnvironment, getWindowControl(),
 				null, null, null,
 				reSecurity.isCoach(), reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach(), reSecurity.isParticipant(),
 				reSecurity.isReadOnly() || reSecurity.isOnlyPrincipal() || reSecurity.isOnlyMasterCoach());
