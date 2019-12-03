@@ -237,11 +237,11 @@ public class EditTaxonomyLevelController extends FormBasicController {
 		boolean allOk = true;
 		
 		textEl.clearError();
-		if(!StringHelper.containsNonWhitespace(identifierEl.getValue())) {
-			identifierEl.setErrorKey("form.legende.mandatory", null);
+		if(!StringHelper.containsNonWhitespace(textEl.getValue())) {
+			textEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
-		} else if(identifierEl.getValue().length() >= maxSize) {
-			identifierEl.setErrorKey("form.error.toolong", new String[] { Integer.toString(maxSize) });
+		} else if(textEl.getValue().length() >= maxSize) {
+			textEl.setErrorKey("form.error.toolong", new String[] { Integer.toString(maxSize) });
 			allOk &= false;
 		}
 		
