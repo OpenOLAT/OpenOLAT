@@ -56,6 +56,7 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
@@ -88,6 +89,7 @@ public class AuthoringEditAccessAndBookingController extends FormBasicController
 	
 	private final boolean status;
 	private final boolean embbeded;
+	private final boolean guestSupported;
 	private RepositoryEntry entry;
 	private List<Organisation> repositoryEntryOrganisations;
 	
@@ -97,6 +99,8 @@ public class AuthoringEditAccessAndBookingController extends FormBasicController
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private RepositoryHandlerFactory handlerFactory;
 	@Autowired
 	private OrganisationModule organisationModule;
 	@Autowired
@@ -108,6 +112,7 @@ public class AuthoringEditAccessAndBookingController extends FormBasicController
 		this.entry = entry;
 		embbeded = false;
 		status = false;
+		guestSupported = handlerFactory.getRepositoryHandler(entry).supportsGuest(entry);
 		initForm(ureq);
 		updateUI();
 	}
@@ -118,6 +123,7 @@ public class AuthoringEditAccessAndBookingController extends FormBasicController
 		this.entry = entry;
 		embbeded = true;
 		status = true;
+		guestSupported = handlerFactory.getRepositoryHandler(entry).supportsGuest(entry);
 		initForm(ureq);
 		updateUI();
 	}
@@ -269,8 +275,8 @@ public class AuthoringEditAccessAndBookingController extends FormBasicController
 	
 	private void updateUI() {
 		boolean shared = accessEl.isSelected(2);
-		guestEl.setVisible(shared);
-		explainGuestAccessEl.setVisible(shared);
+		guestEl.setVisible(shared  && guestSupported);
+		explainGuestAccessEl.setVisible(shared && guestSupported);
 		acCtr.getInitialFormItem().setVisible(accessEl.isSelected(1));
 	}
 	

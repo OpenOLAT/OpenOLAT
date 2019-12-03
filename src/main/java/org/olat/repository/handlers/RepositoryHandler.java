@@ -142,6 +142,14 @@ public interface RepositoryHandler {
 	 * @return true if this handler supports donwloading Resourceables of its type.
 	 */
 	public boolean supportsDownload();
+	
+	/**
+	 * @param entry 
+	 * @return true if the repository entry supports guest (not registered in users)
+	 */
+	public default boolean supportsGuest(RepositoryEntry entry) {
+		return true;
+	}
 
 	/**
 	 * @param resource the reource to edit
@@ -312,4 +320,5 @@ public interface RepositoryHandler {
 	public default List<License> getElementsLicenses(RepositoryEntry entry) {
 		return new ArrayList<>();
 	}
+
 }

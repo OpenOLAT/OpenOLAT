@@ -84,6 +84,11 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider {
 	public boolean isCourseLearningProgressSupported() {
 		return true;
 	}
+
+	@Override
+	public boolean isGuestSupported() {
+		return false;
+	}
 	
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,

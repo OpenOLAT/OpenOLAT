@@ -86,6 +86,8 @@ import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.export.CourseExportMediaResource;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.PersistingCourseGroupManager;
+import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.run.CourseRuntimeController;
 import org.olat.course.run.RunMainController;
 import org.olat.course.tree.CourseEditorTreeNode;
@@ -104,8 +106,8 @@ import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
-import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryImportExport.RepositoryEntryImport;
+import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -533,6 +535,16 @@ public class CourseHandler implements RepositoryHandler {
 		return EditionSupport.yes;
 	}
 	
+	@Override
+	public boolean supportsGuest(RepositoryEntry entry) {
+		ICourse course = CourseFactory.loadCourse(entry);
+		if (course != null) {
+			NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
+			return nodeAccessService.isGuestSupported(NodeAccessType.of(course));
+		}
+		return RepositoryHandler.super.supportsGuest(entry);
+	}
+
 	@Override
 	public boolean supportsAssessmentDetails() {
 		return false;

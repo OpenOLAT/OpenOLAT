@@ -52,6 +52,12 @@ public interface NodeAccessService {
 	public boolean isCourseLearningProgressSupported(NodeAccessType type);
 
 	/**
+	 * @param type
+	 * @return if this type supports guest access
+	 */
+	public boolean isGuestSupported(NodeAccessType type);
+
+	/**
 	 * Creates the controller to edit the access configurations of the node.
 	 * 
 	 * @param ureq

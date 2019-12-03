@@ -42,6 +42,8 @@ public interface NodeAccessProvider extends NodeAccessProviderIdentifier {
 
 	public boolean isCourseLearningProgressSupported();
 
+	public boolean isGuestSupported();
+
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
 			UserCourseEnvironment userCourseEnv, CourseEditorTreeModel editorModel);
 
