@@ -59,6 +59,8 @@ implements SortableFlexiTableDataModel<LearningPathIdentityRow> {
 			switch(LearningPathIdentityCols.values()[col]) {
 				case username: return row.getIdentityName();
 				case completion: return row.getCompletion();
+				case passed: return row.getPassed();
+				case score: return row.getScore();
 				default: return "ERROR";
 			}
 		}
@@ -79,7 +81,9 @@ implements SortableFlexiTableDataModel<LearningPathIdentityRow> {
 	
 	public enum LearningPathIdentityCols implements FlexiSortableColumnDef {
 		username("table.header.username"),
-		completion("table.header.completion");
+		completion("table.header.completion"),
+		passed("table.header.passed"),
+		score("table.header.score");
 		
 		private final String i18nKey;
 		

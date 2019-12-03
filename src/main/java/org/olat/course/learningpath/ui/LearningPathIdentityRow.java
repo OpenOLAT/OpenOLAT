@@ -19,10 +19,12 @@
  */
 package org.olat.course.learningpath.ui;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.id.Identity;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -35,14 +37,27 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 public class LearningPathIdentityRow extends UserPropertiesRow {
 
 	private final Double completion;
+	private final Boolean passed;
+	private final BigDecimal score;
 
-	public LearningPathIdentityRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale, Double completion) {
+	public LearningPathIdentityRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale,
+			AssessmentEntry assessmentEntry) {
 		super(identity, userPropertyHandlers, locale);
-		this.completion = completion;
+		this.completion = assessmentEntry != null ? assessmentEntry.getCompletion(): null;
+		this.passed = assessmentEntry != null ? assessmentEntry.getPassed(): null;
+		this.score = assessmentEntry != null && assessmentEntry.getScore() != null? assessmentEntry.getScore(): null;
 	}
 
 	public Double getCompletion() {
 		return completion;
+	}
+
+	public Boolean getPassed() {
+		return passed;
+	}
+
+	public BigDecimal getScore() {
+		return score;
 	}
 
 }

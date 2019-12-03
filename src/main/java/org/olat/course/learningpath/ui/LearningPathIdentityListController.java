@@ -47,12 +47,14 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.learningpath.ui.LearningPathIdentityDataModel.LearningPathIdentityCols;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
@@ -124,7 +126,10 @@ public class LearningPathIdentityListController extends FormBasicController impl
 			colIndex++;
 		}
 		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathIdentityCols.completion, new LearningProgressCompletionCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathIdentityCols.completion,
+				new LearningProgressCompletionCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathIdentityCols.passed, new PassedCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathIdentityCols.score, new ScoreCellRenderer()));
 		
 		dataModel = new LearningPathIdentityDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
@@ -161,16 +166,16 @@ public class LearningPathIdentityListController extends FormBasicController impl
 				: repositoryService.getCoachedParticipants(getIdentity(), re);
 		
 		List<AssessmentEntry> assessmentEntries = assessmentService.loadAssessmentEntriesBySubIdent(re, subIdent);
-		Map<Long, Double> identityKeyToCompletion = new HashMap<>();
+		Map<Long, AssessmentEntry> identityKeyToCompletion = new HashMap<>();
 		for (AssessmentEntry assessmentEntry : assessmentEntries) {
-			identityKeyToCompletion.put(assessmentEntry.getIdentity().getKey(), assessmentEntry.getCompletion());
+			identityKeyToCompletion.put(assessmentEntry.getIdentity().getKey(), assessmentEntry);
 		}
 		
 		List<LearningPathIdentityRow> rows = new ArrayList<>(coachedIdentities.size());
 		for (Identity coachedIdentity : coachedIdentities) {
-			Double completion = identityKeyToCompletion.get(coachedIdentity.getKey());
+			AssessmentEntry assessmentEntry = identityKeyToCompletion.get(coachedIdentity.getKey());
 			LearningPathIdentityRow row = new LearningPathIdentityRow(coachedIdentity, userPropertyHandlers,
-					getLocale(), completion);
+					getLocale(), assessmentEntry);
 			rows.add(row);
 		}
 		dataModel.setObjects(rows);
