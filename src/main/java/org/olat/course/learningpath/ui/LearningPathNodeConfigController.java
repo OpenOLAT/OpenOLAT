@@ -60,6 +60,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	public static final String CONFIG_VALUE_TRIGGER_NODE_VISITED = "nodeVisited";
 	public static final String CONFIG_VALUE_TRIGGER_CONFIRMED = "confirmed";
 	public static final String CONFIG_VALUE_TRIGGER_STATUS_DONE = "statusDone";
+	public static final String CONFIG_VALUE_TRIGGER_STATUS_IN_REVIEW = "statusInReview";
 	public static final String CONFIG_VALUE_TRIGGER_SCORE = "score";
 	public static final String CONFIG_VALUE_TRIGGER_PASSED = "passed";
 	public static final String CONFIG_DEFAULT_TRIGGER = CONFIG_VALUE_TRIGGER_CONFIRMED;
@@ -135,6 +136,11 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		}
 		if (ctrlConfig.isTriggerPassed()) {
 			triggerKV.add(entry(CONFIG_VALUE_TRIGGER_PASSED, translate("config.trigger.passed")));
+		}
+		TranslateableBoolean triggerStatusInReview = ctrlConfig.getTriggerStatusInReview();
+		if (triggerStatusInReview.isTrue()) {
+			triggerKV.add(entry(CONFIG_VALUE_TRIGGER_STATUS_IN_REVIEW,
+					getTranslationOrDefault(triggerStatusInReview, "config.trigger.status.in.review")));
 		}
 		TranslateableBoolean triggerStatusDone = ctrlConfig.getTriggerStatusDone();
 		if (triggerStatusDone.isTrue()) {
@@ -254,6 +260,8 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		
 		public boolean isTriggerPassed();
 		
+		public TranslateableBoolean getTriggerStatusInReview();
+		
 		public TranslateableBoolean getTriggerStatusDone();
 		
 	}
@@ -269,6 +277,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		private boolean triggerConfirmed;
 		private boolean triggerScore;
 		private boolean triggerPassed;
+		private TranslateableBoolean triggerStatusInReview;
 		private TranslateableBoolean triggerStatusDone;
 		
 		private ControllerConfigBuilder() {
@@ -299,6 +308,16 @@ public class LearningPathNodeConfigController extends FormBasicController {
 			return this;
 		}
 		
+		public ControllerConfigBuilder enableStatusInReview() {
+			triggerStatusInReview = TranslateableBoolean.untranslatedTrue();
+			return this;
+		}
+		
+		public ControllerConfigBuilder enableStatusInReview(String message) {
+			triggerStatusInReview = TranslateableBoolean.translatedTrue(message);
+			return this;
+		}
+		
 		public ControllerConfigBuilder enableStatusDone() {
 			triggerStatusDone = TranslateableBoolean.untranslatedTrue();
 			return this;
@@ -320,6 +339,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 			public final boolean triggerConfirmed;
 			public final boolean triggerScore;
 			public final boolean triggerPassed;
+			public final TranslateableBoolean triggerStatusInReview;
 			public final TranslateableBoolean triggerStatusDone;
 
 			public ControllerConfigImpl(ControllerConfigBuilder builder) {
@@ -328,6 +348,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 				this.triggerConfirmed = builder.triggerConfirmed;
 				this.triggerScore = builder.triggerScore;
 				this.triggerPassed = builder.triggerPassed;
+				this.triggerStatusInReview = falseIfNull(builder.triggerStatusInReview);
 				this.triggerStatusDone = falseIfNull(builder.triggerStatusDone);
 			}
 			
@@ -360,6 +381,11 @@ public class LearningPathNodeConfigController extends FormBasicController {
 			@Override
 			public boolean isTriggerPassed() {
 				return triggerPassed;
+			}
+
+			@Override
+			public TranslateableBoolean getTriggerStatusInReview() {
+				return triggerStatusInReview;
 			}
 
 			@Override

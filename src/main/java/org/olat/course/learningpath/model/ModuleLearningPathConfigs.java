@@ -31,6 +31,7 @@ import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.C
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_TRIGGER_PASSED;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_TRIGGER_SCORE;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_TRIGGER_STATUS_DONE;
+import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_TRIGGER_STATUS_IN_REVIEW;
 
 import java.util.Date;
 
@@ -91,8 +92,8 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 
 	@Override
 	public FullyAssessedResult isFullyAssessedOnNodeVisited() {
-		String doneTriggerName = getDoneTriggerName();
-		if (CONFIG_VALUE_TRIGGER_NODE_VISITED.equals(doneTriggerName)) {
+		String fullyAssessedTrigger = getFullyAssessedTrigger();
+		if (CONFIG_VALUE_TRIGGER_NODE_VISITED.equals(fullyAssessedTrigger)) {
 			return LearningPathConfigs.fullyAssessed(true, true, doneOnFullyAssessed);
 		}
 		return LearningPathConfigs.notFullyAssessed();
@@ -100,8 +101,8 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 
 	@Override
 	public FullyAssessedResult isFullyAssessedOnConfirmation(boolean confirmed) {
-		String doneTriggerName = getDoneTriggerName();
-		if (CONFIG_VALUE_TRIGGER_CONFIRMED.equals(doneTriggerName)) {
+		String fullyAssessedTrigger = getFullyAssessedTrigger();
+		if (CONFIG_VALUE_TRIGGER_CONFIRMED.equals(fullyAssessedTrigger)) {
 			return LearningPathConfigs.fullyAssessed(true, confirmed, doneOnFullyAssessed);
 		}
 		return LearningPathConfigs.notFullyAssessed();
@@ -109,8 +110,8 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 
 	@Override
 	public FullyAssessedResult isFullyAssessedOnScore(Float score, Boolean userVisibility) {
-		String doneTriggerName = getDoneTriggerName();
-		if (CONFIG_VALUE_TRIGGER_SCORE.equals(doneTriggerName)) {
+		String fullyAssessedTrigger = getFullyAssessedTrigger();
+		if (CONFIG_VALUE_TRIGGER_SCORE.equals(fullyAssessedTrigger)) {
 			Integer scoreCut = toInteger(moduleConfiguration.getStringValue(CONFIG_KEY_SCORE_CUT_VALUE));
 			boolean fullyAssessed = Boolean.TRUE.equals(userVisibility) && score != null && scoreCut != null
 					&& score >= scoreCut.intValue();
@@ -121,26 +122,31 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 
 	@Override
 	public FullyAssessedResult isFullyAssessedOnPassed(Boolean passed, Boolean userVisibility) {
-		String doneTriggerName = getDoneTriggerName();
-		if (CONFIG_VALUE_TRIGGER_PASSED.equals(doneTriggerName)) {
+		String fullyAssessedTrigger = getFullyAssessedTrigger();
+		if (CONFIG_VALUE_TRIGGER_PASSED.equals(fullyAssessedTrigger)) {
 			boolean fullyAssessed = Boolean.TRUE.equals(passed) && Boolean.TRUE.equals(userVisibility);
 			return LearningPathConfigs.fullyAssessed(true, fullyAssessed, doneOnFullyAssessed);
 		}
 		return LearningPathConfigs.notFullyAssessed();
 	}
 
-	private String getDoneTriggerName() {
-		return moduleConfiguration.getStringValue(CONFIG_KEY_TRIGGER, CONFIG_DEFAULT_TRIGGER);
-	}
-
 	@Override
 	public FullyAssessedResult isFullyAssessedOnStatus(AssessmentEntryStatus status) {
-		String doneTriggerName = getDoneTriggerName();
-		if (CONFIG_VALUE_TRIGGER_STATUS_DONE.equals(doneTriggerName)) {
+		String fullyAssessedTrigger = getFullyAssessedTrigger();
+		if (CONFIG_VALUE_TRIGGER_STATUS_DONE.equals(fullyAssessedTrigger)) {
 			boolean fullyAssessed = AssessmentEntryStatus.done.equals(status);
 			return LearningPathConfigs.fullyAssessed(true, fullyAssessed, false);
 		}
+		if (CONFIG_VALUE_TRIGGER_STATUS_IN_REVIEW.equals(fullyAssessedTrigger)) {
+			boolean fullyAssessed = AssessmentEntryStatus.done.equals(status)
+					|| AssessmentEntryStatus.inReview.equals(status);
+			return LearningPathConfigs.fullyAssessed(true, fullyAssessed, false);
+		}
 		return LearningPathConfigs.notFullyAssessed();
+	}
+
+	private String getFullyAssessedTrigger() {
+		return moduleConfiguration.getStringValue(CONFIG_KEY_TRIGGER, CONFIG_DEFAULT_TRIGGER);
 	}
 	
 	private Integer toInteger(String value) {
