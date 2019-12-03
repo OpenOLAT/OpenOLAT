@@ -31,13 +31,14 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
@@ -78,12 +79,14 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 	
 	private Link vfButton;
 	private TabbedPane myTabbedPane;
-	private VelocityContainer accessabiliryContent, folderContent;
+	private final BreadcrumbPanel stackPanel;
+	private final VelocityContainer folderContent;
+	private final VelocityContainer accessabiliryContent;
 
-	private CloseableModalController cmc;
 	private FolderRunController folderCtrl;
 	private BCCourseNodeEditForm folderPathChoose;
-	private ConditionEditController uploaderCondContr, downloaderCondContr;
+	private ConditionEditController uploaderCondContr;
+	private ConditionEditController downloaderCondContr;
 	
 	
 	@Autowired
@@ -97,13 +100,15 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 	 * @param ureq
 	 * @param wControl
 	 */
-	public BCCourseNodeEditController(BCCourseNode bcNode, ICourse course, UserRequest ureq, WindowControl wControl,
+	public BCCourseNodeEditController(BCCourseNode bcNode, ICourse course, UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			UserCourseEnvironment euce) {
 		super(ureq,wControl);
 		//o_clusterOK by guido: inside course editor its save to have a reference to the course
 		this.course = course;
 		this.bcNode = bcNode;
 		myTabbedPane = null;
+		this.stackPanel = stackPanel;
+		stackPanel.addListener(this);
 		
 		accessabiliryContent = createVelocityContainer("edit");
 
@@ -141,8 +146,15 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == vfButton){
+		if (source == vfButton) {
 			doOpenFolder(ureq);
+		} else if(source == stackPanel) {
+			if(event instanceof PopEvent) {
+				PopEvent pe = (PopEvent)event;
+				if(pe.getController() == folderCtrl) {
+					cleanUp();
+				}
+			}
 		}
 	}
 	
@@ -181,11 +193,10 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 		if(namedContainer == null) {
 			showWarning("warning.no.linkedfolder");
 		} else {
+			removeAsListenerAndDispose(folderCtrl);
 			folderCtrl = new FolderRunController(namedContainer, false, ureq, getWindowControl());
 			listenTo(folderCtrl);
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), folderCtrl.getInitialComponent());
-			listenTo(cmc);
-			cmc.activate();
+			stackPanel.pushController("Preview", folderCtrl);
 		}
 	}
 	
@@ -219,21 +230,14 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 				accessabiliryContent.contextPut("uploadable", true);
 			}
 			fireEvent(urequest, event);
-		} else if(cmc == source) {
-			cleanUp();
 		}
 	}
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(folderCtrl);
-		removeAsListenerAndDispose(cmc);
 		folderCtrl = null;
-		cmc = null;
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.tabbable.TabbableDefaultController#addTabs(org.olat.core.gui.components.TabbedPane)
-	 */
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
@@ -243,7 +247,9 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 
 	@Override
 	protected void doDispose() {
-		//
+		if(stackPanel != null) {
+			stackPanel.removeListener(this);
+		}
 	}
 
 	@Override
