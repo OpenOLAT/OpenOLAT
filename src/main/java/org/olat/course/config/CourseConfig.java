@@ -31,7 +31,7 @@ import java.util.Map;
 
 import org.olat.core.util.StringHelper;
 import org.olat.course.certificate.RecertificationTimeUnit;
-import org.olat.course.condition.ConditionNodeAccessProvider;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
 
 /**
@@ -81,7 +81,7 @@ public class CourseConfig implements Serializable, Cloneable {
 	public static final transient String KEY_LOGLEVEL_STATISTIC = "LOGLEVELSTAT";
 
 	public static final transient String NODE_ACCESS_TYPE = "NODE_ACCESS_TYPE";
-	public static final transient String NODE_ACCESS_TYPE_DEFAULT = ConditionNodeAccessProvider.TYPE;
+	public static final transient String NODE_ACCESS_TYPE_DEFAULT = LearningPathNodeAccessProvider.TYPE;
 
 	public static final transient String KEY_EFFICENCY_ENABLED = "KEY_EFFICENCY_ENABLED";
 	public static final transient String CERTIFICATE_AUTO_ENABLED = "CERTIFICATE_AUTO";
