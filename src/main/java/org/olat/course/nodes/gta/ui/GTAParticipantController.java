@@ -840,6 +840,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 				cleanUpProcess();
 				resetDueDates();
 				assessedGroup = businessGroupChooserCtrl.getSelectGroup();
+				setGroupHeaders(assessedGroup);
 				process(ureq);
 			}
 			chooserCalloutCtrl.deactivate();
