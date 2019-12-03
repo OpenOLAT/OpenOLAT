@@ -25,6 +25,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
@@ -41,7 +42,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -207,14 +207,14 @@ public class FeedMediaDispatcher implements Dispatcher, GenericEventListener {
 			if(isAccessible(ureq, path, feed)) {
 				deliverFile(request, response, feed, path);
 			} else {
-				log.info("Access was denied. Path::" + path);
+				log.info("Access was denied. Path::{}", path);
 				DispatcherModule.sendForbidden(request.getRequestURI(), response);
 			}
 		} catch (InvalidPathException e) {
-			log.warn("The requested path is invalid. path::" + path, e);
+			log.warn("The requested path is invalid. path::{}", path, e);
 			DispatcherModule.sendBadRequest(request.getRequestURI(), response);
 		} catch (Exception e) {
-			log.warn("Nothing was delivered. Path::" + path, e);
+			log.warn("Nothing was delivered. Path::{}", path, e);
 			DispatcherModule.sendNotFound(request.getRequestURI(), response);
 		}
 	}

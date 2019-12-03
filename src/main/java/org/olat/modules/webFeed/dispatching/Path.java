@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.olat.modules.webFeed.manager.FeedManager;
-
 /**
  * The Path class.
  * <p>
@@ -72,13 +70,13 @@ public class Path {
 	private static final String SLASH = "/";
 	private static final String BASE_PATH_DELIMITER = "/_/";
 	public static final String COURSE_NODE_INDICATOR = "coursenode";
-	public static final String MEDIA_DIR = "media";	
+	public static final String MEDIA_DIR = "media";
 
 	private static final String AUTHENTICATION = NUMBER + SLASH + WORD + SLASH;
 	private static final String COURSE_PREFIX = COURSE_NODE_INDICATOR + SLASH;
 	private static final String COURSE_NODE = NUMBER + SLASH + WORD + SLASH;
 	private static final String FEED_ID = NUMBER + BASE_PATH_DELIMITER;
-	private static final String FEED_PATH = FEED_ID + FeedManager.RSS_FEED_NAME;
+	private static final String FEED_PATH = FEED_ID + "(feed.rss|feed.xml)";
 	private static final String FEED_MEDIA_PATH = FEED_ID + MEDIA_DIR + SLASH + FILE_NAME;
 	private static final String ITEM_MEDIA_PATH = FEED_ID + WORD + SLASH + MEDIA_DIR + SLASH + FILE_NAME;
 

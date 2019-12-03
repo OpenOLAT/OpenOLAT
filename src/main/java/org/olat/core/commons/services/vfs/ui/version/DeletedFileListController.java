@@ -189,7 +189,7 @@ public class DeletedFileListController extends FormBasicController {
 		List<DeletedFileRow> rows = new ArrayList<>();
 		Map<VFSMetadata,DeletedFileRow> metaToRows = new HashMap<>();
 		for(VFSMetadata metadata:metadataList) {
-			if(metadata.isDeleted()) {
+			if(metadata.isDeleted() && !metadata.isDirectory()) {
 				DeletedFileRow row = new DeletedFileRow(metadata);
 				rows.add(row);
 				metaToRows.put(metadata, row);
