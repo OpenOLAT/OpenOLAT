@@ -462,7 +462,9 @@ public class CurriculumElementListController extends FormBasicController impleme
 				.loadAvgCompletionsByCurriculumElements(assessedIdentity, curEleLearningProgressKeys);
 		Map<Long, Double> completions = new HashMap<>();
 		for (AssessmentEntryCompletion completion : loadAvgCompletionsByCurriculumElements) {
-			completions.put(completion.getKey(), completion.getCompletion());
+			if (completion.getCompletion() != null) {
+				completions.put(completion.getKey(), completion.getCompletion());
+			}
 		}
 		return completions;
 	}
