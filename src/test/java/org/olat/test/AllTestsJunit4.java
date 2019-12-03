@@ -296,6 +296,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.video.manager.VideoManagerTest.class,
 	org.olat.modules.video.spi.youtube.YoutubeProviderTest.class,
 	org.olat.modules.video.spi.youtube.YoutubeVideoIdTest.class,
+	org.olat.modules.webFeed.dispatching.PathTest.class,
 	org.olat.modules.webFeed.manager.FeedDAOTest.class,
 	org.olat.modules.webFeed.manager.ItemDAOTest.class,
 	org.olat.modules.webFeed.manager.FeedFileStorgeTest.class,
