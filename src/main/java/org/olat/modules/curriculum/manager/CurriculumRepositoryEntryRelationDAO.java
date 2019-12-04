@@ -29,9 +29,7 @@ import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
 
-import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
-import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
@@ -73,7 +71,7 @@ public class CurriculumRepositoryEntryRelationDAO {
 	}
 	
 	public List<RepositoryEntry> getRepositoryEntries(List<CurriculumElementRef> elements, RepositoryEntryStatusEnum[] status,
-			boolean onlyWithLectures, IdentityRef identity) {
+			boolean onlyWithLectures, IdentityRef identity, List<String> roles) {
 		if(elements == null || elements.isEmpty()) return new ArrayList<>();
 		
 		QueryBuilder sb = new QueryBuilder(256);
@@ -89,10 +87,10 @@ public class CurriculumRepositoryEntryRelationDAO {
 			  .append("  where lectureConfig.entry.key=v.key and lectureConfig.lectureEnabled=true")
 			  .append(" )");
 		}
-		if(identity != null) {
+		if(identity != null && roles != null && !roles.isEmpty()) {
 			sb.append(" and exists (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
 			  .append("  where rel.group.key=membership.group.key and rel.entry.key=v.key and membership.identity.key=:identityKey")
-			  .append("  and membership.role ").in(OrganisationRoles.administrator, OrganisationRoles.principal, OrganisationRoles.learnresourcemanager, GroupRoles.owner)
+			  .append("  and membership.role in (:roles)")
 			  .append(" )");
 		}
 		
@@ -101,8 +99,9 @@ public class CurriculumRepositoryEntryRelationDAO {
 		TypedQuery<RepositoryEntry> query = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), RepositoryEntry.class)
 			.setParameter("elementKeys", elementKeys);
-		if(identity != null) {
+		if(identity != null && roles != null && !roles.isEmpty()) {
 			query.setParameter("identityKey", identity.getKey());
+			query.setParameter("roles", roles);
 		}
 		return query.getResultList();
 	}

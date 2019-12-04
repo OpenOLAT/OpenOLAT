@@ -26,6 +26,7 @@ import java.util.List;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -78,13 +79,15 @@ public interface AssessmentService {
 	
 	public List<AssessmentEntry> loadAssessmentEntriesByAssessedIdentity(Identity assessedIdentity, RepositoryEntry entry);
 	
+	public List<AssessmentEntry> loadRootAssessmentEntriesByAssessedIdentity(Identity assessedIdentity, Collection<Long> entryKeys);
+	
 	public List<AssessmentEntry> loadAssessmentEntries(BusinessGroup assessedGroup, RepositoryEntry entry, String subIdent);
 
-	public List<AssessmentEntryCompletion> loadAvgCompletionsByRepositoryEntries(Identity assessedIdentity, Collection<Long> entryKeys);
-	
 	public List<AssessmentEntryCompletion> loadAvgCompletionsByIdentities(RepositoryEntry entry, Collection<Long> identityKeys);
 	
 	public List<AssessmentEntryCompletion> loadAvgCompletionsByCurriculumElements(Identity assessedIdentity, Collection<Long> curEleKeys);
+	
+	public List<AssessmentEntryCompletion> loadAvgCompletionsByIdentities(CurriculumElement curriculumElement, List<Long> identityKeys);
 
 	public void setLastVisit(AssessmentEntry nodeAssessment, Date lastVisit);
 

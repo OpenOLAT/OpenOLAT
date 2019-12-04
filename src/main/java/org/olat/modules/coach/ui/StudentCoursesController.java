@@ -67,7 +67,7 @@ import org.olat.course.certificate.CertificateEvent;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.ui.DownloadCertificateCellRenderer;
-import org.olat.modules.assessment.AssessmentEntryCompletion;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer;
@@ -277,11 +277,11 @@ public class StudentCoursesController extends FormBasicController implements Act
 		
 		ConcurrentMap<IdentityRepositoryEntryKey, Double> completionsMap = new ConcurrentHashMap<>();
 		List<Long> courseEntryKeys = courses.stream().map(RepositoryEntry::getKey).collect(Collectors.toList());
-		List<AssessmentEntryCompletion> completions = assessmentService.loadAvgCompletionsByRepositoryEntries(student, courseEntryKeys);
-		for (AssessmentEntryCompletion completion : completions) {
-			if (completion.getCompletion() != null) {
-				IdentityRepositoryEntryKey key = new IdentityRepositoryEntryKey(student.getKey(), completion.getKey());
-				completionsMap.put(key, completion.getCompletion());
+		List<AssessmentEntry> assessmentEntries = assessmentService.loadRootAssessmentEntriesByAssessedIdentity(student, courseEntryKeys);
+		for (AssessmentEntry assessmentEntry : assessmentEntries) {
+			if (assessmentEntry.getCompletion() != null) {
+				IdentityRepositoryEntryKey key = new IdentityRepositoryEntryKey(student.getKey(), assessmentEntry.getRepositoryEntry().getKey());
+				completionsMap.put(key, assessmentEntry.getCompletion());
 			}
 		}
 		

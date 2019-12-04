@@ -1,0 +1,179 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.course.learningpath.ui;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.course.CourseFactory;
+import org.olat.course.assessment.bulk.PassedCellRenderer;
+import org.olat.course.learningpath.ui.CurriculumLearningPathRepositoryDataModel.LearningPathRepositoryCols;
+import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.ui.ScoreCellRenderer;
+import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumService;
+import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
+
+/**
+ * 
+ * Initial date: 4 Dec 2019<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ *
+ */
+public class CurriculumLearningPathRepositoryListController extends FormBasicController {
+	
+	private static final String ORES_TYPE_IDENTITY = "Identity";
+	private static final String CMD_SELECT = "select";
+	
+	private FlexiTableElement tableEl;
+	private CurriculumLearningPathRepositoryDataModel dataModel;
+
+	private LearningPathIdentityCtrl currentIdentityCtrl;
+	
+	private final TooledStackedPanel stackPanel;
+	private final CurriculumElement curriculumElement;
+	private final Identity participant;
+
+	@Autowired
+	private CurriculumService curriculumService;
+	@Autowired
+	private AssessmentService assessmentService;
+
+	public CurriculumLearningPathRepositoryListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			CurriculumElement curriculumElement, Identity participant) {
+		super(ureq, wControl, LAYOUT_BAREBONE);
+		this.stackPanel = stackPanel;
+		this.curriculumElement = curriculumElement;
+		this.participant = participant;
+		
+		initForm(ureq);
+	}
+
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathRepositoryCols.reponame, CMD_SELECT));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathRepositoryCols.completion,
+				new LearningProgressCompletionCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathRepositoryCols.passed, new PassedCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathRepositoryCols.score, new ScoreCellRenderer()));
+		
+		dataModel = new CurriculumLearningPathRepositoryDataModel(columnsModel, getLocale());
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
+		tableEl.setEmtpyTableMessageKey("table.empty.repository");
+		tableEl.setExportEnabled(true);
+		
+		loadModel();
+	}
+
+	private void loadModel() {
+		List<RepositoryEntry> repoEntries = curriculumService.getRepositoryEntriesOfParticipantWithDescendants(curriculumElement, participant);
+		List<Long> entryKeys = repoEntries.stream()
+				.map(RepositoryEntry::getKey)
+				.collect(Collectors.toList());
+		
+		List<AssessmentEntry> assessmentEntries = assessmentService.loadRootAssessmentEntriesByAssessedIdentity(participant, entryKeys);
+		Map<Long, AssessmentEntry> identityKeyToCompletion = new HashMap<>();
+		for (AssessmentEntry assessmentEntry : assessmentEntries) {
+			identityKeyToCompletion.put(assessmentEntry.getRepositoryEntry().getKey(), assessmentEntry);
+		}
+		
+		List<CurriculumLearningPathRepositoryRow> rows = new ArrayList<>(repoEntries.size());
+		for (RepositoryEntry repositoryEntry : repoEntries) {
+			AssessmentEntry assessmentEntry = identityKeyToCompletion.get(repositoryEntry.getKey());
+			CurriculumLearningPathRepositoryRow row = new CurriculumLearningPathRepositoryRow(repositoryEntry, assessmentEntry);
+			rows.add(row);
+		}
+		dataModel.setObjects(rows);
+		tableEl.reset(true, true, true);
+	}
+	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (tableEl == source) {
+			if (event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				String cmd = se.getCommand();
+				CurriculumLearningPathRepositoryRow row = dataModel.getObject(se.getIndex());
+				if (CMD_SELECT.equals(cmd)) {
+					doSelect(ureq, row);
+				}
+			}
+		}
+		
+		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void doSelect(UserRequest ureq, CurriculumLearningPathRepositoryRow row) {
+		removeAsListenerAndDispose(currentIdentityCtrl);
+		
+		OLATResourceable identityOres = OresHelper.createOLATResourceableInstance(ORES_TYPE_IDENTITY, participant.getKey());
+		WindowControl bwControl = addToHistory(ureq, identityOres, null);
+		
+		CourseEnvironment courseEnvironment = CourseFactory.loadCourse(row.getRepositoryEntry()).getCourseEnvironment();
+		IdentityEnvironment identityEnv = new IdentityEnvironment();
+		identityEnv.setIdentity(participant);
+		UserCourseEnvironment coachedCourseEnv = new UserCourseEnvironmentImpl(identityEnv, courseEnvironment);
+		currentIdentityCtrl = new LearningPathIdentityCtrl(ureq, bwControl, stackPanel, coachedCourseEnv);
+		listenTo(currentIdentityCtrl);
+		String title = row.getRepositoryEntry().getDisplayname().length() > 30
+				? row.getRepositoryEntry().getDisplayname().substring(0, 30) + "..."
+				: row.getRepositoryEntry().getDisplayname();
+		stackPanel.pushController(title, currentIdentityCtrl);
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
+	}
+
+	@Override
+	protected void doDispose() {
+		//
+	}
+
+}

@@ -27,6 +27,7 @@ import java.util.List;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.Group;
+import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
@@ -35,6 +36,7 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentEntryCompletion;
 import org.olat.modules.assessment.model.AssessmentEntryImpl;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.vitero.model.GroupRole;
 import org.olat.repository.RepositoryEntry;
@@ -321,20 +323,18 @@ public class AssessmentEntryDAO {
 				.getResultList();
 	}
 
-	public List<AssessmentEntryCompletion> loadAvgCompletionsByRepositoryEntries(Identity assessedIdentity, Collection<Long> entryKeys) {
+	public List<AssessmentEntry> loadRootAssessmentEntriesByAssessedIdentity(Identity assessedIdentity, Collection<Long> entryKeys) {
 		if (assessedIdentity == null || entryKeys == null || entryKeys.isEmpty()) return Collections.emptyList();
 		
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select new org.olat.modules.assessment.model.AssessmentEntryCompletionImpl(");
-		sb.append("       ae.repositoryEntry.key");
-		sb.append("     , ae.completion)");
+		sb.append("select ae");
 		sb.append("  from assessmententry ae");
 		sb.and().append(" ae.entryRoot = true");
 		sb.and().append(" ae.identity.key = :identityKey");
 		sb.and().append(" ae.repositoryEntry.key in (:entryKeys)");
 		
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), AssessmentEntryCompletion.class)
+				.createQuery(sb.toString(), AssessmentEntry.class)
 				.setParameter("identityKey", assessedIdentity.getKey())
 				.setParameter("entryKeys", entryKeys)
 				.getResultList();
@@ -395,6 +395,45 @@ public class AssessmentEntryDAO {
 				.setParameter("identityKey", assessedIdentity.getKey())
 				.setParameter("elKeys", curriculumElementKeys)
 				.getResultList();
+	}
+	
+	public List<AssessmentEntryCompletion> loadAvgCompletionsByIdentities(CurriculumElement curriculumElement,
+			List<Long> identityKeys) {
+		if (curriculumElement == null || identityKeys == null || identityKeys.isEmpty()) return Collections.emptyList();
+			
+			QueryBuilder sb = new QueryBuilder();
+			sb.append("select new org.olat.modules.assessment.model.AssessmentEntryCompletionImpl(");
+			sb.append("       ident.key");
+			sb.append("     , (select avg(ae2.completion)");
+			sb.append("          from assessmententry ae2");
+			sb.append("         where ae2.key in (");
+			sb.append("               select distinct ae.key");
+			sb.append("                 from assessmententry ae");
+			sb.append("                    , repositoryentry re");
+			sb.append("                    , repoentrytogroup reToGroup");
+			sb.append("                    , bgroupmember participants");
+			sb.append("                    , curriculumelement el2");
+			sb.append("                where ae.entryRoot = true");
+			sb.append("                  and ae.identity.key = participants.identity.key");
+			sb.append("                  and ae.repositoryEntry.key = reToGroup.entry.key");
+			sb.append("                  and re.key = reToGroup.entry.key");
+			sb.append("                  and re.status ").in(RepositoryEntryStatusEnum.preparationToClosed());
+			sb.append("                  and participants.role = '").append(CurriculumRoles.participant.name()).append("'");
+			sb.append("                  and participants.identity.key = ident.key");
+			sb.append("                  and reToGroup.group.key = participants.group.key");
+			sb.append("                  and el2.group.key = reToGroup.group.key");
+			sb.append("                  and el2.materializedPathKeys like concat(:curEleMatPathKeys, '%')");
+			sb.append("                )");
+			sb.append("       )");
+			sb.append("     )");
+			sb.append("  from ").append(IdentityImpl.class.getName()).append(" as ident");
+			sb.append(" where ident.key in (:identityKeys)");
+			
+			return dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString(), AssessmentEntryCompletion.class)
+					.setParameter("curEleMatPathKeys", curriculumElement.getMaterializedPathKeys())
+					.setParameter("identityKeys", identityKeys)
+					.getResultList();
 	}
 	
 	/**

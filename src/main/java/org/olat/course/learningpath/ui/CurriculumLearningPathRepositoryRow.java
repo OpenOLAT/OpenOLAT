@@ -20,31 +20,32 @@
 package org.olat.course.learningpath.ui;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Locale;
 
-import org.olat.core.id.Identity;
-import org.olat.user.UserPropertiesRow;
-import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
- * Initial date: 2 Dec 2019<br>
+ * Initial date: 4 Dec 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class LearningPathIdentityRow extends UserPropertiesRow {
+public class CurriculumLearningPathRepositoryRow {
 
+	private final RepositoryEntry repositoryEntry;
 	private final Double completion;
 	private final Boolean passed;
 	private final BigDecimal score;
 
-	public LearningPathIdentityRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale,
-			Double completion, Boolean passed, BigDecimal score) {
-		super(identity, userPropertyHandlers, locale);
-		this.completion = completion;
-		this.passed = passed;
-		this.score = score;
+	public CurriculumLearningPathRepositoryRow(RepositoryEntry repositoryEntry, AssessmentEntry assessmentEntry) {
+		this.repositoryEntry = repositoryEntry;
+		this.completion = assessmentEntry != null ? assessmentEntry.getCompletion(): null;
+		this.passed = assessmentEntry != null ? assessmentEntry.getPassed(): null;
+		this.score = assessmentEntry != null && assessmentEntry.getScore() != null? assessmentEntry.getScore(): null;
+	}
+
+	public RepositoryEntry getRepositoryEntry() {
+		return repositoryEntry;
 	}
 
 	public Double getCompletion() {

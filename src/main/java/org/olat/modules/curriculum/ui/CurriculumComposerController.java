@@ -72,6 +72,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.learningpath.ui.CurriculumElementLearningPathController;
 import org.olat.course.member.wizard.ImportMember_1a_LoginListStep;
 import org.olat.course.member.wizard.ImportMember_1b_ChooseMemberStep;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
@@ -122,6 +123,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	private ConfirmCurriculumElementDeleteController confirmDeleteCtrl;
 	private CurriculumElementCalendarController calendarsCtrl;
 	private CurriculumElementLecturesController lecturesCtrl;
+	private CurriculumElementLearningPathController learningPathController;
 	
 	private int counter;
 	private final boolean managed;
@@ -461,6 +463,8 @@ public class CurriculumComposerController extends FormBasicController implements
 				doOpenCalendars(ureq, (CurriculumElementRow)link.getUserObject());
 			} else if("lectures".equals(cmd)) {
 				doOpenLectures(ureq, (CurriculumElementRow)link.getUserObject());
+			} else if("learning.progress".equals(cmd)) {
+				doOpenLearningProgress(ureq, (CurriculumElementRow)link.getUserObject());
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -666,6 +670,19 @@ public class CurriculumComposerController extends FormBasicController implements
 		listenTo(lecturesCtrl);
 		toolbarPanel.pushController(row.getDisplayName(), null, row);
 		toolbarPanel.pushController(translate("lectures"), lecturesCtrl);
+	}
+	
+	private void doOpenLearningProgress(UserRequest ureq, CurriculumElementRow row) {
+		removeAsListenerAndDispose(learningPathController);
+		toolbar(false);
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("LearningProgress", row.getKey());
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(row);
+		learningPathController = new CurriculumElementLearningPathController(ureq, bwControl, toolbarPanel, curriculumElement);
+		listenTo(learningPathController);
+		toolbarPanel.pushController(row.getDisplayName(), null, row);
+		toolbarPanel.pushController(translate("learning.progress"), learningPathController);
 	}
 	
 	private void doConfirmDelete(UserRequest ureq, CurriculumElementRow row) {

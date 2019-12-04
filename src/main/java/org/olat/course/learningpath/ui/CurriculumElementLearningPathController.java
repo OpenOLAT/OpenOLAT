@@ -19,15 +19,14 @@
  */
 package org.olat.course.learningpath.ui;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -41,48 +40,39 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
-import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.context.ContextEntry;
-import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.course.assessment.bulk.PassedCellRenderer;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.learningpath.ui.LearningPathIdentityDataModel.LearningPathIdentityCols;
-import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.course.run.userview.UserCourseEnvironmentImpl;
-import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentEntryCompletion;
 import org.olat.modules.assessment.AssessmentService;
-import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer;
-import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryRelationType;
-import org.olat.repository.RepositoryService;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 2 Dec 2019<br>
+ * Initial date: 4 Dec 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class LearningPathIdentityListController extends FormBasicController implements Activateable2 {
+public class CurriculumElementLearningPathController extends FormBasicController {
 	
-	private static final String USAGE_IDENTIFIER = LearningPathIdentityListController.class.getCanonicalName();
+	private static final String USAGE_IDENTIFIER = CurriculumElementLearningPathController.class.getCanonicalName();
 	private static final String ORES_TYPE_IDENTITY = "Identity";
 	private static final String CMD_SELECT = "select";
 	
 	private FlexiTableElement tableEl;
 	private LearningPathIdentityDataModel dataModel;
 
-	private LearningPathIdentityCtrl currentIdentityCtrl;
-	
+	private CurriculumLearningPathRepositoryListController repoCtrl;
+
 	private final TooledStackedPanel stackPanel;
-	private final UserCourseEnvironment coachCourseEnv;
+	private final CurriculumElement curriculumElement;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final boolean isAdministrativeUser;
 
@@ -93,15 +83,15 @@ public class LearningPathIdentityListController extends FormBasicController impl
 	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
-	private RepositoryService repositoryService;
+	private CurriculumService curriculumService;
 	@Autowired
 	private AssessmentService assessmentService;
 
-	public LearningPathIdentityListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			UserCourseEnvironment coachCourseEnv) {
+	public CurriculumElementLearningPathController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			CurriculumElement curriculumElement) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.stackPanel = stackPanel;
-		this.coachCourseEnv = coachCourseEnv;
+		this.curriculumElement = curriculumElement;
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
@@ -129,57 +119,32 @@ public class LearningPathIdentityListController extends FormBasicController impl
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathIdentityCols.completion,
 				new LearningProgressCompletionCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathIdentityCols.passed, new PassedCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathIdentityCols.score, new ScoreCellRenderer()));
 		
 		dataModel = new LearningPathIdentityDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
-		tableEl.setEmtpyTableMessageKey("table.empty.curriculum");
+		tableEl.setEmtpyTableMessageKey("table.empty.identities");
 		tableEl.setExportEnabled(true);
 		
 		loadModel();
 	}
 
-	@Override
-	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if (entries == null || entries.isEmpty()) return;
-		
-		String resourceType = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if(ORES_TYPE_IDENTITY.equalsIgnoreCase(resourceType)) {
-			Long identityKey = entries.get(0).getOLATResourceable().getResourceableId();
-			for(int i=dataModel.getRowCount(); i--> 0; ) {
-				LearningPathIdentityRow row = dataModel.getObject(i);
-				if(row.getIdentityKey().equals(identityKey)) {
-					doSelect(ureq, row);
-				}
-			}
-		}	
-		
-	}
-
 	private void loadModel() {
-		CourseGroupManager cgm = coachCourseEnv.getCourseEnvironment().getCourseGroupManager();
-		RepositoryEntry re = cgm.getCourseEntry();
-		String subIdent = coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getIdent();
+		List<Identity> identities = curriculumService.getMembersIdentity(curriculumElement, CurriculumRoles.participant);
+		List<Long> identityKeys = identities.stream().map(Identity::getKey).collect(Collectors.toList());
+		List<AssessmentEntryCompletion> completions = assessmentService.loadAvgCompletionsByIdentities(curriculumElement, identityKeys);
 		
-		List<Identity> coachedIdentities = coachCourseEnv.isAdmin()
-				? repositoryService.getMembers(re, RepositoryEntryRelationType.all, GroupRoles.participant.name())
-				: repositoryService.getCoachedParticipants(getIdentity(), re);
-		
-		List<AssessmentEntry> assessmentEntries = assessmentService.loadAssessmentEntriesBySubIdent(re, subIdent);
-		Map<Long, AssessmentEntry> identityKeyToCompletion = new HashMap<>();
-		for (AssessmentEntry assessmentEntry : assessmentEntries) {
-			identityKeyToCompletion.put(assessmentEntry.getIdentity().getKey(), assessmentEntry);
+		Map<Long, Double> identityKeyToCompletion = new HashMap<>();
+		for (AssessmentEntryCompletion completion : completions) {
+			if (completion.getCompletion() != null) {
+				identityKeyToCompletion.put(completion.getKey(), completion.getCompletion());
+			}
 		}
 		
-		List<LearningPathIdentityRow> rows = new ArrayList<>(coachedIdentities.size());
-		for (Identity coachedIdentity : coachedIdentities) {
-			AssessmentEntry assessmentEntry = identityKeyToCompletion.get(coachedIdentity.getKey());
-			Double completion = assessmentEntry != null ? assessmentEntry.getCompletion(): null;
-			Boolean passed = assessmentEntry != null ? assessmentEntry.getPassed(): null;
-			BigDecimal score = assessmentEntry != null && assessmentEntry.getScore() != null? assessmentEntry.getScore(): null;
-			LearningPathIdentityRow row = new LearningPathIdentityRow(coachedIdentity, userPropertyHandlers,
-					getLocale(), completion, passed, score);
+		List<LearningPathIdentityRow> rows = new ArrayList<>(identities.size());
+		for (Identity identity : identities) {
+			Double completion = identityKeyToCompletion.get(identity.getKey());
+			LearningPathIdentityRow row = new LearningPathIdentityRow(identity, userPropertyHandlers,
+					getLocale(), completion, null, null);
 			rows.add(row);
 		}
 		dataModel.setObjects(rows);
@@ -203,20 +168,17 @@ public class LearningPathIdentityListController extends FormBasicController impl
 	}
 	
 	private void doSelect(UserRequest ureq, LearningPathIdentityRow row) {
-		removeAsListenerAndDispose(currentIdentityCtrl);
+		removeAsListenerAndDispose(repoCtrl);
 		
-		Identity coachedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
-		String fullName = userManager.getUserDisplayName(coachedIdentity);
+		Identity participant = securityManager.loadIdentityByKey(row.getIdentityKey());
+		String fullName = userManager.getUserDisplayName(participant);
 		
-		OLATResourceable identityOres = OresHelper.createOLATResourceableInstance(ORES_TYPE_IDENTITY, coachedIdentity.getKey());
-		WindowControl bwControl = addToHistory(ureq, identityOres, null);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ORES_TYPE_IDENTITY, row.getIdentityKey());
+		WindowControl bwControl = addToHistory(ureq, ores, null);
 		
-		IdentityEnvironment identityEnv = new IdentityEnvironment();
-		identityEnv.setIdentity(coachedIdentity);
-		UserCourseEnvironment coachedCourseEnv = new UserCourseEnvironmentImpl(identityEnv, coachCourseEnv.getCourseEnvironment());
-		currentIdentityCtrl = new LearningPathIdentityCtrl(ureq, bwControl, stackPanel, coachedCourseEnv);
-		listenTo(currentIdentityCtrl);
-		stackPanel.pushController(fullName, currentIdentityCtrl);
+		repoCtrl = new CurriculumLearningPathRepositoryListController(ureq, bwControl, stackPanel, curriculumElement, participant);
+		listenTo(repoCtrl);
+		stackPanel.pushController(fullName, repoCtrl);
 	}
 
 	@Override

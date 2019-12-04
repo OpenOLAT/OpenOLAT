@@ -20,6 +20,7 @@
 package org.olat.modules.curriculum.manager;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -741,7 +742,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	public List<RepositoryEntry> getRepositoryEntries(CurriculumElementRef element) {
 		List<CurriculumElementRef> elements = Collections.singletonList(element);
 		return curriculumRepositoryEntryRelationDao
-				.getRepositoryEntries(elements, RepositoryEntryStatusEnum.preparationToClosed(), false, null);
+				.getRepositoryEntries(elements, RepositoryEntryStatusEnum.preparationToClosed(), false, null, null);
 	}
 
 	@Override
@@ -750,16 +751,28 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		descendants.add(element);
 		List<CurriculumElementRef> descendantRefs = new ArrayList<>(descendants);
 		return curriculumRepositoryEntryRelationDao
-				.getRepositoryEntries(descendantRefs, RepositoryEntryStatusEnum.preparationToClosed(), false, null);
+				.getRepositoryEntries(descendantRefs, RepositoryEntryStatusEnum.preparationToClosed(), false, null, null);
+	}
+	
+	@Override
+	public List<RepositoryEntry> getRepositoryEntriesOfParticipantWithDescendants(CurriculumElement element, Identity participant) {
+		List<CurriculumElement> descendants = curriculumElementDao.getDescendants(element);
+		descendants.add(element);
+		List<String> roles = Arrays.asList(GroupRoles.participant.name());
+		List<CurriculumElementRef> descendantRefs = new ArrayList<>(descendants);
+		return curriculumRepositoryEntryRelationDao
+				.getRepositoryEntries(descendantRefs, RepositoryEntryStatusEnum.preparationToClosed(), false, participant, roles);
 	}
 
 	@Override
 	public List<RepositoryEntry> getRepositoryEntriesWithLecturesAndDescendants(CurriculumElement element, Identity identity) {
 		List<CurriculumElement> descendants = curriculumElementDao.getDescendants(element);
 		descendants.add(element);
+		List<String> roles = Arrays.asList(OrganisationRoles.administrator.name(), OrganisationRoles.principal.name(),
+				OrganisationRoles.learnresourcemanager.name(), GroupRoles.owner.name());
 		List<CurriculumElementRef> descendantRefs = new ArrayList<>(descendants);
 		return curriculumRepositoryEntryRelationDao
-				.getRepositoryEntries(descendantRefs, RepositoryEntryStatusEnum.preparationToClosed(), true, identity);
+				.getRepositoryEntries(descendantRefs, RepositoryEntryStatusEnum.preparationToClosed(), true, identity, roles);
 	}
 
 	@Override

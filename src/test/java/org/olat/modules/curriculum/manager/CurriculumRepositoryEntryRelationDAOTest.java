@@ -25,6 +25,8 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.curriculum.Curriculum;
@@ -75,7 +77,7 @@ public class CurriculumRepositoryEntryRelationDAOTest extends OlatTestCase {
 		
 		List<CurriculumElementRef> elements = Collections.singletonList(element);
 		List<RepositoryEntry> entries = curriculumRepositoryEntryRelationDao
-				.getRepositoryEntries(elements, RepositoryEntryStatusEnum.preparationToClosed(), false, null);
+				.getRepositoryEntries(elements, RepositoryEntryStatusEnum.preparationToClosed(), false, null, null);
 		Assert.assertNotNull(entries);
 		Assert.assertEquals(1, entries.size());
 		Assert.assertEquals(entry, entries.get(0));
@@ -100,7 +102,7 @@ public class CurriculumRepositoryEntryRelationDAOTest extends OlatTestCase {
 		
 		List<CurriculumElementRef> elements = Collections.singletonList(element);
 		List<RepositoryEntry> entries = curriculumRepositoryEntryRelationDao
-				.getRepositoryEntries(elements, RepositoryEntryStatusEnum.preparationToClosed(), true, null);
+				.getRepositoryEntries(elements, RepositoryEntryStatusEnum.preparationToClosed(), true, null, null);
 		Assert.assertNotNull(entries);
 		Assert.assertEquals(1, entries.size());
 		Assert.assertEquals(entryLecture, entries.get(0));
@@ -126,16 +128,18 @@ public class CurriculumRepositoryEntryRelationDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// check author
+		List<String> roles = Arrays.asList(OrganisationRoles.administrator.name(), OrganisationRoles.principal.name(),
+				OrganisationRoles.learnresourcemanager.name(), GroupRoles.owner.name());
 		List<CurriculumElementRef> elements = Collections.singletonList(element);
 		List<RepositoryEntry> entries = curriculumRepositoryEntryRelationDao
-				.getRepositoryEntries(elements, RepositoryEntryStatusEnum.preparationToClosed(), true, author);
+				.getRepositoryEntries(elements, RepositoryEntryStatusEnum.preparationToClosed(), true, author, roles);
 		Assert.assertNotNull(entries);
 		Assert.assertEquals(1, entries.size());
 		Assert.assertEquals(entryLecture, entries.get(0));
 		
 		// check the second user without permission
 		List<RepositoryEntry> noEntries = curriculumRepositoryEntryRelationDao
-				.getRepositoryEntries(elements, RepositoryEntryStatusEnum.preparationToClosed(), true, user);
+				.getRepositoryEntries(elements, RepositoryEntryStatusEnum.preparationToClosed(), true, user, roles);
 		Assert.assertNotNull(noEntries);
 		Assert.assertTrue(noEntries.isEmpty());
 	}

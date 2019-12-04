@@ -431,6 +431,16 @@ public interface CurriculumService {
 	
 	/**
 	 * The all list of repository entries hold by the specified curriculum element and
+	 * its descendants elements in which the identity is participant
+	 * 
+	 * @param element The curriculum element
+	 * @param identity Specify the identity to check the permissions of the repository entries
+	 * @return A list of repository entries
+	 */
+	public List<RepositoryEntry> getRepositoryEntriesOfParticipantWithDescendants(CurriculumElement element, Identity participant);
+	
+	/**
+	 * The all list of repository entries hold by the specified curriculum element and
 	 * its descendants elements, reduced to the
 	 * 
 	 * @param element The curriculum element

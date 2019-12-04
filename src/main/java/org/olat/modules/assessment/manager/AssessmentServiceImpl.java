@@ -33,6 +33,7 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentEntryCompletion;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.user.UserDataDeletable;
@@ -106,9 +107,10 @@ public class AssessmentServiceImpl implements AssessmentService, UserDataDeletab
 	}
 
 	@Override
-	public List<AssessmentEntryCompletion> loadAvgCompletionsByRepositoryEntries(Identity assessedIdentity, Collection<Long> entryKeys) {
-		return assessmentEntryDao.loadAvgCompletionsByRepositoryEntries(assessedIdentity, entryKeys);
+	public List<AssessmentEntry> loadRootAssessmentEntriesByAssessedIdentity(Identity assessedIdentity, Collection<Long> entryKeys) {
+		return assessmentEntryDao.loadRootAssessmentEntriesByAssessedIdentity(assessedIdentity, entryKeys);
 	}
+	
 	@Override
 	public List<AssessmentEntryCompletion> loadAvgCompletionsByIdentities(RepositoryEntry entry, Collection<Long> identityKeys) {
 		return assessmentEntryDao.loadAvgCompletionsByIdentities(entry, identityKeys);
@@ -118,6 +120,12 @@ public class AssessmentServiceImpl implements AssessmentService, UserDataDeletab
 	public List<AssessmentEntryCompletion> loadAvgCompletionsByCurriculumElements(Identity assessedIdentity,
 			Collection<Long> curEleKeys) {
 		return assessmentEntryDao.loadAvgCompletionsByCurriculumElements(assessedIdentity, curEleKeys);
+	}
+
+	@Override
+	public List<AssessmentEntryCompletion> loadAvgCompletionsByIdentities(CurriculumElement curriculumElement,
+			List<Long> identityKeys) {
+		return assessmentEntryDao.loadAvgCompletionsByIdentities(curriculumElement, identityKeys);
 	}
 
 	@Override
