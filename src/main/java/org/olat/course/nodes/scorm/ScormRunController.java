@@ -305,7 +305,7 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 			courseId = Long.toString(CodeHelper.getRAMUniqueID());
 			scormDispC = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, null,
 					cpRoot, null, courseId, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT,
-					true, null, doActivate, fullWindow, false, deliveryOptions);
+					true, null, doActivate, fullWindow, false, true, deliveryOptions);
 		} else {
 			boolean attemptsIncremented = false;
 			//increment user attempts only once!
@@ -322,18 +322,18 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 				scormDispC = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, this,
 						cpRoot, null, courseId + "-" + scormNode.getIdent(), ScormConstants.SCORM_MODE_NORMAL,
 						ScormConstants.SCORM_MODE_CREDIT, false, assessableType, doActivate, fullWindow,
-						attemptsIncremented, deliveryOptions);
+						attemptsIncremented, false, deliveryOptions);
 			} else if (chooseScormRunMode.getSelectedElement().equals(ScormConstants.SCORM_MODE_NORMAL)) {
 				// When not assessible users can choose between normal mode where data is stored...
 				scormDispC = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, this,
 						cpRoot, null, courseId + "-" + scormNode.getIdent(), ScormConstants.SCORM_MODE_NORMAL,
 						ScormConstants.SCORM_MODE_CREDIT, false, assessableType, doActivate, fullWindow,
-						attemptsIncremented, deliveryOptions);
+						attemptsIncremented, false, deliveryOptions);
 			} else {
 				// ... and preview mode where no data is stored
 				scormDispC = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, this,
 						cpRoot, null, courseId, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT,
-						false, assessableType, doActivate, fullWindow, attemptsIncremented, deliveryOptions);
+						false, assessableType, doActivate, fullWindow, attemptsIncremented, false, deliveryOptions);
 			}
 			
 		}

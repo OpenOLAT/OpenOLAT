@@ -100,18 +100,18 @@ public class ScormMainManager {
 	 * @param apiCallback the callback to where lmssetvalue data is mirrored, or null if no callback is desired
 	 * @param cpRoot
 	 * @param resourceId
-	 * @param lesson_mode add null for the default value or "normal", "browse" or
+	 * @param lessonMode add null for the default value or "normal", "browse" or
 	 *          "review"
-	 * @param credit_mode add null for the default value or "credit", "no-credit"
+	 * @param creditMode add null for the default value or "credit", "no-credit"
 	 */
 	public ScormAPIandDisplayController createScormAPIandDisplayController(UserRequest ureq, WindowControl wControl,
 			boolean showMenu, ScormAPICallback apiCallback, File cpRoot, Long scormResourceId, String courseId,
-			String lesson_mode, String credit_mode, boolean previewMode, String assessableType, boolean activate,
-			boolean fullWindow, boolean attemptsIncremented, DeliveryOptions deliveryOptions) {
+			String lessonMode, String creditMode, boolean previewMode, String assessableType, boolean activate,
+			boolean fullWindow, boolean attemptsIncremented, boolean randomizeDelivery, DeliveryOptions deliveryOptions) {
 		
 		ScormAPIandDisplayController ctrl= new ScormAPIandDisplayController(ureq, wControl, showMenu, apiCallback, cpRoot,
-				scormResourceId, courseId, lesson_mode, credit_mode, previewMode, assessableType, activate, fullWindow,
-				attemptsIncremented, deliveryOptions);
+				scormResourceId, courseId, lessonMode, creditMode, previewMode, assessableType, activate, fullWindow,
+				attemptsIncremented, randomizeDelivery, deliveryOptions);
 		
 		DeliveryOptions config = ctrl.getDeliveryOptions();
 		boolean configAllowRawContent = (config == null || config.rawContent());
