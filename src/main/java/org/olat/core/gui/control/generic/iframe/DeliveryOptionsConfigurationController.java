@@ -49,7 +49,8 @@ import org.olat.course.editor.NodeEditController;
  */
 public class DeliveryOptionsConfigurationController extends FormBasicController {
 	
-	private DeliveryOptions config, parentConfig;
+	private DeliveryOptions config;
+	private DeliveryOptions parentConfig;
 	
 	private SingleSelection inheritEl;
 	private SingleSelection standardModeEl;
@@ -201,6 +202,7 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 				"1300px", "1320px", "1340px", "1360px", "1380px"
 		};
 		heightEl = uifactory.addDropdownSingleselect("height", "height.label", formLayout, keys, values, null);
+		heightEl.setExampleKey("automatic.need.js", null);
 
 		String[] cssValues = new String[] {
 				translate("option.css.none"), translate("option.css.openolat")
@@ -319,7 +321,7 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 		if(cfg != null && cfg.getOpenolatCss() != null && cfg.getOpenolatCss().booleanValue()) {
 			cssOptionEl.select(cssKeys[1], true);
 		} else {
-			cssOptionEl.select(cssKeys[0], false);//default none
+			cssOptionEl.select(cssKeys[0], true);//default none
 		}
 		
 		String encodingContent = (cfg == null ? null : cfg.getContentEncoding());
@@ -348,19 +350,27 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 		
 		if(!isInherit()) {
 			glossarEl.clearError();
-			if(glossarEl.isAtLeastSelected(1)) {
-				if(!jsOptionEl.isSelected(1)) {
-					allOk &= false;
-					glossarEl.setErrorKey("glossary.need.jQuery", null);
-				}	
+			if(glossarEl.isAtLeastSelected(1) && !jsOptionEl.isSelected(1)) {
+				allOk &= false;
+				glossarEl.setErrorKey("glossary.need.jQuery", null);
 			}
-			
-			heightEl.clearError();
-			if(heightEl.isSelected(0)
-					&& (standardModeEl.isSelected(0) || jsOptionEl.isSelected(0))) {
-				heightEl.setErrorKey("automatic.need.js", null);
-				allOk = false;
-			}
+			allOk &= validateDropdown(jsOptionEl);
+			allOk &= validateDropdown(heightEl);
+			allOk &= validateDropdown(cssOptionEl);
+			allOk &= validateDropdown(encodingContentEl);
+			allOk &= validateDropdown(encodingJSEl);
+		}
+		
+		return allOk;
+	}
+	
+	private boolean validateDropdown(SingleSelection element) {
+		boolean allOk = true;
+		
+		element.clearError();
+		if(element.isEnabled() && !element.isOneSelected()) {
+			element.setErrorKey("form.general.error", null);
+			allOk &= false;
 		}
 		
 		return allOk;

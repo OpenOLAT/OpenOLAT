@@ -29,17 +29,18 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.id.OLATResourceable;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.springframework.stereotype.Service;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
 
 /**
@@ -54,6 +55,11 @@ public class ScormMainManager {
 	private static final Logger log = Tracing.createLoggerFor(ScormMainManager.class);
 	private static XStream configXstream = XStreamHelper.createXStreamInstance();
 	static {
+		XStream.setupDefaultSecurity(configXstream);
+		Class<?>[] types = new Class[] {
+				ScormPackageConfig.class, DeliveryOptions.class
+			};
+		configXstream.addPermission(new ExplicitTypePermission(types));
 		configXstream.alias("packageConfig", ScormPackageConfig.class);
 		configXstream.alias("deliveryOptions", DeliveryOptions.class);
 	}
