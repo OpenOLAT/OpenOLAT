@@ -31,6 +31,7 @@ import java.util.Map;
 
 import org.olat.core.util.StringHelper;
 import org.olat.course.certificate.RecertificationTimeUnit;
+import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
 
@@ -309,7 +310,7 @@ public class CourseConfig implements Serializable, Cloneable {
 
 			if (version == 15) {
 				if (!configuration.containsKey(NODE_ACCESS_TYPE))
-					configuration.put(NODE_ACCESS_TYPE, NODE_ACCESS_TYPE_DEFAULT);
+					configuration.put(NODE_ACCESS_TYPE, ConditionNodeAccessProvider.TYPE);
 
 				this.version = 16;
 			}
