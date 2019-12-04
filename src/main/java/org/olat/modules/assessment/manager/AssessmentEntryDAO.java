@@ -373,7 +373,7 @@ public class AssessmentEntryDAO {
 		sb.append("                    , repositoryentry re");
 		sb.append("                    , repoentrytogroup reToGroup");
 		sb.append("                    , bgroupmember participants");
-		sb.append("                    , curriculumelement el");
+		sb.append("                    , curriculumelement el2");
 		sb.append("                where ae.entryRoot = true");
 		sb.append("                  and ae.identity.key = participants.identity.key");
 		sb.append("                  and ae.repositoryEntry.key = reToGroup.entry.key");
@@ -382,7 +382,8 @@ public class AssessmentEntryDAO {
 		sb.append("                  and participants.role = '").append(CurriculumRoles.participant.name()).append("'");
 		sb.append("                  and participants.identity.key = :identityKey");
 		sb.append("                  and reToGroup.group.key = participants.group.key");
-		sb.append("                  and el.group.key = reToGroup.group.key");
+		sb.append("                  and el2.group.key = reToGroup.group.key");
+		sb.append("                  and el2.materializedPathKeys like concat(el.materializedPathKeys, '%')");
 		sb.append("                )");
 		sb.append("       )");
 		sb.append("     )");

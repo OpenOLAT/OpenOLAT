@@ -321,7 +321,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 		
 		removeByPermissions(rows);
 		
-		forgeCompletions(rows);
+		forgeCurriculumCompletions(rows);
 		
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
@@ -396,6 +396,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 		forgeDetails(row);
 		forgeMarkLink(row);
 		forgeSelectLink(row);
+		forgeCompletion(row, row.getRepositoryEntryCompletion());
 	}
 	
 	private void forgeDetails(CurriculumElementWithViewsRow row) {
@@ -436,20 +437,23 @@ public class CurriculumElementListController extends FormBasicController impleme
 		}
 	}
 	
-	private void forgeCompletions(List<CurriculumElementWithViewsRow> rows) {
+	private void forgeCurriculumCompletions(List<CurriculumElementWithViewsRow> rows) {
 		Map<Long, Double> completions = loadCurriculumElementCompletions(rows);
 		
 		for (CurriculumElementWithViewsRow row : rows) {
-			Double completion = row.isRepositoryEntryOnly()
-					? row.getRepositoryEntryCompletion()
-					: completions.get(row.getKey());
-			if (completion != null) {
-				ProgressBarItem completionItem = new ProgressBarItem("completion_" + row.getKey(), 100,
-						completion.floatValue(), Float.valueOf(1), null);
-				completionItem.setWidthInPercent(true);
-				completionItem.setLabelAlignment(LabelAlignment.none);
-				row.setCompletionItem(completionItem);
+			if (row.getCompletionItem() == null) { // does not show completion of the child entry
+				forgeCompletion(row, completions.get(row.getKey()));
 			}
+		}
+	}
+
+	private void forgeCompletion(CurriculumElementWithViewsRow row, Double completion) {
+		if (completion != null) {
+			ProgressBarItem completionItem = new ProgressBarItem("completion_" + row.getKey(), 100,
+					completion.floatValue(), Float.valueOf(1), null);
+			completionItem.setWidthInPercent(true);
+			completionItem.setLabelAlignment(LabelAlignment.none);
+			row.setCompletionItem(completionItem);
 		}
 	}
 
