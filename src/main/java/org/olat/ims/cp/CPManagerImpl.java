@@ -61,6 +61,7 @@ import org.olat.repository.RepositoryManager;
 import org.springframework.stereotype.Service;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
 /**
  * The CP manager implementation.
@@ -81,6 +82,11 @@ public class CPManagerImpl implements CPManager {
 
 	private static XStream configXstream = XStreamHelper.createXStreamInstance();
 	static {
+		XStream.setupDefaultSecurity(configXstream);
+		Class<?>[] types = new Class[] {
+				CPPackageConfig.class, DeliveryOptions.class
+			};
+		configXstream.addPermission(new ExplicitTypePermission(types));
 		configXstream.alias("packageConfig", CPPackageConfig.class);
 		configXstream.alias("deliveryOptions", DeliveryOptions.class);
 	}
