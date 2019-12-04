@@ -21,6 +21,7 @@ package org.olat.core.gui.control.generic.iframe;
 
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,8 +52,6 @@ public class IFrameDeliveryMapper implements Mapper {
 
 	private static final Logger log = Tracing.createLoggerFor(IFrameDeliveryMapper.class);
 	
-	private static final String DEFAULT_ENCODING = "iso-8859-1";
-	private static final String UNICODE_ENCODING = "unicode";
 	private static final String DEFAULT_CONTENT_TYPE = "text/html";
 	private static final String XHTML_EXTENSION = "xhtml";
 	private static final String XHTML_CONTENT_TYPE = "application/xhtml+xml";
@@ -190,42 +189,17 @@ public class IFrameDeliveryMapper implements Mapper {
 		//only files are allowed, but somehow it happened that folders showed up here
 		if (vfsItem instanceof VFSLeaf) {
 			vfsLeaf = (VFSLeaf) rootDir.resolve(path);
-		} else {
-			mr = new NotFoundMediaResource();
 		}
+		
 		if (vfsLeaf == null) {
 			mr = new NotFoundMediaResource();
 		} else {
 			// check if path ends with .html, .htm or .xhtml. We do this by searching for "htm" 
 			// and accept positions of this string at length-3 or length-4
-			if (path.toLowerCase().lastIndexOf(FILE_SUFFIX_HTM) >= (path.length()-4)) {
-				// set the http content-type and the encoding
-				Page page = loadPageWithGuess(vfsLeaf);
-				String pageEncoding = page.getEncoding();
-				if (page.isUseLoadedPageString()) {
-					mr = prepareMediaResource(httpRequest, page.getPage(), pageEncoding, page.getContentType(), isPopUp);
-				} else {
-					// found a new charset other than iso-8859-1, load string with proper encoding
-					String content = FileUtils.load(vfsLeaf.getInputStream(), pageEncoding);
-					mr = prepareMediaResource(httpRequest, content, pageEncoding, page.getContentType(), isPopUp);
-				}
-				if(contentEncoding == null) {
-					contentEncoding = pageEncoding;
-				}
+			if (path.toLowerCase().lastIndexOf(FILE_SUFFIX_HTM) >= (path.length() - 4)) {
+				mr = deliverHtmlFile(httpRequest, vfsLeaf, isPopUp);
 			} else if (path.endsWith(FILE_SUFFIX_JS)) { // a javascript library
-				VFSMediaResource vmr = new VFSMediaResource(vfsLeaf);
-				// set the encoding; could be null if this page starts with .js file
-				// (not very common...).
-				// if we set no header here, apache sends the default encoding
-				// together with the mime-type, which is wrong.
-				// so we assume the .js file has the same encoding as the html file
-				// that loads the .js file
-				if (jsEncoding != null) {
-					vmr.setEncoding(jsEncoding);
-				} else if (contentEncoding != null) {
-					vmr.setEncoding(contentEncoding);
-				}
-				mr = vmr;
+				mr = deliverJavascriptFile(vfsLeaf);
 			} else {
 				// binary data: not .html, not .htm, not .js -> treated as is
 				VFSMediaResource vmr = new VFSMediaResource(vfsLeaf);
@@ -238,6 +212,52 @@ public class IFrameDeliveryMapper implements Mapper {
 			}
 		}
 		return mr;
+	}
+	
+	private MediaResource deliverJavascriptFile(VFSLeaf vfsLeaf) {
+		VFSMediaResource vmr = new VFSMediaResource(vfsLeaf);
+		// set the encoding; could be null if this page starts with .js file
+		// (not very common...).
+		// if we set no header here, apache sends the default encoding
+		// together with the mime-type, which is wrong.
+		// so we assume the .js file has the same encoding as the html file
+		// that loads the .js file
+		
+		String encoding;
+		if (jsEncoding != null) {
+			encoding = jsEncoding;
+		} else if (contentEncoding != null) {
+			encoding = contentEncoding;
+		} else {
+			encoding = StandardCharsets.ISO_8859_1.name();
+		}
+		vmr.setEncoding(encoding);
+		return vmr;
+	}
+	
+	/**
+	 * Set the http content-type and the encoding
+	 * 
+	 * @param httpRequest The HTTP request
+	 * @param vfsLeaf The file to delivery
+	 * @param isPopUp If it's a popup or not
+	 * @return The media resource
+	 */
+	private MediaResource deliverHtmlFile(HttpServletRequest httpRequest, VFSLeaf vfsLeaf, boolean isPopUp) {
+		Page page = loadPageWithGuess(vfsLeaf);
+		String pageEncoding = page.getEncoding();
+		if(pageEncoding == null) {
+			pageEncoding = StandardCharsets.ISO_8859_1.name();
+		} else if(contentEncoding == null) {
+			contentEncoding = pageEncoding;
+		}
+		
+		if (page.isUseLoadedPageString()) {
+			return prepareMediaResource(httpRequest, page.getContent(), pageEncoding, page.getContentType(), isPopUp);
+		}
+		// found a new charset other than iso-8859-1, load string with proper encoding
+		String content = FileUtils.load(vfsLeaf.getInputStream(), pageEncoding);
+		return prepareMediaResource(httpRequest, content, pageEncoding, page.getContentType(), isPopUp);
 	}
 	
 	private StringMediaResource prepareMediaResource(HttpServletRequest httpRequest, String page, String enc, String contentType, boolean isPopUp) {
@@ -293,113 +313,117 @@ public class IFrameDeliveryMapper implements Mapper {
 		}
 
 		String docType = parser.getHtmlDocType();	
-		HtmlOutput sb = new HtmlOutput(docType, themeBaseUri, page.length() + 1000);
-		if (docType != null) sb.append(docType).append("\n");
-		if (parser.getXhtmlNamespaces() == null) sb.append("<html><head>");
-		else {
-			sb.append(parser.getXhtmlNamespaces());
-			sb.append("<head>\n<meta http-equiv=\"Content-Script-Type\" content=\"text/javascript\"/>");//neded to allow body onload attribute
-		}
-		//<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-		sb.append("\n<meta http-equiv=\"content-type\" content=\"").append(mimetype).append("\"");
-		if (docType != null && docType.indexOf("XHTML") > 0) sb.append("/"); // close tag only when xhtml to validate
-		sb.append(">");
-		
-		if(openolatCss != null && openolatCss.booleanValue()) {
-			sb.appendOpenolatCss();
-		}
-		
-		if(!parser.hasOwnCss()) {
-			if(openolatCss == null || openolatCss.booleanValue()) {
-				//add olat content css as used in html editor
-				sb.appendOpenolatCss();//css only loaded once in HtmlOutput
+		try(HtmlOutput sb = new HtmlOutput(docType, themeBaseUri, page.length() + 1000)) {
+			if (docType != null) sb.append(docType).append("\n");
+			if (parser.getXhtmlNamespaces() == null) sb.append("<html><head>");
+			else {
+				sb.append(parser.getXhtmlNamespaces());
+				sb.append("<head>\n<meta http-equiv=\"Content-Script-Type\" content=\"text/javascript\"/>");//neded to allow body onload attribute
 			}
-			if(customCssDelegate != null && customCssDelegate.getCustomCSS() != null
-					&& customCssDelegate.getCustomCSS().getCSSURLIFrame() != null) {
-				String  customCssURL = customCssDelegate.getCustomCSS().getCSSURLIFrame();
-				sb.appendCss(customCssURL, "customcss");	
-			} else if (customCssURL != null) {
-				// add the custom  CSS, e.g. the course css that overrides the standard content css
-				sb.appendCss(customCssURL, "customcss");				
-			} 
-		}
-		
-		if (enableTextmarking) {
-			if (log.isDebugEnabled()) {
-				log.debug("Textmarking is enabled, including tooltips js files into iframe source...");
-			}
-			sb.appendJQuery();	
-			sb.appendGlossary();
-		}
-		
-		if(jQueryEnabled != null && jQueryEnabled.booleanValue()) {
-			sb.appendJQuery();
-		}
-		
-		if(prototypeEnabled != null && prototypeEnabled.booleanValue()) {
-			sb.appendPrototype();
-		}
-		
-		// Load some iframe.js helper code
-		sb.append("\n<script>\n/* <![CDATA[ */\n");
-		// Set the iframe id. Important to set before iframe.js is loaded.
-		sb.append("b_iframeid=\"").append(frameId).append("\";");
-		sb.append("b_isInlineUri=").append(Boolean.toString(addCheckForInlineEvents)).append(";");
-		sb.append("\n/* ]]> */\n</script>");
-		sb.appendStaticJs("js/openolat/iframe.js");
-		sb.appendStaticJs("js/iframeResizer/iframeResizer.contentWindow.min.js");
-
-		if (parser.getHtmlContent().length() > 0) {
-			sb.append("\n<script>\n/* <![CDATA[ */\n");
-			// register the tooltips enabling on document load event
-			sb.append("b_addOnloadEvent(b_hideExtMessageBox);");
-			if (addCheckForInlineEvents) {
-				// Refresh dirty menu tree by triggering client side request to component which fires events
-				// which is not possible by mappers. The method will first check if the page is loaded in our
-				// iframe and ignore all other requests (files in framesets, sub-iframes, AJAX calls etc)
-				if ((System.currentTimeMillis() - this.suppressEndlessReload) > 2000) sb.append("b_addOnloadEvent(b_sendNewUriEventToParent);");
-				this.suppressEndlessReload = System.currentTimeMillis();
-			}
-			sb.append("b_addOnloadEvent(b_changeLinkTargets);");
+			//<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+			sb.append("\n<meta http-equiv=\"content-type\" content=\"").append(mimetype).append("\"");
+			if (docType != null && docType.indexOf("XHTML") > 0) sb.append("/"); // close tag only when xhtml to validate
+			sb.append(">");
 			
-			if(enableTextmarking){
-				sb.append("b_addOnloadEvent(b_glossaryHighlight);");
+			if(openolatCss != null && openolatCss.booleanValue()) {
+				sb.appendOpenolatCss();
 			}
 			
-			if(anchorFirefoxWorkaround) {
-				sb.append("b_addOnloadEvent(b_anchorFirefoxWorkaround);");
+			if(!parser.hasOwnCss()) {
+				if(openolatCss == null || openolatCss.booleanValue()) {
+					//add olat content css as used in html editor
+					sb.appendOpenolatCss();//css only loaded once in HtmlOutput
+				}
+				if(customCssDelegate != null && customCssDelegate.getCustomCSS() != null
+						&& customCssDelegate.getCustomCSS().getCSSURLIFrame() != null) {
+					String  customCssURL = customCssDelegate.getCustomCSS().getCSSURLIFrame();
+					sb.appendCss(customCssURL, "customcss");	
+				} else if (customCssURL != null) {
+					// add the custom  CSS, e.g. the course css that overrides the standard content css
+					sb.appendCss(customCssURL, "customcss");				
+				} 
 			}
 			
-			sb.append("\n/* ]]> */\n</script>");
-		}		
-
-		String origHTMLHead = parser.getHtmlHead();
-		// jsMath brute force approach to render latex formulas: add library if
-		// a jsmath class is found in the code and the library is not already in
-		// the header of the page
-		if ((page.indexOf("<math") > -1 || page.indexOf("class=\"math\"") != -1 || page.indexOf("class='math'") != -1) && (origHTMLHead == null || origHTMLHead.indexOf("jsMath/easy/load.js") == -1)) {
-			sb.appendJsMath();		
+			if (enableTextmarking) {
+				if (log.isDebugEnabled()) {
+					log.debug("Textmarking is enabled, including tooltips js files into iframe source...");
+				}
+				sb.appendJQuery();	
+				sb.appendGlossary();
+			}
+			
+			if(jQueryEnabled != null && jQueryEnabled.booleanValue()) {
+				sb.appendJQuery();
+			}
+			
+			if(prototypeEnabled != null && prototypeEnabled.booleanValue()) {
+				sb.appendPrototype();
+			}
+			
+			// Load some iframe.js helper code
+			sb.append("\n<script>\n");
+			// Set the iframe id. Important to set before iframe.js is loaded.
+			sb.append("b_iframeid=\"").append(frameId).append("\";");
+			sb.append("b_isInlineUri=").append(Boolean.toString(addCheckForInlineEvents)).append(";");
+			sb.append("\n</script>");
+			sb.appendStaticJs("js/openolat/iframe.js");
+			sb.appendStaticJs("js/iframeResizer/iframeResizer.contentWindow.min.js");
+	
+			if (parser.getHtmlContent().length() > 0) {
+				sb.append("\n<script>\n");
+				// register the tooltips enabling on document load event
+				sb.append("b_addOnloadEvent(b_hideExtMessageBox);");
+				if (addCheckForInlineEvents) {
+					// Refresh dirty menu tree by triggering client side request to component which fires events
+					// which is not possible by mappers. The method will first check if the page is loaded in our
+					// iframe and ignore all other requests (files in framesets, sub-iframes, AJAX calls etc)
+					if ((System.currentTimeMillis() - this.suppressEndlessReload) > 2000) sb.append("b_addOnloadEvent(b_sendNewUriEventToParent);");
+					this.suppressEndlessReload = System.currentTimeMillis();
+				}
+				sb.append("b_addOnloadEvent(b_changeLinkTargets);");
+				
+				if(enableTextmarking){
+					sb.append("b_addOnloadEvent(b_glossaryHighlight);");
+				}
+				
+				if(anchorFirefoxWorkaround) {
+					sb.append("b_addOnloadEvent(b_anchorFirefoxWorkaround);");
+				}
+				
+				sb.append("\n</script>");
+			}		
+	
+			String origHTMLHead = parser.getHtmlHead();
+			// jsMath brute force approach to render latex formulas: add library if
+			// a jsmath class is found in the code and the library is not already in
+			// the header of the page
+			if ((page.indexOf("<math") > -1 || page.indexOf("class=\"math\"") != -1 || page.indexOf("class='math'") != -1) && (origHTMLHead == null || origHTMLHead.indexOf("jsMath/easy/load.js") == -1)) {
+				sb.appendJsMath();		
+			}
+	
+			// add some custom header things like js code or css
+			if (customHeaderContent  != null) {
+				sb.append(customHeaderContent);
+			}
+	
+			// Add HTML header stuff from original page: css, javascript, title etc.
+			if (origHTMLHead != null) sb.append(origHTMLHead);		
+			sb.append("\n</head>\n");
+			// use the original body tag, may include all kind of attributes (class, style, onload, on...)
+			sb.append(parser.getBodyTag());
+			// finally add content and finish page
+			sb.append(parser.getHtmlContent());
+			// iFrameResizer adds that snippet at the end of the iFrame body, but without &nbsp.
+			// Sometimes this leads to a invisible line at the end of the iFrame, so we add the
+			// same snippet but with &nbsp.
+			sb.append("<div style=\"clear: both; display: block;\">&nbsp;</div>");
+			sb.append("</body></html>");
+			
+			return sb.toString();
+		} catch(Exception e) {
+			log.error("", e);
+			return null;
 		}
-
-		// add some custom header things like js code or css
-		if (customHeaderContent  != null) {
-			sb.append(customHeaderContent);
-		}
-
-		// Add HTML header stuff from original page: css, javascript, title etc.
-		if (origHTMLHead != null) sb.append(origHTMLHead);		
-		sb.append("\n</head>\n");
-		// use the original body tag, may include all kind of attributes (class, style, onload, on...)
-		sb.append(parser.getBodyTag());
-		// finally add content and finish page
-		sb.append(parser.getHtmlContent());
-		// iFrameResizer adds that snippet at the end of the iFrame body, but without &nbsp.
-		// Sometimes this leads to a invisible line at the end of the iFrame, so we add the
-		// same snippet but with &nbsp.
-		sb.append("<div style=\"clear: both; display: block;\">&nbsp;</div>");
-		sb.append("</body></html>");
-		
-		return sb.toString();
 	}
 	
 	private Page loadPageWithGuess(VFSLeaf vfsPage) {
@@ -410,26 +434,25 @@ public class IFrameDeliveryMapper implements Mapper {
 			page.setUseLoadedPageString(true);
 			String content = FileUtils.load(vfsPage.getInputStream(), contentEncoding);
 			page.setContentType(guessContentType(page, content));
-			page.setPage(content);
+			page.setContent(content);
 			return page;
 		}
 		
 		Page page = new Page();
 		page.setExtension(FileUtils.getFileSuffix(vfsPage.getName()));
-		page.setEncoding(DEFAULT_ENCODING);
-		String content = FileUtils.load(vfsPage.getInputStream(), DEFAULT_ENCODING);
+		String content = FileUtils.load(vfsPage.getInputStream(), StandardCharsets.ISO_8859_1.name());
 		page.setContentType(guessContentType(page, content));
 		// <meta.*charset=([^"]*)"
 		
 		//extract only the charset attribute without the overhead of creating an htmlparser
-		boolean guessed = loadPageWithGuess(page, content, DEFAULT_ENCODING);
+		boolean guessed = loadPageWithGuess(page, content, StandardCharsets.ISO_8859_1.name());
 		if(!guessed) {
 			//try opening it with utf-8
-			String contentUnicode = FileUtils.load(vfsPage.getInputStream(), UNICODE_ENCODING);
-			guessed = loadPageWithGuess(page, contentUnicode, UNICODE_ENCODING);
+			String contentUnicode = FileUtils.load(vfsPage.getInputStream(), StandardCharsets.UTF_8.name());
+			guessed = loadPageWithGuess(page, contentUnicode, StandardCharsets.UTF_8.name());
 			if(!guessed) {
 				//take default
-				page.setPage(content);
+				page.setContent(content);
 				page.setUseLoadedPageString(true);
 			}
 		}
@@ -439,7 +462,7 @@ public class IFrameDeliveryMapper implements Mapper {
 	private boolean loadPageWithGuess(Page page, String content, String encoding) {
 		//default encoding for xhtml 
 		if(XHTML_CONTENT_TYPE.equals(page.getContentType())) {
-			page.setEncoding("utf-8");
+			page.setEncoding(StandardCharsets.UTF_8.name());
 		}
 		
 		String guessedEncoding = guessEncoding(content);
@@ -456,7 +479,7 @@ public class IFrameDeliveryMapper implements Mapper {
 			if (page.getEncoding().equalsIgnoreCase(encoding) || page.getEncoding().contains(encoding)
 					|| page.getEncoding().toLowerCase().contains(encoding)) {
 				page.setUseLoadedPageString(true);
-				page.setPage(content);
+				page.setContent(content);
 			}
 			return true;
 		}
@@ -632,7 +655,7 @@ public class IFrameDeliveryMapper implements Mapper {
 		private String encoding;
 		private String contentType;
 		private String extension;
-		private String page;
+		private String content;
 		private boolean useLoadedPageString = false;
 		
 		public String getEncoding() {
@@ -659,12 +682,12 @@ public class IFrameDeliveryMapper implements Mapper {
 			this.contentType = contentType;
 		}
 
-		public String getPage() {
-			return page;
+		public String getContent() {
+			return content;
 		}
-		
-		public void setPage(String page) {
-			this.page = page;
+
+		public void setContent(String content) {
+			this.content = content;
 		}
 
 		public boolean isUseLoadedPageString() {
