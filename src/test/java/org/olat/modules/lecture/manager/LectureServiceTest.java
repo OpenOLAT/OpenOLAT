@@ -501,6 +501,218 @@ public class LectureServiceTest extends OlatTestCase {
 		Assert.assertNull(reloadedRollCall3.getAbsenceNotice());
 	}
 	
+	@Test
+	public void getAbsenceNoticeUniquelyRelatedTo() {
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("noticee-1");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("noticee-2");
+		RepositoryEntry entry1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry entry2 = JunitTestHelper.createAndPersistRepositoryEntry();
+
+		LectureBlock block1 = createMinimalLectureBlock(entry1);
+		LectureBlock block2 = createMinimalLectureBlock(entry2);
+		LectureBlock block3 = createMinimalLectureBlock(entry2);
+		LectureBlock block4 = createMinimalLectureBlock(entry2);
+		dbInstance.commit();
+
+		List<LectureBlock> lectureBlocks = new ArrayList<>();
+		lectureBlocks.add(block1);
+		lectureBlocks.add(block2);
+
+		AbsenceNotice notice1_2 = lectureService.createAbsenceNotice(participant1, AbsenceNoticeType.notified, AbsenceNoticeTarget.lectureblocks,
+				new Date(), new Date(), null, null, null, null, lectureBlocks, null);
+		AbsenceNotice notice1_2_alt = lectureService.createAbsenceNotice(participant2, AbsenceNoticeType.notified, AbsenceNoticeTarget.lectureblocks,
+				new Date(), new Date(), null, null, null, null, lectureBlocks, null);
+		AbsenceNotice notice3 = lectureService.createAbsenceNotice(participant1, AbsenceNoticeType.notified, AbsenceNoticeTarget.lectureblocks,
+				new Date(), new Date(), null, null, null, null, Collections.singletonList(block3), null);
+		AbsenceNotice notice3b = lectureService.createAbsenceNotice(participant2, AbsenceNoticeType.notified, AbsenceNoticeTarget.lectureblocks,
+				new Date(), new Date(), null, null, null, null, Collections.singletonList(block3), null);
+		
+		List<LectureBlock> lectureSecondBlocks = new ArrayList<>();
+		lectureSecondBlocks.add(block1);
+		lectureSecondBlocks.add(block2);
+		lectureSecondBlocks.add(block4);
+		
+		AbsenceNotice notice4 = lectureService.createAbsenceNotice(participant2, AbsenceNoticeType.notified, AbsenceNoticeTarget.lectureblocks,
+				new Date(), new Date(), null, null, null, null, lectureSecondBlocks, null);
+		dbInstance.commit();
+		Assert.assertNotNull(notice4);
+		Assert.assertNotNull(notice1_2);
+		Assert.assertNotNull(notice1_2_alt);
+		
+		List<LectureBlock> allLectureBlocks = new ArrayList<>();
+		allLectureBlocks.add(block1);
+		allLectureBlocks.add(block3);
+		
+		// check block 1 + 3
+		List<AbsenceNotice> uniquelyRelatedNotices = lectureService.getAbsenceNoticeUniquelyRelatedTo(allLectureBlocks);
+		Assert.assertNotNull(uniquelyRelatedNotices);
+		Assert.assertEquals(2, uniquelyRelatedNotices.size());
+		Assert.assertTrue(uniquelyRelatedNotices.contains(notice3));
+		Assert.assertTrue(uniquelyRelatedNotices.contains(notice3b));
+
+		List<AbsenceNotice> uniquelyRelatedNoticesTo4 = lectureService.getAbsenceNoticeUniquelyRelatedTo(Collections.singletonList(block4));
+		Assert.assertNotNull(uniquelyRelatedNoticesTo4);
+		Assert.assertTrue(uniquelyRelatedNoticesTo4.isEmpty());
+		
+		// dummy check
+		List<AbsenceNotice> emptyList = lectureService.getAbsenceNoticeUniquelyRelatedTo(Collections.emptyList());
+		Assert.assertNotNull(emptyList);
+		Assert.assertTrue(emptyList.isEmpty());
+	}
+	
+	@Test
+	public void getAbsenceNoticeUniquelyRelatedTo_minimal() {
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("noticee-3");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+
+		LectureBlock block = createMinimalLectureBlock(entry);
+		dbInstance.commit();
+
+		AbsenceNotice noticeEntries = lectureService.createAbsenceNotice(participant, AbsenceNoticeType.notified, AbsenceNoticeTarget.allentries,
+				new Date(), new Date(), null, null, null, null, null, null);
+		AbsenceNotice noticeLectures = lectureService.createAbsenceNotice(participant, AbsenceNoticeType.notified, AbsenceNoticeTarget.lectureblocks,
+				new Date(), new Date(), null, null, null, null, Collections.singletonList(block), null);
+
+		// check
+		List<AbsenceNotice> uniquelyRelatedNotices = lectureService.getAbsenceNoticeUniquelyRelatedTo(Collections.singletonList(block));
+		Assert.assertNotNull(uniquelyRelatedNotices);
+		Assert.assertEquals(1, uniquelyRelatedNotices.size());
+		Assert.assertTrue(uniquelyRelatedNotices.contains(noticeLectures));
+		Assert.assertFalse(uniquelyRelatedNotices.contains(noticeEntries));
+	}
+	
+	/**
+	 * Lengthy test to check the method with more than a few notices
+	 * and cross check different cases.
+	 * 
+	 */
+	@Test
+	public void getAbsenceNoticeUniquelyRelatedTo_variant() {
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("noticee-1");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("noticee-2");
+		Identity participant3 = JunitTestHelper.createAndPersistIdentityAsRndUser("noticee-3");
+		RepositoryEntry entry1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry entry2 = JunitTestHelper.createAndPersistRepositoryEntry();
+
+		LectureBlock block1 = createMinimalLectureBlock(entry1);
+		LectureBlock block2 = createMinimalLectureBlock(entry1);
+		LectureBlock block3 = createMinimalLectureBlock(entry1);
+		LectureBlock block4 = createMinimalLectureBlock(entry2);
+		LectureBlock block5 = createMinimalLectureBlock(entry2);
+		LectureBlock block6 = createMinimalLectureBlock(entry2);
+		dbInstance.commit();
+
+		List<LectureBlock> lectureBlocks1_2 = new ArrayList<>();
+		lectureBlocks1_2.add(block1);
+		lectureBlocks1_2.add(block2);
+
+		AbsenceNotice notice1_2 = lectureService.createAbsenceNotice(participant1, AbsenceNoticeType.notified, AbsenceNoticeTarget.lectureblocks,
+				new Date(), new Date(), null, "1 2", null, null, lectureBlocks1_2, null);
+		
+		List<LectureBlock> lectureBlocks2_3_4 = new ArrayList<>();
+		lectureBlocks2_3_4.add(block2);
+		lectureBlocks2_3_4.add(block3);
+		lectureBlocks2_3_4.add(block4);
+		AbsenceNotice notice2_3_4 = lectureService.createAbsenceNotice(participant2, AbsenceNoticeType.notified, AbsenceNoticeTarget.lectureblocks,
+				new Date(), new Date(), null, "2 3 4", null, null, lectureBlocks2_3_4, null);
+		
+		List<LectureBlock> lectureBlocks1_3_4 = new ArrayList<>();
+		lectureBlocks1_3_4.add(block1);
+		lectureBlocks1_3_4.add(block3);
+		lectureBlocks1_3_4.add(block4);
+		AbsenceNotice notice1_3_4 = lectureService.createAbsenceNotice(participant3, AbsenceNoticeType.notified, AbsenceNoticeTarget.lectureblocks,
+				new Date(), new Date(), null, "1 3 4", null, null, lectureBlocks1_3_4, null);
+		
+		AbsenceNotice notice4 = lectureService.createAbsenceNotice(participant2, AbsenceNoticeType.notified, AbsenceNoticeTarget.lectureblocks,
+				new Date(), new Date(), null, "4", null, null, Collections.singletonList(block4), null);
+		
+		List<LectureBlock> lectureSecondBlocks4_5 = new ArrayList<>();
+		lectureSecondBlocks4_5.add(block4);
+		lectureSecondBlocks4_5.add(block5);
+		AbsenceNotice notice4_5 = lectureService.createAbsenceNotice(participant2, AbsenceNoticeType.notified, AbsenceNoticeTarget.lectureblocks,
+				new Date(), new Date(), null, "4 5", null, null, lectureSecondBlocks4_5, null);
+		
+		List<LectureBlock> lectureBlocks4_5_6 = new ArrayList<>();
+		lectureBlocks4_5_6.add(block4);
+		lectureBlocks4_5_6.add(block5);
+		lectureBlocks4_5_6.add(block6);
+		AbsenceNotice notice4_5_6 = lectureService.createAbsenceNotice(participant2, AbsenceNoticeType.notified, AbsenceNoticeTarget.lectureblocks,
+				new Date(), new Date(), null, "4 5 6", null, null, lectureBlocks4_5_6, null);
+		
+		AbsenceNotice notice6 = lectureService.createAbsenceNotice(participant2, AbsenceNoticeType.notified, AbsenceNoticeTarget.lectureblocks,
+				new Date(), new Date(), null, "6", null, null, Collections.singletonList(block6), null);
+		dbInstance.commit();
+		
+		
+		// check blocks 4, 5, 6
+		List<AbsenceNotice> uniquelyRelatedNotices4_5_6 = lectureService.getAbsenceNoticeUniquelyRelatedTo(lectureBlocks4_5_6);
+		Assert.assertNotNull(uniquelyRelatedNotices4_5_6);
+		Assert.assertEquals(4, uniquelyRelatedNotices4_5_6.size());
+		Assert.assertTrue(uniquelyRelatedNotices4_5_6.contains(notice4));
+		Assert.assertTrue(uniquelyRelatedNotices4_5_6.contains(notice4_5));
+		Assert.assertTrue(uniquelyRelatedNotices4_5_6.contains(notice4_5_6));
+		Assert.assertTrue(uniquelyRelatedNotices4_5_6.contains(notice6));
+		
+		// check blocks 1 5
+		List<LectureBlock> lectureBlocks1_5 = new ArrayList<>();
+		lectureBlocks1_5.add(block1);
+		lectureBlocks1_5.add(block3);
+		List<AbsenceNotice> uniquelyRelatedNotices1_5 = lectureService.getAbsenceNoticeUniquelyRelatedTo(lectureBlocks1_5);
+		Assert.assertNotNull(uniquelyRelatedNotices1_5);
+		Assert.assertTrue(uniquelyRelatedNotices1_5.isEmpty());
+		
+		// check blocks 1 2
+		lectureBlocks1_2.add(block1);// part of the test
+		lectureBlocks1_2.add(block2);
+		List<AbsenceNotice> uniquelyRelatedNotices1_2 = lectureService.getAbsenceNoticeUniquelyRelatedTo(lectureBlocks1_2);
+		Assert.assertNotNull(uniquelyRelatedNotices1_2);
+		Assert.assertEquals(1, uniquelyRelatedNotices1_2.size());
+		Assert.assertTrue(uniquelyRelatedNotices1_2.contains(notice1_2));
+		
+		// check blocks 4
+		List<LectureBlock> lectureBlocks4 = new ArrayList<>();
+		lectureBlocks4.add(block4);
+		List<AbsenceNotice> uniquelyRelatedNotices4 = lectureService.getAbsenceNoticeUniquelyRelatedTo(lectureBlocks4);
+		Assert.assertNotNull(uniquelyRelatedNotices4);
+		Assert.assertEquals(1, uniquelyRelatedNotices4.size());
+		Assert.assertTrue(uniquelyRelatedNotices4.contains(notice4));
+		
+		// check blocks 2, 3, 4, 5, 6
+		List<LectureBlock> lectureBlocks2_3_4_5_6 = new ArrayList<>();
+		lectureBlocks2_3_4_5_6.add(block2);
+		lectureBlocks2_3_4_5_6.add(block3);
+		lectureBlocks2_3_4_5_6.add(block4);
+		lectureBlocks2_3_4_5_6.add(block5);
+		lectureBlocks2_3_4_5_6.add(block6);
+		List<AbsenceNotice> uniquelyRelatedNotices2_3_4_5_6 = lectureService.getAbsenceNoticeUniquelyRelatedTo(lectureBlocks2_3_4_5_6);
+		Assert.assertNotNull(uniquelyRelatedNotices2_3_4_5_6);
+		Assert.assertEquals(5, uniquelyRelatedNotices2_3_4_5_6.size());
+		Assert.assertTrue(uniquelyRelatedNotices2_3_4_5_6.contains(notice2_3_4));
+		Assert.assertTrue(uniquelyRelatedNotices2_3_4_5_6.contains(notice4));
+		Assert.assertTrue(uniquelyRelatedNotices2_3_4_5_6.contains(notice4_5));
+		Assert.assertTrue(uniquelyRelatedNotices2_3_4_5_6.contains(notice4_5_6));
+		Assert.assertTrue(uniquelyRelatedNotices2_3_4_5_6.contains(notice6));
+		
+		// check all blocks
+		List<LectureBlock> lectureBlocks1_2_3_4_5_6 = new ArrayList<>();
+		lectureBlocks1_2_3_4_5_6.add(block1);
+		lectureBlocks1_2_3_4_5_6.add(block2);
+		lectureBlocks1_2_3_4_5_6.add(block3);
+		lectureBlocks1_2_3_4_5_6.add(block4);
+		lectureBlocks1_2_3_4_5_6.add(block5);
+		lectureBlocks1_2_3_4_5_6.add(block6);
+		List<AbsenceNotice> uniquelyRelatedNotices1_2_3_4_5_6 = lectureService.getAbsenceNoticeUniquelyRelatedTo(lectureBlocks1_2_3_4_5_6);
+		Assert.assertNotNull(uniquelyRelatedNotices1_2_3_4_5_6);
+		Assert.assertEquals(7, uniquelyRelatedNotices1_2_3_4_5_6.size());
+		Assert.assertTrue(uniquelyRelatedNotices1_2_3_4_5_6.contains(notice1_2));
+		Assert.assertTrue(uniquelyRelatedNotices1_2_3_4_5_6.contains(notice1_3_4));
+		Assert.assertTrue(uniquelyRelatedNotices1_2_3_4_5_6.contains(notice2_3_4));
+		Assert.assertTrue(uniquelyRelatedNotices1_2_3_4_5_6.contains(notice4));
+		Assert.assertTrue(uniquelyRelatedNotices1_2_3_4_5_6.contains(notice4_5));
+		Assert.assertTrue(uniquelyRelatedNotices1_2_3_4_5_6.contains(notice4_5_6));
+		Assert.assertTrue(uniquelyRelatedNotices1_2_3_4_5_6.contains(notice6));
+	}
+	
 	private LectureBlock createMinimalLectureBlock(RepositoryEntry entry) {
 		LectureBlock lectureBlock = lectureService.createLectureBlock(entry);
 		lectureBlock.setStartDate(new Date());

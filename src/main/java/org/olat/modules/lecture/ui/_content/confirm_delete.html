@@ -1,0 +1,15 @@
+<div class="o_warning" role="alert">$msg
+#if($r.isNotEmpty($noticeMsg))
+	<br><i class="o_icon o_icon-lg o_icon_important"> </i> $noticeMsg
+#end
+</div>
+#if($r.available("confirm"))
+	$r.render("confirm")
+	#if($f.hasError("confirm"))
+		$r.render("confirm_ERROR")
+	#end
+#end
+<div class="o_button_group">
+	$r.render("cancel")
+	$r.render("delete")
+</div>

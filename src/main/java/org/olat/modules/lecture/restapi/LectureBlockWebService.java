@@ -125,8 +125,8 @@ public class LectureBlockWebService {
 	 */
 	@DELETE
 	public Response deleteLectureBlock() {
-		lectureService.deleteLectureBlock(lectureBlock);
-		log.info(Tracing.M_AUDIT, "Lecture block deleted: " + lectureBlock);
+		lectureService.deleteLectureBlock(lectureBlock, null);
+		log.info(Tracing.M_AUDIT, "Lecture block deleted: {}", lectureBlock);
 		return Response.ok().build();
 	}
 

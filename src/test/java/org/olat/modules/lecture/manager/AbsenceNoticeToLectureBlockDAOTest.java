@@ -19,6 +19,7 @@
  */
 package org.olat.modules.lecture.manager;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -192,6 +193,35 @@ public class AbsenceNoticeToLectureBlockDAOTest extends OlatTestCase {
 		Assert.assertTrue(rollCallList.contains(rollCall1));
 		Assert.assertFalse(rollCallList.contains(rollCall2));
 		Assert.assertFalse(rollCallList.contains(oldRollCall1));
+	}
+	
+	@Test
+	public void getRelationsAStepFurther() {
+		
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlockEntry1 = createMinimalLectureBlock(entry, new Date(), new Date());
+		LectureBlock lectureBlockEntry2 = createMinimalLectureBlock(entry, new Date(), new Date());
+		List<LectureBlock> lectureBlockEntries = new ArrayList<>();
+		lectureBlockEntries.add(lectureBlockEntry1);
+		lectureBlockEntries.add(lectureBlockEntry2);
+
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-1");
+		AbsenceNotice notice = lectureService.createAbsenceNotice(participant, AbsenceNoticeType.absence, AbsenceNoticeTarget.entries,
+				CalendarUtils.startOfDay(new Date()), CalendarUtils.endOfDay(new Date()),
+				null, null, Boolean.TRUE, null, lectureBlockEntries, null);
+		dbInstance.commitAndCloseSession();
+		
+		List<AbsenceNoticeToLectureBlock> relations = absenceNoticeToLectureBlockDao
+				.getRelationsAStepFurther(Collections.singletonList(lectureBlockEntry1));
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertNotNull(relations);
+		Assert.assertEquals(2, relations.size());
+		
+		for(AbsenceNoticeToLectureBlock relation:relations) {
+			Assert.assertEquals(notice, relation.getAbsenceNotice());
+			Assert.assertTrue(lectureBlockEntries.remove(relation.getLectureBlock()));
+		}
 	}
 	
 	private LectureBlock createMinimalLectureBlock(RepositoryEntry entry, Date start, Date end) {

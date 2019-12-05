@@ -33,6 +33,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -430,7 +431,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	}
 
 	@Override
-	public void deleteLectureBlock(LectureBlock lectureBlock) {
+	public void deleteLectureBlock(LectureBlock lectureBlock, Identity actingIdentity) {
 		//first remove events
 		LectureBlock reloadedBlock = lectureBlockDao.loadByKey(lectureBlock.getKey());
 		RepositoryEntry entry = reloadedBlock.getEntry();
@@ -442,7 +443,44 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 			List<Identity> teachers = getTeachers(reloadedBlock);
 			unsyncInternalCalendar(reloadedBlock, teachers);
 		}
+		
+		List<AbsenceNotice> absenceNotices = getAbsenceNoticeUniquelyRelatedTo(Collections.singletonList(lectureBlock));
+		for(AbsenceNotice absenceNotice:absenceNotices) {
+			deleteAbsenceNotice(absenceNotice, actingIdentity);
+		}
+		absenceNoticeToLectureBlockDao.deleteRelations(reloadedBlock);
 		lectureBlockDao.delete(reloadedBlock);
+		dbInstance.commit();// make it quick
+	}
+
+	@Override
+	public List<AbsenceNotice> getAbsenceNoticeUniquelyRelatedTo(List<LectureBlock> blocks) {
+		List<AbsenceNoticeToLectureBlock> relations = absenceNoticeToLectureBlockDao.getRelationsAStepFurther(blocks);
+
+		Set<Long> lectureBlockKeys = blocks.stream()
+				.map(LectureBlock::getKey)
+				.collect(Collectors.toSet());
+		
+		Map<AbsenceNotice,AtomicInteger> counters = new HashMap<>();
+		for(AbsenceNoticeToLectureBlock relation:relations) {
+			AbsenceNotice notice = relation.getAbsenceNotice();
+			LectureBlock lectureBlock = relation.getLectureBlock();
+			
+			AtomicInteger counter = counters
+					.computeIfAbsent(notice, n -> new AtomicInteger(0));
+			if(!lectureBlockKeys.contains(lectureBlock.getKey())) {
+				counter.incrementAndGet();
+			}
+		}
+		
+		List<AbsenceNotice> uniquelyRelated = new ArrayList<>();
+		for(Map.Entry<AbsenceNotice,AtomicInteger> counterEntry:counters.entrySet()) {
+			int count = counterEntry.getValue().intValue();
+			if(count == 0) {
+				uniquelyRelated.add(counterEntry.getKey());
+			}
+		}
+		return uniquelyRelated;
 	}
 
 	@Override
