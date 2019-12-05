@@ -255,5 +255,29 @@ public interface VFSRepositoryService {
 	public License getLicense(VFSMetadata meta);
 	
 	public License getOrCreateLicense(VFSMetadata meta, Identity itentity);
+	
+	public List<Object[]> getFileStats(); 
+	
+	public List<Object[]> getRevisionStats(); 
+	
+	public List<Object[]> getThumbnailStats(); 
+	
+	/**
+	 * Returns the largest files from the VFS
+	 * 
+	 * @param maxResults
+	 * @return
+	 */
+	public List<VFSMetadata> getLargestFiles(int maxResults);
+	
+	/**
+	 * Returns the largest revisions from the VFS
+	 * 
+	 * @param maxResults
+	 * @return
+	 */
+	public List<VFSRevision> getLargestRevisions(int maxResults);
+	
+	
 
 }

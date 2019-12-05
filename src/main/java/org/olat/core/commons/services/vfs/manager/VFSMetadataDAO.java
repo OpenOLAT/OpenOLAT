@@ -316,6 +316,23 @@ public class VFSMetadataDAO {
 		dbInstance.getCurrentEntityManager().remove(metadata);
 	}
 	
+	public List<VFSMetadata> getLargest(int maxResult) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select metadata from filemetadata metadata")
+		  .append(" left join fetch metadata.author as author")
+		  .append(" left join fetch author.user as authorUser")
+		  .append(" left join fetch metadata.licenseType as licenseType")
+		  .append(" where metadata.deleted = false")
+		  .append(" and metadata.directory = false")
+		  .append(" order by metadata.fileSize desc nulls last");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), VFSMetadata.class)
+				.setFirstResult(1)
+				.setMaxResults(maxResult > 0 && maxResult <= 100 ? maxResult : 100)
+				.getResultList();
+	}
+	
 
 
 }

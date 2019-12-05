@@ -120,6 +120,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	@Autowired
 	private VFSMetadataDAO metadataDao;
 	@Autowired
+	private VFSStatsDAO statsDao;
+	@Autowired
 	private VFSThumbnailDAO thumbnailDao;
 	@Autowired
 	private VFSRepositoryModule vfsModule;
@@ -1383,6 +1385,31 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		File versionFolder = new File(FolderConfig.getCanonicalVersionRoot(), relPath);
 		File fVersion = new File(versionFolder.getParentFile(), file.getName() + ".xml");
 		return fVersion.exists() ? fVersion : null;
+	}
+	
+	@Override
+	public List<VFSMetadata> getLargestFiles(int maxResults) {
+		return metadataDao.getLargest(maxResults);
+	}
+	
+	@Override 
+	public List<VFSRevision> getLargestRevisions(int maxResults) {
+		return revisionDao.getLargest(maxResults);
+	}
+	
+	@Override 
+	public List<Object[]> getFileStats() {
+		return statsDao.getFileStats();
+	}
+	
+	@Override 
+	public List<Object[]> getRevisionStats() {
+		return statsDao.getRevisionStats();
+	}
+	
+	@Override 
+	public List<Object[]> getThumbnailStats() {
+		return statsDao.getThumbnailStats();
 	}
 
 }

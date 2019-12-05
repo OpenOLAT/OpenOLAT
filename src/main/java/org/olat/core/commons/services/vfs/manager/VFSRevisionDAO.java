@@ -212,5 +212,20 @@ public class VFSRevisionDAO {
 				.getReference(VFSRevisionImpl.class, ((VFSRevisionImpl)revision).getKey());
 		dbInstance.getCurrentEntityManager().remove(reloadedRev);
 	}
+	
+	public List<VFSRevision> getLargest(int maxResult) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select rev from vfsrevision rev")
+		  .append(" inner join fetch rev.metadata meta")
+		  .append(" left join fetch rev.author as author")
+		  .append(" left join fetch author.user as authorUser")
+		  .append(" order by rev.size desc nulls last");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), VFSRevision.class)
+				.setFirstResult(1)
+				.setMaxResults(maxResult > 0 && maxResult <= 100 ? maxResult : 100)
+				.getResultList();
+	}
 
 }
