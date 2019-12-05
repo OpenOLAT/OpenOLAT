@@ -149,6 +149,7 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
 		super.evalFormRequest(ureq);
+		if(!isEnabled()) return;
 		
 		try {
 			String receiverId = component.getFormDispatchId();

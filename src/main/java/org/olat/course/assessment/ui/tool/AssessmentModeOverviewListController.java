@@ -189,9 +189,10 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 		Calendar cal = Calendar.getInstance();
 		long now = cal.getTimeInMillis();
 		cal.setTime(mode.getEnd());
-		boolean endSoon = ((cal.getTimeInMillis() - now) < (5l * 60l * 1000l))
+		long endInMillseconds = cal.getTimeInMillis() - now;
+		boolean endSoon = (endInMillseconds < (5l * 60l * 1000l))
 				&& (mode.getStatus() == Status.assessment || mode.getStatus() == Status.followup);
-		AssessmentModeOverviewRow row = new AssessmentModeOverviewRow(mode, isToday, endSoon);
+		AssessmentModeOverviewRow row = new AssessmentModeOverviewRow(mode, isToday, endSoon, endInMillseconds);
 		
 		LectureBlock block = mode.getLectureBlock();
 		boolean allowToStartStop = assessmentCallback.canStartStopAllAssessments()

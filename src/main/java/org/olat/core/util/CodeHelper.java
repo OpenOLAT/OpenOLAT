@@ -83,9 +83,7 @@ public class CodeHelper {
 	}
 	
 	public static long getUniqueIDFromString(String base){
-		int code = Math.abs(base.hashCode());
-		Long l = new Long(code);
-		return l;
+		return Math.abs(base.hashCode());
 	}
 	
 	/**
