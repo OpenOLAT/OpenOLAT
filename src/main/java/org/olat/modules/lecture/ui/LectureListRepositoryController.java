@@ -53,8 +53,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.modal.DialogBoxController;
-import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
@@ -63,7 +61,6 @@ import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockManagedFlag;
@@ -101,11 +98,10 @@ public class LectureListRepositoryController extends FormBasicController {
 	
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
-	private DialogBoxController deleteDialogCtrl;
 	private StepsMainRunController importBlockWizard;
-	private DialogBoxController bulkDeleteDialogCtrl;
 	private EditLectureBlockController editLectureCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
+	private ConfirmDeleteLectureBlockController deleteLectureBlocksCtrl;
 
 	private int counter = 0;
 	private final RepositoryEntry entry;
@@ -269,34 +265,23 @@ public class LectureListRepositoryController extends FormBasicController {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				loadModel();
 			}
-		} else if(deleteDialogCtrl == source) {
-			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
-				LectureBlockRow row = (LectureBlockRow)deleteDialogCtrl.getUserObject();
-				doDelete(row);
+		} else if(deleteLectureBlocksCtrl == source) {
+			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				loadModel();
-				cleanUp();
 			}
-		} else if(bulkDeleteDialogCtrl == source) {
-			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
-				@SuppressWarnings("unchecked")
-				List<LectureBlock> blocks = (List<LectureBlock>)bulkDeleteDialogCtrl.getUserObject();
-				doDelete(blocks);
-				loadModel();
-				cleanUp();
-			}
+			cmc.deactivate();
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
 	
 	private void cleanUp() {
-		removeAsListenerAndDispose(bulkDeleteDialogCtrl);
-		removeAsListenerAndDispose(deleteDialogCtrl);
+		removeAsListenerAndDispose(deleteLectureBlocksCtrl);
 		removeAsListenerAndDispose(editLectureCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
-		bulkDeleteDialogCtrl = null;
-		deleteDialogCtrl = null;
+		deleteLectureBlocksCtrl = null;
 		toolsCalloutCtrl = null;
 		editLectureCtrl = null;
 		toolsCtrl = null;
@@ -391,45 +376,27 @@ public class LectureListRepositoryController extends FormBasicController {
 		if(blocks.isEmpty()) {
 			showWarning("error.atleastone.lecture");
 		} else {
-			StringBuilder titles = new StringBuilder();
-			for(LectureBlock block:blocks) {
-				if(titles.length() > 0) titles.append(", ");
-				titles.append(StringHelper.escapeHtml(block.getTitle()));
-			}
-			String text = translate("confirm.delete.lectures", new String[] { titles.toString() });
-			bulkDeleteDialogCtrl = activateYesNoDialog(ureq, translate("delete.lectures.title"), text, bulkDeleteDialogCtrl);
-			bulkDeleteDialogCtrl.setUserObject(blocks);
+			deleteLectureBlocksCtrl = new ConfirmDeleteLectureBlockController(ureq, getWindowControl(), blocks);
+			listenTo(deleteLectureBlocksCtrl);
+			
+			String title = translate("delete.lectures.title");
+			cmc = new CloseableModalController(getWindowControl(), "close", deleteLectureBlocksCtrl.getInitialComponent(), true, title);
+			listenTo(cmc);
+			cmc.activate();
 		}
 	}
 	
 	private void doConfirmDelete(UserRequest ureq, LectureBlockRow row) {
-		String text = translate("confirm.delete.lectures", new String[] { row.getLectureBlock().getTitle() });
-		deleteDialogCtrl = activateYesNoDialog(ureq, translate("delete.lectures.title"), text, deleteDialogCtrl);
-		deleteDialogCtrl.setUserObject(row);
-	}
-	
-	private void doDelete(LectureBlockRow row) {
-		if(LectureBlockManagedFlag.isManaged(row.getLectureBlock(), LectureBlockManagedFlag.delete)) return;
+		List<LectureBlock> blocks = Collections.singletonList(row.getLectureBlock());
+		deleteLectureBlocksCtrl = new ConfirmDeleteLectureBlockController(ureq, getWindowControl(), blocks);
+		listenTo(deleteLectureBlocksCtrl);
 		
-		LectureBlock lectureBlock = row.getLectureBlock();
-		lectureService.deleteLectureBlock(lectureBlock);
-		showInfo("lecture.deleted");
-		logAudit("Lecture block deleted: " + lectureBlock);
-		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_DELETED, getClass(),
-				CoreLoggingResourceable.wrap(lectureBlock, OlatResourceableType.lectureBlock, lectureBlock.getTitle()));
-		
+		String title = translate("delete.lectures.title");
+		cmc = new CloseableModalController(getWindowControl(), "close", deleteLectureBlocksCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
 	}
-	
-	private void doDelete(List<LectureBlock> blocks) {
-		for(LectureBlock block:blocks) {
-			lectureService.deleteLectureBlock(block);
-			logAudit("Lecture block deleted: " + block);
-			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_DELETED, getClass(),
-					CoreLoggingResourceable.wrap(block, OlatResourceableType.lectureBlock, block.getTitle()));
-		}
-		showInfo("lecture.deleted");
-	}
-	
+
 	private void doExportLog(UserRequest ureq, LectureBlockRow row) {
 		LectureBlock lectureBlock = lectureService.getLectureBlock(row);
 		List<LectureBlockAuditLog> auditLog = lectureService.getAuditLog(row);

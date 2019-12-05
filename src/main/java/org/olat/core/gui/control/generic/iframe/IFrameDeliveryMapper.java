@@ -22,11 +22,13 @@ package org.olat.core.gui.control.generic.iframe;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSSDelegate;
@@ -34,15 +36,17 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.gui.render.StringOutput;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.SimpleHtmlParser;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.core.util.vfs.filters.VFSItemFilter;
 
 /**
  * 
@@ -177,20 +181,14 @@ public class IFrameDeliveryMapper implements Mapper {
 	}
 
 	protected MediaResource deliverFile(HttpServletRequest httpRequest, String path, boolean isPopUp) {
-		MediaResource mr;
-		VFSLeaf vfsLeaf = null;
-		VFSItem vfsItem = null;
 		//if directory gets renamed root becomes null
 		if (rootDir == null) {
 			return new NotFoundMediaResource();
-		} else {
-			vfsItem = rootDir.resolve(path);
-		}
-		//only files are allowed, but somehow it happened that folders showed up here
-		if (vfsItem instanceof VFSLeaf) {
-			vfsLeaf = (VFSLeaf) rootDir.resolve(path);
-		}
+		} 
 		
+		VFSLeaf vfsLeaf = resolveFile(path);
+
+		MediaResource mr;
 		if (vfsLeaf == null) {
 			mr = new NotFoundMediaResource();
 		} else {
@@ -212,6 +210,41 @@ public class IFrameDeliveryMapper implements Mapper {
 			}
 		}
 		return mr;
+	}
+	
+	/**
+	 * @param path The path
+	 * @return A leaf
+	 */
+	private final VFSLeaf resolveFile(String path) {
+		VFSItem vfsItem = rootDir.resolve(path);
+		if(vfsItem == null && rootDir instanceof VFSContainer) {
+			path = VFSManager.sanitizePath(path);
+			List<VFSItem> items = null;
+			int lastSlash = path.lastIndexOf('/');
+			if(lastSlash == 0) {
+				String filename = path.substring(1);
+				items = ((VFSContainer)rootDir).getItems(new ByNameCaseInsensitive(filename));
+			} else if (lastSlash > 0) {
+				String containerPath = path.substring(0, lastSlash);
+				String filename = path.substring(lastSlash + 1);
+				VFSItem parentItem = rootDir.resolve(containerPath);
+				items = ((VFSContainer)parentItem).getItems(new ByNameCaseInsensitive(filename));
+			} else {
+				items = ((VFSContainer)rootDir).getItems(new ByNameCaseInsensitive(path));
+			}
+			
+			if(items != null && items.size() == 1) {
+				vfsItem = items.get(0);
+			}
+		}
+		
+		VFSLeaf vfsLeaf = null;
+		//only files are allowed, but somehow it happened that folders showed up here
+		if (vfsItem instanceof VFSLeaf) {
+			vfsLeaf = (VFSLeaf)vfsItem;
+		}
+		return vfsLeaf;
 	}
 	
 	private MediaResource deliverJavascriptFile(VFSLeaf vfsLeaf) {
@@ -698,5 +731,18 @@ public class IFrameDeliveryMapper implements Mapper {
 			this.useLoadedPageString = useLoadedPageString;
 		}
 	}
+	
+	private static class ByNameCaseInsensitive implements VFSItemFilter {
+		
+		private final String filename;
+		
+		public ByNameCaseInsensitive(String filename) {
+			this.filename = filename;
+		}
 
+		@Override
+		public boolean accept(VFSItem vfsItem) {
+			return vfsItem != null && filename.equalsIgnoreCase(vfsItem.getName());
+		}
+	}
 }

@@ -153,8 +153,8 @@ public class LectureBlockWebService {
 			@ApiResponse(responseCode = "404", description = "Not found.") })
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response deleteLectureBlock() {
-		lectureService.deleteLectureBlock(lectureBlock);
-		log.info(Tracing.M_AUDIT, "Lecture block deleted: " + lectureBlock);
+		lectureService.deleteLectureBlock(lectureBlock, null);
+		log.info(Tracing.M_AUDIT, "Lecture block deleted: {}", lectureBlock);
 		return Response.ok().build();
 	}
 

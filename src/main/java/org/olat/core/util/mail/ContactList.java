@@ -154,7 +154,7 @@ public class ContactList {
 			rfc2047name = javax.mail.internet.MimeUtility.encodeWord(name, "UTF-8", null);
 		}
 		catch (java.io.UnsupportedEncodingException e) {
-			log.warn("Error MIME-encoding name: " + e, e);
+			log.warn("Error MIME-encoding name: ", e);
 			rfc2047name = name;
 		}
 
@@ -208,7 +208,7 @@ public class ContactList {
 		if (emailPrioInstitutional) {
 			for (Iterator<Identity> it=copy.iterator(); it.hasNext(); ) {
 				Identity tmp = it.next();
-				if(tmp.getStatus() == Identity.STATUS_LOGIN_DENIED) {
+				if(Identity.STATUS_LOGIN_DENIED.equals(tmp.getStatus())) {
 					continue;
 				}
 
@@ -223,7 +223,7 @@ public class ContactList {
 		 * loops over the (remaining) identities, fetches the user email.
 		 */
 		for (Identity tmp : copy){
-			if(tmp.getStatus() == Identity.STATUS_LOGIN_DENIED) {
+			if(Identity.STATUS_LOGIN_DENIED.equals(tmp.getStatus())) {
 				continue;
 			}
 			String email = tmp.getUser().getProperty(UserConstants.EMAIL, null);
@@ -304,16 +304,19 @@ public class ContactList {
 	}
 
 	private void setName(String nameP) {
-		if (!StringHelper.containsNoneOfCoDouSemi(nameP)){
-			log.warn("Contact list name \"" + nameP + "\" doesn't match "+ StringHelper.ALL_WITHOUT_COMMA_2POINT_STRPNT);
+		if (!StringHelper.containsNoneOfCoDouSemi(nameP)
+				|| nameP.contains("(") || nameP.contains(")")
+				|| nameP.contains("[") || nameP.contains("]")) {
+			log.warn("Contact list name \"{}\" doesn't match {}", nameP, StringHelper.ALL_WITHOUT_COMMA_2POINT_STRPNT);
 			//replace bad chars with bad char in rfc compliant comments
-			nameP = nameP.replaceAll(":","¦");
-			nameP = nameP.replaceAll(";","_");
-			nameP = nameP.replaceAll(",","-");
-			
-		}
-				
+			nameP = nameP.replace(":","¦")
+					.replace(";","_")
+					.replace(",","-")
+					.replace("(","_")
+					.replace(")","_")
+					.replace("[","_")
+					.replace("]","_");
+		}		
 		this.name = nameP;
 	}
-
 }
