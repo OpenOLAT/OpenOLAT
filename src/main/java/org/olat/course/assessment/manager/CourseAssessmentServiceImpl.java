@@ -22,12 +22,15 @@ package org.olat.course.assessment.manager;
 import java.io.File;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -46,7 +49,6 @@ import org.olat.course.assessment.handler.NonAssessmentHandler;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.config.CourseConfig;
-import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -65,6 +67,8 @@ import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -82,7 +86,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	private static final String NON_ASSESSMENT_TYPE = NonAssessmentHandler.NODE_TYPE;
 	
 	@Autowired
-	private NodeAccessService nodeAccsessService;
+	private RepositoryService repositoryService;
 	
 	@Autowired
 	private List<AssessmentHandler> loadedAssessmentHandlers;
@@ -347,13 +351,19 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	public void evaluateAll(ICourse course) {
 		log.debug("Evaluate all score accountings for course {}", course);
 		CourseEnvironment courseEnv = course.getCourseEnvironment();
+		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 		CoursePropertyManager pm = courseEnv.getCoursePropertyManager();
+		
+		Set<Identity> identities = new HashSet<>();
 		List<Identity> assessedIdentities = pm.getAllIdentitiesWithCourseAssessmentData(null);
+		identities.addAll(assessedIdentities);
+		List<Identity> members = repositoryService.getMembers(courseEntry, RepositoryEntryRelationType.all, GroupRoles.participant.name());
+		identities.addAll(members);
 		
 		int count = 0;
-		for(Identity assessedIdentity: assessedIdentities) {
-			evaluateAll(courseEnv, assessedIdentity);
-			log.debug("Evaluated score accounting in course {} for {}", course, assessedIdentity);
+		for(Identity identity: identities) {
+			evaluateAll(courseEnv, identity);
+			log.debug("Evaluated score accounting in course {} for {}", course, identity);
 			if(++count % 10 == 0) {
 				DBFactory.getInstance().commitAndCloseSession();
 			}
