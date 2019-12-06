@@ -35,7 +35,7 @@ public class VFSOverviewController extends FormBasicController {
 	
 	public static final Event OPEN_TRASH_EVENT			= new Event("vfs.openTrash");
 	public static final Event OPEN_LARGE_FILES_EVENT	= new Event("vfs.openLargeFiles");
-	public static final Event PRUNE_VERSIONS_EVENT		= new Event("vfs.pruneVersions");
+	public static final Event CLEANUP_VERSIONS_EVENT	= new Event("vfs.cleanUpVersions");
 	public static final Event RESET_THUMNBNAILS_EVENT	= new Event("vfs.resetThumbnails");
 	
 	@Autowired
@@ -123,7 +123,7 @@ public class VFSOverviewController extends FormBasicController {
 		if (source == trashLink) {
 			fireEvent(ureq, OPEN_TRASH_EVENT);
 		} else if (source == versionsLink) {
-			fireEvent(ureq, PRUNE_VERSIONS_EVENT);
+			fireEvent(ureq, CLEANUP_VERSIONS_EVENT);
 		} else if (source == largeFilesLink) {
 			fireEvent(ureq, OPEN_LARGE_FILES_EVENT);
 		} else if (source == thumbnailLink) {

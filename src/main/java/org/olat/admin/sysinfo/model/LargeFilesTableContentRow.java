@@ -9,7 +9,7 @@ import org.olat.core.commons.services.vfs.VFSRevision;
 import org.olat.core.id.Identity;
 import org.olat.core.util.WebappHelper;
 
-public class FileStatsTableContentRow {
+public class LargeFilesTableContentRow {
 	
 	private final Long key;
 	private final String name;
@@ -38,7 +38,7 @@ public class FileStatsTableContentRow {
 	private final long revisionNr;
 	private final String revisionComment;
 		
-	public FileStatsTableContentRow(VFSMetadata metadata) {
+	public LargeFilesTableContentRow(VFSMetadata metadata) {
 		key = metadata.getKey();
 		name = metadata.getFilename();
 		size = metadata.getFileSize();
@@ -67,7 +67,7 @@ public class FileStatsTableContentRow {
 		revisionComment = metadata.getRevisionComment();
 	}
 	
-	public FileStatsTableContentRow(VFSRevision rev) {
+	public LargeFilesTableContentRow(VFSRevision rev) {
 		key = rev.getMetadata().getKey();
 		name = rev.getFilename();
 		size = rev.getSize();
@@ -220,4 +220,7 @@ public class FileStatsTableContentRow {
 		return trashed;
 	}
 	
+	public int getAge() {
+		return this.getCreatedAt().compareTo(new Date());
+	}
 }

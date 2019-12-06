@@ -48,6 +48,7 @@ import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.admin.sysinfo.LargeFilesController;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.FolderLicenseHandler;
@@ -1388,13 +1389,89 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	}
 	
 	@Override
-	public List<VFSMetadata> getLargestFiles(int maxResults) {
-		return metadataDao.getLargest(maxResults);
+	public List<VFSMetadata> getLargestFiles(int maxResult, 
+			Date createdAtNewer, Date createdAtOlder, 
+			Date editedAtNewer, Date editedAtOlder, 
+			Date lockedAtNewer, Date lockedAtOlder,
+			String trashed, String revision, String locked,
+			Integer downloadCount, Long revisionCount) {
+		
+		Boolean trashedVal, revisionVal, lockedVal;
+		
+		
+		if(trashed == LargeFilesController.TRASHED_KEYS[0]) {
+			trashedVal = true;
+		} else if(trashed == LargeFilesController.TRASHED_KEYS[1]) {
+			trashedVal = false;
+		} else {
+			trashedVal = null;
+		}
+		
+		if(revision == LargeFilesController.REVISION_KEYS[0]) {
+			revisionVal = true;
+		} else if(revision == LargeFilesController.REVISION_KEYS[1]) {
+			revisionVal = false;
+		} else {
+			revisionVal = null;
+		}
+		
+		if(locked == LargeFilesController.LOCKED_KEYS[0]) {
+			lockedVal = true;
+		} else if(locked == LargeFilesController.LOCKED_KEYS[1]) {
+			lockedVal = false;
+		} else {
+			lockedVal = null;
+		}
+		
+		return metadataDao.getLargest(maxResult, 
+				createdAtNewer, createdAtOlder, 
+				editedAtNewer, editedAtOlder, 
+				lockedAtNewer, lockedAtOlder,
+				trashedVal, revisionVal, lockedVal,
+				downloadCount, revisionCount);
 	}
 	
 	@Override 
-	public List<VFSRevision> getLargestRevisions(int maxResults) {
-		return revisionDao.getLargest(maxResults);
+	public List<VFSRevision> getLargestRevisions(int maxResults, 
+			Date createdAtNewer, Date createdAtOlder, 
+			Date editedAtNewer, Date editedAtOlder, 
+			Date lockedAtNewer, Date lockedAtOlder,
+			String trashed, String revision, String locked,
+			Integer downloadCount, Long revisionCount) {
+
+		Boolean trashedVal, revisionVal, lockedVal;
+		
+		
+		if(trashed == LargeFilesController.TRASHED_KEYS[0]) {
+			trashedVal = true;
+		} else if(trashed == LargeFilesController.TRASHED_KEYS[1]) {
+			trashedVal = false;
+		} else {
+			trashedVal = null;
+		}
+		
+		if(revision == LargeFilesController.REVISION_KEYS[0]) {
+			revisionVal = true;
+		} else if(revision == LargeFilesController.REVISION_KEYS[1]) {
+			revisionVal = false;
+		} else {
+			revisionVal = null;
+		}
+		
+		if(locked == LargeFilesController.LOCKED_KEYS[0]) {
+			lockedVal = true;
+		} else if(locked == LargeFilesController.LOCKED_KEYS[1]) {
+			lockedVal = false;
+		} else {
+			lockedVal = null;
+		}
+		
+		return revisionDao.getLargest(maxResults, 
+				createdAtNewer, createdAtOlder, 
+				editedAtNewer, editedAtOlder, 
+				lockedAtNewer, lockedAtOlder,
+				trashedVal, revisionVal, lockedVal,
+				downloadCount, revisionCount);
 	}
 	
 	@Override 

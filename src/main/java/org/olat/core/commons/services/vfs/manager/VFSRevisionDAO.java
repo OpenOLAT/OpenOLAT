@@ -24,7 +24,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.persistence.TypedQuery;
+
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSMetadataRef;
 import org.olat.core.commons.services.vfs.VFSRevision;
@@ -41,10 +44,10 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class VFSRevisionDAO {
-	
+
 	@Autowired
 	private DB dbInstance;
-	
+
 	public VFSRevision createRevision(Identity author, String filename, int revisionNr, long size, Date fileLastModified,
 			String revisionComment, VFSMetadata metadata) {
 		VFSRevisionImpl rev = new VFSRevisionImpl();
@@ -65,7 +68,7 @@ public class VFSRevisionDAO {
 		dbInstance.getCurrentEntityManager().persist(rev);
 		return rev;
 	}
-	
+
 	public VFSRevision createRevisionCopy(Identity author, String revisionComment, VFSRevision revisionToCopy, VFSMetadata metadata) {
 		VFSRevisionImpl rev = new VFSRevisionImpl();
 		VFSRevisionImpl revToCopy = (VFSRevisionImpl)revisionToCopy;
@@ -82,150 +85,221 @@ public class VFSRevisionDAO {
 		dbInstance.getCurrentEntityManager().persist(rev);
 		return rev;
 	}
-	
+
 	public VFSRevision loadRevision(Long revisionKey) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select rev from vfsrevision rev")
-		  .append(" left join fetch rev.author as author")
-		  .append(" left join fetch author.user as authorUser")
-		  .append(" inner join fetch rev.metadata meta")
-		  .append(" where rev.key=:revisionKey");
+		.append(" left join fetch rev.author as author")
+		.append(" left join fetch author.user as authorUser")
+		.append(" inner join fetch rev.metadata meta")
+		.append(" where rev.key=:revisionKey");
 		List<VFSRevision> revisions = dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), VFSRevision.class)
-			.setParameter("revisionKey", revisionKey)
-			.getResultList();
+				.createQuery(sb.toString(), VFSRevision.class)
+				.setParameter("revisionKey", revisionKey)
+				.getResultList();
 		return revisions == null || revisions.isEmpty() ? null : revisions.get(0);
 	}
-	
+
 	public List<VFSRevision> getRevisions(VFSMetadataRef metadata) {
 		if(metadata == null) return new ArrayList<>();
-		
+
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select rev from vfsrevision rev")
-		  .append(" left join fetch rev.author as author")
-		  .append(" left join fetch author.user as authorUser")
-		  .append(" where rev.metadata.key=:metadataKey")
-		  .append(" order by rev.revisionNr");
+		.append(" left join fetch rev.author as author")
+		.append(" left join fetch author.user as authorUser")
+		.append(" where rev.metadata.key=:metadataKey")
+		.append(" order by rev.revisionNr");
 		return dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), VFSRevision.class)
-			.setParameter("metadataKey", metadata.getKey())
-			.getResultList();
+				.createQuery(sb.toString(), VFSRevision.class)
+				.setParameter("metadataKey", metadata.getKey())
+				.getResultList();
 	}
-	
+
 	public List<VFSRevision> getRevisions(List<VFSMetadataRef> metadatas) {
 		if(metadatas == null || metadatas.isEmpty()) return new ArrayList<>();
-		
+
 		List<Long> metadataKeys = metadatas.stream().map(VFSMetadataRef::getKey).collect(Collectors.toList());
-		
+
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select rev from vfsrevision rev")
-		  .append(" left join fetch rev.author as author")
-		  .append(" left join fetch author.user as authorUser")
-		  .append(" where rev.metadata.key in (:metadataKeys)");
+		.append(" left join fetch rev.author as author")
+		.append(" left join fetch author.user as authorUser")
+		.append(" where rev.metadata.key in (:metadataKeys)");
 		return dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), VFSRevision.class)
-			.setParameter("metadataKeys", metadataKeys)
-			.getResultList();
+				.createQuery(sb.toString(), VFSRevision.class)
+				.setParameter("metadataKeys", metadataKeys)
+				.getResultList();
 	}
-	
+
 	public List<VFSMetadataRef> getMetadataWithMoreThan(long numOfRevisions) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select new org.olat.core.commons.services.vfs.model.VFSMetadataRefImpl(meta.key)")
-		  .append(" from filemetadata meta")
-		  .append(" where :numOfRevisions < (select count(rev.key) from vfsrevision rev where rev.metadata.key=meta.key)");
+		.append(" from filemetadata meta")
+		.append(" where :numOfRevisions < (select count(rev.key) from vfsrevision rev where rev.metadata.key=meta.key)");
 		return dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), VFSMetadataRef.class)
-			.setParameter("numOfRevisions", Long.valueOf(numOfRevisions))
-			.getResultList();
+				.createQuery(sb.toString(), VFSMetadataRef.class)
+				.setParameter("numOfRevisions", Long.valueOf(numOfRevisions))
+				.getResultList();
 	}
-	
+
 	public List<Long> getMetadataKeysOfDeletedFiles() {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select meta.key")
-		  .append(" from filemetadata meta")
-		  .append(" inner join vfsrevision rev on (rev.metadata.key=meta.key)")
-		  .append(" where meta.deleted=:deleted");
+		.append(" from filemetadata meta")
+		.append(" inner join vfsrevision rev on (rev.metadata.key=meta.key)")
+		.append(" where meta.deleted=:deleted");
 		return dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), Long.class)
-			.setParameter("deleted", Boolean.TRUE)
-			.getResultList();
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("deleted", Boolean.TRUE)
+				.getResultList();
 	}
-	
+
 	/**
 	 * @return A list of metadata of deleted files with revisions.
 	 */
 	public List<VFSMetadataRef> getMetadataOfDeletedFiles() {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select new org.olat.core.commons.services.vfs.model.VFSMetadataRefImpl(meta.key)")
-		  .append(" from vfsrevision rev")
-		  .append(" inner join rev.metadata meta")
-		  .append(" where meta.deleted=:deleted");
+		.append(" from vfsrevision rev")
+		.append(" inner join rev.metadata meta")
+		.append(" where meta.deleted=:deleted");
 		return dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), VFSMetadataRef.class)
-			.setParameter("deleted", Boolean.TRUE)
-			.getResultList();
+				.createQuery(sb.toString(), VFSMetadataRef.class)
+				.setParameter("deleted", Boolean.TRUE)
+				.getResultList();
 	}
-	
+
 	/**
 	 * @return A list of revisions of deleted files.
 	 */
 	public List<VFSRevision> getRevisionsOfDeletedFiles() {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select rev from vfsrevision rev")
-		  .append(" inner join fetch rev.metadata meta")
-		  .append(" where meta.deleted=:deleted");
+		.append(" inner join fetch rev.metadata meta")
+		.append(" where meta.deleted=:deleted");
 		return dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), VFSRevision.class)
-			.setParameter("deleted", Boolean.TRUE)
-			.getResultList();
+				.createQuery(sb.toString(), VFSRevision.class)
+				.setParameter("deleted", Boolean.TRUE)
+				.getResultList();
 	}
-	
+
 	public long getRevisionsSizeOfDeletedFiles() {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select sum(rev.size) from vfsrevision rev")
-		  .append(" inner join rev.metadata meta")
-		  .append(" where meta.deleted=:deleted");
+		.append(" inner join rev.metadata meta")
+		.append(" where meta.deleted=:deleted");
 		List<Long> size = dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), Long.class)
-			.setParameter("deleted", Boolean.TRUE)
-			.getResultList();
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("deleted", Boolean.TRUE)
+				.getResultList();
 		return size == null || size.isEmpty() || size.get(0) == null ? 0 : size.get(0).longValue();
 	}
-	
 
-	
+
+
 	public long calculateRevisionsSize() {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select sum(rev.size) from vfsrevision rev");
 		List<Long> size = dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), Long.class)
-			.getResultList();
+				.createQuery(sb.toString(), Long.class)
+				.getResultList();
 		return size == null || size.isEmpty() || size.get(0) == null ? -1l : size.get(0).longValue();
 	}
-	
+
 	public VFSRevision updateRevision(VFSRevision revision) {
 		return dbInstance.getCurrentEntityManager().merge(revision);
 	}
-	
+
 	public void deleteRevision(VFSRevision revision) {
 		VFSRevision reloadedRev = dbInstance.getCurrentEntityManager()
 				.getReference(VFSRevisionImpl.class, ((VFSRevisionImpl)revision).getKey());
 		dbInstance.getCurrentEntityManager().remove(reloadedRev);
 	}
-	
-	public List<VFSRevision> getLargest(int maxResult) {
-		StringBuilder sb = new StringBuilder(256);
-		sb.append("select rev from vfsrevision rev")
-		  .append(" inner join fetch rev.metadata meta")
-		  .append(" left join fetch rev.author as author")
-		  .append(" left join fetch author.user as authorUser")
-		  .append(" order by rev.size desc nulls last");
+
+	public List<VFSRevision> getLargest(int maxResult, 
+			Date createdAtNewer, Date createdAtOlder, 
+			Date editedAtNewer, Date editedAtOlder, 
+			Date lockedAtNewer, Date lockedAtOlder,
+			Boolean trashed, Boolean revision, Boolean locked,
+			Integer downloadCount, Long revisionCount) {
+
+		QueryBuilder qb = new QueryBuilder(256);
+		qb.append("select rev from vfsrevision rev")
+		.append(" inner join fetch rev.metadata metadata")
+		.append(" left join fetch rev.author as author")
+		.append(" left join fetch author.user as authorUser");
+
+		if(createdAtNewer != null) {
+			qb.where().append("metadata.creationDate>=:createdAtNewer");
+		}
+		if(createdAtOlder != null) {
+			qb.where().append("metadata.creationDate<=:createdAtOlder");
+		}
+		if(editedAtNewer != null) {
+			qb.where().append("metadata.lastModified>=:editedAtNewer");
+		}
+		if(editedAtOlder != null) {
+			qb.where().append("metadata.lastModified<=:editedAtOlder");
+		}
+		if(lockedAtNewer != null) {
+			qb.where().append("metadata.lockedDate>=:lockedAtNewer");
+		}
+		if(lockedAtOlder != null) {
+			qb.where().append("metadata.lockedDate<=:lockedAtOlder");
+		}
+		if(trashed != null) {
+			qb.where().append("metadata.deleted=:trashed");
+		}
+		if(locked != null) {
+			qb.where().append("metadata.locked=:locked");
+		}
+		if(downloadCount > 0) {
+			qb.where().append("metadata.downloadCount>=:downloadCount");
+		}
+		if(revisionCount > 0) {
+			qb.where().append("metadata.revisionNr>=:revisionCount");
+		}
+
+
+		qb.append(" order by rev.size desc nulls last");
+
+		TypedQuery<VFSRevision> query = dbInstance.getCurrentEntityManager()
+				.createQuery(qb.toString(), VFSRevision.class);
+
+		if(createdAtNewer != null) {
+			query.setParameter("createdAtNewer", createdAtNewer);
+		}
+		if(createdAtOlder != null) {
+			query.setParameter("createdAtOlder", createdAtOlder);
+		}
+		if(editedAtNewer != null) {
+			query.setParameter("editedAtNewer", editedAtNewer);
+		}
+		if(editedAtOlder != null) {
+			query.setParameter("editedAtOlder", editedAtOlder);
+		}
+		if(lockedAtNewer != null) {
+			query.setParameter("lockedAtNewer", lockedAtNewer);
+		}
+		if(lockedAtOlder != null) {
+			query.setParameter("lockedAtOlder", lockedAtOlder);
+		}
+		if(trashed != null) {
+			query.setParameter("trashed", trashed);
+		}
+		if(locked != null) {
+			query.setParameter("locked", locked);
+		}
+		if(downloadCount > 0) {
+			query.setParameter("downloadCount", downloadCount);
+		}
+		if(revisionCount > 0) {
+			query.setParameter("revisionCount", revisionCount);
+		}
 		
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), VFSRevision.class)
-				.setFirstResult(1)
+		return query.setFirstResult(0)
 				.setMaxResults(maxResult > 0 && maxResult <= 100 ? maxResult : 100)
 				.getResultList();
-	}
 
+	}
 }

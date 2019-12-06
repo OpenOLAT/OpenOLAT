@@ -21,6 +21,7 @@ package org.olat.core.commons.services.vfs;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.services.license.License;
@@ -268,7 +269,12 @@ public interface VFSRepositoryService {
 	 * @param maxResults
 	 * @return
 	 */
-	public List<VFSMetadata> getLargestFiles(int maxResults);
+	public List<VFSMetadata> getLargestFiles(int maxResult, 
+			Date createdAtNewer, Date createdAtOlder, 
+			Date editedAtNewer, Date editedAtOlder, 
+			Date lockedAtNewer, Date lockedAtOlder,
+			String trashed, String revision, String locked,
+			Integer downloadCount, Long revisionCount);
 	
 	/**
 	 * Returns the largest revisions from the VFS
@@ -276,7 +282,12 @@ public interface VFSRepositoryService {
 	 * @param maxResults
 	 * @return
 	 */
-	public List<VFSRevision> getLargestRevisions(int maxResults);
+	public List<VFSRevision> getLargestRevisions(int maxResult, 
+			Date createdAtNewer, Date createdAtOlder, 
+			Date editedAtNewer, Date editedAtOlder, 
+			Date lockedAtNewer, Date lockedAtOlder,
+			String trashed, String revision, String locked,
+			Integer downloadCount, Long revisionCount);
 	
 	
 

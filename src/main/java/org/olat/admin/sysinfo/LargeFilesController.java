@@ -1,6 +1,7 @@
 package org.olat.admin.sysinfo;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
@@ -9,9 +10,9 @@ import org.olat.admin.sysinfo.gui.LargeFilesNameCellRenderer;
 import org.olat.admin.sysinfo.gui.LargeFilesRevisionCellRenderer;
 import org.olat.admin.sysinfo.gui.LargeFilesSizeCellRenderer;
 import org.olat.admin.sysinfo.gui.LargeFilesTrashedCellRenderer;
-import org.olat.admin.sysinfo.model.FileStatsTableContentRow;
-import org.olat.admin.sysinfo.model.FileStatsTableModel;
-import org.olat.admin.sysinfo.model.FileStatsTableModel.FileStatsTableColumns;
+import org.olat.admin.sysinfo.model.LargeFilesTableContentRow;
+import org.olat.admin.sysinfo.model.LargeFilesTableModel;
+import org.olat.admin.sysinfo.model.LargeFilesTableModel.LargeFilesTableColumns;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
@@ -21,158 +22,232 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ExtendedFlexiTableSearchController;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.util.CSSHelper;
-import org.olat.repository.model.SearchMyRepositoryEntryViewParams.Filter;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class LargeFilesController extends FormBasicController implements FlexiTableCssDelegate {
+public class LargeFilesController extends FormBasicController implements ExtendedFlexiTableSearchController {
+
+	public static final String[] TRASHED_KEYS = new String[]{ "trashed", "notTrashed", "both" };
+	public static final String[] REVISION_KEYS = new String[]{ "revisions", "files", "both" };
+	public static final String[] LOCKED_KEYS = new String[]{ "locked", "notlocked", "both" };
 
 	private FlexiTableElement largeFilesTableElement;
-	private FileStatsTableModel largeFilesTabelModel;
-	
+	private LargeFilesTableModel largeFilesTableModel;
+
 	private MultipleSelectionElement types;
-	private SingleSelection trashed;
-	private SingleSelection revision; 
-	private DateChooser newerThan;
-	private DateChooser olderThan;
-	
+	private SingleSelection trashedSelection;
+	private SingleSelection revisionSelection; 
+	private SingleSelection lockedSelection;
+	private DateChooser createdAtNewerChooser;
+	private DateChooser createdAtOlderChooser;
+	private DateChooser editedAtNewerChooser;
+	private DateChooser editedAtOlderChooser;
+	private DateChooser lockedAtNewerChooser;
+	private DateChooser lockedAtOlderChooser;
+	private IntegerElement downloadCountMinEl;
+	private IntegerElement revisionCountMinEl;
+	private IntegerElement maxResultEl;
+	private FormLink searchButton;
+	private FormLink resetButton;
+
+
+	private boolean enabled = true;
+
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
-	
-	
+
+
 	public LargeFilesController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "large_files");
 		initForm(ureq);
 		updateModel();
 	}
-	
+
 	public void updateModel() {
-		List<VFSMetadata> files = vfsRepositoryService.getLargestFiles(100);
-		List<VFSRevision> revisions = vfsRepositoryService.getLargestRevisions(100);
-		
-		List<FileStatsTableContentRow> rows = new ArrayList<>();
-		
-		for(VFSMetadata file:files) {
-			rows.add(new FileStatsTableContentRow(file));
+		List<LargeFilesTableContentRow> rows = new ArrayList<>();
+
+		if(revisionSelection.getSelectedKey() != REVISION_KEYS[0]) {
+			List<VFSMetadata> files = vfsRepositoryService.getLargestFiles(maxResultEl.getIntValue(), 
+					createdAtNewerChooser.getDate(), createdAtOlderChooser.getDate(),
+					editedAtNewerChooser.getDate(), editedAtOlderChooser.getDate(),
+					lockedAtNewerChooser.getDate(), lockedAtOlderChooser.getDate(),
+					trashedSelection.getSelectedKey(), revisionSelection.getSelectedKey(), lockedSelection.getSelectedKey(),
+					downloadCountMinEl.getIntValue(), new Long(revisionCountMinEl.getIntValue())
+					);
+
+			for(VFSMetadata file:files) {
+				rows.add(new LargeFilesTableContentRow(file));
+			}
 		}
-	
-		for(VFSRevision revision:revisions) {
-			rows.add(new FileStatsTableContentRow(revision));
+
+		if(revisionSelection.getSelectedKey() != REVISION_KEYS[1]) {
+			List<VFSRevision> revisions = vfsRepositoryService.getLargestRevisions(maxResultEl.getIntValue(), 
+					createdAtNewerChooser.getDate(), createdAtOlderChooser.getDate(),
+					editedAtNewerChooser.getDate(), editedAtOlderChooser.getDate(),
+					lockedAtNewerChooser.getDate(), lockedAtOlderChooser.getDate(),
+					trashedSelection.getSelectedKey(), revisionSelection.getSelectedKey(), lockedSelection.getSelectedKey(),
+					downloadCountMinEl.getIntValue(), new Long(revisionCountMinEl.getIntValue()));
+
+			for(VFSRevision revision:revisions) {
+				rows.add(new LargeFilesTableContentRow(revision));
+			}
 		}
-		
-		largeFilesTabelModel.setObjects(rows);
-		largeFilesTableElement.reset(true, true, true);		
+
+		Collections.sort(rows, (row1,row2) -> {
+			return row2.getSize().intValue() - row1.getSize().intValue();
+		});
+
+		if(maxResultEl.getIntValue() != 0 && maxResultEl.getIntValue() < rows.size()) {
+			rows = rows.subList(0, maxResultEl.getIntValue());
+		}
+
+		largeFilesTableModel.setObjects(rows);
+		largeFilesTableElement.reset(true, true, true);
+	}
+
+	private void resetForm() {
+		createdAtNewerChooser.reset();
+		createdAtOlderChooser.reset();
+		lockedAtNewerChooser.reset();
+		lockedAtOlderChooser.reset();
+		editedAtNewerChooser.reset();
+		editedAtOlderChooser.reset();
+		revisionCountMinEl.reset();
+		downloadCountMinEl.reset();
+		trashedSelection.reset();
+		lockedSelection.reset();
+		revisionSelection.reset();
+		maxResultEl.reset();
+
+		updateModel();
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		FormLayoutContainer leftContainer = FormLayoutContainer.createDefaultFormLayout("filter_left", getTranslator());
+		leftContainer.setRootForm(mainForm);
+		formLayout.add(leftContainer);
+
+		FormLayoutContainer rightContainer = FormLayoutContainer.createDefaultFormLayout("filter_right", getTranslator());
+		leftContainer.setRootForm(mainForm);
+		formLayout.add(rightContainer);
+
+		FormLayoutContainer filterButtonLayout = FormLayoutContainer.createButtonLayout("filter_buttons", getTranslator());
+		leftContainer.setRootForm(mainForm);
+		formLayout.add(filterButtonLayout);
+
+		// Left part of the filter
+		createdAtNewerChooser = uifactory.addDateChooser("largefiles.filter.created.newer", "largefiles.filter.created.newer", null, leftContainer);
+		editedAtNewerChooser = uifactory.addDateChooser("largefiles.filter.edited.newer", "largefiles.filter.edited.newer", null, leftContainer);
+		lockedAtNewerChooser = uifactory.addDateChooser("largefiles.filter.locked.newer", null, leftContainer);
+		revisionCountMinEl = uifactory.addIntegerElement("largefiles.filter.revision.count.min", "largefiles.filter.revision.count.min", 0, leftContainer);
+		downloadCountMinEl = uifactory.addIntegerElement("largefiles.filter.download.count.min", "largefiles.filter.download.count.min", 0, leftContainer);
+		maxResultEl = uifactory.addIntegerElement("largefiles.filter.results.max", 100, leftContainer);
+
+
+		// Right part of the filter
+		createdAtOlderChooser = uifactory.addDateChooser("largefiles.filter.created.older", "largefiles.filter.created.older", null, rightContainer);
+		editedAtOlderChooser = uifactory.addDateChooser("largefiles.filter.edited.older", "largefiles.filter.edited.older", null, rightContainer);
+		lockedAtOlderChooser = uifactory.addDateChooser("largefiles.filter.locked.older", null, rightContainer);
+
+
+		String[] trashedValues = new String[] {
+				translate("largefiles.filter.trashed.only"),
+				translate("largefiles.filter.trashed.not"),
+				translate("largefiles.filter.trashed.both")
+		};
+		trashedSelection = uifactory.addRadiosHorizontal("largefiles.filter.trashed", "largefiles.filter.trashed", rightContainer, TRASHED_KEYS, trashedValues);
+		trashedSelection.select(TRASHED_KEYS[2], true);
+
+		String[] revisionValues = new String[] {
+				translate("largefiles.filter.revision.only"),
+				translate("largefiles.filter.revision.not"),
+				translate("largefiles.filter.revision.both")
+		};
+		revisionSelection = uifactory.addRadiosHorizontal("largefiles.filter.revision", "largefiles.filter.revision", rightContainer, REVISION_KEYS, revisionValues);
+		revisionSelection.select(REVISION_KEYS[2], true);
+
+		String[] lockedValues = new String[] {
+				translate("largefiles.filter.locked.only"),
+				translate("largefiles.filter.locked.not"),
+				translate("largefiles.filter.locked.both")
+		};
+		lockedSelection = uifactory.addRadiosHorizontal("largefiles.filter.locked", rightContainer, LOCKED_KEYS, lockedValues);
+		lockedSelection.select(LOCKED_KEYS[2], true);
+
+		// Filter buttons
+		searchButton = uifactory.addFormLink("largefiles.filter.button.search", filterButtonLayout, Link.BUTTON);
+		searchButton.setCustomEnabledLinkCSS("btn btn-primary");
+
+		resetButton = uifactory.addFormLink("largefiles.filter.button.reset", filterButtonLayout, Link.BUTTON);
+
+
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		DefaultFlexiColumnModel column;
-		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileStatsTableColumns.key));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileStatsTableColumns.uuid));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, true, FileStatsTableColumns.name, new LargeFilesNameCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, true, FileStatsTableColumns.size, new LargeFilesSizeCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, true, FileStatsTableColumns.path));
-		
-		column = new DefaultFlexiColumnModel(false, FileStatsTableColumns.trashed, new LargeFilesTrashedCellRenderer());
+
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.key));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.uuid));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, true, LargeFilesTableColumns.name, new LargeFilesNameCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, true, LargeFilesTableColumns.size, new LargeFilesSizeCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, true, LargeFilesTableColumns.path));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.age));
+
+		column = new DefaultFlexiColumnModel(false, LargeFilesTableColumns.trashed, new LargeFilesTrashedCellRenderer());
 		column.setIconHeader(CSSHelper.getIconCssClassFor(CSSHelper.CSS_CLASS_TRASHED));
 		columnsModel.addFlexiColumnModel(column);
-		
-		column = new DefaultFlexiColumnModel(false, FileStatsTableColumns.revision, new LargeFilesRevisionCellRenderer());
+
+		column = new DefaultFlexiColumnModel(false, LargeFilesTableColumns.revision, new LargeFilesRevisionCellRenderer());
 		column.setIconHeader(CSSHelper.getIconCssClassFor(CSSHelper.CSS_CLASS_REVISION));
 		columnsModel.addFlexiColumnModel(column);
-		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileStatsTableColumns.revisionNr));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileStatsTableColumns.revisionComment));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileStatsTableColumns.fileCategory));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileStatsTableColumns.fileType));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileStatsTableColumns.downloadCount));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileStatsTableColumns.author, "selectAuthor"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileStatsTableColumns.license));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileStatsTableColumns.language));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileStatsTableColumns.source));
-		
-		column = new DefaultFlexiColumnModel(false, FileStatsTableColumns.locked, new LargeFilesLockedCellRenderer());
+
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.revisionNr));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.revisionComment));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.fileCategory));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.fileType));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.downloadCount));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.author, "selectAuthor"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.license));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.language));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.source));
+
+		column = new DefaultFlexiColumnModel(false, LargeFilesTableColumns.locked, new LargeFilesLockedCellRenderer());
 		column.setIconHeader(CSSHelper.getIconCssClassFor(CSSHelper.CSS_CLASS_LOCKED));
 		columnsModel.addFlexiColumnModel(column);
-		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileStatsTableColumns.lockedAt));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileStatsTableColumns.lockedBy, "selectLockedBy"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileStatsTableColumns.creator));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileStatsTableColumns.publisher));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileStatsTableColumns.pubDate));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileStatsTableColumns.createdAt));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileStatsTableColumns.lastModifiedAt));
-		
-		largeFilesTabelModel = new FileStatsTableModel(columnsModel, getLocale());
-		largeFilesTableElement = uifactory.addTableElement(getWindowControl(), "large_files", largeFilesTabelModel, getTranslator(), formLayout);
-		
+
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.lockedAt));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.lockedBy, "selectLockedBy"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.creator));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.publisher));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.pubDate));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.createdAt));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.lastModifiedAt));
+
+		largeFilesTableModel = new LargeFilesTableModel(columnsModel, getLocale());
+		largeFilesTableElement = uifactory.addTableElement(getWindowControl(), "large_files", largeFilesTableModel, getTranslator(), formLayout);
+
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
-		sortOptions.setDefaultOrderBy(new SortKey(FileStatsTableColumns.size.name(), false));
+		sortOptions.setDefaultOrderBy(new SortKey(LargeFilesTableColumns.size.name(), false));
 		sortOptions.setFromColumnModel(true);
 		largeFilesTableElement.setSortSettings(sortOptions);
 		largeFilesTableElement.setAndLoadPersistedPreferences(ureq, "admin-large-files-list");	
 		largeFilesTableElement.setSearchEnabled(false);
-		largeFilesTableElement.setCssDelegate(this);
-		
-//		initFilters(largeFilesTableElement);		
-	}
-	
-	private void initFilters(FlexiTableElement tableElement) {
-		List<FlexiTableFilter> filters = new ArrayList<>(16);
-		filters.add(new FlexiTableFilter(translate("filter.show.all"), Filter.showAll.name(), true));
-		filters.add(FlexiTableFilter.SPACER);
-		filters.add(new FlexiTableFilter(translate("filter.only.courses"), Filter.onlyCourses.name()));
-		filters.add(new FlexiTableFilter(translate("filter.current.courses"), Filter.currentCourses.name()));
-		filters.add(new FlexiTableFilter(translate("filter.upcoming.courses"), Filter.upcomingCourses.name()));
-		filters.add(new FlexiTableFilter(translate("filter.old.courses"), Filter.oldCourses.name()));
-		filters.add(FlexiTableFilter.SPACER);
-		filters.add(new FlexiTableFilter(translate("filter.booked.participant"), Filter.asParticipant.name()));
-		filters.add(new FlexiTableFilter(translate("filter.booked.coach"), Filter.asCoach.name()));
-		filters.add(new FlexiTableFilter(translate("filter.booked.author"), Filter.asAuthor.name()));
-		filters.add(FlexiTableFilter.SPACER);
-		filters.add(new FlexiTableFilter(translate("filter.passed"), Filter.passed.name()));
-		filters.add(new FlexiTableFilter(translate("filter.not.passed"), Filter.notPassed.name()));
-		filters.add(new FlexiTableFilter(translate("filter.without.passed.infos"), Filter.withoutPassedInfos.name()));
-		tableElement.setFilters(null, filters, false);
-	}
-	
-	@Override
-	public String getWrapperCssClass(FlexiTableRendererType type) {
-		return null;
-	}
-	
-	@Override
-	public String getTableCssClass(FlexiTableRendererType type) {
-		return null;
-	}
-	
-	@Override
-	public String getRowCssClass(FlexiTableRendererType type, int pos) {
-		return null;
-//		long size = largeFilesTabelModel.getObject(pos).getSize();
-//		
-//		if (size < 5000) {
-//			return "o_table_row_success";
-//		} else if (size < 100000) {
-//			return "o_table_row_warning";
-//		}
-//		return "o_table_row_error";
+		largeFilesTableElement.setExportEnabled(true);
 	}
 
 	@Override
@@ -182,35 +257,51 @@ public class LargeFilesController extends FormBasicController implements FlexiTa
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-
+		updateModel();
 	}
-	
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(largeFilesTableElement == source) {
+		if(source == largeFilesTableElement) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent te = (SelectionEvent) event;
 				String cmd = te.getCommand();
-				FileStatsTableContentRow contentRow = largeFilesTabelModel.getObject(te.getIndex());
-				if("select".equals(cmd)) {
+				LargeFilesTableContentRow contentRow = largeFilesTableModel.getObject(te.getIndex());
+				if("selectAuthor".equals(cmd)) {
 					if (contentRow.getAuthor() != null) {
 						openUser(ureq, contentRow.getAuthor().getKey());
 					}
-				} else if("vcard".equals(cmd)) {
-//					doSelectVcard(ureq, userRow);
-				}
+				} if("selectLockedBy".equals(cmd)) {
+					if (contentRow.getLockedBy() != null) {
+						openUser(ureq, contentRow.getLockedBy().getKey());
+					}
+				} 
 			}
+		} else if(source == searchButton) {
+			updateModel();
+		} else if(source == resetButton) {
+			resetForm();
 		}
-//		} else if(mailButton == source) {
-//			doMail(ureq);
-//		} else if(bulkChangesButton == source) {
-//			doBulkEdit(ureq);
-//		} else if(bulkMovebutton == source) {
-//			doBulkMove(ureq);
-//		}
 		super.formInnerEvent(ureq, source, event);
 	}
-	
+
+	@Override
+	public void setEnabled(boolean enable) {
+		this.enabled = enable;
+	}
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		if(!enabled) return true;
+
+		return true;
+	}
+
+	@Override
+	public List<String> getConditionalQueries() {
+		return Collections.emptyList();
+	}
+
 	private void openUser(UserRequest ureq, Long userKey) {
 		NewControllerFactory.getInstance().launch("[UserAdminSite:0][usearch:0][table:0][Identity:" + userKey.toString() + "]", ureq, getWindowControl());
 	}

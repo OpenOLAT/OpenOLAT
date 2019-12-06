@@ -11,12 +11,12 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
-public class FileStatsTableModel extends DefaultFlexiTableDataModel<FileStatsTableContentRow>
-implements SortableFlexiTableDataModel<FileStatsTableContentRow> {
+public class LargeFilesTableModel extends DefaultFlexiTableDataModel<LargeFilesTableContentRow>
+implements SortableFlexiTableDataModel<LargeFilesTableContentRow> {
 	
 	private final Locale locale;
 	
-	public FileStatsTableModel(FlexiTableColumnModel columnModel, Locale locale) {
+	public LargeFilesTableModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
 	}
@@ -24,20 +24,20 @@ implements SortableFlexiTableDataModel<FileStatsTableContentRow> {
 	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
-			List<FileStatsTableContentRow> views = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+			List<LargeFilesTableContentRow> views = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
 			super.setObjects(views);
 		}
 	}
 	
 	@Override
 	public Object getValueAt(int row, int col) {
-		FileStatsTableContentRow file = getObject(row);
+		LargeFilesTableContentRow file = getObject(row);
 		return getValueAt(file, col);
 	}
 	
 	@Override
-	public Object getValueAt(FileStatsTableContentRow row, int col) {
-		switch(FileStatsTableColumns.values()[col]) {
+	public Object getValueAt(LargeFilesTableContentRow row, int col) {
+		switch(LargeFilesTableColumns.values()[col]) {
 			case key: return notNull(row.getKey());
 			case name: return notNull(row.getName());
 			case size: return notNull(row.getSize());
@@ -49,6 +49,7 @@ implements SortableFlexiTableDataModel<FileStatsTableContentRow> {
 			case license: return notNull(row.getLicense() != null ? LicenseUIFactory.translate(row.getLicense(), locale) : null);
 			case lastModifiedAt: return notNull(row.getLastModifiedAt());
 			case createdAt: return notNull(row.getCreatedAt());
+			case age: return notNull(row.getAge());
 			case trashed: return notNull(row.isTrashed());
 			case uuid: return notNull(row.getUuid());
 			case downloadCount: return notNull(row.getDownloadCount());
@@ -70,15 +71,15 @@ implements SortableFlexiTableDataModel<FileStatsTableContentRow> {
 	}
 	
 	@Override 
-	public DefaultFlexiTableDataModel<FileStatsTableContentRow> createCopyWithEmptyList() {
-		return new FileStatsTableModel(getTableColumnModel(), locale);
+	public DefaultFlexiTableDataModel<LargeFilesTableContentRow> createCopyWithEmptyList() {
+		return new LargeFilesTableModel(getTableColumnModel(), locale);
 	}
 	
 	private Object notNull(Object o) {
 		return o != null ? o : "";
 	}
 	
-	public enum FileStatsTableColumns implements FlexiSortableColumnDef {
+	public enum LargeFilesTableColumns implements FlexiSortableColumnDef {
 		key("largefiles.id"),
 		name("largefiles.name"),
 		size("largefiles.size"),
@@ -88,6 +89,7 @@ implements SortableFlexiTableDataModel<FileStatsTableContentRow> {
 		fileType("largefiles.filetype"),
 		fileCategory("largefiles.filecategory"),
 		createdAt("largefiles.createdat"),
+		age("largefiles.age"),
 		lastModifiedAt("largefiles.lastmodifiedat"),
 		license("largefiles.license"),
 		trashed("largefiles.trashed"),
@@ -108,7 +110,7 @@ implements SortableFlexiTableDataModel<FileStatsTableContentRow> {
 		
 		private final String i18nHeaderKey;
 		
-		private FileStatsTableColumns(String i18nHeaderKey) {
+		private LargeFilesTableColumns(String i18nHeaderKey) {
 			this.i18nHeaderKey = i18nHeaderKey;
 		}
 

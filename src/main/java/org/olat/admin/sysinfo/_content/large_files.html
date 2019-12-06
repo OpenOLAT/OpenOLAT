@@ -1,2 +1,15 @@
 <h4>$r.translate("largefiles.title")</h4>
+<div class="row">
+	<div class="col-md-6">
+		$r.render("filter_left")
+	</div>
+	<div class="col-md-6">
+		$r.render("filter_right")
+	</div>
+</div>
+<div class="row">
+	<div class="col-md-offset-3 col-md-9">
+		$r.render("filter_buttons")
+	</div>
+</div>
 $r.render("large_files")
