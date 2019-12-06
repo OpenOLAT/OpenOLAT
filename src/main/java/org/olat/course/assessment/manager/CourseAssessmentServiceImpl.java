@@ -165,6 +165,8 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	@Override
 	public void updateScoreEvaluation(CourseNode courseNode, ScoreEvaluation scoreEvaluation,
 			UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, boolean incrementAttempts, Role by) {
+		if (!userCourseEnvironment.isParticipant()) return;
+		
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		am.saveScoreEvaluation(courseNode, coachingIdentity, assessedIdentity, new ScoreEvaluation(scoreEvaluation),
@@ -187,6 +189,8 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	@Override
 	public void updateCurrentCompletion(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
 			Double currentCompletion, AssessmentRunStatus runStatus, Role by) {
+		if (!userCourseEnvironment.isParticipant()) return;
+		
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		am.updateCurrentCompletion(courseNode, assessedIdentity, userCourseEnvironment, currentCompletion, runStatus,
@@ -196,6 +200,8 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	@Override
 	public void updateCompletion(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, Double completion,
 			AssessmentEntryStatus runStatus, Role by) {
+		if (!userCourseEnvironment.isParticipant()) return;
+		
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		am.updateCompletion(courseNode, assessedIdentity, userCourseEnvironment, completion, runStatus, by);
@@ -204,6 +210,8 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	@Override
 	public void updateFullyAssessed(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
 			Boolean fullyAssessed, AssessmentEntryStatus status, Role by) {
+		if (!userCourseEnvironment.isParticipant()) return;
+		
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		am.updateFullyAssessed(courseNode, userCourseEnvironment, fullyAssessed, status, by);
 	}
@@ -217,6 +225,8 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 
 	@Override
 	public void incrementAttempts(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, Role by) {
+		if (!userCourseEnvironment.isParticipant()) return;
+		
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		am.incrementNodeAttempts(courseNode, assessedIdentity, userCourseEnvironment, by);
@@ -225,6 +235,8 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	@Override
 	public void updateAttempts(CourseNode courseNode, Integer userAttempts,
 			UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, Role by) {
+		if (!userCourseEnvironment.isParticipant()) return;
+		
 		if (userAttempts != null) {
 			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
@@ -242,6 +254,8 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	@Override
 	public void updatedUserComment(CourseNode courseNode, String userComment,
 			UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
+		if (!userCourseEnvironment.isParticipant()) return;
+		
 		if (userComment != null) {
 			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
@@ -259,6 +273,8 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	@Override
 	public void updateCoachComment(CourseNode courseNode, String coachComment,
 			UserCourseEnvironment userCourseEnvironment) {
+		if (!userCourseEnvironment.isParticipant()) return;
+		
 		if (coachComment != null) {
 			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
@@ -276,6 +292,8 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	@Override
 	public void addIndividualAssessmentDocument(CourseNode courseNode, File document, String filename,
 			UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
+		if (!userCourseEnvironment.isParticipant()) return;
+		
 		if (document != null) {
 			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
@@ -286,6 +304,8 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	@Override
 	public void removeIndividualAssessmentDocument(CourseNode courseNode, File document,
 			UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
+		if (!userCourseEnvironment.isParticipant()) return;
+		
 		if (document != null) {
 			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
@@ -296,6 +316,8 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	@Override
 	public void updateLastModifications(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
 			Identity identity, Role by) {
+		if (!userCourseEnvironment.isParticipant()) return;
+		
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		am.updateLastModifications(courseNode, assessedIdentity, userCourseEnvironment, by);
@@ -311,6 +333,8 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	@Override
 	public void saveScoreEvaluation(CourseNode courseNode, Identity identity, ScoreEvaluation scoreEvaluation,
 			UserCourseEnvironment userCourseEnvironment, boolean incrementUserAttempts, Role by) {
+		if (!userCourseEnvironment.isParticipant()) return;
+		
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		am.saveScoreEvaluation(courseNode, identity, assessedIdentity, scoreEvaluation, userCourseEnvironment,
@@ -341,6 +365,8 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 
 	@Override
 	public boolean onNodeVisited(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
+		if (!userCourseEnvironment.isParticipant()) return false;
+		
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		am.updateLastVisited(courseNode, assessedIdentity, new Date());
