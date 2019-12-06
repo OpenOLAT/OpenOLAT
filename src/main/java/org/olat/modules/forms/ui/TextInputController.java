@@ -21,6 +21,7 @@ package org.olat.modules.forms.ui;
 
 import java.math.BigDecimal;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
@@ -55,6 +56,8 @@ public class TextInputController extends FormBasicController implements Evaluati
 	private boolean singleRow;
 	private EvaluationFormResponse response;
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 
@@ -106,14 +109,20 @@ public class TextInputController extends FormBasicController implements Evaluati
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
+		singleRowEl.clearError();
 		if (textInput.isNumeric()) {
 			String val = singleRowEl.getValue();
 			if(StringHelper.containsNonWhitespace(val)) {
-				try {
-					Double.parseDouble(val);
-				} catch (NumberFormatException e) {
-					singleRowEl.setErrorKey("error.no.number", null);
+				if (dbInstance.isMySQL() && val.length() > 65) {
+					singleRowEl.setErrorKey("error.number.too.large", null);
 					allOk = false;
+				} else {
+					try {
+						Double.parseDouble(val);
+					} catch (NumberFormatException e) {
+						singleRowEl.setErrorKey("error.no.number", null);
+						allOk = false;
+					}
 				}
 			}
 		}
