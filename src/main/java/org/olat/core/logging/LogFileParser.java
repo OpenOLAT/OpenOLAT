@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
@@ -100,48 +101,52 @@ public class LogFileParser {
 	}
 
 	/**
-	 * extracts the errormessage from a line in the logfile and formats it for the
-	 * html
+	 * Extracts the error message from a line in the log file and formats it for the
+	 * html.
 	 * 
-	 * @param s
-	 * @return errormsg
+	 * @param s The splited error
+	 * @return The error message as a string
 	 */
-	private static String extractErrorAsHTML(String s[]) {
-		StringBuilder sb = new StringBuilder();
+	private static String extractErrorAsHTML(String[] s) {
+		StringBuilder sb = new StringBuilder(2048);
 
+		sb.append("<table class='table'><tbody>");
 		if (s.length == 6) {
 			// before refactoring of logging.Tracing
-			sb.append("<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\">");
-			sb.append("<tr><td valign=\"top\"><b>Date&nbsp;</b></td><td>" + Formatter.truncate(s[0].trim(), 20) + "</td></tr>");
-			sb.append("<tr><td valign=\"top\"><b>Error#&nbsp;</td><td><font color=\"red\"><b>" + s[1].trim() + "</font></td></tr>");
-			sb.append("<tr><td valign=\"top\"><b>Identity&nbsp;</b></td><td>" + s[3].trim() + "</td></tr>");
-			sb.append("<tr><td valign=\"top\"><b>Category/Class&nbsp;</b></td><td>" + s[2].trim() + "</td></tr>");
-			sb.append("<tr><td valign=\"top\"><b>Log msg&nbsp;</b></td><td>" + s[4].trim() + "</td></tr>");
-			sb.append("<tr><td valign=\"top\"><b>Cause&nbsp;</b></td><td>"
-					+ s[5].trim().replaceAll(" at ", "<br />at ").replaceAll(">>>", "<br /><br />&gt;&gt;&gt;") + "</td></tr>");
-			sb.append("</table>");
+			sb.append("<tr><th>Date</th><td>").append(Formatter.truncate(s[0].trim(), 20)).append("</td></tr>");
+			sb.append("<tr><th>Error</th><td class='danger'>").append(s[1].trim()).append("</td></tr>");
+			sb.append("<tr><th>Identity</th><td>").append(s[3].trim()).append("</td></tr>");
+			sb.append("<tr><th>Category/Class</th><td>").append(s[2].trim()).append("</td></tr>");
+			sb.append("<tr><th>Log msg</th><td>").append(s[4].trim()).append("</td></tr>");
+			sb.append("<tr><th>Cause</th><td>").append(s[5].trim().replace(" at ", "<br>at ").replace(">>>", "<br><br>&gt;&gt;&gt;")).append("</td></tr>");
 		} else if (s.length == 9) {
 			// the new Tracing
-			sb.append("<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\">");
-			sb.append("<tr><td valign=\"top\"><b>Date&nbsp;</b></td><td>" + Formatter.truncate(s[0].trim(), 20) + "</td></tr>");
-			sb.append("<tr><td valign=\"top\"><b>Error#&nbsp;</td><td><font color=\"red\"><b>" + s[1].trim() + "</font></td></tr>");
-			sb.append("<tr><td valign=\"top\"><b>Identity&nbsp;</b></td><td>" + s[3].trim() + "</td></tr>");
-			sb.append("<tr><td valign=\"top\"><b>Category/Class&nbsp;</b></td><td>" + s[2].trim() + "</td></tr>");
-			sb.append("<tr><td valign=\"top\"><b>Remote IP&nbsp;</b></td><td>" + s[4].trim() + "</td></tr>");
-			sb.append("<tr><td valign=\"top\"><b>Referer&nbsp;</b></td><td>" + s[5].trim() + "</td></tr>");
-			sb.append("<tr><td valign=\"top\"><b>User-Agent&nbsp;</b></td><td>" + s[6].trim() + "</td></tr>");
-			sb.append("<tr><td valign=\"top\"><b>Log msg&nbsp;</b></td><td>" + s[7].trim() + "</td></tr>");
-			sb.append("<tr><td valign=\"top\"><b>Cause&nbsp;</b></td><td>"
-					+ s[8].trim().replaceAll(" at ", "<br />at ").replaceAll(">>>", "<br /><br />&gt;&gt;&gt;") + "</td></tr>");
-			sb.append("</table>");
+			sb.append("<tr><th>Date</th><td>").append(Formatter.truncate(s[0].trim(), 20)).append("</td></tr>");
+			sb.append("<tr><th>Error</th><td class='danger'>").append( s[1].trim()).append("</td></tr>");
+			sb.append("<tr><th>Identity</th><td>").append(s[3].trim()).append("</td></tr>");
+			sb.append("<tr><th>Category/Class</th><td>").append(s[2].trim()).append("</td></tr>");
+			sb.append("<tr><th>Remote IP</th><td>").append(s[4].trim()).append("</td></tr>");
+			sb.append("<tr><th>Referer</th><td>").append(s[5].trim()).append("</td></tr>");
+			sb.append("<tr><th>User-Agent</th><td>").append(s[6].trim()).append("</td></tr>");
+			sb.append("<tr><th>Log msg</th><td>").append( s[7].trim()).append("</td></tr>");
+			sb.append("<tr><th>Cause</th><td>").append(s[8].trim().replace(" at ", "<br>at ").replace(">>>", "<br><br>&gt;&gt;&gt;")).append("</td></tr>");
 		} else {
-			throw new AssertException("Unknown Logfile format");
+			sb.append("<tr><th>Log</th><td colspan='8'>");
+			for(String t:s) {
+				String text = t == null ? "" : t.trim();
+				if(StringHelper.containsNonWhitespace(text)) {
+					sb.append(text).append("<br>");
+				}
+			}
+			sb.append("</td></tr>");
 		}
+		sb.append("</tbody></table>");
+		
 		return sb.toString();
 	}
 
 	/**
-	 * extracts the errormessage from a line in the logfile and formats it as text
+	 * Extracts the error message from a line in the log file and formats it as text
 	 * 
 	 * @param s
 	 * @return errormsg
@@ -156,7 +161,7 @@ public class LogFileParser {
 			sb.append("Remote IP: " + s[4].trim() + "\n");
 			sb.append("Referer: " + s[5].trim() + "\n");
 			sb.append("User-Agent: " + s[6].trim() + "\n");
-			sb.append("Exception: " + s[7].trim().replaceAll(" at ", "\nat ").replaceAll(">>>", "\n\n"));
+			sb.append("Exception: " + s[7].trim().replace(" at ", "\nat ").replace(">>>", "\n\n"));
 		} else {
 			for(String st:s) {
 				sb.append("Raw msg: " + st + "\n");
@@ -179,51 +184,41 @@ public class LogFileParser {
 	}
 
 	/**
-	 * looks through the logfile
+	 * Looks through the log file.
 	 * 
-	 * @param s
-	 * @param dd requested day
-	 * @param mm requested month
-	 * @param yyyy requested yyyy
-	 * @return the first found errormessage
+	 * @param errorNumber The error number to search for
+	 * @param date The date (optional)
+	 * @param asHTML Result as HTML or not
+	 * @return A list of error messages
 	 */
-	public static Collection<String> getError(String errorNumber, Date date, boolean asHTML) {
-		
+	public static List<String> getError(String errorNumber, Date date, boolean asHTML) {
 		if (logfilepathBase == null) {
 			//this is null when olat is setup with an empty olat.local.properties file and no log.dir path is set. 
 			return Collections.emptyList();
+		}
+
+		List<String> errormsg = new ArrayList<>();
+		
+		File logFile = getLogFile(date, new SimpleDateFormat("yyyy-MM-dd"));
+		if(logFile == null) {
+			logFile = getLogFile(date, new SimpleDateFormat("dd MM yyyy"));
+		}
+		
+		if(logFile == null || !logFile.exists() || !logFile.canRead()) {
+			String logFilePath = logFile == null ? "???" : logFile.getAbsolutePath();
+			errormsg.add("logfile <strong>" + logFilePath + "</strong> does not exist or unable to read from");
+			return errormsg;
 		}
 		
 		String line;
 		String line2;
 		String memoryline = "empty";
 		String[] em = new String[10];
-		Collection<String> errormsg = new ArrayList<>();
 
-		SimpleDateFormat sdb = new SimpleDateFormat("dd MM yyyy");
-		
-		String logfilepath;
-		if(date == null) {
-			logfilepath = logfilepathBase;
-		} else {
-			String today = sdb.format(new Date());
-			String reqdate = sdb.format(date);
-			if (today.equals(reqdate)) {
-				logfilepath = logfilepathBase;
-			} else {
-				logfilepath  = logfilepathBase + "." + reqdate;
-			}
-			log.info("logfilepath changed to " + logfilepath + "  (today: " + today + ",  requested date:" + reqdate + ")");
-		}
-
-		int counter = linecount;
 		int founderror = 0;
-		final File logFile = new File(logfilepath);
-		if(!logFile.exists() || !logFile.canRead()){
-			errormsg.add("logfile <b>"+logfilepath+"</b> does not exist or unable to read from");
-			return errormsg;
-		}
-			
+		int counter = linecount;
+		String logFilePath = logFile.getAbsolutePath();
+	
 		try(BufferedReader br = new BufferedReader(new FileReader(logFile))) {
 			while ((line = br.readLine()) != null) {
 				if (counter == 0) {
@@ -235,7 +230,7 @@ public class LogFileParser {
 				} else if ( line.matches(matchError) || line.matches(matchWarn) ) {
 					line2 = line.replaceAll("[/^]", "/");
 					em = line2.split("/%/");
-					if (em[1].trim().startsWith(errorNumber)) {
+					if (em[1].trim().contains(errorNumber)) {
 						founderror++;
 						if (asHTML) {
 							line2 = extractErrorAsHTML(em);
@@ -259,12 +254,29 @@ public class LogFileParser {
 			}
 			
 			if (founderror == 0){
-				errormsg.add("no error with number "+errorNumber+" found in "+logfilepath);
+				errormsg.add("no error with number " + errorNumber + " found in " + logFilePath);
 			}
-			
 			return errormsg;
 		} catch (IOException e) {
-			throw new OLATRuntimeException("error reading OLAT error log at " + logfilepath, e);
+			throw new OLATRuntimeException("error reading OLAT error log at " + logFilePath, e);
 		}
+	}
+	
+	private static File getLogFile(Date date, SimpleDateFormat sdb) {
+		String logfilepath;
+		if(date == null) {
+			logfilepath = logfilepathBase;
+		} else {
+			String today = sdb.format(new Date());
+			String reqdate = sdb.format(date);
+			if (today.equals(reqdate)) {
+				logfilepath = logfilepathBase;
+			} else {
+				logfilepath  = logfilepathBase + "." + reqdate;
+			}
+			log.info("logfilepath changed to {}  (today: {},  requested date:{})", logfilepath, today, reqdate);
+		}
+
+		return new File(logfilepath);
 	}
 }

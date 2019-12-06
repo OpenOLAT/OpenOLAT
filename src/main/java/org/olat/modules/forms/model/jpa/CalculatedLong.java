@@ -44,7 +44,7 @@ public class CalculatedLong {
 	}
 	
 	public CalculatedLong(String identifier, BigDecimal subIdentifier, long value) {
-		this(identifier, subIdentifier.toPlainString(), value);
+		this(identifier, trimZerosFromEnd(subIdentifier.toPlainString()), value);
 	}
 	
 	public CalculatedLong(String identifier, String subIdentifier, long value) {
@@ -64,6 +64,15 @@ public class CalculatedLong {
 
 	public long getValue() {
 		return value;
+	}
+	
+	private static String trimZerosFromEnd(String value) {
+		int len = value.length();
+		int st = 0;
+		while ((st < len) && (value.charAt(len - 1) == '0' || value.charAt(len - 1) == '.')) {
+			len--;
+		}
+		return value.substring(0, len);
 	}
 
 }
