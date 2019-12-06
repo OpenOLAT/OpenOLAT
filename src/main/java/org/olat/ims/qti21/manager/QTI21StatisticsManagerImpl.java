@@ -32,8 +32,10 @@ import java.util.concurrent.atomic.DoubleAdder;
 
 import javax.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.logging.Tracing;
 import org.olat.ims.qti.statistics.manager.Statistics;
 import org.olat.ims.qti.statistics.model.StatisticAssessment;
 import org.olat.ims.qti.statistics.model.StatisticsItem;
@@ -86,6 +88,8 @@ import uk.ac.ed.ph.jqtiplus.value.StringValue;
  */
 @Service
 public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
+	
+	private static final Logger log = Tracing.createLoggerFor(QTI21StatisticsManagerImpl.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -529,8 +533,9 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		for(TextEntryInteraction interaction:interactions) {
 			Identifier responseIdentifier = interaction.getResponseIdentifier();
 			ResponseDeclaration responseDeclaration = item.getResponseDeclaration(responseIdentifier);
-			
-			if(responseDeclaration.hasBaseType(BaseType.STRING)) {
+			if(responseDeclaration == null) {
+				log.warn("Missing response declaration {}", responseIdentifier);
+			} else if(responseDeclaration.hasBaseType(BaseType.STRING)) {
 				TextEntryInteractionStatistics stats = getTextEntryInteractionSettings(responseIdentifier, responseDeclaration);
 				optionMap.put(responseIdentifier.toString(), stats);
 				options.add(stats);
@@ -553,7 +558,9 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 						response = response.substring(1, response.length() - 1);
 					}
 					
-					if(stats.matchResponse(response)) {
+					if(stats == null) {
+						// missing response declaration
+					} else if(stats.matchResponse(response)) {
 						stats.addCorrect(count.longValue());
 					} else {
 						stats.addIncorrect(count.longValue());
