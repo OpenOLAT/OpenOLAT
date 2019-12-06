@@ -156,6 +156,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		
 		return coachCourseEnv.isAdmin()
 				? repositoryService.getMembers(re, RepositoryEntryRelationType.all, GroupRoles.participant.name())
+						.stream().distinct().collect(Collectors.toList())
 				: repositoryService.getCoachedParticipants(getIdentity(), re);
 	}
 

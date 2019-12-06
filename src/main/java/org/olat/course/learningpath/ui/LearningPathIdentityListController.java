@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -164,6 +165,7 @@ public class LearningPathIdentityListController extends FormBasicController impl
 		
 		List<Identity> coachedIdentities = coachCourseEnv.isAdmin()
 				? repositoryService.getMembers(re, RepositoryEntryRelationType.all, GroupRoles.participant.name())
+						.stream().distinct().collect(Collectors.toList())
 				: repositoryService.getCoachedParticipants(getIdentity(), re);
 		
 		List<AssessmentEntry> assessmentEntries = assessmentService.loadAssessmentEntriesBySubIdent(re, subIdent);
