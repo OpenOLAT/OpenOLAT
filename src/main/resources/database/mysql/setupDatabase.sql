@@ -2085,7 +2085,7 @@ create table o_eva_form_response (
    lastmodified datetime not null,
    e_no_response bit default 0,
    e_responseidentifier varchar(64) not null,
-   e_numericalresponse decimal default null,
+   e_numericalresponse decimal(65,10) default null,
    e_stringuifiedresponse mediumtext,
    e_file_response_path varchar(4000),
    fk_session bigint not null,
