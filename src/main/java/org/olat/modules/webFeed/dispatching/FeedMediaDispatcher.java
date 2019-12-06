@@ -208,14 +208,14 @@ public class FeedMediaDispatcher implements Dispatcher, GenericEventListener {
 			if(isAccessible(ureq, path, feed)) {
 				deliverFile(request, response, feed, path);
 			} else {
-				log.info("Access was denied. Path::" + path);
+				log.info("Access was denied. Path::{}", path);
 				DispatcherModule.sendForbidden(request.getRequestURI(), response);
 			}
 		} catch (InvalidPathException e) {
-			log.warn("The requested path is invalid. path::" + path, e);
+			log.warn("The requested path is invalid. path::{}", path, e);
 			DispatcherModule.sendBadRequest(request.getRequestURI(), response);
 		} catch (Exception e) {
-			log.warn("Nothing was delivered. Path::" + path, e);
+			log.warn("Nothing was delivered. Path::{}", path, e);
 			DispatcherModule.sendNotFound(request.getRequestURI(), response);
 		}
 	}

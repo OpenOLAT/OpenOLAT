@@ -44,6 +44,8 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.io.SystemFilenameFilter;
 import org.olat.core.util.vfs.VFSContainer;
@@ -58,6 +60,9 @@ import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskHelper;
 import org.olat.course.nodes.gta.TaskHelper.FilesLocked;
 import org.olat.course.nodes.gta.TaskProcess;
+import org.olat.course.nodes.gta.TaskRevision;
+import org.olat.course.nodes.gta.ui.events.CloseRevisionsEvent;
+import org.olat.course.nodes.gta.ui.events.ReturnToRevisionsEvent;
 import org.olat.course.nodes.gta.ui.events.SubmitEvent;
 import org.olat.course.nodes.gta.ui.events.TaskMultiUserEvent;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -78,8 +83,6 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 	
 	private final VelocityContainer mainVC;
 	private Link collectButton;
-	private Link closeRevisionsButton;
-	private Link returnToRevisionsButton;
 	
 	private CloseableModalController cmc;
 	private Map<Integer,DirectoryController> loopToRevisionCtrl = new HashMap<>();
@@ -89,6 +92,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 	private DialogBoxController confirmCloseRevisionProcessCtrl;
 	
 	private Task assignedTask;
+	private List<TaskRevision> taskRevisions;
 	private final int currentIteration;
 	private final GTACourseNode gtaNode;
 	private final boolean businessGroupTask;
@@ -108,12 +112,13 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 	private CourseAssessmentService courseAssessmentService;
 	
 	public GTACoachRevisionAndCorrectionsController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv,
-			Task assignedTask, GTACourseNode gtaNode, UserCourseEnvironment coachCourseEnv, BusinessGroup assessedGroup,
+			Task assignedTask, List<TaskRevision> taskRevisions, GTACourseNode gtaNode, UserCourseEnvironment coachCourseEnv, BusinessGroup assessedGroup,
 			Identity assessedIdentity, OLATResourceable taskListEventResource) {
 		super(ureq, wControl);
 		this.gtaNode = gtaNode;
 		this.courseEnv = courseEnv;
 		this.assignedTask = assignedTask;
+		this.taskRevisions = taskRevisions;
 		this.assessedGroup = assessedGroup;
 		this.coachCourseEnv = coachCourseEnv;
 		this.assessedIdentity = assessedIdentity;
@@ -136,7 +141,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 	}
 	
 	private void initRevisionProcess(UserRequest ureq) {
-		List<String> revisionStepNames = new ArrayList<>();
+		List<Step> revisionStepNames = new ArrayList<>();
 		mainVC.contextPut("previousRevisions", revisionStepNames);
 		if(collectButton != null) {
 			mainVC.remove(collectButton);//reset collect
@@ -151,12 +156,12 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 		TaskProcess status = assignedTask.getTaskStatus();
 		if(status == TaskProcess.revision) {
 			//assessed user can return some revised documents
-			setRevisions(ureq, "revisions", currentIteration);
+			setRevisions(ureq, new Step("revisions"), currentIteration);
 			setCollectRevisions();
 		} else if(status == TaskProcess.correction) {
 			//coach can return some corrections
-			setRevisions(ureq, "revisions", currentIteration);
-			setUploadCorrections(ureq, assignedTask, assignedTask.getRevisionLoop());
+			setRevisions(ureq, new Step("revisions"), currentIteration);
+			setUploadCorrections(ureq, assignedTask, assignedTask.getRevisionLoop(), taskRevisions);
 		} else {
 			int lastIteration = assignedTask.getRevisionLoop();
 			setRevisionIteration(ureq, lastIteration, revisionStepNames);
@@ -169,20 +174,20 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 		collectButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 	}
 	
-	private void setRevisionIteration(UserRequest ureq, int iteration, List<String> revisionStepNames) {
+	private void setRevisionIteration(UserRequest ureq, int iteration, List<Step> revisionStepNames) {
 		// revisions
-		String revCmpName = "revisions-" + iteration;
+		Step revCmpName = new Step("revisions-" + iteration);
 		if(setRevisions(ureq, revCmpName, iteration)) {
 			revisionStepNames.add(revCmpName);
 		}
 		// corrections
-		String correctionCmpName = "corrections-" + iteration;
+		Step correctionCmpName = new Step("corrections-" + iteration);
 		if(setCorrections(ureq, correctionCmpName, iteration)) {
 			revisionStepNames.add(correctionCmpName);
 		}
 	}
 	
-	private boolean setRevisions(UserRequest ureq, String cmpName, int iteration) {
+	private boolean setRevisions(UserRequest ureq, Step step, int iteration) {
 		File documentsDir;
 		VFSContainer documentsContainer = null;
 		if(businessGroupTask) {
@@ -198,18 +203,18 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 			DirectoryController revisionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer,
 					"coach.revisions.description", "bulk.revisions", "revisions.zip");
 			listenTo(revisionsCtrl);
-			mainVC.put(cmpName, revisionsCtrl.getInitialComponent());
+			mainVC.put(step.getCmpName(), revisionsCtrl.getInitialComponent());
 			loopToRevisionCtrl.put(iteration, revisionsCtrl);
 		} else if (assignedTask.getTaskStatus() == TaskProcess.revision) {
 			String msg = "<i class='o_icon o_icon_error'> </i> " + translate("coach.corrections.rejected");
-			TextFactory.createTextComponentFromString(cmpName, msg, null, true, mainVC);
+			TextFactory.createTextComponentFromString(step.getCmpName(), msg, null, true, mainVC);
 		} else {
-			TextFactory.createTextComponentFromI18nKey(cmpName, "coach.revisions.nofiles", getTranslator(), null, true, mainVC);			
+			TextFactory.createTextComponentFromI18nKey(step.getCmpName(), "coach.revisions.nofiles", getTranslator(), null, true, mainVC);			
 		}
 		return hasDocuments;
 	}
 	
-	private boolean setCorrections(UserRequest ureq, String cmpName, int iteration) {
+	private boolean setCorrections(UserRequest ureq, Step step, int iteration) {
 		File documentsDir;
 		VFSContainer documentsContainer = null;
 		if(businessGroupTask) {
@@ -225,7 +230,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 			DirectoryController correctionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer,
 					"run.coach.corrections.description", "bulk.review", "review");
 			listenTo(correctionsCtrl);
-			mainVC.put(cmpName, correctionsCtrl.getInitialComponent());
+			mainVC.put(step.getCmpName(), correctionsCtrl.getInitialComponent());
 		}
 		
 		String msg = null;
@@ -237,12 +242,24 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 			msg = "<i class='o_icon o_icon_ok'> </i> " + translate("coach.corrections.closed");				
 		}
 		mainVC.contextPut("revisionMessage", msg);
-
-		
+		hasDocuments |= setComment(step, iteration);
 		return hasDocuments;
 	}
 	
-	private void setUploadCorrections(UserRequest ureq, Task task, int iteration) {
+	private boolean setComment(Step step, int iteration) {
+		TaskRevision taskRevision = GTAAbstractController.getTaskRevision(taskRevisions, TaskProcess.revision, iteration);
+		if(taskRevision != null && StringHelper.containsNonWhitespace(taskRevision.getComment())) {
+			String commentator = userManager.getUserDisplayName(taskRevision.getCommentAuthor());
+			String commentDate = Formatter.getInstance(getLocale()).formatDate(taskRevision.getCommentLastModified());
+			String infos = translate("run.corrections.comment.infos", new String[] { commentDate, commentator });
+			step.setComment(taskRevision.getComment());
+			step.setCommentInfos(infos);
+			return true;
+		}
+		return false;
+	}
+	
+	private void setUploadCorrections(UserRequest ureq, Task task, int iteration, List<TaskRevision> revisions) {
 		File documentsDir;
 		VFSContainer documentsContainer;
 		if(businessGroupTask) {
@@ -253,22 +270,12 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 			documentsContainer = gtaManager.getRevisedDocumentsCorrectionsContainer(courseEnv, gtaNode, iteration, assessedIdentity);
 		}
 		
-		uploadCorrectionsCtrl = new SubmitDocumentsController(ureq, getWindowControl(), task, documentsDir, documentsContainer,
-				-1, -1, gtaNode, courseEnv, coachCourseEnv.isCourseReadOnly(), null, "coach.document");
+		TaskRevision taskRevision = GTAAbstractController.getTaskRevision(revisions, TaskProcess.revision, iteration);// next iteration
+		uploadCorrectionsCtrl = new CoachSubmitRevisionsController(ureq, getWindowControl(), task, taskRevision, iteration,
+				assessedIdentity, assessedGroup, documentsDir, documentsContainer, gtaNode, courseEnv,
+				coachCourseEnv.isCourseReadOnly(), null, "coach.document");
 		listenTo(uploadCorrectionsCtrl);
 		mainVC.put("uploadCorrections", uploadCorrectionsCtrl.getInitialComponent());
-
-		returnToRevisionsButton = LinkFactory.createCustomLink("coach.submit.corrections.to.revision.button", "submit", "coach.submit.corrections.to.revision.button", Link.BUTTON, mainVC, this);
-		returnToRevisionsButton.setCustomEnabledLinkCSS("btn btn-primary");
-		returnToRevisionsButton.setIconLeftCSS("o_icon o_icon o_icon_rejected");
-		returnToRevisionsButton.setElementCssClass("o_sel_course_gta_return_revision");
-		returnToRevisionsButton.setVisible(!coachCourseEnv.isCourseReadOnly());
-		
-		closeRevisionsButton = LinkFactory.createCustomLink("coach.close.revision.button", "close", "coach.close.revision.button", Link.BUTTON, mainVC, this);
-		closeRevisionsButton.setCustomEnabledLinkCSS("btn btn-primary");
-		closeRevisionsButton.setIconLeftCSS("o_icon o_icon o_icon_accepted");
-		closeRevisionsButton.setElementCssClass("o_sel_course_gta_close_revision");
-		closeRevisionsButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 	}
 	
 	@Override
@@ -292,6 +299,10 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 				Task aTask = uploadCorrectionsCtrl.getAssignedTask();
 				gtaManager.log("Corrections", (SubmitEvent)event, aTask,
 						getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach);
+			} else if(event instanceof ReturnToRevisionsEvent) {
+				doConfirmReturnToRevisions(ureq);
+			} else if(event instanceof CloseRevisionsEvent) {
+				doConfirmCloseRevisionProcess(ureq);
 			}
 		} else if(confirmReturnToRevisionsCtrl == source) {
 			if(event == Event.DONE_EVENT) {
@@ -323,11 +334,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(returnToRevisionsButton == source) {
-			doConfirmReturnToRevisions(ureq);
-		} else if(closeRevisionsButton == source) {
-			doConfirmCloseRevisionProcess(ureq);
-		} else if(collectButton == source) {
+		if(collectButton == source) {
 			doConfirmCollect(ureq);
 		}
 	}
@@ -418,5 +425,40 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 		assignedTask = gtaManager.reviewedTask(assignedTask, gtaNode, getIdentity(), Role.coach);
 		gtaManager.log("Revision", "close revision", assignedTask,
 				getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach);
+	}
+	
+	public class Step {
+		
+		private final String cmpName;
+		private String comment;
+		private String commentInfos;
+		
+		public Step(String cmpName) {
+			this.cmpName = cmpName;
+		}
+
+		public String getCmpName() {
+			return cmpName;
+		}
+		
+		public boolean hasComment() {
+			return StringHelper.containsNonWhitespace(comment);
+		}
+
+		public String getComment() {
+			return comment;
+		}
+
+		public void setComment(String comment) {
+			this.comment = comment;
+		}
+
+		public String getCommentInfos() {
+			return commentInfos;
+		}
+
+		public void setCommentInfos(String commentInfos) {
+			this.commentInfos = commentInfos;
+		}
 	}
 }

@@ -130,24 +130,19 @@ public class EvaluationFormHandler implements PageElementHandler {
 				boolean readOnly = (pageStatus == PageStatus.published) || (pageStatus == PageStatus.closed) || (pageStatus == PageStatus.deleted);
 				EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, ureq.getIdentity());
 				ctrl =  new EvaluationFormExecutionController(ureq, wControl, session, readOnly, false);
-			} else if(hasRole(PortfolioRoles.coach, ureq.getIdentity(), accessRights)) {
+			} else if(hasRole(PortfolioRoles.coach, ureq.getIdentity(), accessRights)
+					|| hasRole(PortfolioRoles.reviewer, ureq.getIdentity(), accessRights)
+					|| hasRole(PortfolioRoles.invitee, ureq.getIdentity(), accessRights)) {
 				Identity owner = getOwner(accessRights);
 				EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, owner);
 				ctrl =  new EvaluationFormExecutionController(ureq, wControl, session, true, false);
-			} else if(hasRole(PortfolioRoles.reviewer, ureq.getIdentity(), accessRights)
-					|| hasRole(PortfolioRoles.invitee, ureq.getIdentity(), accessRights)) {
-				if(assignment.isReviewerSeeAutoEvaluation()) {
-					Identity owner = getOwner(accessRights);
-					EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, owner);
-					ctrl = new EvaluationFormExecutionController(ureq, wControl, session, true, false);
-				}
 			}
 		} else {
 			if(hasRole(PortfolioRoles.owner, ureq.getIdentity(), accessRights)) {
 				boolean readOnly = (pageStatus == PageStatus.published) || (pageStatus == PageStatus.closed) || (pageStatus == PageStatus.deleted) || onePage;
 				Identity owner = getOwner(accessRights);
 				List<Identity> coachesAndReviewers = getCoachesAndReviewers(accessRights);
-				if(coachesAndReviewers.size() > 0) {
+				if(!coachesAndReviewers.isEmpty()) {
 					ctrl = new MultiEvaluationFormController(ureq, wControl, owner, coachesAndReviewers, survey, false, readOnly, onePage, anonym);
 				} else {
 					EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, ureq.getIdentity());

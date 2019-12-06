@@ -169,12 +169,10 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		} else {
 			iFrameId = frameId;
 		}
-		
-		boolean adjusteightAutomatically = true;
-		
+
 		//Delivers content files via local mapper to enable session based browser caching for at least this instance
 		if(persistMapper) {
-			contentMapper = new SerializableIFrameDeliveryMapper(rootDir, false, enableTextmarking, adjusteightAutomatically,
+			contentMapper = new SerializableIFrameDeliveryMapper(rootDir, false, enableTextmarking,
 					iFrameId, null /*customCssURL*/, themeBaseUri, null /*customHeaderContent*/);
 		} else {
 			contentMapper = new IFrameDeliveryMapper(rootDir, false, enableTextmarking, iFrameId,

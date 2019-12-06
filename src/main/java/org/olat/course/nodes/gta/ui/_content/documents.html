@@ -1,3 +1,8 @@
+#if($r.visible("coach.reviewed.button") || $r.visible("coach.need.revision.button") || $r.visible("coach.submit.corrections.to.revision.button"))
+	<h5>$r.translate("coach.feedback.documents.title")</h5>
+	<p>$r.translate("coach.feedback.documents.desc")</p>
+#end
+
 #if($r.isNotEmpty($minDocsWarning))
 	<div class="o_warning">$minDocsWarning</div>
 #end
@@ -25,4 +30,36 @@
 		</div>
 	</div>
 </div>
+#end
+
+#if($r.visible("coach.reviewed.button") || $r.visible("coach.need.revision.button"))
+	<h5>$r.translate("coach.verdict.title")</h5>
+	<p>$r.translate("coach.verdict.desc")</p>
+	#if($r.visible("corrections.comment"))
+		$r.render("corrections.comment")
+	#end
+	<div class="o_button_group">
+	#if($r.visible("coach.need.revision.button"))
+		$r.render("coach.need.revision.button")
+	#end
+	#if($r.visible("coach.reviewed.button"))
+		$r.render("coach.reviewed.button")
+	#end
+	</div>
+#end
+
+#if($r.visible("coach.submit.corrections.to.revision.button") || $r.visible("coach.close.revision.button"))
+	<h5>$r.translate("coach.verdict.title")</h5>
+	<p>$r.translate("coach.verdict.desc")</p>
+	#if($r.visible("revisions.comment"))
+		$r.render("revisions.comment")
+	#end
+	<div class="o_button_group">
+	#if($r.visible("coach.submit.corrections.to.revision.button"))
+		$r.render("coach.submit.corrections.to.revision.button")
+	#end
+	#if($r.visible("coach.close.revision.button"))
+		$r.render("coach.close.revision.button")
+	#end
+	</div>
 #end

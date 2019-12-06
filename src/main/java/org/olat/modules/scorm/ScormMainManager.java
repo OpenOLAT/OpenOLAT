@@ -29,17 +29,18 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.id.OLATResourceable;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.springframework.stereotype.Service;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
 
 /**
@@ -54,6 +55,11 @@ public class ScormMainManager {
 	private static final Logger log = Tracing.createLoggerFor(ScormMainManager.class);
 	private static XStream configXstream = XStreamHelper.createXStreamInstance();
 	static {
+		XStream.setupDefaultSecurity(configXstream);
+		Class<?>[] types = new Class[] {
+				ScormPackageConfig.class, DeliveryOptions.class
+			};
+		configXstream.addPermission(new ExplicitTypePermission(types));
 		configXstream.alias("packageConfig", ScormPackageConfig.class);
 		configXstream.alias("deliveryOptions", DeliveryOptions.class);
 	}
@@ -100,18 +106,18 @@ public class ScormMainManager {
 	 * @param apiCallback the callback to where lmssetvalue data is mirrored, or null if no callback is desired
 	 * @param cpRoot
 	 * @param resourceId
-	 * @param lesson_mode add null for the default value or "normal", "browse" or
+	 * @param lessonMode add null for the default value or "normal", "browse" or
 	 *          "review"
-	 * @param credit_mode add null for the default value or "credit", "no-credit"
+	 * @param creditMode add null for the default value or "credit", "no-credit"
 	 */
 	public ScormAPIandDisplayController createScormAPIandDisplayController(UserRequest ureq, WindowControl wControl,
 			boolean showMenu, ScormAPICallback apiCallback, File cpRoot, Long scormResourceId, String courseId,
-			String lesson_mode, String credit_mode, boolean previewMode, String assessableType, boolean activate,
-			boolean fullWindow, boolean attemptsIncremented, DeliveryOptions deliveryOptions) {
+			String lessonMode, String creditMode, boolean previewMode, String assessableType, boolean activate,
+			boolean fullWindow, boolean attemptsIncremented, boolean randomizeDelivery, DeliveryOptions deliveryOptions) {
 		
 		ScormAPIandDisplayController ctrl= new ScormAPIandDisplayController(ureq, wControl, showMenu, apiCallback, cpRoot,
-				scormResourceId, courseId, lesson_mode, credit_mode, previewMode, assessableType, activate, fullWindow,
-				attemptsIncremented, deliveryOptions);
+				scormResourceId, courseId, lessonMode, creditMode, previewMode, assessableType, activate, fullWindow,
+				attemptsIncremented, randomizeDelivery, deliveryOptions);
 		
 		DeliveryOptions config = ctrl.getDeliveryOptions();
 		boolean configAllowRawContent = (config == null || config.rawContent());

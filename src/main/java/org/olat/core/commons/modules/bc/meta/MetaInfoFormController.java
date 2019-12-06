@@ -549,7 +549,30 @@ public class MetaInfoFormController extends FormBasicController {
 			}
 		}
 		
+		valid &= validateTextfield(language, 16);
+		valid &= validateTextfield(title, 2000);
+		valid &= validateTextfield(comment, 32000);
+		valid &= validateTextfield(publisher, 2000);
+		valid &= validateTextfield(creator, 2000);
+		valid &= validateTextfield(city, 255);
+		valid &= validateTextfield(sourceEl, 2000);
+		valid &= validateTextfield(pages, 2000);
+		valid &= validateTextfield(filename, 255);
+		valid &= validateTextfield(url, 4000);
+		
 		return valid;
+	}
+	
+	private boolean validateTextfield(TextElement textEl, int maxSize) {
+		boolean allOk = true;
+		
+		textEl.clearError();
+		if(textEl.getValue() != null && textEl.getValue().length() >= maxSize) {
+			textEl.setErrorKey("form.error.toolong", new String[] { Integer.toString(maxSize) });
+			allOk &= false;
+		}
+		
+		return allOk;
 	}
 	
 	/**

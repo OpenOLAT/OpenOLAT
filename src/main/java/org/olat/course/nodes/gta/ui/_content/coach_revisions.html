@@ -1,5 +1,13 @@
 #foreach($previousRevision in $previousRevisions)
-	$r.render($previousRevision)
+	#if(${previousRevision.hasComment()})
+	<div class="o_note">
+		<h5>$r.translate("run.coach.corrections.revs.comment")</strong> <small>$r.escapeHtml($previousRevision.commentInfos)</small></h5>
+		<p>$r.xssScan($previousRevision.comment)</p>
+	</div> 
+	#end
+	#if($r.available($previousRevision.cmpName))
+		$r.render($previousRevision.cmpName)
+	#end
 #end
 
 #if($r.available("revisions"))
@@ -8,25 +16,9 @@
 #if($revisionMessage && !$revisionMessage.isEmpty())
 	<p>$revisionMessage</p>
 #end
+
 #if($r.available("uploadCorrections"))
-	#if($r.visible("coach.submit.corrections.to.revision.button"))
-		<h5>$r.translate("coach.feedback.documents.title")</h5>
-		<p>$r.translate("coach.feedback.documents.desc")</p>
-	#end
 	$r.render("uploadCorrections")
-	
-	#if($r.visible("coach.submit.corrections.to.revision.button") || $r.visible("coach.close.revision.button"))
-		<h5>$r.translate("coach.verdict.title")</h5>
-		<p>$r.translate("coach.verdict.desc")</p>
-		<div class="o_button_group">
-		#if($r.visible("coach.submit.corrections.to.revision.button"))
-			$r.render("coach.submit.corrections.to.revision.button")
-		#end
-		#if($r.visible("coach.close.revision.button"))
-			$r.render("coach.close.revision.button")
-		#end
-		</div>
-	#end
 #elseif($r.visible("coach.collect.revisions"))
 	<h5>$r.translate("coach.collect.confirm.title")</h5>
 	<p>$r.translate("coach.collect.confirm.desc")</p>

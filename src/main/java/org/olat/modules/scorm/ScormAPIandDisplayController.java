@@ -115,7 +115,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	ScormAPIandDisplayController(UserRequest ureq, WindowControl wControl, boolean showMenu, ScormAPICallback apiCallback,
 			File cpRoot, Long scormResourceId, String courseIdNodeId, String lesson_mode, String credit_mode,
 			boolean previewMode, String assessableType, boolean activate, boolean fullWindow, boolean attemptsIncremented,
-			DeliveryOptions deliveryOptions) {
+			boolean radomizeDelivery, DeliveryOptions deliveryOptions) {
 		super(ureq, wControl);
 		
 		// logging-note: the callers of createScormAPIandDisplayController make sure they have the scorm resource added to the ThreadLocalUserActivityLogger
@@ -180,7 +180,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 				&& packageConfig != null) {
 			deliveryOptions = packageConfig.getDeliveryOptions();
 		}
-		iframectr = new IFrameDisplayController(ureq, wControl, new LocalFolderImpl(cpRoot), SCORM_CONTENT_FRAME, courseOres, deliveryOptions, true, previewMode);
+		iframectr = new IFrameDisplayController(ureq, wControl, new LocalFolderImpl(cpRoot), SCORM_CONTENT_FRAME, courseOres, deliveryOptions, true, radomizeDelivery);
 		listenTo(iframectr);
 		myContent.contextPut("frameId", SCORM_CONTENT_FRAME);
 		
@@ -214,20 +214,12 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 		// bootId is the item the user left the sco last time or the first one
 		String bootId = scormAdapter.getScormLastAccessedItemId();
 		// if bootId is -1 all course sco's are completed, we show a message
-		// <OLATCE-289>
-//		if (bootId.equals("-1")) {
-//			iframectr.getInitialComponent().setVisible(false);
-//			showInfo("scorm.course.completed");
-//			
-//		} else {
-			scormAdapter.launchItem(bootId);
-			TreeNode bootnode = treeModel.getNodeByScormItemId(bootId);
+		scormAdapter.launchItem(bootId);
+		TreeNode bootnode = treeModel.getNodeByScormItemId(bootId);
 
-			iframectr.setCurrentURI((String) bootnode.getUserObject());
-			menuTree.setSelectedNodeId(bootnode.getIdent());
-			
-//		}
-		// </OLATCE-239>
+		iframectr.setCurrentURI((String) bootnode.getUserObject());
+		menuTree.setSelectedNodeId(bootnode.getIdent());
+
 		updateNextPreviousButtons(bootId);
 		
 		myContent.put("contentpackage", iframectr.getInitialComponent());

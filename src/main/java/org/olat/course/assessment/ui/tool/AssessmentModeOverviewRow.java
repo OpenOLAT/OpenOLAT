@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.util.CodeHelper;
 import org.olat.course.assessment.AssessmentMode;
 
 /**
@@ -36,14 +37,22 @@ public class AssessmentModeOverviewRow {
 	private FormLink actionButton;
 	private final List<FormLink> elementLinks = new ArrayList<>();
 	
+	private final String id;
 	private final boolean today;
 	private final boolean endSoon;
+	private final long endInMilliSeconds;
 	private final AssessmentMode assessmentMode;
 	
-	public AssessmentModeOverviewRow(AssessmentMode assessmentMode, boolean today, boolean endSoon) {
+	public AssessmentModeOverviewRow(AssessmentMode assessmentMode, boolean today, boolean endSoon, long endInMilliSeconds) {
 		this.today = today;
 		this.endSoon = endSoon;
 		this.assessmentMode = assessmentMode;
+		this.endInMilliSeconds = endInMilliSeconds;
+		id = "m" + CodeHelper.getRAMUniqueID();
+	}
+	
+	public String getId() {
+		return id;
 	}
 	
 	public String getName() {
@@ -56,6 +65,10 @@ public class AssessmentModeOverviewRow {
 	
 	public boolean isEndSoon() {
 		return endSoon;
+	}
+	
+	public long getEndInMilliSeconds() {
+		return endInMilliSeconds;
 	}
 	
 	public AssessmentMode getAssessmentMode() {

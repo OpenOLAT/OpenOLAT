@@ -274,6 +274,18 @@ public interface GTAManager {
 	public Task createAndPersistTask(String taskName, TaskList taskList, TaskProcess status, BusinessGroup assessedGroup, Identity assessedIdentity, GTACourseNode cNode);
 	
 	/**
+	 * Ensure the task exists and is persisted, if not create one with status set to the first configured step.
+	 * 
+	 * @param assignedTask The assigned task, if it exists
+	 * @param assessedGroup The assessed group
+	 * @param assessedIdentity The assessed identity
+	 * @param entry The course entry
+	 * @param gtaNode The course element
+	 * @return A persisted task
+	 */
+	public Task ensureTaskExists(Task assignedTask, BusinessGroup assessedGroup, Identity assessedIdentity, RepositoryEntry entry, GTACourseNode gtaNode);
+	
+	/**
 	 * If a temporary transient task created for coaching purpose need to be persisted,
 	 * 
 	 * @param task The transient task
@@ -291,7 +303,22 @@ public interface GTAManager {
 	
 	public List<TaskLight> getTasksLight(RepositoryEntryRef entry, GTACourseNode gtaNode);
 	
-	public List<TaskRevisionDate> getTaskRevisions(Task task);
+	public List<TaskRevisionDate> getTaskRevisionsDate(Task task);
+	
+	/**
+	 * Update a comment for the specified revision. If the comment is empty
+	 * and there is not already a revision entry, nothing will be saved.
+	 * 
+	 * @param task The task
+	 * @param status The status of the revision
+	 * @param iteration The iteration / revision loop index of the revision
+	 * @param comment The comment
+	 * @param commentator The identity of the commentator
+	 * @return The revision if merged or persisted
+	 */
+	public TaskRevision updateTaskRevisionComment(Task task, TaskProcess status, int iteration, String comment, Identity commentator);
+	
+	public List<TaskRevision> getTaskRevisions(Task task);
 
 	
 	/**

@@ -30,6 +30,7 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -66,12 +67,10 @@ import javax.persistence.TypedQuery;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.context.Context;
-import org.apache.velocity.exception.MethodInvocationException;
-import org.apache.velocity.exception.ParseErrorException;
-import org.apache.velocity.exception.ResourceNotFoundException;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
@@ -88,7 +87,6 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.StringHelper;
@@ -189,8 +187,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	public PublisherData getPublisherData() {
 		String data = "";
 		String businessPath = "[Inbox:0]";
-		PublisherData publisherData = new PublisherData("Inbox", data, businessPath);
-		return publisherData;
+		return new PublisherData("Inbox", data, businessPath);
 	}
 
 	@Override
@@ -285,8 +282,8 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		
 		TypedQuery<DBMailAttachment> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), DBMailAttachment.class)
-				.setParameter("checksum", new Long(checksum))
-				.setParameter("size", new Long(size))
+				.setParameter("checksum", Long.valueOf(checksum))
+				.setParameter("size", Long.valueOf(size))
 				.setParameter("name", name);
 		if(mimetype != null) {
 			query.setParameter("mimetype", mimetype);
@@ -402,7 +399,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 					marked = Boolean.FALSE;
 				}
 				if(!marked.equals(recipient.getMarked())) {
-					recipient.setMarked(marked.booleanValue());
+					recipient.setMarked(marked);
 					dbInstance.updateObject(recipient);
 					changed |= true;
 				}
@@ -603,7 +600,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		File template = new File(baseFolder, "mail_template.html");
 		if(template.exists()) {
 			try(InputStream in = new FileInputStream(template)) {
-				return IOUtils.toString(in, "UTF-8");
+				return IOUtils.toString(in, StandardCharsets.UTF_8);
 			} catch (IOException e) {
 				log.error("", e);
 			}
@@ -621,7 +618,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		File templateFile = new File(baseFolder, "mail_template.html");
 		try(OutputStream out = new FileOutputStream(templateFile);) {
 			StringReader reader = new StringReader(template);
-			IOUtils.copy(reader, out, "UTF-8");
+			IOUtils.copy(reader, out, StandardCharsets.UTF_8);
 		} catch (IOException e) {
 			log.error("", e);
 		}
@@ -643,7 +640,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	@Override
 	public String getDefaultMailTemplate() {
 		try(InputStream in = MailModule.class.getResourceAsStream("_content/mail_template.html")) {
-			return IOUtils.toString(in, "UTF-8");
+			return IOUtils.toString(in, StandardCharsets.UTF_8);
 		} catch (IOException e) {
 			log.error("Cannot read the default mail template", e);
 			return null;
@@ -861,15 +858,6 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 				// template is empty
 				mailerResult.setReturnCode(MailerResult.OK);
 			}
-		} catch (ParseErrorException e) {
-			log.warn("can't send email from user template", e);
-			mailerResult.setReturnCode(MailerResult.TEMPLATE_PARSE_ERROR);
-		} catch (MethodInvocationException e) {
-			log.warn("can't send email from user template", e);
-			mailerResult.setReturnCode(MailerResult.TEMPLATE_GENERAL_ERROR);
-		} catch (ResourceNotFoundException e) {
-			log.warn("can't send email from user template", e);
-			mailerResult.setReturnCode(MailerResult.TEMPLATE_GENERAL_ERROR);
 		} catch (Exception e) {
 			log.warn("can't send email from user template", e);
 			mailerResult.setReturnCode(MailerResult.TEMPLATE_GENERAL_ERROR);
@@ -992,13 +980,13 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			mail.setMetaId(metaId);
 			String subject = content.getSubject();
 			if(subject != null && subject.length() > 500) {
-				log.warn("Cut a too long subkect in name. Size: " + subject.length());
+				log.warn("Cut a too long subkect in name. Size: {}", subject.length());
 				subject = subject.substring(0, 500);
 			}
 			mail.setSubject(subject);
 			String body = content.getBody();
 			if(body != null && body.length() > 16777210) {
-				log.warn("Cut a too long body in mail. Size: " + body.length());
+				log.warn("Cut a too long body in mail. Size: {}", body.length());
 				body = body.substring(0, 16000000);
 			}
 			mail.setBody(body);
@@ -1009,7 +997,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 				if(ores != null) {
 					String resName = ores.getResourceableTypeName();
 					if(resName != null && resName.length() > 50) {
-						log.warn("Cut a too long resourceable type name in mail context: " + resName);
+						log.warn("Cut a too long resourceable type name in mail context: {}", resName);
 						resName = resName.substring(0, 49);
 					}
 					mail.getContext().setResName(ores.getResourceableTypeName());
@@ -1018,14 +1006,14 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 				
 				String resSubPath = context.getResSubPath();
 				if(resSubPath != null && resSubPath.length() > 2000) {
-					log.warn("Cut a too long resSubPath in mail context: " + resSubPath);
+					log.warn("Cut a too long resSubPath in mail context: {}", resSubPath);
 					resSubPath = resSubPath.substring(0, 2000);
 				}
 				mail.getContext().setResSubPath(resSubPath);
 				
 				String businessPath = context.getBusinessPath();
 				if(businessPath != null && businessPath.length() > 2000) {
-					log.warn("Cut a too long resSubPath in mail context: " + businessPath);
+					log.warn("Cut a too long resSubPath in mail context: {}", businessPath);
 					businessPath = businessPath.substring(0, 2000);
 				}
 				mail.getContext().setBusinessPath(businessPath);
@@ -1383,8 +1371,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		}
 		
 		try {
-			Address add = new InternetAddress(address);
-			return add;
+			return new InternetAddress(address);
 		} catch (AddressException e) {
 			result.setReturnCode(MailerResult.SENDER_ADDRESS_ERROR);
 			throw e;
@@ -1556,8 +1543,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 					// abort if attachment does not exist
 					if (attachment == null || attachment.getSize()  <= 0) {
 						result.setReturnCode(MailerResult.ATTACHMENT_INVALID);
-						log.error("Tried to send mail wit attachment that does not exist::"
-								+ (attachment == null ? null : attachment.getName()));
+						log.error("Tried to send mail wit attachment that does not exist:: {}", (attachment == null ? null : attachment.getName()));
 						return msg;
 					}
 					BodyPart messageBodyPart = new MimeBodyPart();
@@ -1737,8 +1723,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 					// abort if attachment does not exist
 					if (attachmentFile == null || !attachmentFile.exists()) {
 						result.setReturnCode(MailerResult.ATTACHMENT_INVALID);
-						log.error("Tried to send mail wit attachment that does not exist::"
-								+ (attachmentFile == null ? null : attachmentFile.getAbsolutePath()));
+						log.error("Tried to send mail wit attachment that does not exist::{}", (attachmentFile == null ? null : attachmentFile.getAbsolutePath()));
 						return msg;
 					}
 					BodyPart filePart = new MimeBodyPart();

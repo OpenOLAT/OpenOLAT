@@ -90,24 +90,14 @@
 		<div class="o_bar"></div>
 		<h4 class="o_title"> <a href="#o_step_review_content" data-toggle="collapse" aria-expanded="$collapse_reviewAndCorrection" #if(!$collapse_reviewAndCorrection) class="collapsed" #end>$r.translate("run.review")</a></h4>
 		<div id="o_step_review_content" class="o_content collapse #if($collapse_reviewAndCorrection) in #end" aria-expanded="$collapse_reviewAndCorrection" role="region">
+		#if($r.isNotEmpty($correctionMessage))
+			<div class="o_note">
+				<h5>$r.translate("run.coach.corrections.comment")</strong> <small>$r.escapeHtml($correctionMessageInfos)</small></h5>
+				<p>$r.xssScan($correctionMessage)</p>
+			</div> 
+		#end
 		#if($r.available("corrections"))
-			<h5>$r.translate("coach.feedback.documents.title")</h5>
-			<p>$r.translate("coach.feedback.documents.desc")</p>
 			$r.render("corrections")
-			
-			#if($r.visible("coach.reviewed.button") || $r.visible("coach.need.revision.button"))
-				<h5>$r.translate("coach.verdict.title")</h5>
-				<p>$r.translate("coach.verdict.desc")</p>
-			
-				<div class="o_button_group">
-				#if($r.visible("coach.need.revision.button"))
-					$r.render("coach.need.revision.button")
-				#end
-				#if($r.visible("coach.reviewed.button"))
-					$r.render("coach.reviewed.button")
-				#end
-				</div>
-			#end 
 		#end
 		</div>
 	</div>

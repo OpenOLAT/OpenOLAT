@@ -33,8 +33,10 @@ import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.id.OrganisationRef;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumElementTypeRef;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
+import org.olat.modules.curriculum.model.CurriculumElementTypeRefImpl;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.quality.QualityContextRole;
 import org.olat.modules.quality.QualityDataCollectionRef;
@@ -79,6 +81,7 @@ public class AnalysisPresentationXStreamTest {
 		RepositoryEntryRef formEntryRef = new RepositoryEntryRefImpl(6l);
 		OrganisationRef organisationRef = new OrganisationRefImpl(9l);
 		CurriculumElementRef curriculumElementRef = new CurriculumElementRefImpl(1l);
+		CurriculumElementTypeRef curriculumElementTypeRef = new CurriculumElementTypeRefImpl(12l);
 		OrganisationRef organisationCurriculumeRef = new OrganisationRefImpl(91l);
 		TaxonomyLevelRef taxonomyLevelRef = new TaxonomyLevelRefImpl(23l);
 		Date dateRangeFrom = new Date();
@@ -89,6 +92,7 @@ public class AnalysisPresentationXStreamTest {
 		searchParams.setDateRangeTo(dateRangeTo);
 		searchParams.setContextOrganisationRef(organisationRef);
 		searchParams.setContextCurriculumElementRef(curriculumElementRef);
+		searchParams.setContextCurriculumElementTypeRefs(asList(curriculumElementTypeRef));
 		searchParams.setContextCurriculumOrganisationRef(organisationCurriculumeRef);
 		searchParams.setContextTaxonomyLevelRef(taxonomyLevelRef);
 		searchParams.setWithUserInfosOnly(withUserInfosOnly);
@@ -114,6 +118,8 @@ public class AnalysisPresentationXStreamTest {
 		softly.assertThat(searchParamsFromXml.getDateRangeTo()).isEqualTo(dateRangeTo);
 		softly.assertThat(searchParamsFromXml.getContextOrganisationRef()).isEqualTo(organisationRef);
 		softly.assertThat(searchParamsFromXml.getContextCurriculumElementRef()).isEqualTo(curriculumElementRef);
+		softly.assertThat(searchParamsFromXml.getContextCurriculumElementTypeRefs()).hasSize(1)
+				.extracting(CurriculumElementTypeRef::getKey).contains(12l);
 		softly.assertThat(searchParamsFromXml.getContextCurriculumOrganisationRef()).isEqualTo(organisationCurriculumeRef);
 		softly.assertThat(searchParamsFromXml.getContextTaxonomyLevelRef()).isEqualTo(taxonomyLevelRef);
 		softly.assertThat(searchParamsFromXml.isWithUserInfosOnly()).isEqualTo(withUserInfosOnly);

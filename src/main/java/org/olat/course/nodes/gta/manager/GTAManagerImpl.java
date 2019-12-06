@@ -74,6 +74,7 @@ import org.olat.course.nodes.gta.TaskLight;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.TaskRef;
+import org.olat.course.nodes.gta.TaskRevision;
 import org.olat.course.nodes.gta.TaskRevisionDate;
 import org.olat.course.nodes.gta.model.DueDate;
 import org.olat.course.nodes.gta.model.Membership;
@@ -85,6 +86,7 @@ import org.olat.course.nodes.gta.model.TaskDueDateImpl;
 import org.olat.course.nodes.gta.model.TaskImpl;
 import org.olat.course.nodes.gta.model.TaskListImpl;
 import org.olat.course.nodes.gta.model.TaskRevisionDateImpl;
+import org.olat.course.nodes.gta.model.TaskRevisionImpl;
 import org.olat.course.nodes.gta.ui.events.SubmitEvent;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -129,6 +131,8 @@ public class GTAManagerImpl implements GTAManager {
 	private DB dbInstance;
 	@Autowired
 	private GTAIdentityMarkDAO gtaMarkDao;
+	@Autowired
+	private GTATaskRevisionDAO taskRevisionDao;
 	@Autowired
 	private BGAreaManager areaManager;
 	@Autowired
@@ -942,7 +946,7 @@ public class GTAManagerImpl implements GTAManager {
 	}
 
 	@Override
-	public List<TaskRevisionDate> getTaskRevisions(Task task) {
+	public List<TaskRevisionDate> getTaskRevisionsDate(Task task) {
 		if(task == null || task.getKey() == null) return Collections.emptyList();
 		
 		String q = "select taskrev from gtataskrevisiondate taskrev where taskrev.task.key=:taskKey";
@@ -952,6 +956,32 @@ public class GTAManagerImpl implements GTAManager {
 			.getResultList();
 	}
 	
+	@Override
+	public TaskRevision updateTaskRevisionComment(Task task, TaskProcess status, int iteration, String comment, Identity commentator) {
+		TaskRevision taskRevision = taskRevisionDao.getTaskRevision(task, status.name(), iteration);
+		if(taskRevision != null) {
+			if(!StringHelper.isSame(taskRevision.getComment(), comment)) {
+				TaskRevisionImpl revision = (TaskRevisionImpl)taskRevision;
+				revision.setComment(comment);
+				revision.setCommentLastModified(new Date());
+				revision.setCommentAuthor(commentator);
+			}
+			taskRevisionDao.updateTaskRevision(taskRevision);
+		} else if(StringHelper.containsNonWhitespace(comment)) {
+			taskRevisionDao.createTaskRevision(task, status.name(), iteration, comment, commentator, null);
+		}
+		dbInstance.commit();
+		return taskRevision;
+	}
+
+	@Override
+	public List<TaskRevision> getTaskRevisions(Task task) {
+		if(task == null || task.getKey() == null) {
+			return Collections.emptyList();
+		}
+		return taskRevisionDao.getTaskRevisions(task);
+	}
+
 	@Override
 	public AssignmentResponse assignTaskAutomatically(TaskList taskList, BusinessGroup assessedGroup, CourseEnvironment courseEnv, GTACourseNode cNode, Identity doerIdentity) {
 		return assignTaskAutomatically(taskList, assessedGroup, null, courseEnv, cNode, doerIdentity);
@@ -1198,7 +1228,22 @@ public class GTAManagerImpl implements GTAManager {
 		}
 		return task;
 	}
-	
+
+	@Override
+	public Task ensureTaskExists(Task assignedTask, BusinessGroup assessedGroup, Identity assessedIdentity,
+			RepositoryEntry entry, GTACourseNode gtaNode) {
+		if(assignedTask == null) {
+			TaskProcess firstStep = firstStep(gtaNode);
+			TaskList taskList = getTaskList(entry, gtaNode);
+			assignedTask = createAndPersistTask(null, taskList, firstStep, assessedGroup, assessedIdentity, gtaNode);
+			dbInstance.commit();
+		} else if(assignedTask.getKey() == null) {
+			assignedTask = persistTask(assignedTask);
+			dbInstance.commit();
+		}
+		return assignedTask;
+	}
+
 	public TaskRevisionDate createAndPersistTaskRevisionDate(Task task, int revisionLoop, TaskProcess status) {
 		TaskRevisionDateImpl rev = new TaskRevisionDateImpl();
 		rev.setCreationDate(new Date());

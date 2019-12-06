@@ -12,12 +12,10 @@
 	
 	#if($adjustAutoHeight)
 		<script>
-		/* <![CDATA[ */
-			## Init the iFrame to the max height possible.
- 			jQuery(function() {b_resizeIframeToMainMaxHeight("$frameId");});
-		
-			registerIFrameAndObserve("$frameId", $debug);
-		/* ]]> */
+		## Init the iFrame to the max height possible.
+		jQuery(function() {b_resizeIframeToMainMaxHeight("$frameId");});
+	
+		registerIFrameAndObserve("$frameId", $debug);
 		</script>
 	#end
 	$r.render("newUriEvent")

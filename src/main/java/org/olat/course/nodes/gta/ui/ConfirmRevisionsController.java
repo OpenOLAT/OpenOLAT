@@ -37,10 +37,9 @@ import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskDueDate;
 import org.olat.course.nodes.gta.TaskHelper;
-import org.olat.course.nodes.gta.TaskList;
-import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -115,16 +114,9 @@ public class ConfirmRevisionsController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		// here special cases if optional with only feedback enabled
-		if(assignedTask == null) {
-			TaskProcess firstStep = gtaManager.firstStep(gtaNode);
-			TaskList taskList = gtaManager.getTaskList(courseEnv.getCourseGroupManager().getCourseEntry(), gtaNode);
-			assignedTask = gtaManager.createAndPersistTask(null, taskList, firstStep, assessedGroup, assessedIdentity, gtaNode);
-			dbInstance.commit();
-		} else if(assignedTask.getKey() == null) {
-			assignedTask = gtaManager.persistTask(assignedTask);
-			dbInstance.commit();
-		}
-		
+		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+		assignedTask = gtaManager.ensureTaskExists(assignedTask, assessedGroup, assessedIdentity, courseEntry, gtaNode);
+
 		TaskDueDate dueDates = gtaManager.getDueDatesTask(assignedTask);
 		dueDates.setRevisionsDueDate(revisionDueDateEl.getDate());
 		gtaManager.updateTaskDueDate(dueDates);

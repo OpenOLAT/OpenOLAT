@@ -27,6 +27,7 @@ package org.olat.course.nodes.bc;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -61,14 +62,16 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 	private VelocityContainer accessibilityContent;
 
 	private BCCourseNodeConfigController configCtrl;
-	private ConditionEditController uploaderCondContr, downloaderCondContr;
+	private ConditionEditController uploaderCondContr;
+	private ConditionEditController downloaderCondContr;
 	
 	private BCCourseNode bcNode;
-	
-	public BCCourseNodeEditController(UserRequest ureq, WindowControl wControl, BCCourseNode bcNode, ICourse course,
-			UserCourseEnvironment euce) {
+
+	public BCCourseNodeEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+			BCCourseNode bcNode, ICourse course, UserCourseEnvironment euce) {
 		super(ureq,wControl);
 		this.bcNode = bcNode;
+		myTabbedPane = null;
 		
 		if (bcNode.hasCustomPreConditions()) {
 			accessibilityContent = createVelocityContainer("edit");
@@ -98,7 +101,7 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 			accessibilityContent.put("downloadCondition", downloaderCondContr.getInitialComponent());
 		}
 
-		configCtrl = new BCCourseNodeConfigController(ureq, wControl, bcNode, course);
+		configCtrl = new BCCourseNodeConfigController(ureq, wControl, stackPanel, bcNode, course);
 		listenTo(configCtrl);
 	}
 
@@ -107,6 +110,7 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 		//
 	}
 	
+
 	@Override
 	public void event(UserRequest urequest, Controller source, Event event) {
 		if (source == uploaderCondContr) {

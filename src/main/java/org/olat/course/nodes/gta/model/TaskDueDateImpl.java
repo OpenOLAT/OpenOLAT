@@ -28,7 +28,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -58,9 +57,7 @@ import org.olat.group.BusinessGroupImpl;
  */
 @Entity(name="gtataskduedate")
 @Table(name="o_gta_task")
-@NamedQueries({
-	@NamedQuery(name="dueDateTaskByTask", query="select duedates from gtataskduedate duedates where duedates.key=:taskKey"),
-})
+@NamedQuery(name="dueDateTaskByTask", query="select duedates from gtataskduedate duedates where duedates.key=:taskKey")
 public class TaskDueDateImpl implements TaskDueDate, CreateInfo, Persistable, ModifiedInfo {
 
 	private static final long serialVersionUID = 4202873369981813454L;

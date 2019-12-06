@@ -220,7 +220,7 @@ public interface LectureService {
 	 * 
 	 * @param block The block to delete.
 	 */
-	public void deleteLectureBlock(LectureBlock block);
+	public void deleteLectureBlock(LectureBlock block, Identity doer);
 	
 	/**
 	 * Delete all the lecture blocks and configuration of the specified course.
@@ -345,6 +345,8 @@ public interface LectureService {
 	public List<AbsenceNotice> getAbsenceNoticeRelatedTo(LectureBlock block);
 
 	public List<AbsenceNoticeInfos> searchAbsenceNotices(AbsenceNoticeSearchParameters searchParams);
+	
+	public List<AbsenceNotice> getAbsenceNoticeUniquelyRelatedTo(List<LectureBlock> blocks);
 	
 	/**
 	 * Detect an absence notice for the specified identity.

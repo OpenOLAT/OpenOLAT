@@ -20,7 +20,9 @@
 package org.olat.core.gui.control.generic.iframe;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -32,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -46,11 +49,16 @@ import org.olat.course.editor.NodeEditController;
  */
 public class DeliveryOptionsConfigurationController extends FormBasicController {
 	
-	private DeliveryOptions config, parentConfig;
+	private DeliveryOptions config;
+	private DeliveryOptions parentConfig;
 	
-	private SingleSelection standardModeEl, inheritEl;
-	private SingleSelection jsOptionEl, cssOptionEl;
-	private SingleSelection encodingContentEl, encodingJSEl, heightEl;
+	private SingleSelection inheritEl;
+	private SingleSelection standardModeEl;
+	private SingleSelection jsOptionEl;
+	private SingleSelection cssOptionEl;
+	private SingleSelection heightEl;
+	private SingleSelection encodingJSEl;
+	private SingleSelection encodingContentEl;
 	private MultipleSelectionElement glossarEl;
 	private String helpPage;
 
@@ -68,9 +76,6 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 			"1200", "1220", "1240", "1260", "1280",
 			"1300", "1320", "1340", "1360", "1380"
 	};
-
-	private String[] encodingContentKeys;
-	private String[] encodingJSKeys;
 	
 	private static final String[] standardModeKeys = new String[]{ "standard", "configured" };
 	private static final String[] inheritKeys = new String[]{ "inherit", "custom"};
@@ -197,6 +202,7 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 				"1300px", "1320px", "1340px", "1360px", "1380px"
 		};
 		heightEl = uifactory.addDropdownSingleselect("height", "height.label", formLayout, keys, values, null);
+		heightEl.setExampleKey("automatic.need.js", null);
 
 		String[] cssValues = new String[] {
 				translate("option.css.none"), translate("option.css.openolat")
@@ -205,38 +211,45 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 
 		uifactory.addSpacerElement("spaceman", formLayout, false);
 		
-		Map<String,Charset> charsets = Charset.availableCharsets();
-		int numOfCharsets = charsets.size() + 1;
+		KeyValues contentCharsetKeyValues = new KeyValues();
+		contentCharsetKeyValues.add(KeyValues.entry(NodeEditController.CONFIG_CONTENT_ENCODING_AUTO, translate("encoding.auto")));
+		loadCharsets(contentCharsetKeyValues);
 		
-		encodingContentKeys = new String[numOfCharsets];
-		encodingContentKeys[0] = NodeEditController.CONFIG_CONTENT_ENCODING_AUTO;
-
-		String[] encodingContentValues = new String[numOfCharsets];
-		encodingContentValues[0] = translate("encoding.auto");
+		KeyValues jsCharsetKeyValues = new KeyValues();
+		jsCharsetKeyValues.add(KeyValues.entry(NodeEditController.CONFIG_JS_ENCODING_AUTO, translate("encoding.same")));
+		loadCharsets(jsCharsetKeyValues);
 		
-		encodingJSKeys = new String[numOfCharsets];
-		encodingJSKeys[0] = NodeEditController.CONFIG_JS_ENCODING_AUTO;
-
-		String[] encodingJSValues = new String[numOfCharsets];
-		encodingJSValues[0] =	translate("encoding.same");
-		
-		int count = 1;
-		Locale locale = getLocale();
-		for(Map.Entry<String, Charset> charset:charsets.entrySet()) {
-			encodingContentKeys[count] = charset.getKey();
-			encodingContentValues[count] = charset.getValue().displayName(locale);
-			encodingJSKeys[count] = charset.getKey();
-			encodingJSValues[count] = charset.getValue().displayName(locale);
-			count++;
-		}
-		
-		encodingContentEl = uifactory.addDropdownSingleselect("encoContent", "encoding.content", formLayout, encodingContentKeys, encodingContentValues, null);
-		encodingJSEl = uifactory.addDropdownSingleselect("encoJS", "encoding.js", formLayout, encodingJSKeys, encodingJSValues, null);
+		encodingContentEl = uifactory.addDropdownSingleselect("encoContent", "encoding.content", formLayout,
+				contentCharsetKeyValues.keys(), contentCharsetKeyValues.values(), null);
+		encodingJSEl = uifactory.addDropdownSingleselect("encoJS", "encoding.js", formLayout,
+				jsCharsetKeyValues.keys(), jsCharsetKeyValues.values(), null);
 
 		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsLayout.setRootForm(mainForm);
 		formLayout.add(buttonsLayout);
 		uifactory.addFormSubmitButton("save", buttonsLayout);
+	}
+	
+	private void loadCharsets(KeyValues charsetKeyValues) {
+		Map<String,Charset> charsets = new LinkedHashMap<>(Charset.availableCharsets());
+		preloadCharset(charsetKeyValues, charsets, StandardCharsets.UTF_8.name());
+		preloadCharset(charsetKeyValues, charsets, StandardCharsets.ISO_8859_1.name());
+		preloadCharset(charsetKeyValues, charsets, "windows-1250");
+		preloadCharset(charsetKeyValues, charsets, "windows-1251");
+		preloadCharset(charsetKeyValues, charsets, "windows-1252");
+
+		Locale locale = getLocale();
+		for(Map.Entry<String, Charset> charset:charsets.entrySet()) {
+			charsetKeyValues.add(KeyValues.entry(charset.getKey(), charset.getValue().displayName(locale)));
+		}
+	}
+
+	private void preloadCharset(KeyValues charsetKeyValues, Map<String,Charset> charsets, String charsetName) {
+		if(charsets.containsKey(charsetName)) {
+			Charset charset = charsets.get(charsetName);
+			charsetKeyValues.add(KeyValues.entry(charset.name(), charset.displayName(getLocale())));
+			charsets.remove(charsetName);
+		}
 	}
 	
 	private void updateEnabled() {
@@ -308,18 +321,18 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 		if(cfg != null && cfg.getOpenolatCss() != null && cfg.getOpenolatCss().booleanValue()) {
 			cssOptionEl.select(cssKeys[1], true);
 		} else {
-			cssOptionEl.select(cssKeys[0], false);//default none
+			cssOptionEl.select(cssKeys[0], true);//default none
 		}
 		
 		String encodingContent = (cfg == null ? null : cfg.getContentEncoding());
-		if (encodingContent != null && Arrays.asList(encodingContentKeys).contains(encodingContent)) {
+		if (encodingContent != null && Arrays.asList(encodingContentEl.getKeys()).contains(encodingContent)) {
 			encodingContentEl.select(encodingContent, true);
 		} else {
 			encodingContentEl.select(NodeEditController.CONFIG_CONTENT_ENCODING_AUTO, true);
 		}
 		
 		String encodingJS = (cfg == null ? null : cfg.getJavascriptEncoding());
-		if (encodingJS != null && Arrays.asList(encodingJSKeys).contains(encodingJS)) {
+		if (encodingJS != null && Arrays.asList(encodingJSEl.getKeys()).contains(encodingJS)) {
 			encodingJSEl.select(encodingJS, true);
 		} else {
 			encodingJSEl.select(NodeEditController.CONFIG_JS_ENCODING_AUTO, true);
@@ -333,26 +346,34 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		if(!isInherit()) {
 			glossarEl.clearError();
-			if(glossarEl.isAtLeastSelected(1)) {
-				if(!jsOptionEl.isSelected(1)) {
-					allOk &= false;
-					glossarEl.setErrorKey("glossary.need.jQuery", null);
-				}	
+			if(glossarEl.isAtLeastSelected(1) && !jsOptionEl.isSelected(1)) {
+				allOk &= false;
+				glossarEl.setErrorKey("glossary.need.jQuery", null);
 			}
-			
-			heightEl.clearError();
-			if(heightEl.isSelected(0)
-					&& (standardModeEl.isSelected(0) || jsOptionEl.isSelected(0))) {
-				heightEl.setErrorKey("automatic.need.js", null);
-				allOk = false;
-			}
+			allOk &= validateDropdown(jsOptionEl);
+			allOk &= validateDropdown(heightEl);
+			allOk &= validateDropdown(cssOptionEl);
+			allOk &= validateDropdown(encodingContentEl);
+			allOk &= validateDropdown(encodingJSEl);
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
+	}
+	
+	private boolean validateDropdown(SingleSelection element) {
+		boolean allOk = true;
+		
+		element.clearError();
+		if(element.isEnabled() && !element.isOneSelected()) {
+			element.setErrorKey("form.general.error", null);
+			allOk &= false;
+		}
+		
+		return allOk;
 	}
 
 	@Override

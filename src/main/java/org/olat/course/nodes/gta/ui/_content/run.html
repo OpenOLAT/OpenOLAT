@@ -116,8 +116,14 @@
 		<div class="o_bar"></div>
 		<h4 class="o_title"> <a href="#o_step_review_content" data-toggle="collapse" aria-expanded="$collapse_reviewAndCorrection" #if(!$collapse_reviewAndCorrection) class="collapsed" #end>$r.translate("run.review")</a></h4>
 		<div id="o_step_review_content" class="o_content collapse #if($collapse_reviewAndCorrection) in #end" aria-expanded="$collapse_reviewAndCorrection" role="region">
-			#if($reviewMessage && !$reviewMessage.isEmpty())
+			#if($r.isNotEmpty($reviewMessage))
 				<p>$reviewMessage</p>
+			#end
+			#if($r.isNotEmpty($correctionMessage))
+				<div class="o_note">
+					<h5>$r.translate("run.corrections.comment")</strong> <small>$r.escapeHtml($correctionMessageInfos)</small></h5>
+					<p>$r.xssScan($correctionMessage)</p>
+				</div> 
 			#end
 			#if($r.available("corrections"))
 				$r.render("corrections")

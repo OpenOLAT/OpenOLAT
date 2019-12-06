@@ -114,6 +114,7 @@
 		<class>org.olat.course.nodes.gta.model.TaskLightImpl</class>
 		<class>org.olat.course.nodes.gta.model.TaskDueDateImpl</class>
 		<class>org.olat.course.nodes.gta.model.TaskListImpl</class>
+		<class>org.olat.course.nodes.gta.model.TaskRevisionImpl</class>
 		<class>org.olat.course.nodes.gta.model.TaskRevisionDateImpl</class>
 		<class>org.olat.course.certificate.model.CertificateImpl</class>
 		<class>org.olat.course.certificate.model.CertificateStandalone</class>

@@ -20,6 +20,9 @@
 package org.olat.modules.scorm;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.stack.PopEvent;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
@@ -44,5 +47,20 @@ public class ScormRuntimeController extends RepositoryEntryRuntimeController {
 	@Override
 	protected RepositoryEntrySettingsController createSettingsController(UserRequest ureq, WindowControl bwControl, RepositoryEntry refreshedEntry) {
 		return new ScormSettingsController(ureq, bwControl, toolbarPanel, refreshedEntry);
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		if(source == toolbarPanel) {
+			if(event instanceof PopEvent) {
+				PopEvent popEvent = (PopEvent)event;
+				if(currentToolCtr instanceof ScormSettingsController && currentToolCtr == popEvent.getController()) {
+					launchContent(ureq);
+					initToolbar();
+				}
+				setActiveTool(null);
+			}
+		}
+		super.event(ureq, source, event);
 	}
 }

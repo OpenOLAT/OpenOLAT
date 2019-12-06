@@ -385,7 +385,7 @@ class GTANotifications {
 		}
 		
 		boolean sendNotificationDueDate = true;
-		List<TaskRevisionDate> taskRevisions = gtaManager.getTaskRevisions(task);
+		List<TaskRevisionDate> taskRevisions = gtaManager.getTaskRevisionsDate(task);
 		if(!coach && gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION)) {
 			//check task revision 1
 			if(task != null && notInStep(task, TaskProcess.assignment, TaskProcess.submit, TaskProcess.review)

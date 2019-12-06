@@ -340,16 +340,14 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 		cal.setTime(now);
 		long nowInMillis = cal.getTimeInMillis();
 		
-		if(nowInMillis > programmedBeginInMillis) {
-			Date end = mode.getEnd();
-			cal.setTime(end);
-			cal.add(Calendar.MILLISECOND, (int)(nowInMillis - programmedBeginInMillis));
-			
-			Date movedEnd = cal.getTime();
-			((AssessmentModeImpl)mode).setEnd(movedEnd);
-			Date endWithFollowupTime = assessmentModeManager.evaluateFollowupTime(movedEnd, mode.getFollowupTime());
-			((AssessmentModeImpl)mode).setEndWithFollowupTime(endWithFollowupTime);
-		}	
+		Date end = mode.getEnd();
+		cal.setTime(end);
+		cal.add(Calendar.MILLISECOND, (int)(nowInMillis - programmedBeginInMillis));
+		
+		Date movedEnd = cal.getTime();
+		((AssessmentModeImpl)mode).setEnd(movedEnd);
+		Date endWithFollowupTime = assessmentModeManager.evaluateFollowupTime(movedEnd, mode.getFollowupTime());
+		((AssessmentModeImpl)mode).setEndWithFollowupTime(endWithFollowupTime);	
 	}
 	
 	private void sendEvent(String cmd, AssessmentMode mode, Set<Long> assessedIdentityKeys) {

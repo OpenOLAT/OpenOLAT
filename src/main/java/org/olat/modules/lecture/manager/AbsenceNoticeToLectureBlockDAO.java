@@ -19,8 +19,11 @@
  */
 package org.olat.modules.lecture.manager;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
@@ -78,6 +81,42 @@ public class AbsenceNoticeToLectureBlockDAO {
 				.createQuery(sb.toString(), AbsenceNoticeToLectureBlock.class)
 				.setParameter("noticeKey", notice.getKey())
 				.getResultList();
+	}
+	
+	/**
+	 * Return all relations of notices which has a relation with
+	 * the specified lecture blocks.
+	 * 
+	 * @param blocks A list of lecture blocks
+	 * @return A list of absence notice to lecture block relationship
+	 */
+	public List<AbsenceNoticeToLectureBlock> getRelationsAStepFurther(List<LectureBlock> blocks) {
+		if(blocks == null || blocks.isEmpty()) return new ArrayList<>();
+		
+		QueryBuilder sb = new QueryBuilder(255);
+		sb.append("select targetNoticeToBlock from absencenoticetolectureblock noticeToBlock")
+		  .append(" inner join noticeToBlock.absenceNotice as notice")
+		  .append(" inner join absencenoticetolectureblock as targetNoticeToBlock on (targetNoticeToBlock.absenceNotice.key=notice.key)")
+		  .append(" inner join fetch targetNoticeToBlock.absenceNotice as targetNotice")
+		  .append(" inner join fetch targetNoticeToBlock.lectureBlock as targetLectureBlock")
+		  .append(" where noticeToBlock.lectureBlock.key in (:lectureBlockKeys)");
+		
+		List<Long> lectureBlockKeys = blocks.stream()
+				.map(LectureBlock::getKey)
+				.collect(Collectors.toList());
+		List<AbsenceNoticeToLectureBlock> relations= dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AbsenceNoticeToLectureBlock.class)
+				.setParameter("lectureBlockKeys", lectureBlockKeys)
+				.getResultList();
+		return new ArrayList<>(new HashSet<>(relations));
+	}
+	
+	public int deleteRelations(LectureBlock lectureBlock) {
+		String query = "delete from absencenoticetolectureblock noticeToBlock where noticeToBlock.lectureBlock.key=:lectureBlockKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query)
+				.setParameter("lectureBlockKey", lectureBlock.getKey())
+				.executeUpdate();
 	}
 	
 	public void deleteRelations(List<AbsenceNoticeToLectureBlock> relations) {

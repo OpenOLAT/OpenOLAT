@@ -584,7 +584,7 @@ public class GTAManagerTest extends OlatTestCase {
 		Assert.assertNotNull(deletedAssignedTasks);
 		Assert.assertEquals(0, deletedAssignedTasks.size());
 		
-		List<TaskRevisionDate> revisionsTask1 = gtaManager.getTaskRevisions(assignedTasks1.get(0));
+		List<TaskRevisionDate> revisionsTask1 = gtaManager.getTaskRevisionsDate(assignedTasks1.get(0));
 		Assert.assertNotNull(revisionsTask1);
 		Assert.assertEquals(0, revisionsTask1.size());
 		
@@ -593,7 +593,7 @@ public class GTAManagerTest extends OlatTestCase {
 		Assert.assertNotNull(notDeletedAssignedTasks2);
 		Assert.assertEquals(1, notDeletedAssignedTasks2.size());
 		
-		List<TaskRevisionDate> revisionsTask2 = gtaManager.getTaskRevisions(notDeletedAssignedTasks2.get(0));
+		List<TaskRevisionDate> revisionsTask2 = gtaManager.getTaskRevisionsDate(notDeletedAssignedTasks2.get(0));
 		Assert.assertNotNull(revisionsTask2);
 		Assert.assertEquals(1, revisionsTask2.size());
 	}
@@ -743,7 +743,7 @@ public class GTAManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void getTaskRevisions() {
+	public void getTaskRevisionsDate() {
 		//prepare
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-21");
 		RepositoryEntry re = deployGTACourse();
@@ -762,7 +762,7 @@ public class GTAManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//load the revisions
-		List<TaskRevisionDate> taskRevisions = gtaManager.getTaskRevisions(task);
+		List<TaskRevisionDate> taskRevisions = gtaManager.getTaskRevisionsDate(task);
 		Assert.assertNotNull(taskRevisions);
 		Assert.assertEquals(1, taskRevisions.size());
 		TaskRevisionDate loadedTaskRevision = taskRevisions.get(0);
@@ -830,7 +830,7 @@ public class GTAManagerTest extends OlatTestCase {
 		Assert.assertEquals("C", nextSlot);
 	}
 	
-	private RepositoryEntry deployGTACourse() {
+	protected static RepositoryEntry deployGTACourse() {
 		try {
 			Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-author");
 			String displayname = "GTA-" + UUID.randomUUID();
@@ -844,7 +844,7 @@ public class GTAManagerTest extends OlatTestCase {
 		}
 	}
 	
-	private GTACourseNode getGTACourseNode(RepositoryEntry courseEntry) {
+	protected static GTACourseNode getGTACourseNode(RepositoryEntry courseEntry) {
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		CourseNode rootNode = course.getRunStructure().getRootNode();
 		for(int i=rootNode.getChildCount(); i-->0; ) {

@@ -133,17 +133,17 @@ public class FeedViewHelper {
 	/**
 	 * @return The iTunes subscription url
 	 */
-	public String getITunesUrl(String protocol) {
+	public String getPodcastAppUrl() {
 		String iTunesfeed = null;
 		if (StringHelper.containsNonWhitespace(feedUrl)) {
 			try {
 				URL url = new URL(feedUrl);
-				if (!StringHelper.containsNonWhitespace(protocol)) {
-					protocol = "itpc";
+				iTunesfeed = "podcast://" + url.getHost() + url.getPath();
+				if (iTunesfeed.endsWith("/" + FeedManager.RSS_FEED_NAME)) {
+					iTunesfeed = iTunesfeed.replace("/" + FeedManager.RSS_FEED_NAME, "/feed.xml");
 				}
-				iTunesfeed = protocol + "://" + url.getHost() + url.getPath();
 			} catch (MalformedURLException e) {
-				log.warn("Malformed podcast URL: " + feedUrl, e);
+				log.warn("Malformed podcast URL: {}", feedUrl, e);
 			}
 		}
 		return iTunesfeed;
@@ -606,13 +606,6 @@ public class FeedViewHelper {
 	 * @return
 	 */
 	public boolean isAuthor(Item item) {
-		boolean isAuthor = false;
-		
-		if (item != null && item.getAuthorKey() != null && item.getAuthorKey().equals(identity.getKey().longValue())) {
-			isAuthor = true;
-		}
-		
-		return isAuthor;
+		return item != null && item.getAuthorKey() != null && item.getAuthorKey().equals(identity.getKey());
 	}
-
 }

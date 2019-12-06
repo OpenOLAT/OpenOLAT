@@ -104,12 +104,12 @@ class SubmitDocumentsController extends FormBasicController implements Activatea
 	private final int minDocs;
 	private final int maxDocs;
 	private final String docI18nKey;
-	private final Task assignedTask;
+	protected Task assignedTask;
 	private final File documentsDir;
 	private final VFSContainer documentsContainer;
-	private final ModuleConfiguration config;
-	private final GTACourseNode gtaNode;
-	private final CourseEnvironment courseEnv;
+	protected final ModuleConfiguration config;
+	protected final GTACourseNode gtaNode;
+	protected final CourseEnvironment courseEnv;
 	
 	private boolean open = true;
 	private final boolean readOnly;
@@ -151,6 +151,10 @@ class SubmitDocumentsController extends FormBasicController implements Activatea
 	
 	public void close() {
 		open = false;
+	}
+	
+	protected boolean isReadOnly() {
+		return readOnly;
 	}
 
 	@Override

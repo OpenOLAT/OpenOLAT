@@ -32,6 +32,7 @@ import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -42,8 +43,9 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
@@ -69,7 +71,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author gnaegi
  */
-public class BCCourseNodeConfigController extends FormBasicController implements ControllerEventListener{
+public class BCCourseNodeConfigController extends FormBasicController {
 	
 	private static final String UPLOAD_BY_COACH = "edit.upload.by.coach";
 	private static final String UPLOAD_BY_PARTICIPANT = "edit.upload.by.participant";
@@ -87,6 +89,7 @@ public class BCCourseNodeConfigController extends FormBasicController implements
 	private FormItem linkedFolderWarning;
 	private MultipleSelectionElement uploadRolesEl;
 	
+	private BreadcrumbPanel stackPanel;
 	private CloseableModalController cmc;
 	private BCCourseNodeEditCreateFolderForm createFolderForm;
 	private BCCourseNodeEditChooseFolderForm chooseForm;
@@ -99,8 +102,11 @@ public class BCCourseNodeConfigController extends FormBasicController implements
 	@Autowired
 	private QuotaManager quotaManager;
 	
-	public BCCourseNodeConfigController(UserRequest ureq, WindowControl wControl, BCCourseNode bcNode, ICourse course) {
+	public BCCourseNodeConfigController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+			BCCourseNode bcNode, ICourse course) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
+		this.stackPanel = stackPanel;
+		stackPanel.addListener(this);
 		this.node = bcNode;
 		this.moduleConfig = node.getModuleConfiguration();
 		this.course = course;
@@ -162,6 +168,7 @@ public class BCCourseNodeConfigController extends FormBasicController implements
 		
 		FormLayoutContainer transferCont = FormLayoutContainer.createDefaultFormLayout("transfer", getTranslator());
 		formLayout.add(transferCont);
+		transferCont.setRootForm(mainForm);
 		transferCont.setFormTitle(translate("info.folder"));
 		
 		folderViewLink = uifactory.addFormLink("folder.view", transferCont, Link.BUTTON);
@@ -227,6 +234,19 @@ public class BCCourseNodeConfigController extends FormBasicController implements
 		} else if (source == uploadRolesEl) {
 			doUpdateUploadRoles(ureq);
 		} 
+	}
+	
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(source == stackPanel) {
+			if(event instanceof PopEvent) {
+				PopEvent pe = (PopEvent)event;
+				if(pe.getController() == folderCtrl) {
+					cleanUp();
+				}
+			}
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override
@@ -320,7 +340,7 @@ public class BCCourseNodeConfigController extends FormBasicController implements
 	
 	private void doOpenFolder(UserRequest ureq) {
 		VFSContainer namedContainer = null;
-		if(moduleConfig.getBooleanSafe(BCCourseNode.CONFIG_AUTO_FOLDER)){
+		if(node.getModuleConfiguration().getBooleanSafe(BCCourseNode.CONFIG_AUTO_FOLDER)){
 			VFSContainer directory = BCCourseNode.getNodeFolderContainer(node, course.getCourseEnvironment());
 			directory.setLocalSecurityCallback(getSecurityCallbackWithQuota(directory.getRelPath()));
 			namedContainer = directory;
@@ -353,11 +373,10 @@ public class BCCourseNodeConfigController extends FormBasicController implements
 		if(namedContainer == null) {
 			showWarning("warning.no.linkedfolder");
 		} else {
+			removeAsListenerAndDispose(folderCtrl);
 			folderCtrl = new FolderRunController(namedContainer, false, ureq, getWindowControl());
 			listenTo(folderCtrl);
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), folderCtrl.getInitialComponent());
-			listenTo(cmc);
-			cmc.activate();
+			stackPanel.pushController("Preview", folderCtrl);
 		}
 	}
 	
@@ -379,7 +398,9 @@ public class BCCourseNodeConfigController extends FormBasicController implements
 
 	@Override
 	protected void doDispose() {
-		//
+		if(stackPanel != null) {
+			stackPanel.removeListener(this);
+		}
 	}
 
 	private boolean isSharedfolderNotPresent() {
