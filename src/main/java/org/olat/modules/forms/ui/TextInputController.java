@@ -112,7 +112,7 @@ public class TextInputController extends FormBasicController implements Evaluati
 		if (textInput.isNumeric()) {
 			String val = singleRowEl.getValue();
 			if(StringHelper.containsNonWhitespace(val)) {
-				if (dbInstance.isMySQL() && val.length() > 65) {
+				if (dbInstance.isMySQL() && val.length() > 55) {
 					singleRowEl.setErrorKey("error.number.too.large", null);
 					allOk = false;
 				} else {
