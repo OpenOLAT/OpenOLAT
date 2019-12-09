@@ -123,6 +123,8 @@ public class FilesAndFoldersController extends BasicController{
 				doFileStats(ureq);
 			} else if (event == VFSOverviewController.OPEN_TRASH_EVENT) {
 				doTrash(ureq);
+			} else if (event == VFSOverviewController.OPEN_VERSIONS_EVENT) {
+				doVersions(ureq);
 			}
 		}
 		super.event(ureq, source, event);
@@ -172,4 +174,6 @@ public class FilesAndFoldersController extends BasicController{
 		mainVC.put("segmentCmp", trash.getInitialComponent());
 		segmentView.select(trashLink);
 	}
+	
+	
 }

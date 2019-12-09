@@ -38,7 +38,13 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.util.CSSHelper;
+import org.olat.core.id.Identity;
+import org.olat.core.util.mail.ContactList;
+import org.olat.core.util.mail.ContactMessage;
+import org.olat.modules.co.ContactFormController;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class LargeFilesController extends FormBasicController implements ExtendedFlexiTableSearchController {
@@ -66,8 +72,10 @@ public class LargeFilesController extends FormBasicController implements Extende
 	private FormLink searchButton;
 	private FormLink resetButton;
 
-
 	private boolean enabled = true;
+	
+	private CloseableModalController cmc;
+	private ContactFormController contactCtrl;
 
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
@@ -197,7 +205,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 
 		resetButton = uifactory.addFormLink("largefiles.filter.button.reset", filterButtonLayout, Link.BUTTON);
 
-
+		// Tabled
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		DefaultFlexiColumnModel column;
 
@@ -280,9 +288,28 @@ public class LargeFilesController extends FormBasicController implements Extende
 		} else if(source == searchButton) {
 			updateModel();
 		} else if(source == resetButton) {
-			resetForm();
+//			resetForm();
+			contactUser(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void contactUser(UserRequest ureq) {
+		removeAsListenerAndDispose(cmc);
+		Identity testUser = UserManager.getInstance().findUniqueIdentityByEmail("admin@olat-newinstallation.org");
+
+		ContactMessage cmsg = new ContactMessage(getIdentity());
+		String fullName = "Test Test TEst";
+		ContactList contactList = new ContactList(fullName);
+		contactList.add(testUser);
+		cmsg.addEmailTo(contactList);
+		cmsg.setSubject("Large FIles");
+		cmsg.setBodyText("youre files are large");
+		contactCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg, null);
+		listenTo(contactCtrl);
+		cmc = new CloseableModalController(getWindowControl(), "close", contactCtrl.getInitialComponent());
+		cmc.activate();
+		listenTo(cmc);
 	}
 
 	@Override

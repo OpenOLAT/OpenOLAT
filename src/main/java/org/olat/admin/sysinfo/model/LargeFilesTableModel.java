@@ -61,7 +61,7 @@ implements SortableFlexiTableDataModel<LargeFilesTableContentRow> {
 			case pubDate: return notNull(row.getPubDate());
 			case language: return notNull(row.getLanguage());
 			case locked: return notNull(row.isLocked());
-			case lockedBy: return notNull(row.getLockedBy());
+			case lockedBy: return notNull(row.getLockedBy() != null ? row.getLockedBy().getUser().getFirstName() + " " + row.getLockedBy().getUser().getLastName() : null);
 			case lockedAt: return notNull(row.getLockedAt());
 			case revisionComment: return notNull(row.getRevisionComment());
 			case revisionNr: return notNull(row.getRevisionNr());	
@@ -130,5 +130,4 @@ implements SortableFlexiTableDataModel<LargeFilesTableContentRow> {
 		}
 		
 	}
-	
-}
+	}
