@@ -67,11 +67,11 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 	//ores helper is limited to 50 character, so truncate it
 	static final OLATResourceable CLUSTER_CHANNEL = OresHelper.createOLATResourceableType(ClusterEventBus.class.getName().substring(0, 50));
 
-	ClusterConfig clusterConfig;
+	private ClusterConfig clusterConfig;
 
 	// settings
-	long sendInterval = 1000; // 1000 miliseconds between each "ping/alive/info" message, can be set using spring
-	long jmsMsgDelayLimit = 5000;  // max duration of ClusterInfoEvent send-receive time in ms
+	private long sendInterval = 1000; // 1000 miliseconds between each "ping/alive/info" message, can be set using spring
+	private long jmsMsgDelayLimit = 5000;  // max duration of ClusterInfoEvent send-receive time in ms
 	
 	// counters
 	private long latestSentMsgId = -1;
@@ -467,7 +467,11 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 			log.warn("Exception in stop ClusteredSearchProvider, ",e);
 		}
 	}
-	
+
+	public ClusterConfig getClusterConfig() {
+		return clusterConfig;
+	}
+
 	/**
 	 * [used by spring]
 	 */

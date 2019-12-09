@@ -125,7 +125,7 @@ public class DifferenceCheckerTest {
 
 	@Test
 	public void shouldDeleteNullIfNotConfigured() {
-		when(shibbolethModuleMock.getDeleteIfNull().get(ATTRIBUTE_NAME)).thenThrow(Exception.class);
+		when(shibbolethModuleMock.getDeleteIfNull().get(ATTRIBUTE_NAME)).thenThrow(new RuntimeException());
 
 		boolean isDifferent = sut.isDifferent(ATTRIBUTE_NAME, null, OLAT_ONLY);
 
