@@ -118,7 +118,7 @@ public class ClusterAdminControllerCluster extends BasicController {
 		mainVc = createVelocityContainer("cluster");
 
 		// information about the cluster nodes
-		mainVc.contextPut("own_nodeid", "This node is node: '"+clusBus.clusterConfig.getNodeId()+"'");
+		mainVc.contextPut("own_nodeid", "This node is node: '"+clusBus.getClusterConfig().getNodeId()+"'");
 		
 		nodeInfoVc = createVelocityContainer("nodeinfos");
 		Formatter f = Formatter.getInstance(ureq.getLocale());
@@ -196,7 +196,7 @@ public class ClusterAdminControllerCluster extends BasicController {
 				return o1.getNodeId().compareTo(o2.getNodeId());
 			}});
 		nodeInfoVc.contextPut("stats",li);
-		nodeInfoVc.contextPut("thisNodeId", clusBus.clusterConfig.getNodeId());
+		nodeInfoVc.contextPut("thisNodeId", clusBus.getClusterConfig().getNodeId());
 		mainVc.contextPut("eventBusListener", clusBus.toString());
 		mainVc.contextPut("busListenerInfos", clusBus.getBusInfosAsString());
 	}
