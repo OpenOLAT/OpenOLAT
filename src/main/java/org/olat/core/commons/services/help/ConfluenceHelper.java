@@ -120,7 +120,8 @@ public class ConfluenceHelper {
 	protected static final String generateSpace(String version, Locale locale) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("/OO");
-
+		
+		version = version.replace("pre", "0");
 		int firstPointIndex = version.indexOf('.');
 		if (firstPointIndex > 0) {
 			sb.append(version.substring(0, firstPointIndex));

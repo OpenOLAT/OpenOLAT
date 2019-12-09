@@ -49,5 +49,17 @@ public class ConfluenceHelperTest {
 		String url4 = ConfluenceHelper.generateSpace("11a", Locale.ENGLISH);
 		Assert.assertNotNull(url4);
 		Assert.assertTrue(url4.startsWith("/OO110EN/"));
+		
+		String url5pre0a = ConfluenceHelper.generateSpace("15.pre.0.a", Locale.ENGLISH);
+		Assert.assertNotNull(url5pre0a);
+		Assert.assertTrue(url5pre0a.startsWith("/OO150EN/"));
+		
+		String url15pre1 = ConfluenceHelper.generateSpace("15.pre.1", Locale.ENGLISH);
+		Assert.assertNotNull(url15pre1);
+		Assert.assertTrue(url15pre1.startsWith("/OO150EN/"));
+		
+		String url15pre = ConfluenceHelper.generateSpace("15.pre", Locale.ENGLISH);
+		Assert.assertNotNull(url15pre);
+		Assert.assertTrue(url15pre.startsWith("/OO150EN/"));
 	}
 }
