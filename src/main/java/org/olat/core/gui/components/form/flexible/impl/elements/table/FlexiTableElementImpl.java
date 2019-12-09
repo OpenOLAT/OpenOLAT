@@ -166,12 +166,12 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			if(col.isDefaultVisible()) {
 				enabledColumnIndex.add(Integer.valueOf(col.getColumnIndex()));
 			}
+			
+			if(hasAlwaysVisibleColumns || col.isAlwaysVisible()) {
+				hasAlwaysVisibleColumns = true;
+			}
 		}
 		
-		if(enabledColumnIndex.size() > 0 ) {
-			hasAlwaysVisibleColumns = true;
-		}
-
 		String dispatchId = component.getDispatchID();
 		customButton = new FormLinkImpl(dispatchId + "_customButton", "rCustomButton", "", Link.BUTTON + Link.NONTRANSLATED);
 		customButton.setTranslator(translator);
@@ -1391,7 +1391,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	
 	protected void setCustomizedColumns(UserRequest ureq, Choice visibleColsChoice) {
 		List<Integer> chosenCols = visibleColsChoice.getSelectedRows();
-		if(chosenCols.size() > 1 || hasAlwaysVisibleColumns) {
+		if(chosenCols.size() > 0 || hasAlwaysVisibleColumns) {
 			VisibleFlexiColumnsModel model = (VisibleFlexiColumnsModel)visibleColsChoice.getModel();
 			for(int i=model.getRowCount(); i-->0; ) {
 				FlexiColumnModel col = model.getObject(i);
