@@ -1555,6 +1555,11 @@ public class RepositoryManager {
 	 */
 	private void addInternalParticipant(Identity ureqIdentity, Identity identity, RepositoryEntry re) {
 		repositoryEntryRelationDao.addRole(identity, re, GroupRoles.participant.name());
+		
+		List<RepositoryEntryMembershipModifiedEvent> deferredEvents = new ArrayList<>();
+		deferredEvents.add(RepositoryEntryMembershipModifiedEvent.roleParticipantAdded(identity, re));
+		dbInstance.commit();
+		sendDeferredEvents(deferredEvents, re);
 
 		ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
 		ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
@@ -2032,6 +2037,7 @@ public class RepositoryManager {
 		if(changes.getRepoParticipant() != null) {
 			if(changes.getRepoParticipant().booleanValue()) {
 				addParticipants(ureqIdentity, ureqRoles, new IdentitiesAddEvent(changes.getMember()), re, mailing);
+				deferredEvents.add(RepositoryEntryMembershipModifiedEvent.roleParticipantAdded(changes.getMember(), re));
 			} else {
 				removeParticipant(ureqIdentity, changes.getMember(), re, mailing, true);
 				deferredEvents.add(RepositoryEntryMembershipModifiedEvent.removed(changes.getMember(), re));

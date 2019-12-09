@@ -369,7 +369,7 @@ public interface BusinessGroupService {
 	 */
 	public boolean hasRoles(IdentityRef identity, BusinessGroupRef businessGroup, String role);
 	
-	public List<Identity> getMembers(BusinessGroup businessGroup, String... roles);
+	public List<Identity> getMembers(BusinessGroupRef businessGroup, String... roles);
 	
 	public List<Identity> getMembers(List<BusinessGroup> businessGroups, String... roles);
 	

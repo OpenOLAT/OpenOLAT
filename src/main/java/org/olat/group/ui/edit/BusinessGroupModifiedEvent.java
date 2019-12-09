@@ -36,7 +36,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.MultiUserEvent;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
@@ -179,7 +178,6 @@ public class BusinessGroupModifiedEvent extends MultiUserEvent {
 		EventBus eventBus = CoordinatorManager.getInstance().getCoordinator().getEventBus();
 		// 1) notify listeners of group events
 		eventBus.fireEventToListenersOf(modifiedEvent, group);
-		eventBus.fireEventToListenersOf(modifiedEvent, OresHelper.lookupType(BusinessGroup.class));
 		// 2) notify listeners of learning resources of this group
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		List<RepositoryEntry> repoEntries = bgs.findRepositoryEntries(Collections.singletonList(group), 0, -1);

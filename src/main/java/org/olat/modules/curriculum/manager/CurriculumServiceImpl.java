@@ -19,6 +19,8 @@
  */
 package org.olat.modules.curriculum.manager;
 
+import static org.olat.modules.curriculum.CurriculumElementRepositoryEntryEvent.REPOSITORY_ENTRY_ADDED;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -47,13 +49,17 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumDataDeletable;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementMembership;
+import org.olat.modules.curriculum.CurriculumElementMembershipEvent;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumElementRepositoryEntryEvent;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementToTaxonomyLevel;
 import org.olat.modules.curriculum.CurriculumElementType;
@@ -131,6 +137,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	private CurriculumElementToTaxonomyLevelDAO curriculumElementToTaxonomyLevelDao;
 	@Autowired
 	private CurriculumRepositoryEntryRelationDAO curriculumRepositoryEntryRelationDao;
+	@Autowired
+	private CoordinatorManager coordinator;
 
 	@Override
 	public Curriculum createCurriculum(String identifier, String displayName, String description, Organisation organisation) {
@@ -352,6 +360,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			List<RepositoryEntry> entries = getRepositoryEntries(elementToClone);
 			for(RepositoryEntry entry:entries) {
 				repositoryEntryRelationDao.createRelation(clone.getGroup(), entry);
+				fireRepositoryEntryAddedEvent(clone, entry);
 			}
 		} else if(settings.getCopyResources() == CopyResources.resource) {
 			List<RepositoryEntry> entries = getRepositoryEntries(elementToClone);
@@ -360,6 +369,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 				if(repositoryService.canCopy(entry, identity)) {
 					RepositoryEntry entryCopy = repositoryService.copy(entry, identity, entry.getDisplayname());
 					repositoryEntryRelationDao.createRelation(clone.getGroup(), entryCopy);
+					fireRepositoryEntryAddedEvent(clone, entryCopy);
 				}
 			}
 		}
@@ -647,9 +657,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			throw new AssertException("Inherited are automatic");
 		}
 		
+		List<CurriculumElement> membershipAdded = new ArrayList<>();
 		GroupMembership membership = groupDao.getMembership(element.getGroup(), member, role.name());
 		if(membership == null) {
 			groupDao.addMembershipOneWay(element.getGroup(), member, role.name(), inheritanceMode);
+			membershipAdded.add(element);
 		} else if(membership.getInheritanceMode() != inheritanceMode) {
 			groupDao.updateInheritanceMode(membership, inheritanceMode);
 		}
@@ -660,11 +672,14 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 				GroupMembership inheritedMembership = groupDao.getMembership(descendant.getGroup(), member, role.name());
 				if(inheritedMembership == null) {
 					groupDao.addMembershipOneWay(descendant.getGroup(), member, role.name(), GroupMembershipInheritance.inherited);
+					membershipAdded.add(element);
 				} else if(inheritedMembership.getInheritanceMode() == GroupMembershipInheritance.none) {
 					groupDao.updateInheritanceMode(inheritedMembership, GroupMembershipInheritance.inherited);
 				}
 			}
 		}
+		
+		fireMemberAddedEvent(membershipAdded, member, role);
 	}
 
 	@Override
@@ -779,6 +794,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	public void addRepositoryEntry(CurriculumElement element, RepositoryEntryRef entry, boolean master) {
 		RepositoryEntry repoEntry = repositoryEntryDao.loadByKey(entry.getKey());
 		repositoryEntryRelationDao.createRelation(element.getGroup(), repoEntry);
+		fireRepositoryEntryAddedEvent(element, entry);
 	}
 
 	@Override
@@ -912,6 +928,21 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			curriculumDao.update(curriculum);
 		}
 		return true;
+	}
+	
+	private void fireMemberAddedEvent(Collection<? extends CurriculumElementRef> elements, Identity member,
+			CurriculumRoles role) {
+		CurriculumElementMembershipEvent event = new CurriculumElementMembershipEvent(
+				CurriculumElementMembershipEvent.MEMEBER_ADDED, elements, member, role);
+		coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event,
+				OresHelper.lookupType(CurriculumElement.class));
+	}
+	
+	private void fireRepositoryEntryAddedEvent(CurriculumElementRef element, RepositoryEntryRef entry) {
+		CurriculumElementRepositoryEntryEvent event = new CurriculumElementRepositoryEntryEvent(REPOSITORY_ENTRY_ADDED,
+				element.getKey(), entry.getKey());
+		coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event,
+				OresHelper.lookupType(CurriculumElement.class));
 	}
 	
 }

@@ -20,7 +20,9 @@
 package org.olat.repository.model;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.core.id.Identity;
 import org.olat.core.util.event.MultiUserEvent;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
 /**
@@ -34,6 +36,7 @@ public class RepositoryEntryMembershipModifiedEvent extends MultiUserEvent {
 	private static final long serialVersionUID = -8624039692057985920L;
 	
 	public static final String IDENTITY_REMOVED = "identity.removed.re";
+	public static final String ROLE_PARTICIPANT_ADDED = "identity.role.participant.added";
 	private Long identityKey;
 	private Long repositoryEntryKey;
 
@@ -59,5 +62,9 @@ public class RepositoryEntryMembershipModifiedEvent extends MultiUserEvent {
 	
 	public static RepositoryEntryMembershipModifiedEvent removed(IdentityRef identity, RepositoryEntryRef re) {
 		return new RepositoryEntryMembershipModifiedEvent(IDENTITY_REMOVED, identity.getKey(), re.getKey());
+	}
+
+	public static RepositoryEntryMembershipModifiedEvent roleParticipantAdded(Identity identity, RepositoryEntry re) {
+		return new RepositoryEntryMembershipModifiedEvent(ROLE_PARTICIPANT_ADDED, identity.getKey(), re.getKey());
 	}
 }

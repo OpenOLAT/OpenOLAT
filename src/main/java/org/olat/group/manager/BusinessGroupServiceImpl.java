@@ -104,6 +104,7 @@ import org.olat.group.right.BGRightManager;
 import org.olat.group.right.BGRightsRole;
 import org.olat.group.ui.BGMailHelper;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
+import org.olat.group.ui.edit.BusinessGroupRepositoryEntryEvent;
 import org.olat.properties.PropertyManager;
 import org.olat.repository.LeavingStatusList;
 import org.olat.repository.RepositoryEntry;
@@ -1517,6 +1518,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	@Override
 	public void addResourceTo(BusinessGroup group, RepositoryEntry re) {
 		businessGroupRelationDAO.addRelationToResource(group, re);
+		BusinessGroupRepositoryEntryEvent.fireEvents(BusinessGroupRepositoryEntryEvent.REPOSITORY_ENTRY_ADDED, group, re);
 	}
 
 	@Override
@@ -1547,6 +1549,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 				}
 				if(!found) {
 					repositoryEntryRelationDao.createRelation(baseGroup, re);
+					BusinessGroupRepositoryEntryEvent.fireEvents(BusinessGroupRepositoryEntryEvent.REPOSITORY_ENTRY_ADDED, group, re);
 				}
 			}
 		}
@@ -1696,7 +1699,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	}
 
 	@Override
-	public List<Identity> getMembers(BusinessGroup businessGroup, String... roles) {
+	public List<Identity> getMembers(BusinessGroupRef businessGroup, String... roles) {
 		return businessGroupRelationDAO.getMembers(businessGroup, roles);
 	}
 	

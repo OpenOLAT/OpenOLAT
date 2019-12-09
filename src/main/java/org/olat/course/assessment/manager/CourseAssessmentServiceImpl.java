@@ -403,5 +403,4 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, courseEnv);
 		userCourseEnv.getScoreAccounting().evaluateAll(true);
 	}
-
 }
