@@ -1950,7 +1950,7 @@ function o_choice_toggleCheck(ref, checked) {
 	else {
 		var i;
 		for (i=0; i < len; i++) {
-			if (checkboxes[i].type == 'checkbox' && checkboxes[i].getAttribute('class') == 'o_checkbox') {
+			if (checkboxes[i].type == 'checkbox' && checkboxes[i].getAttribute('class') == 'o_checkbox' && checkboxes[i].getAttribute('disabled') != 'disabled') {
 				checkboxes[i].checked=checked;
 			}
 		}
