@@ -152,7 +152,7 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 		}
 		if(createObject instanceof QItemList) {
 			QItemList itemToImport = (QItemList)createObject;
-			qpoolServiceProvider.exportToEditorPackage(repositoryDir, itemToImport.getItems(), locale);
+			qpoolServiceProvider.exportToEditorPackage(displayname, repositoryDir, itemToImport.getItems(), locale);
 		} else if(createObject instanceof QTIEditorPackage) {
 			QTIEditorPackage testToConvert = (QTIEditorPackage)createObject;
 			QTI21DeliveryOptions options = qtiService.getDeliveryOptions(re);
