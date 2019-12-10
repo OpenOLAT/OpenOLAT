@@ -1,5 +1,4 @@
 /**
- * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -80,13 +79,13 @@ public class FOConfigController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("Communication and Collaboration#_forumkonfig");
 		formLayout.setElementCssClass("o_sel_course_forum_settings");
 		
 		if(forumModule.isAnonymousPostingWithPseudonymEnabled()) {
 			FormLayoutContainer anonymousCont = FormLayoutContainer.createDefaultFormLayout("anonymous", getTranslator());
 			formLayout.add(anonymousCont);
 			anonymousCont.setFormTitle(translate("anonymous.title"));
+			anonymousCont.setFormContextHelp("Communication and Collaboration#_forumkonfig");
 
 			allowPseudonymEl = uifactory.addCheckboxesHorizontal("allow.pseudonym.post", anonymousCont, allowKeys,
 					translateAll(getTranslator(), allowKeys));
@@ -111,6 +110,9 @@ public class FOConfigController extends FormBasicController {
 		FormLayoutContainer rightsCont = FormLayoutContainer.createDefaultFormLayout("rights", getTranslator());
 		formLayout.add(rightsCont);
 		rightsCont.setFormTitle(translate("user.rights"));
+		if(!forumModule.isAnonymousPostingWithPseudonymEnabled()) {
+			rightsCont.setFormContextHelp("Communication and Collaboration#_forumkonfig");
+		}
 		
 		if (foNode.hasCustomPreConditions()) {
 			allowGuestEl = uifactory.addCheckboxesHorizontal("allow.guest.post", rightsCont, allowKeys,
