@@ -64,53 +64,11 @@ public class ImageRunController extends BasicController implements PageRunElemen
 		
 		ImageSettings settings = media.getImageSettings();
 		if(settings != null) {
-			if(settings.getAlignment() != null) {
-				mainVC.contextPut("alignment", settings.getAlignment().name());
-			}
-			if(settings.getSize() != null) {
-				mainVC.contextPut("size", settings.getSize().name());
-			}
-			if(StringHelper.containsNonWhitespace(settings.getStyle())) {
-				imageCmp.setCssClasses(settings.getStyle());
-			}
-			
-			if(settings.getSize() != null) {
-				mainVC.contextPut("imageSizeStyle", settings.getSize().name());
-			}
-			
-			mainVC.contextPut("someId", CodeHelper.getRAMUniqueID());
-			
+			DublinCoreMetadata meta = null;
 			if(media.getStoredData() instanceof DublinCoreMetadata) {
-				DublinCoreMetadata dMeta = (DublinCoreMetadata)media.getStoredData();
-				boolean hasSource = settings.isShowSource() && StringHelper.containsNonWhitespace(dMeta.getSource());
-				if(hasSource) {
-					mainVC.contextPut("source", dMeta.getSource());
-					mainVC.contextPut("showSource", Boolean.valueOf(settings.isShowSource()));
-				}
+				meta = (DublinCoreMetadata)media.getStoredData();
 			}
-			
-			boolean hasDescriptionToShow = settings.isShowDescription() && StringHelper.containsNonWhitespace(settings.getDescription());
-			mainVC.contextPut("showDescription", Boolean.valueOf(hasDescriptionToShow));
-			if(hasDescriptionToShow) {
-				mainVC.contextPut("description", settings.getDescription());
-			}
-			
-			boolean hasCaptionToShow = StringHelper.containsNonWhitespace(settings.getCaption());
-			mainVC.contextPut("showCaption", Boolean.valueOf(hasCaptionToShow));
-			if(hasCaptionToShow) {
-				mainVC.contextPut("caption", settings.getCaption());
-			}
-			
-			boolean hasTitle = StringHelper.containsNonWhitespace(settings.getTitle());
-			mainVC.contextPut("showTitle", Boolean.valueOf(hasTitle));
-			if(hasTitle) {
-				mainVC.contextPut("title", settings.getTitle());
-				ImageTitlePosition position = settings.getTitlePosition() == null ? ImageTitlePosition.above : settings.getTitlePosition();
-				mainVC.contextPut("titlePosition", position.name());
-				if(StringHelper.containsNonWhitespace(settings.getTitleStyle())) {
-					mainVC.contextPut("titleStyle", settings.getTitleStyle());
-				}
-			}
+			updateImageSettings(settings, meta);
 		}
 	}
 
@@ -123,6 +81,7 @@ public class ImageRunController extends BasicController implements PageRunElemen
 		imageCmp = new ImageComponent(ureq.getUserSession(), "image");
 		imageCmp.setMedia(mediaFile);
 		imageCmp.setDivImageWrapper(false);
+		imageCmp.setPreventBrowserCaching(false);
 		
 		mainVC.put("image", imageCmp);
 		mainVC.contextPut("imageSizeStyle", "none");
@@ -149,11 +108,60 @@ public class ImageRunController extends BasicController implements PageRunElemen
 		mainPanel.setDomReplaceable(false);
 	}
 	
+	public void updateImageSettings(ImageSettings settings, DublinCoreMetadata meta) {
+		if(settings.getAlignment() != null) {
+			mainVC.contextPut("alignment", settings.getAlignment().name());
+		}
+		if(settings.getSize() != null) {
+			mainVC.contextPut("size", settings.getSize().name());
+		}
+		if(StringHelper.containsNonWhitespace(settings.getStyle())) {
+			imageCmp.setCssClasses(settings.getStyle());
+		}
+		
+		if(settings.getSize() != null) {
+			mainVC.contextPut("imageSizeStyle", settings.getSize().name());
+		}
+		
+		mainVC.contextPut("someId", CodeHelper.getRAMUniqueID());
+		
+		if(meta != null) {
+			boolean hasSource = settings.isShowSource() && StringHelper.containsNonWhitespace(meta.getSource());
+			if(hasSource) {
+				mainVC.contextPut("source", meta.getSource());
+				mainVC.contextPut("showSource", Boolean.valueOf(settings.isShowSource()));
+			}
+		}
+		
+		boolean hasDescriptionToShow = settings.isShowDescription() && StringHelper.containsNonWhitespace(settings.getDescription());
+		mainVC.contextPut("showDescription", Boolean.valueOf(hasDescriptionToShow));
+		if(hasDescriptionToShow) {
+			mainVC.contextPut("description", settings.getDescription());
+		}
+		
+		boolean hasCaptionToShow = StringHelper.containsNonWhitespace(settings.getCaption());
+		mainVC.contextPut("showCaption", Boolean.valueOf(hasCaptionToShow));
+		if(hasCaptionToShow) {
+			mainVC.contextPut("caption", settings.getCaption());
+		}
+		
+		boolean hasTitle = StringHelper.containsNonWhitespace(settings.getTitle());
+		mainVC.contextPut("showTitle", Boolean.valueOf(hasTitle));
+		if(hasTitle) {
+			mainVC.contextPut("title", settings.getTitle());
+			ImageTitlePosition position = settings.getTitlePosition() == null ? ImageTitlePosition.above : settings.getTitlePosition();
+			mainVC.contextPut("titlePosition", position.name());
+			if(StringHelper.containsNonWhitespace(settings.getTitleStyle())) {
+				mainVC.contextPut("titleStyle", settings.getTitleStyle());
+			}
+		}
+	}
+	
 	/**
 	 * @param ureq The user request
 	 * @param storedData To be extended 
 	 */
-	protected void initMetadata(UserRequest ureq, StoredData storedData) {
+	protected void  initMetadata(UserRequest ureq, StoredData storedData) {
 		//
 	}
 
