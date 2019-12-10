@@ -252,7 +252,7 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 		}
 	}
 
-	private void removeCustomPreconditions() {
+	public void removeCustomPreconditions() {
 		preConditionModerator = null;
 		preConditionPoster = null;
 		preConditionReader = null;
