@@ -104,6 +104,7 @@ public class ModuleConfiguration implements Serializable {
 	/**
 	 * @see java.lang.Object#toString()
 	 */
+	@Override
 	public String toString() {
 		return config.entrySet() +", "+super.toString();
 	}
@@ -291,7 +292,7 @@ public class ModuleConfiguration implements Serializable {
 	public int getConfigurationVersion() {
 		Integer version = (Integer) get(CONFIG_VERSION);
 		if (version == null) {
-			version = new Integer(1);
+			version = Integer.valueOf(1);
 			set(CONFIG_VERSION, version);
 		}
 		return version.intValue();
@@ -302,6 +303,6 @@ public class ModuleConfiguration implements Serializable {
 	 * @param version
 	 */
 	public void setConfigurationVersion(int version) {
-		set(CONFIG_VERSION, new Integer(version));		
+		set(CONFIG_VERSION, Integer.valueOf(version));
 	}
 }

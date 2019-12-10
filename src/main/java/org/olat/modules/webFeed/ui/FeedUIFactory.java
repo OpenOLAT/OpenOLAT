@@ -26,12 +26,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
-import org.olat.course.ICourse;
-import org.olat.course.nodes.AbstractFeedCourseNode;
-import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.FeedSecurityCallback;
 import org.olat.modules.webFeed.Item;
@@ -79,9 +75,6 @@ public abstract class FeedUIFactory {
 	}
 
 	public abstract FormBasicController createItemFormController(UserRequest ureq, WindowControl wControl, Item currentItem);
-
-	public abstract TabbableController createNodeEditController(AbstractFeedCourseNode courseNode, ICourse course, UserCourseEnvironment uce, UserRequest ureq,
-			WindowControl control);
 
 	public ExternalUrlController createExternalUrlController(UserRequest ureq, WindowControl windowControl, Feed feedResource) {
 		return new ExternalUrlController(ureq, windowControl, feedResource);

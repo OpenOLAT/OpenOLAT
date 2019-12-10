@@ -26,13 +26,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
-import org.olat.course.ICourse;
-import org.olat.course.nodes.AbstractFeedCourseNode;
-import org.olat.course.nodes.feed.podcast.PodcastNodeEditController;
-import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.ui.FeedMainController;
 import org.olat.modules.webFeed.ui.FeedUIFactory;
@@ -96,12 +91,6 @@ public class PodcastUIFactory extends FeedUIFactory {
 	@Override
 	public FormBasicController createItemFormController(UserRequest ureq, WindowControl wControl, Item item) {
 		return new EpisodeFormController(ureq, wControl, item, getTranslator());
-	}
-
-	@Override
-	public TabbableController createNodeEditController(AbstractFeedCourseNode courseNode, ICourse course, UserCourseEnvironment uce,
-			UserRequest ureq, WindowControl control) {
-		return new PodcastNodeEditController(courseNode, course, uce, ureq, control);
 	}
 
 }

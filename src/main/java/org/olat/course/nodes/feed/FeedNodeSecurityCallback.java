@@ -20,13 +20,10 @@
 package org.olat.course.nodes.feed;
 
 import org.olat.core.commons.services.notifications.SubscriptionContext;
-import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.modules.webFeed.FeedSecurityCallback;
 
 /**
- * Feed node security callback based on course node access conditions and user
- * status (admin, guest)
- * 
+ *
  * <P>
  * Initial Date: Aug 10, 2009 <br>
  * 
@@ -34,14 +31,17 @@ import org.olat.modules.webFeed.FeedSecurityCallback;
  */
 public class FeedNodeSecurityCallback implements FeedSecurityCallback {
 
-	private NodeEvaluation ne;
-	private boolean isAdministrator;
-	private boolean isGuestOnly;
-	private boolean isOwner;
+	private final boolean isPoster;
+	private final boolean isModerator;
+	private final boolean isAdministrator;
+	private final boolean isGuestOnly;
+	private final boolean isOwner;
 	private SubscriptionContext subsContext;
 
-	public FeedNodeSecurityCallback(NodeEvaluation ne, boolean isAdministrator, boolean isOwner, boolean isGuestOnly) {
-		this.ne = ne;
+	public FeedNodeSecurityCallback(boolean isPoster, boolean isModerator, boolean isAdministrator, boolean isOwner,
+			boolean isGuestOnly) {
+		this.isPoster = isPoster;
+		this.isModerator = isModerator;
 		this.isAdministrator = isAdministrator;
 		this.isGuestOnly = isGuestOnly;
 		this.isOwner = isOwner;
@@ -50,19 +50,19 @@ public class FeedNodeSecurityCallback implements FeedSecurityCallback {
 	@Override
 	public boolean mayEditMetadata() {
 		if (isGuestOnly) return false;
-		return ne.isCapabilityAccessible("moderator") || isAdministrator;
+		return isModerator || isAdministrator;
 	}
 
 	@Override
 	public boolean mayCreateItems() {
 		if (isGuestOnly) return false;
-		return ne.isCapabilityAccessible("poster") || ne.isCapabilityAccessible("moderator") || isAdministrator;
+		return isPoster || isModerator || isAdministrator;
 	}
 
 	@Override
 	public boolean mayDeleteItems() {
 		if (isGuestOnly) return false;
-		return ne.isCapabilityAccessible("moderator") || isAdministrator;
+		return isModerator || isAdministrator;
 	}
 
 	@Override
@@ -73,7 +73,7 @@ public class FeedNodeSecurityCallback implements FeedSecurityCallback {
 	@Override
 	public boolean mayEditItems() {
 		if (isGuestOnly) return false;
-		return ne.isCapabilityAccessible("moderator") || isAdministrator;
+		return isModerator || isAdministrator;
 	}
 
 	@Override

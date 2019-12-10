@@ -20,76 +20,273 @@
 package org.olat.course.nodes;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
+import org.olat.basesecurity.GroupRoles;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.ValidationStatus;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
+import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
+import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.feed.FeedNodeEditController;
+import org.olat.course.nodes.feed.FeedNodeSecurityCallback;
+import org.olat.course.nodes.feed.FeedPeekviewController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.webFeed.FeedReadOnlySecurityCallback;
+import org.olat.modules.webFeed.FeedSecurityCallback;
 import org.olat.modules.webFeed.manager.FeedManager;
+import org.olat.modules.webFeed.ui.FeedMainController;
+import org.olat.modules.webFeed.ui.FeedUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
- * The podcast course node.
  * 
  * <P>
  * Initial Date: Mar 30, 2009 <br>
  * 
  * @author gwassmann
  */
-public abstract class AbstractFeedCourseNode extends GenericCourseNode {
+public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNode {
+	
+	private static final long serialVersionUID = -5307888583081589123L;
+	
+	private static final int CURRENT_VERSION = 2;
 	public static final String CONFIG_KEY_REPOSITORY_SOFTKEY = "reporef";
-	protected ModuleConfiguration config;
+	public static final String CONFIG_COACH_MODERATE_ALLOWED = "coach.moderate.allowed";
+	public static final String CONFIG_COACH_POST_ALLOWED = "coach.post.allowed";
+	public static final String CONFIG_PARTICIPANT_POST_ALLOWED = "participant.post.allowed";
+	public static final String CONFIG_GUEST_POST_ALLOWED = "guest.post.allowed";
+	
 	protected Condition preConditionReader, preConditionPoster, preConditionModerator;
 
-	/**
-	 * @param type
-	 */
 	public AbstractFeedCourseNode(String type) {
 		super(type);
 		updateModuleConfigDefaults(true);
 	}
+	
+	protected abstract String getTranslatorPackage();
 
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#updateModuleConfigDefaults(boolean)
-	 */
+	protected abstract String getResourceablTypeName();
+	
+	protected abstract FeedUIFactory getFeedUIFactory(Locale locale);
+	
+	protected abstract String geIconCssClass();
+	
+	protected abstract String getPeekviewWrapperCssClass();
+	
+	protected abstract String getEditHelpUrl();
+
+	@Override
+	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+			ICourse course, UserCourseEnvironment euce) {
+		updateModuleConfigDefaults(false);
+		
+		String translatorPackage = getTranslatorPackage();
+		FeedUIFactory uiFactory = getFeedUIFactory(ureq.getLocale());
+		String resourceablTypeName = getResourceablTypeName();
+		String editHelpUrl = getEditHelpUrl();
+		TabbableController editCtrl = new FeedNodeEditController(ureq, wControl, stackPanel, translatorPackage, course,
+				this, euce, uiFactory, resourceablTypeName, editHelpUrl);
+		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
+		return new NodeEditController(ureq, wControl, course, chosenNode, euce, editCtrl);
+	}
+	
+	@Override
+	public ConditionAccessEditConfig getAccessEditConfig() {
+		return hasCustomPreConditions() ? ConditionAccessEditConfig.custom() : ConditionAccessEditConfig.regular(false);
+	}
+	
+	@Override
+	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
+		updateModuleConfigDefaults(false);
+		
+		RepositoryEntry entry = getReferencedRepositoryEntry();
+		FeedSecurityCallback callback = getFeedSecurityCallback(ureq, entry, userCourseEnv, nodeSecCallback);
+		SubscriptionContext subsContext = CourseModule.createSubscriptionContext(userCourseEnv.getCourseEnvironment(),
+				this);
+		callback.setSubscriptionContext(subsContext);
+		
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(this));
+		
+		Long courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
+		FeedMainController mainCtrl = getFeedUIFactory(ureq.getLocale()).createMainController(entry.getOlatResource(),
+				ureq, wControl, callback, courseId, getIdent());
+		List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType(nodecmd);
+		mainCtrl.activate(ureq, entries, null);
+		Controller wrapperCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, mainCtrl, this, geIconCssClass());
+		return new NodeRunConstructionResult(wrapperCtrl);
+	}
+	
+	@Override
+	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl,
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
+		if (nodeSecCallback.isAccessible()) {
+			RepositoryEntry entry = getReferencedRepositoryEntry();
+			FeedSecurityCallback callback = getFeedSecurityCallback(ureq, entry, userCourseEnv, nodeSecCallback);
+			
+			Long courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
+			FeedUIFactory uiFactory = getFeedUIFactory(ureq.getLocale());
+			String peekviewWrapperCssClass = getPeekviewWrapperCssClass();
+			return new FeedPeekviewController(entry.getOlatResource(), ureq, wControl, callback, courseId, getIdent(),
+					uiFactory, 2, peekviewWrapperCssClass);
+		}
+		return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback);
+	}
+	
+	private FeedSecurityCallback getFeedSecurityCallback(UserRequest ureq, RepositoryEntry entry,
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
+		FeedSecurityCallback callback;
+		if(userCourseEnv.isCourseReadOnly()) {
+			callback = new FeedReadOnlySecurityCallback();
+		} else {
+			RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+			Roles roles = ureq.getUserSession().getRoles();
+			boolean isPoster = isPoster(userCourseEnv, nodeSecCallback.getNodeEvaluation());
+			boolean isModerator = isModerator(userCourseEnv, nodeSecCallback.getNodeEvaluation());
+			boolean isAdmin = userCourseEnv.isAdmin();
+			boolean isGuest = roles.isGuestOnly();
+			boolean isOwner = !isGuest && repositoryService.hasRole(ureq.getIdentity(), entry, GroupRoles.owner.name());
+			callback = new FeedNodeSecurityCallback(isPoster, isModerator, isAdmin, isOwner, isGuest);
+		}
+		return callback;
+	}
+	
+	private boolean isModerator(UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
+		if (hasCustomPreConditions()) {
+			return ne != null? ne.isCapabilityAccessible("moderator"): false;
+		} else if (getModuleConfiguration().getBooleanSafe(CONFIG_COACH_MODERATE_ALLOWED) && userCourseEnv.isCoach()) {
+			return true;
+		}
+		return false;
+	}
+	
+	private boolean isPoster(UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
+		if (hasCustomPreConditions()) {
+			return ne != null ? ne.isCapabilityAccessible("poster") : false;
+		} else if ((getModuleConfiguration().getBooleanSafe(CONFIG_COACH_POST_ALLOWED) && userCourseEnv.isCoach())
+				|| (getModuleConfiguration().getBooleanSafe(CONFIG_PARTICIPANT_POST_ALLOWED) && userCourseEnv.isParticipant())) {
+			return true;
+		}
+		return false;
+	}
+
 	@Override
 	public void updateModuleConfigDefaults(boolean isNewNode) {
-		this.config = getModuleConfiguration();
+		ModuleConfiguration config = getModuleConfiguration();
+		int version = config.getConfigurationVersion();
+		
 		if (isNewNode) {
-			// No startpage
 			config.setBooleanEntry(NodeEditController.CONFIG_STARTPAGE, false);
-			config.setConfigurationVersion(1);
-			// restrict moderator access to course admins and owners
-			preConditionModerator = getPreConditionModerator();
-			preConditionModerator.setEasyModeCoachesAndAdmins(true);
-			preConditionModerator.setConditionExpression(preConditionModerator.getConditionFromEasyModeConfiguration());
-			preConditionModerator.setExpertMode(false);
-			// restrict poster access to course admins and owners
-			preConditionPoster = getPreConditionPoster();
-			preConditionPoster.setEasyModeCoachesAndAdmins(true);
-			preConditionPoster.setConditionExpression(preConditionPoster.getConditionFromEasyModeConfiguration());
-			preConditionPoster.setExpertMode(false);
 		}
+		if (version < 2) {
+			config.setBooleanEntry(CONFIG_COACH_MODERATE_ALLOWED, true);
+			config.setBooleanEntry(CONFIG_COACH_POST_ALLOWED, true);
+			config.setBooleanEntry(CONFIG_PARTICIPANT_POST_ALLOWED, true);
+			removeDefaultPreconditions();
+		}
+		
+		config.setConfigurationVersion(CURRENT_VERSION);
+	}
+
+	/**
+	 * We don't want to have custom preConditions. So we keep these preConditions
+	 * only, if they have some special configs. Otherwise we delete them and use the
+	 * regular configs.
+	 */
+	private void removeDefaultPreconditions() {
+		if (hasCustomPreConditions()) {
+			boolean defaultPreconditions =
+					!preConditionModerator.isExpertMode()
+				&& preConditionModerator.isEasyModeCoachesAndAdmins()
+				&& !preConditionModerator.isEasyModeAlwaysAllowCoachesAndAdmins()
+				&& !preConditionModerator.isAssessmentMode()
+				&& !preConditionModerator.isAssessmentModeViewResults()
+				&& !preConditionPoster.isExpertMode()
+				&& preConditionPoster.isEasyModeCoachesAndAdmins()
+				&& !preConditionPoster.isEasyModeAlwaysAllowCoachesAndAdmins()
+				&& !preConditionPoster.isAssessmentMode()
+				&& !preConditionPoster.isAssessmentModeViewResults();
+				if (defaultPreconditions && preConditionReader != null) {
+					defaultPreconditions = !preConditionReader.isExpertMode()
+							&& !preConditionReader.isEasyModeCoachesAndAdmins()
+							&& !preConditionReader.isEasyModeAlwaysAllowCoachesAndAdmins()
+							&& !preConditionReader.isAssessmentMode()
+							&& !preConditionReader.isAssessmentModeViewResults();
+				}
+			if (defaultPreconditions) {
+				removeCustomPreconditions();
+			}
+		}
+	}
+
+	private void removeCustomPreconditions() {
+		preConditionModerator = null;
+		preConditionPoster = null;
+		preConditionReader = null;
+	}
+	
+	@Override
+	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
+		oneClickStatusCache = null;
+		List<StatusDescription> sds = isConfigValidWithTranslator(cev, getTranslatorPackage(), getConditionExpressions());
+		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
+		return oneClickStatusCache;
+	}
+	
+	@Override
+	public StatusDescription isConfigValid() {
+		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
+
+		StatusDescription status = StatusDescription.NOERROR;
+		boolean invalid = getModuleConfiguration().get(CONFIG_KEY_REPOSITORY_SOFTKEY) == null;
+		if (invalid) {
+			String[] params = new String[] { this.getShortTitle() };
+			String shortKey = "error.no.reference.short";
+			String longKey = "error.no.reference.long";
+			status = new StatusDescription(ValidationStatus.ERROR, shortKey, longKey, params, getTranslatorPackage());
+			status.setDescriptionForUnit(getIdent());
+			// Set which pane is affected by error
+			status.setActivateableViewIdentifier(FeedNodeEditController.PANE_TAB_CONFIG);
+		}
+		return status;
+	}
+
+	@Override
+	protected String getDefaultTitleOption() {
+		return CourseNode.DISPLAY_OPTS_CONTENT;
 	}
 
 	@Override
@@ -98,6 +295,87 @@ public abstract class AbstractFeedCourseNode extends GenericCourseNode {
 
 		SubscriptionContext subsContext = CourseModule.createSubscriptionContext(course.getCourseEnvironment(), this);
 		NotificationsManager.getInstance().delete(subsContext);
+	}
+
+	@Override
+	public RepositoryEntry getReferencedRepositoryEntry() {
+		ModuleConfiguration config = getModuleConfiguration();
+		String repoSoftkey = (String) config.get(CONFIG_KEY_REPOSITORY_SOFTKEY);
+		RepositoryManager rm = RepositoryManager.getInstance();
+		return rm.lookupRepositoryEntryBySoftkey(repoSoftkey, false);
+	}
+	
+	public static void setReference(ModuleConfiguration moduleConfig, RepositoryEntry feedEntry) {
+		moduleConfig.set(CONFIG_KEY_REPOSITORY_SOFTKEY, feedEntry.getSoftkey());
+	}
+	
+	public static void removeReference(ModuleConfiguration moduleConfig) {
+		moduleConfig.remove(CONFIG_KEY_REPOSITORY_SOFTKEY);
+	}
+
+	@Override
+	public boolean needsReferenceToARepositoryEntry() {
+		return true;
+	}
+	
+	/**
+	 * The conditions to control the user rights are deprecated. In new course nodes
+	 * this options are controlled by module configurations. Existing course nodes
+	 * may have preconditions. In that case they are still used for compatibility
+	 * reasons.
+	 *
+	 * @return
+	 */
+	public boolean hasCustomPreConditions() {
+		return preConditionModerator != null || preConditionPoster != null || preConditionReader != null;
+	}
+
+	public Condition getPreConditionModerator() {
+		if (preConditionModerator == null) {
+			preConditionModerator = new Condition();
+		}
+		preConditionModerator.setConditionId("moderator");
+		return preConditionModerator;
+	}
+
+	public void setPreConditionModerator(Condition preConditionModerator) {
+		if (preConditionModerator == null) {
+			preConditionModerator = getPreConditionModerator();
+		}
+		preConditionModerator.setConditionId("moderator");
+		this.preConditionModerator = preConditionModerator;
+	}
+
+	public Condition getPreConditionPoster() {
+		if (preConditionPoster == null) {
+			preConditionPoster = new Condition();
+		}
+		preConditionPoster.setConditionId("poster");
+		return preConditionPoster;
+	}
+
+	public void setPreConditionPoster(Condition preConditionPoster) {
+		if (preConditionPoster == null) {
+			preConditionPoster = getPreConditionPoster();
+		}
+		preConditionPoster.setConditionId("poster");
+		this.preConditionPoster = preConditionPoster;
+	}
+
+	public Condition getPreConditionReader() {
+		if (preConditionReader == null) {
+			preConditionReader = new Condition();
+		}
+		preConditionReader.setConditionId("reader");
+		return preConditionReader;
+	}
+
+	public void setPreConditionReader(Condition preConditionReader) {
+		if (preConditionReader == null) {
+			preConditionReader = getPreConditionReader();
+		}
+		preConditionReader.setConditionId("reader");
+		this.preConditionReader = preConditionReader;
 	}
 
 	@Override
@@ -116,118 +394,61 @@ public abstract class AbstractFeedCourseNode extends GenericCourseNode {
 		postExportCondition(preConditionModerator, envMapper, backwardsCompatible);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AbstractAccessableCourseNode#createNodeRunConstructionResult(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      CourseNodeSecurityCallback, java.lang.String)
-	 */
-	@Override
-	public abstract NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl control,
-			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd);
-
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#isConfigValid(org.olat.course.editor.CourseEditorEnv)
-	 */
-	@Override
-	public abstract StatusDescription[] isConfigValid(CourseEditorEnv cev);
-
-	/**
-	 * @see org.olat.course.nodes.CourseNode#getReferencedRepositoryEntry()
-	 */
-	@Override
-	public RepositoryEntry getReferencedRepositoryEntry() {
-		this.config = getModuleConfiguration();
-		String repoSoftkey = (String) config.get(CONFIG_KEY_REPOSITORY_SOFTKEY);
-		RepositoryManager rm = RepositoryManager.getInstance();
-		return rm.lookupRepositoryEntryBySoftkey(repoSoftkey, false);
-	}
-
-	@Override
-	public boolean needsReferenceToARepositoryEntry() {
-		return true;
-	}
-
-	/**
-	 * @return Returns the preConditionModerator.
-	 */
-	public Condition getPreConditionModerator() {
-		if (preConditionModerator == null) {
-			preConditionModerator = new Condition();
-		}
-		preConditionModerator.setConditionId("moderator");
-		return preConditionModerator;
-	}
-
-	/**
-	 * @param preConditionModerator The preConditionModerator to set.
-	 */
-	public void setPreConditionModerator(Condition preConditionModerator) {
-		if (preConditionModerator == null) {
-			preConditionModerator = getPreConditionModerator();
-		}
-		preConditionModerator.setConditionId("moderator");
-		this.preConditionModerator = preConditionModerator;
-	}
-
-	/**
-	 * @return Returns the preConditionPoster.
-	 */
-	public Condition getPreConditionPoster() {
-		if (preConditionPoster == null) {
-			preConditionPoster = new Condition();
-		}
-		preConditionPoster.setConditionId("poster");
-		return preConditionPoster;
-	}
-
-	/**
-	 * @param preConditionPoster The preConditionPoster to set.
-	 */
-	public void setPreConditionPoster(Condition preConditionPoster) {
-		if (preConditionPoster == null) {
-			preConditionPoster = getPreConditionPoster();
-		}
-		preConditionPoster.setConditionId("poster");
-		this.preConditionPoster = preConditionPoster;
-	}
-
-	/**
-	 * @return Returns the preConditionReader.
-	 */
-	public Condition getPreConditionReader() {
-		if (preConditionReader == null) {
-			preConditionReader = new Condition();
-		}
-		preConditionReader.setConditionId("reader");
-		return preConditionReader;
-	}
-
-	/**
-	 * @param preConditionReader The preConditionReader to set.
-	 */
-	public void setPreConditionReader(Condition preConditionReader) {
-		if (preConditionReader == null) {
-			preConditionReader = getPreConditionReader();
-		}
-		preConditionReader.setConditionId("reader");
-		this.preConditionReader = preConditionReader;
-	}
-
 	@Override
 	public void calcAccessAndVisibility(ConditionInterpreter ci, NodeEvaluation nodeEval) {
-		// evaluate the preconditions
-		boolean reader = (getPreConditionReader().getConditionExpression() == null ? true : ci.evaluateCondition(getPreConditionReader()));
-		nodeEval.putAccessStatus("reader", reader);
-		boolean poster = (getPreConditionPoster().getConditionExpression() == null ? true : ci.evaluateCondition(getPreConditionPoster()));
-		nodeEval.putAccessStatus("poster", poster);
-		boolean moderator = (getPreConditionModerator().getConditionExpression() == null ? true : ci
-				.evaluateCondition(getPreConditionModerator()));
-		nodeEval.putAccessStatus("moderator", moderator);
+		if (hasCustomPreConditions()) {
+			boolean reader = (getPreConditionReader().getConditionExpression() == null ? true : ci.evaluateCondition(getPreConditionReader()));
+			nodeEval.putAccessStatus("reader", reader);
+			boolean poster = (getPreConditionPoster().getConditionExpression() == null ? true : ci.evaluateCondition(getPreConditionPoster()));
+			nodeEval.putAccessStatus("poster", poster);
+			boolean moderator = (getPreConditionModerator().getConditionExpression() == null ? true : ci
+					.evaluateCondition(getPreConditionModerator()));
+			nodeEval.putAccessStatus("moderator", moderator);
 
-		boolean visible = (getPreConditionVisibility().getConditionExpression() == null ? true : ci
-				.evaluateCondition(getPreConditionVisibility()));
-		nodeEval.setVisible(visible);
+			boolean visible = (getPreConditionVisibility().getConditionExpression() == null ? true : ci
+					.evaluateCondition(getPreConditionVisibility()));
+			nodeEval.setVisible(visible);
+		} else {
+			super.calcAccessAndVisibility(ci, nodeEval);
+		}
+	}
+	
+	@Override
+	public List<ConditionExpression> getConditionExpressions() {
+		if (hasCustomPreConditions()) {
+			List<ConditionExpression> retVal;
+			List<ConditionExpression> parentsConditions = super.getConditionExpressions();
+			if (!parentsConditions.isEmpty()) {
+				retVal = new ArrayList<>(parentsConditions);
+			} else {
+				retVal = new ArrayList<>();
+			}
+			//
+			String coS = getPreConditionModerator().getConditionExpression();
+			if (coS != null && !coS.equals("")) {
+				// an active condition is defined
+				ConditionExpression ce = new ConditionExpression(getPreConditionModerator().getConditionId());
+				ce.setExpressionString(getPreConditionModerator().getConditionExpression());
+				retVal.add(ce);
+			}
+			coS = getPreConditionPoster().getConditionExpression();
+			if (coS != null && !coS.equals("")) {
+				// an active condition is defined
+				ConditionExpression ce = new ConditionExpression(getPreConditionPoster().getConditionId());
+				ce.setExpressionString(getPreConditionPoster().getConditionExpression());
+				retVal.add(ce);
+			}
+			coS = getPreConditionReader().getConditionExpression();
+			if (coS != null && !coS.equals("")) {
+				// an active condition is defined
+				ConditionExpression ce = new ConditionExpression(getPreConditionReader().getConditionId());
+				ce.setExpressionString(getPreConditionReader().getConditionExpression());
+				retVal.add(ce);
+			}
+			return retVal;
+		}
+
+		return super.getConditionExpressions();
 	}
 
 	@Override
@@ -242,15 +463,25 @@ public abstract class AbstractFeedCourseNode extends GenericCourseNode {
 		RepositoryEntryImportExport reie = new RepositoryEntryImportExport(re, fExportDirectory);
 		reie.exportDoExport();
 	}
+	
+	@Override
+	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences) {
+		if(withReferences) {
+			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(getResourceablTypeName());
+			importFeed(handler, importDirectory, owner, organisation, locale);
+		} else {
+			removeReference(getModuleConfiguration());
+		}
+	}
 
-	public void importFeed(RepositoryHandler handler, File importDirectory, Identity owner, Organisation organisation, Locale locale) {
+	private void importFeed(RepositoryHandler handler, File importDirectory, Identity owner, Organisation organisation, Locale locale) {
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
 		if (rie.anyExportedPropertiesAvailable()) {
 			RepositoryEntry re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
 				rie.getDescription(), false, organisation, locale, rie.importGetExportedFile(), null);
-			FeedNodeEditController.setReference(re, getModuleConfiguration());
+			setReference(getModuleConfiguration(), re);
 		} else {
-			FeedNodeEditController.removeReference(getModuleConfiguration());
+			removeReference(getModuleConfiguration());
 		}
 	}
 }

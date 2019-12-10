@@ -160,6 +160,8 @@ public class CourseXStreamAliases {
 		//deleted attributes
 		readXstream.omitField(DeliveryOptions.class, "noJavascript");
 		readXstream.omitField(org.hibernate.collection.internal.PersistentBag.class, "specjLazyLoad");
+		readXstream.omitField(org.olat.course.nodes.BlogCourseNode.class, "config");
+		readXstream.omitField(org.olat.course.nodes.PodcastCourseNode.class, "config");
 	}
 	
 	/**

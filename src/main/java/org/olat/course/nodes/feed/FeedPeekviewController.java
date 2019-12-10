@@ -120,11 +120,6 @@ public class FeedPeekviewController extends BasicController implements Controlle
 		putInitialPanel(peekviewVC);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source instanceof Link) {
@@ -138,9 +133,6 @@ public class FeedPeekviewController extends BasicController implements Controlle
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
 	// nothing to dispose
