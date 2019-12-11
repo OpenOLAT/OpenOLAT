@@ -9,6 +9,7 @@
 * Licensed under the MIT license
 */
 ;(function($) {
+	"use strict";
 	$.fn.rwdImageMaps = function(options) {
 		var settings = $.extend({
 			fillColor: 'bbbbbb',
@@ -20,6 +21,7 @@
 		var $img = this;
 		var loaded = null;
 		var windowWidth = 0;
+		var hotSpotContainerWidth = 0;
 
 		var rwdImageMap = function() {
 			$img.each(function() {
@@ -32,7 +34,6 @@
 						var attrW = 'width',
 							attrH = 'height';
 						
-						var $this = $(this);
 						if (!$that.data(attrW)) // size are backuped
 							$that.data(attrW, $that.attr(attrW));
 						if (!$that.data(attrH)) // size are backuped
@@ -64,7 +65,13 @@
 							th = ((containerWidth * ratio)|0);
 							$that.width(tw);
 							$that.height(th);
-						}
+						} else if(tw == 0 && th == 0) {
+							// image was hidden
+							tw = w;
+							th = h;
+							$that.width(tw);
+							$that.height(th);
+						} 
 					
 						var wPercent = tw/100,
 							hPercent = th/100,
@@ -104,19 +111,23 @@
 				
 				var that = this,
 					$that = $(that);
-				
+				var containerWidth = $that.closest(".o_oo_hotcontainer").width();
+
 				if(loaded) {
-					if(windowWidth != window.innerWidth) {
+					if(windowWidth != window.innerWidth || hotSpotContainerWidth != containerWidth) {
 						recalculateMap(that, $that);
 						windowWidth = window.innerWidth;
+						hotSpotContainerWidth = containerWidth
 					}
 				} else {
 					windowWidth = window.innerWidth;
+					hotSpotContainerWidth = containerWidth;
 					recalculateMap(that, $that);
 				}
 			});
 		};
 		$(window).resize(rwdImageMap).trigger('resize');
+		$($img).closest('.o_qti21_collapsable_solution').on('shown.bs.collapse', rwdImageMap);
 
 		return this;
 	};
