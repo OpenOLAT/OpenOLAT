@@ -572,10 +572,16 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		}
 
 		if (incrementUserAttempts && attempts!=null) {
-			ThreadLocalUserActivityLogger.log(AssessmentLoggingAction.ASSESSMENT_ATTEMPTS_UPDATED, 
-					getClass(), 
-					LoggingResourceable.wrap(identity), 
-					LoggingResourceable.wrapNonOlatResource(StringResourceableType.qtiAttempts, "", String.valueOf(attempts)));	
+			if(identity != null) {
+				ThreadLocalUserActivityLogger.log(AssessmentLoggingAction.ASSESSMENT_ATTEMPTS_UPDATED, 
+						getClass(), 
+						LoggingResourceable.wrap(identity), 
+						LoggingResourceable.wrapNonOlatResource(StringResourceableType.qtiAttempts, "", String.valueOf(attempts)));	
+			} else {
+				ThreadLocalUserActivityLogger.log(AssessmentLoggingAction.ASSESSMENT_ATTEMPTS_UPDATED, 
+						getClass(), 
+						LoggingResourceable.wrapNonOlatResource(StringResourceableType.qtiAttempts, "", String.valueOf(attempts)));	
+			}
 		}
 		
 		// write only when enabled for this course

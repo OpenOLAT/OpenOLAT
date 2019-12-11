@@ -106,6 +106,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private boolean numOfRowsEnabled = true;
 	private boolean showAllRowsEnabled = false;
 	private boolean extendedSearchExpanded = false;
+	private boolean hasAlwaysVisibleColumns = false;
 	private int columnLabelForDragAndDrop;
 	private String emptyTableMessageKey = null;
 	
@@ -165,8 +166,12 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			if(col.isDefaultVisible()) {
 				enabledColumnIndex.add(Integer.valueOf(col.getColumnIndex()));
 			}
+			
+			if(hasAlwaysVisibleColumns || col.isAlwaysVisible()) {
+				hasAlwaysVisibleColumns = true;
+			}
 		}
-
+		
 		String dispatchId = component.getDispatchID();
 		customButton = new FormLinkImpl(dispatchId + "_customButton", "rCustomButton", "", Link.BUTTON + Link.NONTRANSLATED);
 		customButton.setTranslator(translator);
@@ -1385,12 +1390,12 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 	
 	protected void setCustomizedColumns(UserRequest ureq, Choice visibleColsChoice) {
-		List<Integer> visibleCols = visibleColsChoice.getSelectedRows();
-		if(visibleCols.size() > 1) {
+		List<Integer> chosenCols = visibleColsChoice.getSelectedRows();
+		if(chosenCols.size() > 0 || hasAlwaysVisibleColumns) {
 			VisibleFlexiColumnsModel model = (VisibleFlexiColumnsModel)visibleColsChoice.getModel();
 			for(int i=model.getRowCount(); i-->0; ) {
 				FlexiColumnModel col = model.getObject(i);
-				if(visibleCols.contains(Integer.valueOf(i))) {
+				if(chosenCols.contains(Integer.valueOf(i))) {
 					enabledColumnIndex.add(col.getColumnIndex());
 				} else {
 					enabledColumnIndex.remove(col.getColumnIndex());

@@ -178,7 +178,7 @@
 	            <prop key="hibernate.hikari.minimumIdle">4</prop>
 	            <prop key="hibernate.hikari.idleTimeout">1800000</prop>
 	            <prop key="hibernate.hikari.autoCommit">false</prop>
-	            <prop key="hibernate.hikari.leakDetectionThreshold">120000</prop>
+		    <prop key="hibernate.hikari.leakDetectionThreshold">${db.hibernate.hikari.leakDetectionThreshold:120000}</prop>
 	            <prop key="hibernate.hikari.transactionIsolation">TRANSACTION_READ_COMMITTED</prop>
 	            <prop key="hibernate.hikari.registerMbeans">true</prop>
 	        </props>
