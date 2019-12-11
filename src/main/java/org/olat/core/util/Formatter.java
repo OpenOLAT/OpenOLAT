@@ -30,6 +30,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
@@ -828,6 +829,18 @@ public class Formatter {
     BigDecimal bd = new BigDecimal(value);
     bd = bd.setScale(decimalPlace,BigDecimal.ROUND_HALF_UP); 
 		return bd.toString();
+	}
+	
+	/**
+	 * Format a number to a better readable format
+	 * @param value
+	 */
+	public static String makeReadable(Long value) {
+		DecimalFormat decimalFormat = new DecimalFormat("#.##");
+		decimalFormat.setGroupingUsed(true);
+        decimalFormat.setGroupingSize(3);
+        
+        return decimalFormat.format(value);
 	}
 	
 }

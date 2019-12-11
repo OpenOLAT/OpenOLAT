@@ -41,6 +41,15 @@ public class CSSHelper {
 	public static final String CSS_CLASS_WARN = "o_icon_warn";
 	public static final String CSS_CLASS_INFO = "o_icon_info";
 	public static final String CSS_CLASS_NEW = "o_icon_new";
+	// Various icons
+	public static final String CSS_CLASS_CIRCLE_COLOR = "o_icon_circle_color";
+	public static final String CSS_CLASS_TRASHED = "o_icon_deleted";
+	public static final String CSS_CLASS_VERSION = "o_icon_version";
+	public static final String CSS_CLASS_LOCKED = "o_icon_locked";
+	public static final String CSS_CLASS_REVISION = "o_icon_version";
+	public static final String CSS_CLASS_THUMBNAIL = "o_icon_layout";
+	public static final String CSS_CLASS_GLOBE = "o_icon_origin";
+	
 
 	public static final String CSS_CLASS_DISABLED = "o_disabled";
 
@@ -52,12 +61,21 @@ public class CSSHelper {
 	 */
 	public static String createFiletypeIconCssClassFor(String fileName) {
 		// fallback to standard file icon in case the next class does not exist
-		 StringBuilder cssClass = new StringBuilder(CSS_CLASS_FILETYPE_FILE);
+		StringBuilder cssClass = new StringBuilder(CSS_CLASS_FILETYPE_FILE);
 		int typePos = fileName.lastIndexOf('.');
 		if (typePos > 0) {
 			cssClass.append(' ').append(CSS_CLASS_FILETYPE_FILE_PREFIX).append(fileName.substring(typePos + 1).toLowerCase());
 		}
 		return cssClass.toString();
 	}
-
+	
+	public static String getIconCssClassFor(String icon) {
+		return "o_icon o_icon-fw " + icon;
+	}
+	
+	public static String getIcon(String icon) {
+		return "<i class='" + getIconCssClassFor(icon) + "'></i> ";
+	}
 }
+
+
