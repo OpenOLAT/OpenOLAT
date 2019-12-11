@@ -8,6 +8,7 @@ import org.olat.NewControllerFactory;
 import org.olat.admin.sysinfo.gui.LargeFilesLockedCellRenderer;
 import org.olat.admin.sysinfo.gui.LargeFilesNameCellRenderer;
 import org.olat.admin.sysinfo.gui.LargeFilesRevisionCellRenderer;
+import org.olat.admin.sysinfo.gui.LargeFilesSendMailCellRenderer;
 import org.olat.admin.sysinfo.gui.LargeFilesSizeCellRenderer;
 import org.olat.admin.sysinfo.gui.LargeFilesTrashedCellRenderer;
 import org.olat.admin.sysinfo.model.LargeFilesTableContentRow;
@@ -37,14 +38,15 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.modules.co.ContactFormController;
-import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class LargeFilesController extends FormBasicController implements ExtendedFlexiTableSearchController {
@@ -71,6 +73,8 @@ public class LargeFilesController extends FormBasicController implements Extende
 	private IntegerElement maxResultEl;
 	private FormLink searchButton;
 	private FormLink resetButton;
+	
+	private List<LargeFilesTableContentRow> rows;
 
 	private boolean enabled = true;
 	
@@ -88,8 +92,8 @@ public class LargeFilesController extends FormBasicController implements Extende
 	}
 
 	public void updateModel() {
-		List<LargeFilesTableContentRow> rows = new ArrayList<>();
-
+		rows = new ArrayList<>();
+		
 		if(revisionSelection.getSelectedKey() != REVISION_KEYS[0]) {
 			List<VFSMetadata> files = vfsRepositoryService.getLargestFiles(maxResultEl.getIntValue(), 
 					createdAtNewerChooser.getDate(), createdAtOlderChooser.getDate(),
@@ -213,7 +217,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.uuid));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, true, LargeFilesTableColumns.name, new LargeFilesNameCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, true, LargeFilesTableColumns.size, new LargeFilesSizeCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, true, LargeFilesTableColumns.path));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, LargeFilesTableColumns.path));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.age));
 
 		column = new DefaultFlexiColumnModel(false, LargeFilesTableColumns.trashed, new LargeFilesTrashedCellRenderer());
@@ -229,6 +233,11 @@ public class LargeFilesController extends FormBasicController implements Extende
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.fileCategory));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.fileType));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.downloadCount));
+		
+		DefaultFlexiColumnModel sendMail = new DefaultFlexiColumnModel(false, LargeFilesTableColumns.sendMail, "sendMail", new LargeFilesSendMailCellRenderer());
+		sendMail.setIconHeader(CSSHelper.getIconCssClassFor(CSSHelper.CSS_CLASS_MAIL));
+		columnsModel.addFlexiColumnModel(sendMail);
+		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.author, "selectAuthor"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.license));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.language));
@@ -279,32 +288,62 @@ public class LargeFilesController extends FormBasicController implements Extende
 					if (contentRow.getAuthor() != null) {
 						openUser(ureq, contentRow.getAuthor().getKey());
 					}
-				} if("selectLockedBy".equals(cmd)) {
+				} else if("selectLockedBy".equals(cmd)) {
 					if (contentRow.getLockedBy() != null) {
 						openUser(ureq, contentRow.getLockedBy().getKey());
 					}
-				} 
+				} else if("sendMail".equals(cmd)) {
+					if (contentRow.getAuthor() != null) {
+						contactUser(ureq, contentRow.getAuthor());
+					}
+				}
 			}
 		} else if(source == searchButton) {
 			updateModel();
 		} else if(source == resetButton) {
-//			resetForm();
-			contactUser(ureq);
+			resetForm();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 	
-	private void contactUser(UserRequest ureq) {
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == cmc) {
+			cleanUp();
+		} else if (source == contactCtrl) {
+			cmc.deactivate();
+			cleanUp();
+		}
+	}
+	
+	private void cleanUp() {
 		removeAsListenerAndDispose(cmc);
-		Identity testUser = UserManager.getInstance().findUniqueIdentityByEmail("admin@olat-newinstallation.org");
+		removeAsListenerAndDispose(contactCtrl);
+		cmc = null;
+		contactCtrl = null;
+	}
+	
+	private void contactUser(UserRequest ureq, Identity user) {
+		removeAsListenerAndDispose(cmc);
 
 		ContactMessage cmsg = new ContactMessage(getIdentity());
-		String fullName = "Test Test TEst";
+		String fullName = user.getUser().getFirstName() + " " + user.getUser().getLastName();
 		ContactList contactList = new ContactList(fullName);
-		contactList.add(testUser);
+		contactList.add(user);
 		cmsg.addEmailTo(contactList);
-		cmsg.setSubject("Large FIles");
-		cmsg.setBodyText("youre files are large");
+		cmsg.setSubject("Too large files in your personal folder");
+		
+		String bodyStart = translate("largefiles.mail.start", new String[] {user.getUser().getFirstName() + user.getUser().getLastName()});
+		String bodyFiles = "<t>";
+		String bodyEnd = translate("largefiles.mail.end");
+		
+		for(LargeFilesTableContentRow row:rows) {
+			if (row.getAuthor() == user) {
+				bodyFiles = bodyFiles + "<li><b>" + Formatter.formatBytes(row.getSize()) + "</b>  -  " +row.getName() + "</li>";
+			}
+		}
+		
+		cmsg.setBodyText(bodyStart + bodyFiles + bodyEnd);
 		contactCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg, null);
 		listenTo(contactCtrl);
 		cmc = new CloseableModalController(getWindowControl(), "close", contactCtrl.getInitialComponent());

@@ -78,7 +78,7 @@ public class FilesAndFoldersController extends BasicController{
 		fileStatsLink = LinkFactory.createLink("filesfolders.menu.largefiles", mainVC, this);
 		segmentView.addSegment(fileStatsLink, false);
 		
-		trashLink = LinkFactory.createLink("filesfolders.menu.trash", mainVC, this);
+		trashLink = LinkFactory.createLink("filesfolders.menu.deletedFiles", mainVC, this);
 		segmentView.addSegment(trashLink, false);
 		
 		

@@ -93,8 +93,9 @@ public class VersionsDeletedFileController extends FormBasicController {
 		tableEl.setSortSettings(sortOptions);
 		tableEl.setAndLoadPersistedPreferences(ureq, "deleted-rev-file-list");
 		
-		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		deleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
+		deleteButton.setCustomEnabledLinkCSS("btn btn-danger");
+
 	}
 
 	@Override

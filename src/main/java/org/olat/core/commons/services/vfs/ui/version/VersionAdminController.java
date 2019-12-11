@@ -43,7 +43,6 @@ import org.olat.core.util.Util;
 public class VersionAdminController extends BasicController {
 	
 	private final VersionSettingsForm settingsForm;
-	private final VersionMaintenanceForm maintenanceForm;
 	
 	private VelocityContainer mainVC;
 
@@ -55,12 +54,8 @@ public class VersionAdminController extends BasicController {
 		settingsForm = new VersionSettingsForm(ureq, getWindowControl());
 		listenTo(settingsForm);
 		
-		maintenanceForm = new VersionMaintenanceForm(ureq, this.getWindowControl());
-		listenTo(maintenanceForm);
-		
 		mainVC = createVelocityContainer("admin");
 		mainVC.put("settings", settingsForm.getInitialComponent());
-		mainVC.put("maintenance", maintenanceForm.getInitialComponent());
 		
 		putInitialPanel(mainVC);
 	}

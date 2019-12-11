@@ -41,7 +41,7 @@ implements SortableFlexiTableDataModel<LargeFilesTableContentRow> {
 			case key: return notNull(row.getKey());
 			case name: return notNull(row.getName());
 			case size: return notNull(row.getSize());
-			case path: return notNull(row.getPath());
+			case path: return notNull("LinkFactory not ready yet");
 			case author: return notNull(row.getAuthor() != null ? row.getAuthor().getUser().getFirstName() + " " + row.getAuthor().getUser().getLastName() : null);
 			case revision: return notNull(row.isRevision());
 			case fileCategory: return notNull(row.getFileCategory());
@@ -64,7 +64,8 @@ implements SortableFlexiTableDataModel<LargeFilesTableContentRow> {
 			case lockedBy: return notNull(row.getLockedBy() != null ? row.getLockedBy().getUser().getFirstName() + " " + row.getLockedBy().getUser().getLastName() : null);
 			case lockedAt: return notNull(row.getLockedAt());
 			case revisionComment: return notNull(row.getRevisionComment());
-			case revisionNr: return notNull(row.getRevisionNr());	
+			case revisionNr: return notNull(row.getRevisionNr());
+			case sendMail: return notNull(row.getAuthor() != null ? true : false);
 			
 			default: return "ERROR";
 		}
@@ -106,7 +107,8 @@ implements SortableFlexiTableDataModel<LargeFilesTableContentRow> {
 		lockedBy("largefiles.lockedby"),
 		lockedAt("largefiles.lockedat"),
 		revisionNr("largefiles.revisionnr"),
-		revisionComment("largefiles.revisioncomment");
+		revisionComment("largefiles.revisioncomment"),
+		sendMail("largefiles.sendmail");
 		
 		private final String i18nHeaderKey;
 		

@@ -49,6 +49,7 @@ public class CSSHelper {
 	public static final String CSS_CLASS_REVISION = "o_icon_version";
 	public static final String CSS_CLASS_THUMBNAIL = "o_icon_layout";
 	public static final String CSS_CLASS_GLOBE = "o_icon_origin";
+	public static final String CSS_CLASS_MAIL = "o_icon_mail";
 	
 
 	public static final String CSS_CLASS_DISABLED = "o_disabled";
