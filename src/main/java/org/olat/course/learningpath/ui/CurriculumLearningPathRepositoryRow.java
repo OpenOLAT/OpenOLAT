@@ -21,6 +21,7 @@ package org.olat.course.learningpath.ui;
 
 import java.math.BigDecimal;
 
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
 
@@ -36,6 +37,8 @@ public class CurriculumLearningPathRepositoryRow {
 	private final Double completion;
 	private final Boolean passed;
 	private final BigDecimal score;
+	
+	private FormLink learningPathLink;
 
 	public CurriculumLearningPathRepositoryRow(RepositoryEntry repositoryEntry, AssessmentEntry assessmentEntry) {
 		this.repositoryEntry = repositoryEntry;
@@ -58,6 +61,14 @@ public class CurriculumLearningPathRepositoryRow {
 
 	public BigDecimal getScore() {
 		return score;
+	}
+
+	public FormLink getLearningPathLink() {
+		return learningPathLink;
+	}
+
+	public void setLearningPathLink(FormLink learningPathLink) {
+		this.learningPathLink = learningPathLink;
 	}
 
 }

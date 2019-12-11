@@ -25,25 +25,31 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.assessment.bulk.PassedCellRenderer;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.learningpath.ui.CurriculumLearningPathRepositoryDataModel.LearningPathRepositoryCols;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -66,7 +72,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CurriculumLearningPathRepositoryListController extends FormBasicController {
 	
 	private static final String ORES_TYPE_IDENTITY = "Identity";
-	private static final String CMD_SELECT = "select";
+	private static final String CMD_OPEN_COURSE = "open.course";
+	private static final String CMD_LEARNING_PATH = "learningPath";
 	
 	private FlexiTableElement tableEl;
 	private CurriculumLearningPathRepositoryDataModel dataModel;
@@ -96,11 +103,15 @@ public class CurriculumLearningPathRepositoryListController extends FormBasicCon
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathRepositoryCols.reponame, CMD_SELECT));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathRepositoryCols.reponame, CMD_OPEN_COURSE));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathRepositoryCols.completion,
 				new LearningProgressCompletionCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathRepositoryCols.passed, new PassedCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathRepositoryCols.score, new ScoreCellRenderer()));
+		
+		DefaultFlexiColumnModel learningPathColumn = new DefaultFlexiColumnModel(LearningPathRepositoryCols.learningPath);
+		learningPathColumn.setExportable(false);
+		columnsModel.addFlexiColumnModel(learningPathColumn);
 		
 		dataModel = new CurriculumLearningPathRepositoryDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
@@ -127,9 +138,21 @@ public class CurriculumLearningPathRepositoryListController extends FormBasicCon
 			AssessmentEntry assessmentEntry = identityKeyToCompletion.get(repositoryEntry.getKey());
 			CurriculumLearningPathRepositoryRow row = new CurriculumLearningPathRepositoryRow(repositoryEntry, assessmentEntry);
 			rows.add(row);
+			forgeLinks(row);
 		}
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
+	}
+	
+	public void forgeLinks(CurriculumLearningPathRepositoryRow row) {
+		RepositoryEntry entry = row.getRepositoryEntry();
+		ICourse course = CourseFactory.loadCourse(entry);
+		if (course != null && LearningPathNodeAccessProvider.TYPE.equals(course.getCourseConfig().getNodeAccessType().getType())) {
+			FormLink learningPathLink = uifactory.addFormLink("lp_" + CodeHelper.getRAMUniqueID(), CMD_LEARNING_PATH, "", null, null, Link.NONTRANSLATED);
+			learningPathLink.setIconLeftCSS("o_icon o_icon-lg o_icon_learning_path");
+			learningPathLink.setUserObject(row);
+			row.setLearningPathLink(learningPathLink);
+		}
 	}
 	
 	@Override
@@ -139,16 +162,30 @@ public class CurriculumLearningPathRepositoryListController extends FormBasicCon
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
 				CurriculumLearningPathRepositoryRow row = dataModel.getObject(se.getIndex());
-				if (CMD_SELECT.equals(cmd)) {
-					doSelect(ureq, row);
+				if (CMD_OPEN_COURSE.equals(cmd)) {
+					doOpenCourse(ureq, row);
 				}
 			}
+		} else if (source instanceof FormLink) {
+			FormLink link = (FormLink)source;
+			String cmd = link.getCmd();
+			if (CMD_LEARNING_PATH.equals(cmd)) {
+				CurriculumLearningPathRepositoryRow row = (CurriculumLearningPathRepositoryRow)link.getUserObject();
+				doOpenLearningPath(ureq, row);
+			}
 		}
-		
 		super.formInnerEvent(ureq, source, event);
 	}
 	
-	private void doSelect(UserRequest ureq, CurriculumLearningPathRepositoryRow row) {
+	private void doOpenCourse(UserRequest ureq, CurriculumLearningPathRepositoryRow row) {
+		RepositoryEntry entry = row.getRepositoryEntry();
+		if (entry == null) return;
+		
+		String businessPath = "[RepositoryEntry:" + entry.getKey() + "]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+	}
+
+	private void doOpenLearningPath(UserRequest ureq, CurriculumLearningPathRepositoryRow row) {
 		removeAsListenerAndDispose(currentIdentityCtrl);
 		
 		OLATResourceable identityOres = OresHelper.createOLATResourceableInstance(ORES_TYPE_IDENTITY, participant.getKey());

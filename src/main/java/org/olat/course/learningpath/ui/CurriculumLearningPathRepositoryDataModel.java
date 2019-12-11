@@ -59,6 +59,7 @@ implements SortableFlexiTableDataModel<CurriculumLearningPathRepositoryRow> {
 				case completion: return row.getCompletion();
 				case passed: return row.getPassed();
 				case score: return row.getScore();
+				case learningPath: return row.getLearningPathLink();
 				default: return "ERROR";
 			}
 		}
@@ -80,7 +81,8 @@ implements SortableFlexiTableDataModel<CurriculumLearningPathRepositoryRow> {
 		reponame("table.header.reponame"),
 		completion("table.header.completion"),
 		passed("table.header.passed"),
-		score("table.header.score");
+		score("table.header.score"),
+		learningPath("table.header.learning.path.icon");
 		
 		private final String i18nKey;
 		
