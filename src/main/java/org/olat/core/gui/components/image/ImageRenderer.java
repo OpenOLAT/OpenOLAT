@@ -96,14 +96,12 @@ public class ImageRenderer extends DefaultComponentRenderer {
 		}
 		sb.append("' class='o_video_wrapper'></div>")
 		  .append("<script>")
-		  .append("/* <![CDATA[ */")
 		  .append("BPlayer.insertPlayer('").append(Settings.createServerURI()).append(mapperUrl);
 		sb.append("','").append(imgId).append("',").append(width).append(",").append(height).append(",'video'");
 		if (poster != null) {
 			sb.append(",null,null,null,null,null,null,'").append(poster).append("'");
 		}
 		sb.append(");")
-		  .append("/* ]]> */")
 		  .append("</script>")
 		  .append("</div>"); // ENDcomponent
 	}
@@ -140,10 +138,16 @@ public class ImageRenderer extends DefaultComponentRenderer {
 
 		String mapperUrl = ic.getMapperUrl();
 		String name = ic.getMedia().getName();
-		if(name.lastIndexOf('.') > 0) {
-			mapperUrl += "/" + name + "?" + System.nanoTime();
+		if(ic.isPreventBrowserCaching()) {
+			if(name.lastIndexOf('.') > 0) {
+				mapperUrl += "/" + name + "?" + System.nanoTime();
+			} else {
+				mapperUrl += "/?" + System.nanoTime();
+			}
+		} else if(name.lastIndexOf('.') > 0) {
+			mapperUrl += "/" + name;
 		} else {
-			mapperUrl += "/?" + System.nanoTime();
+			mapperUrl += "/";
 		}
 		sb.append(" src='").append(mapperUrl).append("' alt=\"");
 		if(StringHelper.containsNonWhitespace(ic.getAlt())) {
@@ -160,7 +164,6 @@ public class ImageRenderer extends DefaultComponentRenderer {
 			  .append("<input id='").append(imgId).append("_h' name='").append(imgId).append("_h' type='hidden' value='' />");
 			
 			sb.append("<script>\n")
-			  .append("/* <![CDATA[ */ \n")
 			  .append("jQuery(function() {\n")
 			  .append("  jQuery('#").append(imgId).append("').cropper({\n")
 			  .append("    aspectRatio:1,\n")
@@ -172,7 +175,6 @@ public class ImageRenderer extends DefaultComponentRenderer {
 			  .append("    }")
 			  .append("  });")
 			  .append("});")
-		      .append("/* ]]> */\n")
 		      .append("</script>");
 		}
 		sb.append("</div>", divWrapper); // ENDcomponent

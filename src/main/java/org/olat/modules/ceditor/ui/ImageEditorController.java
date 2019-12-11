@@ -326,11 +326,13 @@ public class ImageEditorController extends FormBasicController implements PageEl
 		String settingsXml = ContentEditorXStream.toXml(settings);
 		imageElement.setLayoutOptions(settingsXml);
 		imageElement = store.savePageElement(imageElement);
+		settings = imageElement.getImageSettings();
 		
-		removeAsListenerAndDispose(imagePreview);
-		imagePreview = new ImageRunController(ureq, getWindowControl(), dataStorage, imageElement, new StandardMediaRenderingHints());
-		listenTo(imagePreview);
-		flc.getFormItemComponent().put("imagePreview", imagePreview.getInitialComponent());
+		DublinCoreMetadata meta = null;
+		if(imageElement.getStoredData() instanceof DublinCoreMetadata) {
+			meta = (DublinCoreMetadata)imageElement.getStoredData();
+		}
+		imagePreview.updateImageSettings(settings, meta);
 		
 		fireEvent(ureq, new ChangePartEvent(imageElement));
 	}

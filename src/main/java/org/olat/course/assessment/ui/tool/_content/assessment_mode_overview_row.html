@@ -9,7 +9,7 @@
 		#end
 	</ul>
 	#end
-	#if($row.endInMilliSeconds > 300000)
+	#if($r.isNotNull($row) && ${row.getEndInMilliSeconds()} > 300000)
 	<script>
 	jQuery(function() {
 		setTimeout(function() {
