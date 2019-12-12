@@ -54,6 +54,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 	public static final String[] TRASHED_KEYS = new String[]{ "trashed", "notTrashed", "both" };
 	public static final String[] REVISION_KEYS = new String[]{ "revisions", "files", "both" };
 	public static final String[] LOCKED_KEYS = new String[]{ "locked", "notlocked", "both" };
+	
 
 	private FlexiTableElement largeFilesTableElement;
 	private LargeFilesTableModel largeFilesTableModel;
@@ -152,11 +153,11 @@ public class LargeFilesController extends FormBasicController implements Extende
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer leftContainer = FormLayoutContainer.createDefaultFormLayout("filter_left", getTranslator());
+		FormLayoutContainer leftContainer = FormLayoutContainer.createDefaultFormLayout_6_6("filter_left", getTranslator());
 		leftContainer.setRootForm(mainForm);
 		formLayout.add(leftContainer);
 
-		FormLayoutContainer rightContainer = FormLayoutContainer.createDefaultFormLayout("filter_right", getTranslator());
+		FormLayoutContainer rightContainer = FormLayoutContainer.createDefaultFormLayout_6_6("filter_right", getTranslator());
 		leftContainer.setRootForm(mainForm);
 		formLayout.add(rightContainer);
 
@@ -333,15 +334,18 @@ public class LargeFilesController extends FormBasicController implements Extende
 		cmsg.addEmailTo(contactList);
 		cmsg.setSubject("Too large files in your personal folder");
 		
+		StringBuilder sb = new StringBuilder();
+		
 		String bodyStart = translate("largefiles.mail.start", new String[] {user.getUser().getFirstName() + user.getUser().getLastName()});
-		String bodyFiles = "<t>";
+		String bodyFiles = "<ul>";
 		String bodyEnd = translate("largefiles.mail.end");
 		
 		for(LargeFilesTableContentRow row:rows) {
 			if (row.getAuthor() == user) {
-				bodyFiles = bodyFiles + "<li><b>" + Formatter.formatBytes(row.getSize()) + "</b>  -  " +row.getName() + "</li>";
+				bodyFiles += "<li><b>" + Formatter.formatBytes(row.getSize()) + "</b>  -  " +row.getName() + "</li>";
 			}
 		}
+		bodyFiles += "</ul>";
 		
 		cmsg.setBodyText(bodyStart + bodyFiles + bodyEnd);
 		contactCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg, null);

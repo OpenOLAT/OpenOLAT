@@ -47,6 +47,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
@@ -113,9 +114,8 @@ public class VFSTrashController extends FormBasicController implements ProgressD
 		
 		cleanUpLink = uifactory.addFormLink("version.clean.up", buttonsLayout, Link.BUTTON);
 		pruneLink = uifactory.addFormLink("version.prune.history", buttonsLayout, Link.BUTTON);
-		cleanUpLink.setCustomEnabledLinkCSS("btn btn-danger");
-		pruneLink.setCustomEnabledLinkCSS("btn btn-warning");
-
+		cleanUpLink.setIconLeftCSS(CSSHelper.getIconCssClassFor(CSSHelper.CSS_CLASS_TRASHED));
+		pruneLink.setIconLeftCSS(CSSHelper.getIconCssClassFor(CSSHelper.CSS_CLASS_REVISION));
 
 		
 		// Lower part
