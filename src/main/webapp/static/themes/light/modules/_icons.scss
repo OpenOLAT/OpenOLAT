@@ -289,6 +289,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_show_more:before { content: $fa-var-toggle-down; }
 .o_icon_show_less:before { content: $fa-var-toggle-up; }
 .o_icon_show_send:before { content: $fa-var-paper-plane-o; }
+.o_icon_shuffle:before { content: $fa-var-random;}
 .o_icon_sign_out:before { content: $fa-var-sign-out; }
 .o_icon_slide_down:before { content: $fa-var-chevron-down; }
 .o_icon_slide_up:before { content: $fa-var-chevron-up; }
