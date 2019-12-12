@@ -391,7 +391,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			sb.append(" ident.key in (select aentry.identity.key from assessmententry aentry")
 			  .append("  where aentry.repositoryEntry.key=:repoEntryKey")
 			  .append("  and not exists (select membership.key from repoentrytogroup as rel, bgroupmember as membership")
-	          .append("    where rel.entry.key=aentry.repositoryEntry.key and rel.group=membership.group and membership.role ").in(GroupRoles.participant, GroupRoles.coach, GroupRoles.owner)
+	          .append("    where rel.entry.key=:repoEntryKey and rel.group=membership.group and membership.role ").in(GroupRoles.participant, GroupRoles.coach, GroupRoles.owner)
 	          .append("    and membership.identity.key=aentry.identity.key)")
 	          .append(" )");
 
