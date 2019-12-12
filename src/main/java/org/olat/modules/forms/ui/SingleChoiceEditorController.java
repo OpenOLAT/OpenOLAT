@@ -134,6 +134,7 @@ public class SingleChoiceEditorController extends FormBasicController implements
 		loadModel();
 		
 		addChoiceEl = uifactory.addFormLink("choice.add", settingsCont, Link.BUTTON);
+		addChoiceEl.setElementCssClass("o_sel_add_single_choice");
 		addChoiceEl.setIconLeftCSS("o_icon o_icon_add");
 		addChoiceEl.setVisible(!restrictedEdit);
 	}
@@ -156,7 +157,7 @@ public class SingleChoiceEditorController extends FormBasicController implements
 			}
 			
 			// value
-			TextElement valueEl = uifactory.addTextElement("o_value_" + CodeHelper.getRAMUniqueID(), 255, null, flc);
+			TextElement valueEl = uifactory.addTextElement("o_value_" + CodeHelper.getRAMUniqueID(), null, 255, null, flc);
 			valueEl.setValue(choice.getValue());
 			valueEl.addActionListener(FormEvent.ONCHANGE);
 			

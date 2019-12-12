@@ -135,6 +135,7 @@ public class SurveyConfigController extends FormBasicController {
 		buttonsCont.setRootForm(mainForm);
 		formLayout.add(buttonsCont);
 		chooseLink = uifactory.addFormLink("edit.choose", buttonsCont, "btn btn-default o_xsmall");
+		chooseLink.setElementCssClass("o_sel_survey_choose_repofile");
 		replaceLink = uifactory.addFormLink("edit.replace", buttonsCont, "btn btn-default o_xsmall");
 		editLink = uifactory.addFormLink("edit.edit", buttonsCont, "btn btn-default o_xsmall");
 		
