@@ -13,16 +13,14 @@
 	#if($print || $pdf)
 	<div class="o_button_group o_button_group_right">
 		<script>
-		/* <![CDATA[ */ 
-			function print() {
-				try {
-					var ww = window.open("$r.commandURI("print")", "$winid", "height=800,left=100,top=100,width=800,toolbar=no,titlebar=0,status=0,menubar=yes,location=no,scrollbars=1");
-					ww.focus();
-				} catch(e) {
-					if(window.console) console.log('Error when trying to dock div id::$r.getId("undck")');
-				}
+		function print() {
+			try {
+				var ww = window.open("$r.commandURI("print")", "$winid", "height=800,left=100,top=100,width=800,toolbar=no,titlebar=0,status=0,menubar=yes,location=no,scrollbars=1");
+				ww.focus();
+			} catch(e) {
+				if(window.console) console.log('Error when trying to dock div id::$r.getId("undck")');
 			}
-		/* ]]> */
+		}
 		</script>
 		#if($print && $pdf) <div class='btn-group'> #end
 		#if($print)
@@ -499,10 +497,9 @@
 				<div id="o_c$itemResult.interactionResults.solutionFormItem.component.dispatchID" class="o_qti21_solution">
 					<h4 onclick="jQuery('#collapse_${itemResult.interactionResults.solutionFormItem.name}').collapse('toggle')">
 						#if($toggleSolution)<i id="collapse_${itemResult.interactionResults.solutionFormItem.name}_toggler" class="o_icon o_icon-fw o_icon_open_togglebox"> </i>#end $r.translate("solution")</h4>
-					<div id="collapse_${itemResult.interactionResults.solutionFormItem.name}" class="#if($toggleSolution) collapse #end">$r.render($itemResult.interactionResults.solutionFormItem.name)</div>
+					<div id="collapse_${itemResult.interactionResults.solutionFormItem.name}" class="#if($toggleSolution) collapse #end o_qti21_collapsable_solution">$r.render($itemResult.interactionResults.solutionFormItem.name)</div>
 				</div>
 				<script>
-				/* <![CDATA[ */
 				jQuery(function() {
 					jQuery('#collapse_${itemResult.interactionResults.solutionFormItem.name}').on('hide.bs.collapse', function () {
 						jQuery('#collapse_${itemResult.interactionResults.solutionFormItem.name}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
@@ -525,7 +522,6 @@
 						});
 					})
 				});
-				/* ]]> */
 				</script>
 			#end
 		#end

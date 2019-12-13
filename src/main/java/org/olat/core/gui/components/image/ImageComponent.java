@@ -77,11 +77,14 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 	private float scalingFactor;
 	private boolean divImageWrapper = true;
 	private boolean cropSelectionEnabled = false;
+	private boolean preventBrowserCaching = true;
 	
 	private final MapperService mapperService;
 
 	/**
-	 * @param name
+	 * 
+	 * @param usess The user session
+	 * @param name The name of the component
 	 */
 	public ImageComponent(UserSession usess, String name) {
 		super(name);
@@ -102,6 +105,14 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 
 	public void setAlt(String alt) {
 		this.alt = alt;
+	}
+
+	public boolean isPreventBrowserCaching() {
+		return preventBrowserCaching;
+	}
+
+	public void setPreventBrowserCaching(boolean preventBrowserCaching) {
+		this.preventBrowserCaching = preventBrowserCaching;
 	}
 
 	public boolean isDivImageWrapper() {

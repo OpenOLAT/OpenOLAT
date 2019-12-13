@@ -36,8 +36,11 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.io.ShieldOutputStream;
 import org.olat.ims.qti21.QTI21Service;
@@ -49,6 +52,7 @@ import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.pool.ImportExportHelper.AssessmentItemsAndResources;
 import org.olat.ims.qti21.pool.ImportExportHelper.ItemMaterial;
+import org.olat.ims.qti21.ui.editor.AssessmentTestComposerController;
 import org.olat.imscp.xml.manifest.ResourceType;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.manager.QPoolFileStorage;
@@ -176,7 +180,7 @@ public class QTI21ExportProcessor {
 		metadataBuilder.appendMetadataFrom(qitem, resolvedAssessmentItem, locale);	
 	}
 	
-	public void assembleTest(List<QuestionItemFull> fullItems, File directory) {
+	public void assembleTest(String title, List<QuestionItemFull> fullItems, File directory) {
 		try {
 			QtiSerializer qtiSerializer = qtiService.qtiSerializer();
 			//imsmanifest
@@ -184,7 +188,14 @@ public class QTI21ExportProcessor {
 			
 			//assessment test
 			DoubleAdder atomicMaxScore = new DoubleAdder();
-			AssessmentTest assessmentTest = AssessmentTestFactory.createAssessmentTest("Assessment test from pool", "Section");
+			if(!StringHelper.containsNonWhitespace(title)) {
+				title = "Assessment test from pool";
+			}
+			
+			Translator translator = Util.createPackageTranslator(AssessmentTestComposerController.class, locale);
+			String sectionTitle = translator.translate("new.section");
+			
+			AssessmentTest assessmentTest = AssessmentTestFactory.createAssessmentTest(title, sectionTitle);
 			String assessmentTestFilename = assessmentTest.getIdentifier() + ".xml";
 			manifest.appendAssessmentTest(assessmentTestFilename);
 

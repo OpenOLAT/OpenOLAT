@@ -1,4 +1,5 @@
 (function ($) {
+	"use strict";
 	$.fn.hotspotInteraction = function(options) {
 		var settings = $.extend({
 			responseIdentifier: null,
@@ -28,7 +29,7 @@
 		var divContainer = jQuery('#' + containerId);
 		
 		var areaIds = settings.responseValue.split(',');
-		for(i=areaIds.length; i-->0; ) {
+		for(var i=areaIds.length; i-->0; ) {
 			var areaEl = jQuery('#ac_' + settings.responseIdentifier + '_' + areaIds[i]);
 			var data = areaEl.data('maphilight') || {};
 			data.selectedOn = true;
@@ -49,7 +50,7 @@
 				clickHotspotArea(this, containerId, settings.responseIdentifier, settings.maxChoices, settings.singleChoice, settings.maphilightSettings);
 			});
 		})
-	};
+	}
 
 	function clickHotspotArea(spot, containerId, responseIdentifier, maxChoices, singleChoice, maphilightSettings) {
 		var areaEl = jQuery(spot);
@@ -101,7 +102,7 @@
 				divContainer.append(inputElement);
 			}
 		});
-	};
+	}
 
 	/*
 	 * Color the data based on the selectedOn flag
