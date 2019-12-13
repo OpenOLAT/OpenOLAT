@@ -328,7 +328,8 @@ public class VFSMetadataDAO {
 			Date editedAtNewer, Date editedAtOlder, 
 			Date lockedAtNewer, Date lockedAtOlder,
 			Boolean trashed, Boolean revision, Boolean locked,
-			Integer downloadCount, Long revisionCount) {
+			Integer downloadCount, Long revisionCount, 
+			Integer size) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select metadata from filemetadata metadata")
 		.append(" left join fetch metadata.author as author")
@@ -365,6 +366,9 @@ public class VFSMetadataDAO {
 		if(revisionCount > 0) {
 			sb.append(" and metadata.revisionNr>=:revisionCount");
 		}
+		if(size > 0) {
+			sb.append(" and metadata.fileSize>=:size");
+		}
 		sb.append(" order by metadata.fileSize desc nulls last");
 
 		TypedQuery<VFSMetadata> query = dbInstance.getCurrentEntityManager()
@@ -399,6 +403,9 @@ public class VFSMetadataDAO {
 		}
 		if(revisionCount > 0) {
 			query.setParameter("revisionCount", revisionCount);
+		}
+		if(size > 0) {
+			query.setParameter("size", new Long(size));
 		}
 
 		return query.setFirstResult(0)

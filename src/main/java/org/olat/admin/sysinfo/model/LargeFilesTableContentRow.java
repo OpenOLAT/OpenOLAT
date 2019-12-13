@@ -6,14 +6,16 @@ import java.util.Date;
 import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRevision;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.Identity;
 import org.olat.core.util.WebappHelper;
 
 public class LargeFilesTableContentRow {
-	
+
 	private final Long key;
 	private final String name;
 	private final Long size;
+	private FormLink pathInfo;
 	private final String path;
 	private final Identity author;
 	private final boolean revision;
@@ -37,13 +39,13 @@ public class LargeFilesTableContentRow {
 	private final Identity lockedBy;
 	private final long revisionNr;
 	private final String revisionComment;
-		
+
 	public LargeFilesTableContentRow(VFSMetadata metadata) {
 		key = metadata.getKey();
 		name = metadata.getFilename();
 		size = metadata.getFileSize();
-		path = metadata.getRelativePath();
 		author = metadata.getAuthor();
+		path = metadata.getRelativePath();
 		fileType = WebappHelper.getMimeType(metadata.getFilename()).split("/")[1];
 		fileCategory = WebappHelper.getMimeType(metadata.getFilename()).split("/")[0];
 		revision = false;
@@ -66,13 +68,13 @@ public class LargeFilesTableContentRow {
 		revisionNr = metadata.getRevisionNr();
 		revisionComment = metadata.getRevisionComment();
 	}
-	
+
 	public LargeFilesTableContentRow(VFSRevision rev) {
 		key = rev.getMetadata().getKey();
 		name = rev.getFilename();
 		size = rev.getSize();
-		path = rev.getMetadata().getRelativePath();
 		author = rev.getAuthor();
+		path = rev.getMetadata().getRelativePath();
 		revision = true;
 		fileType = WebappHelper.getMimeType(rev.getFilename()).split("/")[1];
 		fileCategory = WebappHelper.getMimeType(rev.getFilename()).split("/")[0];
@@ -95,7 +97,7 @@ public class LargeFilesTableContentRow {
 		revisionNr = rev.getRevisionNr();
 		revisionComment = rev.getRevisionComment();
 	}
-	
+
 	private Date calculateDateFromPublicationDateArray(String[] pubDateArray) {
 		if(pubDateArray == null || pubDateArray.length == 0) return null;
 		try {
@@ -116,7 +118,7 @@ public class LargeFilesTableContentRow {
 			return null;
 		}
 	}
-	
+
 	public Long getKey() {
 		return key;
 	}
@@ -129,12 +131,20 @@ public class LargeFilesTableContentRow {
 		return size;
 	}
 
-	public String getPath() {
-		return path;
+	public FormLink getPathInfo() {
+		return pathInfo;
+	}
+
+	public void setPathInfo(FormLink pathInfo) {
+		this.pathInfo = pathInfo;
 	}
 
 	public Identity getAuthor() {
 		return author;
+	}
+
+	public String getPath() {
+		return path;
 	}
 
 	public Boolean isRevision() {
@@ -160,7 +170,7 @@ public class LargeFilesTableContentRow {
 	public String getFileCategory() {
 		return fileCategory;
 	}
-	
+
 	public String getUuid() {
 		return uuid;
 	}
@@ -168,19 +178,19 @@ public class LargeFilesTableContentRow {
 	public int getDownloadCount() {
 		return downloadCount;                 
 	}                                         
-                                              
+
 	public String getTitle() {                
 		return title;                         
 	}                                         
-                                              
+
 	public String getComment() {              
 		return comment;                       
 	}                                         
-                                              
+
 	public String getPublisher() {            
 		return publisher;                     
 	}                                         
-                                              
+
 	public String getSource() {               
 		return source;                        
 	}                                         
@@ -219,7 +229,7 @@ public class LargeFilesTableContentRow {
 	public Boolean isTrashed() {
 		return trashed;
 	}
-	
+
 	public int getAge() {
 		return this.getCreatedAt().compareTo(new Date());
 	}

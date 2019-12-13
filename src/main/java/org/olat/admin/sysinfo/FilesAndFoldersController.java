@@ -22,7 +22,7 @@ package org.olat.admin.sysinfo;
 import org.olat.admin.quota.QuotaController;
 import org.olat.core.commons.services.vfs.ui.management.VFSOverviewController;
 import org.olat.core.commons.services.vfs.ui.version.VFSTrashController;
-import org.olat.core.commons.services.vfs.ui.version.VersionAdminController;
+import org.olat.core.commons.services.vfs.ui.version.VersionSettingsForm;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -39,8 +39,8 @@ import org.olat.core.gui.control.controller.BasicController;
 
 /**
  * 
- * Initial date: 15.11.2012<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 13.12.2019<br>
+ * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  *
  */
 public class FilesAndFoldersController extends BasicController{
@@ -53,7 +53,7 @@ public class FilesAndFoldersController extends BasicController{
 	private final SegmentViewComponent segmentView;
 	private final VelocityContainer mainVC;
 	
-	private VersionAdminController versionsController;
+	private VersionSettingsForm versionsController;
 	private LargeFilesController fileStats;
 	private QuotaController quotas;
 	private VFSTrashController trash;
@@ -132,7 +132,7 @@ public class FilesAndFoldersController extends BasicController{
 
 	private void doVersions(UserRequest ureq) {
 		if(versionsController == null) {
-			versionsController = new VersionAdminController(ureq, getWindowControl());
+			versionsController = new VersionSettingsForm(ureq, getWindowControl());
 			listenTo(versionsController);
 		}
 		mainVC.put("segmentCmp", versionsController.getInitialComponent());

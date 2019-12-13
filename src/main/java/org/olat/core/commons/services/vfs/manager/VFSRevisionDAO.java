@@ -221,7 +221,8 @@ public class VFSRevisionDAO {
 			Date editedAtNewer, Date editedAtOlder, 
 			Date lockedAtNewer, Date lockedAtOlder,
 			Boolean trashed, Boolean revision, Boolean locked,
-			Integer downloadCount, Long revisionCount) {
+			Integer downloadCount, Long revisionCount,
+			Integer size) {
 
 		QueryBuilder qb = new QueryBuilder(256);
 		qb.append("select rev from vfsrevision rev")
@@ -230,19 +231,19 @@ public class VFSRevisionDAO {
 		.append(" left join fetch author.user as authorUser");
 
 		if(createdAtNewer != null) {
-			qb.where().append("metadata.creationDate>=:createdAtNewer");
+			qb.where().append("rev.creationDate>=:createdAtNewer");
 		}
 		if(createdAtOlder != null) {
-			qb.where().append("metadata.creationDate<=:createdAtOlder");
+			qb.where().append("rev.creationDate<=:createdAtOlder");
 		}
 		if(editedAtNewer != null) {
-			qb.where().append("metadata.lastModified>=:editedAtNewer");
+			qb.where().append("rev.lastModified>=:editedAtNewer");
 		}
 		if(editedAtOlder != null) {
-			qb.where().append("metadata.lastModified<=:editedAtOlder");
+			qb.where().append("rev.lastModified<=:editedAtOlder");
 		}
 		if(lockedAtNewer != null) {
-			qb.where().append("metadata.lockedDate>=:lockedAtNewer");
+			qb.where().append("rev.lockedDate>=:lockedAtNewer");
 		}
 		if(lockedAtOlder != null) {
 			qb.where().append("metadata.lockedDate<=:lockedAtOlder");
@@ -258,6 +259,9 @@ public class VFSRevisionDAO {
 		}
 		if(revisionCount > 0) {
 			qb.where().append("metadata.revisionNr>=:revisionCount");
+		}
+		if(size > 0) {
+			qb.where().append("rev.size>=:size");
 		}
 
 
@@ -295,6 +299,9 @@ public class VFSRevisionDAO {
 		}
 		if(revisionCount > 0) {
 			query.setParameter("revisionCount", revisionCount);
+		}
+		if(size > 0) {
+			query.setParameter("size", new Long(size));
 		}
 		
 		return query.setFirstResult(0)

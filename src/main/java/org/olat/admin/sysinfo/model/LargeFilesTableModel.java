@@ -42,7 +42,7 @@ implements SortableFlexiTableDataModel<LargeFilesTableContentRow> {
 			case key: return returnNullSafe(row.getKey());
 			case name: return returnNullSafe(row.getName());
 			case size: return returnNullSafe(row.getSize());
-			case path: return returnNullSafe("LinkFactory not ready yet");
+			case path: return returnNullSafe(row.getPathInfo());
 			case author: return returnNullSafe(row.getAuthor() != null ? row.getAuthor().getUser().getFirstName() + " " + row.getAuthor().getUser().getLastName() : null);
 			case revision: return returnNullSafe(row.isRevision());
 			case fileCategory: return returnNullSafe(row.getFileCategory());
