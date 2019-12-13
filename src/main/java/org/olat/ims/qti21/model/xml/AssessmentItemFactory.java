@@ -331,7 +331,7 @@ public class AssessmentItemFactory {
 		responseDeclaration.setIdentifier(declarationId);
 		if(cardinality != null && (cardinality == Cardinality.SINGLE || cardinality == Cardinality.MULTIPLE)) {
 			responseDeclaration.setCardinality(cardinality);
-		} else if(correctResponseIds == null || correctResponseIds.size() == 0 || correctResponseIds.size() > 1) {
+		} else if(correctResponseIds == null || correctResponseIds.isEmpty() || correctResponseIds.size() > 1) {
 			responseDeclaration.setCardinality(Cardinality.MULTIPLE);
 		} else {
 			responseDeclaration.setCardinality(Cardinality.SINGLE);
@@ -399,7 +399,7 @@ public class AssessmentItemFactory {
 		}
 		
 		//map alternatives
-		if(alternatives != null && alternatives.size() > 0) {
+		if(alternatives != null && !alternatives.isEmpty()) {
 			for(TextEntryAlternative alternative:alternatives) {
 				if(StringHelper.containsNonWhitespace(alternative.getAlternative())) {
 					MapEntry mapEntry = new MapEntry(mapping);
@@ -1172,7 +1172,7 @@ public class AssessmentItemFactory {
 			if(responseRule instanceof ResponseCondition) {
 				ResponseCondition responseCondition = (ResponseCondition)responseRule;
 				if(responseCondition.getResponseIf() == null || responseCondition.getResponseElse() != null
-						|| (responseCondition.getResponseElseIfs() != null && responseCondition.getResponseElseIfs().size() > 0)) {
+						|| (responseCondition.getResponseElseIfs() != null && !responseCondition.getResponseElseIfs().isEmpty())) {
 					continue;
 				}
 				
@@ -1739,7 +1739,7 @@ public class AssessmentItemFactory {
 	
 	public static String coordsString(List<Integer> coords) {
 		StringBuilder sb = new StringBuilder();
-		if(coords != null && coords.size() > 0) {
+		if(coords != null && !coords.isEmpty()) {
 			for(Integer coord:coords) {
 				if(sb.length() > 0) sb.append(",");
 				sb.append(coord.intValue());
@@ -1753,7 +1753,7 @@ public class AssessmentItemFactory {
 		if(StringHelper.containsNonWhitespace(coords)) {
 			for(StringTokenizer tokenizer = new StringTokenizer(coords, ","); tokenizer.hasMoreElements(); ) {
 				String coord = tokenizer.nextToken();
-				list.add(new Integer(Math.round(Float.parseFloat(coord))));
+				list.add(Integer.valueOf(Math.round(Float.parseFloat(coord))));
 			}
 		}
 		return list;

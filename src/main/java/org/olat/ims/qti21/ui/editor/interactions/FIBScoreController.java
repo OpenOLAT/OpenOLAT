@@ -56,7 +56,8 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
  *
  */
 public class FIBScoreController extends AssessmentItemRefEditorController implements SyncAssessmentItem {
-	
+
+	private static final String[] yesnoKeys = new String[]{ "y", "n"};
 	private static final String[] modeKeys = new String[]{
 			ScoreEvaluation.allCorrectAnswers.name(), ScoreEvaluation.perAnswer.name()
 		};
@@ -65,6 +66,7 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 	private TextElement maxScoreEl;
 	private FormLayoutContainer scoreCont;
 	private SingleSelection assessmentModeEl;
+	private SingleSelection duplicateAllowedEl;
 
 	private FIBAssessmentItemBuilder itemBuilder;
 	private final List<FIBEntryWrapper> wrappers = new ArrayList<>();
@@ -92,6 +94,18 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 		maxScoreEl = uifactory.addTextElement("max.score", "max.score", 8, maxValue, formLayout);
 		maxScoreEl.setElementCssClass("o_sel_assessment_item_max_score");
 		maxScoreEl.setEnabled(!restrictedEdit && !readOnly);
+		
+		String[] yesnoValues = new String[]{ translate("yes"), translate("no") };
+		duplicateAllowedEl = uifactory.addRadiosHorizontal("duplicate", "form.imd.duplicate.answers", formLayout, yesnoKeys, yesnoValues);
+		duplicateAllowedEl.setElementCssClass("o_sel_assessment_item_fib_duplicate");
+		duplicateAllowedEl.setEnabled(!restrictedEdit && !readOnly);
+		duplicateAllowedEl.setVisible(hasSeveralTextEntryWithSharedAlternatives());
+		duplicateAllowedEl.setHelpTextKey("form.imd.duplicate.answers.hint", null);
+		if(itemBuilder.isAllowDuplicatedAnswers()) {
+			duplicateAllowedEl.select(yesnoKeys[0], true);
+		} else {
+			duplicateAllowedEl.select(yesnoKeys[1], true);
+		}
 		
 		String[] modeValues = new String[]{
 				translate("form.score.assessment.all.correct"),
@@ -123,6 +137,19 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 		buttonsContainer.setVisible(!readOnly);
 		formLayout.add(buttonsContainer);
 		uifactory.addFormSubmitButton("submit", buttonsContainer);
+	}
+	
+	private boolean hasSeveralTextEntryWithSharedAlternatives() {
+		int count = 0;
+		
+		List<AbstractEntry> entries = itemBuilder.getOrderedTextEntries();
+		for(AbstractEntry entry:entries) {
+			if(entry instanceof TextEntry) {
+				count++;
+			}
+		}
+
+		return count > 1 && itemBuilder.entriesSharesAlternatives();
 	}
 
 	@Override
@@ -167,6 +194,9 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 			}
 			wrappers.clear();
 			wrappers.addAll(reorderedWrappers);
+			
+			// duplicated only for text entry
+			duplicateAllowedEl.setVisible(hasSeveralTextEntryWithSharedAlternatives());
 		}
 	}
 	
@@ -195,7 +225,7 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		allOk &= validateDouble(maxScoreEl);
 
 		if(assessmentModeEl.isOneSelected() && assessmentModeEl.isSelected(1)) {
@@ -204,7 +234,7 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 			}
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override
@@ -233,7 +263,14 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 		String maxScoreValue = maxScoreEl.getValue();
 		Double maxScore = Double.parseDouble(maxScoreValue);
 		itemBuilder.setMaxScore(maxScore);
-		itemBuilder.setMinScore(new Double(0d));
+		itemBuilder.setMinScore(Double.valueOf(0.0d));
+		
+		if(duplicateAllowedEl.isVisible()) {
+			boolean allowDuplicates = duplicateAllowedEl.isOneSelected() && duplicateAllowedEl.isSelected(0);
+			itemBuilder.setAllowDuplicatedAnswers(allowDuplicates);
+		} else {
+			itemBuilder.setAllowDuplicatedAnswers(true);
+		}
 		
 		if(assessmentModeEl.isOneSelected() && assessmentModeEl.isSelected(1)) {
 			itemBuilder.setScoreEvaluationMode(ScoreEvaluation.perAnswer);
