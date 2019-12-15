@@ -187,6 +187,8 @@ $theme.renderHTMLHeaderElements()
             /* Detect IE below version 11 */
             if (window.navigator.userAgent.indexOf('MSIE ') > 0) {
                 jQuery('body').addClass('o_browser_ie10');
+            } else if (!!navigator.userAgent.match(/Trident\/7\./)) {
+            	jQuery('body').addClass('o_browser_ie11');
             }
         });
 	</script>

@@ -108,7 +108,7 @@ public class LiveStreamRunController extends BasicController {
 			streamsCtrl = new LiveStreamsController(ureq, swControl, moduleConfiguration, calendars);
 			listenTo(streamsCtrl);
 		} else {
-			streamsCtrl.refreshData();
+			streamsCtrl.refreshData(ureq.getUserSession());
 			addToHistory(ureq, streamsCtrl);
 		}
 		segmentView.select(streamsLink);

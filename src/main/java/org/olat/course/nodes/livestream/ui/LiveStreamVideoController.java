@@ -19,19 +19,25 @@
  */
 package org.olat.course.nodes.livestream.ui;
 
-import org.apache.logging.log4j.Logger;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.course.nodes.livestream.LiveStreamEvent;
+import org.olat.course.nodes.livestream.paella.PaellaFactory;
+import org.olat.course.nodes.livestream.paella.PaellaMapper;
+import org.olat.course.nodes.livestream.paella.Sources;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -41,61 +47,51 @@ import org.olat.course.nodes.livestream.LiveStreamEvent;
  */
 public class LiveStreamVideoController extends BasicController {
 
-	private static final Logger log = Tracing.createLoggerFor(LiveStreamVideoController.class);
-	
 	private final VelocityContainer mainVC;
-	private Link retryLink;
 	
+	private final List<MapperKey> mappers = new ArrayList<>();
 	private String url;
-	private boolean error = false;
+	
+	@Autowired
+	private MapperService mapperService;
 
 	protected LiveStreamVideoController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		mainVC = createVelocityContainer("video");
-		updateUI();
+		updateUI(ureq.getUserSession());
 		putInitialPanel(mainVC);
 	}
 	
-	public void setEvent(LiveStreamEvent event) {
+	public void setEvent(UserSession usess, LiveStreamEvent event) {
 		String newUrl = event != null? event.getLiveStreamUrl(): null;
 		if (newUrl == null || !newUrl.equalsIgnoreCase(url)) {
 			url = newUrl;
-			error = Boolean.FALSE;
-			updateUI();
+			updateUI(usess);
 		}
 	}
 
-	private void updateUI() {
-		if (error) {
+	private void updateUI(UserSession usess) {
+		if (StringHelper.containsNonWhitespace(url)) {
+			mainVC.contextPut("id", CodeHelper.getRAMUniqueID());
+			Sources sources = PaellaFactory.createSources(url);
+			PaellaMapper paellaMapper = new PaellaMapper(sources);
+			MapperKey mapperKey = mapperService.register(usess, paellaMapper);
+			mappers.add(mapperKey);
+			String baseURI = mapperKey.getUrl();
+			mainVC.contextPut("baseURI", baseURI);
+		}	else {
 			mainVC.contextRemove("id");
-			mainVC.contextPut("error", error);
-			retryLink = LinkFactory.createButton("viewer.retry", mainVC, this);
-		} else {
-			mainVC.contextRemove("error");
-			if (StringHelper.containsNonWhitespace(url)) {
-				mainVC.contextPut("id", CodeHelper.getRAMUniqueID());
-				mainVC.contextPut("src", url);
-			} else {
-				mainVC.contextRemove("id");
-			}
 		}
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if ("error".equals(event.getCommand())) {
-			log.debug("Error when open a video from {}", url);
-			error = true;
-			updateUI();
-		} else if (source == retryLink) {
-			error = false;
-			updateUI();
-		}
+		//
 	}
 
 	@Override
 	protected void doDispose() {
-		//
+		mapperService.cleanUp(mappers);
 	}
 
 }
