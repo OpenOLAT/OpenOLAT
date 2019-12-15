@@ -29,6 +29,7 @@ import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.Select;
 
 /**
  * Page to control the author environnment.
@@ -78,7 +79,7 @@ public class AuthoringEnvPage {
 	public CourseSettingsPage createCourse(String title) {
 		openCreateDropDown()
 			.clickCreate(ResourceType.course)
-			.fillCreateForm(title)
+			.fillCreateCourseForm(title, false)
 			.assertOnInfos();
 		return new CourseSettingsPage(browser);
 	}
@@ -125,13 +126,39 @@ public class AuthoringEnvPage {
 	
 	/**
 	 * Fill the create form and submit
-	 * @param displayName
-	 * @return
+	 * @param displayName The name of the learn resource
+	 * @return Itself
 	 */
 	public RepositorySettingsPage fillCreateForm(String displayName) {
 		OOGraphene.waitModalDialog(browser);
 		By inputBy = By.cssSelector("div.modal.o_sel_author_create_popup div.o_sel_author_displayname input");
 		browser.findElement(inputBy).sendKeys(displayName);
+		By submitBy = By.cssSelector("div.modal.o_sel_author_create_popup .o_sel_author_create_submit");
+		browser.findElement(submitBy).click();
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
+		OOGraphene.waitElement(generaltabBy, browser);
+		OOGraphene.waitTinymce(browser);
+		return new RepositorySettingsPage(browser);
+	}
+	
+	/**
+	 * Fill the create form and submit
+	 * @param displayName The name of the course
+	 * @param learnPath true to use the new learn path course, false for the old model
+	 * @return Itself
+	 */
+	public RepositorySettingsPage fillCreateCourseForm(String displayName, boolean learnPath) {
+		OOGraphene.waitModalDialog(browser);
+		By inputBy = By.cssSelector("div.modal.o_sel_author_create_popup div.o_sel_author_displayname input");
+		browser.findElement(inputBy).sendKeys(displayName);
+		// select node model for the course
+		By typeBy = By.cssSelector("#o_cocif_node_access_SELBOX>select");
+		WebElement typeEl = browser.findElement(typeBy);
+		String type = learnPath ? "learningpath" : "condition";
+		new Select(typeEl).selectByValue(type);
+		OOGraphene.waitBusy(browser);
+		// create the course
 		By submitBy = By.cssSelector("div.modal.o_sel_author_create_popup .o_sel_author_create_submit");
 		browser.findElement(submitBy).click();
 		OOGraphene.waitBusy(browser);

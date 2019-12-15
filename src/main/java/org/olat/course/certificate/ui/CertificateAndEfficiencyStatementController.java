@@ -284,8 +284,11 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 			}
 		}
 		
-		List<AssessmentEntry> completions = assessmentService.loadRootAssessmentEntriesByAssessedIdentity(statementOwner,
+		List<AssessmentEntry> completions = Collections.emptyList();
+		if(courseRepoEntry != null) {
+			completions = assessmentService.loadRootAssessmentEntriesByAssessedIdentity(statementOwner,
 				Collections.singletonList(courseRepoEntry.getKey()));
+		}
 		if (!completions.isEmpty()) {
 			Double completion = completions.get(0).getCompletion();
 			if (completion != null) {

@@ -119,7 +119,7 @@ public class CourseTest extends Deployments {
 		authoringEnv
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
-			.fillCreateForm(title)
+			.fillCreateCourseForm(title, false)
 			.assertOnInfos()
 			//from description editor, back to the course
 			.clickToolbarBack();
@@ -188,7 +188,7 @@ public class CourseTest extends Deployments {
 		RepositoryEditDescriptionPage editDescription = authoringEnv
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
-			.fillCreateForm(title)
+			.fillCreateCourseForm(title, false)
 			.assertOnInfos();
 		
 		//from description editor, back to the course
@@ -310,7 +310,7 @@ public class CourseTest extends Deployments {
 		authoringEnv
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
-			.fillCreateForm(title)
+			.fillCreateCourseForm(title, false)
 			.assertOnInfos()
 			.clickToolbarBack();
 		//add a second owner
@@ -921,7 +921,7 @@ public class CourseTest extends Deployments {
 		authoringEnv
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
-			.fillCreateForm(title)
+			.fillCreateCourseForm(title, false)
 			.assertOnInfos();
 
 		//open course editor
@@ -1017,7 +1017,7 @@ public class CourseTest extends Deployments {
 		authoringEnv
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
-			.fillCreateForm(title)
+			.fillCreateCourseForm(title, false)
 			.assertOnInfos();
 
 		//open course editor
@@ -1121,7 +1121,7 @@ public class CourseTest extends Deployments {
 		RepositorySettingsPage settings = authoringEnv
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
-			.fillCreateForm(title);
+			.fillCreateCourseForm(title, false);
 		settings
 			.assertOnInfos();
 		settings
@@ -1225,7 +1225,7 @@ public class CourseTest extends Deployments {
 		authoringEnv
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
-			.fillCreateForm(title)
+			.fillCreateCourseForm(title, false)
 			.assertOnInfos()
 			.clickToolbarBack();
 		

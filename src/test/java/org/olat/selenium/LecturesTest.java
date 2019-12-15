@@ -118,7 +118,7 @@ public class LecturesTest extends Deployments {
 		authoringEnv
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
-			.fillCreateForm(title)
+			.fillCreateCourseForm(title, false)
 			.assertOnInfos()
 			.clickToolbarBack();
 		
@@ -262,7 +262,7 @@ public class LecturesTest extends Deployments {
 		authoringEnv
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
-			.fillCreateForm(title)
+			.fillCreateCourseForm(title, false)
 			.assertOnInfos()
 			.clickToolbarBack();
 		
@@ -401,7 +401,7 @@ public class LecturesTest extends Deployments {
 		authoringEnv
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
-			.fillCreateForm(title)
+			.fillCreateCourseForm(title, false)
 			.assertOnInfos()
 			.clickToolbarBack();
 
@@ -526,7 +526,7 @@ public class LecturesTest extends Deployments {
 		authoringEnv
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
-			.fillCreateForm(title)
+			.fillCreateCourseForm(title, false)
 			.assertOnInfos()
 			.clickToolbarBack();
 		
@@ -647,7 +647,7 @@ public class LecturesTest extends Deployments {
 		authoringEnv
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
-			.fillCreateForm(title)
+			.fillCreateCourseForm(title, false)
 			.assertOnInfos()
 			.clickToolbarBack();
 		

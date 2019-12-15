@@ -499,7 +499,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				TreeNode treeNode = treeModel.getNodeById(calledCourseNode.getIdent());
 				boolean confirmationEnabled = nodeAccessService.isAssessmentConfirmationEnabled(calledCourseNode, getUce());
 				AssessmentEvaluation assessmentEvaluation = getUce().getScoreAccounting().evalCourseNode(calledCourseNode);
-				confirmVisible = treeNode.isAccessible() && confirmationEnabled;
+				confirmVisible = confirmationEnabled && treeNode.isAccessible();
 				showDone = !Boolean.TRUE.equals(assessmentEvaluation.getFullyAssessed());
 			}
 			paginationCtrl.updateAssessmentConfirmUI(confirmVisible, showDone);

@@ -246,7 +246,7 @@ public class PortfolioV2Test extends Deployments {
 			.openAuthoringEnvironment()
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
-			.fillCreateForm(courseTitle)
+			.fillCreateCourseForm(courseTitle, false)
 			.back();
 		
 		//open course editor

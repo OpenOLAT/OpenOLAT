@@ -632,7 +632,7 @@ public class CourseElementTest extends Deployments {
 		authoringEnv
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
-			.fillCreateForm(title)
+			.fillCreateCourseForm(title, false)
 			.assertOnInfos()
 			.clickToolbarBack();
 		
@@ -738,7 +738,7 @@ public class CourseElementTest extends Deployments {
 		authoringEnv
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
-			.fillCreateForm(title)
+			.fillCreateCourseForm(title, false)
 			.assertOnInfos()
 			.clickToolbarBack();
 		
@@ -873,7 +873,7 @@ public class CourseElementTest extends Deployments {
 		authoringEnv
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
-			.fillCreateForm(title)
+			.fillCreateCourseForm(title, false)
 			.assertOnInfos()
 			.clickToolbarBack();
 		
@@ -1141,7 +1141,7 @@ public class CourseElementTest extends Deployments {
 		authoringEnv
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
-			.fillCreateForm(title)
+			.fillCreateCourseForm(title, false)
 			.assertOnInfos()
 			.clickToolbarBack();
 		
