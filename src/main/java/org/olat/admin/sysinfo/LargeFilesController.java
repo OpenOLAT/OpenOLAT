@@ -27,7 +27,6 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -64,7 +63,6 @@ public class LargeFilesController extends FormBasicController implements Extende
 	private FlexiTableElement largeFilesTableElement;
 	private LargeFilesTableModel largeFilesTableModel;
 
-	private MultipleSelectionElement types;
 	private SingleSelection trashedSelection;
 	private SingleSelection revisionSelection; 
 	private SingleSelection lockedSelection;
@@ -82,8 +80,6 @@ public class LargeFilesController extends FormBasicController implements Extende
 	private FormLink resetButton;
 
 	private List<LargeFilesTableContentRow> rows;
-
-	private boolean enabled = true;
 
 	private CloseableModalController cmc;
 	private ContactFormController contactCtrl;
@@ -256,8 +252,8 @@ public class LargeFilesController extends FormBasicController implements Extende
 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.key));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.uuid));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, true, LargeFilesTableColumns.name, new LargeFilesNameCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, true, LargeFilesTableColumns.size, new LargeFilesSizeCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, LargeFilesTableColumns.name, new LargeFilesNameCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, LargeFilesTableColumns.size, new LargeFilesSizeCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, LargeFilesTableColumns.path));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.age));
 
@@ -365,13 +361,14 @@ public class LargeFilesController extends FormBasicController implements Extende
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
+	protected void event(UserRequest  ureq, Controller source, Event event) {
 		if (source == cmc) {
 			cleanUp();
 		} else if (source == contactCtrl) {
 			cmc.deactivate();
 			cleanUp();
 		} 
+		super.event(ureq, source, event);
 	}
 
 	private void cleanUp() {
@@ -392,8 +389,6 @@ public class LargeFilesController extends FormBasicController implements Extende
 		contactList.add(user);
 		cmsg.addEmailTo(contactList);
 		cmsg.setSubject("Too large files in your personal folder");
-
-		StringBuilder sb = new StringBuilder();
 
 		String bodyStart = translate("largefiles.mail.start", new String[] {user.getUser().getFirstName() + user.getUser().getLastName()});
 		String bodyFiles = "<ul>";
@@ -416,14 +411,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 
 	@Override
 	public void setEnabled(boolean enable) {
-		this.enabled = enable;
-	}
-
-	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
-		if(!enabled) return true;
-
-		return true;
+		// Nothing do to here
 	}
 
 	@Override
