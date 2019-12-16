@@ -25,6 +25,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.UserSession;
 import org.olat.course.nodes.livestream.LiveStreamEvent;
 
 /**
@@ -54,8 +55,8 @@ public class LiveStreamViewerController extends BasicController {
 		putInitialPanel(mainVC);
 	}
 
-	public void setEvent(LiveStreamEvent event) {
-		videoCtrl.setEvent(event);
+	public void setEvent(UserSession usess, LiveStreamEvent event) {
+		videoCtrl.setEvent(usess, event);
 		metadataCtrl.setEvent(event);
 	}
 

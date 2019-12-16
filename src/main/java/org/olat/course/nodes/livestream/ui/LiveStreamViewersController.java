@@ -30,6 +30,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.UserSession;
 import org.olat.course.nodes.LiveStreamCourseNode;
 import org.olat.course.nodes.cal.CourseCalendars;
 import org.olat.course.nodes.livestream.LiveStreamEvent;
@@ -129,12 +130,12 @@ public class LiveStreamViewersController extends BasicController {
 		mainVC.put("display9", displayCtrl9.getInitialComponent());
 		displayWrappers.add(new DisplayWrapper(displayCtrl9));
 		
-		refresh();
+		refresh(ureq.getUserSession());
 		
 		putInitialPanel(mainVC);
 	}
 	
-	void refresh() {
+	void refresh(UserSession usess) {
 		List<? extends LiveStreamEvent> events = liveStreamService.getRunningEvents(calendars, bufferBeforeMin, bufferAfterMin);
 		putNoLiveStreamToMainVC(events);
 		
@@ -144,8 +145,8 @@ public class LiveStreamViewersController extends BasicController {
 		// luck.
 		events = removeOverlappingWithSameUrl(events);
 		Collections.sort(events, (e1, e2) -> e1.getBegin().compareTo(e2.getBegin()));
-		displayStartedEvents(events);
-		removeEndedEvents(events);
+		displayStartedEvents(usess, events);
+		removeEndedEvents(usess, events);
 	}
 
 	private void putNoLiveStreamToMainVC(List<? extends LiveStreamEvent> events) {
@@ -203,13 +204,13 @@ public class LiveStreamViewersController extends BasicController {
 		return sameUrlEvents;
 	}
 
-	private void displayStartedEvents(List<? extends LiveStreamEvent> events) {
+	private void displayStartedEvents(UserSession usess, List<? extends LiveStreamEvent> events) {
 		for (LiveStreamEvent event: events) {
 			DisplayWrapper displayWrapper = getDisplayWrapper(event);
 			if (displayWrapper != null) {
-				updateEvent(displayWrapper, event);
+				updateEvent(usess, displayWrapper, event);
 			} else {
-				addToNextDisplay(event);
+				addToNextDisplay(usess, event);
 			}
 		}
 	}
@@ -223,10 +224,10 @@ public class LiveStreamViewersController extends BasicController {
 		return null;
 	}
 
-	private void addToNextDisplay(LiveStreamEvent event) {
+	private void addToNextDisplay(UserSession usess, LiveStreamEvent event) {
 		DisplayWrapper nextDisplay = getNextFreeDisplay();
 		if (nextDisplay != null ) {
-			updateEvent(nextDisplay, event);
+			updateEvent(usess, nextDisplay, event);
 		}
 	}
 
@@ -242,11 +243,11 @@ public class LiveStreamViewersController extends BasicController {
 		return nextDisplay;
 	}
 
-	private void removeEndedEvents(List<? extends LiveStreamEvent> events) {
+	private void removeEndedEvents(UserSession usess, List<? extends LiveStreamEvent> events) {
 		for (DisplayWrapper displayWrapper : displayWrappers) {
 			LiveStreamEvent wrappedEvent = displayWrapper.getEvent();
 			if (hasEnded(wrappedEvent, events)) {
-				updateEvent(displayWrapper, null);
+				updateEvent(usess, displayWrapper, null);
 			}
 		}
 	}
@@ -262,9 +263,9 @@ public class LiveStreamViewersController extends BasicController {
 		return true;
 	}
 
-	private void updateEvent(DisplayWrapper displayWrapper, LiveStreamEvent event) {
+	private void updateEvent(UserSession usess, DisplayWrapper displayWrapper, LiveStreamEvent event) {
 		displayWrapper.setEvent(event);
-		displayWrapper.getController().setEvent(event);
+		displayWrapper.getController().setEvent(usess, event);
 	}
 
 	@Override

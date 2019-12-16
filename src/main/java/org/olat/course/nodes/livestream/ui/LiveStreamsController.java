@@ -31,6 +31,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.UserSession;
 import org.olat.course.nodes.cal.CourseCalendars;
 import org.olat.modules.ModuleConfiguration;
 
@@ -65,14 +66,14 @@ public class LiveStreamsController extends BasicController {
 		mainVC.put("list", listCtrl.getInitialComponent());
 		
 		scheduler = Executors.newScheduledThreadPool(1);
-		scheduler.scheduleAtFixedRate(new RefreshTask(), 10, 10, TimeUnit.SECONDS);
+		scheduler.scheduleAtFixedRate(new RefreshTask(ureq.getUserSession()), 10, 10, TimeUnit.SECONDS);
 
 		putInitialPanel(mainVC);
 	}
 
-	public synchronized void refreshData() {
+	public synchronized void refreshData(UserSession usess) {
 		log.debug("Refresh live stream data of " + getIdentity());
-		viewersCtrl.refresh();
+		viewersCtrl.refresh(usess);
 		listCtrl.refreshData();
 	}
 
@@ -88,9 +89,16 @@ public class LiveStreamsController extends BasicController {
 
 	private final class RefreshTask implements Runnable {
 
+		private final UserSession usess;
+
+		public RefreshTask(UserSession usess) {
+			this.usess = usess;
+			
+		}
+
 		@Override
 		public void run() {
-			refreshData();
+			refreshData(usess);
 		}
 
 	}
