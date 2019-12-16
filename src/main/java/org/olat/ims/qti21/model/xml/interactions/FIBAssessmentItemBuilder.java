@@ -498,6 +498,25 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 	public void setScoreEvaluationMode(ScoreEvaluation scoreEvaluation) {
 		this.scoreEvaluation = scoreEvaluation;
 	}
+	
+	public boolean alternativesWithSpecificScore() {
+		for(Map.Entry<String, AbstractEntry> entry:responseIdentifierToTextEntry.entrySet()) {
+			AbstractEntry e = entry.getValue();
+			if(e instanceof TextEntry) {
+				TextEntry textEntry = (TextEntry)e;
+				Double score = textEntry.getScore();
+				if(textEntry.getAlternatives() != null && !textEntry.getAlternatives().isEmpty()) {
+					for(TextEntryAlternative alternative:textEntry.getAlternatives()) {
+						double altScore = alternative.getScore();
+						if(altScore >= 0.0d && score != null && score.doubleValue() == altScore) {
+							return true;
+						}
+					}
+				}
+			}
+		}
+		return false;
+	}
 
 	public AbstractEntry getEntry(String responseIdentifier) {
 		return responseIdentifierToTextEntry.get(responseIdentifier);
@@ -600,14 +619,14 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 			if(entry instanceof TextEntry) {
 				TextEntry textEntry = (TextEntry)entry;
 				if( textEntry.getSolution() != null) {
-					Double score = -1.0d; 
+					Double score = -1.0d;
 					if(scoreEvaluation == ScoreEvaluation.perAnswer) {
 						score = textEntry.getScore();
 					}
-					
-					ResponseDeclaration responseDeclaration = createTextEntryResponseDeclaration(assessmentItem,
-							textEntry.getResponseIdentifier(), textEntry.getSolution(),
-							score, textEntry.isCaseSensitive(), textEntry.getAlternatives());
+					ResponseDeclaration	responseDeclaration = createTextEntryResponseDeclaration(assessmentItem,
+								textEntry.getResponseIdentifier(), textEntry.getSolution(),
+								score, textEntry.isCaseSensitive(), textEntry.getAlternatives(),
+								scoreEvaluation == ScoreEvaluation.perAnswer);
 					responseDeclarations.add(responseDeclaration);
 				}
 			} else if(entry instanceof NumericalEntry) {
@@ -1387,6 +1406,10 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		
 		private String alternative;
 		private double score;
+		
+		public TextEntryAlternative() {
+			//
+		}
 
 		public String getAlternative() {
 			return alternative;

@@ -213,6 +213,11 @@ img.o_hotspot_responsive[usemap] {
 	padding: 2px 5px;
 }
 
+span.o_qti_gaptext_score_alternative {
+	padding-left: 2em;
+	color: $gray;
+}
+
 /* Essay extended text */
 .o_qti_item_body .extendedTextInteraction {
 	margin: 15px 0;

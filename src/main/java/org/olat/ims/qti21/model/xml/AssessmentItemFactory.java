@@ -374,7 +374,7 @@ public class AssessmentItemFactory {
 	
 	public static ResponseDeclaration createTextEntryResponseDeclaration(AssessmentItem assessmentItem,
 			Identifier declarationId, String response, Double score, boolean caseSensitive,
-			List<TextEntryAlternative> alternatives) {
+			List<TextEntryAlternative> alternatives, boolean useScoreOfAlternatives) {
 		ResponseDeclaration responseDeclaration = new ResponseDeclaration(assessmentItem);
 		responseDeclaration.setIdentifier(declarationId);
 		responseDeclaration.setCardinality(Cardinality.SINGLE);
@@ -404,7 +404,11 @@ public class AssessmentItemFactory {
 				if(StringHelper.containsNonWhitespace(alternative.getAlternative())) {
 					MapEntry mapEntry = new MapEntry(mapping);
 					mapEntry.setMapKey(new StringValue(alternative.getAlternative()));
-					mapEntry.setMappedValue(score);
+					if(useScoreOfAlternatives) {
+						mapEntry.setMappedValue(alternative.getScore());
+					} else {
+						mapEntry.setMappedValue(score);
+					}
 					mapEntry.setCaseSensitive(Boolean.valueOf(caseSensitive));
 					mapping.getMapEntries().add(mapEntry);
 				}

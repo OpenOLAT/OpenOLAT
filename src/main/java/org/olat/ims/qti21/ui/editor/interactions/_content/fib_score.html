@@ -1,7 +1,7 @@
 <table class="table o_sel_gap_entries_scores">
 	<thead><tr>
-		<th>$r.translate("form.score.answer.summary")</th>
-		<th>$r.translate("form.score.answer.points")</th>
+		<th scope='col'>$r.translate("form.score.answer.summary")</th>
+		<th scope='col'>$r.translate("form.score.answer.points")</th>
 	</tr></thead>
 	<tbody>
 	#foreach($choice in $choices)
@@ -13,6 +13,19 @@
 		#end
 		</td>
 	</tr>
+		#if($r.isTrue($withAlternatives))
+			#set($alternatives = ${choice.getAlternatives()})
+			#foreach($alternative in $alternatives)
+			<tr>
+				<td><span class='o_qti_gaptext_score_alternative'>$alternative.summary</span></td>
+				<td>$r.render(${alternative.getPointsEl().getComponent().getComponentName()})
+				#if($f.hasError($alternative.getPointsEl().getComponent().getComponentName()))
+					<div>$r.render("${alternative.getPointsEl().getComponent().getComponentName()}_ERROR")</div>
+				#end
+				</td>
+			</tr>
+			#end
+		#end
 	#end
 	</tbody>
 </table>
