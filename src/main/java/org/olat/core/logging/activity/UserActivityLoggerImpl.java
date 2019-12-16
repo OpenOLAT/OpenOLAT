@@ -42,6 +42,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StackedBusinessControl;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.session.UserSessionManager;
 
@@ -604,43 +605,36 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 		// to the database below right away
 		List<ILoggingResourceable> resourceInfos = getCombinedOrderedLoggingResourceables(lriOrNull);
 		
-//fxdiff: see FXOLAT-104, move up here to remove targetIdentity before checking the LoggingResourcables, because of often obsolete delivery of targetIdentity. 
-//		TargetIdentity is often missing in XYLoggingAction.
-		
-		if (session_==null) {
-			// then I can't log - log information without session/user information isn't of much use
-			// issue a log warn with a stacktrace for this
-			log_.error("No session available to UserActivityLogger. Cannot write log entry: "+
-					crudAction.name()+":"+actionVerb.name()+", "+actionObject+", "+
-					convertLoggingResourceableListToString(resourceInfos), new Exception());
-			return;
-		}
-		
+		// Move up here to remove targetIdentity before checking the LoggingResourcables, because of often obsolete delivery of targetIdentity. 
+		// TargetIdentity is often missing in XYLoggingAction.
 		final String sessionId;
-		if (session_.getSessionInfo() != null &&
-				session_.getSessionInfo().getSession() == null) {
-			//background taks
+		if(session_ == null || session_.getSessionInfo() == null
+				|| (session_.getSessionInfo() != null && session_.getSessionInfo().getSession() == null)) {
+			//background task
 			sessionId = Thread.currentThread().getName();
-		} else if (session_.getSessionInfo() == null) {
-			// no session Id available - odd
-			log_.error("No session information available to UserActivityLogger. Cannot write log entry: "+
-					crudAction.name()+":"+actionVerb.name()+", "+actionObject+", "+
-					convertLoggingResourceableListToString(resourceInfos), new Exception());
-			return;
 		} else {
 			sessionId = Long.toString(session_.getSessionInfo().getCreationTime());
 		}
 
-		Identity identity = session_.getIdentity();
-		if (identity==null) {
+		Long identityKey = null;
+		if(session_ != null && session_.getIdentity() != null) {
+			identityKey = session_.getIdentity().getKey();
+		} else {
+			for (ILoggingResourceable lr:resourceInfos) {
+				if (lr.getResourceableType() == StringResourceableType.targetIdentity && StringHelper.isLong(lr.getId())) {
+					identityKey = Long.valueOf(lr.getId());
+				}
+			}
+		}
+		if (identityKey == null) {
 			// no identity available - odd
-			log_.error("No identity available to UserActivityLogger. Cannot write log entry: "+
-					crudAction.name()+":"+actionVerb.name()+", "+actionObject+", "+
-					convertLoggingResourceableListToString(resourceInfos), new Exception());
+			log_.error("No identity available to UserActivityLogger. Cannot write log entry: {}:{}, {}, {}",
+					crudAction, actionVerb, actionObject, convertLoggingResourceableListToString(resourceInfos),
+					new Exception());
 			return;
 		}		
 		
-		Long identityKey = identity.getKey();		
+				
 		if (actionType!=ActionType.admin) {
 			final String identityKeyStr = String.valueOf(identityKey);
 			for (Iterator<ILoggingResourceable> it = resourceInfos.iterator(); it.hasNext();) {

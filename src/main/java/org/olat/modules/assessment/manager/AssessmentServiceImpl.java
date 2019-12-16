@@ -24,9 +24,14 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.PersistenceException;
+
+import org.apache.logging.log4j.Logger;
+import org.hibernate.exception.ConstraintViolationException;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -49,6 +54,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class AssessmentServiceImpl implements AssessmentService, UserDataDeletable {
 	
+	private static final Logger log = Tracing.createLoggerFor(AssessmentServiceImpl.class);
+	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -59,11 +66,21 @@ public class AssessmentServiceImpl implements AssessmentService, UserDataDeletab
 	@Override
 	public AssessmentEntry getOrCreateAssessmentEntry(Identity assessedIdentity, String anonymousIdentifier,
 			RepositoryEntry entry, String subIdent, Boolean entryRoot, RepositoryEntry referenceEntry) {
-		
 		AssessmentEntry assessmentEntry = assessmentEntryDao.loadAssessmentEntry(assessedIdentity, anonymousIdentifier, entry, subIdent);
 		if(assessmentEntry == null) {
-			assessmentEntry = assessmentEntryDao.createAssessmentEntry(assessedIdentity, anonymousIdentifier, entry, subIdent, entryRoot, referenceEntry);
-			dbInstance.commit();
+			try {
+				dbInstance.commit();
+				assessmentEntry = assessmentEntryDao.createAssessmentEntry(assessedIdentity, anonymousIdentifier, entry, subIdent, entryRoot, referenceEntry);
+				dbInstance.commit();
+			} catch(PersistenceException e) {
+				if(e.getCause() instanceof ConstraintViolationException) {
+					log.warn("", e);
+					dbInstance.rollback();
+					assessmentEntry = assessmentEntryDao.loadAssessmentEntry(assessedIdentity, anonymousIdentifier, entry, subIdent);
+				} else {
+					log.error("", e);
+				}
+			}
 		}
 		return assessmentEntry;
 	}
