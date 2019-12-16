@@ -68,7 +68,7 @@ public class FIBAssessmentItemBuilderTest {
 		QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
 		FIBAssessmentItemBuilder itemBuilder = new FIBAssessmentItemBuilder("Only texts", EntryType.text, qtiSerializer);
 		
-		List<TextEntryAlternative> entryAlternatives = toAlternatives("Berset", "Sommaruga", "Cassis");
+		List<TextEntryAlternative> entryAlternatives = toAlternatives(1.0d, "Berset", "Sommaruga", "Cassis");
 
 		String responseIdentifier1 = itemBuilder.generateResponseIdentifier();
 		TextEntry entry1 = itemBuilder.createTextEntry(responseIdentifier1);
@@ -138,7 +138,7 @@ public class FIBAssessmentItemBuilderTest {
 		QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
 		FIBAssessmentItemBuilder itemBuilder = new FIBAssessmentItemBuilder("Only texts", EntryType.text, qtiSerializer);
 		
-		List<TextEntryAlternative> entryAlternatives =  toAlternatives("Jupiter", "Saturne", "Uranus", "Neptune");
+		List<TextEntryAlternative> entryAlternatives = toAlternatives(1.0d, "Jupiter", "Saturne", "Uranus", "Neptune");
 		
 		String responseIdentifier1 = itemBuilder.generateResponseIdentifier();
 		TextEntry entry1 = itemBuilder.createTextEntry(responseIdentifier1);
@@ -155,7 +155,7 @@ public class FIBAssessmentItemBuilderTest {
 		String responseIdentifier3 = itemBuilder.generateResponseIdentifier();
 		TextEntry entry3 = itemBuilder.createTextEntry(responseIdentifier3);
 		entry3.setAlternatives(entryAlternatives);
-		entry3.setSolution("Saturne");
+		entry3.setSolution("Uranus");
 		entry3.setScore(1.0d);
 
 		itemBuilder.setQuestion("<p>Plan\u00E8te <textEntryInteraction responseIdentifier=\"" + responseIdentifier1 + "\" data-qti-solution=\"gap\" openolatType=\"string\"/> <textEntryInteraction responseIdentifier=\"" + responseIdentifier2 + "\" data-qti-solution=\"gap\" openolatType=\"string\"/> <textEntryInteraction responseIdentifier=\"" + responseIdentifier3 + "\"/></p>");
@@ -224,21 +224,21 @@ public class FIBAssessmentItemBuilderTest {
 		QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
 		FIBAssessmentItemBuilder itemBuilder = new FIBAssessmentItemBuilder("Only texts", EntryType.text, qtiSerializer);
 		
-		List<TextEntryAlternative> bigAlternatives =  toAlternatives("Jupiter", "Saturne", "Uranus", "Neptune");
+		List<TextEntryAlternative> bigAlternatives =  toAlternatives(1.0, "Jupiter", "Saturne", "Uranus", "Neptune");
 		String responseIdentifier1 = itemBuilder.generateResponseIdentifier();
 		TextEntry entry1 = itemBuilder.createTextEntry(responseIdentifier1);
 		entry1.setAlternatives(bigAlternatives);
 		entry1.setSolution("Jupiter");
 		entry1.setScore(1.0d);
 		
-		List<TextEntryAlternative> smallAlternatives =  toAlternatives("Terre", "Mercure", "Mars", "Venus");
+		List<TextEntryAlternative> smallAlternatives =  toAlternatives(1.0, "Terre", "Mercure", "Mars", "Venus");
 		String responseIdentifier2 = itemBuilder.generateResponseIdentifier();
 		TextEntry entry2 = itemBuilder.createTextEntry(responseIdentifier2);
 		entry2.setAlternatives(smallAlternatives);
 		entry2.setSolution("Terre");
 		entry2.setScore(1.0d);
 
-		List<TextEntryAlternative> verySmallAlternatives =  toAlternatives("Pluton", "Ceres");
+		List<TextEntryAlternative> verySmallAlternatives =  toAlternatives(1.0, "Pluton", "Ceres");
 		String responseIdentifier3 = itemBuilder.generateResponseIdentifier();
 		TextEntry entry3 = itemBuilder.createTextEntry(responseIdentifier3);
 		entry3.setAlternatives(verySmallAlternatives);
@@ -306,11 +306,12 @@ public class FIBAssessmentItemBuilderTest {
 		FileUtils.deleteDirsAndFiles(itemFile.toPath());
 	}
 	
-	private List<TextEntryAlternative> toAlternatives(String... strings) {
+	private List<TextEntryAlternative> toAlternatives(double score, String... strings) {
 		List<TextEntryAlternative> entryAlternatives = new ArrayList<>();
 		for(String string:strings) {
 			TextEntryAlternative alternative = new TextEntryAlternative();
 			alternative.setAlternative(string);
+			alternative.setScore(score);
 			entryAlternatives.add(alternative);
 		}
 		return entryAlternatives;
