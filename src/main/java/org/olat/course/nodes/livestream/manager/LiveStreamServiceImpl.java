@@ -23,6 +23,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -35,6 +38,7 @@ import org.olat.course.nodes.livestream.LiveStreamEvent;
 import org.olat.course.nodes.livestream.LiveStreamService;
 import org.olat.course.nodes.livestream.model.LiveStreamEventImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.stereotype.Service;
 
 /**
@@ -44,10 +48,21 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class LIveStreamServiceImpl implements LiveStreamService {
+public class LiveStreamServiceImpl implements LiveStreamService {
+	
+	private ScheduledExecutorService scheduler;
 	
 	@Autowired
 	private CalendarManager calendarManager;
+
+	@Override
+	public ScheduledExecutorService getScheduler() {
+		if (scheduler == null) {
+			ThreadFactory threadFactory = new CustomizableThreadFactory("oo-livestream-");
+			scheduler = Executors.newScheduledThreadPool(1, threadFactory);
+		}
+		return scheduler;
+	}
 
 	@Override
 	public List<? extends LiveStreamEvent> getRunningEvents(CourseCalendars calendars, int bufferBeforeMin,
@@ -132,5 +147,4 @@ public class LIveStreamServiceImpl implements LiveStreamService {
 		}
 		return liveStreamEvent;
 	}
-
 }

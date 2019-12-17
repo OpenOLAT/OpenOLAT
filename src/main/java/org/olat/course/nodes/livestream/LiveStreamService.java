@@ -20,6 +20,7 @@
 package org.olat.course.nodes.livestream;
 
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.olat.course.nodes.cal.CourseCalendars;
 
@@ -30,6 +31,8 @@ import org.olat.course.nodes.cal.CourseCalendars;
  *
  */
 public interface LiveStreamService {
+	
+	ScheduledExecutorService getScheduler();
 	
 	List<? extends LiveStreamEvent> getRunningEvents(CourseCalendars calendars, int bufferBeforeMin,
 			int bufferAfterMin);
