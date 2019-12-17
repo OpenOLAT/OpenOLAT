@@ -22,11 +22,13 @@ package org.olat.modules.lecture.ui.coach;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.logging.Tracing;
 import org.olat.modules.lecture.model.LectureReportRow;
 
 /**
@@ -38,6 +40,8 @@ import org.olat.modules.lecture.model.LectureReportRow;
 public class LecturesReportTableModel extends DefaultFlexiTableDataModel<LectureReportRow>
 implements SortableFlexiTableDataModel<LectureReportRow> {
 	
+	private static final Logger log = Tracing.createLoggerFor(LecturesReportTableModel.class);
+	
 	private final Locale locale;
 	
 	public LecturesReportTableModel(FlexiTableColumnModel columnsModel, Locale locale) {
@@ -48,8 +52,12 @@ implements SortableFlexiTableDataModel<LectureReportRow> {
 	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
-			List<LectureReportRow> rows = new LecturesReportTableModelSortDelegate(orderBy, this, locale).sort();
-			setObjects(rows);
+			try {
+				List<LectureReportRow> rows = new LecturesReportTableModelSortDelegate(orderBy, this, locale).sort();
+				setObjects(rows);
+			} catch (Exception e) {
+				log.error("", e);
+			}
 		}
 	}
 
