@@ -58,16 +58,6 @@ public interface WindowManager extends Disposable {
 	 * @return
 	 */
 	public WindowBackOffice createWindowBackOffice(String windowName, ChiefController owner, WindowSettings settings);
-
-	/**
-	 * @return The font size relative to the default font size
-	 * 		of the skin.
-	 */
-	public int getFontSize();
-	/**
-	 * @param fontSize relative to default font size
-	 */
-	public void setFontSize(int fontSize);
 	
 	/**
 	 * whether or not ajax mode ("web 2.0") is enabled. should only called by controllers to determine whether they can offer additional ui capabilites due to ajax turned on.

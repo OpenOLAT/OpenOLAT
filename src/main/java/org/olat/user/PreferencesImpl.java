@@ -50,7 +50,7 @@ public class PreferencesImpl implements Preferences {
 	@Column(name="language", nullable=true, insertable=true, updatable=true)
 	private String language;
 	@Column(name="fontsize", nullable=true, insertable=true, updatable=true)
-	private String fontsize;
+	private String fontsize; // not used anymore
 	@Column(name="notification_interval", nullable=true, insertable=true, updatable=true)
 	private String notificationInterval;
 	@Column(name="informsessiontimeout", nullable=true, insertable=true, updatable=true)
@@ -69,6 +69,7 @@ public class PreferencesImpl implements Preferences {
 	 * Get users language settings
 	 * @return Users language
 	 */
+	@Override
 	public String getLanguage() {
 		return this.language;
 	}
@@ -77,6 +78,7 @@ public class PreferencesImpl implements Preferences {
 	 * Set users language settings
 	 * @param l new language
 	 */
+	@Override
 	public void setLanguage(String l) {
 		// validate the language; fallback to default
 		I18nManager i18n = I18nManager.getInstance();
@@ -84,33 +86,9 @@ public class PreferencesImpl implements Preferences {
 	}
 	
 	/**
-	 * Get users fontsize settings
-	 * @return Users fontsize
-	 */
-	public String getFontsize() {
-		if(this.fontsize == null || this.fontsize.equals(""))
-			fontsize = "100"; //100% is default
-		return this.fontsize;
-	}
-
-	/** 
-	 * Set users fontsize settings
-	 * @param f new fontsize
-	 */
-	public void setFontsize(String f) {
-		// since OLAT 6 the font size is not text but a number. It is the relative
-		// size to the default size
-		try {
-			Integer.parseInt(f);
-			this.fontsize = f;
-		} catch (NumberFormatException e) {
-			this.fontsize = "100"; // default value
-		}
-	}
-	
-	/**
 	 * @param notificationInterval The notificationInterval to set.
 	 */
+	@Override
 	public void setNotificationInterval(String notificationInterval) {
 		this.notificationInterval = notificationInterval;
 	}
@@ -118,6 +96,7 @@ public class PreferencesImpl implements Preferences {
 	/**
 	 * @return Returns the notificationInterval.
 	 */
+	@Override
 	public String getNotificationInterval() {
 		// Always return a valid notification interval
 		NotificationsManager notiMgr = NotificationsManager.getInstance();
@@ -135,6 +114,7 @@ public class PreferencesImpl implements Preferences {
 	/**
 	 * @return True if user wants to be informed about the session timeout (popup)
 	 */
+	@Override
 	public boolean getInformSessionTimeout() {
 		return informSessionTimeout;
 	}
@@ -142,6 +122,7 @@ public class PreferencesImpl implements Preferences {
 	/**
 	 * @param b Set information about wether session timeout should be displayed or not
 	 */
+	@Override
 	public void setInformSessionTimeout(boolean b) {
 		informSessionTimeout = b;
 	}
@@ -166,6 +147,7 @@ public class PreferencesImpl implements Preferences {
 	/**
 	 * @see org.olat.user.Preferences#getPresenceMessagesPublic()
 	 */
+	@Override
 	public boolean getPresenceMessagesPublic() {
 		return presenceMessagesPublic;
 	}
@@ -173,6 +155,7 @@ public class PreferencesImpl implements Preferences {
 	/**
 	 * @see org.olat.user.Preferences#setPresenceMessagesPublic(boolean)
 	 */
+	@Override
 	public void setPresenceMessagesPublic(boolean b) {
 		this.presenceMessagesPublic = b;
 	}

@@ -195,11 +195,7 @@ $theme.renderHTMLHeaderElements()
 ## 5) Dynamic overriding of CSS rules
 $r.render("jsCssRawHtmlHeader", "post-theme")
 ## 6) Add user font size (id o_fontSize_css used to place on demand css)
-#if (${globalSettings.getFontSize()} != "100")
-<style id="o_fontSize_css">#o_body{zoom:${globalSettings.getFontSize()}%; -moz-transform: scale(${globalSettings.getFontSize()}%)}</style>
-#else
 <style id="o_fontSize_css"></style>
-#end
 <style>
 	#if($logoInfos.logo)
 		.o_custom_navbar-brand { background-image: url('$logoInfos.logoUri'); }

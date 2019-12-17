@@ -199,11 +199,8 @@ public class ExceptionWindowController extends DefaultChiefController {
 		Window w = wbo.getWindow();
 		
 		msg.put("jsCssRawHtmlHeader", w.getJsCssRawHtmlHeader());		
-		// the current GUI theme and the global settings that contains the
-		// font-size. both are pushed as objects so that window.dirty always reads
-		// out the correct value
+		
 		msg.contextPut("theme", w.getGuiTheme());		
-		msg.contextPut("globalSettings", ws.getWindowManager().getGlobalSettings());		
 		
 		UserSession session = ureq.getUserSession();
 		if(session != null &&  session.getLastHistoryPoint() != null) {

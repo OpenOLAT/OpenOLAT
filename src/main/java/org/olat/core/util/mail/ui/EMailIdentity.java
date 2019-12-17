@@ -190,16 +190,6 @@ public class EMailIdentity implements Identity {
 		}
 
 		@Override
-		public String getFontsize() {
-			return null;
-		}
-
-		@Override
-		public void setFontsize(String l) {
-			//
-		}
-
-		@Override
 		public String getNotificationInterval() {
 			return null;
 		}
