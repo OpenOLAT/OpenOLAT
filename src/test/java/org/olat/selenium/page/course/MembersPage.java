@@ -169,6 +169,58 @@ public class MembersPage {
 	}
 	
 	/**
+	 * @param name The name of the user
+	 * @return Itself
+	 */
+	public MembersPage openMembership(String name) {
+		By toolBy = By.xpath("//div//tr[td/a[text()[contains(.,'" + name+ "')]]]/td/a[i[contains(@class,'o_icon_actions')]]");
+		OOGraphene.waitElement(toolBy, browser);
+		browser.findElement(toolBy).click();
+		OOGraphene.waitCallout(browser);
+		
+		By editBy = By.xpath("//div[contains(@class,'popover')]//ul[contains(@class,'o_dropdown')]/li/a[contains(@onclick,'tbl_edit')]");
+		browser.findElement(editBy).click();
+		
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
+		return this;
+	}
+	
+	/**
+	 * 
+	 * @param participant true/false to change membership
+	 * @return Itself
+	 */
+	public MembersPage editRepositoryMembership(Boolean participant) {
+		if(participant != null) {
+			By participantBy = By.cssSelector(".o_sel_edit_permissions label input[name='repoRights'][type='checkbox'][value='participant']");
+			WebElement participantEl = browser.findElement(participantBy);
+			OOGraphene.check(participantEl, participant);
+			OOGraphene.waitBusy(browser);
+		}
+		return this;
+	}
+	
+	/**
+	 * Save the member ship of a user.
+	 * 
+	 * @return Itself
+	 */
+	public MembersPage saveMembership() {
+		By saveBy = By.cssSelector("div.modal-content div.o_button_group button.btn-primary");
+		browser.findElement(saveBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		// confirm email
+		By confirmNoMailBy = By.xpath("//div[contains(@class,'modal-footer')]/a[contains(@onclick,'link_1')]");
+		OOGraphene.waitElement(confirmNoMailBy, browser);
+		browser.findElement(confirmNoMailBy).click();
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
+		return this;
+	}
+	
+	/**
 	 * Check if the user with the specified first name is in the member list.
 	 * @param user
 	 * @return

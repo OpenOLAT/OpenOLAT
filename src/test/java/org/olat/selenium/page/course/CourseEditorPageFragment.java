@@ -525,7 +525,7 @@ public class CourseEditorPageFragment {
 	/**
 	 * Click the back button
 	 * 
-	 * @return
+	 * @return Itself
 	 */
 	public CoursePageFragment clickToolbarBack() {
 		browser.findElement(toolbarBackBy).click();

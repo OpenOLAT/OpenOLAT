@@ -185,7 +185,7 @@ public class CourseElementTest extends Deployments {
 		// publish the course
 		new RepositoryEditDescriptionPage(browser)
 			.clickToolbarBack();
-		CoursePageFragment.getCourse(browser)
+		CoursePageFragment course = CoursePageFragment.getCourse(browser)
 				.edit()
 				.autoPublish();
 		
@@ -193,6 +193,15 @@ public class CourseElementTest extends Deployments {
 		ScormPage.getScormPage(browser)
 			.back()
 			.assertOnStart();
+		
+		// make the author a participant too
+		course
+			.members()
+			.selectMembers()
+			.openMembership(author.getFirstName())
+			.editRepositoryMembership(Boolean.TRUE)
+			.saveMembership()
+			.clickToolbarBack();
 		
 		//log out
 		new UserToolsPage(browser)

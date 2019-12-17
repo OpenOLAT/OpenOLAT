@@ -79,9 +79,15 @@ public class CoursePageFragment {
 		return this;
 	}
 	
+	public CoursePageFragment assertOnLearnPath() {
+		By menuPathBy = By.cssSelector("div.o_tree.o_tree_root_visible.o_course_menu.o_lp_tree");
+		OOGraphene.waitElement(menuPathBy, browser);
+		return this;
+	}
+	
 	public CoursePageFragment assertOnTitle(String displayName) {
 		By titleBy = By.xpath("//h2[text()[contains(.,'" + displayName + "')]]");
-		OOGraphene.waitElement(titleBy, 5, browser);
+		OOGraphene.waitElement(titleBy, browser);
 		
 		WebElement titleEl = browser.findElement(titleBy);
 		Assert.assertNotNull(titleEl);
@@ -288,6 +294,18 @@ public class CoursePageFragment {
 		
 		By statusViewBy = By.xpath("//li[contains(@class,'o_tool_dropdown')]/a[contains(@class,'o_repo_tools_status')]/span[contains(@class,'o_repo_status_" + status + "')]");
 		OOGraphene.waitElement(statusViewBy, browser);
+		return this;
+	}
+	
+	
+	/**
+	 * Close the course
+	 */
+	public CoursePageFragment closeCourse() {
+		By closeBy = By.cssSelector("ol.breadcrumb li.o_breadcrumb_close a");
+		OOGraphene.waitElement(closeBy, browser);
+		browser.findElement(closeBy).click();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 }

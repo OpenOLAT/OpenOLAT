@@ -588,9 +588,26 @@ public class ImsQTI21Test extends Deployments {
 			.publish()
 			.quickPublish();
 		
-		//open the course and see the CP
+		//open the course
 		CoursePageFragment course = courseEditor
 			.clickToolbarBack();
+		
+		// make the author a participant too
+		course
+			.members()
+			.selectMembers()
+			.openMembership(author.getFirstName())
+			.editRepositoryMembership(Boolean.TRUE)
+			.saveMembership()
+			.clickToolbarBack();
+		// close the course
+		course
+			.closeCourse();
+			
+		// reopen the course as participant (default)
+		navBar
+			.openAuthoringEnvironment()
+			.selectResource(courseTitle);
 		
 		course
 			.clickTree()
@@ -680,6 +697,23 @@ public class ImsQTI21Test extends Deployments {
 		//open the course and see the CP
 		CoursePageFragment course = courseEditor
 			.clickToolbarBack();
+		
+		// make the author a participant too
+		course
+			.members()
+			.selectMembers()
+			.openMembership(author.getFirstName())
+			.editRepositoryMembership(Boolean.TRUE)
+			.saveMembership()
+			.clickToolbarBack();
+		// close the course
+		course
+			.closeCourse();
+			
+		// reopen the course as participant (default)
+		navBar
+			.openAuthoringEnvironment()
+			.selectResource(courseTitle);
 		
 		course
 			.clickTree()
@@ -778,6 +812,23 @@ public class ImsQTI21Test extends Deployments {
 		//open the course and see the CP
 		CoursePageFragment course = courseEditor
 			.clickToolbarBack();
+		
+		// make the author a participant too
+		course
+			.members()
+			.selectMembers()
+			.openMembership(author.getFirstName())
+			.editRepositoryMembership(Boolean.TRUE)
+			.saveMembership()
+			.clickToolbarBack();
+		// close the course
+		course
+			.closeCourse();
+			
+		// reopen the course as participant (default)
+		navBar
+			.openAuthoringEnvironment()
+			.selectResource(courseTitle);
 		
 		course
 			.clickTree()

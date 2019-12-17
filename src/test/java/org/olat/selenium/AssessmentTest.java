@@ -127,8 +127,27 @@ public class AssessmentTest extends Deployments {
 			.quickPublish();
 		
 		//open the course and see the test start page
-		courseEditor
-			.clickToolbarBack()
+		CoursePageFragment course = courseEditor
+			.clickToolbarBack();
+		
+		// make the author a participant too
+		course
+			.members()
+			.selectMembers()
+			.openMembership(author.getFirstName())
+			.editRepositoryMembership(Boolean.TRUE)
+			.saveMembership()
+			.clickToolbarBack();
+		// close the course
+		course
+			.closeCourse();
+			
+		// reopen the course as participant (default)
+		navBar
+			.openAuthoringEnvironment()
+			.selectResource(courseTitle);
+		
+		course
 			.clickTree()
 			.selectWithTitle(testNodeTitle);
 		
