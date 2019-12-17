@@ -37,13 +37,17 @@ import org.springframework.stereotype.Service;
 public class LiveStreamModule extends AbstractSpringModule implements ConfigOnOff {
 
 	public static final String LIVE_STREAM_ENABLED = "live.stream.enabled";
+	public static final String LIVE_STREAM_MULTI_STREAM_ENABLED = "live.stream.multi.stream.enabled";
 	public static final String LIVE_STREAM_URL_SEPARATOR = "live.stream.url.separator";
 	public static final String LIVE_STREAM_BUFFER_BEFORE_MIN = "live.stream.buffer.before.min";
 	public static final String LIVE_STREAM_BUFFER_AFTER_MIN = "live.stream.buffer.after.min";
 	public static final String LIVE_STREAM_EDIT_COACH = "live.stream.edit.coach";
+	public static final String LIVE_STREAM_PLAYER_PROFILE = "live.stream.player.profile";
 
 	@Value("${live.stream.enabled:false}")
 	private boolean enabled;
+	@Value("${live.stream.multi.stream.enabled:false}")
+	private boolean multiStreamEnabled;
 	@Value("${live.stream.url.separator:,}")
 	private String urlSeparator;
 	@Value("${live.stream.buffer.before.min:5}")
@@ -52,6 +56,8 @@ public class LiveStreamModule extends AbstractSpringModule implements ConfigOnOf
 	private int bufferAfterMin;
 	@Value("${live.stream.edit.coach:false}")
 	private boolean editCoach;
+	@Value("${live.stream.player.profile:both}")
+	private String playerProfile;
 	
 	@Autowired
 	public LiveStreamModule(CoordinatorManager coordinatorManager) {
@@ -63,6 +69,11 @@ public class LiveStreamModule extends AbstractSpringModule implements ConfigOnOf
 		String enabledObj = getStringPropertyValue(LIVE_STREAM_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(enabledObj)) {
 			enabled = "true".equals(enabledObj);
+		}
+		
+		String multiStreamEnabledObj = getStringPropertyValue(LIVE_STREAM_MULTI_STREAM_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(multiStreamEnabledObj)) {
+			multiStreamEnabled = "true".equals(multiStreamEnabledObj);
 		}
 		
 		String urlSeparatorObj = getStringPropertyValue(LIVE_STREAM_URL_SEPARATOR, true);
@@ -84,6 +95,11 @@ public class LiveStreamModule extends AbstractSpringModule implements ConfigOnOf
 		if(StringHelper.containsNonWhitespace(editCoachObj)) {
 			editCoach = "true".equals(editCoachObj);
 		}
+		
+		String playerProfileObj = getStringPropertyValue(LIVE_STREAM_PLAYER_PROFILE, true);
+		if(StringHelper.containsNonWhitespace(playerProfileObj)) {
+			playerProfile = playerProfileObj;
+		}
 	}
 	
 	@Override
@@ -99,6 +115,15 @@ public class LiveStreamModule extends AbstractSpringModule implements ConfigOnOf
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
 		setStringProperty(LIVE_STREAM_ENABLED, Boolean.toString(enabled), true);
+	}
+
+	public boolean isMultiStreamEnabled() {
+		return multiStreamEnabled;
+	}
+
+	public void setMultiStreamEnabled(boolean multiStreamEnabled) {
+		this.multiStreamEnabled = multiStreamEnabled;
+		setStringProperty(LIVE_STREAM_MULTI_STREAM_ENABLED, Boolean.toString(multiStreamEnabled), true);
 	}
 
 	public String getUrlSeparator() {
@@ -135,6 +160,15 @@ public class LiveStreamModule extends AbstractSpringModule implements ConfigOnOf
 	public void setEditCoach(boolean editCoach) {
 		this.editCoach = editCoach;
 		setStringProperty(LIVE_STREAM_EDIT_COACH, Boolean.toString(editCoach), true);
+	}
+
+	public String getPlayerProfile() {
+		return playerProfile;
+	}
+
+	public void setPlayerProfile(String playerProfile) {
+		this.playerProfile = playerProfile;
+		setStringProperty(LIVE_STREAM_PLAYER_PROFILE, playerProfile, true);
 	}
 
 }

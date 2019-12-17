@@ -61,7 +61,7 @@ public class LiveStreamsController extends BasicController {
 			CourseCalendars calendars) {
 		super(ureq, wControl);
 		mainVC = createVelocityContainer("streams");
-
+		
 		viewersCtrl = new LiveStreamViewersController(ureq, wControl, moduleConfiguration, calendars);
 		listenTo(viewersCtrl);
 		mainVC.put("viewers", viewersCtrl.getInitialComponent());

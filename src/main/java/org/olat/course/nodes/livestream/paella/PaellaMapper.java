@@ -49,9 +49,11 @@ public class PaellaMapper implements Mapper {
 	private final ObjectMapper mapper = new ObjectMapper();
 	
 	private final Streams streams;
+	private final PlayerProfile playerProfile;
 	
-	public PaellaMapper(Streams streams) {
+	public PaellaMapper(Streams streams, PlayerProfile playerProfile) {
 		this.streams = streams;
+		this.playerProfile = playerProfile;
 	}
 
 	@Override
@@ -210,18 +212,9 @@ public class PaellaMapper implements Mapper {
 		sb.append("      'es.upv.paella.translecture.captionsPlugin': {'enabled':true},");
 		sb.append("      'es.upv.paella.trimmingPlayerPlugin': {'enabled':true},");
 		sb.append("      'es.upv.paella.windowTitlePlugin': {'enabled': true},");
-		sb.append("      'es.upv.paella.singleStreamProfilePlugin': {");
-		sb.append("          'enabled': true,");
-		sb.append("          'videoSets': [");
-		sb.append("            { 'icon':'professor_icon.svg', 'id':'professor', 'content':['stream1']},");
-		sb.append("            { 'icon':'slide_icon.svg', 'id':'slide', 'content':['stream2']}");
-		sb.append("          ]");
-		sb.append("      },");
-		sb.append("      'es.upv.paella.dualStreamProfilePlugin': { 'enabled':true,");
-		sb.append("        'videoSets': [");
-		sb.append("          { 'icon':'slide_professor_icon.svg', 'id':'slide_over_professor', 'content':['stream1','stream2'] }");
-		sb.append("        ]");
-		sb.append("      }");
+		playerProfile.appendPlayerConfig(sb);
+		// The last plugin must not have a comma at the and of the configs.
+		sb.append("      'es.upv.paella.windowTitlePlugin': {'enabled': true}");
 		sb.append("    }");
 		sb.append("  },");
 		sb.append("  'defaultProfile':'presenter_presentation',");

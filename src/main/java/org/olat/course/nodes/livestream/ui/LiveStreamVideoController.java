@@ -36,6 +36,7 @@ import org.olat.core.util.UserSession;
 import org.olat.course.nodes.livestream.LiveStreamEvent;
 import org.olat.course.nodes.livestream.paella.PaellaFactory;
 import org.olat.course.nodes.livestream.paella.PaellaMapper;
+import org.olat.course.nodes.livestream.paella.PlayerProfile;
 import org.olat.course.nodes.livestream.paella.Streams;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -49,14 +50,16 @@ public class LiveStreamVideoController extends BasicController {
 
 	private final VelocityContainer mainVC;
 	
+	private final PlayerProfile playerProfile;
 	private final List<MapperKey> mappers = new ArrayList<>();
 	private String url;
 	
 	@Autowired
 	private MapperService mapperService;
 
-	protected LiveStreamVideoController(UserRequest ureq, WindowControl wControl) {
+	protected LiveStreamVideoController(UserRequest ureq, WindowControl wControl, PlayerProfile playerProfile) {
 		super(ureq, wControl);
+		this.playerProfile = playerProfile;
 		mainVC = createVelocityContainer("video");
 		updateUI(ureq.getUserSession());
 		putInitialPanel(mainVC);
@@ -74,7 +77,7 @@ public class LiveStreamVideoController extends BasicController {
 		if (StringHelper.containsNonWhitespace(url)) {
 			mainVC.contextPut("id", CodeHelper.getRAMUniqueID());
 			Streams streams = PaellaFactory.createStreams(url);
-			PaellaMapper paellaMapper = new PaellaMapper(streams);
+			PaellaMapper paellaMapper = new PaellaMapper(streams, playerProfile);
 			MapperKey mapperKey = mapperService.register(usess, paellaMapper);
 			mappers.add(mapperKey);
 			String baseURI = mapperKey.getUrl();

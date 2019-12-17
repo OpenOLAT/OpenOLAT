@@ -30,11 +30,14 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.course.nodes.LiveStreamCourseNode;
 import org.olat.course.nodes.cal.CourseCalendars;
 import org.olat.course.nodes.livestream.LiveStreamEvent;
+import org.olat.course.nodes.livestream.LiveStreamModule;
 import org.olat.course.nodes.livestream.LiveStreamService;
+import org.olat.course.nodes.livestream.paella.PlayerProfile;
 import org.olat.modules.ModuleConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -67,6 +70,8 @@ public class LiveStreamViewersController extends BasicController {
 	private Boolean noLiveStream;
 	
 	@Autowired
+	private LiveStreamModule liveStreamModule;
+	@Autowired
 	private LiveStreamService liveStreamService;
 	
 	public LiveStreamViewersController(UserRequest ureq, WindowControl wControl, ModuleConfiguration moduleConfiguration,
@@ -76,56 +81,57 @@ public class LiveStreamViewersController extends BasicController {
 		
 		bufferBeforeMin = moduleConfiguration.getIntegerSafe(LiveStreamCourseNode.CONFIG_BUFFER_BEFORE_MIN, 0);
 		bufferAfterMin = moduleConfiguration.getIntegerSafe(LiveStreamCourseNode.CONFIG_BUFFER_AFTER_MIN, 0);
+		PlayerProfile playerProfile = getPlayerProfile(moduleConfiguration);
 		
 		mainVC = createVelocityContainer("viewers");
 		
 		displayWrappers = new ArrayList<>();
-		displayCtrl0 = new LiveStreamViewerController(ureq, wControl);
+		displayCtrl0 = new LiveStreamViewerController(ureq, wControl, playerProfile);
 		listenTo(displayCtrl0);
 		mainVC.put("display0", displayCtrl0.getInitialComponent());
 		displayWrappers.add(new DisplayWrapper(displayCtrl0));
 		
-		displayCtrl1 = new LiveStreamViewerController(ureq, wControl);
+		displayCtrl1 = new LiveStreamViewerController(ureq, wControl, playerProfile);
 		listenTo(displayCtrl1);
 		mainVC.put("display1", displayCtrl1.getInitialComponent());
 		displayWrappers.add(new DisplayWrapper(displayCtrl1));
 		
-		displayCtrl2 = new LiveStreamViewerController(ureq, wControl);
+		displayCtrl2 = new LiveStreamViewerController(ureq, wControl, playerProfile);
 		listenTo(displayCtrl2);
 		mainVC.put("display2", displayCtrl2.getInitialComponent());
 		displayWrappers.add(new DisplayWrapper(displayCtrl2));
 		
-		displayCtrl3 = new LiveStreamViewerController(ureq, wControl);
+		displayCtrl3 = new LiveStreamViewerController(ureq, wControl, playerProfile);
 		listenTo(displayCtrl3);
 		mainVC.put("display3", displayCtrl3.getInitialComponent());
 		displayWrappers.add(new DisplayWrapper(displayCtrl3));
 		
-		displayCtrl4 = new LiveStreamViewerController(ureq, wControl);
+		displayCtrl4 = new LiveStreamViewerController(ureq, wControl, playerProfile);
 		listenTo(displayCtrl4);
 		mainVC.put("display4", displayCtrl4.getInitialComponent());
 		displayWrappers.add(new DisplayWrapper(displayCtrl4));
 		
-		displayCtrl5 = new LiveStreamViewerController(ureq, wControl);
+		displayCtrl5 = new LiveStreamViewerController(ureq, wControl, playerProfile);
 		listenTo(displayCtrl5);
 		mainVC.put("display5", displayCtrl5.getInitialComponent());
 		displayWrappers.add(new DisplayWrapper(displayCtrl5));
 		
-		displayCtrl6 = new LiveStreamViewerController(ureq, wControl);
+		displayCtrl6 = new LiveStreamViewerController(ureq, wControl, playerProfile);
 		listenTo(displayCtrl6);
 		mainVC.put("display6", displayCtrl6.getInitialComponent());
 		displayWrappers.add(new DisplayWrapper(displayCtrl6));
 		
-		displayCtrl7 = new LiveStreamViewerController(ureq, wControl);
+		displayCtrl7 = new LiveStreamViewerController(ureq, wControl, playerProfile);
 		listenTo(displayCtrl7);
 		mainVC.put("display7", displayCtrl7.getInitialComponent());
 		displayWrappers.add(new DisplayWrapper(displayCtrl7));
 		
-		displayCtrl8 = new LiveStreamViewerController(ureq, wControl);
+		displayCtrl8 = new LiveStreamViewerController(ureq, wControl, playerProfile);
 		listenTo(displayCtrl8);
 		mainVC.put("display8", displayCtrl8.getInitialComponent());
 		displayWrappers.add(new DisplayWrapper(displayCtrl8));
 		
-		displayCtrl9 = new LiveStreamViewerController(ureq, wControl);
+		displayCtrl9 = new LiveStreamViewerController(ureq, wControl, playerProfile);
 		listenTo(displayCtrl9);
 		mainVC.put("display9", displayCtrl9.getInitialComponent());
 		displayWrappers.add(new DisplayWrapper(displayCtrl9));
@@ -133,6 +139,20 @@ public class LiveStreamViewersController extends BasicController {
 		refresh(ureq.getUserSession());
 		
 		putInitialPanel(mainVC);
+	}
+	
+	private PlayerProfile getPlayerProfile(ModuleConfiguration moduleConfiguration) {
+		PlayerProfile playerProfile = PlayerProfile.stream1;
+		
+		if (liveStreamModule.isMultiStreamEnabled()) {
+			String nodePlayerProfile = moduleConfiguration.getStringValue(LiveStreamCourseNode.CONFIG_PLAYER_PROFILE);
+			if (StringHelper.containsNonWhitespace(nodePlayerProfile)) {
+				playerProfile = PlayerProfile.valueOf(nodePlayerProfile);
+			} else {
+				playerProfile = PlayerProfile.valueOf(liveStreamModule.getPlayerProfile());
+			}
+		}
+		return playerProfile;
 	}
 	
 	void refresh(UserSession usess) {
