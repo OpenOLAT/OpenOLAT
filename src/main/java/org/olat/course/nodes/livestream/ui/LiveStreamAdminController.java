@@ -21,6 +21,7 @@ package org.olat.course.nodes.livestream.ui;
 
 import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 import static org.olat.course.nodes.livestream.ui.LiveStreamUIFactory.validateInteger;
+import static org.olat.course.nodes.livestream.ui.LiveStreamUIFactory.validateMandatory;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -44,6 +45,7 @@ public class LiveStreamAdminController extends FormBasicController {
 	private static final String[] ENABLED_KEYS = new String[]{"on"};
 	
 	private MultipleSelectionElement enabledEl;
+	private TextElement urlSeparatorEl;
 	private TextElement bufferBeforeMinEl;
 	private TextElement bufferAfterMinEl;
 	private MultipleSelectionElement coachCanEditEl;
@@ -67,6 +69,10 @@ public class LiveStreamAdminController extends FormBasicController {
 		enabledEl = uifactory.addCheckboxesHorizontal("admin.module.enabled", generalCont, ENABLED_KEYS,
 				translateAll(getTranslator(), ENABLED_KEYS));
 		enabledEl.select(ENABLED_KEYS[0], liveStreamModule.isEnabled());
+		
+		urlSeparatorEl = uifactory.addTextElement("admin.url.separator", 10, liveStreamModule.getUrlSeparator(), generalCont);
+		urlSeparatorEl.setMandatory(true);
+		urlSeparatorEl.setHelpTextKey("admin.url.separator.help", null);
 		
 		FormLayoutContainer defaultValuesCont = FormLayoutContainer.createDefaultFormLayout("default_values", getTranslator());
 		defaultValuesCont.setFormTitle(translate("admin.default.values.title"));
@@ -99,6 +105,7 @@ public class LiveStreamAdminController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 
+		allOk &= validateMandatory(urlSeparatorEl);
 		allOk &= validateInteger(bufferBeforeMinEl, true);
 		allOk &= validateInteger(bufferAfterMinEl, true);
 
@@ -109,6 +116,9 @@ public class LiveStreamAdminController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		boolean enabled = enabledEl.isAtLeastSelected(1);
 		liveStreamModule.setEnabled(enabled);
+		
+		String urlSeparator = urlSeparatorEl.getValue();
+		liveStreamModule.setUrlSeparator(urlSeparator);
 		
 		int bufferBeforeMin = Integer.parseInt(bufferBeforeMinEl.getValue());
 		liveStreamModule.setBufferBeforeMin(bufferBeforeMin);

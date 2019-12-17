@@ -37,12 +37,15 @@ import org.springframework.stereotype.Service;
 public class LiveStreamModule extends AbstractSpringModule implements ConfigOnOff {
 
 	public static final String LIVE_STREAM_ENABLED = "live.stream.enabled";
+	public static final String LIVE_STREAM_URL_SEPARATOR = "live.stream.url.separator";
 	public static final String LIVE_STREAM_BUFFER_BEFORE_MIN = "live.stream.buffer.before.min";
 	public static final String LIVE_STREAM_BUFFER_AFTER_MIN = "live.stream.buffer.after.min";
 	public static final String LIVE_STREAM_EDIT_COACH = "live.stream.edit.coach";
 
 	@Value("${live.stream.enabled:false}")
 	private boolean enabled;
+	@Value("${live.stream.url.separator:,}")
+	private String urlSeparator;
 	@Value("${live.stream.buffer.before.min:5}")
 	private int bufferBeforeMin;
 	@Value("${live.stream.buffer.after.min:5}")
@@ -60,6 +63,11 @@ public class LiveStreamModule extends AbstractSpringModule implements ConfigOnOf
 		String enabledObj = getStringPropertyValue(LIVE_STREAM_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(enabledObj)) {
 			enabled = "true".equals(enabledObj);
+		}
+		
+		String urlSeparatorObj = getStringPropertyValue(LIVE_STREAM_URL_SEPARATOR, true);
+		if(StringHelper.containsNonWhitespace(urlSeparatorObj)) {
+			urlSeparator = urlSeparatorObj;
 		}
 		
 		String bufferBeforeMinObj = getStringPropertyValue(LIVE_STREAM_BUFFER_BEFORE_MIN, true);
@@ -91,6 +99,15 @@ public class LiveStreamModule extends AbstractSpringModule implements ConfigOnOf
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
 		setStringProperty(LIVE_STREAM_ENABLED, Boolean.toString(enabled), true);
+	}
+
+	public String getUrlSeparator() {
+		return urlSeparator;
+	}
+
+	public void setUrlSeparator(String urlSeparator) {
+		this.urlSeparator = urlSeparator;
+		setStringProperty(LIVE_STREAM_URL_SEPARATOR, urlSeparator, true);
 	}
 
 	public int getBufferBeforeMin() {

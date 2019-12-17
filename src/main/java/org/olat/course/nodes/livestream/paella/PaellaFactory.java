@@ -19,7 +19,12 @@
  */
 package org.olat.course.nodes.livestream.paella;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.util.StringHelper;
+import org.olat.course.nodes.livestream.LiveStreamModule;
 
 /**
  * 
@@ -29,15 +34,49 @@ import org.olat.core.util.StringHelper;
  */
 public class PaellaFactory {
 	
-	public static Sources createSources(String url) {
+	public static Streams createStreams(String url) {
+		Streams streams = new Streams();
+		if (StringHelper.containsNonWhitespace(url)) {
+			String[] urls = splitUrls(url);
+			addStreams(streams, urls);
+		}
+		return streams;
+	}
+
+	private static String[] splitUrls(String url) {
+		String urlSeparator = CoreSpringFactory.getImpl(LiveStreamModule.class).getUrlSeparator();
+		return url.split(urlSeparator);
+	}
+	
+	private static void addStreams(Streams streams, String[] urls) {
+		List<Stream> streamList = new ArrayList<>(2);
+		if (urls.length > 0) {
+			Stream stream1 = createStream("stream1", urls[0]);
+			streamList.add(stream1);
+		}
+		if (urls.length > 1) {
+			Stream stream1 = createStream("stream2", urls[1]);
+			streamList.add(stream1);
+		}
+		Stream[] streamArray = streamList.toArray(new Stream[streamList.size()]);
+		streams.setStreams(streamArray);
+	}
+
+	private static Stream createStream(String content, String url) {
+		Stream stream = new Stream();
+		stream.setContent(content);
+		Sources sources = createSources(url);
+		stream.setSources(sources);
+		return stream;
+	}
+
+	private static Sources createSources(String url) {
 		Sources sources = new Sources();
 		addSource(sources, url);
 		return sources;
 	}
 	
 	private static void addSource(Sources sources, String url) {
-		if (!StringHelper.containsNonWhitespace(url)) return;
-			
 		String suffix = getSuffix(url);
 		if (suffix == null) return;
 	

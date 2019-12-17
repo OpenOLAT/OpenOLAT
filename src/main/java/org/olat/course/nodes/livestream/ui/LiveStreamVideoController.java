@@ -36,7 +36,7 @@ import org.olat.core.util.UserSession;
 import org.olat.course.nodes.livestream.LiveStreamEvent;
 import org.olat.course.nodes.livestream.paella.PaellaFactory;
 import org.olat.course.nodes.livestream.paella.PaellaMapper;
-import org.olat.course.nodes.livestream.paella.Sources;
+import org.olat.course.nodes.livestream.paella.Streams;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -73,8 +73,8 @@ public class LiveStreamVideoController extends BasicController {
 	private void updateUI(UserSession usess) {
 		if (StringHelper.containsNonWhitespace(url)) {
 			mainVC.contextPut("id", CodeHelper.getRAMUniqueID());
-			Sources sources = PaellaFactory.createSources(url);
-			PaellaMapper paellaMapper = new PaellaMapper(sources);
+			Streams streams = PaellaFactory.createStreams(url);
+			PaellaMapper paellaMapper = new PaellaMapper(streams);
 			MapperKey mapperKey = mapperService.register(usess, paellaMapper);
 			mappers.add(mapperKey);
 			String baseURI = mapperKey.getUrl();

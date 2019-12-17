@@ -48,10 +48,10 @@ public class PaellaMapper implements Mapper {
 	
 	private final ObjectMapper mapper = new ObjectMapper();
 	
-	private final Sources sources;
+	private final Streams streams;
 	
-	public PaellaMapper(Sources sources) {
-		this.sources = sources;
+	public PaellaMapper(Streams streams) {
+		this.streams = streams;
 	}
 
 	@Override
@@ -85,19 +85,11 @@ public class PaellaMapper implements Mapper {
 		appendStaticCSS(sb, "js/paella/player/resources/style/style_dark.css");
 		sb.append("</head>");
 		sb.append("<body id=\"body\" onload=\"paella.load('playerContainer', {");
-		sb.append(" configUrl: '");
-		apendConfigUrl(sb);
-		sb.append("',");
+		sb.append(" config: ");
+		appendPlayerConfig(sb);
+		sb.append(" ,");
 		sb.append(" data:");
-		sb.append("{");
-		
-		sb.append("'streams': [{");
-		sb.append("   'sources' : ");
-		sb.append(objectToJson(sources));
-		sb.append(",  'content': 'stream content'");
-		sb.append("}] ");
-		
-		sb.append("}");
+		sb.append(objectToJson(streams));
 		sb.append("}");
 		sb.append(");\">");
 		sb.append("<div id=\"playerContainer\" style=\"display:block;width:100%\">");
@@ -108,11 +100,6 @@ public class PaellaMapper implements Mapper {
 		String html = sb.toString();
 		log.debug(html);
 		return html;
-	}
-	
-
-	private void apendConfigUrl(StringOutput sb) {
-		StaticMediaDispatcher.renderStaticURI(sb, "js/paella/openolat/config.json");
 	}
 
 	private void appendStaticJs(StringOutput sb, String javascript) {
@@ -125,6 +112,131 @@ public class PaellaMapper implements Mapper {
 		sb.append("<link rel=\"stylesheet\" type=\"text/css\" media=\"screen\"  href=\"");
 		StaticMediaDispatcher.renderStaticURI(sb, css);
 		sb.append("\"></link>");
+	}
+	
+	private void appendPlayerConfig(StringOutput sb) {
+		sb.append("{");
+		sb.append("  'player':{");
+		sb.append("    'accessControlClass':'paella.AccessControl',");
+		sb.append("        'profileFrameStrategy': 'paella.ProfileFrameStrategy',");
+		sb.append("    'videoQualityStrategy': 'paella.LimitedBestFitVideoQualityStrategy',");
+		sb.append("    'videoQualityStrategyParams':{ 'maxAutoQualityRes':720 },");
+		sb.append("    'reloadOnFullscreen': true,");
+		sb.append("    'videoZoom': {");
+		sb.append("      'enabled':false,");
+		sb.append("      'max':800");
+		sb.append("    },");
+		sb.append("    'deprecated-methods':[{'name':'streaming','enabled':true},");
+		sb.append("           {'name':'html','enabled':true},");
+		sb.append("           {'name':'flash','enabled':true},");
+		sb.append("		   {'name':'image','enabled':true}],");
+		sb.append("    'methods':[");
+		sb.append("      { 'factory':'ChromaVideoFactory', 'enabled':true },");
+		sb.append("      { 'factory':'WebmVideoFactory', 'enabled':true },");
+		sb.append("      { 'factory':'Html5VideoFactory', 'enabled':true },");
+		sb.append("      { 'factory':'MpegDashVideoFactory', 'enabled':true },");
+		sb.append("      {");
+		sb.append("        'factory':'HLSVideoFactory',");
+		sb.append("        'enabled':true,");
+		sb.append("        'config': {");
+		sb.append("          'maxBufferLength': 30,");
+		sb.append("		  'maxMaxBufferLength': 600,");
+		sb.append("		  'maxBufferSize': 60000000,");
+		sb.append("		  'maxBufferHole': 0.5,");
+		sb.append("		  'lowBufferWatchdogPeriod': 0.5,");
+		sb.append("          'highBufferWatchdogPeriod': 3");
+		sb.append("        },");
+		sb.append("        'iOSMaxStreams': 2,");
+		sb.append("        'androidMaxStreams': 2");
+		sb.append("      }");
+		sb.append("    ],");
+		sb.append("    'audioMethods':[");
+		sb.append("      { 'factory':'MultiformatAudioFactory', 'enabled':true }");
+		sb.append("    ],");
+		sb.append("    'defaultAudioTag': '',");
+		sb.append("    'slidesMarks':{");
+		sb.append("      'enabled':true,");
+		sb.append("      'color':'gray'");
+		sb.append("    }");
+		sb.append("  },");
+		sb.append("  'data':{");
+		sb.append("    'enabled':true,");
+		sb.append("    'dataDelegates':{");
+		sb.append("      'trimming':'CookieDataDelegate',");
+		sb.append("      'metadata':'VideoManifestMetadataDataDelegate',");
+		sb.append("      'cameraTrack':'TrackCameraDataDelegate'");
+		sb.append("    }");
+		sb.append("  },");
+		sb.append("  'folders': {");
+		sb.append("    'profiles': 'config/profiles',");
+		sb.append("    'resources': '");
+		StaticMediaDispatcher.renderStaticURI(sb, "js/paella/player/resources");
+		sb.append("',");
+		sb.append("    'skins': 'resources/style'");
+		sb.append("  },");
+		sb.append("  'experimental':{");
+		sb.append("    'autoplay':true");
+		sb.append("  },");
+		sb.append("  'plugins':{");
+		sb.append("    'enablePluginsByDefault': false,");
+		sb.append("    'list':{");
+		sb.append("      'edu.harvard.dce.paella.flexSkipPlugin': {'enabled':true, 'direction': 'Rewind', 'seconds': 10, 'minWindowSize': 510 },");
+		sb.append("      'edu.harvard.dce.paella.flexSkipForwardPlugin': {'enabled':true, 'direction': 'Forward', 'seconds': 30},");
+		sb.append("      'es.upv.paella.captionsPlugin': {'enabled':true, 'searchOnCaptions':true},");
+		sb.append("      'es.upv.paella.frameControlPlugin':  {'enabled': true, 'showFullPreview': 'auto', 'showCaptions':true, 'minWindowSize': 450 },");
+		sb.append("      'es.upv.paella.fullScreenButtonPlugin': {'enabled':true, 'reloadOnFullscreen':{ 'enabled':true, 'keepUserSelection':true }},");
+		sb.append("      'es.upv.paella.playPauseButtonPlugin': {'enabled':true},");
+		sb.append("      'es.upv.paella.themeChooserPlugin':  {'enabled':true, 'minWindowSize': 600},");
+		sb.append("      'es.upv.paella.viewModePlugin': { 'enabled': true, 'minWindowSize': 300 },");
+		sb.append("      'es.upv.paella.volumeRangePlugin':{'enabled':true, 'showMasterVolume': true, 'showSlaveVolume': false },");
+		sb.append("      'es.upv.paella.pipModePlugin': { 'enabled':true },");
+		sb.append("      'es.upv.paella.audioSelector': { 'enabled':true, 'minWindowSize': 400 },");
+		sb.append("      'es.upv.paella.airPlayPlugin': { 'enabled':true },");
+		sb.append("      'es.upv.paella.liveStreamingIndicatorPlugin':  { 'enabled': true },");
+		sb.append("      'es.upv.paella.showEditorPlugin':{'enabled':true,'alwaysVisible':true},");
+		sb.append("      'es.upv.paella.videoDataPlugin': {");
+		sb.append("        'enabled': true,");
+		sb.append("        'excludeLocations':[");
+		sb.append("          'paellaplayer.upv.es'");
+		sb.append("        ],");
+		sb.append("        'excludeParentLocations':[");
+		sb.append("          'localhost:8000'");
+		sb.append("        ]");
+		sb.append("      },");
+		sb.append("      'es.upv.paella.blackBoardPlugin': {'enabled': true},");
+		sb.append("      'es.upv.paella.breaksPlayerPlugin': {'enabled': true},");
+		sb.append("      'es.upv.paella.overlayCaptionsPlugin': {'enabled': true},");
+		sb.append("      'es.upv.paella.playButtonOnScreenPlugin': {'enabled':true},");
+		sb.append("      'es.upv.paella.translecture.captionsPlugin': {'enabled':true},");
+		sb.append("      'es.upv.paella.trimmingPlayerPlugin': {'enabled':true},");
+		sb.append("      'es.upv.paella.windowTitlePlugin': {'enabled': true},");
+		sb.append("      'es.upv.paella.singleStreamProfilePlugin': {");
+		sb.append("          'enabled': true,");
+		sb.append("          'videoSets': [");
+		sb.append("            { 'icon':'professor_icon.svg', 'id':'professor', 'content':['stream1']},");
+		sb.append("            { 'icon':'slide_icon.svg', 'id':'slide', 'content':['stream2']}");
+		sb.append("          ]");
+		sb.append("      },");
+		sb.append("      'es.upv.paella.dualStreamProfilePlugin': { 'enabled':true,");
+		sb.append("        'videoSets': [");
+		sb.append("          { 'icon':'slide_professor_icon.svg', 'id':'slide_over_professor', 'content':['stream1','stream2'] }");
+		sb.append("        ]");
+		sb.append("      }");
+		sb.append("    }");
+		sb.append("  },");
+		sb.append("  'defaultProfile':'presenter_presentation',");
+		sb.append("  'standalone' : {");
+		sb.append("    'repository': '../repository/'");
+		sb.append("  },");
+		sb.append("  'skin': {");
+		sb.append("    'available': [");
+		sb.append("      'dark',");
+		sb.append("      'dark_small',");
+		sb.append("      'light',");
+		sb.append("      'light_small'");
+		sb.append("    ]");
+		sb.append("  }");
+		sb.append("}");
 	}
 	
 	private String objectToJson(Object o)  {
