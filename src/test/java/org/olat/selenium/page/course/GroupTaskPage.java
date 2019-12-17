@@ -91,6 +91,9 @@ public class GroupTaskPage {
 	
 	public GroupTaskPage selectTask(String name) {
 		By taskBy = By.xpath("//div[@id='o_step_assignement_content']//table//tr[td[contains(text(),'" + name + "')]]/td//a[contains(@onclick,'select')]");
+		OOGraphene.waitElement(taskBy, browser);
+		// Firefox seems to need double scrollTo to understand
+		OOGraphene.scrollTo(By.cssSelector("#o_step_assignement_content table>tbody"), browser);
 		OOGraphene.clickAndWait(taskBy, browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
