@@ -22,6 +22,7 @@ package org.olat.course.nodes.livestream.manager;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -54,6 +55,8 @@ public class LiveStreamServiceImpl implements LiveStreamService {
 	
 	@Autowired
 	private CalendarManager calendarManager;
+	@Autowired
+	private LiveStreamStatisticDAO statisticDao;
 
 	@Override
 	public ScheduledExecutorService getScheduler() {
@@ -73,6 +76,20 @@ public class LiveStreamServiceImpl implements LiveStreamService {
 		cFrom.setTime(now);
 		cFrom.add(Calendar.MINUTE, -bufferAfterMin);
 		Date from = cFrom.getTime();
+		
+		Calendar cTo = Calendar.getInstance();
+		cTo.setTime(now);
+		cTo.add(Calendar.MINUTE, bufferBeforeMin);
+		Date to = cTo.getTime();
+		
+		return getLiveStreamEvents(calendars, from, to);
+	}
+
+	@Override
+	public List<? extends LiveStreamEvent> getRunningAndPastEvents(CourseCalendars calendars, int bufferBeforeMin) {
+		Date now = new Date();
+		
+		Date from = new GregorianCalendar(2000, 1, 1).getTime();
 		
 		Calendar cTo = Calendar.getInstance();
 		cTo.setTime(now);
@@ -146,5 +163,10 @@ public class LiveStreamServiceImpl implements LiveStreamService {
 			liveStreamEvent.setLocation(event.getLocation());
 		}
 		return liveStreamEvent;
+	}
+
+	@Override
+	public Long getViewers(String courseResId, String nodeIdent, Date from, Date to) {
+		return statisticDao.getViewers(courseResId, nodeIdent, from, to);
 	}
 }

@@ -179,6 +179,7 @@ import org.junit.runners.Suite;
 	org.olat.course.nodes.gta.manager.GTATaskRevisionDAOTest.class,
 	org.olat.course.nodes.gta.manager.GTAIdentityMarkDAOTest.class,
 	org.olat.course.nodes.gta.rule.GTAReminderRuleTest.class,
+	org.olat.course.nodes.livestream.manager.LiveStreamStatisticDAOTest.class,
 	org.olat.course.nodes.pf.manager.PFManagerTest.class,
 	org.olat.course.assessment.AssessmentManagerTest.class,
 	org.olat.course.assessment.manager.UserCourseInformationsManagerTest.class,

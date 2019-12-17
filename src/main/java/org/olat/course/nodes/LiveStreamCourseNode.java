@@ -97,7 +97,7 @@ public class LiveStreamCourseNode extends AbstractAccessableCourseNode {
 			LiveStreamSecurityCallback secCallback = LiveStreamSecurityCallbackFactory
 					.createSecurityCallback(userCourseEnv, this.getModuleConfiguration());
 			OLATResource courseOres = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource();
-			runCtrl = new LiveStreamRunController(ureq, wControl, this.getModuleConfiguration(), courseOres, secCallback, calendars);
+			runCtrl = new LiveStreamRunController(ureq, wControl, this, courseOres, secCallback, calendars);
 		}
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, this, "o_livestream_icon");
 		return new NodeRunConstructionResult(ctrl);
