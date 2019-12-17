@@ -66,6 +66,7 @@ import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
+import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.RubricsComparison.Attribute;
 import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Form;
@@ -162,6 +163,8 @@ public abstract class GroupByController extends FormBasicController implements F
 	private QualityAnalysisService analysisService;
 	@Autowired
 	private QualityService qualityService;
+	@Autowired
+	private EvaluationFormManager evaluationFormManager;
 	
 	public GroupByController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			FilterController filterCtrl, Form evaluationForm, AvailableAttributes availableAttributes,
@@ -186,7 +189,8 @@ public abstract class GroupByController extends FormBasicController implements F
 	private List<SliderWrapper> initSliders(Form evaluationForm) {
 		int counter = 1;
 		List<SliderWrapper> sliderWrappers = new ArrayList<>();
-		for (AbstractElement element : evaluationForm.getElements()) {
+		List<AbstractElement> elements = evaluationFormManager.getUncontainerizedElements(evaluationForm);
+		for (AbstractElement element : elements) {
 			if (element instanceof Rubric) {
 				Rubric rubric = (Rubric) element;
 				for (Slider slider : rubric.getSliders()) {
