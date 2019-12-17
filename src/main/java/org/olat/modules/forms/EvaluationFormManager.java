@@ -31,6 +31,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
+import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.repository.RepositoryEntry;
@@ -48,6 +49,14 @@ public interface EvaluationFormManager {
 	public Form loadForm(RepositoryEntry formEntry);
 	
 	public DataStorage loadStorage(RepositoryEntry formEntry);
+	
+	/**
+	 * Removes all Containers and returns the elements in the right order.
+	 *
+	 * @param form
+	 * @return
+	 */
+	public List<AbstractElement> getUncontainerizedElements(Form form);
 
 	public EvaluationFormSurvey createSurvey(EvaluationFormSurveyIdentifier identifier, RepositoryEntry formEntry);
 	

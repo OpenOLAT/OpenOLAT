@@ -144,7 +144,8 @@ public class MSStatisticController extends FormBasicController {
 	private List<RubricWrapper> wrapRubics(Form form) {
 		int counter = 1;
 		List<RubricWrapper> rubrics = new ArrayList<>();
-		for (AbstractElement element : form.getElements()) {
+		List<AbstractElement> elements = evaluationFormManager.getUncontainerizedElements(form);
+		for (AbstractElement element : elements) {
 			if (Rubric.TYPE.equals(element.getType())) {
 				Rubric rubric = (Rubric)element;
 				String labelCode = translate("tool.stats.table.title.rubric", new String[] { Integer.toString(counter) });
