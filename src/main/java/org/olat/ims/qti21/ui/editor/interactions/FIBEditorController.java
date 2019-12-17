@@ -74,19 +74,17 @@ public class FIBEditorController extends FormBasicController {
 	private final File itemFile;
 	private final File rootDirectory;
 	private final VFSContainer rootContainer;
-	private final QTI21QuestionType preferredType;
-	private final boolean restrictedEdit, readOnly;
+	private final boolean readOnly;
+	private final boolean restrictedEdit;
 	private final FIBAssessmentItemBuilder itemBuilder;
 	
-	public FIBEditorController(UserRequest ureq, WindowControl wControl,
-			QTI21QuestionType preferredType, FIBAssessmentItemBuilder itemBuilder,
+	public FIBEditorController(UserRequest ureq, WindowControl wControl, FIBAssessmentItemBuilder itemBuilder,
 			File rootDirectory, VFSContainer rootContainer, File itemFile,
 			boolean restrictedEdit, boolean readOnly) {
 		super(ureq, wControl, LAYOUT_DEFAULT_2_10);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemFile = itemFile;
 		this.itemBuilder = itemBuilder;
-		this.preferredType = preferredType;
 		this.rootDirectory = rootDirectory;
 		this.rootContainer = rootContainer;
 		this.readOnly = readOnly;
@@ -113,20 +111,8 @@ public class FIBEditorController extends FormBasicController {
 		textEl.setElementCssClass("o_sel_assessment_item_fib_text");
 		RichTextConfiguration richTextConfig = textEl.getEditorConfiguration();
 		richTextConfig.setReadOnly(restrictedEdit || readOnly);
-		
-		boolean hasNumericals = itemBuilder.hasNumericalInputs();
-		boolean hasTexts = itemBuilder.hasTextEntry();
-		if(!hasNumericals && !hasTexts) {
-			if(preferredType == QTI21QuestionType.numerical) {
-				hasNumericals = true;
-			} else if(preferredType == QTI21QuestionType.fib) {
-				hasNumericals = false;
-			} else {
-				hasNumericals = true;
-			}
-		}
 		richTextConfig.enableQTITools(true, true, false);
-		
+
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsContainer.setElementCssClass("o_sel_fib_save");
@@ -210,7 +196,7 @@ public class FIBEditorController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 
 		String questionText = textEl.getRawValue();
 		if(!StringHelper.containsNonWhitespace(questionText)) {
@@ -221,7 +207,7 @@ public class FIBEditorController extends FormBasicController {
 			allOk &= false;
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

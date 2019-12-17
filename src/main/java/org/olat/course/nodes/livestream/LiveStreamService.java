@@ -19,7 +19,9 @@
  */
 package org.olat.course.nodes.livestream;
 
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.olat.course.nodes.cal.CourseCalendars;
 
@@ -31,9 +33,24 @@ import org.olat.course.nodes.cal.CourseCalendars;
  */
 public interface LiveStreamService {
 	
+	ScheduledExecutorService getScheduler();
+	
 	List<? extends LiveStreamEvent> getRunningEvents(CourseCalendars calendars, int bufferBeforeMin,
 			int bufferAfterMin);
+	
+	List<? extends LiveStreamEvent> getRunningAndPastEvents(CourseCalendars calendars, int bufferBeforeMin);
 
 	List<? extends LiveStreamEvent> getUpcomingEvents(CourseCalendars calendars, int bufferBeforeMin);
+	
+	/**
+	 * Get the number of unique viewers of the live stream event.
+	 * 
+	 * @param courseResId
+	 * @param courseNodeIdent
+	 * @param from
+	 * @param to
+	 * @return
+	 */
+	Long getViewers(String courseResId, String courseNodeIdent, Date from, Date to);
 
 }

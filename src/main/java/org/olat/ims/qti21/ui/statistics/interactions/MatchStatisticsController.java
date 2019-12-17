@@ -110,7 +110,7 @@ public class MatchStatisticsController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		
+		//
 	}
 	
 	private void renderMatch() {
@@ -206,15 +206,15 @@ public class MatchStatisticsController extends BasicController {
 				return 0;
 			}
 			
-			long val = 0;
+			double val = 0;
 			if(statistics.getNumOfCorrect() > 0) {
 				val = statistics.getNumOfCorrect();
 			} else if(statistics.getNumOfIncorrect() > 0) {
 				val = statistics.getNumOfIncorrect();
 			}
 			
-			long point = ref / max;
-			return point * val;
+			double point = (double)ref / (double)max;
+			return Math.round(point * val);
 		}
 		
 		public long getRelativeBorder(int ref) {
@@ -223,7 +223,7 @@ public class MatchStatisticsController extends BasicController {
 		}
 		
 		public long getRelativeMargin(int ref) {
-			long val = this.getRelative(ref);
+			long val = getRelative(ref);
 			return val == 0 ? ref : (ref - val) / 2;
 		}
 	}

@@ -54,6 +54,7 @@ import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.node.test.ItemSessionControl;
 import uk.ac.ed.ph.jqtiplus.node.test.NavigationMode;
 import uk.ac.ed.ph.jqtiplus.node.test.Ordering;
+import uk.ac.ed.ph.jqtiplus.node.test.SectionPart;
 import uk.ac.ed.ph.jqtiplus.node.test.SubmissionMode;
 import uk.ac.ed.ph.jqtiplus.node.test.TestFeedback;
 import uk.ac.ed.ph.jqtiplus.node.test.TestFeedbackAccess;
@@ -199,8 +200,8 @@ public class AssessmentTestFactory {
 	*/
 	public static OutcomeCondition createCutValueRule(AssessmentTest assessmentTest, Double cutValue) {
 		OutcomeCondition outcomeCondition = new OutcomeCondition(assessmentTest);
-		//if
-		{
+		
+		{//if
 			OutcomeIf outcomeIf = new OutcomeIf(outcomeCondition);
 			outcomeCondition.setOutcomeIf(outcomeIf);
 			
@@ -338,10 +339,18 @@ public class AssessmentTestFactory {
 		return appendAssessmentSectionInternal(title, part);
 	}
 	
-	private final static AssessmentSection appendAssessmentSectionInternal(String title, AbstractPart part) {
+	private static final AssessmentSection appendAssessmentSectionInternal(String title, AbstractPart part) {
+		boolean shuffledSections = shuffledSections(part);
+	
 		// section
 		AssessmentSection section = new AssessmentSection(part);
-		section.setFixed(Boolean.TRUE);
+		if(shuffledSections) {
+			section.setFixed(Boolean.FALSE);
+			section.setKeepTogether(Boolean.TRUE);
+		} else {
+			section.setFixed(Boolean.TRUE);
+		}
+
 		section.setVisible(Boolean.TRUE);
 		section.setTitle(title);
 		section.setIdentifier(IdentifierGenerator.newAsIdentifier("sect"));
@@ -366,10 +375,41 @@ public class AssessmentTestFactory {
 		return section;
 	}
 	
+	/**
+	 * Check if the specified part is a section, only as sections
+	 * as children and that it matches the rules to shuffle the
+	 * section, parent section shuffles, child sections are
+	 * not fixed. 
+	 * 
+	 * @param part A part
+	 * @return true if part will shuffle the sections under it
+	 */
+	public static final boolean shuffledSections(AbstractPart part) {
+		if(!(part instanceof AssessmentSection)) return false;
+		
+		AssessmentSection section = (AssessmentSection)part;
+		if(section.getOrdering() != null && section.getOrdering().getShuffle()) {
+			boolean allFloating = true;
+			
+			List<SectionPart> sectionParts = section.getSectionParts();
+			for(SectionPart sectionPart:sectionParts) {
+				if(sectionPart instanceof AssessmentSection) {
+					boolean fixed = ((AssessmentSection)sectionPart).getFixed();
+					allFloating &= !fixed;
+				} else {
+					allFloating &= false;
+				}
+			}
+			
+			return allFloating;
+		}
+		return false;
+	}
+	
 	/*
 	<outcomeDeclaration identifier="FEEDBACKMODAL" cardinality="multiple" baseType="identifier" view="testConstructor" />
 	*/
-	public final static OutcomeDeclaration createTestFeedbackModalOutcomeDeclaration(AssessmentTest assessmentTest) {
+	public static final OutcomeDeclaration createTestFeedbackModalOutcomeDeclaration(AssessmentTest assessmentTest) {
 		OutcomeDeclaration feedbackOutcomeDeclaration = new OutcomeDeclaration(assessmentTest);
 		feedbackOutcomeDeclaration.setIdentifier(QTI21Constants.FEEDBACKMODAL_IDENTIFIER);
 		feedbackOutcomeDeclaration.setCardinality(Cardinality.MULTIPLE);
@@ -387,7 +427,7 @@ public class AssessmentTestFactory {
 		<p>This is the correct answer</p>
 	</testFeedback>
 	 */
-	public final static TestFeedback createTestFeedbackModal(AssessmentTest assessmentTest, Identifier identifier, String title, String text) {
+	public static final TestFeedback createTestFeedbackModal(AssessmentTest assessmentTest, Identifier identifier, String title, String text) {
 		TestFeedback testFeedback = new TestFeedback(assessmentTest);
 		testFeedback.setOutcomeValue(identifier);
 		testFeedback.setOutcomeIdentifier(QTI21Constants.FEEDBACKMODAL_IDENTIFIER);
@@ -421,7 +461,7 @@ public class AssessmentTestFactory {
 		</outcomeIf>
 	</outcomeCondition>
 	 */
-	public final static OutcomeCondition createTestFeedbackModalCondition(AssessmentTest assessmentTest, boolean condition, Identifier feedbackIdentifier) {
+	public static final OutcomeCondition createTestFeedbackModalCondition(AssessmentTest assessmentTest, boolean condition, Identifier feedbackIdentifier) {
 		OutcomeCondition outcomeCondition = new OutcomeCondition(assessmentTest);
 		OutcomeIf outcomeIf = new OutcomeIf(outcomeCondition);
 		outcomeCondition.setOutcomeIf(outcomeIf);

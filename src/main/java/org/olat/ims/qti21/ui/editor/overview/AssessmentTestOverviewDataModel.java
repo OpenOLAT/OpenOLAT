@@ -23,6 +23,11 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.util.Formatter;
+import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
+
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
+import uk.ac.ed.ph.jqtiplus.node.test.ControlObject;
 
 /**
  * 
@@ -52,8 +57,23 @@ public class AssessmentTestOverviewDataModel extends DefaultFlexiTableDataModel<
 			case feedback: return partRow.getFeedbacks();
 			case learningTime: return partRow.getLearningTime();
 			case license: return shortenedLicense(partRow);
+			case shuffled: return isShuffled(partRow);
 			default: return "ERROR";
 		}
+	}
+	
+	private Boolean isShuffled(ControlObjectRow partRow) {
+		ControlObject<?> obj = partRow.getControlObject();
+		if(obj instanceof AssessmentSection) {
+			AssessmentSection section = (AssessmentSection)obj;
+			return AssessmentTestFactory.shuffledSections(section.getParent());
+		}
+		if(obj instanceof AssessmentItemRef) {
+			AssessmentItemRef itemRef = (AssessmentItemRef)obj;
+			AssessmentSection section = itemRef.getParentSection();
+			return section != null && section.getOrdering() != null && section.getOrdering().getShuffle();
+		}
+		return null;
 	}
 	
 	private String shortenedLicense(ControlObjectRow partRow) {
@@ -82,7 +102,8 @@ public class AssessmentTestOverviewDataModel extends DefaultFlexiTableDataModel<
 		identifier("table.header.identifier"),
 		feedback("table.header.feedback"),
 		learningTime("table.header.learning.time"),
-		license("table.header.license");
+		license("table.header.license"),
+		shuffled("table.header.shuffled");
 		
 		private final String i18nKey;
 		

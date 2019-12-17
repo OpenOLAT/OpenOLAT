@@ -30,6 +30,7 @@ import org.olat.course.nodes.livestream.LiveStreamEvent;
 public class LiveStreamEventRow {
 	
 	private final LiveStreamEvent event;
+	private Long viewers;
 
 	public LiveStreamEventRow(LiveStreamEvent event) {
 		this.event = event;
@@ -37,6 +38,14 @@ public class LiveStreamEventRow {
 
 	public LiveStreamEvent getEvent() {
 		return event;
+	}
+
+	public Long getViewers() {
+		return viewers;
+	}
+
+	public void setViewers(Long viewers) {
+		this.viewers = viewers;
 	}
 
 }

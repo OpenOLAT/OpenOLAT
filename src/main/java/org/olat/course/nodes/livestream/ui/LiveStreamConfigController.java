@@ -19,19 +19,27 @@
  */
 package org.olat.course.nodes.livestream.ui;
 
+import static org.olat.core.gui.components.util.KeyValues.entry;
 import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 import static org.olat.course.nodes.livestream.ui.LiveStreamUIFactory.validateInteger;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.nodes.LiveStreamCourseNode;
+import org.olat.course.nodes.livestream.LiveStreamModule;
+import org.olat.course.nodes.livestream.paella.PlayerProfile;
 import org.olat.modules.ModuleConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import edu.emory.mathcs.backport.java.util.Arrays;
 
 /**
  * 
@@ -48,6 +56,10 @@ public class LiveStreamConfigController extends FormBasicController {
 	private TextElement bufferBeforeMinEl;
 	private TextElement bufferAfterMinEl;
 	private MultipleSelectionElement coachCanEditEl;
+	private SingleSelection playerProfileEl;
+	
+	@Autowired
+	private LiveStreamModule liveStreamModule;
 
 	public LiveStreamConfigController(UserRequest ureq, WindowControl wControl, ModuleConfiguration moduleConfiguration) {
 		super(ureq, wControl);
@@ -72,6 +84,20 @@ public class LiveStreamConfigController extends FormBasicController {
 				translateAll(getTranslator(), ENABLED_KEYS), 1);
 		boolean coachCanEdit = config.getBooleanSafe(LiveStreamCourseNode.CONFIG_COACH_CAN_EDIT);
 		coachCanEditEl.select(ENABLED_KEYS[0], coachCanEdit);
+		
+		if (liveStreamModule.isMultiStreamEnabled()) {
+			KeyValues playerProfileKV = new KeyValues();
+			for (PlayerProfile playerProfile : PlayerProfile.values()) {
+				playerProfileKV.add(entry(playerProfile.name(), translate(playerProfile.getI18nKey())));
+			}
+			playerProfileEl = uifactory.addDropdownSingleselect("config.player.profile", formLayout, playerProfileKV.keys(),
+					playerProfileKV.values());
+			String playerProfile = config.getStringValue(LiveStreamCourseNode.CONFIG_PLAYER_PROFILE,
+					liveStreamModule.getPlayerProfile());
+			if (Arrays.asList(playerProfileEl.getKeys()).contains(playerProfile)) {
+				playerProfileEl.select(playerProfile, true);
+			}
+		}
 		
 		uifactory.addFormSubmitButton("save", formLayout);
 	}
@@ -100,6 +126,11 @@ public class LiveStreamConfigController extends FormBasicController {
 		
 		boolean coachCanEdit = coachCanEditEl.isAtLeastSelected(1);
 		config.setBooleanEntry(LiveStreamCourseNode.CONFIG_COACH_CAN_EDIT, coachCanEdit);
+		
+		if (playerProfileEl != null) {
+			String playerProfile = playerProfileEl.getSelectedKey();
+			config.setStringValue(LiveStreamCourseNode.CONFIG_PLAYER_PROFILE, playerProfile);
+		}
 		
 		return config;
 	}

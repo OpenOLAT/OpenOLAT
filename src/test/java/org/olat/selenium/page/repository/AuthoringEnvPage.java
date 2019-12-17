@@ -75,6 +75,12 @@ public class AuthoringEnvPage {
 			.fillCreateForm(title);
 	}
 	
+	public RepositorySettingsPage createSurvey(String title) {
+		return openCreateDropDown()
+			.clickCreate(ResourceType.survey)
+			.fillCreateForm(title);
+	}
+	
 	public CourseSettingsPage createCourse(String title) {
 		openCreateDropDown()
 			.clickCreate(ResourceType.course)
@@ -239,7 +245,8 @@ public class AuthoringEnvPage {
 		cp("FileResource.IMSCP"),
 		wiki("FileResource.WIKI"),
 		portfolio("BinderTemplate"),
-		qti21Test("FileResource.IMSQTI21");
+		qti21Test("FileResource.IMSQTI21"),
+		survey("FileResource.FORM");
 		
 		private final String type;
 		

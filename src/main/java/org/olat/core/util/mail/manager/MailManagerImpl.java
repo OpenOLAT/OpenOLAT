@@ -1807,21 +1807,21 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			result.addInvalidAddresses(e.getInvalidAddresses());
 			result.addInvalidAddresses(e.getValidUnsentAddresses());
 			result.setErrorMessage(e.getMessage());
-			log.warn("Could not send mail", e);
+			log.warn("Could not send mail: {}", e.getMessage());
 		} catch (MessagingException e) {
 			result.setReturnCode(MailerResult.SEND_GENERAL_ERROR);
 			result.setErrorMessage(e.getMessage());
-			log.warn("Could not send mail", e);
+			log.warn("Could not send mail: {}", e.getMessage());
 		}
 	}
 	
 	private void logMessage(MimeMessage msg) throws MessagingException {
 		try {
-			log.info("E-mail send: " + msg.getSubject());
+			log.info("E-mail send: {}", msg.getSubject());
 			logRecipients(msg, RecipientType.TO);
 			logRecipients(msg, RecipientType.BCC);
 			logRecipients(msg, RecipientType.CC);
-			log.info("Content    : " + msg.getContent());
+			log.info("Content    : {}", msg.getContent());
 			
 			//File file = new File("/HotCoffee/tmp/mail_" + CodeHelper.getForeverUniqueID() + ".msg");
 			//OutputStream os = new FileOutputStream(file);
@@ -1840,7 +1840,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 				if(sb.length() > 0) sb.append(", ");
 				sb.append(recipient.toString());
 			}
-			log.info(type + "        : " + sb);
+			log.info("{}        : {}", type, sb);
 		}
 	}
 	

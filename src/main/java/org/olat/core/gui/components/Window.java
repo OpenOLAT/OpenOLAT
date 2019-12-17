@@ -971,15 +971,28 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 			};
 			ComponentTraverser ct = new ComponentTraverser(dirtyV, getContentPane(), false);
 			ct.visitAll(null);
+			
+			if(!dirties.isEmpty()) {
+				Set<Component> dirtyDuplicates = new HashSet<>();
+				for(Iterator<Component> it=dirties.iterator(); it.hasNext(); ) {
+					Component dirty = it.next();
+					if(dirtyDuplicates.contains(dirty)) {
+						it.remove();
+					} else {
+						dirtyDuplicates.add(dirty);
+					}
+				}
+			}
+			
 			int dCnt = dirties.size();
 			if (isDebugLog) {
 				long durationVisitAll = System.currentTimeMillis() - start;
-				log.debug("Perf-Test: Window.handleDirties after ct.visitAll durationVisitAll=" + durationVisitAll);
-				log.debug("Perf-Test: Window.handleDirties dirties.size()=" + dirties.size());
+				log.debug("Perf-Test: Window.handleDirties after ct.visitAll durationVisitAll={}", durationVisitAll);
+				log.debug("Perf-Test: Window.handleDirties dirties.size()={}", dirties.size());
 			}
 			
 			if (dCnt > 0) { // collect the redraw dirties command
-				try {			
+				try {
 					JSONObject root = new JSONObject();
 					root.put("cc", dirties.size());
 					root.put("wts", timestamp);
@@ -1000,23 +1013,16 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 							debugMsg = new StringBuilder("update:").append(String.valueOf(dCnt)).append(";");
 						}
 						
-						Set<Component> dirtyDuplicates = new HashSet<>();
-						
 						for (int i = 0; i < dCnt; i++) {
 							Component toRender = dirties.get(i);
-							if(dirtyDuplicates.contains(toRender)) {
-								continue;// prevent rendering twice the same component
-							}
-							
 							if(isDebugLog) {
-								log.debug("Perf-Test: Window.handleDirties toRender.getComponentName()=" + toRender.getComponentName());
-								log.debug("Perf-Test: Window.handleDirties toRender=" + toRender);
+								log.debug("Perf-Test: Window.handleDirties toRender.getComponentName()={}", toRender.getComponentName());
+								log.debug("Perf-Test: Window.handleDirties toRender={}", toRender);
 							}
 							boolean wasDomR = toRender.isDomReplaceable();
 							if (!wasDomR) {
 								throw new CannotReplaceDOMFragmentException("cannot replace as dom fragment:"+toRender.getComponentName()+" ("+toRender.getClass().getName()+"),"+toRender.getExtendedDebugInfo());
 							}
-							dirtyDuplicates.add(toRender);
 							
 							Panel wrapper = new Panel("renderpanel");
 							wrapper.setDomReplaceable(false); // to omit <div> around the render helper panel
@@ -1084,7 +1090,11 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 								jo.put("cname", toRender.getComponentName());
 								jo.put("clisteners",toRender.getListenerInfo());
 								jo.put("hfragsize", result.length());
-							}						
+							}
+							
+							if(cid == null) {
+								System.out.println();
+							}
 							
 							jo.put("cid", cid);
 							jo.put("cw", toRender.isDomReplacementWrapperRequired());

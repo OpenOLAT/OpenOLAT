@@ -34,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.ScoreBuilder;
@@ -41,6 +42,7 @@ import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.AbstractEntry;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.NumericalEntry;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntry;
+import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntryAlternative;
 import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 import org.olat.ims.qti21.ui.editor.SyncAssessmentItem;
@@ -56,15 +58,17 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
  *
  */
 public class FIBScoreController extends AssessmentItemRefEditorController implements SyncAssessmentItem {
-	
+
+	private static final String[] yesnoKeys = new String[]{ "y", "n"};
 	private static final String[] modeKeys = new String[]{
-			ScoreEvaluation.allCorrectAnswers.name(), ScoreEvaluation.perAnswer.name()
+			ScoreEvaluation.allCorrectAnswers.name(), ScoreEvaluation.perAnswer.name(), "perAnswerAndAlternatives"
 		};
 	
 	private TextElement minScoreEl;
 	private TextElement maxScoreEl;
 	private FormLayoutContainer scoreCont;
 	private SingleSelection assessmentModeEl;
+	private SingleSelection duplicateAllowedEl;
 
 	private FIBAssessmentItemBuilder itemBuilder;
 	private final List<FIBEntryWrapper> wrappers = new ArrayList<>();
@@ -93,15 +97,32 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 		maxScoreEl.setElementCssClass("o_sel_assessment_item_max_score");
 		maxScoreEl.setEnabled(!restrictedEdit && !readOnly);
 		
+		String[] yesnoValues = new String[]{ translate("yes"), translate("no") };
+		duplicateAllowedEl = uifactory.addRadiosHorizontal("duplicate", "form.imd.duplicate.answers", formLayout, yesnoKeys, yesnoValues);
+		duplicateAllowedEl.setElementCssClass("o_sel_assessment_item_fib_duplicate");
+		duplicateAllowedEl.setEnabled(!restrictedEdit && !readOnly);
+		duplicateAllowedEl.setVisible(hasSeveralTextEntryWithSharedAlternatives());
+		duplicateAllowedEl.setHelpTextKey("form.imd.duplicate.answers.hint", null);
+		if(itemBuilder.isAllowDuplicatedAnswers()) {
+			duplicateAllowedEl.select(yesnoKeys[0], true);
+		} else {
+			duplicateAllowedEl.select(yesnoKeys[1], true);
+		}
+		
 		String[] modeValues = new String[]{
 				translate("form.score.assessment.all.correct"),
-				translate("form.score.assessment.per.answer")
+				translate("form.score.assessment.per.answer"),
+				translate("form.score.assessment.per.answer.and.alternatives")
 		};
 		assessmentModeEl = uifactory.addRadiosHorizontal("assessment.mode", "form.score.assessment.mode", formLayout, modeKeys, modeValues);
 		assessmentModeEl.addActionListener(FormEvent.ONCHANGE);
 		assessmentModeEl.setEnabled(!restrictedEdit && !readOnly);
 		if(itemBuilder.getScoreEvaluationMode() == ScoreEvaluation.perAnswer) {
-			assessmentModeEl.select(ScoreEvaluation.perAnswer.name(), true);
+			if(itemBuilder.alternativesWithSpecificScore()) {
+				assessmentModeEl.select("perAnswerAndAlternatives", true);
+			} else {
+				assessmentModeEl.select(ScoreEvaluation.perAnswer.name(), true);
+			}
 		} else {
 			assessmentModeEl.select(ScoreEvaluation.allCorrectAnswers.name(), true);
 		}
@@ -115,7 +136,8 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 			wrappers.add(createTextEntryWrapper(entry));
 		}
 		scoreCont.contextPut("choices", wrappers);
-		scoreCont.setVisible(assessmentModeEl.isSelected(1));
+		scoreCont.setVisible(assessmentModeEl.isSelected(1) || assessmentModeEl.isSelected(2));
+		scoreCont.contextPut("withAlternatives", Boolean.valueOf(assessmentModeEl.isSelected(2)));
 
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -123,6 +145,19 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 		buttonsContainer.setVisible(!readOnly);
 		formLayout.add(buttonsContainer);
 		uifactory.addFormSubmitButton("submit", buttonsContainer);
+	}
+	
+	private boolean hasSeveralTextEntryWithSharedAlternatives() {
+		int count = 0;
+		
+		List<AbstractEntry> entries = itemBuilder.getOrderedTextEntries();
+		for(AbstractEntry entry:entries) {
+			if(entry instanceof TextEntry) {
+				count++;
+			}
+		}
+
+		return count > 1 && itemBuilder.entriesSharesAlternatives();
 	}
 
 	@Override
@@ -133,6 +168,8 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 				FIBEntryWrapper wrapper = getTextEntryWrapper(entry);
 				if(wrapper == null) {
 					wrappers.add(createTextEntryWrapper(entry));
+				} else if(entry instanceof TextEntry) {
+					syncAlternatives(wrapper, (TextEntry)entry);
 				}
 			}
 			
@@ -167,7 +204,50 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 			}
 			wrappers.clear();
 			wrappers.addAll(reorderedWrappers);
+			
+			// duplicated only for text entry
+			duplicateAllowedEl.setVisible(hasSeveralTextEntryWithSharedAlternatives());
 		}
+	}
+	
+	private void syncAlternatives(FIBEntryWrapper wrapper, TextEntry entry) {
+		List<FIBAlternativeWrapper> alternativeWrappers = wrapper.getAlternatives();
+		List<TextEntryAlternative> alternatives = entry.getAlternatives();
+		
+		for(Iterator<FIBAlternativeWrapper> it=alternativeWrappers.iterator(); it.hasNext(); ) {
+			FIBAlternativeWrapper alternativeWrapper = it.next();
+			
+			boolean found = false;
+			for(TextEntryAlternative alternative:alternatives) {
+				if(alternativeWrapper.getAlternative() == alternative) {
+					found = true;
+				}
+			}
+			
+			if(!found) {
+				it.remove();
+			}
+		}
+		
+		for(TextEntryAlternative alternative:alternatives) {
+			boolean found = false;
+			
+			for(FIBAlternativeWrapper alternativeWrapper:alternativeWrappers) {
+				if(alternativeWrapper.getAlternative() == alternative) {
+					found = true;
+				}
+			}
+			
+			if(!found) {
+				FIBAlternativeWrapper alternativeWrapper = createAlternativeWrapper(alternative);
+				wrapper.getAlternatives().add(alternativeWrapper);
+			}
+			
+			
+		}
+		
+		
+		
 	}
 	
 	private FIBEntryWrapper getTextEntryWrapper(AbstractEntry entry) {
@@ -190,39 +270,91 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 		pointEl.setDisplaySize(5);
 		pointEl.setEnabled(!restrictedEdit && !readOnly);
 		scoreCont.add(pointElId, pointEl);
-		return new FIBEntryWrapper(entry, pointEl);
-	}
+		
+		List<FIBAlternativeWrapper> alternativeWrappers = new ArrayList<>();
+		if(entry instanceof TextEntry) {
+			TextEntry textEntry = (TextEntry)entry;
+			if(textEntry.getAlternatives() != null) {
+				for(TextEntryAlternative alternative:textEntry.getAlternatives()) {
+					FIBAlternativeWrapper alternativeWrapper = createAlternativeWrapper(alternative);
+					alternativeWrappers.add(alternativeWrapper);
+				}
+			}
+		}
 
+		return new FIBEntryWrapper(entry, pointEl, alternativeWrappers);
+	}
+	
+	private FIBAlternativeWrapper createAlternativeWrapper(TextEntryAlternative alternative) {
+		String altPointElId = "points_" + counter++;
+		String altScoreStr = alternative.getScore() == -1.0d ? "" : Double.toString(alternative.getScore());
+		TextElement altPointEl = uifactory.addTextElement(altPointElId, null, 5, altScoreStr, scoreCont);
+		altPointEl.setDisplaySize(5);
+		altPointEl.setEnabled(!restrictedEdit && !readOnly);
+		scoreCont.add(altPointElId, altPointEl);
+		return new FIBAlternativeWrapper(alternative, altPointEl);
+	}
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		allOk &= validateDouble(maxScoreEl);
 
-		if(assessmentModeEl.isOneSelected() && assessmentModeEl.isSelected(1)) {
+		if(assessmentModeEl.isOneSelected() && (assessmentModeEl.isSelected(1) || assessmentModeEl.isSelected(2))) {
+			boolean alternativeSpecificScore = assessmentModeEl.isSelected(2);
 			for(FIBEntryWrapper wrapper:wrappers) {
 				allOk &= validateDouble(wrapper.getPointsEl());
+				if(alternativeSpecificScore && wrapper.getAlternatives() != null && !wrapper.getAlternatives().isEmpty()) {
+					for(FIBAlternativeWrapper alternativeWrapper:wrapper.getAlternatives()) {
+						allOk &= validateDouble(alternativeWrapper.getPointsEl());
+					}
+				}
 			}
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(assessmentModeEl.isOneSelected()) {
-			boolean perAnswer = assessmentModeEl.isSelected(1);
-			scoreCont.setVisible(perAnswer);
-			if(perAnswer) {
-				for(FIBEntryWrapper wrapper:wrappers) {
-					Double points = wrapper.getEntry().getScore();
-					if(points != null && points.doubleValue() == -1.0d) {//replace the all answers score
-						wrapper.getEntry().setScore(1.0d);
-						wrapper.getPointsEl().setValue("1.0");
+			updateScoresUI();
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void updateScoresUI() {
+		boolean perAnswer = assessmentModeEl.isSelected(1) || assessmentModeEl.isSelected(2);
+		scoreCont.setVisible(perAnswer);
+		scoreCont.contextPut("withAlternatives", Boolean.valueOf(assessmentModeEl.isSelected(2)));
+		if(perAnswer) {
+			for(FIBEntryWrapper wrapper:wrappers) {
+				AbstractEntry entry = wrapper.getEntry();
+				Double points = entry.getScore();
+				if(points != null && points.doubleValue() == -1.0d) {//replace the all answers score
+					wrapper.getEntry().setScore(1.0d);
+					wrapper.getPointsEl().setValue("1.0");
+				}
+				
+				if(entry instanceof TextEntry && wrapper.getAlternatives() != null && !wrapper.getAlternatives().isEmpty()) {
+					for(FIBAlternativeWrapper alternativeWrapper:wrapper.getAlternatives()) {
+						TextEntryAlternative alternative = alternativeWrapper.getAlternative();
+						if(StringHelper.containsNonWhitespace(alternativeWrapper.getPointsEl().getValue())) {
+							if(points != null && points.doubleValue() >= 0.0d && alternative.getScore() == 1.0d) {
+								alternative.setScore(points.doubleValue());
+								alternativeWrapper.getPointsEl().setValue(points.toString());
+							}
+						} else {
+							if(alternative.getScore() >= 0.0) {
+								alternativeWrapper.getPointsEl().setValue(Double.toString(alternative.getScore()));
+							} else if(points != null && points.doubleValue() == -1.0d) {
+								alternative.setScore(points.doubleValue());
+								alternativeWrapper.getPointsEl().setValue(points.toString());
+							}
+						}
 					}
 				}
 			}
 		}
-		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
@@ -233,14 +365,36 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 		String maxScoreValue = maxScoreEl.getValue();
 		Double maxScore = Double.parseDouble(maxScoreValue);
 		itemBuilder.setMaxScore(maxScore);
-		itemBuilder.setMinScore(new Double(0d));
+		itemBuilder.setMinScore(Double.valueOf(0.0d));
 		
-		if(assessmentModeEl.isOneSelected() && assessmentModeEl.isSelected(1)) {
+		if(duplicateAllowedEl.isVisible()) {
+			boolean allowDuplicates = duplicateAllowedEl.isOneSelected() && duplicateAllowedEl.isSelected(0);
+			itemBuilder.setAllowDuplicatedAnswers(allowDuplicates);
+		} else {
+			itemBuilder.setAllowDuplicatedAnswers(true);
+		}
+		
+		if(assessmentModeEl.isOneSelected() && (assessmentModeEl.isSelected(1) || assessmentModeEl.isSelected(2))) {
 			itemBuilder.setScoreEvaluationMode(ScoreEvaluation.perAnswer);
+			boolean alternativeSpecificScore = assessmentModeEl.isSelected(2);
+			
 			for(FIBEntryWrapper wrapper:wrappers) {
 				String pointsStr = wrapper.getPointsEl().getValue();
-				Double points = new Double(pointsStr);
+				Double points = Double.valueOf(pointsStr);
 				wrapper.getEntry().setScore(points);
+				if(wrapper.getAlternatives() != null && !wrapper.getAlternatives().isEmpty()) {
+					if(alternativeSpecificScore) {
+						for(FIBAlternativeWrapper alternativeWrapper:wrapper.getAlternatives()) {
+							String scoreStr = alternativeWrapper.getPointsEl().getValue();
+							double score = Double.parseDouble(scoreStr);
+							alternativeWrapper.getAlternative().setScore(score);
+						}
+					} else {
+						for(FIBAlternativeWrapper alternativeWrapper:wrapper.getAlternatives()) {
+							alternativeWrapper.getAlternative().setScore(points.doubleValue());
+						}
+					}
+				}
 			}
 		} else {
 			itemBuilder.setScoreEvaluationMode(ScoreEvaluation.allCorrectAnswers);
@@ -258,10 +412,12 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 		
 		private final AbstractEntry entry;
 		private final TextElement pointsEl;
+		private final List<FIBAlternativeWrapper> alternatives;
 		
-		public FIBEntryWrapper(AbstractEntry entry, TextElement pointsEl) {
+		public FIBEntryWrapper(AbstractEntry entry, TextElement pointsEl, List<FIBAlternativeWrapper> alternatives) {
 			this.entry = entry;
 			this.pointsEl = pointsEl;
+			this.alternatives = alternatives;
 			pointsEl.setUserObject(this);
 		}
 
@@ -286,6 +442,10 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 			return entry;
 		}
 		
+		public List<FIBAlternativeWrapper> getAlternatives() {
+			return alternatives;
+		}
+		
 		@Override
 		public int hashCode() {
 			return entry.hashCode();
@@ -302,6 +462,29 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 						&& entry.getResponseIdentifier().equals(w.entry.getResponseIdentifier());
 			}
 			return false;
+		}
+	}
+	
+	public final class FIBAlternativeWrapper {
+		
+		private final TextElement pointsEl;
+		private final TextEntryAlternative alternative;
+		
+		public FIBAlternativeWrapper(TextEntryAlternative alternative, TextElement pointsEl) {
+			this.pointsEl = pointsEl;
+			this.alternative = alternative;
+		}
+		
+		public String getSummary() {
+			return alternative.getAlternative();
+		}
+		
+		public TextElement getPointsEl() {
+			return pointsEl;
+		}
+		
+		public TextEntryAlternative getAlternative() {
+			return alternative;
 		}
 	}
 }

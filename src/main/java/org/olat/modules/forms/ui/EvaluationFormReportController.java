@@ -30,6 +30,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.modules.ceditor.DataStorage;
+import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.RubricsComparison;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.handler.DefaultReportProvider;
@@ -40,6 +41,7 @@ import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.ui.model.EvaluationFormReportElement;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -56,6 +58,9 @@ public class EvaluationFormReportController extends FormBasicController {
 	
 	private final Component header;
 	private final List<ReportFragment> fragments = new ArrayList<>();
+	
+	@Autowired
+	private EvaluationFormManager evaluationFormManager;
 	
 	public EvaluationFormReportController(UserRequest ureq, WindowControl wControl, Form form, DataStorage storage, SessionFilter filter) {
 			this(ureq, wControl, form, storage, filter, null, null, null);
@@ -89,7 +94,8 @@ public class EvaluationFormReportController extends FormBasicController {
 		if (header != null) {
 			flc.put("header", header);
 		}
-		for (AbstractElement element: form.getElements()) {
+		List<AbstractElement> elements = evaluationFormManager.getUncontainerizedElements(form);
+		for (AbstractElement element: elements) {
 			EvaluationFormReportHandler reportHandler = provider.getReportHandler(element);
 			if (reportHandler != null) {
 				EvaluationFormReportElement reportElement = reportHandler.getReportElement(ureq, getWindowControl(), element, filter,
