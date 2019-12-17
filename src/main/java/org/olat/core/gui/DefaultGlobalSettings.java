@@ -28,10 +28,6 @@ import org.olat.core.gui.control.winmgr.AJAXFlags;
  *
  */
 public class DefaultGlobalSettings implements GlobalSettings {
-	@Override
-	public int getFontSize() {
-		return 100;
-	}
 	
 	@Override
 	public AJAXFlags getAjaxFlags() {

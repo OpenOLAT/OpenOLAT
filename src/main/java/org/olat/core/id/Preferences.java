@@ -48,18 +48,6 @@ public interface Preferences extends Serializable {
 	 * @param l new language
 	 */
 	public void setLanguage(String l);
-	
-	/**
-	 * Get users fontsize settings
-	 * @return Users fontsize
-	 */
-	public String getFontsize();
-	
-	/** 
-	 * Set users fontsize settings
-	 * @param l new fontsize
-	 */
-	public void setFontsize(String l);
 
 	/**
 	 * @param notificationInterval The notificationInterval to set.
