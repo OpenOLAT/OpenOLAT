@@ -26,11 +26,12 @@ import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ExtendedFlexiTableSearchController;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -47,6 +48,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.modules.co.ContactFormController;
@@ -72,11 +74,11 @@ public class LargeFilesController extends FormBasicController implements Extende
 	private DateChooser editedAtOlderChooser;
 	private DateChooser lockedAtNewerChooser;
 	private DateChooser lockedAtOlderChooser;
-	private IntegerElement downloadCountMinEl;
-	private IntegerElement revisionCountMinEl;
-	private IntegerElement maxResultEl;
-	private IntegerElement maxSizeEl;
-	private FormLink searchButton;
+	private TextElement downloadCountMinEl;
+	private TextElement revisionCountMinEl;
+	private TextElement maxResultEl;
+	private TextElement minSizeEl;
+	private FormSubmit searchButton;
 	private FormLink resetButton;
 
 	private List<LargeFilesTableContentRow> rows;
@@ -97,16 +99,29 @@ public class LargeFilesController extends FormBasicController implements Extende
 
 	public void updateModel() {
 		rows = new ArrayList<>();
+		int maxResults = 100, downloadCountMin = 0, minSize = 0;
+		Long revisionsCountMin = new Long(0);
+
+		if(StringHelper.containsNonWhitespace(maxResultEl.getValue())) {
+			maxResults = Integer.parseInt(maxResultEl.getValue());
+		}
+		if(StringHelper.containsNonWhitespace(minSizeEl.getValue())) {
+			minSize = Integer.parseInt(minSizeEl.getValue());
+		}
+		if(StringHelper.containsNonWhitespace(downloadCountMinEl.getValue())) {
+			downloadCountMin = Integer.parseInt(downloadCountMinEl.getValue());
+		}
+		if(StringHelper.containsNonWhitespace(revisionCountMinEl.getValue())) {
+			revisionsCountMin = Long.parseLong(revisionCountMinEl.getValue());
+		}
 
 		if(revisionSelection.getSelectedKey() != REVISION_KEYS[0]) {
-			List<VFSMetadata> files = vfsRepositoryService.getLargestFiles(maxResultEl.getIntValue(), 
+			List<VFSMetadata> files = vfsRepositoryService.getLargestFiles(maxResults, 
 					createdAtNewerChooser.getDate(), createdAtOlderChooser.getDate(),
 					editedAtNewerChooser.getDate(), editedAtOlderChooser.getDate(),
 					lockedAtNewerChooser.getDate(), lockedAtOlderChooser.getDate(),
 					trashedSelection.getSelectedKey(), revisionSelection.getSelectedKey(), lockedSelection.getSelectedKey(),
-					downloadCountMinEl.getIntValue(), new Long(revisionCountMinEl.getIntValue()),
-					maxSizeEl.getIntValue()
-					);
+					downloadCountMin, revisionsCountMin, minSize);
 
 			for(VFSMetadata file:files) {
 				LargeFilesTableContentRow contentRow = new LargeFilesTableContentRow(file);
@@ -127,13 +142,12 @@ public class LargeFilesController extends FormBasicController implements Extende
 		}
 
 		if(revisionSelection.getSelectedKey() != REVISION_KEYS[1]) {
-			List<VFSRevision> revisions = vfsRepositoryService.getLargestRevisions(maxResultEl.getIntValue(), 
+			List<VFSRevision> revisions = vfsRepositoryService.getLargestRevisions(maxResults, 
 					createdAtNewerChooser.getDate(), createdAtOlderChooser.getDate(),
 					editedAtNewerChooser.getDate(), editedAtOlderChooser.getDate(),
 					lockedAtNewerChooser.getDate(), lockedAtOlderChooser.getDate(),
 					trashedSelection.getSelectedKey(), revisionSelection.getSelectedKey(), lockedSelection.getSelectedKey(),
-					downloadCountMinEl.getIntValue(), new Long(revisionCountMinEl.getIntValue()), 
-					maxSizeEl.getIntValue());
+					downloadCountMin, revisionsCountMin, minSize);
 
 			for(VFSRevision revision:revisions) {
 				LargeFilesTableContentRow contentRow = new LargeFilesTableContentRow(revision);
@@ -156,8 +170,8 @@ public class LargeFilesController extends FormBasicController implements Extende
 			return row2.getSize().intValue() - row1.getSize().intValue();
 		});
 
-		if(maxResultEl.getIntValue() != 0 && maxResultEl.getIntValue() < rows.size()) {
-			rows = rows.subList(0, maxResultEl.getIntValue());
+		if(maxResults != 0 && maxResults < rows.size()) {
+			rows = rows.subList(0, maxResults);
 		}
 
 		largeFilesTableModel.setObjects(rows);
@@ -177,7 +191,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 		lockedSelection.reset();
 		revisionSelection.reset();
 		maxResultEl.reset();
-		maxSizeEl.reset();
+		minSizeEl.reset();
 
 		updateModel();
 	}
@@ -187,11 +201,11 @@ public class LargeFilesController extends FormBasicController implements Extende
 		FormLayoutContainer largefFilesTitle = FormLayoutContainer.createVerticalFormLayout("largeFilesTitle", getTranslator());
 		formLayout.add(largefFilesTitle);
 		largefFilesTitle.setFormTitle(translate("largefiles.title"));
-		
+
 		FormLayoutContainer leftContainer = FormLayoutContainer.createDefaultFormLayout_6_6("filter_left", getTranslator());
 		leftContainer.setRootForm(mainForm);
 		formLayout.add(leftContainer);
-		
+
 		FormLayoutContainer rightContainer = FormLayoutContainer.createDefaultFormLayout_6_6("filter_right", getTranslator());
 		leftContainer.setRootForm(mainForm);
 		formLayout.add(rightContainer);
@@ -204,10 +218,10 @@ public class LargeFilesController extends FormBasicController implements Extende
 		createdAtNewerChooser = uifactory.addDateChooser("largefiles.filter.created.newer", "largefiles.filter.created.newer", null, leftContainer);
 		editedAtNewerChooser = uifactory.addDateChooser("largefiles.filter.edited.newer", "largefiles.filter.edited.newer", null, leftContainer);
 		lockedAtNewerChooser = uifactory.addDateChooser("largefiles.filter.locked.newer", null, leftContainer);
-		revisionCountMinEl = uifactory.addIntegerElement("largefiles.filter.revision.count.min", "largefiles.filter.revision.count.min", 0, leftContainer);
-		downloadCountMinEl = uifactory.addIntegerElement("largefiles.filter.download.count.min", "largefiles.filter.download.count.min", 0, leftContainer);
-		maxResultEl = uifactory.addIntegerElement("largefiles.filter.results.max", 100, leftContainer);
-		maxSizeEl = uifactory.addIntegerElement("largefiles.filter.size.min", 0, leftContainer);
+		revisionCountMinEl = uifactory.addTextElement("largefiles.filter.revision.count.min", 4, "", leftContainer);
+		downloadCountMinEl = uifactory.addTextElement("largefiles.filter.download.count.min", 8, "", leftContainer);
+		maxResultEl = uifactory.addTextElement("largefiles.filter.results.max", 5, "100", leftContainer);
+		minSizeEl = uifactory.addTextElement("largefiles.filter.size.min", 18, "", leftContainer);
 
 
 		// Right part of the filter
@@ -241,9 +255,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 		lockedSelection.select(LOCKED_KEYS[2], true);
 
 		// Filter buttons
-		searchButton = uifactory.addFormLink("largefiles.filter.button.search", filterButtonLayout, Link.BUTTON);
-		searchButton.setCustomEnabledLinkCSS("btn btn-primary");
-
+		searchButton = uifactory.addFormSubmitButton("largefiles.filter.button.search", filterButtonLayout);
 		resetButton = uifactory.addFormLink("largefiles.filter.button.reset", filterButtonLayout, Link.BUTTON);
 
 		// Tabled
@@ -335,8 +347,6 @@ public class LargeFilesController extends FormBasicController implements Extende
 					}
 				}
 			}
-		} else if(source == searchButton) {
-			updateModel();
 		} else if(source == resetButton) {
 			resetForm();
 		} else if(source instanceof FormLink) {
@@ -344,12 +354,12 @@ public class LargeFilesController extends FormBasicController implements Extende
 
 			if("pathInfo".equals(link.getCmd())) {
 				removeAsListenerAndDispose(pathInfoCalloutCtrl);
-				
+
 				LargeFilesTableContentRow row = (LargeFilesTableContentRow) link.getUserObject();
 				System.out.println(link.getUserObject());
 
 				CalloutSettings settings = new CalloutSettings(false);
-				
+
 				pathInfoCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
 						TextFactory.createTextComponentFromString("pathInfo", row.getPath(), "", true, null), link.getFormDispatchId(), "", true, "", settings);
 				listenTo(pathInfoCalloutCtrl);
@@ -378,6 +388,61 @@ public class LargeFilesController extends FormBasicController implements Extende
 		cmc = null;
 		contactCtrl = null;
 		pathInfoCalloutCtrl = null;
+	}
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOK = super.validateFormLogic(ureq);
+
+		if(maxResultEl.getValue() != "") {
+			try {
+				if(Integer.parseInt(maxResultEl.getValue()) <= 0) {
+					maxResultEl.setErrorKey("largefiles.filter.error.small", null);
+					allOK &= false;
+				}
+			} catch (Exception e) {
+				maxResultEl.setErrorKey("largefiles.filter.error.letter", null);
+				allOK &= false;
+			}
+		}
+
+		if(minSizeEl.getValue() != "") {
+			try {
+				if(Integer.parseInt(minSizeEl.getValue()) <= 0) {
+					minSizeEl.setErrorKey("largefiles.filter.error.small", null);
+					allOK &= false;
+				}
+			} catch (Exception e) {
+				minSizeEl.setErrorKey("largefiles.filter.error.letter", null);
+				allOK &= false;
+			}
+		}
+
+		if(downloadCountMinEl.getValue() != "") {
+			try {
+				if(Integer.parseInt(downloadCountMinEl.getValue()) <= 0) {
+					downloadCountMinEl.setErrorKey("largefiles.filter.error.small", null);
+					allOK &= false;
+				}
+			} catch (Exception e) {
+				downloadCountMinEl.setErrorKey("largefiles.filter.error.letter", null);
+				allOK &= false;
+			}
+		}
+
+		if(revisionCountMinEl.getValue() != "") {
+			try {
+				if(Integer.parseInt(revisionCountMinEl.getValue()) <= 0) {
+					revisionCountMinEl.setErrorKey("largefiles.filter.error.small", null);
+					allOK &= false;
+				}
+			} catch (Exception e) {
+				revisionCountMinEl.setErrorKey("largefiles.filter.error.letter", null);
+				allOK &= false;
+			}
+		}
+
+		return allOK;
 	}
 
 	private void contactUser(UserRequest ureq, Identity user) {

@@ -243,7 +243,7 @@ public class VFSRevisionDAO {
 			qb.where().append("rev.lastModified<=:editedAtOlder");
 		}
 		if(lockedAtNewer != null) {
-			qb.where().append("rev.lockedDate>=:lockedAtNewer");
+			qb.where().append("metadata.lockedDate>=:lockedAtNewer");
 		}
 		if(lockedAtOlder != null) {
 			qb.where().append("metadata.lockedDate<=:lockedAtOlder");
