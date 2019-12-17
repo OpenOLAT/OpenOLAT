@@ -1301,6 +1301,7 @@ table.o_qti_item_kprim {
 	
 	.o_assessmentitem .questionTitle {
 		margin-right: 1em;
+		overflow-wrap: break-word;
 	}
 }
 
