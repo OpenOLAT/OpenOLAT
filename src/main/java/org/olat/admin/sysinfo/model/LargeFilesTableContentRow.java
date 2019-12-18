@@ -76,8 +76,8 @@ public class LargeFilesTableContentRow {
 		author = rev.getAuthor();
 		path = rev.getMetadata().getRelativePath();
 		revision = true;
-		fileType = WebappHelper.getMimeType(rev.getFilename()).split("/")[1];
-		fileCategory = WebappHelper.getMimeType(rev.getFilename()).split("/")[0];
+		fileType = WebappHelper.getMimeType(rev.getFilename()) != null ? WebappHelper.getMimeType(rev.getFilename()).split("/")[1] : "Unknown";
+		fileCategory = WebappHelper.getMimeType(rev.getFilename()) != null ? WebappHelper.getMimeType(rev.getFilename()).split("/")[0] : "Unknown";
 		createdAt = rev.getCreationDate();
 		lastModifiedAt = rev.getFileLastModified();
 		license = rev.getMetadata().getLicenseType();
