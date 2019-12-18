@@ -129,9 +129,11 @@ public class LargeFilesController extends FormBasicController implements Extende
 				String[] path = contentRow.getPath().split("/");
 
 				StringBuilder sb = new StringBuilder(path[0]);
-				sb.append("/").append(path[1]);
-				if(path.length > 2) {
-					sb.append("/...");
+				if(path.length > 1) {
+					sb.append("/").append(path[1]);
+					if(path.length > 2) {
+						sb.append("/...");
+					}
 				}
 
 				FormLink pathInfo = uifactory.addFormLink("pathinfo_" + counter.incrementAndGet() , "pathInfo", sb.toString(), null, null, Link.NONTRANSLATED);
