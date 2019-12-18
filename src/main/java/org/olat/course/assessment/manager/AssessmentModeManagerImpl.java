@@ -469,7 +469,6 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	@Override
 	public boolean isSafelyAllowed(HttpServletRequest request, String safeExamBrowserKeys) {
 		boolean safe = false;
-		boolean debug = log.isDebugEnabled();
 		if(StringHelper.containsNonWhitespace(safeExamBrowserKeys)) {
 			String safeExamHash = request.getHeader("x-safeexambrowser-requesthash");
 			String url = request.getRequestURL().toString();
@@ -488,12 +487,13 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 					}
 				}
 				
-				if(debug) {
-					if(safeExamHash == null) {
-						log.debug("Failed safeexambrowser request hash is null for URL: " + url + " and key: " + safeExamBrowserKey);
-					} else {
-						log.debug((safeExamHash.equals(hash) ? "Success" : "Failed") + " : " + safeExamHash +" (Header) " + hash + " (Calculated) for URL: " + url + " and key: " + safeExamBrowserKey);
+				if(safeExamHash == null) {
+					log.warn("Failed safeexambrowser request hash is null for URL: {} and key: {}", url, safeExamBrowserKey);
+				} else {
+					if(!safe) {
+						log.warn("Failed safeexambrowser check: {} (Header) {} (Calculated) for URL: {}", safeExamHash, hash, url);
 					}
+					log.debug("safeexambrowser {} : {} (Header) {} (Calculated) for URL: {} and key: {}", (safeExamHash.equals(hash) ? "Success" : "Failed") , safeExamHash, hash, url, safeExamBrowserKey);
 				}
 			}
 		} else {
