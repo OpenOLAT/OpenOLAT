@@ -76,8 +76,18 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 				new TextFlexiCellRenderer());
 	}
 	
+	public DefaultFlexiColumnModel(boolean defVisible, boolean alwaysVisible, FlexiSortableColumnDef def) {
+		this(defVisible, alwaysVisible, def.i18nHeaderKey(), def.iconHeader(), def.ordinal(), null, def.sortable(), def.sortKey(), FlexiColumnModel.ALIGNMENT_LEFT,
+				new TextFlexiCellRenderer());
+	}
+	
 	public DefaultFlexiColumnModel(boolean defVisible, FlexiSortableColumnDef def, FlexiCellRenderer renderer) {
 		this(defVisible, false, def.i18nHeaderKey(), def.iconHeader(), def.ordinal(), null, def.sortable(), def.sortKey(), FlexiColumnModel.ALIGNMENT_LEFT,
+				renderer);
+	}
+	
+	public DefaultFlexiColumnModel(boolean defVisible, boolean alwaysVisible, FlexiSortableColumnDef def, FlexiCellRenderer renderer) {
+		this(defVisible, alwaysVisible, def.i18nHeaderKey(), def.iconHeader(), def.ordinal(), null, def.sortable(), def.sortKey(), FlexiColumnModel.ALIGNMENT_LEFT,
 				renderer);
 	}
 	
@@ -119,27 +129,23 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 	}
 	
 	/**
-	 * Always visible but not exportable.
-	 * 
+	 * Always visible
 	 * @param headerKey
 	 * @param label
 	 * @param action
 	 */
 	public DefaultFlexiColumnModel(String headerKey, String label, String action) {
 		this(headerKey, label, action, false);
-		this.exportable = false;
 	}
 	
 	/**
-	 * Always visible but not exportable.
-	 * 
+	 * Always visible
 	 * @param headerKey
 	 * @param label
 	 * @param action
 	 */
 	public DefaultFlexiColumnModel(String headerKey, String label, String action, boolean newWindow) {
 		this(true, true, headerKey, null, -1, action, false, null, FlexiColumnModel.ALIGNMENT_LEFT, new StaticFlexiCellRenderer(label, action, newWindow));
-		this.exportable = false;
 	}
 	
 	public DefaultFlexiColumnModel(String headerKey, int columnIndex, boolean sortable, String sortKey) {

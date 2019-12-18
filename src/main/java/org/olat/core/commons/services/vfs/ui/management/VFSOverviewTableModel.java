@@ -1,0 +1,92 @@
+package org.olat.core.commons.services.vfs.ui.management;
+
+import java.util.Locale;
+
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableFooterModel;
+
+public class VFSOverviewTableModel extends DefaultFlexiTableDataModel<VFSOverviewTableContentRow> implements FlexiTableDataModel<VFSOverviewTableContentRow>, FlexiTableFooterModel{
+
+	private final Locale locale;
+	
+	private VFSOverviewTableFooterRow footerRow;
+
+	public VFSOverviewTableModel(FlexiTableColumnModel columnModel, Locale locale) {
+		super(columnModel);
+		this.locale = locale;
+	}
+
+	@Override 
+	public DefaultFlexiTableDataModel<VFSOverviewTableContentRow> createCopyWithEmptyList() {
+		return new VFSOverviewTableModel(getTableColumnModel(), locale);
+	}
+
+
+	@Override
+	public Object getValueAt(int row, int col) {
+		VFSOverviewTableContentRow stat = getObject(row);
+		return getValueAt(stat, col);
+	}
+
+	public Object getValueAt(VFSOverviewTableContentRow row, int col) {
+		switch(VFSOverviewColumns.values()[col]) {
+		case name: return notNull(row.getName());
+		case size: return notNull(row.getSize());
+		case amount: return notNull(row.getAmount());
+		case action: return notNull(row.getAction());
+
+		default: return "ERROR";
+		}
+	}
+	
+	public Object getValueAt(VFSOverviewTableFooterRow row, int col) {
+		switch(VFSOverviewColumns.values()[col]) {
+		case name: return notNull(row.getName());
+		case size: return notNull(row.getSize());
+		case amount: return notNull(row.getAmount());
+		case action: return notNull(row.getAction());
+
+		default: return "ERROR";
+		}
+	}
+
+	private Object notNull(Object o) {
+		return o != null ? o : "";
+	}
+
+	public String getFooterHeader() {
+		return "<i class=\"o_icon o_icon-fw o_icon_origin\"></i> " + "Total";
+	}
+
+	public Object getFooterValueAt(int col) {
+		if (col > 0) {
+			return getValueAt(footerRow, col);
+		}
+		return null;
+	}
+
+	public enum VFSOverviewColumns implements FlexiColumnDef {
+		name("vfs.overview.name"),
+		size("vfs.overview.size"),
+		amount("vfs.overview.amount"),
+		action("vfs.overview.action");
+
+		private final String i18nHeaderKey;
+
+		private VFSOverviewColumns(String i18nHeaderKey) {
+			this.i18nHeaderKey = i18nHeaderKey;
+		}
+
+		@Override
+		public String i18nHeaderKey() {
+			return i18nHeaderKey;
+		}
+	}
+	
+	public void setFooter(VFSOverviewTableFooterRow footerRow) {
+		this.footerRow = footerRow;
+	}
+}

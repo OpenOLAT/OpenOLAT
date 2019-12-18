@@ -464,3 +464,30 @@ div.o_correction_navigation {
 	}
 }
 
+/** live stream course element */
+.o_browser_ie10, .o_browser_ie11 {
+	.o_paella_wrapper {
+		iframe {
+			display: none;
+		}
+		
+		.o_paella_error {
+			display: block;
+		}
+	}
+}
+
+.o_paella_wrapper {
+	iframe {
+		width: 100%;
+		height: 400px;
+		@media (max-width: $screen-sm-min) {
+			height: 300px;
+		}
+	}
+	
+	.o_paella_error {
+		display: none;
+	}
+}
+

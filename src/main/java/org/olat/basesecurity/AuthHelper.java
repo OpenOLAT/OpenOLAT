@@ -340,8 +340,6 @@ public class AuthHelper {
 
 		//set the language
 		usess.setLocale( I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage()) );
-		// update fontsize in users session globalsettings
-		Windows.getWindows(ureq).getWindowManager().setFontSize(Integer.parseInt(identity.getUser().getPreferences().getFontsize() ));
 		// calculate session info and attach it to the user session
 		setSessionInfoFor(identity, authProvider, ureq, rest);
 		//confirm signedOn

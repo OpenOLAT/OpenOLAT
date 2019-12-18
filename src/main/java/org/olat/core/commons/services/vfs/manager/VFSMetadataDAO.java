@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.persistence.TemporalType;
+import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.vfs.VFSMetadata;
@@ -314,6 +315,95 @@ public class VFSMetadataDAO {
 	
 	public void removeMetadata(VFSMetadata metadata) {
 		dbInstance.getCurrentEntityManager().remove(metadata);
+	}
+	
+	/**
+	 * Return the largest files on the system
+	 * 
+	 * @param maxResult
+	 * @return
+	 */
+	public List<VFSMetadata> getLargest(int maxResult, 
+			Date createdAtNewer, Date createdAtOlder, 
+			Date editedAtNewer, Date editedAtOlder, 
+			Date lockedAtNewer, Date lockedAtOlder,
+			Boolean trashed, Boolean revision, Boolean locked,
+			Integer downloadCount, Long revisionCount) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select metadata from filemetadata metadata")
+		.append(" left join fetch metadata.author as author")
+		.append(" left join fetch author.user as authorUser")
+		.append(" left join fetch metadata.licenseType as licenseType")
+		.append(" where metadata.directory = false");
+		if(createdAtNewer != null) {
+			sb.append(" and metadata.creationDate>=:createdAtNewer");
+		}
+		if(createdAtOlder != null) {
+			sb.append(" and metadata.creationDate<=:createdAtOlder");
+		}
+		if(editedAtNewer != null) {
+			sb.append(" and metadata.lastModified>=:editedAtNewer");
+		}
+		if(editedAtOlder != null) {
+			sb.append(" and metadata.lastModified<=:editedAtOlder");
+		}
+		if(lockedAtNewer != null) {
+			sb.append(" and metadata.lockedDate>=:lockedAtNewer");
+		}
+		if(lockedAtOlder != null) {
+			sb.append(" and metadata.lockedDate<=:lockedAtOlder");
+		}
+		if(trashed != null) {
+			sb.append(" and metadata.deleted=:trashed");
+		}
+		if(locked != null) {
+			sb.append(" and metadata.locked=:locked");
+		}
+		if(downloadCount > 0) {
+			sb.append(" and metadata.downloadCount>=:downloadCount");
+		}
+		if(revisionCount > 0) {
+			sb.append(" and metadata.revisionNr>=:revisionCount");
+		}
+		sb.append(" order by metadata.fileSize desc nulls last");
+
+		TypedQuery<VFSMetadata> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), VFSMetadata.class);
+
+		if(createdAtNewer != null) {
+			query.setParameter("createdAtNewer", createdAtNewer);
+		}
+		if(createdAtOlder != null) {
+			query.setParameter("createdAtOlder", createdAtOlder);
+		}
+		if(editedAtNewer != null) {
+			query.setParameter("editedAtNewer", editedAtNewer);
+		}
+		if(editedAtOlder != null) {
+			query.setParameter("editedAtOlder", editedAtOlder);
+		}
+		if(lockedAtNewer != null) {
+			query.setParameter("lockedAtNewer", lockedAtNewer);
+		}
+		if(lockedAtOlder != null) {
+			query.setParameter("lockedAtOlder", lockedAtOlder);
+		}
+		if(trashed != null) {
+			query.setParameter("trashed", trashed);
+		}
+		if(locked != null) {
+			query.setParameter("locked", locked);
+		}
+		if(downloadCount > 0) {
+			query.setParameter("downloadCount", downloadCount);
+		}
+		if(revisionCount > 0) {
+			query.setParameter("revisionCount", revisionCount);
+		}
+
+		return query.setFirstResult(0)
+				.setMaxResults(maxResult)		
+				.getResultList();
 	}
 	
 

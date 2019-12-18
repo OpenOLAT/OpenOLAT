@@ -31,6 +31,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.IdentityRef;
@@ -68,6 +70,8 @@ import org.olat.modules.forms.model.SlidersStepCountsImpl;
 import org.olat.modules.forms.model.StepCountsBuilder;
 import org.olat.modules.forms.model.jpa.CalculatedLong;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
+import org.olat.modules.forms.model.xml.AbstractElement;
+import org.olat.modules.forms.model.xml.Container;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.FormXStream;
 import org.olat.modules.forms.model.xml.Rubric;
@@ -122,6 +126,34 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 			formFile.mkdir();
 		}
 		return new FormDataElementStorage(formFile);
+	}
+
+	@Override
+	public List<AbstractElement> getUncontainerizedElements(Form form) {
+		List<AbstractElement> rawElements = form.getElements();
+		Map<String, AbstractElement> elementIdToElement = rawElements.stream()
+				.collect(Collectors.toMap(AbstractElement::getId, Function.identity()));
+		
+		List<AbstractElement> uncontainerizedElements = new ArrayList<>(rawElements.size());
+		for (AbstractElement element : rawElements) {
+			if (element instanceof Container) {
+				Container container = (Container)element;
+				List<String> allElementIds = container.getContainerSettings().getAllElementIds();
+				for (String elementId : allElementIds) {
+					AbstractElement uncontainerizedElement = elementIdToElement.remove(elementId);
+					if (uncontainerizedElement != null) {
+						uncontainerizedElements.add(uncontainerizedElement);
+					}
+				}
+			} else {
+				AbstractElement uncontainerizedElement = elementIdToElement.remove(element.getId());
+				// If null, it was already in a container
+				if (uncontainerizedElement != null) {
+					uncontainerizedElements.add(uncontainerizedElement);
+				}
+			}
+		}
+		return uncontainerizedElements;
 	}
 
 	@Override

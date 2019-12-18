@@ -804,3 +804,14 @@ a.o_labeled_light {
 	padding: 10px;
 	border: 1px solid #c2c2c2;
 }
+
+/* files and folders */
+.o_files_size_okay {
+	color: $o-files-size-okay;
+}
+.o_files_size_warning {
+	color: $o-files-size-warning;
+}
+.o_files_size_large {
+	color: $o-files-size-large;
+}

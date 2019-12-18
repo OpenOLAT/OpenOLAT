@@ -29,6 +29,8 @@ public interface LiveStreamSecurityCallback {
 
 	boolean canViewStreams();
 
-	boolean canEditStreams();
+	boolean canViewStatistic();
 	
+	boolean canEditStreams();
+
 }

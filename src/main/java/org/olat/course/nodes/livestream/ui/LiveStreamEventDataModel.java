@@ -53,6 +53,7 @@ public class LiveStreamEventDataModel extends DefaultFlexiTableDataModel<LiveStr
 			case subject: return row.getEvent().getSubject();
 			case description: return row.getEvent().getDescription();
 			case location: return row.getEvent().getLocation();
+			case viewers: return row.getViewers();
 			default: return null;
 		}
 	}
@@ -67,7 +68,8 @@ public class LiveStreamEventDataModel extends DefaultFlexiTableDataModel<LiveStr
 		begin("table.header.begin"),
 		end("table.header.end"),
 		location("table.header.location"),
-		description("table.header.description");
+		description("table.header.description"),
+		viewers("table.header.viewers");
 		
 		private final String i18nKey;
 		

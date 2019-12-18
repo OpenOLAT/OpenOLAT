@@ -275,8 +275,8 @@ public class AssessmentItemEditorController extends BasicController implements A
 		switch(type) {
 			case sc: itemBuilder = initSingleChoiceEditors(ureq, item); break;
 			case mc: itemBuilder = initMultipleChoiceEditors(ureq, item); break;
-			case fib: itemBuilder = initFIBEditors(ureq, type, item); break;
-			case numerical: itemBuilder = initFIBEditors(ureq, type, item); break;
+			case fib: itemBuilder = initFIBEditors(ureq, item); break;
+			case numerical: itemBuilder = initFIBEditors(ureq, item); break;
 			case kprim: itemBuilder = initKPrimChoiceEditors(ureq, item); break;
 			case match: itemBuilder = initMatchChoiceEditors(ureq, item); break;
 			case matchdraganddrop: itemBuilder = initMatchDragAndDropEditors(ureq, item); break;
@@ -408,9 +408,9 @@ public class AssessmentItemEditorController extends BasicController implements A
 		return matchItemBuilder;
 	}
 	
-	private AssessmentItemBuilder initFIBEditors(UserRequest ureq, QTI21QuestionType preferedType, AssessmentItem item) {
+	private AssessmentItemBuilder initFIBEditors(UserRequest ureq, AssessmentItem item) {
 		FIBAssessmentItemBuilder fibItemBuilder = new FIBAssessmentItemBuilder(item, qtiService.qtiSerializer());
-		itemEditor = new FIBEditorController(ureq, getWindowControl(), preferedType, fibItemBuilder,
+		itemEditor = new FIBEditorController(ureq, getWindowControl(), fibItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
 		scoreEditor = new FIBScoreController(ureq, getWindowControl(), fibItemBuilder, itemRef,

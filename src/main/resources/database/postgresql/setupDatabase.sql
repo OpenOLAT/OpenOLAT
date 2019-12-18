@@ -4118,6 +4118,8 @@ create index log_ptarget_resid_idx on o_loggingtable(parentresid);
 create index log_gptarget_resid_idx on o_loggingtable(grandparentresid);
 create index log_ggptarget_resid_idx on o_loggingtable(greatgrandparentresid);
 create index log_creationdate_idx on o_loggingtable(creationdate);
+create index idx_log_livestream_idx on o_loggingtable(targetresid, creationdate, parentresid, user_id) where actionverb = 'launch' and targetrestype = 'livestream';
+
 
 
 insert into hibernate_unique_key values ( 0 );

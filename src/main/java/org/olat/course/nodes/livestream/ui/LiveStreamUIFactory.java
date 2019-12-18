@@ -29,6 +29,20 @@ import org.olat.core.util.StringHelper;
  *
  */
 class LiveStreamUIFactory {
+
+	static boolean validateMandatory(TextElement el) {
+		boolean allOk = true;
+		el.clearError();
+		if(el.isEnabled() && el.isVisible()) {
+			String val = el.getValue();
+			if (!StringHelper.containsNonWhitespace(val)) {
+				el.setErrorKey("form.mandatory.hover", null);
+				allOk = false;
+			}
+		}
+		return allOk;
+	}
+
 	
 	static boolean validateInteger(TextElement el, boolean mandatory) {
 		boolean allOk = true;

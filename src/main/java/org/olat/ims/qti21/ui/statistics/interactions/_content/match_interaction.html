@@ -3,16 +3,16 @@
 	<table class="table matchInteraction score">
 		<thead>
 			<tr>
-				<th></th>
+				<td></td>
 				#foreach($targetChoice in $targetChoices)
-					<th>$r.render(${targetChoice.getSummary()})</th>
+					<th scope='col'>$r.render(${targetChoice.getSummary()})</th>
 				#end
 			</tr>
 		</thead>
 		<tbody>
 		#foreach($sourceChoice in $sourceChoices)
 			<tr>
-				<th>$r.render(${sourceChoice.getSummary()})</th>
+				<th scope='row'>$r.render(${sourceChoice.getSummary()})</th>
 				#foreach($targetChoice in $targetChoices)
 					<td>
 					#set($scoreWrapper = $r.get("${sourceChoice.getChoiceIdentifier().toString()}-${targetChoice.getChoiceIdentifier().toString()}"))

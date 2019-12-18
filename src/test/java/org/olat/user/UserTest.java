@@ -38,6 +38,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,7 +48,6 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
 import org.olat.test.OlatTestCase;
@@ -218,7 +218,6 @@ public class UserTest extends OlatTestCase {
 		u5.setLastName("newuser");
 		u5.setEmail("new@user.com");
 		u5.setCreationDate(new Date());
-		u5.getPreferences().setFontsize("normal");
 		dbInstance.saveObject(u5);
 		u5.setProperty(UserConstants.EMAIL, "updated@email.com");
 		userManager.updateUser(u5);

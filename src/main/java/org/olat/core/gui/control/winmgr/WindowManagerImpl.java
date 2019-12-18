@@ -57,8 +57,6 @@ public class WindowManagerImpl implements WindowManager {
 	private boolean showDebugInfo = false;
 	private boolean idDivsForced = false;
 
-	private int fontSize = 100; // default width
-
 	private PopupBrowserWindowControllerCreator pbwcc;
 	
 	public WindowManagerImpl() {
@@ -67,10 +65,6 @@ public class WindowManagerImpl implements WindowManager {
 
 		final AJAXFlags aflags = new AJAXFlags(this);
 		globalSettings = new GlobalSettings() {
-			@Override
-			public int getFontSize() {
-				return WindowManagerImpl.this.getFontSize();
-			}
 			@Override
 			public AJAXFlags getAjaxFlags() {
 				return aflags;
@@ -92,9 +86,6 @@ public class WindowManagerImpl implements WindowManager {
 		setAjaxEnabled(!Settings.isBrowserAjaxBlacklisted(ureq));
 	}
 
-	/**
-	 * @return Returns the ajaxEnabled.
-	 */
 	@Override
 	public boolean isAjaxEnabled() {
 		return ajaxEnabled;
@@ -122,18 +113,6 @@ public class WindowManagerImpl implements WindowManager {
 		}			
 	}
 
-	public int getFontSize() {
-		return fontSize;
-	}
-
-	@Override
-	public void setFontSize(int fontSize) {
-		this.fontSize = fontSize;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.WindowManager#createWindowBackOffice(java.lang.String, org.olat.core.gui.control.ChiefController)
-	 */
 	@Override
 	public WindowBackOffice createWindowBackOffice(String windowName, ChiefController owner, WindowSettings settings) {
 		WindowBackOfficeImpl wbo = new WindowBackOfficeImpl(this, windowName, owner, settings);
@@ -152,10 +131,6 @@ public class WindowManagerImpl implements WindowManager {
 		return showDebugInfo;
 	}
 	
-	/**
-	 * 
-	 * @see org.olat.core.gui.WindowManager#createNewPopupBrowserWindowFor(org.olat.core.gui.UserRequest, org.olat.core.gui.control.creator.ControllerCreator, boolean)
-	 */
 	@Override
 	public PopupBrowserWindow createNewPopupBrowserWindowFor(UserRequest ureq, ControllerCreator contentControllerCreator) {
 		//supports the open(ureq) method
@@ -174,7 +149,6 @@ public class WindowManagerImpl implements WindowManager {
 		return cc;
 	}
 	
-	
 	/**
 	 * needed only by guidebugdispatchercontroller for the gui debug mode!
 	 * @param idDivsForced
@@ -183,9 +157,6 @@ public class WindowManagerImpl implements WindowManager {
 		this.idDivsForced = idDivsForced;
 	}
 	
-	/**
-	 * @return
-	 */
 	public boolean isIdDivsForced() {
 		return idDivsForced;
 	}

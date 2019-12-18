@@ -437,19 +437,19 @@
 		</property>
 	</bean>
 	
-	<!--  the folder menu-entry (reset thumbnails...) -->
-	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints" >
+	<!-- System / File statistic -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="7212" />
-		<property name="navigationKey" value="briefcase" />
-		<property name="actionController">	
+		<property name="actionController">
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-				<property name="className" value="org.olat.admin.bc.BriefcaseAdminController"/>
+				<property name="className" value="org.olat.admin.sysinfo.FilesAndFoldersController" />
 			</bean>
 		</property>
-		<property name="translationPackage" value="org.olat.admin" />
-		<property name="i18nActionKey" value="menu.bc"/>
-		<property name="i18nDescriptionKey" value="menu.bc.alt"/>
+		<property name="navigationKey" value="filesfolders" />
 		<property name="parentTreeNodeIdentifier" value="sysconfigParent" /> 
+		<property name="translationPackage" value="org.olat.admin"/>
+		<property name="i18nActionKey" value="menu.filesfolders"/>
+		<property name="i18nDescriptionKey" value="menu.filesfolders.alt"/>
 		<property name="extensionPoints">
 			<list>	
 				<value>org.olat.admin.SystemAdminMainController</value>		

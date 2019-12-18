@@ -1,0 +1,30 @@
+package org.olat.admin.sysinfo.gui;
+
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
+import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.util.CSSHelper;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
+import org.olat.modules.adobeconnect.model.AdobeConnectSco;
+
+public class LargeFilesLockedCellRenderer implements FlexiCellRenderer{
+	@Override
+	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
+			URLBuilder ubu, Translator translator) {
+		if (cellValue instanceof Boolean) {
+			if((Boolean) cellValue) {
+				String icon = CSSHelper.CSS_CLASS_LOCKED;
+	
+				if(StringHelper.containsNonWhitespace(icon)) {
+					target.append("<i class='o_icon o_icon-fw ")
+					.append(icon)
+					.append("'></i>");
+				}
+			}
+		}
+	}
+}

@@ -30,6 +30,7 @@ import org.olat.core.id.Identity;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.model.LectureReportRow;
 import org.olat.modules.lecture.ui.coach.LecturesReportTableModel.ReportCols;
+import org.olat.modules.lecture.ui.component.IdentityComparator;
 
 /**
  * 
@@ -39,8 +40,11 @@ import org.olat.modules.lecture.ui.coach.LecturesReportTableModel.ReportCols;
  */
 public class LecturesReportTableModelSortDelegate extends SortableFlexiTableModelDelegate<LectureReportRow> {
 	
+	private final Locale locale;
+	
 	public LecturesReportTableModelSortDelegate(SortKey orderBy, LecturesReportTableModel tableModel, Locale locale) {
 		super(orderBy, tableModel, locale);
+		this.locale = locale;
 	}
 	
 	@Override
@@ -85,7 +89,17 @@ public class LecturesReportTableModelSortDelegate extends SortableFlexiTableMode
 			c = 1;
 		} else if(i1.isEmpty() && !i2.isEmpty()) {
 			c = -1;
+		} else if(i1.size() == 1 && i2.size() == 1) {
+			c = compareIdentity(i1.get(0), i2.get(0));
 		} else {
+			// make sure the order are the same
+			if(i1.size() > 1) {
+				Collections.sort(i1, new IdentityComparator(locale));
+			}
+			if(i2.size() > 1) {
+				Collections.sort(i2, new IdentityComparator(locale));
+			}
+			
 			int max = Math.min(i1.size(), i2.size());
 			for(int i=0; i<max && c == 0; i++) {
 				c = compareIdentity(i1.get(i), i2.get(i));
@@ -99,7 +113,7 @@ public class LecturesReportTableModelSortDelegate extends SortableFlexiTableMode
 			return compareNullObjects(i1, i2);
 		}
 
-		int c = compareString(i1.getUser().getLastName(), i2.getUser().getLastName());
+		int c = compareString(i1.getUser().getLastName(), i1.getUser().getLastName());
 		if(c == 0) {
 			c = compareString(i1.getUser().getFirstName(), i2.getUser().getFirstName());
 		}

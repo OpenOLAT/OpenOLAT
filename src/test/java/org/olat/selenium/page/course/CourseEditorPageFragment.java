@@ -50,6 +50,7 @@ public class CourseEditorPageFragment {
 	public static final By chooseFeedButton = By.className("o_sel_feed_choose_repofile");
 	public static final By chooseScormButton = By.className("o_sel_scorm_choose_repofile");
 	public static final By choosePortfolioButton = By.className("o_sel_map_choose_repofile");
+	public static final By chooseSurveyButton = By.className("o_sel_survey_choose_repofile");
 	
 	public static final By changeNodeToolsMenu = By.cssSelector("ul.o_sel_course_editor_change_node");
 	public static final By changeNodeToolsMenuCaret = By.cssSelector("a.o_sel_course_editor_change_node");
@@ -64,6 +65,7 @@ public class CourseEditorPageFragment {
 		chooseRepoEntriesButtonList.add(chooseFeedButton);
 		chooseRepoEntriesButtonList.add(chooseScormButton);
 		chooseRepoEntriesButtonList.add(choosePortfolioButton);
+		chooseRepoEntriesButtonList.add(chooseSurveyButton);
 	}
 	
 	private WebDriver browser;
@@ -299,7 +301,7 @@ public class CourseEditorPageFragment {
 	
 	/**
 	 * Open the tools drop-down
-	 * @return
+	 * @return Itself
 	 */
 	public CourseEditorPageFragment openChangeNodeToolsMenu() {
 		browser.findElement(changeNodeToolsMenuCaret).click();
@@ -311,7 +313,7 @@ public class CourseEditorPageFragment {
 	 * Loop the tabs of the course element configuration to find
 	 * the one with a button to select a repository entry.
 	 * 
-	 * @return
+	 * @return Itself
 	 */
 	public CourseEditorPageFragment selectTabLearnContent() {
 		OOGraphene.selectTab("o_node_config", (b) -> {
@@ -328,8 +330,8 @@ public class CourseEditorPageFragment {
 	
 	/**
 	 * @see chooseResource
-	 * @param resourceTitle
-	 * @return
+	 * @param resourceTitle The title of the CP
+	 * @return Itself
 	 */
 	public CourseEditorPageFragment chooseCP(String resourceTitle) {
 		return chooseResource(chooseCpButton, resourceTitle);
@@ -337,8 +339,8 @@ public class CourseEditorPageFragment {
 	
 	/**
 	 * @see chooseResource
-	 * @param resourceTitle
-	 * @return
+	 * @param resourceTitle The title of the wiki
+	 * @return Itself
 	 */
 	public CourseEditorPageFragment chooseWiki(String resourceTitle) {
 		return chooseResource(chooseWikiButton, resourceTitle);
@@ -346,8 +348,17 @@ public class CourseEditorPageFragment {
 	
 	/**
 	 * @see chooseResource
-	 * @param resourceTitle
-	 * @return
+	 * @param resourceTitle The title of the survey
+	 * @return Itself
+	 */
+	public CourseEditorPageFragment chooseSurvey(String resourceTitle) {
+		return chooseResource(chooseSurveyButton, resourceTitle);
+	}
+	
+	/**
+	 * @see chooseResource
+	 * @param resourceTitle The title of the test
+	 * @return Itself
 	 */
 	public CourseEditorPageFragment chooseTest(String resourceTitle) {
 		return chooseResource(chooseTestButton, resourceTitle);
@@ -355,8 +366,8 @@ public class CourseEditorPageFragment {
 	
 	/**
 	 * @see chooseResource
-	 * @param resourceTitle
-	 * @return
+	 * @param resourceTitle The title of the SCORM
+	 * @return Itself
 	 */
 	public CourseEditorPageFragment chooseScorm(String resourceTitle) {
 		return chooseResource(chooseScormButton, resourceTitle);

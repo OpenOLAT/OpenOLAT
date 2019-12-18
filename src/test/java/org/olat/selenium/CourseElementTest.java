@@ -60,6 +60,8 @@ import org.olat.selenium.page.forum.ForumPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
+import org.olat.selenium.page.survey.SurveyEditorPage;
+import org.olat.selenium.page.survey.SurveyPage;
 import org.olat.selenium.page.repository.FeedPage;
 import org.olat.selenium.page.repository.RepositoryEditDescriptionPage;
 import org.olat.selenium.page.repository.ScormPage;
@@ -1795,5 +1797,130 @@ public class CourseElementTest extends Deployments {
 		SinglePage singlePage = new SinglePage(browser);
 		singlePage
 			.assertInFile("handInTopic1.pdf");	
+	}
+	
+
+	/**
+	 * An author creates a survey with a multiple choice
+	 * and a single choice. He uses it in a course. A
+	 * participant of the course participates to the
+	 * survey.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void survey(@Drone @User WebDriver userBrowser)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		UserVO user = new UserRestClient(deploymentUrl).createRandomUser("Maximilien");
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a survey
+		String surveyTitle = "Survey-1-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.createSurvey(surveyTitle)
+			.assertOnInfos()
+			.clickToolbarBack();
+		
+		SurveyPage survey = SurveyPage
+			.loadPage(browser);
+		SurveyEditorPage surveyEditor = survey
+			.edit();
+		surveyEditor
+			.openElementsChooser()
+			.addTitle("My survey")
+			.setTitleSize(1)
+			.closeEditFragment()
+			.assertOnTitle("My survey", 1);
+		
+		surveyEditor
+			.openElementsChooser()
+			.addMultipleChoiceElement()
+			.addMultipleChoice("Jupiter", 2)
+			.addMultipleChoice("Saturn", 3)
+			.closeEditFragment();
+		
+		surveyEditor
+			.openElementsChooser()
+			.addSingleChoiceElement()
+			.addSingleChoice("Mercury", 2)
+			.addSingleChoice("Venus", 3)
+			.closeEditFragment();
+		
+		surveyEditor
+			.close();
+
+		//create a course
+		String courseTitle = "Course-With-Survey-" + UUID.randomUUID().toString();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+		
+		navBar.openCourse(courseTitle);
+		
+		String surveyNodeTitle = "SurveyNode-1";
+		//create a course element of type CP with the CP that we create above
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("survey")
+			.nodeTitle(surveyNodeTitle)
+			.selectTabLearnContent()
+			.chooseSurvey(surveyTitle);
+
+		//publish the course
+		courseEditor
+			.publish()
+			.quickPublish(UserAccess.membersOnly);
+		
+		MembersPage membersPage = courseEditor
+			.clickToolbarBack()
+			.members();
+			
+		membersPage
+			.importMembers()
+			.setMembers(user)
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
+			.finish();
+		
+		//open the course and see the survey
+		CoursePageFragment course = courseEditor
+			.clickToolbarBack();
+		course
+			.clickTree()
+			.selectWithTitle(surveyNodeTitle);
+		
+		LoginPage userLoginPage = LoginPage.load(userBrowser, deploymentUrl);
+		userLoginPage
+			.loginAs(user.getLogin(), user.getPassword())
+			.resume();
+		
+		//open the course
+		NavigationPage userNavBar = NavigationPage.load(userBrowser);
+		userNavBar
+			.openMyCourses()
+			.select(courseTitle);
+		
+		//go to the group task
+		CoursePageFragment userCourse = new CoursePageFragment(userBrowser);
+		userCourse
+			.clickTree()
+			.selectWithTitle(surveyNodeTitle);
+		
+		SurveyPage userSurvey = SurveyPage.loadPage(userBrowser)
+			.assertOnSurvey();
+		
+		userSurvey
+			.answerMultipleChoice("Saturn")
+			//.answerSingleChoice("Venus")
+			.saveAndCloseSurvey()
+			.assertOnSurveyClosed();
 	}
 }

@@ -147,7 +147,8 @@ public class EvaluationFormExcelExport {
 	}
 
 	private void addContent(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet) {
-		for (AbstractElement element: form.getElements()) {
+		List<AbstractElement> elements = evaluationFormManager.getUncontainerizedElements(form);
+		for (AbstractElement element: elements) {
 			String elementType = element.getType();
 			switch (elementType) {
 			case Title.TYPE:

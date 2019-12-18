@@ -66,6 +66,7 @@ public class LiveStreamCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONFIG_BUFFER_BEFORE_MIN = "bufferBeforeMin";
 	public static final String CONFIG_BUFFER_AFTER_MIN = "bufferBeforeAfter";
 	public static final String CONFIG_COACH_CAN_EDIT = "coachCanEdit";
+	public static final String CONFIG_PLAYER_PROFILE = "playerProfile";
 
 	public LiveStreamCourseNode() {
 		super(TYPE);
@@ -103,7 +104,7 @@ public class LiveStreamCourseNode extends AbstractAccessableCourseNode {
 			LiveStreamSecurityCallback secCallback = LiveStreamSecurityCallbackFactory
 					.createSecurityCallback(userCourseEnv, this.getModuleConfiguration());
 			OLATResource courseOres = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource();
-			runCtrl = new LiveStreamRunController(ureq, wControl, this.getModuleConfiguration(), courseOres, secCallback, calendars);
+			runCtrl = new LiveStreamRunController(ureq, wControl, this, courseOres, secCallback, calendars);
 		}
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, this, "o_livestream_icon");
 		return new NodeRunConstructionResult(ctrl);
@@ -138,6 +139,8 @@ public class LiveStreamCourseNode extends AbstractAccessableCourseNode {
 			config.setIntValue(CONFIG_BUFFER_BEFORE_MIN, liveStreamModule.getBufferBeforeMin());
 			config.setIntValue(CONFIG_BUFFER_AFTER_MIN, liveStreamModule.getBufferAfterMin());
 			config.setBooleanEntry(CONFIG_COACH_CAN_EDIT, liveStreamModule.isEditCoach());
+			// CONFIG_PLAYER_PROFILE has no default value, because previously the multi
+			// stream option has to be enabled and the default value has to be selected.
 		}
 		config.setConfigurationVersion(CURRENT_VERSION);
 	}

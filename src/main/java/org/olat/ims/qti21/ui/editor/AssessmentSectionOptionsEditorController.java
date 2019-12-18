@@ -122,6 +122,7 @@ public class AssessmentSectionOptionsEditorController extends FormBasicControlle
 		//shuffle
 		String[] yesnoValues = new String[]{ translate("yes"), translate("no") };
 		shuffleEl = uifactory.addRadiosHorizontal("shuffle", "form.section.shuffle", formLayout, yesnoKeys, yesnoValues);
+		shuffleEl.setHelpTextKey("form.section.position.hint", null);
 		if (section.getOrdering() != null && section.getOrdering().getShuffle()) {
 			shuffleEl.select("y", true);
 		} else {

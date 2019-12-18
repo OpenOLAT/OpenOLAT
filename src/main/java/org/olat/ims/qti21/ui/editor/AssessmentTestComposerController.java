@@ -650,7 +650,12 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 				}
 				if(targetObject instanceof AssessmentSection) {
 					AssessmentSection targetSection = (AssessmentSection)targetObject;
+					boolean shuffledSections = AssessmentTestFactory.shuffledSections(targetSection);
 					targetSection.getChildAbstractParts().add(droppedSection);
+					if(shuffledSections) {
+						droppedSection.setFixed(Boolean.FALSE);
+						droppedSection.setKeepTogether(Boolean.TRUE);
+					}
 				} else if(targetObject instanceof TestPart) {
 					TestPart targetTestPart = (TestPart)targetObject;
 					targetTestPart.getAssessmentSections().add(droppedSection);
@@ -688,6 +693,11 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 				AssessmentSection targetSection = (AssessmentSection)targetObject;
 				if(targetSection.getParentSection() != null) {
 					AssessmentSection targetParentSection = targetSection.getParentSection();
+					boolean shuffledSections = AssessmentTestFactory.shuffledSections(targetParentSection);
+					if(shuffledSections) {
+						droppedSection.setFixed(Boolean.FALSE);
+						droppedSection.setKeepTogether(Boolean.TRUE);
+					}
 					int pos = targetParentSection.getChildAbstractParts().indexOf(targetSection) + 1;
 					if(pos >= targetParentSection.getChildAbstractParts().size()) {	
 						targetParentSection.getChildAbstractParts().add(droppedSection);
