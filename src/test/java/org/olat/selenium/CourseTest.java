@@ -259,7 +259,7 @@ public class CourseTest extends Deployments {
 		List<WebElement> nodes = browser.findElements(nodeBy);
 		Assert.assertEquals(5, nodes.size());
 		for(int i=0; i<5; i++) {
-			By linkBy = By.xpath("//div[conains(@class,'o_tree')]//li[" + (i+1) + "]/div/span[contains(@class,'o_tree_link')][contains(@class,'o_tree_l1')][contains(@class,'o_tree_level_label_leaf')]/a[span]");
+			By linkBy = By.xpath("//div[contains(@class,'o_tree')]//li[" + (i+1) + "]/div/span[contains(@class,'o_tree_link')][contains(@class,'o_tree_l1')][contains(@class,'o_tree_level_label_leaf')]/a[span]");
 			OOGraphene.waitElement(linkBy, browser);
 			browser.findElement(linkBy).click();
 			OOGraphene.waitBusy(browser);

@@ -31,6 +31,7 @@ import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.selenium.page.LoginPage;
@@ -60,12 +61,12 @@ import org.olat.selenium.page.forum.ForumPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
-import org.olat.selenium.page.survey.SurveyEditorPage;
-import org.olat.selenium.page.survey.SurveyPage;
 import org.olat.selenium.page.repository.FeedPage;
 import org.olat.selenium.page.repository.RepositoryEditDescriptionPage;
 import org.olat.selenium.page.repository.ScormPage;
 import org.olat.selenium.page.repository.UserAccess;
+import org.olat.selenium.page.survey.SurveyEditorPage;
+import org.olat.selenium.page.survey.SurveyPage;
 import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.rest.UserRestClient;
@@ -1255,6 +1256,7 @@ public class CourseElementTest extends Deployments {
 	 * @throws URISyntaxException
 	 */
 	@Test
+	@Ignore
 	@RunAsClient
 	public void courseWithForum_concurrent(@Drone @Participant WebDriver kanuBrowser,
 			@Drone @Student WebDriver reiBrowser)
