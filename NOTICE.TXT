@@ -119,7 +119,7 @@ This product uses software based on the Apache Software License like
 * Java-html-sanitizer (Apache Software License, Version 2.0) [https://github.com/OWASP/java-html-sanitizer]
 
 -----------------------------------------------------------------------
-This produce uses software based on the MIT License
+This product uses software based on the MIT License
 * Bootstrap (MIT License) [http://http://getbootstrap.com]
 * Prototype javascript framework (MIT License) [http://www.prototypejs.org]
 * SCORM player project: reload (MIT License) [http://www.reload.ac.uk]
@@ -211,3 +211,4 @@ This product uses software based on specific License
 * periodic (none) [https://github.com/tra/periodic]
 * typeahead.js (see src/main/webapp/WEB-INF/lib/licenses/typeahead.licence.txt) [https://github.com/twitter/typeahead.js/blob/master/LICENSE]
 * validator.nu htmlparser (https://github.com/validator/htmlparser/blob/validator-nu/LICENSE.txt) [https://github.com/validator/htmlparser/blob/validator-nu/LICENSE.txt]
+* Paella Player (https://paellaplayer.upv.es/license/) [https://paellaplayer.upv.es/license/]

@@ -366,11 +366,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			mainVc.contextPut("userJSON", sb);
 		}
 
-		// the current GUI theme and the global settings that contains the
-		// font-size. both are pushed as objects so that window.dirty always reads
-		// out the correct value
 		mainVc.contextPut("theme", w.getGuiTheme());
-		mainVc.contextPut("globalSettings", winman.getGlobalSettings());
 		
 		// Add JS analytics code, e.g. for google analytics
 		if (analyticsModule.isAnalyticsEnabled()) {

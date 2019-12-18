@@ -38,11 +38,6 @@ import org.olat.core.gui.control.winmgr.AJAXFlags;
 public interface GlobalSettings {
 
 	/**
-	 * @return fontsize relative to applied theme
-	 */
-	public int getFontSize();
-
-	/**
 	 * @return Returns the ajaxFlags.
 	 */
 	public AJAXFlags getAjaxFlags();

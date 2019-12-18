@@ -141,7 +141,7 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 		  .append("<header><h4>").append(StringHelper.escapeHtml(sectionNode.getSectionPartTitle())).append("</h4>");
 
 		sb.append("</header><ul class='o_testpartnavigation_inner list-unstyled'>");
-		sectionNode.getChildren().forEach((child)
+		sectionNode.getChildren().forEach(child
 				-> renderNavigation(renderer, sb, component, child, ubu, translator, options));
 		sb.append("</ul></li>");
 	}
@@ -221,6 +221,10 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 			int num = component.getCandidateSessionContext().getNumber(itemNode);
 			title = translator.translate("question.title", new String[] { Integer.toString(num) });
 		}
+		if(title != null) {
+			title = title.replace("_", " ");
+		}
+		
 		sb.append("<span class='questionTitle'>").append(title).append("</span>");
 
 		if(event == null) {

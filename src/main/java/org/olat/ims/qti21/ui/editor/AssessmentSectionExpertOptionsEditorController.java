@@ -41,6 +41,7 @@ public class AssessmentSectionExpertOptionsEditorController extends ItemSessionC
 	private static final String[] yesnoKeys = new String[]{ "y", "n"};
 	
 	private SingleSelection visibleEl;
+	private SingleSelection positionEl;
 	
 	private final AssessmentSection section;
 
@@ -75,6 +76,18 @@ public class AssessmentSectionExpertOptionsEditorController extends ItemSessionC
 		} else {
 			visibleEl.select("n", true);
 		}
+
+		String[] fixOrNotValues = new String[]{ translate("form.section.position.fixed"), translate("form.section.position.not.fixed") };
+		positionEl = uifactory.addRadiosHorizontal("position", "form.section.position", formLayout, yesnoKeys, fixOrNotValues);
+		positionEl.setHelpTextKey("form.section.position.hint", null);
+		positionEl.setElementCssClass("o_sel_assessment_section_position");
+		positionEl.setEnabled(!restrictedEdit && editable);
+		positionEl.setVisible(section.getParentSection() != null);
+		if (section.getFixed()) {
+			positionEl.select("y", true);
+		} else {
+			positionEl.select("n", true);
+		}
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("butons", getTranslator());
 		formLayout.add(buttonsCont);
@@ -107,6 +120,18 @@ public class AssessmentSectionExpertOptionsEditorController extends ItemSessionC
 		//visible
 		boolean visible = visibleEl.isOneSelected() && visibleEl.isSelected(0);
 		section.setVisible(visible);
+		
+		if(positionEl.isVisible()) {
+			section.setFixed(Boolean.valueOf(positionEl.isSelected(0)));
+			if(!section.getFixed()) {
+				section.setKeepTogether(Boolean.TRUE);
+			} else {
+				section.setKeepTogether(Boolean.FALSE);
+			}
+		} else {
+			section.setFixed(null);
+			section.setKeepTogether(null);
+		}
 
 		fireEvent(ureq, new AssessmentSectionEvent(AssessmentSectionEvent.ASSESSMENT_SECTION_CHANGED, section));
 	}

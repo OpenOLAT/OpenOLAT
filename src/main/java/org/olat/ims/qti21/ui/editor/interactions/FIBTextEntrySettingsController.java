@@ -62,7 +62,8 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 	private final List<AlternativeRow> alternativeRows = new ArrayList<>();
 	
 	private int count = 0;
-	private final boolean restrictedEdit, readOnly;
+	private final boolean readOnly;
+	private final boolean restrictedEdit;
 	private final TextEntry interaction;
 	
 	public FIBTextEntrySettingsController(UserRequest ureq, WindowControl wControl, TextEntry interaction,
@@ -106,7 +107,7 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		addFirstAlternative.setVisible(!restrictedEdit && !readOnly);
 
 		List<TextEntryAlternative> alternatives = interaction.getAlternatives();
-		if(alternatives != null && alternatives.size() > 0) {
+		if(alternatives != null && !alternatives.isEmpty()) {
 			for(TextEntryAlternative alternative:alternatives) {
 				appendAlternative(alternative, null, false);
 			}
@@ -191,7 +192,7 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		expectedLengthEl.clearError();
 		if(StringHelper.containsNonWhitespace(expectedLengthEl.getValue())) {
@@ -208,13 +209,17 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 			}
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == addFirstAlternative) {
-			appendAlternative(new TextEntryAlternative(), null, true);
+			TextEntryAlternative alternative = new TextEntryAlternative();
+			if(interaction.getScore() != null) {
+				alternative.setScore(interaction.getScore().doubleValue());
+			}
+			appendAlternative(alternative, null, true);
 		} else if(source instanceof FormLink) {
 			for(AlternativeRow alternativeRow:alternativeRows) {
 				if(alternativeRow.getRemoveButton() == source) {
@@ -222,7 +227,11 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 					flc.setDirty(true);
 					break;
 				} else if(alternativeRow.getAddButton() == source) {
-					appendAlternative(new TextEntryAlternative(), alternativeRow, true);
+					TextEntryAlternative alternative = new TextEntryAlternative();
+					if(interaction.getScore() != null) {
+						alternative.setScore(interaction.getScore().doubleValue());
+					}
+					appendAlternative(alternative, alternativeRow, true);
 					break;
 				}
 			}
@@ -276,7 +285,8 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 	public class AlternativeRow {
 		
 		private final TextElement alternativeEl;
-		private final FormLink addButton, removeButton;
+		private final FormLink addButton;
+		private final FormLink removeButton;
 		
 		private final TextEntryAlternative alternative;
 		

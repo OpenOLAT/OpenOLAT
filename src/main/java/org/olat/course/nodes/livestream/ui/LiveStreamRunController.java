@@ -32,6 +32,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.cal.CourseCalendars;
 import org.olat.course.nodes.livestream.LiveStreamSecurityCallback;
 import org.olat.modules.ModuleConfiguration;
@@ -46,24 +47,29 @@ import org.olat.resource.OLATResource;
 public class LiveStreamRunController extends BasicController {
 	
 	private static final String PLAY_RES_TYPE = "streams";
+	private static final String STATISTIC_RES_TYPE = "statistic";
 	private static final String EDIT_RES_TYPE = "edit";
 	
 	private VelocityContainer mainVC;
 	private SegmentViewComponent segmentView;
 	private Link streamsLink;
+	private Link statisticLink;
 	private Link editLink;
 	
 	private LiveStreamsController streamsCtrl;
+	private LiveStreamStatisticController statisticCtrl;
 	private WeeklyCalendarController editCtrl;
 	
 	private final ModuleConfiguration moduleConfiguration;
+	private final String courseNodeIdent;
 	private final OLATResource courseOres;
 	private final CourseCalendars calendars;
 
-	public LiveStreamRunController(UserRequest ureq, WindowControl wControl, ModuleConfiguration moduleConfiguration,
+	public LiveStreamRunController(UserRequest ureq, WindowControl wControl, CourseNode coureNode,
 			OLATResource courseOres, LiveStreamSecurityCallback secCallback, CourseCalendars calendars) {
 		super(ureq, wControl);
-		this.moduleConfiguration = moduleConfiguration;
+		this.moduleConfiguration = coureNode.getModuleConfiguration();
+		this.courseNodeIdent = coureNode.getIdent();
 		this.courseOres = courseOres;
 		this.calendars = calendars;
 		
@@ -73,6 +79,10 @@ public class LiveStreamRunController extends BasicController {
 		if (secCallback.canViewStreams()) {
 			streamsLink = LinkFactory.createLink("run.streams", mainVC, this);
 			segmentView.addSegment(streamsLink, true);
+		}
+		if (secCallback.canViewStatistic()) {
+			statisticLink = LinkFactory.createLink("run.statistic", mainVC, this);
+			segmentView.addSegment(statisticLink, true);
 		}
 		if (secCallback.canEditStreams()) {
 			editLink = LinkFactory.createLink("run.edit.events", mainVC, this);
@@ -95,6 +105,8 @@ public class LiveStreamRunController extends BasicController {
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == streamsLink) {
 					doOpenStreams(ureq);
+				} else if (clickedLink == statisticLink){
+					doOpenStatistic(ureq);
 				} else if (clickedLink == editLink){
 					doOpenEdit(ureq);
 				}
@@ -108,11 +120,25 @@ public class LiveStreamRunController extends BasicController {
 			streamsCtrl = new LiveStreamsController(ureq, swControl, moduleConfiguration, calendars);
 			listenTo(streamsCtrl);
 		} else {
-			streamsCtrl.refreshData();
+			streamsCtrl.refreshData(ureq.getUserSession());
 			addToHistory(ureq, streamsCtrl);
 		}
 		segmentView.select(streamsLink);
 		mainVC.put("segmentCmp", streamsCtrl.getInitialComponent());
+	}
+	
+	private void doOpenStatistic(UserRequest ureq) {
+		if (statisticCtrl == null) {
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(STATISTIC_RES_TYPE), null);
+			statisticCtrl = new LiveStreamStatisticController(ureq, swControl, courseOres, courseNodeIdent,
+					moduleConfiguration, calendars);
+			listenTo(statisticCtrl);
+		} else {
+			statisticCtrl.refreshData();
+			addToHistory(ureq, statisticCtrl);
+		}
+		segmentView.select(statisticLink);
+		mainVC.put("segmentCmp", statisticCtrl.getInitialComponent());
 	}
 	
 	private void doOpenEdit(UserRequest ureq) {

@@ -16,3 +16,6 @@ alter table o_gta_task_revision add constraint task_rev_to_task_idx foreign key 
 create index idx_task_rev_to_task_idx on o_gta_task_revision (fk_task);
 alter table o_gta_task_revision add constraint task_rev_to_ident_idx foreign key (fk_comment_author) references o_bs_identity (id);
 create index idx_task_rev_to_ident_idx on o_gta_task_revision (fk_comment_author);
+
+-- livestream
+create index idx_log_livestream_idx on o_loggingtable(targetresid, creationdate, parentresid, user_id) where actionverb = 'launch' and targetrestype = 'livestream';

@@ -203,7 +203,7 @@ class RubricStatisticCalculator {
 				size++;
 			}
 		}
-		return size > 2? varianceDividend/(size - 1): null;
+		return size > 1? varianceDividend/(size - 1): null;
 	}
 
 	Double getStdDev(Double variance) {

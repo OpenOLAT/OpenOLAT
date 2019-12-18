@@ -34,15 +34,18 @@ public class LiveStreamSecurityCallbackFactory {
 	public static LiveStreamSecurityCallback createSecurityCallback(UserCourseEnvironment userCourseEnv,
 			ModuleConfiguration config) {
 		boolean canViewStreams = true;
+		boolean canViewStatistic = userCourseEnv.isAdmin() || userCourseEnv.isCoach();
 		boolean canEditStreams = 
 				userCourseEnv.isAdmin() 
 				|| (userCourseEnv.isCoach() && config.getBooleanSafe(LiveStreamCourseNode.CONFIG_COACH_CAN_EDIT));
-		return createSecurityCallback(canViewStreams, canEditStreams);
+		return createSecurityCallback(canViewStreams, canViewStatistic, canEditStreams);
 	}
 
-	public static LiveStreamSecurityCallback createSecurityCallback(boolean canViewStreams, boolean canEditStreams) {
+	public static LiveStreamSecurityCallback createSecurityCallback(boolean canViewStreams, boolean canViewStatistic,
+			boolean canEditStreams) {
 		LiveStreamSecurityCallbackImpl secCallback = new LiveStreamSecurityCallbackImpl();
 		secCallback.setCanViewStreams(canViewStreams);
+		secCallback.setCanViewStatistic(canViewStatistic);
 		secCallback.setCanEditStreams(canEditStreams);
 		return secCallback;
 	}
@@ -50,6 +53,7 @@ public class LiveStreamSecurityCallbackFactory {
 	private static class LiveStreamSecurityCallbackImpl implements LiveStreamSecurityCallback {
 		
 		private boolean canViewStreams;
+		private boolean canViewStatistic;
 		private boolean canEditStreams;
 
 		@Override
@@ -61,6 +65,15 @@ public class LiveStreamSecurityCallbackFactory {
 			this.canViewStreams = canViewStreams;
 		}
 		
+		@Override
+		public boolean canViewStatistic() {
+			return canViewStatistic;
+		}
+
+		private void setCanViewStatistic(boolean canViewStatistic) {
+			this.canViewStatistic = canViewStatistic;
+		}
+
 		@Override
 		public boolean canEditStreams() {
 			return canEditStreams;

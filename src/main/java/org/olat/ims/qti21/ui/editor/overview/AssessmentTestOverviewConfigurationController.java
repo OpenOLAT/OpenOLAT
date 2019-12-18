@@ -205,6 +205,11 @@ public class AssessmentTestOverviewConfigurationController extends FormBasicCont
 		// max attempts
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PartCols.attempts,
 				SelectionTarget.attempts.name(), new MaxAttemptsCellRenderer(getTranslator())));
+		// shuffled
+		DefaultFlexiColumnModel shuffledCol = new DefaultFlexiColumnModel(PartCols.shuffled);
+		shuffledCol.setCellRenderer(new ShuffledRenderer());
+		shuffledCol.setIconHeader("o_icon o_icon_shuffle");
+		tableColumnModel.addFlexiColumnModel(shuffledCol);
 		// skipping allowed
 		DefaultFlexiColumnModel skippingCol = new DefaultFlexiColumnModel(PartCols.skipping, SelectionTarget.expert.name());
 		skippingCol.setCellRenderer(new TestAndSectionCellRenderer(SelectionTarget.expert.name(), new OptionCellRenderer(getTranslator())));
@@ -436,6 +441,17 @@ public class AssessmentTestOverviewConfigurationController extends FormBasicCont
 				} else if(values.getLearningTime() != null) {
 					learningTime += values.getLearningTime();
 				}
+			}
+		}
+	}
+	
+	private class ShuffledRenderer implements FlexiCellRenderer {
+		@Override
+		public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
+				FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+			if(cellValue instanceof Boolean && ((Boolean)cellValue).booleanValue()) {
+				String title = translate("table.shuffled.hint");
+				target.append("<span title='").append(title).append("'><i class='o_icon o_icon_shuffle'> </i></span>");
 			}
 		}
 	}

@@ -364,7 +364,6 @@ class UserPrefsResetForm extends FormBasicController {
 				UserManager um = UserManager.getInstance();
 				User user = um.loadUserByKey(tobeChangedIdentity.getUser().getKey());
 				org.olat.core.id.Preferences preferences = user.getPreferences();
-				preferences.setFontsize(null);
 				preferences.setNotificationInterval(null);
 				preferences.setPresenceMessagesPublic(false);
 				preferences.setReceiveRealMail(null);

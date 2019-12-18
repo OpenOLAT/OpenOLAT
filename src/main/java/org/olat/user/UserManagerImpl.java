@@ -38,6 +38,7 @@ import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
@@ -53,7 +54,6 @@ import org.olat.core.id.Preferences;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -144,7 +144,6 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 		}
 		//Locale loc
 		prefs.setLanguage(loc.toString());
-		prefs.setFontsize("normal");
 		prefs.setPresenceMessagesPublic(false);
 		prefs.setInformSessionTimeout(false);
 		return newUser;
@@ -643,7 +642,6 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 			sheet.newRow();
 			sheet.newRow().addCell(0, "Settings");
 			Preferences preferences = user.getPreferences();
-			exportKeyValue("Font size", preferences.getFontsize(), sheet);
 			exportKeyValue("Language", preferences.getLanguage(), sheet);
 			exportKeyValue("Notification", preferences.getNotificationInterval(), sheet);
 			exportKeyValue("Real mail", preferences.getReceiveRealMail(), sheet);

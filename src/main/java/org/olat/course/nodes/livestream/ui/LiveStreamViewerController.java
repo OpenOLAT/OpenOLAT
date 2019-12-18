@@ -25,7 +25,9 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.UserSession;
 import org.olat.course.nodes.livestream.LiveStreamEvent;
+import org.olat.course.nodes.livestream.paella.PlayerProfile;
 
 /**
  * 
@@ -39,12 +41,12 @@ public class LiveStreamViewerController extends BasicController {
 	private final LiveStreamVideoController videoCtrl;
 	private final LiveStreamMetadataController metadataCtrl;
 
-	public LiveStreamViewerController(UserRequest ureq, WindowControl wControl) {
+	public LiveStreamViewerController(UserRequest ureq, WindowControl wControl, PlayerProfile playerProfile) {
 		super(ureq, wControl);
 		
 		mainVC = createVelocityContainer("viewer");
 		
-		videoCtrl = new LiveStreamVideoController(ureq, wControl);
+		videoCtrl = new LiveStreamVideoController(ureq, wControl, playerProfile);
 		listenTo(videoCtrl);
 		mainVC.put("video", videoCtrl.getInitialComponent());
 		metadataCtrl = new LiveStreamMetadataController(ureq, wControl);
@@ -54,8 +56,8 @@ public class LiveStreamViewerController extends BasicController {
 		putInitialPanel(mainVC);
 	}
 
-	public void setEvent(LiveStreamEvent event) {
-		videoCtrl.setEvent(event);
+	public void setEvent(UserSession usess, LiveStreamEvent event) {
+		videoCtrl.setEvent(usess, event);
 		metadataCtrl.setEvent(event);
 	}
 

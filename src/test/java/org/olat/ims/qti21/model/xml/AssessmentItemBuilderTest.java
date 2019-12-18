@@ -179,7 +179,7 @@ public class AssessmentItemBuilderTest {
 	}
 	
 	@Test
-	public void buildAssessmentItem_gap() throws IOException, URISyntaxException {
+	public void buildAssessmentItem_textEntry() throws IOException, URISyntaxException {
 		QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
 		FIBAssessmentItemBuilder itemBuilder = new FIBAssessmentItemBuilder("Gap text", EntryType.text, qtiSerializer);
 		if(build.booleanValue()) {
@@ -257,7 +257,7 @@ public class AssessmentItemBuilderTest {
 	 * @return
 	 * @throws IOException
 	 */
-	private ItemValidationResult serializeAndReload(AssessmentItem assessmentItem) throws IOException {
+	protected static ItemValidationResult serializeAndReload(AssessmentItem assessmentItem) throws IOException {
 		QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
 		File tmpDir = new File(WebappHelper.getTmpDir(), "itembuilder" + UUID.randomUUID());
 		tmpDir.mkdirs();
@@ -287,7 +287,7 @@ public class AssessmentItemBuilderTest {
         return itemResult;
 	}
 	
-	private AssessmentItem loadAssessmentItem(URL itemUrl) throws URISyntaxException {
+	protected static AssessmentItem loadAssessmentItem(URL itemUrl) throws URISyntaxException {
 		QtiXmlReader qtiXmlReader = new QtiXmlReader(new JqtiExtensionManager());
 		ResourceLocator fileResourceLocator = new PathResourceLocator(Paths.get(itemUrl.toURI()));
         AssessmentObjectXmlLoader assessmentObjectXmlLoader = new AssessmentObjectXmlLoader(qtiXmlReader, fileResourceLocator);

@@ -1,18 +1,8 @@
-#if($r.isNotNull($error))
-	<div class="o_instruction">
-		$r.translate("viewer.error.stream")
-		<div class="o_button_group">
-			$r.render("viewer.retry")
-		</div>
+#if($r.isNotNull($id))
+<div class="o_paella_wrapper">
+	<div class="o_instruction o_paella_error">
+		$r.translate("viewer.error.browser")
 	</div>
-#elseif($r.isNotNull($id))
-	<div>
-		## height / width does not matter, because the size is streched responsive.
-		<p><span id="o_livestream_${id}" class="olatFlashMovieViewer" style="display:block;border:solid 1px #000;">
-			<script>
-				var errorCallback_$id = function(mediaElement, originalNode, player) {$r.openJavaScriptCommand("error"));};
-				BPlayer.insertPlayer("$src","o_livestream_${id}",400,'100%',0,0,"video",undefined,true,true,false, null, errorCallback_$id);
-			</script>
-		</span></p>
-	</div>
+	<iframe id="${id}" allowfullscreen="true" src="${baseURI}" frameborder="0"></iframe>
+</div>
 #end

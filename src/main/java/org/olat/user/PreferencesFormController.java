@@ -29,13 +29,10 @@ import org.olat.admin.user.SystemRolesAndRightsController;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.WindowManager;
-import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -65,9 +62,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author gwassmann
  */
 public class PreferencesFormController extends FormBasicController {
-	private static final String[] cssFontsizeKeys = new String[] { "80", "90", "100", "110", "120", "140" };
 	private Identity tobeChangedIdentity;
-	private SingleSelection language, fontsize, charset, notificationInterval, mailSystem;
+	private SingleSelection language, charset, notificationInterval, mailSystem;
 	private static final String[] mailIntern = new String[]{"intern.only","send.copy"};
 	
 	@Autowired
@@ -103,19 +99,9 @@ public class PreferencesFormController extends FormBasicController {
 		tobeChangedIdentity = securityManager.loadIdentityByKey(tobeChangedIdentity.getKey());
 		Preferences prefs = tobeChangedIdentity.getUser().getPreferences();
 		prefs.setLanguage(language.getSelectedKey());
-		prefs.setFontsize(fontsize.getSelectedKey());
 		if (notificationInterval != null) {
 			// only read notification interval if available, could be disabled by configuration
 			prefs.setNotificationInterval(notificationInterval.getSelectedKey());			
-		}
-
-		// Maybe the user changed the font size
-		if (ureq.getIdentity().equalsByPersistableKey(tobeChangedIdentity)) {
-			int fontSize = Integer.parseInt(fontsize.getSelectedKey());
-			WindowManager wm = getWindowControl().getWindowBackOffice().getWindowManager();
-			if(fontSize != wm.getFontSize()) {
-				getWindowControl().getWindowBackOffice().getWindow().setDirty(true);
-			}
 		}
 		
 		if(mailSystem != null && mailSystem.isOneSelected()) {
@@ -184,20 +170,6 @@ public class PreferencesFormController extends FormBasicController {
 		} else {
 			language.select(I18nModule.getDefaultLocale().toString(), true);
 		}
-
-		// Font size
-		String[] cssFontsizeValues = new String[] {
-				translate("form.fontsize.xsmall"),
-				translate("form.fontsize.small"),
-				translate("form.fontsize.normal"),
-				translate("form.fontsize.large"),
-				translate("form.fontsize.xlarge"),
-				translate("form.fontsize.presentation")
-		};
-		fontsize = uifactory.addDropdownSingleselect("form.fontsize", formLayout, cssFontsizeKeys, cssFontsizeValues, null);
-		fontsize.setElementCssClass("o_sel_home_settings_fontsize");
-		fontsize.select(prefs.getFontsize(), true);
-		fontsize.addActionListener(FormEvent.ONCHANGE);
 		
 		// Email notification interval
 		List<String> intervals = notificiationMgr.getEnabledNotificationIntervals();
@@ -257,17 +229,6 @@ public class PreferencesFormController extends FormBasicController {
 		buttonLayout.setElementCssClass("o_sel_home_settings_prefs_buttons");
 		uifactory.addFormSubmitButton("submit", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
-	}
-
-	@Override
-	protected void formInnerEvent (UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == fontsize && ureq.getIdentity().equalsByPersistableKey(tobeChangedIdentity)) {
-			int fontSize = Integer.parseInt(fontsize.getSelectedKey());
-			WindowManager wm = getWindowControl().getWindowBackOffice().getWindowManager();
-			if(fontSize != wm.getFontSize()) {
-				getWindowControl().getWindowBackOffice().getWindow().setDirty(true);
-			}
-		}
 	}
 
 	@Override

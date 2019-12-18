@@ -58,6 +58,7 @@ import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -75,7 +76,6 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.nodes.INode;
@@ -1172,7 +1172,6 @@ public class UserMgmtTest extends OlatRestTestCase {
 		Identity prefsId = JunitTestHelper.createAndPersistIdentityAsAuthor("prefs-1-" + UUID.randomUUID().toString());
 		dbInstance.commitAndCloseSession();
 		prefsId.getUser().getPreferences().setLanguage("fr");
-		prefsId.getUser().getPreferences().setFontsize("11");
 		userManager.updateUserFromIdentity(prefsId);
 		dbInstance.commitAndCloseSession();
 		

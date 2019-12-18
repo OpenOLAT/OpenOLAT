@@ -78,6 +78,7 @@ public class SinglePageConfigurationPage {
 		
 		By inputBy = By.cssSelector(".modal-body .o_fileinput input[type='file']");
 		OOGraphene.uploadFile(inputBy, file, browser);
+		OOGraphene.waitBusy(browser);
 		
 		By uploadBy = By.cssSelector(".modal-body .o_sel_upload_buttons button.btn-primary");
 		OOGraphene.waitElement(uploadBy, browser);

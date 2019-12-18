@@ -147,8 +147,7 @@ public class PageEditorComponentRenderer extends DefaultComponentRenderer {
 			sb.append("</div>");
 		}
 
-		sb.append("<div class='o_page_others_above'>")
-		  .append("<span class='o_page_type'><i class='o_icon $fragment.typeCssClass'> </i> $r.translate($fragment.type)</span>");
+		sb.append("<div class='o_page_others_above'>");
 		
 		Component saveLink = fragment.getSaveLink();
 		saveLink.getHTMLRendererSingleton().render(renderer, sb, saveLink, ubu, translator, renderResult, args);
