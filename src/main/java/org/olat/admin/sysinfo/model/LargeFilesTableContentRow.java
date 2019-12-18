@@ -46,8 +46,8 @@ public class LargeFilesTableContentRow {
 		size = metadata.getFileSize();
 		author = metadata.getAuthor();
 		path = metadata.getRelativePath();
-		fileType = WebappHelper.getMimeType(metadata.getFilename()).split("/")[1];
-		fileCategory = WebappHelper.getMimeType(metadata.getFilename()).split("/")[0];
+		fileType = WebappHelper.getMimeType(metadata.getFilename()) != null ? WebappHelper.getMimeType(metadata.getFilename()).split("/")[1] : "Unknown";
+		fileCategory = WebappHelper.getMimeType(metadata.getFilename()) != null ? WebappHelper.getMimeType(metadata.getFilename()).split("/")[0] : "Unknown";
 		revision = false;
 		createdAt = metadata.getCreationDate();
 		lastModifiedAt = metadata.getLastModified();
@@ -96,6 +96,10 @@ public class LargeFilesTableContentRow {
 		lockedBy = rev.getMetadata().getLockedBy();
 		revisionNr = rev.getRevisionNr();
 		revisionComment = rev.getRevisionComment();
+	}
+	
+	private Object returnNullSafe(Object o) {
+		return o != null ? o : "";
 	}
 
 	private Date calculateDateFromPublicationDateArray(String[] pubDateArray) {
