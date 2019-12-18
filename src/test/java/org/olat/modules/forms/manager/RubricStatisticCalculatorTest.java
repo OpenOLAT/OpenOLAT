@@ -202,6 +202,35 @@ public class RubricStatisticCalculatorTest {
 	}
 
 	@Test
+	public void shouldCalculateSliderVarianceOfTwoResponses() {
+		ScaleType scaleType = ScaleType.oneToMax;
+		StepCountsBuilder stepCountsBuilder = StepCountsBuilder.builder(4);
+		stepCountsBuilder.withCount(1, Long.valueOf(1));
+		stepCountsBuilder.withCount(2, Long.valueOf(1));
+		stepCountsBuilder.withCount(3, Long.valueOf(0));
+		stepCountsBuilder.withCount(4, Long.valueOf(0));
+		SumMean sumMean = sut.getSumMean(stepCountsBuilder.build(), scaleType);
+		
+		Double variance = sut.getVariance(stepCountsBuilder.build(), scaleType, sumMean.getMean());
+		
+		assertThat(variance).isEqualTo(0.5);
+	}
+	@Test
+	public void shouldCalculateSliderVarianceOfOneResponse() {
+		ScaleType scaleType = ScaleType.oneToMax;
+		StepCountsBuilder stepCountsBuilder = StepCountsBuilder.builder(4);
+		stepCountsBuilder.withCount(1, Long.valueOf(1));
+		stepCountsBuilder.withCount(2, Long.valueOf(0));
+		stepCountsBuilder.withCount(3, Long.valueOf(0));
+		stepCountsBuilder.withCount(4, Long.valueOf(0));
+		SumMean sumMean = sut.getSumMean(stepCountsBuilder.build(), scaleType);
+		
+		Double variance = sut.getVariance(stepCountsBuilder.build(), scaleType, sumMean.getMean());
+		
+		assertThat(variance).isNull();
+	}
+
+	@Test
 	public void shouldCalculateSliderVarianceScaled() {
 		ScaleType scaleType = ScaleType.zeroBallanced;
 		StepCountsBuilder stepCountsBuilder = StepCountsBuilder.builder(4);
