@@ -49,7 +49,7 @@ public class FormJSHelper {
 	
 	private static final Logger log = Tracing.createLoggerFor(FormJSHelper.class);
 
-	private static final String[] EXTJSACTIONS = { "dblclick", "click", "change" };
+	private static final String[] EXTJSACTIONS = { "dblclick", "click", "change", "keyup" };
 
 	/**
 	 * create for example an

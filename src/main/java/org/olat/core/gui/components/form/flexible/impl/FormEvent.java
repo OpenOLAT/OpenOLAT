@@ -43,9 +43,10 @@ public class FormEvent extends Event {
 	// checkbox / radio button the onclick will also be fired although nothing has 
 	// been clicked. 
 	public static final int ONCHANGE = 4;
+	public static final int ONKEYUP = 8;
 		
 	//sorted x0 > x1 > x2 .. > xn 
-	public static final int[] ON_DOTDOTDOT = new int[]{ONDBLCLICK, ONCLICK, ONCHANGE};
+	public static final int[] ON_DOTDOTDOT = new int[]{ONDBLCLICK, ONCLICK, ONCHANGE, ONKEYUP};
 	public static final FormEvent RESET = new FormEvent("reset",null);
 
 	private final int trigger;
