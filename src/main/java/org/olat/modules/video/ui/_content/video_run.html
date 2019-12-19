@@ -106,7 +106,7 @@
 		        ## listen to end events, fired when movie is finished
 		        mediaElement.addEventListener('ended', function(e) {
 		        	if (!o_info.linkbusy) {
-						$r.openNoResponseJavaScriptCommand("ended"), 'currentTime', mediaElement.currentTime, 'src', $sourcesSrc, 'duration', mediaElement.duration);
+						$r.openNoResponseJavaScriptCommand("ended"), 'currentTime', mediaElement.currentTime, 'src', $mediaSrc, 'duration', mediaElement.duration);
 					}
 		        }, false);
 

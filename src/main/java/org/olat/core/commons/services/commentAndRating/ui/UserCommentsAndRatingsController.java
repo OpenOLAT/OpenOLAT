@@ -22,6 +22,8 @@ package org.olat.core.commons.services.commentAndRating.ui;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.commentAndRating.model.UserRating;
+import org.olat.core.commons.services.notifications.PublishingInformations;
+import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -61,7 +63,7 @@ public class UserCommentsAndRatingsController extends BasicController implements
 	public static final Event EVENT_RATING_CHANGED = new Event("rating_changed");
 
 	private final VelocityContainer userCommentsAndRatingsVC;
-	private final OLATResourceable USER_COMMENTS_AND_RATING_CHANNEL;
+	private final OLATResourceable userAndCommentsRatingsChannel;
 	private final boolean canExpandToFullView;
 	private Object userObject;
 	// Comments 
@@ -74,10 +76,12 @@ public class UserCommentsAndRatingsController extends BasicController implements
 	private UserRating userRating;
 	// Controller state
 	private boolean isExpanded = false; // default
+	private ContextualSubscriptionController subscriptionCtrl;
 	
 	// Configuration
 	private final String oresSubPath;
 	private final OLATResourceable ores;
+	private final PublishingInformations publishingInformations;
 	private final CommentAndRatingSecurityCallback securityCallback;
 	
 	@Autowired
@@ -92,16 +96,19 @@ public class UserCommentsAndRatingsController extends BasicController implements
 	 * @param ores
 	 * @param oresSubPath
 	 * @param securityCallback
+	 * @param publishingInformations Informations for the notifications button (can be null)
 	 * @param enableComments
 	 * @param enableRatings
 	 * @param canExpandToFullView
 	 */
 	public UserCommentsAndRatingsController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, String oresSubPath,
-			CommentAndRatingSecurityCallback securityCallback, boolean enableComments, boolean enableRatings, boolean canExpandToFullView) {
+			CommentAndRatingSecurityCallback securityCallback, PublishingInformations publishingInformations,
+			boolean enableComments, boolean enableRatings, boolean canExpandToFullView) {
 		super(ureq, wControl);
 		this.ores = ores;
 		this.oresSubPath = oresSubPath;
 		this.securityCallback = securityCallback;
+		this.publishingInformations = publishingInformations;
 		userCommentsAndRatingsVC = createVelocityContainer("userCommentsAndRatings");
 		this.canExpandToFullView = canExpandToFullView;
 		putInitialPanel(userCommentsAndRatingsVC);
@@ -109,8 +116,9 @@ public class UserCommentsAndRatingsController extends BasicController implements
 		if (enableComments && securityCallback.canViewComments()) {
 			userCommentsAndRatingsVC.contextPut("enableComments", Boolean.valueOf(enableComments));
 			// Link with comments count to expand view
-			commentsCountLink = LinkFactory.createLink("comments.count", this.userCommentsAndRatingsVC, this);
+			commentsCountLink = LinkFactory.createLink("comments.count", userCommentsAndRatingsVC, this);
 			commentsCountLink.setTitle("comments.count.tooltip");
+			commentsCountLink.setDomReplacementWrapperRequired(false);
 			// Init view with values from DB
 			updateCommentCountView();
 		}
@@ -140,9 +148,16 @@ public class UserCommentsAndRatingsController extends BasicController implements
 			updateRatingView();
 		}
 		
+		if (publishingInformations != null) {
+			subscriptionCtrl = new ContextualSubscriptionController(ureq, getWindowControl(),
+					publishingInformations.getContext(), publishingInformations.getData());
+			listenTo(subscriptionCtrl);
+			userCommentsAndRatingsVC.put("subscription", subscriptionCtrl.getInitialComponent());
+		}
+		
 		// Register to event channel for comments count change events
-		USER_COMMENTS_AND_RATING_CHANNEL = ores;
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), USER_COMMENTS_AND_RATING_CHANNEL);
+		userAndCommentsRatingsChannel = ores;
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), userAndCommentsRatingsChannel);
 
 	}
 
@@ -153,7 +168,7 @@ public class UserCommentsAndRatingsController extends BasicController implements
 	 */
 	public void expandComments(UserRequest ureq) {
 		if (canExpandToFullView) { 
-			commentsCtr = new UserCommentsController(ureq, getWindowControl(), ores, oresSubPath, securityCallback);
+			commentsCtr = new UserCommentsController(ureq, getWindowControl(), ores, oresSubPath, publishingInformations, securityCallback);
 			listenTo(commentsCtr);
 			userCommentsAndRatingsVC.put("commentsCtr", commentsCtr.getInitialComponent());
 			isExpanded = true;
@@ -226,20 +241,12 @@ public class UserCommentsAndRatingsController extends BasicController implements
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
 		// Remove event listener
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, USER_COMMENTS_AND_RATING_CHANNEL);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, userAndCommentsRatingsChannel);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		// Forward comments counter links to parent listeners
@@ -269,15 +276,11 @@ public class UserCommentsAndRatingsController extends BasicController implements
 			updateRatingView();
 			// Notify other user who also have this component
 			UserRatingChangedEvent changedEvent = new UserRatingChangedEvent(this, this.oresSubPath);
-			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(changedEvent, USER_COMMENTS_AND_RATING_CHANNEL);
+			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(changedEvent, userAndCommentsRatingsChannel);
 
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == commentsCtr) {
@@ -285,7 +288,7 @@ public class UserCommentsAndRatingsController extends BasicController implements
 				updateCommentCountView();
 				// notify other user who also have this component
 				UserCommentsCountChangedEvent changedEvent = new UserCommentsCountChangedEvent(this, oresSubPath);
-				CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(changedEvent, USER_COMMENTS_AND_RATING_CHANNEL);
+				CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(changedEvent, userAndCommentsRatingsChannel);
 			} else if (event == Event.CANCELLED_EVENT) {
 				fireEvent(ureq, event);
 			}

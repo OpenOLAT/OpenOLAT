@@ -16,6 +16,9 @@
 	#if ($enableComments)
 		$r.render("comments.count")
 	#end
+	#if($r.available("subscription"))
+		<div class="o_notifications">$r.render("subscription")</div>
+	#end
 </div> 
 
 ## Display user rating when hovering over rating area

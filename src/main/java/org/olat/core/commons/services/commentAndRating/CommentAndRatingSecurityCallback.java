@@ -90,5 +90,6 @@ public interface CommentAndRatingSecurityCallback {
 	 *         resource
 	 */
 	public boolean canRate();
+	
 
 }

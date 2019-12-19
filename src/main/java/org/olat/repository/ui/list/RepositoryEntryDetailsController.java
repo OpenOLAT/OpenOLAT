@@ -713,7 +713,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 		boolean anonym = ureq.getUserSession().getRoles().isGuestOnly();
 		CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, anonym);
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("RepositoryEntry", entry.getKey());
-		commentsCtrl = new UserCommentsController(ureq, getWindowControl(), ores, null, secCallback);
+		commentsCtrl = new UserCommentsController(ureq, getWindowControl(), ores, null, null, secCallback);
 		listenTo(commentsCtrl);
 		cmc = new CloseableModalController(getWindowControl(), "close", commentsCtrl.getInitialComponent(), true, translate("comments"));
 		listenTo(cmc);

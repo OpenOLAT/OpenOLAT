@@ -19,9 +19,10 @@
  */
 package org.olat.core.commons.services.commentAndRating.ui;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.commentAndRating.model.UserComment;
+import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.PublishingInformations;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
@@ -58,15 +59,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class UserCommentFormController extends FormBasicController {
 	private UserComment parentComment;
 	private UserComment toBeUpdatedComment;
-	//
 	private RichTextElement commentElem;
 
 	private final String resSubPath;
 	private final OLATResourceable ores;
-	private final CommentAndRatingService commentAndRatingService;
+	private PublishingInformations publishingInformations;
 
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private NotificationsManager notificationsManager;
+	@Autowired
+	private CommentAndRatingService commentAndRatingService;
 
 	/**
 	 * Constructor for a user comment form controller. Use the
@@ -80,22 +84,17 @@ public class UserCommentFormController extends FormBasicController {
 	 */
 	UserCommentFormController(UserRequest ureq, WindowControl wControl,
 			UserComment parentComment, UserComment toBeUpdatedComment,
-			OLATResourceable ores, String resSubPath) {
+			OLATResourceable ores, String resSubPath,
+			PublishingInformations publishingInformations) {
 		super(ureq, wControl, FormBasicController.LAYOUT_VERTICAL);
 		this.ores = ores;
 		this.resSubPath = resSubPath;
-		commentAndRatingService = CoreSpringFactory.getImpl(CommentAndRatingService.class);
-
 		this.parentComment = parentComment;
 		this.toBeUpdatedComment = toBeUpdatedComment;
-		//
+		this.publishingInformations = publishingInformations;
 		initForm(ureq);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener,
 			UserRequest ureq) {
@@ -115,26 +114,24 @@ public class UserCommentFormController extends FormBasicController {
 				.createButtonLayout("buttonContainer", getTranslator());
 		formLayout.add(buttonContainer);
 
-		uifactory.addFormSubmitButton("submit", buttonContainer);
 		uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
+		uifactory.addFormSubmitButton("submit", buttonContainer);
 	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
 		String commentText = commentElem.getValue();
-		boolean allOk = true;
 		if(commentText.length() <= 4000) {
 			commentElem.clearError();
 		} else {
 			commentElem.setErrorKey("input.toolong", new String[]{"4000"});
-			allOk = false;
+			allOk &= false;
 		}
-		return allOk && super.validateFormLogic(ureq);
+		return allOk;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
 		String commentText = commentElem.getValue();
@@ -164,20 +161,15 @@ public class UserCommentFormController extends FormBasicController {
 					fireEvent(ureq, Event.CHANGED_EVENT);
 				}
 			}
+			notificationsManager.markPublisherNews(publishingInformations.getContext(), null, false);
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formCancelled(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
 		// nothing to dispose

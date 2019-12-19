@@ -59,9 +59,10 @@ public class ContextualSubscriptionController extends BasicController {
 	private NotificationsManager notifManager;
 	
 	/**
-	 * @param ureq
-	 * @param subscriptionContext
-	 * @param publisherData
+	 * @param ureq The user request
+	 * @param wControl The window control
+	 * @param subscriptionContext The subscription context (which resource is involved)
+	 * @param publisherData The publisher data
 	 */
 	public ContextualSubscriptionController(UserRequest ureq, WindowControl wControl, SubscriptionContext subscriptionContext, PublisherData publisherData) {
 		super(ureq, wControl);

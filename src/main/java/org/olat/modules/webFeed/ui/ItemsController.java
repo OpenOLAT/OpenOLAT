@@ -299,7 +299,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 			CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(),
 					callback.mayEditMetadata(), anonym);
 			UserCommentsAndRatingsController commentsAndRatingCtr = new UserCommentsAndRatingsController(ureq,
-					getWindowControl(), feed, item.getGuid(), secCallback, true, true, false);
+					getWindowControl(), feed, item.getGuid(), secCallback, null, true, true, false);
 			commentsAndRatingCtr.setUserObject(item);
 			listenTo(commentsAndRatingCtr);
 			commentsLinks.put(item, commentsAndRatingCtr);
