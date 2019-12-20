@@ -27,6 +27,7 @@ package org.olat.core.commons.services.notifications.ui;
 import java.util.Map;
 
 import org.olat.NewControllerFactory;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.commons.services.notifications.Subscriber;
@@ -71,8 +72,7 @@ public class NotificationSubscriptionAndNewsFormatter {
 	}
 	
 	public String getNewsAsHTML(Subscriber sub) {
-		String news = getNews(sub, SubscriptionInfo.MIME_HTML);
-		return news;
+		return getNews(sub, SubscriptionInfo.MIME_HTML);
 	}
 
 	public String getNewsAsTxt(Subscriber sub) {
@@ -91,15 +91,13 @@ public class NotificationSubscriptionAndNewsFormatter {
 	}
 
 	public String getTitleAsTxt(Subscriber sub) {
-		String textTitle = getTitle(sub, SubscriptionInfo.MIME_PLAIN);
-		return textTitle;
+		return getTitle(sub, SubscriptionInfo.MIME_PLAIN);
 	}
 
 	private String getTitle(Subscriber sub, String mimeType) {
 		SubscriptionInfo subsInfo = subsInfoMap.get(sub);
 		if (subsInfo == null) return "";
-		String title = subsInfo.getTitle(mimeType);
-		return title;
+		return subsInfo.getTitle(mimeType);
 	}
 	
 	public String getCustomUrl(Subscriber sub) {
@@ -109,8 +107,7 @@ public class NotificationSubscriptionAndNewsFormatter {
 
 	public SubscriptionItem getSubscriptionItem(Subscriber sub) {
 		SubscriptionInfo subsInfo = subsInfoMap.get(sub);
-		NotificationsManager notiMgr = NotificationsManager.getInstance();
-		SubscriptionItem subscrItem = notiMgr.createSubscriptionItem(subsInfo, sub, translator.getLocale(), SubscriptionInfo.MIME_HTML, SubscriptionInfo.MIME_HTML);
-		return subscrItem;		
+		NotificationsManager notiMgr = CoreSpringFactory.getImpl(NotificationsManager.class);
+		return notiMgr.createSubscriptionItem(subsInfo, sub, translator.getLocale(), SubscriptionInfo.MIME_HTML, SubscriptionInfo.MIME_HTML);	
 	}
 }

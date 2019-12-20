@@ -284,7 +284,11 @@ public class UserCommentsAndRatingsController extends BasicController implements
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == commentsCtr) {
-			if (event == UserCommentDisplayController.COMMENT_COUNT_CHANGED) {
+			if(event instanceof UserCommentsSubscribeNotificationsEvent) {
+				if(subscriptionCtrl != null && !subscriptionCtrl.isSubscribed()) {
+					subscriptionCtrl.loadModel();
+				}
+			} else if (event == UserCommentDisplayController.COMMENT_COUNT_CHANGED) {
 				updateCommentCountView();
 				// notify other user who also have this component
 				UserCommentsCountChangedEvent changedEvent = new UserCommentsCountChangedEvent(this, oresSubPath);

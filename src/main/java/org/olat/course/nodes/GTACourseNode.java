@@ -746,9 +746,10 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 		
 		//clean subscription
 		SubscriptionContext markedSubscriptionContext = gtaManager.getSubscriptionContext(course.getCourseEnvironment(), this, true);
-		NotificationsManager.getInstance().delete(markedSubscriptionContext);
+		NotificationsManager notificationsManager = CoreSpringFactory.getImpl(NotificationsManager.class);
+		notificationsManager.delete(markedSubscriptionContext);
 		SubscriptionContext subscriptionContext = gtaManager.getSubscriptionContext(course.getCourseEnvironment(), this, false);
-		NotificationsManager.getInstance().delete(subscriptionContext);
+		notificationsManager.delete(subscriptionContext);
 	}
 
 	@Override

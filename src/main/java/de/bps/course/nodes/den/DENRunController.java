@@ -48,6 +48,7 @@ import org.olat.course.ICourse;
 import org.olat.course.nodes.ObjectivesHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import de.bps.course.nodes.DENCourseNode;
 
@@ -81,6 +82,9 @@ public class DENRunController extends BasicController implements GenericEventLis
 	
 	private VelocityContainer runVC;
 	private OLATResourceable ores;
+	
+	@Autowired
+	private NotificationsManager notificationsManager;
 
 	/**
 	 * Standard constructor for Date Enrollment run controller
@@ -222,7 +226,7 @@ public class DENRunController extends BasicController implements GenericEventLis
 				runDENTable.setTableDataModel(runTableData);
 				fireEvent(ureq, Event.DONE_EVENT);
 				// inform subscription context about changes
-				NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity(), true);
+				notificationsManager.markPublisherNews(subsContext, ureq.getIdentity(), true);
 				// </OPAL-122>
 			}
 		} 

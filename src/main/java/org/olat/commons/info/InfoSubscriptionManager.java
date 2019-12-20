@@ -22,13 +22,10 @@ package org.olat.commons.info;
 
 import java.util.List;
 
-import org.olat.commons.info.notification.InfoSubscription;
 import org.olat.core.commons.services.notifications.PublisherData;
-import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.prefs.Preferences;
 
 /**
  * 
@@ -44,10 +41,6 @@ public interface InfoSubscriptionManager {
 	public SubscriptionContext getInfoSubscriptionContext(OLATResourceable resource, String subPath);
 	
 	public PublisherData getInfoPublisherData(OLATResourceable resource, String businessPath);
-	
-	public InfoSubscription getInfoSubscription(Preferences prefs);
-	
-	public Subscriber getInfoSubscriber(Identity identity, OLATResourceable resource, String subPath);
 	
 	public List<Identity> getInfoSubscribers(OLATResourceable resource, String subPath);
 	

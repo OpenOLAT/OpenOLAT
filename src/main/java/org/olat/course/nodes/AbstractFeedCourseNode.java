@@ -22,6 +22,7 @@ package org.olat.course.nodes;
 import java.io.File;
 import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
@@ -96,7 +97,7 @@ public abstract class AbstractFeedCourseNode extends GenericCourseNode {
 		super.cleanupOnDelete(course);
 
 		SubscriptionContext subsContext = CourseModule.createSubscriptionContext(course.getCourseEnvironment(), this);
-		NotificationsManager.getInstance().delete(subsContext);
+		CoreSpringFactory.getImpl(NotificationsManager.class).delete(subsContext);
 	}
 
 	@Override

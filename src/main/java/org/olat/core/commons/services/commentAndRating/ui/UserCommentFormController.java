@@ -23,6 +23,7 @@ import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.commentAndRating.model.UserComment;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.PublishingInformations;
+import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
@@ -63,6 +64,7 @@ public class UserCommentFormController extends FormBasicController {
 
 	private final String resSubPath;
 	private final OLATResourceable ores;
+	private boolean subscribeOnce = true;
 	private PublishingInformations publishingInformations;
 
 	@Autowired
@@ -136,6 +138,18 @@ public class UserCommentFormController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		String commentText = commentElem.getValue();
 		if (StringHelper.containsNonWhitespace(commentText)) {
+			if(publishingInformations != null) {
+				if(subscribeOnce) {
+					Subscriber subscriber = notificationsManager.getSubscriber(getIdentity(), publishingInformations.getContext());
+					if(subscriber == null) {
+						notificationsManager.subscribe(getIdentity(), publishingInformations.getContext(), publishingInformations.getData());
+						fireEvent(ureq, new UserCommentsSubscribeNotificationsEvent());
+					}
+					subscribeOnce = false;
+				}
+				notificationsManager.markPublisherNews(publishingInformations.getContext(), null, false);
+			}
+			
 			if (toBeUpdatedComment == null) {
 				if (parentComment == null) {
 					// create new comment
@@ -161,7 +175,6 @@ public class UserCommentFormController extends FormBasicController {
 					fireEvent(ureq, Event.CHANGED_EVENT);
 				}
 			}
-			notificationsManager.markPublisherNews(publishingInformations.getContext(), null, false);
 		}
 	}
 

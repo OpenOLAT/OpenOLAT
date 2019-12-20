@@ -62,6 +62,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.filter.FilterFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -79,6 +80,9 @@ public class InfoMessagePortletRunController extends AbstractPortletRunControlle
 	private VelocityContainer portletVC;
 	
 	private boolean newInfos = false;
+	
+	@Autowired
+	private NotificationsManager notificationsManager;
 	
 	public InfoMessagePortletRunController(WindowControl wControl, UserRequest ureq, Translator trans,
 			String portletName, int defaultMaxentries) {
@@ -165,7 +169,7 @@ public class InfoMessagePortletRunController extends AbstractPortletRunControlle
 
 	@Override
 	protected void reloadModel(SortingCriteria criteria) {
-		List<SubscriptionInfo> infos = NotificationsManager.getInstance().getSubscriptionInfos(getIdentity(), "InfoMessage");
+		List<SubscriptionInfo> infos = notificationsManager.getSubscriptionInfos(getIdentity(), "InfoMessage");
 		List<InfoSubscriptionItem> items = new ArrayList<>();
 		for(SubscriptionInfo info:infos) {
 			for(SubscriptionListItem item:info.getSubscriptionListItems()) {

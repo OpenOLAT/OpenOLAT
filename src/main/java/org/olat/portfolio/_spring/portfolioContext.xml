@@ -58,10 +58,6 @@
 	<bean name="liveBlogArtefactHandler" class="org.olat.modules.webFeed.portfolio.LiveBlogArtefactHandler"/>
 	
 	<bean name="blogArtefactHandler" class="org.olat.modules.webFeed.portfolio.BlogArtefactHandler"/>
-	
-	
-	<!--   define notifications handler -->
-	<bean id="org.olat.portfolio.manager.EPNotificationsHandler" class="org.olat.portfolio.manager.EPNotificationsHandler" />
 
 	<!-- wrapper for add-link in folder -->
 	<bean name="folderCMDAddToEPortfolio" class="org.olat.core.gui.control.creator.AutoCreator" >

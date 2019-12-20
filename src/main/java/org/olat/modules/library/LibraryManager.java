@@ -68,6 +68,13 @@ public interface LibraryManager {
 	
 	public PublisherData getPublisherData();
 	
+	/**
+	 * Returns the subscriber, enabled or not of the
+	 * specified identity.
+	 * 
+	 * @param identity The identity
+	 * @return A subscriber or null
+	 */
 	public Subscriber getSubscriber(Identity identity);
 	
 	public SubscriptionContext getSubscriptionContext();

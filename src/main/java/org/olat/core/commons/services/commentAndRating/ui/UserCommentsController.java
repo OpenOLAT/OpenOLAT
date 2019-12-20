@@ -146,6 +146,8 @@ public class UserCommentsController extends BasicController {
 			if (event == Event.CANCELLED_EVENT) {
 				// do nothing
 				fireEvent(ureq, event);
+			} else if(event instanceof UserCommentsSubscribeNotificationsEvent) {
+				fireEvent(ureq, event);
 			} else if (event == Event.CHANGED_EVENT) {
 				// Add new comment to view instead of rebuilding datamodel to reduce overhead
 				UserComment newComment = createCommentFormCtr.getComment();

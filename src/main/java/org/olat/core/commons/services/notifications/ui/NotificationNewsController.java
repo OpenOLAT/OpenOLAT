@@ -48,6 +48,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -61,8 +62,8 @@ import org.olat.core.util.StringHelper;
  * 
  * @author gnaegi
  */
-public class NotificationNewsController extends BasicController implements
-		Activateable2 {
+public class NotificationNewsController extends BasicController implements Activateable2 {
+	
 	private VelocityContainer newsVC;
 	private Date compareDate;
 	private String newsType;
@@ -70,6 +71,9 @@ public class NotificationNewsController extends BasicController implements
 	private DateChooserController dateChooserCtr;
 	private Link emailLink;
 	private Map<Subscriber, SubscriptionInfo> subsInfoMap;
+	
+	@Autowired
+	private NotificationsManager notificationsManager;
 
 	/**
 	 * Constructor
@@ -87,8 +91,7 @@ public class NotificationNewsController extends BasicController implements
 		super(ureq, wControl);
 		this.subscriberIdentity = subscriberIdentity;
 		if (newsSinceDate == null) {
-			NotificationsManager man = NotificationsManager.getInstance();
-			compareDate = man.getCompareDateFromInterval(man
+			compareDate = notificationsManager.getCompareDateFromInterval(notificationsManager
 					.getUserIntervalOrDefault(ureq.getIdentity()));
 		} else {
 			compareDate = newsSinceDate;
@@ -125,8 +128,7 @@ public class NotificationNewsController extends BasicController implements
 			notiTypes.add(newsType);
 		}
 
-		NotificationsManager man = NotificationsManager.getInstance();
-		List<Subscriber> subs = man.getSubscribers(subscriberIdentity, notiTypes);
+		List<Subscriber> subs = notificationsManager.getSubscribers(subscriberIdentity, notiTypes, true);
 
 		newsVC.contextPut("subs", subs);
 		subsInfoMap = NotificationHelper.getSubscriptionMap(getLocale(), true,
@@ -137,10 +139,6 @@ public class NotificationNewsController extends BasicController implements
 		return subs;
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == dateChooserCtr) {
@@ -152,28 +150,22 @@ public class NotificationNewsController extends BasicController implements
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == emailLink) {
 			// send email to user with the currently visible date
-			NotificationsManager man = NotificationsManager.getInstance();
 			List<SubscriptionItem> infoList = new ArrayList<>();
 			List<Subscriber> subsList = new ArrayList<>();
 			for (Subscriber subscriber : subsInfoMap.keySet()) {
 				subsList.add(subscriber);
-				SubscriptionItem item = man.createSubscriptionItem(subscriber,
+				SubscriptionItem item = notificationsManager.createSubscriptionItem(subscriber,
 						getLocale(), SubscriptionInfo.MIME_HTML,
 						SubscriptionInfo.MIME_HTML, compareDate);
 				if (item != null) {
 					infoList.add(item);
 				}
 			}
-			if (man.sendMailToUserAndUpdateSubscriber(subscriberIdentity, infoList,
+			if (notificationsManager.sendMailToUserAndUpdateSubscriber(subscriberIdentity, infoList,
 					getTranslator(), subsList)) {
 				showInfo("email.ok");
 			} else {
@@ -223,15 +215,11 @@ public class NotificationNewsController extends BasicController implements
 		if (identifier.startsWith(str)) {
 			int sepIndex = identifier.indexOf(':');
 			int lastIndex = (sepIndex > 0 ? sepIndex : identifier.length());
-			String value = identifier.substring(str.length(), lastIndex);
-			return value;
+			return identifier.substring(str.length(), lastIndex);
 		}
 		return null;
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
 		// child controllers disposed by basic controller

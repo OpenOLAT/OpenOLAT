@@ -139,6 +139,8 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	private CalendarManager calendarManager;
 	@Autowired
 	private CalendarNotificationManager calendarNotificationsManager;
+	@Autowired
+	private NotificationsManager notificationsManager;
 	
 	/**
 	 * Display week view of calendar. Add the calendars to be displayed via
@@ -458,13 +460,13 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		if (calendarEl.getComponent().isDirty()) {
 			if (subsContext != null) {
 				// group or course calendar -> prepared subscription context is the right one
-				NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity(), true);
+				notificationsManager.markPublisherNews(subsContext, ureq.getIdentity(), true);
 			} else if(caller.equals(CALLER_HOME) && affectedCal != null) {
 				// one can add/edit/remove dates of group and course calendars from the home calendar view -> choose right subscription context
 				for( KalendarRenderWrapper calWrapper : calendarWrappers) {
 					if(affectedCal == calWrapper.getKalendar()) {
 						SubscriptionContext tmpSubsContext = calendarNotificationsManager.getSubscriptionContext(calWrapper);
-						NotificationsManager.getInstance().markPublisherNews(tmpSubsContext, ureq.getIdentity(), true);
+						notificationsManager.markPublisherNews(tmpSubsContext, ureq.getIdentity(), true);
 					}
 				}
 			}

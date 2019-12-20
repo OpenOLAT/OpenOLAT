@@ -52,6 +52,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -81,6 +82,9 @@ public class CmdUpload extends BasicController implements FolderCommand {
 	private boolean cancelResetsForm;
 	private boolean showMetadata = false;
 	private boolean showCancel = true; // default is to show cancel button
+	
+	@Autowired
+	private NotificationsManager notificationsManager;
 	
 	public CmdUpload(UserRequest ureq, WindowControl wControl, boolean showMetadata, boolean showCancel) {
 		super(ureq, wControl, Util.createPackageTranslator(FileElementImpl.class, ureq.getLocale()));
@@ -245,7 +249,7 @@ public class CmdUpload extends BasicController implements FolderCommand {
 		if (secCallback != null) {
 			SubscriptionContext subsContext = secCallback.getSubscriptionContext();
 			if (subsContext != null) {
-				NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity(), true);
+				notificationsManager.markPublisherNews(subsContext, ureq.getIdentity(), true);
 			}
 		}
 		// Notify everybody

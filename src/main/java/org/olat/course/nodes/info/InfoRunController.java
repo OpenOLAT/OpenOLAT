@@ -28,7 +28,6 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.commons.info.InfoMessage;
 import org.olat.commons.info.InfoSubscriptionManager;
 import org.olat.commons.info.manager.MailFormatter;
-import org.olat.commons.info.notification.InfoSubscription;
 import org.olat.commons.info.ui.InfoDisplayController;
 import org.olat.commons.info.ui.InfoSecurityCallback;
 import org.olat.commons.info.ui.SendInfoMailFormatter;
@@ -39,7 +38,6 @@ import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionCon
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -95,13 +93,7 @@ public class InfoRunController extends BasicController {
 		if(!usess.getRoles().isGuestOnly()) {
 			SubscriptionContext subContext = subscriptionManager.getInfoSubscriptionContext(infoResourceable, resSubPath);
 			PublisherData pdata = subscriptionManager.getInfoPublisherData(infoResourceable, businessPath);
-			if(InfoCourseNodeEditController.getAutoSubscribe(config)) {
-				InfoSubscription infoSubscription = subscriptionManager.getInfoSubscription(usess.getGuiPreferences());
-				if(infoSubscription.subscribed(businessPath, false)) {
-					subscriptionManager.subscribe(infoResourceable, resSubPath, businessPath, getIdentity());
-				}
-			}
-			subscriptionController = new ContextualSubscriptionController(ureq, getWindowControl(), subContext, pdata);
+			subscriptionController = new ContextualSubscriptionController(ureq, getWindowControl(), subContext, pdata, true);
 			listenTo(subscriptionController);
 		}
 		boolean canAdd;
@@ -174,19 +166,6 @@ public class InfoRunController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
-	}
-	
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source == subscriptionController) {
-			InfoSubscription infoSubscription = subscriptionManager.getInfoSubscription(ureq.getUserSession().getGuiPreferences());
-			if(subscriptionController.isSubscribed()) {
-				infoSubscription.subscribed(businessPath, true);
-			} else {
-				infoSubscription.unsubscribed(businessPath);
-			}
-		}
-		super.event(ureq, source, event);
 	}
 
 	private class InfoCourseSecurityCallback implements InfoSecurityCallback {

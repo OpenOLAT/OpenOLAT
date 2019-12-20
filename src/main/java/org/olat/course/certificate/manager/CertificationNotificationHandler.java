@@ -59,6 +59,8 @@ public class CertificationNotificationHandler implements NotificationsHandler {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private CertificatesManager certificatesManager;
+	@Autowired
+	private NotificationsManager notificationsManager;
 
 	@Override
 	public SubscriptionInfo createSubscriptionInfo(Subscriber subscriber, Locale locale, Date compareDate) {
@@ -66,8 +68,8 @@ public class CertificationNotificationHandler implements NotificationsHandler {
 		Publisher p = subscriber.getPublisher();
 		if(!NotificationsUpgradeHelper.checkCourse(p)) {
 			//course don't exist anymore
-			NotificationsManager.getInstance().deactivate(p);
-			return NotificationsManager.getInstance().getNoSubscriptionInfo();
+			notificationsManager.deactivate(p);
+			return notificationsManager.getNoSubscriptionInfo();
 		}
 		
 		try {
@@ -78,7 +80,7 @@ public class CertificationNotificationHandler implements NotificationsHandler {
 			// do not try to create a subscription info if state is deleted - results in
 			// exceptions, course
 			// can't be loaded when already deleted
-			if (NotificationsManager.getInstance().isPublisherValid(p) && compareDate.before(latestNews)) {
+			if (notificationsManager.isPublisherValid(p) && compareDate.before(latestNews)) {
 				Long courseId = new Long(p.getData());
 				final ICourse course = CourseFactory.loadCourse(courseId);
 				if (courseStatus(course)) {
@@ -110,12 +112,12 @@ public class CertificationNotificationHandler implements NotificationsHandler {
 				}
 			} 
 			if(si == null) {
-				si = NotificationsManager.getInstance().getNoSubscriptionInfo();
+				si = notificationsManager.getNoSubscriptionInfo();
 			}
 			return si;
 		} catch (Exception e) {
 			log.error("Error while creating assessment notifications", e);
-			return NotificationsManager.getInstance().getNoSubscriptionInfo();
+			return notificationsManager.getNoSubscriptionInfo();
 		}
 	}
 	

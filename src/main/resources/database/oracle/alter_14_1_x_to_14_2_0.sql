@@ -16,3 +16,7 @@ alter table o_gta_task_revision add constraint task_rev_to_task_idx foreign key 
 create index idx_task_rev_to_task_idx on o_gta_task_revision (fk_task);
 alter table o_gta_task_revision add constraint task_rev_to_ident_idx foreign key (fk_comment_author) references o_bs_identity (id);
 create index idx_task_rev_to_ident_idx on o_gta_task_revision (fk_comment_author);
+
+
+-- notifications
+alter table o_noti_sub add subenabled number default 1;

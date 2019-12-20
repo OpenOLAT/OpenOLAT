@@ -168,7 +168,7 @@ public class NotificationsWebService {
 			return Response.ok().status(Status.NO_CONTENT).build();
 		}
 		
-		List<Subscriber> subscribers = notificationsMgr.getSubscribers(publisher);
+		List<Subscriber> subscribers = notificationsMgr.getSubscribers(publisher, false);
 		SubscriberVO[] subscriberVoes = new SubscriberVO[subscribers.size()];
 		int count = 0;
 		for(Subscriber subscriber:subscribers) {
@@ -266,8 +266,7 @@ public class NotificationsWebService {
 		if(StringHelper.containsNonWhitespace(date)) {
 			compareDate = parseDate(date, locale);
 		} else {
-			NotificationsManager man = NotificationsManager.getInstance();
-			compareDate = man.getCompareDateFromInterval(man.getUserIntervalOrDefault(identity));
+			compareDate = notificationsMgr.getCompareDateFromInterval(notificationsMgr.getUserIntervalOrDefault(identity));
 		}
 		
 		List<String> types = new ArrayList<>(1);

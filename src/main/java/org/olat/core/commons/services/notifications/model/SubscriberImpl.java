@@ -34,7 +34,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -60,11 +59,9 @@ import org.olat.core.id.Persistable;
  */
 @Entity(name="notisub")
 @Table(name="o_noti_sub")
-@NamedQueries({
-	@NamedQuery(name="subscribersByPublisher", query="select sub from notisub sub where sub.publisher=:publisher"),
-	@NamedQuery(name="subscribersByPublisherAndIdentity", query="select sub from notisub as sub where sub.publisher.key=:publisherKey and sub.identity.key=:identityKey"),
-	@NamedQuery(name="identitySubscribersByPublisher", query="select sub.identity from notisub sub where sub.publisher=:publisher")
-})
+@NamedQuery(name="subscribersByPublisher", query="select sub from notisub sub where sub.publisher=:publisher")
+@NamedQuery(name="subscribersByPublisherAndIdentity", query="select sub from notisub as sub where sub.publisher.key=:publisherKey and sub.identity.key=:identityKey")
+@NamedQuery(name="identitySubscribersByPublisher", query="select sub.identity from notisub sub where sub.publisher=:publisher")
 public class SubscriberImpl implements Subscriber, CreateInfo, Persistable  {
 	private static final long serialVersionUID = 6165097156137862263L;
 	
@@ -105,6 +102,9 @@ public class SubscriberImpl implements Subscriber, CreateInfo, Persistable  {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="latestemailed", nullable=false, insertable=true, updatable=true)
 	private Date latestEmailed; 
+	
+	@Column(name="subenabled", nullable=false, insertable=true, updatable=true)
+	private boolean enabled; 
 
 	/**
 	 * for hibernate only
@@ -121,6 +121,7 @@ public class SubscriberImpl implements Subscriber, CreateInfo, Persistable  {
 		identity = listener;
 	}
 
+	@Override
 	public Long getKey() {
 		return key;
 	}
@@ -128,7 +129,8 @@ public class SubscriberImpl implements Subscriber, CreateInfo, Persistable  {
 	public void setKey(Long key) {
 		this.key = key;
 	}
-	
+
+	@Override
 	public Date getCreationDate() {
 		return creationDate;
 	}
@@ -136,9 +138,11 @@ public class SubscriberImpl implements Subscriber, CreateInfo, Persistable  {
 	public void setCreationDate(Date creationDate) {
 		this.creationDate = creationDate;
 	}
+	
 	/**
 	 * @return the identity
 	 */
+	@Override
 	public Identity getIdentity() {
 		return identity;
 	}
@@ -146,20 +150,17 @@ public class SubscriberImpl implements Subscriber, CreateInfo, Persistable  {
 	/**
 	 * @param identity
 	 */
+	@Override
 	public void setIdentity(Identity identity) {
 		this.identity = identity;
 	}
-	
-	/**
-	 * @see org.olat.core.commons.services.notifications.Subscriber#getLatestEmailed()
-	 */
+
+	@Override
 	public Date getLatestEmailed() {
 		return latestEmailed;
 	}
-	
-	/**
-	 * @see org.olat.core.commons.services.notifications.Subscriber#setLatestEmailed(java.util.Date)
-	 */
+
+	@Override
 	public void setLatestEmailed(Date latestEmailed) {
 		this.latestEmailed = latestEmailed;
 	}
@@ -167,6 +168,7 @@ public class SubscriberImpl implements Subscriber, CreateInfo, Persistable  {
 	/**
 	 * @return the publisher
 	 */
+	@Override
 	public Publisher getPublisher() {
 		return publisher;
 	}
@@ -174,25 +176,31 @@ public class SubscriberImpl implements Subscriber, CreateInfo, Persistable  {
 	/**
 	 * @param publisher
 	 */
+	@Override
 	public void setPublisher(Publisher publisher) {
 		this.publisher = publisher;
 	}
-	
-	/**
-	 * 
-	 * @see org.olat.core.id.ModifiedInfo#getLastModified()
-	 */
+
+	@Override
 	public Date getLastModified() {
 		return lastModified;
 	}
-	
-	/**
-	 * 
-	 * @see org.olat.core.id.ModifiedInfo#setLastModified(java.util.Date)
-	 */
+
+	@Override
 	public void setLastModified(Date date) {
 		this.lastModified = date;
 	}
+
+	@Override
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	@Override
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+	
 	@Override
 	public int hashCode() {
 		return getKey() == null ? 813184 : getKey().hashCode();

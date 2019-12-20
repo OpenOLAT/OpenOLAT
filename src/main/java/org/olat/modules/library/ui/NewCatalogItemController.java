@@ -121,7 +121,7 @@ public class NewCatalogItemController extends BasicController {
 	protected void updateUI(UserRequest ureq, Date compareDate) {
 	//list of new users
 		Subscriber subscriber = libraryManager.getSubscriber(getIdentity());
-		if(subscriber == null) {
+		if(subscriber == null || !subscriber.isEnabled()) {
 			//hasn't subscribed to new users notifications
 			mainVC.contextPut("hasSubscriptions", "false");
 		} else {

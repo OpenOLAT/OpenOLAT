@@ -97,7 +97,7 @@ public class NotificationSubscriptionController extends BasicController {
 		// Load subscriptions from DB. Don't use the ureq.getIdentity() but the
 		// subscriberIdentity instead to make this controller also be usable in the
 		// admin environment (admins might change notifications for a user)
-		List<Subscriber> subs = notificationsManager.getSubscribers(subscriberIdentity);
+		List<Subscriber> subs = notificationsManager.getSubscribers(subscriberIdentity, true);
 		for(Iterator<Subscriber> subIt=subs.iterator(); subIt.hasNext(); ) {
 			Subscriber sub = subIt.next();
 			if(!notificationsManager.isPublisherValid(sub.getPublisher())) {
@@ -114,28 +114,17 @@ public class NotificationSubscriptionController extends BasicController {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
-	// controllers disposed by basic controller
+		// controllers disposed by basic controller
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-	// no events to catch
+		// no events to catch
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == subscriptionsTableCtr) {
 			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
@@ -149,7 +138,6 @@ public class NotificationSubscriptionController extends BasicController {
 				} else if (actionid.equals("del")) {
 					delYesNoC = activateYesNoDialog(ureq, null, translate("confirm.delete"), delYesNoC);
 					delYesNoC.setUserObject(sub);
-					return;
 				}
 			}
 		} else if (source == delYesNoC) {
@@ -167,5 +155,4 @@ public class NotificationSubscriptionController extends BasicController {
 			delYesNoC = null;
 		}
 	}
-
 }

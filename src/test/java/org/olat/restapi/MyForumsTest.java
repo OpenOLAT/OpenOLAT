@@ -49,9 +49,7 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
-import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.core.util.tree.Visitor;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.FOCourseNode;
@@ -74,7 +72,8 @@ public class MyForumsTest extends OlatRestTestCase {
 
 	@Autowired
 	private DB dbInstance;
-
+	@Autowired
+	private NotificationsManager notificationsManager;
 	
 	/**
 	 * Test retrieve the forum which the user subscribe in a course.
@@ -107,17 +106,14 @@ public class MyForumsTest extends OlatRestTestCase {
 		
 		//subscribe to the forum
 		IdentityEnvironment ienv = new IdentityEnvironment(id, Roles.userRoles());
-		new CourseTreeVisitor(myCourse, ienv).visit(new Visitor() {
-			@Override
-			public void visit(INode node) {
-				if(node instanceof FOCourseNode) {
-					FOCourseNode forumNode = (FOCourseNode)node;	
-					Forum forum = forumNode.loadOrCreateForum(myCourse.getCourseEnvironment());
-					String businessPath = "[RepositoryEntry:" + myCourseRe.getKey() + "][CourseNode:" + forumNode.getIdent() + "]";
-					SubscriptionContext forumSubContext = new SubscriptionContext("CourseModule", myCourse.getResourceableId(), forumNode.getIdent());
-					PublisherData forumPdata = new PublisherData(OresHelper.calculateTypeName(Forum.class), forum.getKey().toString(), businessPath);
-					NotificationsManager.getInstance().subscribe(id, forumSubContext, forumPdata);
-				}
+		new CourseTreeVisitor(myCourse, ienv).visit(node -> {
+			if(node instanceof FOCourseNode) {
+				FOCourseNode forumNode = (FOCourseNode)node;	
+				Forum forum = forumNode.loadOrCreateForum(myCourse.getCourseEnvironment());
+				String businessPath = "[RepositoryEntry:" + myCourseRe.getKey() + "][CourseNode:" + forumNode.getIdent() + "]";
+				SubscriptionContext forumSubContext = new SubscriptionContext("CourseModule", myCourse.getResourceableId(), forumNode.getIdent());
+				PublisherData forumPdata = new PublisherData(OresHelper.calculateTypeName(Forum.class), forum.getKey().toString(), businessPath);
+				notificationsManager.subscribe(id, forumSubContext, forumPdata);
 			}
 		}, new VisibleTreeFilter());
 		dbInstance.commitAndCloseSession();

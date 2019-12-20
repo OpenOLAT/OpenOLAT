@@ -28,6 +28,7 @@ package org.olat.user;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.id.Preferences;
 import org.olat.core.util.StringHelper;
@@ -99,7 +100,7 @@ public class PreferencesImpl implements Preferences {
 	@Override
 	public String getNotificationInterval() {
 		// Always return a valid notification interval
-		NotificationsManager notiMgr = NotificationsManager.getInstance();
+		NotificationsManager notiMgr = CoreSpringFactory.getImpl(NotificationsManager.class);
 		if (!StringHelper.containsNonWhitespace(notificationInterval)) {
 			if(notiMgr != null) {
 				notificationInterval = notiMgr.getDefaultNotificationInterval();

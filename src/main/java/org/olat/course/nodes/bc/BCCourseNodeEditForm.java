@@ -21,6 +21,7 @@ package org.olat.course.nodes.bc;
 
 import java.io.File;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
@@ -250,7 +251,7 @@ public class BCCourseNodeEditForm extends FormBasicController implements Control
 		File realFile = VFSManager.getRealFile(container);
 		String relPath = new File(FolderConfig.getCanonicalRoot()).toPath().relativize(realFile.toPath()).toString();
 
-		NotificationsManager notifManager = NotificationsManager.getInstance();
+		NotificationsManager notifManager = CoreSpringFactory.getImpl(NotificationsManager.class);
 		SubscriptionContext nodefolderSubContext = CourseModule.createSubscriptionContext(course.getCourseEnvironment(), node);
 
 		Publisher publisher = notifManager.getPublisher(nodefolderSubContext);

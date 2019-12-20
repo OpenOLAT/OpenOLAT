@@ -24,6 +24,7 @@
 */
 package org.olat.core.commons.services.notifications.manager;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.scheduler.JobWithDB;
 import org.quartz.DisallowConcurrentExecution;
@@ -41,14 +42,9 @@ import org.quartz.JobExecutionException;
 @DisallowConcurrentExecution
 public class EmailNotificationJob extends JobWithDB {
 
-	
-	/**
-	 * 
-	 * @see org.olat.core.commons.services.scheduler.JobWithDB#executeWithDB(org.quartz.JobExecutionContext)
-	 */
 	@Override
 	public void executeWithDB(JobExecutionContext arg0) throws JobExecutionException {
-		NotificationsManager.getInstance().notifyAllSubscribersByEmail();
+		CoreSpringFactory.getImpl(NotificationsManager.class).notifyAllSubscribersByEmail();
 	}
 
 }

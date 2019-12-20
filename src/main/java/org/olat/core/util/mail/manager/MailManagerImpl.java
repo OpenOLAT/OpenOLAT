@@ -77,9 +77,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.notifications.NotificationsManager;
-import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.commons.services.notifications.PublisherData;
-import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.taskexecutor.model.DBSecureRunnable;
 import org.olat.core.helpers.GUISettings;
@@ -188,17 +186,6 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		String data = "";
 		String businessPath = "[Inbox:0]";
 		return new PublisherData("Inbox", data, businessPath);
-	}
-
-	@Override
-	public Subscriber getSubscriber(Identity identity) {
-		SubscriptionContext context = getSubscriptionContext();
-		if(context == null) return null;
-		Publisher publisher = notificationsManager.getPublisher(context);
-		if(publisher == null) {
-			return null;
-		}
-		return notificationsManager.getSubscriber(identity, publisher);
 	}
 
 	@Override
