@@ -62,22 +62,22 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>1.8</targetJdk>
-		<org.springframework.version>5.2.1.RELEASE</org.springframework.version>
-		<org.hibernate.version>5.4.9.Final</org.hibernate.version>
+		<org.springframework.version>5.2.2.RELEASE</org.springframework.version>
+		<org.hibernate.version>5.4.10.Final</org.hibernate.version>
 		<apache.cxf>3.3.4</apache.cxf>
 		<apache.pdfbox>2.0.17</apache.pdfbox>
 		<apache.poi>4.1.1</apache.poi>
-		<apache.log4j>2.12.1</apache.log4j>
+		<apache.log4j>2.13.0</apache.log4j>
 		<io.jsonwebtoken>0.10.7</io.jsonwebtoken>
 		<io.undertow>2.0.28.Final</io.undertow>
 		<jackson.version>2.10.1</jackson.version>
 		<org.mysql.version>5.1.46</org.mysql.version>
-		<org.postgresql.version>42.2.8</org.postgresql.version>
+		<org.postgresql.version>42.2.9</org.postgresql.version>
 		<org.infinispan.version>10.0.1.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>3.141.59</version.selenium>
 		<version.drone>2.5.1</version.drone>
-		<activemq.version>5.15.10</activemq.version>
+		<activemq.version>5.15.11</activemq.version>
 		<qtiworks.version>1.0.18</qtiworks.version>
 
 	    <!-- properties for testing and Q&A -->
@@ -1861,7 +1861,7 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.29</version>
+			<version>1.7.30</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
@@ -2252,7 +2252,7 @@
 		<dependency>
 			<groupId>com.paypal.sdk</groupId>
 			<artifactId>checkout-sdk</artifactId>
-			<version>1.0.1</version>
+			<version>1.0.2</version>
 		</dependency>
 		<!-- end Paypal -->
 
