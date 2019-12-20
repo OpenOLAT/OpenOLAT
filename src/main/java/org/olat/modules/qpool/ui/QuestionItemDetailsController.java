@@ -231,7 +231,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 		commentAndRatingSecurityCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), moderator, anonymous);
 		removeAsListenerAndDispose(commentsAndRatingCtr);
 		commentsAndRatingCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(), metadatasCtrl.getItem(),
-				null, commentAndRatingSecurityCallback, true, this.qItemSecurityCallback.canRate(), true);
+				null, commentAndRatingSecurityCallback, null, true, qItemSecurityCallback.canRate(), true);
 		listenTo(commentsAndRatingCtr);
 		mainVC.put("comments", commentsAndRatingCtr.getInitialComponent());
 	}

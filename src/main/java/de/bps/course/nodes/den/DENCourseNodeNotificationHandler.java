@@ -42,6 +42,8 @@ import org.olat.course.ICourse;
 import org.olat.course.Structure;
 import org.olat.course.nodes.CourseNode;
 import org.olat.repository.RepositoryManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import de.bps.course.nodes.DENCourseNode;
 
@@ -55,9 +57,16 @@ import de.bps.course.nodes.DENCourseNode;
  * 
  * @author bja
  */
+@Service
 public class DENCourseNodeNotificationHandler implements NotificationsHandler {
 	private static final Logger log = Tracing.createLoggerFor(DENCourseNodeNotificationHandler.class);
+	
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private NotificationsManager notificationsManager;
 
+	@Override
 	public SubscriptionInfo createSubscriptionInfo(Subscriber subscriber, Locale locale, Date compareDate) {
 		SubscriptionInfo si = null;
 		Publisher p = subscriber.getPublisher();
@@ -68,7 +77,7 @@ public class DENCourseNodeNotificationHandler implements NotificationsHandler {
 		// exceptions, course
 		// can't be loaded when already deleted
 		try {
-			if (NotificationsManager.getInstance().isPublisherValid(p) && compareDate.before(latestNews)) {
+			if (notificationsManager.isPublisherValid(p) && compareDate.before(latestNews)) {
 				Long courseId = new Long(p.getData());
 				final ICourse course = loadCourseFromId(courseId);
 				if (courseStatus(course)) {
@@ -89,12 +98,12 @@ public class DENCourseNodeNotificationHandler implements NotificationsHandler {
 					}
 				}
 			} else {
-				si = NotificationsManager.getInstance().getNoSubscriptionInfo();
+				si = notificationsManager.getNoSubscriptionInfo();
 			}
 		} catch (Exception e) {
 			log.error("Error creating enrollment notifications for subscriber: " + subscriber.getKey(), e);
 			checkPublisher(p);
-			si = NotificationsManager.getInstance().getNoSubscriptionInfo();
+			si = notificationsManager.getNoSubscriptionInfo();
 		}
 
 		return si;
@@ -108,8 +117,8 @@ public class DENCourseNodeNotificationHandler implements NotificationsHandler {
 	private void checkPublisher(Publisher p) {
 		try {
 			if(!NotificationsUpgradeHelper.checkCourse(p)) {
-				log.info("deactivating publisher with key; " + p.getKey());
-				NotificationsManager.getInstance().deactivate(p);
+				log.info("deactivating publisher with key; {}", p.getKey());
+				notificationsManager.deactivate(p);
 			}
 		} catch (Exception e) {
 			log.error("", e);
@@ -159,7 +168,7 @@ public class DENCourseNodeNotificationHandler implements NotificationsHandler {
 	public String createTitleInfo(Subscriber subscriber, Locale locale) {
 		try {
 			Long resId = subscriber.getPublisher().getResId();
-			String displayName = RepositoryManager.getInstance().lookupDisplayNameByOLATResourceableId(resId);
+			String displayName = repositoryManager.lookupDisplayNameByOLATResourceableId(resId);
 			Translator trans = Util.createPackageTranslator(DENCourseNodeNotificationHandler.class, locale);
 			return trans.translate("notifications.header", new String[]{displayName});
 		} catch (Exception e) {

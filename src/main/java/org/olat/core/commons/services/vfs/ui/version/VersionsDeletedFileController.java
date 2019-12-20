@@ -50,6 +50,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.util.CSSHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -93,8 +94,8 @@ public class VersionsDeletedFileController extends FormBasicController {
 		tableEl.setSortSettings(sortOptions);
 		tableEl.setAndLoadPersistedPreferences(ureq, "deleted-rev-file-list");
 		
-		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		deleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
+		deleteButton.setIconLeftCSS(CSSHelper.getIconCssClassFor(CSSHelper.CSS_CLASS_TRASHED));
 	}
 
 	@Override

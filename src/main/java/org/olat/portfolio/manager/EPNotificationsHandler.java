@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.apache.logging.log4j.Logger;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationsHandler;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
@@ -37,6 +36,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.portfolio.model.structel.EPMapShort;
 import org.olat.portfolio.model.structel.EPStructuredMap;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -54,18 +54,22 @@ public class EPNotificationsHandler implements NotificationsHandler {
 	private static final Logger logger = Tracing.createLoggerFor(EPNotificationsHandler.class);
 
 	public static final String TYPENNAME = EPStructuredMap.class.getSimpleName();
+	
+	@Autowired
+	private EPFrontendManager epFrontendManager;
+	@Autowired
+	private NotificationsManager notificationsManager;
 
 	@Override
 	public SubscriptionInfo createSubscriptionInfo(Subscriber subscriber, Locale locale, Date compareDate) {
 		SubscriptionInfo si = null;
 
 		Publisher publisher = subscriber.getPublisher();
-		EPFrontendManager epMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
-		EPMapShort amap = epMgr.loadMapShortByResourceId(publisher.getResId());
+		EPMapShort amap = epFrontendManager.loadMapShortByResourceId(publisher.getResId());
 
 		if (isInkoveValid(amap, compareDate, publisher)) {
 
-			// init the helper;
+			// init the helper
 			String rootBusinessPath = "[EPDefaultMap:" + amap.getKey() + "]";
 			EPNotificationsHelper helper = new EPNotificationsHelper(rootBusinessPath, locale);
 			String resName = amap.getOlatResource().getResourceableTypeName();
@@ -87,7 +91,7 @@ public class EPNotificationsHandler implements NotificationsHandler {
 
 		if (si == null) {
 			// no info, return empty
-			si = NotificationsManager.getInstance().getNoSubscriptionInfo();
+			si = notificationsManager.getNoSubscriptionInfo();
 		}
 
 		return si;
@@ -96,7 +100,7 @@ public class EPNotificationsHandler implements NotificationsHandler {
 	private boolean isInkoveValid(EPMapShort map, Date compareDate, Publisher publisher) {
 		// only do that if a map was found.
 		// OO-191 only do if compareDate is not null.
-		return (map != null && compareDate != null && NotificationsManager.getInstance().isPublisherValid(publisher));
+		return (map != null && compareDate != null && notificationsManager.isPublisherValid(publisher));
 	}
 
 	/**
@@ -111,8 +115,7 @@ public class EPNotificationsHandler implements NotificationsHandler {
 		Long resId = p.getResId();
 		logger.debug("loading map with resourceableid: {}", resId);
 
-		EPFrontendManager epMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
-		EPMapShort map = epMgr.loadMapShortByResourceId(resId);
+		EPMapShort map = epFrontendManager.loadMapShortByResourceId(resId);
 		return getTitleItemForMap(map);
 	}
 
@@ -126,8 +129,7 @@ public class EPNotificationsHandler implements NotificationsHandler {
 		StringBuilder sbTitle = new StringBuilder();
 		if (amap != null) {
 			sbTitle.append(StringHelper.escapeHtml(amap.getTitle()));
-			EPFrontendManager epMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
-			String firstOwner = epMgr.getFirstOwnerAsString(amap);
+			String firstOwner = epFrontendManager.getFirstOwnerAsString(amap);
 			sbTitle.append(" (").append(StringHelper.escapeHtml(firstOwner)).append(")");
 		}
 		return new TitleItem(sbTitle.toString(), "o_EPStructuredMapTemplate_icon");

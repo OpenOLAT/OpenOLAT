@@ -22,10 +22,10 @@ package org.olat.core.commons.services.commentAndRating.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.commentAndRating.model.UserComment;
+import org.olat.core.commons.services.notifications.PublishingInformations;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -36,6 +36,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.ConsumableBoolean;
 import org.olat.core.util.Formatter;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -67,7 +68,10 @@ public class UserCommentsController extends BasicController {
 	
 	private final String resSubPath;
 	private final OLATResourceable ores;
-	private final CommentAndRatingService commentAndRatingService;
+	private final PublishingInformations publishingInformations;
+	
+	@Autowired
+	private CommentAndRatingService commentAndRatingService;
 
 	/**
 	 * Constructor for a user comments controller. Use the
@@ -79,13 +83,13 @@ public class UserCommentsController extends BasicController {
 	 * @param securityCallback
 	 */
 	public UserCommentsController(UserRequest ureq, WindowControl wControl,
-			OLATResourceable ores, String resSubPath,
+			OLATResourceable ores, String resSubPath, PublishingInformations publishingInformations,
 			CommentAndRatingSecurityCallback securityCallback) {
 		super(ureq, wControl);
 		this.ores = ores;
 		this.resSubPath = resSubPath;
-		commentAndRatingService = CoreSpringFactory.getImpl(CommentAndRatingService.class);
 		this.securityCallback = securityCallback;
+		this.publishingInformations = publishingInformations;
 		// Init view
 		userCommentsVC = createVelocityContainer("userComments");
 		userCommentsVC.contextPut("formatter", Formatter.getInstance(getLocale()));
@@ -99,11 +103,12 @@ public class UserCommentsController extends BasicController {
 		// Add create form
 		if (securityCallback.canCreateComments()) {
 			removeAsListenerAndDispose(createCommentFormCtr);
-			createCommentFormCtr = new UserCommentFormController(ureq, getWindowControl(), null, null, ores, resSubPath);
+			createCommentFormCtr = new UserCommentFormController(ureq, getWindowControl(), null, null,
+					ores, resSubPath, publishingInformations);
 			listenTo(createCommentFormCtr);
 			userCommentsVC.put("createCommentFormCtr", createCommentFormCtr.getInitialComponent());
 		}
-		//
+		
 		putInitialPanel(userCommentsVC);
 	}
 
@@ -124,34 +129,24 @@ public class UserCommentsController extends BasicController {
 		userCommentsVC.contextPut("goToCommentId", commentId);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
 		// Child controllers autodisposed by basic controller
 		commentControllers = null;
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		// nothing to do
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller,
-	 *      org.olat.core.gui.control.Event)
-	 */
+	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == createCommentFormCtr) {
 			if (event == Event.CANCELLED_EVENT) {
 				// do nothing
+				fireEvent(ureq, event);
+			} else if(event instanceof UserCommentsSubscribeNotificationsEvent) {
 				fireEvent(ureq, event);
 			} else if (event == Event.CHANGED_EVENT) {
 				// Add new comment to view instead of rebuilding datamodel to reduce overhead
@@ -163,13 +158,15 @@ public class UserCommentsController extends BasicController {
 					buildTopLevelComments(ureq, true);
 				} else {
 					// Create top level comment controller
-					UserCommentDisplayController commentController = new UserCommentDisplayController(ureq, getWindowControl(), newComment, allComments, ores, resSubPath, securityCallback);
+					UserCommentDisplayController commentController = new UserCommentDisplayController(ureq, getWindowControl(), newComment, allComments,
+							ores, resSubPath, securityCallback, publishingInformations);
 					commentControllers.add(commentController);
 					listenTo(commentController);
 					userCommentsVC.put(commentController.getViewCompName(), commentController.getInitialComponent());
 					// Rebuild new comment form
-					if (createCommentFormCtr != null) removeAsListenerAndDispose(createCommentFormCtr);
-					createCommentFormCtr = new UserCommentFormController(ureq, getWindowControl(), null, null, ores, resSubPath);
+					removeAsListenerAndDispose(createCommentFormCtr);
+					createCommentFormCtr = new UserCommentFormController(ureq, getWindowControl(), null, null,
+							ores, resSubPath, publishingInformations);
 					listenTo(createCommentFormCtr);
 					userCommentsVC.put("createCommentFormCtr", createCommentFormCtr.getInitialComponent());					
 				}
@@ -228,7 +225,8 @@ public class UserCommentsController extends BasicController {
 		for (UserComment comment : allComments) {
 			if (comment.getParent() == null) {
 				// Create top level comment controller
-				UserCommentDisplayController commentController = new UserCommentDisplayController(ureq, getWindowControl(), comment, allComments, ores, resSubPath, securityCallback);
+				UserCommentDisplayController commentController = new UserCommentDisplayController(ureq, getWindowControl(), comment, allComments,
+						ores, resSubPath, securityCallback, publishingInformations);
 				commentControllers.add(commentController);
 				listenTo(commentController);
 				userCommentsVC.put(commentController.getViewCompName(), commentController.getInitialComponent());

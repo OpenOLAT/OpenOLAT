@@ -50,8 +50,6 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
-import org.olat.core.util.nodes.INode;
-import org.olat.core.util.tree.Visitor;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.BCCourseNode;
@@ -75,6 +73,8 @@ public class UserFoldersTest extends OlatRestTestCase {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private NotificationsManager notificationsManager;
 	
 	@Before
 	public void setUp() throws Exception {
@@ -114,17 +114,14 @@ public class UserFoldersTest extends OlatRestTestCase {
 		
 		//subscribe to the forum
 		IdentityEnvironment ienv = new IdentityEnvironment(id, Roles.userRoles());
-		new CourseTreeVisitor(myCourse, ienv).visit(new Visitor() {
-			@Override
-			public void visit(INode node) {
-				if(node instanceof BCCourseNode) {
-					BCCourseNode folderNode = (BCCourseNode)node;	
-					String relPath = BCCourseNode.getFoldernodePathRelToFolderBase(myCourse.getCourseEnvironment(), folderNode);
-					String businessPath = "[RepositoryEntry:" + myCourseRe.getKey() + "][CourseNode:" + folderNode.getIdent() + "]";
-					SubscriptionContext folderSubContext = new SubscriptionContext("CourseModule", myCourse.getResourceableId(), folderNode.getIdent());
-					PublisherData folderPdata = new PublisherData("FolderModule", relPath, businessPath);
-					NotificationsManager.getInstance().subscribe(id, folderSubContext, folderPdata);
-				}
+		new CourseTreeVisitor(myCourse, ienv).visit(node -> {
+			if(node instanceof BCCourseNode) {
+				BCCourseNode folderNode = (BCCourseNode)node;	
+				String relPath = BCCourseNode.getFoldernodePathRelToFolderBase(myCourse.getCourseEnvironment(), folderNode);
+				String businessPath = "[RepositoryEntry:" + myCourseRe.getKey() + "][CourseNode:" + folderNode.getIdent() + "]";
+				SubscriptionContext folderSubContext = new SubscriptionContext("CourseModule", myCourse.getResourceableId(), folderNode.getIdent());
+				PublisherData folderPdata = new PublisherData("FolderModule", relPath, businessPath);
+				notificationsManager.subscribe(id, folderSubContext, folderPdata);
 			}
 		});
 		dbInstance.commitAndCloseSession();

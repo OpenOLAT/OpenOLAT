@@ -274,7 +274,8 @@ public interface VFSRepositoryService {
 			Date editedAtNewer, Date editedAtOlder, 
 			Date lockedAtNewer, Date lockedAtOlder,
 			String trashed, String revision, String locked,
-			Integer downloadCount, Long revisionCount);
+			Integer downloadCount, Long revisionCount, 
+			Integer size);
 	
 	/**
 	 * Returns the largest revisions from the VFS
@@ -287,7 +288,8 @@ public interface VFSRepositoryService {
 			Date editedAtNewer, Date editedAtOlder, 
 			Date lockedAtNewer, Date lockedAtOlder,
 			String trashed, String revision, String locked,
-			Integer downloadCount, Long revisionCount);
+			Integer downloadCount, Long revisionCount,
+			Integer Size);
 	
 	
 

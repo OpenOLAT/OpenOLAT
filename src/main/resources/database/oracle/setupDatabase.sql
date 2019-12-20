@@ -465,6 +465,7 @@ CREATE TABLE o_noti_sub (
   fk_publisher number(20) NOT NULL,
   fk_identity number(20) NOT NULL,
   latestemailed date,
+  subenabled number default 1,
   PRIMARY KEY (publisher_id),
   CONSTRAINT u_o_noti_sub UNIQUE (fk_publisher, fk_identity)
 );

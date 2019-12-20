@@ -52,8 +52,6 @@ import org.olat.core.commons.services.vfs.restapi.VFSWebservice;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.nodes.INode;
-import org.olat.core.util.tree.Visitor;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.course.ICourse;
@@ -79,6 +77,7 @@ import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.restapi.support.vo.CourseNodeVO;
 import org.olat.restapi.support.vo.FolderVO;
 import org.olat.restapi.support.vo.FolderVOes;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -101,6 +100,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 @Component
 @Path("repo/courses/{courseId}/elements/folder")
 public class BCWebService extends AbstractCourseNodeWebService {
+	
+	@Autowired
+	private NotificationsManager notificationsManager;
 	
 	
 	/**
@@ -148,9 +150,8 @@ public class BCWebService extends AbstractCourseNodeWebService {
 		}
 
 		final Set<String> subscribed = new HashSet<>();
-		NotificationsManager man = NotificationsManager.getInstance();
 		List<String> notiTypes = Collections.singletonList("FolderModule");
-		List<Subscriber> subs = man.getSubscribers(ureq.getIdentity(), notiTypes);
+		List<Subscriber> subs = notificationsManager.getSubscribers(ureq.getIdentity(), notiTypes, true);
 		for(Subscriber sub:subs) {
 			Long courseKey = sub.getPublisher().getResId();
 			if(courseId.equals(courseKey)) {
@@ -160,14 +161,11 @@ public class BCWebService extends AbstractCourseNodeWebService {
 		}
 		
 		final List<FolderVO> folderVOs = new ArrayList<>();
-		new CourseTreeVisitor(course, ureq.getUserSession().getIdentityEnvironment()).visit(new Visitor() {
-			@Override
-			public void visit(INode node) {
-				if(node instanceof BCCourseNode) {
-					BCCourseNode bcNode = (BCCourseNode)node;
-					FolderVO folder = createFolderVO(ureq.getUserSession().getIdentityEnvironment(), course, bcNode, subscribed);
-					folderVOs.add(folder);
-				}
+		new CourseTreeVisitor(course, ureq.getUserSession().getIdentityEnvironment()).visit(node -> {
+			if(node instanceof BCCourseNode) {
+				BCCourseNode bcNode = (BCCourseNode)node;
+				FolderVO folder = createFolderVO(ureq.getUserSession().getIdentityEnvironment(), course, bcNode, subscribed);
+				folderVOs.add(folder);
 			}
 		});
 
@@ -361,9 +359,8 @@ public class BCWebService extends AbstractCourseNodeWebService {
 		boolean accessible = (new CourseTreeVisitor(course, ureq.getUserSession().getIdentityEnvironment())).isAccessible(courseNode);
 		if(accessible) {
 			Set<String> subscribed = new HashSet<>();
-			NotificationsManager man = NotificationsManager.getInstance();
 			List<String> notiTypes = Collections.singletonList("FolderModule");
-			List<Subscriber> subs = man.getSubscribers(ureq.getIdentity(), notiTypes);
+			List<Subscriber> subs = notificationsManager.getSubscribers(ureq.getIdentity(), notiTypes, true);
 			for(Subscriber sub:subs) {
 				Long courseKey = sub.getPublisher().getResId();
 				if(courseId.equals(courseKey)) {

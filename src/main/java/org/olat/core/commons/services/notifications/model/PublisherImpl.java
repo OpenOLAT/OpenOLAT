@@ -127,6 +127,7 @@ public class PublisherImpl implements Publisher, CreateInfo, Persistable  {
 		this.latestNewsDate = latestNewsDate;
 	}
 
+	@Override
 	public Long getKey() {
 		return key;
 	}
@@ -135,6 +136,7 @@ public class PublisherImpl implements Publisher, CreateInfo, Persistable  {
 		this.key = key;
 	}
 
+	@Override
 	public Date getCreationDate() {
 		return creationDate;
 	}
@@ -143,37 +145,27 @@ public class PublisherImpl implements Publisher, CreateInfo, Persistable  {
 		this.creationDate = creationDate;
 	}
 
-	/**
-	 * @return resId
-	 */
+	@Override
 	public Long getResId() {
 		return resId;
 	}
 
-	/**
-	 * @param resId
-	 */
+	@Override
 	public void setResId(Long resId) {
 		this.resId = resId;
 	}
 
-	/**
-	 * @return resName
-	 */
+	@Override
 	public String getResName() {
 		return resName;
 	}
 
-	/**
-	 * @param resName
-	 */
+	@Override
 	public void setResName(String resName) {
 		this.resName = resName;
 	}
 
-	/**
-	 * @return the subidentifier
-	 */
+	@Override
 	public String getSubidentifier() {
 		return subidentifier;
 	}
@@ -181,6 +173,7 @@ public class PublisherImpl implements Publisher, CreateInfo, Persistable  {
 	/**
 	 * @param subidentifier (max len 255)
 	 */
+	@Override
 	public void setSubidentifier(String subidentifier) {
 		this.subidentifier = subidentifier;
 	}
@@ -188,11 +181,11 @@ public class PublisherImpl implements Publisher, CreateInfo, Persistable  {
 	/**
 	 * @return the type
 	 */
+	@Override
 	public String getType() {
 		return type;
 	}
 
-	//FIXME:fj:make methods private if no setter used (used only by hibernate)
 	/**
 	 * @param type
 	 */
@@ -200,9 +193,7 @@ public class PublisherImpl implements Publisher, CreateInfo, Persistable  {
 		this.type = type;
 	}
 
-	/**
-	 * @see org.olat.core.commons.services.notifications.Publisher#getData()
-	 */
+	@Override
 	public String getData() {
 		return data;
 	}
@@ -210,6 +201,7 @@ public class PublisherImpl implements Publisher, CreateInfo, Persistable  {
 	/**
 	 * @param data
 	 */
+	@Override
 	public void setData(String data) {
 		this.data = data;
 	}
@@ -217,6 +209,7 @@ public class PublisherImpl implements Publisher, CreateInfo, Persistable  {
 	/**
 	 * @return Returns the state.
 	 */
+	@Override
 	public int getState() {
 		return state;
 	}
@@ -224,6 +217,7 @@ public class PublisherImpl implements Publisher, CreateInfo, Persistable  {
 	/**
 	 * @param state The state to set.
 	 */
+	@Override
 	public void setState(int state) {
 		this.state = state;
 	}
@@ -231,6 +225,7 @@ public class PublisherImpl implements Publisher, CreateInfo, Persistable  {
 	/**
 	 * @return Returns the latestNewsDate.
 	 */
+	@Override
 	public Date getLatestNewsDate() {
 		return latestNewsDate;
 	}
@@ -238,14 +233,17 @@ public class PublisherImpl implements Publisher, CreateInfo, Persistable  {
 	/**
 	 * @param latestNewsDate The latestNewsDate to set.
 	 */
+	@Override
 	public void setLatestNewsDate(Date latestNewsDate) {
 		this.latestNewsDate = latestNewsDate;
 	}
 
+	@Override
 	public String getBusinessPath() {
 		return businessPath;
 	}
 
+	@Override
 	public void setBusinessPath(String businessPath) {
 		this.businessPath = businessPath;
 	}

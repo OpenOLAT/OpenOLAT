@@ -52,9 +52,7 @@ import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
-import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.core.util.tree.Visitor;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.FOCourseNode;
@@ -211,7 +209,7 @@ public class MyForumsWebService {
 		final Set<Long> subscriptions = new HashSet<>();
 		{//collect subscriptions
 			List<String> notiTypes = Collections.singletonList("Forum");
-			List<Subscriber> subs = notificationsManager.getSubscribers(retrievedUser, notiTypes);
+			List<Subscriber> subs = notificationsManager.getSubscribers(retrievedUser, notiTypes, true);
 			for(Subscriber sub:subs) {
 				String resName = sub.getPublisher().getResName();
 				Long forumKey = Long.parseLong(sub.getPublisher().getData());
@@ -236,15 +234,12 @@ public class MyForumsWebService {
 			final Long courseKey = e.getKey();
 			final Collection<Long> forumKeys = e.getValue();
 			final ICourse course = CourseFactory.loadCourse(courseKey);
-			new CourseTreeVisitor(course, ienv).visit(new Visitor() {
-				@Override
-				public void visit(INode node) {
-					if(node instanceof FOCourseNode) {
-						FOCourseNode forumNode = (FOCourseNode)node;
-						ForumVO forumVo = ForumCourseNodeWebService.createForumVO(course, forumNode, subscriptions);
-						if(forumKeys.contains(forumVo.getForumKey())) {
-							forumVOs.add(forumVo);
-						}
+			new CourseTreeVisitor(course, ienv).visit(node -> {
+				if(node instanceof FOCourseNode) {
+					FOCourseNode forumNode = (FOCourseNode)node;
+					ForumVO forumVo = ForumCourseNodeWebService.createForumVO(course, forumNode, subscriptions);
+					if(forumKeys.contains(forumVo.getForumKey())) {
+						forumVOs.add(forumVo);
 					}
 				}
 			});

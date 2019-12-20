@@ -34,6 +34,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.course.CourseModule;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.springframework.stereotype.Service;
 
 /**
  * Description:<br>
@@ -44,6 +45,7 @@ import org.olat.course.run.environment.CourseEnvironment;
  * 
  * @author christian guretzki
  */
+@Service
 public class ReturnboxFileUploadNotificationHandler extends AbstractTaskNotificationHandler implements NotificationsHandler {
 	private static final String CSS_CLASS_RETURNBOX_ICON = "o_returnbox_icon"; 
 	private static final Logger log = Tracing.createLoggerFor(ReturnboxFileUploadNotificationHandler.class);
@@ -55,15 +57,18 @@ public class ReturnboxFileUploadNotificationHandler extends AbstractTaskNotifica
 	protected static SubscriptionContext getSubscriptionContext(CourseEnvironment courseEnv, CourseNode node, Identity identity) {
 	  return CourseModule.createSubscriptionContext(courseEnv, node, "Returnbox-" + identity.getKey());
 	}
-	
+
+	@Override
 	protected String getCssClassIcon() {
 		return CSS_CLASS_RETURNBOX_ICON;
 	}
-	
+
+	@Override
 	protected String getNotificationHeaderKey() {
 		return "returnbox.notifications.header";
 	}
-	
+
+	@Override
 	protected String getNotificationEntryKey() {
 		return "returnbox.notifications.entry";
 	}

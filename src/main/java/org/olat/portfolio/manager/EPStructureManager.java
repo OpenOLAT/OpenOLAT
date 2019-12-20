@@ -74,7 +74,6 @@ import org.olat.portfolio.model.structel.PortfolioStructureRef;
 import org.olat.portfolio.model.structel.StructureStatusEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
@@ -107,9 +106,9 @@ public class EPStructureManager {
 	@Autowired
 	private GroupDAO groupDao;
 	@Autowired
-	private RepositoryService repositoryService;
-	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntyRelationDao;
+	@Autowired
+	private NotificationsManager notificationsManager;
 
 	/**
 	 * Return the list of artefacts glued to this structure element
@@ -1048,7 +1047,7 @@ public class EPStructureManager {
 		// FXOLAT-431 remove subscriptions if the current struct is a map
 		if(struct instanceof EPAbstractMap){
 			SubscriptionContext subsContext = new SubscriptionContext(EPNotificationsHandler.TYPENNAME, struct.getResourceableId(), EPNotificationsHandler.TYPENNAME);
-			NotificationsManager.getInstance().delete(subsContext);
+			notificationsManager.delete(subsContext);
 		}
 		
 		// remove structure itself

@@ -66,6 +66,8 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 	
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
+	@Autowired
+	private NotificationsManager notificationsManager;
 	
 	public CmdUnzip(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -132,7 +134,7 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 				if(secCallback != null) {
 					SubscriptionContext subsContext = secCallback.getSubscriptionContext();
 					if (subsContext != null) {
-						NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity(), true);
+						notificationsManager.markPublisherNews(subsContext, ureq.getIdentity(), true);
 					}
 				}
 			}

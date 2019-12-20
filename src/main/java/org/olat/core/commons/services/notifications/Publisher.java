@@ -67,17 +67,10 @@ public interface Publisher extends Persistable, CreateInfo {
 	 */
 	public void setSubidentifier(String subidentifier);
 	
-	
-	
 	/**
 	 * @return the type
 	 */
 	public String getType();
-
-	/**
-	 * @param type
-	 */
-	public void setType(String type);
 	
 	/**
 	 * @return the data (normally an xml unpacked by streams into an java object
@@ -99,16 +92,15 @@ public interface Publisher extends Persistable, CreateInfo {
 	 */
 	public void setState(int state);
 	
-	
 	/**
 	 * @return the date of the latestNews this publisher has.
 	 */
-	public abstract Date getLatestNewsDate();
+	public Date getLatestNewsDate();
 
 	/**
 	 * @param latestRead
 	 */
-	public abstract void setLatestNewsDate(Date latestRead);
+	public void setLatestNewsDate(Date latestRead);
 
 	
 	public String getBusinessPath();

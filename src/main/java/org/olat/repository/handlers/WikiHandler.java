@@ -264,7 +264,7 @@ public class WikiHandler implements RepositoryHandler {
 	public boolean cleanupOnDelete(RepositoryEntry entry, OLATResourceable res) {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new OLATResourceableJustBeforeDeletedEvent(res), res);
 		//delete also notifications
-		NotificationsManager.getInstance().deletePublishersOf(res);
+		CoreSpringFactory.getImpl(NotificationsManager.class).deletePublishersOf(res);
 		FileResourceManager.getInstance().deleteFileResource(res);
 		return true;
 	}

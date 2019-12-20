@@ -329,7 +329,7 @@ public class CourseFactory {
 	 */
 	public static void deleteCourse(RepositoryEntry entry, OLATResource res) {
 		final long start = System.currentTimeMillis();
-		log.info("deleteCourse: starting to delete course. res="+res);
+		log.info("deleteCourse: starting to delete course. res={}", res);
 
 		PersistingCourseImpl course = null;
 		try {
@@ -347,9 +347,10 @@ public class CourseFactory {
 
 		// delete assessment notifications
 		OLATResourceable assessmentOres = OresHelper.createOLATResourceableInstance(CourseModule.ORES_COURSE_ASSESSMENT, res.getResourceableId());
-		NotificationsManager.getInstance().deletePublishersOf(assessmentOres);
+		NotificationsManager notificationsManager = CoreSpringFactory.getImpl(NotificationsManager.class);
+		notificationsManager.deletePublishersOf(assessmentOres);
 		// delete all course notifications
-		NotificationsManager.getInstance().deletePublishersOf(res);
+		notificationsManager.deletePublishersOf(res);
 		//delete calendar subscription
 		clearCalenderSubscriptions(res, course);
 		// delete course configuration (not really usefull, the config is in
@@ -399,7 +400,7 @@ public class CourseFactory {
 		//set Publisher state to 1 (= ressource is deleted) for all calendars of the course
 		CalendarManager calMan = CoreSpringFactory.getImpl(CalendarManager.class);
 		CalendarNotificationManager notificationManager = CoreSpringFactory.getImpl(CalendarNotificationManager.class);
-		NotificationsManager nfm = NotificationsManager.getInstance();
+		NotificationsManager nfm = CoreSpringFactory.getImpl(NotificationsManager.class);
 
 		if(course != null) {
 			CourseGroupManager courseGroupManager = course.getCourseEnvironment().getCourseGroupManager();

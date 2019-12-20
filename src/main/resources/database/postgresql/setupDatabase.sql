@@ -422,6 +422,7 @@ create table o_noti_sub (
    fk_publisher int8 not null,
    fk_identity int8 not null,
    latestemailed timestamp,
+   subenabled bool default true,
    primary key (publisher_id),
    unique (fk_publisher, fk_identity)
 );

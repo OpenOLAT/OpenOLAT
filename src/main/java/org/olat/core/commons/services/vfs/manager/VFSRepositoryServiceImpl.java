@@ -1394,7 +1394,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			Date editedAtNewer, Date editedAtOlder, 
 			Date lockedAtNewer, Date lockedAtOlder,
 			String trashed, String revision, String locked,
-			Integer downloadCount, Long revisionCount) {
+			Integer downloadCount, Long revisionCount,
+			Integer size) {
 		
 		Boolean trashedVal, revisionVal, lockedVal;
 		
@@ -1428,7 +1429,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				editedAtNewer, editedAtOlder, 
 				lockedAtNewer, lockedAtOlder,
 				trashedVal, revisionVal, lockedVal,
-				downloadCount, revisionCount);
+				downloadCount, revisionCount, size);
 	}
 	
 	@Override 
@@ -1437,7 +1438,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			Date editedAtNewer, Date editedAtOlder, 
 			Date lockedAtNewer, Date lockedAtOlder,
 			String trashed, String revision, String locked,
-			Integer downloadCount, Long revisionCount) {
+			Integer downloadCount, Long revisionCount,
+			Integer size) {
 
 		Boolean trashedVal, revisionVal, lockedVal;
 		
@@ -1471,7 +1473,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				editedAtNewer, editedAtOlder, 
 				lockedAtNewer, lockedAtOlder,
 				trashedVal, revisionVal, lockedVal,
-				downloadCount, revisionCount);
+				downloadCount, revisionCount, size);
 	}
 	
 	@Override 

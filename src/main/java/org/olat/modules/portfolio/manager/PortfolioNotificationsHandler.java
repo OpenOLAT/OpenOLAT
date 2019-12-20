@@ -83,6 +83,8 @@ public class PortfolioNotificationsHandler implements NotificationsHandler {
 	private PortfolioService portfolioService;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private NotificationsManager notificationsManager;
 
 	@Override
 	public SubscriptionInfo createSubscriptionInfo(Subscriber subscriber, Locale locale, Date compareDate) {
@@ -96,7 +98,7 @@ public class PortfolioNotificationsHandler implements NotificationsHandler {
 				secCallback = BinderSecurityCallbackFactory.getCallbackForOwnedBinder(binder);
 			} else {
 				List<AccessRights> rights = portfolioService.getAccessRights(binder, identity);
-				if(rights.size() > 0) {
+				if(!rights.isEmpty()) {
 					secCallback = BinderSecurityCallbackFactory.getCallbackForCoach(binder, rights);
 				}
 			}
@@ -115,13 +117,13 @@ public class PortfolioNotificationsHandler implements NotificationsHandler {
 
 		if (si == null) {
 			// no info, return empty
-			si = NotificationsManager.getInstance().getNoSubscriptionInfo();
+			si = notificationsManager.getNoSubscriptionInfo();
 		}
 		return si;
 	}
 
 	private boolean isInkoveValid(Binder binder, Date compareDate, Publisher publisher) {
-		return (binder != null && compareDate != null && NotificationsManager.getInstance().isPublisherValid(publisher));
+		return (binder != null && compareDate != null && notificationsManager.isPublisherValid(publisher));
 	}
 
 	@Override

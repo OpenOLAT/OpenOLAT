@@ -111,21 +111,21 @@ public class DbStorage implements PreferencesStorage {
 		} catch (Exception e) {
 			// OLAT-6429 detect and delete multiple prefs objects, keep the first one only 
 			List<Property> guiPropertyList = PropertyManager.getInstance().findProperties(identity, null, null, null, USER_PROPERTY_KEY); 
-			if (guiPropertyList != null && guiPropertyList.size() > 0) {
+			if (guiPropertyList != null && !guiPropertyList.isEmpty()) {
 				 log.warn("Found more than 1 entry for " + USER_PROPERTY_KEY + " in o_property table for identity " + identity.getKey() + ". Use first of them, deleting the others!", e); 
 				 Iterator<Property> iterator = guiPropertyList.iterator();
 				 guiProperty = iterator.next();
 				 while (iterator.hasNext()) { 
 					 Property property = iterator.next(); 
 					 PropertyManager.getInstance().deleteProperty(property); 				 
-					 log.info("Will delete old property: " + property.getTextValue()); 
+					 log.info("Will delete old property: {}", property.getTextValue()); 
 				} 
 			}
 		}
 		return guiProperty;
 	}
 
-	private DbPrefs getPreferencesForProperty(Identity identity, Property guiProperty) {
+	public DbPrefs getPreferencesForProperty(Identity identity, Property guiProperty) {
 		DbPrefs prefs;
 		try {
 			prefs = createDbPrefsFrom(identity, guiProperty.getTextValue());

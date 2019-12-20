@@ -34,6 +34,7 @@ import java.util.Locale;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
@@ -296,7 +297,7 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 		super.cleanupOnDelete(course);
 		// mark the subscription to this node as deleted
 		SubscriptionContext subsContext = WikiManager.createTechnicalSubscriptionContextForCourse(course.getCourseEnvironment(), this);
-		NotificationsManager.getInstance().delete(subsContext);
+		CoreSpringFactory.getImpl(NotificationsManager.class).delete(subsContext);
 	
 	}
 }

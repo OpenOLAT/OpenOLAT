@@ -10,6 +10,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.core.util.StringHelper;
 
 public class LargeFilesTableModel extends DefaultFlexiTableDataModel<LargeFilesTableContentRow>
 implements SortableFlexiTableDataModel<LargeFilesTableContentRow> {
@@ -38,33 +39,34 @@ implements SortableFlexiTableDataModel<LargeFilesTableContentRow> {
 	@Override
 	public Object getValueAt(LargeFilesTableContentRow row, int col) {
 		switch(LargeFilesTableColumns.values()[col]) {
-			case key: return notNull(row.getKey());
-			case name: return notNull(row.getName());
-			case size: return notNull(row.getSize());
-			case path: return notNull(row.getPath());
-			case author: return notNull(row.getAuthor() != null ? row.getAuthor().getUser().getFirstName() + " " + row.getAuthor().getUser().getLastName() : null);
-			case revision: return notNull(row.isRevision());
-			case fileCategory: return notNull(row.getFileCategory());
-			case fileType: return notNull(row.getFileType());
-			case license: return notNull(row.getLicense() != null ? LicenseUIFactory.translate(row.getLicense(), locale) : null);
-			case lastModifiedAt: return notNull(row.getLastModifiedAt());
-			case createdAt: return notNull(row.getCreatedAt());
-			case age: return notNull(row.getAge());
-			case trashed: return notNull(row.isTrashed());
-			case uuid: return notNull(row.getUuid());
-			case downloadCount: return notNull(row.getDownloadCount());
-			case title: return notNull(row.getTitle());
-			case comment: return notNull(row.getComment());
-			case publisher: return notNull(row.getPublisher());
-			case creator: return notNull(row.getCreator());
-			case source: return notNull(row.getSource());
-			case pubDate: return notNull(row.getPubDate());
-			case language: return notNull(row.getLanguage());
-			case locked: return notNull(row.isLocked());
-			case lockedBy: return notNull(row.getLockedBy() != null ? row.getLockedBy().getUser().getFirstName() + " " + row.getLockedBy().getUser().getLastName() : null);
-			case lockedAt: return notNull(row.getLockedAt());
-			case revisionComment: return notNull(row.getRevisionComment());
-			case revisionNr: return notNull(row.getRevisionNr());	
+			case key: return returnNullSafe(row.getKey());
+			case name: return returnNullSafe(row.getName());
+			case size: return returnNullSafe(row.getSize());
+			case path: return returnNullSafe(row.getPathInfo());
+			case author: return returnNullSafe(row.getAuthor() != null ? row.getAuthor().getUser().getFirstName() + " " + row.getAuthor().getUser().getLastName() : null);
+			case revision: return returnNullSafe(row.isRevision());
+			case fileCategory: return returnNullSafe(row.getFileCategory());
+			case fileType: return returnNullSafe(row.getFileType());
+			case license: return returnNullSafe(row.getLicense() != null ? LicenseUIFactory.translate(row.getLicense(), locale) : null);
+			case lastModifiedAt: return returnNullSafe(row.getLastModifiedAt());
+			case createdAt: return returnNullSafe(row.getCreatedAt());
+			case age: return returnNullSafe(row.getAge());
+			case trashed: return returnNullSafe(row.isTrashed());
+			case uuid: return returnNullSafe(row.getUuid());
+			case downloadCount: return returnNullSafe(row.getDownloadCount());
+			case title: return returnNullSafe(row.getTitle());
+			case comment: return returnNullSafe(row.getComment());
+			case publisher: return returnNullSafe(row.getPublisher());
+			case creator: return returnNullSafe(row.getCreator());
+			case source: return returnNullSafe(row.getSource());
+			case pubDate: return returnNullSafe(row.getPubDate());
+			case language: return returnNullSafe(row.getLanguage());
+			case locked: return returnNullSafe(row.isLocked());
+			case lockedBy: return returnNullSafe(row.getLockedBy() != null ? row.getLockedBy().getUser().getFirstName() + " " + row.getLockedBy().getUser().getLastName() : null);
+			case lockedAt: return returnNullSafe(row.getLockedAt());
+			case revisionComment: return returnNullSafe(row.getRevisionComment());
+			case revisionNr: return returnNullSafe(row.getRevisionNr());
+			case sendMail: return returnNullSafe(row.getAuthor() != null ? StringHelper.containsNonWhitespace(row.getAuthor().getUser().getEmail()) ? true : false : false);
 			
 			default: return "ERROR";
 		}
@@ -75,7 +77,7 @@ implements SortableFlexiTableDataModel<LargeFilesTableContentRow> {
 		return new LargeFilesTableModel(getTableColumnModel(), locale);
 	}
 	
-	private Object notNull(Object o) {
+	private Object returnNullSafe(Object o) {
 		return o != null ? o : "";
 	}
 	
@@ -106,7 +108,8 @@ implements SortableFlexiTableDataModel<LargeFilesTableContentRow> {
 		lockedBy("largefiles.lockedby"),
 		lockedAt("largefiles.lockedat"),
 		revisionNr("largefiles.revisionnr"),
-		revisionComment("largefiles.revisioncomment");
+		revisionComment("largefiles.revisioncomment"),
+		sendMail("largefiles.sendmail");
 		
 		private final String i18nHeaderKey;
 		

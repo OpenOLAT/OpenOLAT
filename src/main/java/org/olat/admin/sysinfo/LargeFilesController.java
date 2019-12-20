@@ -3,11 +3,13 @@ package org.olat.admin.sysinfo;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.NewControllerFactory;
 import org.olat.admin.sysinfo.gui.LargeFilesLockedCellRenderer;
 import org.olat.admin.sysinfo.gui.LargeFilesNameCellRenderer;
 import org.olat.admin.sysinfo.gui.LargeFilesRevisionCellRenderer;
+import org.olat.admin.sysinfo.gui.LargeFilesSendMailCellRenderer;
 import org.olat.admin.sysinfo.gui.LargeFilesSizeCellRenderer;
 import org.olat.admin.sysinfo.gui.LargeFilesTrashedCellRenderer;
 import org.olat.admin.sysinfo.model.LargeFilesTableContentRow;
@@ -24,27 +26,32 @@ import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ExtendedFlexiTableSearchController;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.modules.co.ContactFormController;
-import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class LargeFilesController extends FormBasicController implements ExtendedFlexiTableSearchController {
@@ -53,10 +60,11 @@ public class LargeFilesController extends FormBasicController implements Extende
 	public static final String[] REVISION_KEYS = new String[]{ "revisions", "files", "both" };
 	public static final String[] LOCKED_KEYS = new String[]{ "locked", "notlocked", "both" };
 
+	private final AtomicInteger counter = new AtomicInteger();
+
 	private FlexiTableElement largeFilesTableElement;
 	private LargeFilesTableModel largeFilesTableModel;
 
-	private MultipleSelectionElement types;
 	private SingleSelection trashedSelection;
 	private SingleSelection revisionSelection; 
 	private SingleSelection lockedSelection;
@@ -66,16 +74,18 @@ public class LargeFilesController extends FormBasicController implements Extende
 	private DateChooser editedAtOlderChooser;
 	private DateChooser lockedAtNewerChooser;
 	private DateChooser lockedAtOlderChooser;
-	private IntegerElement downloadCountMinEl;
-	private IntegerElement revisionCountMinEl;
-	private IntegerElement maxResultEl;
-	private FormLink searchButton;
+	private TextElement downloadCountMinEl;
+	private TextElement revisionCountMinEl;
+	private TextElement maxResultEl;
+	private TextElement minSizeEl;
+	private FormSubmit searchButton;
 	private FormLink resetButton;
 
-	private boolean enabled = true;
-	
+	private List<LargeFilesTableContentRow> rows;
+
 	private CloseableModalController cmc;
 	private ContactFormController contactCtrl;
+	private CloseableCalloutWindowController pathInfoCalloutCtrl;
 
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
@@ -88,32 +98,76 @@ public class LargeFilesController extends FormBasicController implements Extende
 	}
 
 	public void updateModel() {
-		List<LargeFilesTableContentRow> rows = new ArrayList<>();
+		rows = new ArrayList<>();
+		int maxResults = 100, downloadCountMin = 0, minSize = 0;
+		Long revisionsCountMin = new Long(0);
+
+		if(StringHelper.containsNonWhitespace(maxResultEl.getValue())) {
+			maxResults = Integer.parseInt(maxResultEl.getValue());
+		}
+		if(StringHelper.containsNonWhitespace(minSizeEl.getValue())) {
+			minSize = Integer.parseInt(minSizeEl.getValue());
+		}
+		if(StringHelper.containsNonWhitespace(downloadCountMinEl.getValue())) {
+			downloadCountMin = Integer.parseInt(downloadCountMinEl.getValue());
+		}
+		if(StringHelper.containsNonWhitespace(revisionCountMinEl.getValue())) {
+			revisionsCountMin = Long.parseLong(revisionCountMinEl.getValue());
+		}
 
 		if(revisionSelection.getSelectedKey() != REVISION_KEYS[0]) {
-			List<VFSMetadata> files = vfsRepositoryService.getLargestFiles(maxResultEl.getIntValue(), 
+			List<VFSMetadata> files = vfsRepositoryService.getLargestFiles(maxResults, 
 					createdAtNewerChooser.getDate(), createdAtOlderChooser.getDate(),
 					editedAtNewerChooser.getDate(), editedAtOlderChooser.getDate(),
 					lockedAtNewerChooser.getDate(), lockedAtOlderChooser.getDate(),
 					trashedSelection.getSelectedKey(), revisionSelection.getSelectedKey(), lockedSelection.getSelectedKey(),
-					downloadCountMinEl.getIntValue(), new Long(revisionCountMinEl.getIntValue())
-					);
+					downloadCountMin, revisionsCountMin, minSize);
 
 			for(VFSMetadata file:files) {
-				rows.add(new LargeFilesTableContentRow(file));
+				LargeFilesTableContentRow contentRow = new LargeFilesTableContentRow(file);
+
+				String[] path = contentRow.getPath().split("/");
+
+				StringBuilder sb = new StringBuilder(path[0]);
+				if(path.length > 1) {
+					sb.append("/").append(path[1]);
+					if(path.length > 2) {
+						sb.append("/...");
+					}
+				}
+
+				FormLink pathInfo = uifactory.addFormLink("pathinfo_" + counter.incrementAndGet() , "pathInfo", sb.toString(), null, null, Link.NONTRANSLATED);
+				pathInfo.setUserObject(contentRow);
+				contentRow.setPathInfo(pathInfo);
+				rows.add(contentRow);
 			}
 		}
 
 		if(revisionSelection.getSelectedKey() != REVISION_KEYS[1]) {
-			List<VFSRevision> revisions = vfsRepositoryService.getLargestRevisions(maxResultEl.getIntValue(), 
+			List<VFSRevision> revisions = vfsRepositoryService.getLargestRevisions(maxResults, 
 					createdAtNewerChooser.getDate(), createdAtOlderChooser.getDate(),
 					editedAtNewerChooser.getDate(), editedAtOlderChooser.getDate(),
 					lockedAtNewerChooser.getDate(), lockedAtOlderChooser.getDate(),
 					trashedSelection.getSelectedKey(), revisionSelection.getSelectedKey(), lockedSelection.getSelectedKey(),
-					downloadCountMinEl.getIntValue(), new Long(revisionCountMinEl.getIntValue()));
+					downloadCountMin, revisionsCountMin, minSize);
 
 			for(VFSRevision revision:revisions) {
-				rows.add(new LargeFilesTableContentRow(revision));
+				LargeFilesTableContentRow contentRow = new LargeFilesTableContentRow(revision);
+
+				String[] path = contentRow.getPath().split("/");
+
+				StringBuilder sb = new StringBuilder(path[0]);
+				if(path.length > 1) {
+					sb.append("/").append(path[1]);
+					if(path.length > 2) {
+						sb.append("/...");
+					}
+				}
+				
+				FormLink pathInfo = uifactory.addFormLink("pathinfo_" + counter.incrementAndGet() , "pathInfo", sb.toString(), null, null, Link.NONTRANSLATED);
+				pathInfo.setUserObject(contentRow);
+				contentRow.setPathInfo(pathInfo);
+				rows.add(contentRow);
 			}
 		}
 
@@ -121,8 +175,8 @@ public class LargeFilesController extends FormBasicController implements Extende
 			return row2.getSize().intValue() - row1.getSize().intValue();
 		});
 
-		if(maxResultEl.getIntValue() != 0 && maxResultEl.getIntValue() < rows.size()) {
-			rows = rows.subList(0, maxResultEl.getIntValue());
+		if(maxResults != 0 && maxResults < rows.size()) {
+			rows = rows.subList(0, maxResults);
 		}
 
 		largeFilesTableModel.setObjects(rows);
@@ -142,17 +196,22 @@ public class LargeFilesController extends FormBasicController implements Extende
 		lockedSelection.reset();
 		revisionSelection.reset();
 		maxResultEl.reset();
+		minSizeEl.reset();
 
 		updateModel();
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer leftContainer = FormLayoutContainer.createDefaultFormLayout("filter_left", getTranslator());
+		FormLayoutContainer largefFilesTitle = FormLayoutContainer.createVerticalFormLayout("largeFilesTitle", getTranslator());
+		formLayout.add(largefFilesTitle);
+		largefFilesTitle.setFormTitle(translate("largefiles.title"));
+
+		FormLayoutContainer leftContainer = FormLayoutContainer.createDefaultFormLayout_6_6("filter_left", getTranslator());
 		leftContainer.setRootForm(mainForm);
 		formLayout.add(leftContainer);
 
-		FormLayoutContainer rightContainer = FormLayoutContainer.createDefaultFormLayout("filter_right", getTranslator());
+		FormLayoutContainer rightContainer = FormLayoutContainer.createDefaultFormLayout_6_6("filter_right", getTranslator());
 		leftContainer.setRootForm(mainForm);
 		formLayout.add(rightContainer);
 
@@ -164,9 +223,10 @@ public class LargeFilesController extends FormBasicController implements Extende
 		createdAtNewerChooser = uifactory.addDateChooser("largefiles.filter.created.newer", "largefiles.filter.created.newer", null, leftContainer);
 		editedAtNewerChooser = uifactory.addDateChooser("largefiles.filter.edited.newer", "largefiles.filter.edited.newer", null, leftContainer);
 		lockedAtNewerChooser = uifactory.addDateChooser("largefiles.filter.locked.newer", null, leftContainer);
-		revisionCountMinEl = uifactory.addIntegerElement("largefiles.filter.revision.count.min", "largefiles.filter.revision.count.min", 0, leftContainer);
-		downloadCountMinEl = uifactory.addIntegerElement("largefiles.filter.download.count.min", "largefiles.filter.download.count.min", 0, leftContainer);
-		maxResultEl = uifactory.addIntegerElement("largefiles.filter.results.max", 100, leftContainer);
+		revisionCountMinEl = uifactory.addTextElement("largefiles.filter.revision.count.min", 4, "", leftContainer);
+		downloadCountMinEl = uifactory.addTextElement("largefiles.filter.download.count.min", 8, "", leftContainer);
+		maxResultEl = uifactory.addTextElement("largefiles.filter.results.max", 5, "100", leftContainer);
+		minSizeEl = uifactory.addTextElement("largefiles.filter.size.min", 18, "", leftContainer);
 
 
 		// Right part of the filter
@@ -200,9 +260,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 		lockedSelection.select(LOCKED_KEYS[2], true);
 
 		// Filter buttons
-		searchButton = uifactory.addFormLink("largefiles.filter.button.search", filterButtonLayout, Link.BUTTON);
-		searchButton.setCustomEnabledLinkCSS("btn btn-primary");
-
+		searchButton = uifactory.addFormSubmitButton("largefiles.filter.button.search", filterButtonLayout);
 		resetButton = uifactory.addFormLink("largefiles.filter.button.reset", filterButtonLayout, Link.BUTTON);
 
 		// Tabled
@@ -211,9 +269,9 @@ public class LargeFilesController extends FormBasicController implements Extende
 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.key));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.uuid));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, true, LargeFilesTableColumns.name, new LargeFilesNameCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, true, LargeFilesTableColumns.size, new LargeFilesSizeCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, true, LargeFilesTableColumns.path));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, LargeFilesTableColumns.name, new LargeFilesNameCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, LargeFilesTableColumns.size, new LargeFilesSizeCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, LargeFilesTableColumns.path));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.age));
 
 		column = new DefaultFlexiColumnModel(false, LargeFilesTableColumns.trashed, new LargeFilesTrashedCellRenderer());
@@ -229,6 +287,11 @@ public class LargeFilesController extends FormBasicController implements Extende
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.fileCategory));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.fileType));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.downloadCount));
+
+		DefaultFlexiColumnModel sendMail = new DefaultFlexiColumnModel(false, LargeFilesTableColumns.sendMail, "sendMail", new LargeFilesSendMailCellRenderer());
+		sendMail.setIconHeader(CSSHelper.getIconCssClassFor(CSSHelper.CSS_CLASS_MAIL));
+		columnsModel.addFlexiColumnModel(sendMail);
+
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.author, "selectAuthor"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.license));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.language));
@@ -279,32 +342,136 @@ public class LargeFilesController extends FormBasicController implements Extende
 					if (contentRow.getAuthor() != null) {
 						openUser(ureq, contentRow.getAuthor().getKey());
 					}
-				} if("selectLockedBy".equals(cmd)) {
+				} else if("selectLockedBy".equals(cmd)) {
 					if (contentRow.getLockedBy() != null) {
 						openUser(ureq, contentRow.getLockedBy().getKey());
 					}
-				} 
+				} else if("sendMail".equals(cmd)) {
+					if (contentRow.getAuthor() != null) {
+						contactUser(ureq, contentRow.getAuthor());
+					}
+				}
 			}
-		} else if(source == searchButton) {
-			updateModel();
 		} else if(source == resetButton) {
-//			resetForm();
-			contactUser(ureq);
+			resetForm();
+		} else if(source instanceof FormLink) {
+			FormLink link = (FormLink) source;
+
+			if("pathInfo".equals(link.getCmd())) {
+				removeAsListenerAndDispose(pathInfoCalloutCtrl);
+
+				LargeFilesTableContentRow row = (LargeFilesTableContentRow) link.getUserObject();
+				System.out.println(link.getUserObject());
+
+				CalloutSettings settings = new CalloutSettings(false);
+
+				pathInfoCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+						TextFactory.createTextComponentFromString("pathInfo", row.getPath(), "", true, null), link.getFormDispatchId(), "", true, "", settings);
+				listenTo(pathInfoCalloutCtrl);
+				pathInfoCalloutCtrl.activate();
+			}
+
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
-	
-	private void contactUser(UserRequest ureq) {
+
+	@Override
+	protected void event(UserRequest  ureq, Controller source, Event event) {
+		if (source == cmc) {
+			cleanUp();
+		} else if (source == contactCtrl) {
+			cmc.deactivate();
+			cleanUp();
+		} 
+		super.event(ureq, source, event);
+	}
+
+	private void cleanUp() {
 		removeAsListenerAndDispose(cmc);
-		Identity testUser = UserManager.getInstance().findUniqueIdentityByEmail("admin@olat-newinstallation.org");
+		removeAsListenerAndDispose(contactCtrl);
+		removeAsListenerAndDispose(pathInfoCalloutCtrl);
+		cmc = null;
+		contactCtrl = null;
+		pathInfoCalloutCtrl = null;
+	}
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOK = super.validateFormLogic(ureq);
+
+		if(maxResultEl.getValue() != "") {
+			try {
+				if(Integer.parseInt(maxResultEl.getValue()) <= 0) {
+					maxResultEl.setErrorKey("largefiles.filter.error.small", null);
+					allOK &= false;
+				}
+			} catch (Exception e) {
+				maxResultEl.setErrorKey("largefiles.filter.error.letter", null);
+				allOK &= false;
+			}
+		}
+
+		if(minSizeEl.getValue() != "") {
+			try {
+				if(Integer.parseInt(minSizeEl.getValue()) <= 0) {
+					minSizeEl.setErrorKey("largefiles.filter.error.small", null);
+					allOK &= false;
+				}
+			} catch (Exception e) {
+				minSizeEl.setErrorKey("largefiles.filter.error.letter", null);
+				allOK &= false;
+			}
+		}
+
+		if(downloadCountMinEl.getValue() != "") {
+			try {
+				if(Integer.parseInt(downloadCountMinEl.getValue()) <= 0) {
+					downloadCountMinEl.setErrorKey("largefiles.filter.error.small", null);
+					allOK &= false;
+				}
+			} catch (Exception e) {
+				downloadCountMinEl.setErrorKey("largefiles.filter.error.letter", null);
+				allOK &= false;
+			}
+		}
+
+		if(revisionCountMinEl.getValue() != "") {
+			try {
+				if(Integer.parseInt(revisionCountMinEl.getValue()) <= 0) {
+					revisionCountMinEl.setErrorKey("largefiles.filter.error.small", null);
+					allOK &= false;
+				}
+			} catch (Exception e) {
+				revisionCountMinEl.setErrorKey("largefiles.filter.error.letter", null);
+				allOK &= false;
+			}
+		}
+
+		return allOK;
+	}
+
+	private void contactUser(UserRequest ureq, Identity user) {
+		removeAsListenerAndDispose(cmc);
 
 		ContactMessage cmsg = new ContactMessage(getIdentity());
-		String fullName = "Test Test TEst";
+		String fullName = user.getUser().getFirstName() + " " + user.getUser().getLastName();
 		ContactList contactList = new ContactList(fullName);
-		contactList.add(testUser);
+		contactList.add(user);
 		cmsg.addEmailTo(contactList);
-		cmsg.setSubject("Large FIles");
-		cmsg.setBodyText("youre files are large");
+		cmsg.setSubject("Too large files in your personal folder");
+
+		String bodyStart = translate("largefiles.mail.start", new String[] {user.getUser().getFirstName() + user.getUser().getLastName()});
+		String bodyFiles = "<ul>";
+		String bodyEnd = translate("largefiles.mail.end");
+
+		for(LargeFilesTableContentRow row:rows) {
+			if (row.getAuthor() == user) {
+				bodyFiles += "<li><b>" + Formatter.formatBytes(row.getSize()) + "</b>  -  " +row.getName() + "</li>";
+			}
+		}
+		bodyFiles += "</ul>";
+
+		cmsg.setBodyText(bodyStart + bodyFiles + bodyEnd);
 		contactCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg, null);
 		listenTo(contactCtrl);
 		cmc = new CloseableModalController(getWindowControl(), "close", contactCtrl.getInitialComponent());
@@ -314,14 +481,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 
 	@Override
 	public void setEnabled(boolean enable) {
-		this.enabled = enable;
-	}
-
-	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
-		if(!enabled) return true;
-
-		return true;
+		// Nothing do to here
 	}
 
 	@Override

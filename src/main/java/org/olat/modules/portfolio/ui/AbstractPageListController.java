@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
+import org.olat.core.commons.services.commentAndRating.ReadOnlyCommentsSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsController;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
@@ -96,7 +97,6 @@ import org.olat.modules.portfolio.ui.event.PageDeletedEvent;
 import org.olat.modules.portfolio.ui.event.PageRemovedEvent;
 import org.olat.modules.portfolio.ui.event.SelectPageEvent;
 import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
-import org.olat.modules.portfolio.ui.model.ReadOnlyCommentsSecurityCallback;
 import org.olat.modules.portfolio.ui.renderer.PortfolioElementCellRenderer;
 import org.olat.modules.portfolio.ui.renderer.SharedPageStatusCellRenderer;
 import org.olat.modules.portfolio.ui.renderer.StatusCellRenderer;
@@ -859,7 +859,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			commentSecCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
 		}
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Page.class, page.getKey());
-		commentsCtrl = new UserCommentsController(ureq, getWindowControl(), ores, null, commentSecCallback);
+		commentsCtrl = new UserCommentsController(ureq, getWindowControl(), ores, null, null, commentSecCallback);
 		listenTo(commentsCtrl);
 		
 		String title = translate("comment.title");

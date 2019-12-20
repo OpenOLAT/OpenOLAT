@@ -7,6 +7,9 @@
         http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/context 
         http://www.springframework.org/schema/context/spring-context.xsd">
+        
+        
+	<context:component-scan base-package="de.bps.course" />
 
 	<import resource="classpath:/de/bps/course/nodes/cl/_spring/buildingblockContext.xml"/>
 	<import resource="classpath:/de/bps/course/nodes/den/_spring/buildingblockContext.xml"/>

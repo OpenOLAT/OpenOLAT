@@ -53,8 +53,6 @@ import org.olat.core.commons.services.vfs.restapi.VFSWebservice;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
-import org.olat.core.util.nodes.INode;
-import org.olat.core.util.tree.Visitor;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
@@ -208,10 +206,10 @@ public class UserFoldersWebService {
 
 		final Map<Long,Long> groupNotified = new HashMap<>();
 		final Map<Long,Collection<String>> courseNotified = new HashMap<>();
-		NotificationsManager man = NotificationsManager.getInstance();
+		NotificationsManager man = CoreSpringFactory.getImpl(NotificationsManager.class);
 		{//collect subscriptions
 			List<String> notiTypes = Collections.singletonList("FolderModule");
-			List<Subscriber> subs = man.getSubscribers(ureqIdentity, notiTypes);
+			List<Subscriber> subs = man.getSubscribers(ureqIdentity, notiTypes, true);
 			for(Subscriber sub:subs) {
 				String resName = sub.getPublisher().getResName();
 				if("BusinessGroup".equals(resName)) {
@@ -233,15 +231,12 @@ public class UserFoldersWebService {
 			final Long courseKey = e.getKey();
 			final Collection<String> nodeKeys = e.getValue();
 			final ICourse course = CourseFactory.loadCourse(courseKey);
-			new CourseTreeVisitor(course, ienv).visit(new Visitor() {
-				@Override
-				public void visit(INode node) {
-					if(node instanceof BCCourseNode) {
-						BCCourseNode bcNode = (BCCourseNode)node;
-						if(nodeKeys.contains(bcNode.getIdent())) {
-							FolderVO folder = BCWebService.createFolderVO(ienv, course, bcNode, courseNotified.get(course.getResourceableId()));
-							folderVOs.add(folder);
-						}
+			new CourseTreeVisitor(course, ienv).visit(node -> {
+				if(node instanceof BCCourseNode) {
+					BCCourseNode bcNode = (BCCourseNode)node;
+					if(nodeKeys.contains(bcNode.getIdent())) {
+						FolderVO folder = BCWebService.createFolderVO(ienv, course, bcNode, courseNotified.get(course.getResourceableId()));
+						folderVOs.add(folder);
 					}
 				}
 			});

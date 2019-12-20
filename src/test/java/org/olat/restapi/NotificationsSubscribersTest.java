@@ -129,7 +129,7 @@ public class NotificationsSubscribersTest extends OlatRestTestCase {
 		Assert.assertNotNull(publisher);
 		
 		//get subscribers
-		List<Subscriber> subscribers = notificationsManager.getSubscribers(publisher);
+		List<Subscriber> subscribers = notificationsManager.getSubscribers(publisher, true);
 		Assert.assertNotNull(subscribers);
 		Assert.assertEquals(2, subscribers.size());
 		
@@ -198,7 +198,7 @@ public class NotificationsSubscribersTest extends OlatRestTestCase {
 		
 		//check
 		Publisher publisher = notificationsManager.getPublisher(subsContext);
-		List<Subscriber> survivingSubscribers = notificationsManager.getSubscribers(publisher);
+		List<Subscriber> survivingSubscribers = notificationsManager.getSubscribers(publisher, true);
 		Assert.assertNotNull(survivingSubscribers);
 		Assert.assertEquals(2, survivingSubscribers.size());
 		for(Subscriber subscriber:survivingSubscribers) {

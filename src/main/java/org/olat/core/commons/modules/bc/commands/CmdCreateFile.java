@@ -81,6 +81,8 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 	
 	@Autowired
 	private DocumentEditorService docEditorService;
+	@Autowired
+	private NotificationsManager notificationsManager;
 
 	protected CmdCreateFile(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -150,7 +152,7 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 		if(secCallback != null) {
 			SubscriptionContext subsContext = secCallback.getSubscriptionContext();
 			if (subsContext != null) {
-				NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity(), true);
+				notificationsManager.markPublisherNews(subsContext, ureq.getIdentity(), true);
 			}
 		}
 	}

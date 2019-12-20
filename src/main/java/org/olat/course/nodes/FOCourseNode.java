@@ -476,7 +476,7 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 		// mark the subscription to this node as deleted
 		SubscriptionContext forumSubContext = CourseModule
 				.createTechnicalSubscriptionContext(course.getCourseEnvironment(), this);
-		NotificationsManager.getInstance().delete(forumSubContext);
+		CoreSpringFactory.getImpl(NotificationsManager.class).delete(forumSubContext);
 
 		// delete the forum, if there is one (is created on demand only)
 		CoursePropertyManager cpm = PersistingCoursePropertyManager.getInstance(course);

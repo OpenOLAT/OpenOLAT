@@ -1,3 +1,22 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
 package org.olat.core.commons.services.vfs.ui.management;
 
 import java.io.File;
@@ -16,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -27,6 +47,13 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+
+/**
+ * 
+ * Initial date: 13.12.2019<br>
+ * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
+ *
+ */
 public class VFSOverviewController extends FormBasicController {
 
 	private FlexiTableElement vfsOverviewTableElement;
@@ -80,6 +107,10 @@ public class VFSOverviewController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		FormLayoutContainer overviewLayout = FormLayoutContainer.createVerticalFormLayout("vfs.overview", getTranslator());
+		formLayout.add(overviewLayout);
+		
+		overviewLayout.setFormTitle(translate("vfs.overview.title"));
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		DefaultFlexiColumnModel nameColumn;
 		DefaultFlexiColumnModel amountColumn;
@@ -109,7 +140,7 @@ public class VFSOverviewController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(actionColumn);		
 
 		vfsOverviewTableModel = new VFSOverviewTableModel(columnsModel, getLocale());
-		vfsOverviewTableElement = uifactory.addTableElement(getWindowControl(), "vfs.overview", vfsOverviewTableModel, getTranslator(), formLayout);
+		vfsOverviewTableElement = uifactory.addTableElement(getWindowControl(), "vfs.overview.table", vfsOverviewTableModel, getTranslator(), overviewLayout);
 		vfsOverviewTableElement.setSearchEnabled(false);
 		vfsOverviewTableElement.setCustomizeColumns(false);
 		vfsOverviewTableElement.setNumOfRowsEnabled(false);

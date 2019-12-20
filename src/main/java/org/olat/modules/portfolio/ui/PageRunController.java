@@ -26,6 +26,7 @@ import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
+import org.olat.core.commons.services.commentAndRating.ReadOnlyCommentsSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocTemplate;
@@ -111,7 +112,6 @@ import org.olat.modules.portfolio.ui.event.RevisionEvent;
 import org.olat.modules.portfolio.ui.event.SelectPageEvent;
 import org.olat.modules.portfolio.ui.event.ToggleEditPageEvent;
 import org.olat.modules.portfolio.ui.export.ExportBinderAsPDFResource;
-import org.olat.modules.portfolio.ui.model.ReadOnlyCommentsSecurityCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -313,7 +313,7 @@ public class PageRunController extends BasicController implements TooledControll
 					commentSecCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
 				}
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance(Page.class, page.getKey());
-				commentsCtrl = new UserCommentsAndRatingsController(ureq, getWindowControl(), ores, null, commentSecCallback, true, false, true);
+				commentsCtrl = new UserCommentsAndRatingsController(ureq, getWindowControl(), ores, null, commentSecCallback, null, true, false, true);
 				commentsCtrl.expandComments(ureq);
 				listenTo(commentsCtrl);
 			}

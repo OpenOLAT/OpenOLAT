@@ -294,7 +294,7 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 		super.cleanupOnDelete(course);
 
 		SubscriptionContext subsContext = CourseModule.createSubscriptionContext(course.getCourseEnvironment(), this);
-		NotificationsManager.getInstance().delete(subsContext);
+		CoreSpringFactory.getImpl(NotificationsManager.class).delete(subsContext);
 	}
 
 	@Override

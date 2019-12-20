@@ -10,8 +10,5 @@
 		<property name="enabled" value="${course.node.dateenrollment.enabled}" />
 		<property name="order"   value="230" />
 	</bean>
-
-	<bean id="de.bps.course.nodes.den.DENCourseNodeNotificationHandler" 
-	      class="de.bps.course.nodes.den.DENCourseNodeNotificationHandler" />
 	
 </beans>

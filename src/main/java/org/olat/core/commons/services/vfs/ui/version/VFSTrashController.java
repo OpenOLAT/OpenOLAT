@@ -41,13 +41,13 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.progressbar.ProgressController;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
@@ -73,8 +73,6 @@ public class VFSTrashController extends FormBasicController implements ProgressD
 	private StaticTextElement orphanSizeEl;
 	private StaticTextElement versionsSizeEl;
 	
-	private final VelocityContainer mainVC;
-	
 	private CloseableModalController cmc;
 	private ProgressController progressCtrl;
 	private DialogBoxController confirmPruneHistoryBox;
@@ -91,9 +89,8 @@ public class VFSTrashController extends FormBasicController implements ProgressD
 	private VFSRepositoryService vfsRepositoryService;
 	
 	public VFSTrashController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_BAREBONE);
 		// use combined translator from system admin main
-		mainVC = createVelocityContainer("vfs_trash");
 		setTranslator(Util.createPackageTranslator(SystemAdminMainController.class, ureq.getLocale(), getTranslator()));
 		initForm(ureq);
 		loadModel();
@@ -101,28 +98,32 @@ public class VFSTrashController extends FormBasicController implements ProgressD
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		FormLayoutContainer statsLayout = FormLayoutContainer.createDefaultFormLayout("orphansStats", getTranslator());
+		FormLayoutContainer tableLayout = FormLayoutContainer.createVerticalFormLayout("orphanTable", getTranslator());
+		formLayout.add(statsLayout);
+		formLayout.add(tableLayout);
 		
-		setFormTitle("version.maintenance.title");
-//		setFormDescription("version.maintenance.intro");
+		// Upper part
+		statsLayout.setFormTitle(translate("version.maintenance.title"));
 		
-		versionsSizeEl = uifactory.addStaticTextElement("version.size", "version.size", "", formLayout);
-		orphanSizeEl = uifactory.addStaticTextElement("version.orphan.size", "version.orphan.size", "", formLayout);
-		
-		orphansController = new VersionsDeletedFileController(ureq, getWindowControl());			
-		listenTo(orphansController);
-		
-//		mainVC.put("orphans", orphansController.getInitialComponent());
+		versionsSizeEl = uifactory.addStaticTextElement("version.size", "version.size", "", statsLayout);
+		orphanSizeEl = uifactory.addStaticTextElement("version.orphan.size", "version.orphan.size", "", statsLayout);
 		
 		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		formLayout.add(buttonsLayout);
-//		formLayout.add("orphansList", orphansController.getInitialFormItem());
+		statsLayout.add(buttonsLayout);
 		
-		showOrphanLink = uifactory.addFormLink("version.show.orphans", buttonsLayout, Link.BUTTON);
 		cleanUpLink = uifactory.addFormLink("version.clean.up", buttonsLayout, Link.BUTTON);
 		pruneLink = uifactory.addFormLink("version.prune.history", buttonsLayout, Link.BUTTON);
+		cleanUpLink.setIconLeftCSS(CSSHelper.getIconCssClassFor(CSSHelper.CSS_CLASS_TRASHED));
+		pruneLink.setIconLeftCSS(CSSHelper.getIconCssClassFor(CSSHelper.CSS_CLASS_REVISION));
 
 		
-	}
+		// Lower part
+		orphansController = new VersionsDeletedFileController(ureq, getWindowControl());			
+		listenTo(orphansController);
+		tableLayout.setFormTitle(translate("version.deletedFiles"));
+		tableLayout.add("orphansList", orphansController.getInitialFormItem());
+	}		
 
 	@Override
 	protected void doDispose() {
@@ -138,10 +139,7 @@ public class VFSTrashController extends FormBasicController implements ProgressD
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source == orphansController) {
-			cmc.deactivate();
-			cleanup();
-		} else if(source == confirmDeleteOrphansBox) {
+		if(source == confirmDeleteOrphansBox) {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
 				doDeleteOrphans(ureq);
 			}
@@ -169,9 +167,7 @@ public class VFSTrashController extends FormBasicController implements ProgressD
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source == showOrphanLink) {
-			doOpenOrphansList(ureq);
-		} else if(source == cleanUpLink) {
+		if(source == cleanUpLink) {
 			String text = translate("confirm.delete.orphans");
 			confirmDeleteOrphansBox = activateYesNoDialog(ureq, null, text, confirmDeleteOrphansBox);
 		} else if(source == pruneLink) {
@@ -179,18 +175,6 @@ public class VFSTrashController extends FormBasicController implements ProgressD
 			confirmPruneHistoryBox = activateYesNoDialog(ureq, null, text, confirmPruneHistoryBox);
 		}
 		super.formInnerEvent(ureq, source, event);
-	}
-	
-	private void doOpenOrphansList(UserRequest ureq) {
-//		if(guardModalController(orphansController)) return;
-		
-		orphansController = new VersionsDeletedFileController(ureq, getWindowControl());			
-		listenTo(orphansController);
-		
-		String title = translate("version.show.orphans");
-		cmc = new CloseableModalController(getWindowControl(), "close", orphansController.getInitialComponent(), true, title);
-		listenTo(cmc);
-		cmc.activate();
 	}
 	
 	private void doDeleteOrphans(UserRequest ureq) {

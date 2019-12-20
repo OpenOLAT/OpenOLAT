@@ -33,6 +33,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.course.CourseModule;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.springframework.stereotype.Service;
 
 /**
  * Description:<br>
@@ -43,6 +44,7 @@ import org.olat.course.run.environment.CourseEnvironment;
  * 
  * @author christian guretzki
  */
+@Service
 public class SolutionFileUploadNotificationHandler extends AbstractTaskNotificationHandler implements NotificationsHandler {
 	private static final String CSS_CLASS_SOLUTION_ICON = "o_solution_icon"; 
 	private static final Logger log = Tracing.createLoggerFor(SolutionFileUploadNotificationHandler.class);
@@ -55,14 +57,17 @@ public class SolutionFileUploadNotificationHandler extends AbstractTaskNotificat
 	  return CourseModule.createSubscriptionContext(courseEnv, node, "Solutionbox");
 	}
 
+	@Override
 	protected String getCssClassIcon() {
 		return CSS_CLASS_SOLUTION_ICON;
 	}
-	
+
+	@Override
 	protected String getNotificationHeaderKey() {
 		return "solution.notifications.header";
 	}
-	
+
+	@Override
 	protected String getNotificationEntryKey() {
 		return "solution.notifications.entry";
 	}

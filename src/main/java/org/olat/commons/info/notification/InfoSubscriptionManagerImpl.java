@@ -28,11 +28,9 @@ import org.olat.commons.info.InfoSubscriptionManager;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.commons.services.notifications.PublisherData;
-import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OresHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -64,23 +62,7 @@ public class InfoSubscriptionManagerImpl implements InfoSubscriptionManager {
 	@Override
 	public PublisherData getInfoPublisherData(OLATResourceable resource, String businessPath) {
 		String resId = resource.getResourceableId() == null ? "0" : resource.getResourceableId().toString();
-		PublisherData publisherData = new PublisherData(PUBLISHER_TYPE, resId, businessPath);
-		return publisherData;
-	}
-
-	@Override
-	public InfoSubscription getInfoSubscription(Preferences prefs) {
-		return new InfoSubscription(prefs);
-	}
-
-	@Override
-	public Subscriber getInfoSubscriber(Identity identity, OLATResourceable resource, String subPath) {
-		SubscriptionContext context = getInfoSubscriptionContext(resource, subPath);
-		Publisher publisher = notificationsManager.getPublisher(context);
-		if(publisher == null) {
-			return null;
-		}
-		return notificationsManager.getSubscriber(identity, publisher);
+		return new PublisherData(PUBLISHER_TYPE, resId, businessPath);
 	}
 	
 	@Override

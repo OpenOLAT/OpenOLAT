@@ -25,6 +25,7 @@ import java.io.File;
 import java.util.Collection;
 
 import org.olat.admin.quota.QuotaConstants;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.services.notifications.NotificationsManager;
@@ -326,7 +327,7 @@ public class BCCourseNodeConfigController extends FormBasicController {
 		File realFile = VFSManager.getRealFile(container);
 		String relPath = new File(FolderConfig.getCanonicalRoot()).toPath().relativize(realFile.toPath()).toString();
 
-		NotificationsManager notifManager = NotificationsManager.getInstance();
+		NotificationsManager notifManager = CoreSpringFactory.getImpl(NotificationsManager.class);
 		SubscriptionContext nodefolderSubContext = CourseModule.createSubscriptionContext(course.getCourseEnvironment(), node);
 
 		Publisher publisher = notifManager.getPublisher(nodefolderSubContext);

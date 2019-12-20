@@ -217,7 +217,7 @@ public class VFSResourceRoot implements WebResourceRoot  {
 			VFSSecurityCallback callback = inheritingCont.getLocalSecurityCallback();
 			if(callback != null && callback.getSubscriptionContext() != null) {
 				SubscriptionContext subContext = callback.getSubscriptionContext();
-				NotificationsManager.getInstance().markPublisherNews(subContext, null, true);
+				CoreSpringFactory.getImpl(NotificationsManager.class).markPublisherNews(subContext, null, true);
 			}
 		}
 		
