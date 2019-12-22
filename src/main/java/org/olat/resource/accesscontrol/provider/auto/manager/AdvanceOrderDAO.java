@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
 
@@ -92,33 +92,38 @@ class AdvanceOrderDAO {
 		return advanceOrder;
 	}
 
-	Collection<AdvanceOrder> loadPendingAdvanceOrders(Map<IdentifierKey, String> identifiers) {
+	Collection<AdvanceOrder> loadPendingAdvanceOrders(Collection<IdentifierKeyValue> identifiers) {
 		if (identifiers == null || identifiers.isEmpty()) return new ArrayList<>();
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("select advanceOrder from advanceOrder advanceOrder")
 		  .append(" where advanceOrder.status=:status")
 		  .append("   and ((1 = 2)");
-
-		for (Map.Entry<IdentifierKey, String> entry : identifiers.entrySet()) {
-			if (entry.getKey() != null && StringHelper.containsNonWhitespace(entry.getValue())) {
-				sb.append(" or (advanceOrder.identifierKey=:").append(entry.getKey());
-				sb.append(" and advanceOrder.identifierValue=:").append(entry.getKey()).append(entry.getKey()).append(")");
-			}
+		
+		List<IdentifierKeyValue> identifierList = identifiers.stream()
+				.collect(Collectors.toList());
+		for (int i = 0; i < identifierList.size(); i++) {
+			IdentifierKeyValue keyValue = identifierList.get(i);
+			if (keyValue.getKey() != null && StringHelper.containsNonWhitespace(keyValue.getValue())) {
+				sb.append(" or (advanceOrder.identifierKey=:").append("key" + i);
+				sb.append("       and advanceOrder.identifierValue=:").append("value" + i);
+				sb.append("    )");
+			}	
 		}
 		sb.append(")");
-
+		
 		TypedQuery<AdvanceOrder> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AdvanceOrder.class)
 				.setParameter("status", Status.PENDING);
-
-		for (Map.Entry<IdentifierKey, String> entry : identifiers.entrySet()) {
-			if (entry.getKey() != null && StringHelper.containsNonWhitespace(entry.getValue())) {
-				query.setParameter(entry.getKey().toString(), entry.getKey());
-				query.setParameter(entry.getKey().toString().concat(entry.getKey().toString()), entry.getValue());
+		
+		for (int i = 0; i < identifierList.size(); i++) {
+			IdentifierKeyValue keyValue = identifierList.get(i);
+			if (keyValue.getKey() != null && StringHelper.containsNonWhitespace(keyValue.getValue())) {
+				query.setParameter("key" + i, keyValue.getKey());
+				query.setParameter("value" + i, keyValue.getValue());
 			}
 		}
-
+		
 		return query.getResultList();
 	}
 
@@ -154,6 +159,55 @@ class AdvanceOrderDAO {
 		advanceOrder = save(advanceOrder);
 
 		return advanceOrder;
+	}
+	
+	static final class IdentifierKeyValue {
+		
+		private final IdentifierKey key;
+		private final String value;
+		
+		public IdentifierKeyValue(IdentifierKey key, String value) {
+			super();
+			this.key = key;
+			this.value = value;
+		}
+
+		public IdentifierKey getKey() {
+			return key;
+		}
+
+		public String getValue() {
+			return value;
+		}
+		
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((key == null) ? 0 : key.hashCode());
+			result = prime * result + ((value == null) ? 0 : value.hashCode());
+			return result;
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			IdentifierKeyValue other = (IdentifierKeyValue) obj;
+			if (key != other.key)
+				return false;
+			if (value == null) {
+				if (other.value != null)
+					return false;
+			} else if (!value.equals(other.value))
+				return false;
+			return true;
+		}
+		
 	}
 
 }

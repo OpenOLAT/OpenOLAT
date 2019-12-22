@@ -29,6 +29,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
@@ -45,7 +46,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
@@ -374,6 +374,11 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	@Override
 	public List<RepositoryEntry> loadRepositoryEntriesByExternalRef(String externalRef) {
 		return repositoryEntryDAO.loadRepositoryEntriesByExternalRef(externalRef);
+	}
+
+	@Override
+	public List<RepositoryEntry> loadRepositoryEntriesLikeExternalRef(String externalRef) {
+		return repositoryEntryDAO.loadRepositoryEntriesLikeExternalRef(externalRef);
 	}
 
 	@Override

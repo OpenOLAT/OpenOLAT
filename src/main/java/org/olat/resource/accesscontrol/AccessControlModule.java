@@ -66,6 +66,7 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 	private static final String PAYPAL_ENABLED = "method.paypal.enabled";
 	private static final String PAYPAL_CHECKOUT_ENABLED = "method.paypal.checkout.enabled";
 	private static final String AUTO_ENABLED = "method.auto.enabled";
+	private static final String AUTO_EXTERNAL_REF_DELIMITER = "method.auto.external.ref.delimiter";
 
 	@Value("${resource.accesscontrol.enabled:true}")
 	private boolean enabled;
@@ -75,6 +76,8 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 	private boolean freeEnabled;
 	@Value("${method.auto.enabled:false}")
 	private boolean autoEnabled;
+	@Value("${method.auto.externalRef.delimiter}")
+	private String autoExternalRefDelimiter;
 	@Value("${method.token.enabled:true}")
 	private boolean tokenEnabled;
 	@Value("${method.paypal.enabled:false}")
@@ -142,6 +145,11 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 		String autoEnabledObj = getStringPropertyValue(AUTO_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(autoEnabledObj)) {
 			autoEnabled = "true".equals(autoEnabledObj);
+		}
+		
+		String autoExternalRefDelimiterObj = getStringPropertyValue(AUTO_EXTERNAL_REF_DELIMITER, true);
+		if(StringHelper.containsNonWhitespace(autoExternalRefDelimiterObj)) {
+			autoExternalRefDelimiter = autoExternalRefDelimiterObj;
 		}
 
 		String homeEnabledObj = getStringPropertyValue(AC_HOME_ENABLED, true);
@@ -218,6 +226,15 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 		this.autoEnabled = autoEnabled;
 		setStringProperty(AUTO_ENABLED, Boolean.toString(autoEnabled), true);
 		acMethodManager.enableAutoMethods(autoEnabled);
+	}
+
+	public String getAutoExternalRefDelimiter() {
+		return autoExternalRefDelimiter;
+	}
+
+	public void setAutoExternalRefDelimiter(String autoExternalRefDelimiter) {
+		this.autoExternalRefDelimiter = autoExternalRefDelimiter;
+		setStringProperty(AUTO_EXTERNAL_REF_DELIMITER, autoExternalRefDelimiter, true);
 	}
 
 	public boolean isPaypalEnabled() {

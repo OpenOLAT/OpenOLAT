@@ -358,6 +358,43 @@ public class RepositoryEntryDAOTest extends OlatTestCase {
 		Assert.assertNotNull(emptyRes);
 		Assert.assertEquals(0, emptyRes.size());
 	}
+
+	@Test
+	public void loadRepositoryEntriesLikeExternalRef() {
+		String externalRef = "myExternalRef";
+
+		// remove old test date
+		String query = "update repositoryentry as v set v.externalRef=null where v.externalRef like (:externalRef)";
+		String externalRefParamater = new StringBuilder("%").append(externalRef).append("%").toString();
+		dbInstance.getCurrentEntityManager()
+				.createQuery(query)
+				.setParameter("externalRef", externalRefParamater)
+				.executeUpdate();
+
+		// insert test data
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry re1 = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 8a", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
+		re1.setExternalRef(externalRef);
+		repositoryService.update(re1);
+		RepositoryEntry re2 = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 8b", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
+		re2.setExternalRef(externalRef + "123");
+		repositoryService.update(re2);
+		RepositoryEntry re3 = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 8c", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
+		re3.setExternalRef("abc" + externalRef + "123");
+		repositoryService.update(re3);
+		RepositoryEntry re4 = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 8d", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
+		re4.setExternalRef("123");
+		repositoryService.update(re4);
+		dbInstance.commitAndCloseSession();
+
+		Collection<RepositoryEntry> entries = repositoryEntryDao.loadRepositoryEntriesLikeExternalRef(externalRef);
+		Assert.assertNotNull(entries);
+		Assert.assertEquals(3, entries.size());
+	}
 	
 	@Test
 	public void loadRepositoryEntries() {

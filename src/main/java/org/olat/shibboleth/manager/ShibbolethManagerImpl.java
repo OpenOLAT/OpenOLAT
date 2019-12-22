@@ -88,12 +88,12 @@ public class ShibbolethManagerImpl implements ShibbolethManager {
 
 	private void createAndBookAdvanceOrders(Identity identity, ShibbolethAttributes shibbolethAttributes) {
 		if (acModule.isAutoEnabled()) {
-			createAdvanceOr(identity, shibbolethAttributes);
+			createAdvanceOrder(identity, shibbolethAttributes);
 			autoAccessManager.grantAccessToCourse(identity);
 		}
 	}
 
-	private void createAdvanceOr(Identity identity, ShibbolethAttributes shibbolethAttributes) {
+	private void createAdvanceOrder(Identity identity, ShibbolethAttributes shibbolethAttributes) {
 		ShibbolethAdvanceOrderInput input = getShibbolethAdvanceOrderInput();
 		input.setIdentity(identity);
 		String rawValues = shibbolethAttributes.getAcRawValues();

@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -76,16 +77,16 @@ class IdentifierHandler {
 			log.debug("Found more then one RepositotyEntry for " + key + "=" + value + ". Keys: " + keys);
 		}
 		return entries;
-    }
+	}
 
-    /**
-     * Takes a RepostoryEntry and returns the value for a given IdenifierKey
-     *
-     * @param key
-     * @param entry
-     * @return
-     */
-	String getRepositoryEntryValue(IdentifierKey key, RepositoryEntry entry) {
+	/**
+	* Takes a RepostoryEntry and returns the values for a given IdenifierKey
+	*
+	* @param key
+	* @param entry
+	* @return
+	*/
+	Set<String> getRepositoryEntryValue(IdentifierKey key, RepositoryEntry entry) {
 		return handlers.get(key).getRepositoryEntryValue(entry);
 	}
 

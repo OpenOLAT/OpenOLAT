@@ -21,9 +21,9 @@ package org.olat.resource.accesscontrol.provider.auto.manager;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
@@ -42,6 +42,7 @@ import org.olat.resource.accesscontrol.provider.auto.AdvanceOrder.Status;
 import org.olat.resource.accesscontrol.provider.auto.AdvanceOrderInput;
 import org.olat.resource.accesscontrol.provider.auto.AutoAccessManager;
 import org.olat.resource.accesscontrol.provider.auto.IdentifierKey;
+import org.olat.resource.accesscontrol.provider.auto.manager.AdvanceOrderDAO.IdentifierKeyValue;
 import org.olat.resource.accesscontrol.provider.auto.model.AutoAccessMethod;
 import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,13 +109,16 @@ public class AutoAccessManagerImpl implements AutoAccessManager, UserDataDeletab
 	@Override
 	public Collection<AdvanceOrder> loadPendingAdvanceOrders(RepositoryEntry entry) {
 		if (entry == null) return new ArrayList<>();
-
-		Map<IdentifierKey, String> searchValues = new EnumMap<>(IdentifierKey.class);
+		
+		Set<IdentifierKeyValue> searchValues = new HashSet<>();
 		for (IdentifierKey key: IdentifierKey.values()) {
-			String value = identifierHandler.getRepositoryEntryValue(key, entry);
-			searchValues.put(key, value);
+			Set<String> values = identifierHandler.getRepositoryEntryValue(key, entry);
+			for (String value : values) {
+				IdentifierKeyValue identifierKeyValue = new IdentifierKeyValue(key, value);
+				searchValues.add(identifierKeyValue);
+			}
 		}
-
+		
 		return advanceOrderDAO.loadPendingAdvanceOrders(searchValues);
 	}
 

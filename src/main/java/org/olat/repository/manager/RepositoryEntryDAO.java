@@ -152,6 +152,18 @@ public class RepositoryEntryDAO {
 				.getResultList();
 	}
 	
+	public List<RepositoryEntry> loadRepositoryEntriesLikeExternalRef(String externalRef) {
+		if (externalRef == null) return Collections.emptyList();
+		
+		String query = "select v from repositoryentry as v where v.externalRef like (:externalRef)";
+		
+		String externalRefParamater = new StringBuilder("%").append(externalRef).append("%").toString();
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, RepositoryEntry.class)
+				.setParameter("externalRef", externalRefParamater)
+				.getResultList();
+	}
+	
 	public List<RepositoryEntry> loadRepositoryEntries(int firstResult, int maxResult) {
 		String query = "select v from repositoryentry as v order by v.key asc";
 		return dbInstance.getCurrentEntityManager()
