@@ -224,6 +224,46 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldGetAvailableAttributesOfViewerOrganisations() {
+		Organisation organisationLevel1 = organisationService.getDefaultOrganisation();
+		Organisation organisationLevel2 = qualityTestHelper.createOrganisation(organisationLevel1);
+		Organisation organisationLevel3 = qualityTestHelper.createOrganisation(organisationLevel2);
+		Organisation organisationOther = qualityTestHelper.createOrganisation();
+		
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		QualityDataCollection dataCollection = qualityService.createDataCollection(asList(organisationLevel2), formEntry);
+		finish(asList(dataCollection));
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("Analyst");
+		dataCollection.setTopicIdentity(identity);
+		qualityService.updateDataCollection(dataCollection);
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		AvailableAttributes attributes = sut.getAvailableAttributes(searchParams);
+		assertThat(attributes.isTopicIdentity()).isTrue();
+		
+		searchParams = new AnalysisSearchParameter();
+		searchParams.setDataCollectionOrganisationRefs(Collections.singletonList(organisationLevel1));
+		attributes = sut.getAvailableAttributes(searchParams);
+		assertThat(attributes.isTopicIdentity()).isTrue();
+		
+		searchParams = new AnalysisSearchParameter();
+		searchParams.setDataCollectionOrganisationRefs(Collections.singletonList(organisationLevel2));
+		attributes = sut.getAvailableAttributes(searchParams);
+		assertThat(attributes.isTopicIdentity()).isTrue();
+		
+		searchParams = new AnalysisSearchParameter();
+		searchParams.setDataCollectionOrganisationRefs(Collections.singletonList(organisationLevel3));
+		attributes = sut.getAvailableAttributes(searchParams);
+		assertThat(attributes.isTopicIdentity()).isFalse();
+		
+		searchParams = new AnalysisSearchParameter();
+		searchParams.setDataCollectionOrganisationRefs(Collections.singletonList(organisationOther));
+		attributes = sut.getAvailableAttributes(searchParams);
+		assertThat(attributes.isTopicIdentity()).isFalse();
+	}
+	
+	@Test
 	public void shouldGetAvailableAttributeForTopicIdentity() {
 		QualityDataCollection dataCollection = createFinishedDataCollection();
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("Analyst");

@@ -51,6 +51,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
 import org.olat.modules.quality.generator.QualityGeneratorService;
@@ -197,13 +198,30 @@ implements GeneratorWhiteListController, TooledController {
 				: new String[0];
 		List<CurriculumElementRef> elementRefs = Arrays.stream(keys)
 				.map(Long::valueOf)
-				.map(key -> getCurriculumElementRef(key))
+				.map(CurriculumElementRefImpl::new)
 				.collect(Collectors.toList());
 		return elementRefs;
 	}
 	
-	private static CurriculumElementRef getCurriculumElementRef(Long key) {
-		return () -> key;
+	public static void setCurriculumElementRefs(QualityGeneratorConfigs generatorConfigs, List<? extends CurriculumElementRef> elements) {
+		for (CurriculumElementRef element : elements) {
+			doAddCurriculumElement(generatorConfigs, element.getKey().toString());
+		}
+	}
+
+	private static void doAddCurriculumElement(QualityGeneratorConfigs generatorConfigs, String elementKey) {
+		if (StringHelper.containsNonWhitespace(elementKey)) {
+			String whiteListConfig = generatorConfigs.getValue(CURRICULUM_ELEMENT_WHITE_LIST);
+			if (StringHelper.containsNonWhitespace(whiteListConfig)) {
+				String[] keys = whiteListConfig.split(KEY_DELIMITER);
+				if (!Arrays.asList(keys).contains(elementKey)) {
+					whiteListConfig += KEY_DELIMITER + elementKey;
+				}
+			} else {
+				whiteListConfig = elementKey;
+			}
+			generatorConfigs.setValue(CURRICULUM_ELEMENT_WHITE_LIST, whiteListConfig);
+		}
 	}
 
 	private void doSelectCurriculumElement(UserRequest ureq) {
@@ -219,19 +237,8 @@ implements GeneratorWhiteListController, TooledController {
 	}
 
 	private void doAddCurriculumElement(String elementKey) {
-		if (StringHelper.containsNonWhitespace(elementKey)) {
-			String whiteListConfig = configs.getValue(CURRICULUM_ELEMENT_WHITE_LIST);
-			if (StringHelper.containsNonWhitespace(whiteListConfig)) {
-				String[] keys = whiteListConfig.split(KEY_DELIMITER);
-				if (!Arrays.asList(keys).contains(elementKey)) {
-					whiteListConfig += KEY_DELIMITER + elementKey;
-				}
-			} else {
-				whiteListConfig = elementKey;
-			}
-			configs.setValue(CURRICULUM_ELEMENT_WHITE_LIST, whiteListConfig);
-			loadModel();
-		}
+		doAddCurriculumElement(configs, elementKey);
+		loadModel();
 	}
 
 	private void doConfirmRemove(UserRequest ureq, List<CurriculumElement> elements) {

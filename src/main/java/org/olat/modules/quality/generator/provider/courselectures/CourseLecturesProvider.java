@@ -172,8 +172,7 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 		
 		List<QualityDataCollection> dataCollections = new ArrayList<>();
 		for (LectureBlockInfo lectureBlockInfo: infos) {
-			QualityDataCollection dataCollection = generateDataCollection(generator, configs, organisations,
-					lectureBlockInfo);
+			QualityDataCollection dataCollection = generateDataCollection(generator, configs, lectureBlockInfo);
 			dataCollections.add(dataCollection);
 		}
 		return dataCollections;
@@ -188,16 +187,18 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 	}
 	
 	private QualityDataCollection generateDataCollection(QualityGenerator generator, QualityGeneratorConfigs configs,
-			List<Organisation> organisations, LectureBlockInfo lectureBlockInfo) {
+			LectureBlockInfo lectureBlockInfo) {
 		// Load data
 		RepositoryEntry formEntry = generator.getFormEntry();
 		RepositoryEntry course = repositoryService.loadByKey(lectureBlockInfo.getCourseRepoKey());
+		Collection<Organisation> courseOrganisations = repositoryService.getOrganisations(course);
 		Identity teacher = securityManager.loadIdentityByKey(lectureBlockInfo.getTeacherKey());
 		String topicKey =  getTopicKey(configs);
 		
 		// create data collection	
 		Long generatorProviderKey = CONFIG_KEY_TOPIC_COACH.equals(topicKey)? course.getKey(): teacher.getKey();
-		QualityDataCollection dataCollection = qualityService.createDataCollection(organisations, formEntry, generator, generatorProviderKey);
+		QualityDataCollection dataCollection = qualityService.createDataCollection(courseOrganisations, formEntry,
+				generator, generatorProviderKey);
 
 		// fill in data collection attributes
 		Date dcStart = lectureBlockInfo.getLectureEndDate();

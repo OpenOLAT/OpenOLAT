@@ -22,6 +22,7 @@ package org.olat.modules.quality.analysis.manager;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -29,8 +30,10 @@ import java.util.UUID;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
 import org.junit.Test;
+import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.modules.quality.analysis.AnalysisPresentation;
 import org.olat.modules.quality.analysis.AnalysisPresentationSearchParameter;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
@@ -71,9 +74,12 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldCreatePresentation() {
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		List<OrganisationRef> dcOrganisationRefs = new ArrayList<>();
+		OrganisationRef organisationRef = new OrganisationRefImpl(123L);
+		dcOrganisationRefs.add(organisationRef);
 		dbInstance.commitAndCloseSession();
 		
-		AnalysisPresentation presentation = sut.create(formEntry);
+		AnalysisPresentation presentation = sut.create(formEntry, dcOrganisationRefs);
 		
 		SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(presentation).isNotNull();
@@ -85,6 +91,7 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 		softly.assertThat(presentation.getAnalysisSegment()).isEqualTo(AnalysisSegment.OVERVIEW);
 		softly.assertThat(presentation.getSearchParams()).isNotNull();
 		softly.assertThat(presentation.getSearchParams().getFormEntryRef().getKey()).isEqualTo(formEntry.getKey());
+		softly.assertThat(presentation.getSearchParams().getDataCollectionOrganisationRefs().get(0).getKey()).isEqualTo(organisationRef.getKey());
 		softly.assertThat(presentation.getHeatMapGrouping()).isNotNull();
 		softly.assertThat(presentation.getHeatMapInsufficientOnly()).isFalse();
 		softly.assertThat(presentation.getTemporalGroupBy()).isEqualTo(TemporalGroupBy.DATA_COLLECTION_DEADLINE_YEAR);
@@ -96,16 +103,19 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldSaveNewPresentation() {
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		List<OrganisationRef> dcOrganisationRefs = new ArrayList<>();
+		OrganisationRef organisationRef = new OrganisationRefImpl(123L);
+		dcOrganisationRefs.add(organisationRef);
 		dbInstance.commitAndCloseSession();
 		
-		AnalysisPresentation presentation = sut.create(formEntry);
+		AnalysisPresentation presentation = sut.create(formEntry, dcOrganisationRefs);
 		AnalysisSegment segment = AnalysisSegment.HEAT_MAP;
 		presentation.setAnalysisSegment(segment);
 		MultiGroupBy groupBy = MultiGroupBy.noGroupBy();
 		presentation.setHeatMapGrouping(groupBy);
 		String name = "presentation one";
 		presentation.setName(name);
-		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		AnalysisSearchParameter searchParams = presentation.getSearchParams().clone();
 		presentation.setSearchParams(searchParams);
 		TemporalGroupBy temporalGroupBy = TemporalGroupBy.DATA_COLLECTION_DEADLINE_HALF_YEAR;
 		presentation.setTemporalGroupBy(temporalGroupBy);
@@ -130,14 +140,18 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 		softly.assertThat(presentation.getTemporalGroupBy()).isEqualTo(temporalGroupBy);
 		softly.assertThat(presentation.getTrendDifference()).isEqualTo(trendDifference);
 		softly.assertThat(presentation.getRubricId()).isEqualTo(rubricId);
+		softly.assertThat(presentation.getSearchParams().getDataCollectionOrganisationRefs().get(0).getKey()).isEqualTo(organisationRef.getKey());
 		softly.assertAll();
 	}
 
 	@Test
 	public void shouldUpdatePresentation() {
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		List<OrganisationRef> dcOrganisationRefs = new ArrayList<>();
+		OrganisationRef organisationRef = new OrganisationRefImpl(123L);
+		dcOrganisationRefs.add(organisationRef);
 		dbInstance.commitAndCloseSession();
-		AnalysisPresentation presentation = sut.create(formEntry);
+		AnalysisPresentation presentation = sut.create(formEntry, dcOrganisationRefs);
 		presentation = sut.save(presentation);
 		dbInstance.commitAndCloseSession();
 		
@@ -148,6 +162,7 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 		String name = "presentation one";
 		presentation.setName(name);
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		searchParams.setDataCollectionOrganisationRefs(dcOrganisationRefs);
 		presentation.setSearchParams(searchParams);
 		TemporalGroupBy temporalGroupBy = TemporalGroupBy.DATA_COLLECTION_DEADLINE_HALF_YEAR;
 		presentation.setTemporalGroupBy(temporalGroupBy);
@@ -171,14 +186,18 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 		softly.assertThat(presentation.getTemporalGroupBy()).isEqualTo(temporalGroupBy);
 		softly.assertThat(presentation.getTrendDifference()).isEqualTo(trendDifference);
 		softly.assertThat(presentation.getRubricId()).isEqualTo(rubricId);
+		softly.assertThat(presentation.getSearchParams().getDataCollectionOrganisationRefs().get(0).getKey()).isEqualTo(organisationRef.getKey());
 		softly.assertAll();
 	}
 	
 	@Test
 	public void shouldLoadPresentation() {
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		List<OrganisationRef> dcOrganisationRefs = new ArrayList<>();
+		OrganisationRef organisationRef = new OrganisationRefImpl(123L);
+		dcOrganisationRefs.add(organisationRef);
 		dbInstance.commitAndCloseSession();
-		AnalysisPresentation presentation = sut.create(formEntry);
+		AnalysisPresentation presentation = sut.create(formEntry, dcOrganisationRefs);
 		presentation = sut.save(presentation);
 		dbInstance.commitAndCloseSession();
 		
@@ -189,6 +208,7 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 		String name = "presentation one";
 		presentation.setName(name);
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		searchParams.setDataCollectionOrganisationRefs(dcOrganisationRefs);
 		presentation.setSearchParams(searchParams);
 		TemporalGroupBy temporalGroupBy = TemporalGroupBy.DATA_COLLECTION_DEADLINE_HALF_YEAR;
 		presentation.setTemporalGroupBy(temporalGroupBy);
@@ -214,6 +234,7 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 		softly.assertThat(presentation.getTemporalGroupBy()).isEqualTo(temporalGroupBy);
 		softly.assertThat(presentation.getTrendDifference()).isEqualTo(trendDifference);
 		softly.assertThat(presentation.getRubricId()).isEqualTo(rubricId);
+		softly.assertThat(presentation.getSearchParams().getDataCollectionOrganisationRefs()).isNull();
 		softly.assertAll();
 	}
 	
@@ -221,7 +242,7 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 	public void shouldFilterByOrganisations() {
 		// Create a form with a presentation
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
-		AnalysisPresentation presentation1 = sut.create(formEntry);
+		AnalysisPresentation presentation1 = sut.create(formEntry, null);
 		presentation1 = sut.save(presentation1);
 		Organisation organisation1 = testHelper.createOrganisation();
 		testHelper.createDataCollection(organisation1, formEntry);
@@ -229,11 +250,11 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 		Organisation organisation2 = testHelper.createOrganisation();
 		testHelper.createDataCollection(organisation2, formEntry);
 		// Create a second presentation of the same form
-		AnalysisPresentation presentation2 = sut.create(formEntry);
+		AnalysisPresentation presentation2 = sut.create(formEntry, null);
 		presentation2 = sut.save(presentation2);
 		// Create a second form with an other organisation
 		RepositoryEntry formEntryOther = JunitTestHelper.createAndPersistRepositoryEntry();
-		AnalysisPresentation presentationOther = sut.create(formEntryOther);
+		AnalysisPresentation presentationOther = sut.create(formEntryOther, null);
 		presentationOther = sut.save(presentationOther);
 		Organisation organisationOther = testHelper.createOrganisation();
 		testHelper.createDataCollection(organisationOther, formEntryOther);
@@ -252,7 +273,7 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 	public void shouldFilterByAllOrganisations() {
 		// Create a form with a presentation
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
-		AnalysisPresentation presentation1 = sut.create(formEntry);
+		AnalysisPresentation presentation1 = sut.create(formEntry, null);
 		presentation1 = sut.save(presentation1);
 		Organisation organisation1 = testHelper.createOrganisation();
 		testHelper.createDataCollection(organisation1, formEntry);
@@ -260,11 +281,11 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 		Organisation organisation2 = testHelper.createOrganisation();
 		testHelper.createDataCollection(organisation2, formEntry);
 		// Create a second presentation of the same form
-		AnalysisPresentation presentation2 = sut.create(formEntry);
+		AnalysisPresentation presentation2 = sut.create(formEntry, null);
 		presentation2 = sut.save(presentation2);
 		// Create a second form with an other organisation
 		RepositoryEntry formEntryOther = JunitTestHelper.createAndPersistRepositoryEntry();
-		AnalysisPresentation presentationOther = sut.create(formEntryOther);
+		AnalysisPresentation presentationOther = sut.create(formEntryOther, null);
 		presentationOther = sut.save(presentationOther);
 		Organisation organisationOther = testHelper.createOrganisation();
 		testHelper.createDataCollection(organisationOther, formEntryOther);
@@ -282,7 +303,7 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 	public void shouldFilterByNoOrganisations() {
 		// Create a form with a presentation
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
-		AnalysisPresentation presentation1 = sut.create(formEntry);
+		AnalysisPresentation presentation1 = sut.create(formEntry, null);
 		presentation1 = sut.save(presentation1);
 		Organisation organisation1 = testHelper.createOrganisation();
 		testHelper.createDataCollection(organisation1, formEntry);
@@ -290,11 +311,11 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 		Organisation organisation2 = testHelper.createOrganisation();
 		testHelper.createDataCollection(organisation2, formEntry);
 		// Create a second presentation of the same form
-		AnalysisPresentation presentation2 = sut.create(formEntry);
+		AnalysisPresentation presentation2 = sut.create(formEntry, null);
 		presentation2 = sut.save(presentation2);
 		// Create a second form with an other organisation
 		RepositoryEntry formEntryOther = JunitTestHelper.createAndPersistRepositoryEntry();
-		AnalysisPresentation presentationOther = sut.create(formEntryOther);
+		AnalysisPresentation presentationOther = sut.create(formEntryOther, null);
 		presentationOther = sut.save(presentationOther);
 		Organisation organisationOther = testHelper.createOrganisation();
 		testHelper.createDataCollection(organisationOther, formEntryOther);
@@ -311,7 +332,7 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 	public void shouldDeletePresentation() {
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commitAndCloseSession();
-		AnalysisPresentation presentation = sut.create(formEntry);
+		AnalysisPresentation presentation = sut.create(formEntry, null);
 		presentation = sut.save(presentation);
 		dbInstance.commitAndCloseSession();
 		

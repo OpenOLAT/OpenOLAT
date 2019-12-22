@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementType;
@@ -45,7 +46,8 @@ public interface QualityAnalysisService {
 
 	public List<EvaluationFormView> loadEvaluationForms(EvaluationFormViewSearchParams searchParams);
 	
-	public AnalysisPresentation createPresentation(RepositoryEntry formEntry);
+	public AnalysisPresentation createPresentation(RepositoryEntry formEntry,
+			List<? extends OrganisationRef> dataCollectionOrganisationRefs);
 	
 	public AnalysisPresentation clonePresentation(AnalysisPresentation presentation);
 

@@ -24,6 +24,7 @@ import static org.olat.modules.quality.generator.ProviderHelper.addDays;
 import static org.olat.modules.quality.generator.ProviderHelper.subtractDays;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -149,17 +150,19 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 		
 		List<QualityDataCollection> dataCollections = new ArrayList<>();
 		for (CurriculumElement element : elements) {
-			QualityDataCollection dataCollection = generateDataCollection(generator, configs, organisations, element);
+			QualityDataCollection dataCollection = generateDataCollection(generator, configs, element);
 			dataCollections.add(dataCollection);
 		}
 		return dataCollections;
 	}
 
 	private QualityDataCollection generateDataCollection(QualityGenerator generator, QualityGeneratorConfigs configs,
-			List<Organisation> organisations, CurriculumElement curriculumElement) {
+			CurriculumElement curriculumElement) {
 		RepositoryEntry formEntry = generator.getFormEntry();
 		Long generatorProviderKey = curriculumElement.getKey();
-		QualityDataCollection dataCollection = qualityService.createDataCollection(organisations, formEntry, generator, generatorProviderKey);
+		Organisation curriculumOrganisation = curriculumElement.getCurriculum().getOrganisation();
+		QualityDataCollection dataCollection = qualityService.createDataCollection(
+				Collections.singletonList(curriculumOrganisation), formEntry, generator, generatorProviderKey);
 
 		String dueDateType = configs.getValue(CONFIG_KEY_DUE_DATE_TYPE);
 		String dueDateDays = configs.getValue(CONFIG_KEY_DUE_DATE_DAYS);
@@ -234,9 +237,11 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 		searchParams.setOrganisationRefs(organisations);
 		
 		String ceTypeKeyString = configs.getValue(CONFIG_KEY_CURRICULUM_ELEMENT_TYPE);
-		Long ceTypeKey = Long.valueOf(ceTypeKeyString);
-		searchParams.setCeTypeKey(ceTypeKey);
-
+		if (StringHelper.containsNonWhitespace(ceTypeKeyString)) {
+			Long ceTypeKey = Long.valueOf(ceTypeKeyString);
+			searchParams.setCeTypeKey(ceTypeKey);
+		}
+		
 		String dueDateDays = configs.getValue(CONFIG_KEY_DUE_DATE_DAYS);
 		Date dueDateFrom = subtractDays(fromDate, dueDateDays);
 		searchParams.setFrom(dueDateFrom);

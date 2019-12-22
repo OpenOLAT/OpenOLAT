@@ -28,6 +28,7 @@ import java.util.Map;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -64,9 +65,10 @@ class GroupByNameCache {
 		CoreSpringFactory.autowireObject(this);
 	}
 	
-	void init(RepositoryEntryRef formEntryRef) {
+	void init(RepositoryEntryRef formEntryRef, List<? extends OrganisationRef> dataCollectionOrganisationRefs) {
 		if (changed(formEntryRef)) {
 			searchParams.setFormEntryRef(formEntryRef);
+			searchParams.setDataCollectionOrganisationRefs(dataCollectionOrganisationRefs);
 			cache.clear();
 		}
 	}

@@ -56,7 +56,7 @@ class AnalysisPresentationDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	AnalysisPresentation create(RepositoryEntry formEntry) {
+	AnalysisPresentation create(RepositoryEntry formEntry, List<? extends OrganisationRef> dataCollectionOrganisationRefs) {
 		AnalysisPresentationImpl presentation = new AnalysisPresentationImpl();
 		presentation.setCreationDate(new Date());
 		presentation.setLastModified(presentation.getCreationDate());
@@ -64,6 +64,7 @@ class AnalysisPresentationDAO {
 		presentation.setAnalysisSegment(AnalysisSegment.OVERVIEW);
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
 		searchParams.setFormEntryRef(formEntry);
+		searchParams.setDataCollectionOrganisationRefs(dataCollectionOrganisationRefs);
 		presentation.setSearchParams(searchParams);
 		presentation.setHeatMapGrouping(MultiGroupBy.noGroupBy());
 		presentation.setHeatMapInsufficientOnly(Boolean.FALSE);
@@ -75,10 +76,15 @@ class AnalysisPresentationDAO {
 	AnalysisPresentation save(AnalysisPresentation presentation) {
 		toXMLs(presentation);
 		
+		AnalysisPresentation savedPresentation = null;
 		if (presentation.getKey() == null) {
-			return saveNew(presentation);
+			savedPresentation = saveNew(presentation);
+		} else {
+			savedPresentation = saveExisting(presentation);
 		}
-		return saveExisting(presentation);
+		savedPresentation.getSearchParams().setDataCollectionOrganisationRefs(
+				presentation.getSearchParams().getDataCollectionOrganisationRefs());
+		return savedPresentation;
 	}
 
 	private AnalysisPresentation saveNew(AnalysisPresentation presentation) {

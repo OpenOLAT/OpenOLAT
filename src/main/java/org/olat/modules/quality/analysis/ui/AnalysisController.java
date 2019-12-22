@@ -152,6 +152,8 @@ public class AnalysisController extends BasicController implements TooledControl
 		this.form = evaluationFormManager.loadForm(presentation.getFormEntry());
 		this.storage = evaluationFormManager.loadStorage(presentation.getFormEntry());
 		
+		presentation.getSearchParams().setDataCollectionOrganisationRefs(secCallback.getViewAnalysisOrganisationRefs());
+		
 		segmentButtonsCmp = new ButtonGroupComponent("segments");
 		overviewReportLink = LinkFactory.createLink("segments.table.overview", getTranslator(), this);
 		segmentButtonsCmp.addButton(overviewReportLink, true);
@@ -526,6 +528,7 @@ public class AnalysisController extends BasicController implements TooledControl
 		presentation = analysisService.savePresentation(editetPresentation);
 		// refresh to avoid LazyInitializationException if access formEntry
 		presentation = analysisService.loadPresentationByKey(presentation);
+		presentation.getSearchParams().setDataCollectionOrganisationRefs(secCallback.getViewAnalysisOrganisationRefs());
 		doShowHildePresentationLinks();
 		stackPanel.changeDisplayname(presentation.getName());
 	}
