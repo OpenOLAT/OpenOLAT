@@ -3,8 +3,6 @@ package org.olat.core.commons.services.vfs.manager;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.services.vfs.VFSMetadata;
-import org.olat.core.commons.services.vfs.VFSStats;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
