@@ -188,7 +188,12 @@ public class XSSFilterParamTest {
 			{ "<a href=\"media/LTT ZUJ SCM 09.09.2019.pdf\">doc</a>", "<a href=\"media/LTT%20ZUJ%20SCM%2009.09.2019.pdf\">doc</a>" },
 			{ "<a href=\"media/LTT%20ZUJ%20SCM%2009.09.2019.pdf\">doc</a>", "<a href=\"media/LTT%20ZUJ%20SCM%2009.09.2019.pdf\">doc</a>" },
 			{ "<p><img class=\"b_float_left\" src=\"media/IMG 1484.jpg\" width=\"74\" height=\"74\" /></p>", "<p><img class=\"b_float_left\" src=\"media/IMG%201484.jpg\" width=\"74\" height=\"74\" /></p>" },
-			{ null, "" } // be tolerant
+			// link with anchor
+			{ "<a href=\"#Summary\">Summary</a>", "<a href=\"#Summary\">Summary</a>" },
+			{ "<a href=\"#Title_1\">Title 1</a>", "<a href=\"#Title_1\">Title 1</a>" },
+			{ "<a href=\"#Title 1\">Title with space</a>", "<a>Title with space</a>" },
+			{ "<a href=\"#Title#1\">Title with #</a>", "<a>Title with #</a>" },
+			{ null, "" } // be tolerant	
         });
     }
     
