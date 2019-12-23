@@ -8,7 +8,6 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.adobeconnect.model.AdobeConnectSco;
 
 public class LargeFilesNameCellRenderer implements FlexiCellRenderer{
 	@Override

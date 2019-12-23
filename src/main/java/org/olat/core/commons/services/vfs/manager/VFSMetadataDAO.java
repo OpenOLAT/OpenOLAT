@@ -327,7 +327,7 @@ public class VFSMetadataDAO {
 			Date createdAtNewer, Date createdAtOlder, 
 			Date editedAtNewer, Date editedAtOlder, 
 			Date lockedAtNewer, Date lockedAtOlder,
-			Boolean trashed, Boolean revision, Boolean locked,
+			Boolean deleted, Boolean locked,
 			Integer downloadCount, Long revisionCount, 
 			Integer size) {
 		StringBuilder sb = new StringBuilder(256);
@@ -354,7 +354,7 @@ public class VFSMetadataDAO {
 		if(lockedAtOlder != null) {
 			sb.append(" and metadata.lockedDate<=:lockedAtOlder");
 		}
-		if(trashed != null) {
+		if(deleted != null) {
 			sb.append(" and metadata.deleted=:trashed");
 		}
 		if(locked != null) {
@@ -392,8 +392,8 @@ public class VFSMetadataDAO {
 		if(lockedAtOlder != null) {
 			query.setParameter("lockedAtOlder", lockedAtOlder);
 		}
-		if(trashed != null) {
-			query.setParameter("trashed", trashed);
+		if(deleted != null) {
+			query.setParameter("trashed", deleted);
 		}
 		if(locked != null) {
 			query.setParameter("locked", locked);

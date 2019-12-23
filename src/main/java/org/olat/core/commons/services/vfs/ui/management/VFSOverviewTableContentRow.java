@@ -1,7 +1,6 @@
 package org.olat.core.commons.services.vfs.ui.management;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.link.Link;
 
 public class VFSOverviewTableContentRow {
 	private final String name;

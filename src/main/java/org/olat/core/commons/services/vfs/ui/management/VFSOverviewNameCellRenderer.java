@@ -27,7 +27,7 @@ public class VFSOverviewNameCellRenderer implements FlexiCellRenderer{
 			break;
 		case "vfs.overview.total":
 			target.append(CSSHelper.getIcon(CSSHelper.CSS_CLASS_GLOBE));
-
+			break;
 		default:
 			break;
 		}

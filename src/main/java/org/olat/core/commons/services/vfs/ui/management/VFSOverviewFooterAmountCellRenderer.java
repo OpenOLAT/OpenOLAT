@@ -6,17 +6,14 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.Formatter;
-import org.olat.core.util.StringHelper;
-import org.olat.modules.adobeconnect.model.AdobeConnectSco;
 
 public class VFSOverviewFooterAmountCellRenderer implements FlexiCellRenderer{
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
-		target.append("<b>");
+		target.append("<strong>");
 		target.append(Formatter.makeReadable((Long) cellValue));
-		target.append("</b>");
+		target.append("</strong>");
 	}
 }
