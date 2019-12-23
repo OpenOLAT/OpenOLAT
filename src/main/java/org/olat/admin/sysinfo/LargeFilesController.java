@@ -38,6 +38,7 @@ import org.olat.admin.sysinfo.model.LargeFilesTableModel.LargeFilesTableColumns;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.vfs.VFSFilterKeys;
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryModule;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSRevision;
 import org.olat.core.gui.UserRequest;
@@ -112,6 +113,8 @@ public class LargeFilesController extends FormBasicController implements Extende
 
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
+	@Autowired
+	private VFSRepositoryModule vfsRepositoryModule;
 
 
 	public LargeFilesController(UserRequest ureq, WindowControl wControl) {
@@ -297,7 +300,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.key));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.uuid));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, LargeFilesTableColumns.name, new LargeFilesNameCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, LargeFilesTableColumns.size, new LargeFilesSizeCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, LargeFilesTableColumns.size, new LargeFilesSizeCellRenderer(vfsRepositoryModule)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, LargeFilesTableColumns.path));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.age, new LargeFilesAgeCellRenderer()));
 

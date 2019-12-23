@@ -19,6 +19,7 @@
  */
 package org.olat.admin.sysinfo.gui;
 
+import org.olat.core.commons.services.vfs.VFSRepositoryModule;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.render.Renderer;
@@ -36,6 +37,12 @@ import org.olat.core.util.StringHelper;
  *
  */
 public class LargeFilesSizeCellRenderer implements FlexiCellRenderer{
+	VFSRepositoryModule vfsRepositoryModule;
+	
+	public LargeFilesSizeCellRenderer(VFSRepositoryModule vfsRepositoryModule) {
+		this.vfsRepositoryModule = vfsRepositoryModule;
+	}
+	
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
@@ -44,9 +51,9 @@ public class LargeFilesSizeCellRenderer implements FlexiCellRenderer{
 			String color;
 			Long size = ((Number)cellValue).longValue();
 
-			if(size < 5000) {
+			if(size < vfsRepositoryModule.getLowerBorder()) {
 				color = "okay";
-			} else if(size < 10000) {
+			} else if(size < vfsRepositoryModule.getUpperBorder()) {
 				color = "warning";
 			} else {
 				color = "large";
