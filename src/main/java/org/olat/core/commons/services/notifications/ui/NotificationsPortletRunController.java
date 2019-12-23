@@ -66,6 +66,7 @@ import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.event.PersistsEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -79,7 +80,6 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 	private static final String CMD_LAUNCH = "cmd.launch";
 
 	private TableController tableCtr;
-	//private NotificationsMiniTableModel notificationListModel;
 	private NotificationsPortletTableDataModel notificationListModel;
 	private VelocityContainer notificationsVC;	
 	private boolean needsModelReload = false;
@@ -88,9 +88,9 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 
 	private Date compareDate;
 
+	@Autowired
 	private NotificationsManager man;
-	
-	
+
 	/**
 	 * Constructor
 	 * @param ureq
@@ -104,7 +104,7 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 		sortingTermsList.add(SortingCriteria.ALPHABETICAL_SORTING);
 		sortingTermsList.add(SortingCriteria.DATE_SORTING);
 		
-		this.notificationsVC = this.createVelocityContainer("notificationsPortlet");		
+		notificationsVC = createVelocityContainer("notificationsPortlet");		
 		showAllLink = LinkFactory.createLink("notificationsPortlet.showAll", notificationsVC, this);
 		showAllLink.setIconRightCSS("o_icon o_icon_start");
 		
@@ -124,13 +124,13 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("notificationsPortlet.bgname", 0, CMD_LAUNCH, trans.getLocale()));
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("notificationsPortlet.type", 1, null, trans.getLocale(), ColumnDescriptor.ALIGNMENT_RIGHT));
 	
-		this.sortingCriteria = getPersistentSortingConfiguration(ureq);
-		man = NotificationsManager.getInstance();
+		sortingCriteria = getPersistentSortingConfiguration(ureq);
+
 		// default use the interval
 		compareDate = man.getCompareDateFromInterval(man.getUserIntervalOrDefault(ureq.getIdentity()));
 		reloadModel(sortingCriteria);
 
-		this.notificationsVC.put("table", tableCtr.getInitialComponent());
+		notificationsVC.put("table", tableCtr.getInitialComponent());
 		// notify us whenever we will be shown on screen shortly, so that we can reload the model if we received a subscription changed event in the meantime
 		ComponentUtil.registerForValidateEvents(notificationsVC, this);
 		
@@ -167,11 +167,8 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 		return convertedList;
 	}
 	
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.generic.portal.AbstractPortletRunController#reloadModel(org.olat.core.gui.UserRequest, org.olat.core.gui.control.generic.portal.SortingCriteria)
-	 */
-  protected void reloadModel(SortingCriteria sortingCriteria) {
+	@Override
+	protected void reloadModel(SortingCriteria sortingCriteria) {
   	if (sortingCriteria.getSortingType() == SortingCriteria.AUTO_SORTING) {
   		Map<Subscriber,SubscriptionInfo> subscriptionMap = NotificationHelper.getSubscriptionMap(getIdentity(), getLocale(), true, compareDate);
 			
@@ -193,19 +190,14 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 		}  	
   }
 	
-  /**
-   * 
-   * @see org.olat.core.gui.control.generic.portal.AbstractPortletRunController#reloadModel(org.olat.core.gui.UserRequest, java.util.List)
-   */
+	@Override
 	protected void reloadModel(List<PortletEntry<Subscriber>> sortedItems) {
 		Map<Subscriber, SubscriptionInfo> subscriptionMap = NotificationHelper.getSubscriptionMap(getIdentity(), getLocale(), true, compareDate);
 		notificationListModel = new NotificationsPortletTableDataModel(sortedItems, getLocale(), subscriptionMap);
 		tableCtr.setTableDataModel(notificationListModel);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == showAllLink){
 			// activate homes tab in top navigation and active bookmarks menu item
@@ -220,9 +212,7 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.ControllerEventListener#dispatchEvent(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		super.event(ureq, source, event);
 		if (source == tableCtr) {
@@ -240,14 +230,13 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 		} 
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		super.doDispose();
 		man.deregisterAsListener(this);
 	}
 
+	@Override
 	public void event(Event event) {
 		// check if our tablemodel -is- affected (see NotificationsManager where the event is fired),
 		// (if we are subscriber of the publisher which data has changed)
@@ -374,9 +363,7 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 				this.subToSubInfo = subToSubInfo;
 			}
 
-			/**
-			 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
-			 */
+			@Override
 			public final Object getValueAt(int row, int col) {
 				PortletEntry<Subscriber> entry = getObject(row);
 				Subscriber subscriber = entry.getValue();

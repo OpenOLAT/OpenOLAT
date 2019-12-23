@@ -38,11 +38,13 @@ import org.olat.repository.model.RepositoryEntryRefImpl;
 /**
  * 
  * Initial date: 04.09.2018<br>
+ * 
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
 public class AnalysisSearchParameter {
-	
+
+	private transient List<? extends OrganisationRef> dataCollectionOrganisationRefs;
 	private RepositoryEntryRef formEntryRef;
 	private Date dateRangeFrom;
 	private Date dateRangeTo;
@@ -77,6 +79,14 @@ public class AnalysisSearchParameter {
 	private boolean contextCurriculumOrganisationNull;
 	private boolean contextTaxonomyLevelNull;
 	private boolean contextLocationNull;
+
+	public List<? extends OrganisationRef> getDataCollectionOrganisationRefs() {
+		return dataCollectionOrganisationRefs;
+	}
+
+	public void setDataCollectionOrganisationRefs(List<? extends OrganisationRef> dataCollectionOrganisationRefs) {
+		this.dataCollectionOrganisationRefs = dataCollectionOrganisationRefs;
+	}
 
 	public RepositoryEntryRef getFormEntryRef() {
 		return formEntryRef;
@@ -163,7 +173,8 @@ public class AnalysisSearchParameter {
 		return contextCurriculumOrganisationRefs;
 	}
 
-	public void setContextCurriculumOrganisationRefs(List<? extends OrganisationRef> contextCurriculumOrganisationRefs) {
+	public void setContextCurriculumOrganisationRefs(
+			List<? extends OrganisationRef> contextCurriculumOrganisationRefs) {
 		this.contextCurriculumOrganisationRefs = contextCurriculumOrganisationRefs;
 	}
 
@@ -198,7 +209,7 @@ public class AnalysisSearchParameter {
 	public void setContextCurriculumRefs(Collection<? extends CurriculumRef> contextCurriculumRefs) {
 		this.contextCurriculumRefs = contextCurriculumRefs;
 	}
-	
+
 	public CurriculumElementRef getContextCurriculumElementRef() {
 		return contextCurriculumElementRef;
 	}
@@ -356,35 +367,24 @@ public class AnalysisSearchParameter {
 	public AnalysisSearchParameter clone() {
 		AnalysisSearchParameter clone = new AnalysisSearchParameter();
 		clone.formEntryRef = this.formEntryRef;
+		clone.dataCollectionOrganisationRefs = new ArrayList<>(this.dataCollectionOrganisationRefs);
 		clone.dateRangeFrom = this.dateRangeFrom;
 		clone.dateRangeTo = this.dateRangeTo;
-		clone.dataCollectionRefs = this.dataCollectionRefs != null
-				? new ArrayList<>(this.dataCollectionRefs)
+		clone.dataCollectionRefs = this.dataCollectionRefs != null ? new ArrayList<>(this.dataCollectionRefs) : null;
+		clone.topicIdentityRefs = this.topicIdentityRefs != null ? new ArrayList<>(this.topicIdentityRefs) : null;
+		clone.topicOrganisationRefs = this.topicOrganisationRefs != null ? new ArrayList<>(this.topicOrganisationRefs)
 				: null;
-		clone.topicIdentityRefs = this.topicIdentityRefs != null
-				? new ArrayList<>(this.topicIdentityRefs)
-				: null;
-		clone.topicOrganisationRefs = this.topicOrganisationRefs != null
-				? new ArrayList<>(this.topicOrganisationRefs)
-				: null;
-		clone.topicCurriculumRefs = this.topicCurriculumRefs != null
-				? new ArrayList<>(this.topicCurriculumRefs)
-				: null;
+		clone.topicCurriculumRefs = this.topicCurriculumRefs != null ? new ArrayList<>(this.topicCurriculumRefs) : null;
 		clone.topicCurriculumElementRefs = this.topicCurriculumElementRefs != null
 				? new ArrayList<>(this.topicCurriculumElementRefs)
 				: null;
-		clone.topicRepositoryRefs = this.topicRepositoryRefs != null
-				? new ArrayList<>(this.topicRepositoryRefs)
-				: null;
-		clone.contextLocations = this.contextLocations != null
-				? new ArrayList<>(this.contextLocations)
-				: null;
+		clone.topicRepositoryRefs = this.topicRepositoryRefs != null ? new ArrayList<>(this.topicRepositoryRefs) : null;
+		clone.contextLocations = this.contextLocations != null ? new ArrayList<>(this.contextLocations) : null;
 		clone.contextCurriculumElementRef = this.contextCurriculumElementRef;
 		clone.contextOrganisationRefs = this.contextOrganisationRefs != null
 				? new ArrayList<>(this.contextOrganisationRefs)
 				: null;
-		clone.contextCurriculumRefs = this.contextCurriculumRefs != null
-				? new ArrayList<>(this.contextCurriculumRefs)
+		clone.contextCurriculumRefs = this.contextCurriculumRefs != null ? new ArrayList<>(this.contextCurriculumRefs)
 				: null;
 		clone.contextCurriculumElementRef = this.contextCurriculumElementRef;
 		clone.contextCurriculumElementRefs = this.contextCurriculumElementRefs != null
@@ -401,12 +401,8 @@ public class AnalysisSearchParameter {
 		clone.contextTaxonomyLevelRefs = this.contextTaxonomyLevelRefs != null
 				? new ArrayList<>(this.contextTaxonomyLevelRefs)
 				: null;
-		clone.seriesIndexes = this.seriesIndexes != null
-				? new ArrayList<>(this.seriesIndexes)
-				: null;
-		clone.contextRoles = this.contextRoles != null
-				? new ArrayList<>(this.contextRoles)
-				: null;
+		clone.seriesIndexes = this.seriesIndexes != null ? new ArrayList<>(this.seriesIndexes) : null;
+		clone.contextRoles = this.contextRoles != null ? new ArrayList<>(this.contextRoles) : null;
 		clone.withUserInfosOnly = this.withUserInfosOnly;
 		clone.topicIdentityNull = this.topicIdentityNull;
 		clone.topicOrganisationNull = this.topicOrganisationNull;

@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.events.NewIdentityCreatedEvent;
 import org.olat.core.commons.services.notifications.NotificationsManager;
@@ -40,7 +41,6 @@ import org.olat.core.commons.services.vfs.manager.VFSMetadataDAO;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -113,6 +113,8 @@ public class LibraryManagerImpl implements LibraryManager, InitializingBean, Gen
 	private RepositoryEntryDAO repositoryEntryDao;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
+	@Autowired
+	private NotificationsManager notificationsManager;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -347,7 +349,7 @@ public class LibraryManagerImpl implements LibraryManager, InitializingBean, Gen
 
 		Long oldKey = oldRepoEntry.getKey();
 		SubscriptionContext oldContext = new SubscriptionContext(RES_NAME, oldKey, oldKey.toString());
-		Publisher publisher = NotificationsManager.getInstance().getPublisher(oldContext);
+		Publisher publisher = notificationsManager.getPublisher(oldContext);
 		if(publisher != null) {
 			if(newRepoEntry != null) {
 				Long newKey = newRepoEntry.getKey();
@@ -356,7 +358,7 @@ public class LibraryManagerImpl implements LibraryManager, InitializingBean, Gen
 				//FIXME SR Publisher
 				//				NotificationsManager.getInstance().updatePublisher(publisher);
 			} else {
-				NotificationsManager.getInstance().delete(oldContext);
+				notificationsManager.delete(oldContext);
 			}
 		}
 	}
@@ -377,25 +379,25 @@ public class LibraryManagerImpl implements LibraryManager, InitializingBean, Gen
 	public Subscriber getSubscriber(Identity identity) {
 		SubscriptionContext context = getSubscriptionContext();
 		if(context == null) return null;
-		Publisher publisher = NotificationsManager.getInstance().getPublisher(context);
+		Publisher publisher = notificationsManager.getPublisher(context);
 		if(publisher == null) {
 			return null;
 		}
-		return NotificationsManager.getInstance().getSubscriber(identity, publisher);
+		return notificationsManager.getSubscriber(identity, publisher);
 	}
 	
 	public void subscribe(Identity identity) {
 		PublisherData data = getPublisherData();
 		SubscriptionContext context = getSubscriptionContext();
 		if(context != null) {
-			NotificationsManager.getInstance().subscribe(identity, context, data);
+			notificationsManager.subscribe(identity, context, data);
 		}
 	}
 	
 	public void unsubscribe(Identity identity) {
 		SubscriptionContext context = getSubscriptionContext();
 		if(context != null) {
-			NotificationsManager.getInstance().unsubscribe(identity, context);
+			notificationsManager.unsubscribe(identity, context);
 		}
 	}
 	

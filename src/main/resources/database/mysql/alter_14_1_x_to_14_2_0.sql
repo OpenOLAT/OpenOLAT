@@ -15,3 +15,7 @@ alter table o_gta_task_revision ENGINE = InnoDB;
 
 alter table o_gta_task_revision add constraint task_rev_to_task_idx foreign key (fk_task) references o_gta_task (id);
 alter table o_gta_task_revision add constraint task_rev_to_ident_idx foreign key (fk_comment_author) references o_bs_identity (id);
+
+
+-- notifications
+alter table o_noti_sub add column subenabled bit default 1;

@@ -56,6 +56,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Basic abstract notification-handler for all task-notification-handler. 
@@ -65,10 +66,9 @@ public abstract class AbstractTaskNotificationHandler {
 	
 	private static final Logger log = Tracing.createLoggerFor(AbstractTaskNotificationHandler.class);
 
-	/**
-	 * @see org.olat.core.commons.services.notifications.NotificationsHandler#createSubscriptionInfo(org.olat.core.commons.services.notifications.Subscriber,
-	 *      java.util.Locale, java.util.Date)
-	 */
+	@Autowired
+	private NotificationsManager notificationsManager;
+	
 	public SubscriptionInfo createSubscriptionInfo(Subscriber subscriber, Locale locale, Date compareDate) {
 		Publisher p = subscriber.getPublisher();
 		Date latestNews = p.getLatestNewsDate();
@@ -77,7 +77,7 @@ public abstract class AbstractTaskNotificationHandler {
 	
 		// there could be news for me, investigate deeper
 		try {
-			if (NotificationsManager.getInstance().isPublisherValid(p) && compareDate.before(latestNews)) {
+			if (notificationsManager.isPublisherValid(p) && compareDate.before(latestNews)) {
 				String folderRoot = p.getData();
 				
 				boolean logDebug = log.isDebugEnabled();
@@ -90,10 +90,10 @@ public abstract class AbstractTaskNotificationHandler {
 				RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(OresHelper.createOLATResourceableInstance("CourseModule", p.getResId()), false);
 				if(re == null) {
 					if(!checkPublisher(p)) {
-						return NotificationsManager.getInstance().getNoSubscriptionInfo();
+						return notificationsManager.getNoSubscriptionInfo();
 					}
 				} else if(re.getEntryStatus().decommissioned()) {
-					return NotificationsManager.getInstance().getNoSubscriptionInfo();
+					return notificationsManager.getNoSubscriptionInfo();
 				}
 				
 				String displayName = re == null ? "" : re.getDisplayname();
@@ -119,12 +119,12 @@ public abstract class AbstractTaskNotificationHandler {
 					si.addSubscriptionListItem(subListItem);						
 				}
 			} else {
-				si = NotificationsManager.getInstance().getNoSubscriptionInfo();
+				si = notificationsManager.getNoSubscriptionInfo();
 			}
 		} catch (Exception e) {
 			log.error("Cannot create task notifications for subscriber: " + subscriber.getKey(), e);
 			checkPublisher(p);
-			si = NotificationsManager.getInstance().getNoSubscriptionInfo();
+			si = notificationsManager.getNoSubscriptionInfo();
 		}
 		return si;
 	}
@@ -159,7 +159,7 @@ public abstract class AbstractTaskNotificationHandler {
 		try {
 			if ("CourseModule".equals(p.getResName()) && !NotificationsUpgradeHelper.checkCourse(p)) {
 				log.info("deactivating publisher with key; " + p.getKey());
-				NotificationsManager.getInstance().deactivate(p);
+				notificationsManager.deactivate(p);
 				return false;
 			}
 		} catch (Exception e) {

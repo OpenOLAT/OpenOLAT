@@ -72,6 +72,8 @@ public class CmdEditMeta extends BasicController implements FolderCommand {
 	private VFSLockManager vfsLockManager;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
+	@Autowired
+	private NotificationsManager notificationsManager;
 
 	protected CmdEditMeta(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, Util.createPackageTranslator(MetaInfoController.class, ureq.getLocale()));
@@ -194,7 +196,7 @@ public class CmdEditMeta extends BasicController implements FolderCommand {
 		if(secCallback != null) {
 			SubscriptionContext subsContext = secCallback.getSubscriptionContext();
 			if (subsContext != null) {
-				NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity(), true);
+				notificationsManager.markPublisherNews(subsContext, ureq.getIdentity(), true);
 			}
 		}
 		fireEvent(ureq, FOLDERCOMMAND_FINISHED);

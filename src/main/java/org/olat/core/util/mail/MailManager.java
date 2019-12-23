@@ -30,7 +30,6 @@ import javax.mail.internet.MimeMessage;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.services.notifications.PublisherData;
-import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
 import org.olat.core.util.mail.model.DBMail;
@@ -52,8 +51,7 @@ public interface MailManager {
 	public SubscriptionContext getSubscriptionContext();
 	
 	public PublisherData getPublisherData();
-	
-	public Subscriber getSubscriber(Identity identity);
+
 	
 	/**
 	 * Subscribe to mail news (asynchronously).

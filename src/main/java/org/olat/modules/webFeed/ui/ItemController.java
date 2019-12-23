@@ -91,7 +91,7 @@ public class ItemController extends BasicController implements Activateable2 {
 		if (displayConfig.isShowCRInDetails()) {
 			boolean anonym = ureq.getUserSession().getRoles().isGuestOnly();
 			CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), callback.mayEditMetadata(), anonym);
-			commentsCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(), feed, item.getGuid(), secCallback, true, true, true);
+			commentsCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(), feed, item.getGuid(), secCallback, null, true, true, true);
 			listenTo(commentsCtr);
 			vcItem.put("commentsAndRating", commentsCtr.getInitialComponent());				
 		}

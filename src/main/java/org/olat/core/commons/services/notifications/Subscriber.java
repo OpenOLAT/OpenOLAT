@@ -41,32 +41,37 @@ public interface Subscriber extends Persistable, CreateInfo, ModifiedInfo {
 	/**
 	 * @return the identity
 	 */
-	public abstract Identity getIdentity();
+	public Identity getIdentity();
 
 	/**
 	 * @param identity
 	 */
-	public abstract void setIdentity(Identity identity);
+	public void setIdentity(Identity identity);
 
 	/**
 	 * @return the latest date the user got an email concering this subscription here
 	 */
-	public abstract Date getLatestEmailed();
+	public Date getLatestEmailed();
 
 	/**
 	 * @param latestEmailed
 	 */
-	public abstract void setLatestEmailed(Date latestEmailed);
-	
-	
+	public void setLatestEmailed(Date latestEmailed);
 	
 	/**
 	 * @return the publisher
 	 */
-	public abstract Publisher getPublisher();
+	public Publisher getPublisher();
 
 	/**
 	 * @param publisher
 	 */
-	public abstract void setPublisher(Publisher publisher);
+	public void setPublisher(Publisher publisher);
+	
+	/**
+	 * @return true if the subscriber is enabled, false if it needs to be ignored
+	 */
+	public boolean isEnabled();
+	
+	public void setEnabled(boolean enabled);
 }

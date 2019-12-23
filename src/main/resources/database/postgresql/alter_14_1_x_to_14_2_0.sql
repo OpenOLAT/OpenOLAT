@@ -19,3 +19,7 @@ create index idx_task_rev_to_ident_idx on o_gta_task_revision (fk_comment_author
 
 -- livestream
 create index idx_log_livestream_idx on o_loggingtable(targetresid, creationdate, parentresid, user_id) where actionverb = 'launch' and targetrestype = 'livestream';
+
+
+-- notifications
+alter table o_noti_sub add column subenabled bool default true;

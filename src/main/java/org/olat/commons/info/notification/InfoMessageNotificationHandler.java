@@ -83,7 +83,7 @@ public class InfoMessageNotificationHandler implements NotificationsHandler {
 		// do not try to create a subscription info if state is deleted - results in
 		// exceptions, course
 		// can't be loaded when already deleted
-		if (NotificationsManager.getInstance().isPublisherValid(p) && compareDate.before(latestNews)) {
+		if (notificationsManager.isPublisherValid(p) && compareDate.before(latestNews)) {
 		
 			try {
 				final Long resId = subscriber.getPublisher().getResId();

@@ -20,6 +20,7 @@
 package org.olat.core.commons.services.notifications.ui;
 
 import org.olat.NewControllerFactory;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationsHandler;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
@@ -41,11 +42,14 @@ import org.olat.core.gui.translator.Translator;
  */
 class NotificationSubscriptionTableDataModel extends DefaultTableDataModel<Subscriber> {
 	Translator trans;
+	
+	private final NotificationsManager notificationsManager;
 
 	NotificationSubscriptionTableDataModel(Translator translator) {
 		super(null); // set at a later stage
 		this.trans = translator;
-		this.setLocale(trans.getLocale());
+		setLocale(trans.getLocale());
+		notificationsManager = CoreSpringFactory.getImpl(NotificationsManager.class);
 	}
 
 	/**
@@ -65,18 +69,11 @@ class NotificationSubscriptionTableDataModel extends DefaultTableDataModel<Subsc
 				.translate("overview.column.action.cellvalue")));
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.DefaultTableDataModel#getColumnCount()
-	 */
 	@Override
 	public int getColumnCount() {
 		return 4;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.DefaultTableDataModel#getValueAt(int,
-	 *      int)
-	 */
 	@Override
 	public Object getValueAt(int row, int col) {
 		Subscriber sub = getObject(row);
@@ -91,7 +88,7 @@ class NotificationSubscriptionTableDataModel extends DefaultTableDataModel<Subsc
 				String containerType = pub.getResName();
 				return NewControllerFactory.translateResourceableTypeName(containerType, getLocale());
 			case 3:
-				NotificationsHandler handler = NotificationsManager.getInstance().getNotificationsHandler(pub);
+				NotificationsHandler handler = notificationsManager.getNotificationsHandler(pub);
 				if(handler == null){
 					return "";
 				}

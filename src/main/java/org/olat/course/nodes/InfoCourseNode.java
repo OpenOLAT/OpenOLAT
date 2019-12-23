@@ -258,7 +258,7 @@ public class InfoCourseNode extends AbstractAccessableCourseNode {
 		}
 		
 		final SubscriptionContext subscriptionContext = CourseModule.createTechnicalSubscriptionContext(course.getCourseEnvironment(), this);
-		NotificationsManager notifManagar =  NotificationsManager.getInstance();
+		NotificationsManager notifManagar =  CoreSpringFactory.getImpl(NotificationsManager.class);
 		notifManagar.delete(subscriptionContext);
 		super.cleanupOnDelete(course);
 	}

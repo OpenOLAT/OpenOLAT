@@ -56,8 +56,6 @@ import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.nodes.INode;
-import org.olat.core.util.tree.Visitor;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.FOCourseNode;
@@ -145,21 +143,18 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 
 		final Set<Long> subcribedForums = new HashSet<>();
 		List<String> notiTypes = Collections.singletonList("Forum");
-		List<Subscriber> subs = notificationsManager.getSubscribers(ureq.getIdentity(), notiTypes);
+		List<Subscriber> subs = notificationsManager.getSubscribers(ureq.getIdentity(), notiTypes, true);
 		for(Subscriber sub:subs) {
 			Long forumKey = Long.parseLong(sub.getPublisher().getData());
 			subcribedForums.add(forumKey);
 		}
 
 		final List<ForumVO> forumVOs = new ArrayList<>();
-		new CourseTreeVisitor(course, ureq.getUserSession().getIdentityEnvironment()).visit(new Visitor() {
-			@Override
-			public void visit(INode node) {
-				if(node instanceof FOCourseNode) {
-					FOCourseNode forumNode = (FOCourseNode)node;
-					ForumVO forum = createForumVO(course, forumNode, subcribedForums);
-					forumVOs.add(forum);
-				}
+		new CourseTreeVisitor(course, ureq.getUserSession().getIdentityEnvironment()).visit(node -> {
+			if(node instanceof FOCourseNode) {
+				FOCourseNode forumNode = (FOCourseNode)node;
+				ForumVO forum = createForumVO(course, forumNode, subcribedForums);
+				forumVOs.add(forum);
 			}
 		}, new VisibleTreeFilter());
 
@@ -310,7 +305,7 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 
 			Set<Long> subscriptions = new HashSet<>();
 			List<String> notiTypes = Collections.singletonList("Forum");
-			List<Subscriber> subs = notificationsManager.getSubscribers(ureq.getIdentity(), notiTypes);
+			List<Subscriber> subs = notificationsManager.getSubscribers(ureq.getIdentity(), notiTypes, true);
 			for(Subscriber sub:subs) {
 				Long forumKey = Long.parseLong(sub.getPublisher().getData());
 				subscriptions.add(forumKey);

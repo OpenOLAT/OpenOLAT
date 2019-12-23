@@ -425,6 +425,7 @@ create table if not exists o_noti_sub (
    fk_publisher bigint not null,
    fk_identity bigint not null,
    latestemailed datetime,
+   subenabled bit default 1,
    primary key (publisher_id),
    unique (fk_publisher, fk_identity)
 );

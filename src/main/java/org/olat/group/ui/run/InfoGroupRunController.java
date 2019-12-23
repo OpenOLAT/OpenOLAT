@@ -28,7 +28,6 @@ import org.olat.commons.info.InfoMessage;
 import org.olat.commons.info.InfoMessageFrontendManager;
 import org.olat.commons.info.InfoSubscriptionManager;
 import org.olat.commons.info.manager.MailFormatter;
-import org.olat.commons.info.notification.InfoSubscription;
 import org.olat.commons.info.ui.InfoDisplayController;
 import org.olat.commons.info.ui.InfoSecurityCallback;
 import org.olat.commons.info.ui.SendInfoMailFormatter;
@@ -40,7 +39,6 @@ import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionCon
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -146,19 +144,6 @@ public class InfoGroupRunController extends BasicController {
 		//
 	}
 	
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source == subscriptionController) {
-			InfoSubscription infoSubscription = subscriptionManager.getInfoSubscription(ureq.getUserSession().getGuiPreferences());
-			if(subscriptionController.isSubscribed()) {
-				infoSubscription.subscribed(businessPath, true);
-			} else {
-				infoSubscription.unsubscribed(businessPath);
-			}
-		}
-		super.event(ureq, source, event);
-	}
-	
 	private class InfoGroupSecurityCallback implements InfoSecurityCallback {
 		private final boolean canAdd;
 		private final boolean canAdmin;
@@ -208,5 +193,4 @@ public class InfoGroupRunController extends BasicController {
 			return resId;
 		}
 	}
-
 }

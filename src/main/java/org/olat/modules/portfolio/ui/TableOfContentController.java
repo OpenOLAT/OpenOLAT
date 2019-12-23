@@ -28,6 +28,7 @@ import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
+import org.olat.core.commons.services.commentAndRating.ReadOnlyCommentsSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsController;
 import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.gui.UserRequest;
@@ -92,7 +93,6 @@ import org.olat.modules.portfolio.ui.event.SectionSelectionEvent;
 import org.olat.modules.portfolio.ui.event.SelectPageEvent;
 import org.olat.modules.portfolio.ui.export.ExportBinderAsCPResource;
 import org.olat.modules.portfolio.ui.export.ExportBinderAsPDFResource;
-import org.olat.modules.portfolio.ui.model.ReadOnlyCommentsSecurityCallback;
 import org.olat.modules.portfolio.ui.renderer.PortfolioRendererHelper;
 import org.olat.modules.portfolio.ui.renderer.SharedPageStatusCellRenderer;
 import org.olat.repository.RepositoryEntry;
@@ -716,7 +716,7 @@ public class TableOfContentController extends BasicController implements TooledC
 			commentSecCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
 		}
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Page.class, pageRow.getKey());
-		commentsCtrl = new UserCommentsController(ureq, getWindowControl(), ores, null, commentSecCallback);
+		commentsCtrl = new UserCommentsController(ureq, getWindowControl(), ores, null, null, commentSecCallback);
 		listenTo(commentsCtrl);
 		
 		String title = translate("comment.title");

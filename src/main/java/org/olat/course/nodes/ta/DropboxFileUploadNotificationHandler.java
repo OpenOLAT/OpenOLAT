@@ -32,6 +32,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.course.CourseModule;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.springframework.stereotype.Service;
 
 /**
  * Description:<br>
@@ -42,6 +43,7 @@ import org.olat.course.run.environment.CourseEnvironment;
  * 
  * @author christian guretzki
  */
+@Service
 public class DropboxFileUploadNotificationHandler extends AbstractTaskNotificationHandler implements NotificationsHandler {
 	private static final Logger log = Tracing.createLoggerFor(DropboxFileUploadNotificationHandler.class);
 	
@@ -55,14 +57,17 @@ public class DropboxFileUploadNotificationHandler extends AbstractTaskNotificati
 	  return CourseModule.createSubscriptionContext(courseEnv, node, node.getIdent());
 	}
 
+	@Override
 	protected String getCssClassIcon() {
 		return CSS_CLASS_DROPBOX_ICON;
 	}
-	
+
+	@Override
 	protected String getNotificationHeaderKey() {
 		return "dropbox.notifications.header";
 	}
-	
+
+	@Override
 	protected String getNotificationEntryKey() {
 		return "dropbox.notifications.entry";
 	}

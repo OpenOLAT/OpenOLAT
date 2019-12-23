@@ -562,7 +562,7 @@ public class RepositoryEntryListController extends FormBasicController
 		
 		boolean anonym = ureq.getUserSession().getRoles().isGuestOnly();
 		CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, anonym);
-		commentsCtrl = new UserCommentsController(ureq, getWindowControl(), row.getRepositoryEntryResourceable(), null, secCallback);
+		commentsCtrl = new UserCommentsController(ureq, getWindowControl(), row.getRepositoryEntryResourceable(), null, null, secCallback);
 		commentsCtrl.setUserObject(row);
 		listenTo(commentsCtrl);
 		cmc = new CloseableModalController(getWindowControl(), "close", commentsCtrl.getInitialComponent(), true, translate("comments"));

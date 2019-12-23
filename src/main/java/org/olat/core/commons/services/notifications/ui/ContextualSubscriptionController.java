@@ -28,6 +28,7 @@ package org.olat.core.commons.services.notifications.ui;
 
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.PublisherData;
+import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -51,20 +52,38 @@ public class ContextualSubscriptionController extends BasicController {
 	private VelocityContainer myContent;
 	private Link subscribeButton;
 	private Link unsubscribeButton;
-	private SubscriptionContext subscriptionContext;
+	
+	private final boolean optOut;
 	private boolean isSubscribed;
 	private final PublisherData publisherData;
+	private SubscriptionContext subscriptionContext;
 	
 	@Autowired
 	private NotificationsManager notifManager;
 	
 	/**
-	 * @param ureq
-	 * @param subscriptionContext
-	 * @param publisherData
+	 * @param ureq The user request
+	 * @param wControl The window control
+	 * @param subscriptionContext The subscription context (which resource is involved)
+	 * @param publisherData The publisher data
 	 */
-	public ContextualSubscriptionController(UserRequest ureq, WindowControl wControl, SubscriptionContext subscriptionContext, PublisherData publisherData) {
+	public ContextualSubscriptionController(UserRequest ureq, WindowControl wControl,
+			SubscriptionContext subscriptionContext, PublisherData publisherData) {
+		this(ureq, wControl, subscriptionContext, publisherData, false);
+	}
+	
+	/**
+	 * 
+	 * @param ureq The user request
+	 * @param wControl The window control
+	 * @param subscriptionContext  The subscription context (which resource is involved)
+	 * @param publisherData The publisher data
+	 * @param optOut true will automatically subscribed the user if it has not previously opt-out
+	 */
+	public ContextualSubscriptionController(UserRequest ureq, WindowControl wControl,
+			SubscriptionContext subscriptionContext, PublisherData publisherData, boolean optOut) {
 		super(ureq, wControl);
+		this.optOut = optOut;
 		this.subscriptionContext = subscriptionContext;
 		this.publisherData = publisherData;
 		myContent = createVelocityContainer("consubs");
@@ -85,15 +104,26 @@ public class ContextualSubscriptionController extends BasicController {
 		unsubscribeButton.setIconRightCSS("o_icon o_icon_toggle");
 		unsubscribeButton.setTitle("command.unsubscribe");
 		
-		// if subscribed, offer a unsubscribe button and vica versa.
-		isSubscribed = notifManager.isSubscribed(ureq.getIdentity(), subscriptionContext);
-
-		updateUI();
+		loadModel();
 		putInitialPanel(myContent);
 	}
 	
 	public boolean isSubscribed() {
 		return isSubscribed;
+	}
+	
+	public void loadModel() {
+		// if subscribed, offer a unsubscribe button and vice versa.
+		Subscriber subscriber = notifManager.getSubscriber(getIdentity(), subscriptionContext);
+		if(subscriber == null && optOut) {
+			notifManager.subscribe(getIdentity(), subscriptionContext, publisherData);
+			isSubscribed = true;
+		} else if(subscriber == null || !subscriber.isEnabled()) {
+			isSubscribed = false;
+		} else {
+			isSubscribed = true;
+		}
+		updateUI();
 	}
 
 	private void updateUI() {

@@ -133,7 +133,7 @@ public class DocumentPoolNotificationsHandler implements NotificationsHandler {
 					}
 				}, model.getRootNode(), false).visitAll();
 			} else {
-				si = NotificationsManager.getInstance().getNoSubscriptionInfo();
+				si = notificationsManager.getNoSubscriptionInfo();
 			}
 			return si;
 		} catch (Exception e) {

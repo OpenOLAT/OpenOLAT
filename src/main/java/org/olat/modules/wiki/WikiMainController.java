@@ -192,6 +192,8 @@ public class WikiMainController extends BasicController implements CloneableCont
 	private PortfolioV2Module portfolioModule;
 	@Autowired
 	private ForumManager forumManager;
+	@Autowired
+	private NotificationsManager notificationsManager;
 
 	public WikiMainController(UserRequest ureq, WindowControl wControl, OLATResourceable ores,
 			WikiSecurityCallback securityCallback, String initialPageName) {
@@ -1017,7 +1019,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 				}
 				WikiManager.getInstance().saveWikiPage(ores, page, true, wiki, true);
 				// inform subscription context about changes
-				NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity(), true);
+				notificationsManager.markPublisherNews(subsContext, ureq.getIdentity(), true);
 
 				updatePageContext(ureq, page);
 			}

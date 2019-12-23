@@ -76,14 +76,6 @@ public class FileUploadNotificationHandler implements NotificationsHandler {
 	@Autowired
 	private NotificationsManager notificationsManager;
 
-	public FileUploadNotificationHandler() {
-	//
-	}
-
-	/**
-	 * @see org.olat.core.commons.services.notifications.NotificationsHandler#createSubscriptionInfo(org.olat.core.commons.services.notifications.Subscriber,
-	 *      java.util.Locale, java.util.Date)
-	 */
 	@Override
 	public SubscriptionInfo createSubscriptionInfo(Subscriber subscriber, Locale locale, Date compareDate) {
 		Publisher p = subscriber.getPublisher();
@@ -158,8 +150,8 @@ public class FileUploadNotificationHandler implements NotificationsHandler {
 		try {
 			if ("CourseModule".equals(p.getResName())) {
 				if(!NotificationsUpgradeHelper.checkCourse(p)) {
-					log.info("deactivating publisher with key; " + p.getKey());
-					NotificationsManager.getInstance().deactivate(p);
+					log.info("deactivating publisher with key; {}", p.getKey());
+					notificationsManager.deactivate(p);
 					return false;
 				}
 			}

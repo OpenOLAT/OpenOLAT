@@ -66,14 +66,24 @@ public class NotificationHelper {
 		return getSubscriptionMap(identity, locale, showWithNewsOnly, compareDate, Collections.<String>emptyList());
 	}
 	
+	/**
+	 * The subscribers are all enabled.
+	 * 
+	 * @param identity The identity
+	 * @param locale The locale of identity
+	 * @param showWithNewsOnly
+	 * @param compareDate
+	 * @param types
+	 * @return
+	 */
 	public static Map<Subscriber, SubscriptionInfo> getSubscriptionMap(Identity identity, Locale locale, boolean showWithNewsOnly, Date compareDate, List<String> types) {
-		NotificationsManager man = NotificationsManager.getInstance();
-		List<Subscriber> subs = man.getSubscribers(identity, types);
+		NotificationsManager man = CoreSpringFactory.getImpl(NotificationsManager.class);
+		List<Subscriber> subs = man.getSubscribers(identity, types, true);
 		return getSubscriptionMap(locale, showWithNewsOnly, compareDate, subs);	
 	}
 	
 	public static Map<Subscriber, SubscriptionInfo> getSubscriptionMap(Locale locale, boolean showWithNewsOnly, Date compareDate, List<Subscriber> subs) {		
-		NotificationsManager man = NotificationsManager.getInstance();
+		NotificationsManager man = CoreSpringFactory.getImpl(NotificationsManager.class);
 		Map<Subscriber, SubscriptionInfo> subToSubInfo = new HashMap<>();
 		// calculate subscription info for all subscriptions and, if only those with news
 		// are to be shown, remove the other ones
@@ -85,7 +95,8 @@ public class NotificationHelper {
 				if (notifHandler != null) {
 					subsInfo = notifHandler.createSubscriptionInfo(subscriber, locale, compareDate);
 				} else {
-					log.error("getSubscriptionMap: No notificationhandler for valid publisher: "+pub+", resname: "+pub.getResName()+", businesspath: "+pub.getBusinessPath()+", subscriber: "+subscriber);
+					log.error("getSubscriptionMap: No notificationhandler for valid publisher: {}, resname: {}, businesspath: {}, subscriber: {}",
+							pub, pub.getResName(), pub.getBusinessPath(), subscriber);
 					subsInfo = man.getNoSubscriptionInfo();
 				}
 			} else {

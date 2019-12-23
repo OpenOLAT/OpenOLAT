@@ -27,6 +27,7 @@ package org.olat.core.commons.services.notifications;
 import java.util.Date;
 
 import org.olat.NewControllerFactory;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.ui.NotificationNewsController;
 import org.olat.core.commons.services.notifications.ui.NotificationSubscriptionAndNewsController;
 import org.olat.core.gui.UserRequest;
@@ -86,7 +87,7 @@ public class NotificationUIFactory {
 	 */
 	public static NotificationSubscriptionAndNewsController createCombinedSubscriptionsAndNewsController(Identity subscriberIdentity,
 			UserRequest ureq, WindowControl windowControl) {
-		NotificationsManager notiMgr = NotificationsManager.getInstance();
+		NotificationsManager notiMgr = CoreSpringFactory.getImpl(NotificationsManager.class);
 		// default use the interval
 		Date compareDate = notiMgr.getCompareDateFromInterval(notiMgr.getUserIntervalOrDefault(ureq.getIdentity()));
 		return new NotificationSubscriptionAndNewsController(subscriberIdentity, ureq, windowControl, compareDate);
@@ -100,7 +101,7 @@ public class NotificationUIFactory {
 	 */
 	public static void launchSubscriptionResource(UserRequest ureq, WindowControl windowControl, Subscriber sub) {
 		Publisher pub = sub.getPublisher();
-		if (!NotificationsManager.getInstance().isPublisherValid(pub)) {
+		if (!CoreSpringFactory.getImpl(NotificationsManager.class).isPublisherValid(pub)) {
 			Translator trans = Util.createPackageTranslator(NotificationUIFactory.class, ureq.getLocale());
 			windowControl.setError(trans.translate("error.publisherdeleted"));
 			return;
@@ -108,10 +109,8 @@ public class NotificationUIFactory {
 		if("Inbox".equals(pub.getResName())) {
 			String businessPath = "[HomeSite:" + ureq.getIdentity().getKey() + "][Inbox:0]";
 			NewControllerFactory.getInstance().launch(businessPath, ureq, windowControl);
-			return;
 		} else if(StringHelper.containsNonWhitespace(pub.getBusinessPath())) {
 			NewControllerFactory.getInstance().launch(pub.getBusinessPath(), ureq, windowControl);
-			return;
 		}
 	}
 }

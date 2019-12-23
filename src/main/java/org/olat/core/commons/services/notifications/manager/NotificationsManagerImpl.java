@@ -105,8 +105,7 @@ import org.springframework.beans.factory.InitializingBean;
  * Initial Date: 21.10.2004 <br>
  * @author Felix Jost
  */
-public class NotificationsManagerImpl extends NotificationsManager
-implements UserDataDeletable, UserDataExportable, GenericEventListener, InitializingBean {
+public class NotificationsManagerImpl implements NotificationsManager, UserDataDeletable, UserDataExportable, GenericEventListener, InitializingBean {
 	private static final Logger log = Tracing.createLoggerFor(NotificationsManagerImpl.class);
 
 	private static final int PUB_STATE_OK = 0;
@@ -129,15 +128,6 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 	private BaseSecurity securityManager;
 	private PropertyManager propertyManager;
 	private CoordinatorManager coordinatorManager;
-	
-	/**
-	 * [used by spring]
-	 * @param userDeletionManager
-	 */
-	private NotificationsManagerImpl() {
-		// private since singleton
-		INSTANCE = this;
-	}
 
 	/**
 	 * [used by Spring]
@@ -199,7 +189,7 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 		}
 		
 		if(businessPath != null && businessPath.length() > 230) {
-			log.error("Businesspath too long for publisher: " + resName + " with business path: " + businessPath);
+			log.error("Businesspath too long for publisher: {} with business path: {}", resName, businessPath);
 			businessPath = businessPath.substring(0, 230);
 		}
 		PublisherImpl pi = new PublisherImpl(resName, resId, subidentifier, type, data, businessPath, new Date(), PUB_STATE_OK);
@@ -217,8 +207,9 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 	protected Subscriber doCreateAndPersistSubscriber(Publisher persistedPublisher, Identity listener) {
 		SubscriberImpl si = new SubscriberImpl(persistedPublisher, listener);
 		si.setCreationDate(new Date());
-		si.setLastModified(new Date());
-		si.setLatestEmailed(new Date());
+		si.setLastModified(si.getCreationDate());
+		si.setLatestEmailed(si.getCreationDate());
+		si.setEnabled(true);
 		dbInstance.getCurrentEntityManager().persist(si);
 		return si;
 	}
@@ -231,8 +222,8 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 	 * @return List of Subscriber Objects which belong to the identity
 	 */
 	@Override
-	public List<Subscriber> getSubscribers(Identity identity) {
-		return getSubscribers(identity, Collections.<String>emptyList());
+	public List<Subscriber> getSubscribers(Identity identity, boolean enabledOnly) {
+		return getSubscribers(identity, Collections.<String>emptyList(), enabledOnly);
 	}
 
 	/**
@@ -243,13 +234,16 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 	 * @return List of Subscriber Objects which belong to the identity
 	 */
 	@Override
-	public List<Subscriber> getSubscribers(IdentityRef identity, List<String> types) {
+	public List<Subscriber> getSubscribers(IdentityRef identity, List<String> types, boolean enabledOnly) {
 		if(identity == null) return Collections.emptyList();
 		
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select sub from notisub as sub ")
 		  .append("inner join fetch sub.publisher as publisher ")
 		  .append("where sub.identity.key = :identityKey");
+		if(enabledOnly) {
+			sb.append(" and sub.enabled=true");
+		}
 		if(types != null && !types.isEmpty()) {
 			sb.append(" and publisher.type in (:types)");
 		}
@@ -263,41 +257,18 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 	}
 
 	/**
-	 * subscribers for ONE person (e.g. subscribed to 5 forums -> 5 subscribers
-	 * belonging to this person) restricted to the specified Olat resourceable id
-	 * 
-	 * @param identity
-	 * @param resId
-	 * @return List of Subscriber Objects which belong to the identity
-	 */
-	@Override
-	public List<Subscriber> getSubscribers(IdentityRef identity, long resId) {
-		if(identity == null) return Collections.emptyList();
-		
-		StringBuilder sb = new StringBuilder(256);
-		sb.append("select sub from notisub as sub")
-		  .append(" inner join fetch sub.publisher as publisher")
-		  .append(" where sub.identity.key = :identityKey and publisher.resId = :resId");
-		return dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), Subscriber.class)
-			.setParameter("identityKey", identity.getKey())
-			.setParameter("resId", resId)
-			.getResultList();
-	}
-
-	/**
-	 * @param identity
-	 * @return a list of all subscribers which belong to the identity and which
-	 *         publishers are valid
+	 * @param identity The identity
+	 * @return A list of all enabled subscribers which belong to the identity
+	 * 			and which publishers are valid.
 	 */
 	@Override
 	public List<Subscriber> getValidSubscribers(Identity identity) {
 		if(identity == null) return Collections.emptyList();
 		
 		StringBuilder q = new StringBuilder(256);
-		q.append("select sub from notisub sub ")
+		q.append("select sub from notisub sub")
 		 .append(" inner join fetch sub.publisher as pub ")
-		 .append(" where sub.identity.key=:anIdentityKey and pub.state=").append(PUB_STATE_OK);
+		 .append(" where sub.identity.key=:anIdentityKey and sub.enabled=true and pub.state=").append(PUB_STATE_OK);
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(q.toString(), Subscriber.class)
@@ -306,41 +277,28 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 	}
 
 	/**
-	 * @see org.olat.core.commons.services.notifications.NotificationsManager#getValidSubscribersOf(org.olat.core.commons.services.notifications.Publisher)
+	 * @param The publisher
+	 * @return A list of enabled and valid subscribers
 	 */
 	@Override
 	public List<Subscriber> getValidSubscribersOf(Publisher publisher) {
-		StringBuilder q = new StringBuilder();
+		StringBuilder q = new StringBuilder(256);
 		q.append("select sub from notisub sub ")
 		 .append(" inner join fetch sub.identity")
-		 .append(" where sub.publisher = :publisher and sub.publisher.state=").append(PUB_STATE_OK);
+		 .append(" where sub.publisher.key=:publisherKey and sub.enabled=true and sub.publisher.state=").append(PUB_STATE_OK);
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(q.toString(), Subscriber.class)
-				.setParameter("publisher", publisher)
-				.getResultList();
-	}
-	
-	private List<Subscriber> getValidSubscribersOf(String publisherType, String data) {
-		StringBuilder q = new StringBuilder();
-		q.append("select sub from notisub sub ")
-		 .append(" inner join fetch sub.identity as ident")
-		 .append(" inner join fetch sub.publisher as pub")
-		 .append(" where pub.publisherType=:publisherType and pub.data=:data and sub.publisher.state=").append(PUB_STATE_OK);
-		
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(q.toString(), Subscriber.class)
-				.setParameter("publisherType", publisherType)
-				.setParameter("data", data)
+				.setParameter("publisherKey", publisher.getKey())
 				.getResultList();
 	}
 	
 	@Override
 	public List<SubscriptionInfo> getSubscriptionInfos(Identity identity, String publisherType) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(256);
 		sb.append("select sub from notisub sub")
 			.append(" inner join fetch sub.publisher as pub")
-			.append(" where sub.identity=:identity and pub.type=:type and pub.state=:aState");
+			.append(" where sub.identity=:identity and sub.enabled=true and pub.type=:type and pub.state=:aState");
 		
 		List<Subscriber> subscribers = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Subscriber.class)
@@ -421,7 +379,7 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 		}
 
 		Date defaultCompareDate = getDefaultCompareDate();
-		List<Subscriber> subscribers = getSubscribers(ident);
+		List<Subscriber> subscribers = getSubscribers(ident, true);
 		if(subscribers.isEmpty()) {
 			return;
 		}
@@ -437,6 +395,10 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 		List<SubscriptionItem> items = new ArrayList<>();
 		List<Subscriber> subsToUpdate = new ArrayList<>();
 		for(Subscriber sub:subscribers) {
+			if(!sub.isEnabled()) {
+				continue;
+			}
+			
 			Date latestEmail = sub.getLatestEmailed();
 		
 			SubscriptionItem subsitem = null;
@@ -807,9 +769,12 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 	}
 
 	/**
-	 * @param identity
-	 * @param publisher
-	 * @return a Subscriber object belonging to the identity and listening to the
+	 * Returns a subscriber (enabled or not) belonging to the
+	 * specified publisher and identity.
+	 * 
+	 * @param identity The identity
+	 * @param publisher The publisher
+	 * @return A subscriber object belonging to the identity and listening to the
 	 *         given publisher
 	 */
 	@Override
@@ -820,18 +785,50 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 				.setParameter("identityKey", identity.getKey())
 				.getResultList();
 
-		if (res.size() == 0) return null;
+		if (res.isEmpty()) return null;
 		if (res.size() != 1) throw new AssertException("only one subscriber per person and publisher!!");
 		return res.get(0);
 	}
 	
 	/**
-	 * @see org.olat.core.commons.services.notifications.NotificationsManager#getSubscriber(org.olat.core.commons.services.notifications.Publisher)
+	 * @param identity The identity
+	 * @param subscriptionContext The context of the publisher
+	 * @return A subscriber object belonging to the identity and listening to the
+	 *         given context
 	 */
 	@Override
-	public List<Subscriber> getSubscribers(Publisher publisher) {
+	public Subscriber getSubscriber(Identity identity, SubscriptionContext subscriptionContext) {
+		StringBuilder q = new StringBuilder(256);		
+		q.append("select sub from notisub as sub ")
+		 .append(" inner join sub.publisher as pub ")
+		 .append(" where sub.identity.key=:anIdentityKey and pub.resName=:resName and pub.resId=:resId");
+		if(StringHelper.containsNonWhitespace(subscriptionContext.getSubidentifier())) {
+			q.append(" and pub.subidentifier=:subidentifier");
+		} else {
+			q.append(" and (pub.subidentifier=:subidentifier or pub.subidentifier is null)");
+		}
+
+		List<Subscriber> subscribers = dbInstance.getCurrentEntityManager()
+				.createQuery(q.toString(), Subscriber.class)
+				.setParameter("anIdentityKey", identity.getKey())
+				.setParameter("resName", subscriptionContext.getResName())
+				.setParameter("resId", subscriptionContext.getResId())
+				.setParameter("subidentifier", subscriptionContext.getSubidentifier())
+				.getResultList();
+		return subscribers.isEmpty() ? null : subscribers.get(0);
+	}
+	
+	@Override
+	public List<Subscriber> getSubscribers(Publisher publisher, boolean enabledOnly) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select sub from notisub sub")
+		  .append(" where sub.publisher=:publisher");
+		if(enabledOnly) {
+			sb.append(" and sub.enabled=true");
+		}
+		
 		return dbInstance.getCurrentEntityManager()
-				.createNamedQuery("subscribersByPublisher", Subscriber.class)
+				.createQuery(sb.toString(), Subscriber.class)
 				.setParameter("publisher", publisher)
 				.getResultList();
 	}
@@ -930,6 +927,9 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 			// s.latestReadDate >= p.latestNewsDate == no news for subscriber when no
 			// news after subscription time
 			doCreateAndPersistSubscriber(toUpdate, identity);
+		} else if(!s.isEnabled()) {
+			s.setEnabled(true);
+			dbInstance.getCurrentEntityManager().merge(s);
 		}
 		dbInstance.commit();
 	}
@@ -976,6 +976,9 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 				// s.latestReadDate >= p.latestNewsDate == no news for subscriber when no
 				// news after subscription time
 				doCreateAndPersistSubscriber(toUpdate, identity);
+			} else if (!s.isEnabled()) {
+				s.setEnabled(true);
+				dbInstance.getCurrentEntityManager().merge(s);
 			}
 		}
 		dbInstance.commit();	
@@ -1072,20 +1075,27 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 			MultiUserEvent mue = EventFactory.createAffectedEvent(subsKeys);
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(mue, oresMyself);
 		}
+	}
+	
+	private List<Subscriber> getValidSubscribersOf(String publisherType, String data) {
+		StringBuilder q = new StringBuilder(256);
+		q.append("select sub from notisub sub ")
+		 .append(" inner join fetch sub.identity as ident")
+		 .append(" inner join fetch sub.publisher as pub")
+		 .append(" where pub.publisherType=:publisherType and pub.data=:data and sub.enabled=true and sub.publisher.state=").append(PUB_STATE_OK);
 		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(q.toString(), Subscriber.class)
+				.setParameter("publisherType", publisherType)
+				.setParameter("data", data)
+				.getResultList();
 	}
 
-	/**
-	 * @see org.olat.core.commons.services.notifications.NotificationsManager#registerAsListener(org.olat.core.util.event.GenericEventListener, org.olat.core.id.Identity)
-	 */
 	@Override
 	public void registerAsListener(GenericEventListener gel, Identity ident) {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(gel, ident, oresMyself);
 	}
-	
-	/**
-	 * @see org.olat.core.commons.services.notifications.NotificationsManager#deregisterAsListener(org.olat.core.util.event.GenericEventListener)
-	 */
+
 	@Override
 	public void deregisterAsListener(GenericEventListener gel) {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(gel, oresMyself);
@@ -1101,9 +1111,10 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 		if (p != null) {
 			Subscriber s = getSubscriber(identity, p);
 			if (s != null) {
-				deleteSubscriber(s);
+				s.setEnabled(false);
+				dbInstance.getCurrentEntityManager().merge(s);
 			} else {
-				log.warn("could not unsubscribe " + identity.getKey() + " from publisher:" + p.getResName() + ","	+ p.getResId() + "," + p.getSubidentifier());
+				log.warn("could not unsubscribe {} from publisher:{},{},{}", identity.getKey(), p.getResName(), p.getResId(), p.getSubidentifier());
 			}
 		}
 		dbInstance.commit();
@@ -1118,19 +1129,16 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 			for(Identity identity:identities) {
 				Subscriber s = getSubscriber(identity, p);
 				if (s != null) {
-					deleteSubscriber(s);
+					s.setEnabled(false);
+					dbInstance.getCurrentEntityManager().merge(s);
 				} else {
-					log.warn("could not unsubscribe " + identity.getKey() + " from publisher:" + p.getResName() + ","	+ p.getResId() + "," + p.getSubidentifier());
+					log.warn("could not unsubscribe {} from publisher:{},{},{}", identity.getKey(), p.getResName(), p.getResId(), p.getSubidentifier());
 				}
 			}
 		}
 		dbInstance.commit();
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.commons.services.notifications.NotificationsManager#unsubscribe(org.olat.core.commons.services.notifications.Subscriber)
-	 */
 	@Override
 	public void unsubscribe(Subscriber s) {
 		Subscriber foundSub = getSubscriber(s.getKey());
@@ -1145,8 +1153,31 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 	public void unsubscribeAllForIdentityAndResId(IdentityRef identity, Long resId) {
 		List<Subscriber> subscribers = getSubscribers(identity, resId.longValue());
 		for (Subscriber sub:subscribers) {
-			unsubscribe (sub);
+			unsubscribe(sub);
 		}
+	}
+	
+	/**
+	 * All subscribers (enabled or not) for ONE person (e.g. subscribed to 5 forums
+	 * -> 5 subscribers belonging to this person) restricted to the specified Olat
+	 * resourceable id
+	 * 
+	 * @param identity the identity
+	 * @param resId The resource ID
+	 * @return List of Subscriber Objects which belong to the identity
+	 */
+	private List<Subscriber> getSubscribers(IdentityRef identity, long resId) {
+		if(identity == null) return Collections.emptyList();
+		
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select sub from notisub as sub")
+		  .append(" inner join fetch sub.publisher as publisher")
+		  .append(" where sub.identity.key=:identityKey and publisher.resId = :resId");
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Subscriber.class)
+			.setParameter("identityKey", identity.getKey())
+			.setParameter("resId", resId)
+			.getResultList();
 	}
 
 	/**
@@ -1159,7 +1190,7 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 		StringBuilder q = new StringBuilder(256);		
 		q.append("select count(sub) from notisub as sub ")
 		 .append(" inner join sub.publisher as pub ")
-		 .append(" where sub.identity.key=:anIdentityKey and pub.resName=:resName and pub.resId=:resId");
+		 .append(" where sub.identity.key=:anIdentityKey and sub.enabled=true and pub.resName=:resName and pub.resId=:resId");
 		if(StringHelper.containsNonWhitespace(subscriptionContext.getSubidentifier())) {
 			q.append(" and pub.subidentifier=:subidentifier");
 		} else {
@@ -1173,10 +1204,7 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 				.setParameter("resId", subscriptionContext.getResId())
 				.setParameter("subidentifier", subscriptionContext.getSubidentifier())
 				.getSingleResult();
-
-		long cnt = count.longValue();
-		if (cnt == 0) return false;
-		else return true;
+		return count.longValue() > 0;
 	}
 
 	/**
@@ -1192,7 +1220,7 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 		// -> nothing to do
 		if (p == null) return;
 		//first delete all subscribers
-		List<Subscriber> subscribers = getValidSubscribersOf(p);
+		List<Subscriber> subscribers = getSubscribers(p, false);
 		for (Subscriber subscriber : subscribers) {
 			deleteSubscriber(subscriber);
 		}
@@ -1220,6 +1248,7 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 	 * @return true if the publisher is valid (that is: has not been marked as
 	 *         deleted)
 	 */
+	@Override
 	public boolean isPublisherValid(Publisher pub) {
 		return pub.getState() == PUB_STATE_OK;
 	}
@@ -1339,11 +1368,11 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 	 */
 	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
-		List<Subscriber> subscribers = getSubscribers(identity);
+		List<Subscriber> subscribers = getSubscribers(identity, false);
 		for (Subscriber subscriber:subscribers) {
 			deleteSubscriber(subscriber);
 		}
-		log.debug("All notification-subscribers deleted for identity=" + identity);
+		log.debug("All notification-subscribers deleted for identity={}", identity);
 	}
 
 	@Override
@@ -1364,8 +1393,9 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 			row.addCell(1, "Type");
 			row.addCell(2, "Creation date");
 			row.addCell(3, "Title");
+			row.addCell(4, "Enabled");
 			
-			List<Subscriber> subscribers = getSubscribers(identity);
+			List<Subscriber> subscribers = getSubscribers(identity, false);
 			for(Subscriber subscriber:subscribers) {
 				exportSubscriberData(subscriber, sheet, workbook, locale);
 			}
@@ -1391,6 +1421,7 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 			String title = handler.createTitleInfo(subscriber, locale);
 			row.addCell(3, title);
 		}
+		row.addCell(4, Boolean.toString(subscriber.isEnabled()));
 	}
 
 	/**
@@ -1405,7 +1436,7 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 				if(key.length() <= 16) {
 					notificationIntervals.add(key);
 				} else {
-					log.error("Interval notification cannot be more than 16 characters wide: " + key);
+					log.error("Interval notification cannot be more than 16 characters wide: {}", key);
 				}
 			}
 		}

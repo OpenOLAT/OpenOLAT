@@ -31,7 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.core.CoreSpringFactory;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.modules.bc.FileInfo;
 import org.olat.core.commons.modules.bc.FolderManager;
 import org.olat.core.commons.services.notifications.NotificationHelper;
@@ -47,7 +47,6 @@ import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
@@ -56,6 +55,8 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Description: <br>
@@ -66,20 +67,17 @@ import org.olat.repository.RepositoryManager;
  * 
  * @author Felix Jost
  */
+@Service
 public class FolderNotificationsHandler implements NotificationsHandler {
 	private static final Logger log = Tracing.createLoggerFor(FolderNotificationsHandler.class);
 	
-	/**
-	 * 
-	 */
-	public FolderNotificationsHandler() {
-	//
-	}
-
-	/**
-	 * @see org.olat.core.commons.services.notifications.NotificationsHandler#createSubscriptionInfo(org.olat.core.commons.services.notifications.Subscriber,
-	 *      java.util.Locale, java.util.Date)
-	 */
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private NotificationsManager notificationsManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
+	
 	@Override
 	public SubscriptionInfo createSubscriptionInfo(final Subscriber subscriber, Locale locale, Date compareDate) {
 		Publisher p = subscriber.getPublisher();
@@ -90,11 +88,11 @@ public class FolderNotificationsHandler implements NotificationsHandler {
 		SubscriptionInfo si;
 		// there could be news for me, investigate deeper
 		try {
-			if (NotificationsManager.getInstance().isPublisherValid(p) && compareDate.before(latestNews)) {
+			if (notificationsManager.isPublisherValid(p) && compareDate.before(latestNews)) {
 				if("CourseModule".equals(p.getResName())) {
-					RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(OresHelper.createOLATResourceableInstance(p.getResName(), p.getResId()), false);
+					RepositoryEntry re = repositoryManager.lookupRepositoryEntry(OresHelper.createOLATResourceableInstance(p.getResName(), p.getResId()), false);
 					if(re == null || re.getEntryStatus().decommissioned()) {
-						return NotificationsManager.getInstance().getNoSubscriptionInfo();
+						return notificationsManager.getNoSubscriptionInfo();
 					}
 				}
 				
@@ -137,12 +135,12 @@ public class FolderNotificationsHandler implements NotificationsHandler {
 					si.addSubscriptionListItem(subListItem);
 				}
 			} else {
-				si = NotificationsManager.getInstance().getNoSubscriptionInfo();
+				si = notificationsManager.getNoSubscriptionInfo();
 			}
 		} catch (Exception e) {
 			log.error("Error creating folder's notifications for subscriber: " + subscriber.getKey(), e);
 			checkPublisher(subscriber.getPublisher());
-			si = NotificationsManager.getInstance().getNoSubscriptionInfo();
+			si = notificationsManager.getNoSubscriptionInfo();
 		}
 		return si;
 	}
@@ -150,15 +148,15 @@ public class FolderNotificationsHandler implements NotificationsHandler {
 	private void checkPublisher(Publisher p) {
 		try {
 			if("BusinessGroup".equals(p.getResName())) {
-				BusinessGroup bg = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(p.getResId());
+				BusinessGroup bg = businessGroupService.loadBusinessGroup(p.getResId());
 				if(bg == null) {
-					log.info("deactivating publisher with key; " + p.getKey());
-					NotificationsManager.getInstance().deactivate(p);
+					log.info("deactivating publisher with key; {}", p.getKey());
+					notificationsManager.deactivate(p);
 				}
 			} else if ("CourseModule".equals(p.getResName())) {
 				if(!NotificationsUpgradeHelper.checkCourse(p)) {
-					log.info("deactivating publisher with key; " + p.getKey());
-					NotificationsManager.getInstance().deactivate(p);
+					log.info("deactivating publisher with key; {}", p.getKey());
+					notificationsManager.deactivate(p);
 				}
 			}
 		} catch (Exception e) {
@@ -171,10 +169,10 @@ public class FolderNotificationsHandler implements NotificationsHandler {
 		try {
 			String resName = p.getResName();
 			if("BusinessGroup".equals(resName)) {
-				BusinessGroup bg = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(p.getResId());
+				BusinessGroup bg = businessGroupService.loadBusinessGroup(p.getResId());
 				title = translator.translate("notifications.header.group", new String[]{bg.getName()});
 			} else if("CourseModule".equals(resName)) {
-				String displayName = RepositoryManager.getInstance().lookupDisplayNameByOLATResourceableId(p.getResId());
+				String displayName = repositoryManager.lookupDisplayNameByOLATResourceableId(p.getResId());
 				title = translator.translate("notifications.header.course", new String[]{displayName});
 			} else {
 				title = translator.translate("notifications.header");

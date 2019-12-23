@@ -20,8 +20,11 @@
 package org.olat.resource.accesscontrol.provider.auto.manager;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.accesscontrol.provider.auto.IdentifierKey;
@@ -59,8 +62,13 @@ class ExternalIdHandler implements IdentifierKeyHandler {
 	}
 
 	@Override
-	public String getRepositoryEntryValue(RepositoryEntry entry) {
-		return entry.getExternalId();
+	public Set<String> getRepositoryEntryValue(RepositoryEntry entry) {
+		Set<String> values = new HashSet<>();
+		String externalId = entry.getExternalId();
+		if (StringHelper.containsNonWhitespace(externalId)) {
+			values.add(externalId);
+		}
+		return values;
 	}
 
 }

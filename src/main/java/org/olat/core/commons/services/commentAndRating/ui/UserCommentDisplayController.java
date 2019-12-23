@@ -27,6 +27,7 @@ import org.olat.core.commons.creator.UserAvatarDisplayControllerCreator;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.commentAndRating.model.UserComment;
+import org.olat.core.commons.services.notifications.PublishingInformations;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -41,8 +42,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.gui.control.generic.title.TitleInfo;
-import org.olat.core.gui.control.generic.title.TitledWrapperController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Formatter;
 import org.olat.user.UserManager;
@@ -79,26 +78,27 @@ public class UserCommentDisplayController extends BasicController {
 	private Link replyLink;
 	private CloseableModalController replyCmc;
 	private UserCommentFormController replyCommentFormCtr;
-	private TitledWrapperController replyTitledWrapperCtr;
 	
-	private String resSubPath;
-	private OLATResourceable ores;
-	private final CommentAndRatingService commentAndRatingService;
+	private final String resSubPath;
+	private final OLATResourceable ores;
+	private final PublishingInformations publishingInformations;
 	
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private CommentAndRatingService commentAndRatingService;
 	
 	UserCommentDisplayController(UserRequest ureq, WindowControl wControl,
 			UserComment userComment, List<UserComment> allComments,
-			OLATResourceable ores, String resSubPath,
-			CommentAndRatingSecurityCallback securityCallback) {
+			OLATResourceable ores, String resSubPath, CommentAndRatingSecurityCallback securityCallback, 
+			PublishingInformations publishingInformations) {
 		super(ureq, wControl);
-		commentAndRatingService = CoreSpringFactory.getImpl(CommentAndRatingService.class);
 		this.ores = ores;
 		this.resSubPath = resSubPath;
 		this.userComment = userComment;
 		this.allComments = allComments;
 		this.securityCallback = securityCallback;
+		this.publishingInformations = publishingInformations;
 		// Init view
 		userCommentDisplayVC = createVelocityContainer("userCommentDisplay");
 		userCommentDisplayVC.contextPut("formatter", Formatter.getInstance(getLocale()));
@@ -159,7 +159,8 @@ public class UserCommentDisplayController extends BasicController {
 			if (reply.getParent() == null) continue;
 			if (reply.getParent().getKey().equals(userComment.getKey())) {
 				// Create child controller
-				UserCommentDisplayController replyCtr = new UserCommentDisplayController(ureq, getWindowControl(), reply, allComments, ores, resSubPath, securityCallback);
+				UserCommentDisplayController replyCtr = new UserCommentDisplayController(ureq, getWindowControl(), reply, allComments,
+						ores, resSubPath, securityCallback, publishingInformations);
 				replyControllers.add(replyCtr);
 				listenTo(replyCtr);
 				userCommentDisplayVC.put(replyCtr.getViewCompName(), replyCtr.getInitialComponent());
@@ -167,71 +168,22 @@ public class UserCommentDisplayController extends BasicController {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
 		// Child controllers disposed by basic controller
 		replyControllers = null;
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == replyLink) {
-			// Init reply workflow
-			replyCommentFormCtr = new UserCommentFormController(ureq, getWindowControl(), userComment, null, ores, resSubPath);
-			listenTo(replyCommentFormCtr);
-			String name = userManager.getUserDisplayName(userComment.getCreator());
-			String title = translate("comments.coment.reply.title", new String[]{name});
-			TitleInfo titleInfo = new TitleInfo(null, title);
-			replyTitledWrapperCtr = new TitledWrapperController(ureq, getWindowControl(), replyCommentFormCtr, null, titleInfo);
-			listenTo(replyTitledWrapperCtr);
-			replyCmc = new CloseableModalController(getWindowControl(), "close", replyTitledWrapperCtr.getInitialComponent());
-			replyCmc.activate();			
-			
+			doReply(ureq);	
 		} else if (source == deleteLink) {
-			// Init delete workflow
-			List<String> buttonLabels = new ArrayList<>();
-			boolean hasReplies = false;
-			for (UserComment comment : allComments) {
-				if (comment.getParent() != null && comment.getParent().getKey().equals(userComment.getKey())) {
-					hasReplies = true;
-					break;
-				}
-			}
-			if (hasReplies) {
-				buttonLabels.add(translate("comments.button.delete.without.replies"));
-				buttonLabels.add(translate("comments.button.delete.with.replies"));
-			} else {
-				buttonLabels.add(translate("delete"));
-			}
-			buttonLabels.add(translate("cancel"));								
-			String deleteText;
-			if (hasReplies) {
-				deleteText = translate("comments.dialog.delete.with.replies");				
-			} else {
-				deleteText = translate("comments.dialog.delete");
-			}
-			deleteDialogCtr = DialogBoxUIFactory.createGenericDialog(ureq, getWindowControl(), translate("comments.dialog.delete.title"), deleteText, buttonLabels);
-			listenTo(deleteDialogCtr);
-			deleteDialogCtr.activate();
-			// Add replies info as user object to retrieve it later when evaluating the events
-			deleteDialogCtr.setUserObject(Boolean.valueOf(hasReplies));
-			
+			doConfirmDelete(ureq);
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller,
-	 *      org.olat.core.gui.control.Event)
-	 */
+	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == deleteDialogCtr) {
 			boolean hasReplies = ((Boolean)deleteDialogCtr.getUserObject()).booleanValue();
@@ -263,12 +215,7 @@ public class UserCommentDisplayController extends BasicController {
 			
 		} else if (source == replyCmc) {
 			// User closed modal dialog (cancel)
-			removeAsListenerAndDispose(replyCmc);
-			replyCmc = null;
-			removeAsListenerAndDispose(replyCommentFormCtr);
-			replyCommentFormCtr = null;
-			removeAsListenerAndDispose(replyTitledWrapperCtr);
-			replyTitledWrapperCtr = null;
+			cleanUp();
 		} else if (source == replyCommentFormCtr) {
 			// User Saved or canceled form
 			replyCmc.deactivate();
@@ -277,7 +224,7 @@ public class UserCommentDisplayController extends BasicController {
 				UserComment newReply = replyCommentFormCtr.getComment();
 				allComments.add(newReply);
 				// Create child controller
-				UserCommentDisplayController replyCtr = new UserCommentDisplayController(ureq, getWindowControl(), newReply, allComments, ores, resSubPath, securityCallback);
+				UserCommentDisplayController replyCtr = new UserCommentDisplayController(ureq, getWindowControl(), newReply, allComments, ores, resSubPath, securityCallback, publishingInformations);
 				replyControllers.add(replyCtr);
 				listenTo(replyCtr);
 				userCommentDisplayVC.put(replyCtr.getViewCompName(), replyCtr.getInitialComponent());
@@ -287,12 +234,7 @@ public class UserCommentDisplayController extends BasicController {
 				// Reply failed - reload everything
 				fireEvent(ureq, COMMENT_DATAMODEL_DIRTY);						
 			}
-			removeAsListenerAndDispose(replyCmc);
-			replyCmc = null;
-			removeAsListenerAndDispose(replyCommentFormCtr);
-			replyCommentFormCtr = null;
-			removeAsListenerAndDispose(replyTitledWrapperCtr);
-			replyTitledWrapperCtr = null;
+			cleanUp();
 		} else if (source instanceof UserCommentDisplayController) {
 			UserCommentDisplayController replyCtr = (UserCommentDisplayController) source;
 			if (event == DELETED_EVENT) {
@@ -309,4 +251,53 @@ public class UserCommentDisplayController extends BasicController {
 		}
 	}
 	
+	private void cleanUp() {
+		removeAsListenerAndDispose(replyCommentFormCtr);
+		removeAsListenerAndDispose(replyCmc);
+		replyCommentFormCtr = null;
+		replyCmc = null;
+	}
+	
+	private void doConfirmDelete(UserRequest ureq) {
+		// Init delete workflow
+		List<String> buttonLabels = new ArrayList<>();
+		boolean hasReplies = false;
+		for (UserComment comment : allComments) {
+			if (comment.getParent() != null && comment.getParent().getKey().equals(userComment.getKey())) {
+				hasReplies = true;
+				break;
+			}
+		}
+		if (hasReplies) {
+			buttonLabels.add(translate("comments.button.delete.without.replies"));
+			buttonLabels.add(translate("comments.button.delete.with.replies"));
+		} else {
+			buttonLabels.add(translate("delete"));
+		}
+		buttonLabels.add(translate("cancel"));								
+		String deleteText;
+		if (hasReplies) {
+			deleteText = translate("comments.dialog.delete.with.replies");				
+		} else {
+			deleteText = translate("comments.dialog.delete");
+		}
+		deleteDialogCtr = DialogBoxUIFactory.createGenericDialog(ureq, getWindowControl(), translate("comments.dialog.delete.title"), deleteText, buttonLabels);
+		listenTo(deleteDialogCtr);
+		deleteDialogCtr.activate();
+		// Add replies info as user object to retrieve it later when evaluating the events
+		deleteDialogCtr.setUserObject(Boolean.valueOf(hasReplies));
+	}
+	
+	private void doReply(UserRequest ureq) {
+		// Init reply workflow
+		replyCommentFormCtr = new UserCommentFormController(ureq, getWindowControl(), userComment, null,
+				ores, resSubPath, publishingInformations);
+		listenTo(replyCommentFormCtr);
+		
+		String name = userManager.getUserDisplayName(userComment.getCreator());
+		String title = translate("comments.coment.reply.title", new String[]{ name });
+		replyCmc = new CloseableModalController(getWindowControl(), "close", replyCommentFormCtr.getInitialComponent(), true, title);
+		listenTo(replyCmc);
+		replyCmc.activate();	
+	}
 }

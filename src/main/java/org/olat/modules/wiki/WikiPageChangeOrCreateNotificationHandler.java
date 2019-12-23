@@ -30,8 +30,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationHelper;
 import org.olat.core.commons.services.notifications.NotificationsHandler;
 import org.olat.core.commons.services.notifications.NotificationsManager;
@@ -45,7 +45,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
@@ -65,6 +64,8 @@ import org.olat.modules.fo.Message;
 import org.olat.modules.fo.manager.ForumManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Description:<br>
@@ -75,21 +76,23 @@ import org.olat.repository.RepositoryManager;
  * 
  * @author guido
  */
+@Service
 public class WikiPageChangeOrCreateNotificationHandler implements NotificationsHandler {
 	
 	private static final Logger log = Tracing.createLoggerFor(WikiPageChangeOrCreateNotificationHandler.class);
 
 	private static final String CSS_CLASS_WIKI_PAGE_CHANGED_ICON = "o_wiki_icon";
 	protected String businessControlString;
+	
+	@Autowired
+	private ForumManager forumManager;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
+	@Autowired
+	private NotificationsManager notificationsManager;
 
-	public WikiPageChangeOrCreateNotificationHandler() {
-		//
-	}
-
-	/**
-	 * @see org.olat.core.commons.services.notifications.NotificationsHandler#createSubscriptionInfo(org.olat.core.commons.services.notifications.Subscriber,
-	 *      java.util.Locale, java.util.Date)
-	 */
 	@Override
 	public SubscriptionInfo createSubscriptionInfo(Subscriber subscriber, final Locale locale, Date compareDate) {
 		Publisher p = subscriber.getPublisher();
@@ -102,13 +105,13 @@ public class WikiPageChangeOrCreateNotificationHandler implements NotificationsH
 		// there could be news for me, investigate deeper
 		if(debug) log.debug("compareDate=" + compareDate + " ; latestNews=" + latestNews);
 		try {
-			if (NotificationsManager.getInstance().isPublisherValid(p) && compareDate.before(latestNews)) {
+			if (notificationsManager.isPublisherValid(p) && compareDate.before(latestNews)) {
 				OLATResourceable ores = null;
 				if (p.getResName().equals( CourseModule.getCourseTypeName() ) ) {
 					// resId = CourseResourceableId           p.getSubidentifier() = wikiCourseNode.getIdent()
 					ICourse course = CourseFactory.loadCourse(resId);
 					if(!courseStatus(course)) {
-						return NotificationsManager.getInstance().getNoSubscriptionInfo();
+						return notificationsManager.getNoSubscriptionInfo();
 					}
 					CourseEnvironment cenv = course.getCourseEnvironment();
 					CourseNode courseNode = cenv.getRunStructure().getNode(p.getSubidentifier());
@@ -116,9 +119,9 @@ public class WikiPageChangeOrCreateNotificationHandler implements NotificationsH
 						//OLAT-3356 because removing wikicoursenodes was not propagated to 
 						// disable subcriptions, we may end up here with a NULL wikicoursenode
 						// Best we can do here -> return noSubsInfo and clean up
-						NotificationsManager.getInstance().deactivate(p);
+						notificationsManager.deactivate(p);
 						// return nothing available
-						return NotificationsManager.getInstance().getNoSubscriptionInfo();
+						return notificationsManager.getNoSubscriptionInfo();
 					}
 					ModuleConfiguration config = ((WikiCourseNode)courseNode).getModuleConfiguration();
 					RepositoryEntry re = WikiEditController.getWikiRepoReference(config, true);
@@ -171,7 +174,7 @@ public class WikiPageChangeOrCreateNotificationHandler implements NotificationsH
 					}
 					
 					long forumKey = element.getForumKey();
-					List<Message> mInfos = CoreSpringFactory.getImpl(ForumManager.class).getNewMessageInfo(forumKey, compareDate);
+					List<Message> mInfos = forumManager.getNewMessageInfo(forumKey, compareDate);
 					
 					for (Message mInfo : mInfos) {
 						String messageTitle = mInfo.getTitle();
@@ -201,12 +204,12 @@ public class WikiPageChangeOrCreateNotificationHandler implements NotificationsH
 				}
 			} else {
 				//no news
-				si = NotificationsManager.getInstance().getNoSubscriptionInfo();
+				si = notificationsManager.getNoSubscriptionInfo();
 			}
 		} catch (Exception e) {
 			log.error("Error creating wiki's notifications for subscriber: " + subscriber.getKey(), e);
 			checkPublisher(p);
-			si = NotificationsManager.getInstance().getNoSubscriptionInfo();
+			si = notificationsManager.getNoSubscriptionInfo();
 		}
 		return si;
 	}
@@ -219,20 +222,20 @@ public class WikiPageChangeOrCreateNotificationHandler implements NotificationsH
 	private void checkPublisher(Publisher p) {
 		try {
 			if("BusinessGroup".equals(p.getResName())) {
-				BusinessGroup bg = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(p.getResId());
+				BusinessGroup bg = businessGroupService.loadBusinessGroup(p.getResId());
 				if(bg == null) {
-					log.info("deactivating publisher with key; " + p.getKey());
-					NotificationsManager.getInstance().deactivate(p);
+					log.info("deactivating publisher with key; {}", p.getKey());
+					notificationsManager.deactivate(p);
 				}
 			} else if ("CourseModule".equals(p.getResName())) {
 				if(!NotificationsUpgradeHelper.checkCourse(p)) {
-					log.info("deactivating publisher with key; " + p.getKey());
-					NotificationsManager.getInstance().deactivate(p);
+					log.info("deactivating publisher with key; {}", p.getKey());
+					notificationsManager.deactivate(p);
 				}
 			} else {
 				if(!NotificationsUpgradeHelper.checkOLATResourceable(p)) {
-					log.info("deactivating publisher with key; " + p.getKey());
-					NotificationsManager.getInstance().deactivate(p);
+					log.info("deactivating publisher with key; {}", p.getKey());
+					notificationsManager.deactivate(p);
 				}
 			}
 		} catch (Exception e) {
@@ -245,10 +248,10 @@ public class WikiPageChangeOrCreateNotificationHandler implements NotificationsH
 		String type = p.getResName();
 		String title;
 		if("BusinessGroup".equals(type)) {
-			BusinessGroup bg = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(resId);
+			BusinessGroup bg = businessGroupService.loadBusinessGroup(resId);
 			title = translator.translate("notifications.header.group", new String[]{bg.getName()});
 		} else if (CourseModule.getCourseTypeName().equals(type)) {
-			String displayName = RepositoryManager.getInstance().lookupDisplayNameByOLATResourceableId(resId);
+			String displayName = repositoryManager.lookupDisplayNameByOLATResourceableId(resId);
 			title = translator.translate("notifications.header.course", new String[]{displayName});
 		} else {
 			title = translator.translate("notifications.header");

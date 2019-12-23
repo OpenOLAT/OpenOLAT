@@ -244,7 +244,7 @@ public class CatalogController extends BasicController {
 		Roles roles = ureq.getUserSession().getRoles();
 		CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), roles.isAdministrator(), roles.isGuestOnly());
 		commentsController =
-				new UserCommentsAndRatingsController(ureq, getWindowControl(), libraryOres, item.getId(), secCallback, true, true, true);
+				new UserCommentsAndRatingsController(ureq, getWindowControl(), libraryOres, item.getId(), secCallback, null, true, true, true);
 		commentsController.expandComments(ureq);
 		listenTo(commentsController);
 
@@ -345,7 +345,7 @@ public class CatalogController extends BasicController {
 		Roles roles = ureq.getUserSession().getRoles();
 		CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), roles.isAdministrator(), roles.isGuestOnly());
 		UserCommentsAndRatingsController commentsAndRatingCtr =
-				new UserCommentsAndRatingsController(ureq, getWindowControl(), libraryOres, item.getId(), secCallback, true, true, false);
+				new UserCommentsAndRatingsController(ureq, getWindowControl(), libraryOres, item.getId(), secCallback, null, true, true, false);
 		commentsAndRatingCtr.setUserObject(item);
 		listenTo(commentsAndRatingCtr);
 		contentVC.put("comments_" + item.getId(), commentsAndRatingCtr.getInitialComponent());

@@ -23,7 +23,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationsHandler;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
@@ -60,15 +59,19 @@ public class PFNotificationsHandler implements NotificationsHandler {
 	private static final Logger log = Tracing.createLoggerFor(PFNotificationsHandler.class);
 	protected static final String CSS_CLASS_ICON = "o_pf_icon";
 
-	@Autowired
-	private NotificationsManager notificationsManager;
 	@Autowired 
 	private PFManager pfManager;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private NotificationsManager notificationsManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 
 	public PFNotificationsHandler() {
-
+		//
 	}
 	
 	protected static SubscriptionContext getSubscriptionContext(CourseEnvironment courseEnv, CourseNode node) {
@@ -105,15 +108,15 @@ public class PFNotificationsHandler implements NotificationsHandler {
 	private void checkPublisher(Publisher p) {
 		try {
 			if("BusinessGroup".equals(p.getResName())) {
-				BusinessGroup bg = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(p.getResId());
+				BusinessGroup bg = businessGroupService.loadBusinessGroup(p.getResId());
 				if(bg == null) {
-					log.info("deactivating publisher with key; " + p.getKey());
-					NotificationsManager.getInstance().deactivate(p);
+					log.info("deactivating publisher with key; {}", p.getKey());
+					notificationsManager.deactivate(p);
 				}
 			} else if ("CourseModule".equals(p.getResName())) {
 				if(!NotificationsUpgradeHelper.checkCourse(p)) {
-					log.info("deactivating publisher with key; " + p.getKey());
-					NotificationsManager.getInstance().deactivate(p);
+					log.info("deactivating publisher with key; {}", p.getKey());
+					notificationsManager.deactivate(p);
 				}
 			}
 		} catch (Exception e) {
@@ -126,10 +129,10 @@ public class PFNotificationsHandler implements NotificationsHandler {
 		try {
 			String resName = p.getResName();
 			if("BusinessGroup".equals(resName)) {
-				BusinessGroup bg = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(p.getResId());
+				BusinessGroup bg = businessGroupService.loadBusinessGroup(p.getResId());
 				title = translator.translate("notifications.header.group", new String[]{bg.getName()});
 			} else if("CourseModule".equals(resName)) {
-				String displayName = RepositoryManager.getInstance().lookupDisplayNameByOLATResourceableId(p.getResId());
+				String displayName = repositoryManager.lookupDisplayNameByOLATResourceableId(p.getResId());
 				title = translator.translate("notifications.header.course", new String[]{displayName});
 			} else {
 				title = translator.translate("notifications.header");

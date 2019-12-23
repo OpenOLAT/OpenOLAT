@@ -73,6 +73,8 @@ public interface RepositoryService {
 	public List<RepositoryEntry> loadRepositoryEntriesByExternalId(String externalId);
 
 	public List<RepositoryEntry> loadRepositoryEntriesByExternalRef(String externalRef);
+	
+	public List<RepositoryEntry> loadRepositoryEntriesLikeExternalRef(String externalRef);
 
 	public List<RepositoryEntry> loadByResourceKeys(Collection<Long> keys);
 

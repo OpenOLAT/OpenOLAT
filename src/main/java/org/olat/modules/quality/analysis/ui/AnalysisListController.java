@@ -224,7 +224,7 @@ public class AnalysisListController extends FormBasicController implements Flexi
 	}
 	
 	private AnalysisPresentation createPresentation(EvaluationFormView formView) {
-		return analysisService.createPresentation(formView.getFormEntry());
+		return analysisService.createPresentation(formView.getFormEntry(), secCallback.getViewAnalysisOrganisationRefs());
 	}
 
 	private void doOpenPresentation(UserRequest ureq, Long presentationKey) {

@@ -184,7 +184,7 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 		for (DialogElement dialogElement : dialogElements) {
 			Long forumKey = dialogElement.getForum().getKey();
 			SubscriptionContext subsContext = CourseModule.createSubscriptionContext(course.getCourseEnvironment(), this, forumKey.toString());
-			NotificationsManager.getInstance().delete(subsContext);
+			CoreSpringFactory.getImpl(NotificationsManager.class).delete(subsContext);
 			depm.deleteDialogElement(dialogElement);
 		}
 	}

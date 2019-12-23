@@ -43,6 +43,7 @@ import javax.xml.bind.Marshaller;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
+import org.olat.core.commons.services.commentAndRating.ReadOnlyCommentsSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsController;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.dispatcher.mapper.Mapper;
@@ -103,7 +104,6 @@ import org.olat.modules.portfolio.model.ExtendedMediaRenderingHints;
 import org.olat.modules.portfolio.ui.AbstractPageListController;
 import org.olat.modules.portfolio.ui.PageMetadataController;
 import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
-import org.olat.modules.portfolio.ui.model.ReadOnlyCommentsSecurityCallback;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -356,7 +356,7 @@ public class ExportBinderAsCPResource implements MediaResource {
 		
 		CommentAndRatingSecurityCallback commentSecCallback = new ReadOnlyCommentsSecurityCallback();
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Page.class, page.getKey());
-		UserCommentsController commentsCtrl = new UserCommentsController(ureq, mockwControl, ores, null, commentSecCallback);
+		UserCommentsController commentsCtrl = new UserCommentsController(ureq, mockwControl, ores, null, null, commentSecCallback);
 		Component metadata = metadatCtrl.getInitialComponent();
 		Component component = pageCtrl.getInitialComponent();
 		Component comments = commentsCtrl.getNumOfComments() > 0 ? commentsCtrl.getInitialComponent() : null;

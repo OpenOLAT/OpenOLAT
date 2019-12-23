@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
+import org.olat.core.commons.services.commentAndRating.ReadOnlyCommentsSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -56,7 +57,6 @@ import org.olat.modules.portfolio.handler.SpacerElementHandler;
 import org.olat.modules.portfolio.handler.TablePageElementHandler;
 import org.olat.modules.portfolio.handler.TitlePageElementHandler;
 import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
-import org.olat.modules.portfolio.ui.model.ReadOnlyCommentsSecurityCallback;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -167,7 +167,7 @@ public class BinderOnePageController extends BasicController {
 
 		CommentAndRatingSecurityCallback commentSecCallback = new ReadOnlyCommentsSecurityCallback();
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Page.class, page.getKey());
-		UserCommentsController commentsCtrl = new UserCommentsController(ureq, getWindowControl(), ores, null, commentSecCallback);
+		UserCommentsController commentsCtrl = new UserCommentsController(ureq, getWindowControl(), ores, null, null, commentSecCallback);
 		listenTo(commentsCtrl);
 		if(commentsCtrl.getNumOfComments() > 0) {
 			pageVC.put("comments", commentsCtrl.getInitialComponent());

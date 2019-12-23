@@ -72,6 +72,7 @@ import org.olat.restapi.support.vo.CourseInfoVO;
 import org.olat.restapi.support.vo.CourseInfoVOes;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.FolderVO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -95,6 +96,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 public class CoursesInfosWebService {
 	
 	private static final Logger log = Tracing.createLoggerFor(CoursesInfosWebService.class);
+	
+	@Autowired
+	private NotificationsManager notificationsManager;
 	
 	/**
 	 * Get courses informations viewable by the authenticated user
@@ -187,27 +191,25 @@ public class CoursesInfosWebService {
 	}
 	
 	private void collectSubscriptions(Identity identity, Set<Long> forumNotified, Map<Long,Set<String>> courseNotified) {
-		NotificationsManager man = NotificationsManager.getInstance();
-		{//collect subscriptions
-			List<String> notiTypes = new ArrayList<>();
-			notiTypes.add("FolderModule");
-			notiTypes.add("Forum");
-			List<Subscriber> subs = man.getSubscribers(identity, notiTypes);
-			for(Subscriber sub:subs) {
-				String publisherType = sub.getPublisher().getType();
-				String resName = sub.getPublisher().getResName();
-				
-				if("CourseModule".equals(resName)) {
-					if("FolderModule".equals(publisherType)) {
-						Long courseKey = sub.getPublisher().getResId();
-						if(!courseNotified.containsKey(courseKey)) {
-							courseNotified.put(courseKey,new HashSet<String>());
-						}
-						courseNotified.get(courseKey).add(sub.getPublisher().getSubidentifier());
-					} else if ("Forum".equals(publisherType)) {
-						Long forumKey = Long.parseLong(sub.getPublisher().getData());
-						forumNotified.add(forumKey);
+		//collect subscriptions
+		List<String> notiTypes = new ArrayList<>();
+		notiTypes.add("FolderModule");
+		notiTypes.add("Forum");
+		List<Subscriber> subs = notificationsManager.getSubscribers(identity, notiTypes, true);
+		for(Subscriber sub:subs) {
+			String publisherType = sub.getPublisher().getType();
+			String resName = sub.getPublisher().getResName();
+			
+			if("CourseModule".equals(resName)) {
+				if("FolderModule".equals(publisherType)) {
+					Long courseKey = sub.getPublisher().getResId();
+					if(!courseNotified.containsKey(courseKey)) {
+						courseNotified.put(courseKey,new HashSet<String>());
 					}
+					courseNotified.get(courseKey).add(sub.getPublisher().getSubidentifier());
+				} else if ("Forum".equals(publisherType)) {
+					Long forumKey = Long.parseLong(sub.getPublisher().getData());
+					forumNotified.add(forumKey);
 				}
 			}
 		}

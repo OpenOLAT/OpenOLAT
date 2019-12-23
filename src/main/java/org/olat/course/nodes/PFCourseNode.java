@@ -269,7 +269,7 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 		super.cleanupOnDelete(course);
 		// mark the subscription to this node as deleted
 		SubscriptionContext folderSubContext = CourseModule.createTechnicalSubscriptionContext(course.getCourseEnvironment(), this);
-		NotificationsManager.getInstance().delete(folderSubContext);
+		CoreSpringFactory.getImpl(NotificationsManager.class).delete(folderSubContext);
 		// delete filesystem
 		
 		CourseEnvironment courseEnv = course.getCourseEnvironment();

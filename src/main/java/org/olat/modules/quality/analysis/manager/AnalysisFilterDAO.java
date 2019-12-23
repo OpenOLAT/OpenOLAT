@@ -543,6 +543,10 @@ public class AnalysisFilterDAO {
 		sb.append("       inner join evaluationformsurvey survey");
 		sb.append("               on survey.resName = '").append(QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME).append("'");
 		sb.append("              and survey.resId = collection.key");
+		sb.append("       inner join qualitydatacollectiontoorganisation dc2org");
+		sb.append("              on dc2org.dataCollection.key = collection.key");
+		sb.append("       inner join organisation dcOrganisation");
+		sb.append("              on dc2org.organisation.key = dcOrganisation.key");
 		sb.append("       left join collection.topicOrganisation topicOrganisation");
 		sb.append("       left join qualitycontext context");
 		sb.append("              on context.dataCollection.key = collection.key");
@@ -569,6 +573,21 @@ public class AnalysisFilterDAO {
 		sb.and().append("collection.status = '").append(QualityDataCollectionStatus.FINISHED).append("'");
 		if (searchParams.getFormEntryRef() != null) {
 			sb.and().append("survey.formEntry.key = :formEntryKey");
+		}
+		if (searchParams.getDataCollectionOrganisationRefs() != null && !searchParams.getDataCollectionOrganisationRefs().isEmpty()) {
+			// load the organisations and all children
+			sb.and();
+			for (int i = 0; i < searchParams.getDataCollectionOrganisationRefs().size(); i++) {
+				if (i == 0) {
+					sb.append("(");
+				} else {
+					sb.append(" or ");
+				}
+				sb.append("dcOrganisation.materializedPathKeys like :dcOrgPath").append(i);
+				if (i == searchParams.getDataCollectionOrganisationRefs().size() - 1) {
+					sb.append(")");
+				}
+			}
 		}
 		if (searchParams.getDateRangeFrom() != null) {
 			sb.and().append("collection.deadline >= :dateRangeFrom");
@@ -732,6 +751,14 @@ public class AnalysisFilterDAO {
 	static void appendParameters(Query query, AnalysisSearchParameter searchParams) {
 		if (searchParams.getFormEntryRef() != null) {
 			query.setParameter("formEntryKey", searchParams.getFormEntryRef().getKey());
+		}
+		if (searchParams.getDataCollectionOrganisationRefs() != null && !searchParams.getDataCollectionOrganisationRefs().isEmpty()) {
+			for (int i = 0; i < searchParams.getDataCollectionOrganisationRefs().size(); i++) {
+				String parameter = new StringBuilder(12).append("dcOrgPath").append(i).toString();
+				Long key = searchParams.getDataCollectionOrganisationRefs().get(i).getKey();
+				String value = new StringBuilder(32).append("%/").append(key).append("/%").toString();
+				query.setParameter(parameter, value);
+			}
 		}
 		if (searchParams.getDateRangeFrom() != null) {
 			query.setParameter("dateRangeFrom", searchParams.getDateRangeFrom());

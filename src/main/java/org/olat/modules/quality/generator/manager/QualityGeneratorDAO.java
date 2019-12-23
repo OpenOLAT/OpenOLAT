@@ -87,7 +87,7 @@ public class QualityGeneratorDAO {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select generator");
 		sb.append("  from qualitygenerator as generator");
-		sb.append(" where generator.enabled is true");
+		sb.append(" where generator.enabled = true");
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), QualityGenerator.class)

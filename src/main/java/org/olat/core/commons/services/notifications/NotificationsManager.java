@@ -34,37 +34,30 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.event.GenericEventListener;
 
-public abstract class NotificationsManager {
-	
-	
-	protected static NotificationsManager INSTANCE = null;
-	
-	/**
-	 * Description:<br>
-	 * Notification Module gets started by the framework (spring) and initializes the
-	 * scheduler by value you specified in the
-	 * spring config file. When the time has come the notification manager gets
-	 * called and it searches for pending notifications by checking all the
-	 * subscriber objects which are persisted in the database (table: o_noti_sub).
-	 * For each subscription a user has he has an subscriber object. Inside the
-	 * subscriber object the times the user recently got informed are saved and by
-	 * comparing those dates to the value "latestNews" field each publisher
-	 * (o_noti_pub) has we can find out what we have to send to each users
-	 * subscriptions. To add a new publisher see classes implementing the
-	 * 
-	 * @see org.olat.core.commons.services.notifications.NotificationsHandler and the corresponding code
-	 *      in such as
-	 * @see org.olat.modules.fo.ui.ForumController where you add the subscription stuff
-	 *      to the constructor and for the action that creates a new entry you have
-	 *      to inform the
-	 * @see org.olat.core.commons.services.notifications.manager.NotificationsManagerImpl#markPublisherNews(SubscriptionContext,
-	 *      Identity)
-	 * Retrieve an instance of the notifications manager
-	 * @return
-	 */
-	public static NotificationsManager getInstance() {
-		return INSTANCE;
-	}
+/**
+ * Description:<br>
+ * Notification Module gets started by the framework (spring) and initializes the
+ * scheduler by value you specified in the
+ * spring config file. When the time has come the notification manager gets
+ * called and it searches for pending notifications by checking all the
+ * subscriber objects which are persisted in the database (table: o_noti_sub).
+ * For each subscription a user has he has an subscriber object. Inside the
+ * subscriber object the times the user recently got informed are saved and by
+ * comparing those dates to the value "latestNews" field each publisher
+ * (o_noti_pub) has we can find out what we have to send to each users
+ * subscriptions. To add a new publisher see classes implementing the
+ * 
+ * @see org.olat.core.commons.services.notifications.NotificationsHandler and the corresponding code
+ *      in such as
+ * @see org.olat.modules.fo.ui.ForumController where you add the subscription stuff
+ *      to the constructor and for the action that creates a new entry you have
+ *      to inform the
+ * @see org.olat.core.commons.services.notifications.manager.NotificationsManagerImpl#markPublisherNews(SubscriptionContext,
+ *      Identity)
+ * Retrieve an instance of the notifications manager
+ * @return
+ */
+public interface NotificationsManager {
 	
 	/**
 	 * Return all the subscription items for a defined user and restricted to a
@@ -73,12 +66,12 @@ public abstract class NotificationsManager {
 	 * @param publisherType
 	 * @return
 	 */
-	public abstract List<SubscriptionInfo> getSubscriptionInfos(Identity identity, String publisherType);
+	public List<SubscriptionInfo> getSubscriptionInfos(Identity identity, String publisherType);
 
 	/**
 	 * Notify all users by email with their notifications
 	 */
-	public abstract void notifyAllSubscribersByEmail();
+	public void notifyAllSubscribersByEmail();
 
 	/**
 	 * Send an email to a single user with the given set of subscription items
@@ -88,20 +81,20 @@ public abstract class NotificationsManager {
 	 * @param subscribersToUpdate
 	 * @return
 	 */
-	public abstract boolean sendMailToUserAndUpdateSubscriber(Identity curIdent, List<SubscriptionItem> items, Translator translator, List<Subscriber> subscribersToUpdate);
+	public boolean sendMailToUserAndUpdateSubscriber(Identity curIdent, List<SubscriptionItem> items, Translator translator, List<Subscriber> subscribersToUpdate);
 
 	/**
 	 * @param key
 	 * @return the subscriber with this key or null if not found
 	 */
-	public abstract Subscriber getSubscriber(Long key);
+	public Subscriber getSubscriber(Long key);
 
 	/**
 	 * Get the publisher or return null if not exists
 	 * @param subsContext
 	 * @return the publisher belonging to the given context or null
 	 */
-	public abstract Publisher getPublisher(SubscriptionContext subsContext);
+	public Publisher getPublisher(SubscriptionContext subsContext);
 	
 	/**
 	 * Get or create the publisher
@@ -109,9 +102,9 @@ public abstract class NotificationsManager {
 	 * @param pdata
 	 * @return
 	 */
-	public abstract Publisher getOrCreatePublisher(final SubscriptionContext scontext, final PublisherData pdata);
+	public Publisher getOrCreatePublisher(final SubscriptionContext scontext, final PublisherData pdata);
 	
-	public abstract List<Publisher> getAllPublisher();
+	public List<Publisher> getAllPublisher();
 
 	/**
 	 * deletes all publishers of the given olatresourceable. e.g. ores =
@@ -120,7 +113,7 @@ public abstract class NotificationsManager {
 	 * 
 	 * @param ores
 	 */
-	public abstract int deletePublishersOf(OLATResourceable ores);
+	public int deletePublishersOf(OLATResourceable ores);
 
 
 	/**
@@ -129,7 +122,16 @@ public abstract class NotificationsManager {
 	 * @return a Subscriber object belonging to the identity and listening to the
 	 *         given publisher
 	 */
-	public abstract Subscriber getSubscriber(IdentityRef identity, Publisher publisher);
+	public Subscriber getSubscriber(IdentityRef identity, Publisher publisher);
+	
+	/**
+	 * Get the subscriber (enable or not) of a user by context.
+	 * 
+	 * @param identity The identity
+	 * @param subscriptionContext The resource context
+	 * @return A subscriber (publisher is not fetched)
+	 */
+	public Subscriber getSubscriber(Identity identity, SubscriptionContext subscriptionContext);
 	
 	/**
 	 * Delete the subscriber with the specified primary key.
@@ -137,21 +139,24 @@ public abstract class NotificationsManager {
 	 * @param subscriberKey
 	 * @return True if something was deleted.
 	 */
-	public abstract boolean deleteSubscriber(Long subscriberKey);
+	public boolean deleteSubscriber(Long subscriberKey);
 	
 	/**
 	 * Return all subscribers of a publisher
-	 * @param publisher
-	 * @return
+	 * 
+	 * @param publisher The publisher
+	 * @param enabledOnly true if restrict to enabled subscribers
+	 * @return A list of subscribers
 	 */
-	public abstract List<Subscriber> getSubscribers(Publisher publisher);
+	public List<Subscriber> getSubscribers(Publisher publisher, boolean enabledOnly);
 	
 	/**
-	 * Return identities of all subscribers of the publisher
-	 * @param publisher
-	 * @return
+	 * Return identities of all enabled subscribers of the publisher.
+	 * 
+	 * @param publisher The publisher
+	 * @return A list of identities
 	 */
-	public abstract List<Identity> getSubscriberIdentities(Publisher publisher);
+	public List<Identity> getSubscriberIdentities(Publisher publisher);
 
 	/**
 	 * sets the latest visited date of the subscription to 'now' .assumes the
@@ -160,7 +165,7 @@ public abstract class NotificationsManager {
 	 * @param identity
 	 * @param subsContext
 	 */
-	public abstract void markSubscriberRead(Identity identity, SubscriptionContext subsContext);
+	public void markSubscriberRead(Identity identity, SubscriptionContext subsContext);
 
 	/**
 	 * call this method to indicate that there is news for the given
@@ -169,34 +174,34 @@ public abstract class NotificationsManager {
 	 * @param subscriptionContext
 	 * @param ignoreNewsFor
 	 */
-	public abstract void markPublisherNews(SubscriptionContext subscriptionContext, Identity ignoreNewsFor, boolean sendEvent);
+	public void markPublisherNews(SubscriptionContext subscriptionContext, Identity ignoreNewsFor, boolean sendEvent);
 	
-	public abstract void markPublisherNews(String publisherType, String data, Identity ignoreNewsFor, boolean sendEvent);
+	public void markPublisherNews(String publisherType, String data, Identity ignoreNewsFor, boolean sendEvent);
 
-	public abstract void registerAsListener(GenericEventListener gel, Identity ident);
+	public void registerAsListener(GenericEventListener gel, Identity ident);
 
-	public abstract void deregisterAsListener(GenericEventListener gel);
+	public void deregisterAsListener(GenericEventListener gel);
 	
 	/**
 	 * get interval of identity.
 	 * @param ident
 	 * @return interval string or defaultinterval if not valid or not set
 	 */
-	public abstract String getUserIntervalOrDefault(Identity ident);
+	public String getUserIntervalOrDefault(Identity ident);
 	
 	/**
 	 * calculate a Date from the past with given interval (now - interval)
 	 * @param interval
 	 * @return
 	 */
-	public abstract Date getCompareDateFromInterval(String interval);
+	public Date getCompareDateFromInterval(String interval);
 
 	/**
 	 * @param identity
 	 * @param subscriptionContext
 	 * @return true if this user is subscribed
 	 */
-	public abstract boolean isSubscribed(Identity identity, SubscriptionContext subscriptionContext);
+	public boolean isSubscribed(Identity identity, SubscriptionContext subscriptionContext);
 
 	/**
 	 * marks the publisher as deleted. It cannot delete the publisher, since most
@@ -209,20 +214,20 @@ public abstract class NotificationsManager {
 	 * 
 	 * @param scontext the subscriptioncontext
 	 */
-	public abstract void delete(SubscriptionContext scontext);
+	public void delete(SubscriptionContext scontext);
 	
 	/**
 	 * delete the publisher and all subscribers to this publisher.
 	 * @param publisher
 	 */
-	public abstract void deactivate(Publisher publisher);
+	public void deactivate(Publisher publisher);
 
 	/**
 	 * @param pub
 	 * @return true if the publisher is valid (that is: has not been marked as
 	 *         deleted)
 	 */
-	public abstract boolean isPublisherValid(Publisher pub);
+	public boolean isPublisherValid(Publisher pub);
 
 	/**
 	 * @param subscriber
@@ -230,7 +235,7 @@ public abstract class NotificationsManager {
 	 * @param mimeType text/html or text/plain
 	 * @return the item or null if there is currently no news for this subscription
 	 */
-	public abstract SubscriptionItem createSubscriptionItem(Subscriber subscriber, Locale locale, String mimeTypeTitle, String mimeTypeContent);
+	public SubscriptionItem createSubscriptionItem(Subscriber subscriber, Locale locale, String mimeTypeTitle, String mimeTypeContent);
 	
 	/**
 	 * @param subscriber
@@ -239,7 +244,7 @@ public abstract class NotificationsManager {
 	 * @param lowerDateBoundary The date from which the news should be collected
 	 * @return
 	 */
-	public abstract SubscriptionItem createSubscriptionItem(Subscriber subscriber, Locale locale, String mimeTypeTitle, String mimeTypeContent, Date lowerDateBoundary);
+	public SubscriptionItem createSubscriptionItem(Subscriber subscriber, Locale locale, String mimeTypeTitle, String mimeTypeContent, Date lowerDateBoundary);
 
 	/**
 	 * Create a subscription item from info without reloading all the subscription
@@ -250,19 +255,19 @@ public abstract class NotificationsManager {
 	 * @param mimeTypeContent
 	 * @return
 	 */
-	public abstract SubscriptionItem createSubscriptionItem(SubscriptionInfo subsInfo, Subscriber subscriber, Locale locale, String mimeTypeTitle, String mimeTypeContent);
+	public SubscriptionItem createSubscriptionItem(SubscriptionInfo subsInfo, Subscriber subscriber, Locale locale, String mimeTypeTitle, String mimeTypeContent);
 
-	public abstract SubscriptionInfo getNoSubscriptionInfo();
+	public SubscriptionInfo getNoSubscriptionInfo();
 
 
 	/**
 	 * subscribers for ONE person (e.g. subscribed to 5 forums -> 5 subscribers
-	 * belonging to this person)
+	 * belonging to this person), enabled or not
 	 * 
 	 * @param identity
 	 * @return List of Subscriber Objects which belong to the identity
 	 */
-	public abstract List<Subscriber> getSubscribers(Identity identity);
+	public List<Subscriber> getSubscribers(Identity identity, boolean enabledOnly);
 	
 	/**
 	 * subscribers for ONE person (e.g. subscribed to 5 forums -> 5 subscribers
@@ -271,36 +276,28 @@ public abstract class NotificationsManager {
 	 * @param types
 	 * @return
 	 */
-	public abstract List<Subscriber> getSubscribers(IdentityRef identity, List<String> types);
+	public List<Subscriber> getSubscribers(IdentityRef identity, List<String> types, boolean enabledOnly);
 
-	/**
-	 * subscribers for ONE person (e.g. subscribed to 5 forums -> 5 subscribers
-	 * belonging to this person) restricted to the specified types
-	 * 
-	 * @param identity
-	 * @return List of Subscriber Objects which belong to the identity
-	 */
-	public abstract List<Subscriber> getSubscribers(IdentityRef identity, long resId);
 	
 	/**
 	 * @param identity
 	 * @return a list of all subscribers which belong to the identity and which
 	 *         publishers are valid
 	 */
-	public abstract List<Subscriber> getValidSubscribers(Identity identity);
+	public List<Subscriber> getValidSubscribers(Identity identity);
 	
 	/**
 	 * @param publisher
 	 * @return
 	 */
-	public abstract List<Subscriber> getValidSubscribersOf(Publisher publisher);
+	public List<Subscriber> getValidSubscribersOf(Publisher publisher);
 
 	/**
 	 * @param identity
 	 * @param subscriptionContext
 	 * @param publisherData
 	 */
-	public abstract void subscribe(Identity identity, SubscriptionContext subscriptionContext, PublisherData publisherData);
+	public void subscribe(Identity identity, SubscriptionContext subscriptionContext, PublisherData publisherData);
 	
 	/**
 	 * The method is equivalent to the method above but is done through the JMS server.
@@ -309,45 +306,45 @@ public abstract class NotificationsManager {
 	 * @param subscriptionContext The context
 	 * @param publisherData The additional data
 	 */
-	public abstract void asyncSubscribe(Identity identity, SubscriptionContext subscriptionContext, PublisherData publisherData);
+	public void asyncSubscribe(Identity identity, SubscriptionContext subscriptionContext, PublisherData publisherData);
 	
-	public abstract void subscribe(List<Identity> identities, SubscriptionContext subscriptionContext, PublisherData publisherData);
+	public void subscribe(List<Identity> identities, SubscriptionContext subscriptionContext, PublisherData publisherData);
 
-	public abstract void unsubscribe(Subscriber s);
+	public void unsubscribe(Subscriber s);
 	
-	public abstract void unsubscribeAllForIdentityAndResId(IdentityRef identity, Long resId);
+	public void unsubscribeAllForIdentityAndResId(IdentityRef identity, Long resId);
 
 	/**
 	 * @param identity
 	 * @param subscriptionContext
 	 */
-	public abstract void unsubscribe(Identity identity, SubscriptionContext subscriptionContext);
+	public void unsubscribe(Identity identity, SubscriptionContext subscriptionContext);
 	
 	/**
 	 * 
 	 * @param identities
 	 * @param subscriptionContext
 	 */
-	public abstract void unsubscribe(List<Identity> identities, SubscriptionContext subscriptionContext);
+	public void unsubscribe(List<Identity> identities, SubscriptionContext subscriptionContext);
 	
 	/**
 	 * @return the handler for the type
 	 */
-	public abstract NotificationsHandler getNotificationsHandler(Publisher publisher);
+	public NotificationsHandler getNotificationsHandler(Publisher publisher);
 
 	/**
 	 * @return the notification intervals
 	 */
-	public abstract List<String> getEnabledNotificationIntervals();
+	public List<String> getEnabledNotificationIntervals();
 
 	/**
 	 * @return the default notification interval
 	 */
-	public abstract String getDefaultNotificationInterval();
+	public String getDefaultNotificationInterval();
 
 	/**
 	 * @param subscriptionContext
 	 * @param publisherData new data to write
 	 */
-	public abstract void updatePublisherData(SubscriptionContext subscriptionContext, PublisherData publisherData);
+	public void updatePublisherData(SubscriptionContext subscriptionContext, PublisherData publisherData);
 }

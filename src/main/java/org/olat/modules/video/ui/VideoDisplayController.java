@@ -32,6 +32,9 @@ import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityC
 import org.olat.core.commons.services.commentAndRating.ReadOnlyCommentsSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
 import org.olat.core.commons.services.image.Size;
+import org.olat.core.commons.services.notifications.PublisherData;
+import org.olat.core.commons.services.notifications.PublishingInformations;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -44,15 +47,18 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.helpers.Settings;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.nodes.VideoCourseNode;
+import org.olat.fileresource.types.VideoFileResource;
 import org.olat.modules.video.VideoFormat;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMarker;
@@ -151,7 +157,6 @@ public class VideoDisplayController extends BasicController {
 			mediaRepoBaseUrl = registerMapper(ureq, new VFSContainerMapper(mediaContainer.getParentContainer()));
 		}
 		initMediaElementJs();
-		
 
 		videoMetadata = videoManager.getVideoMetadata(videoEntry.getOlatResource());	
 		VFSLeaf video = videoManager.getMasterVideoFile(videoEntry.getOlatResource());
@@ -168,7 +173,8 @@ public class VideoDisplayController extends BasicController {
 			}
 
 			// Load users preferred version from GUI prefs
-			Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
+			UserSession usess = ureq.getUserSession();
+			Preferences guiPrefs = usess.getGuiPreferences();
 			userPreferredResolution = (Integer) guiPrefs.get(VideoDisplayController.class, GUIPREF_KEY_PREFERRED_RESOLUTION);
 			if (userPreferredResolution == null) {
 				userPreferredResolution = videoModule.getPreferredDefaultResolution();
@@ -176,12 +182,14 @@ public class VideoDisplayController extends BasicController {
 
 			mainVC.contextPut("autoplay", displayOptions.isAutoplay());
 	
-			if ((displayOptions.isShowComments() || displayOptions.isShowRating()) && !ureq.getUserSession().getRoles().isGuestOnly()) {
+			if ((displayOptions.isShowComments() || displayOptions.isShowRating()) && !usess.getRoles().isGuestOnly()) {
 				CommentAndRatingSecurityCallback ratingSecCallback = displayOptions.isReadOnly()
 						? new ReadOnlyCommentsSecurityCallback() : new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
 				String subIdent = courseNode == null ? null : courseNode.getIdent();
+				PublishingInformations publishingInformations = getPublisher(entry, videoEntry, subIdent);
+				// comments are always linked to the video resource (it's historic)
 				commentsAndRatingCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(), videoEntry.getOlatResource(), subIdent,
-						ratingSecCallback, displayOptions.isShowComments(), displayOptions.isShowRating(), true);
+						ratingSecCallback, publishingInformations, displayOptions.isShowComments(), displayOptions.isShowRating(), true);
 				if (displayOptions.isShowComments()) {					
 					commentsAndRatingCtr.expandComments(ureq);
 				}
@@ -199,9 +207,26 @@ public class VideoDisplayController extends BasicController {
 			}
 		}
 	}
+	
+	private PublishingInformations getPublisher(RepositoryEntry entry, RepositoryEntry resourceEntry, String subIdent) {
+		OLATResourceable ores = null;
+		if(entry != null) {
+			ores = entry.getOlatResource();
+		} else {
+			ores = resourceEntry.getOlatResource();
+		}
+		if(subIdent == null) {
+			subIdent = "";
+		}
+		
+		String businessPath = getWindowControl().getBusinessControl().getAsString();
+		SubscriptionContext ctx = new SubscriptionContext(ores.getResourceableTypeName(), ores.getResourceableId(), subIdent);
+		PublisherData data = new PublisherData(VideoFileResource.TYPE_NAME, ores.getResourceableId() + "-" + subIdent, businessPath);
+		return new PublishingInformations(data, ctx);
+	}
 
-	private String getDescription(VideoCourseNode courseNode, VideoDisplayOptions displayOptions) {
-		if (displayOptions.isCustomDescription()) return displayOptions.getDescriptionText();
+	private String getDescription(VideoCourseNode courseNode, VideoDisplayOptions options) {
+		if (options.isCustomDescription()) return options.getDescriptionText();
 		if (courseNode != null) return courseNode.getLearningObjectives();
 		return null;
 	}
@@ -412,7 +437,7 @@ public class VideoDisplayController extends BasicController {
 	private void loadTracks() {
 		Map<String, String> trackfiles = new HashMap<>();
 		Map<String, VFSLeaf> configTracks = videoManager.getAllTracks(videoEntry.getOlatResource());
-		for (HashMap.Entry<String, VFSLeaf> track : configTracks.entrySet()) {
+		for (Map.Entry<String, VFSLeaf> track : configTracks.entrySet()) {
 			trackfiles.put(track.getKey(), track.getValue().getName());
 		}
 		mainVC.contextPut("trackfiles",trackfiles);	
