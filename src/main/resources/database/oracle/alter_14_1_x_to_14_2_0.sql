@@ -20,3 +20,9 @@ create index idx_task_rev_to_ident_idx on o_gta_task_revision (fk_comment_author
 
 -- notifications
 alter table o_noti_sub add subenabled number default 1;
+
+
+-- index
+create index mark_all_idx on o_mark(resname,resid,creator_id);
+create index idx_eff_stat_course_ident_idx on o_as_eff_statement (fk_identity,course_repo_key);
+

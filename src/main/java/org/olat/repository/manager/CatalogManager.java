@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.persistence.FlushModeType;
 import javax.persistence.TypedQuery;
 
 import org.apache.logging.log4j.Logger;
@@ -504,19 +505,20 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	
 	public boolean isOwner(Identity identity) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select count(cei.key) from ").append(CatalogEntryImpl.class.getName()).append(" as cei ")
+		sb.append("select cei.key from ").append(CatalogEntryImpl.class.getName()).append(" as cei ")
 		  .append(" where exists (select sgmsi.key from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
 		  .append("   where  cei.ownerGroup=sgmsi.securityGroup and sgmsi.identity.key=:identityKey")
 		  .append(" )");
 
-		Number count = dbInstance.getCurrentEntityManager()
+		List<Number> count = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Number.class)
+				.setFlushMode(FlushModeType.COMMIT)
+				.setFirstResult(0)
+				.setMaxResults(1)
 				.setParameter("identityKey", identity.getKey())
-				.getSingleResult();
-		return count == null ? false : count.intValue() > 0;
+				.getResultList();
+		return count != null && !count.isEmpty() && count.get(0) != null && count.get(0).intValue() > 0;
 	}
-	
-
 	
 	public List<Identity> getOwnersOfParentLine(CatalogEntry entry) {
 		List<CatalogEntry> parentLine = getCategoryParentLine(entry);

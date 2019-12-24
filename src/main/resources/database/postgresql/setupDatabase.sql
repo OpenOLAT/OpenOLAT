@@ -3470,6 +3470,7 @@ create index lc_action_idx on o_lifecycle (action);
 alter table o_mark add constraint FKF26C8375236F21X foreign key (creator_id) references o_bs_identity (id);
 create index FKF26C8375236F21X on o_mark (creator_id);
 
+create index mark_all_idx on o_mark(resname,resid,creator_id);
 create index mark_id_idx on o_mark(resid);
 create index mark_name_idx on o_mark(resname);
 create index mark_subpath_idx on o_mark(ressubpath);
@@ -3609,6 +3610,7 @@ create index idx_im_prefs_ident_idx on o_im_preferences (fk_from_identity_id);
 alter table o_as_eff_statement add constraint eff_statement_id_cstr foreign key (fk_identity) references o_bs_identity (id);
 create index idx_eff_statement_ident_idx on o_as_eff_statement (fk_identity);
 create index eff_statement_repo_key_idx on o_as_eff_statement (course_repo_key);
+create index idx_eff_stat_course_ident_idx on o_as_eff_statement (fk_identity,course_repo_key);
 
 -- course infos
 alter table o_as_user_course_infos add constraint user_course_infos_id_cstr foreign key (fk_identity) references o_bs_identity (id);

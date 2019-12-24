@@ -34,16 +34,13 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.MembersCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -58,15 +55,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class MembersCourseNodeRunController extends BasicController {
 	
-	
 	private MembersDisplayRunController membersDisplayRunController;
 	
 	@Autowired
+	private MembersManager membersManager;
+	@Autowired
 	protected BaseSecurity securityManager;
-	@Autowired
-	private RepositoryService repositoryService;
-	@Autowired
-	private BusinessGroupService businessGroupService;
 	@Autowired
 	private CurriculumModule curriculumModule;
 	@Autowired
@@ -78,10 +72,6 @@ public class MembersCourseNodeRunController extends BasicController {
 		CourseEnvironment courseEnv = userCourseEnv.getCourseEnvironment();
 		RepositoryEntry courseRepositoryEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 
-		List<Identity> owners;
-		List<Identity> coaches;
-		List<Identity> participants = new ArrayList<>();
-
 		boolean showOwners = config.getBooleanSafe(MembersCourseNode.CONFIG_KEY_SHOWOWNER);
 		
 		MembersCourseNodeConfiguration nodeConfig = (MembersCourseNodeConfiguration)CourseNodeFactory.getInstance().getCourseNodeConfiguration("cmembers");
@@ -92,32 +82,31 @@ public class MembersCourseNodeRunController extends BasicController {
 		
 		String downloadFct = config.getStringValue(MembersCourseNode.CONFIG_KEY_DOWNLOAD_FUNCTION, MembersCourseNode.EMAIL_FUNCTION_COACH_ADMIN);
 		boolean canDownload = MembersCourseNode.EMAIL_FUNCTION_ALL.equals(downloadFct) || userCourseEnv.isAdmin() || userCourseEnv.isCoach();
-		
+
+		List<Identity> owners;
 		if(showOwners) {
-			owners = MembersHelpers.getOwners(repositoryService, courseRepositoryEntry);
+			owners = membersManager.getOwners(courseRepositoryEntry);
 		} else {
 			owners = Collections.emptyList();
 		}
-		
+
+		List<Identity> coaches;
 		boolean showCoaches = false;
 		if(config.anyTrue(MembersCourseNode.CONFIG_KEY_COACHES_ALL, MembersCourseNode.CONFIG_KEY_COACHES_COURSE)		
 				|| config.hasAnyOf(MembersCourseNode.CONFIG_KEY_COACHES_GROUP, MembersCourseNode.CONFIG_KEY_COACHES_AREA,
 						MembersCourseNode.CONFIG_KEY_COACHES_CUR_ELEMENT)) {
-			
-			CourseGroupManager cgm = courseEnv.getCourseGroupManager();
-			coaches = MembersHelpers.getCoaches(config, cgm, businessGroupService);
+			coaches = membersManager.getCoaches(courseRepositoryEntry, config);
 			showCoaches = true;
 		} else {
 			coaches = Collections.emptyList();
 		}
-		
+
+		List<Identity> participants;
 		boolean showParticipants = false;
 		if(config.anyTrue(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_ALL, MembersCourseNode.CONFIG_KEY_PARTICIPANTS_COURSE)
 				|| config.hasAnyOf(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_GROUP, MembersCourseNode.CONFIG_KEY_PARTICIPANTS_AREA,
 						MembersCourseNode.CONFIG_KEY_PARTICIPANTS_CUR_ELEMENT)) {
-			
-			CourseGroupManager cgm = courseEnv.getCourseGroupManager();
-			participants = MembersHelpers.getParticipants(config, cgm, businessGroupService);
+			participants = membersManager.getParticipants(courseRepositoryEntry, config);
 			showParticipants = true;
 		} else {
 			participants = Collections.emptyList();

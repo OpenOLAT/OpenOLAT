@@ -19,3 +19,8 @@ alter table o_gta_task_revision add constraint task_rev_to_ident_idx foreign key
 
 -- notifications
 alter table o_noti_sub add column subenabled bit default 1;
+
+
+-- index
+create index mark_all_idx on o_mark(resname,resid,creator_id);
+create index idx_eff_stat_course_ident_idx on o_as_eff_statement (fk_identity,course_repo_key);
