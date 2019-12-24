@@ -27,6 +27,7 @@ import java.util.Map;
 import org.olat.admin.user.groups.GroupChanges;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OrganisationRef;
 
 /**
  * 
@@ -45,6 +46,20 @@ public class UserBulkChanges extends GroupChanges {
 	
 	private Integer status;
 	private boolean sendLoginDeniedEmail;
+	
+	private OrganisationRef organisation;
+	
+	public UserBulkChanges(OrganisationRef organisation) {
+		this.organisation = organisation;
+	}
+	
+	public OrganisationRef getOrganisation() {
+		return organisation;
+	}
+	
+	public void setOrganisation(OrganisationRef organisation) {
+		this.organisation = organisation;
+	}
 	
 	public Map<OrganisationRoles, String> getRoleChangeMap() {
 		return roleChangeMap;
