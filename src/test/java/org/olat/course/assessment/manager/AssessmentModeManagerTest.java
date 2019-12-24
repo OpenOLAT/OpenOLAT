@@ -1257,6 +1257,19 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		boolean allowed = assessmentModeMgr.isSafelyAllowed(request, safeExamBrowserKey);
 		Assert.assertFalse(allowed);
 	}
+	
+	@Test
+	public void isSafelyAllowed_missingHeader() {
+		String safeExamBrowserKey = "gdfkhjsduzezrutuzsf";
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.setServerName("localhost");
+		request.setScheme("http");
+		request.setRequestURI("/unauthorized/url");
+		
+		boolean allowed = assessmentModeMgr.isSafelyAllowed(request, safeExamBrowserKey);
+		Assert.assertFalse(allowed);
+	}
 
 	/**
 	 * Create a minimal assessment mode which start one hour before now

@@ -70,6 +70,7 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -434,9 +435,15 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		if(identities.isEmpty()) {
 			return;
 		}
+		
+		OrganisationRef selectedOrganisation = null;
+		if(currentSearchParams != null && currentSearchParams.getOrganisations() != null
+				&& currentSearchParams.getOrganisations().size() == 1) {
+			selectedOrganisation = currentSearchParams.getOrganisations().get(0);
+		}
 
 		// valid selection: load in wizard
-		final UserBulkChanges userBulkChanges = new UserBulkChanges();
+		final UserBulkChanges userBulkChanges = new UserBulkChanges(selectedOrganisation);
 		Step start = new UserBulkChangeStep00(ureq, identities, userBulkChanges);
 		// callback executed in case wizard is finished.
 		StepRunnerCallback finish = (uureq, wwControl, runContext) -> {

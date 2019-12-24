@@ -1,17 +1,11 @@
-$r.translate("step0.content")
-<p>$r.translate("step.notmandatory")</p>
-<br />
+<div class="o_desc"><p>$r.translate("step0.content")<br>$r.translate("step.notmandatory")</p></div>
 
 #o_togglebox_start("o_usermanagement_bulkChange" "$r.translate('step0.formatexplanation.link')")
 	$r.translate('step0.formatexplanation.text') 
 	<table class="table table-bordered"><tbody>
 		#foreach( $propertyHandler in $userPropertyHandlers )
 		<tr>
-			<td>
-				<label>
-					$r.translate($propertyHandler.i18nFormElementLabelKey())
-				</label>
-			</td>
+			<th scope="row">$r.translate($propertyHandler.i18nFormElementLabelKey())</th>
 			<td>
 				#set($so='{')
 				#set($sc='}')

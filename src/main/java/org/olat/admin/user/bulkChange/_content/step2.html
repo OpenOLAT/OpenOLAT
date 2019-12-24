@@ -1,5 +1,5 @@
 #if($validChange=="true")
-	$r.translate("step2.content")
+	<div class="o_desc">$r.translate("step2.content")</div>
 #else 
-	$r.translate("step2.novalidChanges")
+	<div class="o_error" role="alert">$r.translate("step2.novalidChanges")</div>
 #end
