@@ -34,6 +34,7 @@ Tested with OpenSuSE LEAP 15.1.
 > sudo mkdir /opt/olatdata/install
 > sudo cp openolat/WEB-INF/classes/serviceconfig/olat.properties /opt/olatdata/install/olat.local.properties
 > sudo cp -R openolat/WEB-INF/classes/database/* /opt/olatdata/install/
+> sudo cp -R openolat_1416.war /opt/olatdata/install/
 > sudo chown -R tomcat:tomcat /opt/olatdata
 ```
 
@@ -115,6 +116,13 @@ Tomcat has changed basically how it uses Memory. Therefore most of parameters gi
 </Context>
 ```
 
+* Copy war file into Tomcat's webapp folder
+
+```bash 
+> sudo cp /opt/olatdata/install/openolat_1416.war /TOMCAT_HOME/webapps/openolat.war
+```
+
+ 
 ## Setup Container Configuration  
 
 * Edit olat.local.properties in the olatdata dir according your configuration. 
@@ -126,8 +134,3 @@ Tomcat has changed basically how it uses Memory. Therefore most of parameters gi
 > sudo service tomcat start
 ```
   
-
-
-
-
- 
