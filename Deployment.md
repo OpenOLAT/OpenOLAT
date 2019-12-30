@@ -34,7 +34,7 @@ Tested with OpenSuSE LEAP 15.1.
 > sudo mkdir /opt/olatdata/install
 > sudo cp openolat/WEB-INF/classes/serviceconfig/olat.properties /opt/olatdata/install/olat.local.properties
 > sudo cp -R openolat/WEB-INF/classes/database/* /opt/olatdata/install/
-> sudo chown -R /opt/olatdata
+> sudo chown -R tomcat:tomcat /opt/olatdata
 ```
 
 ## Prepare PostgreSQL
