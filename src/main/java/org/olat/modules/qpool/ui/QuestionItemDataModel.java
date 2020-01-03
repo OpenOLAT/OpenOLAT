@@ -85,7 +85,7 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 			case topic: return item.getTopic();
 			case keywords: return item.getKeywords();
 			case coverage: return item.getCoverage();
-			case additionalInfos: return item.getAdditionalInformations();
+			case additionalInformations: return item.getAdditionalInformations();
 			case creationDate: return item.getCreationDate();
 			case lastModified: return item.getLastModified();
 			case taxonomyLevel: return item.getTaxonomyLevelName();
@@ -130,7 +130,7 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 		topic("general.topic"),
 		keywords("general.keywords"),
 		coverage("general.coverage"),
-		additionalInfos("general.additional.informations"),
+		additionalInformations("general.additional.informations"),
 		creationDate("technical.creation"),
 		lastModified("technical.lastModified"),
 		taxonomyLevel("classification.taxonomy.level"),
@@ -164,7 +164,7 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 
 		@Override
 		public boolean sortable() {
-			return true;
+			return this != editable;
 		}
 
 		@Override

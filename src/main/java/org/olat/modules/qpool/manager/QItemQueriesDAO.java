@@ -498,6 +498,7 @@ public class QItemQueriesDAO {
 					sb.append(itemDbRef).append(".type.type ");
 					appendAsc(sb, asc);
 					break;
+				case "mark":
 				case "marks":
 					sb.append("marks");
 					appendAsc(sb, asc);
