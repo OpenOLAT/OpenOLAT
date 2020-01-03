@@ -411,6 +411,18 @@ public class StringHelper {
 		}
 	}
 	
+	/**
+	 * Same as escapeHtml but replace " and ' by their respective entity.
+	 * 
+	 * @param str The text to escape
+	 * @return A string suitable for use in a HTML attribute
+	 */
+	public static final String escapeForHtmlAttribute(String str) {
+		if(str == null) return null;
+		String escaped = org.apache.commons.text.StringEscapeUtils.escapeHtml4(str);
+		return escaped.replace("\"", "&quot;").replace("'", "&apos;");
+	}
+	
 	public static final String escapeXml(String str) {
 		return org.apache.commons.text.StringEscapeUtils.escapeXml11(str);
 	}

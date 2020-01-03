@@ -144,6 +144,15 @@ public class CurriculumElementWithViewsRow implements CurriculumElementWithView,
 		return true;
 	}
 	
+	public String getDisplayName() {
+		if(repositoryEntry != null) {
+			return repositoryEntry.getDisplayname();
+		} else if(element != null) {
+			return element.getDisplayName();
+		}
+		return null;
+	}
+	
 	public boolean isCurriculumElementOnly() {
 		return element != null && repositoryEntry == null;
 	}

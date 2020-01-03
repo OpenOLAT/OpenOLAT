@@ -824,9 +824,9 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 						}
 						
 						//to check HTML by reload
-						//System.out.println();
-						//System.out.println(result.toString());
-						//System.out.println();
+						System.out.println();
+						System.out.println(result.toString());
+						System.out.println();
 		
 						// after rendering we know if some component awaits further async
 						// calls

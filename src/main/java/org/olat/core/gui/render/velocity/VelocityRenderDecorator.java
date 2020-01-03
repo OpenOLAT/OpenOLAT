@@ -668,11 +668,24 @@ public class VelocityRenderDecorator implements Closeable {
 	 * @param str
 	 * @return
 	 */
-	public String escapeHtml(String str) throws IOException {
+	public String escapeHtml(String str) {
 		if(str == null) {
 			return "";
 		}
 		return StringHelper.escapeHtml(str);
+	}
+	
+	/**
+	 * Same as escapeHtml but replace " and ' by their respective entity.
+	 * 
+	 * @param str The text to escape
+	 * @return A string suitable for use in a HTML attribute
+	 */
+	public String escapeForHtmlAttribute(String str) {
+		if(str == null) {
+			return "";
+		}
+		return StringHelper.escapeForHtmlAttribute(str);
 	}
 	
 	public String xssScan(String str) {
