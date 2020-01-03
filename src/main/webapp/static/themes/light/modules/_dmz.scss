@@ -59,7 +59,12 @@ body.o_dmz {
 	#o_main_wrapper, #o_main_wrapper #o_main_container {
 		background: transparent;
 	}
+	
+	label>select {
+		font-weight: normal;
+	}
 }
+
 .o_login {
 	padding-bottom: $padding-large-vertical * 2;
 	padding-left: 10%;

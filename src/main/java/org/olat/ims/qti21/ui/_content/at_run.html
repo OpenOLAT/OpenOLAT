@@ -56,7 +56,7 @@
 	
 	#if($r.visible("qtiResults"))
 		<div id="o_main_center">
-			<a id="o_content"></a>
+			<a id="o_content" aria-hidden="true"></a>
 			<div id="o_main_center_content" class="clearfix o_scrollblock">
 		       	<div id="o_main_center_content_inner">$r.render("qtiResults")
 		       	#if($r.visible("restartTest"))
@@ -74,14 +74,14 @@
 			</div>
 		</div>
 		<div id="o_main_center">
-			<a id="o_content"></a>
+			<a id="o_content" aria-hidden="true"></a>
 			<div id="o_main_center_content" class="clearfix o_scrollblock">
 		       	<div id="o_main_center_content_inner">$r.render("qtirun")</div>
 			</div>
 		</div>
 	#else
 		<div id="o_main_center">
-			<a id="o_content"></a>
+			<a id="o_content" aria-hidden="true"></a>
 			<div id="o_main_center_content" class="clearfix o_scrollblock">
 		       	<div id="o_main_center_content_inner">$r.render("qtirun")</div>
 			</div>

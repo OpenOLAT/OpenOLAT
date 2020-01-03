@@ -37,7 +37,7 @@
 		<div class="o_old_browser o_warning">$r.translate("warning.old.browser","$helplink")</div>
 		<div class="o_login_box">
 			#if ($r.available("menu.guest") || ($providerSet && $providerSet.size() > 1))
-			<div class="o_login_providers">
+			<div class="o_login_providers" role="navigation">
 				<div class="btn-group btn-group-lg btn-group-justified">
 				#foreach ($authProvider in $providerSet)
 					<a $r.hrefAndOnclick("login",true,true,"lp","$authProvider.getName()") title="$r.escapeHtml("$authProvider.getDescription($locale)")" class="btn btn-default #if ($currentProvider == $authProvider.getName()) btn-primary #end ">

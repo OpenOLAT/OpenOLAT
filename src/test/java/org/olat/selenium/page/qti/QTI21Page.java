@@ -718,7 +718,7 @@ public class QTI21Page {
 	 * @return Itself
 	 */
 	public QTI21Page assertNoFeedbackText(String text) {
-		By feedbackBy = By.xpath("//div[contains(@class,'modalFeedback')][text()[contains(normalize-space(.),'\" + text + \"')]]");
+		By feedbackBy = By.xpath("//div[contains(@class,'modalFeedback')][text()[contains(normalize-space(.),'" + text + "')]]");
 		OOGraphene.waitElementDisappears(feedbackBy, 5, browser);
 		return this;
 	}
