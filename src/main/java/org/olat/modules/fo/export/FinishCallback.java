@@ -63,26 +63,25 @@ public class FinishCallback implements StepRunnerCallback {
 		mailService = CoreSpringFactory.getImpl(MailManager.class);		
 	}
 
-
 	@Override
 	public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
-		FOCourseNode node = (FOCourseNode)runContext.get(SendMailStepForm.FORUM);
+		FOCourseNode targetNode = (FOCourseNode)runContext.get(SendMailStepForm.FORUM);
 		ICourse course = (ICourse)runContext.get(SendMailStepForm.ICOURSE);
 		CourseEnvironment courseEnv = course.getCourseEnvironment();
-		Forum chosenforum = node.loadOrCreateForum(courseEnv);
-		Message msg = (Message)runContext.get(SendMailStepForm.MESSAGE_TO_MOVE);
-		msg = forumManager.getMessageById(msg.getKey());
+		Forum chosenforum = targetNode.loadOrCreateForum(courseEnv);
+		Message msgToMove = (Message)runContext.get(SendMailStepForm.MESSAGE_TO_MOVE);
+		msgToMove = forumManager.getMessageById(msgToMove.getKey());
 		Message parentMessage = (Message)runContext.get(SendMailStepForm.PARENT_MESSAGE);	
 		if (parentMessage!= null) {
 			parentMessage = forumManager.getMessageById(parentMessage.getKey());
 		}
-		if (msg.getParentKey() == null && msg.getThreadtop() == null) {
-			msg = forumManager.createOrAppendThreadInAnotherForum(msg, chosenforum, parentMessage);
+		if (msgToMove.getParentKey() == null && msgToMove.getThreadtop() == null) {
+			forumManager.createOrAppendThreadInAnotherForum(msgToMove, chosenforum, parentMessage);
 		} else {
-			msg = forumManager.moveMessageToAnotherForum(msg, chosenforum, parentMessage);		
+			forumManager.moveMessageToAnotherForum(msgToMove, chosenforum, parentMessage);		
 		}
 		DBFactory.getInstance().commit();//commit before sending event
-		if ((Boolean)runContext.get(SendMailStepForm.SENDMAIL)) {
+		if (((Boolean)runContext.get(SendMailStepForm.SENDMAIL)).booleanValue()) {
 			sendMail(ureq, wControl, runContext);
 		}
 		return StepsMainRunController.DONE_MODIFIED;
