@@ -272,6 +272,11 @@ img.o_hotspot_responsive[usemap] {
 	}
 }
 
+/* prevent the toggle to obscure the title of the question */
+#o_main_wrapper #o_main_container #o_qti_run #o_main_left #o_main_left_toggle {
+	top : 50px;
+}
+
 #o_qti_results_infos {
 	border: 1px solid $o-qti-run-infos-border-color;
 	border-radius: $o-qti-run-infos-border-radius;

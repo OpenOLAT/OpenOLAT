@@ -125,7 +125,16 @@ jQuery().ready(function() {
 		if (!menuState.docked && menuState.open) {
 			var l = jQuery('#o_main_left');
 			jQuery('#o_main_left_content').hide();
-			l.transition({'x': '-' + l.css('width'), 'y': 0, 'left': '5px'}, duration, function() {
+			var mh = 0;
+			try {// no error for beautify
+				if(jQuery('#o_qti_run_title').length == 1) {
+					mh = mh - jQuery('#o_qti_run_title').height();
+				}
+				if(jQuery('#o_qti_run_infos').length == 1) {
+					mh = mh - jQuery('#o_qti_run_infos').height();
+				}
+			} catch(e) {}
+			l.transition({'x': '-' + l.css('width'), 'y': mh, 'left': '5px'}, duration, function() {
 				menuState.open = false;
 			});			
 		} 
