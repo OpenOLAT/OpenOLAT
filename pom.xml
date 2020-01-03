@@ -65,7 +65,7 @@
 		<org.springframework.version>5.2.2.RELEASE</org.springframework.version>
 		<org.hibernate.version>5.4.10.Final</org.hibernate.version>
 		<apache.cxf>3.3.4</apache.cxf>
-		<apache.pdfbox>2.0.17</apache.pdfbox>
+		<apache.pdfbox>2.0.18</apache.pdfbox>
 		<apache.poi>4.1.1</apache.poi>
 		<apache.log4j>2.13.0</apache.log4j>
 		<io.jsonwebtoken>0.10.7</io.jsonwebtoken>
@@ -73,7 +73,7 @@
 		<jackson.version>2.10.1</jackson.version>
 		<org.mysql.version>5.1.46</org.mysql.version>
 		<org.postgresql.version>42.2.9</org.postgresql.version>
-		<org.infinispan.version>10.0.1.Final</org.infinispan.version>
+		<org.infinispan.version>10.1.0.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>3.141.59</version.selenium>
 		<version.drone>2.5.1</version.drone>
@@ -2260,7 +2260,7 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.12</version>
+			<version>4.13</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

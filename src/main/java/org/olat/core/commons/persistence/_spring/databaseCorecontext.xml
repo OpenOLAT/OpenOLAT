@@ -66,7 +66,7 @@
 			<props>
 		     	<!-- Using datasource of hibernate -->
 				<prop key="hibernate.connection.datasource">${db.jndi}</prop>
-		        <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQL92Dialect</prop>
+		        <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQL94Dialect</prop>
         	</props>            
 		</constructor-arg>
 		<property name="addMoreProperties" ref="hibernateProps" />
