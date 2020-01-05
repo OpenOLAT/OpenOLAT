@@ -152,8 +152,13 @@ public class OLATUpgrade_15_pre_0 extends OLATUpgrade {
 					}
 				}
 			}
-		} catch (CorruptedCourseException e) {
-			// do nothing
+		} catch (CorruptedCourseException cce) {
+			log.warn("CorruptedCourseException in migration of assessment entries of course {} ({})",
+					repositoryEntry.getKey(), repositoryEntry.getDisplayname());
+		} catch (Exception e) {
+			log.error("Error in migration of assessment entries of course {} ({}).", repositoryEntry.getKey(),
+					repositoryEntry.getDisplayname());
+			log.error("", e);
 		}
 	}
 
