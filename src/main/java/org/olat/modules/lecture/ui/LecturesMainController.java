@@ -44,7 +44,7 @@ public class LecturesMainController extends MainLayoutBasicController implements
 	private final TooledStackedPanel content;
 	
 	private LayoutMain3ColsController columnLayoutCtr;
-	private final LecturesCoachingController lectureCoochingCtrl;
+	private final LecturesCoachingController lectureCoachingCtrl;
 	
 	public LecturesMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -55,15 +55,15 @@ public class LecturesMainController extends MainLayoutBasicController implements
 		
 		// TODO principal
 		LecturesSecurityCallback secCallback = LecturesSecurityCallbackFactory.getSecurityCallback(true, false, false, LectureRoles.lecturemanager, false);
-		lectureCoochingCtrl = new LecturesCoachingController(ureq, getWindowControl(), content, secCallback);
-		listenTo(lectureCoochingCtrl);
+		lectureCoachingCtrl = new LecturesCoachingController(ureq, getWindowControl(), content, secCallback);
+		listenTo(lectureCoachingCtrl);
 		
 		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, content, "lectures");
 		columnLayoutCtr.addCssClassToMain("o_lectures");
 		listenTo(columnLayoutCtr); // auto dispose later
 		putInitialPanel(columnLayoutCtr.getInitialComponent());
 		
-		content.rootController("[ROOT]", lectureCoochingCtrl);
+		content.rootController("[ROOT]", lectureCoachingCtrl);
 	}
 
 	@Override

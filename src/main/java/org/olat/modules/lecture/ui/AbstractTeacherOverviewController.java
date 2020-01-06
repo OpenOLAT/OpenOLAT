@@ -75,7 +75,7 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 	private TeacherRollCallController rollCallCtrl;
 	private TeacherRollCallWizardController rollCallWizardCtrl;
 	
-	private TeacherOverviewSearchController searchCtrl;
+	protected TeacherOverviewSearchController searchCtrl;
 	private TeacherLecturesTableController currentLecturesBlockCtrl;
 	private TeacherLecturesTableController pendingLecturesBlockCtrl;
 	private TeacherLecturesTableController nextLecturesBlockCtrl;
@@ -120,7 +120,7 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 	}
 	
 	protected void initTables(UserRequest ureq, boolean withTeachers, boolean withAssessment) {
-		searchCtrl = new TeacherOverviewSearchController(ureq, getWindowControl(), withRepositoryEntry);
+		searchCtrl = new TeacherOverviewSearchController(ureq, getWindowControl(), withRepositoryEntry, withRepositoryEntry);
 		listenTo(searchCtrl);
 		mainVC.put("search", searchCtrl.getInitialComponent());
 		
