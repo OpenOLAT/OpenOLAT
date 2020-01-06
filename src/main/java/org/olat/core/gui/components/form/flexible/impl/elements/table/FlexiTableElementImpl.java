@@ -61,6 +61,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
+import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
@@ -80,7 +81,7 @@ import org.olat.core.util.prefs.Preferences;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableElement, FormItemCollection,
-	ControllerEventListener, ComponentEventListener {
+	ControllerEventListener, ComponentEventListener, Disposable {
 	
 	//settings
 	private boolean multiSelect;
@@ -1895,5 +1896,15 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	@Override
 	public String getEmtpyTableMessageKey() {
 		return this.emptyTableMessageKey;
+	}
+
+	@Override
+	public void dispose() {
+		for (FormItem formItem : getFormItems()) {
+			if (formItem instanceof Disposable) {
+				Disposable disposableFormItem = (Disposable) formItem;
+				disposableFormItem.dispose();				
+			}
+		}
 	}
 }
