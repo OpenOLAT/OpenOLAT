@@ -2066,6 +2066,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				doCloseResults(ureq);
 			} else if(restartTest == source) {
 				restartTest(ureq);
+				return;// test will be completely reloaded
 			} else if(!timeLimitBarrier(ureq)) {
 				if(endTestPartButton == source) {
 					doEndTestPart(ureq);
