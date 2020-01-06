@@ -1206,22 +1206,24 @@ table.o_qti_item_kprim {
 		padding: 0.1em 0;
 	    a {
 	    	color : $o-qti-menu-link-color;
+			overflow-wrap: break-word;
 	    	&:hover,
 			&:focus {
 				color: $o-qti-menu-link-hover-color;
+				overflow-wrap: break-word;
 			}
 	    }
 		&.active a {
 			color : $o-qti-menu-link-active-color; 
+			font-weight: $o-qti-menu-link-active-font-weight;
+			overflow-wrap: break-word;
 			&:hover,
 			&:focus {
 				color: $o-qti-menu-link-active-hover-color; 
 				background-color : $o-qti-menu-link-active-hover-bg;
+				overflow-wrap: break-word;
 			}
-			font-weight: $o-qti-menu-link-active-font-weight;
 		}
-
-
 		
 		span {
 			vertical-align: middle;

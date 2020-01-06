@@ -20,6 +20,8 @@
 package org.olat.modules.lecture.ui;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -53,7 +55,22 @@ public class TeacherToolOverviewController extends AbstractTeacherOverviewContro
 		super(ureq, wControl, false, "Lectures::UserTools", true, false);
 		this.secCallback = secCallback;
 		initTables(ureq, false, false);
-		loadModel(null);
+		
+		LecturesBlockSearchParameters searchParams = getDefaultSearchParameters();
+		searchCtrl.setDefaultDates(searchParams.getStartDate(), searchParams.getEndDate());
+		loadModel(searchParams);
+	}
+	
+	private LecturesBlockSearchParameters getDefaultSearchParameters() {
+		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.DATE, -14);
+		Date start = cal.getTime();
+		searchParams.setStartDate(start);
+		cal.add(Calendar.DATE, 28);
+		Date end = cal.getTime();
+		searchParams.setEndDate(end);
+		return searchParams;
 	}
 
 	@Override

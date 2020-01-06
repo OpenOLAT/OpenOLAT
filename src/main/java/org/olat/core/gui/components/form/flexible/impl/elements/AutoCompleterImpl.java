@@ -54,7 +54,6 @@ public class AutoCompleterImpl extends AbstractTextElement implements AutoComple
 	private AutoCompleterMapper mapper;
 	private MapperKey mapperKey;
 	
-	private String noResults;
 	private String key;
 	private int minLength = 3;
 	
@@ -132,7 +131,7 @@ public class AutoCompleterImpl extends AbstractTextElement implements AutoComple
 		}
 	}
 
-	private class  AutoCompleterMapper implements Mapper {
+	private static class  AutoCompleterMapper implements Mapper {
 		
 		private final ListProvider provider;
 		
@@ -146,7 +145,7 @@ public class AutoCompleterImpl extends AbstractTextElement implements AutoComple
 			String lastN = request.getParameter(PARAM_QUERY);
 			JSONArray result;
 			if(StringHelper.containsNonWhitespace(lastN)) {
-				AutoCompleterListReceiver receiver = new AutoCompleterListReceiver(noResults, false);
+				AutoCompleterListReceiver receiver = new AutoCompleterListReceiver(null, false);
 				provider.getResult(lastN, receiver);
 				result = receiver.getResult(); 
 			} else {
