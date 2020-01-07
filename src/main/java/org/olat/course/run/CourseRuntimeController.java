@@ -804,7 +804,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			toolbarPanel.addTool(learningPathLink);
 		}
 		if (learningPathLink != null) {
-			learningPathLink.setVisible(userCourseEnv.isParticipant());
+			learningPathLink.setVisible(userCourseEnv != null && userCourseEnv.isParticipant());
 		}
 		
 		if (!assessmentLock && !isGuestOnly
@@ -813,7 +813,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			toolbarPanel.addTool(learningPathsLink);
 		}
 		if (learningPathsLink != null) {
-			learningPathsLink.setVisible(userCourseEnv.isCoach() || userCourseEnv.isAdmin());
+			learningPathsLink.setVisible(userCourseEnv != null && (userCourseEnv.isCoach() || userCourseEnv.isAdmin()));
 		}
 		
 		boolean calendarIsEnabled =  !assessmentLock && !isGuestOnly && calendarModule.isEnabled()
