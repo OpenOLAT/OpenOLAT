@@ -27,8 +27,11 @@ package org.olat.course.nodes.en;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
@@ -36,7 +39,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -188,7 +190,7 @@ public class EnrollmentManager {
 	 * @return List<BusinessGroup> in which the identity is enrolled
 	 */
 	protected List<BusinessGroup> getBusinessGroupsWhereEnrolled(Identity identity, List<Long> groupKeys, List<Long> areaKeys, RepositoryEntry courseResource) {
-		List<BusinessGroup> groups = new ArrayList<>();
+		Set<BusinessGroup> groups = new HashSet<>();
 		//search in the enrollable bg keys for the groups where identity is attendee
 		if(groupKeys != null && !groupKeys.isEmpty()) {
 			SearchBusinessGroupParams params = new SearchBusinessGroupParams();
@@ -201,7 +203,7 @@ public class EnrollmentManager {
 		if(areaKeys != null && !areaKeys.isEmpty()) {
 			groups.addAll(areaManager.findBusinessGroupsOfAreaAttendedBy(identity, areaKeys, courseResource.getOlatResource()));
 		}
-		return groups; 
+		return new ArrayList<>(groups); 
 	}
 
 	/**
