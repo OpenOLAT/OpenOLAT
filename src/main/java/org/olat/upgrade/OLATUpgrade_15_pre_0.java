@@ -129,6 +129,7 @@ public class OLATUpgrade_15_pre_0 extends OLATUpgrade {
 		sb.append("  from repositoryentry re");
 		sb.append("       inner join re.olatResource as ores");
 		sb.and().append(" ores.resName = 'CourseModule'");
+		sb.append(" order by re.statistics.lastUsage desc");
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntry.class)
