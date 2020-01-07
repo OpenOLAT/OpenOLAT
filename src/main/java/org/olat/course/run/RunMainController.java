@@ -78,6 +78,7 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentChangedEvent;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.Status;
+import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.editor.PublishEvent;
 import org.olat.course.groupsandrights.CourseGroupManager;
@@ -293,8 +294,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	}
 	
 	protected void initToolbar() {
-		if(toolbarPanel != null) {
-			// new toolbox 'general'
+		if(toolbarPanel != null && ConditionNodeAccessProvider.TYPE.equals(course.getCourseConfig().getNodeAccessType().getType())) {
 			previousLink = LinkFactory.createToolLink("previouselement","", this, "o_icon_previous_toolbar");
 			previousLink.setTitle(translate("command.previous"));
 			toolbarPanel.addTool(previousLink, Align.rightEdge, false, "o_tool_previous");
