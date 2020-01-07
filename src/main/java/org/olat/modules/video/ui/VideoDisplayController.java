@@ -411,7 +411,7 @@ public class VideoDisplayController extends BasicController {
 		mainVC.contextPut("masterUrl", masterUrl);
 		
 		mainVC.contextPut("title", videoEntry.getDisplayname());
-		String desc = (descriptionText != null ? descriptionText : videoEntry.getDescription());
+		String desc = (StringHelper.containsNonWhitespace(descriptionText) ? descriptionText : videoEntry.getDescription());
 		setText(desc, "description");
 		String authors = videoEntry.getAuthors();
 		mainVC.contextPut("authors", (StringHelper.containsNonWhitespace(authors) ? authors : null));

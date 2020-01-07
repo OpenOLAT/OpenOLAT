@@ -27,7 +27,9 @@ package org.olat.course.nodes.en;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
@@ -188,7 +190,7 @@ public class EnrollmentManager {
 	 * @return List<BusinessGroup> in which the identity is enrolled
 	 */
 	protected List<BusinessGroup> getBusinessGroupsWhereEnrolled(Identity identity, List<Long> groupKeys, List<Long> areaKeys, RepositoryEntry courseResource) {
-		List<BusinessGroup> groups = new ArrayList<>();
+		Set<BusinessGroup> groups = new HashSet<>();
 		//search in the enrollable bg keys for the groups where identity is attendee
 		if(groupKeys != null && !groupKeys.isEmpty()) {
 			SearchBusinessGroupParams params = new SearchBusinessGroupParams();
@@ -201,7 +203,7 @@ public class EnrollmentManager {
 		if(areaKeys != null && !areaKeys.isEmpty()) {
 			groups.addAll(areaManager.findBusinessGroupsOfAreaAttendedBy(identity, areaKeys, courseResource.getOlatResource()));
 		}
-		return groups; 
+		return new ArrayList<>(groups); 
 	}
 
 	/**
