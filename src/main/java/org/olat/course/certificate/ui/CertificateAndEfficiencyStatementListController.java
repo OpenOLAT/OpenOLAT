@@ -75,7 +75,6 @@ import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListModel.CertificateAndEfficiencyStatement;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListModel.Cols;
-import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer;
 import org.olat.modules.portfolio.PortfolioV2Module;
@@ -245,10 +244,11 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				.collect(Collectors.toList());
 		Map<Long, Double> courseEntryKeysToCompletion = assessmentService
 				.loadRootAssessmentEntriesByAssessedIdentity(assessedIdentity, courseEntryKeys).stream()
-				.filter(ec -> ec.getCompletion() != null)
+				.filter(ae -> ae.getCompletion() != null)
 				.collect(Collectors.toMap(
-						AssessmentEntry::getKey,
-						AssessmentEntry::getCompletion));
+						ae -> ae.getRepositoryEntry().getKey(),
+						ae -> ae.getCompletion()
+					));
 		
 		for(UserEfficiencyStatementLight efficiencyStatement:efficiencyStatementsList) {
 			CertificateAndEfficiencyStatement wrapper = new CertificateAndEfficiencyStatement();
