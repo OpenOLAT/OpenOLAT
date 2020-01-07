@@ -53,10 +53,12 @@ import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.modules.quality.generator.QualityGenerator;
+import org.olat.modules.quality.generator.QualityGeneratorProvider;
 import org.olat.modules.quality.generator.QualityGeneratorRef;
 import org.olat.modules.quality.generator.QualityGeneratorSearchParams;
 import org.olat.modules.quality.generator.QualityGeneratorService;
 import org.olat.modules.quality.generator.QualityGeneratorView;
+import org.olat.modules.quality.generator.manager.QualityGeneratorProviderFactory;
 import org.olat.modules.quality.ui.QualityUIFactory;
 import org.olat.modules.quality.ui.security.GeneratorSecurityCallback;
 import org.olat.repository.RepositoryEntry;
@@ -91,6 +93,8 @@ public class GeneratorConfigController extends FormBasicController {
 	@Autowired
 	private QualityGeneratorService generatorService;
 	@Autowired
+	private QualityGeneratorProviderFactory generatorProviderFactory;
+	@Autowired
 	private OrganisationModule organisationModule;
 	@Autowired
 	private EvaluationFormManager evaluationManager;
@@ -108,6 +112,10 @@ public class GeneratorConfigController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		QualityGeneratorProvider provider = generatorProviderFactory.getProvider(generator.getType());
+		String providerType = provider != null? provider.getDisplayname(getLocale()): "???";
+		uifactory.addStaticTextElement("generator.provider.name", providerType, formLayout);
+		
 		titleEl = uifactory.addTextElement("generator.title", 200, generator.getTitle(), formLayout);
 		
 		organisationsEl = uifactory.addCheckboxesDropdown("generator.organisations", formLayout);

@@ -556,10 +556,10 @@ public class QualityUIFactory {
 				try {
 					int value = Integer.parseInt(val);
 					if(min > value) {
-						el.setErrorKey("error.wrong.number", null);
+						el.setErrorKey("error.number.greater", new String[] {String.valueOf(min)});
 						allOk = false;
 					} else if(max < value) {
-						el.setErrorKey("error.wrong.number", null);
+						el.setErrorKey("error.number.lower", new String[] {String.valueOf(max)});
 						allOk = false;
 					}
 				} catch (NumberFormatException e) {
