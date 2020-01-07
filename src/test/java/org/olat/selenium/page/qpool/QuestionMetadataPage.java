@@ -136,11 +136,12 @@ public class QuestionMetadataPage {
 	 * @param standardDeviation Value between 0.0 and 1.0
 	 * @param discriminationIndex Value between -1.0 and 1.0
 	 * @param distractors The number of distractors
-	 * @param usage
+	 * @param usage Number of times this questions is used
+	 * @param correctionTime Time in minutes to correction the question
 	 * @return Itself
 	 */
 	public QuestionMetadataPage setItemAnalyse(Double difficulty, Double standardDeviation,
-			Double discriminationIndex, Integer distractors, Integer usage) {
+			Double discriminationIndex, Integer distractors, Integer usage, Integer correctionTime) {
 		
 		if(difficulty != null) {
 			By difficultyBy = By.cssSelector(".o_sel_qpool_metadata_item_analyse .o_sel_difficulty input[type='text']");
@@ -165,6 +166,10 @@ public class QuestionMetadataPage {
 			WebElement usageEl = browser.findElement(usageBy);
 			usageEl.clear();
 			usageEl.sendKeys(usage.toString());
+		}
+		if(correctionTime != null) {
+			By correctionTimeBy = By.cssSelector(".o_sel_qpool_metadata_item_analyse .o_sel_correction_time input[type='text']");
+			browser.findElement(correctionTimeBy).sendKeys(correctionTime.toString());
 		}
 		return this;
 	}
@@ -258,6 +263,12 @@ public class QuestionMetadataPage {
 	public QuestionMetadataPage assertUsage(Integer usage) {
 		By usageBy = By.xpath("//div[contains(@class,'o_sel_usage')]//input[@value='" + usage + "']");
 		OOGraphene.waitElement(usageBy, browser);
+		return this;
+	}
+	
+	public QuestionMetadataPage assertCorrectionTime(Integer timeInMinutes) {
+		By correctionTimeBy = By.xpath("//div[contains(@class,'o_sel_correction_time')]//input[@value='" + timeInMinutes + "']");
+		OOGraphene.waitElement(correctionTimeBy, browser);
 		return this;
 	}
 	

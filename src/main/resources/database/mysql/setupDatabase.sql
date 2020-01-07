@@ -1650,6 +1650,7 @@ create table o_qp_item (
    q_differentiation decimal(10,9),
    q_num_of_answers_alt bigint not null default 0,
    q_usage bigint not null default 0,
+   q_correction_time bigint default null,
    q_assessment_type varchar(64),
    q_status varchar(32) not null,
    q_version varchar(50),

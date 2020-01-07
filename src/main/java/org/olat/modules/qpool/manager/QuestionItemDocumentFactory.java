@@ -153,7 +153,7 @@ public class QuestionItemDocumentFactory {
 		ResourceLicense license = licenseService.loadLicense(item);
 		if(license != null && license.getLicenseType() != null) {
 			String licenseKey = String.valueOf(license.getLicenseType().getKey());
-			addTextField(document, QItemDocument.LICENSE_TYPE_FIELD_NAME, licenseKey);
+			addTextField(document, AbstractOlatDocument.LICENSE_TYPE_FIELD_NAME, licenseKey);
 		}
 
 		//technical
@@ -195,7 +195,7 @@ public class QuestionItemDocumentFactory {
 			}
 			TaxonomyLevel taxonomyLevel = item.getTaxonomyLevel();
 			if (taxonomyLevel != null) {
-				String materializedPathKeys = taxonomyLevel.getMaterializedPathKeys().replaceAll("/", "_");
+				String materializedPathKeys = taxonomyLevel.getMaterializedPathKeys().replace("/", "_");
 				TextField field = new TextField(QItemDocument.TAXONOMIC_PATH_FIELD, materializedPathKeys, Field.Store.YES);
 				document.add(field);
 			}

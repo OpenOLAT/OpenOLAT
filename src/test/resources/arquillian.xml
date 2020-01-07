@@ -25,7 +25,7 @@
 		<property name="dimensions">1024x800</property>
 		<!--
 		<property name="downloadBinaries">no</property>
-		<property name="chromeDriverBinary">target/drone/12b3858a57bfe0a3d450cd194e0992aa/chromedriver</property>
+		<property name="chromeDriverBinary">target/drone/57d2a9629298aa6dc2d759fe09da5d13/chromedriver</property>
 		<property name="firefoxDriverBinary">target/drone/ce03addb1fc8c24900011f90fc80f3c1/geckodriver</property>
 		-->
 		<property name="firefoxUserPreferences">src/test/profile/firefox/prefs.js</property>

@@ -97,6 +97,7 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 				return item.getNumOfAnswerAlternatives() > 0 ? Integer.toString(item.getNumOfAnswerAlternatives()) : "";
 			case usage:
 				return item.getUsage() > 0 ? Integer.toString(item.getUsage()) : "";
+			case correctionTime: return item.getCorrectionTime();
 			case type: {
 				String type = item.getItemType();
 				if(type == null) {
@@ -149,7 +150,8 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 		statusLastModified("lifecycle.status.last.modified"),
 		license("rights.license"),
 		editable("editable"),
-		mark("mark");
+		mark("mark"),
+		correctionTime("question.correctionTime");
 		
 		private final String i18nKey;
 	

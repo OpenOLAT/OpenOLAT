@@ -198,6 +198,7 @@ public abstract class AbstractItemListController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.differentiation));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.numOfAnswerAlternatives));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.usage));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.correctionTime));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.type));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.format));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.rating));

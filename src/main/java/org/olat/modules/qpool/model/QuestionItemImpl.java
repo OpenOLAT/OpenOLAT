@@ -120,6 +120,10 @@ public class QuestionItemImpl implements QuestionItemFull, Persistable {
 	@Column(name="q_assessment_type", nullable=true, insertable=true, updatable=true)
 	private String assessmentType;
 	
+	//management
+	@Column(name="q_correction_time", nullable=true, insertable=true, updatable=true)
+	private Integer correctionTime;
+	
 	//life cycle
 	@Column(name="q_version", nullable=true, insertable=true, updatable=true)
 	private String itemVersion;
@@ -409,6 +413,15 @@ public class QuestionItemImpl implements QuestionItemFull, Persistable {
 
 	public void setStatus(String status) {
 		this.status = status;
+	}
+
+	@Override
+	public Integer getCorrectionTime() {
+		return correctionTime;
+	}
+
+	public void setCorrectionTime(Integer correctionTime) {
+		this.correctionTime = correctionTime;
 	}
 
 	@Override

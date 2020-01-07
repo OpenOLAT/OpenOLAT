@@ -150,6 +150,7 @@ public class QuestionDAOTest extends OlatTestCase {
 		original.setNumOfAnswerAlternatives(4);
 		original.setUsage(5);
 		original.setAssessmentType("formative");
+		original.setCorrectionTime(3);
 		//lifecycle
 		original.setItemVersion("1.0");
 		original.setStatus(QuestionStatus.review.name());
@@ -193,6 +194,7 @@ public class QuestionDAOTest extends OlatTestCase {
 		Assert.assertEquals(original.getNumOfAnswerAlternatives(), clone.getNumOfAnswerAlternatives());
 		Assert.assertEquals(0, clone.getUsage());
 		Assert.assertEquals(original.getAssessmentType(), clone.getAssessmentType());
+		Assert.assertEquals(Integer.valueOf(3), clone.getCorrectionTime());
 		//lifecycle
 		Assert.assertEquals(QuestionStatus.draft.name(), clone.getStatus());
 		Assert.assertNotNull(clone.getQuestionStatusLastModified());

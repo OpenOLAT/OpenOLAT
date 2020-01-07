@@ -24,3 +24,7 @@ alter table o_noti_sub add column subenabled bit default 1;
 -- index
 create index mark_all_idx on o_mark(resname,resid,creator_id);
 create index idx_eff_stat_course_ident_idx on o_as_eff_statement (fk_identity,course_repo_key);
+
+-- question pool
+alter table o_qp_item add column q_correction_time bigint default null;
+

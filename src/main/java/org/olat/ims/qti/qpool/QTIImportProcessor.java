@@ -19,7 +19,6 @@
  */
 package org.olat.ims.qti.qpool;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.Closeable;
 import java.io.File;
@@ -31,7 +30,6 @@ import java.io.StringReader;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -46,6 +44,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
+import org.dom4j.DocumentException;
 import org.dom4j.DocumentFactory;
 import org.dom4j.Element;
 import org.dom4j.Node;
@@ -85,7 +84,6 @@ import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 import nu.validator.htmlparser.common.XmlViolationPolicy;
 import nu.validator.htmlparser.sax.HtmlParser;
@@ -145,7 +143,7 @@ class QTIImportProcessor {
 				}
 
 				for(DocInfos docInfos:docInfoList) {
-					IOUtils.closeQuietly(docInfos);
+					FileUtils.closeSafely(docInfos);
 				}
 			}
 		} catch (IOException e) {
@@ -440,7 +438,7 @@ class QTIImportProcessor {
 		
 		//write
 		try {
-			OutputStream os = endFile.getOutputStream(false);;
+			OutputStream os = endFile.getOutputStream(false);
 			XMLWriter xw = new XMLWriter(os, new OutputFormat("  ", true));
 			xw.write(itemDoc.getRootElement());
 			xw.close();
@@ -458,37 +456,32 @@ class QTIImportProcessor {
 	private void processAssessmentMaterials(Element itemEl, VFSContainer container) {
 		List<String> materials = getMaterials(itemEl);
 
-		try {
-			InputStream in = new FileInputStream(importedFile);
-			ZipInputStream zis = new ZipInputStream(in);
+		try(InputStream in = new FileInputStream(importedFile);
+				ZipInputStream zis = new ZipInputStream(in)) {
 
 			ZipEntry entry;
-			try {
-				while ((entry = zis.getNextEntry()) != null) {
-					String name = entry.getName();
-					if(materials.contains(name)) {
-						
-						VFSLeaf leaf = container.createChildLeaf(name);
-						OutputStream out = leaf.getOutputStream(false);
-						BufferedOutputStream bos = new BufferedOutputStream (out);
-						FileUtils.cpio(new BufferedInputStream(zis), bos, "unzip:"+entry.getName());
-						bos.flush();
-						bos.close();
-						out.close();
-					}
+			while ((entry = zis.getNextEntry()) != null) {
+				String name = entry.getName();
+				if(materials.contains(name)) {
+					unzipMaterial(zis, container, name);
 				}
-			} catch(Exception e) {
-				log.error("", e);
-			} finally {
-				IOUtils.closeQuietly(zis);
-				IOUtils.closeQuietly(in);
 			}
 		} catch (IOException e) {
 			log.error("", e);
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
+	private void unzipMaterial(ZipInputStream zis, VFSContainer container, String name) {
+		VFSLeaf leaf = container.createChildLeaf(name);
+		try(OutputStream out = leaf.getOutputStream(false);
+				OutputStream bos = new BufferedOutputStream(out);) {
+			FileUtils.cpio(zis, bos, "unzip:" + name);
+			bos.flush();
+		} catch (IOException e) {
+			log.error("", e);
+		}
+	}
+	
 	protected List<String> getMaterials(Element el) {
 		List<String> materialPath = new ArrayList<>();
 		//mattext
@@ -530,10 +523,6 @@ class QTIImportProcessor {
 			QTI12HtmlHandler contentHandler = new QTI12HtmlHandler(materialPath);
 			parser.setContentHandler(contentHandler);
 			parser.parse(new InputSource(new StringReader(content)));
-		} catch (SAXException e) {
-			log.error("", e);
-		} catch (IOException e) {
-			log.error("", e);
 		} catch (Exception e) {
 			log.error("", e);
 		}
@@ -563,44 +552,41 @@ class QTIImportProcessor {
 			ZipUtil.unzipStrict(importedFile, container);
 		} else {
 			VFSLeaf endFile = container.createChildLeaf(rootFilename);
-			
-			OutputStream out = null;
-			FileInputStream in = null;
-			try {
-				out = endFile.getOutputStream(false);
-				in = new FileInputStream(importedFile);
+			try(OutputStream out = endFile.getOutputStream(false);
+					FileInputStream in = new FileInputStream(importedFile)) {
 				IOUtils.copy(in, out);
 			} catch (IOException e) {
 				log.error("", e);
-			} finally {
-				IOUtils.closeQuietly(out);
-				IOUtils.closeQuietly(in);
 			}
 		}
 	}
 	
 	private boolean processSidecarMetadata(QuestionItemImpl item, DocInfos docInfos) {
-		InputStream metadataIn = null;
 		try {
 			Path path = docInfos.root;
 			if(path != null && path.getFileName() != null) {
 				Path metadata = path.resolve(path.getFileName().toString() + "_metadata.xml");
-				metadataIn = Files.newInputStream(metadata);
-				SAXReader reader = new SAXReader();
-		        Document document = reader.read(metadataIn);
-		        Element rootElement = document.getRootElement();
-		        QTIMetadataConverter enricher = new QTIMetadataConverter(rootElement, qItemTypeDao, qEduContextDao, qpoolService);
-		        enricher.toQuestion(item);
+				Document document = readSidecarMetadata(metadata);
+				if(document != null) {
+			        Element rootElement = document.getRootElement();
+			        QTIMetadataConverter enricher = new QTIMetadataConverter(rootElement, qItemTypeDao, qEduContextDao, qpoolService);
+			        enricher.toQuestion(item);
+				}
 			}
 	        return true;
-		} catch(NoSuchFileException e) {
-			//nothing to do
-			return true;
 		} catch (Exception e) {
 			log.error("", e);
 			return false;
-		} finally {
-			IOUtils.closeQuietly(metadataIn);
+		}
+	}
+	
+	private Document readSidecarMetadata(Path metadata) {
+		try(InputStream metadataIn = Files.newInputStream(metadata)) {
+			SAXReader reader = new SAXReader();
+	        return reader.read(metadataIn);
+		} catch(IOException | DocumentException e) {
+			log.error("", e);
+			return null;
 		}
 	}
 	
@@ -658,7 +644,6 @@ class QTIImportProcessor {
 	protected List<DocInfos> getDocInfos() throws IOException {
 		List<DocInfos> doc;
 		if(importedFilename.toLowerCase().endsWith(".zip")) {
-			//doc = traverseZip(importedFile);
 			doc = traverseZip_nio(importedFile);
 		} else {
 			doc = Collections.singletonList(traverseFile(importedFile));
@@ -666,10 +651,9 @@ class QTIImportProcessor {
 		return doc;
 	}
 	
-	private DocInfos traverseFile(File file) throws IOException {
-		InputStream in = new FileInputStream(file);
+	private DocInfos traverseFile(File file) {
 		try {
-			Document doc = readXml(in);
+			Document doc = readXml(file.toPath());
 			if(doc != null) {
 				DocInfos d = new DocInfos();
 				d.doc = doc;
@@ -680,40 +664,8 @@ class QTIImportProcessor {
 		} catch(Exception e) {
 			log.error("", e);
 			return null;
-		} finally {
-			IOUtils.closeQuietly(in);
 		}
 	}
-	
-	/*
-	private List<DocInfos> traverseZip(File file) throws IOException {
-		InputStream in = new FileInputStream(file);
-		ZipInputStream zis = new ZipInputStream(in);
-		List<DocInfos> docInfos = new ArrayList<>();
-
-		ZipEntry entry;
-		try {
-			while ((entry = zis.getNextEntry()) != null) {
-				String name = entry.getName();
-				if(name != null && name.toLowerCase().endsWith(".xml")) {
-					Document doc = readXml(new ShieldInputStream(zis));
-					if(doc != null) {
-						DocInfos d = new DocInfos();
-						d.doc = doc;
-						d.filename = name;
-						docInfos.add(d);
-					}
-				}
-			}
-		} catch(Exception e) {
-			log.error("", e);
-		} finally {
-			IOUtils.closeQuietly(zis);
-			IOUtils.closeQuietly(in);
-		}
-		return docInfos;
-	}
-	*/
 	
 	private List<DocInfos> traverseZip_nio(File file) throws IOException {
 		List<DocInfos> docInfos = new ArrayList<>();
@@ -725,9 +677,7 @@ class QTIImportProcessor {
 		    
 		    List<Path> xmlFiles = visitor.getXmlFiles();
 		    for(Path xmlFile:xmlFiles) {
-		    	InputStream in = Files.newInputStream(xmlFile);
-		    	
-		    	Document doc = readXml(in);
+		    	Document doc = readXml(xmlFile);
 				if(doc != null) {
 					DocInfos d = new DocInfos();
 					d.setDocument(doc);
@@ -762,9 +712,9 @@ class QTIImportProcessor {
 		}
 	}
 	
-	private Document readXml(InputStream in) {
+	private Document readXml(Path xmlFile) {
 		Document doc = null;
-		try {
+		try(InputStream in = Files.newInputStream(xmlFile)) {
 			XMLParser xmlParser = new XMLParser(new IMSEntityResolver());
 			doc = xmlParser.parse(in, false);
 			return doc;

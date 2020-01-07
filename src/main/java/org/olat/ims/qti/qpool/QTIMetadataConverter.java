@@ -130,7 +130,7 @@ public class QTIMetadataConverter {
 		}
 		
 		TaxonomyLevel lowerLevel = null;
-		if(path != null && path.length > 0) {
+		if(path.length > 0) {
 			for(String field :cleanedPath) {
 				List<TaxonomyLevel> levels = qpoolService.getTaxonomyLevelBy(lowerLevel, field);
 				
@@ -248,6 +248,11 @@ public class QTIMetadataConverter {
 		if(StringHelper.containsNonWhitespace(educationalContext)) {
 			fullItem.setEducationalContext(toEducationalContext(educationalContext));
 		}
+		
+		String correctionTime = getMetadataEntry("oo_correction_time");
+		if(StringHelper.containsNonWhitespace(correctionTime) && StringHelper.isLong(correctionTime)) {
+			fullItem.setCorrectionTime(toInteger(correctionTime));
+		}
 	}
 	
 	protected void toXml(QuestionItemFull fullItem) {
@@ -273,10 +278,10 @@ public class QTIMetadataConverter {
 		addMetadataField("status", fullItem.getQuestionStatus(), qtimetadata);
 		addMetadataField("oo_std_dev_difficulty", fullItem.getStdevDifficulty(), qtimetadata);
 		addMetadataField("oo_taxonomy", fullItem.getTaxonomicPath(), qtimetadata);
-		//fullItem.getTaxonomicLevel();
 		addMetadataField("title", fullItem.getTitle(), qtimetadata);
 		addMetadataField("oo_topic", fullItem.getTopic(), qtimetadata);
 		addMetadataField("oo_usage", fullItem.getUsage(), qtimetadata);
+		addMetadataField("oo_correction_time", fullItem.getCorrectionTime(), qtimetadata);
 	}
 	
 	private void addMetadataField(String label, int entry, Element metadata) {
@@ -331,7 +336,6 @@ public class QTIMetadataConverter {
 	private String getMetadataEntry(String label) {
 		String entry = null;
 		
-		@SuppressWarnings("unchecked")
 		List<Element> qtimetadatafields = qtimetadata.elements("qtimetadatafield");
 		for(Element qtimetadatafield:qtimetadatafields) {
 			Element fieldlabel = qtimetadatafield.element("fieldlabel");
@@ -359,6 +363,14 @@ public class QTIMetadataConverter {
 			return Integer.parseInt(str);
 		} catch (NumberFormatException e) {
 			return 0;
+		}
+	}
+	
+	private Integer toInteger(String str) {
+		try {
+			return Integer.parseInt(str);
+		} catch (NumberFormatException e) {
+			return null;
 		}
 	}
 	

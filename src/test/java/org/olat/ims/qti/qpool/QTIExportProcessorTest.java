@@ -31,7 +31,6 @@ import java.util.Locale;
 import java.util.UUID;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -89,8 +88,8 @@ public class QTIExportProcessorTest extends OlatTestCase {
 		OutputStream out = new ByteArrayOutputStream();
 		ZipOutputStream zout = new ZipOutputStream(out);
 		exportProc.assembleTest(fullItems, zout);
-
-		IOUtils.closeQuietly(zout);
-		IOUtils.closeQuietly(out);
+		
+		zout.close();
+		out.close();
 	}
 }

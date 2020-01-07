@@ -153,6 +153,9 @@ public class QuestionItemDAO {
 		copy.setItemVersion(original.getItemVersion());
 		copy.setStatus(QuestionStatus.draft.name());
 		
+		// management
+		copy.setCorrectionTime(original.getCorrectionTime());
+		
 		//technical
 		copy.setEditor(original.getEditor());
 		copy.setEditorVersion(original.getEditorVersion());
