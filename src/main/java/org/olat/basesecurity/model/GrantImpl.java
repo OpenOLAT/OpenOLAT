@@ -28,7 +28,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -50,9 +49,7 @@ import org.olat.resource.OLATResourceImpl;
  */
 @Entity(name="bgrant")
 @Table(name="o_bs_grant")
-@NamedQueries({
-	@NamedQuery(name="grantedPermissionByIdentityAndResource", query="select grant.permission from bgrant as grant inner join grant.group as baseGroup inner join baseGroup.members as membership where membership.identity.key=:identityKey and grant.resource.key=:resourceKey and membership.role=grant.role")
-})
+@NamedQuery(name="grantedPermissionByIdentityAndResource", query="select grant.permission from bgrant as grant inner join grant.group as baseGroup inner join baseGroup.members as membership where membership.identity.key=:identityKey and grant.resource.key=:resourceKey and membership.role=grant.role")
 public class GrantImpl implements Grant, Persistable {
 
 	private static final long serialVersionUID = -9157469088175205845L;

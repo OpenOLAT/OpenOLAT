@@ -41,6 +41,8 @@ import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Preferences;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
@@ -121,12 +123,7 @@ public class UserBulkChangeManager implements InitializingBean {
 		notUpdatedIdentities.clear();
 		List<Identity> changedIdentities = new ArrayList<>();
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
-		OrganisationRoles[] organisationRoles = {
-				OrganisationRoles.usermanager, OrganisationRoles.groupmanager,
-				OrganisationRoles.author, OrganisationRoles.administrator,
-				OrganisationRoles.poolmanager, OrganisationRoles.learnresourcemanager
-			};
-		
+
 		Map<String,String> attributeChangeMap = userBulkChanges.getAttributeChangeMap();
 		// loop over users to be edited:
 		for (Identity identity : selIdentities) {
@@ -209,25 +206,29 @@ public class UserBulkChangeManager implements InitializingBean {
 					}
 				}
 
-			} // for (propertyHandlers)
+			} // for property handlers
 
 			// set roles for identity
 			// loop over securityGroups defined above
 			Map<OrganisationRoles,String> roleChangeMap = userBulkChanges.getRoleChangeMap();
-			for (OrganisationRoles organisationRole : organisationRoles) {
-				boolean isInGroup = organisationService.hasRole(identity, organisationRole);
-				String thisRoleAction = "";
-				if (roleChangeMap.containsKey(organisationRole)) {
-					thisRoleAction = roleChangeMap.get(organisationRole);
-					// user not anymore in security group, remove him
-					if (isInGroup && thisRoleAction.equals("remove")) {
-						organisationService.removeMember(identity, organisationRole);
-						log.info(Tracing.M_AUDIT, "User::" + actingIdentity.getKey() + " removed system role::" + organisationRole + " from user::" + identity.getKey());
-					}
-					// user not yet in security group, add him
-					if (!isInGroup && thisRoleAction.equals("add")) {
-						organisationService.addMember(identity, organisationRole);
-						log.info(Tracing.M_AUDIT, "User::" + actingIdentity.getKey() + " added system role::" + organisationRole + " to user::" + identity.getKey());
+			if(!roleChangeMap.isEmpty()) {
+				OrganisationRef organisationRef = userBulkChanges.getOrganisation();
+				Organisation organisation = organisationRef == null
+						? organisationService.getDefaultOrganisation() : organisationService.getOrganisation(organisationRef);
+				for (OrganisationRoles organisationRole : OrganisationRoles.values()) {
+					if (roleChangeMap.containsKey(organisationRole)) {
+						boolean isInGroup = organisationService.hasRole(identity, organisation, organisationRole);
+						String thisRoleAction = roleChangeMap.get(organisationRole);
+						// user not anymore in security group, remove him
+						if (isInGroup && thisRoleAction.equals("remove")) {
+							organisationService.removeMember(organisation, identity, organisationRole, false);
+							log.info(Tracing.M_AUDIT, "User::{} removed system role::{} from user:: {}", actingIdentity.getKey(), organisationRole, identity);
+						}
+						// user not yet in security group, add him
+						if (!isInGroup && thisRoleAction.equals("add")) {
+							organisationService.addMember(organisation, identity, organisationRole);
+							log.info(Tracing.M_AUDIT, "User::{} added system role::{} to user::{}", actingIdentity.getKey(), organisationRole, identity);
+						}
 					}
 				}
 			}
@@ -243,19 +244,21 @@ public class UserBulkChangeManager implements InitializingBean {
 					sendLoginDeniedEmail(identity);
 				}
 				identity = securityManager.saveIdentityStatus(identity, status, actingIdentity);
-				log.info(Tracing.M_AUDIT, "User::" + actingIdentity.getKey() + " changed account status for user::" + identity.getKey() + " from::" + oldStatusText + " to::" + newStatusText);
+				log.info(Tracing.M_AUDIT, "User::{} changed account status for user::{} from::{} to::{}",
+						actingIdentity.getKey(), identity.getKey(), oldStatusText, newStatusText);
 			}
 
 			// persist changes:
 			if (updateError) {
 				String errorOutput = identity.getKey() + ": " + errorDesc;
-				log.debug("error during bulkChange of users, following user could not be updated: " + errorOutput);
+				log.debug("error during bulkChange of users, following user could not be updated: {}", errorOutput);
 				notUpdatedIdentities.add(errorOutput); 
 			} else {
 				userManager.updateUserFromIdentity(identity);
 				securityManager.deleteInvalidAuthenticationsByEmail(oldEmail);
 				changedIdentities.add(identity);
-				log.info(Tracing.M_AUDIT, "User::" + actingIdentity.getKey() + " successfully changed account data for user::" + identity.getKey() + " in bulk change");
+				log.info(Tracing.M_AUDIT, "User::{} successfully changed account data for user::{} in bulk change",
+						actingIdentity.getKey(), identity.getKey());
 			}
 
 			// commit changes for this user

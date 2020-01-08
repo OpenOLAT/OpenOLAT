@@ -50,17 +50,41 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class TeacherOverviewSearchController extends FormBasicController implements Activateable2 {
 	
 	private TextElement searchEl;
-	private DateChooser startEl, endEl;
+	private DateChooser endEl;
+	private DateChooser startEl;
 	
+	private Date defaultStartDate;
+	private Date defaultEndDate;
+	private final boolean forceDates;
 	private final boolean withSearchString;
 	
 	@Autowired
 	private RepositoryService repositoryService;
 	
-	public TeacherOverviewSearchController(UserRequest ureq, WindowControl wControl, boolean withSearchString) {
+	/**
+	 * 
+	 * @param ureq The user request
+	 * @param wControl The window control
+	 * @param withSearchString Show the field to search with text
+	 * @param forceDates true if dates are mandatory
+	 */
+	public TeacherOverviewSearchController(UserRequest ureq, WindowControl wControl,
+			boolean withSearchString, boolean forceDates) {
 		super(ureq, wControl, FormBasicController.LAYOUT_VERTICAL);
 		this.withSearchString = withSearchString;
+		this.forceDates = forceDates;
 		initForm(ureq);
+	}
+	
+	public void setDefaultDates(Date start, Date end) {
+		this.defaultStartDate = start;
+		this.defaultEndDate = end;
+		if(startEl != null && defaultStartDate != null) {
+			startEl.setDate(defaultStartDate);
+		}
+		if(endEl != null && defaultEndDate != null) {
+			endEl.setDate(defaultEndDate);
+		}
 	}
 
 	@Override
@@ -71,7 +95,13 @@ public class TeacherOverviewSearchController extends FormBasicController impleme
 		FormLayoutContainer dateLayout = FormLayoutContainer.createHorizontalFormLayout("dateLayout", getTranslator());
 		formLayout.add(dateLayout);
 		startEl = uifactory.addDateChooser("start", "search.form.start", null, dateLayout);
+		if(startEl != null) {
+			startEl.setDate(defaultStartDate);
+		}
 		endEl = uifactory.addDateChooser("end", "search.form.end", null, dateLayout);
+		if(endEl != null) {
+			endEl.setDate(defaultEndDate);
+		}
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
@@ -109,6 +139,25 @@ public class TeacherOverviewSearchController extends FormBasicController impleme
 	}
 
 	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		if(forceDates) {
+			if(startEl.getDate() == null) {
+				startEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
+			
+			if(endEl.getDate() == null) {
+				endEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
+		}
+		
+		return allOk;
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		doSearch(ureq);
 	}
@@ -116,8 +165,8 @@ public class TeacherOverviewSearchController extends FormBasicController impleme
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		searchEl.setValue(null);
-		startEl.setDate(null);
-		endEl.setDate(null);
+		startEl.setDate(defaultStartDate);
+		endEl.setDate(defaultEndDate);
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 	

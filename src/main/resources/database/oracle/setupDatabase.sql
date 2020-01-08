@@ -2219,6 +2219,7 @@ create table o_qp_item (
    q_differentiation decimal(10,9),
    q_num_of_answers_alt number(20) default 0 not null,
    q_usage number(20) default 0 not null,
+   q_correction_time number(20) default null,
    q_assessment_type varchar2(64 char),
    q_status varchar2(32 char) not null,
    q_version varchar2(50 char),
@@ -3011,6 +3012,18 @@ create table o_es_usage (
    primary key (id)
 );
 
+-- livestream
+create table o_livestream_launch (
+   id number(20) generated always as identity,
+   creationdate timestamp not null,
+   l_launch_date timestamp not null,
+   fk_entry  number(20) not null,
+   l_subident varchar(128) not null,
+   fk_identity  number(20) not null,
+   primary key (id)
+);
+
+
 -- user view
 create view o_bs_identity_short_v as (
    select
@@ -3591,6 +3604,7 @@ create index lc_action_idx on o_lifecycle (action);
 alter table o_mark add constraint FKF26C8375236F21X foreign key (creator_id) references o_bs_identity (id);
 create index FKF26C8375236F21X on o_mark (creator_id);
 
+create index mark_all_idx on o_mark(resname,resid,creator_id);
 create index mark_id_idx on o_mark(resid);
 create index mark_name_idx on o_mark(resname);
 create index mark_subpath_idx on o_mark(substr(ressubpath,0,255));
@@ -3731,6 +3745,7 @@ create index idx_im_prefs_ident_idx on o_im_preferences (fk_from_identity_id);
 alter table o_as_eff_statement add constraint eff_statement_id_cstr foreign key (fk_identity) references o_bs_identity (id);
 create index idx_eff_statement_ident_idx on o_as_eff_statement (fk_identity);
 create index eff_statement_repo_key_idx on o_as_eff_statement (course_repo_key);
+create index idx_eff_stat_course_ident_idx on o_as_eff_statement (fk_identity,course_repo_key);
 
 -- gotomeeting
 alter table o_goto_organizer add constraint goto_organ_owner_idx foreign key (fk_identity) references o_bs_identity (id);
@@ -4225,6 +4240,9 @@ create index log_ptarget_resid_idx on o_loggingtable(parentresid);
 create index log_gptarget_resid_idx on o_loggingtable(grandparentresid);
 create index log_ggptarget_resid_idx on o_loggingtable(greatgrandparentresid);
 create index log_creationdate_idx on o_loggingtable(creationdate);
+
+-- livestream
+create index idx_livestream_viewers_idx on o_livestream_launch(l_subident, l_launch_date, fk_entry, fk_identity);
 
 
 insert into o_stat_lastupdated (until_datetime, from_datetime, lastupdated) values (to_date('1999-01-01', 'YYYY-mm-dd'), to_date('1999-01-01', 'YYYY-mm-dd'), to_date('1999-01-01', 'YYYY-mm-dd'));

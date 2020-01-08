@@ -85,11 +85,11 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 			case topic: return item.getTopic();
 			case keywords: return item.getKeywords();
 			case coverage: return item.getCoverage();
-			case additionalInfos: return item.getAdditionalInformations();
+			case additionalInformations: return item.getAdditionalInformations();
 			case creationDate: return item.getCreationDate();
 			case lastModified: return item.getLastModified();
-			case taxnonomyLevel: return item.getTaxonomyLevelName();
-			case taxnonomyPath: return item.getTaxonomicPath();
+			case taxonomyLevel: return item.getTaxonomyLevelName();
+			case taxonomyPath: return item.getTaxonomicPath();
 			case difficulty: return MetaUIFactory.bigDToString(item.getDifficulty());
 			case stdevDifficulty: return MetaUIFactory.bigDToString(item.getStdevDifficulty());
 			case differentiation: return MetaUIFactory.bigDToString(item.getDifferentiation());
@@ -97,6 +97,7 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 				return item.getNumOfAnswerAlternatives() > 0 ? Integer.toString(item.getNumOfAnswerAlternatives()) : "";
 			case usage:
 				return item.getUsage() > 0 ? Integer.toString(item.getUsage()) : "";
+			case correctionTime: return item.getCorrectionTime();
 			case type: {
 				String type = item.getItemType();
 				if(type == null) {
@@ -130,11 +131,11 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 		topic("general.topic"),
 		keywords("general.keywords"),
 		coverage("general.coverage"),
-		additionalInfos("general.additional.informations"),
+		additionalInformations("general.additional.informations"),
 		creationDate("technical.creation"),
 		lastModified("technical.lastModified"),
-		taxnonomyLevel("classification.taxonomy.level"),
-		taxnonomyPath("classification.taxonomic.path"),
+		taxonomyLevel("classification.taxonomy.level"),
+		taxonomyPath("classification.taxonomic.path"),
 		difficulty("question.difficulty"),
 		stdevDifficulty("question.stdevDifficulty"),
 		differentiation("question.differentiation"),
@@ -149,7 +150,8 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 		statusLastModified("lifecycle.status.last.modified"),
 		license("rights.license"),
 		editable("editable"),
-		mark("mark");
+		mark("mark"),
+		correctionTime("question.correctionTime");
 		
 		private final String i18nKey;
 	
@@ -164,7 +166,7 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 
 		@Override
 		public boolean sortable() {
-			return true;
+			return this != editable;
 		}
 
 		@Override

@@ -25,6 +25,8 @@ import java.util.Map;
 
 import org.olat.admin.user.SystemRolesAndRightsController;
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -33,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
@@ -42,10 +45,14 @@ import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationNameComparator;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * Description:<br>
@@ -85,6 +92,7 @@ class UserBulkChangeStep01 extends BasicStep {
 	private final class UserBulkChangeStepForm01 extends StepFormBasicController {
 
 		private SingleSelection setStatus;
+		private SingleSelection organisationEl;
 		private MultipleSelectionElement chkStatus;
 		private MultipleSelectionElement sendLoginDeniedEmail;
 		private final List<RoleChange> roleChanges = new ArrayList<>();
@@ -95,6 +103,8 @@ class UserBulkChangeStep01 extends BasicStep {
 		
 		@Autowired
 		private UserManager userManager;
+		@Autowired
+		private OrganisationService organisationService;
 
 		public UserBulkChangeStepForm01(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext) {
 			super(ureq, control, rootForm, runContext, LAYOUT_VERTICAL, null);
@@ -123,8 +133,13 @@ class UserBulkChangeStep01 extends BasicStep {
 					validChange = true;
 				}
 			}
+			
+			if(organisationEl != null && organisationEl.isOneSelected()) {
+				Long organisationkey = Long.valueOf(organisationEl.getSelectedKey());
+				userBulkChanges.setOrganisation(new OrganisationRefImpl(organisationkey));
+			}
 
-			if (chkStatus!=null && chkStatus.isAtLeastSelected(1)) {
+			if (chkStatus != null && chkStatus.isAtLeastSelected(1)) {
 				userBulkChanges.setStatus(Integer.parseInt(setStatus.getSelectedKey()));
 				// also check dependent send-email checkbox
 				if (sendLoginDeniedEmail != null) {
@@ -159,32 +174,39 @@ class UserBulkChangeStep01 extends BasicStep {
 		}
 		
 		private void initRole(OrganisationRoles role, FormItemContainer formLayout) {
-			MultipleSelectionElement chkAuthor = uifactory.addCheckboxesHorizontal("rolechk_" + (++counter), "table.role." + role.name(), formLayout, onKeys, onValues);
-			chkAuthor.select("Author", false);
-			
-			chkAuthor.addActionListener(FormEvent.ONCLICK);
+			MultipleSelectionElement chkRole = uifactory.addCheckboxesHorizontal("rolechk_" + (++counter), "table.role." + role.name(), formLayout, onKeys, onValues);
+			chkRole.addActionListener(FormEvent.ONCLICK);
 
-			SingleSelection setAuthor = uifactory.addDropdownSingleselect("roleset_" + (++counter), null, formLayout, addremove, addremoveTranslated, null);
-			setAuthor.setVisible(false);
+			SingleSelection setRole = uifactory.addDropdownSingleselect("roleset_" + (++counter), null, formLayout, addremove, addremoveTranslated, null);
+			setRole.setVisible(false);
 			
-			RoleChange change = new RoleChange(chkAuthor, setAuthor, OrganisationRoles.author);
+			RoleChange change = new RoleChange(chkRole, setRole, role);
 			roleChanges.add(change);
-			chkAuthor.setUserObject(change);
+			chkRole.setUserObject(change);
 		}
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			setFormTitle("step1.title");
 
-			FormLayoutContainer textContainer = FormLayoutContainer.createCustomFormLayout("index", getTranslator(), this.velocity_root + "/step1.html");
+			FormLayoutContainer textContainer = FormLayoutContainer.createCustomFormLayout("index", getTranslator(), velocity_root + "/step1.html");
 			formLayout.add(textContainer);
-			
 
 			// Main layout is a vertical layout without left side padding. To format
 			// the checkboxes properly we need a default layout for the remaining form
 			// elements
 			FormItemContainer innerFormLayout = FormLayoutContainer.createDefaultFormLayout("innerFormLayout", getTranslator());
 			formLayout.add(innerFormLayout);
+			
+			if(userBulkChanges.getOrganisation() == null) {
+				KeyValues orgKeyValues = getOrganisationKeyValues(ureq);
+				if(!orgKeyValues.isEmpty()) {
+					String[] keys = orgKeyValues.keys();
+					organisationEl = uifactory.addDropdownSingleselect("organisations", "organisations", innerFormLayout,
+							keys, orgKeyValues.values());
+					organisationEl.select(keys[0], true);
+				}
+			}
 
 			// check user rights:
 			Roles roles = ureq.getUserSession().getRoles();
@@ -200,7 +222,7 @@ class UserBulkChangeStep01 extends BasicStep {
 						OrganisationRoles.linemanager, OrganisationRoles.principal,
 						OrganisationRoles.administrator
 				};
-				
+
 				for(OrganisationRoles role:roleArr) {
 					initRole(role, innerFormLayout);
 				}
@@ -237,6 +259,20 @@ class UserBulkChangeStep01 extends BasicStep {
 				sendLoginDeniedEmail.setLabel(null, null);
 				sendLoginDeniedEmail.setVisible(false);
 			}
+		}
+		
+		private KeyValues getOrganisationKeyValues(UserRequest ureq) {
+			Roles roles = ureq.getUserSession().getRoles();
+			List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), roles,
+					OrganisationRoles.administrator, OrganisationRoles.usermanager, OrganisationRoles.rolesmanager);
+			if(organisations.size() > 1) {
+				Collections.sort(organisations, new OrganisationNameComparator(getLocale()));
+			}
+			KeyValues organisationKeyValues = new KeyValues();
+			for(Organisation organisation:organisations) {
+				organisationKeyValues.add(KeyValues.entry(organisation.getKey().toString(), organisation.getDisplayName()));
+			}
+			return organisationKeyValues;
 		}
 	}
 	

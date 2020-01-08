@@ -56,7 +56,7 @@
 	
 	#if($r.visible("qtiResults"))
 		<div id="o_main_center">
-			<a id="o_content"></a>
+			<a id="o_content" aria-hidden="true"></a>
 			<div id="o_main_center_content" class="clearfix o_scrollblock">
 		       	<div id="o_main_center_content_inner">$r.render("qtiResults")
 		       	#if($r.visible("restartTest"))
@@ -74,14 +74,14 @@
 			</div>
 		</div>
 		<div id="o_main_center">
-			<a id="o_content"></a>
+			<a id="o_content" aria-hidden="true"></a>
 			<div id="o_main_center_content" class="clearfix o_scrollblock">
 		       	<div id="o_main_center_content_inner">$r.render("qtirun")</div>
 			</div>
 		</div>
 	#else
 		<div id="o_main_center">
-			<a id="o_content"></a>
+			<a id="o_content" aria-hidden="true"></a>
 			<div id="o_main_center_content" class="clearfix o_scrollblock">
 		       	<div id="o_main_center_content_inner">$r.render("qtirun")</div>
 			</div>
@@ -125,7 +125,16 @@ jQuery().ready(function() {
 		if (!menuState.docked && menuState.open) {
 			var l = jQuery('#o_main_left');
 			jQuery('#o_main_left_content').hide();
-			l.transition({'x': '-' + l.css('width'), 'y': 0, 'left': '5px'}, duration, function() {
+			var mh = 0;
+			try {// no error for beautify
+				if(jQuery('#o_qti_run_title').length == 1) {
+					mh = mh - jQuery('#o_qti_run_title').height();
+				}
+				if(jQuery('#o_qti_run_infos').length == 1) {
+					mh = mh - jQuery('#o_qti_run_infos').height();
+				}
+			} catch(e) {}
+			l.transition({'x': '-' + l.css('width'), 'y': mh, 'left': '5px'}, duration, function() {
 				menuState.open = false;
 			});			
 		} 

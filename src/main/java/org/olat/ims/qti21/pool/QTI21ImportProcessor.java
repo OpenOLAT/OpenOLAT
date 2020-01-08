@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.net.URI;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
@@ -42,13 +42,12 @@ import javax.xml.parsers.SAXParserFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.PathUtils;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.io.ShieldInputStream;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.ims.qti.qpool.QTIMetadataConverter;
 import org.olat.ims.qti21.QTI21Constants;
@@ -127,8 +126,7 @@ public class QTI21ImportProcessor {
 			    
 			    List<Path> imsmanifests = visitor.getImsmanifestFiles();
 			    for(Path imsmanifest:imsmanifests) {
-			    		InputStream in = Files.newInputStream(imsmanifest);
-			    		ManifestBuilder manifestBuilder = ManifestBuilder.read(new ShieldInputStream(in));
+			    		ManifestBuilder manifestBuilder = ManifestBuilder.read(imsmanifest);
 			    		List<ResourceType> resources = manifestBuilder.getResourceList();
 					for(ResourceType resource:resources) {
 						ManifestMetadataBuilder metadataBuilder = manifestBuilder.getMetadataBuilder(resource, true);
@@ -228,7 +226,7 @@ public class QTI21ImportProcessor {
 	
 	private void convertXmlFile(Path inputFile, Path outputFile, QTI21Infos infos) {
 		try(InputStream in = Files.newInputStream(inputFile);
-				Writer out = Files.newBufferedWriter(outputFile, Charset.forName("UTF-8"))) {
+				Writer out = Files.newBufferedWriter(outputFile, StandardCharsets.UTF_8)) {
 			XMLOutputFactory xof = XMLOutputFactory.newInstance();
 	        XMLStreamWriter xtw = xof.createXMLStreamWriter(out);
 
@@ -379,6 +377,7 @@ public class QTI21ImportProcessor {
 		poolItem.setTopic(metadata.getTopic());
 		poolItem.setAssessmentType(metadata.getAssessmentType());
 		poolItem.setAdditionalInformations(metadata.getAdditionalInformations());
+		poolItem.setCorrectionTime(metadata.getCorrectionTime());
 	}
 
 	private void createLicense(QuestionItemImpl poolItem, AssessmentItemMetadata metadata) {

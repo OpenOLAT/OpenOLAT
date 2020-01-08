@@ -162,8 +162,11 @@ public class MarkManagerImpl implements MarkManager {
 			query.setParameter("resSubPath", resSubPath);
 		}
 
-		List<Long> results = query.getResultList();
-		return results != null && results.size() > 0 && results.get(0) != null && results.get(0).longValue() > 0;
+		List<Long> results = query
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return results != null && !results.isEmpty() && results.get(0) != null && results.get(0).longValue() > 0;
 	}
 	
 	@Override

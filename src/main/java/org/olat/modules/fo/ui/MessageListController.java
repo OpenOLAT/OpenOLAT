@@ -37,6 +37,7 @@ import org.olat.core.commons.services.mark.MarkResourceStat;
 import org.olat.core.commons.services.mark.MarkingService;
 import org.olat.core.commons.services.mark.impl.ui.MarkedEvent;
 import org.olat.core.commons.services.mark.impl.ui.UnmarkedEvent;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.dispatcher.mapper.Mapper;
@@ -207,7 +208,7 @@ public class MessageListController extends BasicController implements GenericEve
 		mainVC = createVelocityContainer("threadview");
 		mainVC.contextPut("threadMode", Boolean.TRUE);
 		mainVC.contextPut("thumbMapper", thumbnailMapper);
-		mainVC.contextPut("guestOnly", new Boolean(guestOnly));
+		mainVC.contextPut("guestOnly", Boolean.valueOf(guestOnly));
 		
 		messageTableCtrl = new ForumMessageListController(ureq, getWindowControl(), forum, false, true, true);
 		listenTo(messageTableCtrl);
@@ -557,7 +558,7 @@ public class MessageListController extends BasicController implements GenericEve
 			orderedList.add(message.getMessage());
 		}
 		List<MessageNode> children = message.getChildren();
-		if(children.size() > 0) {
+		if(!children.isEmpty()) {
 			if(children.size() > 1) {
 				Collections.sort(children);
 			}
@@ -816,8 +817,8 @@ public class MessageListController extends BasicController implements GenericEve
 	private void doDeliverAttachment(UserRequest ureq, String cmd) {
 		MediaResource res = null;
 		try {
-			int index = cmd.lastIndexOf("_");
-			String attachmentPosition = cmd.substring(cmd.indexOf("_") + 1, index);
+			int index = cmd.lastIndexOf('_');
+			String attachmentPosition = cmd.substring(cmd.indexOf('_') + 1, index);
 			String messageKey = cmd.substring(index + 1);
 			
 			int position = Integer.parseInt(attachmentPosition);
@@ -1284,7 +1285,7 @@ public class MessageListController extends BasicController implements GenericEve
 		mainVC.contextPut("mode", "one");
 		mainVC.contextPut("threadMode", Boolean.FALSE);
 		
-		if(backupViews != null && backupViews.size() > 0) {
+		if(backupViews != null && !backupViews.isEmpty()) {
 			List<MessageView> oneView = new ArrayList<>(1);
 			oneView.add(backupViews.get(0));
 			mainVC.contextPut("messages", oneView);
@@ -1315,7 +1316,7 @@ public class MessageListController extends BasicController implements GenericEve
 		mainVC.contextPut("mode", "one");
 		mainVC.contextPut("threadMode", Boolean.FALSE);
 		
-		if(backupViews != null && backupViews.size() > 0) {
+		if(backupViews != null && !backupViews.isEmpty()) {
 			List<MessageView> oneView = new ArrayList<>(1);
 			for(MessageView message:backupViews) {
 				if(message.getKey().equals(messageKey)) {
@@ -1323,7 +1324,7 @@ public class MessageListController extends BasicController implements GenericEve
 				}
 			}
 			mainVC.contextPut("messages", oneView);
-			if(oneView.size() > 0) {
+			if(!oneView.isEmpty()) {
 				messageTableCtrl.setSelectView(oneView.get(0));
 			} else {
 				showWarning("error.message.deleted");
@@ -1409,23 +1410,41 @@ public class MessageListController extends BasicController implements GenericEve
 			// starting thread
 			runContext.put(SendMailStepForm.START_THREADTOP, message.getThreadtop() == null ? message : message.getThreadtop());
 			// get start course
-			PropertyManager propertyManager = PropertyManager.getInstance();
-			Long forumResourceableId = forum.getResourceableId();
-			Property forumproperty = propertyManager.getPropertyByLongValue(forumResourceableId, FOCourseNode.CONFIG_FORUM_KEY);
-			if (forumproperty != null) {
-				Long resourcetypeId = forumproperty.getResourceTypeId();
-				String resourcetypeName = forumproperty.getResourceTypeName();
-				OLATResourceable olatResourceable = olatManager.findResourceable(resourcetypeId, resourcetypeName);
-				RepositoryEntry startCourse = repositoryManager.lookupRepositoryEntry(olatResourceable, false);
-				if (startCourse != null) {
-					runContext.put(SendMailStepForm.START_COURSE, startCourse);
-				}
+			RepositoryEntry courseEntry = getStartCourse();
+			if(courseEntry != null) {
+				runContext.put(SendMailStepForm.START_COURSE, courseEntry);
 			}
+			
 			listenTo(exportCtrl);
 			getWindowControl().pushAsModalDialog(exportCtrl.getInitialComponent());
 		} else {
 			showWarning("may.not.move.message");
 		}
+	}
+	
+	private RepositoryEntry getStartCourse() {
+		PropertyManager propertyManager = PropertyManager.getInstance();
+		Long forumResourceableId = forum.getResourceableId();
+		Property forumproperty = propertyManager.getPropertyByLongValue(forumResourceableId, FOCourseNode.CONFIG_FORUM_KEY);
+		if (forumproperty != null) {
+			Long resourcetypeId = forumproperty.getResourceTypeId();
+			String resourcetypeName = forumproperty.getResourceTypeName();
+			OLATResourceable olatResourceable = olatManager.findResourceable(resourcetypeId, resourcetypeName);
+			RepositoryEntry startCourse = repositoryManager.lookupRepositoryEntry(olatResourceable, false);
+			if (startCourse != null) {
+				return startCourse;
+			}
+		}
+		SubscriptionContext ctx = foCallback.getSubscriptionContext();
+		if(ctx != null && "CourseModule".equals(ctx.getResName())) {
+			OLATResourceable olatResourceable = OresHelper.createOLATResourceableInstance("CourseModule", ctx.getResId());
+			RepositoryEntry startCourse = repositoryManager.lookupRepositoryEntry(olatResourceable, false);
+			if (startCourse != null) {
+				return startCourse;
+			}
+		}
+		
+		return null;
 	}
 	
 	private void doFinalizeMove(UserRequest ureq, MessageView messageToMove, Long parentMessageKey) {
@@ -1445,12 +1464,8 @@ public class MessageListController extends BasicController implements GenericEve
 	}
 	
 	private void doOpenVisitingCard(UserRequest ureq, Identity creator) {
-		ControllerCreator userInfoMainControllerCreator = new ControllerCreator() {
-			@Override
-			public Controller createController(UserRequest lureq, WindowControl lwControl) {
-				return new UserInfoMainController(lureq, lwControl, creator, true, false);
-			}					
-		};
+		ControllerCreator userInfoMainControllerCreator = (lureq, lwControl)
+				-> new UserInfoMainController(lureq, lwControl, creator, true, false);
 		//wrap the content controller into a full header layout
 		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, userInfoMainControllerCreator);
 		PopupBrowserWindow pbw = getWindowControl().getWindowBackOffice().getWindowManager().createNewPopupBrowserWindowFor(ureq, layoutCtrlr);

@@ -202,6 +202,7 @@ public class AssessmentTestOverviewConfigurationController extends FormBasicCont
 		tableColumnModel.addFlexiColumnModel(scoreCol);
 		// typical learning time
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PartCols.learningTime, new DurationFlexiCellRenderer(getTranslator())));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PartCols.correctionTime, new UnitCellRenderer(translate("minute.short"))));
 		// max attempts
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PartCols.attempts,
 				SelectionTarget.attempts.name(), new MaxAttemptsCellRenderer(getTranslator())));
@@ -273,6 +274,9 @@ public class AssessmentTestOverviewConfigurationController extends FormBasicCont
 
 		if(aggregatedValues.getLearningTime() != null) {
 			testRow.setLearningTime(aggregatedValues.getLearningTime());
+		}
+		if(aggregatedValues.getCorrectionTime() != null) {
+			testRow.setCorrectionTime(aggregatedValues.getCorrectionTime());
 		}
 		if(withLicenses) {
 			loadLicenses(rows);
@@ -361,12 +365,13 @@ public class AssessmentTestOverviewConfigurationController extends FormBasicCont
 		if(aggregatedValues.getLearningTime() != null) {
 			sectionRow.setLearningTime(aggregatedValues.getLearningTime());
 		}
-		return new AggregatedValues(sectionRow.getMaxScore(), sectionRow.getLearningTime());
+		return new AggregatedValues(sectionRow.getMaxScore(), sectionRow.getLearningTime(), aggregatedValues.getCorrectionTime());
 	}
 	
 	private AggregatedValues loadModel(AssessmentItemRef itemRef, List<ControlObjectRow> rows) {
 		Double maxScore = null;
 		Long learningTime = null;
+		Integer correctionTime = null;
 		ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
 		if(resolvedAssessmentItem == null || resolvedAssessmentItem.getItemLookup() == null
 				|| resolvedAssessmentItem.getItemLookup().getRootNodeHolder() == null) {
@@ -380,10 +385,11 @@ public class AssessmentTestOverviewConfigurationController extends FormBasicCont
 				ControlObjectRow row = ControlObjectRow.valueOf(itemRef, assessmentItem, manifestBuilder);
 				maxScore = row.getMaxScore();
 				learningTime = row.getLearningTime();
+				correctionTime = row.getCorrectionTime();
 				rows.add(row);
 			}
 		}
-		return new AggregatedValues(maxScore, learningTime);
+		return new AggregatedValues(maxScore, learningTime, correctionTime);
 	}
 
 	@Override
@@ -410,14 +416,16 @@ public class AssessmentTestOverviewConfigurationController extends FormBasicCont
 		
 		private BigDecimal maxScore = null;
 		private Long learningTime = null;
+		private Integer correctionTime = null;
 		
 		public AggregatedValues() {
 			//
 		}
 		
-		public AggregatedValues(Double maxScore, Long learningTime) {
+		public AggregatedValues(Double maxScore, Long learningTime, Integer correctionTime) {
 			this.maxScore = maxScore == null ? null : BigDecimal.valueOf(maxScore.doubleValue());
 			this.learningTime = learningTime;
+			this.correctionTime = correctionTime;
 		}
 
 		public Double getMaxScore() {
@@ -426,6 +434,10 @@ public class AssessmentTestOverviewConfigurationController extends FormBasicCont
 
 		public Long getLearningTime() {
 			return learningTime;
+		}
+		
+		public Integer getCorrectionTime() {
+			return correctionTime;
 		}
 		
 		public void add(AggregatedValues values) {
@@ -440,6 +452,12 @@ public class AssessmentTestOverviewConfigurationController extends FormBasicCont
 					learningTime = values.getLearningTime();
 				} else if(values.getLearningTime() != null) {
 					learningTime += values.getLearningTime();
+				}
+				
+				if(correctionTime == null) {
+					correctionTime = values.getCorrectionTime();
+				} else if(values.getCorrectionTime() != null) {
+					correctionTime += values.getCorrectionTime(); 
 				}
 			}
 		}

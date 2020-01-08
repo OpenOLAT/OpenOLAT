@@ -234,7 +234,7 @@ public interface VFSRepositoryService {
 	 * 
 	 * @param identity The identity who makes the operation
 	 * @param revisions The revisions to delete
-	 * @return true if ssuccessful
+	 * @return true if successful
 	 */
 	public boolean deleteRevisions(Identity identity, List<VFSRevision> revisions);
 	
@@ -257,11 +257,11 @@ public interface VFSRepositoryService {
 	
 	public License getOrCreateLicense(VFSMetadata meta, Identity itentity);
 	
-	public List<Object[]> getFileStats(); 
+	public Object[] getFileStats(); 
 	
-	public List<Object[]> getRevisionStats(); 
+	public Object[] getRevisionStats(); 
 	
-	public List<Object[]> getThumbnailStats(); 
+	public Object[] getThumbnailStats(); 
 	
 	/**
 	 * Returns the largest files from the VFS
@@ -273,7 +273,7 @@ public interface VFSRepositoryService {
 			Date createdAtNewer, Date createdAtOlder, 
 			Date editedAtNewer, Date editedAtOlder, 
 			Date lockedAtNewer, Date lockedAtOlder,
-			String trashed, String revision, String locked,
+			String trashed, String locked,
 			Integer downloadCount, Long revisionCount, 
 			Integer size);
 	
@@ -287,7 +287,7 @@ public interface VFSRepositoryService {
 			Date createdAtNewer, Date createdAtOlder, 
 			Date editedAtNewer, Date editedAtOlder, 
 			Date lockedAtNewer, Date lockedAtOlder,
-			String trashed, String revision, String locked,
+			String trashed, String locked,
 			Integer downloadCount, Long revisionCount,
 			Integer Size);
 	

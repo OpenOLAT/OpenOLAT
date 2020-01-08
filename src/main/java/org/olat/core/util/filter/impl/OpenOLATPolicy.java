@@ -45,11 +45,12 @@ public class OpenOLATPolicy {
 	private static final String MEDIA_HOST = "http://my" + CodeHelper.getForeverUniqueID() + "localhost:8123/";
 
 	private static final Pattern PARAGRAPH = Pattern.compile("([\\p{L}\\p{N},'\\.\\s\\-_\\(\\)]|&[0-9]{2};)*");
-	private static final Pattern COLORNAME = Pattern.compile("(aqua|black|blue|fuchsia|gray|grey|green|lime|maroon|navy|olive|purple|red|silver|teal|white|yellow)");
+	private static final Pattern COLORNAME = Pattern.compile("(aqua|black|blue|fuchsia|gray|grey|green|lime|maroon|navy|olive|rebeccapurple|purple|red|silver|teal|white|yellow)");
 	private static final Pattern OFFSITEURL = Pattern.compile("(\\s)*((ht)tp(s?)://|mailto:)[\\p{L}\\p{N}]+[\\p{L}\\p{N}\\p{Zs}\\.\\#@\\$%\\+&;:\\-_~,\\?=/!\\(\\)]*(\\s)*");
 	private static final Pattern HTMLCLASS = Pattern.compile("[a-zA-Z0-9\\s,-_]+");
 	private static final Pattern ANYTHING = Pattern.compile(".*");
 	private static final Pattern ONSITEURL = Pattern.compile("([\\p{L}\\p{N}\\p{Zs}/\\.\\?=&\\-~_]|ccrep:)+");
+	private static final Pattern ANCHOR = Pattern.compile("#[a-zA-Z0-9_]*");
 	private static final Pattern NUMBER = Pattern.compile("[0-9]+");
 	private static final Pattern HTMLTITLE = Pattern.compile("[a-zA-Z0-9\\s-_',:\\[\\]!\\./\\\\\\(\\)%&;\\+#]*");
 	private static final Pattern OLATINTERNALURL = Pattern.compile("javascript:parent\\.gotonode\\(\\d+\\)");
@@ -156,7 +157,7 @@ public class OpenOLATPolicy {
 		.allowAttributes("rel")
 			.matching(false,"nofollow").onElements("a")
 		.allowAttributes("href")
-			.matching(new Patterns(ONSITEURL, OFFSITEURL, OLATINTERNALURL))
+			.matching(new Patterns(ONSITEURL, OFFSITEURL, OLATINTERNALURL, ANCHOR))
 			.onElements("a")
 	    .allowAttributes("onclick")
 			.matching(new OnClickValues())
@@ -363,22 +364,29 @@ public class OpenOLATPolicy {
 		private final Pattern a;
 		private final Pattern b;
 		private final Pattern c;
+		private final Pattern d;
 		
 		public Patterns(Pattern a, Pattern b) {
 			this(a, b, null);
 		}
 		
 		public Patterns(Pattern a, Pattern b, Pattern c) {
+			this(a, b ,c , null);
+		}
+		
+		public Patterns(Pattern a, Pattern b, Pattern c, Pattern d) {
 			this.a = a;
 			this.b = b;
 			this.c = c;
+			this.d = d;
 		}
 
 		@Override
 		public boolean apply(String s) {
 			return a.matcher(s).matches()
 					|| b.matcher(s).matches()
-					|| c == null  || c.matcher(s).matches();
+					|| c == null || c.matcher(s).matches()
+					|| d == null || d.matcher(s).matches();
 		}
 		
 		// Needed for Java8 compat with later Guava that extends

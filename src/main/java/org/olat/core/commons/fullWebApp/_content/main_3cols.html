@@ -19,7 +19,7 @@
 #end
 #if($existsCol3 && $r.visible("col3"))	
 	<div id="o_main_center"> ## style="$!col3CustomCSSStyles1 $!col3CustomCSSStyles2">
-		<a id="o_content"></a> 
+		<a id="o_content" aria-hidden="true"></a> 
 		<div id="o_main_center_content" class="clearfix o_scrollblock">			          
 	       	<div id="o_main_center_content_inner">
 				$r.render("col3")		

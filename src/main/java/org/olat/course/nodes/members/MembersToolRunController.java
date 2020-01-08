@@ -36,7 +36,6 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -50,7 +49,7 @@ public class MembersToolRunController extends BasicController {
 private MembersDisplayRunController membersDisplayRunController;
 
 	@Autowired
-	private RepositoryService repositoryService;
+	private MembersManager membersManager;
 	@Autowired
 	private CurriculumModule curriculumModule;
 	@Autowired
@@ -62,7 +61,7 @@ private MembersDisplayRunController membersDisplayRunController;
 		CourseEnvironment courseEnv = userCourseEnv.getCourseEnvironment();
 		RepositoryEntry courseRepositoryEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 		
-		List<Identity> owners = MembersHelpers.getOwners(repositoryService, courseRepositoryEntry);
+		List<Identity> owners = membersManager.getOwners(courseRepositoryEntry);
 		List<Identity> coaches = courseEnv.getCourseGroupManager().getCoaches();
 		List<Identity> participants = courseEnv.getCourseGroupManager().getParticipants();
 		List<Identity> waiting = Collections.emptyList();

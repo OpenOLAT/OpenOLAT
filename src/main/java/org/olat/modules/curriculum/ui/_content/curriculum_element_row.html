@@ -44,9 +44,9 @@
 #if(${row.isRepositoryEntryOnly()} || ${row.isCurriculumElementWithEntry()})
 	<div class="o_curriculum_entry">
 		<div class="o_visual">
-			<a href="javascript:${f.ffXHREvent("select_row","$row.key")}">
+			<a href="javascript:${f.ffXHREvent("select_row","$row.key")}" title="$r.escapeForHtmlAttribute($row.displayName)">
 			#if($row.isThumbnailAvailable())
-				<img src="${row.getThumbnailRelPath()}" />
+				<img src="${row.getThumbnailRelPath()}" alt="$r.translate("rentry.pic.alt")" />
 			#else
 				<div class="o_visual_not_available"></div>
 			#end

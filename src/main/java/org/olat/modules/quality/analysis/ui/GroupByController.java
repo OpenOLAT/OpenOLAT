@@ -515,7 +515,7 @@ public abstract class GroupByController extends FormBasicController implements F
 	@Override
 	public void onFilter(UserRequest ureq, AnalysisSearchParameter searchParams) {
 		this.searchParams = searchParams;
-		groupByNames.init(searchParams.getFormEntryRef());
+		groupByNames.init(searchParams.getFormEntryRef(), searchParams.getDataCollectionOrganisationRefs());
 		refreshDiagram();
 	}
 

@@ -23,6 +23,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Set;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -65,10 +67,10 @@ public class ExternalIdHandlerTest {
 	public void shouldReturnTheExternalIdFromRepositoryEntry() {
 		String externalId = "1234";
 		when(entryMock.getExternalId()).thenReturn(externalId);
-
-		String value = sut.getRepositoryEntryValue(entryMock);
-
-		assertThat(value).isEqualTo(externalId);
+		
+		Set<String> values = sut.getRepositoryEntryValue(entryMock);
+		
+		assertThat(values.iterator().next()).isEqualTo(externalId);
 	}
 
 }

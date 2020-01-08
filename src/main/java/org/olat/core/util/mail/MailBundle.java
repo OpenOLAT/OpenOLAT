@@ -38,6 +38,8 @@ public class MailBundle {
 	private MailContext context;
 	private Identity fromId;
 	private String from;
+	private String mimeFromEmail;
+	private String mimeFromName;
 	private Identity toId;
 	private String to;
 	private Identity cc;
@@ -77,6 +79,22 @@ public class MailBundle {
 		this.from = from;
 	}
 	
+	public String getMimeFromEmail() {
+		return mimeFromEmail;
+	}
+
+	public void setMimeFromEmail(String mimeFromEmail) {
+		this.mimeFromEmail = mimeFromEmail;
+	}
+
+	public String getMimeFromName() {
+		return mimeFromName;
+	}
+
+	public void setMimeFromName(String mimeFromName) {
+		this.mimeFromName = mimeFromName;
+	}
+
 	public Identity getToId() {
 		return toId;
 	}

@@ -20,6 +20,7 @@
 package org.olat.resource.accesscontrol.provider.auto.manager;
 
 import java.util.List;
+import java.util.Set;
 
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.accesscontrol.provider.auto.IdentifierKey;
@@ -47,11 +48,11 @@ interface IdentifierKeyHandler {
 	public List<RepositoryEntry> find(String value);
 
 	/**
-	 * Finds the appropriate Value in the RepositoryEntry.
+	 * Finds the appropriate values in the RepositoryEntry.
 	 *
 	 * @param entry
 	 * @return
 	 */
-	public String getRepositoryEntryValue(RepositoryEntry entry);
+	public Set<String> getRepositoryEntryValue(RepositoryEntry entry);
 
 }

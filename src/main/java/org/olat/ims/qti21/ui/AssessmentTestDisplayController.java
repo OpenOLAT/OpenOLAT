@@ -842,17 +842,23 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			return;
 		}
 
-		TestPlanNodeKey nodeKey = TestPlanNodeKey.fromString(key);
-		Date requestTimestamp = ureq.getRequestTimestamp();
-		TestPlanNode selectedNode = testSessionController.selectItemNonlinear(requestTimestamp, nodeKey);
+		try {
+			TestPlanNodeKey nodeKey = TestPlanNodeKey.fromString(key);
+			Date requestTimestamp = ureq.getRequestTimestamp();
+			TestPlanNode selectedNode = testSessionController.selectItemNonlinear(requestTimestamp, nodeKey);
 
-		/* Record and log event */
-		TestPlanNodeKey selectedNodeKey = (selectedNode == null ? null : selectedNode.getKey());
-		NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
-		TestSessionState testSessionState = testSessionController.getTestSessionState();
-		CandidateEvent candidateEvent = qtiService.recordCandidateTestEvent(candidateSession, testEntry, entry,
-				CandidateTestEventType.SELECT_MENU, null, selectedNodeKey,testSessionState, notificationRecorder);
-		candidateAuditLogger.logCandidateEvent(candidateEvent);
+			/* Record and log event */
+			TestPlanNodeKey selectedNodeKey = (selectedNode == null ? null : selectedNode.getKey());
+			NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+			TestSessionState testSessionState = testSessionController.getTestSessionState();
+			CandidateEvent candidateEvent = qtiService.recordCandidateTestEvent(candidateSession, testEntry, entry,
+					CandidateTestEventType.SELECT_MENU, null, selectedNodeKey,testSessionState, notificationRecorder);
+			candidateAuditLogger.logCandidateEvent(candidateEvent);
+		} catch (final QtiCandidateStateException e) {
+			logError("CANNOT_SELECT_MENU", e);//log informations
+			ServletUtil.printOutRequestParameters(ureq.getHttpReq());
+			mainVC.setDirty(true);// redraw the full panel -> browser view must be same as server states
+		}
 	}
 	
 	/**
@@ -2066,6 +2072,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				doCloseResults(ureq);
 			} else if(restartTest == source) {
 				restartTest(ureq);
+				return;// test will be completely reloaded
 			} else if(!timeLimitBarrier(ureq)) {
 				if(endTestPartButton == source) {
 					doEndTestPart(ureq);

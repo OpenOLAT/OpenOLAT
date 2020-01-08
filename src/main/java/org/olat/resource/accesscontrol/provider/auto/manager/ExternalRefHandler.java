@@ -20,10 +20,14 @@
 package org.olat.resource.accesscontrol.provider.auto.manager;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
+import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.provider.auto.IdentifierKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -38,6 +42,8 @@ import org.springframework.stereotype.Component;
 class ExternalRefHandler implements IdentifierKeyHandler {
 
 	@Autowired
+	private AccessControlModule accessControlModule;
+	@Autowired
 	private RepositoryService repositoryService;
 
 	@Override
@@ -50,7 +56,12 @@ class ExternalRefHandler implements IdentifierKeyHandler {
 		List<RepositoryEntry> entries = new ArrayList<>();
 
 		try {
-			entries = repositoryService.loadRepositoryEntriesByExternalRef(value);
+			String delimiter = accessControlModule.getAutoExternalRefDelimiter();
+			if (StringHelper.containsNonWhitespace(delimiter)) {
+				entries = getRepositoryEntries(value, delimiter);
+			} else {
+				entries = repositoryService.loadRepositoryEntriesByExternalRef(value);
+			}
 		} catch (Exception e) {
 			// nothing to add
 		}
@@ -58,9 +69,45 @@ class ExternalRefHandler implements IdentifierKeyHandler {
 		return entries;
 	}
 
-	@Override
-	public String getRepositoryEntryValue(RepositoryEntry entry) {
-		return entry.getExternalRef();
+	private List<RepositoryEntry> getRepositoryEntries(String value, String delimiter) {
+		List<RepositoryEntry> entries = repositoryService.loadRepositoryEntriesLikeExternalRef(value);
+		Set<RepositoryEntry> matchingEntries = new HashSet<>();
+		for (RepositoryEntry entry : entries) {
+			for (String externalRef : entry.getExternalRef().split(delimiter)) {
+				if (externalRef.equals(value)) {
+					matchingEntries.add(entry);
+				}
+			}
+		}
+		return new ArrayList<>(matchingEntries);
 	}
 
+	@Override
+	public Set<String> getRepositoryEntryValue(RepositoryEntry entry) {
+		String delimiter = accessControlModule.getAutoExternalRefDelimiter();
+		return StringHelper.containsNonWhitespace(delimiter)
+				? getSplitedValues(entry, delimiter)
+				: getValue(entry);
+	}
+	
+	private Set<String> getValue(RepositoryEntry entry) {
+		Set<String> values = new HashSet<>();
+		String externalRef = entry.getExternalRef();
+		if (StringHelper.containsNonWhitespace(externalRef)) {
+			values.add(externalRef);
+		}
+		return values;
+	}
+
+	private Set<String> getSplitedValues(RepositoryEntry entry, String delimiter) {
+		Set<String> values = new HashSet<>();
+		String externalRef = entry.getExternalRef();
+		if (StringHelper.containsNonWhitespace(externalRef)) {
+			for (String externalRefToken : externalRef.split(delimiter)) {
+				values.add(externalRefToken);
+			}
+		}
+		return values;
+	}
+	
 }

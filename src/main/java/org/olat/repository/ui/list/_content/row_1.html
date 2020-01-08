@@ -1,6 +1,6 @@
 <div #if($row.selected) class="o_selected" #end>
 	<div class="o_visual">
-		<a href="javascript:${f.ffXHREvent("select_row","$row.key")}">
+		<a href="javascript:${f.ffXHREvent("select_row","$row.key")}" title="$r.escapeForHtmlAttribute($row.displayName)">
 		#if($row.isThumbnailAvailable())
 			<img src="${row.getThumbnailRelPath()}" alt="$r.translate("rentry.pic.alt")" />
 		#else

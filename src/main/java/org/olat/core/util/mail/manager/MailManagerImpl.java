@@ -692,19 +692,19 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		MailerResult result = new MailerResult();
 		for(MailBundle bundle:bundles) {
 			MailContent content = decorateMail(bundle);
-			if(mailModule.isInternSystem()) {
-				saveDBMessage(bundle.getContext(), bundle.getFromId(), bundle.getFrom(),
-						bundle.getToId(), bundle.getTo(), bundle.getCc(),
-						bundle.getContactLists(), bundle.getMetaId(), content, result);
+			InternetAddress mimeFrom = createMimeFrom(bundle.getMimeFromEmail(), bundle.getMimeFromName());
+			if (mailModule.isInternSystem()) {
+				saveDBMessage(bundle.getContext(), mimeFrom, bundle.getFromId(), bundle.getFrom(), bundle.getToId(),
+						bundle.getTo(), bundle.getCc(), bundle.getContactLists(), bundle.getMetaId(), content, result);
 			} else {
-				sendExternMessage(bundle.getFromId(), bundle.getFrom(),
+				sendExternMessage(mimeFrom, bundle.getFromId(), bundle.getFrom(),
 						bundle.getToId(), bundle.getTo(), bundle.getCc(),
 						bundle.getContactLists(), content, result);
 			}
 		}
 		return result;
 	}
-	
+
 	@Override
 	public MailContent decorateMail(MailBundle bundle) {
 		MailContent content = bundle.getContent();
@@ -758,6 +758,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		return new SimpleMailContent(subjectWriter.toString(), bodyWriter.toString(), template.getAttachments());
 	}
 
+	@Override
 	public String decorateMailBody(String body, Locale locale) {
 		String template = getMailTemplate();
 		boolean htmlTemplate = StringHelper.isHtml(template);
@@ -875,13 +876,15 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		if(useTemplate) {
 			content = decorateMail(bundle);
 		}
-		return sendExternMessage(bundle.getFromId(), bundle.getFrom(), bundle.getToId(), bundle.getTo(), bundle.getCc(),
-				bundle.getContactLists(), content, result);
+		Address mimeFrom = createMimeFrom(bundle.getMimeFromEmail(), bundle.getMimeFromName());
+		return sendExternMessage(mimeFrom, bundle.getFromId(), bundle.getFrom(), bundle.getToId(), bundle.getTo(),
+				bundle.getCc(), bundle.getContactLists(), content, result);
 	}
 	
 	
 	/**
 	 * Send the message via e-mail, always.
+	 * @param mimeFrom 
 	 * @param from
 	 * @param to
 	 * @param cc
@@ -892,13 +895,13 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	 * @param attachments
 	 * @return
 	 */
-	private MailerResult sendExternMessage(Identity fromId, String from, Identity toId, String to, Identity cc, List<ContactList> bccLists,
-			MailContent content, MailerResult result) {
+	private MailerResult sendExternMessage(Address mimeFrom, Identity fromId, String from, Identity toId, String to,
+			Identity cc, List<ContactList> bccLists, MailContent content, MailerResult result) {
 
 		if(result == null) {
 			result = new MailerResult();
 		}
-		MimeMessage mail = createMimeMessage(fromId, from, toId, to, cc, bccLists, content, result);
+		MimeMessage mail = createMimeMessage(mimeFrom, fromId, from, toId, to, cc, bccLists, content, result);
 		if(mail != null) {
 			sendMessage(mail, result);
 			if(result != null && !result.isSuccessful()) {
@@ -919,8 +922,8 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		return mailModule.isReceiveRealMailUserDefaultSetting();
 	}
 	
-	protected DBMail saveDBMessage(MailContext context, Identity fromId, String from, Identity toId, String to, 
-			Identity cc,  List<ContactList> bccLists, String metaId, MailContent content, MailerResult result) {
+	protected DBMail saveDBMessage(MailContext context, InternetAddress mimeFromAddress, Identity fromId, String from, Identity toId, String to, 
+			Identity cc, List<ContactList> bccLists, String metaId, MailContent content, MailerResult result) {
 		
 		try {
 			DBMailImpl mail = new DBMailImpl();
@@ -949,7 +952,13 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 				mail.setFrom(fromRecipient);
 			} else {
 				if(!StringHelper.containsNonWhitespace(from)) {
-					from = WebappHelper.getMailConfig("mailFrom");
+					if (mimeFromAddress != null) {
+						from = mimeFromAddress.getPersonal();
+						fromAddress = mimeFromAddress;
+					} else {
+						from = WebappHelper.getMailConfig("mailFrom");
+						fromAddress = createFromAddress(from, result);
+					}
 				}
 				DBMailRecipient fromRecipient = new DBMailRecipient();
 				fromRecipient.setEmailAddress(from);
@@ -957,7 +966,6 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 				fromRecipient.setMarked(Boolean.FALSE);
 				fromRecipient.setDeleted(Boolean.TRUE);//marked as delted as nobody can read it
 				mail.setFrom(fromRecipient);
-				fromAddress = createFromAddress(from, result);
 			}
 			
 			if(result.getReturnCode() != MailerResult.OK) {
@@ -1088,7 +1096,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			if(makeRealMail) {
 				//check that we send an email to someone
 				if(!toAddress.isEmpty() || !ccAddress.isEmpty() || !bccAddress.isEmpty()) {
-					sendRealMessage(fromAddress, toAddress, ccAddress, bccAddress, subject, body, attachments, result);
+					sendRealMessage(mimeFromAddress, fromAddress, toAddress, ccAddress, bccAddress, subject, body, attachments, result);
 					if(result != null && !result.isSuccessful()) {
 						handleErrors(result, fromId, toId, cc, bccLists);
 					}
@@ -1271,8 +1279,8 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		return makeRealMail;
 	}
 	
-	private MimeMessage createMimeMessage(Identity fromId, String mailFrom, Identity toId, String to, Identity ccId,
-			List<ContactList> bccLists, MailContent content, MailerResult result) {
+	private MimeMessage createMimeMessage(Address mimeFrom, Identity fromId, String mailFrom, Identity toId, String to,
+			Identity ccId, List<ContactList> bccLists, MailContent content, MailerResult result) {
 		try {
 			Address from;
 			if(StringHelper.containsNonWhitespace(mailFrom)) {
@@ -1329,7 +1337,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			Address[] tos = toList.toArray(new Address[toList.size()]);
 			Address[] ccs = ccList.toArray(new Address[ccList.size()]);
 			Address[] bccs = bccList.toArray(new Address[bccList.size()]);
-			return createMimeMessage(from, tos, ccs, bccs, content.getSubject(), content.getBody(), content.getAttachments(), result);
+			return createMimeMessage(mimeFrom, from, tos, ccs, bccs, content.getSubject(), content.getBody(), content.getAttachments(), result);
 		} catch (MessagingException e) {
 			log.error("", e);
 			return null;
@@ -1350,6 +1358,24 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			throw e;
 		}
 		return add;
+	}
+	
+	private InternetAddress createMimeFrom(String mimeFromEmail, String mimeFromName) {
+		InternetAddress mimeFromAddress = null;
+		
+		try {
+			if (StringHelper.containsNonWhitespace(mimeFromEmail)) {
+				if (StringHelper.containsNonWhitespace(mimeFromName)) {
+					mimeFromAddress = new InternetAddress(mimeFromEmail, mimeFromName);
+				} else {
+					mimeFromAddress = new InternetAddress(mimeFromEmail);
+				}
+			}
+		} catch (Exception e) {
+			log.warn("Unable to create mime from address: email={}, name={}", mimeFromEmail, mimeFromName);
+		}
+		
+		return mimeFromAddress;
 	}
 	
 	private Address createFromAddress(String address, MailerResult result) throws AddressException {
@@ -1477,8 +1503,8 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		return null;
 	}
 	
-	private void sendRealMessage(Address from, List<Address> toList, List<Address> ccList, List<Address> bccList, String subject, String body,
-			List<File> attachments, MailerResult result) {
+	private void sendRealMessage(Address mimeFrom, Address from, List<Address> toList, List<Address> ccList,
+			List<Address> bccList, String subject, String body, List<File> attachments, MailerResult result) {
 		
 		Address[] tos = null;
 		if(toList != null && !toList.isEmpty()) {
@@ -1498,7 +1524,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			bccs = bccList.toArray(bccs);
 		}
 
-		MimeMessage msg = createMimeMessage(from, tos, ccs, bccs, subject, body, attachments, result);
+		MimeMessage msg = createMimeMessage(mimeFrom, from, tos, ccs, bccs, subject, body, attachments, result);
 		sendMessage(msg, result);
 	}
 	
@@ -1659,9 +1685,14 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		return !(Arrays.stream(addressArray).map(r -> ((InternetAddress) r).getAddress())
 				.filter(x -> x.contains("@")).allMatch(x -> x.endsWith(fromDomain)));
 	}
-
+	
 	@Override
 	public MimeMessage createMimeMessage(Address from, Address[] tos, Address[] ccs, Address[] bccs, String subject, String body,
+			List<File> attachments, MailerResult result) {
+		return createMimeMessage(null, from, tos, ccs, bccs, subject, body, attachments, result);
+	}
+	
+	public MimeMessage createMimeMessage(Address mimeSender, Address from, Address[] tos, Address[] ccs, Address[] bccs, String subject, String body,
 			List<File> attachments, MailerResult result) {
 		
 		if (from == null || ((tos == null || tos.length == 0) && ((ccs == null || ccs.length == 0)) && (bccs == null || bccs.length == 0))) return null;
@@ -1678,18 +1709,25 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			if(bccs != null && bccs.length > 0) {
 				msg.addRecipients(RecipientType.BCC, bccs);
 			}
-
-			String platformFrom = WebappHelper.getMailConfig("mailFrom");
-			String platformName = WebappHelper.getMailConfig("mailFromName");
-			Address viewablePlatformFrom = createAddressWithName(platformFrom, platformName);
-			// in case the sender and one of the recipients has an external mail address domain we set
-			// the from header to the admin address to prevent rejected or messages detected as spam.
-			msg.setFrom(from);
-			// from has to be set for this check to work
-			if (hasExternalFromAndRecipient(msg)) {
-				msg.setFrom(viewablePlatformFrom);
+			
+			// If custom mime from address, use it.
+			if (mimeSender != null) {
+				msg.setFrom(mimeSender);
+				Address rawMimeSender = getRawEmailFromAddress(mimeSender);
+				msg.setReplyTo(new Address[] {rawMimeSender});
+			} else {
+				// in case the sender and one of the recipients has an external mail address domain we set
+				// the from header to the admin address to prevent rejected or messages detected as spam.
+				msg.setFrom(from);
+				// from has to be set for this check to work
+				if (hasExternalFromAndRecipient(msg)) {
+					String platformFrom = WebappHelper.getMailConfig("mailFrom");
+					String platformName = WebappHelper.getMailConfig("mailFromName");
+					Address viewablePlatformFrom = createAddressWithName(platformFrom, platformName);
+					msg.setFrom(viewablePlatformFrom);
+				}
 			}
-
+			
 			if (attachments != null && !attachments.isEmpty()) {
 				// with attachment use multipart message
 				Multipart multipart = new MimeMultipart("mixed");

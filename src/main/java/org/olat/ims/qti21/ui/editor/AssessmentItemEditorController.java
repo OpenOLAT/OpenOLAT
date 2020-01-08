@@ -97,9 +97,13 @@ public class AssessmentItemEditorController extends BasicController implements A
 	
 	private int displayTabPosition;
 	private int solutionTabPosition;
+	
+	private Controller itemEditor;
+	private Controller scoreEditor;
+	private Controller feedbackEditor;
 	private PoolEditorController poolEditor;
+	private MetadataController metadataCtrl;
 	private AssessmentItemPreviewController displayCtrl;
-	private Controller itemEditor, scoreEditor, feedbackEditor;
 	private AssessmentItemPreviewSolutionController solutionCtrl;
 	
 	private final File itemFile;
@@ -205,6 +209,12 @@ public class AssessmentItemEditorController extends BasicController implements A
 			
 			if(poolEditor != null ) {
 				tabbedPane.addTab(translate("form.pool"), poolEditor);
+			}
+			
+			metadataCtrl = new MetadataController(ureq, getWindowControl(), metadataBuilder);
+			listenTo(metadataCtrl);
+			if(metadataCtrl.hasMetadata()) {
+				tabbedPane.addTab(translate("form.metadata"), metadataCtrl);
 			}
 		}
 
@@ -524,8 +534,7 @@ public class AssessmentItemEditorController extends BasicController implements A
 		
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if(SelectionTarget.description.name().equalsIgnoreCase(type)
-				|| SelectionTarget.expert.name().equalsIgnoreCase(type)
-				|| SelectionTarget.description.name().equalsIgnoreCase(type)) {
+				|| SelectionTarget.expert.name().equalsIgnoreCase(type)) {
 			activate(ureq, itemEditor);
 		} else if(SelectionTarget.attempts.name().equalsIgnoreCase(type)
 				|| SelectionTarget.maxpoints.name().equalsIgnoreCase(type)) {

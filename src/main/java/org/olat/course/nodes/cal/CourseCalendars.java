@@ -145,13 +145,11 @@ public class CourseCalendars {
 			// learning groups
 			List<BusinessGroup> ownerGroups = cgm.getOwnedBusinessGroups(identity);
 			addCalendars(ureq, userCourseEnv, ownerGroups, !readOnly, clpc, calendars);
-			List<BusinessGroup> attendedGroups = cgm.getParticipatingBusinessGroups(identity);
-			for (BusinessGroup ownerGroup : ownerGroups) {
-				if (attendedGroups.contains(ownerGroup)) {
-					attendedGroups.remove(ownerGroup);
-				}
-			}
-			addCalendars(ureq, userCourseEnv, attendedGroups, false, clpc, calendars);
+			// always add all group calendars in this course no matter if the identity is a member
+			// as public entries should be visible anyway
+			List<BusinessGroup> allGroups = cgm.getAllBusinessGroups();
+			allGroups.removeAll(ownerGroups);
+			addCalendars(ureq, userCourseEnv, allGroups, false, clpc, calendars);			
 		}
 		return new CourseCalendars(courseKalendarWrapper, calendars);
 	}

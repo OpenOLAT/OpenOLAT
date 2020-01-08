@@ -45,6 +45,8 @@ public class EventVO {
 	private Date end;
 	private boolean allDayEvent;
 	
+	private Integer classification;
+	
 	private String liveStreamUrl;
 	
 	@Schema(required = true, description = "Action to be performed on managedFlags", allowableValues = { 
@@ -79,6 +81,7 @@ public class EventVO {
 		managedFlags = CalendarManagedFlag.toString(event.getManagedFlags());
 		externalId = event.getExternalId();
 		externalSource = event.getExternalSource();
+		classification = event.getClassification();
 	}
 
 	public String getId() {
@@ -155,6 +158,14 @@ public class EventVO {
 
 	public void setCalendarId(String calendarId) {
 		this.calendarId = calendarId;
+	}
+
+	public Integer getClassification() {
+		return classification;
+	}
+
+	public void setClassification(Integer classification) {
+		this.classification = classification;
 	}
 
 	public String getManagedFlags() {

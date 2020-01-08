@@ -23,7 +23,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 
+import org.olat.core.id.Identity;
 import org.olat.course.nodes.cal.CourseCalendars;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -43,14 +46,23 @@ public interface LiveStreamService {
 	List<? extends LiveStreamEvent> getUpcomingEvents(CourseCalendars calendars, int bufferBeforeMin);
 	
 	/**
-	 * Get the number of unique viewers of the live stream event.
+	 * Create a new launch of a course node by the identity.
+	 *
+	 * @param courseEntry
+	 * @param subIdent
+	 * @param identity
+	 */
+	void createLaunch(RepositoryEntry courseEntry, String subIdent, Identity identity);
+
+	/**
+	 * Get the number of unique launchers (viewers) of the live stream event.
 	 * 
-	 * @param courseResId
-	 * @param courseNodeIdent
+	 * @param courseEntry
+	 * @param subIdent
 	 * @param from
 	 * @param to
 	 * @return
 	 */
-	Long getViewers(String courseResId, String courseNodeIdent, Date from, Date to);
+	Long getLaunchers(RepositoryEntryRef courseEntry, String subIdent, Date from, Date to);
 
 }

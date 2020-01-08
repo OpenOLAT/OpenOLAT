@@ -38,10 +38,9 @@ import org.olat.core.util.mail.ContactMessage;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.co.COToolRecipientsController.Config;
 import org.olat.course.nodes.co.COToolRecipientsController.Recipients;
-import org.olat.course.nodes.members.MembersHelpers;
+import org.olat.course.nodes.members.MembersManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.co.ContactFormController;
-import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -60,7 +59,7 @@ public class COToolController extends BasicController {
 	private final CourseGroupManager courseGroupManager;
 
 	@Autowired
-	private RepositoryService repositoryService;
+	private MembersManager membersManager;
 
 	private VelocityContainer mainVC;
 
@@ -132,7 +131,7 @@ public class COToolController extends BasicController {
 	
 	private ContactList getOwnersContactList() {
 		ContactList cl = new ContactList(translate("tool.recipients.owners"));
-		List<Identity> identities = MembersHelpers.getOwners(repositoryService, courseGroupManager.getCourseEntry());
+		List<Identity> identities = membersManager.getOwners(courseGroupManager.getCourseEntry());
 		cl.addAllIdentites(identities);
 		return cl;
 	}

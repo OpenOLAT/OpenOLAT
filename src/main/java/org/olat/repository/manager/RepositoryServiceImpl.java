@@ -377,6 +377,11 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	}
 
 	@Override
+	public List<RepositoryEntry> loadRepositoryEntriesLikeExternalRef(String externalRef) {
+		return repositoryEntryDAO.loadRepositoryEntriesLikeExternalRef(externalRef);
+	}
+
+	@Override
 	public List<RepositoryEntry> loadRepositoryEntries(int firstResult, int maxResult) {
 		return repositoryEntryDAO.loadRepositoryEntries(firstResult, maxResult);
 	}

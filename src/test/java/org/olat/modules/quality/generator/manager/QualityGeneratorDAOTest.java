@@ -113,7 +113,6 @@ public class QualityGeneratorDAOTest extends OlatTestCase {
 				.containsExactlyInAnyOrder(generator1, generator2)
 				.doesNotContain(otherGenerator);
 	}
-
 	
 	@Test
 	public void shouldSaveGenerator() {

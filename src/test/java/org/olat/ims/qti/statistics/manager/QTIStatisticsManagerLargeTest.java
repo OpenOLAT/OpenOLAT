@@ -22,6 +22,7 @@ package org.olat.ims.qti.statistics.manager;
 
 import static org.junit.Assert.assertNotNull;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.logging.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.junit.Assert;
@@ -41,7 +43,6 @@ import org.junit.Test;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Organisation;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.xml.XMLParser;
 import org.olat.ims.qti.QTIResult;
@@ -328,20 +329,24 @@ public class QTIStatisticsManagerLargeTest extends OlatTestCase {
 	}
 
 	@SuppressWarnings("rawtypes")
-	private void getItemObjectList() {
-		InputStream in = QTIStatisticsManagerLargeTest.class.getResourceAsStream("qti.xml");
-		XMLParser xmlParser = new XMLParser(new IMSEntityResolver());
-		Document doc = xmlParser.parse(in, false);
-		Element root = doc.getRootElement();
-		List items = root.selectNodes("//item");
-		itemObjects = new ArrayList<>();
-		for (Iterator iter = items.iterator(); iter.hasNext();) {
-			Element el_item = (Element) iter.next();
-			if (el_item.selectNodes(".//response_lid").size() > 0) {
-				itemObjects.add(new ItemWithResponseLid(el_item));
-			} else if (el_item.selectNodes(".//response_str").size() > 0) {
-				itemObjects.add(new ItemWithResponseStr(el_item));
+	private void getItemObjectList() throws IOException {
+		try(InputStream in = QTIStatisticsManagerLargeTest.class.getResourceAsStream("qti.xml")) {
+			XMLParser xmlParser = new XMLParser(new IMSEntityResolver());
+			Document doc = xmlParser.parse(in, false);
+			Element root = doc.getRootElement();
+			List items = root.selectNodes("//item");
+			itemObjects = new ArrayList<>();
+			for (Iterator iter = items.iterator(); iter.hasNext();) {
+				Element el_item = (Element) iter.next();
+				if (el_item.selectNodes(".//response_lid").size() > 0) {
+					itemObjects.add(new ItemWithResponseLid(el_item));
+				} else if (el_item.selectNodes(".//response_str").size() > 0) {
+					itemObjects.add(new ItemWithResponseStr(el_item));
+				}
 			}
+		} catch(IOException e) {
+			log.error("", e);
+			throw e;
 		}
 	}
 	

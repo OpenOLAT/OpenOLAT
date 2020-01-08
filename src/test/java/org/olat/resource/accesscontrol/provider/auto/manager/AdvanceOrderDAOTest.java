@@ -23,9 +23,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -38,6 +38,7 @@ import org.olat.resource.accesscontrol.model.TokenAccessMethod;
 import org.olat.resource.accesscontrol.provider.auto.AdvanceOrder;
 import org.olat.resource.accesscontrol.provider.auto.AdvanceOrder.Status;
 import org.olat.resource.accesscontrol.provider.auto.IdentifierKey;
+import org.olat.resource.accesscontrol.provider.auto.manager.AdvanceOrderDAO.IdentifierKeyValue;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -150,12 +151,12 @@ public class AdvanceOrderDAOTest extends OlatTestCase {
 		AdvanceOrder aoNotMatchingValue = sut.create(identity, IdentifierKey.internalId, "not matching", freeMethod);
 		sut.save(aoNotMatchingValue);
 		dbInstance.commitAndCloseSession();
-
-		Map<IdentifierKey, String> identifiers = new HashMap<>();
-		identifiers.put(IdentifierKey.internalId, IDENTIFIER_VALUE);
-		identifiers.put(IdentifierKey.externalId, IDENTIFIER_VALUE);
-		Collection<AdvanceOrder> advanceOrders = sut.loadPendingAdvanceOrders(identifiers);
-
+		
+		Set<IdentifierKeyValue> searchValues = new HashSet<>();
+		searchValues.add(new IdentifierKeyValue(IdentifierKey.internalId, IDENTIFIER_VALUE));
+		searchValues.add(new IdentifierKeyValue(IdentifierKey.externalId, IDENTIFIER_VALUE));
+		Collection<AdvanceOrder> advanceOrders = sut.loadPendingAdvanceOrders(searchValues);
+		
 		assertThat(advanceOrders).hasSize(2).contains(aoMatchingInternalId, aoMatchingExternalId);
 	}
 
@@ -170,13 +171,13 @@ public class AdvanceOrderDAOTest extends OlatTestCase {
 		AdvanceOrder aoNotMatchingValue = sut.create(identity, IdentifierKey.internalId, "not matching", freeMethod);
 		sut.save(aoNotMatchingValue);
 		dbInstance.commitAndCloseSession();
-
-		Map<IdentifierKey, String> identifiers = new HashMap<>();
-		identifiers.put(IdentifierKey.internalId, IDENTIFIER_VALUE);
-		identifiers.put(null, IDENTIFIER_VALUE);
-		identifiers.put(IdentifierKey.externalId, "");
-		Collection<AdvanceOrder> advanceOrders = sut.loadPendingAdvanceOrders(identifiers);
-
+		
+		Set<IdentifierKeyValue> searchValues = new HashSet<>();
+		searchValues.add(new IdentifierKeyValue(IdentifierKey.internalId, IDENTIFIER_VALUE));
+		searchValues.add(new IdentifierKeyValue(null, IDENTIFIER_VALUE));
+		searchValues.add(new IdentifierKeyValue(IdentifierKey.externalId, ""));
+		Collection<AdvanceOrder> advanceOrders = sut.loadPendingAdvanceOrders(searchValues);
+		
 		assertThat(advanceOrders).hasSize(1).contains(aoMatchingInternalId);
 	}
 

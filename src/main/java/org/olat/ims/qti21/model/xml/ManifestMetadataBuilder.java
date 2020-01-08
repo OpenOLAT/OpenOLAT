@@ -723,6 +723,15 @@ public class ManifestMetadataBuilder {
 		getOpenOLATMetadata(true).setAdditionalInformations(informations);
 	}
 	
+	public Integer getOpenOLATMetadataCorrectionTime() {
+		OpenOLATMetadataType ooMetadata = getOpenOLATMetadata(false);
+		return ooMetadata == null ? null : ooMetadata.getCorrectionTime();
+	}
+	
+	public void setOpenOLATMetadataCorrectionTime(Integer timeInMinute) {
+		getOpenOLATMetadata(true).setCorrectionTime(timeInMinute);
+	}
+	
 	/**
 	 * Return the qti metadata if it exists or if specified, create
 	 * one and append it to the metadata of the resource.
@@ -912,5 +921,6 @@ public class ManifestMetadataBuilder {
 		setOpenOLATMetadataAssessmentType(item.getAssessmentType());
 		setOpenOLATMetadataTopic(item.getTopic());
 		setOpenOLATMetadataAdditionalInformations(item.getAdditionalInformations());
+		setOpenOLATMetadataCorrectionTime(item.getCorrectionTime());
 	}
 }

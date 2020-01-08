@@ -1661,6 +1661,7 @@ create table o_qp_item (
    q_differentiation decimal(10,9),
    q_num_of_answers_alt bigint not null default 0,
    q_usage bigint not null default 0,
+   q_correction_time bigint default null,
    q_assessment_type varchar(64),
    q_status varchar(32) not null,
    q_version varchar(50),
@@ -2930,6 +2931,17 @@ create table o_es_usage (
    primary key (id)
 );
 
+-- livestream
+create table o_livestream_launch (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   l_launch_date datetime not null,
+   fk_entry bigint not null,
+   l_subident varchar(128) not null,
+   fk_identity bigint not null,
+   primary key (id)
+);
+
 
 -- user view
 create view o_bs_identity_short_v as (
@@ -3328,6 +3340,7 @@ alter table o_cur_curriculum_element ENGINE = InnoDB;
 alter table o_cur_element_type_to_type ENGINE = InnoDB;
 alter table o_cur_element_to_tax_level ENGINE = InnoDB;
 alter table o_es_usage ENGINE = InnoDB;
+alter table o_livestream_launch ENGINE = InnoDB;
 
 -- rating
 alter table o_userrating add constraint FKF26C8375236F20X foreign key (creator_id) references o_bs_identity (id);
@@ -3573,6 +3586,7 @@ create index lc_action_idx on o_lifecycle (action);
 -- mark
 alter table o_mark add constraint FKF26C8375236F21X foreign key (creator_id) references o_bs_identity (id);
 
+create index mark_all_idx on o_mark(resname,resid,creator_id);
 create index mark_id_idx on o_mark(resid);
 create index mark_name_idx on o_mark(resname);
 create index mark_subpath_idx on o_mark(ressubpath(255));
@@ -3674,6 +3688,7 @@ alter table o_im_preferences add constraint idx_im_prfs_to_id foreign key (fk_fr
 -- efficiency statements
 alter table o_as_eff_statement add unique eff_statement_id_cstr (fk_identity, fk_resource_id), add constraint eff_statement_id_cstr foreign key (fk_identity) references o_bs_identity (id);
 create index eff_statement_repo_key_idx on o_as_eff_statement (course_repo_key);
+create index idx_eff_stat_course_ident_idx on o_as_eff_statement (fk_identity,course_repo_key);
 
 -- course infos
 alter table o_as_user_course_infos add index user_course_infos_id_cstr (fk_identity), add constraint user_course_infos_id_cstr foreign key (fk_identity) references o_bs_identity (id);
@@ -4019,6 +4034,10 @@ create index log_ptarget_resid_idx on o_loggingtable(parentresid);
 create index log_gptarget_resid_idx on o_loggingtable(grandparentresid);
 create index log_ggptarget_resid_idx on o_loggingtable(greatgrandparentresid);
 create index log_creationdate_idx on o_loggingtable(creationdate);
+
+-- livestream
+create index idx_livestream_viewers_idx on o_livestream_launch(l_subident, l_launch_date, fk_entry, fk_identity);
+
 
 
 insert into hibernate_unique_key values ( 0 );

@@ -35,8 +35,12 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.cal.CourseCalendars;
 import org.olat.course.nodes.livestream.LiveStreamSecurityCallback;
+import org.olat.course.nodes.livestream.LiveStreamService;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -62,15 +66,18 @@ public class LiveStreamRunController extends BasicController {
 	
 	private final ModuleConfiguration moduleConfiguration;
 	private final String courseNodeIdent;
-	private final OLATResource courseOres;
+	private final UserCourseEnvironment userCourseEnv;
 	private final CourseCalendars calendars;
+	
+	@Autowired
+	private LiveStreamService liveStreamService;
 
 	public LiveStreamRunController(UserRequest ureq, WindowControl wControl, CourseNode coureNode,
-			OLATResource courseOres, LiveStreamSecurityCallback secCallback, CourseCalendars calendars) {
+			UserCourseEnvironment userCourseEnv, LiveStreamSecurityCallback secCallback, CourseCalendars calendars) {
 		super(ureq, wControl);
 		this.moduleConfiguration = coureNode.getModuleConfiguration();
 		this.courseNodeIdent = coureNode.getIdent();
-		this.courseOres = courseOres;
+		this.userCourseEnv = userCourseEnv;
 		this.calendars = calendars;
 		
 		mainVC = createVelocityContainer("run");
@@ -123,6 +130,8 @@ public class LiveStreamRunController extends BasicController {
 			streamsCtrl.refreshData(ureq.getUserSession());
 			addToHistory(ureq, streamsCtrl);
 		}
+		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		liveStreamService.createLaunch(courseEntry, courseNodeIdent, getIdentity());
 		segmentView.select(streamsLink);
 		mainVC.put("segmentCmp", streamsCtrl.getInitialComponent());
 	}
@@ -130,7 +139,8 @@ public class LiveStreamRunController extends BasicController {
 	private void doOpenStatistic(UserRequest ureq) {
 		if (statisticCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(STATISTIC_RES_TYPE), null);
-			statisticCtrl = new LiveStreamStatisticController(ureq, swControl, courseOres, courseNodeIdent,
+			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			statisticCtrl = new LiveStreamStatisticController(ureq, swControl, courseEntry , courseNodeIdent,
 					moduleConfiguration, calendars);
 			listenTo(statisticCtrl);
 		} else {
@@ -144,6 +154,7 @@ public class LiveStreamRunController extends BasicController {
 	private void doOpenEdit(UserRequest ureq) {
 		if (editCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(EDIT_RES_TYPE), null);
+			OLATResource courseOres = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource();
 			editCtrl = new WeeklyCalendarController(ureq, swControl, calendars.getCalendars(),
 					WeeklyCalendarController.CALLER_LIVE_STREAM, courseOres, false);
 			editCtrl.setDifferentiateManagedEvent(true);

@@ -54,6 +54,14 @@ public class CalendarWSHelper {
 		kalEvent.setLiveStreamUrl(event.getLiveStreamUrl());
         kalEvent.setExternalId(event.getExternalId());
         kalEvent.setExternalSource(event.getExternalSource());
+        if(event.getClassification() != null) {
+        	int classification = event.getClassification().intValue();
+        	if(classification == KalendarEvent.CLASS_PRIVATE
+        			|| classification == KalendarEvent.CLASS_PUBLIC
+        			|| classification == KalendarEvent.CLASS_X_FREEBUSY) {
+        		kalEvent.setClassification(classification);
+        	}
+        }
 	}
 	
 	static boolean hasReadAccess(KalendarRenderWrapper wrapper) {

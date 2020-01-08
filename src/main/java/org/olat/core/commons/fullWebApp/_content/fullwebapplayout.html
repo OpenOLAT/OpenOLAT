@@ -259,7 +259,7 @@ $r.renderForce("development")
 </div>
 #end
 ## ---- END #o_header ---	
-<a id='o_top'></a>
+<a id='o_top' aria-hidden='true'></a>
 ## ---- START #o_navbar ---
 #if($screenMode.standardScreen)
 <div id="o_offcanvas_right" class="o_navbar o_navbar-offcanvas " role="navigation">
@@ -366,10 +366,8 @@ $r.render("modalpanel")
 ## hidden div for EM-PX factor readout 
 <div id="o_width_1em" style="width:1em; position: absolute; left: -1000px;"></div>
 <div><script>
-/* <![CDATA[ */ 
 // init size and listen to text resize events
 jQuery(function() {
 	o_initEmPxFactor(); 
 });
-/* ]]> */
 </script></div></body></html>

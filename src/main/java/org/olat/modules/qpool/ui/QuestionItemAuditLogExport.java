@@ -19,7 +19,6 @@
  */
 package org.olat.modules.qpool.ui;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -27,12 +26,12 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.gui.translator.Translator;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -99,8 +98,6 @@ public class QuestionItemAuditLogExport extends OpenXMLWorkbookResource {
 			addSheetSettings(exportSheet);
 			addHeader(exportSheet);
 			addContent(exportSheet, workbook);
-		} catch (IOException e) {
-			log.error("", e);
 		} catch (Exception e) {
 			log.error("", e);
 		}
@@ -139,6 +136,7 @@ public class QuestionItemAuditLogExport extends OpenXMLWorkbookResource {
 		headerRow.addCell(pos++, translator.translate("export.log.header.differentiation"));
 		headerRow.addCell(pos++, translator.translate("export.log.header.numOfAnswerAlternatives"));
 		headerRow.addCell(pos++, translator.translate("export.log.header.usage"));
+		headerRow.addCell(pos++, translator.translate("export.log.header.correctionTime"));
 		headerRow.addCell(pos++, translator.translate("export.log.header.version"));
 		headerRow.addCell(pos++, translator.translate("export.log.header.status"));
 		if (licenseModule.isEnabled(licenseHandler)) {
@@ -183,6 +181,7 @@ public class QuestionItemAuditLogExport extends OpenXMLWorkbookResource {
 				row.addCell(pos++, format(item.getDifferentiation()));
 				row.addCell(pos++, String.valueOf(item.getNumOfAnswerAlternatives()));
 				row.addCell(pos++, String.valueOf(item.getUsage()));
+				row.addCell(pos++, item.getCorrectionTime(), null);
 				row.addCell(pos++, item.getItemVersion());
 				row.addCell(pos++, getTranslatedStatus(item.getQuestionStatus()));
 			} else {

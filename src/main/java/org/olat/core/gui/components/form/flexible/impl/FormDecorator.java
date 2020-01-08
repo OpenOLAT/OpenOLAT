@@ -101,6 +101,11 @@ public class FormDecorator {
 		FormItem foco = getFormItem(formItemName);
 		return foco == null ? null : foco.getHelpText();
 	}
+	
+	public String getLabelText(String formItemName) {
+		FormItem foco = getFormItem(formItemName);
+		return foco == null ? null : foco.getLabelText();
+	}
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.FormDecorator#isEnabled(java.lang.String)

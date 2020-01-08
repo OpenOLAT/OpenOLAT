@@ -1706,12 +1706,19 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	@Override
 	public List<Identity> getMembers(List<BusinessGroup> businessGroups, String... roles) {
 		List<Identity> ids = new ArrayList<>();
-		for(BusinessGroup businessGroup:businessGroups) {
+		for(BusinessGroupRef businessGroup:businessGroups) {
 			ids.addAll(businessGroupRelationDAO.getMembers(businessGroup, roles));
 		}
 		return ids;
 	}
 	
+	@Override
+	public List<Identity> getMembersOf(RepositoryEntryRef entry, List<BusinessGroupRef> businesGroups, String role) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
 	@Override
 	public int countMembers(BusinessGroup businessGroup, String... roles) {
 		return businessGroupRelationDAO.countRoles(businessGroup, roles);

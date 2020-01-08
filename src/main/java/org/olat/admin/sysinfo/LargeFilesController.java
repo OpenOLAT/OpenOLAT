@@ -1,3 +1,22 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
 package org.olat.admin.sysinfo;
 
 import java.util.ArrayList;
@@ -6,6 +25,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.NewControllerFactory;
+import org.olat.admin.sysinfo.gui.LargeFilesAgeCellRenderer;
 import org.olat.admin.sysinfo.gui.LargeFilesLockedCellRenderer;
 import org.olat.admin.sysinfo.gui.LargeFilesNameCellRenderer;
 import org.olat.admin.sysinfo.gui.LargeFilesRevisionCellRenderer;
@@ -16,7 +36,9 @@ import org.olat.admin.sysinfo.model.LargeFilesTableContentRow;
 import org.olat.admin.sysinfo.model.LargeFilesTableModel;
 import org.olat.admin.sysinfo.model.LargeFilesTableModel.LargeFilesTableColumns;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.commons.services.vfs.VFSFilterKeys;
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryModule;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSRevision;
 import org.olat.core.gui.UserRequest;
@@ -31,7 +53,6 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ExtendedFlexiTableSearchController;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -39,6 +60,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.text.TextFactory;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -54,11 +76,14 @@ import org.olat.core.util.mail.ContactMessage;
 import org.olat.modules.co.ContactFormController;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class LargeFilesController extends FormBasicController implements ExtendedFlexiTableSearchController {
 
-	public static final String[] TRASHED_KEYS = new String[]{ "trashed", "notTrashed", "both" };
-	public static final String[] REVISION_KEYS = new String[]{ "revisions", "files", "both" };
-	public static final String[] LOCKED_KEYS = new String[]{ "locked", "notlocked", "both" };
+/**
+ * 
+ * Initial date: 23 Dec 2019<br>
+ * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
+ *
+ */
+public class LargeFilesController extends FormBasicController implements ExtendedFlexiTableSearchController {
 
 	private final AtomicInteger counter = new AtomicInteger();
 
@@ -78,7 +103,6 @@ public class LargeFilesController extends FormBasicController implements Extende
 	private TextElement revisionCountMinEl;
 	private TextElement maxResultEl;
 	private TextElement minSizeEl;
-	private FormSubmit searchButton;
 	private FormLink resetButton;
 
 	private List<LargeFilesTableContentRow> rows;
@@ -89,6 +113,8 @@ public class LargeFilesController extends FormBasicController implements Extende
 
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
+	@Autowired
+	private VFSRepositoryModule vfsRepositoryModule;
 
 
 	public LargeFilesController(UserRequest ureq, WindowControl wControl) {
@@ -99,8 +125,12 @@ public class LargeFilesController extends FormBasicController implements Extende
 
 	public void updateModel() {
 		rows = new ArrayList<>();
-		int maxResults = 100, downloadCountMin = 0, minSize = 0;
-		Long revisionsCountMin = new Long(0);
+		
+		int maxResults = 100;
+		int downloadCountMin = 0;
+		int minSize = 0;
+		
+		Long revisionsCountMin = Long.valueOf(0);
 
 		if(StringHelper.containsNonWhitespace(maxResultEl.getValue())) {
 			maxResults = Integer.parseInt(maxResultEl.getValue());
@@ -115,12 +145,12 @@ public class LargeFilesController extends FormBasicController implements Extende
 			revisionsCountMin = Long.parseLong(revisionCountMinEl.getValue());
 		}
 
-		if(revisionSelection.getSelectedKey() != REVISION_KEYS[0]) {
+		if(!revisionSelection.getSelectedKey().equals(VFSFilterKeys.REVISIONS.name())) {
 			List<VFSMetadata> files = vfsRepositoryService.getLargestFiles(maxResults, 
 					createdAtNewerChooser.getDate(), createdAtOlderChooser.getDate(),
 					editedAtNewerChooser.getDate(), editedAtOlderChooser.getDate(),
 					lockedAtNewerChooser.getDate(), lockedAtOlderChooser.getDate(),
-					trashedSelection.getSelectedKey(), revisionSelection.getSelectedKey(), lockedSelection.getSelectedKey(),
+					trashedSelection.getSelectedKey(), lockedSelection.getSelectedKey(),
 					downloadCountMin, revisionsCountMin, minSize);
 
 			for(VFSMetadata file:files) {
@@ -143,12 +173,12 @@ public class LargeFilesController extends FormBasicController implements Extende
 			}
 		}
 
-		if(revisionSelection.getSelectedKey() != REVISION_KEYS[1]) {
+		if(!revisionSelection.getSelectedKey().equals(VFSFilterKeys.FILES.name())) {
 			List<VFSRevision> revisions = vfsRepositoryService.getLargestRevisions(maxResults, 
 					createdAtNewerChooser.getDate(), createdAtOlderChooser.getDate(),
 					editedAtNewerChooser.getDate(), editedAtOlderChooser.getDate(),
 					lockedAtNewerChooser.getDate(), lockedAtOlderChooser.getDate(),
-					trashedSelection.getSelectedKey(), revisionSelection.getSelectedKey(), lockedSelection.getSelectedKey(),
+					trashedSelection.getSelectedKey(), lockedSelection.getSelectedKey(),
 					downloadCountMin, revisionsCountMin, minSize);
 
 			for(VFSRevision revision:revisions) {
@@ -234,33 +264,33 @@ public class LargeFilesController extends FormBasicController implements Extende
 		editedAtOlderChooser = uifactory.addDateChooser("largefiles.filter.edited.older", "largefiles.filter.edited.older", null, rightContainer);
 		lockedAtOlderChooser = uifactory.addDateChooser("largefiles.filter.locked.older", null, rightContainer);
 
+		
+		KeyValues deletedKeys = new KeyValues();
+		deletedKeys.add(KeyValues.entry(VFSFilterKeys.DELETED.name(), translate("largefiles.filter.trashed.only")));
+		deletedKeys.add(KeyValues.entry(VFSFilterKeys.NOT_DELETED.name(), translate("largefiles.filter.trashed.not")));
+		deletedKeys.add(KeyValues.entry(VFSFilterKeys.BOTH_DELETED.name(), translate("largefiles.filter.trashed.both")));
+		
+		trashedSelection = uifactory.addRadiosHorizontal("largefiles.filter.trashed", "largefiles.filter.trashed", rightContainer, deletedKeys.keys(), deletedKeys.values());
+		trashedSelection.select(VFSFilterKeys.BOTH_DELETED.name(), true);
 
-		String[] trashedValues = new String[] {
-				translate("largefiles.filter.trashed.only"),
-				translate("largefiles.filter.trashed.not"),
-				translate("largefiles.filter.trashed.both")
-		};
-		trashedSelection = uifactory.addRadiosHorizontal("largefiles.filter.trashed", "largefiles.filter.trashed", rightContainer, TRASHED_KEYS, trashedValues);
-		trashedSelection.select(TRASHED_KEYS[2], true);
+		KeyValues revisionKeys = new KeyValues();
+		revisionKeys.add(KeyValues.entry(VFSFilterKeys.REVISIONS.name(), translate("largefiles.filter.revision.only")));
+		revisionKeys.add(KeyValues.entry(VFSFilterKeys.FILES.name(), translate("largefiles.filter.revision.not")));
+		revisionKeys.add(KeyValues.entry(VFSFilterKeys.BOTH_REVISIONS_FILES.name(), translate("largefiles.filter.revision.both")));
+		
+		revisionSelection = uifactory.addRadiosHorizontal("largefiles.filter.revision", "largefiles.filter.revision", rightContainer, revisionKeys.keys(), revisionKeys.values());
+		revisionSelection.select(VFSFilterKeys.BOTH_REVISIONS_FILES.name(), true);
 
-		String[] revisionValues = new String[] {
-				translate("largefiles.filter.revision.only"),
-				translate("largefiles.filter.revision.not"),
-				translate("largefiles.filter.revision.both")
-		};
-		revisionSelection = uifactory.addRadiosHorizontal("largefiles.filter.revision", "largefiles.filter.revision", rightContainer, REVISION_KEYS, revisionValues);
-		revisionSelection.select(REVISION_KEYS[2], true);
-
-		String[] lockedValues = new String[] {
-				translate("largefiles.filter.locked.only"),
-				translate("largefiles.filter.locked.not"),
-				translate("largefiles.filter.locked.both")
-		};
-		lockedSelection = uifactory.addRadiosHorizontal("largefiles.filter.locked", rightContainer, LOCKED_KEYS, lockedValues);
-		lockedSelection.select(LOCKED_KEYS[2], true);
+		KeyValues lockedValues = new KeyValues();
+		lockedValues.add(KeyValues.entry(VFSFilterKeys.LOCKED.name(), translate("largefiles.filter.locked.only")));
+		lockedValues.add(KeyValues.entry(VFSFilterKeys.NOT_LOCKED.name(), translate("largefiles.filter.locked.not")));
+		lockedValues.add(KeyValues.entry(VFSFilterKeys.BOTH_LOCKED.name(), translate("largefiles.filter.locked.both")));
+		
+		lockedSelection = uifactory.addRadiosHorizontal("largefiles.filter.locked", rightContainer, lockedValues.keys(), lockedValues.values());
+		lockedSelection.select(VFSFilterKeys.BOTH_LOCKED.name(), true);
 
 		// Filter buttons
-		searchButton = uifactory.addFormSubmitButton("largefiles.filter.button.search", filterButtonLayout);
+		uifactory.addFormSubmitButton("largefiles.filter.button.search", filterButtonLayout);
 		resetButton = uifactory.addFormLink("largefiles.filter.button.reset", filterButtonLayout, Link.BUTTON);
 
 		// Tabled
@@ -270,9 +300,9 @@ public class LargeFilesController extends FormBasicController implements Extende
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.key));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.uuid));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, LargeFilesTableColumns.name, new LargeFilesNameCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, LargeFilesTableColumns.size, new LargeFilesSizeCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, LargeFilesTableColumns.size, new LargeFilesSizeCellRenderer(vfsRepositoryModule)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, LargeFilesTableColumns.path));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.age));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.age, new LargeFilesAgeCellRenderer()));
 
 		column = new DefaultFlexiColumnModel(false, LargeFilesTableColumns.trashed, new LargeFilesTrashedCellRenderer());
 		column.setIconHeader(CSSHelper.getIconCssClassFor(CSSHelper.CSS_CLASS_TRASHED));
@@ -361,7 +391,6 @@ public class LargeFilesController extends FormBasicController implements Extende
 				removeAsListenerAndDispose(pathInfoCalloutCtrl);
 
 				LargeFilesTableContentRow row = (LargeFilesTableContentRow) link.getUserObject();
-				System.out.println(link.getUserObject());
 
 				CalloutSettings settings = new CalloutSettings(false);
 

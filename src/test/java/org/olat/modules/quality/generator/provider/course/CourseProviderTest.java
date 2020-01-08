@@ -20,6 +20,7 @@
 package org.olat.modules.quality.generator.provider.course;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.olat.test.JunitTestHelper.random;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -33,6 +34,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.modules.quality.QualityDataCollection;
+import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
 import org.olat.modules.quality.generator.QualityGeneratorService;
@@ -41,6 +43,7 @@ import org.olat.modules.quality.generator.ui.RepositoryEntryWhiteListController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.test.JunitTestHelper;
@@ -60,9 +63,13 @@ public class CourseProviderTest  extends OlatTestCase {
 	@Autowired
 	private QualityGeneratorService generatorService;
 	@Autowired
+	private QualityService qualityService;
+	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private RepositoryEntryLifecycleDAO lifecycleDAO;
 	
@@ -70,7 +77,7 @@ public class CourseProviderTest  extends OlatTestCase {
 	private CourseProvider sut;
 	
 	@Test
-	public void shouldNotGenerateDataCollectionIfBeginDateIsReachedYet() {
+	public void shouldNotGenerateDataCollectionIfBeginDateIsNotReachedYet() {
 		GregorianCalendar lifecycleStart = new GregorianCalendar(2010, 6, 2);
 		GregorianCalendar lifecycleEnd = new GregorianCalendar(2010, 12, 30);
 		RepositoryEntry courseEntry = createCourse(lifecycleStart, lifecycleEnd);
@@ -84,6 +91,7 @@ public class CourseProviderTest  extends OlatTestCase {
 		Date now = new GregorianCalendar(2010, 6, 11).getTime();
 		
 		List<QualityDataCollection> generated = sut.generate(generator, configs, lastRun, now);
+		dbInstance.commitAndCloseSession();
 		
 		assertThat(generated).isEmpty();
 	}
@@ -103,6 +111,7 @@ public class CourseProviderTest  extends OlatTestCase {
 		Date now = new GregorianCalendar(2010, 6, 11).getTime();
 		
 		List<QualityDataCollection> generated = sut.generate(generator, configs, lastRun, now);
+		dbInstance.commitAndCloseSession();
 		
 		QualityDataCollection dataCollection = generated.get(0);
 		assertThat(dataCollection.getStart()).isCloseTo(new GregorianCalendar(2010, 6, 11).getTime(), 1000);
@@ -125,6 +134,7 @@ public class CourseProviderTest  extends OlatTestCase {
 		Date now = new GregorianCalendar(2010, 6, 13).getTime();
 		
 		List<QualityDataCollection> generated = sut.generate(generator, configs, lastRun, now);
+		dbInstance.commitAndCloseSession();
 		
 		QualityDataCollection dataCollection = generated.get(0);
 		assertThat(dataCollection.getStart()).isCloseTo(new GregorianCalendar(2010, 6, 11).getTime(), 1000);
@@ -147,6 +157,7 @@ public class CourseProviderTest  extends OlatTestCase {
 		Date now = new GregorianCalendar(2010, 6, 30).getTime();
 		
 		List<QualityDataCollection> generated = sut.generate(generator, configs, lastRun, now);
+		dbInstance.commitAndCloseSession();
 		
 		assertThat(generated).isEmpty();
 	}
@@ -166,6 +177,7 @@ public class CourseProviderTest  extends OlatTestCase {
 		Date now = new GregorianCalendar(2010, 6, 11).getTime();
 		
 		List<QualityDataCollection> generated = sut.generate(generator, configs, lastRun, now);
+		dbInstance.commitAndCloseSession();
 		
 		assertThat(generated).isEmpty();
 	}
@@ -185,6 +197,7 @@ public class CourseProviderTest  extends OlatTestCase {
 		Date now = new GregorianCalendar(2010, 6, 11).getTime();
 		
 		List<QualityDataCollection> generated = sut.generate(generator, configs, lastRun, now);
+		dbInstance.commitAndCloseSession();
 		
 		QualityDataCollection dataCollection = generated.get(0);
 		assertThat(dataCollection.getStart()).isCloseTo(new GregorianCalendar(2010, 6, 11).getTime(), 1000);
@@ -207,6 +220,7 @@ public class CourseProviderTest  extends OlatTestCase {
 		Date now = new GregorianCalendar(2010, 6, 13).getTime();
 		
 		List<QualityDataCollection> generated = sut.generate(generator, configs, lastRun, now);
+		dbInstance.commitAndCloseSession();
 		
 		QualityDataCollection dataCollection = generated.get(0);
 		assertThat(dataCollection.getStart()).isCloseTo(new GregorianCalendar(2010, 6, 8).getTime(), 1000);
@@ -229,8 +243,39 @@ public class CourseProviderTest  extends OlatTestCase {
 		Date now = new GregorianCalendar(2010, 6, 13).getTime();
 		
 		List<QualityDataCollection> generated = sut.generate(generator, configs, lastRun, now);
+		dbInstance.commitAndCloseSession();
 		
 		assertThat(generated).isEmpty();
+	}
+	
+	@Test
+	public void shouldCopyOrganisationsOfCourseToDataCollection() {
+		GregorianCalendar lifecycleStart = new GregorianCalendar(2010, 6, 1);
+		GregorianCalendar lifecycleEnd = new GregorianCalendar(2010, 6, 18);
+		RepositoryEntry courseEntry = createCourse(lifecycleStart, lifecycleEnd);
+		Organisation defaultOrganisation = organisationService.getDefaultOrganisation();
+		repositoryService.removeOrganisation(courseEntry, defaultOrganisation);
+		Organisation courseOrganisation1 = createOrganisation(defaultOrganisation);
+		repositoryService.addOrganisation(courseEntry, courseOrganisation1);
+		Organisation courseOrganisation2 = createOrganisation(defaultOrganisation);
+		repositoryService.addOrganisation(courseEntry, courseOrganisation2);
+		
+		QualityGenerator generator = createGeneratorInDefaultOrganisation();
+		String dueDateDays = "-10";
+		String durationHours = "240";
+		QualityGeneratorConfigs configs = createCourseEndConfigs(generator, dueDateDays, durationHours, courseEntry);
+		
+		Date lastRun = new GregorianCalendar(2010, 6, 1).getTime();
+		Date now = new GregorianCalendar(2010, 6, 13).getTime();
+		
+		List<QualityDataCollection> generated = sut.generate(generator, configs, lastRun, now);
+		dbInstance.commitAndCloseSession();
+		
+		QualityDataCollection dataCollection = generated.get(0);
+		List<Organisation> organisations = qualityService.loadDataCollectionOrganisations(dataCollection);
+		assertThat(organisations)
+				.containsExactlyInAnyOrder(courseOrganisation1, courseOrganisation2)
+				.doesNotContain(defaultOrganisation);
 	}
 
 	private RepositoryEntry createCourse(GregorianCalendar lifecycleStart, GregorianCalendar lifecycleEnd) {
@@ -276,7 +321,15 @@ public class CourseProviderTest  extends OlatTestCase {
 		QualityGenerator generator = generatorService.createGenerator(sut.getType(), organisations);
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		generator.setFormEntry(formEntry);
-		return generatorService.updateGenerator(generator);
+		generatorService.updateGenerator(generator);
+		dbInstance.commitAndCloseSession();
+		return generator;
+	}
+
+	private Organisation createOrganisation(Organisation parent) {
+		Organisation organisation = organisationService.createOrganisation(random(), random(), random(), parent, null);
+		dbInstance.commitAndCloseSession();
+		return organisation;
 	}
 
 }

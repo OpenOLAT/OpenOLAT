@@ -84,4 +84,7 @@ public interface QuestionItemShort extends OLATResourceable, CreateInfo, Modifie
 	//technics
 	public String getFormat();
 	
+	//management
+	public Integer getCorrectionTime();
+	
 }

@@ -220,7 +220,7 @@ public class VFSRevisionDAO {
 			Date createdAtNewer, Date createdAtOlder, 
 			Date editedAtNewer, Date editedAtOlder, 
 			Date lockedAtNewer, Date lockedAtOlder,
-			Boolean trashed, Boolean revision, Boolean locked,
+			Boolean trashed, Boolean locked,
 			Integer downloadCount, Long revisionCount,
 			Integer size) {
 

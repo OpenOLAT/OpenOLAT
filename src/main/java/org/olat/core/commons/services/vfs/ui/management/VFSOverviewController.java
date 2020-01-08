@@ -84,18 +84,22 @@ public class VFSOverviewController extends FormBasicController {
 
 	public void updateModel() {
 		List<VFSOverviewTableContentRow> rows = new ArrayList<>();
+		
+		Object[] fileStats = vfsRepositoryService.getFileStats();
+		Object[] revisionStats = vfsRepositoryService.getRevisionStats();
+		Object[] thumbnailStats = vfsRepositoryService.getThumbnailStats();
 
-		rows.add(new VFSOverviewTableContentRow("vfs.overview.files", (Long) vfsRepositoryService.getFileStats().get(0)[0], (Long) vfsRepositoryService.getFileStats().get(0)[1], largeFilesLink));
-		rows.add(new VFSOverviewTableContentRow("vfs.overview.versions", (Long) vfsRepositoryService.getRevisionStats().get(0)[0], (Long) vfsRepositoryService.getRevisionStats().get(0)[1], versionsLink));
-		rows.add(new VFSOverviewTableContentRow("vfs.overview.trash", (Long) vfsRepositoryService.getFileStats().get(0)[2], (Long) vfsRepositoryService.getFileStats().get(0)[3], trashLink));
-		rows.add(new VFSOverviewTableContentRow("vfs.overview.thumbnails", (Long) vfsRepositoryService.getThumbnailStats().get(0)[0], (Long) vfsRepositoryService.getThumbnailStats().get(0)[1], thumbnailLink));
+		rows.add(new VFSOverviewTableContentRow("vfs.overview.files", (Long) fileStats[0], (Long) fileStats[1], largeFilesLink));
+		rows.add(new VFSOverviewTableContentRow("vfs.overview.versions", (Long) revisionStats[0], (Long) revisionStats[1], versionsLink));
+		rows.add(new VFSOverviewTableContentRow("vfs.overview.trash", (Long) fileStats[2], (Long) fileStats[3], trashLink));
+		rows.add(new VFSOverviewTableContentRow("vfs.overview.thumbnails", (Long) thumbnailStats[0], (Long) thumbnailStats[1], thumbnailLink));
 
 		vfsOverviewTableElement.setFooter(true);
 		vfsOverviewTableModel.setObjects(rows);
 		vfsOverviewTableElement.reset(true, true, true);
 
-		Long size = new Long(0);
-		Long amount = new Long(0);
+		Long size = Long.valueOf(0);
+		Long amount = Long.valueOf(0);
 
 		for(VFSOverviewTableContentRow row: rows) {
 			size += row.getSize() != null ? row.getSize() : 0;

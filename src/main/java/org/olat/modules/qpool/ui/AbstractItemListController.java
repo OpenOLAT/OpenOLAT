@@ -188,16 +188,17 @@ public abstract class AbstractItemListController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lastModified));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.keywords));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.coverage));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.additionalInfos));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.additionalInformations));
 		if (getSecurityCallback().canUseTaxonomy()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.taxnonomyLevel));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.taxnonomyPath));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.taxonomyLevel));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.taxonomyPath));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.difficulty));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.stdevDifficulty));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.differentiation));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.numOfAnswerAlternatives));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.usage));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.correctionTime));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.type));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.format));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.rating));

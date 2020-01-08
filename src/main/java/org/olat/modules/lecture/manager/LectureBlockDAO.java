@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.persistence.FlushModeType;
 import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
@@ -693,6 +694,7 @@ public class LectureBlockDAO {
 		
 		List<Long> firstKey = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
+				.setFlushMode(FlushModeType.COMMIT)
 				.setParameter("entryKey", entry.getKey())
 				.setParameter("identityKey", identity.getKey())
 				.setFirstResult(0)

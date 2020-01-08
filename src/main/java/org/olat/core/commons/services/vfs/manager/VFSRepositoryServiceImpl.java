@@ -48,7 +48,6 @@ import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 
 import org.apache.logging.log4j.Logger;
-import org.olat.admin.sysinfo.LargeFilesController;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.FolderLicenseHandler;
@@ -62,6 +61,7 @@ import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.thumbnail.CannotGenerateThumbnailException;
 import org.olat.core.commons.services.thumbnail.FinalSize;
 import org.olat.core.commons.services.thumbnail.ThumbnailService;
+import org.olat.core.commons.services.vfs.VFSFilterKeys;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSMetadataRef;
 import org.olat.core.commons.services.vfs.VFSRepositoryModule;
@@ -1393,32 +1393,24 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			Date createdAtNewer, Date createdAtOlder, 
 			Date editedAtNewer, Date editedAtOlder, 
 			Date lockedAtNewer, Date lockedAtOlder,
-			String trashed, String revision, String locked,
+			String deleted, String locked,
 			Integer downloadCount, Long revisionCount,
 			Integer size) {
 		
-		Boolean trashedVal, revisionVal, lockedVal;
+		Boolean trashedVal;
+		Boolean lockedVal;
 		
-		
-		if(trashed == LargeFilesController.TRASHED_KEYS[0]) {
+		if(deleted.equals(VFSFilterKeys.DELETED.name())) {
 			trashedVal = true;
-		} else if(trashed == LargeFilesController.TRASHED_KEYS[1]) {
+		} else if(deleted.equals(VFSFilterKeys.NOT_DELETED.name())) {
 			trashedVal = false;
 		} else {
 			trashedVal = null;
 		}
 		
-		if(revision == LargeFilesController.REVISION_KEYS[0]) {
-			revisionVal = true;
-		} else if(revision == LargeFilesController.REVISION_KEYS[1]) {
-			revisionVal = false;
-		} else {
-			revisionVal = null;
-		}
-		
-		if(locked == LargeFilesController.LOCKED_KEYS[0]) {
+		if(locked.equals(VFSFilterKeys.LOCKED.name())) {
 			lockedVal = true;
-		} else if(locked == LargeFilesController.LOCKED_KEYS[1]) {
+		} else if(locked.equals(VFSFilterKeys.NOT_LOCKED.name())) {
 			lockedVal = false;
 		} else {
 			lockedVal = null;
@@ -1428,7 +1420,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				createdAtNewer, createdAtOlder, 
 				editedAtNewer, editedAtOlder, 
 				lockedAtNewer, lockedAtOlder,
-				trashedVal, revisionVal, lockedVal,
+				trashedVal, lockedVal,
 				downloadCount, revisionCount, size);
 	}
 	
@@ -1437,32 +1429,24 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			Date createdAtNewer, Date createdAtOlder, 
 			Date editedAtNewer, Date editedAtOlder, 
 			Date lockedAtNewer, Date lockedAtOlder,
-			String trashed, String revision, String locked,
+			String deleted, String locked,
 			Integer downloadCount, Long revisionCount,
 			Integer size) {
 
-		Boolean trashedVal, revisionVal, lockedVal;
+		Boolean trashedVal;
+		Boolean lockedVal;
 		
-		
-		if(trashed == LargeFilesController.TRASHED_KEYS[0]) {
+		if(deleted.equals(VFSFilterKeys.DELETED.name())) {
 			trashedVal = true;
-		} else if(trashed == LargeFilesController.TRASHED_KEYS[1]) {
+		} else if(deleted.equals(VFSFilterKeys.NOT_DELETED.name())) {
 			trashedVal = false;
 		} else {
 			trashedVal = null;
 		}
 		
-		if(revision == LargeFilesController.REVISION_KEYS[0]) {
-			revisionVal = true;
-		} else if(revision == LargeFilesController.REVISION_KEYS[1]) {
-			revisionVal = false;
-		} else {
-			revisionVal = null;
-		}
-		
-		if(locked == LargeFilesController.LOCKED_KEYS[0]) {
+		if(locked.equals(VFSFilterKeys.LOCKED.name())) {
 			lockedVal = true;
-		} else if(locked == LargeFilesController.LOCKED_KEYS[1]) {
+		} else if(locked.equals(VFSFilterKeys.NOT_LOCKED.name())) {
 			lockedVal = false;
 		} else {
 			lockedVal = null;
@@ -1472,23 +1456,22 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				createdAtNewer, createdAtOlder, 
 				editedAtNewer, editedAtOlder, 
 				lockedAtNewer, lockedAtOlder,
-				trashedVal, revisionVal, lockedVal,
+				trashedVal, lockedVal,
 				downloadCount, revisionCount, size);
 	}
 	
 	@Override 
-	public List<Object[]> getFileStats() {
+	public Object[] getFileStats() {
 		return statsDao.getFileStats();
 	}
 	
 	@Override 
-	public List<Object[]> getRevisionStats() {
+	public Object[] getRevisionStats() {
 		return statsDao.getRevisionStats();
 	}
 	
 	@Override 
-	public List<Object[]> getThumbnailStats() {
+	public Object[] getThumbnailStats() {
 		return statsDao.getThumbnailStats();
 	}
-
 }

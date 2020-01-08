@@ -277,7 +277,7 @@ public class QuestionPoolTest extends Deployments {
 			.metadata()
 			.openItemAnalyse()
 			.setLearningTime(1, 5, 3, 35)
-			.setItemAnalyse(0.5d, 0.3d, -0.7d, 2, 3)
+			.setItemAnalyse(0.5d, 0.3d, -0.7d, 2, 3, 5)
 			.saveItemAnalyse();
 		
 		// open quick view
@@ -292,7 +292,8 @@ public class QuestionPoolTest extends Deployments {
 			.assertStandardDeviation(0.3d)
 			.assertDiscriminationIndex(-0.7d)
 			.assertDistractors(2)
-			.assertUsage(3);
+			.assertUsage(3)
+			.assertCorrectionTime(5);
 	}
 
 }

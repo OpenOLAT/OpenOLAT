@@ -22,6 +22,7 @@ package org.olat.modules.quality.analysis.manager;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -357,4 +358,20 @@ public class AnalysisPresentationXStreamTest {
 
 		assertThat(searchParamsFromXml.getContextRoles()).containsExactlyInAnyOrder(role1, role2);
 	}
+	
+	@Test
+	public void shouldNotSerializeViewerOrganisationRefs() {
+		OrganisationRef organisationRef = new OrganisationRefImpl(345L);
+		List<OrganisationRef> organisationRefs = new ArrayList<>();
+		organisationRefs.add(organisationRef);
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		searchParams.setDataCollectionOrganisationRefs(organisationRefs);
+		
+		String xml = AnalysisPresentationXStream.toXml(searchParams);
+		AnalysisSearchParameter searchParamsFromXml = AnalysisPresentationXStream.fromXml(xml,
+				AnalysisSearchParameter.class);
+		
+		assertThat(searchParamsFromXml.getDataCollectionOrganisationRefs()).isNull();
+	}
+
 }

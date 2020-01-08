@@ -57,6 +57,8 @@ public class ItemWrapper implements QuestionItemView {
 	private String educationalContextLevel;
 	private String educationalLearningTime;
 	
+	private Integer correctionTime;
+	
 	private String itemType;
 	private BigDecimal difficulty;
 	private BigDecimal stdevDifficulty;
@@ -247,7 +249,12 @@ public class ItemWrapper implements QuestionItemView {
 	public int getUsage() {
 		return usage;
 	}
-	
+
+	@Override
+	public Integer getCorrectionTime() {
+		return correctionTime;
+	}
+
 	@Override
 	public Date getCreationDate() {
 		return creationDate;
@@ -348,6 +355,8 @@ public class ItemWrapper implements QuestionItemView {
 			itemWrapper.educationalContextLevel = item.getEducationalContextLevel();
 			itemWrapper.educationalLearningTime = item.getEducationalLearningTime();
 			
+			itemWrapper.correctionTime = item.getCorrectionTime();
+			
 			itemWrapper.itemType = item.getItemType();
 			itemWrapper.difficulty = item.getDifficulty();
 			itemWrapper.stdevDifficulty = item.getStdevDifficulty();
@@ -368,7 +377,7 @@ public class ItemWrapper implements QuestionItemView {
 		}
 
 		public ItemWrapperBuilder setAuthor(Number authorCount) {
-			itemWrapper.isAuthor = authorCount == null ? false : authorCount.longValue() > 0;
+			itemWrapper.isAuthor = authorCount != null && authorCount.longValue() > 0;
 			return this;
 		}
 
@@ -378,7 +387,7 @@ public class ItemWrapper implements QuestionItemView {
 		}
 
 		public ItemWrapperBuilder setTeacher(Number teacherCount) {
-			itemWrapper.isTeacher = teacherCount == null ? false : teacherCount.longValue() > 0;
+			itemWrapper.isTeacher = teacherCount != null && teacherCount.longValue() > 0;
 			return this;
 		}
 
@@ -388,12 +397,12 @@ public class ItemWrapper implements QuestionItemView {
 		}
 
 		public ItemWrapperBuilder setManager(Number managerCount) {
-			itemWrapper.isManager = managerCount == null ? false : managerCount.longValue() > 0;
+			itemWrapper.isManager = managerCount != null && managerCount.longValue() > 0;
 			return this;
 		}
 		
 		public ItemWrapperBuilder setRater(Number ratingsCount) {
-			itemWrapper.isRater = ratingsCount == null ? false : ratingsCount.longValue() > 0;
+			itemWrapper.isRater = ratingsCount != null && ratingsCount.longValue() > 0;
 			return this;
 		}
 
@@ -403,7 +412,7 @@ public class ItemWrapper implements QuestionItemView {
 		}
 
 		public ItemWrapperBuilder setEditableInPool(Number editableInPoolCount) {
-			itemWrapper.isEditableInPool = editableInPoolCount == null ? false : editableInPoolCount.longValue() > 0;
+			itemWrapper.isEditableInPool = editableInPoolCount != null && editableInPoolCount.longValue() > 0;
 			return this;
 		}
 
@@ -413,7 +422,7 @@ public class ItemWrapper implements QuestionItemView {
 		}
 
 		public ItemWrapperBuilder setEditableInShare(Number editableInShareCount) {
-			itemWrapper.isEditableInShare = editableInShareCount == null ? false : editableInShareCount.longValue() > 0;
+			itemWrapper.isEditableInShare = editableInShareCount != null && editableInShareCount.longValue() > 0;
 			return this;
 		}
 
@@ -423,7 +432,7 @@ public class ItemWrapper implements QuestionItemView {
 		}
 
 		public ItemWrapperBuilder setMarked(Number markedCount) {
-			itemWrapper.isMarked = markedCount == null ? false : markedCount.longValue() > 0;
+			itemWrapper.isMarked = markedCount != null && markedCount.longValue() > 0;
 			return this;
 		}
 
@@ -438,9 +447,8 @@ public class ItemWrapper implements QuestionItemView {
 		}
 		
 		public ItemWrapper create() {
-			log.debug("Question item wrapped:" + itemWrapper.toString());
+			log.debug("Question item wrapped: {}", itemWrapper);
 			return itemWrapper;
 		}
 	}
-
 }

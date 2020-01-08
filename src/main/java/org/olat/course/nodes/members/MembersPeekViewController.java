@@ -36,16 +36,12 @@ import org.olat.core.gui.components.table.TableGuiConfiguration;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.id.Identity;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.MembersCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -56,10 +52,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class MembersPeekViewController extends BasicController {
 
 	@Autowired
-	private RepositoryService repositoryService;
-	@Autowired
-	private BusinessGroupService businessGroupService;	
-	
+	private MembersManager membersManager;
 	
 	private final CourseEnvironment courseEnv;
 	private TableController tableController;
@@ -101,7 +94,7 @@ public class MembersPeekViewController extends BasicController {
 			public Object getValueAt(int row, int col) {
 				Row r = entries.get(row);
 				if (col == 0) { return r.col1; }
-				if (col == 1) { return r.col2; }
+				if (col == 1) { return r.numOfMembers; }
 				return null;
 			}
 		});
@@ -110,33 +103,31 @@ public class MembersPeekViewController extends BasicController {
 	}
 	
 	protected void readFormData(ModuleConfiguration config) {
-		CourseGroupManager cgm = courseEnv.getCourseGroupManager();
-		
+
 		boolean withOwners = config.getBooleanSafe(MembersCourseNode.CONFIG_KEY_SHOWOWNER);
 		boolean withCoaches = config.anyTrue(MembersCourseNode.CONFIG_KEY_COACHES_COURSE, MembersCourseNode.CONFIG_KEY_COACHES_ALL)
 				|| config.hasAnyOf(MembersCourseNode.CONFIG_KEY_COACHES_GROUP, MembersCourseNode.CONFIG_KEY_COACHES_AREA, MembersCourseNode.CONFIG_KEY_COACHES_CUR_ELEMENT);
 		boolean withParticipants = config.anyTrue(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_COURSE, MembersCourseNode.CONFIG_KEY_PARTICIPANTS_ALL)
 				|| config.hasAnyOf(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_GROUP, MembersCourseNode.CONFIG_KEY_PARTICIPANTS_AREA, MembersCourseNode.CONFIG_KEY_PARTICIPANTS_CUR_ELEMENT);
 		
-		
 		RepositoryEntry courseRepositoryEntry = courseEnv.getCourseGroupManager().getCourseEntry();
-		List<Identity> owners;
+		List<Long> owners;
 		if(withOwners) {
-			owners = MembersHelpers.getOwners(repositoryService, courseRepositoryEntry);
+			owners = membersManager.getOwnersKeys(courseRepositoryEntry);
 		} else {
 			owners = new ArrayList<>();
 		}
 		
-		List<Identity> coaches;
+		List<Long> coaches;
 		if(withCoaches) {
-			coaches = MembersHelpers.getCoaches(config, cgm, businessGroupService);
+			coaches = membersManager.getCoachesKeys(courseRepositoryEntry, config);
 		} else {
 			coaches = new ArrayList<>();
 		}
 		
-		List<Identity> participants;
+		List<Long> participants;
 		if(withParticipants) {
-			participants = MembersHelpers.getParticipants(config, cgm, businessGroupService);
+			participants = membersManager.getParticipantsKeys(courseRepositoryEntry, config);
 		} else {
 			participants = new ArrayList<>();
 		}
@@ -144,32 +135,32 @@ public class MembersPeekViewController extends BasicController {
 		MembersCourseNodeConfiguration nodeConfig = (MembersCourseNodeConfiguration)CourseNodeFactory.getInstance().getCourseNodeConfiguration("cmembers");
 		boolean deduplicateList = nodeConfig.isDeduplicateList();
 		
-		Predicate<Identity> deduplicatCatch = new Deduplicate();
+		Predicate<Long> deduplicatCatch = new Deduplicate();
 		if(withOwners) {
-			List<Identity> filteredOwners = owners.stream()
+			List<Long> filteredOwners = owners.stream()
 					.filter(deduplicatCatch)
 					.collect(Collectors.toList());
-			entries.add(new Row(translate("members.owners"), Integer.toString(filteredOwners.size())));
+			entries.add(new Row(translate("members.owners"), filteredOwners.size()));
 		}
 
 		if(withCoaches) {
 			if(!deduplicateList) {
 				deduplicatCatch = new Deduplicate();
 			}
-			List<Identity> filteredCoaches = coaches.stream()
+			List<Long> filteredCoaches = coaches.stream()
 					.filter(deduplicatCatch)
 					.collect(Collectors.toList());
-			entries.add(new Row(translate("members.coaches"), Integer.toString(filteredCoaches.size())));
+			entries.add(new Row(translate("members.coaches"), filteredCoaches.size()));
 		}
 
 		if(withParticipants) {
 			if(!deduplicateList) {
 				deduplicatCatch = new Deduplicate();
 			}
-			List<Identity> filteredParticipants = participants.stream()
+			List<Long> filteredParticipants = participants.stream()
 					.filter(deduplicatCatch)
 					.collect(Collectors.toList());
-			entries.add(new Row(translate("members.participants"), Integer.toString(filteredParticipants.size())));
+			entries.add(new Row(translate("members.participants"), filteredParticipants.size()));
 		}
 	}
 
@@ -185,19 +176,20 @@ public class MembersPeekViewController extends BasicController {
 	
 	private static class Row {
 		private String col1;
-		private String col2;
-		public Row(String col1, String col2) {
+		private int numOfMembers;
+		
+		public Row(String col1, int numOfMembers) {
 			this.col1 = col1;
-			this.col2 = col2;
+			this.numOfMembers = numOfMembers;
 		}
 	}
 	
-	private static class Deduplicate implements Predicate<Identity> {
+	private static class Deduplicate implements Predicate<Long> {
 		
-		private final Set<Identity> duplicateCatcher = new HashSet<>();
+		private final Set<Long> duplicateCatcher = new HashSet<>();
 
 		@Override
-		public boolean test(Identity t) {
+		public boolean test(Long t) {
 			if(duplicateCatcher.contains(t)) {
 				return false;
 			}

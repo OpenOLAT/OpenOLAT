@@ -30,6 +30,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -50,9 +51,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -269,20 +270,19 @@ public class FileUtils {
 	 * @return true upon success
 	 */
 	public static long getDirSize(File path) {
-		Iterator<File> path_iterator;
-		File current_file;
-		long size;
-
 		File[] f = path.listFiles();
-		if (f == null) { return 0; }
-		path_iterator = (Arrays.asList(f)).iterator();
-		size = 0;
-		while (path_iterator.hasNext()) {
-			current_file = path_iterator.next();
-			if (current_file.isFile()) {
-				size += current_file.length();
+		if (f == null) {
+			return 0;
+		}
+		
+		Iterator<File> pathIterator = (Arrays.asList(f)).iterator();
+		long size = 0l;
+		while (pathIterator.hasNext()) {
+			File currentFile = pathIterator.next();
+			if (currentFile.isFile()) {
+				size += currentFile.length();
 			} else {
-				size += getDirSize(current_file);
+				size += getDirSize(currentFile);
 			}
 		}
 		return size;
@@ -746,30 +746,16 @@ public class FileUtils {
 	}
 	
 	/**
-	 * @param is the inputstream to close, may also be null
+	 * @param cl The closeable to close, may also be null
 	 */
-	public static void closeSafely(InputStream is) {
-		if (is == null) return;
+	public static void closeSafely(Closeable cl) {
+		if (cl == null) return;
 		try {
-			is.close();
+			cl.close();
 		} catch (IOException e) {
 			// nothing to do
 		}
-		
 	}
-	
-	/**
-	 * @param os the outputstream to close, may also be null
-	 */
-	public static void closeSafely(OutputStream os) {
-		if (os == null) return;
-		try {
-			os.close();
-		} catch (IOException e) {
-			// nothing to do
-		}
-		
-	}	
 
 	/**
 	 * Extract file suffix. E.g. 'html' from index.html

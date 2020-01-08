@@ -48,7 +48,6 @@ import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
-import org.olat.resource.OLATResource;
 
 /**
  * 
@@ -103,8 +102,7 @@ public class LiveStreamCourseNode extends AbstractAccessableCourseNode {
 					nodeSecCallback.getNodeEvaluation());
 			LiveStreamSecurityCallback secCallback = LiveStreamSecurityCallbackFactory
 					.createSecurityCallback(userCourseEnv, this.getModuleConfiguration());
-			OLATResource courseOres = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource();
-			runCtrl = new LiveStreamRunController(ureq, wControl, this, courseOres, secCallback, calendars);
+			runCtrl = new LiveStreamRunController(ureq, wControl, this, userCourseEnv, secCallback, calendars);
 		}
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, this, "o_livestream_icon");
 		return new NodeRunConstructionResult(ctrl);

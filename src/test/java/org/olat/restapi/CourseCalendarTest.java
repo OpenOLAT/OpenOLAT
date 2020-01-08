@@ -187,6 +187,42 @@ public class CourseCalendarTest extends OlatRestTestCase {
 	}
 	
 	@Test
+	public void putVisibleCalendarEvent() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(auth1.getName(), "A6B7C8"));
+
+		//create an event
+		EventVO event = new EventVO();
+		Calendar cal = Calendar.getInstance();
+		event.setBegin(cal.getTime());
+		cal.add(Calendar.HOUR_OF_DAY, 1);
+		event.setEnd(cal.getTime());
+		String subject = UUID.randomUUID().toString();
+		event.setSubject(subject);
+		event.setClassification(KalendarEvent.CLASS_PUBLIC);
+
+		URI eventUri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.path(course1.getResourceableId().toString()).path("calendar").path("event").build();
+		HttpPut putEventMethod = conn.createPut(eventUri, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(putEventMethod, event);
+		HttpResponse putEventResponse = conn.execute(putEventMethod);
+		assertEquals(200, putEventResponse.getStatusLine().getStatusCode());
+		EntityUtils.consume(putEventResponse.getEntity());
+		
+		//check if the event is saved
+		KalendarRenderWrapper calendarWrapper = calendarManager.getCourseCalendar(course1);
+		Collection<KalendarEvent> savedEvents = calendarWrapper.getKalendar().getEvents();
+		
+		KalendarEvent savedEvent = savedEvents.stream()
+				.filter(e -> subject.equals(e.getSubject()))
+				.findFirst().get();
+		
+		Assert.assertEquals(KalendarEvent.CLASS_PUBLIC, savedEvent.getClassification());
+
+		conn.shutdown();
+	}
+	
+	@Test
 	public void putCalendarEvents() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
 		Identity admin = securityManager.findIdentityByName("administrator");

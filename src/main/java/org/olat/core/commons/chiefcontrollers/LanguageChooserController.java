@@ -63,19 +63,11 @@ public class LanguageChooserController extends FormBasicController {
 		initForm(ureq);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormDefaultController#formOK(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
-	//
+		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormDefaultController#formInnerEvent(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.form.flexible.FormItem,
-	 *      org.olat.core.gui.components.form.flexible.FormEvent)
-	 */
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		Locale loc = I18nManager.getInstance().getLocaleOrDefault(getSelectedLanguage());
@@ -98,10 +90,6 @@ public class LanguageChooserController extends FormBasicController {
 		return langs.getSelectedKey();
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormDefaultController#initFormElements(org.olat.core.gui.components.form.flexible.FormItemContainer,
-	 *      org.olat.core.gui.control.Controller)
-	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, final UserRequest ureq) {
 
@@ -118,17 +106,13 @@ public class LanguageChooserController extends FormBasicController {
 		String[] langValues = StringHelper.getMapValuesAsStringArray(languages);
 		ArrayHelper.sort(langKeys, langValues, false, true, false);
 		// Build css classes for reference languages
-		//String[] langCssClasses = I18nManager.getInstance().createLanguageFlagsCssClasses(langKeys, "o_with_flag");
 		langs = uifactory.addDropdownSingleselect(mainForm.getFormId() + "_select", "select.language", "select.language", formLayout, langKeys, langValues, null); 
 		langs.addActionListener(FormEvent.ONCHANGE);
 		langs.select(curlang, true);
 		// Add to velocity for flag
-		flc.contextPut("languageCode", curlang.toString());
+		flc.contextPut("languageCode", curlang);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		langs = null;

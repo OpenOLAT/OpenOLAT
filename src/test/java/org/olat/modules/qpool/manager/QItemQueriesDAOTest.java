@@ -55,6 +55,7 @@ import org.olat.modules.qpool.QuestionType;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
+import org.olat.modules.qpool.ui.QuestionItemDataModel;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -231,6 +232,36 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 			SortKey sortDesc = new SortKey(order.name(), false);
 			List<QuestionItemView> descOrderedItems = qItemQueriesDao.getItems(params, 0, -1, sortDesc);
 			Assert.assertNotNull(descOrderedItems);
+		}
+	}
+	
+	/**
+	 * Check if all the queries works with the order by used
+	 * by the main table in question pool.
+	 */
+	@Test
+	public void getItemsOfCollection_orderByColumns() {
+		//create a collection with 2 items
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-3c-" + UUID.randomUUID().toString());
+		QuestionItemCollection coll = collectionDao.createCollection("NGC collection 3c", id);
+		QuestionItem item = questionDao.createAndPersist(null, "NGC 92", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
+		collectionDao.addItemToCollection(item, singletonList(coll));
+		dbInstance.commit();//check if it's alright
+		
+		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null, Locale.ENGLISH);
+		params.setCollection(coll);
+		
+		//test order by
+		for(QuestionItemDataModel.Cols order: QuestionItemDataModel.Cols.values()) {
+			if(order.sortable()) {
+				SortKey sortAsc = new SortKey(order.name(), true);
+				List<QuestionItemView> ascOrderedItems = qItemQueriesDao.getItems(params, 0, -1, sortAsc);
+				Assert.assertNotNull(ascOrderedItems);
+				
+				SortKey sortDesc = new SortKey(order.name(), false);
+				List<QuestionItemView> descOrderedItems = qItemQueriesDao.getItems(params, 0, -1, sortDesc);
+				Assert.assertNotNull(descOrderedItems);
+			}
 		}
 	}
 	

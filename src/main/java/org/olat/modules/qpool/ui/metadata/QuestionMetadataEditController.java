@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.MetadataSecurityCallback;
 import org.olat.modules.qpool.QPoolService;
@@ -70,6 +71,7 @@ public class QuestionMetadataEditController extends FormBasicController {
 	private TextElement differentiationEl;
 	private TextElement numAnswerAltEl;
 	private TextElement usageEl;
+	private TextElement correctionTimeMinuteElement;
 	private FormLayoutContainer buttonsCont;
 	
 	private QuestionItem item;
@@ -161,7 +163,12 @@ public class QuestionMetadataEditController extends FormBasicController {
 		usageEl = uifactory.addTextElement("question.usage", "question.usage", 24, numUsage, formLayout);
 		usageEl.setElementCssClass("o_sel_usage");
 		usageEl.setDisplaySize(4);
-
+		
+		String correctionTime = item.getCorrectionTime() == null ? "" : item.getCorrectionTime().toString();
+		correctionTimeMinuteElement = uifactory.addTextElement("question.correctionTime", 8, correctionTime, formLayout);
+		correctionTimeMinuteElement.setElementCssClass("o_sel_correction_time");
+		correctionTimeMinuteElement.setDisplaySize(4);
+		
 		buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setElementCssClass("o_sel_qpool_metadata_buttons");
 		buttonsCont.setRootForm(mainForm);
@@ -205,6 +212,7 @@ public class QuestionMetadataEditController extends FormBasicController {
 		allOk &= validateBigDecimal(differentiationEl, -1.0d, 1.0d, true);
 		allOk &= validateInteger(numAnswerAltEl, 0, Integer.MAX_VALUE, true);
 		allOk &= validateInteger(usageEl, 0, Integer.MAX_VALUE, true);
+		allOk &= validateInteger(correctionTimeMinuteElement, 0, Integer.MAX_VALUE, true);
 		return allOk;
 	}
 	
@@ -242,6 +250,11 @@ public class QuestionMetadataEditController extends FormBasicController {
 			
 			int numUsage = toInt(usageEl.getValue());
 			itemImpl.setUsage(numUsage);
+			
+			if(StringHelper.containsNonWhitespace(correctionTimeMinuteElement.getValue())
+					&& StringHelper.isLong(correctionTimeMinuteElement.getValue())) {
+				itemImpl.setCorrectionTime(Integer.valueOf(correctionTimeMinuteElement.getValue()));
+			}
 
 			item = qpoolService.updateItem(itemImpl);
 			builder.withAfter(item);

@@ -101,14 +101,12 @@ public class OLATAuthentcationForm extends FormBasicController {
 		FormLayoutContainer loginWrapper = FormLayoutContainer.createInputGroupLayout("loginWrapper", getTranslator(), "<i class='o_icon o_icon-fw o_icon_user'> </i>", null);
 		formLayout.add(loginWrapper);
 		login = uifactory.addTextElement(mainForm.getFormId() + "_name", "lf_login", "lf.login", 128, "", loginWrapper);
-		login.setLabel(null, null);
 		login.setPlaceholderKey("lf.login", null);
 		login.setFocus(true);
 		
 		FormLayoutContainer passWrapper = FormLayoutContainer.createInputGroupLayout("passWrapper", getTranslator(), "<i class='o_icon o_icon-fw o_icon_password'> </i>", null);
 		formLayout.add(passWrapper);
 		pass  = uifactory.addPasswordElement(mainForm.getFormId() + "_pass", "lf_pass",  "lf.pass", 128, "", passWrapper);
-		pass.setLabel(null, null);
 		pass.setPlaceholderKey("lf.pass", null);
 
 		login.setDisplaySize(20);
@@ -117,7 +115,7 @@ public class OLATAuthentcationForm extends FormBasicController {
 		uifactory.addFormSubmitButton(mainForm.getFormId() + "_button", "login.button", "login.button", formLayout);
 		
 		// turn off the dirty message when leaving the login form without loggin in (e.g. pressing guest login)
-		this.flc.getRootForm().setHideDirtyMarkingMessage(true);
+		flc.getRootForm().setHideDirtyMarkingMessage(true);
 	}
 
 	@Override

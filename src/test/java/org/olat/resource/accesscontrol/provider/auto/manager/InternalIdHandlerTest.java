@@ -25,6 +25,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collection;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -75,10 +76,11 @@ public class InternalIdHandlerTest {
 	public void shouldReturnTheExternalIdFromRepositoryEntry() {
 		Long key = 1234L;
 		when(entryMock.getKey()).thenReturn(key);
-
-		String value = sut.getRepositoryEntryValue(entryMock);
-
+		
+		Set<String> values = sut.getRepositoryEntryValue(entryMock);
+		
 		String keyAsString = Long.toString(key);
-		assertThat(value).isEqualTo(keyAsString);
+		assertThat(values.iterator().next()).isEqualTo(keyAsString);
 	}
+	
 }

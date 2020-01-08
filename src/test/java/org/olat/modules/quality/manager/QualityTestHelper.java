@@ -235,7 +235,10 @@ public class QualityTestHelper {
 	}
 
 	public Organisation createOrganisation() {
-		return organisationService.createOrganisation(UUID.randomUUID().toString(), UUID.randomUUID().toString(), null, null, null);
+		return createOrganisation(null);
+	}
+	public Organisation createOrganisation(Organisation parent) {
+		return organisationService.createOrganisation(UUID.randomUUID().toString(), UUID.randomUUID().toString(), null, parent, null);
 	}
 	
 	public Curriculum createCurriculum() {

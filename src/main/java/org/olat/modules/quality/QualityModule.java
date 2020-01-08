@@ -49,6 +49,8 @@ public class QualityModule extends AbstractSpringModule implements ConfigOnOff {
 	private static final String SUGGESTION_EMAIL_SUBJECT = "quality.suggestion.email.subject";
 	private static final String SUGGESTION_EMAIL_BODY = "quality.suggestion.email.body";
 	private static final String DELIMITER = ",";
+	private static final String FROM_EMAIL = "quality.from.email";
+	private static final String FROM_NAME = "quality.from.name";
 	
 	@Value("${quality.enabled:false}")
 	private boolean enabled;
@@ -58,6 +60,10 @@ public class QualityModule extends AbstractSpringModule implements ConfigOnOff {
 	private String suggestionEmailAddresses;
 	private String suggestionEmailSubject;
 	private String suggestionEmailBody;
+	@Value("${quality.from.email}")
+	private String fromEmail;
+	@Value("${quality.from.name}")
+	private String fromName;
 
 	@Autowired
 	public QualityModule(CoordinatorManager coordinatorManager) {
@@ -101,6 +107,16 @@ public class QualityModule extends AbstractSpringModule implements ConfigOnOff {
 		String suggestionEmailBodyObj = getStringPropertyValue(SUGGESTION_EMAIL_BODY, true);
 		if (StringHelper.containsNonWhitespace(suggestionEmailBodyObj)) {
 			suggestionEmailBody = suggestionEmailBodyObj;
+		}
+		
+		String fromEmailObj = getStringPropertyValue(FROM_EMAIL, true);
+		if (StringHelper.containsNonWhitespace(fromEmailObj)) {
+			fromEmail = fromEmailObj;
+		}
+		
+		String fromNameObj = getStringPropertyValue(FROM_NAME, true);
+		if (StringHelper.containsNonWhitespace(fromNameObj)) {
+			fromName = fromNameObj;
 		}
 	}
 
@@ -151,6 +167,24 @@ public class QualityModule extends AbstractSpringModule implements ConfigOnOff {
 	public void setSuggestionEmailBody(String suggestionEmailBody) {
 		this.suggestionEmailBody = suggestionEmailBody;
 		setStringProperty(SUGGESTION_EMAIL_BODY, suggestionEmailBody, true);
+	}
+
+	public String getFromEmail() {
+		return fromEmail;
+	}
+
+	public void setFromEmail(String fromEmail) {
+		this.fromEmail = fromEmail;
+		setStringProperty(FROM_EMAIL, fromEmail, true);
+	}
+
+	public String getFromName() {
+		return fromName;
+	}
+
+	public void setFromName(String fromName) {
+		this.fromName = fromName;
+		setStringProperty(FROM_NAME, fromName, true);
 	}
 
 }

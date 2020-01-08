@@ -53,6 +53,7 @@ public class AssessmentItemMetadata {
 	private BigDecimal difficulty;
 	private BigDecimal differentiation;
 	private BigDecimal stdevDifficulty;
+	private Integer correctionTime;
 
 	private boolean hasError;
 	
@@ -227,6 +228,14 @@ public class AssessmentItemMetadata {
 		this.additionalInformations = additionalInformations;
 	}
 
+	public Integer getCorrectionTime() {
+		return correctionTime;
+	}
+
+	public void setCorrectionTime(Integer correctionTime) {
+		this.correctionTime = correctionTime;
+	}
+
 	public void toBuilder(ManifestMetadataBuilder metadata, Locale locale) {
 		if(getQuestionType() != null) {
 			metadata.setOpenOLATMetadataQuestionType(getQuestionType().getPrefix());
@@ -283,6 +292,7 @@ public class AssessmentItemMetadata {
 		metadata.setOpenOLATMetadataTopic(topic);
 		metadata.setOpenOLATMetadataAssessmentType(assessmentType);
 		metadata.setOpenOLATMetadataAdditionalInformations(additionalInformations);
+		metadata.setOpenOLATMetadataCorrectionTime(correctionTime);
 	}
 	
 	public void fromBuilder(ManifestMetadataBuilder metadata) {
@@ -340,6 +350,9 @@ public class AssessmentItemMetadata {
 			}
 			if(openolatMetadata.getAdditionalInformations() != null) {
 				additionalInformations = openolatMetadata.getAdditionalInformations();
+			}
+			if(openolatMetadata.getCorrectionTime() != null) {
+				correctionTime = openolatMetadata.getCorrectionTime();
 			}
 		}
 	}

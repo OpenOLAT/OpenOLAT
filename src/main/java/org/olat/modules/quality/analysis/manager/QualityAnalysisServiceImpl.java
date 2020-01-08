@@ -30,6 +30,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
@@ -105,13 +106,15 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 	}
 
 	@Override
-	public AnalysisPresentation createPresentation(RepositoryEntry formEntry) {
-		return presentationDAO.create(formEntry);
+	public AnalysisPresentation createPresentation(RepositoryEntry formEntry,
+			List<? extends OrganisationRef> dataCollectionOrganisationRefs) {
+		return presentationDAO.create(formEntry, dataCollectionOrganisationRefs);
 	}
 
 	@Override
 	public AnalysisPresentation clonePresentation(AnalysisPresentation presentation) {
-		AnalysisPresentation clone = presentationDAO.create(presentation.getFormEntry());
+		AnalysisPresentation clone = presentationDAO.create(presentation.getFormEntry(),
+				presentation.getSearchParams().getDataCollectionOrganisationRefs());
 		clone.setAnalysisSegment(presentation.getAnalysisSegment());
 		clone.setHeatMapGrouping(presentation.getHeatMapGrouping());
 		clone.setHeatMapInsufficientOnly(presentation.getHeatMapInsufficientOnly());

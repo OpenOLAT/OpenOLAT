@@ -29,6 +29,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -43,6 +44,11 @@ public class VFSRepositoryModule extends AbstractSpringModule {
 	private static final String MIGRATED_VFS = "vfs.migrated";
 	
 	private boolean migrated;
+	
+	@Value("${vfs.largefiles.upperborder}")
+	private long upperBorder;
+	@Value("${vfs.largefiles.lowerborder}")
+	private long lowerBorder;
 	
 	@Autowired
 	public VFSRepositoryModule(CoordinatorManager coordinatorManager) {
@@ -108,6 +114,14 @@ public class VFSRepositoryModule extends AbstractSpringModule {
 				&& !filename.equals(".DS_Store")
 				&& !filename.equals("__MACOSX")
 				? VFSConstants.YES : VFSConstants.NO;
+	}
+	
+	public long getUpperBorder() {
+		return upperBorder;
+	}
+	
+	public long getLowerBorder() {
+		return lowerBorder;
 	}
 
 }

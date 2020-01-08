@@ -213,6 +213,11 @@ public class ItemRow implements QuestionItemView {
 	}
 	
 	@Override
+	public Integer getCorrectionTime() {
+		return delegate.getCorrectionTime();
+	}
+
+	@Override
 	public Date getCreationDate() {
 		return delegate.getCreationDate();
 	}

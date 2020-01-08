@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
+import org.apache.logging.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.Node;
@@ -37,6 +38,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -69,6 +71,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class QTIImportProcessorTest extends OlatTestCase {
+	
+	private static final Logger log = Tracing.createLoggerFor(QTIImportProcessorTest.class);
 	
 	private static Identity owner;
 	
@@ -159,6 +163,8 @@ public class QTIImportProcessorTest extends OlatTestCase {
 		Assert.assertTrue(qtiLeaf instanceof VFSLeaf);
 		Assert.assertTrue(qtiLeaf.exists());
 		Assert.assertEquals(itemFile.length(), ((VFSLeaf)qtiLeaf).getSize());
+		
+		docInfos.close();
 	}
 	
 	@Test
@@ -216,6 +222,8 @@ public class QTIImportProcessorTest extends OlatTestCase {
 		List<ItemInfos> itemElements = proc.getItemList(docInfos);
 		Assert.assertNotNull(itemElements);
 		Assert.assertEquals(4, itemElements.size());
+		
+		docInfos.close();
 	}
 	
 	@Test
@@ -272,10 +280,14 @@ public class QTIImportProcessorTest extends OlatTestCase {
 			Assert.assertTrue(itemLeaf instanceof VFSLeaf);
 			
 			//try to parse it
-			InputStream is = ((VFSLeaf)itemLeaf).getInputStream();
-			XMLParser xmlParser = new XMLParser(new IMSEntityResolver());
-			Document doc = xmlParser.parse(is, false);
-			Node itemNode = doc.selectSingleNode("questestinterop/item");
+			Node itemNode = null;
+			try(InputStream is = ((VFSLeaf)itemLeaf).getInputStream()) {
+				XMLParser xmlParser = new XMLParser(new IMSEntityResolver());
+				Document doc = xmlParser.parse(is, false);
+				itemNode = doc.selectSingleNode("questestinterop/item");
+			} catch(IOException e) {
+				log.error("", e);
+			}
 			Assert.assertNotNull(itemNode);
 		}
 	}
@@ -305,10 +317,14 @@ public class QTIImportProcessorTest extends OlatTestCase {
 			Assert.assertTrue(itemLeaf instanceof VFSLeaf);
 			
 			//try to parse it
-			InputStream is = ((VFSLeaf)itemLeaf).getInputStream();
-			XMLParser xmlParser = new XMLParser(new IMSEntityResolver());
-			Document doc = xmlParser.parse(is, false);
-			Node itemNode = doc.selectSingleNode("questestinterop/item");
+			Node itemNode = null;
+			try(InputStream is = ((VFSLeaf)itemLeaf).getInputStream()) {
+				XMLParser xmlParser = new XMLParser(new IMSEntityResolver());
+				Document doc = xmlParser.parse(is, false);
+				itemNode = doc.selectSingleNode("questestinterop/item");
+			} catch(IOException e) {
+				log.error("", e);
+			}
 			Assert.assertNotNull(itemNode);
 			
 		//check the attachments
@@ -351,10 +367,14 @@ public class QTIImportProcessorTest extends OlatTestCase {
 			Assert.assertTrue(itemLeaf instanceof VFSLeaf);
 			
 			//try to parse it
-			InputStream is = ((VFSLeaf)itemLeaf).getInputStream();
-			XMLParser xmlParser = new XMLParser(new IMSEntityResolver());
-			Document doc = xmlParser.parse(is, false);
-			Node itemNode = doc.selectSingleNode("questestinterop/item");
+			Node itemNode = null;
+			try(InputStream is = ((VFSLeaf)itemLeaf).getInputStream()) {
+				XMLParser xmlParser = new XMLParser(new IMSEntityResolver());
+				Document doc = xmlParser.parse(is, false);
+				itemNode = doc.selectSingleNode("questestinterop/item");
+			} catch(IOException e) {
+				log.error("", e);
+			}
 			Assert.assertNotNull(itemNode);
 			
 			//check the attachments
@@ -404,10 +424,14 @@ public class QTIImportProcessorTest extends OlatTestCase {
 			Assert.assertTrue(itemLeaf instanceof VFSLeaf);
 			
 			//try to parse it
-			InputStream is = ((VFSLeaf)itemLeaf).getInputStream();
-			XMLParser xmlParser = new XMLParser(new IMSEntityResolver());
-			Document doc = xmlParser.parse(is, false);
-			Node itemNode = doc.selectSingleNode("questestinterop/item");
+			Node itemNode = null;
+			try(InputStream is = ((VFSLeaf)itemLeaf).getInputStream()) {
+				XMLParser xmlParser = new XMLParser(new IMSEntityResolver());
+				Document doc = xmlParser.parse(is, false);
+				itemNode = doc.selectSingleNode("questestinterop/item");
+			} catch(IOException e) {
+				log.error("", e);
+			}
 			Assert.assertNotNull(itemNode);
 			
 			//check the attachments
@@ -487,6 +511,7 @@ public class QTIImportProcessorTest extends OlatTestCase {
 		Assert.assertEquals("/Physique/Astronomie/Astrophysique/", item.getTaxonomicPath());
 		Assert.assertEquals("Une question sur Pluton", item.getTitle());
 		Assert.assertEquals(0, item.getUsage());
+		Assert.assertEquals(Integer.valueOf(2), item.getCorrectionTime());
 	}
 	
 	@Test
@@ -514,6 +539,8 @@ public class QTIImportProcessorTest extends OlatTestCase {
 		Assert.assertNotNull(materials);
 		Assert.assertEquals(1, materials.size());
 		Assert.assertEquals("media/filmH264.mp4", materials.get(0));
+		
+		docInfos.close();
 	}
 	
 	private boolean exists(QuestionItemFull itemFull, String path) {

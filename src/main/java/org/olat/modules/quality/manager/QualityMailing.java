@@ -88,6 +88,7 @@ import org.olat.modules.quality.QualityDataCollectionView;
 import org.olat.modules.quality.QualityDataCollectionViewSearchParams;
 import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityExecutorParticipationSearchParams;
+import org.olat.modules.quality.QualityModule;
 import org.olat.modules.quality.QualityReminder;
 import org.olat.modules.quality.model.QualityMailTemplateBuilder;
 import org.olat.modules.quality.ui.FiguresFactory;
@@ -117,6 +118,8 @@ class QualityMailing {
 			QualityDataCollectionStatus.FINISHED);
 	
 	@Autowired
+	private QualityModule qualityModule;
+	@Autowired
 	private QualityParticipationDAO participationDao;
 	@Autowired
 	private QualityDataCollectionDAO dataCollectionDao;
@@ -138,6 +141,7 @@ class QualityMailing {
 			MailManager mailManager = CoreSpringFactory.getImpl(MailManager.class);
 			MailBundle bundle = mailManager.makeMailBundle(null, executor, template, null, null, result);
 			if(bundle != null) {
+				appendMimeFrom(bundle);
 				result = mailManager.sendMessage(bundle);
 				if (result.isSuccessful()) {
 					log.info(MessageFormat.format("{0} for quality data collection [key={1}] sent to {2}",
@@ -246,6 +250,7 @@ class QualityMailing {
 		MailManager mailManager = CoreSpringFactory.getImpl(MailManager.class);
 		MailBundle bundle = mailManager.makeMailBundle(null, recipient, template, null, null, result);
 		if(bundle != null) {
+			appendMimeFrom(bundle);
 			result = mailManager.sendMessage(bundle);
 			if (result.isSuccessful()) {
 				log.info("Report access email send");
@@ -462,5 +467,14 @@ class QualityMailing {
 		return new EvaluationFormPrintControllerCreator(form, storage, filter, figures, reportHelper, printSelection,
 				dataCollection.getTitle());
 	}
+	
+	private void appendMimeFrom(MailBundle bundle) {
+		if (StringHelper.containsNonWhitespace(qualityModule.getFromEmail())) {
+			bundle.setMimeFromEmail(qualityModule.getFromEmail());
+			bundle.setMimeFromName(qualityModule.getFromName());
+		}
+		
+	}
+
 
 }
