@@ -18,7 +18,16 @@ alter table o_gta_task_revision add constraint task_rev_to_ident_idx foreign key
 create index idx_task_rev_to_ident_idx on o_gta_task_revision (fk_comment_author);
 
 -- livestream
-create index idx_log_livestream_idx on o_loggingtable(targetresid, creationdate, parentresid, user_id) where actionverb = 'launch' and targetrestype = 'livestream';
+create table o_livestream_launch (
+   id bigserial,
+   creationdate timestamp not null,
+   l_launch_date timestamp not null,
+   fk_entry int8 not null,
+   l_subident varchar(128) not null,
+   fk_identity int8 not null,
+   primary key (id)
+);
+create index idx_livestream_viewers_idx on o_livestream_launch(l_subident, l_launch_date, fk_entry, fk_identity);
 
 
 -- notifications

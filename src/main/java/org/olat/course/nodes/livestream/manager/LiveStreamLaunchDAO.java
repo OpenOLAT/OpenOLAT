@@ -24,6 +24,11 @@ import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.core.id.Identity;
+import org.olat.course.nodes.livestream.Launch;
+import org.olat.course.nodes.livestream.model.LaunchImpl;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -34,29 +39,39 @@ import org.springframework.stereotype.Component;
  *
  */
 @Component
-public class LiveStreamStatisticDAO {
+public class LiveStreamLaunchDAO {
 
 	@Autowired
 	private DB dbInstance;
 	
-	public Long getViewers(String courseResId, String nodeIdent, Date from, Date to) {
+	public Launch create(RepositoryEntry courseEntry, String subIdent, Identity identity, Date launchDate) {
+		LaunchImpl launchImpl = new LaunchImpl();
+		launchImpl.setCreationDate(new Date());
+		launchImpl.setLaunchDate(launchDate);
+		launchImpl.setCourseEntry(courseEntry);
+		launchImpl.setSubIdent(subIdent);
+		launchImpl.setIdentity(identity);
+		dbInstance.getCurrentEntityManager().persist(launchImpl);
+		return launchImpl;
+	}
+
+	public Long getLaunchers(RepositoryEntryRef courseEntry, String subIdent, Date from, Date to) {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select count(distinct log.userId)");
-		sb.append("  from loggingobject log");
-		sb.and().append("log.actionVerb = 'launch'");
-		sb.and().append("log.targetResType = 'livestream'");
-		sb.and().append("log.targetResId = :targetResId");
-		sb.and().append("log.parentResId = :parentResId");
-		sb.and().append("log.creationDate >= :from");
-		sb.and().append("log.creationDate <= :to");
+		sb.append("select count(distinct launch.identity.key)");
+		sb.append("  from livestreamlaunch launch");
+		sb.and().append("launch.courseEntry.key = :courseEntryKey");
+		sb.and().append("launch.subIdent = :subIdent");
+		sb.and().append("launch.launchDate >= :from");
+		sb.and().append("launch.launchDate <= :to");
 		
 		List<Long> counts = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
-				.setParameter("targetResId", nodeIdent)
-				.setParameter("parentResId", courseResId)
+				.setParameter("courseEntryKey", courseEntry.getKey())
+				.setParameter("subIdent", subIdent)
 				.setParameter("from", from)
 				.setParameter("to", to)
 				.getResultList();
 		return !counts.isEmpty()? counts.get(0): null;
 	}
+
 }

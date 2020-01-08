@@ -3001,6 +3001,18 @@ create table o_es_usage (
    primary key (id)
 );
 
+-- livestream
+create table o_livestream_launch (
+   id number(20) generated always as identity,
+   creationdate timestamp not null,
+   l_launch_date timestamp not null,
+   fk_entry  number(20) not null,
+   l_subident varchar(128) not null,
+   fk_identity  number(20) not null,
+   primary key (id)
+);
+
+
 -- user view
 create view o_bs_identity_short_v as (
    select
@@ -4216,6 +4228,9 @@ create index log_ptarget_resid_idx on o_loggingtable(parentresid);
 create index log_gptarget_resid_idx on o_loggingtable(grandparentresid);
 create index log_ggptarget_resid_idx on o_loggingtable(greatgrandparentresid);
 create index log_creationdate_idx on o_loggingtable(creationdate);
+
+-- livestream
+create index idx_livestream_viewers_idx on o_livestream_launch(l_subident, l_launch_date, fk_entry, fk_identity);
 
 
 insert into o_stat_lastupdated (until_datetime, from_datetime, lastupdated) values (to_date('1999-01-01', 'YYYY-mm-dd'), to_date('1999-01-01', 'YYYY-mm-dd'), to_date('1999-01-01', 'YYYY-mm-dd'));

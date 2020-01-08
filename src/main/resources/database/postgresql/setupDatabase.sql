@@ -2944,6 +2944,17 @@ create table o_es_usage (
    primary key (id)
 );
 
+-- livestream
+create table o_livestream_launch (
+   id bigserial,
+   creationdate timestamp not null,
+   l_launch_date timestamp not null,
+   fk_entry int8 not null,
+   l_subident varchar(128) not null,
+   fk_identity int8 not null,
+   primary key (id)
+);
+
 -- user view
 create view o_bs_identity_short_v as (
    select
@@ -4108,8 +4119,9 @@ create index log_ptarget_resid_idx on o_loggingtable(parentresid);
 create index log_gptarget_resid_idx on o_loggingtable(grandparentresid);
 create index log_ggptarget_resid_idx on o_loggingtable(greatgrandparentresid);
 create index log_creationdate_idx on o_loggingtable(creationdate);
-create index idx_log_livestream_idx on o_loggingtable(targetresid, creationdate, parentresid, user_id) where actionverb = 'launch' and targetrestype = 'livestream';
 
+-- livestream
+create index idx_livestream_viewers_idx on o_livestream_launch(l_subident, l_launch_date, fk_entry, fk_identity);
 
 
 insert into hibernate_unique_key values ( 0 );

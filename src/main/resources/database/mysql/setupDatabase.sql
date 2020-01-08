@@ -2918,6 +2918,17 @@ create table o_es_usage (
    primary key (id)
 );
 
+-- livestream
+create table o_livestream_launch (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   l_launch_date datetime not null,
+   fk_entry bigint not null,
+   l_subident varchar(128) not null,
+   fk_identity bigint not null,
+   primary key (id)
+);
+
 
 -- user view
 create view o_bs_identity_short_v as (
@@ -3316,6 +3327,7 @@ alter table o_cur_curriculum_element ENGINE = InnoDB;
 alter table o_cur_element_type_to_type ENGINE = InnoDB;
 alter table o_cur_element_to_tax_level ENGINE = InnoDB;
 alter table o_es_usage ENGINE = InnoDB;
+alter table o_livestream_launch ENGINE = InnoDB;
 
 -- rating
 alter table o_userrating add constraint FKF26C8375236F20X foreign key (creator_id) references o_bs_identity (id);
@@ -4008,6 +4020,10 @@ create index log_ptarget_resid_idx on o_loggingtable(parentresid);
 create index log_gptarget_resid_idx on o_loggingtable(grandparentresid);
 create index log_ggptarget_resid_idx on o_loggingtable(greatgrandparentresid);
 create index log_creationdate_idx on o_loggingtable(creationdate);
+
+-- livestream
+create index idx_livestream_viewers_idx on o_livestream_launch(l_subident, l_launch_date, fk_entry, fk_identity);
+
 
 
 insert into hibernate_unique_key values ( 0 );

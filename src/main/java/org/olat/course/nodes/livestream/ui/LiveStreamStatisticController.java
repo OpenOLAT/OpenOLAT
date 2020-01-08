@@ -38,7 +38,7 @@ import org.olat.course.nodes.livestream.LiveStreamEvent;
 import org.olat.course.nodes.livestream.LiveStreamService;
 import org.olat.course.nodes.livestream.ui.LiveStreamEventDataModel.EventCols;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.resource.OLATResource;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -52,7 +52,7 @@ public class LiveStreamStatisticController extends FormBasicController {
 	private FlexiTableElement tableEl;
 	private LiveStreamEventDataModel dataModel;
 	
-	private String courseResId;
+	private RepositoryEntry courseEntry;
 	private String courseNodeIdent;
 	private final CourseCalendars calendars;
 	private final int bufferBeforeMin;
@@ -60,10 +60,10 @@ public class LiveStreamStatisticController extends FormBasicController {
 	@Autowired
 	private LiveStreamService liveStreamService;
 
-	public LiveStreamStatisticController(UserRequest ureq, WindowControl wControl, OLATResource courseOres,
+	public LiveStreamStatisticController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
 			String courseNodeIdent, ModuleConfiguration moduleConfiguration, CourseCalendars calendars) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
-		this.courseResId = courseOres.getResourceableId().toString();
+		this.courseEntry = courseEntry;
 		this.courseNodeIdent = courseNodeIdent;
 		this.calendars = calendars;
 		
@@ -101,7 +101,7 @@ public class LiveStreamStatisticController extends FormBasicController {
 		List<LiveStreamEventRow> rows = new ArrayList<>(upcomingEvents.size());
 		for (LiveStreamEvent liveStreamEvent : upcomingEvents) {
 			LiveStreamEventRow row = new LiveStreamEventRow(liveStreamEvent);
-			Long viewers = liveStreamService.getViewers(courseResId, courseNodeIdent, liveStreamEvent.getBegin(),
+			Long viewers = liveStreamService.getLaunchers(courseEntry, courseNodeIdent, liveStreamEvent.getBegin(),
 					liveStreamEvent.getEnd());
 			row.setViewers(viewers);
 			rows.add(row);

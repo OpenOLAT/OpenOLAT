@@ -34,10 +34,13 @@ import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.core.id.Identity;
 import org.olat.course.nodes.cal.CourseCalendars;
 import org.olat.course.nodes.livestream.LiveStreamEvent;
 import org.olat.course.nodes.livestream.LiveStreamService;
 import org.olat.course.nodes.livestream.model.LiveStreamEventImpl;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.stereotype.Service;
@@ -56,7 +59,7 @@ public class LiveStreamServiceImpl implements LiveStreamService {
 	@Autowired
 	private CalendarManager calendarManager;
 	@Autowired
-	private LiveStreamStatisticDAO statisticDao;
+	private LiveStreamLaunchDAO launchDao;
 
 	@Override
 	public ScheduledExecutorService getScheduler() {
@@ -166,7 +169,12 @@ public class LiveStreamServiceImpl implements LiveStreamService {
 	}
 
 	@Override
-	public Long getViewers(String courseResId, String nodeIdent, Date from, Date to) {
-		return statisticDao.getViewers(courseResId, nodeIdent, from, to);
+	public void createLaunch(RepositoryEntry courseEntry, String subIdent, Identity identity) {
+		launchDao.create(courseEntry, subIdent, identity, new Date());
+	}
+
+	@Override
+	public Long getLaunchers(RepositoryEntryRef courseEntry, String subIdent, Date from, Date to) {
+		return launchDao.getLaunchers(courseEntry, subIdent, from, to);
 	}
 }
