@@ -1689,7 +1689,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	@Override
 	public MimeMessage createMimeMessage(Address from, Address[] tos, Address[] ccs, Address[] bccs, String subject, String body,
 			List<File> attachments, MailerResult result) {
-		return createMimeMessage(from, tos, ccs, bccs, subject, body, attachments, result);
+		return createMimeMessage(null, from, tos, ccs, bccs, subject, body, attachments, result);
 	}
 	
 	public MimeMessage createMimeMessage(Address mimeSender, Address from, Address[] tos, Address[] ccs, Address[] bccs, String subject, String body,
@@ -1715,11 +1715,17 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 				msg.setFrom(mimeSender);
 				Address rawMimeSender = getRawEmailFromAddress(mimeSender);
 				msg.setReplyTo(new Address[] {rawMimeSender});
-			} else if (!hasExternalFromAndRecipient(msg)) {
-				// Only if whether the sender nor one of the recipients have an external email address,
-				// we set the from to the sender email address. In all other cases we use the admin address
-				// to prevent rejected or messages detected as spam (see createMessage(subject, from)).
+			} else {
+				// in case the sender and one of the recipients has an external mail address domain we set
+				// the from header to the admin address to prevent rejected or messages detected as spam.
 				msg.setFrom(from);
+				// from has to be set for this check to work
+				if (hasExternalFromAndRecipient(msg)) {
+					String platformFrom = WebappHelper.getMailConfig("mailFrom");
+					String platformName = WebappHelper.getMailConfig("mailFromName");
+					Address viewablePlatformFrom = createAddressWithName(platformFrom, platformName);
+					msg.setFrom(viewablePlatformFrom);
+				}
 			}
 			
 			if (attachments != null && !attachments.isEmpty()) {
