@@ -58,6 +58,7 @@ public class AssessmentTestOverviewDataModel extends DefaultFlexiTableDataModel<
 			case learningTime: return partRow.getLearningTime();
 			case license: return shortenedLicense(partRow);
 			case shuffled: return isShuffled(partRow);
+			case correctionTime: return partRow.getCorrectionTime();
 			default: return "ERROR";
 		}
 	}
@@ -102,6 +103,7 @@ public class AssessmentTestOverviewDataModel extends DefaultFlexiTableDataModel<
 		identifier("table.header.identifier"),
 		feedback("table.header.feedback"),
 		learningTime("table.header.learning.time"),
+		correctionTime("table.header.correction.time"),
 		license("table.header.license"),
 		shuffled("table.header.shuffled");
 		

@@ -64,6 +64,7 @@ public class ControlObjectRow {
 	private OptionAndInheritance solution;
 	private MaxAttemptOption attemptOption;
 	
+	private Integer correctionTime;
 	private Long typicalLearningTime;
 	
 	public ControlObjectRow(String title, ControlObject<?> part, String iconCssClass) {
@@ -130,6 +131,7 @@ public class ControlObjectRow {
 				row.license = metadata.getLicense();
 			}
 			
+			row.correctionTime = metadata.getOpenOLATMetadataCorrectionTime();
 			row.metadataIdentifier = metadata.getOpenOLATMetadataIdentifier();
 			if(!StringHelper.containsNonWhitespace(row.metadataIdentifier)) {
 				row.metadataIdentifier = metadata.getOpenOLATMetadataMasterIdentifier();
@@ -336,6 +338,14 @@ public class ControlObjectRow {
 		this.typicalLearningTime = learningTime;
 	}
 	
+	public Integer getCorrectionTime() {
+		return correctionTime;
+	}
+
+	public void setCorrectionTime(Integer correctionTime) {
+		this.correctionTime = correctionTime;
+	}
+
 	public int getDepth() {
 		int depth = 0;
 		for(ControlObject<?> parent=part.getParent(); parent != null; parent = parent.getParent()) {
