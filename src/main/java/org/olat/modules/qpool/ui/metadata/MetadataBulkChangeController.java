@@ -22,6 +22,7 @@ package org.olat.modules.qpool.ui.metadata;
 import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.toBigDecimal;
 import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.toInt;
 import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateBigDecimal;
+import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateInteger;
 import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateElementLogic;
 import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateSelection;
 
@@ -84,7 +85,11 @@ public class MetadataBulkChangeController extends FormBasicController {
 	private SingleSelection taxonomyLevelEl;
 	private SingleSelection contextEl;
 	private FormLayoutContainer learningTimeContainer;
-	private IntegerElement learningTimeDayElement, learningTimeHourElement, learningTimeMinuteElement, learningTimeSecondElement;
+	private IntegerElement learningTimeDayElement;
+	private IntegerElement learningTimeHourElement;
+	private IntegerElement learningTimeMinuteElement;
+	private IntegerElement learningTimeSecondElement;
+	private TextElement correctionTimeElement;
 	private SingleSelection assessmentTypeEl;
 	private TextElement difficultyEl, stdevDifficultyEl, differentiationEl, numAnswerAltEl;
 	private SingleSelection licenseEl;
@@ -216,6 +221,10 @@ public class MetadataBulkChangeController extends FormBasicController {
 		learningTimeSecondElement = uifactory.addIntegerElement("learningTime.second", "", 0, learningTimeContainer);
 		learningTimeSecondElement.setDisplaySize(3);
 		
+		correctionTimeElement = uifactory.addTextElement("question.correctionTime", "question.correctionTime", 10, null, questionCont);
+		correctionTimeElement.setDisplaySize(4);
+		decorate(correctionTimeElement, questionCont);
+		
 		difficultyEl = uifactory.addTextElement("question.difficulty", "question.difficulty", 10, null, questionCont);
 		difficultyEl.setExampleKey("question.difficulty.example", null);
 		difficultyEl.setDisplaySize(4);
@@ -345,6 +354,8 @@ public class MetadataBulkChangeController extends FormBasicController {
 		allOk &= validateBigDecimal(stdevDifficultyEl, 0.0d, 1.0d, true);
 		allOk &= validateBigDecimal(differentiationEl, -1.0d, 1.0d, true);
 		
+		allOk &= validateInteger(correctionTimeElement, 0, 1000, isEnabled(correctionTimeElement));
+
 		//technical
 		allOk &= validateElementLogic(versionEl, versionEl.getMaxLength(), false, isEnabled(versionEl));
 		allOk &= validateSelection(statusEl, isEnabled(statusEl));
@@ -422,14 +433,21 @@ public class MetadataBulkChangeController extends FormBasicController {
 			itemImpl.setEducationalLearningTime(timeStr);
 		}
 		
-		if(isEnabled(difficultyEl))
+		if(isEnabled(correctionTimeElement) && StringHelper.isLong(correctionTimeElement.getValue())) {
+			itemImpl.setCorrectionTime(Integer.valueOf(correctionTimeElement.getValue()));
+		}
+		if(isEnabled(difficultyEl)) {
 			itemImpl.setDifficulty(toBigDecimal(difficultyEl.getValue()));
-		if(isEnabled(stdevDifficultyEl))
+		}
+		if(isEnabled(stdevDifficultyEl)) {
 			itemImpl.setStdevDifficulty(toBigDecimal(stdevDifficultyEl.getValue()));
-		if(isEnabled(differentiationEl))
+		}
+		if(isEnabled(differentiationEl)) {
 			itemImpl.setDifferentiation(toBigDecimal(differentiationEl.getValue()));
-		if(isEnabled(numAnswerAltEl))
+		}
+		if(isEnabled(numAnswerAltEl)) {
 			itemImpl.setNumOfAnswerAlternatives(toInt(numAnswerAltEl.getValue()));
+		}
 		if(isEnabled(assessmentTypeEl)) {
 			String assessmentType = assessmentTypeEl.isOneSelected() ? assessmentTypeEl.getSelectedKey() : null;
 			itemImpl.setAssessmentType(assessmentType);

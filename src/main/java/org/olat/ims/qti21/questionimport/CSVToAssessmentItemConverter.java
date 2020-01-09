@@ -184,6 +184,7 @@ public class CSVToAssessmentItemConverter {
 			case "language": processLanguage(parts); break;
 			case "durchschnittliche bearbeitungszeit":
 			case "typical learning time": processTypicalLearningTime(parts); break;
+			case "required grading time": processCorrectionTime(parts); break;
 			case "itemschwierigkeit":
 			case "difficulty index": processDifficultyIndex(parts); break;
 			case "standardabweichung itemschwierigkeit":
@@ -226,6 +227,19 @@ public class CSVToAssessmentItemConverter {
 		String time = parts[1];
 		if(StringHelper.containsNonWhitespace(time)) {
 			currentItem.setTypicalLearningTime(time.trim());
+		}
+	}
+	
+	private void processCorrectionTime(String[] parts) {
+		if(currentItem == null || parts.length < 2) return;
+		
+		String time = parts[1];
+		if(StringHelper.containsNonWhitespace(time) && StringHelper.isLong(time.trim())) {
+			try {
+				currentItem.setCorrectionTime(Integer.valueOf(time.trim()));
+			} catch (NumberFormatException e) {
+				log.error("Cannot parse correction time: {}", time, e);
+			}
 		}
 	}
 	
