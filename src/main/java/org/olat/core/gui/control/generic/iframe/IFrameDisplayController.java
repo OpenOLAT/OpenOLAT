@@ -336,28 +336,25 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		setPageDownload(isPageDownloadAllowed(currentUri));
 	}
 	
-	private boolean isPageDownloadAllowed(String uri) {
+	private boolean isPageDownloadAllowed(final String uri) {
 		if(!allowDownload || !StringHelper.containsNonWhitespace(uri)) {
 			return false;
 		}
 		// remove any URL parameters
 		String uriLc = uri.toLowerCase();
-		int qmarkPos = uriLc.indexOf("?");
+		int qmarkPos = uriLc.indexOf('?');
 		if (qmarkPos != -1) {
 			// e.g. index.html?olatraw=true
 			uriLc = uriLc.substring(0, qmarkPos);
 		}
 		// remove any anchor references
-		int hTagPos = uri.indexOf("#");
+		int hTagPos = uriLc.indexOf('#');
 		if (hTagPos != -1) {
 			// e.g. index.html#checkThisOut
 			uriLc = uriLc.substring(0, hTagPos);
 		}
 		// HTML pages are rendered inline, everything else is regarded as "downloadable"
-		if(uriLc.endsWith(".html") || uriLc.endsWith(".htm") || uriLc.endsWith(".xhtml")) {
-			return false;
-		}
-		return true;
+		return !uriLc.endsWith(".html") && !uriLc.endsWith(".htm") && !uriLc.endsWith(".xhtml");
 	}
 	
 	private void setPageDownload(boolean allow) {
@@ -385,8 +382,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 			if (NEW_URI_EVENT.equals(event.getCommand())) {
 				// This event gets triggered from the iframe content by calling a js function outside 
 				// Get new uri from JS method and fire to parents
-				String newUri = ureq.getModuleURI();
-				newUri = ureq.getHttpReq().getParameter("uri");
+				String newUri = ureq.getHttpReq().getParameter("uri");
 				int baseUriPos = newUri.indexOf(baseURI);
 				if (baseUriPos != -1) {
 					int newUriPos =  baseUriPos + baseURI.length();

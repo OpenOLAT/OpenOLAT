@@ -31,7 +31,8 @@ public class VideoDisplayOptions {
 	private boolean autoplay;
 	private boolean showComments;
 	private boolean showRating;
-	private boolean showTitleAndDescription;
+	private boolean showTitle;
+	private boolean showDescription;
 	private boolean customDescription;
 	private boolean autoWidth;
 	private boolean readOnly;
@@ -44,7 +45,7 @@ public class VideoDisplayOptions {
 	private boolean clickToPlayPause;
 	private boolean authorMode;
 	
-	public static VideoDisplayOptions valueOf(boolean autoplay, boolean showComments, boolean showRating, boolean showTitleAndDescription,
+	public static VideoDisplayOptions valueOf(boolean autoplay, boolean showComments, boolean showRating, boolean showTitle, boolean showDescription,
 			boolean customDescription, boolean autoWidth, String descriptionText, boolean authorMode, boolean readOnly) {
 		VideoDisplayOptions options = new VideoDisplayOptions();
 		options.setAutoplay(autoplay);
@@ -54,7 +55,8 @@ public class VideoDisplayOptions {
 		options.setReadOnly(readOnly);
 		options.setShowComments(showComments);
 		options.setShowRating(showRating);
-		options.setShowTitleAndDescription(showTitleAndDescription);
+		options.setShowTitle(showTitle);
+		options.setShowDescription(showDescription);
 		options.setShowPoster(true);
 		options.setShowQuestions(true);
 		options.setShowAnnotations(true);
@@ -74,7 +76,8 @@ public class VideoDisplayOptions {
 		options.setReadOnly(false);
 		options.setShowComments(false);
 		options.setShowRating(false);
-		options.setShowTitleAndDescription(false);
+		options.setShowTitle(false);
+		options.setShowDescription(false);
 		options.setShowPoster(true);
 		options.setShowQuestions(false);
 		options.setShowAnnotations(false);
@@ -149,14 +152,22 @@ public class VideoDisplayOptions {
 		this.showQuestions = showQuestions;
 	}
 
-	public boolean isShowTitleAndDescription() {
-		return showTitleAndDescription;
+	public boolean isShowTitle() {
+		return showTitle;
 	}
 	
-	public void setShowTitleAndDescription(boolean showTitleAndDescription) {
-		this.showTitleAndDescription = showTitleAndDescription;
+	public void setShowTitle(boolean showTitle) {
+		this.showTitle = showTitle;
 	}
 	
+	public boolean isShowDescription() {
+		return showDescription;
+	}
+
+	public void setShowDescription(boolean showDescription) {
+		this.showDescription = showDescription;
+	}
+
 	public boolean isCustomDescription() {
 		return customDescription;
 	}
