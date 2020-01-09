@@ -30,7 +30,6 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
@@ -167,7 +166,7 @@ public class TeacherOverviewSearchController extends FormBasicController impleme
 		searchEl.setValue(null);
 		startEl.setDate(defaultStartDate);
 		endEl.setDate(defaultEndDate);
-		fireEvent(ureq, Event.CANCELLED_EVENT);
+		doSearch(ureq);
 	}
 	
 	private void doSearch(UserRequest ureq) {
