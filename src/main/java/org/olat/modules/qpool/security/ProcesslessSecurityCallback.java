@@ -19,7 +19,6 @@
  */
 package org.olat.modules.qpool.security;
 
-import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItemSecurityCallback;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionPoolModule;
@@ -45,8 +44,6 @@ public class ProcesslessSecurityCallback implements QuestionItemSecurityCallback
 
 	@Autowired
 	private QuestionPoolModule qpoolModule;
-	@Autowired
-	private QPoolService qpoolService;
 	
 	@Override
 	public void setQuestionItemView(QuestionItemView itemView) {

@@ -103,8 +103,8 @@ public class RightsMetadataEditController extends FormBasicController {
 	private QuestionPoolLicenseHandler licenseHandler;
 
 	public RightsMetadataEditController(UserRequest ureq, WindowControl wControl, QuestionItem item,
-			MetadataSecurityCallback securityCallback) {
-		super(ureq, wControl, LAYOUT_VERTICAL);
+			MetadataSecurityCallback securityCallback, boolean wideLayout) {
+		super(ureq, wControl, wideLayout ? LAYOUT_DEFAULT : LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 		
 		this.item = item;
@@ -128,35 +128,45 @@ public class RightsMetadataEditController extends FormBasicController {
 		authorCont.put("manage.owners", managerOwners);
 		
 		if (licenseModule.isEnabled(licenseHandler)) {
-			license = licenseService.loadOrCreateLicense(item);
-
-			LicenseSelectionConfig licenseSelectionConfig = LicenseUIFactory
-					.createLicenseSelectionConfig(licenseHandler, license.getLicenseType());
-			licenseEl = uifactory.addDropdownSingleselect("rights.license", formLayout,
-					licenseSelectionConfig.getLicenseTypeKeys(),
-					licenseSelectionConfig.getLicenseTypeValues(getLocale()));
-			licenseEl.setElementCssClass("o_sel_repo_license");
-			licenseEl.setMandatory(licenseSelectionConfig.isLicenseMandatory());
-			if (licenseSelectionConfig.getSelectionLicenseTypeKey() != null) {
-				licenseEl.select(licenseSelectionConfig.getSelectionLicenseTypeKey(), true);
-			}
-			licenseEl.addActionListener(FormEvent.ONCHANGE);
+			license = loadLicense();
 			
-			licensorEl = uifactory.addTextElement("rights.licensor", 1000, license.getLicensor(), formLayout);
-
-			String freetext = licenseService.isFreetext(license.getLicenseType()) ? license.getFreetext() : "";
-			licenseFreetextEl = uifactory.addTextAreaElement("rights.freetext", 4, 72, freetext, formLayout);
-			LicenseUIFactory.updateVisibility(licenseEl, licensorEl, licenseFreetextEl);
-
-			licenseTextEl = uifactory.addStaticTextElement("rights.licenseText", "", "", formLayout);
-			updateLicenseText();
-
-			buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-			buttonsCont.setRootForm(mainForm);
-			formLayout.add(buttonsCont);
-			okButton = uifactory.addFormSubmitButton("ok", "ok", buttonsCont);
-			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+			if(license != null) {
+				LicenseSelectionConfig licenseSelectionConfig = LicenseUIFactory
+						.createLicenseSelectionConfig(licenseHandler, license.getLicenseType());
+				licenseEl = uifactory.addDropdownSingleselect("rights.license", formLayout,
+						licenseSelectionConfig.getLicenseTypeKeys(),
+						licenseSelectionConfig.getLicenseTypeValues(getLocale()));
+				licenseEl.setElementCssClass("o_sel_repo_license");
+				licenseEl.setMandatory(licenseSelectionConfig.isLicenseMandatory());
+				if (licenseSelectionConfig.getSelectionLicenseTypeKey() != null) {
+					licenseEl.select(licenseSelectionConfig.getSelectionLicenseTypeKey(), true);
+				}
+				licenseEl.addActionListener(FormEvent.ONCHANGE);
+				
+				licensorEl = uifactory.addTextElement("rights.licensor", 1000, license.getLicensor(), formLayout);
+	
+				String freetext = licenseService.isFreetext(license.getLicenseType()) ? license.getFreetext() : "";
+				licenseFreetextEl = uifactory.addTextAreaElement("rights.freetext", 4, 72, freetext, formLayout);
+				LicenseUIFactory.updateVisibility(licenseEl, licensorEl, licenseFreetextEl);
+	
+				licenseTextEl = uifactory.addStaticTextElement("rights.licenseText", "", "", formLayout);
+				updateLicenseText();
+	
+				buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+				buttonsCont.setRootForm(mainForm);
+				formLayout.add(buttonsCont);
+				uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+				okButton = uifactory.addFormSubmitButton("ok", "ok", buttonsCont);
+			}
 		}
+	}
+	
+	private ResourceLicense loadLicense() {
+		ResourceLicense resourceLicense = null;
+		if(item.getResourceableId() != null) {
+			resourceLicense = licenseService.loadOrCreateLicense(item);
+		}
+		return resourceLicense;
 	}
 	
 	private void updateLicenseText() {
@@ -217,13 +227,15 @@ public class RightsMetadataEditController extends FormBasicController {
 	}
 
 	private void reloadAuthors() {
-		List<Identity> authors = qpoolService.getAuthors(item);
-		List<String> authorLinks = new ArrayList<>(authors.size());
-		for(Identity author:authors) {
-			String name = userManager.getUserDisplayName(author);
-			authorLinks.add(name);
+		if(item.getKey() != null) {
+			List<Identity> authors = qpoolService.getAuthors(item);
+			List<String> authorLinks = new ArrayList<>(authors.size());
+			for(Identity author:authors) {
+				String name = userManager.getUserDisplayName(author);
+				authorLinks.add(name);
+			}
+			authorCont.contextPut("authors", authorLinks);
 		}
-		authorCont.contextPut("authors", authorLinks);
 	}
 	
 	@Override
@@ -245,8 +257,6 @@ public class RightsMetadataEditController extends FormBasicController {
 				qpoolService.removeAuthors(list, Collections.<QuestionItemShort>singletonList(item));
 			}
 			reloadAuthors();
-			//cmc.deactivate();
-			//cleanUp();
 		} else if(source == cmc) {
 			fireEvent(ureq, new QItemEdited(item));
 			cleanUp();
@@ -288,7 +298,7 @@ public class RightsMetadataEditController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 
 		if (licenseEl != null) {
 			licenseEl.clearError();
@@ -298,7 +308,7 @@ public class RightsMetadataEditController extends FormBasicController {
 			}
 		}
 		
-		return allOk &= super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

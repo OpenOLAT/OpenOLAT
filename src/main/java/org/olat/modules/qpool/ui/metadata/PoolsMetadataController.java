@@ -113,7 +113,7 @@ public class PoolsMetadataController extends FormBasicController {
 		public Object getValueAt(int row, int col) {
 			QuestionItem2Pool info = getObject(row);
 			if(col == 0) {
-				return new Boolean(info.isEditable());
+				return Boolean.valueOf(info.isEditable());
 			}
 			return info.getPoolName();
 		}

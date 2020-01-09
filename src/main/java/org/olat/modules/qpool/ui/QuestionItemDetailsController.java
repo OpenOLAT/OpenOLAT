@@ -170,7 +170,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 
 	private void setMetadatasController(UserRequest ureq, QuestionItem item, QuestionItemSecurityCallback securityCallback) {
 		metadatasCtrl = new MetadatasController(ureq, getWindowControl(), qPoolSecurityCallback, item, securityCallback,
-				itemSource.isAdminItemSource());
+				itemSource.isAdminItemSource(), false);
 		mainVC.put("metadatas", metadatasCtrl.getInitialComponent());
 		listenTo(metadatasCtrl);
 	}

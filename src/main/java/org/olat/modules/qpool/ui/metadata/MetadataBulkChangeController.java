@@ -331,7 +331,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		//general
 		allOk &= validateElementLogic(topicEl, topicEl.getMaxLength(), false, isEnabled(topicEl));
@@ -352,7 +352,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 		//rights
 		allOk &= validateElementLogic(licensorEl, 1000, false, isEnabled(licensorEl));
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	private boolean isEnabled(FormItem item) {

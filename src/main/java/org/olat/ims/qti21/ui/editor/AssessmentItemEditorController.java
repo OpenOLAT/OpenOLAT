@@ -70,6 +70,8 @@ import org.olat.ims.qti21.ui.editor.interactions.MultipleChoiceEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.SingleChoiceEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.TrueFalseEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.UploadEditorController;
+import org.olat.ims.qti21.ui.editor.metadata.MetadataChangedEvent;
+import org.olat.ims.qti21.ui.editor.metadata.MetadataController;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.qpool.QPoolService;
@@ -211,11 +213,9 @@ public class AssessmentItemEditorController extends BasicController implements A
 				tabbedPane.addTab(translate("form.pool"), poolEditor);
 			}
 			
-			metadataCtrl = new MetadataController(ureq, getWindowControl(), metadataBuilder);
+			metadataCtrl = new MetadataController(ureq, getWindowControl(), metadataBuilder, readOnly);
 			listenTo(metadataCtrl);
-			if(metadataCtrl.hasMetadata()) {
-				tabbedPane.addTab(translate("form.metadata"), metadataCtrl);
-			}
+			tabbedPane.addTab(translate("form.metadata"), metadataCtrl);
 		}
 
 		putInitialPanel(mainVC);
@@ -595,6 +595,11 @@ public class AssessmentItemEditorController extends BasicController implements A
 			}
 		} else if(poolEditor == source) {
 			if(event instanceof DetachFromPoolEvent) {
+				fireEvent(ureq, event);
+			}
+		} else if(metadataCtrl == source) {
+			if(event instanceof MetadataChangedEvent) {
+				doBuildAndCommitMetadata();
 				fireEvent(ureq, event);
 			}
 		}

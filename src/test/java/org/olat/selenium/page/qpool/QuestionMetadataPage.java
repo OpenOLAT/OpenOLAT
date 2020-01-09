@@ -19,6 +19,8 @@
  */
 package org.olat.selenium.page.qpool;
 
+import java.util.List;
+
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -54,11 +56,17 @@ public class QuestionMetadataPage {
 	private QuestionMetadataPage openMetadata(String panelClass) {
 		By hrefBy = By.cssSelector("div." + panelClass + ">div>h4>a");
 		OOGraphene.waitElement(hrefBy, browser);
-		browser.findElement(hrefBy).click();
-		OOGraphene.waitingALittleLonger();// wait the accordion opens up
 		
-		By generalMetadata = By.cssSelector("div." + panelClass + " div.panel-body fieldset.o_form");
-		OOGraphene.waitElement(generalMetadata, browser);
+		By panelInBy = By.cssSelector("div." + panelClass + " div.panel-collapse.collapse.in");
+		List<WebElement> panelInEls = browser.findElements(panelInBy);
+		if(panelInEls.isEmpty()) {
+			browser.findElement(hrefBy).click();
+			OOGraphene.waitElement(panelInBy, browser);
+			OOGraphene.waitingALittleLonger();// wait the accordion opens up
+		}
+		
+		By formBy = By.cssSelector("div." + panelClass + " div.panel-body fieldset.o_form");
+		OOGraphene.waitElement(formBy, browser);
 		return this;
 	}
 	

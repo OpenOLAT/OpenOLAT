@@ -121,6 +121,7 @@ import org.olat.ims.qti21.ui.editor.events.AssessmentTestPartEvent;
 import org.olat.ims.qti21.ui.editor.events.DetachFromPoolEvent;
 import org.olat.ims.qti21.ui.editor.events.SelectEvent;
 import org.olat.ims.qti21.ui.editor.events.SelectEvent.SelectionTarget;
+import org.olat.ims.qti21.ui.editor.metadata.MetadataChangedEvent;
 import org.olat.ims.qti21.ui.editor.overview.AssessmentTestOverviewConfigurationController;
 import org.olat.imscp.xml.manifest.FileType;
 import org.olat.imscp.xml.manifest.ResourceType;
@@ -473,6 +474,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		} else if(event instanceof DetachFromPoolEvent) {
 			DetachFromPoolEvent dfpe = (DetachFromPoolEvent)event;
 			doDetachItemFromPool(ureq, dfpe.getItemRef());
+		} else if(event instanceof MetadataChangedEvent) {
+			doSaveManifest();
 		} else if(selectQItemCtrl == source) {
 			cmc.deactivate();
 			cleanUp();
