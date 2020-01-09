@@ -113,11 +113,11 @@ public class VideoDisplayController extends BasicController {
 	private VideoManager videoManager;
 
 	public VideoDisplayController(UserRequest ureq, WindowControl wControl, RepositoryEntry videoEntry, boolean autoWidth) {
-		this(ureq, wControl, videoEntry, null, null, VideoDisplayOptions.valueOf(false, false, false, true, false, autoWidth, null, false, false));
+		this(ureq, wControl, videoEntry, null, null, VideoDisplayOptions.valueOf(false, false, false, true, true, false, autoWidth, null, false, false));
 	}
 	
 	public VideoDisplayController(UserRequest ureq, WindowControl wControl, RepositoryEntry videoEntry) {
-		this(ureq, wControl, videoEntry, null, null, VideoDisplayOptions.valueOf(false, false, false, true, false, false, null, false, false));
+		this(ureq, wControl, videoEntry, null, null, VideoDisplayOptions.valueOf(false, false, false, true, true, false, false, null, false, false));
 	}
 	
 	/**
@@ -188,7 +188,8 @@ public class VideoDisplayController extends BasicController {
 				listenTo(commentsAndRatingCtr);				
 				mainVC.put("commentsAndRating", commentsAndRatingCtr.getInitialComponent());
 			}
-			mainVC.contextPut("showTitleAndDescription", displayOptions.isShowTitleAndDescription());
+			mainVC.contextPut("showTitle", displayOptions.isShowTitle());
+			mainVC.contextPut("showDescription", displayOptions.isShowDescription());
 			mainVC.contextPut("alwaysShowControls", displayOptions.isAlwaysShowControls());
 			mainVC.contextPut("clickToPlayPause", displayOptions.isClickToPlayPause());
 			// Finally load the video, transcoded versions and tracks
@@ -386,8 +387,11 @@ public class VideoDisplayController extends BasicController {
 		mainVC.contextPut("masterUrl", masterUrl);
 		
 		mainVC.contextPut("title", videoEntry.getDisplayname());
-		String desc = (StringHelper.containsNonWhitespace(descriptionText) ? descriptionText : videoEntry.getDescription());
-		setText(desc, "description");
+		if(displayOptions == null || displayOptions.isShowDescription()) {
+			String desc = (StringHelper.containsNonWhitespace(descriptionText) ? descriptionText : videoEntry.getDescription());
+			setText(desc, "description");
+		}
+		
 		String authors = videoEntry.getAuthors();
 		mainVC.contextPut("authors", (StringHelper.containsNonWhitespace(authors) ? authors : null));
 		
@@ -412,7 +416,7 @@ public class VideoDisplayController extends BasicController {
 	private void loadTracks() {
 		Map<String, String> trackfiles = new HashMap<>();
 		Map<String, VFSLeaf> configTracks = videoManager.getAllTracks(videoEntry.getOlatResource());
-		for (HashMap.Entry<String, VFSLeaf> track : configTracks.entrySet()) {
+		for (Map.Entry<String, VFSLeaf> track : configTracks.entrySet()) {
 			trackfiles.put(track.getKey(), track.getValue().getName());
 		}
 		mainVC.contextPut("trackfiles",trackfiles);	

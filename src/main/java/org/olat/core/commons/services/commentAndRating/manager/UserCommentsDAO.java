@@ -30,6 +30,7 @@ import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingLoggingAction;
 import org.olat.core.commons.services.commentAndRating.UserCommentsDelegate;
 import org.olat.core.commons.services.commentAndRating.model.UserComment;
@@ -100,19 +101,25 @@ public class UserCommentsDAO {
 	}
 
 	public List<UserComment> getComments(OLATResourceable ores, String resSubPath) {
-		TypedQuery<UserComment> query;
+		QueryBuilder sb = new QueryBuilder(512);
+		sb.append("select comment from usercomment as comment")
+		  .append(" left join fetch comment.creator as creatorIdent")
+		  .append(" left join fetch creatorIdent.user as creatorUser")
+		  .append(" where resName=:resname and resId=:resId");
 		if (resSubPath == null) {
-			// special query when sub path is null
-			query = dbInstance.getCurrentEntityManager()
-					.createQuery("select comment from usercomment as comment where resName=:resname AND resId=:resId AND resSubPath is NULL", UserComment.class);
+			sb.append(" and resSubPath is null");
 		} else {
-			query = dbInstance.getCurrentEntityManager()
-					.createQuery("select comment from usercomment as comment where resName=:resname AND resId=:resId AND resSubPath=:resSubPath", UserComment.class)
-					.setParameter("resSubPath", resSubPath);
+			sb.append(" and resSubPath=:resSubPath");
 		}
-		return query.setParameter("resname", ores.getResourceableTypeName())
-		     .setParameter("resId", ores.getResourceableId())
-		     .getResultList();
+
+		TypedQuery<UserComment> query = dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString(), UserComment.class)
+					.setParameter("resname", ores.getResourceableTypeName())
+				    .setParameter("resId", ores.getResourceableId());
+		if(resSubPath != null) {
+			query.setParameter("resSubPath", resSubPath);
+		}
+		return query.getResultList();
 	}
 	
 	public List<UserComment> getComments(IdentityRef identity) {

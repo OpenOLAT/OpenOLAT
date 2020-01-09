@@ -137,7 +137,7 @@
 		</script>
 	</div>
 	
-	#if($showTitleAndDescription && $title)
+	#if($r.isTrue($showTitle) && $r.isNotEmpty($title))
 	<h1>$title</h1>
 	#end
 
@@ -147,10 +147,8 @@
 		$r.escapeHtml($authors)
 	</div>
 	#end
-	#if($showTitleAndDescription && $description)
-	<div class="o_desc clearfix">
-		$description
-	</div>
+	#if($r.isTrue($showDescription) && $r.isNotEmpty($description))
+	<div class="o_desc clearfix">$description</div>
 	#end
 	#if($r.available("commentsAndRating"))
 		$r.render("commentsAndRating")
