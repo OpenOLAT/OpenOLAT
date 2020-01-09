@@ -248,21 +248,23 @@ public class AbsenceNoticesListController extends FormBasicController {
 		}
 		
 		// decorate with teachers
-		LecturesBlockSearchParameters searchTeachersParams = new LecturesBlockSearchParameters();
-		List<LectureBlockRef> lectureBlocks = blockWithNotices.stream()
-				.map(LectureBlockWithNotice::getLectureBlock).collect(Collectors.toList());
-		searchTeachersParams.setLectureBlocks(lectureBlocks);
-		List<LectureBlockWithTeachers> teacherBlocks = lectureService.getLectureBlocksWithTeachers(searchTeachersParams);
 		Map<Long, List<Identity>> blockKeyWithTeachersMap = new HashMap<>();
-		Map<Identity,Identity> deduplicatesTeachers = new HashMap<>();
-		for(LectureBlockWithTeachers teacherBlock:teacherBlocks) {
-			Long lectureBlockKey = teacherBlock.getLectureBlock().getKey();
-			List<Identity> blockList = blockKeyWithTeachersMap
-					.computeIfAbsent(lectureBlockKey, key -> new ArrayList<>());
-			// prevent to load 100X the same identity object
-			for(Identity teacher:teacherBlock.getTeachers()) {
-				Identity uniqueTeacher = deduplicatesTeachers.computeIfAbsent(teacher, t -> t);
-				blockList.add(uniqueTeacher);
+		if(!blockWithNotices.isEmpty()) {
+			LecturesBlockSearchParameters searchTeachersParams = new LecturesBlockSearchParameters();
+			List<LectureBlockRef> lectureBlocks = blockWithNotices.stream()
+					.map(LectureBlockWithNotice::getLectureBlock).collect(Collectors.toList());
+			searchTeachersParams.setLectureBlocks(lectureBlocks);
+			List<LectureBlockWithTeachers> teacherBlocks = lectureService.getLectureBlocksWithTeachers(searchTeachersParams);
+			Map<Identity,Identity> deduplicatesTeachers = new HashMap<>();
+			for(LectureBlockWithTeachers teacherBlock:teacherBlocks) {
+				Long lectureBlockKey = teacherBlock.getLectureBlock().getKey();
+				List<Identity> blockList = blockKeyWithTeachersMap
+						.computeIfAbsent(lectureBlockKey, key -> new ArrayList<>());
+				// prevent to load 100X the same identity object
+				for(Identity teacher:teacherBlock.getTeachers()) {
+					Identity uniqueTeacher = deduplicatesTeachers.computeIfAbsent(teacher, t -> t);
+					blockList.add(uniqueTeacher);
+				}
 			}
 		}
 
