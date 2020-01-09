@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import javax.persistence.FlushModeType;
 import javax.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.OrganisationRoles;
@@ -39,7 +40,6 @@ import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
@@ -58,6 +58,7 @@ import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.Filter;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.OrderBy;
 import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceImpl;
 import org.olat.user.UserImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -441,7 +442,10 @@ public class RepositoryEntryMyCourseQueries {
 		switch(filter) {
 			case showAll: break;
 			case onlyCourses:
-				sb.append(" and res.resName='CourseModule'");
+				// much quicker with lot of data than res.resName = 'CourseModule'
+				sb.append(" and exists (select oresname.key from ").append(OLATResourceImpl.class.getName()).append(" as oresname")
+				  .append("    where oresname.key=v.olatResource.key and oresname.resName='CourseModule'")
+				  .append(" )");
 				break;
 			case currentCourses:
 				sb.append(" and lifecycle.validFrom<=:now and lifecycle.validTo>=:now");
