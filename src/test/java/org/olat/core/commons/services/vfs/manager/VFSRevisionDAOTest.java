@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.vfs.VFSMetadata;
@@ -224,7 +225,22 @@ public class VFSRevisionDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	@Ignore
 	public void getLargest() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rev-1");
+		VFSMetadata metadata1 = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text1.txt",
+				new Date(), 10l, false, "file:///text.tx", "file", null);
+		VFSRevision revision1 = revisionDao.createRevision(author, "._oo_vr_1_text.txt", 1, 25l, new Date(), "A comment", metadata1);
+		dbInstance.commitAndCloseSession();
+		VFSMetadata metadata2 = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text2.txt",
+				new Date(), 10l, false, "file:///text.tx", "file", null);
+		VFSRevision revision2 = revisionDao.createRevision(author, "._oo_vr_2_text.txt", 1, 25l, new Date(), "A comment", metadata2);
+		dbInstance.commitAndCloseSession();
+		VFSMetadata metadata3 = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text3.txt",
+				new Date(), 10l, false, "file:///text.tx", "file", null);
+		VFSRevision revision3 = revisionDao.createRevision(author, "._oo_vr_3_text.txt", 1, 25l, new Date(), "A comment", metadata3);
+		dbInstance.commitAndCloseSession();
+		
 		int maxResult = 100;
 		Date createdAtNewer = Date.from(ZonedDateTime.now().minusMonths(5).toInstant());
 		Date createdAtOlder = Date.from(ZonedDateTime.now().toInstant());
