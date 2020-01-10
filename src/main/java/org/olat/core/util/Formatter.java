@@ -63,7 +63,7 @@ import org.olat.core.util.filter.impl.HtmlMathScanner;
  */
 public class Formatter {
 
-	private static final int BYTE_UNIT = 1000;
+	public static final int BYTE_UNIT = 1000;
 	private static final DateFormat formatterDatetimeFilesystem = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss_SSS");
 	private static final DateFormat formatterDatetimeWithMinutes = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm");
 	private static final DateFormat formatDateTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
