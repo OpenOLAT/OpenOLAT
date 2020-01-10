@@ -19,14 +19,15 @@
  */
 package org.olat.core.commons.services.vfs.manager;
 
+import java.time.ZonedDateTime;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.vfs.VFSMetadata;
-import org.olat.core.commons.services.vfs.manager.VFSMetadataDAO;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -169,5 +170,26 @@ public class VFSMetadataDAOTest extends OlatTestCase {
 		Assert.assertEquals(metadata, loadedMetadata);
 		Assert.assertEquals(12345l, loadedMetadata.getFileSize());
 	}
-
+	
+	@Test
+	public void getLargest() {
+		int maxResult = 100;
+		Date createdAtNewer = Date.from(ZonedDateTime.now().minusMonths(5).toInstant());
+		Date createdAtOlder = Date.from(ZonedDateTime.now().toInstant());
+		Date editedAtNewer = Date.from(ZonedDateTime.now().minusMonths(5).toInstant());
+		Date editedAtOlder = Date.from(ZonedDateTime.now().toInstant());
+		
+		List<VFSMetadata> queryResult = vfsMetadataDao.getLargest(maxResult, createdAtNewer, createdAtOlder, editedAtNewer, editedAtOlder, null, null, null, null, 0, Long.valueOf(0), 0);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertNotNull(queryResult);
+		Assert.assertTrue(queryResult.size() > 0);
+		Assert.assertTrue(queryResult.size() <= maxResult);
+		for (VFSMetadata vfsMetadata : queryResult) {
+			Assert.assertTrue(vfsMetadata.getCreationDate().compareTo(createdAtNewer) >= 0);
+			Assert.assertTrue(vfsMetadata.getCreationDate().compareTo(createdAtOlder) <= 0);
+			Assert.assertTrue(vfsMetadata.getLastModified().compareTo(editedAtNewer) >= 0);
+			Assert.assertTrue(vfsMetadata.getLastModified().compareTo(editedAtOlder) <= 0);
+		}
+	}
 }

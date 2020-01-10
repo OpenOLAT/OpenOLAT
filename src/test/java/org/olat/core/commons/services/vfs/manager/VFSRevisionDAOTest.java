@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.services.vfs.manager;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -220,5 +221,27 @@ public class VFSRevisionDAOTest extends OlatTestCase {
 		
 		long size = revisionDao.calculateRevisionsSize();
 		Assert.assertTrue(size >= 25l);
+	}
+	
+	@Test
+	public void getLargest() {
+		int maxResult = 100;
+		Date createdAtNewer = Date.from(ZonedDateTime.now().minusMonths(5).toInstant());
+		Date createdAtOlder = Date.from(ZonedDateTime.now().toInstant());
+		Date editedAtNewer = Date.from(ZonedDateTime.now().minusMonths(5).toInstant());
+		Date editedAtOlder = Date.from(ZonedDateTime.now().toInstant());
+		
+		List<VFSRevision> queryResult = revisionDao.getLargest(maxResult, createdAtNewer, createdAtOlder, editedAtNewer, editedAtOlder, null, null, null, null, 0, Long.valueOf(0), 0);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertNotNull(queryResult);
+		Assert.assertTrue(queryResult.size() > 0);
+		Assert.assertTrue(queryResult.size() <= maxResult);
+		for (VFSRevision vfsMetadata : queryResult) {
+			Assert.assertTrue(vfsMetadata.getCreationDate().compareTo(createdAtNewer) >= 0);
+			Assert.assertTrue(vfsMetadata.getCreationDate().compareTo(createdAtOlder) <= 0);
+			Assert.assertTrue(vfsMetadata.getFileLastModified().compareTo(editedAtNewer) >= 0);
+			Assert.assertTrue(vfsMetadata.getFileLastModified().compareTo(editedAtOlder) <= 0);
+		}
 	}
 }

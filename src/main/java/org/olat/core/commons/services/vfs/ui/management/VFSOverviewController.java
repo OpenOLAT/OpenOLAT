@@ -26,6 +26,9 @@ import java.util.List;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.commons.services.vfs.model.VFSFileStatistics;
+import org.olat.core.commons.services.vfs.model.VFSRevisionStatistics;
+import org.olat.core.commons.services.vfs.model.VFSThumbnailStatistics;
 import org.olat.core.commons.services.vfs.ui.management.VFSOverviewTableModel.VFSOverviewColumns;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -85,14 +88,14 @@ public class VFSOverviewController extends FormBasicController {
 	public void updateModel() {
 		List<VFSOverviewTableContentRow> rows = new ArrayList<>();
 		
-		Object[] fileStats = vfsRepositoryService.getFileStats();
-		Object[] revisionStats = vfsRepositoryService.getRevisionStats();
-		Object[] thumbnailStats = vfsRepositoryService.getThumbnailStats();
+		VFSFileStatistics fileStats = vfsRepositoryService.getFileStats();
+		VFSRevisionStatistics revisionStats = vfsRepositoryService.getRevisionStats();
+		VFSThumbnailStatistics thumbnailStats = vfsRepositoryService.getThumbnailStats();
 
-		rows.add(new VFSOverviewTableContentRow("vfs.overview.files", (Long) fileStats[0], (Long) fileStats[1], largeFilesLink));
-		rows.add(new VFSOverviewTableContentRow("vfs.overview.versions", (Long) revisionStats[0], (Long) revisionStats[1], versionsLink));
-		rows.add(new VFSOverviewTableContentRow("vfs.overview.trash", (Long) fileStats[2], (Long) fileStats[3], trashLink));
-		rows.add(new VFSOverviewTableContentRow("vfs.overview.thumbnails", (Long) thumbnailStats[0], (Long) thumbnailStats[1], thumbnailLink));
+		rows.add(new VFSOverviewTableContentRow("vfs.overview.files", fileStats.getFilesAmount(), fileStats.getFilesSize(), largeFilesLink));
+		rows.add(new VFSOverviewTableContentRow("vfs.overview.versions", revisionStats.getRevisionsAmount(), revisionStats.getRevisionsSize(), versionsLink));
+		rows.add(new VFSOverviewTableContentRow("vfs.overview.trash", fileStats.getTrashAmount(), fileStats.getTrashSize(), trashLink));
+		rows.add(new VFSOverviewTableContentRow("vfs.overview.thumbnails", thumbnailStats.getThumbnailsAmount(), thumbnailStats.getThumbnailsSize(), thumbnailLink));
 
 		vfsOverviewTableElement.setFooter(true);
 		vfsOverviewTableModel.setObjects(rows);

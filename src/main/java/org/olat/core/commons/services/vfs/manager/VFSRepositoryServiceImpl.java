@@ -71,8 +71,11 @@ import org.olat.core.commons.services.vfs.VFSRevisionRef;
 import org.olat.core.commons.services.vfs.VFSThumbnailMetadata;
 import org.olat.core.commons.services.vfs.VFSVersionModule;
 import org.olat.core.commons.services.vfs.manager.MetaInfoReader.Thumbnail;
+import org.olat.core.commons.services.vfs.model.VFSFileStatistics;
 import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
 import org.olat.core.commons.services.vfs.model.VFSRevisionImpl;
+import org.olat.core.commons.services.vfs.model.VFSRevisionStatistics;
+import org.olat.core.commons.services.vfs.model.VFSThumbnailStatistics;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -1461,17 +1464,17 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	}
 	
 	@Override 
-	public Object[] getFileStats() {
+	public VFSFileStatistics getFileStats() {
 		return statsDao.getFileStats();
 	}
 	
 	@Override 
-	public Object[] getRevisionStats() {
+	public VFSRevisionStatistics getRevisionStats() {
 		return statsDao.getRevisionStats();
 	}
 	
 	@Override 
-	public Object[] getThumbnailStats() {
+	public VFSThumbnailStatistics getThumbnailStats() {
 		return statsDao.getThumbnailStats();
 	}
 }

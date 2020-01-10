@@ -219,7 +219,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 		lockedAtNewerChooser.reset();
 		lockedAtOlderChooser.reset();
 		editedAtNewerChooser.reset();
-		editedAtOlderChooser.reset();
+		editedAtOlderChooser.reset();	
 		revisionCountMinEl.reset();
 		downloadCountMinEl.reset();
 		trashedSelection.reset();

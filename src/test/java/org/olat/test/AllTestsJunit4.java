@@ -106,6 +106,7 @@ import org.junit.runners.Suite;
 	org.olat.core.commons.services.vfs.manager.VFSXStreamTest.class,
 	org.olat.core.commons.services.vfs.manager.VFSMetadataDAOTest.class,
 	org.olat.core.commons.services.vfs.manager.VFSRevisionDAOTest.class,
+	org.olat.core.commons.services.vfs.manager.VFSStatsDAOTest.class,
 	org.olat.core.commons.services.vfs.manager.VFSThumbnailDAOTest.class,
 	org.olat.core.commons.services.vfs.manager.VFSRepositoryServiceTest.class,
 	org.olat.core.commons.services.vfs.manager.VFSLockManagerTest.class,
