@@ -146,6 +146,11 @@ public class LoginPage {
 	 * @param password
 	 */
 	public LoginPage loginAs(String username, String password) {
+		By footerUserBy = By.cssSelector("#o_footer_user #o_username");
+		return loginAs(username, password, footerUserBy);
+	}
+	
+	public LoginPage loginAs(String username, String password, By landingPointBy) {
 		//fill login form
 		By usernameId = By.id("o_fiooolat_login_name");
 		OOGraphene.waitElement(usernameId, browser);//wait the login page
@@ -168,8 +173,7 @@ public class LoginPage {
 		}
 		
 		//wait until the content appears
-		By footerUserBy = By.cssSelector("#o_footer_user #o_username"); 
-		OOGraphene.waitElement(footerUserBy, 30, browser);
+		OOGraphene.waitElement(landingPointBy, 30, browser);
 		return this;
 	}
 	

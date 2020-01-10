@@ -34,6 +34,7 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.Participant;
@@ -160,6 +161,7 @@ public class CourseElementTest extends Deployments {
 		OOGraphene.waitElement(By.xpath("//h2[text()='Lorem Ipsum']"), browser);
 	}
 	
+
 	/**
 	 * This test an edge case where a course start automatically its first
 	 *  course element, which is a structure node which start itself its first
@@ -173,6 +175,8 @@ public class CourseElementTest extends Deployments {
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage.loginAs(author.getLogin(), author.getPassword());
 		
@@ -198,22 +202,43 @@ public class CourseElementTest extends Deployments {
 			.assertOnStart();
 		
 		// make the author a participant too
-		course
-			.members()
-			.selectMembers()
-			.openMembership(author.getFirstName())
-			.editRepositoryMembership(Boolean.TRUE)
-			.saveMembership()
+		MembersPage members = course
+			.members();
+		members
+			.addMember()
+			.searchMember(participant, true)
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
+			.finish();
+		members
 			.clickToolbarBack();
 		
+		course
+			.settings()
+			.accessConfiguration()
+			.setUserAccess(UserAccess.registred)
+			.save()
+			.clickToolbarBack();
+		
+		course
+			.changeStatus(RepositoryEntryStatusEnum.published);
+		
+		String courseUrl = browser.getCurrentUrl();
+		if(courseUrl.indexOf("CourseNode") >= 0) {
+			courseUrl = courseUrl.substring(0, courseUrl.indexOf("CourseNode"));
+		}
+
 		//log out
 		new UserToolsPage(browser)
 			.logout();
-				
-		//log in and resume test
-		loginPage
-			.loginAs(author.getLogin(), author.getPassword())
-			.resume();
+		
+		// participant log in and go directly to the course with the SCORM
+		LoginPage participantLoginPage = LoginPage.load(browser, new URL(courseUrl));		
+		
+		participantLoginPage
+			.loginAs(participant.getLogin(), participant.getPassword(), By.className("o_scorm_content"));
+		
 		// direct jump in SCORM content
 		ScormPage.getScormPage(browser)
 			.passVerySimpleScorm()
