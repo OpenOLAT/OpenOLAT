@@ -7,7 +7,17 @@
   http://www.springframework.org/schema/beans/spring-beans.xsd
   http://www.springframework.org/schema/context 
   http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<bean id="assessmentEvaluateStartOverTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="assessmentEvaluateStartOverJob" />
+		<property name="cronExpression" value="1 * * * * ?" />
+		<property name="startDelay" value="23000" />
+	</bean>
 	
+	<bean id="assessmentEvaluateStartOverJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
+		<property name="jobClass" value="org.olat.course.assessment.manager.AssessmentEvaluateStartOverJob" />
+	</bean>
+		
 	<bean id="assessmentNotificationsTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 	    <property name="jobDetail" ref="assessmentNotificationsJob" />
 	    <property name="cronExpression" value="1 * * * * ?" />

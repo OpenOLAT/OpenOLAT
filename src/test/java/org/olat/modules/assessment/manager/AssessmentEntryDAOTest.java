@@ -774,6 +774,58 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getRootEntriesWithStartOverSubEntries() {
+		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity identity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		
+		Date before = new GregorianCalendar(2010, 2, 8).getTime();
+		Date start = new GregorianCalendar(2010, 2, 10).getTime();
+		Date after = new GregorianCalendar(2010, 2, 12).getTime();
+		
+		// Root is (only once) in results
+		AssessmentEntry ae1Root = assessmentEntryDao.createAssessmentEntry(identity1, null, re1, random(), Boolean.TRUE,
+				null);
+		AssessmentEntry ae1SubOver1 = assessmentEntryDao.createAssessmentEntry(identity1, null, re1, random(),
+				Boolean.FALSE, null);
+		ae1SubOver1.setStartDate(before);
+		assessmentEntryDao.updateAssessmentEntry(ae1SubOver1);
+		AssessmentEntry ae1SubOver2 = assessmentEntryDao.createAssessmentEntry(identity1, null, re1, random(),
+				Boolean.FALSE, null);
+		ae1SubOver2.setStartDate(before);
+		assessmentEntryDao.updateAssessmentEntry(ae1SubOver2);
+
+		// Root is in results: second identity
+		AssessmentEntry ae2Root = assessmentEntryDao.createAssessmentEntry(identity2, null, re1, random(), Boolean.TRUE,
+				null);
+		AssessmentEntry ae2SubOver1 = assessmentEntryDao.createAssessmentEntry(identity2, null, re1, random(),
+				Boolean.FALSE, null);
+		ae2SubOver1.setStartDate(before);
+		assessmentEntryDao.updateAssessmentEntry(ae2SubOver1);
+
+		// Root is not in list: no start date, start date not over
+		AssessmentEntry ae3Root = assessmentEntryDao.createAssessmentEntry(identity3, null, re1, random(), Boolean.TRUE,
+				null);
+		AssessmentEntry ae3SubOver1 = assessmentEntryDao.createAssessmentEntry(identity3, null, re1, random(),
+				Boolean.FALSE, null);
+		ae3SubOver1.setStartDate(null);
+		assessmentEntryDao.updateAssessmentEntry(ae3SubOver1);
+		AssessmentEntry ae3SubOver2 = assessmentEntryDao.createAssessmentEntry(identity3, null, re1, random(),
+				Boolean.FALSE, null);
+		ae3SubOver2.setStartDate(after);
+		assessmentEntryDao.updateAssessmentEntry(ae3SubOver2);
+		
+		dbInstance.commitAndCloseSession();
+		
+		List<AssessmentEntry> rootEntries = assessmentEntryDao.getRootEntriesWithStartOverSubEntries(start);
+		
+		assertThat(rootEntries)
+				.contains(ae1Root, ae2Root)
+				.doesNotContain(ae1SubOver1, ae1SubOver2, ae2SubOver1, ae3Root, ae3SubOver1, ae3SubOver2);
+	}
+	
+	@Test
 	public void removeEntryForReferenceEntry() {
 		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-18");
 		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-19");

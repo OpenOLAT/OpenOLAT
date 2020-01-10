@@ -522,4 +522,13 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	public boolean equalsByPersistableKey(Persistable persistable) {
 		return equals(persistable);
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("AssessmentEntryImpl [key=");
+		builder.append(key);
+		builder.append("]");
+		return builder.toString();
+	}
 }

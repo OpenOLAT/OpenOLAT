@@ -31,7 +31,7 @@ import javax.annotation.PostConstruct;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -40,6 +40,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.Tracing;
+import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -61,6 +62,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
@@ -85,6 +87,10 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	
 	private static final String NON_ASSESSMENT_TYPE = NonAssessmentHandler.NODE_TYPE;
 	
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private AssessmentService assessmentService;
 	@Autowired
 	private RepositoryService repositoryService;
 	
@@ -391,10 +397,10 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 			evaluateAll(courseEnv, identity);
 			log.debug("Evaluated score accounting in course {} for {}", course, identity);
 			if(++count % 10 == 0) {
-				DBFactory.getInstance().commitAndCloseSession();
+				dbInstance.commitAndCloseSession();
 			}
 		}
-		DBFactory.getInstance().commitAndCloseSession();
+		dbInstance.commitAndCloseSession();
 	}
 
 	private void evaluateAll(CourseEnvironment courseEnv, Identity assessedIdentity) {
@@ -402,5 +408,26 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 		identityEnv.setIdentity(assessedIdentity);
 		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, courseEnv);
 		userCourseEnv.getScoreAccounting().evaluateAll(true);
+	}
+
+	@Override
+	public void evaluateStartOver(Date start) {
+		List<AssessmentEntry> rootEntries = assessmentService.getRootEntriesWithStartOverSubEntries(start);
+		for (AssessmentEntry rootEntry : rootEntries) {
+			try {
+				tryEvaluateStartOver(rootEntry);
+			} catch (Exception e) {
+				log.warn("Error when evaluate assessment entries after start over. {}", rootEntry);
+			}
+		}
+	}
+
+	private void tryEvaluateStartOver(AssessmentEntry rootEntry) {
+		ICourse course = CourseFactory.loadCourse(rootEntry.getRepositoryEntry());
+		CourseEnvironment courseEnv = course.getCourseEnvironment();
+		Identity assessedIdentity = rootEntry.getIdentity();
+		evaluateAll(courseEnv, assessedIdentity);
+		log.debug("Evaluated score accounting after start over in course {} for {}", course, assessedIdentity);
+		dbInstance.commitAndCloseSession();
 	}
 }

@@ -3700,6 +3700,7 @@ alter table o_as_entry add constraint as_entry_to_entry_idx foreign key (fk_entr
 alter table o_as_entry add constraint as_entry_to_refentry_idx foreign key (fk_reference_entry) references o_repositoryentry (repositoryentry_id);
 
 create index idx_as_entry_to_id_idx on o_as_entry (a_assessment_id);
+create index idx_as_entry_start_idx on o_as_entry (a_date_start);
 
 -- gotomeeting
 alter table o_goto_organizer add constraint goto_organ_owner_idx foreign key (fk_identity) references o_bs_identity (id);

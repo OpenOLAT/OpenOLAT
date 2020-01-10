@@ -88,6 +88,8 @@ public interface AssessmentService {
 	public List<AssessmentEntryCompletion> loadAvgCompletionsByCurriculumElements(Identity assessedIdentity, Collection<Long> curEleKeys);
 	
 	public List<AssessmentEntryCompletion> loadAvgCompletionsByIdentities(CurriculumElement curriculumElement, List<Long> identityKeys);
+	
+	public List<AssessmentEntry> getRootEntriesWithStartOverSubEntries(Date start);
 
 	public void setLastVisit(AssessmentEntry nodeAssessment, Date lastVisit);
 

@@ -3801,6 +3801,7 @@ alter table o_as_entry add constraint as_entry_to_refentry_idx foreign key (fk_r
 create index idx_as_entry_to_refentry_idx on o_as_entry (fk_reference_entry);
 
 create index idx_as_entry_to_id_idx on o_as_entry (a_assessment_id);
+create index idx_as_entry_start_idx on o_as_entry (a_date_start);
 
 -- mapper
 create index o_mapper_uuid_idx on o_mapper (mapper_uuid);

@@ -3652,6 +3652,7 @@ alter table o_as_entry add constraint as_entry_to_refentry_idx foreign key (fk_r
 create index idx_as_entry_to_refentry_idx on o_as_entry (fk_reference_entry);
 
 create index idx_as_entry_to_id_idx on o_as_entry (a_assessment_id);
+create index idx_as_entry_start_idx on o_as_entry (a_date_start) where a_date_start is not null;
 
 -- calendar
 alter table o_cal_use_config add constraint cal_u_conf_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);

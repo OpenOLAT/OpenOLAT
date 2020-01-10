@@ -20,6 +20,7 @@
 package org.olat.course.assessment;
 
 import java.io.File;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -325,5 +326,13 @@ public interface CourseAssessmentService {
 	 * @param course
 	 */
 	public void evaluateAll(ICourse course);
+	
+	/**
+	 * Evaluates the all assessment entries of a repository entry / user when the
+	 * start date of a sub assessment entry is after the start.
+	 * 
+	 * @param start
+	 */
+	public void evaluateStartOver(Date start);
 
 }

@@ -435,6 +435,27 @@ public class AssessmentEntryDAO {
 					.setParameter("identityKeys", identityKeys)
 					.getResultList();
 	}
+
+	public List<AssessmentEntry> getRootEntriesWithStartOverSubEntries(Date start) {
+		if (start == null) return Collections.emptyList();
+		
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select ae");
+		sb.append("  from assessmententry ae");
+		sb.append("       inner join fetch ae.repositoryEntry re");
+		sb.append("       inner join fetch ae.identity identity");
+		sb.append(" where ae.entryRoot = true");
+		sb.append("   and (ae.repositoryEntry.key, ae.identity.key) in (");
+		sb.append("       select subae.repositoryEntry.key, subae.identity.key");
+		sb.append("          from assessmententry subae");
+		sb.append("         where subae.startDate <= :start");
+		sb.append("       )");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentEntry.class)
+				.setParameter("start", start)
+				.getResultList();
+	}
 	
 	/**
 	 * Delete all the entry where the specified repository entry is
@@ -474,4 +495,5 @@ public class AssessmentEntryDAO {
 				.setParameter("identityKey", identity.getKey())
 				.executeUpdate();
 	}
+	
 }

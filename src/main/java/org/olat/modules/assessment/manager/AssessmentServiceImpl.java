@@ -144,6 +144,11 @@ public class AssessmentServiceImpl implements AssessmentService, UserDataDeletab
 			List<Long> identityKeys) {
 		return assessmentEntryDao.loadAvgCompletionsByIdentities(curriculumElement, identityKeys);
 	}
+	
+	@Override
+	public List<AssessmentEntry> getRootEntriesWithStartOverSubEntries(Date start) {
+		return assessmentEntryDao.getRootEntriesWithStartOverSubEntries(start);
+	}
 
 	@Override
 	public void setLastVisit(AssessmentEntry nodeAssessment, Date lastVisit) {
