@@ -2,11 +2,11 @@
 	<div class="panel panel-default o_sel_qpool_metadata_general">
 		<div class="panel-heading">
 			<h4 class="panel-title">
-				<i id="collapseGeneralToggler" class="o_icon o_icon-fw #if($inGeneral) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
+				<i id="collapseGeneralToggler" class="o_icon o_icon-fw #if($ingeneral) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
 				<a data-toggle="collapse" data-parent="#accordion" href="#general">$r.translate("general")</a>
 			</h4>
 		</div>
-		<div id="general" class="panel-collapse collapse $!inGeneral">
+		<div id="general" class="panel-collapse collapse $!ingeneral">
 			<div class="panel-body">
 				$r.render("details_general")
 			</div>
@@ -24,11 +24,11 @@
 	<div class="panel panel-default o_sel_qpool_metadata_item_analyse">
 		<div class="panel-heading">
 			<h4 class="panel-title">
-				<i id="collapseQuestionToggler" class="o_icon o_icon-fw #if($inQuestion) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
+				<i id="collapseQuestionToggler" class="o_icon o_icon-fw #if($inquestion) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
 				<a data-toggle="collapse" data-parent="#accordion" href="#question">$r.translate("question")</a>
 			</h4>
 		</div>
-		<div id="question" class="panel-collapse collapse $!inQuestion">
+		<div id="question" class="panel-collapse collapse $!inquestion">
 			<div class="panel-body">
 				$r.render("details_question")
 			</div>
@@ -43,42 +43,42 @@
 		})
 		</script>
 	</div>
+	#if($r.available("details_rights"))
 	<div class="panel panel-default">
 		<div class="panel-heading">
 			<h4 class="panel-title">
-				<i id="collapseRightsToggler" class="o_icon o_icon-fw #if($inRights) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
+				<i id="collapseRightsToggler" class="o_icon o_icon-fw #if($inrights) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
 				<a data-toggle="collapse" data-parent="#accordion" href="#rights">
 					$r.translate("rights")
 				</a>
 			</h4>
 		</div>
-		<div id="rights" class="panel-collapse collapse $!inRights">
+		<div id="rights" class="panel-collapse collapse $!inrights">
 			<div class="panel-body">
 				$r.render("details_rights")
 			</div>
 		</div>
 		<script>
-			/* <![CDATA[ */
-				jQuery('#rights').on('hide.bs.collapse', function () {
-					jQuery('#collapseRightsToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-				})
-				jQuery('#rights').on('show.bs.collapse', function () {
-					jQuery('#collapseRightsToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-					$r.backgroundCommand("show","panel","rights")
-				})
-			/* ]]> */
+		jQuery('#rights').on('hide.bs.collapse', function () {
+			jQuery('#collapseRightsToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+		})
+		jQuery('#rights').on('show.bs.collapse', function () {
+			jQuery('#collapseRightsToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+			$r.backgroundCommand("show","panel","rights")
+		})
 		</script>
 	</div>
+	#end
 	<div class="panel panel-default">
 		<div class="panel-heading">
 			<h4 class="panel-title">
-				<i id="collapseTechnicalToggler" class="o_icon o_icon-fw #if($inTechnical) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
+				<i id="collapseTechnicalToggler" class="o_icon o_icon-fw #if($intechnical) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
 				<a data-toggle="collapse" data-parent="#accordion" href="#technical">
 					$r.translate("technical")
 				</a>
 			</h4>
 		</div>
-		<div id="technical" class="panel-collapse collapse $!inTechnical">
+		<div id="technical" class="panel-collapse collapse $!intechnical">
 			<div class="panel-body">
 				$r.render("details_technical")
 			</div>
@@ -99,27 +99,25 @@
 		<div class="panel panel-default">
 			<div class="panel-heading">
 				<h4 class="panel-title">
-					<i id="collapsRatingsToggler" class="o_icon o_icon-fw #if($inRatings) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
+					<i id="collapsRatingsToggler" class="o_icon o_icon-fw #if($inratings) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
 					<a data-toggle="collapse" data-parent="#accordion" href="#ratings">
 						$r.translate("menu.ratings")
 					</a>
 				</h4>
 			</div>
-			<div id="ratings" class="panel-collapse collapse $!inRatings">
+			<div id="ratings" class="panel-collapse collapse $!inratings">
 				<div class="panel-body">
 					$r.render("details_ratings")
 				</div>
 			</div>
 			<script>
-				/* <![CDATA[ */
-					jQuery('#ratings').on('hide.bs.collapse', function () {
-						jQuery('#collapsRatingsToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-					})
-					jQuery('#ratings').on('show.bs.collapse', function () {
-						jQuery('#collapsRatingsToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-						$r.backgroundCommand("show","panel","ratings")
-					})
-				/* ]]> */
+			jQuery('#ratings').on('hide.bs.collapse', function () {
+				jQuery('#collapsRatingsToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+			})
+			jQuery('#ratings').on('show.bs.collapse', function () {
+				jQuery('#collapsRatingsToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+				$r.backgroundCommand("show","panel","ratings")
+			})
 			</script>
 		</div>
 	#end
@@ -127,27 +125,25 @@
 		<div class="panel panel-default">
 			<div class="panel-heading">
 				<h4 class="panel-title">
-					<i id="collapsePoolsToggler" class="o_icon o_icon-fw #if($inPools) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
+					<i id="collapsePoolsToggler" class="o_icon o_icon-fw #if($inpools) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
 					<a data-toggle="collapse" data-parent="#accordion" href="#pools">
 						$r.translate("menu.pools")
 					</a>
 				</h4>
 			</div>
-			<div id="pools" class="panel-collapse collapse $!inPools">
+			<div id="pools" class="panel-collapse collapse $!inpools">
 				<div class="panel-body">
 					$r.render("details_pools")
 				</div>
 			</div>
 			<script>
-				/* <![CDATA[ */
-					jQuery('#pools').on('hide.bs.collapse', function () {
-						jQuery('#collapsePoolsToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-					})
-					jQuery('#pools').on('show.bs.collapse', function () {
-						jQuery('#collapsePoolsToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-						$r.backgroundCommand("show","panel","pools")
-					})
-				/* ]]> */
+			jQuery('#pools').on('hide.bs.collapse', function () {
+				jQuery('#collapsePoolsToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+			})
+			jQuery('#pools').on('show.bs.collapse', function () {
+				jQuery('#collapsePoolsToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+				$r.backgroundCommand("show","panel","pools")
+			})
 			</script>
 		</div>
 	#end
@@ -155,27 +151,25 @@
 		<div class="panel panel-default">
 			<div class="panel-heading">
 				<h4 class="panel-title">
-					<i id="collapseSharesToggler" class="o_icon o_icon-fw #if($inShares) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
+					<i id="collapseSharesToggler" class="o_icon o_icon-fw #if($inshares) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
 					<a data-toggle="collapse" data-parent="#accordion" href="#shares">
 						$r.translate("sharing.shares")
 					</a>
 				</h4>
 			</div>
-			<div id="shares" class="panel-collapse collapse $!inShares">
+			<div id="shares" class="panel-collapse collapse $!inshares">
 				<div class="panel-body">
 					$r.render("details_shares")
 				</div>
 			</div>
 			<script>
-				/* <![CDATA[ */
-					jQuery('#shares').on('hide.bs.collapse', function () {
-						jQuery('#collapseSharesToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-					})
-					jQuery('#shares').on('show.bs.collapse', function () {
-						jQuery('#collapseSharesToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-						$r.backgroundCommand("show","panel","shares")
-					})
-				/* ]]> */
+			jQuery('#shares').on('hide.bs.collapse', function () {
+				jQuery('#collapseSharesToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+			})
+			jQuery('#shares').on('show.bs.collapse', function () {
+				jQuery('#collapseSharesToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+				$r.backgroundCommand("show","panel","shares")
+			})
 			</script>
 		</div>
 	#end

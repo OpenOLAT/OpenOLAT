@@ -113,17 +113,17 @@ public class VideoRunController extends BasicController {
 		boolean comments = config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS);
 		boolean ratings = config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING);
 		String customtext = config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_CUSTOMTEXT);
-		
-		VideoDisplayOptions displayOptions = VideoDisplayOptions.valueOf(autoplay, comments, ratings, true, false, false, "", false, userCourseEnv.isCourseReadOnly());
+
+		VideoDisplayOptions displayOptions = VideoDisplayOptions.valueOf(autoplay, comments, ratings, true, true, false, false, null, false, userCourseEnv.isCourseReadOnly());
 		switch(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT,"none")) {
-			case "resourceDescription": break;
 			case "customDescription":
 				displayOptions.setCustomDescription(true);
 				displayOptions.setDescriptionText(customtext);
 				break;
 			case "none":
-				displayOptions.setCustomDescription(true);
-				displayOptions.setDescriptionText("");
+				displayOptions.setShowDescription(false);
+				break;
+			default:
 				break;
 		}
 		

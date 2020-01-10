@@ -31,6 +31,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.MetadataSecurityCallback;
 import org.olat.modules.qpool.QPoolService;
@@ -55,7 +56,7 @@ public class TechnicalMetadataEditController extends FormBasicController  {
 	private StaticTextElement formatEl;
 	private StaticTextElement editorVersionEl;
 	private StaticTextElement lastModifiedEl;
-	private StaticTextElement statusLastMdifiedEl;	
+	private StaticTextElement statusLastModifiedEl;	
 	private TextElement versionEl;
 	private FormLayoutContainer buttonsCont;
 	
@@ -65,8 +66,8 @@ public class TechnicalMetadataEditController extends FormBasicController  {
 	private QPoolService qpoolService;
 
 	public TechnicalMetadataEditController(UserRequest ureq, WindowControl wControl, QuestionItem item,
-			MetadataSecurityCallback securityCallback) {
-		super(ureq, wControl, LAYOUT_VERTICAL);
+			MetadataSecurityCallback securityCallback, boolean wideLayout) {
+		super(ureq, wControl, wideLayout ? LAYOUT_DEFAULT : LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 		
 		this.item = item;
@@ -89,19 +90,21 @@ public class TechnicalMetadataEditController extends FormBasicController  {
 		
 		Formatter formatter = Formatter.getInstance(getLocale());
 		String creationDate = formatter.formatDateAndTime(item.getCreationDate());
-		uifactory.addStaticTextElement("technical.creation", creationDate, formLayout);
+		if(StringHelper.containsNonWhitespace(creationDate)) {
+			uifactory.addStaticTextElement("technical.creation", creationDate, formLayout);
+		}
 		
 		lastModifiedEl = uifactory.addStaticTextElement("technical.lastModified", "", formLayout);
 
 		versionEl = uifactory.addTextElement("lifecycle.version", "lifecycle.version", 50, "", formLayout);
 		
-		statusLastMdifiedEl = uifactory.addStaticTextElement("technical.statusLastModified", "", formLayout);
+		statusLastModifiedEl = uifactory.addStaticTextElement("technical.statusLastModified", "", formLayout);
 		
 		buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
 		formLayout.add(buttonsCont);
-		uifactory.addFormSubmitButton("ok", "ok", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		uifactory.addFormSubmitButton("ok", "ok", buttonsCont);
 	}
 	
 	private void setReadOnly(MetadataSecurityCallback securityCallback) {
@@ -124,12 +127,14 @@ public class TechnicalMetadataEditController extends FormBasicController  {
 		
 		String lastModified = formatter.formatDateAndTime(item.getLastModified());
 		lastModifiedEl.setValue(lastModified);
+		lastModifiedEl.setVisible(StringHelper.containsNonWhitespace(lastModified));
 		
 		versionEl.setValue(item.getItemVersion());
 		
 		String statusLastModified = formatter.formatDateAndTime(item.getQuestionStatusLastModified());
-		statusLastModified = statusLastModified != null? statusLastModified: "";
-		statusLastMdifiedEl.setValue(statusLastModified);
+		statusLastModified = statusLastModified != null ? statusLastModified: "";
+		statusLastModifiedEl.setValue(statusLastModified);
+		statusLastModifiedEl.setVisible(StringHelper.containsNonWhitespace(statusLastModified));
 	}
 
 	public void setItem(QuestionItem item, MetadataSecurityCallback securityCallback) {

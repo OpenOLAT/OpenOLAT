@@ -253,16 +253,16 @@ public class VideoEditController extends ActivateableTabbableDefaultController i
 		boolean showRating = config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING);
 		boolean showComments = config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS);
 		
-		VideoDisplayOptions options = VideoDisplayOptions.valueOf(autoplay, showComments, showRating, true, false, false, "", true, true);
-		switch(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT)) {
-			case "resourceDescription": break;
+		VideoDisplayOptions options = VideoDisplayOptions.valueOf(autoplay, showComments, showRating, true, true, false, false, "", true, true);
+		switch(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT, "none")) {
 			case "customDescription":
 				options.setCustomDescription(true);
 				options.setDescriptionText(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_CUSTOMTEXT));
 				break;
 			case "none":
-				options.setCustomDescription(true);
-				options.setDescriptionText("");
+				options.setShowDescription(false);
+				break;
+			default:
 				break;
 		}
 
@@ -284,9 +284,7 @@ public class VideoEditController extends ActivateableTabbableDefaultController i
 			else return null;
 		}
 		RepositoryManager rm = RepositoryManager.getInstance();
-		RepositoryEntry entry = rm.lookupRepositoryEntryBySoftkey(repoSoftkey, strict);
-		// entry can be null only if !strict
-		return entry;
+		return rm.lookupRepositoryEntryBySoftkey(repoSoftkey, strict);
 	}
 
 	/**
@@ -373,7 +371,7 @@ class VideoOptionsForm extends FormBasicController{
 		config.setBooleanEntry(VideoEditController.CONFIG_KEY_RATING, videoRating.isSelected(0));
 		config.setBooleanEntry(VideoEditController.CONFIG_KEY_AUTOPLAY, videoAutoplay.isSelected(0));
 		config.setStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT, description.getSelectedKey());
-		if(description.getSelectedKey() == "customDescription"){
+		if("customDescription".equals(description.getSelectedKey())) {
 			config.setStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_CUSTOMTEXT, descriptionField.getValue());
 		}
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
@@ -407,7 +405,7 @@ class VideoOptionsForm extends FormBasicController{
 		config.setBooleanEntry(VideoEditController.CONFIG_KEY_RATING, videoRating.isSelected(0));
 		config.setBooleanEntry(VideoEditController.CONFIG_KEY_AUTOPLAY, videoAutoplay.isSelected(0));
 		config.setStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT, description.getSelectedKey());
-		if(description.getSelectedKey() == "customDescription"){
+		if("customDescription".equals(description.getSelectedKey())) {
 			config.setStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_CUSTOMTEXT, descriptionField.getValue());
 		}
 	}

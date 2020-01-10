@@ -57,7 +57,7 @@ public class MetadatasController extends BasicController {
 	private QuestionItem item;
 	
 	public MetadatasController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback qPoolSecurityCallback,
-			QuestionItem item, MetadataSecurityCallback metadataScurityCallback, boolean ignoreCompetences) {
+			QuestionItem item, MetadataSecurityCallback metadataScurityCallback, boolean ignoreCompetences, boolean wideLayout) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 		
@@ -65,19 +65,21 @@ public class MetadatasController extends BasicController {
 
 		mainVC = createVelocityContainer("item_metadatas");
 		generalEditCtrl = new GeneralMetadataEditController(ureq, wControl, qPoolSecurityCallback, item,
-				metadataScurityCallback, ignoreCompetences);
+				metadataScurityCallback, ignoreCompetences, wideLayout);
 		listenTo(generalEditCtrl);
 		mainVC.put("details_general", generalEditCtrl.getInitialComponent());
 
-		questionEditCtrl = new QuestionMetadataEditController(ureq, wControl, item, metadataScurityCallback);
+		questionEditCtrl = new QuestionMetadataEditController(ureq, wControl, item, metadataScurityCallback, wideLayout);
 		listenTo(questionEditCtrl);
 		mainVC.put("details_question", questionEditCtrl.getInitialComponent());
 		
-		rightsEditCtrl = new RightsMetadataEditController(ureq, wControl, item, metadataScurityCallback);
-		listenTo(rightsEditCtrl);
-		mainVC.put("details_rights", rightsEditCtrl.getInitialComponent());
+		if(item.getResourceableId() != null) {
+			rightsEditCtrl = new RightsMetadataEditController(ureq, wControl, item, metadataScurityCallback, wideLayout);
+			listenTo(rightsEditCtrl);
+			mainVC.put("details_rights", rightsEditCtrl.getInitialComponent());
+		}
 
-		technicalEditCtrl = new TechnicalMetadataEditController(ureq, wControl, item, metadataScurityCallback);
+		technicalEditCtrl = new TechnicalMetadataEditController(ureq, wControl, item, metadataScurityCallback, wideLayout);
 		listenTo(technicalEditCtrl);
 		mainVC.put("details_technical", technicalEditCtrl.getInitialComponent());
 
@@ -150,7 +152,9 @@ public class MetadatasController extends BasicController {
 		this.item = item;
 		generalEditCtrl.setItem(item, metadataSecurityCallback);
 		questionEditCtrl.setItem(item, metadataSecurityCallback);
-		rightsEditCtrl.setItem(item, metadataSecurityCallback);
+		if(rightsEditCtrl != null) {
+			rightsEditCtrl.setItem(item, metadataSecurityCallback);
+		}
 		technicalEditCtrl.setItem(item, metadataSecurityCallback);
 		if (ratingMetadataCtrl != null) {
 			ratingMetadataCtrl.setItem(item);
@@ -173,14 +177,14 @@ public class MetadatasController extends BasicController {
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		String guiPref = (String) guiPrefs.get(MetadatasController.class, GUIPREF_KEY_OPEN_PANEL);
 		String openPanel = guiPref != null? guiPrefToPanel(guiPref): "general";
-		mainVC.contextRemove("inGeneral");
-		mainVC.contextRemove("inQuestion");
-		mainVC.contextRemove("inRights");
-		mainVC.contextRemove("inTechnical");
-		mainVC.contextRemove("inRatings");
-		mainVC.contextRemove("inPools");
-		mainVC.contextRemove("inShares");
-		mainVC.contextPut("in-" + openPanel, "in");
+		mainVC.contextRemove("ingeneral");
+		mainVC.contextRemove("inquestion");
+		mainVC.contextRemove("inrights");
+		mainVC.contextRemove("intechnical");
+		mainVC.contextRemove("inratings");
+		mainVC.contextRemove("inpools");
+		mainVC.contextRemove("inshares");
+		mainVC.contextPut("in" + openPanel.toLowerCase(), "in");
 	}
 	
 	private String guiPrefToPanel(String guiPref) {

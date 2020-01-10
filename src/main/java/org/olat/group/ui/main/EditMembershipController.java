@@ -47,6 +47,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -386,6 +387,8 @@ public class EditMembershipController extends FormBasicController {
 		} else {
 			curriculumTableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.curriculumElement, new CurriculumElementIndentRenderer()));
 		}
+
+		curriculumTableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.curriculumElementIdentifier));
 		curriculumTableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.owner));
 		curriculumTableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.coach));
 		curriculumTableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.participant));
@@ -675,11 +678,12 @@ public class EditMembershipController extends FormBasicController {
 			switch(CurriculumCols.values()[col]) {
 				case curriculum: return option.getElement().getCurriculum().getDisplayName();
 				case curriculumElement: return option.getElement().getDisplayName();
+				case curriculumElementIdentifier: return option.getElement().getIdentifier();
 				case owner: return option.getOwner();
 				case coach: return option.getCoach();
 				case participant: return option.getParticipant();
+				default: return "ERROR";
 			}
-			return null;
 		}
 
 		@Override
@@ -749,9 +753,10 @@ public class EditMembershipController extends FormBasicController {
 	}
 	
 	
-	public static enum CurriculumCols implements FlexiColumnDef {
+	public enum CurriculumCols implements FlexiSortableColumnDef {
 		curriculum("table.header.curriculum"),
 		curriculumElement("table.header.curriculum.element"),
+		curriculumElementIdentifier("table.header.identifier"),
 		owner("table.header.owners"),
 		coach("table.header.tutors"),
 		participant("table.header.participants");
@@ -766,9 +771,19 @@ public class EditMembershipController extends FormBasicController {
 		public String i18nHeaderKey() {
 			return i18n;
 		}
+
+		@Override
+		public boolean sortable() {
+			return false;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
+		}
 	}
 	
-	public static enum GroupCols implements FlexiColumnDef {
+	public enum GroupCols implements FlexiColumnDef {
 		groupName("table.header.groups"),
 		tutorCount("table.header.tutorsCount"),
 		participantCount("table.header.participantsCount"),

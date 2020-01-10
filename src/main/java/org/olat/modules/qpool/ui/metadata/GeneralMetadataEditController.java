@@ -40,6 +40,7 @@ import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemAuditLog.Action;
 import org.olat.modules.qpool.QuestionItemAuditLogBuilder;
+import org.olat.modules.qpool.QuestionItemEditable;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.QuestionsController;
@@ -78,8 +79,8 @@ public class GeneralMetadataEditController extends FormBasicController {
 	
 	public GeneralMetadataEditController(UserRequest ureq, WindowControl wControl,
 			QPoolSecurityCallback qPoolSecurityCallback, QuestionItem item, MetadataSecurityCallback securityCallback,
-			boolean ignoreCompetences) {
-		super(ureq, wControl, LAYOUT_VERTICAL);
+			boolean ignoreCompetences, boolean wideLayout) {
+		super(ureq, wControl, wideLayout ? LAYOUT_DEFAULT : LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 		
 		this.qPoolSecurityCallback = qPoolSecurityCallback;
@@ -144,8 +145,8 @@ public class GeneralMetadataEditController extends FormBasicController {
 		buttonsCont.setElementCssClass("o_sel_qpool_metadata_buttons");
 		buttonsCont.setRootForm(mainForm);
 		formLayout.add(buttonsCont);
-		uifactory.addFormSubmitButton("ok", "ok", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		uifactory.addFormSubmitButton("ok", "ok", buttonsCont);
 	}
 
 	private void buildTaxonomyLevelEl() {
@@ -153,26 +154,25 @@ public class GeneralMetadataEditController extends FormBasicController {
 		String[] selectableKeys = qpoolTaxonomyTreeBuilder.getSelectableKeys();
 		String[] selectableValues = qpoolTaxonomyTreeBuilder.getSelectableValues();
 		taxonomyLevelEl.setKeysAndValues(selectableKeys, selectableValues, null);
-		if (item instanceof QuestionItemImpl) {
-			QuestionItemImpl itemImpl = (QuestionItemImpl) item;
-			TaxonomyLevel selectedTaxonomyLevel = itemImpl.getTaxonomyLevel();
-			if(selectedTaxonomyLevel != null) {
-				String selectedTaxonomyLevelKey = String.valueOf(selectedTaxonomyLevel.getKey());
-				for(String taxonomyKey: qpoolTaxonomyTreeBuilder.getSelectableKeys()) {
-					if(taxonomyKey.equals(selectedTaxonomyLevelKey)) {
-						taxonomyLevelEl.select(taxonomyKey, true);
-					}
-				}
-				if (!taxonomyLevelEl.isOneSelected() && itemImpl.getTaxonomyLevel() != null) {
-					if (selectableKeys.length == 0) {
-						selectableKeys = new String[] {"dummy"};
-						selectableValues = new String[1];
-					}
-					selectableValues[0] = itemImpl.getTaxonomyLevel().getDisplayName();
-					taxonomyLevelEl.setEnabled(false);
+
+		TaxonomyLevel selectedTaxonomyLevel = item.getTaxonomyLevel();
+		if(selectedTaxonomyLevel != null) {
+			String selectedTaxonomyLevelKey = String.valueOf(selectedTaxonomyLevel.getKey());
+			for(String taxonomyKey: qpoolTaxonomyTreeBuilder.getSelectableKeys()) {
+				if(taxonomyKey.equals(selectedTaxonomyLevelKey)) {
+					taxonomyLevelEl.select(taxonomyKey, true);
 				}
 			}
+			if (!taxonomyLevelEl.isOneSelected() && selectedTaxonomyLevel != null) {
+				if (selectableKeys.length == 0) {
+					selectableKeys = new String[] {"dummy"};
+					selectableValues = new String[1];
+				}
+				selectableValues[0] = selectedTaxonomyLevel.getDisplayName();
+				taxonomyLevelEl.setEnabled(false);
+			}
 		}
+
 		taxonomyLevelEl.addActionListener(FormEvent.ONCHANGE);
 		setTaxonomicPath();
 	}
@@ -240,11 +240,13 @@ public class GeneralMetadataEditController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if(item instanceof QuestionItemImpl) {
-			QuestionItemImpl itemImpl = (QuestionItemImpl)item;
+		if(item instanceof QuestionItemEditable) {
+			QuestionItemEditable itemImpl = (QuestionItemEditable)item;
 			QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(getIdentity(),
 					Action.UPDATE_QUESTION_ITEM_METADATA);
-			builder.withBefore(itemImpl);
+			if(item instanceof QuestionItemImpl) {
+				builder.withBefore(item);
+			}
 			
 			itemImpl.setTopic(topicEl.getValue());
 			
@@ -284,9 +286,11 @@ public class GeneralMetadataEditController extends FormBasicController {
 			String assessmentType = assessmentTypeEl.isOneSelected()? assessmentTypeEl.getSelectedKey(): null;
 			itemImpl.setAssessmentType(assessmentType);
 
-			item = qpoolService.updateItem(item);
-			builder.withAfter(itemImpl);
-			qpoolService.persist(builder.create());
+			if(item instanceof QuestionItemImpl) {
+				item = qpoolService.updateItem(item);
+				builder.withAfter(item);
+				qpoolService.persist(builder.create());
+			}
 			fireEvent(ureq, new QItemEdited(item));
 		}
 	}

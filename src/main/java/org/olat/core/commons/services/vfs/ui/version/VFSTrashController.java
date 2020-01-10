@@ -19,26 +19,40 @@
  */
 package org.olat.core.commons.services.vfs.ui.version;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.admin.SystemAdminMainController;
+import org.olat.core.commons.modules.bc.commands.FolderCommand;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSMetadataRef;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSRevision;
 import org.olat.core.commons.services.vfs.VFSVersionModule;
+import org.olat.core.commons.services.vfs.model.VFSRevisionRefImpl;
+import org.olat.core.commons.services.vfs.ui.component.BytesCellRenderer;
+import org.olat.core.commons.services.vfs.ui.version.VersionsDeletedFileDataModel.VersionsDeletedCols;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.progressbar.ProgressController;
 import org.olat.core.gui.control.Controller;
@@ -69,7 +83,6 @@ public class VFSTrashController extends FormBasicController implements ProgressD
 	
 	private FormLink pruneLink;
 	private FormLink cleanUpLink;
-	private FormLink showOrphanLink;
 	private StaticTextElement orphanSizeEl;
 	private StaticTextElement versionsSizeEl;
 	
@@ -77,7 +90,12 @@ public class VFSTrashController extends FormBasicController implements ProgressD
 	private ProgressController progressCtrl;
 	private DialogBoxController confirmPruneHistoryBox;
 	private DialogBoxController confirmDeleteOrphansBox;
-	private VersionsDeletedFileController orphansController; 
+	
+	private FormLink orphansDeleteButton;
+	private FlexiTableElement orphansListTableEl;
+	private VersionsDeletedFileDataModel versionsDeletedFileDataModel;
+	
+	private DialogBoxController dialogCtr;
 	
 	@Autowired
 	private DB dbInstance;
@@ -99,7 +117,8 @@ public class VFSTrashController extends FormBasicController implements ProgressD
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer statsLayout = FormLayoutContainer.createDefaultFormLayout("orphansStats", getTranslator());
-		FormLayoutContainer tableLayout = FormLayoutContainer.createVerticalFormLayout("orphanTable", getTranslator());
+		String page = this.velocity_root + "/orphans.html";
+		FormLayoutContainer tableLayout = FormLayoutContainer.createCustomFormLayout("orphansTable", getTranslator(), page);
 		formLayout.add(statsLayout);
 		formLayout.add(tableLayout);
 		
@@ -119,10 +138,29 @@ public class VFSTrashController extends FormBasicController implements ProgressD
 
 		
 		// Lower part
-		orphansController = new VersionsDeletedFileController(ureq, getWindowControl());			
-		listenTo(orphansController);
 		tableLayout.setFormTitle(translate("version.deletedFiles"));
-		tableLayout.add("orphansList", orphansController.getInitialFormItem());
+		
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, VersionsDeletedCols.id));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(VersionsDeletedCols.relativePath));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(VersionsDeletedCols.filename));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(VersionsDeletedCols.size, new BytesCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
+		
+		versionsDeletedFileDataModel = new VersionsDeletedFileDataModel(columnsModel, getTranslator());
+		orphansListTableEl = uifactory.addTableElement(getWindowControl(), "orphansList", versionsDeletedFileDataModel, 24, false, getTranslator(), tableLayout);
+		orphansListTableEl.setEmtpyTableMessageKey("version.noDeletedFiles");
+		orphansListTableEl.setMultiSelect(true);
+		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions(true);
+		sortOptions.setDefaultOrderBy(new SortKey(VersionsDeletedCols.size.name(), false));
+		orphansListTableEl.setSortSettings(sortOptions);
+		orphansListTableEl.setAndLoadPersistedPreferences(ureq, "deleted-rev-file-list");
+		
+		orphansDeleteButton = uifactory.addFormLink("delete", tableLayout, Link.BUTTON);
+		orphansDeleteButton.setIconLeftCSS(CSSHelper.getIconCssClassFor(CSSHelper.CSS_CLASS_TRASHED));
+		
+		tableLayout.add("orphansTable", orphansListTableEl);
+		tableLayout.add("orphansDelete", orphansDeleteButton);
 	}		
 
 	@Override
@@ -135,6 +173,14 @@ public class VFSTrashController extends FormBasicController implements ProgressD
 		versionsSizeEl.setValue(Formatter.formatBytes(versionsSize));
 		long versionsDeletedFiles = vfsRepositoryService.getRevisionsTotalSizeOfDeletedFiles();
 		orphanSizeEl.setValue(Formatter.formatBytes(versionsDeletedFiles));
+		
+		List<VFSRevision> revisions = vfsRepositoryService.getRevisionsOfDeletedFiles();
+		List<VersionsDeletedFileRow> rows = revisions.stream()
+				.map(VersionsDeletedFileRow::new)
+				.collect(Collectors.toList());
+		versionsDeletedFileDataModel.setObjects(rows);
+		orphansListTableEl.reset(true, true, true);
+		orphansDeleteButton.setVisible(!rows.isEmpty());
 	}
 
 	@Override
@@ -149,15 +195,29 @@ public class VFSTrashController extends FormBasicController implements ProgressD
 			}
 		} else if(source == cmc) {
 			cleanup();
+		} else if (source == dialogCtr) {
+			if (DialogBoxUIFactory.isYesEvent(event)) {	
+				@SuppressWarnings("unchecked")
+				List<VersionsDeletedFileRow> rowsToDelete =  (List<VersionsDeletedFileRow>)dialogCtr.getUserObject();
+				doDelete(rowsToDelete);
+				fireEvent(ureq, FolderCommand.FOLDERCOMMAND_FINISHED);
+				loadModel();
+			}
 		}
 		super.event(ureq, source, event);
 	}
 	
+	private void doDelete(List<VersionsDeletedFileRow> rowsToDelete) {
+		for(VersionsDeletedFileRow row:rowsToDelete) {
+			VFSRevision revision = vfsRepositoryService.getRevision(new VFSRevisionRefImpl(row.getRevisionKey()));
+			vfsRepositoryService.deleteRevisions(getIdentity(), Collections.singletonList(revision));
+		}
+	}
+	
 	private void cleanup() {
-		removeAsListenerAndDispose(orphansController);
 		removeAsListenerAndDispose(cmc);
-		orphansController = null;
 		cmc = null;
+		loadModel();
 	}
 
 	@Override
@@ -173,8 +233,50 @@ public class VFSTrashController extends FormBasicController implements ProgressD
 		} else if(source == pruneLink) {
 			String text = translate("confirm.prune.history");
 			confirmPruneHistoryBox = activateYesNoDialog(ureq, null, text, confirmPruneHistoryBox);
+		} else if(orphansDeleteButton == source) {
+			doConfirmDelete(ureq);
+			loadModel();
+		} else if(orphansListTableEl == source) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				if("delete".equals(se.getCommand())) {
+					VersionsDeletedFileRow row = versionsDeletedFileDataModel.getObject(se.getIndex());
+					doConfirmDelete(ureq, Collections.singletonList(row));
+					loadModel();
+				}
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void doConfirmDelete(UserRequest ureq, List<VersionsDeletedFileRow> rows) {
+		String msg = translate("version.del.confirm") + "<p>" + renderVersionsAsHtml(rows) + "</p>";
+		dialogCtr = activateYesNoDialog(ureq, translate("version.del.header"), msg, dialogCtr);
+		dialogCtr.setUserObject(rows);
+	}
+	
+	private String renderVersionsAsHtml(List<VersionsDeletedFileRow> rows) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("<ul>");
+		for (VersionsDeletedFileRow row:rows) {
+			sb.append("<li>").append(row.getFilename()).append("</li>");
+		}
+		sb.append("</ul>");
+		return sb.toString();
+	}
+	
+	private void doConfirmDelete(UserRequest ureq) {
+		Set<Integer> selectedIndexes = orphansListTableEl.getMultiSelectedIndex();
+		List<VersionsDeletedFileRow> rowsToDelete = new ArrayList<>(selectedIndexes.size());
+		for(Integer selectedIndex:selectedIndexes) {
+			VersionsDeletedFileRow row = versionsDeletedFileDataModel.getObject(selectedIndex.intValue());
+			if(row != null) {
+				rowsToDelete.add(row);
+			}
+		}
+		if(!rowsToDelete.isEmpty()) {
+			doConfirmDelete(ureq, rowsToDelete);
+		}
 	}
 	
 	private void doDeleteOrphans(UserRequest ureq) {

@@ -136,7 +136,8 @@ public class LargeFilesController extends FormBasicController implements Extende
 			maxResults = Integer.parseInt(maxResultEl.getValue());
 		}
 		if(StringHelper.containsNonWhitespace(minSizeEl.getValue())) {
-			minSize = Integer.parseInt(minSizeEl.getValue());
+			minSize = (int) (Double.parseDouble(minSizeEl.getValue()) * Formatter.BYTE_UNIT * Formatter.BYTE_UNIT);
+			System.out.println(minSize);
 		}
 		if(StringHelper.containsNonWhitespace(downloadCountMinEl.getValue())) {
 			downloadCountMin = Integer.parseInt(downloadCountMinEl.getValue());
@@ -219,7 +220,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 		lockedAtNewerChooser.reset();
 		lockedAtOlderChooser.reset();
 		editedAtNewerChooser.reset();
-		editedAtOlderChooser.reset();
+		editedAtOlderChooser.reset();	
 		revisionCountMinEl.reset();
 		downloadCountMinEl.reset();
 		trashedSelection.reset();
@@ -442,7 +443,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 
 		if(minSizeEl.getValue() != "") {
 			try {
-				if(Integer.parseInt(minSizeEl.getValue()) <= 0) {
+				if(Double.parseDouble(minSizeEl.getValue()) <= 0) {
 					minSizeEl.setErrorKey("largefiles.filter.error.small", null);
 					allOK &= false;
 				}

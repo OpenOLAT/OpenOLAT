@@ -45,6 +45,7 @@ import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemAuditLog.Action;
 import org.olat.modules.qpool.QuestionItemAuditLogBuilder;
+import org.olat.modules.qpool.QuestionItemEditable;
 import org.olat.modules.qpool.manager.MetadataConverterHelper;
 import org.olat.modules.qpool.model.LOMDuration;
 import org.olat.modules.qpool.model.QItemType;
@@ -80,8 +81,8 @@ public class QuestionMetadataEditController extends FormBasicController {
 	private QPoolService qpoolService;
 
 	public QuestionMetadataEditController(UserRequest ureq, WindowControl wControl, QuestionItem item,
-			MetadataSecurityCallback securityCallback) {
-		super(ureq, wControl, LAYOUT_VERTICAL);
+			MetadataSecurityCallback securityCallback, boolean wideLayout) {
+		super(ureq, wControl, wideLayout ? LAYOUT_DEFAULT : LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 		
 		this.item = item;
@@ -173,8 +174,8 @@ public class QuestionMetadataEditController extends FormBasicController {
 		buttonsCont.setElementCssClass("o_sel_qpool_metadata_buttons");
 		buttonsCont.setRootForm(mainForm);
 		formLayout.add(buttonsCont);
-		uifactory.addFormSubmitButton("ok", "ok", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		uifactory.addFormSubmitButton("ok", "ok", buttonsCont);
 	}
 	
 	private void setReadOnly(MetadataSecurityCallback securityCallback) {
@@ -223,11 +224,13 @@ public class QuestionMetadataEditController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if(item instanceof QuestionItemImpl) {
-			QuestionItemImpl itemImpl = (QuestionItemImpl)item;
+		if(item instanceof QuestionItemEditable) {
+			QuestionItemEditable itemImpl = (QuestionItemEditable)item;
 			QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(getIdentity(),
 					Action.UPDATE_QUESTION_ITEM_METADATA);
-			builder.withBefore(itemImpl);
+			if(itemImpl instanceof QuestionItemImpl) {
+				builder.withBefore(item);
+			}
 
 			int day = learningTimeDayElement.getIntValue();
 			int hour = learningTimeHourElement.getIntValue();
@@ -256,9 +259,11 @@ public class QuestionMetadataEditController extends FormBasicController {
 				itemImpl.setCorrectionTime(Integer.valueOf(correctionTimeMinuteElement.getValue()));
 			}
 
-			item = qpoolService.updateItem(itemImpl);
-			builder.withAfter(item);
-			qpoolService.persist(builder.create());
+			if(item instanceof QuestionItemImpl) {
+				item = qpoolService.updateItem(item);
+				builder.withAfter(item);
+				qpoolService.persist(builder.create());
+			}
 			fireEvent(ureq, new QItemEdited(item));
 		}
 	}

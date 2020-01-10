@@ -298,9 +298,6 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 		} else if(searchCtrl == source) {
 			if(event instanceof SearchLecturesBlockEvent) {
 				doSearch((SearchLecturesBlockEvent)event);
-			} else if(event == Event.CANCELLED_EVENT) {
-				currentSearchParams = new LecturesBlockSearchParameters();
-				loadModel(currentSearchParams);
 			}
 		}
 		super.event(ureq, source, event);

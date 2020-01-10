@@ -60,7 +60,7 @@ public class QuickViewMetadataController extends BasicController {
 			metadataPanel.setContent(null);
 		} else {
 			removeAsListenerAndDispose(metadataCtrl);
-			metadataCtrl = new MetadatasController(ureq, getWindowControl(), qPoolSecurityCallback, item, metadataSecurityCallback, false);
+			metadataCtrl = new MetadatasController(ureq, getWindowControl(), qPoolSecurityCallback, item, metadataSecurityCallback, false, false);
 			metadataPanel.setContent(metadataCtrl.getInitialComponent());
 		}
 	}

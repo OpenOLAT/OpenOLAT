@@ -41,6 +41,7 @@ import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupImpl;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.qpool.QuestionItemEditable;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -54,7 +55,7 @@ import org.olat.modules.taxonomy.model.TaxonomyLevelImpl;
 @Entity(name="questionitem")
 @Table(name="o_qp_item")
 @NamedQuery(name="loadQuestionItemByKey", query="select item from questionitem item where item.key=:itemKey")
-public class QuestionItemImpl implements QuestionItemFull, Persistable {
+public class QuestionItemImpl implements QuestionItemFull, QuestionItemEditable, Persistable {
 
 	private static final long serialVersionUID = 6264601750280239307L;
 
@@ -216,6 +217,7 @@ public class QuestionItemImpl implements QuestionItemFull, Persistable {
 		return topic;
 	}
 
+	@Override
 	public void setTopic(String topic) {
 		this.topic = topic;
 	}
@@ -234,6 +236,7 @@ public class QuestionItemImpl implements QuestionItemFull, Persistable {
 		return coverage;
 	}
 
+	@Override
 	public void setCoverage(String coverage) {
 		this.coverage = coverage;
 	}
@@ -243,6 +246,7 @@ public class QuestionItemImpl implements QuestionItemFull, Persistable {
 		return additionalInformations;
 	}
 
+	@Override
 	public void setAdditionalInformations(String additionalInformations) {
 		this.additionalInformations = additionalInformations;
 	}
@@ -252,6 +256,7 @@ public class QuestionItemImpl implements QuestionItemFull, Persistable {
 		return taxonomyLevel;
 	}
 
+	@Override
 	public void setTaxonomyLevel(TaxonomyLevel taxonomyLevel) {
 		this.taxonomyLevel = taxonomyLevel;
 	}
@@ -278,6 +283,7 @@ public class QuestionItemImpl implements QuestionItemFull, Persistable {
 		return educationalContext;
 	}
 
+	@Override
 	public void setEducationalContext(QEducationalContext educationalContext) {
 		this.educationalContext = educationalContext;
 	}
@@ -295,6 +301,7 @@ public class QuestionItemImpl implements QuestionItemFull, Persistable {
 		return educationalLearningTime;
 	}
 
+	@Override
 	public void setEducationalLearningTime(String educationalLearningTime) {
 		this.educationalLearningTime = educationalLearningTime;
 	}
@@ -304,6 +311,7 @@ public class QuestionItemImpl implements QuestionItemFull, Persistable {
 		return difficulty;
 	}
 
+	@Override
 	public void setDifficulty(BigDecimal difficulty) {
 		this.difficulty = difficulty;
 	}
@@ -313,6 +321,7 @@ public class QuestionItemImpl implements QuestionItemFull, Persistable {
 		return stdevDifficulty;
 	}
 
+	@Override
 	public void setStdevDifficulty(BigDecimal stdevDifficulty) {
 		this.stdevDifficulty = stdevDifficulty;
 	}
@@ -322,6 +331,7 @@ public class QuestionItemImpl implements QuestionItemFull, Persistable {
 		return differentiation;
 	}
 
+	@Override
 	public void setDifferentiation(BigDecimal differentiation) {
 		this.differentiation = differentiation;
 	}
@@ -331,6 +341,7 @@ public class QuestionItemImpl implements QuestionItemFull, Persistable {
 		return numOfAnswerAlternatives;
 	}
 
+	@Override
 	public void setNumOfAnswerAlternatives(int numOfAnswerAlternatives) {
 		this.numOfAnswerAlternatives = numOfAnswerAlternatives;
 	}
@@ -340,6 +351,7 @@ public class QuestionItemImpl implements QuestionItemFull, Persistable {
 		return usage;
 	}
 
+	@Override
 	public void setUsage(int usage) {
 		this.usage = usage;
 	}
@@ -349,6 +361,7 @@ public class QuestionItemImpl implements QuestionItemFull, Persistable {
 		return assessmentType;
 	}
 
+	@Override
 	public void setAssessmentType(String assessmentType) {
 		this.assessmentType = assessmentType;
 	}
@@ -386,6 +399,7 @@ public class QuestionItemImpl implements QuestionItemFull, Persistable {
 		return language;
 	}
 
+	@Override
 	public void setLanguage(String language) {
 		this.language = language;
 	}
@@ -420,6 +434,7 @@ public class QuestionItemImpl implements QuestionItemFull, Persistable {
 		return correctionTime;
 	}
 
+	@Override
 	public void setCorrectionTime(Integer correctionTime) {
 		this.correctionTime = correctionTime;
 	}
@@ -429,6 +444,7 @@ public class QuestionItemImpl implements QuestionItemFull, Persistable {
 		return keywords;
 	}
 
+	@Override
 	public void setKeywords(String keywords) {
 		this.keywords = keywords;
 	}
