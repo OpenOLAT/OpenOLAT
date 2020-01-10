@@ -34,6 +34,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.olat.repository.model.SingleRoleRepositoryEntrySecurity.Role;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.Participant;
@@ -148,6 +149,7 @@ public class AssessmentTest extends Deployments {
 			.selectResource(courseTitle);
 		
 		course
+			.switchRole(Role.participant)
 			.clickTree()
 			.selectWithTitle(testNodeTitle);
 		

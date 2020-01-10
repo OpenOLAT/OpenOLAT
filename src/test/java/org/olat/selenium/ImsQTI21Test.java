@@ -33,6 +33,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
+import org.olat.repository.model.SingleRoleRepositoryEntrySecurity.Role;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.User;
@@ -610,6 +611,7 @@ public class ImsQTI21Test extends Deployments {
 			.selectResource(courseTitle);
 		
 		course
+			.switchRole(Role.participant)
 			.clickTree()
 			.selectWithTitle(testNodeTitle);
 		
@@ -716,6 +718,7 @@ public class ImsQTI21Test extends Deployments {
 			.selectResource(courseTitle);
 		
 		course
+			.switchRole(Role.participant)
 			.clickTree()
 			.selectWithTitle(testNodeTitle);
 		
@@ -831,15 +834,16 @@ public class ImsQTI21Test extends Deployments {
 			.selectResource(courseTitle);
 		
 		course
+			.switchRole(Role.participant)
 			.clickTree()
 			.selectWithTitle(testNodeTitle);
 		
 		//check that the title of the start page of test is correct
 		WebElement testH2 = browser.findElement(By.cssSelector("div.o_course_run h2"));
 		Assert.assertEquals(testNodeTitle, testH2.getText().trim());
-		
+
 		QTI21Page qtiPage = QTI21Page
-				.getQTI21Page(browser);
+			.getQTI21Page(browser);
 		qtiPage
 			.assertOnStart()
 			.start()
@@ -856,6 +860,10 @@ public class ImsQTI21Test extends Deployments {
 		authorLoginPage
 			.loginAs(author.getLogin(), author.getPassword())
 			.resume();
+		
+		course
+			.switchRole(Role.participant);
+	
 		//resume the course, resume the test
 		qtiPage = QTI21Page
 				.getQTI21Page(browser);

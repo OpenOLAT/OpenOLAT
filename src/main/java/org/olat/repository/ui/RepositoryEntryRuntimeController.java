@@ -383,7 +383,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	private void initRole() {
 		rolesDropdown = new Dropdown("toolbox.roles", "role.switch", false, getTranslator());
-		rolesDropdown.setElementCssClass("o_with_labeled");
+		rolesDropdown.setElementCssClass("o_sel_switch_role o_with_labeled");
 		rolesDropdown.setIconCSS("o_icon " + getCurrentRoleIcon());
 		rolesDropdown.setInnerText(translate("role." + reSecurity.getCurrentRole()));
 		rolesDropdown.setInnerCSS("o_labeled");

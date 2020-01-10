@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.model.SingleRoleRepositoryEntrySecurity.Role;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.selenium.page.core.BookingPage;
 import org.olat.selenium.page.core.MenuTreePageFragment;
@@ -293,6 +294,31 @@ public class CoursePageFragment {
 		OOGraphene.waitBusy(browser);
 		
 		By statusViewBy = By.xpath("//li[contains(@class,'o_tool_dropdown')]/a[contains(@class,'o_repo_tools_status')]/span[contains(@class,'o_repo_status_" + status + "')]");
+		OOGraphene.waitElement(statusViewBy, browser);
+		return this;
+	}
+	
+	public CoursePageFragment switchRole(Role role) {
+		String cssRole;
+		switch(role) {
+			case participant: cssRole = "o_icon_user"; break;
+			case coach: cssRole = "o_icon_coach"; break;
+			case owner: cssRole = "o_icon_owner"; break;
+			default: cssRole = "o_icon_unkown"; break;
+		}
+		
+		By statusMenuBy = By.cssSelector("ul.o_sel_switch_role");
+		if(!browser.findElement(statusMenuBy).isDisplayed()) {
+			By statusMenuCaret = By.cssSelector("a.o_sel_switch_role");
+			browser.findElement(statusMenuCaret).click();
+			OOGraphene.waitElement(statusMenuBy, browser);
+		}
+		
+		By statusBy = By.cssSelector("ul.o_sel_switch_role>li>a>i." + cssRole);
+		browser.findElement(statusBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		By statusViewBy = By.xpath("//li[contains(@class,'o_tool_dropdown')]/a[contains(@class,'o_sel_switch_role')]/span/i[contains(@class,'" + cssRole + "')]");
 		OOGraphene.waitElement(statusViewBy, browser);
 		return this;
 	}

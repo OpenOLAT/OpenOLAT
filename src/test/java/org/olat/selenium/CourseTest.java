@@ -247,6 +247,13 @@ public class CourseTest extends Deployments {
 			.nextCatalog()
 			.finish();
 		OOGraphene.closeBlueMessageWindow(browser);
+		
+		RepositorySettingsPage settings = new RepositorySettingsPage(browser);
+		//from description editor, back to details and launch the course
+		settings
+			.assertOnInfos();
+		settings	
+			.back();
 
 		//open course editor
 		CoursePageFragment course = CoursePageFragment.getCourse(browser);
