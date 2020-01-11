@@ -173,7 +173,7 @@ public class OLATUpgrade_14_2_0 extends OLATUpgrade {
 					SubscriberImpl sub = new SubscriberImpl(publisher, identity);
 					sub.setEnabled(false);
 					sub.setCreationDate(new Date());
-					sub.setLastModified(sub.getLastModified());
+					sub.setLastModified(sub.getCreationDate());
 					dbInstance.getCurrentEntityManager().persist(sub);
 					dbInstance.commit();
 				}	

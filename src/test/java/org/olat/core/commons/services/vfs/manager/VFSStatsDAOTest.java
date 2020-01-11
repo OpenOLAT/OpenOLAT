@@ -21,7 +21,6 @@ package org.olat.core.commons.services.vfs.manager;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.vfs.model.VFSFileStatistics;
 import org.olat.core.commons.services.vfs.model.VFSRevisionStatistics;
 import org.olat.core.commons.services.vfs.model.VFSThumbnailStatistics;
@@ -36,8 +35,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class VFSStatsDAOTest extends OlatTestCase {
 	
-	@Autowired
-	private DB dbInstance;
 	@Autowired
 	private VFSStatsDAO vfsStatsDAO;
 	

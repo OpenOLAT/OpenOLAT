@@ -61,8 +61,7 @@ public class SearchQueryController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		searchInput = uifactory.addTextElement("search_input", "search.title", 255, "", formLayout);
-		searchInput.setLabel(null, null);
+		searchInput = uifactory.addTextElement("search_input", null, 255, "", formLayout);
 		searchInput.setPlaceholderKey("search", null);
 
 		searchButton = uifactory.addFormLink("rightAddOn", "", "", formLayout, Link.NONTRANSLATED);
