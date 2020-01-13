@@ -248,9 +248,11 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	private void postImportCopy(ICourse course, String nodeIdent) {
+		RepositoryEntry formEntry = getEvaluationForm(getModuleConfiguration());
+		if (formEntry == null) return;
+		
 		RepositoryEntry ores = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
 		EvaluationFormManager evaluationFormManager = CoreSpringFactory.getImpl(EvaluationFormManager.class);
-		RepositoryEntry formEntry = getEvaluationForm(getModuleConfiguration());
 		EvaluationFormSurveyIdentifier surveyIdent = of(ores, nodeIdent);
 		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(surveyIdent);
 		if (survey == null) {
