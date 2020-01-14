@@ -100,7 +100,7 @@ public class LearningPathIdentityListController extends FormBasicController impl
 
 	public LearningPathIdentityListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			UserCourseEnvironment coachCourseEnv) {
-		super(ureq, wControl, LAYOUT_BAREBONE);
+		super(ureq, wControl, "identities");
 		this.stackPanel = stackPanel;
 		this.coachCourseEnv = coachCourseEnv;
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
@@ -113,6 +113,9 @@ public class LearningPathIdentityListController extends FormBasicController impl
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		String courseTitle = coachCourseEnv.getCourseEnvironment().getCourseTitle();
+		flc.contextPut("courseTitle", courseTitle);
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if(isAdministrativeUser) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathIdentityCols.username, CMD_SELECT));

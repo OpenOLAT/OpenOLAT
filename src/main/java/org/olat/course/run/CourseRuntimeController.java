@@ -101,7 +101,7 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.learningpath.ui.LearningPathIdentityListController;
-import org.olat.course.learningpath.ui.LearningPathListController;
+import org.olat.course.learningpath.ui.MyLearningPathController;
 import org.olat.course.member.MembersManagementMainController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ENCourseNode;
@@ -1729,7 +1729,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(delayedClose == Delayed.learningPath || requestForClose(ureq)) {
 			OLATResourceable ores = OresHelper.createOLATResourceableType("LearningPath");
 			WindowControl swControl = addToHistory(ureq, ores, null);
-			LearningPathListController learningPathCtrl = new LearningPathListController(ureq, swControl,
+			MyLearningPathController learningPathCtrl = new MyLearningPathController(ureq, swControl,
 					toolbarPanel, getUserCourseEnvironment());
 			
 			listenTo(learningPathCtrl);

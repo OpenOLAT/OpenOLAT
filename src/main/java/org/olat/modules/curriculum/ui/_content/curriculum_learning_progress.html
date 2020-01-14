@@ -1,0 +1,23 @@
+<fieldset>
+	<legend>$r.translate("curriculum.element.title") "$r.escapeHtml($elementName) #if($r.isNotEmpty($elementIdentifier))<small class='text-muted'>$r.escapeHtml($elementIdentifier)</small>#end"</legend>
+	<div class="o_block_bottom">
+		<div class="text-muted"><i class="o_icon o_icon-fw o_icon_curriculum_element"> </i>
+			$r.escapeHtml($curriculumName) #if($r.isNotEmpty($curriculumIdentifier))<small>$r.escapeHtml($curriculumIdentifier)</small>#end
+			#foreach($parent in $parentLine) 
+				/ $r.escapeHtml($parent.displayName) #if($r.isNotEmpty($parent.identifier))<small>$r.escapeHtml($parent.identifier)</small>#end
+			#end
+		</div>
+		#if($r.isNotNull($elementBegin) || $r.isNotNull($elementEnd))
+		<div class="o_date text-muted"><i class="o_icon o_icon-fw o_icon_calendar"> </i>
+			#if($r.isNotNull($elementBegin) && $r.isNotNull($elementEnd))
+				$r.translate("curriculum.element.from.to", $elementBegin, $elementEnd)
+			#elseif($r.isNotNull($elementBegin))
+				$r.translate("curriculum.element.from", $elementBegin)
+			#else
+				$r.translate("curriculum.element.to", $elementEnd)
+			#end
+		</div>
+		#end
+	</div>
+	$r.render("list")
+</fieldset>
