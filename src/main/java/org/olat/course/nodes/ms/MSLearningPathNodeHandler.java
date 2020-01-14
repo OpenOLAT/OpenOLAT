@@ -22,6 +22,8 @@ package org.olat.course.nodes.ms;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathNodeHandler;
 import org.olat.course.learningpath.model.ModuleLearningPathConfigs;
@@ -59,11 +61,13 @@ public class MSLearningPathNodeHandler implements LearningPathNodeHandler {
 	@Override
 	public Controller createConfigEditController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
 			CourseNode courseNode) {
+		Translator translator = Util.createPackageTranslator(MSEditFormController.class, ureq.getLocale());
 		LearningPathControllerConfig ctrlConfig = LearningPathNodeConfigController.builder()
 				.enableNodeVisited()
 				.enableConfirmed()
 				.enableScore()
 				.enablePassed()
+				.enableStatusDone(translator.translate("fully.assessed.trigger.status.done"))
 				.build();
 		return new LearningPathNodeConfigController(ureq, wControl, courseEntry, courseNode.getModuleConfiguration(), ctrlConfig);
 	}
