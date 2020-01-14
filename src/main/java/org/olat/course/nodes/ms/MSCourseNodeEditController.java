@@ -105,7 +105,7 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == editScoringConfigButton) {
 			configController.setDisplayOnly(false);
-			configurationVC.contextPut("isOverwriting", Boolean.TRUE);			
+			configurationVC.contextPut("isOverwriting", Boolean.TRUE);
 		}
 	}
 
@@ -125,7 +125,8 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 	
 	private void updateHighscoreTab() {
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(msNode);
-		myTabbedPane.setEnabled(4, assessmentConfig.hasScore());
+		myTabbedPane.setEnabled(myTabbedPane.indexOfTab(highScoreNodeConfigController.getInitialComponent()),
+				assessmentConfig.hasScore());
 	}
 
 	@Override
