@@ -63,6 +63,7 @@ import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
 import org.olat.course.nodes.cl.CheckListAssessmentConfig;
 import org.olat.course.nodes.cl.CheckboxManager;
 import org.olat.course.nodes.cl.model.Checkbox;
@@ -71,6 +72,8 @@ import org.olat.course.nodes.cl.ui.CheckListAssessmentController;
 import org.olat.course.nodes.cl.ui.CheckListEditController;
 import org.olat.course.nodes.cl.ui.CheckListExcelExport;
 import org.olat.course.nodes.cl.ui.CheckListRunController;
+import org.olat.course.nodes.iq.IQTESTLearningPathNodeHandler;
+import org.olat.course.nodes.ms.MSAssessmentConfig;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -204,7 +207,34 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 			}
 		}
 		
+		if (isFullyAssessedScoreConfigError()) {
+			addStatusErrorDescription("error.fully.assessed.score",
+					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+		}
+		if (isFullyAssessedPassedConfigError()) {
+			addStatusErrorDescription("error.fully.assessed.passed",
+					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+		}
+		
 		return sdList;
+	}
+	
+	private boolean isFullyAssessedScoreConfigError() {
+		boolean hasScore = new MSAssessmentConfig(getModuleConfiguration()).hasScore();
+		boolean isScoreTrigger = CoreSpringFactory.getImpl(IQTESTLearningPathNodeHandler.class)
+				.getConfigs(this)
+				.isFullyAssessedOnScore(null, null)
+				.isEnabled();
+		return isScoreTrigger && !hasScore;
+	}
+	
+	private boolean isFullyAssessedPassedConfigError() {
+		boolean hasPassed = new MSAssessmentConfig(getModuleConfiguration()).hasPassed();
+		boolean isPassedTrigger = CoreSpringFactory.getImpl(IQTESTLearningPathNodeHandler.class)
+				.getConfigs(this)
+				.isFullyAssessedOnPassed(null, null)
+				.isEnabled();
+		return isPassedTrigger && !hasPassed;
 	}
 	
 	private void addStatusErrorDescription(String key, String pane, List<StatusDescription> status) {
