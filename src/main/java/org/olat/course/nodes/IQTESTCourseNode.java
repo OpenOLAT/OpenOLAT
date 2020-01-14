@@ -386,7 +386,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 	}
 	
 	private boolean isFullyAssessedScoreConfigError() {
-		boolean hasScore = new IQTESTAssessmentConfig(this).hasPassed();
+		boolean hasScore = new IQTESTAssessmentConfig(this).hasScore();
 		boolean isScoreTrigger = CoreSpringFactory.getImpl(IQTESTLearningPathNodeHandler.class)
 				.getConfigs(this)
 				.isFullyAssessedOnScore(null, null)

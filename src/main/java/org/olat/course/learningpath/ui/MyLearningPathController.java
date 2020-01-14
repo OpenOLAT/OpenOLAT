@@ -26,32 +26,27 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 
 /**
  * 
- * Initial date: 2 Dec 2019<br>
+ * Initial date: 14 Jan 2020<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class LearningPathIdentityCtrl extends BasicController {
-
-	private CoachedIdentityLargeInfosController coachedIdentityLargeInfosCtrl;
+public class MyLearningPathController extends BasicController {
+	
 	private LearningPathListController learningPathListCtrl;
 
-	public LearningPathIdentityCtrl(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			UserCourseEnvironment coachedCourseEnv) {
+	public MyLearningPathController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			UserCourseEnvironmentImpl userCourseEnv) {
 		super(ureq, wControl);
 		
-		VelocityContainer mainVC = createVelocityContainer("identity");
-		String courseTitle = coachedCourseEnv.getCourseEnvironment().getCourseTitle();
+		VelocityContainer mainVC = createVelocityContainer("my_learning_path");
+		String courseTitle = userCourseEnv.getCourseEnvironment().getCourseTitle();
 		mainVC.contextPut("courseTitle", courseTitle);
 		
-		coachedIdentityLargeInfosCtrl = new CoachedIdentityLargeInfosController(ureq, wControl, coachedCourseEnv);
-		listenTo(coachedIdentityLargeInfosCtrl);
-		mainVC.put("user", coachedIdentityLargeInfosCtrl.getInitialComponent());
-		
-		learningPathListCtrl = new LearningPathListController(ureq, wControl, stackPanel, coachedCourseEnv);
+		learningPathListCtrl = new LearningPathListController(ureq, wControl, stackPanel, userCourseEnv);
 		listenTo(learningPathListCtrl);
 		mainVC.put("list", learningPathListCtrl.getInitialComponent());
 		

@@ -28,6 +28,7 @@ package org.olat.course.nodes;
 import static org.olat.modules.forms.EvaluationFormSessionStatus.done;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -50,12 +51,14 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
-import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
+import org.olat.course.nodes.iq.IQTESTLearningPathNodeHandler;
+import org.olat.course.nodes.ms.MSAssessmentConfig;
 import org.olat.course.nodes.ms.MSCoachRunController;
 import org.olat.course.nodes.ms.MSCourseNodeEditController;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
@@ -222,17 +225,75 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 		return getReferencedRepositoryEntry() != null? true: false;
 	}
 
-	@SuppressWarnings("deprecation")
-	@Override
-	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
-		String translatorStr = Util.getPackageName(ConditionEditController.class);
-		List<StatusDescription> statusDescs = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
-		return StatusDescriptionHelper.sort(statusDescs);
-	}
-	
 	@Override
 	public StatusDescription isConfigValid() {
-		return  StatusDescription.NOERROR;
+		if (oneClickStatusCache != null && oneClickStatusCache.length > 0) {
+			return oneClickStatusCache[0];
+		}
+		
+		List<StatusDescription> statusDescs = validateInternalConfiguration();
+		if(statusDescs.isEmpty()) {
+			statusDescs.add(StatusDescription.NOERROR);
+		}
+		oneClickStatusCache = StatusDescriptionHelper.sort(statusDescs);
+		return oneClickStatusCache[0];
+	}
+
+	@Override
+	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
+		oneClickStatusCache = null;
+		
+		List<StatusDescription> sds = isConfigValidWithTranslator(cev, PACKAGE_MS, getConditionExpressions());
+		if(oneClickStatusCache != null && oneClickStatusCache.length > 0) {
+			//isConfigValidWithTranslator add first
+			sds.remove(oneClickStatusCache[0]);
+		}
+		sds.addAll(validateInternalConfiguration());
+		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
+		return oneClickStatusCache;
+	}
+	
+	private List<StatusDescription> validateInternalConfiguration() {
+		List<StatusDescription> sdList = new ArrayList<>(1);
+		
+		if (isFullyAssessedScoreConfigError()) {
+			addStatusErrorDescription("error.fully.assessed.score", "error.fully.assessed.score",
+					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+		}
+		if (isFullyAssessedPassedConfigError()) {
+			addStatusErrorDescription("error.fully.assessed.passed", "error.fully.assessed.passed",
+					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+		}
+		
+		return sdList;
+	}
+	
+	private boolean isFullyAssessedScoreConfigError() {
+		boolean hasScore = new MSAssessmentConfig(getModuleConfiguration()).hasScore();
+		boolean isScoreTrigger = CoreSpringFactory.getImpl(IQTESTLearningPathNodeHandler.class)
+				.getConfigs(this)
+				.isFullyAssessedOnScore(null, null)
+				.isEnabled();
+		return isScoreTrigger && !hasScore;
+	}
+	
+	private boolean isFullyAssessedPassedConfigError() {
+		boolean hasPassed = new MSAssessmentConfig(getModuleConfiguration()).hasPassed();
+		boolean isPassedTrigger = CoreSpringFactory.getImpl(IQTESTLearningPathNodeHandler.class)
+				.getConfigs(this)
+				.isFullyAssessedOnPassed(null, null)
+				.isEnabled();
+		return isPassedTrigger && !hasPassed;
+	}
+	
+	private void addStatusErrorDescription(String shortDescKey, String longDescKey, String pane,
+			List<StatusDescription> status) {
+		String[] params = new String[] { getShortTitle() };
+		StatusDescription sd = new StatusDescription(StatusDescription.ERROR, shortDescKey, longDescKey, params,
+				PACKAGE_MS);
+		sd.setDescriptionForUnit(getIdent());
+		sd.setActivateableViewIdentifier(pane);
+		status.add(sd);
 	}
 
 	@Override

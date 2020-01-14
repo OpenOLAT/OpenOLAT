@@ -60,16 +60,16 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumElementLearningPathController extends FormBasicController {
+public class CurriculumElementLearningPathListController extends FormBasicController {
 	
-	private static final String USAGE_IDENTIFIER = CurriculumElementLearningPathController.class.getCanonicalName();
+	private static final String USAGE_IDENTIFIER = CurriculumElementLearningPathListController.class.getCanonicalName();
 	private static final String ORES_TYPE_IDENTITY = "Identity";
 	private static final String CMD_SELECT = "select";
 	
 	private FlexiTableElement tableEl;
 	private LearningPathIdentityDataModel dataModel;
 
-	private CurriculumLearningPathRepositoryListController repoCtrl;
+	private CurriculumLearningPathRepositoryController repoCtrl;
 
 	private final TooledStackedPanel stackPanel;
 	private final CurriculumElement curriculumElement;
@@ -87,7 +87,7 @@ public class CurriculumElementLearningPathController extends FormBasicController
 	@Autowired
 	private AssessmentService assessmentService;
 
-	public CurriculumElementLearningPathController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+	public CurriculumElementLearningPathListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			CurriculumElement curriculumElement) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.stackPanel = stackPanel;
@@ -176,7 +176,7 @@ public class CurriculumElementLearningPathController extends FormBasicController
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ORES_TYPE_IDENTITY, row.getIdentityKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		
-		repoCtrl = new CurriculumLearningPathRepositoryListController(ureq, bwControl, stackPanel, curriculumElement, participant);
+		repoCtrl = new CurriculumLearningPathRepositoryController(ureq, bwControl, stackPanel, curriculumElement, participant);
 		listenTo(repoCtrl);
 		stackPanel.pushController(fullName, repoCtrl);
 	}

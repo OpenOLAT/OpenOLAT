@@ -1210,7 +1210,7 @@
 					</bean>
 				</entry>
 				
-				<entry key="org.olat.course.learningpath.ui.CurriculumElementLearningPathController">
+				<entry key="org.olat.course.learningpath.ui.CurriculumElementLearningPathListController">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="description" value="Learning progress in the curriculum browser" />
 						<property name="propertyHandlers">
