@@ -98,7 +98,7 @@ public class SubscriberImpl implements Subscriber, CreateInfo, Persistable  {
 	@JoinColumn(name="fk_identity", nullable=false, updatable=false)
 	private Identity identity;
 	
-	// when the user latest received an email concering this subscription; may be null if no email has been sent yet
+	// when the user latest received an email concerning this subscription; may be null if no email has been sent yet
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="latestemailed", nullable=false, insertable=true, updatable=true)
 	private Date latestEmailed; 

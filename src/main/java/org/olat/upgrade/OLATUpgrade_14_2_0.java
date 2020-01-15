@@ -174,6 +174,7 @@ public class OLATUpgrade_14_2_0 extends OLATUpgrade {
 					sub.setEnabled(false);
 					sub.setCreationDate(new Date());
 					sub.setLastModified(sub.getCreationDate());
+					sub.setLatestEmailed(sub.getCreationDate());
 					dbInstance.getCurrentEntityManager().persist(sub);
 					dbInstance.commit();
 				}	
