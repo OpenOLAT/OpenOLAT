@@ -51,6 +51,7 @@ public class MonitoringWebService {
 	private static final MemoryWebService memoryWebService = new MemoryWebService();
 	private static final ThreadsWebService threadsWebService = new ThreadsWebService();
 	private static final OpenOLATStatisticsWebService ooStatsWebService = new OpenOLATStatisticsWebService();
+	private static final VFSStatsWebService vfsStatsWebService = new VFSStatsWebService();
 	
 	public MonitoringWebService() {
 		//make Spring happy
@@ -85,6 +86,12 @@ public class MonitoringWebService {
 	public ThreadsWebService getThreadsWS() {
 		return threadsWebService;
 	}
+	
+	@Path("revisionsSize")
+	public VFSStatsWebService getRevisionsSizeWS() {
+		return vfsStatsWebService;
+	}
+	
 	
 	
 	/**
