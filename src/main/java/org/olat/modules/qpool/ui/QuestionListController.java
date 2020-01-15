@@ -799,13 +799,13 @@ public class QuestionListController extends AbstractItemListController implement
 	}
 	
 	private void doOpenImport(UserRequest ureq) {
-		String title = translate("import");
+		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(importSourcesCtrl);
+		
 		importSourcesCtrl = new ImportSourcesController(ureq, getWindowControl());
 		listenTo(importSourcesCtrl);
 		
-		removeAsListenerAndDispose(calloutCtrl);
-		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), importSourcesCtrl.getInitialComponent(), importItem, title, true, null);
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), importSourcesCtrl.getInitialComponent(), importItem, null, true, null);
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();	
 	}

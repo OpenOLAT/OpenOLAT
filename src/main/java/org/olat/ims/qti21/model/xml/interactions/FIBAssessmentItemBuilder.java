@@ -508,7 +508,7 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 				if(textEntry.getAlternatives() != null && !textEntry.getAlternatives().isEmpty()) {
 					for(TextEntryAlternative alternative:textEntry.getAlternatives()) {
 						double altScore = alternative.getScore();
-						if(altScore >= 0.0d && score != null && score.doubleValue() == altScore) {
+						if(altScore >= 0.0d && score != null && score.doubleValue() != altScore) {
 							return true;
 						}
 					}

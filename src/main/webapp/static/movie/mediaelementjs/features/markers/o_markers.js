@@ -41,6 +41,9 @@ Object.assign(MediaElementPlayer.prototype, {
 		media.addEventListener('durationchange', function () {
 			player.setmarkers(controls);
 		});
+		media.addEventListener('loadedmetadata', function () {// for external video like YouTube
+			player.setmarkers(controls);
+		});
 		media.addEventListener('timeupdate', function () {
 			currentPos = Math.floor(media.currentTime);
 			if (lastPlayPos > currentPos) {

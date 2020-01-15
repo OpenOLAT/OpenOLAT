@@ -36,17 +36,18 @@ import org.olat.restapi.system.vo.MemoryStatisticsVO;
 import org.olat.restapi.system.vo.MemoryVO;
 import org.olat.restapi.system.vo.MonitoringInfosVO;
 import org.olat.restapi.system.vo.OpenOLATStatisticsVO;
-import org.olat.restapi.system.vo.StatusVO;
 import org.olat.restapi.system.vo.ReleaseInfosVO;
 import org.olat.restapi.system.vo.RepositoryStatisticsVO;
 import org.olat.restapi.system.vo.RuntimeStatisticsVO;
 import org.olat.restapi.system.vo.SessionsVO;
+import org.olat.restapi.system.vo.StatusVO;
 import org.olat.restapi.system.vo.TasksVO;
 import org.olat.restapi.system.vo.ThreadStatisticsVO;
 import org.olat.restapi.system.vo.ThreadVO;
 import org.olat.restapi.system.vo.ThreadVOes;
 import org.olat.restapi.system.vo.ThreadsVO;
 import org.olat.restapi.system.vo.UserStatisticsVO;
+import org.olat.restapi.system.vo.VFSStatsVO;
 import org.olat.test.OlatRestTestCase;
 
 /**
@@ -426,5 +427,18 @@ public class SystemTest extends OlatRestTestCase {
 		assertNotNull(databaseInfos.getType());
 
 		conn.shutdown();	
+	}
+	
+	@Test
+	public void testVFSStats() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI systemUri = conn.getContextURI().path("system").path("monitoring").path("revisionsSize").build();
+		VFSStatsVO revisionsInfos = conn.get(systemUri, VFSStatsVO.class);
+		assertNotNull(revisionsInfos);
+		assertNotNull(revisionsInfos.getRevisionsSize());
+		
+		conn.shutdown();
 	}
 }
