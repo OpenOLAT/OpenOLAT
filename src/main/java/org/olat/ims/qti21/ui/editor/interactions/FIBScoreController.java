@@ -218,9 +218,11 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 			FIBAlternativeWrapper alternativeWrapper = it.next();
 			
 			boolean found = false;
-			for(TextEntryAlternative alternative:alternatives) {
-				if(alternativeWrapper.getAlternative() == alternative) {
-					found = true;
+			if(alternatives != null && !alternatives.isEmpty()) {
+				for(TextEntryAlternative alternative:alternatives) {
+					if(alternativeWrapper.getAlternative() == alternative) {
+						found = true;
+					}
 				}
 			}
 			
@@ -229,25 +231,21 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 			}
 		}
 		
-		for(TextEntryAlternative alternative:alternatives) {
-			boolean found = false;
-			
-			for(FIBAlternativeWrapper alternativeWrapper:alternativeWrappers) {
-				if(alternativeWrapper.getAlternative() == alternative) {
-					found = true;
+		if(alternatives != null && !alternatives.isEmpty()) {
+			for(TextEntryAlternative alternative:alternatives) {
+				boolean found = false;
+				for(FIBAlternativeWrapper alternativeWrapper:alternativeWrappers) {
+					if(alternativeWrapper.getAlternative() == alternative) {
+						found = true;
+					}
+				}
+				
+				if(!found) {
+					FIBAlternativeWrapper alternativeWrapper = createAlternativeWrapper(alternative);
+					wrapper.getAlternatives().add(alternativeWrapper);
 				}
 			}
-			
-			if(!found) {
-				FIBAlternativeWrapper alternativeWrapper = createAlternativeWrapper(alternative);
-				wrapper.getAlternatives().add(alternativeWrapper);
-			}
-			
-			
 		}
-		
-		
-		
 	}
 	
 	private FIBEntryWrapper getTextEntryWrapper(AbstractEntry entry) {
