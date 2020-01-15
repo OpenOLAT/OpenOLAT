@@ -59,7 +59,7 @@ public class LiveStreamCourseNode extends AbstractAccessableCourseNode {
 
 	private static final long serialVersionUID = 1948699450468358698L;
 	
-	private static final String TYPE = "livestream";
+	public static final String TYPE = "livestream";
 	
 	public static final int CURRENT_VERSION = 1;
 	public static final String CONFIG_BUFFER_BEFORE_MIN = "bufferBeforeMin";
