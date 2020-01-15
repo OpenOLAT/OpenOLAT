@@ -174,6 +174,7 @@ public class GroupSelectionController extends FormBasicController {
 		groupTableElement.setEmtpyTableMessageKey("groupselection.noentries");
 		groupTableElement.setMultiSelect(true);		
 		groupTableElement.setSelectAllEnable(true);
+		groupTableElement.setCustomizeColumns(false);
 		
 		uifactory.addFormSubmitButton("subm", "apply", formLayout);
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
