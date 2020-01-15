@@ -54,10 +54,9 @@ import org.olat.repository.RepositoryEntry;
  */
 public class TUCourseNode extends AbstractAccessableCourseNode {
 
-	private static final String TYPE = "tu";
+	public static final String TYPE = "tu";
 	
 	// NLS support:
-	
 	private static final String NLS_ERROR_HOSTMISSING_SHORT = "error.hostmissing.short";
 	private static final String NLS_ERROR_HOSTMISSING_LONG = "error.hostmissing.long";
 
