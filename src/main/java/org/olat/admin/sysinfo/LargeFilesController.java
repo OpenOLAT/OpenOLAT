@@ -319,10 +319,6 @@ public class LargeFilesController extends FormBasicController implements Extende
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.fileType));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.downloadCount));
 
-		DefaultFlexiColumnModel sendMail = new DefaultFlexiColumnModel(false, LargeFilesTableColumns.sendMail, "sendMail", new LargeFilesSendMailCellRenderer());
-		sendMail.setIconHeader(CSSHelper.getIconCssClassFor(CSSHelper.CSS_CLASS_MAIL));
-		columnsModel.addFlexiColumnModel(sendMail);
-
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.author, "selectAuthor"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.license));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.language));
@@ -339,6 +335,11 @@ public class LargeFilesController extends FormBasicController implements Extende
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.pubDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.createdAt));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.lastModifiedAt));
+		
+		DefaultFlexiColumnModel sendMail = new DefaultFlexiColumnModel(true, LargeFilesTableColumns.sendMail, "sendMail", new LargeFilesSendMailCellRenderer());
+		sendMail.setAlwaysVisible(true);
+		sendMail.setIconHeader(CSSHelper.getIconCssClassFor(CSSHelper.CSS_CLASS_MAIL));
+		columnsModel.addFlexiColumnModel(sendMail);
 
 		largeFilesTableModel = new LargeFilesTableModel(columnsModel, getLocale());
 		largeFilesTableElement = uifactory.addTableElement(getWindowControl(), "large_files", largeFilesTableModel, getTranslator(), formLayout);
@@ -490,7 +491,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 		cmsg.addEmailTo(contactList);
 		cmsg.setSubject("Too large files in your personal folder");
 
-		String bodyStart = translate("largefiles.mail.start", new String[] {user.getUser().getFirstName() + user.getUser().getLastName()});
+		String bodyStart = translate("largefiles.mail.start", new String[] {user.getUser().getFirstName() + " " + user.getUser().getLastName()});
 		String bodyFiles = "<ul>";
 		String bodyEnd = translate("largefiles.mail.end");
 

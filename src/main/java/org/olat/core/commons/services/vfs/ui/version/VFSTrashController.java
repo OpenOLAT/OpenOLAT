@@ -156,6 +156,7 @@ public class VFSTrashController extends FormBasicController implements ProgressD
 		sortOptions.setDefaultOrderBy(new SortKey(VersionsDeletedCols.size.name(), false));
 		orphansListTableEl.setSortSettings(sortOptions);
 		orphansListTableEl.setAndLoadPersistedPreferences(ureq, "deleted-rev-file-list");
+		orphansListTableEl.setSelectAllEnable(true);
 		
 		orphansDeleteButton = uifactory.addFormLink("delete", tableLayout, Link.BUTTON);
 		orphansDeleteButton.setIconLeftCSS(CSSHelper.getIconCssClassFor(CSSHelper.CSS_CLASS_TRASHED));
