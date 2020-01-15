@@ -71,12 +71,8 @@
 			width: $o-lp-step-size;
 			@include o-make-icon(); 
 		}
-	}	
-	/* Path stops on last element */
-	ul.o_tree_l1 > li:last-child:before {
-		border: none;
 	}
-
+	
 	/* Create the path renderings for each status with this mixin */
 	@mixin alert-tree-path-variant($iconcolor, $icon, $strokecolor, $stroke) {
 		&:before {
@@ -105,7 +101,12 @@
 	li.o_lp_done {
 		@include alert-tree-path-variant($o-lp-done, $fa-var-check-circle, $o-lp-done, solid);
 	}
-
+	
+	/* Path stops on last element */
+	li.o_last_node:before {
+		border: none;
+	}
+	
 }
 
 .o_lp_identity {
