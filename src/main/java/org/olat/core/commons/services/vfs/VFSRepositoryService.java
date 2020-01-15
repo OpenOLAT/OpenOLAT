@@ -71,6 +71,16 @@ public interface VFSRepositoryService {
 	 */
 	public List<VFSMetadata> getChildren(VFSMetadataRef parentMetadata);
 	
+	/**
+	 * The method is sorted by key, and doesn't fetch any
+	 * associated objects.
+	 * 
+	 * @param startPosition Start position (mandatory)
+	 * @param maxResults Max. number of rows to return
+	 * @return A list of metadata without any fetched objects
+	 */
+	public List<VFSMetadata> getMetadatas(int startPosition, int maxResults);
+	
 	public List<VFSMetadata> getMostDownloaded(VFSMetadata ancestorMetadata, int maxResults);
 	
 	/**

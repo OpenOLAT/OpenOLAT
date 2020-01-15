@@ -52,9 +52,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.vfs.VFSRepositoryModule;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -548,6 +552,9 @@ public class FileUtils {
 	public static boolean deleteFile(File file) {
 		boolean deleted = false;
 		try {
+			if(VFSRepositoryModule.canMeta(file) == VFSConstants.YES) {
+				CoreSpringFactory.getImpl(VFSRepositoryService.class).deleteMetadata(file);
+			}
 			deleted = Files.deleteIfExists(file.toPath());
 		} catch (IOException e) {
 			log.error("", e);

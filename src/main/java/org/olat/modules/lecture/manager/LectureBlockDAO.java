@@ -931,7 +931,7 @@ public class LectureBlockDAO {
 			query.setParameter("managerKey", searchParams.getManager().getKey());
 		}
 		if(refId != null) {
-			query.setParameter("refId", refId);
+			query.setParameter("idKey", refId);
 		}
 		if(StringHelper.containsNonWhitespace(fuzzyString)) {
 			query.setParameter("fuzzyString", fuzzyString);

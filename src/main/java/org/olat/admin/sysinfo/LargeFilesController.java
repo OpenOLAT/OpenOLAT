@@ -19,6 +19,7 @@
  */
 package org.olat.admin.sysinfo;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -35,7 +36,9 @@ import org.olat.admin.sysinfo.gui.LargeFilesTrashedCellRenderer;
 import org.olat.admin.sysinfo.model.LargeFilesTableContentRow;
 import org.olat.admin.sysinfo.model.LargeFilesTableModel;
 import org.olat.admin.sysinfo.model.LargeFilesTableModel.LargeFilesTableColumns;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.commons.services.vfs.VFSFilterKeys;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryModule;
@@ -67,12 +70,15 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.modules.co.ContactFormController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -104,18 +110,23 @@ public class LargeFilesController extends FormBasicController implements Extende
 	private TextElement maxResultEl;
 	private TextElement minSizeEl;
 	private FormLink resetButton;
+	private FormLink cleanupMetadataButton;
 
 	private List<LargeFilesTableContentRow> rows;
 
 	private CloseableModalController cmc;
 	private ContactFormController contactCtrl;
+	private DialogBoxController confirmMetadataCleanupBox;
 	private CloseableCalloutWindowController pathInfoCalloutCtrl;
 
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
 	private VFSRepositoryModule vfsRepositoryModule;
-
+	@Autowired
+	private TaskExecutorManager taskExecutorManager;
 
 	public LargeFilesController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "large_files");
@@ -137,7 +148,6 @@ public class LargeFilesController extends FormBasicController implements Extende
 		}
 		if(StringHelper.containsNonWhitespace(minSizeEl.getValue())) {
 			minSize = (int) (Double.parseDouble(minSizeEl.getValue()) * Formatter.BYTE_UNIT * Formatter.BYTE_UNIT);
-			System.out.println(minSize);
 		}
 		if(StringHelper.containsNonWhitespace(downloadCountMinEl.getValue())) {
 			downloadCountMin = Integer.parseInt(downloadCountMinEl.getValue());
@@ -234,9 +244,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer largefFilesTitle = FormLayoutContainer.createVerticalFormLayout("largeFilesTitle", getTranslator());
-		formLayout.add(largefFilesTitle);
-		largefFilesTitle.setFormTitle(translate("largefiles.title"));
+		cleanupMetadataButton = uifactory.addFormLink("metadata.cleanup", formLayout, Link.BUTTON);
 
 		FormLayoutContainer leftContainer = FormLayoutContainer.createDefaultFormLayout_6_6("filter_left", getTranslator());
 		leftContainer.setRootForm(mainForm);
@@ -355,7 +363,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 
 	@Override
 	protected void doDispose() {
-
+		//
 	}
 
 	@Override
@@ -386,6 +394,8 @@ public class LargeFilesController extends FormBasicController implements Extende
 			}
 		} else if(source == resetButton) {
 			resetForm();
+		} else if(cleanupMetadataButton == source) {
+			doConfirmMetadataCleanup(ureq);
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink) source;
 
@@ -413,7 +423,11 @@ public class LargeFilesController extends FormBasicController implements Extende
 		} else if (source == contactCtrl) {
 			cmc.deactivate();
 			cleanUp();
-		} 
+		} else if(source == confirmMetadataCleanupBox) {
+			if (DialogBoxUIFactory.isYesEvent(event)) {
+				doCleanupMetadata();
+			}
+		}
 		super.event(ureq, source, event);
 	}
 
@@ -508,6 +522,65 @@ public class LargeFilesController extends FormBasicController implements Extende
 		cmc = new CloseableModalController(getWindowControl(), "close", contactCtrl.getInitialComponent());
 		cmc.activate();
 		listenTo(cmc);
+	}
+	
+	private void doConfirmMetadataCleanup(UserRequest ureq) {
+		String msg = translate("confirm.cleanup.metadata");
+		confirmMetadataCleanupBox = activateYesNoDialog(ureq, translate("confirm.cleanup.metadata.title"), msg, confirmMetadataCleanupBox);
+	}
+	
+	private void doCleanupMetadata() {
+		cleanupMetadataButton.setIconLeftCSS("o_icon o_icon_busy o_icon-spin");
+		cleanupMetadataButton.setEnabled(false);
+		
+		taskExecutorManager.execute(() -> {
+			cleanupMetadata();
+			if(cleanupMetadataButton != null) {
+				cleanupMetadataButton.setIconLeftCSS("");
+				cleanupMetadataButton.setEnabled(true);
+			}
+		});
+	}
+	
+	private void cleanupMetadata() {
+		try {
+			int counter = 0;
+			int batchSize = 10000;
+			List<VFSMetadata> metadata;
+			do {
+				metadata = vfsRepositoryService.getMetadatas(counter, batchSize);
+				for(VFSMetadata data:metadata) {
+					checkMetadata(data);
+				}
+				counter += metadata.size();
+				getLogger().info("Metadata processed: {}, total metadata processed ({})", metadata.size(), counter);
+				dbInstance.commitAndCloseSession();
+			} while(metadata.size() == batchSize);
+		} catch (Exception e) {
+			dbInstance.closeSession();
+			logError("", e);
+		}
+	}
+	
+	private void checkMetadata(VFSMetadata data) {
+		VFSItem item = vfsRepositoryService.getItemFor(data);
+		if(item == null || !item.exists()) {
+			boolean exists = false;
+			List<VFSRevision> revisions = vfsRepositoryService.getRevisions(data);
+			for(VFSRevision revision:revisions) {
+				File revFile = vfsRepositoryService.getRevisionFile(revision);
+				exists = revFile != null && revFile.exists();
+			}
+			
+			if(!exists) {
+				data = vfsRepositoryService.getMetadata(data);
+				if(data != null) {
+					getLogger().info("Delete metadata and associated: {}/{}", data.getRelativePath(), data.getFilename());
+					vfsRepositoryService.deleteMetadata(data);
+					dbInstance.commit();
+				}
+			}
+		}
 	}
 
 	@Override

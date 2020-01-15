@@ -193,6 +193,11 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	}
 
 	@Override
+	public List<VFSMetadata> getMetadatas(int startPosition, int maxResults) {
+		return metadataDao.getMetadatas(startPosition, maxResults);
+	}
+
+	@Override
 	public VFSMetadata getMetadataFor(VFSItem path) {
 		File file = toFile(path);
 		return getMetadataFor(file);
@@ -390,7 +395,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				try {
 					Files.delete(revFile.toPath());
 				} catch (IOException e) {
-					log.error("Cannot delete thumbnail: " + revFile, e);
+					log.error("Cannot delete thumbnail: {}", revFile, e);
 				}
 			}
 			revisionDao.deleteRevision(revision);
