@@ -746,7 +746,12 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 				} else if(abstractEntry instanceof NumericalEntry) {
 					NumericalEntry numericalEntry = (NumericalEntry)abstractEntry;
 					Equal equal = new Equal(and);
-					equal.setToleranceMode(numericalEntry.getToleranceMode());
+					if(numericalEntry.getToleranceMode() == null) {
+						equal.setToleranceMode(ToleranceMode.EXACT);
+					} else {
+					
+						equal.setToleranceMode(numericalEntry.getToleranceMode());
+					}
 					if(numericalEntry.getLowerTolerance() != null && numericalEntry.getUpperTolerance() != null) {
 						List<FloatOrVariableRef> tolerances = new ArrayList<>();
 						tolerances.add(new FloatOrVariableRef(numericalEntry.getLowerTolerance().doubleValue()));
@@ -1116,7 +1121,11 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		rule.setResponseIf(responseIf);
 		
 		Equal equal = new Equal(responseIf);
-		equal.setToleranceMode(numericalEntry.getToleranceMode());
+		if(numericalEntry.getToleranceMode() == null) {
+			equal.setToleranceMode(ToleranceMode.EXACT);
+		} else {
+			equal.setToleranceMode(numericalEntry.getToleranceMode());
+		}
 		if(numericalEntry.getLowerTolerance() != null && numericalEntry.getUpperTolerance() != null) {
 			List<FloatOrVariableRef> tolerances = new ArrayList<>();
 			tolerances.add(new FloatOrVariableRef(numericalEntry.getLowerTolerance().doubleValue()));
