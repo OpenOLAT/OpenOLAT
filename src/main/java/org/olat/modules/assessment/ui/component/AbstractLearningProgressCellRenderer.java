@@ -52,7 +52,7 @@ public abstract class AbstractLearningProgressCellRenderer implements FlexiCellR
 			LearningProgressComponent learningProgressComponent = new LearningProgressComponent("progress-" + CodeHelper.getRAMUniqueID(), locale);
 			learningProgressComponent.setFullyAssessed(assessmentEvaluation.getFullyAssessed());
 			learningProgressComponent.setStatus(assessmentEvaluation.getAssessmentStatus());
-			learningProgressComponent.setCompletion(assessmentEvaluation.getCompletion());
+			learningProgressComponent.setCompletion(getActual(cellValue));
 			learningProgressComponent.getHTMLRendererSingleton().render(renderer, target, learningProgressComponent, ubu, translator, null, null);
 		}
 	}

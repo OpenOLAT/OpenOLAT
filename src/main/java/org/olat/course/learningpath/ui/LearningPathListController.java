@@ -126,6 +126,7 @@ public class LearningPathListController extends FormBasicController implements T
 	}
 
 	void loadModel() {
+		userCourseEnv.getScoreAccounting().evaluateAll(true);
 		LearningPathCourseTreeModelBuilder learningPathCourseTreeModelBuilder = new LearningPathCourseTreeModelBuilder(userCourseEnv);
 		GenericTreeModel learningPathTreeModel = learningPathCourseTreeModelBuilder.build();
 		List<LearningPathRow> rows = forgeRows(learningPathTreeModel);
