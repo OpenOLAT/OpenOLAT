@@ -66,7 +66,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.core.util.async.ProgressDelegate;
-import org.olat.core.util.vfs.VFSItem;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -152,17 +151,14 @@ public class VFSTrashController extends FormBasicController implements ProgressD
 		orphansListTableEl = uifactory.addTableElement(getWindowControl(), "orphansList", versionsDeletedFileDataModel, 24, false, getTranslator(), tableLayout);
 		orphansListTableEl.setEmtpyTableMessageKey("version.noDeletedFiles");
 		orphansListTableEl.setMultiSelect(true);
+		orphansListTableEl.setSelectAllEnable(true);
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions(true);
 		sortOptions.setDefaultOrderBy(new SortKey(VersionsDeletedCols.size.name(), false));
 		orphansListTableEl.setSortSettings(sortOptions);
 		orphansListTableEl.setAndLoadPersistedPreferences(ureq, "deleted-rev-file-list");
-		orphansListTableEl.setSelectAllEnable(true);
 		
 		orphansDeleteButton = uifactory.addFormLink("delete", tableLayout, Link.BUTTON);
 		orphansDeleteButton.setIconLeftCSS(CSSHelper.getIconCssClassFor(CSSHelper.CSS_CLASS_TRASHED));
-		
-		tableLayout.add("orphansTable", orphansListTableEl);
-		tableLayout.add("orphansDelete", orphansDeleteButton);
 	}		
 
 	@Override
@@ -212,23 +208,7 @@ public class VFSTrashController extends FormBasicController implements ProgressD
 	private void doDelete(List<VersionsDeletedFileRow> rowsToDelete) {
 		for(VersionsDeletedFileRow row:rowsToDelete) {
 			VFSRevision revision = vfsRepositoryService.getRevision(new VFSRevisionRefImpl(row.getRevisionKey()));
-			doDelete(revision);
-		}
-	}
-	
-	private void doDelete(VFSRevision revision) {
-		VFSMetadata metadata = revision.getMetadata();
-		vfsRepositoryService.deleteRevisions(getIdentity(), Collections.singletonList(revision));
-		dbInstance.commit();
-		
-		if(metadata.isDeleted()) {
-			List<VFSRevision> revisions = vfsRepositoryService.getRevisions(metadata);
-			if(revisions.isEmpty()) {
-				VFSItem item = vfsRepositoryService.getItemFor(metadata);
-				if(item == null || !item.exists()) {
-					vfsRepositoryService.deleteMetadata(metadata);
-				}
-			}
+			vfsRepositoryService.deleteRevisions(getIdentity(), Collections.singletonList(revision));
 		}
 	}
 	
