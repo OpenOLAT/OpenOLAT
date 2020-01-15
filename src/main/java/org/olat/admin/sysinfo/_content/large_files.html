@@ -1,15 +1,20 @@
-$r.render("largeFilesTitle")
-<div class="row">
-	<div class="col-md-6">
-		$r.render("filter_left")
+<fieldset>
+	<legend>$r.translate("largefiles.title")</legend>
+	<div class="o_button_group o_button_group_right">
+	$r.render("metadata.cleanup")
 	</div>
-	<div class="col-md-6">
-		$r.render("filter_right")
+	<div class="row">
+		<div class="col-md-6">
+			$r.render("filter_left")
+		</div>
+		<div class="col-md-6">
+			$r.render("filter_right")
+		</div>
 	</div>
-</div>
-<div class="row">
-	<div class="col-md-offset-3 col-md-9">
-		$r.render("filter_buttons")
+	<div class="row">
+		<div class="col-md-offset-3 col-md-9">
+			$r.render("filter_buttons")
+		</div>
 	</div>
-</div>
-$r.render("large_files")
+	$r.render("large_files")
+</fieldset>

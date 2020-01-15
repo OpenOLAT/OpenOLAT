@@ -160,6 +160,15 @@ public class VFSMetadataDAO {
 		return metadata == null || metadata.isEmpty() ? null : metadata.get(0);
 	}
 	
+	public List<VFSMetadata> getMetadatas(int startPosition, int batchSize) {
+		String query = "select metadata from filemetadata metadata order by key";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, VFSMetadata.class)
+				.setFirstResult(startPosition)
+				.setMaxResults(batchSize)
+				.getResultList();
+	}
+	
 	/**
 	 * This is an exact match to find the direct children of a specific
 	 * directory.
