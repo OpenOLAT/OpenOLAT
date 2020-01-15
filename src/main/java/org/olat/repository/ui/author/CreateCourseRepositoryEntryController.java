@@ -32,6 +32,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodeaccess.NodeAccessProviderIdentifier;
 import org.olat.course.nodeaccess.NodeAccessService;
@@ -55,6 +56,7 @@ public class CreateCourseRepositoryEntryController extends CreateRepositoryEntry
 
 	public CreateCourseRepositoryEntryController(UserRequest ureq, WindowControl wControl, RepositoryHandler handler) {
 		super(ureq, wControl, handler);
+		updateUI();
 	}
 
 	@Override
@@ -70,7 +72,7 @@ public class CreateCourseRepositoryEntryController extends CreateRepositoryEntry
 	}
 
 	private void updateUI() {
-		boolean hasWizard = nodeAccessEl.isOneSelected() && CourseConfig.NODE_ACCESS_TYPE_DEFAULT.equals(nodeAccessEl.getSelectedKey());
+		boolean hasWizard = nodeAccessEl.isOneSelected() && ConditionNodeAccessProvider.TYPE.equals(nodeAccessEl.getSelectedKey());
 		wizardButton.setVisible(hasWizard);
 	}
 
