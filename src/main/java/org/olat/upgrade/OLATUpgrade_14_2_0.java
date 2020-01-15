@@ -169,7 +169,7 @@ public class OLATUpgrade_14_2_0 extends OLATUpgrade {
 			List<Publisher> publishers = getPublisher(infoSubscription);
 			for(Publisher publisher:publishers) {
 				Subscriber subscriber = notificationsManager.getSubscriber(identity, publisher);
-				if(subscriber == null || !subscriber.isEnabled()) {
+				if(subscriber == null) {
 					SubscriberImpl sub = new SubscriberImpl(publisher, identity);
 					sub.setEnabled(false);
 					sub.setCreationDate(new Date());
