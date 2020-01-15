@@ -113,6 +113,8 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONFIG_GROUPNAME = "groupname";
 	/** CONFIG_GROUPNAME configuration parameter key. */
 	public static final String CONFIG_GROUP_IDS = "groupkeys";
+	/** CONFIG_GROUPNAME configuration parameter key  */
+	public static final String CONFIG_GROUP_SORTED = "groupsort";
 	
 	/** CONFIG_AREANAME configuration parameter key. */
 	public static final String CONFIG_AREANAME = "areaname";
@@ -404,6 +406,7 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 		config.set(CONF_CANCEL_ENROLL_ENABLED, Boolean.TRUE);
 		config.set(CONFIG_ALLOW_MULTIPLE_ENROLL_COUNT,1);
 		config.setConfigurationVersion(CURRENT_CONFIG_VERSION);
+		config.setBooleanEntry(CONFIG_GROUP_SORTED, false);
 	}
 	
     @Override
@@ -474,10 +477,16 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 				// migrate V1 => V2
 				config.set(CONF_CANCEL_ENROLL_ENABLED, Boolean.TRUE);
 				version = 2;
-			}else if(version <= 2){
+			} 
+			if(version <= 2){
 				// migrate V2 -> V3
 				config.set(CONFIG_ALLOW_MULTIPLE_ENROLL_COUNT, 1);
 				version = 3;
+			} 
+			if(version <= 3) {
+				// migrate V3 -> V4
+				config.setBooleanEntry(CONFIG_GROUP_SORTED, false);
+				version = 4;
 			}
 			config.setConfigurationVersion(CURRENT_CONFIG_VERSION);
 		}

@@ -1,39 +1,42 @@
 /**
-* OLAT - Online Learning and Training<br>
-* http://www.olat.org
-* <p>
-* Licensed under the Apache License, Version 2.0 (the "License"); <br>
-* you may not use this file except in compliance with the License.<br>
-* You may obtain a copy of the License at
-* <p>
-* http://www.apache.org/licenses/LICENSE-2.0
-* <p>
-* Unless required by applicable law or agreed to in writing,<br>
-* software distributed under the License is distributed on an "AS IS" BASIS, <br>
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
-* See the License for the specific language governing permissions and <br>
-* limitations under the License.
-* <p>
-* Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
-* University of Zurich, Switzerland.
-* <hr>
-* <a href="http://www.openolat.org">
-* OpenOLAT - Online Learning and Training</a><br>
-* This file has been modified by the OpenOLAT community. Changes are licensed
-* under the Apache 2.0 license as the original file.
-*/
+ * OLAT - Online Learning and Training<br>
+ * http://www.olat.org
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
+ * University of Zurich, Switzerland.
+ * <hr>
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * This file has been modified by the OpenOLAT community. Changes are licensed
+ * under the Apache 2.0 license as the original file.
+ */
 package org.olat.course.nodes.en;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
@@ -43,6 +46,12 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -61,6 +70,7 @@ import org.olat.course.condition.GroupSelectionController;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.ENCourseNode;
+import org.olat.course.nodes.en.ENEditGroupTableModel.ENEditGroupTableColumns;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.area.BGArea;
@@ -72,6 +82,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date:  12.08.2007 <br>
@@ -83,60 +94,101 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 	private CourseEditorEnv cev;
 	private MultipleSelectionElement enableCancelEnroll;
 	private MultipleSelectionElement allowMultipleEnroll;
+	private MultipleSelectionElement allowGroupSort;
 	private IntegerElement multipleEnrollCount;
-	
-	private StaticTextElement easyGroupList;
+
+	private FlexiTableElement easyGroupTableElement;
+	private ENEditGroupTableModel easyGroupTableModel;
+	private List<ENEditGroupTableContentRow> easyGroupTableRows;
+	private DefaultFlexiColumnModel moveUpColumnModel;
+	private DefaultFlexiColumnModel moveDownColumnModel;
+
 	private FormLink chooseGroupsLink;
-	
+	private FormLink createGroupLink;
+
 	private StaticTextElement easyAreaList;
 	private FormLink chooseAreasLink;
-	
+
 	private boolean hasAreas;
 	private boolean hasGroups;
-	
+
 	private FormSubmit subm;
 	private FormLink fixGroupError;
 	private FormLink fixAreaError;
-	
+
 	private NewAreaController areaCreateCntrllr;
 	private NewBGController groupCreateCntrllr;
 	private AreaSelectionController areaChooseC;
 	private GroupSelectionController groupChooseC;
-	
+
 	private EventBus singleUserEventCenter;
 	private OLATResourceable groupConfigChangeEventOres;
-	
+
 	private CloseableModalController cmc;
-	
+
 	private final boolean managedGroups;
-	
+
 	private final BGAreaManager areaManager;
 	private final BusinessGroupService businessGroupService;
+
+	private static final String CMD_UP = "up";
+	private static final String CMD_DOWN = "down";
+	private static final String CMD_REMOVE = "remove";
+	
+	@Autowired
+	private RepositoryManager repositoryManager;
 
 	public ENEditGroupAreaFormController(UserRequest ureq, WindowControl wControl, ModuleConfiguration moduleConfig, CourseEditorEnv cev) {
 		super(ureq, wControl);
 		Translator pT = Util.createPackageTranslator(Condition.class, ureq.getLocale(), getTranslator());
 		this.setTranslator(pT);
-		
+
 		areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		
+
 		singleUserEventCenter = ureq.getUserSession().getSingleUserEventCenter();
 		groupConfigChangeEventOres = OresHelper.createOLATResourceableType(MultiUserEvent.class);
 		singleUserEventCenter.registerFor(this, ureq.getIdentity(), groupConfigChangeEventOres);
-		
+
 		this.moduleConfig = moduleConfig;
 		this.cev = cev;
-		
+
 		hasAreas = areaManager.countBGAreasInContext(cev.getCourseGroupManager().getCourseResource()) > 0;
 		hasGroups = businessGroupService.countBusinessGroups(null, cev.getCourseGroupManager().getCourseEntry()) > 0;
-		
+
 
 		OLATResource courseResource = cev.getCourseGroupManager().getCourseResource();
 		RepositoryEntry courseRe = RepositoryManager.getInstance().lookupRepositoryEntry(courseResource, false);
 		managedGroups = RepositoryEntryManagedFlag.isManaged(courseRe, RepositoryEntryManagedFlag.groups);
 
 		initForm(ureq);
+	}
+	
+	public void loadModel() {
+		List<Long> groupKeys = moduleConfig.getList(ENCourseNode.CONFIG_GROUP_IDS, Long.class);
+		if(groupKeys == null || groupKeys.isEmpty()) {
+			String groupNames = (String) moduleConfig.get(ENCourseNode.CONFIG_GROUPNAME);
+			if(StringHelper.containsNonWhitespace(groupNames)) {
+				groupKeys = businessGroupService.toGroupKeys(groupNames, cev.getCourseGroupManager().getCourseEntry());
+			} else {
+				groupKeys = new ArrayList<>();
+			}
+		}	
+
+		updateModel(groupKeys);
+	}
+
+	public void updateModel(List<Long> groupKeys) {
+		List<BusinessGroupShort> groups = businessGroupService.loadShortBusinessGroups(groupKeys);
+		Map<Long,BusinessGroupShort> groupMap = groups.stream().collect(Collectors.toMap(BusinessGroupShort::getKey, g -> g, (u, v) -> u));
+
+		easyGroupTableRows = new ArrayList<ENEditGroupTableContentRow>();
+		for (Long groupKey : groupKeys) {
+			easyGroupTableRows.add(new ENEditGroupTableContentRow(groupKey, groupMap.get(groupKey).getName()));
+		}
+
+		easyGroupTableModel.setObjects(easyGroupTableRows);
+		easyGroupTableElement.reset(true,true,true);
 	}
 
 	@Override
@@ -147,10 +199,9 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 	@Override
 	protected void formOK(UserRequest ureq) {
 		// 1. group names
-		KeysAndNames groupKeysAndNames = (KeysAndNames)easyGroupList.getUserObject();
-		String groupNames = StringHelper.formatAsSortUniqCSVString(groupKeysAndNames.getNames());
+		String groupNames = StringHelper.formatAsSortUniqCSVString(easyGroupTableModel.getNames());
 		moduleConfig.set(ENCourseNode.CONFIG_GROUPNAME, groupNames);
-		moduleConfig.set(ENCourseNode.CONFIG_GROUP_IDS, groupKeysAndNames.getKeys());
+		moduleConfig.set(ENCourseNode.CONFIG_GROUP_IDS, easyGroupTableModel.getKeys());
 		// 2. area names
 		KeysAndNames areaKeysAndNames = (KeysAndNames)easyAreaList.getUserObject();
 		String areaNames = StringHelper.formatAsSortUniqCSVString(areaKeysAndNames.getNames());
@@ -169,6 +220,8 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			enrollCount = 1; 
 		}
 		moduleConfig.set(ENCourseNode.CONFIG_ALLOW_MULTIPLE_ENROLL_COUNT, enrollCount);
+		// 5. group sorting
+		moduleConfig.set(ENCourseNode.CONFIG_GROUP_SORTED, allowGroupSort.isSelected(0));
 		// Inform all listeners about the changed condition
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 	}
@@ -176,31 +229,70 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// groups
-		List<Long> groupKeys = moduleConfig.getList(ENCourseNode.CONFIG_GROUP_IDS, Long.class);
-		if(groupKeys == null || groupKeys.isEmpty()) {
-			String groupNames = (String) moduleConfig.get(ENCourseNode.CONFIG_GROUPNAME);
-			if(StringHelper.containsNonWhitespace(groupNames)) {
-				groupKeys = businessGroupService.toGroupKeys(groupNames, cev.getCourseGroupManager().getCourseEntry());
-			} else {
-				groupKeys = new ArrayList<>();
-			}
-		}
-		KeysAndNames groupInitVal = getGroupKeysAndNames(groupKeys);
-		chooseGroupsLink = uifactory.addFormLink("chooseGroup", formLayout, "btn btn-default o_xsmall o_form_groupchooser");
-		chooseGroupsLink.setLabel("form.groupnames", null);
+		String page = this.velocity_root + "/chooseGroups.html";
+		FormLayoutContainer buttonLayout = FormLayoutContainer.createCustomFormLayout("chooseGroups", getTranslator(), page);
+		formLayout.add("asdfasdf",buttonLayout);
+		
+		chooseGroupsLink = uifactory.addFormLink("chooseGroup", buttonLayout, "btn btn-default o_xsmall o_form_groupchooser");
+		chooseGroupsLink.setI18nKey("choose");
 		chooseGroupsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
+
+		createGroupLink = uifactory.addFormLink("createGroup", buttonLayout, "btn btn-default o_xsmall o_form_groupcreate");
+		createGroupLink.setI18nKey("create");
+		createGroupLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		
-		easyGroupList = uifactory.addStaticTextElement("group", null, groupInitVal.getDecoratedNames(), formLayout);
-		easyGroupList.setUserObject(groupInitVal);
-		easyGroupList.setElementCssClass("text-muted");
+		buttonLayout.add("chooseGroupBtn", chooseGroupsLink);
+		buttonLayout.add("createGroupBtn", createGroupLink);
+		buttonLayout.setLabel("form.groupnames", null);
 		
+
+		// Group sort
+		allowGroupSort = uifactory.addCheckboxesHorizontal("allowGroupSort", "form.allowGroupSort", formLayout, new String[] { "allowGroupSort" }, new String[] { "" });
+		allowGroupSort.select("allowGroupSort", moduleConfig.getBooleanSafe(ENCourseNode.CONFIG_GROUP_SORTED, false));
+		allowGroupSort.addActionListener(FormEvent.ONCLICK);
+
+		// Group table		
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+
+		moveUpColumnModel = new DefaultFlexiColumnModel(ENEditGroupTableColumns.up, CMD_UP,
+				new BooleanCellRenderer(
+						new StaticFlexiCellRenderer("", CMD_UP, "o_icon o_icon-lg o_icon_move_up"),
+						null));
+		moveDownColumnModel = new DefaultFlexiColumnModel(ENEditGroupTableColumns.down, CMD_DOWN,
+				new BooleanCellRenderer(
+						new StaticFlexiCellRenderer("", CMD_DOWN, "o_icon o_icon-lg o_icon_move_down"),
+						null));
+
+		columnsModel.addFlexiColumnModel(moveUpColumnModel);
+		columnsModel.addFlexiColumnModel(moveDownColumnModel);
+		DefaultFlexiColumnModel keyColumn = new DefaultFlexiColumnModel(ENEditGroupTableColumns.key);
+		keyColumn.setDefaultVisible(false);
+		keyColumn.setAlwaysVisible(false);
+		columnsModel.addFlexiColumnModel(keyColumn);
+
+		DefaultFlexiColumnModel groupColumn = new DefaultFlexiColumnModel(ENEditGroupTableColumns.groupName);
+		groupColumn.setDefaultVisible(true);
+		groupColumn.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(groupColumn);
+
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ENEditGroupTableColumns.remove, CMD_REMOVE,
+				new StaticFlexiCellRenderer("", CMD_REMOVE, "o_icon o_icon-lg o_icon_delete_item")));
+
+		easyGroupTableModel = new ENEditGroupTableModel(columnsModel, getLocale());
+		easyGroupTableElement = uifactory.addTableElement(getWindowControl(), "en_edit_group_table", easyGroupTableModel, getTranslator(), formLayout);
+		easyGroupTableElement.setCustomizeColumns(false);
+		easyGroupTableElement.setNumOfRowsEnabled(false);
+
+		// Update model
+		if (!moduleConfig.getBooleanSafe(ENCourseNode.CONFIG_GROUP_SORTED, false)) {
+			easyGroupTableElement.setColumnModelVisible(moveDownColumnModel, false);
+			easyGroupTableElement.setColumnModelVisible(moveUpColumnModel, false);
+		}	
+		this.loadModel();
+
+
 		hasGroups = businessGroupService.countBusinessGroups(null, cev.getCourseGroupManager().getCourseEntry()) > 0;
-		if(hasGroups){
-			chooseGroupsLink.setI18nKey("choose");
-		}else{
-			chooseGroupsLink.setI18nKey("create");
-		}
-		
+
 		// areas
 
 		@SuppressWarnings("unchecked")
@@ -209,75 +301,76 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			String areaNames = (String) moduleConfig.get(ENCourseNode.CONFIG_AREANAME);
 			areaKeys = areaManager.toAreaKeys(areaNames, cev.getCourseGroupManager().getCourseResource());
 		}
-		
+
 		KeysAndNames areaInitVal = getAreaKeysAndNames(areaKeys);
 		chooseAreasLink = uifactory.addFormLink("chooseArea", formLayout, "btn btn-default o_xsmall o_form_areachooser");
 		chooseAreasLink.setLabel("form.areanames", null);
 		chooseAreasLink.setIconLeftCSS("o_icon o_icon-fw o_icon_courseareas");
-		
+
 		easyAreaList = uifactory.addStaticTextElement("area", null, areaInitVal.getDecoratedNames(), formLayout);
 		easyAreaList.setUserObject(areaInitVal);
 		easyAreaList.setElementCssClass("text-muted");
-		
+
 		hasAreas = areaManager.countBGAreasInContext(cev.getCourseGroupManager().getCourseResource()) > 0;
 		if(hasAreas){
 			chooseAreasLink.setI18nKey("choose");
 		} else {
-			chooseAreasLink.setI18nKey("create");
+			chooseAreasLink.setVisible(false);
+			easyAreaList.setVisible(false);
 		}
-		
+
 		//multiple group selection
 		int enrollCountConfig = moduleConfig.getIntegerSafe(ENCourseNode.CONFIG_ALLOW_MULTIPLE_ENROLL_COUNT,1);
 		Boolean multipleEnroll = (enrollCountConfig > 1);
 		allowMultipleEnroll = uifactory.addCheckboxesHorizontal("allowMultipleEnroll", "form.allowMultiEnroll", formLayout, new String[] { "multiEnroll" }, new String[] { "" });
 		allowMultipleEnroll.select("multiEnroll", multipleEnroll);
 		allowMultipleEnroll.addActionListener(FormEvent.ONCLICK);
-		
+
 		multipleEnrollCount = uifactory.addIntegerElement("form.multipleEnrollCount", enrollCountConfig, formLayout);
 		multipleEnrollCount.setElementCssClass("o_sel_enroll_max");
 		multipleEnrollCount.setMinValueCheck(1, "error.multipleEnroll");
 		multipleEnrollCount.setVisible(allowMultipleEnroll.isSelected(0));
-		
+
 		// enrolment
 		Boolean initialCancelEnrollEnabled  = (Boolean) moduleConfig.get(ENCourseNode.CONF_CANCEL_ENROLL_ENABLED);
 		enableCancelEnroll = uifactory.addCheckboxesHorizontal("enableCancelEnroll", "form.enableCancelEnroll", formLayout, new String[] { "ison" }, new String[] { "" });
 		enableCancelEnroll.select("ison", initialCancelEnrollEnabled);
-		
+
 		subm = uifactory.addFormSubmitButton("submit", formLayout);
-		
+
 		validateGroupFields();
 		updateGroupsAndAreasCheck();
 	}
-	
+
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq){
 		return validateGroupFields();
 	}
-	
+
 	private boolean validateGroupFields() {
 		boolean retVal = true;
 		List<Long> activeGroupSelection = null;
 		List<Long> activeAreaSelection = null;
-		
-		easyAreaList.clearError();
-		easyGroupList.clearError();
 
-		if (!isEmpty(easyGroupList)) {
+		easyAreaList.clearError();
+		easyGroupTableElement.clearError();
+
+		if (!isEmpty(easyGroupTableModel)) {
 			// check whether groups exist
-			activeGroupSelection = getKeys(easyGroupList);
+			activeGroupSelection = easyGroupTableModel.getKeys();
 
 			Set<Long> missingGroups = new HashSet<>();
 			List<BusinessGroupShort> existingGroups =  businessGroupService.loadShortBusinessGroups(activeGroupSelection);
 			a_a:
-			for(Long activeGroupKey:activeGroupSelection) {
-				for(BusinessGroupShort group:existingGroups) {
-					if(group.getKey().equals(activeGroupKey)) {
-						continue a_a;
+				for(Long activeGroupKey:activeGroupSelection) {
+					for(BusinessGroupShort group:existingGroups) {
+						if(group.getKey().equals(activeGroupKey)) {
+							continue a_a;
+						}
 					}
+					missingGroups.add(activeGroupKey);
 				}
-				missingGroups.add(activeGroupKey);
-			}
-			
+
 			if (missingGroups.size() > 0) {
 				retVal = false;
 				String labelKey = missingGroups.size() == 1 ? "error.notfound.name" : "error.notfound.names";
@@ -289,7 +382,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 				FormLayoutContainer errorGroupItemLayout = FormLayoutContainer.createCustomFormLayout(
 						"errorgroupitem", getTranslator(), vc_errorPage);
 
-				easyGroupList.setErrorComponent(errorGroupItemLayout, this.flc);
+				easyGroupTableElement.setErrorComponent(errorGroupItemLayout, this.flc);
 				// FIXING LINK ONLY IF A DEFAULTCONTEXT EXISTS
 				fixGroupError = new FormLinkImpl("error.fix", "create");
 				// link
@@ -310,11 +403,11 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 					fixGroupError.setUserObject(new String[] { csvMissGrps });
 				}
 
-				easyGroupList.showError(true);
+				easyGroupTableElement.showError(true);
 			}
 		}
-		
-		
+
+
 		if (!isEmpty(easyAreaList)) {
 			// check whether areas exist
 			activeAreaSelection = getKeys(easyAreaList);
@@ -322,15 +415,15 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			List<Long> missingAreas = new ArrayList<>();
 			List<BGArea> cnt = areaManager.loadAreas(activeAreaSelection);
 			a_a:
-			for(Long activeAreaKey:activeAreaSelection) {
-				for (BGArea element : cnt) {
-					if (element.getKey().equals(activeAreaKey)) { 
-						continue a_a;
+				for(Long activeAreaKey:activeAreaSelection) {
+					for (BGArea element : cnt) {
+						if (element.getKey().equals(activeAreaKey)) { 
+							continue a_a;
+						}
 					}
+					missingAreas.add(activeAreaKey);
 				}
-				missingAreas.add(activeAreaKey);
-			}
-			
+
 			if (missingAreas.size() > 0) {
 				retVal = false;
 				String labelKey = missingAreas.size() == 1 ? "error.notfound.name" : "error.notfound.names";
@@ -352,7 +445,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 				fixAreaError.setErrorKey(labelKey, params);
 				fixAreaError.showError(true);
 				fixAreaError.showLabel(false);
-				
+
 				// hint to pass the information if one area is
 				// missing or if 2 or more areas are missing
 				// (see fixGroupErrer.getUserObject to understand)
@@ -367,22 +460,22 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 				easyAreaList.showError(true);
 			}
 		}
-		
+
 		boolean easyGroupOK = activeGroupSelection != null && activeGroupSelection.size() > 0;
 		boolean easyAreaOK = activeAreaSelection != null && activeAreaSelection.size() > 0;
 		if (!easyGroupOK && !easyAreaOK) {
 			// error concerns both fields -> set it as switch error
-			easyGroupList.setErrorKey("form.noGroupsOrAreas", null);
+			easyGroupTableElement.setErrorKey("form.noGroupsOrAreas", null);
 			retVal = false;
 		}
-		
+
 		//raise error if someone removed all groups and areas from form
 		if (!retVal && !easyGroupOK && !easyAreaOK) {
-			easyGroupList.setErrorKey("form.noGroupsOrAreas", null);
+			easyGroupTableElement.setErrorKey("form.noGroupsOrAreas", null);
 		}
 		return retVal;
 	}
-	
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == allowMultipleEnroll){
@@ -391,19 +484,43 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			}else{
 				multipleEnrollCount.setVisible(false);
 			}
-		}else if (source == chooseGroupsLink) {
+		} else if(source == allowGroupSort) {
+			if (allowGroupSort.isSelected(0)) {				
+				easyGroupTableElement.setColumnModelVisible(moveDownColumnModel, true);
+				easyGroupTableElement.setColumnModelVisible(moveUpColumnModel, true);
+			} else {
+				easyGroupTableElement.setColumnModelVisible(moveDownColumnModel, false);
+				easyGroupTableElement.setColumnModelVisible(moveUpColumnModel, false);
+			}
+		} else if (source == chooseGroupsLink) {
 			removeAsListenerAndDispose(groupChooseC);
-			groupChooseC = new GroupSelectionController(ureq, getWindowControl(), true,
-					cev.getCourseGroupManager(), getKeys(easyGroupList));
+			groupChooseC = new GroupSelectionController(ureq, getWindowControl(), false,
+					cev.getCourseGroupManager(), easyGroupTableModel.getKeys());
 			listenTo(groupChooseC);
 
 			removeAsListenerAndDispose(cmc);
 			cmc = new CloseableModalController(getWindowControl(), "close", groupChooseC.getInitialComponent());
 			listenTo(cmc);
-			
+
 			cmc.activate();
 			subm.setEnabled(false);
 
+		} else if (source == createGroupLink) {
+			// user wants to create a new group -> show group create form
+			removeAsListenerAndDispose(cmc);
+			removeAsListenerAndDispose(groupCreateCntrllr);
+			
+			RepositoryEntry re = repositoryManager.lookupRepositoryEntry(cev.getCourseGroupManager().getCourseResource(), false);
+			groupCreateCntrllr = new NewBGController(ureq, getWindowControl(), re, true, null);
+			listenTo(groupCreateCntrllr);
+			
+			removeAsListenerAndDispose(cmc);
+			cmc = new CloseableModalController(
+					getWindowControl(),"close",groupCreateCntrllr.getInitialComponent()
+			);
+			listenTo(cmc);
+			cmc.activate();
+		
 		} else if (source == chooseAreasLink) {
 			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose(areaChooseC);
@@ -423,8 +540,8 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			 * or more group at once.
 			 */
 			String[] csvGroupName = (String[]) fixGroupError.getUserObject();
-			
-			easyGroupList.setEnabled(false);
+
+			easyGroupTableElement.setEnabled(false);
 			removeAsListenerAndDispose(groupCreateCntrllr);
 			OLATResource courseResource = this.cev.getCourseGroupManager().getCourseResource();
 			RepositoryEntry courseRe = RepositoryManager.getInstance().lookupRepositoryEntry(courseResource, false);
@@ -435,35 +552,47 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			cmc = new CloseableModalController(
 					getWindowControl(), "close",
 					groupCreateCntrllr.getInitialComponent()
-			);
+					);
 			listenTo(cmc);
-			
+
 			cmc.activate();
 			subm.setEnabled(false);
-			
+
 		} else if (source == fixAreaError) {
 			/*
 			 * user wants to fix problem with fixing area error link e.g. create one
 			 * or more areas at once.
 			 */
 			String[] csvAreaName = (String[]) fixAreaError.getUserObject();
-			
+
 			easyAreaList.setEnabled(false);
 			removeAsListenerAndDispose(areaCreateCntrllr);
 			OLATResource courseResource = this.cev.getCourseGroupManager().getCourseResource();
 			areaCreateCntrllr = new NewAreaController(ureq, getWindowControl(), courseResource, true, csvAreaName[0]);
 			listenTo(areaCreateCntrllr);
-			
+
 			removeAsListenerAndDispose(cmc);
 			cmc = new CloseableModalController(
 					getWindowControl(), "close",
 					areaCreateCntrllr.getInitialComponent()
-			);
+					);
 			listenTo(cmc);
-			
+
 			cmc.activate();
 			subm.setEnabled(false);
-			
+
+		} else if(source == easyGroupTableElement) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				String cmd = se.getCommand();
+				if (CMD_UP.equals(cmd)) {
+					doUp(se.getIndex());	
+				} else if (CMD_DOWN.equals(cmd)) {
+					doDown(se.getIndex());
+				} else if(CMD_REMOVE.equals(cmd)) {
+					doDelete(se.getIndex());
+				}
+			}
 		}
 	}
 
@@ -473,11 +602,9 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		if (source == groupChooseC) {
 			if (event == Event.DONE_EVENT) {
 				cmc.deactivate();
-				KeysAndNames c =  getGroupKeysAndNames(groupChooseC.getSelectedKeys());
-				easyGroupList.setValue(c.getDecoratedNames());
-				easyGroupList.setUserObject(c);
-				easyGroupList.getRootForm().submit(ureq);
-				chooseGroupsLink.setI18nKey("choose");
+
+				updateModel(groupChooseC.getSelectedKeys());
+				easyGroupTableElement.getRootForm().submit(ureq);
 			} else if (Event.CANCELLED_EVENT == event) {
 				cmc.deactivate();
 			}
@@ -493,12 +620,12 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 				cmc.deactivate();
 			}
 		} else if (source == groupCreateCntrllr) {
-			easyGroupList.setEnabled(true);
+			easyGroupTableElement.setEnabled(true);
 			cmc.deactivate();
 
 			if (event == Event.DONE_EVENT) {
 				List<Long> c = new ArrayList<>();
-				c.addAll(getKeys(easyGroupList));
+				c.addAll(easyGroupTableModel.getKeys());
 				if (fixGroupError != null && fixGroupError.getUserObject() != null) {
 					String[] keyArr = (String[])fixGroupError.getUserObject();
 					if(keyArr != null && keyArr.length > 0) {
@@ -507,17 +634,15 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 					}
 				}
 				c.addAll(groupCreateCntrllr.getCreatedGroupKeys());
-				
-				KeysAndNames keysAndNames = getGroupKeysAndNames(c);
-				easyGroupList.setValue(keysAndNames.getDecoratedNames());
-				easyGroupList.setUserObject(keysAndNames);
-				
+
+				updateModel(c);
+
 				if (groupCreateCntrllr.getCreatedGroupNames().size() > 0 && !hasGroups) {
 					chooseGroupsLink.setLinkTitle("select");
 					singleUserEventCenter.fireEventToListenersOf(new MultiUserEvent("changed"), groupConfigChangeEventOres);
 				}
-				
-				easyGroupList.getRootForm().submit(ureq);
+
+				easyGroupTableElement.getRootForm().submit(ureq);
 			}
 		} else if (source == areaCreateCntrllr) {
 			easyAreaList.setEnabled(true);
@@ -533,11 +658,11 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 					}
 				}
 				c.addAll(areaCreateCntrllr.getCreatedAreaKeys());
-				
+
 				KeysAndNames keysAndNames = getAreaKeysAndNames(c);
 				easyAreaList.setValue(keysAndNames.getDecoratedNames());
 				easyAreaList.setUserObject(keysAndNames);
-				
+
 				if (areaCreateCntrllr.getCreatedAreaNames().size() > 0 && !hasAreas) {
 					chooseAreasLink.setLinkTitle("select");
 					singleUserEventCenter.fireEventToListenersOf(new MultiUserEvent("changed"), groupConfigChangeEventOres);
@@ -558,7 +683,31 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			updateGroupsAndAreasCheck();
 		}
 	}
-	
+
+	private void doDown(int index) {
+		switchGroups(index, index + 1);
+	}
+
+	private void doUp(int index) {
+		switchGroups(index - 1, index);
+	}
+
+	private void doDelete(int index) {
+		easyGroupTableRows.remove(index);
+
+		easyGroupTableModel.setObjects(easyGroupTableRows);
+		easyGroupTableElement.reset(true,true,true);
+	}
+
+	private void switchGroups(int downGroup, int upGroup) {
+		ENEditGroupTableContentRow temp = easyGroupTableRows.get(downGroup);
+		easyGroupTableRows.set(downGroup, easyGroupTableRows.get(upGroup));
+		easyGroupTableRows.set(upGroup, temp);
+
+		easyGroupTableModel.setObjects(easyGroupTableRows);
+		easyGroupTableElement.reset(true,true,true);
+	}
+
 	private void updateGroupsAndAreasCheck() {
 		hasGroups = businessGroupService.countBusinessGroups(null, cev.getCourseGroupManager().getCourseEntry()) > 0;
 		if(!hasGroups && !managedGroups){
@@ -566,7 +715,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		}else{
 			chooseGroupsLink.setLinkTitle("choose");
 		}
-		
+
 		hasAreas = areaManager.countBGAreasInContext(cev.getCourseGroupManager().getCourseResource()) > 0;
 		if(hasAreas){
 			chooseAreasLink.setLinkTitle("choose");
@@ -574,15 +723,24 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			chooseAreasLink.setLinkTitle("create");
 		}
 	}
-	
+
 	private boolean isEmpty(StaticTextElement element) {
 		List<Long> keys = getKeys(element);
 		if(keys == null || keys.isEmpty()) {
 			return true;
 		}
+	
 		return false;
 	}
-	
+
+	private boolean isEmpty(ENEditGroupTableModel element) {
+		List<Long> keys = element.getKeys();
+		if(keys == null || keys.isEmpty()) {
+			return true;
+		}
+		return false;
+	}
+
 	private List<Long> getKeys(StaticTextElement element) {
 		KeysAndNames keys = (KeysAndNames)element.getUserObject();
 		if(keys == null) {
@@ -591,7 +749,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		}
 		return keys.getKeys();
 	}
-	
+
 	private String toString(Collection<Long> keys) {
 		StringBuilder sb = new StringBuilder();
 		for(Long key:keys) {
@@ -600,7 +758,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		}
 		return sb.toString();
 	}
-	
+
 	private List<Long> toKeys(String keysString) {
 		List<Long> keyList = new ArrayList<>();
 		String[] keys = keysString.split(",");
@@ -613,24 +771,24 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		}
 		return keyList;
 	}
-	
+
 	private KeysAndNames getGroupKeysAndNames(List<Long> keys) {
 		StringBuilder sb = new StringBuilder();
 		KeysAndNames keysAndNames = new KeysAndNames();
 		keysAndNames.getKeys().addAll(keys);
-		
+
 		List<BusinessGroupShort> groups = businessGroupService.loadShortBusinessGroups(keys);
 		for(BusinessGroupShort group:groups) {
 			if(sb.length() > 0) sb.append("&nbsp;&nbsp;");
 			sb.append("<i class='o_icon o_icon-fw o_icon_group'>&nbsp;</i> ");
 			sb.append(StringHelper.escapeHtml(group.getName()));
 			keysAndNames.getNames().add(group.getName());
-			
+
 		}
 		keysAndNames.setDecoratedNames(sb.toString());
 		return keysAndNames;
 	}
-	
+
 	private KeysAndNames getAreaKeysAndNames(List<Long> keys) {
 		StringBuilder sb = new StringBuilder();
 		List<BGArea> areas = areaManager.loadAreas(keys);
@@ -645,17 +803,17 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		keysAndNames.setDecoratedNames(sb.toString());
 		return keysAndNames;
 	}
-	
+
 	private static class KeysAndNames {
-		
+
 		private final List<Long> keys = new ArrayList<>();
 		private final List<String> names = new ArrayList<>();
 		private String decoratedNames;
-		
+
 		public List<Long> getKeys() {
 			return keys;
 		}
-		
+
 		public List<String> getNames() {
 			return names;
 		}

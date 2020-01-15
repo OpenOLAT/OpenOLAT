@@ -26,18 +26,26 @@ package org.olat.course.condition;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.course.condition.model.GroupSelectionTableContentRow;
+import org.olat.course.condition.model.GroupSelectionTableModel;
+import org.olat.course.condition.model.GroupSelectionTableModel.GroupSelectionTableColumns;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.ui.NewBGController;
@@ -52,7 +60,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GroupSelectionController extends FormBasicController {
 
-	private MultipleSelectionElement entrySelector;
 	private FormLink createNew;
 	private CourseGroupManager courseGrpMngr;
 	private NewBGController groupCreateCntrllr;
@@ -61,6 +68,10 @@ public class GroupSelectionController extends FormBasicController {
 	private String[] groupNames;
 	private String[] groupKeys;
 	private boolean createEnable;
+	
+	private FlexiTableElement groupTableElement;
+	private GroupSelectionTableModel groupTableModel;
+	private List<GroupSelectionTableContentRow> groupTableRows;
 	
 	@Autowired
 	private RepositoryManager repositoryManager;
@@ -73,23 +84,32 @@ public class GroupSelectionController extends FormBasicController {
 		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(courseGrpMngr.getCourseResource(), false);
 		createEnable = allowCreate && !RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.groups);
 		// unique names from list to array
-		loadNamesAndKeys();
 		initForm(ureq);
-		// after initialising the element, select the entries
-		for (Long selectionKey :selectionKeys) {
-			entrySelector.select(selectionKey.toString(), true);
-		}
+		loadModel(selectionKeys);
+		
 	}
 	
-	private void loadNamesAndKeys() {
+	public void loadModel(List<Long> selectionKeys) {
 		List<BusinessGroup> groups = courseGrpMngr.getAllBusinessGroups();
-		groupNames = new String[groups.size()];
-		groupKeys = new String[groups.size()];
-		for(int i=groups.size(); i-->0; ) {
-			groupNames[i] = groups.get(i).getName();
-			groupKeys[i] = groups.get(i).getKey().toString();
+		
+		groupTableRows = new ArrayList<GroupSelectionTableContentRow>();
+		Set<Integer> selectedRows = new HashSet<Integer>();
+		
+		
+		
+		for (BusinessGroup businessGroup : groups) {
+			groupTableRows.add(new GroupSelectionTableContentRow(businessGroup.getKey(), businessGroup.getName()));
+			for (Long selectionKey : selectionKeys) {
+				if (selectionKey.equals(businessGroup.getKey())) {
+					selectedRows.add(groupTableRows.size() - 1);
+					break;
+				}
+			}
 		}
-
+		
+		groupTableModel.setObjects(groupTableRows);
+		groupTableElement.reset(true, true, true);
+		groupTableElement.setMultiSelectedIndex(selectedRows);
 	}
 
 	@Override
@@ -117,13 +137,16 @@ public class GroupSelectionController extends FormBasicController {
 		if (source == groupCreateCntrllr) {
 			cmc.deactivate();
 			if (event == Event.DONE_EVENT) {
-				loadNamesAndKeys();
 				// select new value
-				entrySelector.setKeysAndValues(groupKeys, groupNames);
-				Collection<Long> newGroupKeys = groupCreateCntrllr.getCreatedGroupKeys();
-				for(Long newGroupKey:newGroupKeys) {
-					entrySelector.select(newGroupKey.toString(), true);
+				Collection<BusinessGroup> newGroups = groupCreateCntrllr.getCreatedGroups();
+				List<Integer> selectedRows = new ArrayList<>(groupTableElement.getMultiSelectedIndex());
+				for(BusinessGroup newGroup : newGroups) {
+					groupTableRows.add(new GroupSelectionTableContentRow(newGroup.getKey(), newGroup.getName()));
+					selectedRows.add(groupTableRows.size() - 1);
 				}
+				groupTableModel.setObjects(groupTableRows);
+				groupTableElement.reset(true, true, true);
+				groupTableElement.setMultiSelectedIndex(new HashSet<>(selectedRows));
 				//inform condition config easy about new groups -> which informs further
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			} 
@@ -141,8 +164,17 @@ public class GroupSelectionController extends FormBasicController {
 			// easy creation only possible if a default group context available
 			createNew = uifactory.addFormLink("create", formLayout, Link.BUTTON);
 		}
-
-		entrySelector = uifactory.addCheckboxesVertical("entries",  null, formLayout, groupKeys, groupNames, 1);
+		
+		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupSelectionTableColumns.key));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupSelectionTableColumns.groupName));
+		
+		groupTableModel = new GroupSelectionTableModel(columnModel, getTranslator());
+		groupTableElement = uifactory.addTableElement(getWindowControl(), "entries", groupTableModel, getTranslator(), formLayout);
+		groupTableElement.setEmtpyTableMessageKey("groupselection.noentries");
+		groupTableElement.setMultiSelect(true);		
+		groupTableElement.setSelectAllEnable(true);
+		
 		uifactory.addFormSubmitButton("subm", "apply", formLayout);
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 	}
@@ -156,28 +188,25 @@ public class GroupSelectionController extends FormBasicController {
 	protected void formResetted(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
-
-	public Collection<String> getSelectedEntries() {
-		return entrySelector.getSelectedKeys();
-	}
 	
 	public List<String> getSelectedNames() {
-		List<String> selectedNames = new ArrayList<>();
-		for(int i=0; i<groupKeys.length; i++) {
-			if(entrySelector.isSelected(i)) {
-				selectedNames.add(groupNames[i]);
-			}
+		List<String> selectedEntries = new ArrayList<>();
+		
+		for (Integer integer : groupTableElement.getMultiSelectedIndex()) {
+			selectedEntries.add(groupTableModel.getObject(integer).getGroupName());
 		}
-		return selectedNames;
+	 
+		return selectedEntries;
 	}
 	
 	public List<Long> getSelectedKeys() {
-		Collection<String> selectedKeys = entrySelector.getSelectedKeys();
-		List<Long> keys = new ArrayList<>();
-		for(String selectedKey:selectedKeys) {
-			keys.add(Long.valueOf(selectedKey));
+		List<Long> selectedEntries = new ArrayList<>();
+		
+		for (Integer integer : groupTableElement.getMultiSelectedIndex()) {
+			selectedEntries.add(groupTableModel.getObject(integer).getKey());
 		}
-		return keys;
+	 
+		return selectedEntries;
 	}
 
 }

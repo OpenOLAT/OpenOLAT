@@ -1,27 +1,27 @@
 /**
-* OLAT - Online Learning and Training<br>
-* http://www.olat.org
-* <p>
-* Licensed under the Apache License, Version 2.0 (the "License"); <br>
-* you may not use this file except in compliance with the License.<br>
-* You may obtain a copy of the License at
-* <p>
-* http://www.apache.org/licenses/LICENSE-2.0
-* <p>
-* Unless required by applicable law or agreed to in writing,<br>
-* software distributed under the License is distributed on an "AS IS" BASIS, <br>
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
-* See the License for the specific language governing permissions and <br>
-* limitations under the License.
-* <p>
-* Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
-* University of Zurich, Switzerland.
-* <hr>
-* <a href="http://www.openolat.org">
-* OpenOLAT - Online Learning and Training</a><br>
-* This file has been modified by the OpenOLAT community. Changes are licensed
-* under the Apache 2.0 license as the original file.
-*/
+ * OLAT - Online Learning and Training<br>
+ * http://www.olat.org
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
+ * University of Zurich, Switzerland.
+ * <hr>
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * This file has been modified by the OpenOLAT community. Changes are licensed
+ * under the Apache 2.0 license as the original file.
+ */
 
 package org.olat.course.nodes.en;
 
@@ -148,6 +148,29 @@ public class ENRunController extends BasicController implements GenericEventList
 		enrollVC = createVelocityContainer("enrollmultiple");
 
 		List<EnrollmentRow> enrollmentRows = enrollmentManager.getEnrollments(getIdentity(), enrollableGroupKeys, enrollableAreaKeys, 256);
+
+		// Sort groups
+		if (moduleConfig.getBooleanSafe(ENCourseNode.CONFIG_GROUP_SORTED, false)) {
+			for (int i = 0; i < enrollableGroupKeys.size(); i++) {
+				long groupKey = enrollableGroupKeys.get(i);
+				for (int j = i; j < enrollmentRows.size(); j++) {
+					if (enrollmentRows.get(j).getKey().equals(groupKey)) {
+						if (i == j) {
+							break;
+						} else {
+							EnrollmentRow temp = enrollmentRows.get(i);
+							enrollmentRows.set(i, enrollmentRows.get(j));
+							enrollmentRows.set(j, temp);
+						}
+					}
+				}
+			}
+		}
+
+		for (int i = 0; i <enrollmentRows.size(); i++) {
+			enrollmentRows.get(i).setSortKey(i);
+		}
+
 		groupListModel = new EnrollmentTableModelWithMaxSize(enrollmentRows, getTranslator(), getIdentity(), cancelEnrollEnabled, maxEnrollCount);
 		Stats stats = groupListModel.getStats();
 		tableCtr = createTableController(ureq, stats.isSomeGroupWaitingListEnabled());
@@ -265,8 +288,8 @@ public class ENRunController extends BasicController implements GenericEventList
 			int numOfAvailableAuthorizedEnrollments = groupListModel.getRowCount() - numOfParticipatingGroups - numOfWaitingGroups;
 			int numOfAuthorizedEnrollments = Math.min(numOfConfiguredAuthorizedEnrollments, numOfAvailableAuthorizedEnrollments);
 			String[] hintNumbers = new String[]{
-				String.valueOf(numOfParticipatingGroups + numOfWaitingGroups),
-				String.valueOf(numOfAuthorizedEnrollments)
+					String.valueOf(numOfParticipatingGroups + numOfWaitingGroups),
+					String.valueOf(numOfAuthorizedEnrollments)
 			};
 			enrollVC.contextPut("multipleHint", translate("multiple.select.hint.outstanding", hintNumbers));
 		} else {
@@ -315,11 +338,13 @@ public class ENRunController extends BasicController implements GenericEventList
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
 		listenTo(tableCtr);
 
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("grouplist.table.name", 0, CMD_VISIT_CARD, getLocale()));
-		DefaultColumnDescriptor descCd = new DefaultColumnDescriptor("grouplist.table.desc", 1, null, getLocale());
+
+		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("grouplist.table.sort", 0, null, getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("grouplist.table.name", 1, CMD_VISIT_CARD, getLocale()));
+		DefaultColumnDescriptor descCd = new DefaultColumnDescriptor("grouplist.table.desc", 2, null, getLocale());
 		descCd.setEscapeHtml(EscapeMode.antisamy);
 		tableCtr.addColumnDescriptor(descCd);
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("grouplist.table.partipiciant", 2, null, getLocale()) {
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("grouplist.table.partipiciant", 3, null, getLocale()) {
 			@Override
 			public int compareTo(int rowa, int rowb) {
 				Object a = table.getTableDataModel().getValueAt(rowa, dataColumn);
@@ -348,18 +373,26 @@ public class ENRunController extends BasicController implements GenericEventList
 				}
 			}
 		});
-		tableCtr.addColumnDescriptor(hasAnyWaitingList, new DefaultColumnDescriptor("grouplist.table.waitingList", 3, null, getLocale()));
-		DefaultColumnDescriptor stateColdEsc = new DefaultColumnDescriptor("grouplist.table.state", 4, null, getLocale());
+		tableCtr.addColumnDescriptor(hasAnyWaitingList, new DefaultColumnDescriptor("grouplist.table.waitingList", 4, null, getLocale()));
+		DefaultColumnDescriptor stateColdEsc = new DefaultColumnDescriptor("grouplist.table.state", 5, null, getLocale());
 		stateColdEsc.setEscapeHtml(EscapeMode.none);
 		tableCtr.addColumnDescriptor(stateColdEsc);
 		String enrollCmd = userCourseEnv.isCourseReadOnly() ? null : CMD_ENROLL_IN_GROUP;
-		BooleanColumnDescriptor columnDesc = new BooleanColumnDescriptor("grouplist.table.enroll", 5, enrollCmd,
-		  	translate(CMD_ENROLL_IN_GROUP), translate("grouplist.table.no_action"));
-		columnDesc.setSortingAllowed(false);
+		BooleanColumnDescriptor columnDesc = new BooleanColumnDescriptor("grouplist.table.enroll", 6, enrollCmd,
+		  	translate(CMD_ENROLL_IN_GROUP), translate("grouplist.table.no_action")) {
+			@Override
+			public int compareTo(int rowa, int rowb) {
+				Integer a = (Integer) table.getTableDataModel().getValueAt(rowa, 0);
+				Integer b = (Integer) table.getTableDataModel().getValueAt(rowb, 0);
+				
+				return Integer.compare(a, b);
+			}
+		};
 		tableCtr.addColumnDescriptor(columnDesc);
 		String cancelCmd = userCourseEnv.isCourseReadOnly() ? null : CMD_ENROLLED_CANCEL;
- 		tableCtr.addColumnDescriptor(new BooleanColumnDescriptor("grouplist.table.cancel_enroll", 6, cancelCmd,
+ 		tableCtr.addColumnDescriptor(new BooleanColumnDescriptor("grouplist.table.cancel_enroll", 7, cancelCmd,
 	  		  	translate(CMD_ENROLLED_CANCEL), translate("grouplist.table.no_action")));
+ 		tableCtr.setSortColumn(5, true);
  		return tableCtr;
 	}
 

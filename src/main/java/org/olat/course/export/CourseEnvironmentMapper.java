@@ -101,6 +101,12 @@ public class CourseEnvironmentMapper {
 		return groupKeyList;
 	}
 	
+	/**
+	 * Order must be kept!
+	 * 
+	 * @param originalKeys
+	 * @return
+	 */
 	public List<Long> toGroupKeyFromOriginalKeys(List<Long> originalKeys) {
 		if(originalKeys == null || originalKeys.isEmpty()) return null;
 		List<Long> groupKeyList = new ArrayList<>();

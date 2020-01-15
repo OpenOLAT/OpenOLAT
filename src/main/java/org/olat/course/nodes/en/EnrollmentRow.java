@@ -43,6 +43,7 @@ public class EnrollmentRow implements BusinessGroupRef {
 	private int numOfParticipants;
 	private int numOfReservations;
 	private int positionInWaitingList;
+	private int sortKey;
 	
 	public EnrollmentRow(Long groupKey, String name, String description,
 			int maxParticipants, boolean waitingListEnabled) {
@@ -56,6 +57,10 @@ public class EnrollmentRow implements BusinessGroupRef {
 	@Override
 	public Long getKey() {
 		return groupKey;
+	}
+	
+	public int getSortKey() {
+		return sortKey;
 	}
 	
 	public String getName() {
@@ -84,6 +89,10 @@ public class EnrollmentRow implements BusinessGroupRef {
 	
 	public boolean isParticipant() {
 		return participant;
+	}
+	
+	public void setSortKey(int sortKey) {
+		this.sortKey = sortKey;
 	}
 	
 	public void setParticipant(boolean participant) {

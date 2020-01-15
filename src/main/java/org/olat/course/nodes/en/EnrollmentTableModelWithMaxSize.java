@@ -28,11 +28,11 @@ package org.olat.course.nodes.en;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.components.table.TableDataModelWithMarkableRows;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -86,9 +86,10 @@ public class EnrollmentTableModelWithMaxSize extends DefaultTableDataModel<Enrol
 		int numOfParticipants = enrollmentRow.getNumOfParticipants() + enrollmentRow.getNumOfReservations();
 		int max = enrollmentRow.getMaxParticipants();
 		switch (col) {
-			case 0: return enrollmentRow.getName();
-			case 1: return enrollmentRow.getDescription();
-			case 2:
+			case 0: return enrollmentRow.getSortKey();
+			case 1: return enrollmentRow.getName();
+			case 2: return enrollmentRow.getDescription();
+			case 3:
 				// Belegt/Plätze
 				if (max < 0) { 
 					// no limit => return only members
@@ -103,14 +104,14 @@ public class EnrollmentTableModelWithMaxSize extends DefaultTableDataModel<Enrol
 					log.info("Group overflow detected for the group: " + enrollmentRow.getKey() + "[name=" + enrollmentRow.getName() + "], participants: " + numOfParticipants + " maxParticipamts: " + enrollmentRow.getMaxParticipants());
 				}
 				return buf.toString();
-			case 3:
+			case 4:
 				// Waiting-list
 				if (enrollmentRow.isWaitingListEnabled()) {
 					// Waitinglist is enabled => show current size
 					return new Integer(enrollmentRow.getNumInWaitingList());
 				}
 				return trans.translate("grouplist.table.noWaitingList");
-			case 4:
+			case 5:
 				// Status
 				if (enrollmentRow.isParticipant()) {
 					return trans.translate("grouplist.table.state.onPartipiciantList"); 
@@ -124,7 +125,7 @@ public class EnrollmentTableModelWithMaxSize extends DefaultTableDataModel<Enrol
 					return trans.translate("grouplist.table.state.WaitingList");
 				}
 				return trans.translate("grouplist.table.state.notEnrolled");
-			case 5:
+			case 6:
 				// Action enroll
 				if (getEnrolCount() >= maxEnrolCount || isEnrolledIn(enrollmentRow)) {
 					// Already too much enrollments or already enrolled in the bg of the row => does not show action-link 'enroll'
@@ -135,7 +136,7 @@ public class EnrollmentTableModelWithMaxSize extends DefaultTableDataModel<Enrol
 					return Boolean.FALSE;
 				}
 				return Boolean.TRUE;
-			case 6:
+			case 7:
 				// Action cancel enrollment
 				if (isEnrolledIn(enrollmentRow)) {
           // check if user is on waiting-list
