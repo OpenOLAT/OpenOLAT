@@ -21,6 +21,7 @@ package org.olat.modules.curriculum.restapi;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.olat.modules.curriculum.CurriculumElementType;
@@ -57,7 +58,18 @@ public class CurriculumElementTypeVO {
 			 "copy(all)",
 			 "delete(all)"})
 	private String managedFlagsString;
+	@Schema(required = false, description = "Enable or disable the calendars aggregation", allowableValues = { 
+			"enabled",
+			"disabled",
+			"inherited"})
+	@XmlAttribute(name="calendars", required=false)
 	private String calendars;
+	@Schema(required = false, description = "Enable or disable the lecture block overview and aggregation", allowableValues = { 
+			"enabled",
+			"disabled",
+			"inherited"})
+	@XmlAttribute(name="lectures", required=false)
+	private String lectures;
 	
 	public CurriculumElementTypeVO() {
 		//
@@ -73,6 +85,7 @@ public class CurriculumElementTypeVO {
 		vo.setExternalId(type.getExternalId());
 		vo.setManagedFlagsString(CurriculumElementTypeManagedFlag.toString(type.getManagedFlags()));
 		vo.setCalendars(type.getCalendars().name());
+		vo.setLectures(type.getLectures().name());
 		return vo;
 	}
 
@@ -138,5 +151,13 @@ public class CurriculumElementTypeVO {
 
 	public void setCalendars(String calendars) {
 		this.calendars = calendars;
-	}	
+	}
+
+	public String getLectures() {
+		return lectures;
+	}
+
+	public void setLectures(String lectures) {
+		this.lectures = lectures;
+	}
 }
