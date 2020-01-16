@@ -19,7 +19,6 @@
  */
 package org.olat.admin.sysinfo;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -36,7 +35,6 @@ import org.olat.admin.sysinfo.gui.LargeFilesTrashedCellRenderer;
 import org.olat.admin.sysinfo.model.LargeFilesTableContentRow;
 import org.olat.admin.sysinfo.model.LargeFilesTableModel;
 import org.olat.admin.sysinfo.model.LargeFilesTableModel.LargeFilesTableColumns;
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.commons.services.vfs.VFSFilterKeys;
@@ -78,7 +76,6 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
-import org.olat.core.util.vfs.VFSItem;
 import org.olat.modules.co.ContactFormController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -119,8 +116,6 @@ public class LargeFilesController extends FormBasicController implements Extende
 	private DialogBoxController confirmMetadataCleanupBox;
 	private CloseableCalloutWindowController pathInfoCalloutCtrl;
 
-	@Autowired
-	private DB dbInstance;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
@@ -245,6 +240,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		cleanupMetadataButton = uifactory.addFormLink("metadata.cleanup", formLayout, Link.BUTTON);
+		cleanupMetadataButton.getComponent().isSuppressDirtyFormWarning();
 
 		FormLayoutContainer leftContainer = FormLayoutContainer.createDefaultFormLayout_6_6("filter_left", getTranslator());
 		leftContainer.setRootForm(mainForm);
@@ -534,53 +530,12 @@ public class LargeFilesController extends FormBasicController implements Extende
 		cleanupMetadataButton.setEnabled(false);
 		
 		taskExecutorManager.execute(() -> {
-			cleanupMetadata();
+			vfsRepositoryService.cleanMetadatas();
 			if(cleanupMetadataButton != null) {
 				cleanupMetadataButton.setIconLeftCSS("");
 				cleanupMetadataButton.setEnabled(true);
 			}
 		});
-	}
-	
-	private void cleanupMetadata() {
-		try {
-			int counter = 0;
-			int batchSize = 10000;
-			List<VFSMetadata> metadata;
-			do {
-				metadata = vfsRepositoryService.getMetadatas(counter, batchSize);
-				for(VFSMetadata data:metadata) {
-					checkMetadata(data);
-				}
-				counter += metadata.size();
-				getLogger().info("Metadata processed: {}, total metadata processed ({})", metadata.size(), counter);
-				dbInstance.commitAndCloseSession();
-			} while(metadata.size() == batchSize);
-		} catch (Exception e) {
-			dbInstance.closeSession();
-			logError("", e);
-		}
-	}
-	
-	private void checkMetadata(VFSMetadata data) {
-		VFSItem item = vfsRepositoryService.getItemFor(data);
-		if(item == null || !item.exists()) {
-			boolean exists = false;
-			List<VFSRevision> revisions = vfsRepositoryService.getRevisions(data);
-			for(VFSRevision revision:revisions) {
-				File revFile = vfsRepositoryService.getRevisionFile(revision);
-				exists = revFile != null && revFile.exists();
-			}
-			
-			if(!exists) {
-				data = vfsRepositoryService.getMetadata(data);
-				if(data != null) {
-					getLogger().info("Delete metadata and associated: {}/{}", data.getRelativePath(), data.getFilename());
-					vfsRepositoryService.deleteMetadata(data);
-					dbInstance.commit();
-				}
-			}
-		}
 	}
 
 	@Override

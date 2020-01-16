@@ -69,8 +69,8 @@
 		<apache.poi>4.1.1</apache.poi>
 		<apache.log4j>2.13.0</apache.log4j>
 		<io.jsonwebtoken>0.10.7</io.jsonwebtoken>
-		<io.undertow>2.0.28.Final</io.undertow>
-		<jackson.version>2.10.1</jackson.version>
+		<io.undertow>2.0.29.Final</io.undertow>
+		<jackson.version>2.10.2</jackson.version>
 		<org.mysql.version>5.1.46</org.mysql.version>
 		<org.postgresql.version>42.2.9</org.postgresql.version>
 		<org.infinispan.version>10.1.0.Final</org.infinispan.version>
@@ -1139,7 +1139,7 @@
 			<id>central</id>
 			<name>Maven Repository Switchboard</name>
 			<layout>default</layout>
-			<url>http://central.maven.org/maven2</url>
+			<url>https://repo1.maven.org/maven2</url>
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
@@ -1970,7 +1970,7 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpcore</artifactId>
-			<version>4.4.12</version>
+			<version>4.4.13</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>

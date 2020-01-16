@@ -160,6 +160,14 @@ public class VFSMetadataDAO {
 		return metadata == null || metadata.isEmpty() ? null : metadata.get(0);
 	}
 	
+	/**
+	 * The method is sorted by key, and doesn't fetch any
+	 * associated objects.
+	 * 
+	 * @param startPosition Start position (mandatory)
+	 * @param maxResults Max. number of rows to return
+	 * @return A list of metadata without any fetched objects
+	 */
 	public List<VFSMetadata> getMetadatas(int startPosition, int batchSize) {
 		String query = "select metadata from filemetadata metadata order by key";
 		return dbInstance.getCurrentEntityManager()

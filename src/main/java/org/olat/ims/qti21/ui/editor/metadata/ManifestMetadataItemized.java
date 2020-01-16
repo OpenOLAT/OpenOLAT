@@ -307,7 +307,11 @@ class ManifestMetadataItemized implements QuestionItem, QuestionItemEditable {
 	@Override
 	public void setTaxonomyLevel(TaxonomyLevel taxonomyLevel) {
 		this.taxonomyLevel = taxonomyLevel;
-		metadataBuilder.setClassificationTaxonomy(getTaxonomicPath(), lang);
+		if(taxonomyLevel == null) {
+			metadataBuilder.setClassificationTaxonomy(null, lang);
+		} else {
+			metadataBuilder.setClassificationTaxonomy(getTaxonomicPath(), lang);
+		}
 	}
 
 	@Override
@@ -323,7 +327,11 @@ class ManifestMetadataItemized implements QuestionItem, QuestionItemEditable {
 	@Override
 	public void setEducationalContext(QEducationalContext context) {
 		this.context = context;
-		metadataBuilder.setEducationalContext(context.getLevel(), lang);
+		if(context == null) {
+			metadataBuilder.setEducationalContext(null, lang);
+		} else {
+			metadataBuilder.setEducationalContext(context.getLevel(), lang);
+		}
 	}
 
 	@Override
