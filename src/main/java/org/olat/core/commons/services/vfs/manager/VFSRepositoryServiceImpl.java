@@ -193,8 +193,62 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	}
 
 	@Override
-	public List<VFSMetadata> getMetadatas(int startPosition, int maxResults) {
-		return metadataDao.getMetadatas(startPosition, maxResults);
+	public void cleanMetadatas() {
+		try {
+			int loop = 0;
+			int counter = 0;
+			int processed = 0;
+			int batchSize = 10000;
+			int maxLoops = 10000;// allow 100'000'000 rows, but prevent an infinite loop in case
+			int totalDeleted = 0;
+			List<VFSMetadata> metadata;
+			do {
+				metadata = metadataDao.getMetadatas(counter, batchSize);
+				int deleted = 0;
+				for(VFSMetadata data:metadata) {
+					deleted += checkMetadata(data);
+				}
+				counter += metadata.size() - deleted;
+				totalDeleted += deleted;
+				if(counter < 0) {
+					counter = 0;
+				}
+				loop++;
+				processed += metadata.size();
+				log.info("Metadata processed: {}, deleted {}, total metadata processed ({})", metadata.size(), deleted, processed);
+				dbInstance.commitAndCloseSession();
+			} while(metadata.size() == batchSize && loop < maxLoops);
+			
+			log.info("Cleanup metadata ended: deleted {}, total metadata processed ({})", totalDeleted, processed);
+		} catch (Exception e) {
+			dbInstance.closeSession();
+			log.error("", e);
+		}
+	}
+	
+	private int checkMetadata(VFSMetadata data) {
+		int deleted = 0;
+		
+		VFSItem item = getItemFor(data);
+		if(item == null || !item.exists() || item.getName().startsWith("._oo_")) {
+			boolean exists = false;
+			List<VFSRevision> revisions = getRevisions(data);
+			for(VFSRevision revision:revisions) {
+				File revFile = getRevisionFile(revision);
+				exists = revFile != null && revFile.exists();
+			}
+			
+			if(!exists) {
+				data = getMetadata(data);
+				if(data != null) {
+					log.info("Delete metadata and associated: {}/{}", data.getRelativePath(), data.getFilename());
+					deleted = deleteMetadata(data);
+					dbInstance.commit();
+				}
+			}
+		}
+		
+		return deleted;
 	}
 
 	@Override
@@ -376,8 +430,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	}
 
 	@Override
-	public void deleteMetadata(VFSMetadata data) {
-		if(data == null) return; // nothing to do
+	public int deleteMetadata(VFSMetadata data) {
+		if(data == null) return 0; // nothing to do
 		
 		List<VFSThumbnailMetadata> thumbnails = thumbnailDao.loadByMetadata(data);
 		for(VFSThumbnailMetadata thumbnail:thumbnails) {
@@ -401,11 +455,15 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			revisionDao.deleteRevision(revision);
 		}
 		
+		int deleted = 0;
+		
 		List<VFSMetadata> children = getChildren(data);
 		for(VFSMetadata child:children) {
-			deleteMetadata(child);
+			deleted += deleteMetadata(child);
 		}
 		metadataDao.removeMetadata(data);
+		deleted++;
+		return deleted;
 	}
 
 	@Override
