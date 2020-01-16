@@ -267,19 +267,26 @@ public class ManifestMetadataBuilder {
 	}
 	
 	public void setEducationalContext(String context, String lang) {
-		EducationalType educational = getEducational(true);
-		if(educational != null) {
-			ContextType type = getFromAny(ContextType.class, educational.getContent());
-			if(type == null) {
-				type = mdObjectFactory.createContextType();
-				educational.getContent().add(mdObjectFactory.createContext(type));
+		if(StringHelper.containsNonWhitespace(context)) {
+			EducationalType educational = getEducational(true);
+			if(educational != null) {
+				ContextType type = getFromAny(ContextType.class, educational.getContent());
+				if(type == null) {
+					type = mdObjectFactory.createContextType();
+					educational.getContent().add(mdObjectFactory.createContext(type));
+				}
+				SourceType sourceType = mdObjectFactory.createSourceType();
+				sourceType.setLangstring(createString("https://www.openolat.org", lang));
+				ValueType valueType = mdObjectFactory.createValueType();
+				valueType.setLangstring(createString(context, lang));
+				type.setSource(sourceType);
+				type.setValue(valueType);
 			}
-			SourceType sourceType = mdObjectFactory.createSourceType();
-			sourceType.setLangstring(createString("https://www.openolat.org", lang));
-			ValueType valueType = mdObjectFactory.createValueType();
-			valueType.setLangstring(createString(context, lang));
-			type.setSource(sourceType);
-			type.setValue(valueType);
+		} else {
+			EducationalType educational = getEducational(false);
+			if(educational != null) {
+				clearFromAny(ContextType.class, educational.getContent());
+			}
 		}
 	}
 	
@@ -341,7 +348,7 @@ public class ManifestMetadataBuilder {
 				List<TaxonType> taxons = taxonpath.getTaxon();
 				if(taxons != null) {
 					for(TaxonType taxon:taxons) {
-						if(taxon.getEntry() != null && taxon.getEntry().getLangstring().size() > 0) {
+						if(taxon.getEntry() != null && !taxon.getEntry().getLangstring().isEmpty()) {
 							LangstringType value = taxon.getEntry().getLangstring().get(0);
 							if(value != null && value.getValue() != null) {
 								sb.append("/").append(value.getValue());
@@ -360,25 +367,32 @@ public class ManifestMetadataBuilder {
 	 * @param lang
 	 */
 	public void setClassificationTaxonomy(String taxonomyPath, String lang) {
-		ClassificationType classification = getClassification("discipline", lang, true);
-		if(classification != null) {
-			TaxonpathType taxonpathType = mdObjectFactory.createTaxonpathType();
-			clearFromAny(TaxonpathType.class, classification.getContent());
-			classification.getContent().add(mdObjectFactory.createTaxonpath(taxonpathType));
-			taxonpathType.getTaxon().clear();
-			
-			SourceType sourceType = mdObjectFactory.createSourceType();
-			sourceType.setLangstring(createString("Unkown", "en"));
-			taxonpathType.setSource(sourceType);
-			
-			for(StringTokenizer tokenizer = new StringTokenizer(taxonomyPath, "/"); tokenizer.hasMoreTokens(); ) {
-				String level = tokenizer.nextToken();
+		if(StringHelper.containsNonWhitespace(taxonomyPath)) {
+			ClassificationType classification = getClassification("discipline", lang, true);
+			if(classification != null) {
+				TaxonpathType taxonpathType = mdObjectFactory.createTaxonpathType();
+				clearFromAny(TaxonpathType.class, classification.getContent());
+				classification.getContent().add(mdObjectFactory.createTaxonpath(taxonpathType));
+				taxonpathType.getTaxon().clear();
 				
-				TaxonType taxonType = mdObjectFactory.createTaxonType();
-				EntryType entryType = mdObjectFactory.createEntryType();
-				createOrUpdateFirstLangstring(entryType.getLangstring(), level, lang);
-				taxonType.setEntry(entryType);
-				taxonpathType.getTaxon().add(taxonType);
+				SourceType sourceType = mdObjectFactory.createSourceType();
+				sourceType.setLangstring(createString("Unkown", "en"));
+				taxonpathType.setSource(sourceType);
+				
+				for(StringTokenizer tokenizer = new StringTokenizer(taxonomyPath, "/"); tokenizer.hasMoreTokens(); ) {
+					String level = tokenizer.nextToken();
+					
+					TaxonType taxonType = mdObjectFactory.createTaxonType();
+					EntryType entryType = mdObjectFactory.createEntryType();
+					createOrUpdateFirstLangstring(entryType.getLangstring(), level, lang);
+					taxonType.setEntry(entryType);
+					taxonpathType.getTaxon().add(taxonType);
+				}
+			}
+		} else {
+			ClassificationType classification = getClassification("discipline", lang, false);
+			if(classification != null) {
+				clearFromAny(TaxonpathType.class, classification.getContent());
 			}
 		}
 	}
@@ -413,7 +427,7 @@ public class ManifestMetadataBuilder {
 	
 	public String getFirstString(List<LangstringType> langStrings) {
 		String firstString = null;
-		if(langStrings != null && langStrings.size() > 0) {
+		if(langStrings != null && !langStrings.isEmpty()) {
 			firstString = langStrings.get(0).getValue();
 		}
 		return firstString;
