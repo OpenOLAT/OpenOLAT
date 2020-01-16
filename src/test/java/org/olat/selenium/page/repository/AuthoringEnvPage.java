@@ -183,6 +183,12 @@ public class AuthoringEnvPage {
 		OOGraphene.waitModalDialog(browser);
 		By inputBy = By.cssSelector("div.modal.o_sel_author_create_popup div.o_sel_author_displayname input");
 		browser.findElement(inputBy).sendKeys(displayName);
+		// select node model for the course
+		By typeBy = By.cssSelector("#o_cocif_node_access_SELBOX>select");
+		WebElement typeEl = browser.findElement(typeBy);
+		new Select(typeEl).selectByValue("condition");
+		OOGraphene.waitBusy(browser);
+		
 		By createBy = By.cssSelector("div.modal.o_sel_author_create_popup .o_sel_author_create_wizard");
 		browser.findElement(createBy).click();
 		OOGraphene.waitBusy(browser);

@@ -258,7 +258,7 @@ public class CourseTest extends Deployments {
 		//open course editor
 		CoursePageFragment course = CoursePageFragment.getCourse(browser);
 		course
-			.assertOnLearnPath()
+			.assertOnCoursePage()
 			.assertOnTitle(title);
 		
 		//assert the 5 nodes are there and click them

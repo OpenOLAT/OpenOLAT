@@ -51,7 +51,7 @@ public class EnrollmentConfigurationPage {
 		browser.findElement(createGroupBy).click();
 		OOGraphene.waitModalDialog(browser);
 		
-		By checkGroupsBy = By.cssSelector("div.modal-body input[type='checkbox'][name='entries']");
+		By checkGroupsBy = By.cssSelector("div.modal-body td.o_multiselect>input[type='checkbox'][name='tb_ms']");
 		List<WebElement> checkGroupEls = browser.findElements(checkGroupsBy);
 		for(WebElement checkGroupEl:checkGroupEls) {
 			checkGroupEl.click();
@@ -61,6 +61,7 @@ public class EnrollmentConfigurationPage {
 		By selectBy = By.cssSelector("div.modal-body div.o_button_group button.btn.btn-primary");
 		browser.findElement(selectBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
@@ -70,12 +71,9 @@ public class EnrollmentConfigurationPage {
 	 */
 	public EnrollmentConfigurationPage createBusinessGroup(String name, String description,
 			int maxParticipants, boolean waitingList, boolean auto) {
-		By chooseGroupBy = By.cssSelector("a.o_form_groupchooser");
+		By chooseGroupBy = By.cssSelector("a.o_form_groupcreate");
 		browser.findElement(chooseGroupBy).click();
 		OOGraphene.waitBusy(browser);
-		
-		By createGroupBy = By.cssSelector("div.o_button_group_right a");
-		browser.findElement(createGroupBy).click();
 		OOGraphene.waitModalDialog(browser);
 		
 		//fill the form
@@ -99,14 +97,9 @@ public class EnrollmentConfigurationPage {
 		
 		//save the group
 		By submitBy = By.cssSelector(".o_sel_group_edit_group_form button.btn-primary");
-		WebElement submitButton = browser.findElement(submitBy);
-		submitButton.click();
+		browser.findElement(submitBy).click();
 		OOGraphene.waitBusy(browser);
-		// save group selection
-		By saveBy = By.cssSelector(".o_sel_group_selection_groups button.btn-primary");
-		WebElement saveButton = browser.findElement(saveBy);
-		saveButton.click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
