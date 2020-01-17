@@ -285,7 +285,7 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 	
 	private FIBAlternativeWrapper createAlternativeWrapper(TextEntryAlternative alternative) {
 		String altPointElId = "points_" + counter++;
-		String altScoreStr = alternative.getScore() == -1.0d ? "" : Double.toString(alternative.getScore());
+		String altScoreStr = Double.toString(alternative.getScore());
 		TextElement altPointEl = uifactory.addTextElement(altPointElId, null, 5, altScoreStr, scoreCont);
 		altPointEl.setDisplaySize(5);
 		altPointEl.setEnabled(!restrictedEdit && !readOnly);
@@ -321,23 +321,25 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 	}
 	
 	private void updateScoresUI() {
-		boolean perAnswer = assessmentModeEl.isSelected(1) || assessmentModeEl.isSelected(2);
-		scoreCont.setVisible(perAnswer);
-		scoreCont.contextPut("withAlternatives", Boolean.valueOf(assessmentModeEl.isSelected(2)));
-		if(perAnswer) {
+		boolean perAnswer = assessmentModeEl.isSelected(1);
+		boolean perAnswerAndVariants = assessmentModeEl.isSelected(2);
+		scoreCont.setVisible(perAnswer || perAnswerAndVariants);
+		scoreCont.contextPut("withAlternatives", Boolean.valueOf(perAnswerAndVariants));
+		if(perAnswer || perAnswerAndVariants) {
 			for(FIBEntryWrapper wrapper:wrappers) {
 				AbstractEntry entry = wrapper.getEntry();
 				Double points = entry.getScore();
 				if(points != null && points.doubleValue() == -1.0d) {//replace the all answers score
 					wrapper.getEntry().setScore(1.0d);
 					wrapper.getPointsEl().setValue("1.0");
+					points = Double.valueOf(1.0d);
 				}
 				
 				if(entry instanceof TextEntry && wrapper.getAlternatives() != null && !wrapper.getAlternatives().isEmpty()) {
 					for(FIBAlternativeWrapper alternativeWrapper:wrapper.getAlternatives()) {
 						TextEntryAlternative alternative = alternativeWrapper.getAlternative();
 						if(StringHelper.containsNonWhitespace(alternativeWrapper.getPointsEl().getValue())) {
-							if(points != null && points.doubleValue() >= 0.0d && alternative.getScore() == 1.0d) {
+							if(points != null && (alternative.getScore() == 1.0d || alternative.getScore() == -1.0d)) {
 								alternative.setScore(points.doubleValue());
 								alternativeWrapper.getPointsEl().setValue(points.toString());
 							}
