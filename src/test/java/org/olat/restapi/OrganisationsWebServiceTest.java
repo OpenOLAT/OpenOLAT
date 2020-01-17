@@ -19,8 +19,8 @@
  */
 package org.olat.restapi;
 
-import static org.junit.Assert.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,6 +38,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Logger;
+import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
@@ -52,7 +54,6 @@ import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
@@ -154,7 +155,7 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		conn.addJsonEntity(method, vo);
 		
 		HttpResponse response = conn.execute(method);
-		Assert.assertThat(response.getStatusLine().getStatusCode(), Matchers.either(Matchers.is(200)).or(Matchers.is(201)));
+		MatcherAssert.assertThat(response.getStatusLine().getStatusCode(), Matchers.either(Matchers.is(200)).or(Matchers.is(201)));
 		
 		// checked VO
 		OrganisationVO savedVo = conn.parse(response, OrganisationVO.class);
@@ -214,7 +215,7 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		conn.addJsonEntity(method, vo);
 		
 		HttpResponse response = conn.execute(method);
-		Assert.assertThat(response.getStatusLine().getStatusCode(), Matchers.either(Matchers.is(200)).or(Matchers.is(201)));
+		MatcherAssert.assertThat(response.getStatusLine().getStatusCode(), Matchers.either(Matchers.is(200)).or(Matchers.is(201)));
 		
 		// checked VO
 		OrganisationVO savedVo = conn.parse(response, OrganisationVO.class);
@@ -310,7 +311,7 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		conn.addJsonEntity(method, vo);
 		
 		HttpResponse response = conn.execute(method);
-		Assert.assertThat(response.getStatusLine().getStatusCode(), Matchers.either(Matchers.is(200)).or(Matchers.is(201)));
+		MatcherAssert.assertThat(response.getStatusLine().getStatusCode(), Matchers.either(Matchers.is(200)).or(Matchers.is(201)));
 		
 		// checked VO
 		OrganisationVO savedVo = conn.parse(response, OrganisationVO.class);
@@ -357,7 +358,7 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		conn.addJsonEntity(method, organisationVo2);
 		
 		HttpResponse response = conn.execute(method);
-		Assert.assertThat(response.getStatusLine().getStatusCode(), Matchers.either(Matchers.is(200)).or(Matchers.is(201)));
+		MatcherAssert.assertThat(response.getStatusLine().getStatusCode(), Matchers.either(Matchers.is(200)).or(Matchers.is(201)));
 		
 		// checked VO
 		OrganisationVO savedVo = conn.parse(response, OrganisationVO.class);
@@ -428,7 +429,7 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		conn.addJsonEntity(method, vo);
 		
 		HttpResponse response = conn.execute(method);
-		Assert.assertThat(response.getStatusLine().getStatusCode(), Matchers.either(Matchers.is(200)).or(Matchers.is(201)));
+		MatcherAssert.assertThat(response.getStatusLine().getStatusCode(), Matchers.either(Matchers.is(200)).or(Matchers.is(201)));
 		
 		// checked VO
 		OrganisationVO savedVo = conn.parse(response, OrganisationVO.class);

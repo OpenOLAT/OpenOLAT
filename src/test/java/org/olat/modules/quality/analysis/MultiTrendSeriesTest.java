@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 
 import org.junit.Test;
+import org.olat.modules.quality.analysis.MultiTrendSeries.TemporalMinMaxKeys;
 import org.olat.modules.quality.analysis.model.TrendImpl;
 
 /**
@@ -40,16 +41,18 @@ public class MultiTrendSeriesTest {
 		TemporalKey tk2001 = TemporalKey.of(2001);
 		TemporalKey tk2002 = TemporalKey.of(2002);
 		TemporalKey tk2003 = TemporalKey.of(2003);
+		TemporalMinMaxKeys minMaxKeys = TemporalMinMaxKeys.of(tk2000, tk2003);
 
-		MultiTrendSeries<String> multiTrendSeries = new MultiTrendSeries<>(TemporalGroupBy.DATA_COLLECTION_DEADLINE_YEAR, tk2000, tk2003);
+		MultiTrendSeries<String> multiTrendSeries = new MultiTrendSeries<>(TemporalGroupBy.DATA_COLLECTION_DEADLINE_YEAR, minMaxKeys);
 		
 		assertThat(multiTrendSeries.getTemporalKeys()).containsExactly(tk2000, tk2001, tk2002, tk2003);
 	}
 	@Test
 	public void shouldGenerateTemporalKeysIfMinEqualsMax() {
 		TemporalKey tk2000 = TemporalKey.of(2000);
+		TemporalMinMaxKeys minMaxKeys = TemporalMinMaxKeys.of(tk2000, tk2000);
 
-		MultiTrendSeries<String> multiTrendSeries = new MultiTrendSeries<>(TemporalGroupBy.DATA_COLLECTION_DEADLINE_YEAR, tk2000, tk2000);
+		MultiTrendSeries<String> multiTrendSeries = new MultiTrendSeries<>(TemporalGroupBy.DATA_COLLECTION_DEADLINE_YEAR, minMaxKeys);
 		
 		assertThat(multiTrendSeries.getTemporalKeys()).containsExactly(tk2000);
 	}
@@ -59,8 +62,9 @@ public class MultiTrendSeriesTest {
 		String identifier = "1";
 		TemporalKey tk2000 = TemporalKey.of(2000);
 		TemporalKey tk2003 = TemporalKey.of(2003);
+		TemporalMinMaxKeys minMaxKeys = TemporalMinMaxKeys.of(tk2000, tk2003);
 
-		MultiTrendSeries<String> multiTrendSeries = new MultiTrendSeries<>(TemporalGroupBy.DATA_COLLECTION_DEADLINE_YEAR, tk2000, tk2003);
+		MultiTrendSeries<String> multiTrendSeries = new MultiTrendSeries<>(TemporalGroupBy.DATA_COLLECTION_DEADLINE_YEAR, minMaxKeys);
 		multiTrendSeries.put(identifier, tk2000, null);
 		
 		List<Trend> trendList = multiTrendSeries.getSeries(identifier).toList();
@@ -72,9 +76,10 @@ public class MultiTrendSeriesTest {
 		String identifier = "1";
 		TemporalKey tk2000 = TemporalKey.of(2000);
 		TemporalKey tk2003 = TemporalKey.of(2003);
+		TemporalMinMaxKeys minMaxKeys = TemporalMinMaxKeys.of(tk2000, tk2003);
 		Trend trend = new TrendImpl(null, null, null, null);
 
-		MultiTrendSeries<String> multiTrendSeries = new MultiTrendSeries<>(TemporalGroupBy.DATA_COLLECTION_DEADLINE_YEAR, tk2000, tk2003);
+		MultiTrendSeries<String> multiTrendSeries = new MultiTrendSeries<>(TemporalGroupBy.DATA_COLLECTION_DEADLINE_YEAR, minMaxKeys);
 		multiTrendSeries.put(identifier, tk2003, trend);
 		
 		List<Trend> trendList = multiTrendSeries.getSeries(identifier).toList();
@@ -86,8 +91,9 @@ public class MultiTrendSeriesTest {
 		String identifier = "1";
 		TemporalKey tk2000 = TemporalKey.of(2000);
 		TemporalKey tk2003 = TemporalKey.of(2003);
+		TemporalMinMaxKeys minMaxKeys = TemporalMinMaxKeys.of(tk2000, tk2003);
 
-		MultiTrendSeries<String> multiTrendSeries = new MultiTrendSeries<>(TemporalGroupBy.DATA_COLLECTION_DEADLINE_YEAR, tk2000, tk2003);
+		MultiTrendSeries<String> multiTrendSeries = new MultiTrendSeries<>(TemporalGroupBy.DATA_COLLECTION_DEADLINE_YEAR, minMaxKeys);
 		
 		List<Trend> trendList = multiTrendSeries.getSeries(identifier).toList();
 		assertThat(trendList).containsExactly(null, null, null, null);

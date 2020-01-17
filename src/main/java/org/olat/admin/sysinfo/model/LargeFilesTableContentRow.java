@@ -21,10 +21,14 @@ package org.olat.admin.sysinfo.model;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSRevision;
+import org.olat.core.commons.services.vfs.impl.VFSContextInfoUnknownPathResolver;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.Identity;
 import org.olat.core.util.WebappHelper;
@@ -42,6 +46,7 @@ public class LargeFilesTableContentRow {
 	private final Long size;
 	private FormLink pathInfo;
 	private final String path;
+	private final String context;
 	private final Identity author;
 	private final boolean revision;
 	private final String fileType;
@@ -65,12 +70,14 @@ public class LargeFilesTableContentRow {
 	private final long revisionNr;
 	private final String revisionComment;
 
-	public LargeFilesTableContentRow(VFSMetadata metadata) {
+	public LargeFilesTableContentRow(VFSMetadata metadata, Locale locale) {
 		key = metadata.getKey();
 		name = metadata.getFilename();
 		size = metadata.getFileSize();
 		author = metadata.getAuthor();
 		path = metadata.getRelativePath();
+		VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
+		context = vfsRepositoryService.getContextTypeFor(path, locale);		
 		fileType = WebappHelper.getMimeType(metadata.getFilename()) != null ? WebappHelper.getMimeType(metadata.getFilename()).split("/")[1] : "Unknown";
 		fileCategory = WebappHelper.getMimeType(metadata.getFilename()) != null ? WebappHelper.getMimeType(metadata.getFilename()).split("/")[0] : "Unknown";
 		revision = false;
@@ -94,12 +101,14 @@ public class LargeFilesTableContentRow {
 		revisionComment = metadata.getRevisionComment();
 	}
 
-	public LargeFilesTableContentRow(VFSRevision rev) {
+	public LargeFilesTableContentRow(VFSRevision rev, Locale locale) {
 		key = rev.getMetadata().getKey();
 		name = rev.getFilename();
 		size = rev.getSize();
 		author = rev.getAuthor();
 		path = rev.getMetadata().getRelativePath();
+		VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
+		context = vfsRepositoryService.getContextTypeFor(path, locale);		
 		revision = true;
 		fileType = WebappHelper.getMimeType(rev.getFilename()) != null ? WebappHelper.getMimeType(rev.getFilename()).split("/")[1] : "Unknown";
 		fileCategory = WebappHelper.getMimeType(rev.getFilename()) != null ? WebappHelper.getMimeType(rev.getFilename()).split("/")[0] : "Unknown";
@@ -170,6 +179,13 @@ public class LargeFilesTableContentRow {
 
 	public String getPath() {
 		return path;
+	}
+
+	public String getContext() {
+		if (context == null || context.equals(VFSContextInfoUnknownPathResolver.UNKNOWN_TYPE)) {
+			return path;
+		}
+		return context;
 	}
 
 	public Boolean isRevision() {

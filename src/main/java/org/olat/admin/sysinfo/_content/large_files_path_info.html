@@ -1,0 +1,7 @@
+<div class='o_nowrap'><strong>$r.translate("vfs.context.name"):</strong> $contextInfo.getContextTitle()</div>
+<div class='o_nowrap'><strong>$r.translate("vfs.context.type"):</strong> $contextInfo.getContextTypeName()</div>
+<div class='o_nowrap'><strong>$r.translate("largefiles.path"):</strong> $row.getPath() $row.getName()</div>
+#if ($contextInfo.getContextUrl())
+<div class="o_nowrap"><strong>$r.translate("vfs.context.url"):</strong> <a href='$contextInfo.getContextUrl()'>$contextInfo.getContextUrl()</a></div>	
+#end
+	

@@ -42,6 +42,7 @@ import org.olat.modules.quality.analysis.GroupedStatistics;
 import org.olat.modules.quality.analysis.HeatMapStatistic;
 import org.olat.modules.quality.analysis.MultiKey;
 import org.olat.modules.quality.analysis.MultiTrendSeries;
+import org.olat.modules.quality.analysis.MultiTrendSeries.TemporalMinMaxKeys;
 import org.olat.modules.quality.analysis.RawGroupedStatistic;
 import org.olat.modules.quality.analysis.TemporalGroupBy;
 import org.olat.modules.quality.analysis.TemporalKey;
@@ -236,18 +237,10 @@ public class StatisticsCalculator {
 
 
 	MultiTrendSeries<String> getTrendsByIdentifiers(GroupedStatistics<GroupedStatistic> statistics, TemporalGroupBy temporalGroupBy) {
-		Set<TemporalKey> temporalKeys = new HashSet<>();
-		for (GroupedStatisticKeys groupedStatistic : statistics.getStatistics()) {
-			temporalKeys.add(groupedStatistic.getTemporalKey());
-		}
-		List<TemporalKey> sortedTemporalKeys = new ArrayList<>(temporalKeys);
-		Collections.sort(sortedTemporalKeys);
-		TemporalKey minKey = sortedTemporalKeys.get(0);
-		TemporalKey maxKey = sortedTemporalKeys.get(sortedTemporalKeys.size() - 1);
-		
+		TemporalMinMaxKeys minMaxKeys = getTemporalMinMax(statistics);
 		Set<String> identifiers = statistics.getIdentifiers();
 		
-		MultiTrendSeries<String> multiTrendSeries = new MultiTrendSeries<>(temporalGroupBy, minKey, maxKey);
+		MultiTrendSeries<String> multiTrendSeries = new MultiTrendSeries<>(temporalGroupBy, minMaxKeys);
 		for (String identifier: identifiers) {
 			GroupedStatistic lastStatistic = null;
 			for (TemporalKey temporalKey: multiTrendSeries.getTemporalKeys()) {
@@ -266,18 +259,10 @@ public class StatisticsCalculator {
 	}
 	
 	MultiTrendSeries<MultiKey> getTrendsByMultiKey(GroupedStatistics<GroupedStatistic> statistics, TemporalGroupBy temporalGroupBy) {
-		Set<TemporalKey> temporalKeys = new HashSet<>();
-		for (GroupedStatisticKeys groupedStatistic : statistics.getStatistics()) {
-			temporalKeys.add(groupedStatistic.getTemporalKey());
-		}
-		List<TemporalKey> sortedTemporalKeys = new ArrayList<>(temporalKeys);
-		Collections.sort(sortedTemporalKeys);
-		TemporalKey minKey = sortedTemporalKeys.get(0);
-		TemporalKey maxKey = sortedTemporalKeys.get(sortedTemporalKeys.size() - 1);
-		
+		TemporalMinMaxKeys minMaxKeys = getTemporalMinMax(statistics);
 		Set<MultiKey> multiKeys = statistics.getMultiKeys();
 		
-		MultiTrendSeries<MultiKey> multiTrendSeries = new MultiTrendSeries<>(temporalGroupBy, minKey, maxKey);
+		MultiTrendSeries<MultiKey> multiTrendSeries = new MultiTrendSeries<>(temporalGroupBy, minMaxKeys);
 		for (MultiKey multiKey: multiKeys) {
 			GroupedStatistic lastStatistic = null;
 			for (TemporalKey temporalKey: multiTrendSeries.getTemporalKeys()) {
@@ -293,6 +278,21 @@ public class StatisticsCalculator {
 			}
 		}
 		return multiTrendSeries;
+	}
+	
+	private TemporalMinMaxKeys getTemporalMinMax(GroupedStatistics<GroupedStatistic> statistics) {
+		if (statistics.getStatistics().isEmpty()) return TemporalMinMaxKeys.nones();
+		
+		Set<TemporalKey> temporalKeys = new HashSet<>();
+		for (GroupedStatisticKeys groupedStatistic : statistics.getStatistics()) {
+			temporalKeys.add(groupedStatistic.getTemporalKey());
+		}
+		List<TemporalKey> sortedTemporalKeys = new ArrayList<>(temporalKeys);
+		Collections.sort(sortedTemporalKeys);
+		TemporalKey minKey = sortedTemporalKeys.get(0);
+		TemporalKey maxKey = sortedTemporalKeys.get(sortedTemporalKeys.size() - 1);
+		
+		return TemporalMinMaxKeys.of(minKey, maxKey);
 	}
 	
 	Double getAvgDiffAbsolute(GroupedStatistic prev, GroupedStatistic current) {

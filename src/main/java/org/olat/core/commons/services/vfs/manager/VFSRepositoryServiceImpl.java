@@ -41,6 +41,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -61,6 +62,8 @@ import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.thumbnail.CannotGenerateThumbnailException;
 import org.olat.core.commons.services.thumbnail.FinalSize;
 import org.olat.core.commons.services.thumbnail.ThumbnailService;
+import org.olat.core.commons.services.vfs.VFSContextInfo;
+import org.olat.core.commons.services.vfs.VFSContextInfoResolver;
 import org.olat.core.commons.services.vfs.VFSFilterKeys;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSMetadataRef;
@@ -70,6 +73,8 @@ import org.olat.core.commons.services.vfs.VFSRevision;
 import org.olat.core.commons.services.vfs.VFSRevisionRef;
 import org.olat.core.commons.services.vfs.VFSThumbnailMetadata;
 import org.olat.core.commons.services.vfs.VFSVersionModule;
+import org.olat.core.commons.services.vfs.impl.VFSContextInfoUnknown;
+import org.olat.core.commons.services.vfs.impl.VFSContextInfoUnknownPathResolver;
 import org.olat.core.commons.services.vfs.manager.MetaInfoReader.Thumbnail;
 import org.olat.core.commons.services.vfs.model.VFSFileStatistics;
 import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
@@ -141,6 +146,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	private CoordinatorManager coordinatorManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	// Autowired liste by setVfsContextInfoResolver() method
+	private List<VFSContextInfoResolver> vfsContextInfoResolver;
 	
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -283,6 +290,34 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		}
 		dbInstance.commit();
 		return metadata;
+	}
+	
+	@Override
+	public String getContextTypeFor(String relativePath, Locale locale) {
+		if (relativePath == null) {
+			return "No path";
+		}
+		for (VFSContextInfoResolver resolver : vfsContextInfoResolver) {
+			String contextType = resolver.resolveContextTypeName(relativePath, locale);
+			if (contextType != null) {
+				return contextType;
+			}
+		}
+		return VFSContextInfoUnknownPathResolver.UNKNOWN_TYPE;
+	}
+	
+	@Override
+	public VFSContextInfo getContextInfoFor(String relativePath, Locale locale) {
+		if (relativePath == null) {
+			new VFSContextInfoUnknown("No Relative Path");	
+		}
+		for (VFSContextInfoResolver resolver : vfsContextInfoResolver) {
+			VFSContextInfo contextInfo = resolver.resolveContextInfo(relativePath, locale);
+			if (contextInfo != null) {
+				return contextInfo;
+			}
+		}
+		return new VFSContextInfoUnknown(VFSContextInfoUnknownPathResolver.UNKNOWN_CONTEXT);				
 	}
 	
 	@Override
@@ -1540,4 +1575,15 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	public VFSThumbnailStatistics getThumbnailStats() {
 		return statsDao.getThumbnailStats();
 	}
+	
+	
+	/**
+	 * Set list of context info resolver. Used to autowire resolvers from various implementers
+	 * @param vfsContextInfoResolver
+	 */
+	@Autowired
+	public void setVfsContextInfoResolvers(List<VFSContextInfoResolver> vfsContextInfoResolver) {
+		this.vfsContextInfoResolver = vfsContextInfoResolver;
+	}
+	
 }

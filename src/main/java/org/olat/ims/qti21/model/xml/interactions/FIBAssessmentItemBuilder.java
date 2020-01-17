@@ -499,6 +499,11 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		this.scoreEvaluation = scoreEvaluation;
 	}
 	
+	/**
+	 * This method only applies to score per answer.
+	 * 
+	 * @return true if some variant hasn't the same score as the main response.
+	 */
 	public boolean alternativesWithSpecificScore() {
 		for(Map.Entry<String, AbstractEntry> entry:responseIdentifierToTextEntry.entrySet()) {
 			AbstractEntry e = entry.getValue();
@@ -508,7 +513,7 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 				if(textEntry.getAlternatives() != null && !textEntry.getAlternatives().isEmpty()) {
 					for(TextEntryAlternative alternative:textEntry.getAlternatives()) {
 						double altScore = alternative.getScore();
-						if(altScore >= 0.0d && score != null && score.doubleValue() != altScore) {
+						if(score != null && score.doubleValue() != altScore) {
 							return true;
 						}
 					}

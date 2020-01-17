@@ -37,6 +37,7 @@ import org.olat.admin.sysinfo.model.LargeFilesTableModel;
 import org.olat.admin.sysinfo.model.LargeFilesTableModel.LargeFilesTableColumns;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
+import org.olat.core.commons.services.vfs.VFSContextInfo;
 import org.olat.core.commons.services.vfs.VFSFilterKeys;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryModule;
@@ -60,8 +61,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -160,7 +161,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 					downloadCountMin, revisionsCountMin, minSize);
 
 			for(VFSMetadata file:files) {
-				LargeFilesTableContentRow contentRow = new LargeFilesTableContentRow(file);
+				LargeFilesTableContentRow contentRow = new LargeFilesTableContentRow(file, getLocale());
 
 				String[] path = contentRow.getPath().split("/");
 
@@ -188,7 +189,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 					downloadCountMin, revisionsCountMin, minSize);
 
 			for(VFSRevision revision:revisions) {
-				LargeFilesTableContentRow contentRow = new LargeFilesTableContentRow(revision);
+				LargeFilesTableContentRow contentRow = new LargeFilesTableContentRow(revision, getLocale());
 
 				String[] path = contentRow.getPath().split("/");
 
@@ -306,6 +307,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.uuid));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, LargeFilesTableColumns.name, new LargeFilesNameCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, LargeFilesTableColumns.size, new LargeFilesSizeCellRenderer(vfsRepositoryModule)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, LargeFilesTableColumns.context));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, LargeFilesTableColumns.path));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.age, new LargeFilesAgeCellRenderer()));
 
@@ -401,9 +403,12 @@ public class LargeFilesController extends FormBasicController implements Extende
 				LargeFilesTableContentRow row = (LargeFilesTableContentRow) link.getUserObject();
 
 				CalloutSettings settings = new CalloutSettings(false);
+				VFSContextInfo contextInfo = vfsRepositoryService.getContextInfoFor(row.getPath(), getLocale());			
+				VelocityContainer pathInfoVC = createVelocityContainer("large_files_path_info");
+				pathInfoVC.contextPut("contextInfo", contextInfo);
+				pathInfoVC.contextPut("row", row);
 
-				pathInfoCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-						TextFactory.createTextComponentFromString("pathInfo", row.getPath(), "", true, null), link.getFormDispatchId(), "", true, "", settings);
+				pathInfoCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),pathInfoVC, link.getFormDispatchId(), "", true, "", settings);
 				listenTo(pathInfoCalloutCtrl);
 				pathInfoCalloutCtrl.activate();
 			}

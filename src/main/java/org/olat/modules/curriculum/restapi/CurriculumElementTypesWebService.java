@@ -20,7 +20,6 @@
 package org.olat.modules.curriculum.restapi;
 
 import java.util.ArrayList;
-
 import java.util.List;
 import java.util.Set;
 
@@ -41,6 +40,7 @@ import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
+import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementTypeRefImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -237,6 +237,12 @@ public class CurriculumElementTypesWebService {
 		} else {
 			elementType.setCalendars(CurriculumCalendars.disabled);
 		}
+		if(StringHelper.containsNonWhitespace(elementTypeVo.getLectures())) {
+			elementType.setLectures(CurriculumLectures.valueOf(elementTypeVo.getLectures()));
+		} else {
+			elementType.setLectures(CurriculumLectures.disabled);
+		}
+		
 		elementType.setManagedFlags(CurriculumElementTypeManagedFlag.toEnum(elementTypeVo.getManagedFlagsString()));
 		return curriculumService.updateCurriculumElementType(elementType);
 	}

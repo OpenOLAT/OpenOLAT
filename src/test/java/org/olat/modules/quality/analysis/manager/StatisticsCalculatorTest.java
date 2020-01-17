@@ -327,6 +327,24 @@ public class StatisticsCalculatorTest {
 	}
 	
 	@Test
+	public void shouldCalculateTrendsByMultiKeyWithoutData() {
+		GroupedStatistics<GroupedStatistic> statistics = new GroupedStatistics<>();
+		
+		MultiTrendSeries<MultiKey> multiTrendSeries = sut.getTrendsByMultiKey(statistics, TemporalGroupBy.DATA_COLLECTION_DEADLINE_YEAR);
+		
+		assertThat(multiTrendSeries.getTemporalKeys()).hasSize(0);
+	}
+	
+	@Test
+	public void shouldCalculateTrendssByIdentifiersWithoutData() {
+		GroupedStatistics<GroupedStatistic> statistics = new GroupedStatistics<>();
+		
+		MultiTrendSeries<String> multiTrendSeries = sut.getTrendsByIdentifiers(statistics, TemporalGroupBy.DATA_COLLECTION_DEADLINE_YEAR);
+		
+		assertThat(multiTrendSeries.getTemporalKeys()).hasSize(0);
+	}
+	
+	@Test
 	public void shouldReduceIdentifier() {
 		// Rubric 1
 		List<Slider> sliders1 = new ArrayList<>();
