@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.vfs.model.VFSFileStatistics;
@@ -44,6 +45,29 @@ public interface VFSRepositoryService {
 	public VFSMetadata getMetadataFor(VFSItem path);
 	
 	public VFSMetadata getMetadataFor(File file);
+	
+	/**
+	 * Resolve the context type for the given metadata. This method is "light
+	 * weight" and does not trigger database queries
+	 * 
+	 * @param relativePath The vfs metadada relative path for which the context is
+	 *                     resolved
+	 * @param locale       The users locale
+	 * @return A localized string or "Unknown" if not resolved
+	 */
+	public String getContextTypeFor(String relativePath, Locale locale);
+
+	/**
+	 * Resolve and build the detailed context information for the given metadata.
+	 * This methods is "heavy weight" and might user multiple database queries to
+	 * lookup all information. Use this only to lookup individual items.
+	 * 
+	 * @param relativePath The vfs metadada relative path for which the context is
+	 *                     resolved
+	 * @param locale       The users locale
+	 * @return The resolved and localized context or the VFSContextInfoUnknown
+	 */
+	public VFSContextInfo getContextInfoFor(String relativePath, Locale locale);
 	
 	public VFSMetadata getMetadata(VFSMetadataRef ref);
 	
