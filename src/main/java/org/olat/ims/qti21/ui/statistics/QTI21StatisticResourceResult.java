@@ -33,6 +33,9 @@ import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.messages.MessageUIFactory;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.QTICourseNode;
@@ -47,6 +50,7 @@ import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
+import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.repository.RepositoryEntry;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -359,6 +363,12 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 	private Controller createAssessmentItemController(UserRequest ureq, WindowControl wControl,
 			AssessmentItemRef assessmentItemRef, String sectionTitle, boolean printMode) {
 		ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(assessmentItemRef);
+		if(resolvedAssessmentItem == null || resolvedAssessmentItem.getItemLookup() == null) {
+			Translator translator = Util.createPackageTranslator(AssessmentTestDisplayController.class, ureq.getLocale());
+			String text = translator.translate("error.assessment.item.missing");
+			Controller errorCtrl = MessageUIFactory.createErrorMessage(ureq, wControl, "", text);
+			return TitledWrapperHelper.getWrapper(ureq, wControl, errorCtrl, courseNode, "o_icon_error");
+		}
 		
 		Controller ctrl = new QTI21AssessmentItemStatisticsController(ureq, wControl,
 				assessmentItemRef, resolvedAssessmentItem, sectionTitle, this, withFilter, printMode);
