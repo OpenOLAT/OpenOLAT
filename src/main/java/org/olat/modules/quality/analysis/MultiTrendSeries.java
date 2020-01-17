@@ -43,9 +43,11 @@ public class MultiTrendSeries<V> {
 		this.temporalKeys = Collections.emptyList();
 	}
 	
-	public MultiTrendSeries(TemporalGroupBy temporalGroupBy, TemporalKey min, TemporalKey max) {
+	public MultiTrendSeries(TemporalGroupBy temporalGroupBy, TemporalMinMaxKeys minMaxKeys) {
 		this.temporalGroupBy = temporalGroupBy;
 		this.temporalKeys = new ArrayList<>();
+		TemporalKey min = minMaxKeys.getMinKey();
+		TemporalKey max = minMaxKeys.getMaxKey();
 		if (!TemporalKey.none().equals(min) && !TemporalKey.none().equals(max)) {
 			generateTemporalKeys(temporalKeys, min, max);
 		}
@@ -92,6 +94,35 @@ public class MultiTrendSeries<V> {
 		}
 		return series;
 	}
-	
+
+	public static class TemporalMinMaxKeys {
+		
+		private static final TemporalMinMaxKeys NONES = new TemporalMinMaxKeys(TemporalKey.none(), TemporalKey.none());
+		
+		private final TemporalKey minKey;
+		private final TemporalKey maxKey;
+		
+		public static TemporalMinMaxKeys nones() {
+			return NONES;
+		}
+		
+		public static TemporalMinMaxKeys of(TemporalKey minKey, TemporalKey maxKey) {
+			return new TemporalMinMaxKeys(minKey, maxKey);
+		}
+		
+		private TemporalMinMaxKeys(TemporalKey minKey, TemporalKey maxKey) {
+			this.minKey = minKey;
+			this.maxKey = maxKey;
+		}
+
+		public TemporalKey getMinKey() {
+			return minKey;
+		}
+
+		public TemporalKey getMaxKey() {
+			return maxKey;
+		}
+		
+	}
 
 }
