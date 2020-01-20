@@ -243,7 +243,11 @@ public class LinkRenderer extends DefaultComponentRenderer {
 				sb.append("<i class='o_icon o_icon_back'> </i> "); // one space needed				
 			}
 			
-			sb.append("<span>"); // inner wrapper for layouting
+			sb.append("<span"); // inner wrapper for layouting
+			if(StringHelper.containsNonWhitespace(link.getLabelCSS())) {
+				sb.append(" class='").append(link.getLabelCSS()).append("'");
+			}
+			sb.append(">");
 			if (customDisplayText != null) {
 				//link is not translated but has custom text
 				sb.append(customDisplayText);

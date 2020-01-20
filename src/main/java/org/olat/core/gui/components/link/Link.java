@@ -91,6 +91,7 @@ public class Link extends AbstractComponent {
 	private String customDisabledLinkCSS;
 	private String iconLeftCSS;
 	private String iconRightCSS;
+	private String labelCSS;
 	private String target;
 	private FormLink flexiLink;
 	private Object userObject;
@@ -630,6 +631,20 @@ public class Link extends AbstractComponent {
 	 */
 	public String getIconRightCSS() {
 		return iconRightCSS;
+	}
+
+	/**
+	 * @return The label (span tag) CSS classes or NULL 
+	 */
+	public String getLabelCSS() {
+		return labelCSS;
+	}
+
+	/**
+	 * @param labelCSS The CSS classes used for the label (span tag)
+	 */
+	public void setLabelCSS(String labelCSS) {
+		this.labelCSS = labelCSS;
 	}
 
 	/**
