@@ -72,8 +72,10 @@ public class AssessmentIdentityCourseController extends BasicController
 
 	private final TooledStackedPanel stackPanel;
 	private final VelocityContainer identityAssessmentVC;
-	private Link nextLink, previousLink, courseNodeSelectionLink;
 	private Link pdfLink;
+	private Link nextLink;
+	private Link previousLink;
+	private Link courseNodeSelectionLink;
 	
 	private IdentityCertificatesController certificateCtrl;
 	private AssessedIdentityLargeInfosController infosController;
@@ -291,7 +293,7 @@ public class AssessmentIdentityCourseController extends BasicController
 		stackPanel.pushController(courseNode.getShortTitle(), currentNodeCtrl);
 		
 		previousLink = LinkFactory.createToolLink("previouselement", translate("previous"), this, "o_icon_previous");
-		previousLink.setTitle(translate("command.previous"));
+		previousLink.setTitle(translate("command.previous.node"));
 		previousLink.setEnabled(hasPrevious(courseNode));
 		stackPanel.addTool(previousLink, Align.rightEdge, false);
 
@@ -301,10 +303,11 @@ public class AssessmentIdentityCourseController extends BasicController
 		courseNodeSelectionLink.setElementCssClass("dropdown-toggle ");
 		courseNodeSelectionLink.setIconLeftCSS("o_icon " + courseNodeCssClass);
 		courseNodeSelectionLink.setIconRightCSS("o_icon o_icon_caret");
+		courseNodeSelectionLink.setLabelCSS("o_label");
 		stackPanel.addTool(courseNodeSelectionLink, Align.rightEdge, false, "o_tool_dropdown dropdown");
 		
 		nextLink = LinkFactory.createToolLink("nextelement", translate("next"), this, "o_icon_next");
-		nextLink.setTitle(translate("command.next"));
+		nextLink.setTitle(translate("command.next.node"));
 		CourseNode nextNode = treeOverviewCtrl.getNextNode(courseNode);
 		boolean hasNext = (nextNode != null && nextNode.getParent() != null);
 		nextLink.setEnabled(hasNext);

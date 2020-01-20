@@ -159,7 +159,7 @@ public class IdentityProfileController extends BasicController implements Activa
 		// dispensation
 		if(lectureModule.isAbsenceNoticeEnabled()) {
 			dispensationsTab = tabPane.addTab(translate("user.overview.dispensation"), uureq -> {
-				dispensationsCtrl = new DispensationsController(uureq, getWindowControl(), null, secCallback, false, false);
+				dispensationsCtrl = new DispensationsController(uureq, getWindowControl(), null, secCallback, profiledIdentity, false, false);
 				listenTo(dispensationsCtrl);
 				return dispensationsCtrl.getInitialComponent();
 			});

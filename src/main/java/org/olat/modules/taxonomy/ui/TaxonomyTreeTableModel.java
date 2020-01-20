@@ -116,6 +116,7 @@ implements FilterableFlexiTableModel  {
 			case key: return level.getKey();
 			case displayName: return level.getDisplayName();
 			case identifier: return level.getIdentifier();
+			case externalId: return level.getExternalId();
 			case typeIdentifier: return level.getTypeIdentifier();
 			case numOfChildren: return level.getNumberOfChildren();
 			case tools: return level.getToolsLink();
@@ -127,6 +128,7 @@ implements FilterableFlexiTableModel  {
 		key("table.header.key"),
 		displayName("table.header.taxonomy.level.displayName"),
 		identifier("table.header.taxonomy.level.identifier"),
+		externalId("table.header.taxonomy.level.externalId"),
 		typeIdentifier("table.header.taxonomy.level.type.identifier"),
 		numOfChildren("table.header.taxonomy.level.num.children"),
 		tools("table.header.actions");

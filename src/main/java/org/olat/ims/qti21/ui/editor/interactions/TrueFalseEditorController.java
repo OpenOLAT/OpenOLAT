@@ -175,7 +175,7 @@ public class TrueFalseEditorController extends FormBasicController {
 		List<FlowStatic> choiceFlow = choice.getFlowStatics();
 		String choiceContent =  itemBuilder.getHtmlHelper().flowStaticString(choiceFlow);
 		String choiceId = "answer" + count++;
-		RichTextElement choiceEl = uifactory.addRichTextElementForQTI21Match(choiceId, "form.imd.answer", choiceContent, 4, -1, itemContainer,
+		RichTextElement choiceEl = uifactory.addRichTextElementVeryMinimalistic(choiceId, "form.imd.answer", choiceContent, 4, -1, false, itemContainer,
 				answersCont, ureq.getUserSession(), getWindowControl());
 		choiceEl.setUserObject(choice);
 		choiceEl.setEnabled(!readOnly);

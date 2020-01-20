@@ -110,6 +110,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 	 * Show per default the start / end date as whole date
 	 */
 	private final boolean wholeDateDefault;
+	private final boolean withUserProperties;
 	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final LecturesSecurityCallback secCallback;
@@ -134,7 +135,8 @@ public class AbsenceNoticesListController extends FormBasicController {
 	private BaseSecurityModule securityModule;
 	
 	public AbsenceNoticesListController(UserRequest ureq, WindowControl wControl, Date currentDate,
-			boolean authorizedEnabled, LecturesSecurityCallback secCallback, String tableId) {
+			boolean authorizedEnabled, LecturesSecurityCallback secCallback, boolean withUserProperties,
+			String tableId) {
 		super(ureq, wControl, "absences_list", Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.tableId = tableId;
@@ -142,6 +144,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 		this.currentDate = currentDate;
 		wholeDateDefault = (currentDate == null);
 		this.authorizedEnabled = authorizedEnabled;
+		this.withUserProperties = withUserProperties;
 
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_USAGE_IDENTIFIER, isAdministrativeUser);
@@ -167,7 +170,9 @@ public class AbsenceNoticesListController extends FormBasicController {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NoticeCols.id));
 
-		initUserColumns(columnsModel);
+		if(withUserProperties) {
+			initUserColumns(columnsModel);
+		}
 		initColumns(columnsModel);
 		
 		tableModel = new AbsenceNoticesListTableModel(columnsModel, userManager, userPropertyHandlers, getLocale());

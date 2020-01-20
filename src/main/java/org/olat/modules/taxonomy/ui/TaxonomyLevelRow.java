@@ -84,6 +84,10 @@ public class TaxonomyLevelRow implements TaxonomyLevelRef, FlexiTreeTableNode {
 		return taxonomyLevel.getIdentifier();
 	}
 	
+	public String getExternalId() {
+		return taxonomyLevel.getExternalId();
+	}
+	
 	public Long getTypeKey() {
 		return type == null ? null : type.getKey();
 	}

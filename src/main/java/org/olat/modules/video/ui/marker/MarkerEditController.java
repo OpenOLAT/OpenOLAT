@@ -118,7 +118,7 @@ public class MarkerEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		markerTextEl = uifactory.addRichTextElementForQTI21Match("text", "video.marker.text", "", 4, -1, null,
+		markerTextEl = uifactory.addRichTextElementVeryMinimalistic("text", "video.marker.text", "", 4, -1, true, null,
 				formLayout, ureq.getUserSession(), getWindowControl());
 		markerTextEl.getEditorConfiguration().disableImageAndMovie();
 		markerTextEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.oneLine);

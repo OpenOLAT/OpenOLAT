@@ -854,14 +854,14 @@ public class FormUIFactory {
 		return rte;
 	}
 	
-	public RichTextElement addRichTextElementForQTI21Match(String name, String i18nLabel, String initialHTMLValue, int rows,
-			int cols, VFSContainer baseContainer, FormItemContainer formLayout, UserSession usess, WindowControl wControl) {
+	public RichTextElement addRichTextElementVeryMinimalistic(String name, String i18nLabel, String initialHTMLValue, int rows,
+			int cols, boolean withLinks,  VFSContainer baseContainer, FormItemContainer formLayout, UserSession usess, WindowControl wControl) {
 		// Create rich text element with bare bone configuration
 		RichTextElement rte = new RichTextElementImpl(name, initialHTMLValue, rows, cols, formLayout.getRootForm(), formLayout.getTranslator().getLocale());
 		setLabelIfNotNull(i18nLabel, rte);
 		// Now configure editor
 		Theme theme = wControl.getWindowBackOffice().getWindow().getGuiTheme();
-		rte.getEditorConfiguration().setConfigProfileFormVeryMinimalisticConfigEditor(usess, theme, baseContainer);
+		rte.getEditorConfiguration().setConfigProfileFormVeryMinimalisticConfigEditor(usess, theme, baseContainer, withLinks);
 		rte.getEditorConfiguration().setInvalidElements(RichTextConfiguration.INVALID_ELEMENTS_FORM_FULL_VALUE_UNSAVE_WITH_SCRIPT);
 		rte.getEditorConfiguration().setExtendedValidElements("script[src|type|defer]");
 		rte.getEditorConfiguration().disableTinyMedia();
