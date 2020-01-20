@@ -274,7 +274,7 @@ public class RichTextConfiguration implements Disposable {
 	 * @param guiTheme
 	 * @param baseContainer
 	 */
-	public void setConfigProfileFormVeryMinimalisticConfigEditor(UserSession usess, Theme guiTheme, VFSContainer baseContainer) {
+	public void setConfigProfileFormVeryMinimalisticConfigEditor(UserSession usess, Theme guiTheme, VFSContainer baseContainer, boolean withLinks) {
 		setConfigBasics(guiTheme);
 		// Add additional plugins
 		TinyMCECustomPluginFactory customPluginFactory = CoreSpringFactory.getImpl(TinyMCECustomPluginFactory.class);
@@ -285,7 +285,11 @@ public class RichTextConfiguration implements Disposable {
 		
 		// Don't allow javascript or iframes, if the file browser is there allow also media elements (the full values)
 		setQuotedConfigValue(INVALID_ELEMENTS, (baseContainer == null ? INVALID_ELEMENTS_FORM_SIMPLE_VALUE_UNSAVE : INVALID_ELEMENTS_FORM_FULL_VALUE_UNSAVE));
-		tinyConfig = TinyConfig.veryMinimalisticConfig;
+		if(withLinks) {
+			tinyConfig = TinyConfig.veryMinimalisticWithLinksConfig;
+		} else {
+			tinyConfig = TinyConfig.veryMinimalisticConfig;
+		}
 		setPathInStatusBar(false);
 		
 		// Setup file and link browser
