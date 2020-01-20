@@ -33,6 +33,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.modules.lecture.AbsenceNoticeSearchParameters;
 import org.olat.modules.lecture.AbsenceNoticeType;
@@ -64,8 +65,34 @@ public class DispensationsController extends BasicController {
 	private AbsenceNoticeSearchController searchCtrl;
 	private AbsenceNoticesListController noticesListCtlr;
 	
+	/**
+	 * Show a list of dispense (type notified or dispensation).
+	 * 
+	 * @param ureq The user request
+	 * @param wControl The window control
+	 * @param currentDate The date to restrict the list
+	 * @param secCallback The security callback
+	 * @param withSearch With search
+	 * @param withAddAbsence With button the add absence (if allowed by security callback)
+	 */
 	public DispensationsController(UserRequest ureq, WindowControl wControl, Date currentDate,
 			LecturesSecurityCallback secCallback, boolean withSearch, boolean withAddAbsence) {
+		this(ureq, wControl, currentDate, secCallback, null, withSearch, withAddAbsence);
+	}
+	
+	/**
+	 * Show a list of dispense (type notified or dispensation).
+	 * 
+	 * @param ureq The user request
+	 * @param wControl The window control
+	 * @param currentDate The date to restrict the list
+	 * @param secCallback The security callback
+	 * @param profiledIdentity Limit to a single identity (can be null)
+	 * @param withSearch With search
+	 * @param withAddAbsence With button the add absence (if allowed by security callback)
+	 */
+	public DispensationsController(UserRequest ureq, WindowControl wControl, Date currentDate,
+			LecturesSecurityCallback secCallback, Identity profiledIdentity, boolean withSearch, boolean withAddAbsence) {
 		super(ureq, wControl, Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
 		
 		this.secCallback = secCallback;
@@ -76,11 +103,13 @@ public class DispensationsController extends BasicController {
 		searchParams.setLinkedToRollCall(false);
 		searchParams.setStartDate(CalendarUtils.startOfDay(currentDate));
 		searchParams.setEndDate(CalendarUtils.endOfDay(currentDate));
+		searchParams.setParticipant(profiledIdentity);
 	
 		searchCtrl = new AbsenceNoticeSearchController(ureq, getWindowControl(), currentDate);
 		listenTo(searchCtrl);
+		boolean showUserProperties = profiledIdentity == null;
 		noticesListCtlr = new AbsenceNoticesListController(ureq, getWindowControl(),
-				null, false, secCallback, "notices");
+				null, false, secCallback, showUserProperties, "notices");
 		listenTo(noticesListCtlr);
 		
 		mainVC = createVelocityContainer("dispensations");

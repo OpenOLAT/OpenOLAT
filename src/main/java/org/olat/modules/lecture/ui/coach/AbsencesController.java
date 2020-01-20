@@ -85,7 +85,7 @@ public class AbsencesController extends BasicController {
 		searchCtrl = new AbsenceNoticeSearchController(ureq, getWindowControl(), currentDate);
 		listenTo(searchCtrl);
 		noticesListCtlr = new AbsenceNoticesListController(ureq, getWindowControl(),
-				null, true, secCallback, "absences");
+				null, true, secCallback, true, "absences");
 		listenTo(noticesListCtlr);
 		
 		mainVC = createVelocityContainer("absences");
