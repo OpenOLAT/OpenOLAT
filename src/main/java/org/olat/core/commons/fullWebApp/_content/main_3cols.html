@@ -56,7 +56,7 @@ jQuery().ready(function() {
 		if (!menuState.open) {
 			jQuery('#o_main_left_content').show();
 			var l = jQuery('#o_main_left');
-			l.transition({'x': '0', 'left': '0'}, duration, function() {
+			l.transition({'x': 0, 'y': 0, 'left': 0}, duration, function() {
 				menuState.open = true;
 			});
 		} 
@@ -66,7 +66,7 @@ jQuery().ready(function() {
 		if (!menuState.docked && menuState.open) {
 			var l = jQuery('#o_main_left');
 			jQuery('#o_main_left_content').hide();
-			l.transition({'x': '-' + l.css('width'), 'left': '5px'}, duration, function() {
+			l.transition({'x': '-' + l.css('width'), 'y': 0, 'left': '5px'}, duration, function() {
 				menuState.open = false;
 			});			
 		} 
