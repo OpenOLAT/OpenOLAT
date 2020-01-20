@@ -73,7 +73,7 @@
 		<jackson.version>2.10.2</jackson.version>
 		<org.mysql.version>5.1.46</org.mysql.version>
 		<org.postgresql.version>42.2.9</org.postgresql.version>
-		<org.infinispan.version>10.1.0.Final</org.infinispan.version>
+		<org.infinispan.version>10.1.1.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>3.141.59</version.selenium>
 		<version.drone>2.5.1</version.drone>
