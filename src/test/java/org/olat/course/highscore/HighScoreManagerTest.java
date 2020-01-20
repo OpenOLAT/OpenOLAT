@@ -24,6 +24,7 @@
 * <p>
 */
 package org.olat.course.highscore;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -39,6 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -100,5 +102,47 @@ public class HighScoreManagerTest extends OlatTestCase {
 
 		long classwidth = highScoreManager.processHistogramData(allScores, 0F, 30F).getClasswidth();
 		assertEquals(2L, classwidth);
+	}
+	
+	@Test
+	public void highscoreTest_sameResults() {
+		List<AssessmentEntry> assessEntries = new ArrayList<>();
+
+		//Create entries, add to List
+		for (int i = 0; i < 10; i++) {
+			Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-2");
+			RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+			String subIdent = UUID.randomUUID().toString();
+			AssessmentEntry nodeAssessment = courseNodeAssessmentDao
+					.createAssessmentEntry(assessedIdentity, subIdent, entry, subIdent, entry);
+			nodeAssessment.setScore(new BigDecimal(8.0));
+			dbInstance.commitAndCloseSession();
+			AssessmentEntry reloadedAssessment = courseNodeAssessmentDao.loadAssessmentEntryById(nodeAssessment.getKey());
+			assessEntries.add(reloadedAssessment);
+		}
+
+		List<Integer> ownIdIndices = new ArrayList<>();
+		List<HighScoreTableEntry> allMembers = new ArrayList<>();
+		List<HighScoreTableEntry> ownIdMembers = new ArrayList<>();
+		List<List<HighScoreTableEntry>> allPodium = new ArrayList<>();
+		allPodium.add(new ArrayList<>());
+		allPodium.add(new ArrayList<>());
+		allPodium.add(new ArrayList<>());
+		
+		double[] allScores = highScoreManager.sortRankByScore(assessEntries, allMembers, ownIdMembers, allPodium,
+				ownIdIndices, 5, JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-2"))
+				.getScores();
+		for(int i=allScores.length; i-->0; ) {
+			Assert.assertEquals(8.0d, allScores[i], 0.00001d);
+		}
+		
+		double[] histogramData = highScoreManager.processHistogramData(allScores, 0F, 30F).getModifiedScores();
+		assertNotNull(histogramData);
+		for(int i=allScores.length; i-->0; ) {
+			Assert.assertEquals(8.0d, allScores[i], 0.00001d);
+		}
+
+		long classwidth = highScoreManager.processHistogramData(allScores, 0F, 30F).getClasswidth();
+		assertEquals(1l, classwidth);
 	}
 }

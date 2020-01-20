@@ -75,13 +75,11 @@ public class HighScoreManager {
 		
 		float buffer = -1;
 		int index = 0;
-//		int rank = 1;
 		double[] allScores = new double[allMembers.size()];
 		for (int j = 0; j < allMembers.size(); j++) {
 			HighScoreTableEntry member = allMembers.get(j);
 			if (member.getScore() < buffer){
 				index++;
-//				rank = j + 1;
 			}
 			//first three position are put in separate lists, exclude zero scorers
 			if (index < 3 && member.getScore() > 0) {
@@ -103,7 +101,7 @@ public class HighScoreManager {
 				.filter(a -> a.getIdentity().equals(ownIdentity))
 				.collect(Collectors.toList()));
 		
-		if (ownIdMembers.size() > 0) {
+		if (!ownIdMembers.isEmpty()) {
 			log.info(Tracing.M_AUDIT, "2nd Highscore Table established");
 		}
 		
@@ -122,7 +120,7 @@ public class HighScoreManager {
 			double min = Math.floor(Arrays.stream(scores).min().getAsDouble());
 			double range = max - min;
 			// use original scores if range is too small else convert results to fit histogram
-			if (range <= 20 && range <0) {
+			if (range <= 20) {
 				classwidth = 1;
 				return new HighScoreRankingResults(scores, classwidth, min);
 			} else {
@@ -168,7 +166,7 @@ public class HighScoreManager {
 					// allow one extension if no borders are defined
 					primeRange = upperBorder - lowerBorder > 0;
 				}
-				// steps can only be natural numbers 
+				// steps can only be natural numbers
 				classwidth = Math.round(range / numberofclasses);
 				// modified scores are calculated and saved
 				double[] allScores = new double[scores.length];
@@ -189,7 +187,7 @@ public class HighScoreManager {
 
 	
 	/**
-	 * Calculate histogram cutvalue using results from the method (processHistogramData(double[]))
+	 * Calculate histogram cut value using results from the method (processHistogramData(double[]))
 	 *
 	 * @param score the score
 	 * @return the double
@@ -199,11 +197,9 @@ public class HighScoreManager {
 			// determine n-th class to fit the current score result
 			double n = Math.ceil((score - min) / classwidth);
 			// calculate higher score to fit the class width
-			double cutvalue = min + (n * classwidth);
-			return cutvalue;
-		} else {
-			return score;
-		}		
+			return min + (n * classwidth);
+		}
+		return score;	
 	}
 	
 	
