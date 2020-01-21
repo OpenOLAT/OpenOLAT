@@ -316,6 +316,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_status_in_progress:before { content: $fa-var-play; }
 .o_icon_status_in_review:before { content: $fa-var-hand-o-up; }
 .o_icon_status_done:before { content: $fa-var-check-circle; }
+.o_icon_status_undone:before { content: $fa-var-check-circle-o; }
 .o_icon_statistics_tool:before { content: $fa-var-bar-chart-o;}
 .o_icon_submit:before { content: $fa-var-check; }
 .o_icon_table:before { content: $fa-var-table; }

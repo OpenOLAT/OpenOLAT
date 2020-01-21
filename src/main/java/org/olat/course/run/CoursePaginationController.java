@@ -57,10 +57,6 @@ public class CoursePaginationController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		previousButton = uifactory.addFormLink("previous", "previous", "", null, formLayout, Link.BUTTON_XSMALL | Link.NONTRANSLATED);
-		previousButton.setDomReplacementWrapperRequired(false);
-		previousButton.setIconLeftCSS("o_icon o_icon_previous_page");
-		
 		progressBar = uifactory.addProgressBar("progress", null, formLayout);
 		progressBar.setMax(1);
 		progressBar.setLabelAlignment(LabelAlignment.none);
@@ -69,6 +65,10 @@ public class CoursePaginationController extends FormBasicController {
 		confirmButton = uifactory.addFormLink("confirm", "confirm", "command.assessment.done", null, formLayout, Link.BUTTON_XSMALL);
 		confirmButton.setIconLeftCSS("o_icon o_icon_status_done");
 		confirmButton.setUserObject(Boolean.TRUE);
+		
+		previousButton = uifactory.addFormLink("previous", "previous", "", null, formLayout, Link.BUTTON_XSMALL | Link.NONTRANSLATED);
+		previousButton.setDomReplacementWrapperRequired(false);
+		previousButton.setIconLeftCSS("o_icon o_icon_previous_page");
 		
 		nextButton = uifactory.addFormLink("next", "next", "", null, formLayout, Link.BUTTON_XSMALL | Link.NONTRANSLATED);
 		nextButton.setDomReplacementWrapperRequired(false);
@@ -80,9 +80,11 @@ public class CoursePaginationController extends FormBasicController {
 		nextButton.setEnabled(nextEnabled);
 	}
 
-	public void updateAssessmentConfirmUI(boolean confirmVisible, boolean showDone) {
-		confirmButton.setI18nKey(showDone? "command.assessment.done": "command.assessment.undone");
-		confirmButton.setUserObject(showDone? Boolean.TRUE: Boolean.FALSE);
+	public void updateAssessmentConfirmUI(boolean confirmVisible, boolean doConfirm) {
+		// If doConfirm (click to confirm), show the current state "undone" and vice versa.
+		confirmButton.setI18nKey(doConfirm? "command.assessment.undone": "command.assessment.done");
+		confirmButton.setIconLeftCSS(doConfirm? "o_icon o_icon_status_undone": "o_icon o_icon_status_done");
+		confirmButton.setUserObject(doConfirm? Boolean.TRUE: Boolean.FALSE);
 		confirmButton.setVisible(confirmVisible);
 		flc.setDirty(true);
 	}
