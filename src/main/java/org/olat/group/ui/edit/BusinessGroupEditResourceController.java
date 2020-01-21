@@ -49,6 +49,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.course.CourseModule;
 import org.olat.group.BusinessGroup;
@@ -92,6 +93,8 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 
 	private BusinessGroup group;
 	private final boolean managed;
+	private final boolean hasAuthorRight;
+	
 	@Autowired
 	private BusinessGroupService businessGroupService;
 
@@ -107,6 +110,9 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 		
 		this.group = group;
 		managed = BusinessGroupManagedFlag.isManaged(group, BusinessGroupManagedFlag.resources);
+		
+		Roles roles = ureq.getUserSession().getRoles();
+		hasAuthorRight =  roles.isAdministrator() || roles.isLearnResourceManager() || roles.isAuthor();
 		
 		Translator resourceTrans = Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator());
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
@@ -130,24 +136,10 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 		putInitialPanel(mainVC);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == addTabResourcesButton) {
-			removeAsListenerAndDispose(repoSearchCtr);
-			removeAsListenerAndDispose(cmc);
-			
-			RepositoryEntryFilter filter = new ManagedEntryfilter();
-			repoSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq,
-					new String[]{ CourseModule.getCourseTypeName() }, filter,
-					translate("resources.add"), true, true, true, false, true, Can.referenceable);
-			listenTo(repoSearchCtr);
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), repoSearchCtr.getInitialComponent(), true, translate("resources.add.title"));
-			listenTo(cmc);
-			cmc.activate();
+			doAddRepositoryEntry(ureq);
 		}
 	}
 
@@ -195,6 +187,20 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		}
+	}
+	
+	private void doAddRepositoryEntry(UserRequest ureq) {
+		removeAsListenerAndDispose(repoSearchCtr);
+		removeAsListenerAndDispose(cmc);
+		
+		RepositoryEntryFilter filter = new ManagedEntryfilter();
+		repoSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq,
+				new String[]{ CourseModule.getCourseTypeName() }, filter,
+				translate("resources.add"), hasAuthorRight, hasAuthorRight, true, false, true, Can.referenceable);
+		listenTo(repoSearchCtr);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), repoSearchCtr.getInitialComponent(), true, translate("resources.add.title"));
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doOpenInfos(UserRequest ureq, RepositoryEntry repositoryEntry, int rowId) {

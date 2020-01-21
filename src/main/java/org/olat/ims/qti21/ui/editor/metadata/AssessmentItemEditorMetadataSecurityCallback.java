@@ -43,7 +43,7 @@ class AssessmentItemEditorMetadataSecurityCallback implements MetadataSecurityCa
 
 	@Override
 	public boolean canRemoveTaxonomy() {
-		return !readOnly;
+		return true;
 	}
 
 	@Override
