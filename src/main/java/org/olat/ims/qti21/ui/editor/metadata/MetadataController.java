@@ -44,8 +44,7 @@ import org.olat.modules.qpool.ui.metadata.MetadatasController;
  */
 public class MetadataController extends BasicController {
 	
-	private MetadatasController metadataCtrl;
-	
+	private final MetadatasController metadataCtrl;
 	
 	public MetadataController(UserRequest ureq, WindowControl wControl,
 			ManifestMetadataBuilder metadataBuilder, boolean readOnly) {
