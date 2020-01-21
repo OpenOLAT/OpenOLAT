@@ -27,11 +27,7 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.RedirectStrategy;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
 import org.apache.http.config.SocketConfig;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -52,14 +48,6 @@ import org.apache.http.protocol.HttpContext;
  * @author Florian Gnägi, frentix GmbH, http://www.frentix.com
  */
 public class HttpClientFactory {
-
-	private static final EasySSLSocketFactory sslFactory = new EasySSLSocketFactory();
-	private static final Registry<ConnectionSocketFactory> socketRegistry;
-	static {
-		socketRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
-				.register("http", PlainConnectionSocketFactory.getSocketFactory())
-				.register("https", sslFactory).build();	
-	}
 	
 	/**
 	 * [used by Spring]
@@ -87,7 +75,7 @@ public class HttpClientFactory {
 	 * @return CloseableHttpClient
 	 */
 	public static CloseableHttpClient getHttpClientInstance(String host, int port, String user, String password, boolean redirect) {
-		PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(socketRegistry);
+		PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
 		SocketConfig.Builder socketConfigBuilder = SocketConfig.copy(SocketConfig.DEFAULT);
 		socketConfigBuilder.setSoTimeout(10000);
 		cm.setDefaultSocketConfig(socketConfigBuilder.build());
