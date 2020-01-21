@@ -116,7 +116,8 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 		this.overrideUserResultsVisiblity = overrideUserResultsVisiblity;
 		myContent = createVelocityContainer("run");
 
-		if (courseNode.hasScoreConfigured()) {
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		if (assessmentConfig.hasScore()) {
 			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, wControl, userCourseEnv, courseNode);
 			if (highScoreCtr.isViewHighscore()) {
 				Component highScoreComponent = highScoreCtr.getInitialComponent();
