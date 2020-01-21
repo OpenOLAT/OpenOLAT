@@ -843,6 +843,10 @@ public class VelocityRenderDecorator implements Closeable {
 		}
 	}
 	
+	public String replace(String text, String target, String replacement) {
+		return text.replace(target, replacement);
+	}
+	
 	/**
 	 * @param componentName
 	 * @return true if the component with name componentName is a child of the current container. Used to "if" the render 

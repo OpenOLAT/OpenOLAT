@@ -146,6 +146,7 @@ public class VideoDisplayController extends BasicController {
 		putInitialPanel(mainVC);
 		mainVC.put("markers", markerPanel);
 		markerVC = createVelocityContainer("video_markers");
+		markerVC.getContext().put("videoElementId", getVideoElementId());
 		
 		questionCtrl = new VideoAssessmentItemController(ureq, getWindowControl(), videoEntry, entry, courseNode,
 				getVideoElementId(), displayOptions.isAuthorMode());
@@ -606,24 +607,30 @@ public class VideoDisplayController extends BasicController {
 	private void doMarkerMoved(UserRequest ureq) {
 		String markerId = ureq.getParameter("marker_id");
 		MarkerMovedEvent event = new MarkerMovedEvent(markerId);
-		event.setTop(parseDouble(ureq, "top", 0.0d));
-		event.setLeft(parseDouble(ureq, "left", 0.0d));
+		event.setTop(parseDouble(ureq, "top", 0.0d, 0.98d));
+		event.setLeft(parseDouble(ureq, "left", 0.0d, 0.98d));
 		fireEvent(ureq, event);
 	}
 	
 	private void doMarkerResized(UserRequest ureq) {
 		String markerId = ureq.getParameter("marker_id");
 		MarkerResizedEvent event = new MarkerResizedEvent(markerId);
-		event.setTop(parseDouble(ureq, "top", 0.0d));
-		event.setLeft(parseDouble(ureq, "left", 0.0d));
-		event.setWidth(parseDouble(ureq, "width", 10.0d));
-		event.setHeight(parseDouble(ureq, "height", 10.0d));
+		event.setTop(parseDouble(ureq, "top", 0.0d, 0.98d));
+		event.setLeft(parseDouble(ureq, "left", 0.0d, 0.98d));
+		event.setWidth(parseDouble(ureq, "width", 10.0d, 0.98d));
+		event.setHeight(parseDouble(ureq, "height", 10.0d, 0.98d));
 		fireEvent(ureq, event);
 	}
 	
-	private double parseDouble(UserRequest ureq, String name, double def) {
+	private double parseDouble(UserRequest ureq, String name, double def, double max) {
 		try {
-			return Double.parseDouble(ureq.getParameter(name));
+			double val = Double.parseDouble(ureq.getParameter(name));
+			if(val < 0.0d) {
+				val = 0.0d;
+			} else if(val > max) {
+				val = max;
+			}
+			return val;
 		} catch (NumberFormatException e) {
 			return def;
 		}
