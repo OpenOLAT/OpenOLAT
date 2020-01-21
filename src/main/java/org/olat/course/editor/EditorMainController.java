@@ -92,6 +92,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.DisposedCourseRestartController;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.editor.overview.OverviewController;
 import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.CourseNode;
@@ -130,11 +131,13 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private static final String CMD_MOVENODE = "moven";
 	private static final String CMD_DELNODE = "deln";
 	private static final String CMD_PUBLISH = "pbl";
+	private static final String CMD_OVERVIEW = "overview";
 	private static final String CMD_COURSEPREVIEW = "cprev";
 	protected static final String CMD_MULTI_SP = "cmp.multi.sp";
 	protected static final String CMD_MULTI_CHECKLIST = "cmp.multi.checklist";
 
 	// NLS support
+	private static final String NLS_OVERVIEW = "command.overview";
 	private static final String NLS_COMMAND_COURSEPREVIEW = "command.coursepreview";
 	private static final String NLS_COMMAND_PUBLISH = "command.publish";
 	private static final String NLS_HEADER_INSERTNODES = "header.insertnodes";
@@ -161,6 +164,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private TabbableController nodeEditCntrllr;
 	private StepsMainRunController publishStepsController;
 	private StepsMainRunController checklistWizard;
+	private OverviewController overviewCtrl;
 	private PreviewConfigController previewController;
 	private MoveCopySubtreeController moveCopyController;
 	private DialogBoxController deleteDialogController;		
@@ -177,6 +181,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private Dropdown nodeTools;
 	private Link undelButton, alternativeLink, statusLink;
 	private Link previewLink, publishLink, closeLink;
+	private Link overviewLink;
 	private Link createNodeLink, deleteNodeLink, moveNodeLink, copyNodeLink;
 	
 	private CloseableModalController cmc;
@@ -302,6 +307,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				copyNodeLink = LinkFactory.createToolLink(CMD_COPYNODE, translate(NLS_COMMAND_COPYNODE), this, "o_icon_copy");
 				nodeTools.addComponent(copyNodeLink);
 
+				overviewLink = LinkFactory.createToolLink(CMD_OVERVIEW, translate(NLS_OVERVIEW), this,
+						"o_icon_description");
 				previewLink = LinkFactory.createToolLink(CMD_COURSEPREVIEW, translate(NLS_COMMAND_COURSEPREVIEW), this, "o_icon_preview");
 				publishLink = LinkFactory.createToolLink(CMD_PUBLISH, translate(NLS_COMMAND_PUBLISH), this, "o_icon_publish");
 				publishLink.setElementCssClass("o_sel_course_editor_publish");
@@ -337,6 +344,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		stackPanel.addTool(createNodeLink, Align.left);
 		stackPanel.addTool(nodeTools, Align.left);
 		stackPanel.addTool(statusLink, Align.right);
+		stackPanel.addTool(overviewLink, Align.right);
 		stackPanel.addTool(previewLink, Align.right);
 		stackPanel.addTool(publishLink, Align.right);
 	}
@@ -384,6 +392,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			} else if(source == alternativeLink) {
 				CourseNode chosenNode = (CourseNode)alternativeLink.getUserObject();
 				askForAlternative(ureq, chosenNode);
+			} else if(overviewLink == source) {
+				doOverview(ureq, course);
 			} else if(previewLink == source) {
 				launchPreview(ureq, course);
 			} else if(publishLink == source) {
@@ -1137,7 +1147,17 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		getWindowControl().pushAsModalDialog(publishStepsController.getInitialComponent());
 	}
 	
+	private void doOverview(UserRequest ureq, ICourse course) {
+		overviewCtrl = new OverviewController(ureq, getWindowControl(), course);
+		listenTo(overviewCtrl);
+		
+		stackPanel.pushController(translate("command.overview"), overviewCtrl);
+	}
+	
 	private void launchPreview(UserRequest ureq, ICourse course) {
+		removeAsListenerAndDispose(previewController);
+		
+		//TODO uh do it like in preview
 		previewController = new PreviewConfigController(ureq, getWindowControl(), course);
 		listenTo(previewController);
 		stackPanel.pushController(translate("command.coursepreview"), previewController);
