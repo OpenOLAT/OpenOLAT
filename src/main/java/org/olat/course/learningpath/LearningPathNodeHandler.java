@@ -40,7 +40,9 @@ public interface LearningPathNodeHandler extends CourseNodeProvider {
 	
 	public Controller createConfigEditController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
 			CourseNode courseNode);
-
+	
+	public LearningPathEditConfigs getEditConfigs();
+	
 	public void onMigrated(CourseNode courseNode);
 
 }

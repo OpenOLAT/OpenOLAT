@@ -26,6 +26,8 @@ import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
  * 
+ * Configuration of a single course node.
+ * 
  * Initial date: 30 Aug 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
@@ -39,6 +41,10 @@ public interface LearningPathConfigs {
 	public AssessmentObligation getObligation();
 	
 	public Date getStartDate();
+	
+	public FullyAssessedTrigger getFullyAssessedTrigger();
+	
+	public Integer getScoreTriggerValue();
 	
 	public FullyAssessedResult isFullyAssessedOnNodeVisited();
 	

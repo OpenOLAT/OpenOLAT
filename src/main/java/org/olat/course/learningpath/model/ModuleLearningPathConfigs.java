@@ -36,6 +36,7 @@ import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.C
 import java.util.Date;
 
 import org.olat.core.util.StringHelper;
+import org.olat.course.learningpath.FullyAssessedTrigger;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -89,10 +90,27 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 	public Date getStartDate() {
 		return moduleConfiguration.getDateValue(CONFIG_KEY_START);
 	}
+	
+	@Override
+	public FullyAssessedTrigger getFullyAssessedTrigger() {
+		return FullyAssessedTrigger.valueOf(getFullyAssessedTriggerConfig());
+	}
+
+	private String getFullyAssessedTriggerConfig() {
+		return moduleConfiguration.getStringValue(CONFIG_KEY_TRIGGER, CONFIG_DEFAULT_TRIGGER);
+	}
+
+	@Override
+	public Integer getScoreTriggerValue() {
+		String fullyAssessedTrigger = getFullyAssessedTriggerConfig();
+		return CONFIG_VALUE_TRIGGER_SCORE.equals(fullyAssessedTrigger)
+			? toInteger(moduleConfiguration.getStringValue(CONFIG_KEY_SCORE_CUT_VALUE))
+			: null;
+	}
 
 	@Override
 	public FullyAssessedResult isFullyAssessedOnNodeVisited() {
-		String fullyAssessedTrigger = getFullyAssessedTrigger();
+		String fullyAssessedTrigger = getFullyAssessedTriggerConfig();
 		if (CONFIG_VALUE_TRIGGER_NODE_VISITED.equals(fullyAssessedTrigger)) {
 			return LearningPathConfigs.fullyAssessed(true, true, doneOnFullyAssessed);
 		}
@@ -101,7 +119,7 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 
 	@Override
 	public FullyAssessedResult isFullyAssessedOnConfirmation(boolean confirmed) {
-		String fullyAssessedTrigger = getFullyAssessedTrigger();
+		String fullyAssessedTrigger = getFullyAssessedTriggerConfig();
 		if (CONFIG_VALUE_TRIGGER_CONFIRMED.equals(fullyAssessedTrigger)) {
 			return LearningPathConfigs.fullyAssessed(true, confirmed, doneOnFullyAssessed);
 		}
@@ -110,7 +128,7 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 
 	@Override
 	public FullyAssessedResult isFullyAssessedOnScore(Float score, Boolean userVisibility) {
-		String fullyAssessedTrigger = getFullyAssessedTrigger();
+		String fullyAssessedTrigger = getFullyAssessedTriggerConfig();
 		if (CONFIG_VALUE_TRIGGER_SCORE.equals(fullyAssessedTrigger)) {
 			Integer scoreCut = toInteger(moduleConfiguration.getStringValue(CONFIG_KEY_SCORE_CUT_VALUE));
 			boolean fullyAssessed = Boolean.TRUE.equals(userVisibility) && score != null && scoreCut != null
@@ -122,7 +140,7 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 
 	@Override
 	public FullyAssessedResult isFullyAssessedOnPassed(Boolean passed, Boolean userVisibility) {
-		String fullyAssessedTrigger = getFullyAssessedTrigger();
+		String fullyAssessedTrigger = getFullyAssessedTriggerConfig();
 		if (CONFIG_VALUE_TRIGGER_PASSED.equals(fullyAssessedTrigger)) {
 			boolean fullyAssessed = Boolean.TRUE.equals(passed) && Boolean.TRUE.equals(userVisibility);
 			return LearningPathConfigs.fullyAssessed(true, fullyAssessed, doneOnFullyAssessed);
@@ -132,7 +150,7 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 
 	@Override
 	public FullyAssessedResult isFullyAssessedOnStatus(AssessmentEntryStatus status) {
-		String fullyAssessedTrigger = getFullyAssessedTrigger();
+		String fullyAssessedTrigger = getFullyAssessedTriggerConfig();
 		if (CONFIG_VALUE_TRIGGER_STATUS_DONE.equals(fullyAssessedTrigger)) {
 			boolean fullyAssessed = AssessmentEntryStatus.done.equals(status);
 			return LearningPathConfigs.fullyAssessed(true, fullyAssessed, false);
@@ -143,10 +161,6 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 			return LearningPathConfigs.fullyAssessed(true, fullyAssessed, false);
 		}
 		return LearningPathConfigs.notFullyAssessed();
-	}
-
-	private String getFullyAssessedTrigger() {
-		return moduleConfiguration.getStringValue(CONFIG_KEY_TRIGGER, CONFIG_DEFAULT_TRIGGER);
 	}
 	
 	private Integer toInteger(String value) {

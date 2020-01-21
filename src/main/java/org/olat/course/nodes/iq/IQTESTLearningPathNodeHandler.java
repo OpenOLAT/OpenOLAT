@@ -22,13 +22,11 @@ package org.olat.course.nodes.iq;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.Util;
 import org.olat.course.learningpath.LearningPathConfigs;
+import org.olat.course.learningpath.LearningPathEditConfigs;
 import org.olat.course.learningpath.LearningPathNodeHandler;
 import org.olat.course.learningpath.model.ModuleLearningPathConfigs;
 import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
-import org.olat.course.learningpath.ui.LearningPathNodeConfigController.LearningPathControllerConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.repository.RepositoryEntry;
@@ -42,6 +40,16 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class IQTESTLearningPathNodeHandler implements LearningPathNodeHandler {
+	
+	private static final LearningPathEditConfigs EDIT_CONFIGS = LearningPathEditConfigs.builder()
+			.enableNodeVisited()
+			.enableConfirmed()
+			.enableScore()
+			.enablePassed()
+			.withTranslations(IQEditController.class)
+				.withTriggerStatusDone("fully.assessed.trigger.status.in.review")
+				.buildTranslations()
+			.build();
 
 	@Override
 	public String acceptCourseNodeType() {
@@ -61,15 +69,13 @@ public class IQTESTLearningPathNodeHandler implements LearningPathNodeHandler {
 	@Override
 	public Controller createConfigEditController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
 			CourseNode courseNode) {
-		Translator translator = Util.createPackageTranslator(IQEditController.class, ureq.getLocale());
-		LearningPathControllerConfig ctrlConfig = LearningPathNodeConfigController.builder()
-				.enableNodeVisited()
-				.enableConfirmed()
-				.enableScore()
-				.enablePassed()
-				.enableStatusInReview(translator.translate("fully.assessed.trigger.status.in.review"))
-				.build();
-		return new LearningPathNodeConfigController(ureq, wControl, courseEntry, courseNode.getModuleConfiguration(), ctrlConfig);
+		return new LearningPathNodeConfigController(ureq, wControl, courseEntry, courseNode.getModuleConfiguration(),
+				EDIT_CONFIGS);
+	}
+
+	@Override
+	public LearningPathEditConfigs getEditConfigs() {
+		return EDIT_CONFIGS;
 	}
 	
 	@Override

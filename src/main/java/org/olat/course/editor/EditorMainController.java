@@ -1157,7 +1157,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private void launchPreview(UserRequest ureq, ICourse course) {
 		removeAsListenerAndDispose(previewController);
 		
-		//TODO uh do it like in preview
 		previewController = new PreviewConfigController(ureq, getWindowControl(), course);
 		listenTo(previewController);
 		stackPanel.pushController(translate("command.coursepreview"), previewController);

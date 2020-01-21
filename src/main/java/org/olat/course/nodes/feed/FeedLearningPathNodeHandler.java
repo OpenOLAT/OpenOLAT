@@ -24,9 +24,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathNodeHandler;
+import org.olat.course.learningpath.LearningPathEditConfigs;
 import org.olat.course.learningpath.model.ModuleLearningPathConfigs;
 import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
-import org.olat.course.learningpath.ui.LearningPathNodeConfigController.LearningPathControllerConfig;
 import org.olat.course.nodes.AbstractFeedCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.repository.RepositoryEntry;
@@ -38,6 +38,11 @@ import org.olat.repository.RepositoryEntry;
  *
  */
 public abstract class FeedLearningPathNodeHandler implements LearningPathNodeHandler {
+	
+	private static final LearningPathEditConfigs EDIT_CONFIGS = LearningPathEditConfigs.builder()
+			.enableNodeVisited()
+			.enableConfirmed()
+			.build();
 
 	@Override
 	public boolean isSupported() {
@@ -51,11 +56,12 @@ public abstract class FeedLearningPathNodeHandler implements LearningPathNodeHan
 
 	@Override
 	public Controller createConfigEditController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry, CourseNode courseNode) {
-		LearningPathControllerConfig ctrlConfig = LearningPathNodeConfigController.builder()
-				.enableNodeVisited()
-				.enableConfirmed()
-				.build();
-		return new LearningPathNodeConfigController(ureq, wControl, courseEntry, courseNode.getModuleConfiguration(), ctrlConfig);
+		return new LearningPathNodeConfigController(ureq, wControl, courseEntry, courseNode.getModuleConfiguration(), EDIT_CONFIGS);
+	}
+
+	@Override
+	public LearningPathEditConfigs getEditConfigs() {
+		return EDIT_CONFIGS;
 	}
 
 	@Override

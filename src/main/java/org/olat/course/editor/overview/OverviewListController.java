@@ -42,8 +42,17 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.IndentedNodeRenderer;
 import org.olat.course.editor.EditorMainController;
 import org.olat.course.editor.overview.OverviewDataModel.OverviewCols;
+import org.olat.course.learningpath.FullyAssessedTrigger;
+import org.olat.course.learningpath.LearningPathConfigs;
+import org.olat.course.learningpath.LearningPathService;
+import org.olat.course.learningpath.LearningPathTranslations;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.tree.CourseEditorTreeNode;
+import org.olat.modules.assessment.model.AssessmentObligation;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -57,11 +66,17 @@ public class OverviewListController extends FormBasicController {
 	private OverviewDataModel dataModel;
 
 	private final ICourse course;
+	private final boolean learningPath;
+	
+	@Autowired
+	private LearningPathService learningPathService;
 
 	public OverviewListController(UserRequest ureq, WindowControl wControl, ICourse course) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(Util.createPackageTranslator(EditorMainController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(LearningPathNodeConfigController.class, getLocale(), getTranslator()));
 		this.course = course;
+		this.learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType());
 		
 		initForm(ureq);
 	}
@@ -84,7 +99,16 @@ public class OverviewListController extends FormBasicController {
 		learningObjectivesModel.setCellRenderer(new TextFlexiCellRenderer(EscapeMode.none));
 		learningObjectivesModel.setDefaultVisible(false);
 		columnsModel.addFlexiColumnModel(learningObjectivesModel);
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.display));
+		DefaultFlexiColumnModel displayModel = new DefaultFlexiColumnModel(OverviewCols.display);
+		displayModel.setDefaultVisible(false);
+		columnsModel.addFlexiColumnModel(displayModel);
+		
+		if (learningPath) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.duration));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.obligation));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.start));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.trigger));
+		}
 		
 		dataModel = new OverviewDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 250, false, getTranslator(), formLayout);
@@ -120,8 +144,15 @@ public class OverviewListController extends FormBasicController {
 	private OverviewRow forgeRow(CourseEditorTreeNode editorNode, int recursionLevel, OverviewRow parent) {
 		CourseNode courseNode = editorNode.getCourseNode();
 		OverviewRow row = new OverviewRow(courseNode, recursionLevel);
-		row.setTranslatedDisplayOption(getTranslatedDisplayOption(courseNode));
 		row.setParent(parent);
+		row.setTranslatedDisplayOption(getTranslatedDisplayOption(courseNode));
+		if (learningPath) {
+			LearningPathConfigs learningPathConfigs = learningPathService.getConfigs(courseNode);
+			row.setDuration(learningPathConfigs.getDuration());
+			row.setTranslatedObligation(getTranslatedObligation(learningPathConfigs));
+			row.setStart(learningPathConfigs.getStartDate());
+			row.setTranslatedTrigger(getTranslatedTrigger(courseNode, learningPathConfigs));
+		}
 		return row;
 	}
 
@@ -141,6 +172,49 @@ public class OverviewListController extends FormBasicController {
 		return null;
 	}
 
+	private String getTranslatedObligation(LearningPathConfigs learningPathConfigs) {
+		AssessmentObligation obligation = learningPathConfigs.getObligation();
+		if (obligation == null) return null;
+		
+		switch (obligation) {
+		case mandatory: return translate("config.obligation.mandatory");
+		case optional: return translate("config.obligation.optional");
+		default:
+			// nothing
+		}
+		return null;
+	}
+
+	private String getTranslatedTrigger(CourseNode courseNode, LearningPathConfigs learningPathConfigs) {
+		FullyAssessedTrigger trigger = learningPathConfigs.getFullyAssessedTrigger();
+		if (trigger == null) return null;
+		
+		switch (trigger) {
+		case nodeVisited: return translate("config.trigger.visited");
+		case confirmed: return translate("config.trigger.confirmed");
+		case score: {
+			Integer scoreTriggerValue = learningPathConfigs.getScoreTriggerValue();
+			return translate("config.trigger.score.value", new String[] { scoreTriggerValue.toString() } );
+		}
+		case passed: return translate("config.trigger.passed");
+		case statusInReview: {
+			LearningPathTranslations translations = learningPathService.getEditConfigs(courseNode).getTranslations();
+			return translations.getTriggerStatusInReview(getLocale()) != null
+					? translations.getTriggerStatusInReview(getLocale())
+					: translate("config.trigger.status.in.review");
+		}
+		case statusDone: {
+			LearningPathTranslations translations = learningPathService.getEditConfigs(courseNode).getTranslations();
+			return translations.getTriggerStatusDone(getLocale()) != null
+					? translations.getTriggerStatusDone(getLocale())
+					: translate("config.trigger.status.done");
+		}
+		default:
+			// nothing
+		}
+		return null;
+	}
+	
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//

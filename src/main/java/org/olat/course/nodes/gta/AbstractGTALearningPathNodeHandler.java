@@ -24,8 +24,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathNodeHandler;
+import org.olat.course.learningpath.LearningPathEditConfigs;
 import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
-import org.olat.course.learningpath.ui.LearningPathNodeConfigController.LearningPathControllerConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.repository.RepositoryEntry;
 
@@ -37,6 +37,15 @@ import org.olat.repository.RepositoryEntry;
  */
 public abstract class AbstractGTALearningPathNodeHandler implements LearningPathNodeHandler {
 
+	private static final LearningPathEditConfigs EDIT_CONFIGS = LearningPathEditConfigs.builder()
+			.disableObligation()
+			.enableNodeVisited()
+			.enableConfirmed()
+			.enableScore()
+			.enablePassed()
+			.enableStatusDone()
+			.build();
+	
 	@Override
 	public boolean isSupported() {
 		return true;
@@ -50,15 +59,12 @@ public abstract class AbstractGTALearningPathNodeHandler implements LearningPath
 	@Override
 	public Controller createConfigEditController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
 			CourseNode courseNode) {
-		LearningPathControllerConfig ctrlConfig = LearningPathNodeConfigController.builder()
-				.disableObligation()
-				.enableNodeVisited()
-				.enableConfirmed()
-				.enableScore()
-				.enablePassed()
-				.enableStatusDone()
-				.build();
-		return new LearningPathNodeConfigController(ureq, wControl, courseEntry, courseNode.getModuleConfiguration(), ctrlConfig);
+		return new LearningPathNodeConfigController(ureq, wControl, courseEntry, courseNode.getModuleConfiguration(), EDIT_CONFIGS);
+	}
+
+	@Override
+	public LearningPathEditConfigs getEditConfigs() {
+		return EDIT_CONFIGS;
 	}
 
 	@Override

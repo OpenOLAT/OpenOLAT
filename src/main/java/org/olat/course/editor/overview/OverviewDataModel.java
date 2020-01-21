@@ -63,6 +63,10 @@ public class OverviewDataModel extends DefaultFlexiTreeTableDataModel<OverviewRo
 			case longTitle: return row.getCourseNode().getLongTitle();
 			case learningObjectives: return row.getCourseNode().getLearningObjectives();
 			case display: return row.getTranslatedDisplayOption();
+			case duration: return row.getDuration();
+			case obligation: return row.getTranslatedObligation();
+			case start: return row.getStart();
+			case trigger: return row.getTranslatedTrigger();
 			default: return null;
 		}
 	}
@@ -77,7 +81,11 @@ public class OverviewDataModel extends DefaultFlexiTreeTableDataModel<OverviewRo
 		shortTitle("table.header.short.title"),
 		longTitle("table.header.long.title"),
 		learningObjectives("table.header.learning.objectives"),
-		display("table.header.display");
+		display("table.header.display"),
+		duration("table.header.duration"),
+		obligation("table.header.obligation"),
+		start("table.header.start"),
+		trigger("table.header.trigger");
 		
 		private final String i18nKey;
 		

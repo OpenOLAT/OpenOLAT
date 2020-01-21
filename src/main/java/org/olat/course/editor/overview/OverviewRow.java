@@ -19,6 +19,8 @@
  */
 package org.olat.course.editor.overview;
 
+import java.util.Date;
+
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.course.assessment.IndentedNodeRenderer.IndentedCourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -34,6 +36,10 @@ public class OverviewRow implements FlexiTreeTableNode, IndentedCourseNode {
 	private final CourseNode courseNode;
 	private final int recursionLevel;
 	private String translatedDisplayOption;
+	private Integer duration;
+	private String translatedObligation;
+	private Date start;
+	private String translatedTrigger;
 	private OverviewRow parent;
 	private boolean hasChildren;
 	
@@ -72,6 +78,38 @@ public class OverviewRow implements FlexiTreeTableNode, IndentedCourseNode {
 
 	public void setTranslatedDisplayOption(String translatedDisplayOption) {
 		this.translatedDisplayOption = translatedDisplayOption;
+	}
+
+	public Integer getDuration() {
+		return duration;
+	}
+
+	public void setDuration(Integer duration) {
+		this.duration = duration;
+	}
+
+	public String getTranslatedObligation() {
+		return translatedObligation;
+	}
+
+	public void setTranslatedObligation(String translatedObligation) {
+		this.translatedObligation = translatedObligation;
+	}
+
+	public Date getStart() {
+		return start;
+	}
+
+	public void setStart(Date start) {
+		this.start = start;
+	}
+
+	public String getTranslatedTrigger() {
+		return translatedTrigger;
+	}
+
+	public void setTranslatedTrigger(String translatedTrigger) {
+		this.translatedTrigger = translatedTrigger;
 	}
 
 	@Override

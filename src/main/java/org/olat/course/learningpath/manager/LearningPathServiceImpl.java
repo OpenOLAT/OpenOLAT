@@ -26,6 +26,7 @@ import org.olat.core.util.tree.TreeVisitor;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.learningpath.LearningPathConfigs;
+import org.olat.course.learningpath.LearningPathEditConfigs;
 import org.olat.course.learningpath.LearningPathService;
 import org.olat.course.nodes.CollectingVisitor;
 import org.olat.course.nodes.CourseNode;
@@ -52,6 +53,11 @@ public class LearningPathServiceImpl implements LearningPathService {
 	@Override
 	public LearningPathConfigs getConfigs(CourseNode courseNode) {
 		return registry.getLearningPathNodeHandler(courseNode).getConfigs(courseNode);
+	}
+
+	@Override
+	public LearningPathEditConfigs getEditConfigs(CourseNode courseNode) {
+		return registry.getLearningPathNodeHandler(courseNode).getEditConfigs();
 	}
 
 	@Override

@@ -19,27 +19,33 @@
  */
 package org.olat.course.learningpath;
 
-import java.util.List;
-
-import org.olat.core.id.Identity;
-import org.olat.course.ICourse;
-import org.olat.course.nodes.CourseNode;
-import org.olat.repository.RepositoryEntry;
-
 /**
+ * Configuration how a type of course node can be configured.
  * 
- * Initial date: 1 Sep 2019<br>
+ * Initial date: 20 Jan 2020<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface LearningPathService {
-
-	public LearningPathConfigs getConfigs(CourseNode courseNode);
+public interface LearningPathEditConfigs {
 	
-	public LearningPathEditConfigs getEditConfigs(CourseNode courseNode);
-
-	public List<CourseNode> getUnsupportedCourseNodes(ICourse course);
-
-	public RepositoryEntry migrate(RepositoryEntry courseEntry, Identity identity);
+	public boolean isObligationVisible();
+	
+	public boolean isTriggerNodeVisited();
+	
+	public boolean isTriggerConfirmed();
+	
+	public boolean isTriggerScore();
+	
+	public boolean isTriggerPassed();
+	
+	public boolean isTriggerStatusInReview();
+	
+	public boolean isTriggerStatusDone();
+	
+	public LearningPathTranslations getTranslations();
+	
+	public static LearningPathEditConfigsBuilder builder() {
+		return new LearningPathEditConfigsBuilder();
+	}
 
 }

@@ -40,6 +40,9 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.config.CompletionType;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.learningpath.FullyAssessedTrigger;
+import org.olat.course.learningpath.LearningPathEditConfigs;
+import org.olat.course.learningpath.LearningPathTranslations;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.repository.RepositoryEntry;
@@ -57,12 +60,12 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	public static final String CONFIG_DEFAULT_OBLIGATION = AssessmentObligation.mandatory.name();
 	public static final String CONFIG_KEY_START = "start.date";
 	public static final String CONFIG_KEY_TRIGGER = "fully.assessed.trigger";
-	public static final String CONFIG_VALUE_TRIGGER_NODE_VISITED = "nodeVisited";
-	public static final String CONFIG_VALUE_TRIGGER_CONFIRMED = "confirmed";
-	public static final String CONFIG_VALUE_TRIGGER_STATUS_DONE = "statusDone";
-	public static final String CONFIG_VALUE_TRIGGER_STATUS_IN_REVIEW = "statusInReview";
-	public static final String CONFIG_VALUE_TRIGGER_SCORE = "score";
-	public static final String CONFIG_VALUE_TRIGGER_PASSED = "passed";
+	public static final String CONFIG_VALUE_TRIGGER_NODE_VISITED = FullyAssessedTrigger.nodeVisited.name();
+	public static final String CONFIG_VALUE_TRIGGER_CONFIRMED = FullyAssessedTrigger.confirmed.name();
+	public static final String CONFIG_VALUE_TRIGGER_STATUS_DONE = FullyAssessedTrigger.statusDone.name();
+	public static final String CONFIG_VALUE_TRIGGER_STATUS_IN_REVIEW = FullyAssessedTrigger.statusInReview.name();
+	public static final String CONFIG_VALUE_TRIGGER_SCORE = FullyAssessedTrigger.score.name();
+	public static final String CONFIG_VALUE_TRIGGER_PASSED = FullyAssessedTrigger.passed.name();
 	public static final String CONFIG_DEFAULT_TRIGGER = CONFIG_VALUE_TRIGGER_CONFIRMED;
 	public static final String CONFIG_KEY_SCORE_CUT_VALUE = "scoreCutValue";
 	
@@ -74,14 +77,14 @@ public class LearningPathNodeConfigController extends FormBasicController {
 
 	private final CourseConfig courseConfig;
 	private final ModuleConfiguration moduleConfigs;
-	private final LearningPathControllerConfig ctrlConfig;
+	private final LearningPathEditConfigs editConfigs;
 
 	public LearningPathNodeConfigController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
-			ModuleConfiguration moduleConfig, LearningPathControllerConfig ctrlConfig) {
+			ModuleConfiguration moduleConfig, LearningPathEditConfigs editConfigs) {
 		super(ureq, wControl);
 		this.courseConfig = CourseFactory.loadCourse(courseEntry).getCourseConfig();
 		this.moduleConfigs = moduleConfig;
-		this.ctrlConfig = ctrlConfig;
+		this.editConfigs = editConfigs;
 		initForm(ureq);
 	}
 
@@ -99,7 +102,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		if (Arrays.asList(obligationEl.getKeys()).contains(obligationKey)) {
 			obligationEl.select(obligationKey, true);
 		}
-		obligationEl.setVisible(ctrlConfig.isObligationVisible());
+		obligationEl.setVisible(editConfigs.isObligationVisible());
 		
 		Date startDate = moduleConfigs.getDateValue(CONFIG_KEY_START);
 		startDateEl = uifactory.addDateChooser("config.start.date", startDate, formLayout);
@@ -125,35 +128,34 @@ public class LearningPathNodeConfigController extends FormBasicController {
 
 	private KeyValues getTriggerKV() {
 		KeyValues triggerKV = new KeyValues();
-		if (ctrlConfig.isTriggerNodeVisited()) {
+		if (editConfigs.isTriggerNodeVisited()) {
 			triggerKV.add(entry(CONFIG_VALUE_TRIGGER_NODE_VISITED, translate("config.trigger.visited")));
 		}
-		if (ctrlConfig.isTriggerConfirmed()) {
+		if (editConfigs.isTriggerConfirmed()) {
 			triggerKV.add(entry(CONFIG_VALUE_TRIGGER_CONFIRMED, translate("config.trigger.confirmed")));
 		}
-		if (ctrlConfig.isTriggerScore()) {
+		if (editConfigs.isTriggerScore()) {
 			triggerKV.add(entry(CONFIG_VALUE_TRIGGER_SCORE, translate("config.trigger.score")));
 		}
-		if (ctrlConfig.isTriggerPassed()) {
+		if (editConfigs.isTriggerPassed()) {
 			triggerKV.add(entry(CONFIG_VALUE_TRIGGER_PASSED, translate("config.trigger.passed")));
 		}
-		TranslateableBoolean triggerStatusInReview = ctrlConfig.getTriggerStatusInReview();
-		if (triggerStatusInReview.isTrue()) {
-			triggerKV.add(entry(CONFIG_VALUE_TRIGGER_STATUS_IN_REVIEW,
-					getTranslationOrDefault(triggerStatusInReview, "config.trigger.status.in.review")));
+		
+		LearningPathTranslations translations = editConfigs.getTranslations();
+		if (editConfigs.isTriggerStatusInReview()) {
+			String translation = translations.getTriggerStatusInReview(getLocale()) != null
+					? translations.getTriggerStatusInReview(getLocale())
+					: translate("config.trigger.status.in.review");
+			triggerKV.add(entry(CONFIG_VALUE_TRIGGER_STATUS_IN_REVIEW, translation));
 		}
-		TranslateableBoolean triggerStatusDone = ctrlConfig.getTriggerStatusDone();
-		if (triggerStatusDone.isTrue()) {
-			triggerKV.add(entry(CONFIG_VALUE_TRIGGER_STATUS_DONE,
-					getTranslationOrDefault(triggerStatusDone, "config.trigger.status.done")));
+		
+		if (editConfigs.isTriggerStatusDone()) {
+			String translation = translations.getTriggerStatusDone(getLocale()) != null
+					? translations.getTriggerStatusDone(getLocale())
+					: translate("config.trigger.status.done");
+			triggerKV.add(entry(CONFIG_VALUE_TRIGGER_STATUS_DONE, translation));
 		}
 		return triggerKV;
-	}
-	
-	private String getTranslationOrDefault(TranslateableBoolean trans, String defaulI18nKey) {
-		return trans.isTranslated()
-				? trans.getMessage()
-				: translate(defaulI18nKey);
 	}
 	
 	private void updateUI() {
@@ -246,155 +248,6 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		return CompletionType.duration.equals(courseConfig.getCompletionType())
 				&& obligationEl.isOneSelected()
 				&& AssessmentObligation.mandatory.name().equals(obligationEl.getSelectedKey());
-	}
-	
-	public interface LearningPathControllerConfig {
-		
-		public boolean isObligationVisible();
-		
-		public boolean isTriggerNodeVisited();
-		
-		public boolean isTriggerConfirmed();
-		
-		public boolean isTriggerScore();
-		
-		public boolean isTriggerPassed();
-		
-		public TranslateableBoolean getTriggerStatusInReview();
-		
-		public TranslateableBoolean getTriggerStatusDone();
-		
-	}
-	
-	public static ControllerConfigBuilder builder() {
-		return new ControllerConfigBuilder();
-	}
-	
-	public static class ControllerConfigBuilder {
-		
-		public boolean obligationVisible = true;
-		private boolean triggerNodeVisited;
-		private boolean triggerConfirmed;
-		private boolean triggerScore;
-		private boolean triggerPassed;
-		private TranslateableBoolean triggerStatusInReview;
-		private TranslateableBoolean triggerStatusDone;
-		
-		private ControllerConfigBuilder() {
-		}
-		
-		public ControllerConfigBuilder disableObligation() {
-			obligationVisible = false;
-			return this;
-		}
-		
-		public ControllerConfigBuilder enableNodeVisited() {
-			triggerNodeVisited = true;
-			return this;
-		}
-		
-		public ControllerConfigBuilder enableConfirmed() {
-			triggerConfirmed = true;
-			return this;
-		}
-		
-		public ControllerConfigBuilder enableScore() {
-			triggerScore = true;
-			return this;
-		}
-		
-		public ControllerConfigBuilder enablePassed() {
-			triggerPassed = true;
-			return this;
-		}
-		
-		public ControllerConfigBuilder enableStatusInReview() {
-			triggerStatusInReview = TranslateableBoolean.untranslatedTrue();
-			return this;
-		}
-		
-		public ControllerConfigBuilder enableStatusInReview(String message) {
-			triggerStatusInReview = TranslateableBoolean.translatedTrue(message);
-			return this;
-		}
-		
-		public ControllerConfigBuilder enableStatusDone() {
-			triggerStatusDone = TranslateableBoolean.untranslatedTrue();
-			return this;
-		}
-		
-		public ControllerConfigBuilder enableStatusDone(String message) {
-			triggerStatusDone = TranslateableBoolean.translatedTrue(message);
-			return this;
-		}
-		
-		public LearningPathControllerConfig build() {
-			return new ControllerConfigImpl(this);
-		}
-		
-		private final static class ControllerConfigImpl implements LearningPathControllerConfig {
-			
-			public final boolean obligationVisible;
-			public final boolean triggerNodeVisited;
-			public final boolean triggerConfirmed;
-			public final boolean triggerScore;
-			public final boolean triggerPassed;
-			public final TranslateableBoolean triggerStatusInReview;
-			public final TranslateableBoolean triggerStatusDone;
-
-			public ControllerConfigImpl(ControllerConfigBuilder builder) {
-				this.obligationVisible = builder.obligationVisible;
-				this.triggerNodeVisited = builder.triggerNodeVisited;
-				this.triggerConfirmed = builder.triggerConfirmed;
-				this.triggerScore = builder.triggerScore;
-				this.triggerPassed = builder.triggerPassed;
-				this.triggerStatusInReview = falseIfNull(builder.triggerStatusInReview);
-				this.triggerStatusDone = falseIfNull(builder.triggerStatusDone);
-			}
-			
-			private TranslateableBoolean falseIfNull(TranslateableBoolean translateableBoolean) {
-				return translateableBoolean != null
-						? translateableBoolean
-						: TranslateableBoolean.untranslatedFalse();
-			}
-
-			@Override
-			public boolean isObligationVisible() {
-				return obligationVisible;
-			}
-
-			@Override
-			public boolean isTriggerNodeVisited() {
-				return triggerNodeVisited;
-			}
-
-			@Override
-			public boolean isTriggerConfirmed() {
-				return triggerConfirmed;
-			}
-
-			@Override
-			public boolean isTriggerScore() {
-				return triggerScore;
-			}
-
-			@Override
-			public boolean isTriggerPassed() {
-				return triggerPassed;
-			}
-
-			@Override
-			public TranslateableBoolean getTriggerStatusInReview() {
-				return triggerStatusInReview;
-			}
-
-			@Override
-			public TranslateableBoolean getTriggerStatusDone() {
-				return triggerStatusDone;
-			}
-			
-		}
-		
 	}
 	
 }

@@ -21,6 +21,7 @@ package org.olat.course.nodes.st.assessment;
 
 import java.util.Date;
 
+import org.olat.course.learningpath.FullyAssessedTrigger;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
@@ -50,6 +51,16 @@ public class STLearningPathConfigs implements LearningPathConfigs {
 
 	@Override
 	public Date getStartDate() {
+		return null;
+	}
+
+	@Override
+	public FullyAssessedTrigger getFullyAssessedTrigger() {
+		return null;
+	}
+
+	@Override
+	public Integer getScoreTriggerValue() {
 		return null;
 	}
 

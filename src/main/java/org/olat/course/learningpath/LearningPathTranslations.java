@@ -19,27 +19,26 @@
  */
 package org.olat.course.learningpath;
 
-import java.util.List;
-
-import org.olat.core.id.Identity;
-import org.olat.course.ICourse;
-import org.olat.course.nodes.CourseNode;
-import org.olat.repository.RepositoryEntry;
+import java.util.Locale;
 
 /**
  * 
- * Initial date: 1 Sep 2019<br>
+ * Initial date: 19 Jan 2020<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface LearningPathService {
+public interface LearningPathTranslations {
 
-	public LearningPathConfigs getConfigs(CourseNode courseNode);
+	public String getTriggerStatusInReview(Locale locale);
 	
-	public LearningPathEditConfigs getEditConfigs(CourseNode courseNode);
-
-	public List<CourseNode> getUnsupportedCourseNodes(ICourse course);
-
-	public RepositoryEntry migrate(RepositoryEntry courseEntry, Identity identity);
-
+	public String getTriggerStatusDone(Locale locale);
+	
+	public static LearningPathTranslations untranslated() {
+		return LearningPathTranslationsBuilder.UNTRANSLATED;
+	}
+	
+	public static LearningPathTranslationsBuilder builder(LearningPathEditConfigsBuilder editConfigsBuilder) {
+		return new LearningPathTranslationsBuilder(editConfigsBuilder);
+	}
+	
 }

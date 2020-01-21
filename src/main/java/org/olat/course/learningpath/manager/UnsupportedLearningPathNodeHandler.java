@@ -24,6 +24,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathNodeHandler;
+import org.olat.course.learningpath.LearningPathEditConfigs;
 import org.olat.course.learningpath.model.UnsupportedLearningPathConfigs;
 import org.olat.course.nodes.CourseNode;
 import org.olat.repository.RepositoryEntry;
@@ -60,6 +61,11 @@ public class UnsupportedLearningPathNodeHandler implements LearningPathNodeHandl
 	@Override
 	public Controller createConfigEditController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
 			CourseNode courseNode) {
+		return null;
+	}
+
+	@Override
+	public LearningPathEditConfigs getEditConfigs() {
 		return null;
 	}
 
