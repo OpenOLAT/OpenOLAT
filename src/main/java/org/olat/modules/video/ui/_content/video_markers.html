@@ -1,54 +1,110 @@
 #foreach($marker in $markers)
-<div id="marker_${marker.id}" class="mejs__overlay o_video_marker" style="" #if($r.isTrue($dragMarkers)) draggable="true" #end>$r.xssScan($marker.text)</div>
+<div id="marker_${marker.id}" class="mejs__overlay o_video_marker" style="" #if($r.isTrue($dragMarkers)) draggable="true" #end>$r.xssScan($marker.text) ${videoElementId}</div>
+#set($markedFuncId = $r.replace(${marker.id}, "-", ""))
 <script>
 jQuery(function() {
-	var containerEl = jQuery(".mejs__container");
-	var top = ${marker.top} * containerEl.height();
-	var left = ${marker.left} * containerEl.width();
-	var markerEl =jQuery("#marker_${marker.id}")
-		.css('top', top + 'px')
-		.css('left', left + 'px');
-	var color = '${marker.style}';
-	if(color.indexOf('#') == 0 || color.indexOf('rgb') == 0 || color.indexOf('rgba') == 0) {
-		markerEl.css('border-color', color);
-	} else {
-		markerEl.addClass(color);
+	
+	function _size${markedFuncId}Marker() {
+		var containerEl = jQuery(".mejs__container");
+		var cHeight = containerEl.height();
+		var cWidth = containerEl.width();
+		var cLeftOffset = 0;
+		var cTopOffset = 0;
+		var player = jQuery('#o_so_vid${videoElementId}').data('player');
+		if(player !== "undefined" && player.isFullScreen && player.normalWidth > 0 &&  player.normalHeight > 0) {
+			var nScale = player.normalWidth / player.normalHeight;
+			var cScale = cWidth / cHeight;
+			if(cScale > nScale) {
+				// reduce width
+				var scale = cHeight / player.normalHeight;
+				var sWidth = player.normalWidth * scale;
+				cLeftOffset = (cWidth - sWidth) / 2.0;
+				cWidth = sWidth;
+			} else {
+				var scale = cWidth / player.normalWidth;
+				var sHeight = player.normalHeight * scale;
+				cTopOffset = (cHeight - sHeight) / 2.0;
+				cHeight = sHeight;
+			}
+		}
+
+		var topPercent = ${marker.top};
+		var leftPercent = ${marker.left};
+		var top = (topPercent * cHeight) + cTopOffset;
+		var left = (leftPercent * cWidth) + cLeftOffset;
+		var markerEl = jQuery("#marker_${marker.id}")
+			.css('top', top + 'px')
+			.css('left', left + 'px');
+		var color = '${marker.style}';
+		if(color.indexOf('#') == 0 || color.indexOf('rgb') == 0 || color.indexOf('rgba') == 0) {
+			markerEl.css('border-color', color);
+		} else {
+			markerEl.addClass(color);
+		}
+		
+		#if($r.isNotNull($marker.width) && ${marker.width} > 0.01)
+			var widthPercent = ${marker.width};
+			if(widthPercent + leftPercent > 1.0) {
+				widthPercent = 1.0 - leftPercent;
+			}
+			markerEl.width((widthPercent * cWidth) + 'px')
+		#end
+		#if($r.isNotNull($marker.height) && ${marker.height} > 0.01)
+			var heightPercent = ${marker.height};
+			if(heightPercent + topPercent > 1.0) {
+				heightPercent = 1.0 - topPercent;
+			}
+			markerEl.height((heightPercent * cHeight) + 'px')	
+		#end	
 	}
-	#if($r.isNotNull($marker.width) && ${marker.width} > 0.01)
-		markerEl.width((${marker.width} * containerEl.width()) + 'px')
-	#end
-	#if($r.isNotNull($marker.height) && ${marker.height} > 0.01)
-		markerEl.height((${marker.height} * containerEl.height()) + 'px')	
-	#end
 	
 	#if($r.isTrue($dragMarkers))
-		markerEl.draggable({
+		function boxPercent(val) {
+			val = (val < 0.0) ? 0.0 : val;
+			val = (val > 0.98) ? 0.98 : val;
+			return val;
+		}
+		
+		jQuery("#marker_${marker.id}").draggable({
 			containment: ".mejs__container",
 			scroll: false,
 			stop: function(event, ui) {
-				var top = ui.position.top / containerEl.height();
-				var left = ui.position.left / containerEl.width();
+				var containerEl = jQuery(".mejs__container");
+				var top = boxPercent(ui.position.top / containerEl.height());
+				var left = boxPercent(ui.position.left / containerEl.width());
 				$r.openJavaScriptCommand('marker_moved'), 'marker_id', '${marker.id}', 'top', top, 'left', left);
-				jQuery("div.o_sel_video_marker_top input").val(Math.round(top * 100));
-				jQuery("div.o_sel_video_marker_left input").val(Math.round(left * 100));
+				jQuery("div.o_sel_video_marker_top input").val(Math.round(top * 100.0));
+				jQuery("div.o_sel_video_marker_left input").val(Math.round(left * 100.0));
 			}
 		}).resizable({
     		handles: 'all',
     		containment: '.mejs__container',
 			grid: [o_info.emPxFactor, 10000],
 			stop: function(event, ui) {
-				var width = ui.size.height / containerEl.height();
-				var height = ui.size.width / containerEl.width();
-				var top = ui.position.top / containerEl.height();
-				var left = ui.position.left / containerEl.width();
+				var containerEl = jQuery(".mejs__container");
+				var height = boxPercent(ui.size.height / containerEl.height());
+				var width = boxPercent(ui.size.width / containerEl.width());
+				var top = boxPercent(ui.position.top / containerEl.height());
+				var left = boxPercent(ui.position.left / containerEl.width());
 				$r.openJavaScriptCommand('marker_resized'), 'marker_id', '${marker.id}', 'top', top, 'left', left, 'width', width, 'height', height);
-				jQuery("div.o_sel_video_marker_width input").val(Math.round(width * 100));
-				jQuery("div.o_sel_video_marker_height input").val(Math.round(width * 100));
-				jQuery("div.o_sel_video_marker_top input").val(Math.round(top * 100));
-				jQuery("div.o_sel_video_marker_left input").val(Math.round(left * 100));
+				jQuery("div.o_sel_video_marker_width input").val(Math.round(width * 100.0));
+				jQuery("div.o_sel_video_marker_height input").val(Math.round(height * 100.0));
+				jQuery("div.o_sel_video_marker_top input").val(Math.round(top * 100.0));
+				jQuery("div.o_sel_video_marker_left input").val(Math.round(left * 100.0));
 			}
     	});
+	#else
+		var screenChangeEvents = "resize webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange";
+		jQuery(window).on(screenChangeEvents, function _resize${markedFuncId}Marker(e) {
+			if(jQuery("#marker_${marker.id}").length > 0) {
+				_size${markedFuncId}Marker();
+			} else {
+				jQuery(window).off(screenChangeEvents, _resize${markedFuncId}Marker);
+			}
+		});
 	#end
+	
+	_size${markedFuncId}Marker();
 	
 	setTimeout(function() { BFormatter.formatLatexFormulas('marker_${marker.id}'); }, 100);
 });
