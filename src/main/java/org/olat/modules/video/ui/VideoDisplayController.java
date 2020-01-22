@@ -38,6 +38,7 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -651,13 +652,13 @@ public class VideoDisplayController extends BasicController {
 				&& questionCtrl.present(ureq, questionToPresent, videoQuestions.getQuestions())) {
 			markerPanel.setContent(questionCtrl.getInitialComponent());
 		} else {
-			List<VideoMarker> currentMarkers = new ArrayList<>();
+			List<VideoMarkerWrapper> currentMarkers = new ArrayList<>();
 			if(questionToPresent == null || displayOptions.isShowAnnotations() && videoMarkers != null) {
 				for(VideoMarker marker:videoMarkers.getMarkers()) {
 					long start = marker.toSeconds();
 					long end = start + marker.getDuration();
 					if(start <= time && time < end) {
-						currentMarkers.add(marker);
+						currentMarkers.add(new VideoMarkerWrapper(marker));
 					}
 				}
 			}
@@ -696,6 +697,49 @@ public class VideoDisplayController extends BasicController {
 					}
 				}
 			}
+		}
+	}
+	
+	public static class VideoMarkerWrapper {
+		
+		private final VideoMarker marker;
+		
+		public VideoMarkerWrapper(VideoMarker marker) {
+			this.marker = marker;
+		}
+
+		public String getId() {
+			return marker.getId();
+		}
+
+		public String getText() {
+			String text = marker.getText();
+			TextMode mode = TextMode.guess(text);
+			switch(mode) {
+				case oneLine: return TextMode.fromOneLine(text);
+				case multiLine: return TextMode.fromMultiLine(text);
+				default: return text;
+			}
+		}
+
+		public double getTop() {
+			return marker.getTop();
+		}
+
+		public double getLeft() {
+			return marker.getLeft();
+		}
+
+		public double getWidth() {
+			return marker.getWidth();
+		}
+
+		public double getHeight() {
+			return marker.getHeight();
+		}
+
+		public String getStyle() {
+			return marker.getStyle();
 		}
 	}
 	
