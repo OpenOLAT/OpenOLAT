@@ -93,18 +93,24 @@ public class MSEditFormController extends FormBasicController {
 
 	private final String title;
 	private final String helpUrl;
-	
+	private final boolean withIndividualAssessmentDocs;
 	
 	public MSEditFormController(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig) {
-		this(ureq, wControl, modConfig, null, null);
+		this(ureq, wControl, modConfig, null, null, true);
 	}
 	
 	public MSEditFormController(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig, String title,
 			String helpUrl) {
+		this(ureq, wControl, modConfig, title, helpUrl, true);
+	}
+	
+	public MSEditFormController(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig, String title,
+			String helpUrl, boolean withIndividualAssessmentDocs) {
 		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT);
 		this.modConfig = modConfig;
 		this.title = title;
 		this.helpUrl = helpUrl;
+		this.withIndividualAssessmentDocs = withIndividualAssessmentDocs;
 		trueFalseKeys = new String[] { Boolean.TRUE.toString(), Boolean.FALSE.toString() };
 		passedTypeValues = new String[] { translate("form.passedtype.cutval"), translate("form.passedtype.manual") };
 		initForm(ureq);
@@ -130,29 +136,16 @@ public class MSEditFormController extends FormBasicController {
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formNOK
-	 *      (org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formNOK(UserRequest ureq) {
 		fireEvent(ureq, Event.FAILED_EVENT);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formCancelled(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm
-	 *      (org.olat.core.gui.components.form.flexible.FormItemContainer,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if (StringHelper.containsNonWhitespace(title)) {
@@ -231,17 +224,18 @@ public class MSEditFormController extends FormBasicController {
 		if(docsCf) {
 			individualAssessmentDocsFlag.select("xx", true);
 		}
+		individualAssessmentDocsFlag.setVisible(withIndividualAssessmentDocs);
 
 		uifactory.addSpacerElement("spacer3", formLayout, false);
 
 		// Create the rich text fields.
 		String infoUser = (String) modConfig.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
-		if (infoUser == null) infoUser = new String("");
+		if (infoUser == null) infoUser = "";
 		infotextUser = uifactory.addRichTextElementForStringDataMinimalistic("infotextUser", "form.infotext.user", infoUser, 10, -1,
 				formLayout, getWindowControl());
 
 		String infoCoach = (String) modConfig.get(MSCourseNode.CONFIG_KEY_INFOTEXT_COACH);
-		if (infoCoach == null) infoCoach = new String("");
+		if (infoCoach == null) infoCoach = "";
 		infotextCoach = uifactory.addRichTextElementForStringDataMinimalistic("infotextCoach", "form.infotext.coach", infoCoach, 10, -1,
 				formLayout, getWindowControl());
 
@@ -273,9 +267,6 @@ public class MSEditFormController extends FormBasicController {
 		validateFormLogic(ureq);
 	}
 	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#validateFormLogic(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		
@@ -340,7 +331,6 @@ public class MSEditFormController extends FormBasicController {
 	public void setDisplayOnly(boolean displayOnly) {
 		Map<String, FormItem> formItems = flc.getFormComponents();
 		for (String formItemName : formItems.keySet()) {
-			//formItems.get(formItemName).setVisible(true);
 			formItems.get(formItemName).setEnabled(!displayOnly);
 		}
 	}
@@ -350,7 +340,7 @@ public class MSEditFormController extends FormBasicController {
 	 */
 	public void updateModuleConfiguration(ModuleConfiguration moduleConfiguration) {
 		// mandatory score flag
-		Boolean sf = new Boolean(scoreGranted.isSelected(0));
+		Boolean sf = Boolean.valueOf(scoreGranted.isSelected(0));
 		moduleConfiguration.set(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD, sf);
 		if (sf.booleanValue()) {
 			// do min/max value
@@ -363,7 +353,7 @@ public class MSEditFormController extends FormBasicController {
 		}
 
 		// mandatory passed flag
-		Boolean pf = new Boolean(displayPassed.isSelected(0));
+		Boolean pf = Boolean.valueOf(displayPassed.isSelected(0));
 		moduleConfiguration.set(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, pf);
 		if (pf.booleanValue()) {
 			// do cut value
@@ -380,9 +370,10 @@ public class MSEditFormController extends FormBasicController {
 		}
 
 		// mandatory comment flag
-		moduleConfiguration.set(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, new Boolean(commentFlag.isSelected(0)));
+		moduleConfiguration.set(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, Boolean.valueOf(commentFlag.isSelected(0)));
 		// individual assessment docs
-		moduleConfiguration.setBooleanEntry(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, new Boolean(individualAssessmentDocsFlag.isSelected(0)));
+		boolean withAssessmentDocs = individualAssessmentDocsFlag.isVisible() && individualAssessmentDocsFlag.isSelected(0);
+		moduleConfiguration.setBooleanEntry(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, withAssessmentDocs);
 
 		// set info text only if something is in there
 		String iu = infotextUser.getValue();
@@ -412,20 +403,20 @@ public class MSEditFormController extends FormBasicController {
 
 		// score flag is mandatory
 		confElement = config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
-		if (confElement != null && confElement instanceof Boolean) {
+		if (confElement instanceof Boolean) {
 			Boolean hasScore = (Boolean) confElement;
 			if (hasScore.booleanValue()) {
 				// score min and max are mandatory if score flag is set to true
 				confElement = config.get(MSCourseNode.CONFIG_KEY_SCORE_MIN);
-				isValid = (confElement != null && confElement instanceof Float);
+				isValid = confElement instanceof Float;
 				confElement = config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
-				isValid = (confElement != null && confElement instanceof Float);
+				isValid = confElement instanceof Float;
 			}
 		} else return false;
 
 		// passed flag is mandatory
 		confElement = config.get(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD);
-		if (confElement != null && confElement instanceof Boolean) {
+		if (confElement instanceof Boolean) {
 			Boolean hasPassed = (Boolean) confElement;
 			if (hasPassed.booleanValue()) {
 				// cut value is optional if passed flag set to true, but type must match
@@ -436,7 +427,7 @@ public class MSEditFormController extends FormBasicController {
 
 		// comment flag is mandatory
 		confElement = config.get(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD);
-		isValid = (confElement != null && confElement instanceof Boolean);
+		isValid = confElement instanceof Boolean;
 
 		// infotext is optional
 		confElement = config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);

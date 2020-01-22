@@ -36,6 +36,7 @@ public class GTAAssessmentConfig extends ModuleAssessmentConfig {
 	public GTAAssessmentConfig(ModuleConfiguration config) {
 		super(config);
 		this.hasNoGrading = !config.getBooleanSafe(GTACourseNode.GTASK_GRADING);
+		
 	}
 
 	@Override
@@ -66,7 +67,7 @@ public class GTAAssessmentConfig extends ModuleAssessmentConfig {
 	
 	@Override
 	public boolean hasIndividualAsssessmentDocuments() {
-		if (hasNoGrading) return false;
+		if (hasNoGrading || isAssessedBusinessGroups()) return false;
 		
 		return super.hasIndividualAsssessmentDocuments();
 	}
