@@ -37,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
@@ -51,6 +52,7 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.IndentedNodeRenderer;
 import org.olat.course.editor.EditorMainController;
 import org.olat.course.editor.NodeEditController;
+import org.olat.course.editor.SelectEvent;
 import org.olat.course.editor.overview.OverviewDataModel.OverviewCols;
 import org.olat.course.learningpath.FullyAssessedTrigger;
 import org.olat.course.learningpath.LearningPathConfigs;
@@ -71,6 +73,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class OverviewListController extends FormBasicController {
+	
+	private static final String CMD_OPEN = "open";
 	
 	private FlexiTableElement tableEl;
 	private OverviewDataModel dataModel;
@@ -107,7 +111,9 @@ public class OverviewListController extends FormBasicController {
 		IndentedNodeRenderer intendedNodeRenderer = new IndentedNodeRenderer();
 		intendedNodeRenderer.setIndentationEnabled(false);
 		FlexiCellRenderer nodeRenderer = new TreeNodeFlexiCellRenderer(intendedNodeRenderer);
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.node, nodeRenderer));
+		DefaultFlexiColumnModel nodeModel = new DefaultFlexiColumnModel(OverviewCols.node, CMD_OPEN, nodeRenderer);
+		nodeModel.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(nodeModel);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.shortTitle));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.longTitle));
 		DefaultFlexiColumnModel learningObjectivesModel = new DefaultFlexiColumnModel(OverviewCols.learningObjectives);
@@ -264,7 +270,16 @@ public class OverviewListController extends FormBasicController {
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == bulkLink) {
+		if (tableEl == source) {
+			if (event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				String cmd = se.getCommand();
+				OverviewRow row = dataModel.getObject(se.getIndex());
+				if (CMD_OPEN.equals(cmd)) {
+					fireEvent(ureq, new SelectEvent(row.getCourseNode()));
+				}
+			}
+		} else if (source == bulkLink) {
 			doBulk(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);

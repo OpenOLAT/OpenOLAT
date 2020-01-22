@@ -23,6 +23,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.SimpleStackedPanel;
 import org.olat.core.gui.components.panel.StackedPanel;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -45,6 +46,14 @@ public class OverviewController extends BasicController {
 		
 		StackedPanel initialPanel = putInitialPanel(new SimpleStackedPanel("overviewPanel", "o_edit_mode"));
 		initialPanel.setContent(overviewListCtrl.getInitialComponent());
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == overviewListCtrl) {
+			fireEvent(ureq, event);
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override

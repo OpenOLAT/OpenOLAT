@@ -199,13 +199,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	@Autowired
 	private AssessmentModeManager assessmentModeMgr;
 	
-	/**
-	 * Constructor for the course editor controller
-	 * 
-	 * @param ureq The user request
-	 * @param wControl The window controller
-	 * @param course The course
-	 */
 	public EditorMainController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar, ICourse course, CourseNode selectedNode) {
 		super(ureq,wControl);
 		this.ores = OresHelper.clone(course);	
@@ -364,10 +357,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		return immediateClose;
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		try {
@@ -684,8 +673,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			} else if (event == Event.CANCELLED_EVENT) {
 				// user canceled						
 			}
-			
-			//aggressive clean-up
 			cleanUp();
 		} else if (source == deleteDialogController){
 			removeAsListenerAndDispose(deleteDialogController);
@@ -721,6 +708,12 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			removeAsListenerAndDispose(alternateCtr);
 			cmc = null;
 			alternateCtr = null;
+		} else if (source == overviewCtrl) {
+			if (event instanceof SelectEvent) {
+				SelectEvent se = (SelectEvent)event;
+				doOpenNode(ureq, se.getCourseNode());
+				cleanUp();
+			}
 		}
     } catch (RuntimeException e) {
 			log.warn(RELEASE_LOCK_AT_CATCH_EXCEPTION+" [in event(UserRequest,Controller,Event)]", e);			
@@ -728,14 +721,12 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			throw e;
 		}
 	}
-	
-	/**
-	 * Aggressive clean-up of popup controllers
-	 */
+
 	private void cleanUp() {
 		removeAsListenerAndDispose(moveCopyController);
 		removeAsListenerAndDispose(multiSPChooserCtr);
 		removeAsListenerAndDispose(chooseNodeTypeCtr);
+		removeAsListenerAndDispose(overviewCtrl);
 		removeAsListenerAndDispose(alternateCtr);
 		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(statusCtr);
@@ -743,6 +734,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		moveCopyController = null;
 		chooseNodeTypeCtr = null;
 		multiSPChooserCtr = null;
+		overviewCtrl = null;
 		alternateCtr = null;
 		calloutCtrl = null;
 		statusCtr = null;
@@ -765,6 +757,16 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			showInfo("pbl.success");
 			// do logging
 			ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_EDITOR_PUBLISHED, getClass());
+		}
+	}
+	
+	private void doOpenNode(UserRequest ureq, CourseNode courseNode) {
+		TreeNode selectedNode = menuTree.getTreeModel().getNodeById(courseNode.getIdent());
+		if (selectedNode != null) {
+			stackPanel.popUpToController(this);
+			
+			menuTree.setSelectedNodeId(selectedNode.getIdent());
+			updateViewForSelectedNodeId(ureq, selectedNode.getIdent());
 		}
 	}
 	
@@ -1234,9 +1236,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		}
 	}
 
-	/**
-	 * @see org.olat.core.util.event.GenericEventListener#event(org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(Event event) {
 	  try {
