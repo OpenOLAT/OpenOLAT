@@ -110,7 +110,7 @@ public class OverviewListController extends FormBasicController {
 		
 		IndentedNodeRenderer intendedNodeRenderer = new IndentedNodeRenderer();
 		intendedNodeRenderer.setIndentationEnabled(false);
-		FlexiCellRenderer nodeRenderer = new TreeNodeFlexiCellRenderer(intendedNodeRenderer);
+		FlexiCellRenderer nodeRenderer = new TreeNodeFlexiCellRenderer(intendedNodeRenderer, CMD_OPEN);
 		DefaultFlexiColumnModel nodeModel = new DefaultFlexiColumnModel(OverviewCols.node, CMD_OPEN, nodeRenderer);
 		nodeModel.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(nodeModel);

@@ -58,6 +58,11 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 		this.labelDelegate = labelDelegate;
 		this.action = null;
 	}
+	
+	public TreeNodeFlexiCellRenderer(FlexiCellRenderer labelDelegate, String action) {
+		this.labelDelegate = labelDelegate;
+		this.action = action;
+	}
 
 	public boolean isFlatBySearchAndFilter() {
 		return flatBySearchAndFilter;
