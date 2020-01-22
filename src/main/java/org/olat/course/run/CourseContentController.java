@@ -40,8 +40,12 @@ public class CourseContentController extends BasicController {
 			Component row2) {
 		super(ureq, wControl);
 		mainVC = createVelocityContainer("content");
-		mainVC.put("row1", row1);
-		mainVC.put("row2", row2);
+		if (row1 != null) {
+			mainVC.put("row1", row1);
+		}
+		if (row2 != null) {
+			mainVC.put("row2", row2);
+		}
 		putInitialPanel(mainVC);
 	}
 	

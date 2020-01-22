@@ -35,6 +35,7 @@ import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
 import org.olat.course.nodeaccess.NodeAccessProvider;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.CoursePaginationController;
 import org.olat.course.run.userview.CourseTreeModelBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
@@ -96,6 +97,11 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider {
 	@Override
 	public String getCourseTreeCssClass() {
 		return "o_lp_tree";
+	}
+
+	@Override
+	public CoursePaginationController getCoursePaginationController(UserRequest ureq, WindowControl wControl) {
+		return new CoursePaginationController(ureq, wControl);
 	}
 
 	@Override

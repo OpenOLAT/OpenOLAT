@@ -33,6 +33,7 @@ import org.olat.course.nodeaccess.NodeAccessProviderIdentifier;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.CoursePaginationController;
 import org.olat.course.run.navigation.NodeVisitedListener;
 import org.olat.course.run.userview.CourseTreeModelBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -100,6 +101,11 @@ public class NodeAccessServiceImpl implements NodeAccessService, NodeVisitedList
 	@Override
 	public String getCourseTreeCssClass(NodeAccessType type) {
 		return getNodeAccessProvider(type).getCourseTreeCssClass();
+	}
+
+	@Override
+	public CoursePaginationController getCoursePaginationController(UserRequest ureq, WindowControl wControl, NodeAccessType type) {
+		return getNodeAccessProvider(type).getCoursePaginationController(ureq, wControl);
 	}
 	
 	@Override

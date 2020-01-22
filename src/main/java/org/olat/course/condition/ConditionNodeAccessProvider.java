@@ -31,6 +31,7 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.nodeaccess.NodeAccessProvider;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.CoursePaginationController;
 import org.olat.course.run.userview.CourseTreeModelBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
@@ -87,6 +88,11 @@ public class ConditionNodeAccessProvider implements NodeAccessProvider {
 	@Override
 	public String getCourseTreeCssClass() {
 		return "";
+	}
+
+	@Override
+	public CoursePaginationController getCoursePaginationController(UserRequest ureq, WindowControl wControl) {
+		return null;
 	}
 
 	@Override

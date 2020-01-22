@@ -24,6 +24,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.CoursePaginationController;
 import org.olat.course.run.userview.CourseTreeModelBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
@@ -46,6 +47,8 @@ public interface NodeAccessProvider extends NodeAccessProviderIdentifier {
 			UserCourseEnvironment userCourseEnv, CourseEditorTreeModel editorModel);
 
 	public String getCourseTreeCssClass();
+
+	public CoursePaginationController getCoursePaginationController(UserRequest ureq, WindowControl wControl);
 
 	public CourseTreeModelBuilder getCourseTreeModelBuilder(UserCourseEnvironment userCourseEnv);
 

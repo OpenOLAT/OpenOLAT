@@ -186,12 +186,14 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		luTree = new MenuTree(null, "luTreeRun", this);
 		luTree.setScrollTopOnClick(true);
 		luTree.setExpandSelectedNode(false);
-		String treeCssClass =nodeAccessService.getCourseTreeCssClass(NodeAccessType.of(course));
+		String treeCssClass = nodeAccessService.getCourseTreeCssClass(NodeAccessType.of(course));
 		luTree.setElementCssClass("o_course_menu " + treeCssClass);
 		contentP = new Panel("building_block_content");
 
-		paginationCtrl = new CoursePaginationController(ureq, getWindowControl());
-		listenTo(paginationCtrl);
+		paginationCtrl = nodeAccessService.getCoursePaginationController(ureq, getWindowControl(), NodeAccessType.of(course));
+		if (paginationCtrl != null) {
+			listenTo(paginationCtrl);
+		}
 
 		// build up the running structure for this user
 		// get all group memberships for this course
@@ -226,6 +228,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			layoutTree = null;
 		}
 		
+		Component paginationCmp = paginationCtrl != null? paginationCtrl.getInitialComponent(): null;
 		if (glossaryMarkerCtr != null) {
 			listenTo(glossaryMarkerCtr);
 			// enable / disable glossary highlighting according to user prefs
@@ -242,11 +245,10 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			} else {
 				glossaryMarkerCtr.setTextMarkingEnabled(state.booleanValue());
 			}
-			contentCtrl = new CourseContentController(ureq, getWindowControl(), paginationCtrl.getInitialComponent(),
+			contentCtrl = new CourseContentController(ureq, getWindowControl(), paginationCmp,
 					glossaryMarkerCtr.getInitialComponent());
 		} else {
-			contentCtrl = new CourseContentController(ureq, getWindowControl(), paginationCtrl.getInitialComponent(),
-					contentP);
+			contentCtrl = new CourseContentController(ureq, getWindowControl(), paginationCmp, contentP);
 		}
 		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), layoutTree,
 				contentCtrl.getInitialComponent(), "courseRun" + course.getResourceableId());
