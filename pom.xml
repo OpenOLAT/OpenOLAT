@@ -151,6 +151,7 @@
 										<exclude>**/mediaelementjs/*</exclude>
 										<exclude>**/mediaelementjs/**/*</exclude>
 										<exclude>**/fullcalendar/*</exclude>
+										<exclude>**/paella/**/*</exclude>
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
 									</excludes>
 								</configuration>
@@ -186,6 +187,7 @@
 										<exclude>**/fullcalendar/*</exclude>
 										<exclude>**/mediaelementjs/*</exclude>
 										<exclude>**/mediaelementjs/**/*</exclude>
+										<exclude>**/paella/**/*</exclude>
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
 									</excludes>
 								</configuration>
@@ -310,6 +312,7 @@
 										<exclude>**/fullcalendar/*</exclude>
 										<exclude>**/mediaelementjs/*</exclude>
 										<exclude>**/mediaelementjs/**/*</exclude>
+										<exclude>**/paella/**/*</exclude>
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
 									</excludes>
 								</configuration>
@@ -349,6 +352,7 @@
 										<exclude>**/fullcalendar/fullcalendar.min.js</exclude>
 										<exclude>**/mediaelementjs/*</exclude>
 										<exclude>**/mediaelementjs/**/*</exclude>
+										<exclude>**/paella/**/*</exclude>
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
 									</excludes>
 								</configuration>
