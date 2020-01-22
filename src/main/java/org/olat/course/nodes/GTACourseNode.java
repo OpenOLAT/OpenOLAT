@@ -828,10 +828,12 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 
 	@Override
 	public boolean hasIndividualAsssessmentDocuments() {
-		boolean hasGrading = getModuleConfiguration().getBooleanSafe(GTASK_GRADING);
+		ModuleConfiguration config = getModuleConfiguration();
+		
+		boolean hasGrading = config.getBooleanSafe(GTASK_GRADING);
 		if (hasGrading) {
-			return getModuleConfiguration()
-					.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false);
+			return config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false)
+					&& GTAType.individual.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE));
 		}
 		return false;
 	}
