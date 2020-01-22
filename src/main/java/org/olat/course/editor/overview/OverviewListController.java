@@ -283,7 +283,7 @@ public class OverviewListController extends FormBasicController {
 				.collect(Collectors.toList());
 		
 		removeAsListenerAndDispose(bulkChangeCtrl);
-		bulkChangeCtrl = new BulkChangeController(ureq, getWindowControl(), selectedCourseNodes);
+		bulkChangeCtrl = new BulkChangeController(ureq, getWindowControl(), course, selectedCourseNodes);
 		listenTo(bulkChangeCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), bulkChangeCtrl.getInitialComponent(),

@@ -34,17 +34,28 @@ import org.olat.modules.assessment.model.AssessmentObligation;
  */
 public interface LearningPathConfigs {
 	
+	public static final AssessmentObligation OBLIGATION_DEFAULT = AssessmentObligation.mandatory;
+	public static final FullyAssessedTrigger TRIGGER_DEFAULT = FullyAssessedTrigger.confirmed;
+	
 	public Integer getDuration();
 	
 	public void setDuration(Integer duration);
 
 	public AssessmentObligation getObligation();
 	
+	public void setObligation(AssessmentObligation obligation);
+	
 	public Date getStartDate();
+	
+	public void setStartDate(Date start);
 	
 	public FullyAssessedTrigger getFullyAssessedTrigger();
 	
+	public void setFullyAssessedTrigger(FullyAssessedTrigger trigger);
+	
 	public Integer getScoreTriggerValue();
+	
+	public void setScoreTriggerValue(Integer score);
 	
 	public FullyAssessedResult isFullyAssessedOnNodeVisited();
 	

@@ -23,8 +23,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.learningpath.LearningPathConfigs;
-import org.olat.course.learningpath.LearningPathNodeHandler;
 import org.olat.course.learningpath.LearningPathEditConfigs;
+import org.olat.course.learningpath.LearningPathNodeHandler;
 import org.olat.course.learningpath.model.ModuleLearningPathConfigs;
 import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
 import org.olat.course.nodes.Card2BrainCourseNode;
@@ -64,7 +64,7 @@ public class Card2BrainLearningPathNodeHandler implements LearningPathNodeHandle
 	@Override
 	public Controller createConfigEditController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
 			CourseNode courseNode) {
-		return new LearningPathNodeConfigController(ureq, wControl, courseEntry, courseNode.getModuleConfiguration(), NODE_TYPE_CONFIG);
+		return new LearningPathNodeConfigController(ureq, wControl, courseEntry, courseNode, NODE_TYPE_CONFIG);
 	}
 
 	@Override

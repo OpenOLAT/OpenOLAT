@@ -50,8 +50,18 @@ public class UnsupportedLearningPathConfigs implements LearningPathConfigs {
 	}
 
 	@Override
+	public void setObligation(AssessmentObligation obligation) {
+		//
+	}
+
+	@Override
 	public Date getStartDate() {
 		return null;
+	}
+
+	@Override
+	public void setStartDate(Date start) {
+		//
 	}
 
 	@Override
@@ -60,8 +70,18 @@ public class UnsupportedLearningPathConfigs implements LearningPathConfigs {
 	}
 
 	@Override
+	public void setFullyAssessedTrigger(FullyAssessedTrigger trigger) {
+		//
+	}
+
+	@Override
 	public Integer getScoreTriggerValue() {
 		return null;
+	}
+
+	@Override
+	public void setScoreTriggerValue(Integer score) {
+		//
 	}
 	
 	@Override

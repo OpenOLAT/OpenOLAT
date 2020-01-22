@@ -68,8 +68,7 @@ public class SurveyLearningPathNodeHandler implements LearningPathNodeHandler {
 	@Override
 	public Controller createConfigEditController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
 			CourseNode courseNode) {
-		return new LearningPathNodeConfigController(ureq, wControl, courseEntry, courseNode.getModuleConfiguration(),
-				EDIT_CONFIGS);
+		return new LearningPathNodeConfigController(ureq, wControl, courseEntry, courseNode, EDIT_CONFIGS);
 	}
 
 	@Override

@@ -41,11 +41,14 @@ import org.olat.course.CourseFactory;
 import org.olat.course.config.CompletionType;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.learningpath.FullyAssessedTrigger;
+import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathEditConfigs;
+import org.olat.course.learningpath.LearningPathService;
 import org.olat.course.learningpath.LearningPathTranslations;
-import org.olat.modules.ModuleConfiguration;
+import org.olat.course.nodes.CourseNode;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -55,19 +58,12 @@ import org.olat.repository.RepositoryEntry;
  */
 public class LearningPathNodeConfigController extends FormBasicController {	
 
-	public static final String CONFIG_KEY_DURATION = "duration";
-	public static final String CONFIG_KEY_OBLIGATION = "obligation";
-	public static final String CONFIG_DEFAULT_OBLIGATION = AssessmentObligation.mandatory.name();
-	public static final String CONFIG_KEY_START = "start.date";
-	public static final String CONFIG_KEY_TRIGGER = "fully.assessed.trigger";
 	public static final String CONFIG_VALUE_TRIGGER_NODE_VISITED = FullyAssessedTrigger.nodeVisited.name();
 	public static final String CONFIG_VALUE_TRIGGER_CONFIRMED = FullyAssessedTrigger.confirmed.name();
 	public static final String CONFIG_VALUE_TRIGGER_STATUS_DONE = FullyAssessedTrigger.statusDone.name();
 	public static final String CONFIG_VALUE_TRIGGER_STATUS_IN_REVIEW = FullyAssessedTrigger.statusInReview.name();
 	public static final String CONFIG_VALUE_TRIGGER_SCORE = FullyAssessedTrigger.score.name();
 	public static final String CONFIG_VALUE_TRIGGER_PASSED = FullyAssessedTrigger.passed.name();
-	public static final String CONFIG_DEFAULT_TRIGGER = CONFIG_VALUE_TRIGGER_CONFIRMED;
-	public static final String CONFIG_KEY_SCORE_CUT_VALUE = "scoreCutValue";
 	
 	private TextElement durationEl;
 	private SingleSelection obligationEl;
@@ -76,35 +72,41 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	private TextElement scoreCutEl;
 
 	private final CourseConfig courseConfig;
-	private final ModuleConfiguration moduleConfigs;
+	private final LearningPathConfigs learningPathConfigs;
 	private final LearningPathEditConfigs editConfigs;
+	
+	@Autowired
+	private LearningPathService learningPathService;
 
 	public LearningPathNodeConfigController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
-			ModuleConfiguration moduleConfig, LearningPathEditConfigs editConfigs) {
+			CourseNode courseNode, LearningPathEditConfigs editConfigs) {
 		super(ureq, wControl);
 		this.courseConfig = CourseFactory.loadCourse(courseEntry).getCourseConfig();
-		this.moduleConfigs = moduleConfig;
+		this.learningPathConfigs = learningPathService.getConfigs(courseNode);
 		this.editConfigs = editConfigs;
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String estimatedTime = moduleConfigs.getStringValue(CONFIG_KEY_DURATION);
-		durationEl = uifactory.addTextElement("config.duration", 128, estimatedTime , formLayout);
+		String duration = learningPathConfigs.getDuration() != null? learningPathConfigs.getDuration().toString(): null;
+		durationEl = uifactory.addTextElement("config.duration", 128, duration , formLayout);
 		
 		KeyValues obligationKV = new KeyValues();
 		obligationKV.add(entry(AssessmentObligation.mandatory.name(), translate("config.obligation.mandatory")));
 		obligationKV.add(entry(AssessmentObligation.optional.name(), translate("config.obligation.optional")));
 		obligationEl = uifactory.addRadiosHorizontal("config.obligation", formLayout, obligationKV.keys(), obligationKV.values());
 		obligationEl.addActionListener(FormEvent.ONCHANGE);
-		String obligationKey = moduleConfigs.getStringValue(CONFIG_KEY_OBLIGATION, CONFIG_DEFAULT_OBLIGATION);
+		AssessmentObligation obligation = learningPathConfigs.getObligation() != null
+				? learningPathConfigs.getObligation()
+				: LearningPathConfigs.OBLIGATION_DEFAULT;
+		String obligationKey = obligation.name();
 		if (Arrays.asList(obligationEl.getKeys()).contains(obligationKey)) {
 			obligationEl.select(obligationKey, true);
 		}
 		obligationEl.setVisible(editConfigs.isObligationVisible());
 		
-		Date startDate = moduleConfigs.getDateValue(CONFIG_KEY_START);
+		Date startDate = learningPathConfigs.getStartDate();
 		startDateEl = uifactory.addDateChooser("config.start.date", startDate, formLayout);
 		startDateEl.setDateChooserTimeEnabled(true);
 		
@@ -112,12 +114,17 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		triggerEl = uifactory.addRadiosVertical("config.trigger", formLayout,
 				triggerKV.keys(), triggerKV.values());
 		triggerEl.addActionListener(FormEvent.ONCHANGE);
-		String triggerKey = moduleConfigs.getStringValue(CONFIG_KEY_TRIGGER, CONFIG_DEFAULT_TRIGGER);
+		FullyAssessedTrigger trigger = learningPathConfigs.getFullyAssessedTrigger() != null
+				? learningPathConfigs.getFullyAssessedTrigger()
+				: LearningPathConfigs.TRIGGER_DEFAULT;
+		String triggerKey = trigger.name();
 		if (Arrays.asList(triggerEl.getKeys()).contains(triggerKey)) {
 			triggerEl.select(triggerKey, true);
 		}
 		
-		String score = moduleConfigs.getStringValue(CONFIG_KEY_SCORE_CUT_VALUE);
+		String score = learningPathConfigs.getScoreTriggerValue() != null
+				? learningPathConfigs.getScoreTriggerValue().toString()
+				: null;
 		scoreCutEl = uifactory.addTextElement("config.score.cut", 100, score, formLayout);
 		scoreCutEl.setMandatory(true);
 		
@@ -213,28 +220,24 @@ public class LearningPathNodeConfigController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		String estimatedTime = durationEl.getValue();
-		moduleConfigs.setStringValue(CONFIG_KEY_DURATION, estimatedTime);
+		Integer duration = Integer.valueOf(durationEl.getValue());
+		learningPathConfigs.setDuration(duration);
 		
-		String obligation = obligationEl.isOneSelected()
-				? obligationEl.getSelectedKey()
-				: CONFIG_DEFAULT_OBLIGATION;
-		moduleConfigs.setStringValue(CONFIG_KEY_OBLIGATION, obligation);
+		AssessmentObligation obligation = obligationEl.isOneSelected()
+				? AssessmentObligation.valueOf(obligationEl.getSelectedKey())
+				: LearningPathConfigs.OBLIGATION_DEFAULT;
+		learningPathConfigs.setObligation(obligation);
 		
 		Date startDate = startDateEl.getDate();
-		moduleConfigs.setDateValue(CONFIG_KEY_START, startDate);
+		learningPathConfigs.setStartDate(startDate);
 		
-		String trigger = triggerEl.isOneSelected()
-				? triggerEl.getSelectedKey()
-				: CONFIG_DEFAULT_TRIGGER;
-		moduleConfigs.setStringValue(CONFIG_KEY_TRIGGER, trigger);
+		FullyAssessedTrigger trigger = triggerEl.isOneSelected()
+				? FullyAssessedTrigger.valueOf(triggerEl.getSelectedKey())
+				: LearningPathConfigs.TRIGGER_DEFAULT;
+		learningPathConfigs.setFullyAssessedTrigger(trigger);
 		
-		if (scoreCutEl.isVisible()) {
-			String scoreCut = scoreCutEl.getValue();
-			moduleConfigs.setStringValue(CONFIG_KEY_SCORE_CUT_VALUE, scoreCut);
-		} else {
-			moduleConfigs.remove(CONFIG_KEY_SCORE_CUT_VALUE);
-		}
+		Integer score = scoreCutEl.isVisible()? Integer.valueOf(scoreCutEl.getValue()): null;
+		learningPathConfigs.setScoreTriggerValue(score);
 		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

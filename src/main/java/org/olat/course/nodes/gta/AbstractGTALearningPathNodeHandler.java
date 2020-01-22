@@ -23,8 +23,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.learningpath.LearningPathConfigs;
-import org.olat.course.learningpath.LearningPathNodeHandler;
 import org.olat.course.learningpath.LearningPathEditConfigs;
+import org.olat.course.learningpath.LearningPathNodeHandler;
 import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.repository.RepositoryEntry;
@@ -59,7 +59,7 @@ public abstract class AbstractGTALearningPathNodeHandler implements LearningPath
 	@Override
 	public Controller createConfigEditController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
 			CourseNode courseNode) {
-		return new LearningPathNodeConfigController(ureq, wControl, courseEntry, courseNode.getModuleConfiguration(), EDIT_CONFIGS);
+		return new LearningPathNodeConfigController(ureq, wControl, courseEntry, courseNode, EDIT_CONFIGS);
 	}
 
 	@Override

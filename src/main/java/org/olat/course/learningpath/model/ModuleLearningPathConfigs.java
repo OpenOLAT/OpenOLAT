@@ -19,13 +19,6 @@
  */
 package org.olat.course.learningpath.model;
 
-import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_DEFAULT_OBLIGATION;
-import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_DEFAULT_TRIGGER;
-import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_DURATION;
-import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_OBLIGATION;
-import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_SCORE_CUT_VALUE;
-import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_START;
-import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_TRIGGER;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_TRIGGER_CONFIRMED;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_TRIGGER_NODE_VISITED;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_TRIGGER_PASSED;
@@ -49,6 +42,12 @@ import org.olat.modules.assessment.model.AssessmentObligation;
  *
  */
 public class ModuleLearningPathConfigs implements LearningPathConfigs {
+	
+	private static final String CONFIG_KEY_DURATION = "duration";
+	private static final String CONFIG_KEY_OBLIGATION = "obligation";
+	private static final String CONFIG_KEY_START = "start.date";
+	private static final String CONFIG_KEY_TRIGGER = "fully.assessed.trigger";
+	private static final String CONFIG_KEY_SCORE_CUT_VALUE = "scoreCutValue";
 	
 	protected final ModuleConfiguration moduleConfiguration;
 	private final boolean doneOnFullyAssessed;
@@ -82,22 +81,49 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 
 	@Override
 	public AssessmentObligation getObligation() {
-		String value = moduleConfiguration.getStringValue(CONFIG_KEY_OBLIGATION, CONFIG_DEFAULT_OBLIGATION);
-		return AssessmentObligation.valueOf(value);
+		String config = moduleConfiguration.getStringValue(CONFIG_KEY_OBLIGATION);
+		return StringHelper.containsNonWhitespace(config)
+				? AssessmentObligation.valueOf(config)
+				: OBLIGATION_DEFAULT;
+	}
+
+	@Override
+	public void setObligation(AssessmentObligation obligation) {
+		moduleConfiguration.setStringValue(CONFIG_KEY_OBLIGATION, obligation.name());
 	}
 
 	@Override
 	public Date getStartDate() {
 		return moduleConfiguration.getDateValue(CONFIG_KEY_START);
 	}
+
+	@Override
+	public void setStartDate(Date start) {
+		moduleConfiguration.setDateValue(CONFIG_KEY_START, start);
+	}
 	
 	@Override
 	public FullyAssessedTrigger getFullyAssessedTrigger() {
-		return FullyAssessedTrigger.valueOf(getFullyAssessedTriggerConfig());
+		String config = getFullyAssessedTriggerConfig();
+		return config != null? FullyAssessedTrigger.valueOf(config): null;
 	}
 
 	private String getFullyAssessedTriggerConfig() {
-		return moduleConfiguration.getStringValue(CONFIG_KEY_TRIGGER, CONFIG_DEFAULT_TRIGGER);
+		return moduleConfiguration.getStringValue(CONFIG_KEY_TRIGGER, TRIGGER_DEFAULT.name());
+	}
+
+	@Override
+	public void setFullyAssessedTrigger(FullyAssessedTrigger trigger) {
+		moduleConfiguration.setStringValue(CONFIG_KEY_TRIGGER, trigger.name());
+	}
+
+	@Override
+	public void setScoreTriggerValue(Integer score) {
+		if (score != null) {
+			moduleConfiguration.setStringValue(CONFIG_KEY_SCORE_CUT_VALUE, score.toString());
+		} else {
+			moduleConfiguration.remove(CONFIG_KEY_SCORE_CUT_VALUE);
+		}
 	}
 
 	@Override

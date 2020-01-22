@@ -19,6 +19,8 @@
  */
 package org.olat.course.editor.overview;
 
+import static org.olat.core.gui.components.util.KeyValues.entry;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,15 +31,26 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.ICourse;
 import org.olat.course.editor.EditorMainController;
+import org.olat.course.learningpath.LearningPathConfigs;
+import org.olat.course.learningpath.LearningPathService;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
+import org.olat.modules.assessment.model.AssessmentObligation;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -57,15 +70,23 @@ public class BulkChangeController extends FormBasicController {
 			CourseNode.DISPLAY_OPTS_CONTENT};
 	
 	private SingleSelection displayEl;
+	private TextElement durationEl;
+	private SingleSelection obligationEl;
 	
 	private Map<MultipleSelectionElement, FormLayoutContainer> checkboxContainer = new HashMap<>();
 	private final List<MultipleSelectionElement> checkboxSwitch = new ArrayList<>();
 	
+	private final boolean learningPath;
 	private final List<CourseNode> courseNodes;
+	
+	@Autowired
+	private LearningPathService learningPathService;
 
-	public BulkChangeController(UserRequest ureq, WindowControl wControl, List<CourseNode> courseNodes) {
+	public BulkChangeController(UserRequest ureq, WindowControl wControl, ICourse course, List<CourseNode> courseNodes) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(EditorMainController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(LearningPathNodeConfigController.class, getLocale(), getTranslator()));
+		this.learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType());
 		this.courseNodes = courseNodes;
 		initForm(ureq);
 	}
@@ -73,6 +94,10 @@ public class BulkChangeController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		initGeneralForm(formLayout);
+		
+		if (learningPath) {
+			initLearningPathForm(formLayout);
+		}
 
 		FormLayoutContainer buttonsWrapperCont = FormLayoutContainer.createDefaultFormLayout("global", getTranslator());
 		buttonsWrapperCont.setRootForm(mainForm);
@@ -97,10 +122,26 @@ public class BulkChangeController extends FormBasicController {
 				translate("nodeConfigForm.content_only")};
 		displayEl = uifactory.addDropdownSingleselect("nodeConfigForm.display_options", generalCont, displayOptionsKeys,
 				values, null);
+		displayEl.select(displayOptionsKeys[0], true);
 		decorate(displayEl, generalCont);
-		
 	}
 	
+	private void initLearningPathForm(FormItemContainer formLayout) {
+		FormLayoutContainer lpCont = FormLayoutContainer.createDefaultFormLayout("learningPath", getTranslator());
+		lpCont.setRootForm(mainForm);
+		formLayout.add(lpCont);
+		
+		durationEl = uifactory.addTextElement("config.duration", 128, "", lpCont);
+		decorate(durationEl, lpCont);
+		
+		KeyValues obligationKV = new KeyValues();
+		obligationKV.add(entry(AssessmentObligation.mandatory.name(), translate("config.obligation.mandatory")));
+		obligationKV.add(entry(AssessmentObligation.optional.name(), translate("config.obligation.optional")));
+		obligationEl = uifactory.addRadiosHorizontal("config.obligation", lpCont, obligationKV.keys(), obligationKV.values());
+		obligationEl.select(obligationEl.getKey(0), true);
+		decorate(obligationEl, lpCont);
+	}
+
 	private FormItem decorate(FormItem item, FormLayoutContainer formLayout) {
 		String itemName = item.getName();
 		MultipleSelectionElement checkbox = uifactory.addCheckboxesHorizontal("cbx_" + itemName, itemName, formLayout,
@@ -129,40 +170,73 @@ public class BulkChangeController extends FormBasicController {
 			super.formInnerEvent(ureq, source, event);
 		}
 	}
+	
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+		
+		allOk = validateInteger(durationEl, 1, 10000, true, "error.positiv.int");
+		
+		return allOk & super.validateFormLogic(ureq);
+	}
+	
+	public static boolean validateInteger(TextElement el, int min, int max, boolean mandatory, String i18nKey) {
+		boolean allOk = true;
+		el.clearError();
+		if(el.isEnabled() && el.isVisible()) {
+			String val = el.getValue();
+			if(StringHelper.containsNonWhitespace(val)) {
+				try {
+					int value = Integer.parseInt(val);
+					if(min > value) {
+						allOk = false;
+					} else if(max < value) {
+						allOk = false;
+					}
+				} catch (NumberFormatException e) {
+					allOk = false;
+				}
+			} else if (mandatory) {
+				allOk = false;
+			}
+		}
+		if (!allOk) {
+			el.setErrorKey(i18nKey, null);
+		}
+		return allOk;
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		for (CourseNode courseNode : courseNodes) {
 			formOKGeneral(courseNode);
+			formOKLearningPath(courseNode);
 		}
-//		for(QuestionItemShort item : items) {
-//			QuestionItem fullItem = qpoolService.loadItemById(item.getKey());
-//			if(fullItem instanceof QuestionItemImpl) {
-//				QuestionItemImpl itemImpl = (QuestionItemImpl)fullItem;
-//				QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(getIdentity(),
-//						Action.UPDATE_QUESTION_ITEM_METADATA);
-//				builder.withBefore(itemImpl);
-//				
-//				formOKGeneral(itemImpl);
-//				formOKQuestion(itemImpl);
-//				formOKTechnical(itemImpl);
-//				formOKRights(itemImpl);
-//				QuestionItem merged = qpoolService.updateItem(itemImpl);
-//				builder.withAfter(itemImpl);
-//				qpoolService.persist(builder.create());
-//				updatedItems.add(merged);
-//			}
-//		}
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
 	private void formOKGeneral(CourseNode courseNode) {
-		if(isEnabled(displayEl)) {
+		if (isEnabled(displayEl)) {
 			String displayOption = displayEl.getSelectedKey();
 			courseNode.setDisplayOption(displayOption);
 		}
 	}
 	
+	private void formOKLearningPath(CourseNode courseNode) {
+		LearningPathConfigs learningPathConfigs = learningPathService.getConfigs(courseNode);
+		if (isEnabled(durationEl)) {
+			Integer duration = Integer.valueOf(durationEl.getValue());
+			learningPathConfigs.setDuration(duration);
+		}
+		
+		if (isEnabled(obligationEl)) {
+			AssessmentObligation obligation = obligationEl.isOneSelected()
+					? AssessmentObligation.valueOf(obligationEl.getSelectedKey())
+					: LearningPathConfigs.OBLIGATION_DEFAULT;
+			learningPathConfigs.setObligation(obligation);
+		}
+	}
+
 	private boolean isEnabled(FormItem item) {
 		if (item == null) return false;
 		
