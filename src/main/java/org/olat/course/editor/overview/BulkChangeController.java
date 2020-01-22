@@ -175,7 +175,9 @@ public class BulkChangeController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 		
-		allOk = validateInteger(durationEl, 1, 10000, true, "error.positiv.int");
+		if (learningPath) {
+			allOk = validateInteger(durationEl, 1, 10000, true, "error.positiv.int");
+		}
 		
 		return allOk & super.validateFormLogic(ureq);
 	}
@@ -210,7 +212,9 @@ public class BulkChangeController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		for (CourseNode courseNode : courseNodes) {
 			formOKGeneral(courseNode);
-			formOKLearningPath(courseNode);
+			if (learningPath) {
+				formOKLearningPath(courseNode);
+			}
 		}
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
