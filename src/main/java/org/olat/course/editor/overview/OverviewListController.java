@@ -21,26 +21,36 @@ package org.olat.course.editor.overview;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.IndentedNodeRenderer;
 import org.olat.course.editor.EditorMainController;
+import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.overview.OverviewDataModel.OverviewCols;
 import org.olat.course.learningpath.FullyAssessedTrigger;
 import org.olat.course.learningpath.LearningPathConfigs;
@@ -64,7 +74,11 @@ public class OverviewListController extends FormBasicController {
 	
 	private FlexiTableElement tableEl;
 	private OverviewDataModel dataModel;
+	private FormLink bulkLink;
 
+	private CloseableModalController cmc;
+	private BulkChangeController bulkChangeCtrl;
+	
 	private final ICourse course;
 	private final boolean learningPath;
 	
@@ -84,6 +98,7 @@ public class OverviewListController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		initTable(ureq, formLayout);
+		initButtons(formLayout);
 	}
 
 	private void initTable(UserRequest ureq, FormItemContainer formLayout) {
@@ -114,6 +129,7 @@ public class OverviewListController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 250, false, getTranslator(), formLayout);
 		tableEl.setAndLoadPersistedPreferences(ureq, "course-editor-overview");
 		tableEl.setEmtpyTableMessageKey("table.empty");
+		tableEl.setMultiSelect(true);
 		tableEl.setBordered(true);
 		
 		loadModel();
@@ -124,7 +140,7 @@ public class OverviewListController extends FormBasicController {
 		List<OverviewRow> rows = new ArrayList<>();
 		forgeRows(rows, rootNode, 0, null);
 		dataModel.setObjects(rows);
-		tableEl.reset(true, true, true);
+		tableEl.reset(true, false, true);
 	}
 
 	private void forgeRows(List<OverviewRow> rows, INode node, int recursionLevel, OverviewRow parent) {
@@ -214,7 +230,68 @@ public class OverviewListController extends FormBasicController {
 		}
 		return null;
 	}
+
+	private void initButtons(FormItemContainer formLayout) {
+		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		buttonCont.setElementCssClass("o_button_group");
+		buttonCont.setRootForm(mainForm);
+		formLayout.add("buttons", buttonCont);
+		
+		bulkLink = uifactory.addFormLink("command.bulk", buttonCont, Link.BUTTON);
+	}
 	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source == bulkChangeCtrl) {
+			if (event == FormEvent.DONE_EVENT) {
+				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+				loadModel();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (source == cmc) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(bulkChangeCtrl);
+		removeAsListenerAndDispose(cmc);
+		bulkChangeCtrl = null;
+		cmc = null;
+	}
+	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == bulkLink) {
+			doBulk(ureq);
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void doBulk(UserRequest ureq) {
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		if (selectedIndex.isEmpty()) {
+			showWarning("error.select.one.course.node");
+			return;
+		}
+		
+		List<CourseNode> selectedCourseNodes = selectedIndex.stream()
+				.map(index -> dataModel.getObject(index.intValue()))
+				.map(OverviewRow::getCourseNode)
+				.collect(Collectors.toList());
+		
+		removeAsListenerAndDispose(bulkChangeCtrl);
+		bulkChangeCtrl = new BulkChangeController(ureq, getWindowControl(), selectedCourseNodes);
+		listenTo(bulkChangeCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), bulkChangeCtrl.getInitialComponent(),
+				true, translate("command.bulk"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
