@@ -13,6 +13,12 @@
 	}
 }
 
+.o_course_edit_overview_table {
+	tr.o_deleted, tr.o_deleted td, tr.o_deleted td span, tr.o_deleted td a {
+		color: lighten($o-course-node-deleted, 20%);
+	}
+}
+
 /* learning path tree rendering */
 .o_lp_tree.o_tree {
 

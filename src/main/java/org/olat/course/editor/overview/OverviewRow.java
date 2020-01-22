@@ -24,6 +24,7 @@ import java.util.Date;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.course.assessment.IndentedNodeRenderer.IndentedCourseNode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.tree.CourseEditorTreeNode;
 
 /**
  * 
@@ -33,7 +34,7 @@ import org.olat.course.nodes.CourseNode;
  */
 public class OverviewRow implements FlexiTreeTableNode, IndentedCourseNode {
 	
-	private final CourseNode courseNode;
+	private final CourseEditorTreeNode editorNode;
 	private final int recursionLevel;
 	private String translatedDisplayOption;
 	private Integer duration;
@@ -43,8 +44,8 @@ public class OverviewRow implements FlexiTreeTableNode, IndentedCourseNode {
 	private OverviewRow parent;
 	private boolean hasChildren;
 	
-	public OverviewRow(CourseNode courseNode, int recursionLevel) {
-		this.courseNode = courseNode;
+	public OverviewRow(CourseEditorTreeNode editorNode, int recursionLevel) {
+		this.editorNode = editorNode;
 		this.recursionLevel = recursionLevel;
 	}
 
@@ -55,21 +56,25 @@ public class OverviewRow implements FlexiTreeTableNode, IndentedCourseNode {
 
 	@Override
 	public String getType() {
-		return courseNode.getType();
+		return getCourseNode().getType();
 	}
 
 	@Override
 	public String getShortTitle() {
-		return courseNode.getShortName();
+		return getCourseNode().getShortName();
 	}
 
 	@Override
 	public String getLongTitle() {
-		return courseNode.getLongTitle();
+		return getCourseNode().getLongTitle();
+	}
+
+	public CourseEditorTreeNode getEditorNode() {
+		return editorNode;
 	}
 
 	public CourseNode getCourseNode() {
-		return courseNode;
+		return editorNode.getCourseNode();
 	}
 
 	public String getTranslatedDisplayOption() {

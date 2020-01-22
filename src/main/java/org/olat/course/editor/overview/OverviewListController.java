@@ -36,7 +36,9 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
@@ -72,7 +74,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class OverviewListController extends FormBasicController {
+public class OverviewListController extends FormBasicController implements FlexiTableCssDelegate {
 	
 	private static final String CMD_OPEN = "open";
 	
@@ -133,6 +135,8 @@ public class OverviewListController extends FormBasicController {
 		
 		dataModel = new OverviewDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 250, false, getTranslator(), formLayout);
+		tableEl.setElementCssClass("o_course_edit_overview_table");
+		tableEl.setCssDelegate(this);
 		tableEl.setAndLoadPersistedPreferences(ureq, "course-editor-overview");
 		tableEl.setEmtpyTableMessageKey("table.empty");
 		tableEl.setMultiSelect(true);
@@ -165,7 +169,7 @@ public class OverviewListController extends FormBasicController {
 
 	private OverviewRow forgeRow(CourseEditorTreeNode editorNode, int recursionLevel, OverviewRow parent) {
 		CourseNode courseNode = editorNode.getCourseNode();
-		OverviewRow row = new OverviewRow(courseNode, recursionLevel);
+		OverviewRow row = new OverviewRow(editorNode, recursionLevel);
 		row.setParent(parent);
 		row.setTranslatedDisplayOption(getTranslatedDisplayOption(courseNode));
 		if (learningPath) {
@@ -244,6 +248,21 @@ public class OverviewListController extends FormBasicController {
 		formLayout.add("buttons", buttonCont);
 		
 		bulkLink = uifactory.addFormLink("command.bulk", buttonCont, Link.BUTTON);
+	}
+	
+	@Override
+	public String getWrapperCssClass(FlexiTableRendererType type) {
+		return null;
+	}
+
+	@Override
+	public String getTableCssClass(FlexiTableRendererType type) {
+		return null;
+	}
+
+	@Override
+	public String getRowCssClass(FlexiTableRendererType type, int pos) {
+		return dataModel.getObject(pos).getEditorNode().getCssClass();
 	}
 	
 	@Override
