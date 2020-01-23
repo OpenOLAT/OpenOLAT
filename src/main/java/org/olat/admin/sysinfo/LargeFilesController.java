@@ -43,6 +43,7 @@ import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryModule;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSRevision;
+import org.olat.core.commons.services.vfs.impl.VFSContextInfoUnknownPathResolver;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -173,9 +174,12 @@ public class LargeFilesController extends FormBasicController implements Extende
 					}
 				}
 
-				FormLink pathInfo = uifactory.addFormLink("pathinfo_" + counter.incrementAndGet() , "pathInfo", sb.toString(), null, null, Link.NONTRANSLATED);
-				pathInfo.setUserObject(contentRow);
-				contentRow.setPathInfo(pathInfo);
+				FormLink contextInfo = uifactory.addFormLink("contextinfo_" + counter.incrementAndGet(), "contextInfo", contentRow.getContext(), null, null, Link.NONTRANSLATED);
+				contextInfo.setUserObject(contentRow);
+				contentRow.setContextInfo(contextInfo);
+				
+				contentRow.setShowPath(sb.toString());
+				
 				rows.add(contentRow);
 			}
 		}
@@ -201,9 +205,12 @@ public class LargeFilesController extends FormBasicController implements Extende
 					}
 				}
 				
-				FormLink pathInfo = uifactory.addFormLink("pathinfo_" + counter.incrementAndGet() , "pathInfo", sb.toString(), null, null, Link.NONTRANSLATED);
-				pathInfo.setUserObject(contentRow);
-				contentRow.setPathInfo(pathInfo);
+				FormLink contextInfo = uifactory.addFormLink("contextinfo_" + counter.incrementAndGet(), "contextInfo", contentRow.getContext(), null, null, Link.NONTRANSLATED);
+				contextInfo.setUserObject(contentRow);
+				contentRow.setContextInfo(contextInfo);
+				
+				contentRow.setShowPath(sb.toString());
+				
 				rows.add(contentRow);
 			}
 		}
@@ -307,8 +314,8 @@ public class LargeFilesController extends FormBasicController implements Extende
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.uuid));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, LargeFilesTableColumns.name, new LargeFilesNameCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, LargeFilesTableColumns.size, new LargeFilesSizeCellRenderer(vfsRepositoryModule)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, LargeFilesTableColumns.context));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, LargeFilesTableColumns.path));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, LargeFilesTableColumns.contextInfo));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.showPath));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LargeFilesTableColumns.age, new LargeFilesAgeCellRenderer()));
 
 		column = new DefaultFlexiColumnModel(false, LargeFilesTableColumns.trashed, new LargeFilesTrashedCellRenderer());
@@ -397,18 +404,18 @@ public class LargeFilesController extends FormBasicController implements Extende
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink) source;
 
-			if("pathInfo".equals(link.getCmd())) {
+			if("contextInfo".equals(link.getCmd())) {
 				removeAsListenerAndDispose(pathInfoCalloutCtrl);
 
 				LargeFilesTableContentRow row = (LargeFilesTableContentRow) link.getUserObject();
 
 				CalloutSettings settings = new CalloutSettings(false);
 				VFSContextInfo contextInfo = vfsRepositoryService.getContextInfoFor(row.getPath(), getLocale());			
-				VelocityContainer pathInfoVC = createVelocityContainer("large_files_path_info");
-				pathInfoVC.contextPut("contextInfo", contextInfo);
-				pathInfoVC.contextPut("row", row);
+				VelocityContainer contextInfoContainer = createVelocityContainer("large_files_context_info");
+				contextInfoContainer.contextPut("contextInfo", contextInfo);
+				contextInfoContainer.contextPut("row", row);
 
-				pathInfoCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),pathInfoVC, link.getFormDispatchId(), "", true, "", settings);
+				pathInfoCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),contextInfoContainer, link.getFormDispatchId(), "", true, "", settings);
 				listenTo(pathInfoCalloutCtrl);
 				pathInfoCalloutCtrl.activate();
 			}
@@ -445,7 +452,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOK = super.validateFormLogic(ureq);
 
-		if(maxResultEl.getValue() != "") {
+		if(StringHelper.containsNonWhitespace(maxResultEl.getValue())) {
 			try {
 				if(Integer.parseInt(maxResultEl.getValue()) <= 0) {
 					maxResultEl.setErrorKey("largefiles.filter.error.small", null);
@@ -457,7 +464,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 			}
 		}
 
-		if(minSizeEl.getValue() != "") {
+		if(StringHelper.containsNonWhitespace(minSizeEl.getValue())) {
 			try {
 				if(Double.parseDouble(minSizeEl.getValue()) <= 0) {
 					minSizeEl.setErrorKey("largefiles.filter.error.small", null);
@@ -469,7 +476,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 			}
 		}
 
-		if(downloadCountMinEl.getValue() != "") {
+		if(StringHelper.containsNonWhitespace(downloadCountMinEl.getValue())) {
 			try {
 				if(Integer.parseInt(downloadCountMinEl.getValue()) <= 0) {
 					downloadCountMinEl.setErrorKey("largefiles.filter.error.small", null);
@@ -481,7 +488,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 			}
 		}
 
-		if(revisionCountMinEl.getValue() != "") {
+		if(StringHelper.containsNonWhitespace(revisionCountMinEl.getValue())) {
 			try {
 				if(Integer.parseInt(revisionCountMinEl.getValue()) <= 0) {
 					revisionCountMinEl.setErrorKey("largefiles.filter.error.small", null);
@@ -504,20 +511,38 @@ public class LargeFilesController extends FormBasicController implements Extende
 		ContactList contactList = new ContactList(fullName);
 		contactList.add(user);
 		cmsg.addEmailTo(contactList);
-		cmsg.setSubject("Too large files in your personal folder");
+		cmsg.setSubject(translate("largefiles.mail.subject"));
 
 		String bodyStart = translate("largefiles.mail.start", new String[] {user.getUser().getFirstName() + " " + user.getUser().getLastName()});
-		String bodyFiles = "<ul>";
+		StringBuilder bodyFiles = new StringBuilder(5000);
 		String bodyEnd = translate("largefiles.mail.end");
 
+		bodyFiles.append("<ul>");
 		for(LargeFilesTableContentRow row:rows) {
-			if (row.getAuthor() == user) {
-				bodyFiles += "<li><b>" + Formatter.formatBytes(row.getSize()) + "</b>  -  " +row.getName() + "</li>";
+			if (row.getAuthor() != null && row.getAuthor().equals(user)) {
+				bodyFiles.append("<li><strong>" + row.getName() + "</strong>")
+					.append("<ul>")
+						.append("<li>")
+							.append("Typ: " + row.getContext())
+						.append("</li>")
+						.append("<li>")
+							.append("Size: " + "<strong>" + Formatter.formatBytes(row.getSize()) + "</strong>")
+						.append("</li>")
+						.append("<li>")
+							.append("Path: " + row.getPath())
+						.append("</li>");
+						if (row.getContext() != VFSContextInfoUnknownPathResolver.UNKNOWN_TYPE ) {
+							bodyFiles.append("<li>")
+								.append("<span>URL: " + "<a href='" + vfsRepositoryService.getContextInfoFor(row.getPath(), getLocale()).getContextUrl() + "'>" + vfsRepositoryService.getContextInfoFor(row.getPath(), getLocale()).getContextUrl() + "</a></span>")
+							.append("</li>");
+						}
+					bodyFiles.append("<ul>")
+				.append("</li>");
 			}
 		}
-		bodyFiles += "</ul>";
+		bodyFiles.append("</ul>");
 
-		cmsg.setBodyText(bodyStart + bodyFiles + bodyEnd);
+		cmsg.setBodyText(bodyStart + bodyFiles.toString() + bodyEnd);
 		contactCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg, null);
 		listenTo(contactCtrl);
 		cmc = new CloseableModalController(getWindowControl(), "close", contactCtrl.getInitialComponent());

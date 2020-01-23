@@ -240,9 +240,9 @@ public class VFSRevisionDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		int maxResult = 100;
-		Date createdAtNewer = Date.from(ZonedDateTime.now().minusMonths(5).toInstant());
+		Date createdAtNewer = Date.from(ZonedDateTime.now().minusMonths(10).toInstant());
 		Date createdAtOlder = Date.from(ZonedDateTime.now().toInstant());
-		Date editedAtNewer = Date.from(ZonedDateTime.now().minusMonths(5).toInstant());
+		Date editedAtNewer = Date.from(ZonedDateTime.now().minusMonths(10).toInstant());
 		Date editedAtOlder = Date.from(ZonedDateTime.now().toInstant());
 		
 		List<VFSRevision> queryResult = revisionDao.getLargest(maxResult, createdAtNewer, createdAtOlder, editedAtNewer, editedAtOlder, null, null, null, null, 0, Long.valueOf(0), 0);

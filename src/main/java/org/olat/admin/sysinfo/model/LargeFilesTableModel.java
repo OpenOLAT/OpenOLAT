@@ -68,8 +68,10 @@ implements SortableFlexiTableDataModel<LargeFilesTableContentRow> {
 		case key: return row.getKey();
 		case name: return row.getName();
 		case size: return row.getSize();
-		case path: return row.getPathInfo();
 		case context: return row.getContext();
+		case contextInfo: return row.getContextInfo();
+		case path: return row.getPath();
+		case showPath: return row.getShowPath();
 		case author: return row.getAuthor() != null ? row.getAuthor().getUser().getFirstName() + " " + row.getAuthor().getUser().getLastName() : null;
 		case revision: return row.isRevision();
 		case fileCategory: return row.getFileCategory();
@@ -116,7 +118,9 @@ implements SortableFlexiTableDataModel<LargeFilesTableContentRow> {
 		name("largefiles.name"),
 		size("largefiles.size"),
 		path("largefiles.path"),
+		showPath("largefiles.path"),
 		context("largefiles.context"),
+		contextInfo("largefiles.context"),
 		author("largefiles.author"),
 		revision("largefiles.revision"),
 		fileType("largefiles.filetype"),

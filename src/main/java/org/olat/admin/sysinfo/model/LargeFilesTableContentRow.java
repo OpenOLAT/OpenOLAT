@@ -44,8 +44,9 @@ public class LargeFilesTableContentRow {
 	private final Long key;
 	private final String name;
 	private final Long size;
-	private FormLink pathInfo;
+	private FormLink contextInfo;
 	private final String path;
+	private String showPath;
 	private final String context;
 	private final Identity author;
 	private final boolean revision;
@@ -71,12 +72,13 @@ public class LargeFilesTableContentRow {
 	private final String revisionComment;
 
 	public LargeFilesTableContentRow(VFSMetadata metadata, Locale locale) {
+		VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
+		
 		key = metadata.getKey();
 		name = metadata.getFilename();
 		size = metadata.getFileSize();
 		author = metadata.getAuthor();
 		path = metadata.getRelativePath();
-		VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
 		context = vfsRepositoryService.getContextTypeFor(path, locale);		
 		fileType = WebappHelper.getMimeType(metadata.getFilename()) != null ? WebappHelper.getMimeType(metadata.getFilename()).split("/")[1] : "Unknown";
 		fileCategory = WebappHelper.getMimeType(metadata.getFilename()) != null ? WebappHelper.getMimeType(metadata.getFilename()).split("/")[0] : "Unknown";
@@ -165,12 +167,8 @@ public class LargeFilesTableContentRow {
 		return size;
 	}
 
-	public FormLink getPathInfo() {
-		return pathInfo;
-	}
-
-	public void setPathInfo(FormLink pathInfo) {
-		this.pathInfo = pathInfo;
+	public void setContextInfo(FormLink contextInfo) {
+		this.contextInfo = contextInfo;
 	}
 
 	public Identity getAuthor() {
@@ -180,12 +178,24 @@ public class LargeFilesTableContentRow {
 	public String getPath() {
 		return path;
 	}
+	
+	public String getShowPath() {
+		return showPath;
+	}
+	
+	public void setShowPath(String showPath) {
+		this.showPath = showPath;
+	}
 
 	public String getContext() {
-		if (context == null || context.equals(VFSContextInfoUnknownPathResolver.UNKNOWN_TYPE)) {
+		if (context == null) {
 			return path;
 		}
 		return context;
+	}
+	
+	public FormLink getContextInfo() {
+		return contextInfo;
 	}
 
 	public Boolean isRevision() {

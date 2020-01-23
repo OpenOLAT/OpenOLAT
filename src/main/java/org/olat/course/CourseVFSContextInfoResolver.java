@@ -60,13 +60,20 @@ public class CourseVFSContextInfoResolver extends RepositoryEntryVFSContextInfoR
 			return null;
 		}
 		String type = null;
-		// Is either a transcoding or the master video
 		if (vfsMetadataRelativePath.startsWith(PersistingCourseImpl.COURSE_ROOT_DIR_NAME)) {
 			if (vfsMetadataRelativePath.contains(PersistingCourseImpl.COURSEFOLDER)) {
 				type = Util.createPackageTranslator(CourseVFSContextInfoResolver.class, locale).translate("vfs.context.coursefolder");
 			} else if (vfsMetadataRelativePath.contains("foldernodes")) {
 				type = Util.createPackageTranslator(CourseVFSContextInfoResolver.class, locale).translate("vfs.context.foldernodes");
-			}		
+			} else if (vfsMetadataRelativePath.contains("gtasks")) {
+				type = Util.createPackageTranslator(CourseVFSContextInfoResolver.class, locale).translate("vfs.context.gtasks");
+			} else if (vfsMetadataRelativePath.contains("export")) {
+				type = Util.createPackageTranslator(CourseVFSContextInfoResolver.class, locale).translate("vfs.context.export");
+			} else if (vfsMetadataRelativePath.contains("participantfolder")) {
+				type = Util.createPackageTranslator(CourseVFSContextInfoResolver.class, locale).translate("vfs.context.participantfolder");
+			} else { 
+				type = Util.createPackageTranslator(CourseVFSContextInfoResolver.class, locale).translate("vfs.context.courseconfiguration");
+			} 
 		}		
 		return type;	
 	}
@@ -100,9 +107,9 @@ public class CourseVFSContextInfoResolver extends RepositoryEntryVFSContextInfoR
 						// Add direct path to course folder
 						// TODO: add other path elements to subdirectory
 						url += "/path%3D~~/0";
-					} else if (path.length >= 4 && "foldernodes".equals(path[2])) {
+					} else if (path.length >= 4 && ("foldernodes".equals(path[2]) || "gtasks".equals(path[2]) || "participantfolder".equals(path[2]))) {
 						// Add course node jump in if available
-						url += "/CourseNode" + path[3];
+						url += "/CourseNode/" + path[3];
 					}
 				}
 			}
