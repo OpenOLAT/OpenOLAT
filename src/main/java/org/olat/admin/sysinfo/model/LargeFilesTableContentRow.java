@@ -28,7 +28,6 @@ import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSRevision;
-import org.olat.core.commons.services.vfs.impl.VFSContextInfoUnknownPathResolver;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.Identity;
 import org.olat.core.util.WebappHelper;
