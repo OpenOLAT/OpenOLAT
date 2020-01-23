@@ -57,20 +57,16 @@
 		// Pencil Points
 		var ppts = [];
 	
-		//undo array
-		var undo_count = 0;// NEWTHING
-		var empty_canv; // NEWTHING
-	
 		// current tool
 		var tool = 'brush';
 		jQuery('#tools a#brush').addClass("active");
-		jQuery('#tools a').on('click', function(){
+		jQuery('#tools a').on('click', function() {
 			tool = jQuery(this).attr('id');
 			jQuery('#tools a').removeClass("active");
 			jQuery(this).addClass('active');
 		});
 		// colors
-		jQuery('#colors a').on('click', function(){
+		jQuery('#colors a').on('click', function() {
 			tmp_ctx.strokeStyle = jQuery(this).attr('id');
 			tmp_ctx.fillStyle = tmp_ctx.strokeStyle;
 			
@@ -96,8 +92,8 @@
 		jQuery(this.canvas).on('mousemove touchmove', function(e) {
 			copyEventCoordinateToMouse(e, this.canvas);
 		});
-	
-		//NEWTHING
+		
+		/* Draw the example brush */
 		var drawBrush = function() {
 			context_small.clearRect(0, 0, canvas_small.width, canvas_small.height);
 			
@@ -112,7 +108,6 @@
 		};
 	
 		/* Drawing on Paint App */
-		//tmp_ctx.lineWidth = document.getElementById("width_range").value;
 		tmp_ctx.lineWidth = 10;
 		tmp_ctx.lineJoin = 'round';
 		tmp_ctx.lineCap = 'round';
@@ -120,10 +115,8 @@
 		tmp_ctx.fillStyle = 'blue';
 		jQuery('#colors a.blue').addClass("active");
 				
-		//show current brush view  //NEWTHING
+		//show current brush view
 		drawBrush();
-	
-		empty_canv = this.canvas.toDataURL(); //NEWTHING
 
 		jQuery(tmp_canvas).on('mousedown touchstart', function(e) {
 
@@ -146,10 +139,12 @@
 			onPaint(e);
 		}).on('mousedown touchstart', {formId: formDispatchFieldId}, setFlexiFormDirtyByListener);
 	
+		/* Events which stops drawing */
 		jQuery(tmp_canvas).on('mouseup click touchend', function() {
 			stopPainting();
 		});
 		
+		/* Prevent action */
 		jQuery(tmp_canvas).on('dragstart scroll', function() {
 			return false;
 		});
@@ -205,7 +200,6 @@
 			
 			var image = canvas.toDataURL();
 			jQuery('#' + inputHolderId).val(image);
-			undo_count = 0; //NEWTHING
 		}
 		
 		jQuery("#width_range_ui").slider({
@@ -228,7 +222,6 @@
 		});
 		drawBrush();
 		
-		//NEWTHING
 		jQuery("#clear").on("click", function() {
 			var mainWin = o_getMainWin();
 			var cachedTrans;
