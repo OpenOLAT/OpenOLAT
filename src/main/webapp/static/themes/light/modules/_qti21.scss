@@ -52,12 +52,6 @@ ul.sessionControl {
 /* Drawing */
 .sketch {
 	position: relative;
-	user-drag: none; 
-	user-select: none;
-	-moz-user-select: none;
-	-webkit-user-drag: none;
-	-webkit-user-select: none;
-	-ms-user-select: none;
 }
 
 #tmp_canvas {
@@ -65,7 +59,12 @@ ul.sessionControl {
 	left: 0px; right: 0;
 	bottom: 0; top: 0;
 	cursor: crosshair;
-	user-drag: none; 
+}
+
+.sketch, .sketch>canvas {
+	touch-action: none;
+	user-drag: none;
+	-webkit-user-drag: none;
 	user-select: none;
 	-moz-user-select: none;
 	-webkit-user-drag: none;
