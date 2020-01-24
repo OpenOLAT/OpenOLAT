@@ -952,13 +952,13 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 				mail.setFrom(fromRecipient);
 			} else {
 				if(!StringHelper.containsNonWhitespace(from)) {
-					if (mimeFromAddress != null) {
-						from = mimeFromAddress.getPersonal();
-						fromAddress = mimeFromAddress;
-					} else {
-						from = WebappHelper.getMailConfig("mailFrom");
-						fromAddress = createFromAddress(from, result);
-					}
+					from = WebappHelper.getMailConfig("mailFrom");
+				}
+				if (mimeFromAddress != null) {
+					from = mimeFromAddress.getPersonal();
+					fromAddress = mimeFromAddress;
+				} else {
+					fromAddress = createFromAddress(from, result);
 				}
 				DBMailRecipient fromRecipient = new DBMailRecipient();
 				fromRecipient.setEmailAddress(from);
