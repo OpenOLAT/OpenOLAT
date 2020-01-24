@@ -186,8 +186,8 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 		
-		allOk = validateInteger(durationEl, 1, 10000, isDurationMandatory(), "error.positiv.int");
-		allOk = validateInteger(scoreCutEl, 0, 10000, true, "error.positiv.int");
+		allOk &= validateInteger(durationEl, 1, 10000, isDurationMandatory(), "error.positiv.int");
+		allOk &= validateInteger(scoreCutEl, 0, 10000, true, "error.positiv.int");
 		
 		return allOk & super.validateFormLogic(ureq);
 	}
