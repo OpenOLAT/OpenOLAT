@@ -1116,8 +1116,6 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		return rollCall;
 	}
 	
-	
-	
 	@Override
 	public void saveDefaultRollCalls(List<LectureBlock> lectureBlocks, Identity teacher) {
 		for(LectureBlock lectureBlock:lectureBlocks) {
@@ -1148,7 +1146,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 			LectureBlockRollCall rollCall = identityToRollCallMap.get(participant);
 			AbsenceNotice notice = identityToNotices.get(participant);
 			
-			List<Integer> absenceList = null;
+			List<Integer> absenceList;
 			if(notice != null) {
 				absenceList = new ArrayList<>();
 				for(int i=0; i<numOfLectures; i++) {
@@ -1156,6 +1154,8 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 				}
 			} else if(rollCall != null) {
 				absenceList = rollCall.getLecturesAbsentList();
+			} else {
+				absenceList = new ArrayList<>();
 			}
 			addRollCall(participant, lectureBlock, rollCall, null, absenceList);
 		}
