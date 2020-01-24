@@ -229,11 +229,9 @@ public class VFSRevisionDAOTest extends OlatTestCase {
 		VFSMetadata metadata1 = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text1.txt",
 				new Date(), 10l, false, "file:///text.tx", "file", null);
 		VFSRevision revision1 = revisionDao.createRevision(author, "._oo_vr_1_text.txt", 1, 25l, Date.from(ZonedDateTime.now().minusMinutes(5).toInstant()), "A comment", metadata1);
-		dbInstance.commitAndCloseSession();
 		VFSMetadata metadata2 = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text2.txt",
 				new Date(), 10l, false, "file:///text.tx", "file", null);
 		VFSRevision revision2 = revisionDao.createRevision(author, "._oo_vr_2_text.txt", 1, 25l, Date.from(ZonedDateTime.now().minusMinutes(5).toInstant()), "A comment", metadata2);
-		dbInstance.commitAndCloseSession();
 		VFSMetadata metadata3 = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text3.txt",
 				new Date(), 10l, false, "file:///text.tx", "file", null);
 		VFSRevision revision3 = revisionDao.createRevision(author, "._oo_vr_3_text.txt", 1, 25l, Date.from(ZonedDateTime.now().minusMinutes(5).toInstant()), "A comment", metadata3);
@@ -246,7 +244,6 @@ public class VFSRevisionDAOTest extends OlatTestCase {
 		Date editedAtOlder = Date.from(ZonedDateTime.now().toInstant());
 		
 		List<VFSRevision> queryResult = revisionDao.getLargest(maxResult, createdAtNewer, createdAtOlder, editedAtNewer, editedAtOlder, null, null, null, null, 0, Long.valueOf(0), 0);
-		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(queryResult);
 		Assert.assertTrue(queryResult.size() > 0);
