@@ -527,7 +527,7 @@ public interface LectureService {
 	 */
 	public LectureBlockRollCall removeRollCall(Identity identity, LectureBlock lectureBlock, LectureBlockRollCall rollCall, List<Integer> absences);
 	
-	public void saveDefaultRollCalls(List<LectureBlock> lectureBlocks, Identity teacher);
+	public List<LectureBlock> saveDefaultRollCalls(List<LectureBlock> lectureBlocks, Identity teacher, boolean closeLectures);
 
 	
 	/**

@@ -67,6 +67,7 @@ import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RollCallSecurityCallback;
 import org.olat.modules.lecture.model.EditAbsenceNoticeWrapper;
+import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.modules.lecture.model.RollCallSecurityCallbackImpl;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
 import org.olat.modules.lecture.ui.LectureRoles;
@@ -104,7 +105,7 @@ public class IdentitiesLecturesRollCallController extends FormBasicController {
 	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final List<Identity> participants;
-	private final List<LectureBlock> lectureBlocks;
+	private List<LectureBlock> lectureBlocks;
 	private final Map<LectureBlock, List<Identity>> lectureBlocksMap;
 	private final Map<Identity, List<LectureBlock>> reversedLectureBlocksMap;
 	private final boolean authorizedAbsenceEnabled;
@@ -407,7 +408,15 @@ public class IdentitiesLecturesRollCallController extends FormBasicController {
 	}
 	
 	private void doCloseLectures() {
-		lectureService.saveDefaultRollCalls(lectureBlocks, getIdentity());
+		lectureBlocks = lectureService.saveDefaultRollCalls(lectureBlocks, getIdentity(), true);
+		
+		if(!lectureBlocks.isEmpty()) {
+			LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+			searchParams.setLectureBlocks(lectureBlocks);
+			lectureBlocks= lectureService.getLectureBlocks(searchParams);
+		
+		}
+		
 	}
 	
 	private void doRollCall(UserRequest ureq, IdentityLecturesRollCallsRow row) {

@@ -1117,15 +1117,18 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	}
 	
 	@Override
-	public void saveDefaultRollCalls(List<LectureBlock> lectureBlocks, Identity teacher) {
+	public List<LectureBlock> saveDefaultRollCalls(List<LectureBlock> lectureBlocks, Identity teacher, boolean closeLectures) {
+		List<LectureBlock> mergedBlocks = new ArrayList<>(lectureBlocks.size());
 		for(LectureBlock lectureBlock:lectureBlocks) {
 			lectureBlock = getLectureBlock(lectureBlock);
-			saveDefaultRollCall(lectureBlock, teacher);
+			lectureBlock = saveDefaultRollCall(lectureBlock, teacher, closeLectures);
 			dbInstance.commit();
+			mergedBlocks.add(lectureBlock);
 		}
+		return mergedBlocks;
 	}
 	
-	private void saveDefaultRollCall(LectureBlock lectureBlock, Identity teacher) {
+	private LectureBlock saveDefaultRollCall(LectureBlock lectureBlock, Identity teacher, boolean closeLectures) {
 		String before = toAuditXml(lectureBlock);
 		
 		List<Identity> participants = startLectureBlock(teacher, lectureBlock);
@@ -1162,17 +1165,25 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 
 		lectureBlock = getLectureBlock(lectureBlock);
 		
-		if(lectureBlock.getRollCallStatus() == null) {
-			lectureBlock.setRollCallStatus(LectureRollCallStatus.open);
+		if(closeLectures) {
+			lectureBlock.setStatus(LectureBlockStatus.done);
+			lectureBlock.setRollCallStatus(LectureRollCallStatus.closed);
+		} else {
+			if(lectureBlock.getRollCallStatus() == null) {
+				lectureBlock.setRollCallStatus(LectureRollCallStatus.open);
+			}
+			if(lectureBlock.getStatus() == null || lectureBlock.getStatus() == LectureBlockStatus.active) {
+				lectureBlock.setStatus(LectureBlockStatus.active);
+			}
 		}
-		if(lectureBlock.getStatus() == null || lectureBlock.getStatus() == LectureBlockStatus.active) {
-			lectureBlock.setStatus(LectureBlockStatus.active);
-		}
+		
 		lectureBlock = save(lectureBlock, null);
 		recalculateSummary(lectureBlock.getEntry());
 		
 		String after = toAuditXml(lectureBlock);
 		auditLog(LectureBlockAuditLog.Action.saveLectureBlock, before, after, null, lectureBlock, null, lectureBlock.getEntry(), null, teacher);
+		
+		return lectureBlock;
 	}
 
 	@Override

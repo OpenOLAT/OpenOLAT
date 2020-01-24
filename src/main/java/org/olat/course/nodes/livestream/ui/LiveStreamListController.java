@@ -97,6 +97,7 @@ public class LiveStreamListController extends FormBasicController {
 		for (LiveStreamEvent liveStreamEvent : upcomingEvents) {
 			rows.add(new LiveStreamEventRow(liveStreamEvent));
 		}
+		// ascending
 		Collections.sort(rows, (e1, e2) -> e1.getEvent().getBegin().compareTo(e2.getEvent().getBegin()));
 		dataModel.setObjects(rows);
 		tableEl.reset(false, false, true);
