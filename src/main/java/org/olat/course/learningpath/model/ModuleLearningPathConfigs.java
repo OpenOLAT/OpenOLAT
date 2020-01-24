@@ -65,7 +65,11 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 
 	@Override
 	public void setDuration(Integer duration) {
-		moduleConfiguration.setStringValue(CONFIG_KEY_DURATION, duration.toString());
+		if (duration != null) {
+			moduleConfiguration.setStringValue(CONFIG_KEY_DURATION, duration.toString());
+		} else {
+			moduleConfiguration.remove(CONFIG_KEY_DURATION);
+		}
 	}
 
 	private Integer integerOrNull(String value) {
@@ -89,7 +93,11 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 
 	@Override
 	public void setObligation(AssessmentObligation obligation) {
-		moduleConfiguration.setStringValue(CONFIG_KEY_OBLIGATION, obligation.name());
+		if (obligation != null) {
+			moduleConfiguration.setStringValue(CONFIG_KEY_OBLIGATION, obligation.name());
+		} else {
+			moduleConfiguration.remove(CONFIG_KEY_OBLIGATION);
+		}
 	}
 
 	@Override
@@ -114,7 +122,11 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 
 	@Override
 	public void setFullyAssessedTrigger(FullyAssessedTrigger trigger) {
-		moduleConfiguration.setStringValue(CONFIG_KEY_TRIGGER, trigger.name());
+		if (trigger != null) {
+			moduleConfiguration.setStringValue(CONFIG_KEY_TRIGGER, trigger.name());
+		} else {
+			moduleConfiguration.remove(CONFIG_KEY_TRIGGER);
+		}
 	}
 
 	@Override

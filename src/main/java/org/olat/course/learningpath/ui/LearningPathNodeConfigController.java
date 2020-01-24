@@ -220,7 +220,9 @@ public class LearningPathNodeConfigController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		Integer duration = Integer.valueOf(durationEl.getValue());
+		Integer duration = StringHelper.containsNonWhitespace(durationEl.getValue())
+				? Integer.valueOf(durationEl.getValue())
+				: null;
 		learningPathConfigs.setDuration(duration);
 		
 		AssessmentObligation obligation = obligationEl.isOneSelected()

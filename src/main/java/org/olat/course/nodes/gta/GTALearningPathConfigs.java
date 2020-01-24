@@ -43,4 +43,10 @@ public class GTALearningPathConfigs extends ModuleLearningPathConfigs {
 				: AssessmentObligation.mandatory;
 	}
 
+	@Override
+	public void setObligation(AssessmentObligation obligation) {
+		boolean valuea = obligation != null && AssessmentObligation.optional.equals(obligation);
+		moduleConfiguration.setBooleanEntry(MSCourseNode.CONFIG_KEY_OPTIONAL, valuea );
+	}
+
 }
