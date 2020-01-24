@@ -1393,7 +1393,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	
 	private boolean createAddress(List<Address> addressList, String address) throws AddressException {
 		Address add = createAddress(address);
-		if(add != null) {
+		if(add != null && !addressList.contains(add)) {
 			addressList.add(add);
 		}
 		return true;
