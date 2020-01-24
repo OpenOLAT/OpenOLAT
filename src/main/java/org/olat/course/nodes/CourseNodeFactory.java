@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
@@ -118,7 +119,7 @@ public class CourseNodeFactory implements PreWarm {
 	 */
 	public CourseNodeConfiguration getCourseNodeConfiguration(String alias) {
 		CourseNodeConfiguration config = getAllCourseNodeConfigurations().get(alias);
-		if(config.isEnabled()) {
+		if(config != null && config.isEnabled()) {
 			return config;
 		}
 		return null;
@@ -129,7 +130,11 @@ public class CourseNodeFactory implements PreWarm {
 	 * @return The instance of the desired type of node if enabled or not
 	 */
 	public CourseNodeConfiguration getCourseNodeConfigurationEvenForDisabledBB(String alias) {
-		return getAllCourseNodeConfigurations().get(alias);
+		CourseNodeConfiguration config = getAllCourseNodeConfigurations().get(alias);
+		if(config == null) {
+			config = new DisabledCourseNodeConfiguration(alias);
+		}
+		return config;
 	}
 	
 	/**
@@ -148,7 +153,7 @@ public class CourseNodeFactory implements PreWarm {
 		
 		RepositoryHandler typeToEdit = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repositoryEntry);
 		if (typeToEdit.supportsEdit(repositoryEntry.getOlatResource(), ureq.getIdentity(), ureq.getUserSession().getRoles()) == EditionSupport.no){
-			log.error("Trying to edit repository entry which has no associated editor: "+ typeToEdit);
+			log.error("Trying to edit repository entry which has no associated editor: {}", typeToEdit);
 			return false;
 		}
 		
@@ -179,6 +184,50 @@ public class CourseNodeFactory implements PreWarm {
 				diff = a1.compareTo(a1);
 			}
 			return diff;
+		}
+	}
+	
+	private static class DisabledCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
+		
+		private final String alias;
+		
+		public DisabledCourseNodeConfiguration(String alias) {
+			this.alias = alias;
+		}
+
+		@Override
+		public String getAlias() {
+			return alias;
+		}
+
+		@Override
+		public boolean isDeprecated() {
+			return true;
+		}
+
+		@Override
+		public boolean isEnabled() {
+			return false;
+		}
+
+		@Override
+		public String getGroup() {
+			return null;
+		}
+
+		@Override
+		public CourseNode getInstance() {
+			return null;
+		}
+
+		@Override
+		public String getLinkText(Locale locale) {
+			return null;
+		}
+
+		@Override
+		public String getIconCSSClass() {
+			return "o_unkown_icon";
 		}
 	}
 }
