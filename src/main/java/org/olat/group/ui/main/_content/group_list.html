@@ -1,6 +1,6 @@
-#set ($notEmpty = $r.getComponent("table").getFlexiTableElement().getRowCount() > 0)
+#set ($notEmpty = $r.isNotZero($r.getComponent("table").getFlexiTableElement().getRowCount()))
 ## inSearch to detect group management
-#set ($inSearch = $r.getComponent("table").getFlexiTableElement().isExtendedSearchExpanded())
+#set ($inSearch = $r.isTrue($r.getComponent("table").getFlexiTableElement().isExtendedSearchExpanded()))
 
 #if($notEmpty || $inSearch)
 	$r.render("table")

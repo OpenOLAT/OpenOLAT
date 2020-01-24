@@ -832,6 +832,22 @@ public class VelocityRenderDecorator implements Closeable {
 		return notEmpty;
 	}
 	
+	public boolean isNotZero(Object obj) {
+		boolean notZero;
+		if(obj == null) {
+			notZero = false;
+		} else if(obj instanceof Number) {
+			notZero = ((Number)obj).intValue() != 0;
+		} else if(obj instanceof Collection) {
+			notZero = !((Collection<?>)obj).isEmpty();
+		} else if(obj instanceof Map) {
+			notZero = !((Map<?,?>)obj).isEmpty();
+		} else {
+			notZero = true;
+		}
+		return notZero;
+	}
+	
 	public int parseInt(String text) {
 		try {
 			if(StringHelper.containsNonWhitespace(text)) {
@@ -843,8 +859,8 @@ public class VelocityRenderDecorator implements Closeable {
 		}
 	}
 	
-	public String replace(String text, String target, String replacement) {
-		return text.replace(target, replacement);
+	public String replace(String text, String targetString, String replacement) {
+		return text.replace(targetString, replacement);
 	}
 	
 	/**
