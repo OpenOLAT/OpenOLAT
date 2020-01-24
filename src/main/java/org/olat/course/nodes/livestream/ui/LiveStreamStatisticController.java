@@ -106,7 +106,8 @@ public class LiveStreamStatisticController extends FormBasicController {
 			row.setViewers(viewers);
 			rows.add(row);
 		}
-		Collections.sort(rows, (e1, e2) -> e1.getEvent().getBegin().compareTo(e2.getEvent().getBegin()));
+		// descending
+		Collections.sort(rows, (e1, e2) -> e2.getEvent().getBegin().compareTo(e1.getEvent().getBegin()));
 		dataModel.setObjects(rows);
 		tableEl.reset(false, false, true);
 	}
