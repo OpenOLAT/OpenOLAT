@@ -22,9 +22,12 @@ package org.olat.course.nodes.livestream.manager;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.TypedQuery;
+
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.livestream.Launch;
 import org.olat.course.nodes.livestream.model.LaunchImpl;
 import org.olat.repository.RepositoryEntry;
@@ -60,17 +63,21 @@ public class LiveStreamLaunchDAO {
 		sb.append("select count(distinct launch.identity.key)");
 		sb.append("  from livestreamlaunch launch");
 		sb.and().append("launch.courseEntry.key = :courseEntryKey");
-		sb.and().append("launch.subIdent = :subIdent");
 		sb.and().append("launch.launchDate >= :from");
 		sb.and().append("launch.launchDate <= :to");
+		if (StringHelper.containsNonWhitespace(subIdent)) {
+			sb.and().append("launch.subIdent = :subIdent");
+		}
 		
-		List<Long> counts = dbInstance.getCurrentEntityManager()
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
 				.setParameter("courseEntryKey", courseEntry.getKey())
-				.setParameter("subIdent", subIdent)
 				.setParameter("from", from)
-				.setParameter("to", to)
-				.getResultList();
+				.setParameter("to", to);
+		if (StringHelper.containsNonWhitespace(subIdent)) {
+			query.setParameter("subIdent", subIdent);
+		}
+		List<Long> counts = query.getResultList();
 		return !counts.isEmpty()? counts.get(0): null;
 	}
 

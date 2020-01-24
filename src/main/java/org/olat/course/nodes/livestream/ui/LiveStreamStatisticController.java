@@ -101,7 +101,7 @@ public class LiveStreamStatisticController extends FormBasicController {
 		List<LiveStreamEventRow> rows = new ArrayList<>(upcomingEvents.size());
 		for (LiveStreamEvent liveStreamEvent : upcomingEvents) {
 			LiveStreamEventRow row = new LiveStreamEventRow(liveStreamEvent);
-			Long viewers = liveStreamService.getLaunchers(courseEntry, courseNodeIdent, liveStreamEvent.getBegin(),
+			Long viewers = liveStreamService.getLaunchers(courseEntry, null, liveStreamEvent.getBegin(),
 					liveStreamEvent.getEnd());
 			row.setViewers(viewers);
 			rows.add(row);
