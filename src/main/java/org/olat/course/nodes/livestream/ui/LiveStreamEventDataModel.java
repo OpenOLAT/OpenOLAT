@@ -19,11 +19,15 @@
  */
 package org.olat.course.nodes.livestream.ui;
 
+import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
 /**
  * 
@@ -31,13 +35,21 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class LiveStreamEventDataModel extends DefaultFlexiTableDataModel<LiveStreamEventRow> {
+public class LiveStreamEventDataModel extends DefaultFlexiTableDataModel<LiveStreamEventRow>
+		implements SortableFlexiTableDataModel<LiveStreamEventRow> {
 	
 	private final Locale locale;
 	
 	public LiveStreamEventDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public void sort(SortKey orderBy) {
+		SortableFlexiTableModelDelegate<LiveStreamEventRow> sorter = new SortableFlexiTableModelDelegate<>(orderBy, this, null);
+		List<LiveStreamEventRow> rows = sorter.sort();
+		super.setObjects(rows);
 	}
 
 	@Override
@@ -46,6 +58,7 @@ public class LiveStreamEventDataModel extends DefaultFlexiTableDataModel<LiveStr
 		return getValueAt(reason, col);
 	}
 
+	@Override
 	public Object getValueAt(LiveStreamEventRow row, int col) {
 		switch(EventCols.values()[col]) {
 			case begin: return row.getEvent().getBegin();
@@ -63,7 +76,7 @@ public class LiveStreamEventDataModel extends DefaultFlexiTableDataModel<LiveStr
 		return new LiveStreamEventDataModel(getTableColumnModel(), locale);
 	}
 	
-	public enum EventCols implements FlexiColumnDef {
+	public enum EventCols implements FlexiSortableColumnDef {
 		subject("table.header.subject"),
 		begin("table.header.begin"),
 		end("table.header.end"),
@@ -80,6 +93,16 @@ public class LiveStreamEventDataModel extends DefaultFlexiTableDataModel<LiveStr
 		@Override
 		public String i18nHeaderKey() {
 			return i18nKey;
+		}
+
+		@Override
+		public boolean sortable() {
+			return true;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
 		}
 	}
 }
