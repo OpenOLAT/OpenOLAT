@@ -482,7 +482,7 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 	
 	private void doCloseLectures() {
 		List<LectureBlock> blocks = tableModel.getLectureBlocks();
-		lectureService.saveDefaultRollCalls(blocks, getIdentity());
+		lectureService.saveDefaultRollCalls(blocks, getIdentity(), true);
 	}
 
 	private class ToolsController extends BasicController {
