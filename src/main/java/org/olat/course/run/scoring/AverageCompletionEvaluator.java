@@ -68,9 +68,11 @@ public class AverageCompletionEvaluator implements CompletionEvaluator {
 		
 		int count = 0;
 		double completion = 0.0;
+		boolean allOptional = true;
 		for (CourseNode child: visitor.getCourseNodes()) {
 			AssessmentEvaluation assessmentEvaluation = scoreAccounting.evalCourseNode(child);
 			if (isMandatory(assessmentEvaluation)) {
+				allOptional = false;
 				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(child);
 				int nodeCount = 0;
 				double nodeCompletion = 0.0;
@@ -92,6 +94,9 @@ public class AverageCompletionEvaluator implements CompletionEvaluator {
 			}
 		}
 		
+		if (allOptional) {
+			return 1.0;
+		}
 		return count > 0? completion / count: null;
 	}
 
