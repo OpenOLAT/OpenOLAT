@@ -35,7 +35,7 @@ public interface DurationEvaluator {
 	
 	Integer getDuration(CourseNode courseNode);
 	
-	boolean isdependingOnChildNodes();
+	boolean isDependingOnChildNodes();
 	
 	Integer getDuration(List<AssessmentEvaluation> children);
 

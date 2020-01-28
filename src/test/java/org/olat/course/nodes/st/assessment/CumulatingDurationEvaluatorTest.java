@@ -45,7 +45,7 @@ public class CumulatingDurationEvaluatorTest {
 
 	@Test
 	public void shouldDependOnChildren() {
-		assertThat(sut.isdependingOnChildNodes()).isTrue();
+		assertThat(sut.isDependingOnChildNodes()).isTrue();
 	}
 	
 	@Test

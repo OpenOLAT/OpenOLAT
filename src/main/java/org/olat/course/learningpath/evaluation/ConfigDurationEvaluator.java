@@ -47,7 +47,7 @@ public class ConfigDurationEvaluator implements DurationEvaluator {
 	}
 
 	@Override
-	public boolean isdependingOnChildNodes() {
+	public boolean isDependingOnChildNodes() {
 		return false;
 	}
 

@@ -139,7 +139,7 @@ class AccountingEvaluatorsFactory {
 		}
 
 		@Override
-		public boolean isdependingOnChildNodes() {
+		public boolean isDependingOnChildNodes() {
 			return false;
 		}
 

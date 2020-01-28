@@ -200,7 +200,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 			}
 		}
 		
-		if (durationEvaluator.isdependingOnChildNodes()) {
+		if (durationEvaluator.isDependingOnChildNodes()) {
 			Integer duration = durationEvaluator.getDuration(children);
 			result.setDuration(duration);
 		}

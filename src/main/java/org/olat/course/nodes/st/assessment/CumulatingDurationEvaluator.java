@@ -45,7 +45,7 @@ public class CumulatingDurationEvaluator implements DurationEvaluator {
 	}
 
 	@Override
-	public boolean isdependingOnChildNodes() {
+	public boolean isDependingOnChildNodes() {
 		return true;
 	}
 
