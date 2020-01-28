@@ -66,6 +66,7 @@ public class OverviewDataModel extends DefaultFlexiTreeTableDataModel<OverviewRo
 			case duration: return row.getDuration();
 			case obligation: return row.getTranslatedObligation();
 			case start: return row.getStart();
+			case end: return row.getEnd();
 			case trigger: return row.getTranslatedTrigger();
 			default: return null;
 		}
@@ -85,6 +86,7 @@ public class OverviewDataModel extends DefaultFlexiTreeTableDataModel<OverviewRo
 		duration("table.header.duration"),
 		obligation("table.header.obligation"),
 		start("table.header.start"),
+		end("table.header.end"),
 		trigger("table.header.trigger");
 		
 		private final String i18nKey;

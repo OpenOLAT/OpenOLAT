@@ -46,6 +46,7 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 	private static final String CONFIG_KEY_DURATION = "duration";
 	private static final String CONFIG_KEY_OBLIGATION = "obligation";
 	private static final String CONFIG_KEY_START = "start.date";
+	private static final String CONFIG_KEY_END = "end.date";
 	private static final String CONFIG_KEY_TRIGGER = "fully.assessed.trigger";
 	private static final String CONFIG_KEY_SCORE_CUT_VALUE = "scoreCutValue";
 	
@@ -108,6 +109,16 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 	@Override
 	public void setStartDate(Date start) {
 		moduleConfiguration.setDateValue(CONFIG_KEY_START, start);
+	}
+
+	@Override
+	public Date getEndDate() {
+		return moduleConfiguration.getDateValue(CONFIG_KEY_END);
+	}
+
+	@Override
+	public void setEndDate(Date end) {
+		moduleConfiguration.setDateValue(CONFIG_KEY_END, end);
 	}
 	
 	@Override

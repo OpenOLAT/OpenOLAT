@@ -1306,6 +1306,9 @@ create table o_as_entry (
    a_coach_comment text,
    a_num_assessment_docs int8 not null default 0,
    a_date_start timestamp,
+   a_date_end timestamp,
+   a_date_end_original timestamp,
+   a_date_end_mod_date timestamp,
    a_duration int8,
    a_obligation varchar(50),
    a_first_visit timestamp,
@@ -1316,6 +1319,7 @@ create table o_as_entry (
    a_entry_root bool,
    fk_reference_entry int8,
    fk_identity int8 default null,
+   fk_identity_end_date_mod int8,
    a_anon_identifier varchar(128) default null,
    primary key (id),
    unique(fk_identity, fk_entry, a_subident)

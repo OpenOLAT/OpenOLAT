@@ -128,8 +128,9 @@ public class OverviewListController extends FormBasicController implements Flexi
 		
 		if (learningPath) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.duration));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.obligation));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.start));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.end));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.obligation));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.trigger));
 		}
 		
@@ -177,6 +178,7 @@ public class OverviewListController extends FormBasicController implements Flexi
 			row.setDuration(learningPathConfigs.getDuration());
 			row.setTranslatedObligation(getTranslatedObligation(learningPathConfigs));
 			row.setStart(learningPathConfigs.getStartDate());
+			row.setEnd(learningPathConfigs.getEndDate());
 			row.setTranslatedTrigger(getTranslatedTrigger(courseNode, learningPathConfigs));
 		}
 		return row;

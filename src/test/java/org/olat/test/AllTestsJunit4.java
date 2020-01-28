@@ -466,6 +466,7 @@ import org.junit.runners.Suite;
 	org.olat.core.gui.components.form.flexible.impl.elements.SelectboxSelectionImplTest.class,
 	org.olat.core.gui.components.form.flexible.impl.elements.TextElementRendererTest.class,
 	org.olat.core.util.DateUtilsTest.class,
+	org.olat.course.learningpath.evaluation.ConfigEndDateEvaluatorTest.class,
 	org.olat.course.learningpath.evaluation.ConfigStartDateEvaluatorTest.class,
 	org.olat.course.learningpath.evaluation.DefaultLinearStatusEvaluatorTest.class,
 	org.olat.course.learningpath.evaluation.LinearAccessEvaluatorTest.class,

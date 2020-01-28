@@ -1280,6 +1280,9 @@ create table o_as_entry (
    a_coach_comment text,
    a_num_assessment_docs bigint not null default 0,
    a_date_start datetime,
+   a_date_end datetime,
+   a_date_end_original datetime,
+   a_date_end_mod_date datetime,
    a_duration int8,
    a_obligation varchar(50),
    a_first_visit datetime,
@@ -1290,6 +1293,7 @@ create table o_as_entry (
    a_entry_root bit default null,
    fk_reference_entry bigint,
    fk_identity bigint default null,
+   fk_identity_end_date_mod bigint,
    a_anon_identifier varchar(128) default null,
    primary key (id),
    unique (fk_identity, fk_entry, a_subident)

@@ -123,7 +123,7 @@ public class DefaultLinearStatusEvaluatorTest {
 
 	private AssessmentEvaluation getAssessmentEvaluation(Boolean fullyAssessd, AssessmentEntryStatus assessmentStatus, AssessmentObligation obligation) {
 		return new AssessmentEvaluation(null, null, null, null, assessmentStatus, null, fullyAssessd, null, null, null, null,
-				null, null, 0, null, null, null, null, null, obligation, null, null, null);
+				null, null, 0, null, null, null, null, null, null, null, null, null, obligation, null, null, null);
 	}
 
 }

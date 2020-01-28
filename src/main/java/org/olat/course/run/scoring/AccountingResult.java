@@ -35,6 +35,7 @@ public class AccountingResult extends AssessmentEvaluation {
 
 	private final AssessmentEvaluation origin;
 	private Date evaluatedStartDate;
+	private Date evaluatedEndDate;
 	private Integer evaluatedDuration;
 	private AssessmentObligation evaluatedObligation;
 	private Float evaluatedScore;
@@ -49,6 +50,7 @@ public class AccountingResult extends AssessmentEvaluation {
 		super(evaluation, evaluation.getAssessmentStatus());
 		this.origin = evaluation;
 		this.evaluatedStartDate = origin.getStartDate();
+		this.evaluatedEndDate = origin.getEndDate();
 		this.evaluatedDuration = origin.getDuration();
 		this.evaluatedObligation = origin.getObligation();
 		this.evaluatedScore = origin.getScore();
@@ -67,6 +69,15 @@ public class AccountingResult extends AssessmentEvaluation {
 
 	public void setStartDate(Date startDate) {
 		this.evaluatedStartDate = startDate;
+	}
+
+	@Override
+	public Date getEndDate() {
+		return evaluatedEndDate;
+	}
+
+	public void setEndDate(Date startDate) {
+		this.evaluatedEndDate = startDate;
 	}
 
 	@Override
@@ -152,6 +163,7 @@ public class AccountingResult extends AssessmentEvaluation {
 
 	public boolean hasChanges() {
 		return !Objects.equals(origin.getStartDate(), evaluatedStartDate)
+				|| !Objects.equals(origin.getEndDate(), evaluatedEndDate)
 				|| !Objects.equals(origin.getDuration(), evaluatedDuration)
 				|| !Objects.equals(origin.getObligation(), evaluatedObligation)
 				|| !Objects.equals(origin.getPassed(), evaluatedPassed)

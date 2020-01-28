@@ -21,6 +21,7 @@ package org.olat.course.run.scoring;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -157,6 +158,10 @@ public class AssessmentAccounting implements ScoreAccounting {
 		startDateEvaluator.evaluate(courseNode, blocker);
 		result.setStartDate(blocker.getStartDate());
 		
+		EndDateEvaluator endDateEvaluator = evaluators.getEndDateEvaluator();
+		Date endDate = endDateEvaluator.getEndDate(result, courseNode, blocker);
+		result.setEndDate(endDate);
+		
 		ObligationEvaluator obligationEvaluator = evaluators.getObligationEvaluator();
 		AssessmentObligation obligation = obligationEvaluator.getObligation(result, courseNode);
 		result.setObligation(obligation);
@@ -229,6 +234,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 		AssessmentEntry entry = getOrCreateAssessmentEntry(courseNode);
 		
 		entry.setStartDate(result.getStartDate());
+		entry.setEndDate(result.getEndDate());
 		entry.setObligation(result.getObligation());
 		BigDecimal score = result.getScore() != null? new BigDecimal(result.getScore()): null;
 		entry.setScore(score);

@@ -126,6 +126,15 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	private Date fullyAssessedDate;
 	@Column(name="a_date_start", nullable=true, insertable=true, updatable=true)
 	private Date startDate;
+	@Column(name="a_date_end", nullable=true, insertable=true, updatable=true)
+	private Date endDate;
+	@Column(name="a_date_end_original", nullable=true, insertable=true, updatable=true)
+	private Date endDateOriginal;
+	@Column(name="a_date_end_mod_date", nullable=true, insertable=true, updatable=true)
+	private Date endDateModificationDate;
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_identity_end_date_mod", nullable=true, insertable=true, updatable=true)
+	private Identity endDateModificationIdentity;
 	@Enumerated(EnumType.STRING)
 	@Column(name="a_obligation", nullable=true, insertable=true, updatable=true)
 	private AssessmentObligation obligation;
@@ -314,6 +323,46 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	@Override
 	public void setStartDate(Date startDate) {
 		this.startDate = startDate;
+	}
+
+	@Override
+	public Date getEndDate() {
+		return endDate;
+	}
+
+	@Override
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
+	}
+
+	@Override
+	public Date getEndDateOriginal() {
+		return endDateOriginal;
+	}
+
+	@Override
+	public void setEndDateOriginal(Date endDateOriginal) {
+		this.endDateOriginal = endDateOriginal;
+	}
+
+	@Override
+	public Date getEndDateModificationDate() {
+		return endDateModificationDate;
+	}
+
+	@Override
+	public void setEndDateModificationDate(Date endDateModificationDate) {
+		this.endDateModificationDate = endDateModificationDate;
+	}
+
+	@Override
+	public Identity getEndDateModificationIdentity() {
+		return endDateModificationIdentity;
+	}
+
+	@Override
+	public void setEndDateModificationIdentity(Identity endDateModificationIdentity) {
+		this.endDateModificationIdentity = endDateModificationIdentity;
 	}
 
 	@Override

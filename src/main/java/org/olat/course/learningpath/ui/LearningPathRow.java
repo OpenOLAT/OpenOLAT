@@ -78,6 +78,10 @@ public class LearningPathRow implements FlexiTreeTableNode, IndentedCourseNode {
 		return learningPathNode.getStartDate();
 	}
 
+	public Date getEndDate() {
+		return learningPathNode.getEndDate();
+	}
+
 	public AssessmentObligation getObligation() {
 		return learningPathNode.getObligation();
 	}

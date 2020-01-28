@@ -19,6 +19,7 @@
  */
 package org.olat.course.run.scoring;
 
+import java.util.Date;
 import java.util.List;
 
 import org.olat.course.condition.interpreter.ConditionInterpreter;
@@ -36,6 +37,7 @@ import org.olat.repository.RepositoryEntry;
 class AccountingEvaluatorsFactory {
 	
 	private static final StartDateEvaluator NO_BLOCKING_START_DATE_EVALUATOR = new NoBlockingStartDateEvaluator();
+	private static final EndDateEvaluator NO_BLOCKING_END_DATE_EVALUATOR = new NoBlockingEndDateEvaluator();
 	private static final ObligationEvaluator NULL_OBLIGATION_EVALUATOR = new NullObligationEvaluator();
 	private static final DurationEvaluator NULL_DURATION_EVALUATOR = new NullDurationEvaluator();
 	private static final ScoreEvaluator UNCHANGING_SCORE_EVALUATOR = new UnchangingScoreEvaluator();
@@ -47,6 +49,10 @@ class AccountingEvaluatorsFactory {
 	
 	static StartDateEvaluator createNoBlockingStartDateEvaluator() {
 		return NO_BLOCKING_START_DATE_EVALUATOR;
+	}
+	
+	static EndDateEvaluator createNoBlockingEndDateEvaluator() {
+		return NO_BLOCKING_END_DATE_EVALUATOR;
 	}
 	
 	static ObligationEvaluator createNullObligationEvaluator() {
@@ -90,6 +96,15 @@ class AccountingEvaluatorsFactory {
 		@Override
 		public void evaluate(CourseNode courseNode, Blocker blocker) {
 			// nothing to do
+		}
+		
+	}
+
+	private static class NoBlockingEndDateEvaluator implements EndDateEvaluator {
+
+		@Override
+		public Date getEndDate(AssessmentEvaluation currentEvaluation, CourseNode courseNode, Blocker blocker) {
+			return null;
 		}
 		
 	}

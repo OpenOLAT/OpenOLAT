@@ -48,6 +48,10 @@ public class LearningPathTreeNode extends CourseTreeNode {
 		return assessmentEvaluation != null? assessmentEvaluation.getStartDate(): null;
 	}
 
+	public Date getEndDate() {
+		return assessmentEvaluation != null? assessmentEvaluation.getEndDate(): null;
+	}
+
 	public Integer getDuration() {
 		return assessmentEvaluation != null? assessmentEvaluation.getDuration(): null;
 	}

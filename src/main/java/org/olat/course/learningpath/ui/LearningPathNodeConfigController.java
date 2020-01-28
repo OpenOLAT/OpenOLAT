@@ -68,6 +68,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	private TextElement durationEl;
 	private SingleSelection obligationEl;
 	private DateChooser startDateEl;
+	private DateChooser endDateEl;
 	private SingleSelection triggerEl;
 	private TextElement scoreCutEl;
 
@@ -109,6 +110,10 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		Date startDate = learningPathConfigs.getStartDate();
 		startDateEl = uifactory.addDateChooser("config.start.date", startDate, formLayout);
 		startDateEl.setDateChooserTimeEnabled(true);
+		
+		Date endDate = learningPathConfigs.getEndDate();
+		endDateEl = uifactory.addDateChooser("config.end.date", endDate, formLayout);
+		endDateEl.setDateChooserTimeEnabled(true);
 		
 		KeyValues triggerKV = getTriggerKV();
 		triggerEl = uifactory.addRadiosVertical("config.trigger", formLayout,
@@ -232,6 +237,9 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		
 		Date startDate = startDateEl.getDate();
 		learningPathConfigs.setStartDate(startDate);
+		
+		Date endDate = endDateEl.getDate();
+		learningPathConfigs.setEndDate(endDate);
 		
 		FullyAssessedTrigger trigger = triggerEl.isOneSelected()
 				? FullyAssessedTrigger.valueOf(triggerEl.getSelectedKey())

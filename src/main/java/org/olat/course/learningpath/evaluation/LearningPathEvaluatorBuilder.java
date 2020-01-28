@@ -21,6 +21,7 @@ package org.olat.course.learningpath.evaluation;
 
 import org.olat.course.run.scoring.AccountingEvaluators;
 import org.olat.course.run.scoring.AccountingEvaluatorsBuilder;
+import org.olat.course.run.scoring.EndDateEvaluator;
 import org.olat.course.run.scoring.StartDateEvaluator;
 import org.olat.course.run.scoring.StatusEvaluator;
 
@@ -33,12 +34,14 @@ import org.olat.course.run.scoring.StatusEvaluator;
 public class LearningPathEvaluatorBuilder {
 	
 	private static final StartDateEvaluator CONFIG_START_DATE_EVALUATOR = new ConfigStartDateEvaluator();
+	private static final EndDateEvaluator CONFIG_END_DATE_EVALUATOR = new ConfigEndDateEvaluator();
 	private static final ConfigObligationEvaluator CONFIG_OBLIGATION_EVALUATOR = new ConfigObligationEvaluator();
 	private static final ConfigDurationEvaluator CONFIG_DURATION_EVALUATOR = new ConfigDurationEvaluator();
 	private static final StatusEvaluator LINEAR_STATUS_EVALUATOR = new DefaultLinearStatusEvaluator();
 	private static final AccountingEvaluators DEFAULT = AccountingEvaluatorsBuilder
 			.builder()
 			.withStartDateEvaluator(CONFIG_START_DATE_EVALUATOR)
+			.withEndDateEvaluator(CONFIG_END_DATE_EVALUATOR)
 			.withObligationEvaluator(CONFIG_OBLIGATION_EVALUATOR)
 			.withDurationEvaluator(CONFIG_DURATION_EVALUATOR)
 			.withStatusEvaluator(LINEAR_STATUS_EVALUATOR)

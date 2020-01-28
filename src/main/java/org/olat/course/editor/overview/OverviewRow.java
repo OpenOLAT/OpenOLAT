@@ -40,6 +40,7 @@ public class OverviewRow implements FlexiTreeTableNode, IndentedCourseNode {
 	private Integer duration;
 	private String translatedObligation;
 	private Date start;
+	private Date end;
 	private String translatedTrigger;
 	private OverviewRow parent;
 	private boolean hasChildren;
@@ -107,6 +108,14 @@ public class OverviewRow implements FlexiTreeTableNode, IndentedCourseNode {
 
 	public void setStart(Date start) {
 		this.start = start;
+	}
+
+	public Date getEnd() {
+		return end;
+	}
+
+	public void setEnd(Date end) {
+		this.end = end;
 	}
 
 	public String getTranslatedTrigger() {

@@ -82,6 +82,22 @@ public interface AssessmentEntry extends AssessmentEntryLight {
 	
 	public void setStartDate(Date startDate);
 	
+	public Date getEndDate();
+	
+	public void setEndDate(Date endDate);
+	
+	public Date getEndDateOriginal();
+	
+	public void setEndDateOriginal(Date endDateOriginal);
+	
+	public Date getEndDateModificationDate();
+	
+	public void setEndDateModificationDate(Date endDateModificationDate);
+	
+	public Identity getEndDateModificationIdentity();
+	
+	public void setEndDateModificationIdentity(Identity identity);
+	
 	public AssessmentObligation getObligation();
 	
 	public void setObligation(AssessmentObligation obligation);

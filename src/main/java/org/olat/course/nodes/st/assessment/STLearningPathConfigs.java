@@ -65,6 +65,16 @@ public class STLearningPathConfigs implements LearningPathConfigs {
 	}
 
 	@Override
+	public Date getEndDate() {
+		return null;
+	}
+
+	@Override
+	public void setEndDate(Date end) {
+		//
+	}
+
+	@Override
 	public FullyAssessedTrigger getFullyAssessedTrigger() {
 		return null;
 	}

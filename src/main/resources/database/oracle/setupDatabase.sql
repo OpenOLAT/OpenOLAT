@@ -1343,6 +1343,9 @@ create table o_as_entry (
    a_coach_comment clob,
    a_num_assessment_docs number(20) default 0 not null,
    a_date_start date,
+   a_date_end date,
+   a_date_end_original date,
+   a_date_end_mod_date date,
    a_duration number(20),
    a_obligation varchar(50),
    a_first_visit date,
@@ -1353,6 +1356,7 @@ create table o_as_entry (
    a_entry_root number default null,
    fk_reference_entry number(20),
    fk_identity number(20) default null,
+   fk_identity_end_date_mod number(20),
    a_anon_identifier varchar2(128 char) default null,
    primary key (id),
    unique(fk_identity, fk_entry, a_subident)

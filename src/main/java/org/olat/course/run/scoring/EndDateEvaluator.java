@@ -19,32 +19,18 @@
  */
 package org.olat.course.run.scoring;
 
+import java.util.Date;
+
+import org.olat.course.nodes.CourseNode;
+
 /**
  * 
- * Initial date: 16 Sep 2019<br>
+ * Initial date: 27 Jan 2020<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface AccountingEvaluators {
+public interface EndDateEvaluator {
 
-	public StartDateEvaluator getStartDateEvaluator();
-
-	public EndDateEvaluator getEndDateEvaluator();
-
-	public ObligationEvaluator getObligationEvaluator();
-
-	public DurationEvaluator getDurationEvaluator();
-	
-	public ScoreEvaluator getScoreEvaluator();
-
-	public PassedEvaluator getPassedEvaluator();
-
-	public LastModificationsEvaluator getLastModificationsEvaluator();
-
-	public CompletionEvaluator getCompletionEvaluator();
-
-	public StatusEvaluator getStatusEvaluator();
-
-	public FullyAssessedEvaluator getFullyAssessedEvaluator();
+	public Date getEndDate(AssessmentEvaluation currentEvaluation, CourseNode courseNode, Blocker blocker);
 
 }

@@ -49,6 +49,10 @@ public interface LearningPathConfigs {
 	
 	public void setStartDate(Date start);
 	
+	public Date getEndDate();
+	
+	public void setEndDate(Date end);
+	
 	public FullyAssessedTrigger getFullyAssessedTrigger();
 	
 	public void setFullyAssessedTrigger(FullyAssessedTrigger trigger);

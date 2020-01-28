@@ -60,6 +60,7 @@ public class LearningPathDataModel extends DefaultFlexiTreeTableDataModel<Learni
 		switch(LearningPathCols.values()[col]) {
 			case node: return row;
 			case start: return row.getStartDate();
+			case end: return row.getEndDate();
 			case obligation: return row.getObligation();
 			case duration: return row.getDuration();
 			case firstVisit: return row.getFirstVisit();
@@ -79,6 +80,7 @@ public class LearningPathDataModel extends DefaultFlexiTreeTableDataModel<Learni
 	public enum LearningPathCols implements FlexiColumnDef {
 		node("table.header.node"),
 		start("table.header.start"),
+		end("table.header.end"),
 		obligation("table.header.obligation"),
 		duration("table.header.duration"),
 		firstVisit("table.header.first.visit"),
