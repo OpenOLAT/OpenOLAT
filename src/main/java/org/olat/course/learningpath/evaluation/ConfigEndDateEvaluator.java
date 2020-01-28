@@ -41,6 +41,10 @@ public class ConfigEndDateEvaluator implements EndDateEvaluator {
 	public Overridable<Date> getEndDate(AssessmentEvaluation currentEvaluation, CourseNode courseNode, Blocker blocker) {
 		Date configEndDate = getConfigEndDate(courseNode);
 		Overridable<Date> endDate = currentEvaluation.getEndDate();
+		if (configEndDate == null) {
+			// If end date is deleted in config, it can not be overridden.
+			endDate.reset();
+		}
 		endDate.setCurrent(configEndDate);
 		evaluateBlocker(currentEvaluation.getFullyAssessed(), endDate.getCurrent(), blocker);
 		return endDate;

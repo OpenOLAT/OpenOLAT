@@ -173,6 +173,12 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	private void updateUI() {
 		durationEl.setMandatory(isDurationMandatory());
 		
+		AssessmentObligation obligation = obligationEl.isOneSelected()
+				? AssessmentObligation.valueOf(obligationEl.getSelectedKey())
+				: LearningPathConfigs.OBLIGATION_DEFAULT;
+		boolean obligationMandatory = AssessmentObligation.mandatory.equals(obligation);
+		endDateEl.setVisible(obligationMandatory);
+				
 		boolean triggerScore = triggerEl.isOneSelected() && triggerEl.getSelectedKey().equals(CONFIG_VALUE_TRIGGER_SCORE);
 		scoreCutEl.setVisible(triggerScore);
 	}
@@ -238,6 +244,9 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		Date startDate = startDateEl.getDate();
 		learningPathConfigs.setStartDate(startDate);
 		
+		if (!endDateEl.isVisible()) {
+			endDateEl.setValue(null);
+		}
 		Date endDate = endDateEl.getDate();
 		learningPathConfigs.setEndDate(endDate);
 		
