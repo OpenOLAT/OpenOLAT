@@ -60,7 +60,9 @@ public class LearningPathDataModel extends DefaultFlexiTreeTableDataModel<Learni
 		switch(LearningPathCols.values()[col]) {
 			case node: return row;
 			case start: return row.getStartDate();
-			case end: return row.getEndDate();
+			case end: return row.getEndDateFormItem() != null
+					? row.getEndDateFormItem()
+					: row.getEndDate().getCurrent();
 			case obligation: return row.getObligation();
 			case duration: return row.getDuration();
 			case firstVisit: return row.getFirstVisit();

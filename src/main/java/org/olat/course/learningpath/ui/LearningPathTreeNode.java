@@ -24,6 +24,7 @@ import java.util.Date;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.CourseTreeNode;
+import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
@@ -48,7 +49,7 @@ public class LearningPathTreeNode extends CourseTreeNode {
 		return assessmentEvaluation != null? assessmentEvaluation.getStartDate(): null;
 	}
 
-	public Date getEndDate() {
+	public Overridable<Date> getEndDate() {
 		return assessmentEvaluation != null? assessmentEvaluation.getEndDate(): null;
 	}
 

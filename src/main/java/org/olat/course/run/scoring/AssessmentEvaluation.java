@@ -21,10 +21,10 @@ package org.olat.course.run.scoring;
 
 import java.util.Date;
 
-import org.olat.core.id.Identity;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
@@ -40,10 +40,7 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	public static final AssessmentEvaluation EMPTY_EVAL = new AssessmentEvaluation((Float)null, (Boolean)null);
 	
 	private final Date startDate;
-	private final Date endDate;
-	private final Date endDateOriginal;
-	private final Date endDateModificationDate;
-	private final Identity endDateModificationIdentity;
+	private final Overridable<Date> endDate;
 	private final Integer duration;
 	private final AssessmentObligation obligation;
 	private final Double completion;
@@ -71,21 +68,20 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 
 	public AssessmentEvaluation(Float score, Boolean passed, Boolean fullyAssessed, Long assessmentID) {
 		this(score, passed, null, null, null, null, fullyAssessed, null, null, null, assessmentID, null, null, -1, null,
-				null, null, null, null, null, null, null, null, null, null, null, null);
+				null, null, null, null, null, null, null, null, null);
 	}
 
 	public AssessmentEvaluation(Date lastModified, Date lastUserModified, Date lastCoachModified) {
 		this(null, null, null, null, null, null, null, null, null, null, null, null, null, -1, lastModified,
-				lastUserModified, lastCoachModified, null, null, null, null, null, null, null, null, null, null);
+				lastUserModified, lastCoachModified, null, null, null, null, null, null, null);
 	}
 
 	public AssessmentEvaluation(Float score, Boolean passed, Integer attempts, Double completion,
 			AssessmentEntryStatus assessmentStatus, Boolean userVisibility, Boolean fullyAssessed,
 			Date fullyAssessedDate, Double currentRunCompletion, AssessmentRunStatus runStatus, Long assessmentID,
 			String comment, String coachComment, int numOfAssessmentDocs, Date lastModified, Date lastUserModified,
-			Date lastCoachModified, Date assessmentDone, Date startDate, Date endDate, Date endDateOriginal,
-			Date endDateModificationDate, Identity endDateModificationIdentity, AssessmentObligation obligation,
-			Integer duration, Date firstVisit, Date lastVisit) {
+			Date lastCoachModified, Date assessmentDone, Date startDate, Overridable<Date> endDate,
+			AssessmentObligation obligation, Integer duration, Date firstVisit, Date lastVisit) {
 		super(score, passed, assessmentStatus, userVisibility, currentRunCompletion, runStatus, assessmentID);
 		this.attempts = attempts;
 		this.completion = completion;
@@ -100,9 +96,6 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 		this.fullyAssessedDate = fullyAssessedDate;
 		this.startDate = startDate;
 		this.endDate = endDate;
-		this.endDateOriginal = endDateOriginal;
-		this.endDateModificationDate = endDateModificationDate;
-		this.endDateModificationIdentity = endDateModificationIdentity;
 		this.obligation = obligation;
 		this.duration = duration;
 		this.firstVisit = firstVisit;
@@ -120,8 +113,7 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 				eval.getFullyAssessed(), eval.getFullyAssessedDate(), eval.getCurrentRunCompletion(),
 				eval.getCurrentRunStatus(), eval.getAssessmentID(), eval.getComment(), eval.getCoachComment(), -1,
 				eval.getLastModified(), eval.getLastUserModified(), eval.getLastCoachModified(),
-				eval.getAssessmentDone(), eval.getStartDate(), eval.getEndDate(), eval.getEndDateOriginal(),
-				eval.getEndDateModificationDate(), eval.getEndDateModificationIdentity(), eval.getObligation(),
+				eval.getAssessmentDone(), eval.getStartDate(), eval.getEndDate(), eval.getObligation(),
 				eval.getDuration(), eval.getFirstVisit(), eval.getLastVisit());
 	}
 
@@ -129,20 +121,8 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 		return startDate;
 	}
 
-	public Date getEndDate() {
+	public Overridable<Date> getEndDate() {
 		return endDate;
-	}
-
-	public Date getEndDateOriginal() {
-		return endDateOriginal;
-	}
-
-	public Date getEndDateModificationDate() {
-		return endDateModificationDate;
-	}
-
-	public Identity getEndDateModificationIdentity() {
-		return endDateModificationIdentity;
 	}
 
 	public Integer getDuration() {
@@ -244,7 +224,6 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 				runStatus, entry.getAssessmentId(), comment, entry.getCoachComment(),
 				entry.getNumberOfAssessmentDocuments(), entry.getLastModified(), entry.getLastUserModified(),
 				entry.getLastCoachModified(), entry.getAssessmentDone(), entry.getStartDate(), entry.getEndDate(),
-				entry.getEndDateOriginal(), entry.getEndDateModificationDate(), entry.getEndDateModificationIdentity(),
 				entry.getObligation(), entry.getDuration(), entry.getFirstVisit(), entry.getLastVisit());
 	}
 }

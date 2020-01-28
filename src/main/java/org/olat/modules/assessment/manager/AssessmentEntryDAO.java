@@ -34,6 +34,7 @@ import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentEntryCompletion;
+import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentEntryImpl;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -201,7 +202,17 @@ public class AssessmentEntryDAO {
 	}
 	
 	public AssessmentEntry updateAssessmentEntry(AssessmentEntry nodeAssessment) {
-		((AssessmentEntryImpl)nodeAssessment).setLastModified(new Date());
+		if (nodeAssessment instanceof AssessmentEntryImpl) {
+			AssessmentEntryImpl impl = (AssessmentEntryImpl)nodeAssessment;
+			impl.setLastModified(new Date());
+			Overridable<Date> end = impl.getEndOverridable();
+			if (end != null) {
+				impl.setEndDate(end.getCurrent());
+				impl.setEndDateOriginal(end.getOriginal());
+				impl.setEndDateModificationIdentity(end.getModBy());
+				impl.setEndDateModificationDate(end.getModDate());
+			}
+		}
 		return dbInstance.getCurrentEntityManager().merge(nodeAssessment);
 	}
 	

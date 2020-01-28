@@ -27,6 +27,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.Blocker;
 import org.olat.course.run.scoring.EndDateEvaluator;
+import org.olat.modules.assessment.Overridable;
 
 /**
  * 
@@ -37,10 +38,12 @@ import org.olat.course.run.scoring.EndDateEvaluator;
 public class ConfigEndDateEvaluator implements EndDateEvaluator {
 
 	@Override
-	public Date getEndDate(AssessmentEvaluation currentEvaluation, CourseNode courseNode, Blocker blocker) {
+	public Overridable<Date> getEndDate(AssessmentEvaluation currentEvaluation, CourseNode courseNode, Blocker blocker) {
 		Date configEndDate = getConfigEndDate(courseNode);
-		evaluateBlocker(currentEvaluation.getFullyAssessed(), configEndDate, blocker);
-		return configEndDate;
+		Overridable<Date> endDate = currentEvaluation.getEndDate();
+		endDate.setCurrent(configEndDate);
+		evaluateBlocker(currentEvaluation.getFullyAssessed(), endDate.getCurrent(), blocker);
+		return endDate;
 	}
 
 	private Date getConfigEndDate(CourseNode courseNode) {

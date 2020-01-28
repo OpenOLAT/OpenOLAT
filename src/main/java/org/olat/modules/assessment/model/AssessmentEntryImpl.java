@@ -47,6 +47,7 @@ import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.Overridable;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -126,6 +127,7 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	private Date fullyAssessedDate;
 	@Column(name="a_date_start", nullable=true, insertable=true, updatable=true)
 	private Date startDate;
+	private transient Overridable<Date> endOverridable;
 	@Column(name="a_date_end", nullable=true, insertable=true, updatable=true)
 	private Date endDate;
 	@Column(name="a_date_end_original", nullable=true, insertable=true, updatable=true)
@@ -324,43 +326,48 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	public void setStartDate(Date startDate) {
 		this.startDate = startDate;
 	}
-
+	
+	public Overridable<Date> getEndOverridable() {
+		return endOverridable;
+	}
+	
 	@Override
-	public Date getEndDate() {
-		return endDate;
+	public Overridable<Date> getEndDate() {
+		if (endOverridable == null) {
+			endOverridable = new OverridableImpl<>(endDate, endDateOriginal, endDateModificationIdentity, endDateModificationDate);
+		}
+		return endOverridable;
 	}
 
 	@Override
+	public void setEndDate(Overridable<Date> endDate) {
+		this.endOverridable = endDate;
+	}
+
 	public void setEndDate(Date endDate) {
 		this.endDate = endDate;
 	}
 
-	@Override
 	public Date getEndDateOriginal() {
 		return endDateOriginal;
 	}
 
-	@Override
 	public void setEndDateOriginal(Date endDateOriginal) {
 		this.endDateOriginal = endDateOriginal;
 	}
 
-	@Override
 	public Date getEndDateModificationDate() {
 		return endDateModificationDate;
 	}
 
-	@Override
 	public void setEndDateModificationDate(Date endDateModificationDate) {
 		this.endDateModificationDate = endDateModificationDate;
 	}
 
-	@Override
 	public Identity getEndDateModificationIdentity() {
 		return endDateModificationIdentity;
 	}
 
-	@Override
 	public void setEndDateModificationIdentity(Identity endDateModificationIdentity) {
 		this.endDateModificationIdentity = endDateModificationIdentity;
 	}
@@ -580,4 +587,5 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 		builder.append("]");
 		return builder.toString();
 	}
+
 }

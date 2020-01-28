@@ -24,8 +24,10 @@ import java.util.List;
 
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.nodes.CourseNode;
+import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
+import org.olat.modules.assessment.model.OverridableImpl;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -103,8 +105,8 @@ class AccountingEvaluatorsFactory {
 	private static class NoBlockingEndDateEvaluator implements EndDateEvaluator {
 
 		@Override
-		public Date getEndDate(AssessmentEvaluation currentEvaluation, CourseNode courseNode, Blocker blocker) {
-			return null;
+		public Overridable<Date> getEndDate(AssessmentEvaluation currentEvaluation, CourseNode courseNode, Blocker blocker) {
+			return new OverridableImpl<>();
 		}
 		
 	}

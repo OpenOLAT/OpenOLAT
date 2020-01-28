@@ -40,6 +40,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.LastModificationsEvaluator.LastModifications;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -159,7 +160,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 		result.setStartDate(blocker.getStartDate());
 		
 		EndDateEvaluator endDateEvaluator = evaluators.getEndDateEvaluator();
-		Date endDate = endDateEvaluator.getEndDate(result, courseNode, blocker);
+		Overridable<Date> endDate = endDateEvaluator.getEndDate(result, courseNode, blocker);
 		result.setEndDate(endDate);
 		
 		ObligationEvaluator obligationEvaluator = evaluators.getObligationEvaluator();

@@ -20,13 +20,18 @@
 package org.olat.course.learningpath.ui;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -42,15 +47,22 @@ import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.helpers.Settings;
+import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.assessment.IndentedNodeRenderer;
 import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
 import org.olat.course.learningpath.manager.LearningPathCourseTreeModelBuilder;
 import org.olat.course.learningpath.ui.LearningPathDataModel.LearningPathCols;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.Overridable;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -62,26 +74,41 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class LearningPathListController extends FormBasicController implements TooledController {
 
+	private static final String CMD_END_DATE = "endDate";
+	
+	private final AtomicInteger counter = new AtomicInteger();
 	private final TooledStackedPanel stackPanel;
 	private FlexiTableElement tableEl;
 	private LearningPathDataModel dataModel;
 	private Link resetStatusLink;
 	
+	private CloseableCalloutWindowController ccwc;
+	private Controller endDateEditCtrl;
+	
 	private final UserCourseEnvironment userCourseEnv;
 	private final RepositoryEntry courseEntry;
+	private final boolean canEdit;
 	
 	@Autowired
 	private AssessmentService assessmentService;
-	
+
 	public LearningPathListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.userCourseEnv = userCourseEnv;
 		this.stackPanel = stackPanel;
 		this.courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		this.canEdit = getCanEdit();
 		initForm(ureq);
 	}
 	
+	private boolean getCanEdit() {
+		IdentityEnvironment identityEnv = new IdentityEnvironment();
+		identityEnv.setIdentity(getIdentity());
+		UserCourseEnvironment myCourseEnv = new UserCourseEnvironmentImpl(identityEnv, userCourseEnv.getCourseEnvironment());
+		return !myCourseEnv.isCourseReadOnly() && (myCourseEnv.isAdmin() || myCourseEnv.isCoach());
+	}
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -164,14 +191,87 @@ public class LearningPathListController extends FormBasicController implements T
 	private LearningPathRow forgeRow(LearningPathTreeNode treeNode, LearningPathRow parent) {
 		LearningPathRow row = new LearningPathRow(treeNode);
 		row.setParent(parent);
+		forgeEndDate(row, treeNode);
 		return row;
 	}
+
+	private void forgeEndDate(LearningPathRow row, LearningPathTreeNode treeNode) {
+		Overridable<Date> endDate = treeNode.getEndDate();
+		if (!canEdit && !endDate.isOverridden()) {
+			// Show date as plain text
+			return;
+		}
+		
+		if (row.getEndDate().getCurrent() != null) {
+			Date currentEndDate = endDate.getCurrent();
+			StringBuilder sb = new StringBuilder();
+			sb.append(Formatter.getInstance(getLocale()).formatDateAndTime(currentEndDate));
+			if (treeNode.getEndDate().isOverridden()) {
+				sb.append(" <i class='o_icon o_icon_info'> </i>");
+			}
+			FormLink endDateLink = uifactory.addFormLink("o_end_" + counter.getAndIncrement(), CMD_END_DATE,
+					sb.toString(), null, null, Link.NONTRANSLATED);
+			endDateLink.setUserObject(treeNode.getCourseNode());
+			row.setEndDateFormItem(endDateLink);
+		}
+	}
 	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source instanceof FormLink) {
+			FormLink link = (FormLink) source;
+			if (CMD_END_DATE.equals(link.getCmd())) {
+				doEditEndDate(ureq, link);
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == endDateEditCtrl) {
+			if (event == FormEvent.DONE_EVENT) {
+				loadModel();
+			}
+			ccwc.deactivate();
+			cleanUp();
+		} else if (source == ccwc) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(endDateEditCtrl);
+		removeAsListenerAndDispose(ccwc);
+		endDateEditCtrl = null;
+		ccwc = null;
+	}
+
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == resetStatusLink) {
 			doResetStatus();
 		}
+		super.event(ureq, source, event);
+	}
+	
+	private void doEditEndDate(UserRequest ureq, FormLink link) {
+		removeAsListenerAndDispose(ccwc);
+		removeAsListenerAndDispose(endDateEditCtrl);
+		
+		CourseNode courseNode = (CourseNode)link.getUserObject();
+		AssessmentEntry assessmentEntry = assessmentService.loadAssessmentEntry(
+				userCourseEnv.getIdentityEnvironment().getIdentity(), courseEntry, courseNode.getIdent());
+		
+		endDateEditCtrl = new EndDateEditController(ureq, getWindowControl(), assessmentEntry, canEdit);
+		listenTo(endDateEditCtrl);
+		
+		CalloutSettings settings = new CalloutSettings();
+		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), endDateEditCtrl.getInitialComponent(),
+				link.getFormDispatchId(), "", true, "", settings);
+		listenTo(ccwc);
+		ccwc.activate();
 	}
 
 	private void doResetStatus() {

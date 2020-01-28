@@ -46,6 +46,7 @@ import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentEntryCompletion;
+import org.olat.modules.assessment.model.AssessmentEntryImpl;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.curriculum.Curriculum;
@@ -282,8 +283,8 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
-		AssessmentEntry nodeAssessment = assessmentEntryDao.createAssessmentEntry(assessedIdentity, null, entry,
-				subIdent, null, refEntry);
+		AssessmentEntryImpl nodeAssessment = (AssessmentEntryImpl) assessmentEntryDao
+				.createAssessmentEntry(assessedIdentity, null, entry, subIdent, null, refEntry);
 		dbInstance.commitAndCloseSession();
 		
 		Date startDate = new GregorianCalendar(2014,1,1,1,1,2).getTime();
@@ -299,16 +300,16 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		nodeAssessment.setDuration(duration);
 		AssessmentObligation obligation = AssessmentObligation.optional;
 		nodeAssessment.setObligation(obligation);
-		nodeAssessment = assessmentEntryDao.updateAssessmentEntry(nodeAssessment);
+		assessmentEntryDao.updateAssessmentEntry(nodeAssessment);
 		dbInstance.commitAndCloseSession();
 		
 		AssessmentEntry reloadedEntry = assessmentEntryDao.loadAssessmentEntryById(nodeAssessment.getKey());
 		
 		assertThat(reloadedEntry.getStartDate()).isCloseTo(startDate, within(2, ChronoUnit.MINUTES).getValue());
-		assertThat(reloadedEntry.getEndDate()).isCloseTo(endDate, within(2, ChronoUnit.MINUTES).getValue());
-		assertThat(reloadedEntry.getEndDateOriginal()).isCloseTo(endDateOriginal, within(2, ChronoUnit.MINUTES).getValue());
-		assertThat(reloadedEntry.getEndDateModificationDate()).isCloseTo(endDateModifiactionDate, within(2, ChronoUnit.MINUTES).getValue());
-		assertThat(reloadedEntry.getEndDateModificationIdentity()).isEqualTo(endDateIdentity);
+		assertThat(reloadedEntry.getEndDate().getCurrent()).isCloseTo(endDate, within(2, ChronoUnit.MINUTES).getValue());
+		assertThat(reloadedEntry.getEndDate().getOriginal()).isCloseTo(endDateOriginal, within(2, ChronoUnit.MINUTES).getValue());
+		assertThat(reloadedEntry.getEndDate().getModDate()).isCloseTo(endDateModifiactionDate, within(2, ChronoUnit.MINUTES).getValue());
+		assertThat(reloadedEntry.getEndDate().getModBy()).isEqualTo(endDateIdentity);
 		assertThat(reloadedEntry.getDuration()).isEqualTo(duration);
 		assertThat(reloadedEntry.getObligation()).isEqualTo(obligation);
 	}

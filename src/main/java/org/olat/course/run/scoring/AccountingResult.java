@@ -22,6 +22,7 @@ package org.olat.course.run.scoring;
 import java.util.Date;
 import java.util.Objects;
 
+import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
@@ -35,7 +36,7 @@ public class AccountingResult extends AssessmentEvaluation {
 
 	private final AssessmentEvaluation origin;
 	private Date evaluatedStartDate;
-	private Date evaluatedEndDate;
+	private Overridable<Date> evaluatedEndDate;
 	private Integer evaluatedDuration;
 	private AssessmentObligation evaluatedObligation;
 	private Float evaluatedScore;
@@ -72,12 +73,12 @@ public class AccountingResult extends AssessmentEvaluation {
 	}
 
 	@Override
-	public Date getEndDate() {
+	public Overridable<Date> getEndDate() {
 		return evaluatedEndDate;
 	}
 
-	public void setEndDate(Date startDate) {
-		this.evaluatedEndDate = startDate;
+	public void setEndDate(Overridable<Date> endDate) {
+		this.evaluatedEndDate = endDate;
 	}
 
 	@Override
@@ -163,7 +164,8 @@ public class AccountingResult extends AssessmentEvaluation {
 
 	public boolean hasChanges() {
 		return !Objects.equals(origin.getStartDate(), evaluatedStartDate)
-				|| !Objects.equals(origin.getEndDate(), evaluatedEndDate)
+				|| !Objects.equals(origin.getEndDate().getCurrent(), evaluatedEndDate.getCurrent())
+				|| !Objects.equals(origin.getEndDate().getOriginal(), evaluatedEndDate.getOriginal())
 				|| !Objects.equals(origin.getDuration(), evaluatedDuration)
 				|| !Objects.equals(origin.getObligation(), evaluatedObligation)
 				|| !Objects.equals(origin.getPassed(), evaluatedPassed)

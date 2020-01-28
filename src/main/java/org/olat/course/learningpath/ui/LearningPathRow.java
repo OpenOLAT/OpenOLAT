@@ -21,8 +21,10 @@ package org.olat.course.learningpath.ui;
 
 import java.util.Date;
 
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.course.assessment.IndentedNodeRenderer.IndentedCourseNode;
+import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
@@ -35,6 +37,7 @@ import org.olat.modules.assessment.model.AssessmentObligation;
 public class LearningPathRow implements FlexiTreeTableNode, IndentedCourseNode {
 	
 	private final LearningPathTreeNode learningPathNode;
+	private FormLink endDateFormItem;
 	private LearningPathRow parent;
 	private boolean hasChildren;
 	
@@ -61,7 +64,7 @@ public class LearningPathRow implements FlexiTreeTableNode, IndentedCourseNode {
 	public String getLongTitle() {
 		return learningPathNode.getCourseNode().getLongTitle();
 	}
-
+	
 	public AssessmentEntryStatus getStatus() {
 		return learningPathNode.getAssessmentStatus();
 	}
@@ -78,7 +81,15 @@ public class LearningPathRow implements FlexiTreeTableNode, IndentedCourseNode {
 		return learningPathNode.getStartDate();
 	}
 
-	public Date getEndDate() {
+	public FormLink getEndDateFormItem() {
+		return endDateFormItem;
+	}
+
+	public void setEndDateFormItem(FormLink endDateFormItem) {
+		this.endDateFormItem = endDateFormItem;
+	}
+
+	public Overridable<Date> getEndDate() {
 		return learningPathNode.getEndDate();
 	}
 
