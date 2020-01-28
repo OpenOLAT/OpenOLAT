@@ -195,7 +195,6 @@ public class CurriculumLearningPathRepositoryListController extends FormBasicCon
 		IdentityEnvironment identityEnv = new IdentityEnvironment();
 		identityEnv.setIdentity(participant);
 		UserCourseEnvironment coachedCourseEnv = new UserCourseEnvironmentImpl(identityEnv, courseEnvironment);
-		coachedCourseEnv.getScoreAccounting().evaluateAll(true);
 		currentIdentityCtrl = new LearningPathIdentityCtrl(ureq, bwControl, stackPanel, coachedCourseEnv);
 		listenTo(currentIdentityCtrl);
 		String title = row.getRepositoryEntry().getDisplayname().length() > 30

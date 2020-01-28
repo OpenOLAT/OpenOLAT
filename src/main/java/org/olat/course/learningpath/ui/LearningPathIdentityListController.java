@@ -219,7 +219,6 @@ public class LearningPathIdentityListController extends FormBasicController impl
 		IdentityEnvironment identityEnv = new IdentityEnvironment();
 		identityEnv.setIdentity(coachedIdentity);
 		UserCourseEnvironment coachedCourseEnv = new UserCourseEnvironmentImpl(identityEnv, coachCourseEnv.getCourseEnvironment());
-		coachedCourseEnv.getScoreAccounting().evaluateAll(true);
 		currentIdentityCtrl = new LearningPathIdentityCtrl(ureq, bwControl, stackPanel, coachedCourseEnv);
 		listenTo(currentIdentityCtrl);
 		stackPanel.pushController(fullName, currentIdentityCtrl);
