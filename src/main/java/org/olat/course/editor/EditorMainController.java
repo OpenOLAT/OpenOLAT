@@ -1021,7 +1021,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		tv.visitAll();					
 		
 		CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
-		showInfo("movecopynode.info.condmoved");
 		ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_EDITOR_NODE_MOVED, getClass());
 
 		euce.getCourseEditorEnv().validateCourse();

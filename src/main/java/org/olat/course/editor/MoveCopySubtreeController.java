@@ -167,7 +167,6 @@ public class MoveCopySubtreeController extends BasicController {
 			}, moveCopyFrom, true);
 			tv.visitAll();					
 			CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
-			showInfo("movecopynode.info.condmoved");
 
 			ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_EDITOR_NODE_MOVED, getClass());
 			fireEvent(ureq, Event.DONE_EVENT);
