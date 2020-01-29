@@ -23,11 +23,14 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.SimpleStackedPanel;
 import org.olat.core.gui.components.panel.StackedPanel;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.Util;
 import org.olat.course.ICourse;
+import org.olat.course.editor.EditorMainController;
 
 /**
  * 
@@ -41,11 +44,16 @@ public class OverviewController extends BasicController {
 
 	public OverviewController(UserRequest ureq, WindowControl wControl, ICourse course) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(EditorMainController.class, getLocale(), getTranslator()));
+		
+		VelocityContainer mainVC = createVelocityContainer("overview");
+		
 		overviewListCtrl = new OverviewListController(ureq, getWindowControl(), course);
 		listenTo(overviewListCtrl);
+		mainVC.put("list", overviewListCtrl.getInitialComponent());
 		
 		StackedPanel initialPanel = putInitialPanel(new SimpleStackedPanel("overviewPanel", "o_edit_mode"));
-		initialPanel.setContent(overviewListCtrl.getInitialComponent());
+		initialPanel.setContent(mainVC);
 	}
 
 	@Override

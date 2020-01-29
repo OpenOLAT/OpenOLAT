@@ -111,6 +111,7 @@ public class BulkChangeController extends FormBasicController {
 
 	private void initGeneralForm(FormItemContainer formLayout) {
 		FormLayoutContainer generalCont = FormLayoutContainer.createDefaultFormLayout("general", getTranslator());
+		generalCont.setFormTitle(translate("bulk.general"));
 		generalCont.setRootForm(mainForm);
 		formLayout.add(generalCont);
 		
@@ -128,6 +129,7 @@ public class BulkChangeController extends FormBasicController {
 	
 	private void initLearningPathForm(FormItemContainer formLayout) {
 		FormLayoutContainer lpCont = FormLayoutContainer.createDefaultFormLayout("learningPath", getTranslator());
+		lpCont.setFormTitle(translate("bulk.learning.path"));
 		lpCont.setRootForm(mainForm);
 		formLayout.add(lpCont);
 		
