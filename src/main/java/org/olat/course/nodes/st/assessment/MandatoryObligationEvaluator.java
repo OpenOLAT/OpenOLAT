@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ObligationEvaluator;
+import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
@@ -35,19 +36,19 @@ import org.olat.modules.assessment.model.AssessmentObligation;
 public class MandatoryObligationEvaluator implements ObligationEvaluator {
 
 	@Override
-	public AssessmentObligation getObligation(AssessmentEvaluation currentEvaluation, CourseNode courseNode) {
+	public Overridable<AssessmentObligation> getObligation(AssessmentEvaluation currentEvaluation, CourseNode courseNode) {
 		return currentEvaluation.getObligation();
 	}
 
 	@Override
-	public AssessmentObligation getObligation(AssessmentEvaluation currentEvaluation,
+	public Overridable<AssessmentObligation> getObligation(AssessmentEvaluation currentEvaluation,
 			List<AssessmentEvaluation> children) {
 		for (AssessmentEvaluation child : children) {
-			if (AssessmentObligation.mandatory.equals(child.getObligation())) {
-				return AssessmentObligation.mandatory;
+			if (AssessmentObligation.mandatory == child.getObligation().getCurrent()) {
+				return Overridable.of(AssessmentObligation.mandatory);
 			}
 		}
-		return AssessmentObligation.optional;
+		return Overridable.of(AssessmentObligation.optional);
 	}
 
 }

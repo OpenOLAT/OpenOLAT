@@ -114,4 +114,9 @@ public class LearningPathOnlyAssessmentConfig implements AssessmentConfig {
 		return false;
 	}
 
+	@Override
+	public boolean isObligationOverridable() {
+		return true;
+	}
+
 }

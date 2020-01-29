@@ -1347,7 +1347,9 @@ create table o_as_entry (
    a_date_end_original date,
    a_date_end_mod_date date,
    a_duration number(20),
-   a_obligation varchar(50),
+   a_obligation varchar2(50),
+   a_obligation_original varchar2(50),
+   a_obligation_mod_date date,
    a_first_visit date,
    a_last_visit date,
    a_num_visits number(20),
@@ -1357,6 +1359,7 @@ create table o_as_entry (
    fk_reference_entry number(20),
    fk_identity number(20) default null,
    fk_identity_end_date_mod number(20),
+   fk_identity_obligation_mod number(20),
    a_anon_identifier varchar2(128 char) default null,
    primary key (id),
    unique(fk_identity, fk_entry, a_subident)

@@ -130,4 +130,9 @@ public class ScormAssessmentConfig implements AssessmentConfig {
 		return config.getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true);
 	}
 
+	@Override
+	public boolean isObligationOverridable() {
+		return true;
+	}
+
 }

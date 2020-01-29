@@ -38,7 +38,7 @@ public class AccountingResult extends AssessmentEvaluation {
 	private Date evaluatedStartDate;
 	private Overridable<Date> evaluatedEndDate;
 	private Integer evaluatedDuration;
-	private AssessmentObligation evaluatedObligation;
+	private Overridable<AssessmentObligation> evaluatedObligation;
 	private Float evaluatedScore;
 	private Boolean evaluatedPassed;
 	private Double evaluatedCompletion;
@@ -91,11 +91,11 @@ public class AccountingResult extends AssessmentEvaluation {
 	}
 
 	@Override
-	public AssessmentObligation getObligation() {
+	public Overridable<AssessmentObligation> getObligation() {
 		return evaluatedObligation;
 	}
 
-	public void setObligation(AssessmentObligation obligation) {
+	public void setObligation(Overridable<AssessmentObligation> obligation) {
 		this.evaluatedObligation = obligation;
 	}
 
@@ -167,7 +167,8 @@ public class AccountingResult extends AssessmentEvaluation {
 				|| !Objects.equals(origin.getEndDate().getCurrent(), evaluatedEndDate.getCurrent())
 				|| !Objects.equals(origin.getEndDate().getOriginal(), evaluatedEndDate.getOriginal())
 				|| !Objects.equals(origin.getDuration(), evaluatedDuration)
-				|| !Objects.equals(origin.getObligation(), evaluatedObligation)
+				|| !Objects.equals(origin.getObligation().getCurrent(), evaluatedObligation.getCurrent())
+				|| !Objects.equals(origin.getObligation().getOriginal(), evaluatedObligation.getOriginal())
 				|| !Objects.equals(origin.getPassed(), evaluatedPassed)
 				|| !Objects.equals(origin.getScore(), evaluatedScore)
 				|| !Objects.equals(origin.getFullyAssessed(), evaluatedFullyAssessed)

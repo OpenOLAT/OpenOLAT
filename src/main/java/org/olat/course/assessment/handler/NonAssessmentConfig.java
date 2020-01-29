@@ -122,4 +122,9 @@ public class NonAssessmentConfig implements AssessmentConfig {
 		return false;
 	}
 
+	@Override
+	public boolean isObligationOverridable() {
+		return false;
+	}
+
 }

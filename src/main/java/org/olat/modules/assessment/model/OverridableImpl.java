@@ -40,6 +40,10 @@ public class OverridableImpl<T> implements Overridable<T> {
 	public OverridableImpl() {
 		//
 	}
+	
+	public OverridableImpl(T current) {
+		this.current = current;
+	}
 
 	public OverridableImpl(T current, T original, Identity modBy, Date modDate) {
 		this.current = current;

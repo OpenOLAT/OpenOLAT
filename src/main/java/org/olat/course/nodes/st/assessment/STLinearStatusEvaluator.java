@@ -52,7 +52,7 @@ public class STLinearStatusEvaluator implements StatusEvaluator {
 
 		log.debug("         fully assessed '{}', obligation '{}, blocked: '{}', status '{}', new status '{}'"
 				, currentEvaluation.getFullyAssessed()
-				, currentEvaluation.getObligation()
+				, currentEvaluation.getObligation().getCurrent()
 				, isBlocked(blocker)
 				, currentEvaluation.getAssessmentStatus()
 				, status);
@@ -100,7 +100,7 @@ public class STLinearStatusEvaluator implements StatusEvaluator {
 	}
 
 	private boolean isMandatory(AssessmentEvaluation evaluation) {
-		return evaluation.getObligation() != null && AssessmentObligation.mandatory.equals(evaluation.getObligation());
+		return evaluation.getObligation() != null && AssessmentObligation.mandatory == evaluation.getObligation().getCurrent();
 	}
 	private boolean isNotFullyAssessed(AssessmentEvaluation assessmentEvaluation) {
 		return !Boolean.TRUE.equals(assessmentEvaluation.getFullyAssessed());

@@ -164,7 +164,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 		result.setEndDate(endDate);
 		
 		ObligationEvaluator obligationEvaluator = evaluators.getObligationEvaluator();
-		AssessmentObligation obligation = obligationEvaluator.getObligation(result, courseNode);
+		Overridable<AssessmentObligation> obligation = obligationEvaluator.getObligation(result, courseNode);
 		result.setObligation(obligation);
 		
 		DurationEvaluator durationEvaluator = evaluators.getDurationEvaluator();

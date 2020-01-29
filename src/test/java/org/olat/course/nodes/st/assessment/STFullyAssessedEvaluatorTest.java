@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.junit.Test;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
@@ -84,7 +85,7 @@ public class STFullyAssessedEvaluatorTest {
 
 	private AssessmentEvaluation createAssessmentEvaluation(Boolean fullyAssessd, AssessmentObligation obligation) {
 		return new AssessmentEvaluation(null, null, null, null, null, null, fullyAssessd, null, null, null, null, null, null,
-				0, null, null, null, null, null, null, obligation, null, null, null);
+				0, null, null, null, null, null, null, Overridable.of(obligation), null, null, null);
 	}
 
 }

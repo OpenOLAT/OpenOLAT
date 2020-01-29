@@ -107,7 +107,7 @@ public class AverageCompletionEvaluator implements CompletionEvaluator {
 	private boolean isMandatory(AssessmentEvaluation evaluation) {
 		return evaluation != null
 				&& evaluation.getObligation() != null
-				&& AssessmentObligation.mandatory.equals(evaluation.getObligation());
+				&& AssessmentObligation.mandatory == evaluation.getObligation().getCurrent();
 	}
 
 }

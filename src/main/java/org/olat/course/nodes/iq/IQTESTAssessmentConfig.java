@@ -194,4 +194,9 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 		return true;
 	}
 
+	@Override
+	public boolean isObligationOverridable() {
+		return true;
+	}
+
 }

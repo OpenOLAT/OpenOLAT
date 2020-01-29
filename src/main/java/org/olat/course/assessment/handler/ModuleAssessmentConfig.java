@@ -106,4 +106,9 @@ public abstract class ModuleAssessmentConfig implements AssessmentConfig {
 		return false;
 	}
 
+	@Override
+	public boolean isObligationOverridable() {
+		return true;
+	}
+
 }

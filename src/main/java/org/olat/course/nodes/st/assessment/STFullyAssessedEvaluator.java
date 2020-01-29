@@ -48,7 +48,7 @@ public class STFullyAssessedEvaluator implements FullyAssessedEvaluator {
 	}
 
 	private boolean isMandatory(AssessmentEvaluation evaluation) {
-		return evaluation.getObligation() != null && AssessmentObligation.mandatory.equals(evaluation.getObligation());
+		return evaluation.getObligation() != null && AssessmentObligation.mandatory == evaluation.getObligation().getCurrent();
 	}
 
 }

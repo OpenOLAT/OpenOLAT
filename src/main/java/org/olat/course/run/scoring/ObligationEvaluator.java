@@ -22,6 +22,7 @@ package org.olat.course.run.scoring;
 import java.util.List;
 
 import org.olat.course.nodes.CourseNode;
+import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
@@ -32,8 +33,8 @@ import org.olat.modules.assessment.model.AssessmentObligation;
  */
 public interface ObligationEvaluator {
 	
-	public AssessmentObligation getObligation(AssessmentEvaluation currentEvaluation, CourseNode courseNode);
+	public Overridable<AssessmentObligation> getObligation(AssessmentEvaluation currentEvaluation, CourseNode courseNode);
 
-	public AssessmentObligation getObligation(AssessmentEvaluation currentEvaluation, List<AssessmentEvaluation> children);
+	public Overridable<AssessmentObligation> getObligation(AssessmentEvaluation currentEvaluation, List<AssessmentEvaluation> children);
 
 }

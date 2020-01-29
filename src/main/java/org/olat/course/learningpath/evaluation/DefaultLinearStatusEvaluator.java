@@ -51,7 +51,7 @@ public class DefaultLinearStatusEvaluator implements StatusEvaluator {
 				status = AssessmentEntryStatus.notReady;
 			}
 		}
-		if (blocker != null && AssessmentObligation.mandatory.equals(currentEvaluation.getObligation())
+		if (blocker != null && AssessmentObligation.mandatory == currentEvaluation.getObligation().getCurrent()
 				&& !Boolean.TRUE.equals(currentEvaluation.getFullyAssessed())) {
 			blocker.block();
 		}

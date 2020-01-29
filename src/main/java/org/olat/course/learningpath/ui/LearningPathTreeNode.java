@@ -57,7 +57,7 @@ public class LearningPathTreeNode extends CourseTreeNode {
 		return assessmentEvaluation != null? assessmentEvaluation.getDuration(): null;
 	}
 
-	public AssessmentObligation getObligation() {
+	public Overridable<AssessmentObligation> getObligation() {
 		return assessmentEvaluation != null? assessmentEvaluation.getObligation(): null;
 	}
 	

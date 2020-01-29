@@ -137,9 +137,18 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_identity_end_date_mod", nullable=true, insertable=true, updatable=true)
 	private Identity endDateModificationIdentity;
+	private transient Overridable<AssessmentObligation> obligationOverridable;
 	@Enumerated(EnumType.STRING)
 	@Column(name="a_obligation", nullable=true, insertable=true, updatable=true)
 	private AssessmentObligation obligation;
+	@Enumerated(EnumType.STRING)
+	@Column(name="a_obligation_original", nullable=true, insertable=true, updatable=true)
+	private AssessmentObligation obligationOriginal;
+	@Column(name="a_obligation_mod_date", nullable=true, insertable=true, updatable=true)
+	private Date obligationModDate;
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_identity_obligation_mod", nullable=true, insertable=true, updatable=true)
+	private Identity obligationModIdentity;
 	@Column(name="a_duration", nullable=true, insertable=true, updatable=true)
 	private Integer duration;
 	// assessment id are only for onyx
@@ -327,10 +336,6 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 		this.startDate = startDate;
 	}
 	
-	public Overridable<Date> getEndOverridable() {
-		return endOverridable;
-	}
-	
 	@Override
 	public Overridable<Date> getEndDate() {
 		if (endOverridable == null) {
@@ -371,15 +376,46 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	public void setEndDateModificationIdentity(Identity endDateModificationIdentity) {
 		this.endDateModificationIdentity = endDateModificationIdentity;
 	}
-
+	
 	@Override
-	public AssessmentObligation getObligation() {
-		return obligation;
+	public Overridable<AssessmentObligation> getObligation() {
+		if (obligationOverridable == null) {
+			obligationOverridable = new OverridableImpl<>(obligation, obligationOriginal, obligationModIdentity, obligationModDate);
+		}
+		return obligationOverridable;
+	}
+	
+	@Override
+	public void setObligation(Overridable<AssessmentObligation> obligation) {
+		this.obligationOverridable = obligation;
 	}
 
-	@Override
 	public void setObligation(AssessmentObligation obligation) {
 		this.obligation = obligation;
+	}
+
+	public AssessmentObligation getObligationOriginal() {
+		return obligationOriginal;
+	}
+
+	public void setObligationOriginal(AssessmentObligation obligationOriginal) {
+		this.obligationOriginal = obligationOriginal;
+	}
+
+	public Date getObligationModDate() {
+		return obligationModDate;
+	}
+
+	public void setObligationModDate(Date obligationModDate) {
+		this.obligationModDate = obligationModDate;
+	}
+
+	public Identity getObligationModIdentity() {
+		return obligationModIdentity;
+	}
+
+	public void setObligationModIdentity(Identity obligationModIdentity) {
+		this.obligationModIdentity = obligationModIdentity;
 	}
 
 	@Override

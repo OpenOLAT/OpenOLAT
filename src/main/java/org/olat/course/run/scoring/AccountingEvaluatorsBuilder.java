@@ -30,7 +30,7 @@ public class AccountingEvaluatorsBuilder {
 	private static AccountingEvaluators CONVENTIONAL = builder()
 			.withStartDateEvaluator(AccountingEvaluatorsFactory.createNoBlockingStartDateEvaluator())
 			.withEndDateEvaluator(AccountingEvaluatorsFactory.createNoBlockingEndDateEvaluator())
-			.withObligationEvaluator(AccountingEvaluatorsFactory.createNullObligationEvaluator())
+			.withObligationEvaluator(AccountingEvaluatorsFactory.createNoneObligationEvaluator())
 			.withDurationEvaluator(AccountingEvaluatorsFactory.createNullDurationEvaluator())
 			.withScoreEvaluator(AccountingEvaluatorsFactory.createUnchangingScoreEvaluator())
 			.withPassedEvaluator(AccountingEvaluatorsFactory.createUnchangingPassedEvaluator())
@@ -115,7 +115,7 @@ public class AccountingEvaluatorsBuilder {
 				: AccountingEvaluatorsFactory.createNoBlockingEndDateEvaluator();
 		impl.obligationEvaluator = this.obligationEvaluator != null 
 				? this.obligationEvaluator
-				: AccountingEvaluatorsFactory.createNullObligationEvaluator();
+				: AccountingEvaluatorsFactory.createNoneObligationEvaluator();
 		impl.durationEvaluator = this.durationEvaluator != null 
 				? this.durationEvaluator
 				: AccountingEvaluatorsFactory.createNullDurationEvaluator();

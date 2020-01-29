@@ -63,7 +63,7 @@ public class CumulatingDurationEvaluator implements DurationEvaluator {
 	}
 
 	private boolean isMandatory(AssessmentEvaluation child) {
-		return AssessmentObligation.mandatory.equals(child.getObligation());
+		return AssessmentObligation.mandatory == child.getObligation().getCurrent();
 	}
 
 }

@@ -53,7 +53,9 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.nodes.INode;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.IndentedNodeRenderer;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
 import org.olat.course.learningpath.manager.LearningPathCourseTreeModelBuilder;
 import org.olat.course.learningpath.ui.LearningPathDataModel.LearningPathCols;
@@ -63,6 +65,7 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.Overridable;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -75,6 +78,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class LearningPathListController extends FormBasicController implements TooledController {
 
 	private static final String CMD_END_DATE = "endDate";
+	private static final String CMD_OBLIGATION = "obligation";
 	
 	private final AtomicInteger counter = new AtomicInteger();
 	private final TooledStackedPanel stackPanel;
@@ -84,6 +88,7 @@ public class LearningPathListController extends FormBasicController implements T
 	
 	private CloseableCalloutWindowController ccwc;
 	private Controller endDateEditCtrl;
+	private Controller obligationEditCtrl;
 	
 	private final UserCourseEnvironment userCourseEnv;
 	private final RepositoryEntry courseEntry;
@@ -91,6 +96,8 @@ public class LearningPathListController extends FormBasicController implements T
 	
 	@Autowired
 	private AssessmentService assessmentService;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 
 	public LearningPathListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			UserCourseEnvironment userCourseEnv) {
@@ -119,8 +126,7 @@ public class LearningPathListController extends FormBasicController implements T
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.node, nodeRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.start));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.end));
-		FlexiCellRenderer obligationRenderer = new ObligationCellRenderer(getLocale());
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.obligation, obligationRenderer));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.obligation));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.duration));
 		DefaultFlexiColumnModel firstVisitColumnModel = new DefaultFlexiColumnModel(LearningPathCols.firstVisit);
 		firstVisitColumnModel.setDefaultVisible(false);
@@ -191,37 +197,82 @@ public class LearningPathListController extends FormBasicController implements T
 	private LearningPathRow forgeRow(LearningPathTreeNode treeNode, LearningPathRow parent) {
 		LearningPathRow row = new LearningPathRow(treeNode);
 		row.setParent(parent);
-		forgeEndDate(row, treeNode);
+		forgeEndDate(row);
+		forgeObligation(row);
 		return row;
 	}
 
-	private void forgeEndDate(LearningPathRow row, LearningPathTreeNode treeNode) {
-		Overridable<Date> endDate = treeNode.getEndDate();
+	private void forgeEndDate(LearningPathRow row) {
+		Overridable<Date> endDate = row.getEndDate();
 		if (!canEdit && !endDate.isOverridden()) {
 			// Show date as plain text
 			return;
 		}
 		
-		if (row.getEndDate().getCurrent() != null) {
+		if (endDate.getCurrent() != null) {
 			Date currentEndDate = endDate.getCurrent();
 			StringBuilder sb = new StringBuilder();
 			sb.append(Formatter.getInstance(getLocale()).formatDateAndTime(currentEndDate));
-			if (treeNode.getEndDate().isOverridden()) {
+			if (endDate.isOverridden()) {
 				sb.append(" <i class='o_icon o_icon_info'> </i>");
 			}
 			FormLink endDateLink = uifactory.addFormLink("o_end_" + counter.getAndIncrement(), CMD_END_DATE,
 					sb.toString(), null, null, Link.NONTRANSLATED);
-			endDateLink.setUserObject(treeNode.getCourseNode());
+			endDateLink.setUserObject(row.getCourseNode());
 			row.setEndDateFormItem(endDateLink);
 		}
 	}
 	
+	private void forgeObligation(LearningPathRow row) {
+		Overridable<AssessmentObligation> obligation = row.getObligation();
+		
+		if (isObligationOverridable(row)) {
+			StringBuilder sb = new StringBuilder();
+			if (AssessmentObligation.mandatory == obligation.getCurrent()) {
+				sb.append(translate("config.obligation.mandatory"));
+			} else if (AssessmentObligation.optional == obligation.getCurrent()) {
+				sb.append(translate("config.obligation.optional"));
+			}
+			if (obligation.isOverridden()) {
+				sb.append(" <i class='o_icon o_icon_info'> </i>");
+			}
+			FormLink formLink = uifactory.addFormLink("o_obli_" + counter.getAndIncrement(), CMD_OBLIGATION,
+					sb.toString(), null, null, Link.NONTRANSLATED);
+			formLink.setUserObject(row.getCourseNode());
+			row.setObligationFormItem(formLink);
+		} else {
+			String translatedObligation = null;
+			if (AssessmentObligation.mandatory == obligation.getCurrent()) {
+				translatedObligation = translate("config.obligation.mandatory");
+			} else if (AssessmentObligation.optional == obligation.getCurrent()) {
+				translatedObligation = translate("config.obligation.optional");
+			}
+			row.setTranslatedObligation(translatedObligation);
+		}
+	}
+
+	private boolean isObligationOverridable(LearningPathRow row) {
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(row.getCourseNode());
+		if (!assessmentConfig.isObligationOverridable()) {
+			return false;
+		}
+		
+		Overridable<AssessmentObligation> obligation = row.getObligation();
+		if (!canEdit && !obligation.isOverridden()) {
+			return false;
+		}
+		
+		return true;
+	}
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source instanceof FormLink) {
 			FormLink link = (FormLink) source;
 			if (CMD_END_DATE.equals(link.getCmd())) {
 				doEditEndDate(ureq, link);
+			} else if (CMD_OBLIGATION.equals(link.getCmd())) {
+				doEditObligation(ureq, link);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -230,6 +281,12 @@ public class LearningPathListController extends FormBasicController implements T
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == endDateEditCtrl) {
+			if (event == FormEvent.DONE_EVENT) {
+				loadModel();
+			}
+			ccwc.deactivate();
+			cleanUp();
+		} else if (source == obligationEditCtrl) {
 			if (event == FormEvent.DONE_EVENT) {
 				loadModel();
 			}
@@ -272,6 +329,25 @@ public class LearningPathListController extends FormBasicController implements T
 				link.getFormDispatchId(), "", true, "", settings);
 		listenTo(ccwc);
 		ccwc.activate();
+	}
+
+	private void doEditObligation(UserRequest ureq, FormLink link) {
+		removeAsListenerAndDispose(ccwc);
+		removeAsListenerAndDispose(obligationEditCtrl);
+		
+		CourseNode courseNode = (CourseNode)link.getUserObject();
+		AssessmentEntry assessmentEntry = assessmentService.loadAssessmentEntry(
+				userCourseEnv.getIdentityEnvironment().getIdentity(), courseEntry, courseNode.getIdent());
+		
+		obligationEditCtrl = new ObligationEditController(ureq, getWindowControl(), assessmentEntry, canEdit);
+		listenTo(obligationEditCtrl);
+		
+		CalloutSettings settings = new CalloutSettings();
+		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), obligationEditCtrl.getInitialComponent(),
+				link.getFormDispatchId(), "", true, "", settings);
+		listenTo(ccwc);
+		ccwc.activate();
+		
 	}
 
 	private void doResetStatus() {

@@ -34,6 +34,12 @@ import org.olat.core.logging.AssertException;
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
 public class ArrayHelper {
+	
+	private static final String[] EMPTY_STRING_ARRAY = {};
+	
+	public static String[] emptyStrings() {
+		return EMPTY_STRING_ARRAY;
+	}
 
 	/**
 	 * Helper to sort two string arrays. The arrays must have the same length and
@@ -62,6 +68,7 @@ public class ArrayHelper {
 		}
 		// sort the pairs
 		Arrays.sort(pairs, new Comparator<Object>() {
+			@Override
 			public int compare(Object o1, Object o2) {
 				Object[] pair1 = (Object[]) o1;
 				Object[] pair2 = (Object[]) o2;

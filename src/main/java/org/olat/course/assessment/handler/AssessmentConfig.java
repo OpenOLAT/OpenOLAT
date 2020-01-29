@@ -121,5 +121,7 @@ public interface AssessmentConfig {
 	 * @return True if this course node has additional details to be edited.
 	 */
 	public boolean hasEditableDetails();
+	
+	public boolean isObligationOverridable();
 
 }

@@ -22,6 +22,7 @@ package org.olat.modules.assessment;
 import java.util.Date;
 
 import org.olat.core.id.Identity;
+import org.olat.modules.assessment.model.OverridableImpl;
 
 /**
  * 
@@ -30,6 +31,14 @@ import org.olat.core.id.Identity;
  *
  */
 public interface Overridable<T> {
+	
+	public static <T> Overridable<T> empty() {
+		return new OverridableImpl<>();
+	}
+	
+	public static <T> Overridable<T> of(T current) {
+		return new OverridableImpl<>(current);
+	}
 	
 	public T getCurrent();
 

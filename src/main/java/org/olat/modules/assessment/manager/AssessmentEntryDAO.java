@@ -37,6 +37,7 @@ import org.olat.modules.assessment.AssessmentEntryCompletion;
 import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentEntryImpl;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.vitero.model.GroupRole;
@@ -205,13 +206,17 @@ public class AssessmentEntryDAO {
 		if (nodeAssessment instanceof AssessmentEntryImpl) {
 			AssessmentEntryImpl impl = (AssessmentEntryImpl)nodeAssessment;
 			impl.setLastModified(new Date());
-			Overridable<Date> end = impl.getEndOverridable();
-			if (end != null) {
-				impl.setEndDate(end.getCurrent());
-				impl.setEndDateOriginal(end.getOriginal());
-				impl.setEndDateModificationIdentity(end.getModBy());
-				impl.setEndDateModificationDate(end.getModDate());
-			}
+			Overridable<Date> end = nodeAssessment.getEndDate();
+			impl.setEndDate(end.getCurrent());
+			impl.setEndDateOriginal(end.getOriginal());
+			impl.setEndDateModificationIdentity(end.getModBy());
+			impl.setEndDateModificationDate(end.getModDate());
+			Overridable<AssessmentObligation> obligation = nodeAssessment.getObligation();
+			impl.setObligation(obligation.getCurrent());
+			impl.setObligationOriginal(obligation.getOriginal());
+			impl.setObligationModIdentity(obligation.getModBy());
+			impl.setObligationModDate(obligation.getModDate());;
+			
 		}
 		return dbInstance.getCurrentEntityManager().merge(nodeAssessment);
 	}

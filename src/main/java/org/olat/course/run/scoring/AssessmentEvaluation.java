@@ -42,7 +42,7 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	private final Date startDate;
 	private final Overridable<Date> endDate;
 	private final Integer duration;
-	private final AssessmentObligation obligation;
+	private final Overridable<AssessmentObligation> obligation;
 	private final Double completion;
 	private final Integer attempts;
 	private final String comment;
@@ -81,7 +81,7 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 			Date fullyAssessedDate, Double currentRunCompletion, AssessmentRunStatus runStatus, Long assessmentID,
 			String comment, String coachComment, int numOfAssessmentDocs, Date lastModified, Date lastUserModified,
 			Date lastCoachModified, Date assessmentDone, Date startDate, Overridable<Date> endDate,
-			AssessmentObligation obligation, Integer duration, Date firstVisit, Date lastVisit) {
+			Overridable<AssessmentObligation> obligation, Integer duration, Date firstVisit, Date lastVisit) {
 		super(score, passed, assessmentStatus, userVisibility, currentRunCompletion, runStatus, assessmentID);
 		this.attempts = attempts;
 		this.completion = completion;
@@ -129,7 +129,7 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 		return duration;
 	}
 
-	public AssessmentObligation getObligation() {
+	public Overridable<AssessmentObligation> getObligation() {
 		return obligation;
 	}
 

@@ -86,9 +86,9 @@ public interface AssessmentEntry extends AssessmentEntryLight {
 	
 	public void setEndDate(Overridable<Date> overwritable);
 	
-	public AssessmentObligation getObligation();
+	public Overridable<AssessmentObligation> getObligation();
 	
-	public void setObligation(AssessmentObligation obligation);
+	public void setObligation(Overridable<AssessmentObligation> obligation);
 	
 	public Integer getDuration();
 	

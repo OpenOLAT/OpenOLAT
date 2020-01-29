@@ -24,6 +24,7 @@ import java.util.Date;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.course.assessment.IndentedNodeRenderer.IndentedCourseNode;
+import org.olat.course.nodes.CourseNode;
 import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
@@ -38,6 +39,8 @@ public class LearningPathRow implements FlexiTreeTableNode, IndentedCourseNode {
 	
 	private final LearningPathTreeNode learningPathNode;
 	private FormLink endDateFormItem;
+	private String translatedObligation;
+	private FormLink obligationFormItem;
 	private LearningPathRow parent;
 	private boolean hasChildren;
 	
@@ -63,6 +66,10 @@ public class LearningPathRow implements FlexiTreeTableNode, IndentedCourseNode {
 	@Override
 	public String getLongTitle() {
 		return learningPathNode.getCourseNode().getLongTitle();
+	}
+	
+	public CourseNode getCourseNode() {
+		return learningPathNode.getCourseNode();
 	}
 	
 	public AssessmentEntryStatus getStatus() {
@@ -93,7 +100,23 @@ public class LearningPathRow implements FlexiTreeTableNode, IndentedCourseNode {
 		return learningPathNode.getEndDate();
 	}
 
-	public AssessmentObligation getObligation() {
+	public String getTranslatedObligation() {
+		return translatedObligation;
+	}
+
+	public void setTranslatedObligation(String translatedObligation) {
+		this.translatedObligation = translatedObligation;
+	}
+
+	public FormLink getObligationFormItem() {
+		return obligationFormItem;
+	}
+
+	public void setObligationFormItem(FormLink obligationFormItem) {
+		this.obligationFormItem = obligationFormItem;
+	}
+
+	public Overridable<AssessmentObligation> getObligation() {
 		return learningPathNode.getObligation();
 	}
 

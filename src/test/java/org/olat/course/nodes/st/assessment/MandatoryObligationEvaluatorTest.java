@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
@@ -47,9 +48,9 @@ public class MandatoryObligationEvaluatorTest {
 		AssessmentEvaluation child2 = getAssessmentEvaluation(AssessmentObligation.optional);
 		List<AssessmentEvaluation> children = Arrays.asList(child1, child2);
 		
-		AssessmentObligation obligation = sut.getObligation(currentEvaluation, children);
+		Overridable<AssessmentObligation> obligation = sut.getObligation(currentEvaluation, children);
 		
-		assertThat(obligation).isEqualTo(AssessmentObligation.mandatory);
+		assertThat(obligation.getCurrent()).isEqualTo(AssessmentObligation.mandatory);
 	}
 
 	@Test
@@ -59,9 +60,9 @@ public class MandatoryObligationEvaluatorTest {
 		AssessmentEvaluation child2 = getAssessmentEvaluation(AssessmentObligation.optional);
 		List<AssessmentEvaluation> children = Arrays.asList(child1, child2);
 		
-		AssessmentObligation obligation = sut.getObligation(currentEvaluation, children);
+		Overridable<AssessmentObligation> obligation = sut.getObligation(currentEvaluation, children);
 		
-		assertThat(obligation).isEqualTo(AssessmentObligation.optional);
+		assertThat(obligation.getCurrent()).isEqualTo(AssessmentObligation.optional);
 
 	}
 	
@@ -70,14 +71,14 @@ public class MandatoryObligationEvaluatorTest {
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(AssessmentObligation.optional);
 		CourseNode courseNode = new STCourseNode();
 		
-		AssessmentObligation obligation = sut.getObligation(currentEvaluation, courseNode);
+		Overridable<AssessmentObligation> obligation = sut.getObligation(currentEvaluation, courseNode);
 		
-		assertThat(obligation).isEqualTo(AssessmentObligation.optional);
+		assertThat(obligation.getCurrent()).isEqualTo(AssessmentObligation.optional);
 	}
 
 	private AssessmentEvaluation getAssessmentEvaluation(AssessmentObligation obligation) {
 		return new AssessmentEvaluation(null, null, null, null, null, null, null, null, null, null, null, null, null, 0,
-				null, null, null, null, null, null, obligation, null, null, null);
+				null, null, null, null, null, null, Overridable.of(obligation), null, null, null);
 	}
 	
 }
