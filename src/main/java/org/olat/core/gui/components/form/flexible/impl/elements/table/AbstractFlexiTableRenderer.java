@@ -176,7 +176,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		if(ftE.isFilterEnabled()) {
 			List<FlexiTableFilter> filters = ftE.getFilters();
 			if(filters != null && !filters.isEmpty()) {
-				filterIndication = renderFilterDropdown(sb, ftE, filters);
+				filterIndication = renderFilterDropdown(sb, ftE, filters, translator);
 			}
 		}
 		
@@ -184,7 +184,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		if(ftE.isSortEnabled()) {
 			List<FlexiTableSort> sorts = ftE.getSorts();
 			if(sorts != null && !sorts.isEmpty()) {
-				renderSortDropdown(sb, ftE, sorts);
+				renderSortDropdown(sb, ftE, sorts, translator);
 			}
 		}
 		
@@ -239,14 +239,17 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			
 			sb.append("<div class='o_table_search input-group o_noprint'>");
 			if(searchInput) {
+				sb.append("<label aria-label='").append(translator.translate("aria.search.input")).append("' for='").append(ftE.getSearchElement().getFormDispatchId()).append("'>");
 				renderFormItem(renderer, sb, ftE.getSearchElement(), ubu, translator, renderResult, args);
+				sb.append("</label>");
 				sb.append("<div class='input-group-btn'>");
 				// reset quick search
 				String id = ftE.getSearchElement().getFormDispatchId();
 				sb.append("<a href=\"javascript:jQuery('#").append(id).append("').val('');")
 				  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
 						  new NameValuePair("reset-search", "true")))
-				  .append("\" class='btn o_reset_quick_search'><i class='o_icon o_icon_remove_filters'> </i></a>");
+				  .append("\" class='btn o_reset_quick_search'><i class='o_icon o_icon_remove_filters' aria-label='")
+				  .append(translator.translate("aria.reset.search")).append("'> </i></a>");
 							
 				renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, args);
 				if(ftE.getExtendedSearchButton() != null) {
@@ -279,14 +282,15 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		}
 	}
 	
-	protected String renderFilterDropdown(StringOutput sb, FlexiTableElementImpl ftE, List<FlexiTableFilter> filters) {
+	protected String renderFilterDropdown(StringOutput sb, FlexiTableElementImpl ftE, List<FlexiTableFilter> filters, Translator translator) {
 		Form theForm = ftE.getRootForm();
 		String dispatchId = ftE.getFormDispatchId();
 		StringBuilder selected = new StringBuilder(256);
 		
 		sb.append("<div class='btn-group'>")
-		  .append("<button id='table-button-filters-").append(dispatchId).append("' type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'>")
-		  .append("<i class='o_icon o_icon_filter o_icon-lg'> </i> <b class='caret'></b></button>")
+		  .append("<button id='table-button-filters-").append(dispatchId).append("' type='button' aria-label='")
+		  .append(translator.translate("aria.filters")).append("' class='btn btn-default dropdown-toggle' data-toggle='dropdown'>")
+		  .append("<i class='o_icon o_icon_filter o_icon-lg'> </i> <b class='caret'> </b></button>")
 		  .append("<div id='table-filters-").append(dispatchId).append("' class='hide'><ul class='o_dropdown list-unstyled' role='menu'>");
 		
 		List<FlexiTableFilter> selectedFilters = ftE.getSelectedFilters();
@@ -323,12 +327,13 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		return selected.toString();
 	}
 	
-	protected void renderSortDropdown(StringOutput sb, FlexiTableElementImpl ftE, List<FlexiTableSort> sorts) {
+	protected void renderSortDropdown(StringOutput sb, FlexiTableElementImpl ftE, List<FlexiTableSort> sorts, Translator translator) {
 		Form theForm = ftE.getRootForm();
 		String dispatchId = ftE.getFormDispatchId();
 		
 		sb.append("<div class='btn-group'>")
-		  .append("<button id='table-button-sorters-").append(dispatchId).append("' type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'>")
+		  .append("<button id='table-button-sorters-").append(dispatchId).append("' type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'")
+		  .append(" aria-label='").append(translator.translate("aria.sort")).append("'>")
 		  .append("<i class='o_icon o_icon_sort_menu o_icon-lg'> </i> <b class='caret'></b></button>")
 		  .append("<div id='table-sorters-").append(dispatchId).append("' class='hide'><ul class='o_dropdown list-unstyled' role='menu'>");
 		

@@ -71,6 +71,7 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	private String customEnabledLinkCSS;
 	private String customDisabledLinkCSS;
 	private String title;
+	private String ariaLabel;
 	private String textReasonForDisabling;
 
 	/**
@@ -221,6 +222,7 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 		component.setIconRightCSS(iconRightCSS);
 		component.setElementCssClass(getElementCssClass());
 		component.setTitle(title);
+		component.setAriaLabel(ariaLabel);
 		component.setForceFlexiDirtyFormWarning(ownDirtyFormWarning);
 		component.setPopup(popup);
 		component.setNewWindow(newWindow);
@@ -301,6 +303,14 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 		this.title = linkTitle;
 		if(component != null){
 			component.setTitle(linkTitle);
+		}
+	}
+
+	@Override
+	public void setAriaLabel(String label) {
+		this.ariaLabel = label;
+		if(component != null) {
+			component.setAriaLabel(label);
 		}
 	}
 

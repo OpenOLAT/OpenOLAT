@@ -594,6 +594,7 @@ public class RepositoryEntryListController extends FormBasicController
 			FormLink markLink = uifactory.addFormLink("mark_" + row.getKey(), "mark", "", null, null, Link.NONTRANSLATED);
 			markLink.setIconLeftCSS(row.isMarked() ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
 			markLink.setTitle(translate(row.isMarked() ? "details.bookmark.remove" : "details.bookmark"));
+			markLink.setAriaLabel(translate(row.isMarked() ? "details.bookmark.remove" : "details.bookmark"));
 			markLink.setUserObject(row);
 			row.setMarkLink(markLink);
 		}

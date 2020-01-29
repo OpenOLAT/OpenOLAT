@@ -28,6 +28,7 @@
 */
 package org.olat.core.gui.dev.controller;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -150,6 +151,7 @@ public class DevelopmentController extends BasicController {
 		devToolLink.setIconLeftCSS("o_icon o_icon_dev o_icon-fw");
 		devToolLink.setCustomEnabledLinkCSS("o_dev hidden-print");
 		devToolLink.setTitle(translate("devTool"));
+		devToolLink.setAriaLabel(translate("devTool"));
 
 		Component protectedMainPanel = DebugHelper.createDebugProtectedWrapper(mainpanel);
 		spacesaverController = new ExpColController(ureq, getWindowControl(), false, protectedMainPanel, devToolLink);
@@ -247,9 +249,12 @@ public class DevelopmentController extends BasicController {
 
 	private void updateComponentTree() {
 		Window win = wboImpl.getWindow();
-		StringOutput sb = new StringOutput();
-		renderDebugInfo(win.getContentPane(), sb);
-		myContent.contextPut("compdump", sb.toString());
+		try(StringOutput sb = new StringOutput()) {
+			renderDebugInfo(win.getContentPane(), sb);
+			myContent.contextPut("compdump", sb.toString());
+		} catch(IOException e) {
+			logError("", e);
+		}
 	}
 	
 	private void updateUI() {

@@ -116,7 +116,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	private FormLink customButton, exportButton;
 	private FormLink searchButton, extendedSearchButton;
-	private FormLink classicTypeButton, customTypeButton;
+	private FormLink classicTypeButton;
+	private FormLink customTypeButton;
 	private FormLink extendedFilterButton;
 	private AbstractTextElement searchFieldEl;
 	private ExtendedFilterController extendedFilterCtrl;
@@ -177,6 +178,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		customButton = new FormLinkImpl(dispatchId + "_customButton", "rCustomButton", "", Link.BUTTON + Link.NONTRANSLATED);
 		customButton.setTranslator(translator);
 		customButton.setIconLeftCSS("o_icon o_icon_customize");
+		customButton.setAriaLabel(translator.translate("aria.customize"));
 		components.put("rCustomize", customButton);
 		
 		this.pageSize = pageSize;
@@ -237,6 +239,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			customTypeButton.setIconLeftCSS("o_icon o_icon_table_custom o_icon-lg");
 			customTypeButton.setElementCssClass("o_sel_custom");
 			customTypeButton.setActive(FlexiTableRendererType.custom == rendererType);
+			customTypeButton.setAriaLabel(translator.translate("aria.view.custom"));
 			components.put("rTypeCustom", customTypeButton);
 			//classic tables
 			classicTypeButton = new FormLinkImpl(dispatchId + "_classicRTypeButton", "rClassicRTypeButton", "", Link.BUTTON + Link.NONTRANSLATED);
@@ -244,6 +247,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			classicTypeButton.setIconLeftCSS("o_icon o_icon_table o_icon-lg");
 			classicTypeButton.setElementCssClass("o_sel_table");
 			classicTypeButton.setActive(FlexiTableRendererType.classic == rendererType);
+			classicTypeButton.setAriaLabel(translator.translate("aria.view.table"));
 			components.put("rTypeClassic", classicTypeButton);
 			
 			if(getRootForm() != null) {

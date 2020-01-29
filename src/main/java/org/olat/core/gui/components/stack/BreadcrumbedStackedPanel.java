@@ -87,12 +87,14 @@ public class BreadcrumbedStackedPanel extends Panel implements BreadcrumbPanel, 
 		backLink = LinkFactory.createCustomLink("back", "back", "\u00A0", Link.NONTRANSLATED + Link.LINK_CUSTOM_CSS, null, this);
 		backLink.setIconLeftCSS("o_icon o_icon_back");
 		backLink.setTitle(translator.translate("back"));
+		backLink.setAriaLabel(translator.translate("back"));
 		backLink.setAccessKey("b"); // allow navigation using keyboard
 
 		// Add back link before the bread crumbs, when pressed delegates click to current bread-crumb - 1
 		closeLink = LinkFactory.createCustomLink("close", "close", "\u00A0", Link.NONTRANSLATED + Link.LINK_CUSTOM_CSS, null, this);
 		closeLink.setIconLeftCSS("o_icon o_icon_close_tool");
 		closeLink.setCustomDisplayText(translator.translate("close"));
+		closeLink.setAriaLabel(translator.translate("close"));
 		closeLink.setAccessKey("x"); // allow navigation using keyboard
 		
 		setDomReplacementWrapperRequired(false);
@@ -589,11 +591,13 @@ public class BreadcrumbedStackedPanel extends Panel implements BreadcrumbPanel, 
 			closeText = getTranslator().translate("doclose", new String[] { link.getCustomDisplayText() });
 			showClose = isShowCloseLinkForRootCrumb();
 			backLink.setTitle(closeText);
+			backLink.setAriaLabel(closeText);
 		} else {
 			Link link = stack.get(stack.size()-1);
 			closeText = getTranslator().translate("doclose", new String[] { link.getCustomDisplayText() });
 			showClose = isShowCloseLink();
 			backLink.setTitle(getTranslator().translate("back"));
+			backLink.setAriaLabel(getTranslator().translate("back"));
 		}
 		closeLink.setCustomDisplayText(closeText);
 		closeLink.setTitle(closeText);

@@ -84,6 +84,7 @@ public class Link extends AbstractComponent {
 	private boolean focus;
 	private String i18n;
 	private String title;
+	private String ariaLabel;
 	private final String elementId;
 	private String textReasonForDisabling;
 	private String customDisplayText;
@@ -285,6 +286,11 @@ public class Link extends AbstractComponent {
 		badge.setLevel(level);
 		setDirty(true);
 	}
+	
+	public void removeBadge() {
+		badge = null;
+		setDirty(true);
+	}
 
 	public int getPresentation() {
 		return presentation;
@@ -300,6 +306,10 @@ public class Link extends AbstractComponent {
 	 */
 	public String getTitle() {
 		return title;
+	}
+	
+	public String getAriaLabel() {
+		return ariaLabel;
 	}
 	
 	FormLink getFlexiForm() {
@@ -328,6 +338,10 @@ public class Link extends AbstractComponent {
 	 */
 	public void setTitle(String i18nKey) {
 		this.title = i18nKey;
+	}
+	
+	public void setAriaLabel(String i18nKey) {
+		this.ariaLabel = i18nKey;
 	}
 
 	/**
