@@ -20,23 +20,34 @@
 package org.olat.ims.qti21.manager;
 
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.course.nodes.ArchiveOptions;
 import org.olat.ims.qti21.AssessmentItemSession;
+import org.olat.ims.qti21.AssessmentResponse;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.model.ParentPartItemRefs;
+import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
+import org.olat.ims.qti21.model.ResponseLegality;
 import org.olat.ims.qti21.model.jpa.AssessmentTestSessionStatistics;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import uk.ac.ed.ph.jqtiplus.types.ResponseData.ResponseDataType;
 
 /**
  * 
@@ -49,11 +60,15 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private AssessmentResponseDAO responseDao;
+	@Autowired
 	private AssessmentItemSessionDAO itemSessionDao;
 	@Autowired
 	private AssessmentTestSessionDAO testSessionDao;
 	@Autowired
 	private AssessmentService assessmentService;
+	@Autowired
+	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 
 	@Test
 	public void createTestSession_repo() {
@@ -229,5 +244,46 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		Assert.assertTrue(authorSessions.contains(testSession1));
 		Assert.assertTrue(authorSessions.contains(testSession2));
 		Assert.assertFalse(authorSessions.contains(testSession3));
+	}
+	
+	
+	@Test
+	public void getTestSessionsOfResponse_groupsAndIdentities() {
+		// prepare a test and 2 users
+		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-9");
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, null, testEntry);
+		dbInstance.commit();
+		repositoryEntryRelationDao.addRole(assessedIdentity, testEntry, GroupRoles.participant.name());
+		Group testDefaultGroup = repositoryEntryRelationDao.getDefaultGroup(testEntry);
+		
+		//create an assessment test session with a response
+		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, testEntry, null, assessmentEntry, assessedIdentity, null, false);
+		Assert.assertNotNull(testSession);
+		AssessmentItemSession itemSession = itemSessionDao.createAndPersistAssessmentItemSession(testSession, null, UUID.randomUUID().toString());
+		Assert.assertNotNull(itemSession);
+		AssessmentResponse response = responseDao.createAssessmentResponse(testSession, itemSession, UUID.randomUUID().toString(), ResponseLegality.VALID, ResponseDataType.FILE);
+		Assert.assertNotNull(response);
+		
+		dbInstance.commitAndCloseSession();
+		
+		// only finished count
+		testSession.setDuration(100l);
+		testSession.setFinishTime(new Date());
+		testSession = testSessionDao.update(testSession);
+		
+		dbInstance.commitAndCloseSession();
+		
+		//check that there isn't any active test session (only author mode)
+		ArchiveOptions options = new ArchiveOptions();
+		options.setIdentities(Collections.singletonList(assessedIdentity));
+		QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(options, testEntry, null, null);
+		searchParams.setLimitToGroups(Collections.singletonList(testDefaultGroup));
+		searchParams.setLimitToIdentities(Collections.singletonList(assessedIdentity));
+		
+		List<AssessmentTestSession> authorSessions = testSessionDao.getTestSessionsOfResponse(searchParams);
+		Assert.assertNotNull(authorSessions);
+		Assert.assertEquals(1, authorSessions.size());
+		Assert.assertEquals(testSession, authorSessions.get(0));
 	}
 }
