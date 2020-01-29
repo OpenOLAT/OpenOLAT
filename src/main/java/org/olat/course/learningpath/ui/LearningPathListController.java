@@ -65,6 +65,7 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.Overridable;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,7 +77,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class LearningPathListController extends FormBasicController implements TooledController {
-
+	
 	private static final String CMD_END_DATE = "endDate";
 	private static final String CMD_OBLIGATION = "obligation";
 	
@@ -147,6 +148,7 @@ public class LearningPathListController extends FormBasicController implements T
 		tableEl.setNumOfRowsEnabled(false);
 		
 		loadModel();
+		openNodes();
 	}
 	
 	@Override
@@ -263,6 +265,20 @@ public class LearningPathListController extends FormBasicController implements T
 		}
 		
 		return true;
+	}
+	
+	private void openNodes() {
+		dataModel.closeAll();
+		for (int rowIndex = 0; rowIndex < dataModel.getRowCount(); rowIndex ++) {
+			LearningPathRow row = dataModel.getObject(rowIndex);
+			boolean notOpen =  AssessmentObligation.optional == row.getObligation().getCurrent()
+					|| (row.getFullyAssessed() != null && row.getFullyAssessed().booleanValue())
+					|| (AssessmentEntryStatus.notReady == row.getStatus());
+			boolean open = !notOpen;
+			if (open) {
+				dataModel.open(rowIndex);
+			}
+		}
 	}
 
 	@Override

@@ -80,6 +80,10 @@ public class LearningPathRow implements FlexiTreeTableNode, IndentedCourseNode {
 		return learningPathNode.getAssessmentDone();
 	}
 	
+	public Boolean getFullyAssessed() {
+		return learningPathNode.getFullyAssessed();
+	}
+	
 	public Date getFullyAssessedDate() {
 		return learningPathNode.getFullyAssessedDate();
 	}
