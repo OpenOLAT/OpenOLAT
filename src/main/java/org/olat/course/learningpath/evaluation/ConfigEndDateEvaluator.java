@@ -81,7 +81,7 @@ public class ConfigEndDateEvaluator implements EndDateEvaluator {
 		return fullyAssessed == null || !fullyAssessed.booleanValue();
 	}
 	
-	private class LearningPathServiceSupplier implements Function<CourseNode, Date> {
+	private static final class LearningPathServiceSupplier implements Function<CourseNode, Date> {
 		
 		private LearningPathService learningPathService;
 
