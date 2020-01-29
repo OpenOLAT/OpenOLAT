@@ -90,6 +90,8 @@ public class LearningPathNodeConfigController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormTitle("config.title");
+		
 		String duration = learningPathConfigs.getDuration() != null? learningPathConfigs.getDuration().toString(): null;
 		durationEl = uifactory.addTextElement("config.duration", 128, duration , formLayout);
 		
