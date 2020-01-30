@@ -1299,8 +1299,12 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			if(StringHelper.containsNonWhitespace(placeholder)) {
 				sb.append(placeholder);
 			}
-		} else if( StringHelper.containsNonWhitespace(responseInputString)) {
-			sb.append(responseInputString);
+		} else if(StringHelper.containsNonWhitespace(responseInputString)) {
+			if(ended) {
+				sb.append(StringHelper.escapeHtml(responseInputString));
+			} else {
+				sb.append(responseInputString);
+			}
 		}
 		
 		if(ended) {
