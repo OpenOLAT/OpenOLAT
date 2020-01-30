@@ -181,7 +181,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		RepositoryEntry testEntry = getReferencedRepositoryEntry();
 		if(((IQTESTCourseNode)courseNode).hasQTI21TimeLimit(testEntry)) {
 			extraTimeButton = uifactory.addFormLink("extra.time", formLayout, Link.BUTTON);
-			extraTimeButton.setIconLeftCSS("o_icon o_icon_extra_time");
+			extraTimeButton.setIconLeftCSS("o_icon o_icon-fw o_icon_extra_time");
 		}
 		boolean qti21 = isTestQTI21();
 		boolean onyx = !qti21 && QTIResourceTypeModule.isOnyxTest(testEntry.getOlatResource());

@@ -22,4 +22,7 @@ $r.render("table")
 	#if($r.available("bulk.visible"))
 		$r.render("bulk.visible")
 	#end
+	#if($r.available("bulk.email"))
+		$r.render("bulk.email")
+	#end
 </div>

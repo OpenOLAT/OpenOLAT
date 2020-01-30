@@ -68,6 +68,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.mail.ContactList;
+import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -100,6 +102,7 @@ import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.assessment.ui.component.CompletionItem;
 import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
 import org.olat.modules.assessment.ui.event.CompletionEvent;
+import org.olat.modules.co.ContactFormController;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
@@ -132,7 +135,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	
 	private Link nextLink, previousLink;
 	protected FlexiTableElement tableEl;
-	private FormLink bulkDoneButton, bulkVisibleButton;
+	private FormLink bulkDoneButton, bulkVisibleButton, bulkEmailButton;
 	protected final TooledStackedPanel stackPanel;
 	private final AssessmentToolContainer toolContainer;
 	protected IdentityListCourseNodeTableModel usersTableModel;
@@ -143,6 +146,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private AssessedIdentityController currentIdentityCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private ConfirmUserVisibilityController changeUserVisibilityCtrl;
+	private ContactFormController contactCtrl;
 	
 	@Autowired
 	private UserManager userManager;
@@ -166,6 +170,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		setTranslator(Util.createPackageTranslator(IdentityListCourseNodeController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		setTranslator(Util.createPackageTranslator(ContactFormController.class, getLocale(), getTranslator()));		
 		
 		this.group = group;
 		this.courseNode = courseNode;
@@ -419,11 +424,18 @@ public class IdentityListCourseNodeController extends FormBasicController
 		if(courseAssessmentService.getAssessmentConfig(courseNode).isAssessable()) {
 			bulkDoneButton = uifactory.addFormLink("bulk.done", formLayout, Link.BUTTON);
 			bulkDoneButton.setElementCssClass("o_sel_assessment_bulk_done");
+			bulkDoneButton.setIconLeftCSS("o_icon o_icon-fw o_icon_status_done");
 			bulkDoneButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 			
 			bulkVisibleButton = uifactory.addFormLink("bulk.visible", formLayout, Link.BUTTON);
 			bulkVisibleButton.setElementCssClass("o_sel_assessment_bulk_visible");
+			bulkVisibleButton.setIconLeftCSS("o_icon o_icon-fw o_icon_results_visible");
 			bulkVisibleButton.setVisible(!coachCourseEnv.isCourseReadOnly());
+			
+			bulkEmailButton = uifactory.addFormLink("bulk.email", formLayout, Link.BUTTON);
+			bulkEmailButton.setElementCssClass("o_sel_assessment_bulk_email");
+			bulkEmailButton.setIconLeftCSS("o_icon o_icon-fw o_icon_mail");
+			bulkEmailButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 		}
 	}
 	
@@ -645,6 +657,11 @@ public class IdentityListCourseNodeController extends FormBasicController
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if (source == contactCtrl) {
+			if(cmc != null) {
+				cmc.deactivate();
+			}
+			cleanUp();
 		} else if(toolsCtrl == source) {
 			if(event instanceof ShowDetailsEvent) {
 				doSelect(ureq, ((ShowDetailsEvent)event).getAssessedIdentity());
@@ -673,10 +690,12 @@ public class IdentityListCourseNodeController extends FormBasicController
 		removeAsListenerAndDispose(changeUserVisibilityCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
+		removeAsListenerAndDispose(contactCtrl);
 		removeAsListenerAndDispose(cmc);
 		changeUserVisibilityCtrl = null;
 		toolsCalloutCtrl = null;
 		toolsCtrl = null;
+		contactCtrl = null;
 		cmc = null;
 	}
 
@@ -697,6 +716,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 			doSetDone(ureq);
 		} else if(bulkVisibleButton == source) {
 			doConfirmVisible(ureq);
+		} else if(bulkEmailButton == source) {
+			doEmail(ureq);
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			if("tools".equals(link.getCmd())) {
@@ -826,6 +847,38 @@ public class IdentityListCourseNodeController extends FormBasicController
 		}
 	}
 	
+	private void doEmail(UserRequest ureq) {
+		Set<Integer> selections = tableEl.getMultiSelectedIndex();
+		List<Identity> identities = new ArrayList<>(selections.size());
+		for (Integer i : selections) {
+			AssessedIdentityElementRow row = usersTableModel.getObject(i.intValue());
+			if (row != null) {
+				Identity identity = securityManager.loadIdentityByKey(row.getIdentityKey());
+				identities.add(identity);
+			}
+		}
+
+		if (identities.isEmpty()) {
+			showWarning("error.msg.send.no.rcps");
+		} else {
+			ContactMessage contactMessage = new ContactMessage(getIdentity());
+			String name = this.courseEntry.getDisplayname();
+			ContactList contactList = new ContactList(name);
+			contactList.addAllIdentites(identities);
+			contactMessage.addEmailTo(contactList);
+
+			removeAsListenerAndDispose(contactCtrl);
+			contactCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, contactMessage, null);
+			listenTo(contactCtrl);
+
+			cmc = new CloseableModalController(getWindowControl(), translate("close"),
+					contactCtrl.getInitialComponent(), true, translate("bulk.email"));
+			cmc.activate();
+			listenTo(cmc);
+		}
+
+	}
+
 	private void doSetVisibility(UserRequest ureq, Boolean visibility, List<AssessedIdentityElementRow> rows) {
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		
