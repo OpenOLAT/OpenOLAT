@@ -116,6 +116,22 @@ public class OverviewListController extends FormBasicController implements Flexi
 		DefaultFlexiColumnModel nodeModel = new DefaultFlexiColumnModel(OverviewCols.node, CMD_OPEN, nodeRenderer);
 		nodeModel.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(nodeModel);
+		DefaultFlexiColumnModel hintsModel = new DefaultFlexiColumnModel(OverviewCols.hints);
+		hintsModel.setCellRenderer(new HintsCellRenderer());
+		hintsModel.setExportable(false);
+		columnsModel.addFlexiColumnModel(hintsModel);
+		DefaultFlexiColumnModel dirtyModel = new DefaultFlexiColumnModel(OverviewCols.dirty);
+		dirtyModel.setCellRenderer(new YesNoCellRenderer(getTranslator()));
+		dirtyModel.setDefaultVisible(false);
+		columnsModel.addFlexiColumnModel(dirtyModel);
+		DefaultFlexiColumnModel newModel = new DefaultFlexiColumnModel(OverviewCols.newNode);
+		newModel.setCellRenderer(new YesNoCellRenderer(getTranslator()));
+		newModel.setDefaultVisible(false);
+		columnsModel.addFlexiColumnModel(newModel);
+		DefaultFlexiColumnModel deletedModel = new DefaultFlexiColumnModel(OverviewCols.deleted);
+		deletedModel.setCellRenderer(new YesNoCellRenderer(getTranslator()));
+		deletedModel.setDefaultVisible(false);
+		columnsModel.addFlexiColumnModel(deletedModel);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.shortTitle));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.longTitle));
 		DefaultFlexiColumnModel learningObjectivesModel = new DefaultFlexiColumnModel(OverviewCols.learningObjectives);
@@ -136,10 +152,11 @@ public class OverviewListController extends FormBasicController implements Flexi
 		
 		dataModel = new OverviewDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 250, false, getTranslator(), formLayout);
-		tableEl.setElementCssClass("o_course_edit_overview_table");
+		tableEl.setElementCssClass("o_course_edit_overview_table o_course_editor_legend");
 		tableEl.setCssDelegate(this);
 		tableEl.setAndLoadPersistedPreferences(ureq, "course-editor-overview");
 		tableEl.setEmtpyTableMessageKey("table.empty");
+		tableEl.setExportEnabled(true);
 		tableEl.setMultiSelect(true);
 		tableEl.setBordered(true);
 		

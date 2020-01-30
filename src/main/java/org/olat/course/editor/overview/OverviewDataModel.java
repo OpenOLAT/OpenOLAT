@@ -59,6 +59,10 @@ public class OverviewDataModel extends DefaultFlexiTreeTableDataModel<OverviewRo
 	public Object getValueAt(OverviewRow row, int col) {
 		switch(OverviewCols.values()[col]) {
 			case node: return row;
+			case hints: return row.getEditorNode();
+			case dirty: return Boolean.valueOf(row.getEditorNode().isDirty());
+			case newNode: return Boolean.valueOf(row.getEditorNode().isNewnode());
+			case deleted: return Boolean.valueOf(row.getEditorNode().isDeleted());
 			case shortTitle: return row.getCourseNode().getShortTitle();
 			case longTitle: return row.getCourseNode().getLongTitle();
 			case learningObjectives: return row.getCourseNode().getLearningObjectives();
@@ -79,6 +83,10 @@ public class OverviewDataModel extends DefaultFlexiTreeTableDataModel<OverviewRo
 	
 	public enum OverviewCols implements FlexiColumnDef {
 		node("table.header.node"),
+		hints("table.header.hints"),
+		dirty("table.header.dirty"),
+		newNode("table.header.new"),
+		deleted("table.header.deleted"),
 		shortTitle("table.header.short.title"),
 		longTitle("table.header.long.title"),
 		learningObjectives("table.header.learning.objectives"),
