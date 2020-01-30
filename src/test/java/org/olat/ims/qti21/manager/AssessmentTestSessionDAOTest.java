@@ -252,7 +252,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		// prepare a test and 2 users
 		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-9");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, null, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, null, null, testEntry);
 		dbInstance.commit();
 		repositoryEntryRelationDao.addRole(assessedIdentity, testEntry, GroupRoles.participant.name());
 		Group testDefaultGroup = repositoryEntryRelationDao.getDefaultGroup(testEntry);
