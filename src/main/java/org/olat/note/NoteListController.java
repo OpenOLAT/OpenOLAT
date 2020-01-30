@@ -36,6 +36,7 @@ import org.olat.core.gui.components.table.Table;
 import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.components.table.TableEvent;
 import org.olat.core.gui.components.table.TableGuiConfiguration;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -93,8 +94,11 @@ public class NoteListController extends BasicController implements GenericEventL
 		tableC.addColumnDescriptor(new StaticColumnDescriptor("delete", "table.header.delete", translate(
 				"action.delete")));
 		populateNLTable();
+		
+		VelocityContainer notesListVC = createVelocityContainer("notesList");
+		notesListVC.put("table", tableC.getInitialComponent());
 
-		putInitialPanel(tableC.getInitialComponent());
+		putInitialPanel(notesListVC);
 		
 		sec = ureq.getUserSession().getSingleUserEventCenter();
 		sec.registerFor(this, ureq.getIdentity(), OresHelper.lookupType(Note.class));
