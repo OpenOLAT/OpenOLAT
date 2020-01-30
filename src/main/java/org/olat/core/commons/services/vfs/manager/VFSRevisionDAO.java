@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
@@ -271,22 +272,22 @@ public class VFSRevisionDAO {
 				.createQuery(qb.toString(), VFSRevision.class);
 
 		if(createdAtNewer != null) {
-			query.setParameter("createdAtNewer", createdAtNewer);
+			query.setParameter("createdAtNewer", createdAtNewer, TemporalType.TIMESTAMP);
 		}
 		if(createdAtOlder != null) {
-			query.setParameter("createdAtOlder", createdAtOlder);
+			query.setParameter("createdAtOlder", createdAtOlder, TemporalType.TIMESTAMP);
 		}
 		if(editedAtNewer != null) {
-			query.setParameter("editedAtNewer", editedAtNewer);
+			query.setParameter("editedAtNewer", editedAtNewer, TemporalType.TIMESTAMP);
 		}
 		if(editedAtOlder != null) {
-			query.setParameter("editedAtOlder", editedAtOlder);
+			query.setParameter("editedAtOlder", editedAtOlder, TemporalType.TIMESTAMP);
 		}
 		if(lockedAtNewer != null) {
-			query.setParameter("lockedAtNewer", lockedAtNewer);
+			query.setParameter("lockedAtNewer", lockedAtNewer, TemporalType.TIMESTAMP);
 		}
 		if(lockedAtOlder != null) {
-			query.setParameter("lockedAtOlder", lockedAtOlder);
+			query.setParameter("lockedAtOlder", lockedAtOlder, TemporalType.TIMESTAMP);
 		}
 		if(trashed != null) {
 			query.setParameter("trashed", trashed);
@@ -301,7 +302,7 @@ public class VFSRevisionDAO {
 			query.setParameter("revisionCount", revisionCount);
 		}
 		if(size > 0) {
-			query.setParameter("size", new Long(size));
+			query.setParameter("size", Long.valueOf(size));
 		}
 		
 		return query.setFirstResult(0)
