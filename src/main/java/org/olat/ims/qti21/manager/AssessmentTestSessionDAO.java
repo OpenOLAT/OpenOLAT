@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
@@ -650,6 +651,9 @@ public class AssessmentTestSessionDAO {
 	}
 	
 	/**
+	 * The query only returns session with a valid finish time and which are not in
+	 * author mode.
+	 * 
 	 * @param searchParams
 	 * @return The returned list is order by user name and test session key
 	 */
@@ -676,7 +680,7 @@ public class AssessmentTestSessionDAO {
 	 * @param sb
 	 * @param searchParams
 	 */
-	protected static final void decorateTestSessionPermission(StringBuilder sb, QTI21StatisticSearchParams searchParams) {
+	private static final void decorateTestSessionPermission(StringBuilder sb, QTI21StatisticSearchParams searchParams) {
 	  	sb.append(" where testSession.testEntry.key=:testEntryKey")
 	  	  .append("  and testSession.finishTime is not null and testSession.authorMode=false");
 		if(searchParams.getCourseEntry() != null || searchParams.getTestEntry() != null) {
@@ -719,7 +723,7 @@ public class AssessmentTestSessionDAO {
 	 * @param sb
 	 * @param searchParams
 	 */
-	protected static final void decorateTestSessionPermission(TypedQuery<?> query, QTI21StatisticSearchParams searchParams) {
+	private static final void decorateTestSessionPermission(TypedQuery<?> query, QTI21StatisticSearchParams searchParams) {
 		query.setParameter("testEntryKey", searchParams.getTestEntry().getKey());
 		if(searchParams.getCourseEntry() != null) {
 			query.setParameter("repoEntryKey", searchParams.getCourseEntry().getKey());
@@ -729,14 +733,13 @@ public class AssessmentTestSessionDAO {
 		if(StringHelper.containsNonWhitespace(searchParams.getNodeIdent())) {
 			query.setParameter("subIdent", searchParams.getNodeIdent());
 		}
-		if(searchParams.getLimitToGroups() != null && searchParams.getLimitToGroups().size() > 0) {
+		if(searchParams.getLimitToGroups() != null && !searchParams.getLimitToGroups().isEmpty()) {
 			List<Long> keys = searchParams.getLimitToGroups().stream()
-					.map(group -> group.getKey()).collect(Collectors.toList());
+					.map(Group::getKey).collect(Collectors.toList());
 			query.setParameter("limitGroupKeys", keys);
-		}
-		if(searchParams.getLimitToIdentities() != null && searchParams.getLimitToIdentities().size() > 0) {
+		} else if(searchParams.getLimitToIdentities() != null && !searchParams.getLimitToIdentities().isEmpty()) {
 			List<Long> keys = searchParams.getLimitToIdentities().stream()
-					.map(group -> group.getKey()).collect(Collectors.toList());
+					.map(Identity::getKey).collect(Collectors.toList());
 			query.setParameter("limitIdentityKeys", keys);
 		}
 	}

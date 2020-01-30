@@ -85,6 +85,8 @@ public interface FormLink extends FormItem {
 	 * @param linkTitle
 	 */
 	public void setTitle(String linkTitle);
+	
+	public void setAriaLabel(String label);
 
 
 	public void setDomReplacementWrapperRequired(boolean required);

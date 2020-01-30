@@ -62,7 +62,7 @@ public class RepositorySite extends AbstractSiteInstance {
 		super(siteDef);
 		Translator trans = Util.createPackageTranslator(BaseChiefController.class, loc);
 		origNavElem = new DefaultNavElement(trans.translate("topnav.dr"), trans.translate("topnav.dr.alt"), "o_site_author_env");		
-		origNavElem.setAccessKey("r".charAt(0));
+		origNavElem.setAccessKey("a".charAt(0));
 		curNavElem = new DefaultNavElement(origNavElem);
 	}
 

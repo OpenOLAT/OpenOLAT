@@ -63,6 +63,10 @@ public class DropdownItem extends FormItemImpl implements FormItemCollection {
 	public void setOrientation(DropdownOrientation orientation) {
 		dropdown.setOrientation(orientation);
 	}
+	
+	public void setDomReplacementWrapperRequired(boolean required) {
+		dropdown.setDomReplacementWrapperRequired(required);
+	}
 
 	@Override
 	public void setElementCssClass(String elementCssClass) {

@@ -223,6 +223,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 					} else {
 						sb.appendHtmlEscaped(translator.translate(title)).append("\"");
 					}
+
 				}
 				//tooltips based on the extjs library, see webapp/static/js/ext*
 				if (link.isHasTooltip()) {
@@ -233,6 +234,14 @@ public class LinkRenderer extends DefaultComponentRenderer {
 						text = translator.translate(title);
 					}
 					sb.append(" title=\"").appendHtmlEscaped(text).append("\"");
+				}
+			}
+			if(link.getAriaLabel() != null) {
+				sb.append(" aria-label=\"");
+				if (nontranslated){
+					sb.appendHtmlEscaped(link.getAriaLabel()).append("\"");
+				} else {
+					sb.appendHtmlEscaped(translator.translate(link.getAriaLabel())).append("\"");
 				}
 			}
 			sb.append(">");

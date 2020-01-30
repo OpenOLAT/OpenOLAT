@@ -232,7 +232,7 @@ public class AuthHelper {
 		if(guestRoles.isGuestOnly()) {
 			return doLogin(guestIdent, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq);
 		}
-		log.error("Guest account has user permissions: " + guestIdent);
+		log.error("Guest account has user permissions: {}", guestIdent);
 		return LOGIN_DENIED;
 	}
 
@@ -317,7 +317,7 @@ public class AuthHelper {
 		if ( (loginBlocked && !usess.getRoles().isAdministrator() && !usess.getRoles().isSystemAdmin())
 				|| ( ((maxSessions != MAX_SESSION_NO_LIMIT) && (sessionManager.getUserSessionsCnt() >= maxSessions))
 						&& !usess.getRoles().isAdministrator() && !usess.getRoles().isSystemAdmin())) {
-			log.info(Tracing.M_AUDIT, "Login was blocked for identity=" + usess.getIdentity().getKey() + ", loginBlocked=" + loginBlocked + " NbrOfSessions=" + sessionManager.getUserSessionsCnt());
+			log.info(Tracing.M_AUDIT, "Login was blocked for identity={}, loginBlocked={} NbrOfSessions={}", usess.getIdentity().getKey(), loginBlocked, sessionManager.getUserSessionsCnt());
 			sessionManager.signOffAndClear(usess);
 			return LOGIN_NOTAVAILABLE;
 		}
@@ -341,7 +341,7 @@ public class AuthHelper {
 		//set the language
 		usess.setLocale( I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage()) );
 		// calculate session info and attach it to the user session
-		setSessionInfoFor(identity, authProvider, ureq, rest);
+		setSessionInfoFor(identity, usess, authProvider, ureq, rest);
 		//confirm signedOn
 		sessionManager.signOn(usess);
 		// set users web delivery mode
@@ -418,7 +418,7 @@ public class AuthHelper {
 	 * @param authProvider
 	 * @param ureq
 	 */
-	public static void setSessionInfoFor(Identity identity, String authProvider, UserRequest ureq, boolean rest) {
+	private static void setSessionInfoFor(Identity identity, UserSession usess, String authProvider, UserRequest ureq, boolean rest) {
 		HttpSession session = ureq.getHttpReq().getSession();
 		SessionInfo sinfo = new SessionInfo(identity.getKey(), identity.getName(), session);
 		sinfo.setFirstname(identity.getUser().getProperty(UserConstants.FIRSTNAME, ureq.getLocale()));
@@ -430,7 +430,6 @@ public class AuthHelper {
 		sinfo.setLastClickTime();
 		sinfo.setREST(rest);
 		// set session info for this session
-		UserSession usess = ureq.getUserSession();
 		usess.setSessionInfo(sinfo);
 		// For Usertracking, let the User object know about some desired/specified infos from the sessioninfo
 		Map<String,String> sessionInfoForUsertracking = new HashMap<>();

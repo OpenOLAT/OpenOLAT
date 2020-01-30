@@ -1,4 +1,4 @@
-<a id="o_search_tool_toggler" href="#" class="dropdown-toggle" data-toggle="dropdown" title="$r.translate("search")">
+<a id="o_search_tool_toggler" href="#" class="dropdown-toggle" data-toggle="dropdown" title="$r.translate("search")" aria-label="$r.translate("search")">
 	<i class="o_icon o_icon_search o_icon-lg"></i>
 	<span>$r.translate("topnav.search")</span>
 </a>
@@ -9,11 +9,9 @@
 </ul>
 ## focus search input field whenever search is displayed
 <script>
-/* <![CDATA[ */
 jQuery('#o_search_tool_toggler').click(function () {
 	setTimeout(function() {
 		jQuery('#o_search_tool_toggler[aria-expanded="true"] + .dropdown-menu #o_navbar_search input:text').focus();	
 	},0);
 });
-/* ]]> */
 </script>
