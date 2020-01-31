@@ -86,12 +86,27 @@ public class OrdersController extends FormBasicController implements Activateabl
 	@Autowired
 	private AccessControlModule acModule;
 
+	/**
+	 * Constructor that shows table with title and description for identity of user
+	 * session.
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 */
 	public OrdersController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, LAYOUT_BAREBONE);
+		super(ureq, wControl, "orders");
 		this.identity = getIdentity();
 		initForm(ureq);
 	}
 
+	/**
+	 * Constructor that shows table without title and description for the given
+	 * identity, e.g. for an admin interface. 
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 * @param identity
+	 */
 	public OrdersController(UserRequest ureq, WindowControl wControl, Identity identity) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.identity = identity;
