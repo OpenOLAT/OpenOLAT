@@ -48,7 +48,6 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -91,13 +90,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CourseController extends FormBasicController implements Activateable2, GenericEventListener, TooledController {
 	
 	private FormLink openCourse;
-	private Link nextCourse, detailsCourseCmp, previousCourse;
+	private Link nextCourse;
+	private Link previousCourse;
 
 	private FlexiTableElement tableEl;
 	private EfficiencyStatementEntryTableDataModel model;
-	
-	private CloseableModalController cmc;
-	private ContactController contactCtrl;
 	private final TooledStackedPanel stackPanel;
 	private UserDetailsController statementCtrl;
 	
@@ -156,7 +153,7 @@ public class CourseController extends FormBasicController implements Activateabl
 				Integer.toString(index + 1), Integer.toString(numOfCourses)
 		});
 		
-		detailsCourseCmp = LinkFactory.createToolLink("details.course", details, this);
+		Link detailsCourseCmp = LinkFactory.createToolLink("details.course", details, this);
 		detailsCourseCmp.setIconLeftCSS("o_icon o_CourseModule_icon");
 		stackPanel.addTool(detailsCourseCmp);
 		
@@ -309,11 +306,6 @@ public class CourseController extends FormBasicController implements Activateabl
 			} else if("previous".equals(event.getCommand())) {
 				previousEntry(ureq);
 			}
-		} else if (source == cmc) {
-			removeAsListenerAndDispose(cmc);
-			removeAsListenerAndDispose(contactCtrl);
-			cmc = null;
-			contactCtrl = null;
 		}
 		super.event(ureq, source, event);
 	}
