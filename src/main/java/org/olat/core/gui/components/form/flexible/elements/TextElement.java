@@ -176,6 +176,15 @@ public interface TextElement extends FormItem{
 	 */
 	public boolean hasPlaceholder();
 	
+	public String getAriaLabel();
+	
+	/**
+	 * Set an ARIA label directly in the input tag.
+	 * 
+	 * @param label The translated label
+	 */
+	public void setAriaLabel(String label);
+	
 	/**
 	 * Set the autocomplete behavior of the TextElement. Default value is null
 	 * (is same behavior as "on"). To avoid the automatic completion of password

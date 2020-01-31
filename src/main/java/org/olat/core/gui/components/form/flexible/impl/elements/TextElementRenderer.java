@@ -81,6 +81,9 @@ class TextElementRenderer extends DefaultComponentRenderer {
 			if (te.getAutocomplete() != null) {
 				sb.append(" autocomplete=\"").append(te.getAutocomplete()).append("\"");
 			}
+			if(StringHelper.containsNonWhitespace(te.getAriaLabel())) {
+				sb.append(" aria-label=\"").append(te.getAriaLabel()).append("\"");
+			}
 			
 			sb.append(" />");
 			

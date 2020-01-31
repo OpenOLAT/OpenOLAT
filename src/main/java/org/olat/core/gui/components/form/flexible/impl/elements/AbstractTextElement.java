@@ -81,6 +81,7 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	private String checkRegexpErrorKey;
 	private String placeholder;
 	private String autocomplete;
+	private String ariaLabel;
 	private ItemValidatorProvider itemValidatorProvider;
 	protected boolean originalInitialised=false;
 	
@@ -355,9 +356,19 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 
 	@Override
 	public boolean hasPlaceholder() {
-		return (placeholder != null);
+		return placeholder != null;
 	}
-	
+
+	@Override
+	public String getAriaLabel() {
+		return ariaLabel;
+	}
+
+	@Override
+	public void setAriaLabel(String label) {
+		this.ariaLabel = label;
+	}
+
 	@Override
 	public void setAutocomplete(String autocomplete) {
 		if (StringHelper.containsNonWhitespace(autocomplete)) {

@@ -239,9 +239,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			
 			sb.append("<div class='o_table_search input-group o_noprint'>");
 			if(searchInput) {
-				sb.append("<label aria-label='").append(translator.translate("aria.search.input")).append("' for='").append(ftE.getSearchElement().getFormDispatchId()).append("'>");
 				renderFormItem(renderer, sb, ftE.getSearchElement(), ubu, translator, renderResult, args);
-				sb.append("</label>");
 				sb.append("<div class='input-group-btn'>");
 				// reset quick search
 				String id = ftE.getSearchElement().getFormDispatchId();

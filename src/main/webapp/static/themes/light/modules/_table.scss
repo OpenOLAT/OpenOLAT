@@ -93,6 +93,10 @@
 		z-index:5;
 		color: grey;
 	}
+	
+	>label {
+		display: inline;
+	}
 }
 
 .o_breadcrumb.o_table_flexi_breadcrumb ol.breadcrumb {

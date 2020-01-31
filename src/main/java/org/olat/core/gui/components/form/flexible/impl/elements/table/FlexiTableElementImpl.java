@@ -161,6 +161,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		this.dataModel = tableModel;
 		this.dataSource = (tableModel instanceof FlexiTableDataSource) ? (FlexiTableDataSource<?>)dataModel : null;
 		translator = Util.createPackageTranslator(FlexiTableElementImpl.class, translator.getLocale(), translator);
+		setTranslator(translator);
 		component = new FlexiTableComponent(this, translator);
 		
 		for(int i=dataModel.getTableColumnModel().getColumnCount(); i-->0; ) {
@@ -549,6 +550,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			String dispatchId = component.getDispatchID();
 			searchFieldEl = new TextElementImpl(dispatchId + "_searchField", "search", "");
 			searchFieldEl.showLabel(false);
+			searchFieldEl.setAriaLabel(translator.translate("aria.search.input"));
 			components.put("rSearch", searchFieldEl);
 			searchButton = new FormLinkImpl(dispatchId + "_searchButton", "rSearchButton", "search", Link.BUTTON);
 			searchButton.setTranslator(translator);
