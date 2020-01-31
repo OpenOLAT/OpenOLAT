@@ -49,8 +49,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.Util;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionErrorMessage;
 import org.olat.course.condition.interpreter.ConditionExpression;
@@ -219,13 +219,11 @@ class EditScoreCalculationExpertForm extends FormBasicController {
 
 		String[] failedTypeKeys = new String[]{
 				FailedEvaluationType.failedAsNotPassed.name(),
-				FailedEvaluationType.failedAsNotPassedAfterEndDate.name(),
-				FailedEvaluationType.manual.name()
+				FailedEvaluationType.failedAsNotPassedAfterEndDate.name()
 		};
 		String[] failedTypeValues = new String[]{
 				translate(FailedEvaluationType.failedAsNotPassed.name()),
-				translate(FailedEvaluationType.failedAsNotPassedAfterEndDate.name()),
-				translate(FailedEvaluationType.manual.name())
+				translate(FailedEvaluationType.failedAsNotPassedAfterEndDate.name())
 		};
 		
 		failedType = uifactory.addDropdownSingleselect("scform.failedtype", formLayout, failedTypeKeys, failedTypeValues, null);

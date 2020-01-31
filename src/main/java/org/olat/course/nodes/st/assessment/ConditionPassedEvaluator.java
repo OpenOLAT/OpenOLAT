@@ -64,8 +64,6 @@ public class ConditionPassedEvaluator implements PassedEvaluator {
 						if(lifecycle != null && lifecycle.getValidTo() != null && lifecycle.getValidTo().compareTo(new Date()) < 0) {
 							passed = Boolean.FALSE;
 						}
-					} else if(failedType == FailedEvaluationType.manual) {
-						passed = currentEvaluation.getPassed();
 					}
 				}
 			}

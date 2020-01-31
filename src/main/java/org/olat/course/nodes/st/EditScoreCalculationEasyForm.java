@@ -151,13 +151,11 @@ public class EditScoreCalculationEasyForm extends FormBasicController {
 		
 		String[] failedTypeKeys = new String[]{
 				FailedEvaluationType.failedAsNotPassed.name(),
-				FailedEvaluationType.failedAsNotPassedAfterEndDate.name(),
-				FailedEvaluationType.manual.name()
+				FailedEvaluationType.failedAsNotPassedAfterEndDate.name()
 		};
 		String[] failedTypeValues = new String[]{
 				translate(FailedEvaluationType.failedAsNotPassed.name()),
-				translate(FailedEvaluationType.failedAsNotPassedAfterEndDate.name()),
-				translate(FailedEvaluationType.manual.name())
+				translate(FailedEvaluationType.failedAsNotPassedAfterEndDate.name())
 		};
 		
 		failedType = uifactory.addDropdownSingleselect("scform.failedtype", formLayout, failedTypeKeys, failedTypeValues, null);
