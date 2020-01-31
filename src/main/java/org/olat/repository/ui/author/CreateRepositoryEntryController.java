@@ -102,7 +102,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		this.handler = handler;
 		
 		manageableOrganisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(),
-				OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager);
+				OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, OrganisationRoles.author);
 		initForm(ureq);
 	}
 
