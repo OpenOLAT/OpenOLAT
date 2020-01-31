@@ -61,13 +61,25 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 		if (percent > 100) {
 			percent = 100;
 		}
+		
+		if (ProgressBar.RenderStyle.horizontal.equals(ubar.getRenderStyle())) {
+			renderHorizontal(target, ubar, renderLabels, percent);			
+		} else {
+			renderRadial(target, ubar, renderLabels, percent);
+		}
+	}
+
+	private void renderHorizontal(StringOutput target, ProgressBar ubar, boolean renderLabels, float percent) {
+		//TODO: render size
+		
 		target.append("<div class='progress")
 			.append(" o_progress_label_right", right.equals(ubar.getLabelAlignment()));
 		if (StringHelper.containsNonWhitespace(ubar.getCssClass())) {
 			target.append(" ").append(ubar.getCssClass());
-		}
-		target.append(" ")
-			.append("' style=\"width:")
+		}		
+		String compId = "o_c" + ubar.getDispatchID();	
+		target.append("' id='").append(compId).append("' ");
+		target.append(" style=\"width:")
 			.append(ubar.getWidth())
 			.append("%", "px", ubar.isWidthInPercent())
 			.append(";\"><div class='progress-bar' style=\"width:")
@@ -113,4 +125,57 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 			target.append(ubar.getUnitLabel());
 		}
 	}
+
+	private void renderRadial(StringOutput target, ProgressBar ubar, boolean renderLabels, float percent) {
+		// 1) Wrapper
+		target.append("<div class='radial-progress ");
+		// medium is default style
+		if (ProgressBar.RenderSize.inline.equals(ubar.getRenderSize())) {
+			target.append("radial-progress-inline");
+		} else if (ProgressBar.RenderSize.small.equals(ubar.getRenderSize())) {
+			target.append("radial-progress-sm");
+		} else if (ProgressBar.RenderSize.large.equals(ubar.getRenderSize())) {
+			target.append("radial-progress-lg");
+		}
+		//TODO: colors
+//		target.append(" radial-progress-success");
+		target.append("' ");
+		
+		String compId = "o_c" + ubar.getDispatchID();	
+		target.append(" id='").append(compId).append("' ");
+
+		target.append(" data-progress='").append(Math.round(percent)).append("'>");
+		
+		// 2) Circle (the outer colored circle)
+		target.append("<div class='circle'><div class='mask full'><div class='fill'></div></div>")
+				.append("<div class='mask half'><div class='fill'></div><div class='fill fix'></div></div>")
+				.append("<div class='shadow'></div></div>");
+		
+		// 3a) Inset (the inner circle)
+		if (ProgressBar.RenderStyle.radial.equals(ubar.getRenderStyle())) {
+			target.append("<div class='inset'></div>");
+		}
+
+		if (renderLabels && !ProgressBar.RenderSize.inline.equals(ubar.getRenderSize())) {
+			target.append("<div class='percentage'><div class='centeredWrapper'>");
+			if (ubar.isPercentagesEnabled()) {
+				target.append("<div class='number'><span>");
+				target.append(percent);
+				target.append("%</span></div>");
+			}
+			if (middle.equals(ubar.getLabelAlignment())) {
+				target.append("<div class='text-muted' style='text-align:center; font-size: 0.8em; margin-top: 0.8em;'>(");
+				renderLabel(target, ubar);				
+				target.append(")</div>");
+			}
+			target.append("</div></div>");
+		}
+		 
+		// 3b) else: without inset it does pie style rendering
+		 
+		// 4) End wrapper
+		target.append("</div>");
+
+	}
+	
 }

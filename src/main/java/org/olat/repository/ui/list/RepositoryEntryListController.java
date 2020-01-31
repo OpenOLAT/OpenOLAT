@@ -55,6 +55,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.components.rating.RatingFormEvent;
 import org.olat.core.gui.components.rating.RatingFormItem;
@@ -616,6 +618,8 @@ public class RepositoryEntryListController extends FormBasicController
 					row.getCompletion().floatValue(), Float.valueOf(1), null);
 			completionItem.setWidthInPercent(true);
 			completionItem.setLabelAlignment(LabelAlignment.none);
+			completionItem.setRenderStyle(RenderStyle.radial);
+			completionItem.setRenderSize(RenderSize.inline);			
 			row.setCompletionItem(completionItem);
 		}
 	}

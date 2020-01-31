@@ -23,6 +23,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
 
 /**
  * 
@@ -64,7 +66,15 @@ public class ProgressBarItem extends FormItemImpl {
 	public void setLabelAlignment(LabelAlignment labelAlignment) {
 		component.setLabelAlignment(labelAlignment);
 	}
-	
+
+	public void setRenderStyle(RenderStyle renderStyle) {
+		component.setRenderStyle(renderStyle);
+	}
+
+	public void setRenderSize(RenderSize renderSize) {
+		component.setRenderSize(renderSize);
+	}
+
 	public void setCssClass(String cssClass) {
 		component.setCssClass(cssClass);
 	}

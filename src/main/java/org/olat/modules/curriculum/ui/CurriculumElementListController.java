@@ -55,6 +55,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiC
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -453,6 +455,8 @@ public class CurriculumElementListController extends FormBasicController impleme
 					completion.floatValue(), Float.valueOf(1), null);
 			completionItem.setWidthInPercent(true);
 			completionItem.setLabelAlignment(LabelAlignment.none);
+			completionItem.setRenderStyle(RenderStyle.radial);
+			completionItem.setRenderSize(RenderSize.inline);			
 			row.setCompletionItem(completionItem);
 		}
 	}

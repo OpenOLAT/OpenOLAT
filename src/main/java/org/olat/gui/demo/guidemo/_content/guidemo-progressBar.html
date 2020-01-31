@@ -1,0 +1,76 @@
+<h2>$r.translate("GuiDemoProgressBarController.menu.title.alt")</h2>
+
+<h3>Basic usage</h3>
+<pre><code class="small">ProgressBar progressBar = new ProgressBar("progressBar");
+progressBar.setMax(200);		
+progressBar.setActual(25);
+</code></pre>
+$r.render("base")
+<br />
+
+<pre><code class="small">progressBar.setWidth(300);
+progressBar.setUnitLabel("MB");
+progressBar.setLabelAlignment(LabelAlignment.right);
+progressBar.setMax(125);		
+progressBar.setActual(40);
+</code></pre>
+$r.render("base2")
+<br />
+
+
+
+<h3>Render Styles</h3>
+<div class="row">
+	<div class="col-xs-12 col-md-4 o_block_bottom">
+		<pre><code class="small">progressBar.setRenderStyle(RenderStyle.horizontal); </code></pre>
+		$r.render("hor")
+	</div>
+	<div class="col-xs-12 col-md-4 o_block_bottom">
+		<pre><code class="small">progressBar.setRenderStyle(RenderStyle.radial);</code></pre>
+		$r.render("rad")
+	</div>
+	<div class="col-xs-12 col-md-4 o_block_bottom">
+		<pre><code class="small">progressBar.setRenderStyle(RenderStyle.pie);</code></pre>
+		$r.render("pie")
+	</div>
+</div>
+
+<h3>Render Sizes</h3>
+<pre><code class="small">progressBar.setRenderStyle(RenderSize.large); </code></pre>
+<div class="row">
+	<div class="col-xs-12 col-md-4 o_block_bottom">
+		$r.render("hor-l")
+	</div>
+	<div class="col-xs-12 col-md-4 o_block_bottom">
+		$r.render("rad-l")
+	</div>
+	<div class="col-xs-12 col-md-4 o_block_bottom">
+		$r.render("pie-l")
+	</div>
+</div>
+
+<pre><code class="small">progressBar.setRenderStyle(RenderSize.small); </code></pre>
+<div class="row">
+	<div class="col-xs-12 col-md-4 o_block_bottom">
+		$r.render("hor-s")
+	</div>
+	<div class="col-xs-12 col-md-4 o_block_bottom">
+		$r.render("rad-s")
+	</div>
+	<div class="col-xs-12 col-md-4 o_block_bottom">
+		$r.render("pie-s")
+	</div>
+</div>
+
+<pre><code class="small">progressBar.setRenderStyle(RenderSize.inline); </code></pre>
+<div class="row">
+	<div class="col-xs-12 col-md-4 o_block_bottom">
+		This is within $r.render("hor-i") some text
+	</div>
+	<div class="col-xs-12 col-md-4 o_block_bottom">
+		This is within $r.render("rad-i") some text
+	</div>
+	<div class="col-xs-12 col-md-4 o_block_bottom">
+		This is within $r.render("pie-i") some text
+	</div>
+</div>

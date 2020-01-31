@@ -66,36 +66,37 @@ https://gist.github.com/digitalbreed/84a19db69244b22519e03550ba010a25
 			transition: opacity 0;
 			transition-delay: $o-radial-progress-transition-length;
 		}
+	}
 		
-		.percentage {
-			height: 80%;
-			width: 80%;
-			position: absolute;
-			top: 10%;
-			left: 10%;
-			display: table; /* for vertical alignment */
-			line-height: 1;
-			
-			.centeredWrapper {
-				display: table-cell;
-				vertical-align: middle;
-				text-align: center;
-				.number {
-					font-weight: 800;
-					color: $o-radial-progress-number-color;
+		
+	.percentage {
+		height: 80%;
+		width: 80%;
+		position: absolute;
+		top: 10%;
+		left: 10%;
+		display: table; /* for vertical alignment */
+		line-height: 1;
+		
+		.centeredWrapper {
+			display: table-cell;
+			vertical-align: middle;
+			text-align: center;
+			.number {
+				font-weight: 800;
+				color: $o-radial-progress-number-color;
+			}
+			.addon {
+				color: $o-radial-progress-addon-color;	
+				margin-top: 5px; 
+				div:nth-of-type(1) {
+					font-size: 0.55em; 
+					font-weight: bold;
 				}
-				.addon {
-					color: $o-radial-progress-addon-color;	
-					margin-top: 5px; 
-					div:nth-of-type(1) {
-						font-size: 0.55em; 
-						font-weight: bold;
-					}
-					div:nth-of-type(2) {
-						margin-top: 2px; 
-						font-size:0.45em;
-					}					
-				}
+				div:nth-of-type(2) {
+					margin-top: 2px; 
+					font-size:0.45em;
+				}					
 			}
 		}
 	}
@@ -189,6 +190,45 @@ https://gist.github.com/digitalbreed/84a19db69244b22519e03550ba010a25
 			}
 		}
 	}
+
+	/* xsmall variant */
+	&.radial-progress-inline {
+		/* derived variables */		
+		$o-radial-progress-inset-size-inline				: $o-radial-progress-circle-size-inline * 0.75 !default;
+		$o-radial-progress-percentage-font-size-inline		: $o-radial-progress-circle-size-inline * 0.18 !default;
+		$o-radial-progress-percentage-text-width-inline		: $o-radial-progress-circle-size-inline * 0.48 !default;
+
+		width: $o-radial-progress-circle-size-inline;
+		height: $o-radial-progress-circle-size-inline;
+
+		margin: 0;
+		vertical-align: bottom;
+		display: inline-block;
+		
+		.circle {
+			.mask {
+				clip: rect(0px, $o-radial-progress-circle-size-inline, $o-radial-progress-circle-size-inline, $o-radial-progress-circle-size-inline/2);
+				.fill {
+					clip: rect(0px, $o-radial-progress-circle-size-inline/2, $o-radial-progress-circle-size-inline, 0px);
+				}
+			}
+		}
+		.inset {
+			width: $o-radial-progress-inset-size-inline;
+			height: $o-radial-progress-inset-size-inline;
+			margin-left: ($o-radial-progress-circle-size-inline - $o-radial-progress-inset-size-inline)/2;
+			margin-top: ($o-radial-progress-circle-size-inline - $o-radial-progress-inset-size-inline)/2;
+			font-size: $o-radial-progress-percentage-font-size-inline;
+			.bgIcon {
+				position: absolute;
+				font-size: $o-radial-progress-inset-size-inline - 10px;
+				top: 5px;
+				left: -2px;
+			}
+		}
+	}
+
+
 
 	/* large variant */
 	&.radial-progress-lg {

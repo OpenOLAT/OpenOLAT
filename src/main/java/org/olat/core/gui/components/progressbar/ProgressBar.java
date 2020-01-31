@@ -39,6 +39,8 @@ public class ProgressBar extends AbstractComponent {
 	private static final ComponentRenderer RENDERER = new ProgressBarRenderer();
 	
 	public enum LabelAlignment {none, middle, right};
+	public enum RenderStyle {horizontal, radial, pie};
+	public enum RenderSize {inline, small, medium, large};
 
 	private static final int DEFAULT_WIDTH = 200;
 
@@ -48,6 +50,8 @@ public class ProgressBar extends AbstractComponent {
 	private float max;
 	private boolean isNoMax = false;
 	private LabelAlignment labelAlignment = LabelAlignment.middle;
+	private RenderStyle renderStyle = RenderStyle.horizontal;
+	private RenderSize renderSize = RenderSize.medium;
 	private String unitLabel;
 	private boolean percentagesEnabled = true; // default
 	private String info;
@@ -55,6 +59,7 @@ public class ProgressBar extends AbstractComponent {
 	
 	public ProgressBar(String name) {
 		super(name);
+		setDomReplacementWrapperRequired(false);
 	}
 
 	public ProgressBar(String name, int width, float actual, float max, String unitLabel) {
@@ -63,6 +68,7 @@ public class ProgressBar extends AbstractComponent {
 		this.actual = actual > max ? max : actual;
 		this.max = max;
 		this.unitLabel = unitLabel == null ? "" : unitLabel;
+		setDomReplacementWrapperRequired(false);
 	}
 
 	@Override
@@ -127,12 +133,42 @@ public class ProgressBar extends AbstractComponent {
 	 * Defines where the label is rendered (but the percent still within if
 	 * configured).
 	 * 
+	 * @param renderStyle
+	 */
+	public void setRenderStyle(RenderStyle renderStyle) {
+		this.renderStyle = renderStyle;
+	}
+
+	
+	public RenderStyle getRenderStyle() {
+		return renderStyle;
+	}
+	
+	/**
+	 * Defines the size of the progress bar. small, medium and large. Inline size
+	 * will render as an inline element that fits into a standard line height.
+	 * 
+	 * @param renderSize
+	 */
+	public void setRenderSize(RenderSize renderSize) {
+		this.renderSize = renderSize;
+	}
+
+	
+	public RenderSize getRenderSize() {
+		return renderSize;
+	}
+
+
+	/**
+	 * Defines how the progress bar rendered: horizontal or radial
+	 * 
 	 * @param labelAlignment
 	 */
 	public void setLabelAlignment(LabelAlignment labelAlignment) {
 		this.labelAlignment = labelAlignment;
 	}
-
+		
 	public float getActual() {
 		return actual;
 	}

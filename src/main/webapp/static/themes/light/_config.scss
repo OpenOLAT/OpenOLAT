@@ -810,6 +810,7 @@ $o-radial-progress-shadow				: 6px 6px 10px rgba(0,0,0,0.1) !default;
 $o-radial-progress-circle-size			: 120px !default;
 $o-radial-progress-circle-size-sm		: 80px !default;
 $o-radial-progress-circle-size-lg		: 180px !default;
+$o-radial-progress-circle-size-inline	: $line-height-computed !default;
 $o-radial-progress-circle-bg			: #eee !default;
 $o-radial-progress-circle-color			: $progress-bar-bg !default;
 $o-radial-progress-inset-color			: #fff !default;

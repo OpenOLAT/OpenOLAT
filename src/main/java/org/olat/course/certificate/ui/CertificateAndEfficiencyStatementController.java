@@ -40,6 +40,8 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.progressbar.ProgressBar;
 import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
 import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
 import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
@@ -296,6 +298,8 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 						Float.valueOf(1), null);
 				completionItem.setWidthInPercent(true);
 				completionItem.setLabelAlignment(LabelAlignment.none);
+				completionItem.setRenderStyle(RenderStyle.radial);
+				completionItem.setRenderSize(RenderSize.inline);			
 				mainVC.put("completion", completionItem);
 			}
 		}
