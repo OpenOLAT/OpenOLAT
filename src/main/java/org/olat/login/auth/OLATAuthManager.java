@@ -144,7 +144,7 @@ public class OLATAuthManager implements AuthenticationSPI {
 		}
 
 		if (authentication == null) {
-			log.info(Tracing.M_AUDIT, "Cannot authenticate user " + login + " via provider OLAT");
+			log.info(Tracing.M_AUDIT, "Cannot authenticate user {} via provider OLAT", login);
 			return null;
 		}
 		
@@ -156,12 +156,15 @@ public class OLATAuthManager implements AuthenticationSPI {
 				authentication = securityManager.updateCredentials(authentication, password, defAlgorithm);
 			}
 			Identity identity = authentication.getIdentity();
+			if(!securityManager.isIdentityVisible(identity)) {
+				return null;
+			}
 			if(identity != null && webDAVAuthManager != null) {
 				webDAVAuthManager.upgradePassword(identity, login, password);
 			}
 			return identity;
 		}
-		log.info(Tracing.M_AUDIT, "Cannot authenticate user " + login + " via provider OLAT");
+		log.info(Tracing.M_AUDIT, "Cannot authenticate user {} via provider OLAT", login);
 		return null;
 	}
 	
