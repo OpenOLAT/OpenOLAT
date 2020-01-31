@@ -51,7 +51,9 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.IndentedNodeRenderer;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.editor.EditorMainController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.SelectEvent;
@@ -90,6 +92,8 @@ public class OverviewListController extends FormBasicController implements Flexi
 	
 	@Autowired
 	private LearningPathService learningPathService;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 
 	public OverviewListController(UserRequest ureq, WindowControl wControl, ICourse course) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
@@ -150,6 +154,33 @@ public class OverviewListController extends FormBasicController implements Flexi
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.trigger));
 		}
 		
+		// Assessment configuration
+		DefaultFlexiColumnModel scoreModel = new DefaultFlexiColumnModel(OverviewCols.score);
+		scoreModel.setCellRenderer(new OnOffCellRenderer(getTranslator()));
+		scoreModel.setDefaultVisible(false);
+		columnsModel.addFlexiColumnModel(scoreModel);
+		DefaultFlexiColumnModel scoreMinModel = new DefaultFlexiColumnModel(OverviewCols.scoreMin);
+		scoreMinModel.setDefaultVisible(false);
+		columnsModel.addFlexiColumnModel(scoreMinModel);
+		DefaultFlexiColumnModel scoreMaxModel = new DefaultFlexiColumnModel(OverviewCols.scoreMax);
+		scoreMaxModel.setDefaultVisible(false);
+		columnsModel.addFlexiColumnModel(scoreMaxModel);
+		DefaultFlexiColumnModel passedModel = new DefaultFlexiColumnModel(OverviewCols.passed);
+		passedModel.setCellRenderer(new OnOffCellRenderer(getTranslator()));
+		passedModel.setDefaultVisible(false);
+		columnsModel.addFlexiColumnModel(passedModel);
+		DefaultFlexiColumnModel passedCutModel = new DefaultFlexiColumnModel(OverviewCols.passesCut);
+		passedCutModel.setDefaultVisible(false);
+		columnsModel.addFlexiColumnModel(passedCutModel);
+		DefaultFlexiColumnModel commentModel = new DefaultFlexiColumnModel(OverviewCols.comment);
+		commentModel.setCellRenderer(new OnOffCellRenderer(getTranslator()));
+		commentModel.setDefaultVisible(false);
+		columnsModel.addFlexiColumnModel(commentModel);
+		DefaultFlexiColumnModel individualDocumentsModel = new DefaultFlexiColumnModel(OverviewCols.individualAsssessmentDocuments);
+		individualDocumentsModel.setCellRenderer(new OnOffCellRenderer(getTranslator()));
+		individualDocumentsModel.setDefaultVisible(false);
+		columnsModel.addFlexiColumnModel(individualDocumentsModel);
+		
 		dataModel = new OverviewDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 250, false, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_course_edit_overview_table o_course_editor_legend");
@@ -198,6 +229,8 @@ public class OverviewListController extends FormBasicController implements Flexi
 			row.setEnd(learningPathConfigs.getEndDate());
 			row.setTranslatedTrigger(getTranslatedTrigger(courseNode, learningPathConfigs));
 		}
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		row.setAssessmentConfig(assessmentConfig);
 		return row;
 	}
 

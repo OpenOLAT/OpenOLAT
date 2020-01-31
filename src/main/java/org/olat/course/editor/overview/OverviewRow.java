@@ -23,6 +23,7 @@ import java.util.Date;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.course.assessment.IndentedNodeRenderer.IndentedCourseNode;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.tree.CourseEditorTreeNode;
 
@@ -36,14 +37,15 @@ public class OverviewRow implements FlexiTreeTableNode, IndentedCourseNode {
 	
 	private final CourseEditorTreeNode editorNode;
 	private final int recursionLevel;
+	private OverviewRow parent;
+	private boolean hasChildren;
 	private String translatedDisplayOption;
 	private Integer duration;
 	private String translatedObligation;
 	private Date start;
 	private Date end;
 	private String translatedTrigger;
-	private OverviewRow parent;
-	private boolean hasChildren;
+	private AssessmentConfig assessmentConfig;
 	
 	public OverviewRow(CourseEditorTreeNode editorNode, int recursionLevel) {
 		this.editorNode = editorNode;
@@ -68,6 +70,27 @@ public class OverviewRow implements FlexiTreeTableNode, IndentedCourseNode {
 	@Override
 	public String getLongTitle() {
 		return getCourseNode().getLongTitle();
+	}
+
+	@Override
+	public String getCrump() {
+		return null;
+	}
+
+	public void setParent(OverviewRow parent) {
+		this.parent = parent;
+		if (parent != null) {
+			parent.hasChildren = true;
+		}
+	}
+
+	@Override
+	public FlexiTreeTableNode getParent() {
+		return parent;
+	}
+
+	public boolean hasChildren() {
+		return hasChildren;
 	}
 
 	public CourseEditorTreeNode getEditorNode() {
@@ -126,25 +149,12 @@ public class OverviewRow implements FlexiTreeTableNode, IndentedCourseNode {
 		this.translatedTrigger = translatedTrigger;
 	}
 
-	@Override
-	public String getCrump() {
-		return null;
+	public AssessmentConfig getAssessmentConfig() {
+		return assessmentConfig;
 	}
 
-	public void setParent(OverviewRow parent) {
-		this.parent = parent;
-		if (parent != null) {
-			parent.hasChildren = true;
-		}
-	}
-
-	@Override
-	public FlexiTreeTableNode getParent() {
-		return parent;
-	}
-
-	public boolean hasChildren() {
-		return hasChildren;
+	public void setAssessmentConfig(AssessmentConfig assessmentConfig) {
+		this.assessmentConfig = assessmentConfig;
 	}
 
 }

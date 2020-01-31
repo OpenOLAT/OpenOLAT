@@ -72,6 +72,27 @@ public class OverviewDataModel extends DefaultFlexiTreeTableDataModel<OverviewRo
 			case start: return row.getStart();
 			case end: return row.getEnd();
 			case trigger: return row.getTranslatedTrigger();
+			case score: return row.getAssessmentConfig().isAssessable()
+					? Boolean.valueOf(row.getAssessmentConfig().hasScore())
+					: null;
+			case scoreMin: return row.getAssessmentConfig().isAssessable() && row.getAssessmentConfig().hasScore()
+					? row.getAssessmentConfig().getMinScore()
+					: null;
+			case scoreMax: return row.getAssessmentConfig().isAssessable() && row.getAssessmentConfig().hasScore()
+					? row.getAssessmentConfig().getMaxScore()
+					: null;
+			case passed: return row.getAssessmentConfig().isAssessable()
+					? Boolean.valueOf(row.getAssessmentConfig().hasPassed())
+					: null;
+			case passesCut: return row.getAssessmentConfig().isAssessable() && row.getAssessmentConfig().hasPassed()
+					? row.getAssessmentConfig().getCutValue()
+					: null;
+			case comment: return row.getAssessmentConfig().isAssessable()
+					? Boolean.valueOf(row.getAssessmentConfig().hasComment())
+					: null;
+			case individualAsssessmentDocuments: return row.getAssessmentConfig().isAssessable()
+					? Boolean.valueOf(row.getAssessmentConfig().hasIndividualAsssessmentDocuments())
+					: null;
 			default: return null;
 		}
 	}
@@ -95,7 +116,14 @@ public class OverviewDataModel extends DefaultFlexiTreeTableDataModel<OverviewRo
 		obligation("table.header.obligation"),
 		start("table.header.start"),
 		end("table.header.end"),
-		trigger("table.header.trigger");
+		trigger("table.header.trigger"),
+		score("table.header.score"),
+		scoreMin("table.header.score.min"),
+		scoreMax("table.header.score.max"),
+		passed("table.header.passed"),
+		passesCut("table.header.passed.cut"),
+		comment("table.header.comment"),
+		individualAsssessmentDocuments("table.header.individual.documents");
 		
 		private final String i18nKey;
 		

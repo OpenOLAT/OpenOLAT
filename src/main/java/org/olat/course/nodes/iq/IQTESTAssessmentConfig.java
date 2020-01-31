@@ -72,16 +72,18 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 			maxScore = (Float) config.get(IQEditController.CONFIG_KEY_MAXSCORE);
 		} else {
 			RepositoryEntry testEntry = courseNode.getReferencedRepositoryEntry();
-			if(QTIResourceTypeModule.isQtiWorks(testEntry.getOlatResource())) {
-				AssessmentTest assessmentTest = courseNode.loadAssessmentTest(testEntry);
-				if(assessmentTest != null) {
-					Double max = QtiNodesExtractor.extractMaxScore(assessmentTest);
-					if(max != null) {
-						maxScore = Float.valueOf(max.floatValue());
+			if (testEntry != null) {
+				if(QTIResourceTypeModule.isQtiWorks(testEntry.getOlatResource())) {
+					AssessmentTest assessmentTest = courseNode.loadAssessmentTest(testEntry);
+					if(assessmentTest != null) {
+						Double max = QtiNodesExtractor.extractMaxScore(assessmentTest);
+						if(max != null) {
+							maxScore = Float.valueOf(max.floatValue());
+						}
 					}
+				} else {
+					maxScore = (Float) config.get(IQEditController.CONFIG_KEY_MAXSCORE);
 				}
-			} else {
-				maxScore = (Float) config.get(IQEditController.CONFIG_KEY_MAXSCORE);
 			}
 		}
 		
@@ -99,16 +101,18 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 			minScore = (Float) config.get(IQEditController.CONFIG_KEY_MINSCORE);
 		} else {
 			RepositoryEntry testEntry = courseNode.getReferencedRepositoryEntry();
-			if(QTIResourceTypeModule.isQtiWorks(testEntry.getOlatResource())) {
-				AssessmentTest assessmentTest = courseNode.loadAssessmentTest(testEntry);
-				if(assessmentTest != null) {
-					Double min = QtiNodesExtractor.extractMinScore(assessmentTest);
-					if(min != null) {
-						minScore = Float.valueOf(min.floatValue());
+			if (testEntry != null) {
+				if(QTIResourceTypeModule.isQtiWorks(testEntry.getOlatResource())) {
+					AssessmentTest assessmentTest = courseNode.loadAssessmentTest(testEntry);
+					if(assessmentTest != null) {
+						Double min = QtiNodesExtractor.extractMinScore(assessmentTest);
+						if(min != null) {
+							minScore = Float.valueOf(min.floatValue());
+						}
 					}
+				} else {
+					minScore = (Float) config.get(IQEditController.CONFIG_KEY_MINSCORE);
 				}
-			} else {
-				minScore = (Float) config.get(IQEditController.CONFIG_KEY_MINSCORE);
 			}
 		}
 		return minScore;
@@ -130,16 +134,18 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 			cutValue = (Float) config.get(IQEditController.CONFIG_KEY_CUTVALUE);
 		} else {
 			RepositoryEntry testEntry = courseNode.getReferencedRepositoryEntry();
-			if(QTIResourceTypeModule.isQtiWorks(testEntry.getOlatResource())) {
-				AssessmentTest assessmentTest = courseNode.loadAssessmentTest(testEntry);
-				if(assessmentTest != null) {
-					Double cut = QtiNodesExtractor.extractCutValue(assessmentTest);
-					if(cut != null) {
-						cutValue = Float.valueOf(cut.floatValue());
+			if (testEntry != null) {
+				if(QTIResourceTypeModule.isQtiWorks(testEntry.getOlatResource())) {
+					AssessmentTest assessmentTest = courseNode.loadAssessmentTest(testEntry);
+					if(assessmentTest != null) {
+						Double cut = QtiNodesExtractor.extractCutValue(assessmentTest);
+						if(cut != null) {
+							cutValue = Float.valueOf(cut.floatValue());
+						}
 					}
+				} else {
+					cutValue = (Float) config.get(IQEditController.CONFIG_KEY_CUTVALUE);
 				}
-			} else {
-				cutValue = (Float) config.get(IQEditController.CONFIG_KEY_CUTVALUE);
 			}
 		}
 		return cutValue;

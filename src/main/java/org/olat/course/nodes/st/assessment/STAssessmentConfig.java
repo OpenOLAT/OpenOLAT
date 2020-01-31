@@ -19,7 +19,6 @@
  */
 package org.olat.course.nodes.st.assessment;
 
-import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.run.scoring.ScoreCalculator;
@@ -63,12 +62,12 @@ public class STAssessmentConfig implements AssessmentConfig {
 
 	@Override
 	public Float getMaxScore() {
-		throw new OLATRuntimeException(STAssessmentConfig.class, "Max score never defined for ST nodes", null);
+		return null;
 	}
 
 	@Override
 	public Float getMinScore() {
-		throw new OLATRuntimeException(STAssessmentConfig.class, "Min score never defined for ST nodes", null);
+		return null;
 	}
 
 	@Override
@@ -81,7 +80,10 @@ public class STAssessmentConfig implements AssessmentConfig {
 	
 	@Override
 	public Float getCutValue() {
-		throw new OLATRuntimeException(STAssessmentConfig.class, "Cut value never defined for ST nodes", null);
+		if (scoreCalculator != null && ScoreCalculator.PASSED_TYPE_CUTVALUE.equals(scoreCalculator.getPassedType())) {
+			return Float.valueOf(scoreCalculator.getPassedCutValue());
+		}
+		return null;
 	}
 
 	@Override
