@@ -49,10 +49,15 @@ import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.restapi.security.RestSecurityHelper;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatRestTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -66,6 +71,11 @@ import org.olat.test.OlatRestTestCase;
 public class AuthenticationTest extends OlatRestTestCase {
 	
 	private static final Logger log = Tracing.createLoggerFor(AuthenticationTest.class);
+	
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private BaseSecurity securityManager;
 
 	@Test
 	public void testSessionCookieLogin() throws IOException, URISyntaxException {
@@ -158,6 +168,23 @@ public class AuthenticationTest extends OlatRestTestCase {
 		assertTrue(StringHelper.containsNonWhitespace(securityToken));
 		
 		conn.shutdown();
+	}
+	
+	@Test
+	public void testAuthenticationDenied() throws IOException, URISyntaxException {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-denied");
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(id.getName(), JunitTestHelper.PWD));
+		conn.shutdown();
+		
+		id = securityManager.saveIdentityStatus(id, Identity.STATUS_LOGIN_DENIED, id);
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn2 = new RestConnection();
+		Assert.assertFalse(conn2.login(id.getName(), JunitTestHelper.PWD));
+		conn2.shutdown();
 	}
 	
 	@Test

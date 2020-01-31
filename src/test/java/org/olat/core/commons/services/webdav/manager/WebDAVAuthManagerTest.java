@@ -50,6 +50,8 @@ public class WebDAVAuthManagerTest extends OlatTestCase {
 	@Autowired
 	private UserManager userManager;
 	@Autowired
+	private OLATAuthManager authManager;
+	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
 	private WebDAVAuthManager webdavAuthManager;
@@ -153,5 +155,50 @@ public class WebDAVAuthManagerTest extends OlatTestCase {
 		id2 = userDeletionManager.setIdentityAsActiv(id2);
 		Assert.assertNotNull(id2);
 		dbInstance.commit();
+	}
+	
+	@Test
+	public void authenticationByName() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("webdav-user-1");
+		Identity reloadedUser = authManager.authenticate(id, id.getName(), JunitTestHelper.PWD);
+		Assert.assertNotNull(reloadedUser);
+		dbInstance.commitAndCloseSession();
+
+		// login successful
+		Identity authenticatedByLogin = webdavAuthManager.authenticate(null, id.getName(), JunitTestHelper.PWD);
+		Assert.assertNotNull(authenticatedByLogin);
+		Assert.assertEquals(id, authenticatedByLogin);
+	}
+	
+	@Test
+	public void authenticationByName_failed() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("webdav-usser-2");
+		Identity reloadedUser = authManager.authenticate(id, id.getName(), JunitTestHelper.PWD);
+		Assert.assertNotNull(reloadedUser);
+		dbInstance.commitAndCloseSession();
+		
+		// login successful
+		Identity authenticatedId = webdavAuthManager.authenticate(null, id.getName(), "ooops");
+		Assert.assertNull(authenticatedId);
+	}
+	
+	@Test
+	public void authenticationByName_denied() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("webdav-usser-2");
+		Identity reloadedUser = authManager.authenticate(id, id.getName(), JunitTestHelper.PWD);
+		Assert.assertNotNull(reloadedUser);
+		dbInstance.commitAndCloseSession();
+		
+		// login successful
+		Identity authenticatedId = webdavAuthManager.authenticate(null, id.getName(), JunitTestHelper.PWD);
+		Assert.assertNotNull(authenticatedId);
+		
+		// denied login
+		securityManager.saveIdentityStatus(authenticatedId, Identity.STATUS_LOGIN_DENIED, id);
+		dbInstance.commitAndCloseSession();
+		
+		// login failed
+		Identity deniedId = webdavAuthManager.authenticate(null, id.getName(), JunitTestHelper.PWD);
+		Assert.assertNull(deniedId);
 	}
 }
