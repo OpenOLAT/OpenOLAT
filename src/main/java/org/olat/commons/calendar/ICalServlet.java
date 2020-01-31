@@ -343,7 +343,7 @@ public class ICalServlet extends HttpServlet {
 		String userAgent = request.getHeader("User-Agent");
 		if(userAgent == null) {
 			return Agent.unkown;
-		} else if(userAgent.indexOf("Microsoft Outlook") >= 0 || userAgent.indexOf("Microsoft Office") >= 0
+		} else if(userAgent.indexOf("Microsoft ") >= 0 // to catch "Microsoft Outlook", "Microsoft Office", "Microsoft Exchange" which are all user agents used by outlook.com
 				|| userAgent.equals("Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0)")) {// <- this is the user agent of Outlook live
 			return Agent.outlook;
 		} else if(userAgent.indexOf("Google") >= 0 && userAgent.indexOf("Calendar") >= 0) {
