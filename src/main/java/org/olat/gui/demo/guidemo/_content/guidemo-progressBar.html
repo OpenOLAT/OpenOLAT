@@ -8,15 +8,40 @@ progressBar.setActual(25);
 $r.render("base")
 <br />
 
-<pre><code class="small">progressBar.setWidth(300);
+<h4>Labeling options</h4>
+<pre><code class="small">progressBar.setInfo("Disk usage");
 progressBar.setUnitLabel("MB");
 progressBar.setLabelAlignment(LabelAlignment.right);
+progressBar.setPercentagesEnabled(true);
 progressBar.setMax(125);		
 progressBar.setActual(40);
 </code></pre>
 $r.render("base2")
 <br />
 
+<pre><code class="small">progressBar.setLabelAlignment(LabelAlignment.left);
+</code></pre>
+$r.render("base3")
+<br />
+
+<pre><code class="small">progressBar.setLabelAlignment(LabelAlignment.none);
+</code></pre>
+$r.render("base4")
+<br />
+
+<pre><code class="small">progressBar.setPercentagesEnabled(false);
+</code></pre>
+$r.render("base5")
+<br />
+
+<h4>Special length options for horizontal progress bars</h4>
+<pre><code class="small">progressBar.setWidth(300);</code></pre>
+$r.render("base-long")
+<br />
+<pre><code class="small">progressBar.setWidth(50);
+progressBar.setWidthInPercent(true);</code></pre>
+$r.render("base-percent")
+<br />
 
 
 <h3>Render Styles</h3>
@@ -62,7 +87,9 @@ $r.render("base2")
 	</div>
 </div>
 
-<pre><code class="small">progressBar.setRenderStyle(RenderSize.inline); </code></pre>
+<pre><code class="small">progressBar.setRenderStyle(RenderSize.inline); 
+progressBar.setLabelAlignment(LabelAlignment.none);
+progressBar.setPercentagesEnabled(false);</code></pre>
 <div class="row">
 	<div class="col-xs-12 col-md-4 o_block_bottom">
 		This is within $r.render("hor-i") some text
@@ -72,5 +99,74 @@ $r.render("base2")
 	</div>
 	<div class="col-xs-12 col-md-4 o_block_bottom">
 		This is within $r.render("pie-i") some text
+	</div>
+</div>
+
+<pre><code class="small">progressBar.setInfo("Disk usage");
+progressBar.setUnitLabel("MB");
+progressBar.setLabelAlignment(LabelAlignment.right);</code></pre>
+<div class="row">
+	<div class="col-xs-12 col-md-4 o_block_bottom">
+		$r.render("hor-i2")
+	</div>
+	<div class="col-xs-12 col-md-4 o_block_bottom">
+		$r.render("rad-i2")
+	</div>
+	<div class="col-xs-12 col-md-4 o_block_bottom">
+		$r.render("pie-i2")
+	</div>
+</div>
+
+
+
+
+<h3>Colors</h3>
+<div class="row">
+	<div class="col-xs-12 col-md-4 o_block_bottom">
+		<pre><code class="small">progressBar.setRenderStyle(arColor.info); 
+progressBar.setRenderStyle(arColor.success);
+progressBar.setRenderStyle(arColor.warning);
+progressBar.setRenderStyle(arColor.danger);
+		</code></pre>
+		$r.render("hor-ci")
+		$r.render("hor-cs")
+		$r.render("hor-cw")
+		$r.render("hor-cd")
+	</div>
+	<div class="col-xs-12 col-md-4 o_block_bottom">
+		<pre><code class="small">progressBar.setRenderStyle(arColor.info); 
+progressBar.setRenderStyle(arColor.success);
+progressBar.setRenderStyle(arColor.warning);
+progressBar.setRenderStyle(arColor.danger);
+		</code></pre>
+		<div style="display: inline-block">$r.render("rad-ci")</div>
+		<div style="display: inline-block">$r.render("rad-cs")</div>
+		<div style="display: inline-block">$r.render("rad-cw")</div>
+		<div style="display: inline-block">$r.render("rad-cd")</div>
+	</div>
+	<div class="col-xs-12 col-md-4 o_block_bottom">
+		<pre><code class="small">progressBar.setRenderStyle(arColor.info); 
+progressBar.setRenderStyle(arColor.success);
+progressBar.setRenderStyle(arColor.warning);
+progressBar.setRenderStyle(arColor.danger);
+		</code></pre>
+		<div style="display: inline-block">$r.render("pie-ci")</div>
+		<div style="display: inline-block">$r.render("pie-cs")</div>
+		<div style="display: inline-block">$r.render("pie-cw")</div>
+		<div style="display: inline-block">$r.render("pie-cd")</div>
+	</div>
+</div>
+
+<h3>Animated</h3>
+<pre><code class="small">progressBar.setProgressAnimationEnabled(true); </code></pre>
+<div class="row">
+	<div class="col-xs-12 col-md-4 o_block_bottom">
+		$r.render("hor-anim")
+	</div>
+	<div class="col-xs-12 col-md-4 o_block_bottom">
+		$r.render("rad-anim")
+	</div>
+	<div class="col-xs-12 col-md-4 o_block_bottom">
+		$r.render("pie-anim")
 	</div>
 </div>

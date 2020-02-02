@@ -727,6 +727,7 @@ ul.o_assessment_docs>li:last-child {
 }	
 
 /* indicator on progress bar */
+// FIXME FG: check if still used? no references found to o_progress_marker
 .progress .o_progress_marker {
 	position: absolute; 
 	height: 100%;
@@ -735,13 +736,62 @@ ul.o_assessment_docs>li:last-child {
 	background: $o-progress-marker-color;
 }
 
-.progress .progress-bar {
-	text-shadow: 1px 1px 2px #000000;
-}
+.o_progress {
+	&.o_progress_inline {
+		display: inline-block;
+		white-space: nowrap;
+		.progress {
+			vertical-align: bottom;		
+		}
+	}
+	.o_progress_label, 
+	.o_progress_info {
+		display: inline-block;
+		vertical-align: top;
+	}
+	.o_progress_info {
+		margin-left: 0.5em;
+	}
+	.progress {
+		position: relative;
+		display: inline-block;
+		text-shadow: 1px 1px 2px #000000;
+		
+		span {
+			position: absolute;
+			top: 0;
+			left: 0;
+			padding-left: 0.4em;
+			text-overflow: ellipsis;
+			overflow: hidden;
+			white-space: nowrap; 
+		}
+		
+		&+.o_progress_label {
+			margin-left: 0.5em;
+		}		
+	}
 
-.o_progress_label_right {
-	float:left;
-	margin-right: 10px;
+	.o_progress-lg {
+		height: 40px;
+		span {
+			padding-left: 1em;
+		}
+		.progress-bar {
+			line-height: 40px;
+		}			
+	}
+	.o_progress-sm {
+		vertical-align: bottom;
+		height: 5px;
+		&+span {
+			position: absolute;
+			top: 0;
+			left: 15px;
+			font-size: 80%;
+		}
+	}
+	
 }
 
 

@@ -38,9 +38,10 @@ import org.olat.core.gui.components.ComponentRenderer;
 public class ProgressBar extends AbstractComponent {
 	private static final ComponentRenderer RENDERER = new ProgressBarRenderer();
 	
-	public enum LabelAlignment {none, middle, right};
+	public enum LabelAlignment {none, left, right};
 	public enum RenderStyle {horizontal, radial, pie};
 	public enum RenderSize {inline, small, medium, large};
+	public enum BarColor {primary, success, info, warning, danger};
 
 	private static final int DEFAULT_WIDTH = 200;
 
@@ -49,9 +50,12 @@ public class ProgressBar extends AbstractComponent {
 	private float actual;
 	private float max;
 	private boolean isNoMax = false;
-	private LabelAlignment labelAlignment = LabelAlignment.middle;
+	private LabelAlignment labelAlignment = LabelAlignment.left;
 	private RenderStyle renderStyle = RenderStyle.horizontal;
 	private RenderSize renderSize = RenderSize.medium;
+	private BarColor barColor = BarColor.primary;
+
+	private boolean progressAnimationEnabled = false;
 	private String unitLabel;
 	private boolean percentagesEnabled = true; // default
 	private String info;
@@ -119,7 +123,7 @@ public class ProgressBar extends AbstractComponent {
 	}
 
 	public void setWidthInPercent(boolean widthInPercent) {
-		if(widthInPercent) {
+		if(widthInPercent && width > 100) {
 			width = 100;
 		}
 		this.widthInPercent = widthInPercent;
@@ -159,6 +163,34 @@ public class ProgressBar extends AbstractComponent {
 		return renderSize;
 	}
 
+	/**
+	 * Defines the color of the bar. By default the primary color is used. For other
+	 * colors use the custom CSS setter ot override the bar color.
+	 * 
+	 * @param barColor
+	 */
+	public void setBarColor(BarColor barColor) {
+		this.barColor = barColor;
+	}
+
+	public BarColor getBarColor() {
+		return barColor;
+	}
+	
+	/**
+	 * If set to true, the bar will display animated stripes.
+	 * 
+	 * @param progressAnimationEnabled
+	 */
+	public void setProgressAnimationEnabled(boolean progressAnimationEnabled) {
+		this.progressAnimationEnabled = progressAnimationEnabled;
+	}
+
+	public boolean isProgressAnimationEnabled() {
+		return progressAnimationEnabled;
+	}
+	
+	
 
 	/**
 	 * Defines how the progress bar rendered: horizontal or radial

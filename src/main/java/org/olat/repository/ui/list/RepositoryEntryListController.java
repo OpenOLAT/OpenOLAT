@@ -54,6 +54,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
 import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
@@ -619,7 +620,8 @@ public class RepositoryEntryListController extends FormBasicController
 			completionItem.setWidthInPercent(true);
 			completionItem.setLabelAlignment(LabelAlignment.none);
 			completionItem.setRenderStyle(RenderStyle.radial);
-			completionItem.setRenderSize(RenderSize.inline);			
+			completionItem.setRenderSize(RenderSize.inline);		
+			completionItem.setBarColor(BarColor.success);	
 			row.setCompletionItem(completionItem);
 		}
 	}

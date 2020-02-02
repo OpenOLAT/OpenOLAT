@@ -22,6 +22,7 @@ package org.olat.modules.assessment.ui.component;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.progressbar.ProgressBar;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
 import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
@@ -64,7 +65,8 @@ public class LearningProgressRenderer extends DefaultComponentRenderer {
 		progressBar.setPercentagesEnabled(true);
 		progressBar.setLabelAlignment(LabelAlignment.none);
 		progressBar.setRenderStyle(RenderStyle.radial);
-		progressBar.setRenderSize(RenderSize.inline);			
+		progressBar.setRenderSize(RenderSize.inline);	
+		progressBar.setBarColor(BarColor.success);	
 		progressBar.setActual(actual);
 		progressBar.getHTMLRendererSingleton().render(renderer, sb, progressBar, ubu, translator, null, null);
 	}

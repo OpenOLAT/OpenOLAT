@@ -22,6 +22,7 @@ package org.olat.modules.assessment.ui.component;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.progressbar.ProgressBar;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
 import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
@@ -49,7 +50,8 @@ public class LearningProgressCompletionCellRenderer implements FlexiCellRenderer
 			progressBar.setWidthInPercent(true);
 			progressBar.setLabelAlignment(LabelAlignment.none);
 			progressBar.setRenderStyle(RenderStyle.radial);
-			progressBar.setRenderSize(RenderSize.inline);			
+			progressBar.setRenderSize(RenderSize.inline);	
+			progressBar.setBarColor(BarColor.success);	
 			progressBar.getHTMLRendererSingleton().render(renderer, target, progressBar, ubu, translator, null, null);
 		}
 	}
