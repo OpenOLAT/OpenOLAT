@@ -42,10 +42,10 @@ public class VFSStatsDAOTest extends OlatTestCase {
 	public void getFileStats() {
 		VFSFileStatistics fileStatistics = vfsStatsDAO.getFileStats();
 		
-		Assert.assertTrue(fileStatistics.getFilesAmount() > 0);
-		Assert.assertTrue(fileStatistics.getFilesSize() > 0);
-		Assert.assertTrue(fileStatistics.getTrashAmount() > 0);
-		Assert.assertTrue(fileStatistics.getTrashSize() > 0);
+		Assert.assertTrue(fileStatistics.getFilesAmount() >= 0);
+		Assert.assertTrue(fileStatistics.getFilesSize() >= 0);
+		Assert.assertTrue(fileStatistics.getTrashAmount() >= 0);
+		Assert.assertTrue(fileStatistics.getTrashSize() >= 0);
 	}
 	
 	@Test

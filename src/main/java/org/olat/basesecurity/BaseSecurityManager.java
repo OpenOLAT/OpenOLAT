@@ -1051,6 +1051,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
 		  .append(" inner join fetch auth.identity ident")
+		  .append(" inner join fetch ident.user identUser")
 		  .append(" where auth.provider=:provider and auth.authusername=:authusername");
 
 		List<Authentication> results = dbInstance.getCurrentEntityManager()
@@ -1070,6 +1071,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
 		  .append(" inner join fetch auth.identity ident")
+		  .append(" inner join fetch ident.user identUser")
 		  .append(" where auth.provider in (:providers) and auth.authusername=:authusername");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Authentication.class)

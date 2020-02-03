@@ -19,16 +19,20 @@
  */
 package org.olat.core.commons.services.webdav.ui;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.webdav.WebDAVModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -39,6 +43,8 @@ public class WebDAVAdminController extends FormBasicController {
 	
 	private static final String[] onKeys = new String[]{"xx"};
 	
+	private TextElement excludeUserAgentsClientsEl;
+	private MultipleSelectionElement excludeClientsEl;
 	private MultipleSelectionElement enableModuleEl;
 	private MultipleSelectionElement enableLinkEl;
 	private MultipleSelectionElement enableDigestEl;
@@ -48,13 +54,17 @@ public class WebDAVAdminController extends FormBasicController {
 	private MultipleSelectionElement learnersAsParticipantEl;
 	private MultipleSelectionElement learnersBookmarkEl;
 	private MultipleSelectionElement prependReferenceEl;
+	private SpacerElement spacer1;
+	private SpacerElement spacer2;
 	
-	private final WebDAVModule webDAVModule;
+
+	@Autowired
+	private WebDAVModule webDAVModule;
 	
 	public WebDAVAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		webDAVModule = CoreSpringFactory.getImpl(WebDAVModule.class);
 		initForm(ureq);
+		updateEnabledDisabled();
 	}
 
 	@Override
@@ -64,56 +74,51 @@ public class WebDAVAdminController extends FormBasicController {
 		setFormDescription("admin.webdav.description");
 		setFormContextHelp("WebDAV");
 
-
 		boolean enabled = webDAVModule.isEnabled();
 		String[] values = new String[] { getTranslator().translate("webdav.on") };
 		enableModuleEl = uifactory.addCheckboxesHorizontal("webdavModule", "webdav.module", formLayout, onKeys, values);
-		enableModuleEl.select("xx", enabled);
 		enableModuleEl.addActionListener(FormEvent.ONCHANGE);
+		enableModuleEl.select("xx", enabled);
 		
 		enableLinkEl = uifactory.addCheckboxesHorizontal("webdavLink", "webdav.link", formLayout, onKeys, values);
 		enableLinkEl.select("xx", webDAVModule.isLinkEnabled());
-		enableLinkEl.addActionListener(FormEvent.ONCHANGE);
-		enableLinkEl.setEnabled(enabled);
 		
 		enableDigestEl = uifactory.addCheckboxesHorizontal("webdavDigest", "webdav.digest", formLayout, onKeys, values);
 		enableDigestEl.select("xx", webDAVModule.isDigestAuthenticationEnabled());
-		enableDigestEl.addActionListener(FormEvent.ONCHANGE);
-		enableDigestEl.setEnabled(enabled);
+
+		String excludedUserAgents = webDAVModule.getUserAgentBlackList();
+		excludeClientsEl = uifactory.addCheckboxesHorizontal("webdavExclusion", "webdav.client.exclusion", formLayout, onKeys, values);
+		excludeClientsEl.select("xx", StringHelper.containsNonWhitespace(excludedUserAgents));
+		excludeClientsEl.addActionListener(FormEvent.ONCHANGE);
 		
-		uifactory.addSpacerElement("spacer1", formLayout, false);
+		excludeUserAgentsClientsEl = uifactory.addTextElement("webdav.user.agent.exclusion", 4096, excludedUserAgents, formLayout);
+		excludeUserAgentsClientsEl.setVisible(excludeClientsEl.isAtLeastSelected(1));
+		
+		spacer1 = uifactory.addSpacerElement("spacer1", formLayout, false);
 		
 		enableTermsFoldersEl = uifactory.addCheckboxesHorizontal("webdavTermsFolders", "webdav.termsfolders", formLayout, onKeys, values);
 		enableTermsFoldersEl.select("xx", webDAVModule.isTermsFoldersEnabled());
-		enableTermsFoldersEl.addActionListener(FormEvent.ONCHANGE);
-		enableTermsFoldersEl.setEnabled(enabled);
 		
 		enableCurriculumElementFoldersEl = uifactory.addCheckboxesHorizontal("webdavCurriculumsElementsFolders", "webdav.curriculumelementsfolders", formLayout, onKeys, values);
 		enableCurriculumElementFoldersEl.select("xx", webDAVModule.isCurriculumElementFoldersEnabled());
-		enableCurriculumElementFoldersEl.addActionListener(FormEvent.ONCHANGE);
-		enableCurriculumElementFoldersEl.setEnabled(enabled);
 		
 		enableManagedFoldersEl = uifactory.addCheckboxesHorizontal("webdavManagedFolders", "webdav.managedfolders", formLayout, onKeys, values);
 		enableManagedFoldersEl.select("xx", webDAVModule.isManagedFoldersEnabled());
-		enableManagedFoldersEl.addActionListener(FormEvent.ONCHANGE);
-		enableManagedFoldersEl.setEnabled(enabled);
 		
 		prependReferenceEl = uifactory.addCheckboxesHorizontal("webdavPrepend", "webdav.prepend.reference", formLayout, onKeys, values);
 		prependReferenceEl.select("xx", webDAVModule.isPrependCourseReferenceToTitle());
-		prependReferenceEl.addActionListener(FormEvent.ONCHANGE);
-		prependReferenceEl.setEnabled(enabled);
-
-		uifactory.addSpacerElement("spacer2", formLayout, false);
+		
+		spacer2 = uifactory.addSpacerElement("spacer2", formLayout, false);
 		
 		learnersAsParticipantEl = uifactory.addCheckboxesHorizontal("learnersParticipants", "webdav.for.learners.participants", formLayout, onKeys, values);
 		learnersAsParticipantEl.select("xx", webDAVModule.isEnableLearnersParticipatingCourses());
-		learnersAsParticipantEl.addActionListener(FormEvent.ONCHANGE);
-		learnersAsParticipantEl.setEnabled(enabled);
 		
 		learnersBookmarkEl = uifactory.addCheckboxesHorizontal("learnerBookmarks", "webdav.for.learners.bookmarks", formLayout, onKeys, values);
 		learnersBookmarkEl.select("xx", webDAVModule.isEnableLearnersBookmarksCourse());
-		learnersBookmarkEl.addActionListener(FormEvent.ONCHANGE);
-		learnersBookmarkEl.setEnabled(enabled);
+		
+		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		formLayout.add(buttonsCont);
+		uifactory.addFormSubmitButton("save", buttonsCont);
 	}
 
 	@Override
@@ -126,41 +131,44 @@ public class WebDAVAdminController extends FormBasicController {
 		if(source == enableModuleEl) {
 			boolean enabled = enableModuleEl.isAtLeastSelected(1);
 			webDAVModule.setEnabled(enabled);
-			enableLinkEl.setEnabled(enabled);
-			enableDigestEl.setEnabled(enabled);
-			enableTermsFoldersEl.setEnabled(enabled);
-			learnersAsParticipantEl.setEnabled(enabled);
-			learnersBookmarkEl.setEnabled(enabled);
-		} else if(source == enableLinkEl) {
-			boolean enabled = enableLinkEl.isAtLeastSelected(1);
-			webDAVModule.setLinkEnabled(enabled);
-		} else if(source == enableDigestEl) {
-			boolean enabled = enableDigestEl.isAtLeastSelected(1);
-			webDAVModule.setDigestAuthenticationEnabled(enabled);
-		} else if(source == enableTermsFoldersEl) {
-			boolean enabled = enableTermsFoldersEl.isAtLeastSelected(1);
-			webDAVModule.setTermsFoldersEnabled(enabled);
-		} else if(source == enableCurriculumElementFoldersEl) {
-			boolean enabled = enableCurriculumElementFoldersEl.isAtLeastSelected(1);
-			webDAVModule.setCurriculumElementFoldersEnabled(enabled);
-		} else if(source == learnersAsParticipantEl) {
-			boolean enabled = learnersAsParticipantEl.isAtLeastSelected(1);
-			webDAVModule.setEnableLearnersParticipatingCourses(enabled);
-		} else if(source == learnersBookmarkEl) {
-			boolean enabled = learnersBookmarkEl.isAtLeastSelected(1);
-			webDAVModule.setEnableLearnersBookmarksCourse(enabled);
-		} else if(source == prependReferenceEl) {
-			boolean enabled = prependReferenceEl.isAtLeastSelected(1);
-			webDAVModule.setPrependCourseReferenceToTitle(enabled);
-		} else if(source == enableManagedFoldersEl) {
-			boolean enabled = enableManagedFoldersEl.isAtLeastSelected(1);
-			webDAVModule.setManagedFoldersEnabled(enabled);
+			updateEnabledDisabled();
+		} else if(source == excludeClientsEl) {
+			excludeUserAgentsClientsEl.setVisible(excludeClientsEl.isAtLeastSelected(1));
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void updateEnabledDisabled() {
+		boolean enabled = enableModuleEl.isAtLeastSelected(1);
+		
+		enableLinkEl.setVisible(enabled);
+		enableDigestEl.setVisible(enabled);
+		enableTermsFoldersEl.setVisible(enabled);
+		learnersAsParticipantEl.setVisible(enabled);
+		learnersBookmarkEl.setVisible(enabled);
+		enableCurriculumElementFoldersEl.setVisible(enabled);
+		enableManagedFoldersEl.setVisible(enabled);
+		prependReferenceEl.setVisible(enabled);
+		excludeClientsEl.setVisible(enabled);
+		excludeUserAgentsClientsEl.setVisible(enabled && excludeClientsEl.isAtLeastSelected(1));
+		spacer1.setVisible(enabled);
+		spacer2.setVisible(enabled);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		//
+		webDAVModule.setLinkEnabled(enableLinkEl.isAtLeastSelected(1));
+		webDAVModule.setDigestAuthenticationEnabled(enableDigestEl.isAtLeastSelected(1));
+		webDAVModule.setTermsFoldersEnabled(enableTermsFoldersEl.isAtLeastSelected(1));
+		webDAVModule.setCurriculumElementFoldersEnabled(enableCurriculumElementFoldersEl.isAtLeastSelected(1));
+		webDAVModule.setEnableLearnersParticipatingCourses(learnersAsParticipantEl.isAtLeastSelected(1));
+		webDAVModule.setEnableLearnersBookmarksCourse(learnersBookmarkEl.isAtLeastSelected(1));
+		webDAVModule.setPrependCourseReferenceToTitle(prependReferenceEl.isAtLeastSelected(1));
+		webDAVModule.setManagedFoldersEnabled(enableManagedFoldersEl.isAtLeastSelected(1));
+		if(excludeClientsEl.isAtLeastSelected(1)) {
+			webDAVModule.setUserAgentBlackList(excludeUserAgentsClientsEl.getValue());
+		} else {
+			webDAVModule.setUserAgentBlackList(null);
+		}
 	}
 }
