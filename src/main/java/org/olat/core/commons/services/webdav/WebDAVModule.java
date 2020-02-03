@@ -70,7 +70,9 @@ public class WebDAVModule extends AbstractSpringModule implements ConfigOnOff {
 	private boolean prependCourseReferenceToTitle;
 	@Value("${webdav.basic.authentication.black.list}")
 	private String basicAuthenticationBlackList;
-
+	@Value("${webdav.user.agent.black.list}")
+	private String userAgentBlackList;
+	
 	@Value("${webdav.learners.bookmarks.enabled:true}")
 	private boolean enableLearnersBookmarksCourse;
 	/**
@@ -231,6 +233,21 @@ public class WebDAVModule extends AbstractSpringModule implements ConfigOnOff {
 
 	public void setBasicAuthenticationBlackList(String basicAuthenticationBlackList) {
 		this.basicAuthenticationBlackList = basicAuthenticationBlackList;
+	}
+
+	public String[] getUserAgentBlackListArray() {
+		if(StringHelper.containsNonWhitespace(userAgentBlackList)) {
+			return userAgentBlackList.split("[,]");
+		}
+		return new String[0];
+	}
+
+	public String getUserAgentBlackList() {
+		return userAgentBlackList;
+	}
+
+	public void setUserAgentBlackList(String userAgentBlackList) {
+		this.userAgentBlackList = userAgentBlackList;
 	}
 
 	/**

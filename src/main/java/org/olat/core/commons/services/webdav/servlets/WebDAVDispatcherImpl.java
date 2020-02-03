@@ -54,9 +54,11 @@ import org.olat.core.commons.services.webdav.WebDAVDispatcher;
 import org.olat.core.commons.services.webdav.WebDAVManager;
 import org.olat.core.commons.services.webdav.WebDAVModule;
 import org.olat.core.dispatcher.Dispatcher;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.helpers.Settings;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.vfs.QuotaExceededException;
 import org.olat.core.util.vfs.VFSItem;
@@ -273,13 +275,28 @@ public class WebDAVDispatcherImpl
 	throws ServletException, IOException {
 		if (webDAVManager == null) {
 			resp.setStatus(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
-		} else if(webDAVModule == null || !webDAVModule.isEnabled()) {
+		} else if(webDAVModule == null || !webDAVModule.isEnabled() || isUserAgentExcluded(req)) {
 			resp.setStatus(WebdavStatus.SC_FORBIDDEN);
 		} else if (webDAVManager.handleAuthentication(req, resp)) {
 			webdavService(req, resp);
 		} else {
 			//the method handleAuthentication will send the challenges for authentication
 		}
+	}
+	
+	private boolean isUserAgentExcluded(HttpServletRequest req) {
+		String userAgent = ServletUtil.getUserAgent(req);
+		if(!StringHelper.containsNonWhitespace(userAgent)) {
+			userAgent = "";
+		}
+		String[] blackList = webDAVModule.getUserAgentBlackListArray();
+		for(String blackListedAgent:blackList) {
+			if((blackListedAgent.length() < 2 && userAgent.equalsIgnoreCase(blackListedAgent))
+					|| (blackListedAgent.length() >= 2 && userAgent.contains(blackListedAgent))) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
