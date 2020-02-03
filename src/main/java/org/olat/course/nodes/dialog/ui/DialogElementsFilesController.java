@@ -60,7 +60,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class DialogElementsEditController extends BasicController {
+public class DialogElementsFilesController extends BasicController {
 	
 	private final Link uploadButton;
 	private final VelocityContainer mainVC;
@@ -78,7 +78,7 @@ public class DialogElementsEditController extends BasicController {
 	@Autowired
 	private NotificationsManager notificationsManager;
 	
-	public DialogElementsEditController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, DialogCourseNode courseNode) {
+	public DialogElementsFilesController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, DialogCourseNode courseNode) {
 		super(ureq, wControl);
 		this.courseNode = courseNode;
 		this.courseEnv = courseEnv;

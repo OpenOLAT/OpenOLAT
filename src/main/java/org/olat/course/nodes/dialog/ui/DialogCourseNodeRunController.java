@@ -60,20 +60,15 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.CourseModule;
-import org.olat.course.groupsandrights.CourseGroupManager;
-import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.nodes.DialogCourseNode;
 import org.olat.course.nodes.dialog.DialogElement;
 import org.olat.course.nodes.dialog.DialogElementsManager;
-import org.olat.course.nodes.dialog.DialogNodeForumCallback;
-import org.olat.course.nodes.dialog.ReadOnlyDialogNodeForumCallback;
-import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.course.nodes.dialog.DialogSecurityCallback;
+import org.olat.course.nodes.dialog.security.SecurityCallbackFactory;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.modules.fo.ForumCallback;
 import org.olat.modules.fo.Message;
 import org.olat.modules.fo.manager.ForumManager;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryService;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -89,13 +84,10 @@ public class DialogCourseNodeRunController extends BasicController implements Ac
 	private Link uploadButton;
 	private final VelocityContainer mainVC;
 
-	private final boolean isGuestOnly;
-	private DialogCourseNode courseNode;
+	private final DialogCourseNode courseNode;
 	private final RepositoryEntry entry;
-	private ForumCallback forumCallback;
-	private NodeEvaluation nodeEvaluation;
-	private SubscriptionContext subsContext;
-	private UserCourseEnvironment userCourseEnv;
+	private final UserCourseEnvironment userCourseEnv;
+	private final DialogSecurityCallback secCallback;
 
 	private CloseableModalController cmc;
 	private FileUploadController fileUplCtr;
@@ -107,54 +99,47 @@ public class DialogCourseNodeRunController extends BasicController implements Ac
 	@Autowired
 	private ForumManager forumManager;
 	@Autowired
-	private RepositoryService repositoryService;
-	@Autowired
 	private DialogElementsManager dialogElmsMgr;
 	@Autowired
 	private NotificationsManager notificationsManager;
 
-	public DialogCourseNodeRunController(UserRequest ureq, WindowControl wControl, DialogCourseNode courseNode, UserCourseEnvironment userCourseEnv,
-			NodeEvaluation nodeEvaluation) {
+	public DialogCourseNodeRunController(UserRequest ureq, WindowControl wControl, DialogCourseNode courseNode,
+			UserCourseEnvironment userCourseEnv, DialogSecurityCallback secCallback) {
 		super(ureq, wControl);
-		this.nodeEvaluation = nodeEvaluation;
 		this.userCourseEnv = userCourseEnv;
 		this.courseNode = courseNode;
-		
-		CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
-		entry = cgm.getCourseEntry();
+		this.secCallback = secCallback;
+		this.entry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 
 		addLoggingResourceable(LoggingResourceable.wrap(courseNode));
 
-		mainVC = createVelocityContainer("dialog");		
-
-		isGuestOnly = ureq.getUserSession().getRoles().isGuestOnly();
-		subsContext = isGuestOnly ? null : CourseModule.createSubscriptionContext(userCourseEnv.getCourseEnvironment(), courseNode);
-		forumCallback = userCourseEnv.isCourseReadOnly() ?
-				new ReadOnlyDialogNodeForumCallback(nodeEvaluation, userCourseEnv.isAdmin(), isGuestOnly, subsContext) :
-				new DialogNodeForumCallback(nodeEvaluation, userCourseEnv.isAdmin(), isGuestOnly, subsContext);
+		mainVC = createVelocityContainer("dialog");
 		
-		if (subsContext != null) {
+		if (!userCourseEnv.getIdentityEnvironment().getRoles().isGuestOnly()) {
+			SubscriptionContext subsContext = CourseModule.createSubscriptionContext(userCourseEnv.getCourseEnvironment(), courseNode);
+			secCallback = SecurityCallbackFactory.create(secCallback, subsContext);
+		}
+		if (secCallback.getSubscriptionContext() != null) {
 			String businessPath = "[RepositoryEntry:" +entry.getKey() + "][CourseNode:" + courseNode.getIdent() + "]";
 			PublisherData pdata = new PublisherData(OresHelper.calculateTypeName(DialogElement.class), "", businessPath);
-			csCtr = new ContextualSubscriptionController(ureq, getWindowControl(), subsContext, pdata);
+			csCtr = new ContextualSubscriptionController(ureq, getWindowControl(), secCallback.getSubscriptionContext(), pdata);
 			listenTo(csCtr);
 			mainVC.put("subscription", csCtr.getInitialComponent());
 		}
 		
 		backButton = LinkFactory.createLinkBack(mainVC, this);
 		
-		if (!userCourseEnv.isCourseReadOnly()
-				&& (userCourseEnv.isAdmin() || cgm.hasRight(getIdentity(), CourseRights.RIGHT_COURSEEDITOR))) {
+		if (secCallback.canCopyFile()) {
 			copyButton = LinkFactory.createButton("dialog.copy.file", mainVC, this);
 		}
 		
-		if(forumCallback.mayOpenNewThread() && !userCourseEnv.isCourseReadOnly()) {
+		if(secCallback.mayOpenNewThread()) {
 			uploadButton = LinkFactory.createButton("dialog.upload.file", mainVC, this);
 			uploadButton.setIconLeftCSS("o_icon o_icon-fw o_icon_upload");
 			uploadButton.setElementCssClass("o_sel_dialog_upload");
 		}
 
-		filesCtrl = new DialogElementListController(ureq, getWindowControl(), userCourseEnv, courseNode, forumCallback, true);
+		filesCtrl = new DialogElementListController(ureq, getWindowControl(), userCourseEnv, courseNode, secCallback, true);
 		listenTo(filesCtrl);
 		mainVC.put("files", filesCtrl.getInitialComponent());
 		putInitialPanel(mainVC);
@@ -259,7 +244,7 @@ public class DialogCourseNodeRunController extends BasicController implements Ac
 			return;
 		}
 		
-		dialogCtr = new DialogElementController(ureq, getWindowControl(), element, userCourseEnv, courseNode, nodeEvaluation);
+		dialogCtr = new DialogElementController(ureq, getWindowControl(), element, userCourseEnv, courseNode, secCallback);
 		listenTo(dialogCtr);
 		mainVC.put("forum", dialogCtr.getInitialComponent());
 		//activate message
@@ -272,7 +257,7 @@ public class DialogCourseNodeRunController extends BasicController implements Ac
 			return;
 		}
 		
-		dialogCtr = new DialogElementController(ureq, getWindowControl(), element, userCourseEnv, courseNode, nodeEvaluation);
+		dialogCtr = new DialogElementController(ureq, getWindowControl(), element, userCourseEnv, courseNode, secCallback);
 		listenTo(dialogCtr);
 		mainVC.put("forum", dialogCtr.getInitialComponent());
 	}
@@ -289,7 +274,7 @@ public class DialogCourseNodeRunController extends BasicController implements Ac
 			showInfo("element.already.deleted");
 			filesCtrl.loadModel();
 		} else {
-			dialogCtr = new DialogElementController(ureq, getWindowControl(), element, userCourseEnv, courseNode, nodeEvaluation);
+			dialogCtr = new DialogElementController(ureq, getWindowControl(), element, userCourseEnv, courseNode, secCallback);
 			listenTo(dialogCtr);
 			mainVC.put("forum", dialogCtr.getInitialComponent());
 		}
@@ -315,10 +300,7 @@ public class DialogCourseNodeRunController extends BasicController implements Ac
 		VFSContainer dialogContainer = dialogElmsMgr.getDialogContainer(element);
 		VFSManager.copyContent(file.getParentContainer(), dialogContainer);
 
-		// inform subscription manager about new element
-		if (subsContext != null) {
-			notificationsManager.markPublisherNews(subsContext, getIdentity(), true);
-		}
+		markPublisherNews();
 		filesCtrl.loadModel();
 	}
 	
@@ -348,11 +330,17 @@ public class DialogCourseNodeRunController extends BasicController implements Ac
 		}
 		VFSManager.copyContent(vl, copyVl, true);
 		
-		// inform subscription manager about new element
-		if (subsContext != null) {
-			notificationsManager.markPublisherNews(subsContext, getIdentity(), true);
-		}
+		markPublisherNews();
 		filesCtrl.loadModel();
+	}
+
+	/**
+	 * Inform subscription manager about new element.
+	 */
+	private void markPublisherNews() {
+		if (secCallback.getSubscriptionContext() != null) {
+			notificationsManager.markPublisherNews(secCallback.getSubscriptionContext(), getIdentity(), true);
+		}
 	}
 	
 	private class MyLinkChooserController extends LinkChooserController {

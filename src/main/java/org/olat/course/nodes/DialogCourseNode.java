@@ -51,12 +51,15 @@ import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
+import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.dialog.DialogElement;
 import org.olat.course.nodes.dialog.DialogElementsManager;
+import org.olat.course.nodes.dialog.DialogSecurityCallback;
+import org.olat.course.nodes.dialog.security.SecurityCallbackFactory;
 import org.olat.course.nodes.dialog.ui.DialogCourseNodeEditController;
 import org.olat.course.nodes.dialog.ui.DialogCourseNodeRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
@@ -78,6 +81,17 @@ import org.olat.repository.RepositoryEntry;
 public class DialogCourseNode extends AbstractAccessableCourseNode {
 
 	public static final String TYPE = "dialog";
+	
+	@SuppressWarnings("deprecation")
+	private static final String TRANSLATOR_PACKAGE = Util.getPackageName(DialogCourseNodeEditController.class);
+	
+	private static final int CURRENT_VERSION = 2;
+	public static final String CONFIG_KEY_UPLOAD_BY_COACH = "upload.by.coach";
+	public static final String CONFIG_KEY_UPLOAD_BY_PARTICIPANT = "upload.by.participant";
+	public static final String CONFIG_KEY_MODERATE_BY_COACH = "moderate.by.coach";
+	public static final String CONFIG_KEY_POST_BY_COACH = "post.by.coach";
+	public static final String CONFIG_KEY_POST_BY_PARTICIPANT = "post.by.participant";
+	
 	private Condition preConditionReader, preConditionPoster, preConditionModerator;
 
 	public DialogCourseNode() {
@@ -94,9 +108,18 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
+	public ConditionAccessEditConfig getAccessEditConfig() {
+		return hasCustomPreConditions()
+				? ConditionAccessEditConfig.custom()
+				: ConditionAccessEditConfig.regular(false);
+	}
+
+	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
-		DialogCourseNodeRunController ctrl = new DialogCourseNodeRunController(ureq, wControl, this, userCourseEnv, nodeSecCallback.getNodeEvaluation());
+		updateModuleConfigDefaults(false);
+		DialogSecurityCallback secCallback = SecurityCallbackFactory.create(this, userCourseEnv, nodeSecCallback.getNodeEvaluation());
+		DialogCourseNodeRunController ctrl = new DialogCourseNodeRunController(ureq, wControl, this, userCourseEnv, secCallback);
 		Controller wrappedCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, ctrl, this, "o_dialog_icon");
 		return new NodeRunConstructionResult(wrappedCtrl);
 	}
@@ -104,10 +127,8 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		oneClickStatusCache = null;
-		// only here we know which translator to take for translating condition
-		// error messages
-		String translatorStr = Util.getPackageName(DialogCourseNodeEditController.class);
-		List<StatusDescription> sds = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		
+		List<StatusDescription> sds = isConfigValidWithTranslator(cev, TRANSLATOR_PACKAGE, getConditionExpressions());
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
 	}
@@ -143,11 +164,47 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public void updateModuleConfigDefaults(boolean isNewNode) {
 		ModuleConfiguration config = getModuleConfiguration();
-		if (isNewNode) {
-			// use defaults for new course building blocks
-			//REVIEW:pb version should go to 2 now and the handling for 1er should be to remove 
-			config.setConfigurationVersion(1);
+		int version = config.getConfigurationVersion();
+		
+		if (version < 2) {
+			config.setBooleanEntry(CONFIG_KEY_UPLOAD_BY_COACH, true);
+			config.setBooleanEntry(CONFIG_KEY_UPLOAD_BY_PARTICIPANT, true);
+			config.setBooleanEntry(CONFIG_KEY_MODERATE_BY_COACH, true);
+			config.setBooleanEntry(CONFIG_KEY_POST_BY_COACH, true);
+			config.setBooleanEntry(CONFIG_KEY_POST_BY_PARTICIPANT, true);
+			removeDefaultPreconditions();
 		}
+		config.setConfigurationVersion(CURRENT_VERSION);
+	}
+	
+	private void removeDefaultPreconditions() {
+		if (hasCustomPreConditions()) {
+			boolean defaultPreconditions =
+					!preConditionModerator.isExpertMode()
+				&& preConditionModerator.isEasyModeCoachesAndAdmins()
+				&& preConditionModerator.isEasyModeAlwaysAllowCoachesAndAdmins()
+				&& !preConditionModerator.isAssessmentMode()
+				&& !preConditionModerator.isAssessmentModeViewResults()
+				&& !preConditionPoster.isExpertMode()
+				&& !preConditionPoster.isEasyModeCoachesAndAdmins()
+				&& !preConditionPoster.isEasyModeAlwaysAllowCoachesAndAdmins()
+				&& !preConditionPoster.isAssessmentMode()
+				&& !preConditionPoster.isAssessmentModeViewResults()
+				&& !preConditionReader.isExpertMode()
+				&& !preConditionReader.isEasyModeCoachesAndAdmins()
+				&& !preConditionReader.isEasyModeAlwaysAllowCoachesAndAdmins()
+				&& !preConditionReader.isAssessmentMode()
+				&& !preConditionReader.isAssessmentModeViewResults();
+			if (defaultPreconditions) {
+				removeCustomPreconditions();
+			}
+		}
+	}
+	
+	public void removeCustomPreconditions() {
+		preConditionModerator = null;
+		preConditionPoster = null;
+		preConditionReader = null;
 	}
 	
 	@Override
@@ -254,18 +311,25 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public void calcAccessAndVisibility(ConditionInterpreter ci, NodeEvaluation nodeEval) {
-		// evaluate the preconditions
-		boolean reader = (getPreConditionReader().getConditionExpression() == null ? true : ci.evaluateCondition(getPreConditionReader()));
-		nodeEval.putAccessStatus("reader", reader);
-		boolean poster = (getPreConditionPoster().getConditionExpression() == null ? true : ci.evaluateCondition(getPreConditionPoster()));
-		nodeEval.putAccessStatus("poster", poster);
-		boolean moderator = (getPreConditionModerator().getConditionExpression() == null ? true : ci
-				.evaluateCondition(getPreConditionModerator()));
-		nodeEval.putAccessStatus("moderator", moderator);
+		if (hasCustomPreConditions()) {
+			boolean reader = (getPreConditionReader().getConditionExpression() == null ? true : ci.evaluateCondition(getPreConditionReader()));
+			nodeEval.putAccessStatus("reader", reader);
+			boolean poster = (getPreConditionPoster().getConditionExpression() == null ? true : ci.evaluateCondition(getPreConditionPoster()));
+			nodeEval.putAccessStatus("poster", poster);
+			boolean moderator = (getPreConditionModerator().getConditionExpression() == null ? true : ci
+					.evaluateCondition(getPreConditionModerator()));
+			nodeEval.putAccessStatus("moderator", moderator);
 
-		boolean visible = (getPreConditionVisibility().getConditionExpression() == null ? true : ci
-				.evaluateCondition(getPreConditionVisibility()));
-		nodeEval.setVisible(visible);
+			boolean visible = (getPreConditionVisibility().getConditionExpression() == null ? true : ci
+					.evaluateCondition(getPreConditionVisibility()));
+			nodeEval.setVisible(visible);
+		} else {
+			super.calcAccessAndVisibility(ci, nodeEval);
+		}
+	}
+	
+	public boolean hasCustomPreConditions() {
+		return preConditionModerator != null || preConditionPoster != null || preConditionReader != null;
 	}
 
 	/**

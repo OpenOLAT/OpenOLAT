@@ -39,7 +39,6 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
-import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.DialogCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
@@ -54,57 +53,58 @@ import org.olat.course.tree.CourseEditorTreeModel;
  */
 public class DialogCourseNodeEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
 
-	private static final String PANE_TAB_DIALOGCONFIG = "pane.tab.dialogconfig";
+	private static final String PANE_TAB_FILES = "pane.tab.files";
+	private static final String PANE_TAB_CONFIG = "pane.tab.config";
 	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
 	
-	private static final String[] paneKeys = { PANE_TAB_DIALOGCONFIG, PANE_TAB_ACCESSIBILITY };
+	private static final String[] paneKeys = { PANE_TAB_FILES, PANE_TAB_ACCESSIBILITY };
 	
 	private TabbedPane myTabbedPane;
-	private VelocityContainer accessContent;	
+	private VelocityContainer accessContent;
 	private ConditionEditController readerCondContr, posterCondContr, moderatorCondContr;
+	private Controller elementsEditCtrl;
+	private Controller configCtrl;
 	
 	private DialogCourseNode courseNode;
-	private BCCourseNode bcNode = new BCCourseNode();
 
-	private DialogElementsEditController elementsEditCtrl;
-	
 	public DialogCourseNodeEditController(UserRequest ureq, WindowControl wControl, DialogCourseNode node,
 			ICourse course, UserCourseEnvironment userCourseEnv) {
 		super(ureq,wControl);
 		this.courseNode = node;
 		
-		// set name of the folder we use
-		bcNode.setShortTitle(translate("dialog.folder.name"));
-
-		elementsEditCtrl = new DialogElementsEditController(ureq, getWindowControl(), course.getCourseEnvironment(), node);
+		elementsEditCtrl = new DialogElementsFilesController(ureq, getWindowControl(), course.getCourseEnvironment(), node);
 		listenTo(elementsEditCtrl);
+		
+		if (!node.hasCustomPreConditions()) {
+			configCtrl = new DialogElementsConfigController(ureq, getWindowControl(), node);
+			listenTo(configCtrl);
+		} else {
+			accessContent = createVelocityContainer("edit_access");
 
-		// accessability config tab		
-		accessContent = createVelocityContainer("edit_access");
+			CourseEditorTreeModel editorModel = course.getEditorTreeModel();
+			// Reader precondition
+			Condition readerCondition = courseNode.getPreConditionReader();
+			readerCondContr = new ConditionEditController(ureq, getWindowControl(), userCourseEnv, readerCondition,
+					AssessmentHelper.getAssessableNodes(editorModel, courseNode));
+			listenTo(readerCondContr);
+			accessContent.put("readerCondition", readerCondContr.getInitialComponent());
 
-		CourseEditorTreeModel editorModel = course.getEditorTreeModel();
-		// Reader precondition
-		Condition readerCondition = courseNode.getPreConditionReader();
-		readerCondContr = new ConditionEditController(ureq, getWindowControl(), userCourseEnv, readerCondition,
-				AssessmentHelper.getAssessableNodes(editorModel, courseNode));		
-		listenTo(readerCondContr);
-		accessContent.put("readerCondition", readerCondContr.getInitialComponent());
+			// Poster precondition
+			Condition posterCondition = courseNode.getPreConditionPoster();
+			posterCondContr = new ConditionEditController(ureq, getWindowControl(), userCourseEnv, posterCondition,
+					AssessmentHelper.getAssessableNodes(editorModel, courseNode));
+			this.listenTo(posterCondContr);
+			accessContent.put("posterCondition", posterCondContr.getInitialComponent());
 
-		// Poster precondition
-		Condition posterCondition = courseNode.getPreConditionPoster();
-		posterCondContr = new ConditionEditController(ureq, getWindowControl(), userCourseEnv, posterCondition,
-				AssessmentHelper.getAssessableNodes(editorModel, courseNode));		
-		this.listenTo(posterCondContr);
-		accessContent.put("posterCondition", posterCondContr.getInitialComponent());
+			// Moderator precondition
+			Condition moderatorCondition = courseNode.getPreConditionModerator();
+			moderatorCondContr = new ConditionEditController(ureq, getWindowControl(), userCourseEnv, moderatorCondition,
+					AssessmentHelper.getAssessableNodes(editorModel, courseNode));
 
-		// Moderator precondition
-		Condition moderatorCondition = courseNode.getPreConditionModerator();
-		moderatorCondContr = new ConditionEditController(ureq, getWindowControl(), userCourseEnv, moderatorCondition,
-				AssessmentHelper.getAssessableNodes(editorModel, courseNode));
-
-		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);		
-		listenTo(moderatorCondContr);
-		accessContent.put("moderatorCondition", moderatorCondContr.getInitialComponent());
+			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			listenTo(moderatorCondContr);
+			accessContent.put("moderatorCondition", moderatorCondContr.getInitialComponent());
+		}
 	}
 
 	@Override
@@ -128,6 +128,8 @@ public class DialogCourseNodeEditController extends ActivateableTabbableDefaultC
 			if (event == Event.CHANGED_EVENT) {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
+		} else if (source == configCtrl) {
+			fireEvent(ureq, event);
 		} else if (source == readerCondContr) {
 			if (event == Event.CHANGED_EVENT) {
 				Condition cond = readerCondContr.getCondition();
@@ -156,7 +158,12 @@ public class DialogCourseNodeEditController extends ActivateableTabbableDefaultC
 
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
-		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessContent);
-		tabbedPane.addTab(translate(PANE_TAB_DIALOGCONFIG), elementsEditCtrl.getInitialComponent());
+		if (accessContent != null) {
+			tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessContent);
+		}
+		tabbedPane.addTab(translate(PANE_TAB_FILES), elementsEditCtrl.getInitialComponent());
+		if (configCtrl != null) {
+			tabbedPane.addTab(translate(PANE_TAB_CONFIG), configCtrl.getInitialComponent());
+		}
 	}
 }

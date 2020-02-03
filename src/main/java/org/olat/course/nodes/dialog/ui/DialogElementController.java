@@ -39,7 +39,6 @@ import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.UserSession;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
@@ -47,12 +46,10 @@ import org.olat.course.CourseModule;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.dialog.DialogElement;
 import org.olat.course.nodes.dialog.DialogElementsManager;
-import org.olat.course.nodes.dialog.DialogNodeForumCallback;
-import org.olat.course.nodes.dialog.ReadOnlyDialogNodeForumCallback;
-import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.course.nodes.dialog.DialogSecurityCallback;
+import org.olat.course.nodes.dialog.security.SecurityCallbackFactory;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.fo.Forum;
-import org.olat.modules.fo.ForumCallback;
 import org.olat.modules.fo.ui.ForumController;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -79,20 +76,20 @@ public class DialogElementController extends BasicController implements Activate
 	private DialogElementsManager dialogElmsMgr;
 	
 	public DialogElementController(UserRequest ureq, WindowControl wControl, DialogElement element,
-			UserCourseEnvironment userCourseEnv, CourseNode courseNode, NodeEvaluation nodeEvaluation) {
+			UserCourseEnvironment userCourseEnv, CourseNode courseNode, DialogSecurityCallback secCallback) {
 		super(ureq, wControl);
 		this.element = element;
-
 		Forum forum = element.getForum();
-		UserSession usess = ureq.getUserSession();
-		boolean isAdministrator = userCourseEnv.isAdmin();
-		boolean isGuestOnly = usess.getRoles().isGuestOnly();
+
+		boolean isGuestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 		
-		SubscriptionContext subsContext = CourseModule.createSubscriptionContext(userCourseEnv.getCourseEnvironment(), courseNode, forum.getKey().toString());
-		ForumCallback forumCallback = userCourseEnv.isCourseReadOnly() ?
-				new ReadOnlyDialogNodeForumCallback(nodeEvaluation, isAdministrator, isGuestOnly, subsContext) :
-				new DialogNodeForumCallback(nodeEvaluation, isAdministrator, isGuestOnly, subsContext);
-		forumCtr = new ForumController(ureq, wControl, forum, forumCallback, !isGuestOnly);		
+		if (!isGuestOnly) {
+			SubscriptionContext subsContext = CourseModule.createSubscriptionContext(
+					userCourseEnv.getCourseEnvironment(), courseNode, forum.getKey().toString());
+			secCallback = SecurityCallbackFactory.create(secCallback, subsContext);
+		}
+		
+		forumCtr = new ForumController(ureq, wControl, forum, secCallback, !isGuestOnly);
 		listenTo(forumCtr);
 		
 		mainVC = createVelocityContainer("discussion");

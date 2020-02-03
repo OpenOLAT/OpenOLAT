@@ -23,35 +23,35 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.course.nodes.dialog;
+package org.olat.course.nodes.dialog.security;
 
 import org.olat.core.commons.services.notifications.SubscriptionContext;
-import org.olat.course.run.userview.NodeEvaluation;
-import org.olat.modules.fo.ForumCallback;
+import org.olat.course.groupsandrights.CourseRights;
+import org.olat.course.nodes.dialog.DialogSecurityCallback;
+import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
- * Initial Date: 21.11.2005 <br>
- * 
- * @author guido
+ * Initial date: 2 Feb 2020<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  */
-public class DialogNodeForumCallback implements ForumCallback {
+class DialogCallback implements DialogSecurityCallback {
 
-	private NodeEvaluation ne;
-	private boolean isOlatAdmin;
-	private boolean isGuestOnly;
-	private final SubscriptionContext subscriptionContext;
+	private final boolean isOlatAdmin;
+	private final boolean isUploader;
+	private final boolean isModerator;
+	private final boolean isPoster;
+	private final boolean isCourseEditor;
+	private final boolean isGuestOnly;
 
-	/**
-	 * @param ne the nodeevaluation for this coursenode
-	 * @param isOlatAdmin true if the user is olat-admin
-	 * @param isGuestOnly true if the user is olat-guest
-	 * @param subscriptionContext
-	 */
-	public DialogNodeForumCallback(NodeEvaluation ne, boolean isOlatAdmin, boolean isGuestOnly, SubscriptionContext subscriptionContext) {
-		this.ne = ne;
-		this.isOlatAdmin = isOlatAdmin;
-		this.isGuestOnly = isGuestOnly;
-		this.subscriptionContext = subscriptionContext;
+	DialogCallback(UserCourseEnvironment userCourseEnv, boolean isUploader, boolean isModerator, boolean isPoster) {
+		this.isOlatAdmin = userCourseEnv.isAdmin();
+		this.isUploader = isUploader;
+		this.isModerator = isModerator;
+		this.isPoster = isPoster;
+		this.isCourseEditor = userCourseEnv.getCourseEnvironment().getCourseGroupManager().hasRight(
+				userCourseEnv.getIdentityEnvironment().getIdentity(),
+				CourseRights.RIGHT_COURSEEDITOR);
+		this.isGuestOnly = userCourseEnv.getIdentityEnvironment().getRoles().isGuestOnly();
 	}
 
 	@Override
@@ -62,13 +62,13 @@ public class DialogNodeForumCallback implements ForumCallback {
 	@Override
 	public boolean mayOpenNewThread() {
 		if (isGuestOnly) return false;
-		return ne.isCapabilityAccessible("poster") || ne.isCapabilityAccessible("moderator") || isOlatAdmin;
+		return isUploader || isOlatAdmin;
 	}
 
 	@Override
 	public boolean mayReplyMessage() {
 		if (isGuestOnly) return false;
-		return ne.isCapabilityAccessible("poster") || ne.isCapabilityAccessible("moderator") || isOlatAdmin;
+		return isPoster || isModerator || isOlatAdmin;
 	}
 
 	@Override
@@ -84,30 +84,35 @@ public class DialogNodeForumCallback implements ForumCallback {
 	@Override
 	public boolean mayEditMessageAsModerator() {
 		if (isGuestOnly) return false;
-		return ne.isCapabilityAccessible("moderator") || isOlatAdmin;
+		return isModerator || isOlatAdmin;
 	}
 
 	@Override
 	public boolean mayDeleteMessageAsModerator() {
 		if (isGuestOnly) return false;
-		return ne.isCapabilityAccessible("moderator") || isOlatAdmin;
+		return isModerator || isOlatAdmin;
 	}
 
 	@Override
 	public boolean mayArchiveForum() {
 		if (isGuestOnly) return false;
-		else return true;
+		return true;
 	}
 
 	@Override
 	public boolean mayFilterForUser() {
 		if (isGuestOnly) return false;
-		return ne.isCapabilityAccessible("moderator") || isOlatAdmin;
+		return isModerator|| isOlatAdmin;
 	}
 
 	@Override
 	public SubscriptionContext getSubscriptionContext() {
-		return (isGuestOnly ? null : subscriptionContext);
+		return null;
+	}
+
+	@Override
+	public boolean canCopyFile() {
+		return isOlatAdmin || isCourseEditor;
 	}
 
 }

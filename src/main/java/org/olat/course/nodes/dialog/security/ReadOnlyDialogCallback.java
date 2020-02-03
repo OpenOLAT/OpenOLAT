@@ -23,11 +23,11 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.course.nodes.dialog;
+package org.olat.course.nodes.dialog.security;
 
 import org.olat.core.commons.services.notifications.SubscriptionContext;
-import org.olat.course.run.userview.NodeEvaluation;
-import org.olat.modules.fo.ForumCallback;
+import org.olat.course.nodes.dialog.DialogSecurityCallback;
+import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
  * 
@@ -35,24 +35,16 @@ import org.olat.modules.fo.ForumCallback;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ReadOnlyDialogNodeForumCallback implements ForumCallback {
+class ReadOnlyDialogCallback implements DialogSecurityCallback {
 
-	private NodeEvaluation ne;
-	private boolean isOlatAdmin;
-	private boolean isGuestOnly;
-	private final SubscriptionContext subscriptionContext;
+	private final boolean isOlatAdmin;
+	private final boolean isModerator;
+	private final boolean isGuestOnly;
 
-	/**
-	 * @param ne the nodeevaluation for this coursenode
-	 * @param isOlatAdmin true if the user is olat-admin
-	 * @param isGuestOnly true if the user is olat-guest
-	 * @param subscriptionContext
-	 */
-	public ReadOnlyDialogNodeForumCallback(NodeEvaluation ne, boolean isOlatAdmin, boolean isGuestOnly, SubscriptionContext subscriptionContext) {
-		this.ne = ne;
-		this.isOlatAdmin = isOlatAdmin;
-		this.isGuestOnly = isGuestOnly;
-		this.subscriptionContext = subscriptionContext;
+	ReadOnlyDialogCallback(UserCourseEnvironment userCourseEnv, boolean isModerator) {
+		this.isOlatAdmin = userCourseEnv.isAdmin();
+		this.isModerator = isModerator;
+		this.isGuestOnly = userCourseEnv.getIdentityEnvironment().getRoles().isGuestOnly();
 	}
 
 	@Override
@@ -60,17 +52,11 @@ public class ReadOnlyDialogNodeForumCallback implements ForumCallback {
 		return false;
 	}
 
-	/**
-	 * @see org.olat.modules.fo.ForumCallback#mayOpenNewThread()
-	 */
 	@Override
 	public boolean mayOpenNewThread() {
 		return false;
 	}
 
-	/**
-	 * @see org.olat.modules.fo.ForumCallback#mayReplyMessage()
-	 */
 	@Override
 	public boolean mayReplyMessage() {
 		return false;
@@ -86,47 +72,37 @@ public class ReadOnlyDialogNodeForumCallback implements ForumCallback {
 		return false;
 	}
 
-	/**
-	 * @see org.olat.modules.fo.ForumCallback#mayEditMessageAsModerator()
-	 */
 	@Override
 	public boolean mayEditMessageAsModerator() {
 		return false;
 	}
 
-	/**
-	 * @see org.olat.modules.fo.ForumCallback#mayDeleteMessageAsModerator()
-	 */
 	@Override
 	public boolean mayDeleteMessageAsModerator() {
 		return false;
 	}
 
-	/**
-	 * 
-	 * @see org.olat.modules.fo.ForumCallback#mayArchiveForum()
-	 */
 	@Override
 	public boolean mayArchiveForum() {
 		if (isGuestOnly) return false;
-		else return true;
+		
+		return true;
 	}
 	
-	/**
-	 * @see org.olat.modules.fo.ForumCallback#mayFilterForUser()
-	 */
 	@Override
 	public boolean mayFilterForUser() {
 		if (isGuestOnly) return false;
-		return ne.isCapabilityAccessible("moderator") || isOlatAdmin;
+		return isModerator || isOlatAdmin;
 	}
 
-	/**
-	 * @see org.olat.modules.fo.ForumCallback#getSubscriptionContext()
-	 */
 	@Override
 	public SubscriptionContext getSubscriptionContext() {
-		return (isGuestOnly ? null : subscriptionContext);
+		return null;
+	}
+
+	@Override
+	public boolean canCopyFile() {
+		return false;
 	}
 
 }
