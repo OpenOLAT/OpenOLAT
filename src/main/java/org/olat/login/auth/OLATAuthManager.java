@@ -125,7 +125,7 @@ public class OLATAuthManager implements AuthenticationSPI {
 					if(identities.size() == 1) {
 						ident = identities.get(0);
 					} else if(identities.size() > 1) {
-						log.error("more than one identity found with email::" + login);
+						log.error("more than one identity found with email::{}", login);
 					}
 					
 					if (ident == null) {
@@ -245,7 +245,7 @@ public class OLATAuthManager implements AuthenticationSPI {
 			if(ldapLoginModule.isPropagatePasswordChangedOnLdapServer()) {
 				LDAPError ldapError = new LDAPError();
 				ldapLoginManager.changePassword(identity, newPwd, ldapError);
-				log.info(Tracing.M_AUDIT, doer.getKey() + " change the password on the LDAP server for identity: " + identity.getKey());
+				log.info(Tracing.M_AUDIT, "{} change the password on the LDAP server for identity: {}", doer.getKey(), identity.getKey());
 				allOk = ldapError.isEmpty();
 
 				if(allOk && ldapLoginModule.isCacheLDAPPwdAsOLATPwdOnLogin()) {
@@ -304,10 +304,10 @@ public class OLATAuthManager implements AuthenticationSPI {
 		Authentication auth = securityManager.findAuthentication(identity, "OLAT");
 		if (auth == null) { // create new authentication for provider OLAT
 			securityManager.createAndPersistAuthentication(identity, "OLAT", identity.getName(), newPwd, loginModule.getDefaultHashAlgorithm());
-			log.info(Tracing.M_AUDIT, doer.getKey() + " created new authenticatin for identity: " + identity.getKey());
+			log.info(Tracing.M_AUDIT, "{} created new authenticatin for identity: {}", doer.getKey(), identity.getKey());
 		} else {
 			securityManager.updateCredentials(auth, newPwd, loginModule.getDefaultHashAlgorithm());
-			log.info(Tracing.M_AUDIT, doer.getKey() + " set new password for identity: " + identity.getKey());
+			log.info(Tracing.M_AUDIT, "{} set new password for identity: {}", doer.getKey(),  identity.getKey());
 		}
 		
 		if(StringHelper.containsNonWhitespace(username) && webDAVAuthManager != null) {
