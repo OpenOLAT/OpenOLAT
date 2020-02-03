@@ -255,13 +255,13 @@ public class VFSRevisionDAO {
 		if(locked != null) {
 			qb.where().append("metadata.locked=:locked");
 		}
-		if(downloadCount > 0) {
+		if(downloadCount != null && downloadCount.longValue() > 0) {
 			qb.where().append("metadata.downloadCount>=:downloadCount");
 		}
-		if(revisionCount > 0) {
+		if(revisionCount != null && revisionCount.longValue() > 0) {
 			qb.where().append("metadata.revisionNr>=:revisionCount");
 		}
-		if(size > 0) {
+		if(size != null && size.intValue() > 0) {
 			qb.where().append("rev.size>=:size");
 		}
 
@@ -295,13 +295,13 @@ public class VFSRevisionDAO {
 		if(locked != null) {
 			query.setParameter("locked", locked);
 		}
-		if(downloadCount > 0) {
+		if(downloadCount != null && downloadCount.longValue() > 0) {
 			query.setParameter("downloadCount", downloadCount);
 		}
-		if(revisionCount > 0) {
+		if(revisionCount != null && revisionCount.longValue() > 0) {
 			query.setParameter("revisionCount", revisionCount);
 		}
-		if(size > 0) {
+		if(size != null && size.intValue() > 0) {
 			query.setParameter("size", Long.valueOf(size));
 		}
 		

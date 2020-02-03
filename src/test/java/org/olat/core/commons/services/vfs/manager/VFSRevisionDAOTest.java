@@ -19,8 +19,8 @@
  */
 package org.olat.core.commons.services.vfs.manager;
 
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -225,7 +225,7 @@ public class VFSRevisionDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getLargest() {
-		Date fiveMinutesInThePast = Date.from(ZonedDateTime.now().minusMinutes(5).toInstant());
+		Date fiveMinutesInThePast = addMinutesToDate(-5, new Date());
 		
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rev-1");
 		VFSMetadata metadata1 = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text1.txt",
@@ -243,12 +243,12 @@ public class VFSRevisionDAOTest extends OlatTestCase {
 		Assert.assertNotNull(revision3);
 		
 		int maxResult = 100;
-		Date createdAtNewer = Date.from(ZonedDateTime.now().minusMonths(10).toInstant());
-		Date createdAtOlder = Date.from(ZonedDateTime.now().toInstant());
-		Date editedAtNewer = Date.from(ZonedDateTime.now().minusMonths(10).toInstant());
-		Date editedAtOlder = Date.from(ZonedDateTime.now().toInstant());
+		Date createdAtNewer = addMinutesToDate(-150, new Date());
+		Date createdAtOlder = addMinutesToDate(5, new Date());
+		Date editedAtNewer = addMinutesToDate(-150, new Date());
+		Date editedAtOlder = addMinutesToDate(5, new Date());
 		
-		List<VFSRevision> queryResult = revisionDao.getLargest(maxResult, createdAtNewer, createdAtOlder, editedAtNewer, editedAtOlder, null, null, null, null, 0, Long.valueOf(0), 0);
+		List<VFSRevision> queryResult = revisionDao.getLargest(maxResult, createdAtNewer, createdAtOlder, editedAtNewer, editedAtOlder, null, null, null, null, null, null, null);
 		
 		Assert.assertNotNull(queryResult);
 		Assert.assertTrue(queryResult.size() > 0);
@@ -260,4 +260,33 @@ public class VFSRevisionDAOTest extends OlatTestCase {
 			Assert.assertTrue(vfsMetadata.getFileLastModified().compareTo(editedAtOlder) <= 0);
 		}
 	}
+	
+	/**
+	 * Only check the query syntax
+	 */
+	@Test
+	public void getLargest_allParameters() {
+
+		Date now = new Date();
+		
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rev-1");
+		VFSMetadata metadata = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text_all.txt",
+				new Date(), 10000l, false, "file:///text.tx", "file", null);
+		VFSRevision revision = revisionDao.createRevision(author, "._oo_vr_all_text.txt", 1, 25l, now, "A comment", metadata);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(revision);
+
+		List<VFSRevision> queryResult = revisionDao.getLargest(100, now, now, now, now, now, now,
+				Boolean.TRUE, Boolean.FALSE, Integer.valueOf(25), Long.valueOf(33), Integer.valueOf(55));
+		
+		Assert.assertNotNull(queryResult);
+	}
+	
+	private Date addMinutesToDate(int minutes, Date date) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		cal.add(Calendar.MINUTE, minutes);
+		return cal.getTime();
+	}
+	
 }
