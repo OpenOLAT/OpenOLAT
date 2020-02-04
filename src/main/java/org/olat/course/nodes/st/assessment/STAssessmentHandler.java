@@ -44,6 +44,7 @@ import org.olat.course.run.scoring.AccountingEvaluators;
 import org.olat.course.run.scoring.AccountingEvaluatorsBuilder;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.AverageCompletionEvaluator;
+import org.olat.course.run.scoring.BlockerEvaluator;
 import org.olat.course.run.scoring.CompletionEvaluator;
 import org.olat.course.run.scoring.FullyAssessedEvaluator;
 import org.olat.course.run.scoring.LastModificationsEvaluator;
@@ -69,12 +70,14 @@ import org.springframework.stereotype.Service;
 @Service
 public class STAssessmentHandler implements AssessmentHandler {
 	
+	private static final BlockerEvaluator SEQUENTIAL_BLOCKER_EVALUATOR = new STSequentialBlockerEvaluator();
+	private static final BlockerEvaluator WITHOUT_SEQUENCE_BLOCKER_EVALUATOR = new STWithoutSequenceBlockerEvaluator();
 	private static final ObligationEvaluator MANDATORY_OBLIGATION_EVALUATOR = new MandatoryObligationEvaluator();
 	private static final CumulatingDurationEvaluator CUMULATION_DURATION_EVALUATOR = new CumulatingDurationEvaluator();
 	private static final ScoreEvaluator CONDITION_SCORE_EVALUATOR = new ConditionScoreEvaluator();
 	private static final PassedEvaluator CONDITION_PASSED_EVALUATOR = new ConditionPassedEvaluator();
 	private static final StatusEvaluator SCORE_STATUS_EVALUATOR = new ScoreStatusEvaluator();
-	private static final StatusEvaluator LEARNING_PATH_STATUS_EVALUATOR = new STLinearStatusEvaluator();
+	private static final StatusEvaluator LEARNING_PATH_STATUS_EVALUATOR = new STStatusEvaluator();
 	private static final FullyAssessedEvaluator FULLY_ASSESSED_EVALUATOR = new STFullyAssessedEvaluator();
 	private static final LastModificationsEvaluator LAST_MODIFICATION_EVALUATOR = new STLastModificationsEvaluator();
 	
@@ -114,6 +117,12 @@ public class STAssessmentHandler implements AssessmentHandler {
 					? new AverageCompletionEvaluator(DURATION_WEIGHTED)
 					: new AverageCompletionEvaluator(UNWEIGHTED);
 			builder.withCompletionEvaluator(completionEvaluator);
+			String sequenceKey = courseNode.getModuleConfiguration().getStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY, STCourseNode.CONFIG_LP_SEQUENCE_DEFAULT);
+			if (STCourseNode.CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL.equals(sequenceKey)) {
+				builder.withBlockerEvaluator(SEQUENTIAL_BLOCKER_EVALUATOR);
+			} else {
+				builder.withBlockerEvaluator(WITHOUT_SEQUENCE_BLOCKER_EVALUATOR);
+			}
 			return builder.build();
 		}
 		return AccountingEvaluatorsBuilder.builder()

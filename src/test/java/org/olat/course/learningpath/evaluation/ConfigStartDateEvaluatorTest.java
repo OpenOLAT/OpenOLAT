@@ -26,6 +26,7 @@ import java.util.Date;
 
 import org.junit.Test;
 import org.olat.core.util.DateUtils;
+import org.olat.course.nodes.st.assessment.SequentialBlocker;
 import org.olat.course.run.scoring.Blocker;
 
 /**
@@ -40,7 +41,7 @@ public class ConfigStartDateEvaluatorTest {
 	
 	@Test
 	public void shouldBlockIfStartIsInFuture() {
-		Blocker blocker = new Blocker();
+		Blocker blocker = new SequentialBlocker();
 		Date inThreeDays = DateUtils.toDate(LocalDate.now().plusDays(3));
 		
 		sut.evaluateDate(inThreeDays, blocker);
@@ -50,7 +51,7 @@ public class ConfigStartDateEvaluatorTest {
 	
 	@Test
 	public void shouldNotBlockIfStartIsInPast() {
-		Blocker blocker = new Blocker();
+		Blocker blocker = new SequentialBlocker();
 		Date threeDaysBefore = DateUtils.toDate(LocalDate.now().minusDays(3));
 		
 		sut.evaluateDate(threeDaysBefore, blocker);
@@ -60,7 +61,7 @@ public class ConfigStartDateEvaluatorTest {
 	
 	@Test
 	public void shouldNotBlockIfHasNoStart() {
-		Blocker blocker = new Blocker();
+		Blocker blocker = new SequentialBlocker();
 		
 		sut.evaluateDate(null, blocker);
 		
@@ -69,7 +70,7 @@ public class ConfigStartDateEvaluatorTest {
 
 	@Test
 	public void shouldReturnStartDateIfBlocks() {
-		Blocker blocker = new Blocker();
+		Blocker blocker = new SequentialBlocker();
 		Date inThreeDays = DateUtils.toDate(LocalDate.now().plusDays(3));
 		
 		sut.evaluateDate(inThreeDays, blocker);
@@ -81,7 +82,7 @@ public class ConfigStartDateEvaluatorTest {
 	public void shouldReturnBlockerStartIfBlockerIsLater() {
 		Date inFourDays = DateUtils.toDate(LocalDate.now().plusDays(4));
 		Date inThreeDays = DateUtils.toDate(LocalDate.now().plusDays(3));
-		Blocker blocker = new Blocker();
+		Blocker blocker = new SequentialBlocker();
 		blocker.block(inFourDays);
 		
 		sut.evaluateDate(inThreeDays, blocker);
@@ -93,7 +94,7 @@ public class ConfigStartDateEvaluatorTest {
 	public void shouldReturnNodeStartIfNodeIsLater() {
 		Date inTwoDays = DateUtils.toDate(LocalDate.now().plusDays(2));
 		Date inThreeDays = DateUtils.toDate(LocalDate.now().plusDays(3));
-		Blocker blocker = new Blocker();
+		Blocker blocker = new SequentialBlocker();
 		blocker.block(inTwoDays);
 		
 		sut.evaluateDate(inThreeDays, blocker);
@@ -104,7 +105,7 @@ public class ConfigStartDateEvaluatorTest {
 	@Test
 	public void shouldReturnBlockerStartIfNodeIsNotBlocking() {
 		Date inFourDays = DateUtils.toDate(LocalDate.now().plusDays(4));
-		Blocker blocker = new Blocker();
+		Blocker blocker = new SequentialBlocker();
 		blocker.block(inFourDays);
 		
 		sut.evaluateDate(null, blocker);

@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.junit.Test;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.Blocker;
 import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
@@ -42,44 +43,52 @@ public class STFullyAssessedEvaluatorTest {
 	
 	@Test
 	public void shouldReturnTrueIfAllMandatoryChildrenAreFullyAssessed() {
+		Blocker blocker = new SequentialBlocker();
 		AssessmentEvaluation childMandatoryAssessed = createAssessmentEvaluation(Boolean.TRUE, AssessmentObligation.mandatory);
 		AssessmentEvaluation childOptoinalAssessed = createAssessmentEvaluation(Boolean.TRUE, AssessmentObligation.optional);
 		AssessmentEvaluation childOptoinalNotAssessed = createAssessmentEvaluation(Boolean.FALSE, AssessmentObligation.optional);
 		AssessmentEvaluation childOptoinalNullAssessed = createAssessmentEvaluation(null, AssessmentObligation.optional);
 		List<AssessmentEvaluation> children = Arrays.asList(childMandatoryAssessed, childOptoinalAssessed, childOptoinalNotAssessed, childOptoinalNullAssessed);
 		
-		Boolean fullyAssessed = sut.getFullyAssessed(null, children);
+		Boolean fullyAssessed = sut.getFullyAssessed(null, children, blocker);
 		
 		assertThat(fullyAssessed).isTrue();
+		assertThat(blocker.isBlocked()).isFalse();
 	}
 	
 	@Test
 	public void shouldReturnTrueIfItHasNoChildren() {
+		Blocker blocker = new SequentialBlocker();
 		
-		Boolean fullyAssessed = sut.getFullyAssessed(null, Collections.emptyList());
+		Boolean fullyAssessed = sut.getFullyAssessed(null, Collections.emptyList(), blocker);
 		
 		assertThat(fullyAssessed).isTrue();
+		assertThat(blocker.isBlocked()).isFalse();
 	}
 	
 	@Test
 	public void shouldReturnFalseIfAllAtLeastOneMandatoryChildrenIsNotFullyAssessed() {
+		Blocker blocker = new SequentialBlocker();
 		AssessmentEvaluation childMandatoryAssessed = createAssessmentEvaluation(Boolean.TRUE, AssessmentObligation.mandatory);
 		AssessmentEvaluation childMandatoryNotAssessed = createAssessmentEvaluation(Boolean.FALSE, AssessmentObligation.mandatory);
 		List<AssessmentEvaluation> children = Arrays.asList(childMandatoryAssessed, childMandatoryNotAssessed);
 		
-		Boolean fullyAssessed = sut.getFullyAssessed(null, children);
+		Boolean fullyAssessed = sut.getFullyAssessed(null, children, blocker);
 		
 		assertThat(fullyAssessed).isFalse();
+		assertThat(blocker.isBlocked()).isTrue();
 	}
 	@Test
 	public void shouldReturnFalseIfAllAtLeastOneMandatoryChildrenIsNotAssessed() {
+		Blocker blocker = new SequentialBlocker();
 		AssessmentEvaluation childMandatoryAssessed = createAssessmentEvaluation(Boolean.TRUE, AssessmentObligation.mandatory);
 		AssessmentEvaluation childMandatoryNotAssessed = createAssessmentEvaluation(null, AssessmentObligation.mandatory);
 		List<AssessmentEvaluation> children = Arrays.asList(childMandatoryAssessed, childMandatoryNotAssessed);
 		
-		Boolean fullyAssessed = sut.getFullyAssessed(null, children);
+		Boolean fullyAssessed = sut.getFullyAssessed(null, children, blocker);
 		
 		assertThat(fullyAssessed).isFalse();
+		assertThat(blocker.isBlocked()).isTrue();
 	}
 	
 

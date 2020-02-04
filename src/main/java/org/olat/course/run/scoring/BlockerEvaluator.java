@@ -21,32 +21,14 @@ package org.olat.course.run.scoring;
 
 /**
  * 
- * Initial date: 16 Sep 2019<br>
+ * Initial date: 3 Feb 2020<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface AccountingEvaluators {
-
-	public BlockerEvaluator getBlockerEvaluator();
-
-	public StartDateEvaluator getStartDateEvaluator();
-
-	public EndDateEvaluator getEndDateEvaluator();
-
-	public ObligationEvaluator getObligationEvaluator();
-
-	public DurationEvaluator getDurationEvaluator();
+public interface BlockerEvaluator {
 	
-	public ScoreEvaluator getScoreEvaluator();
+	public Blocker getChildrenBlocker(Blocker blocker);
 
-	public PassedEvaluator getPassedEvaluator();
-
-	public LastModificationsEvaluator getLastModificationsEvaluator();
-
-	public CompletionEvaluator getCompletionEvaluator();
-
-	public StatusEvaluator getStatusEvaluator();
-
-	public FullyAssessedEvaluator getFullyAssessedEvaluator();
+	public void mergeChildrenBlocker(Blocker blocker, Blocker childrenBlocker);
 
 }

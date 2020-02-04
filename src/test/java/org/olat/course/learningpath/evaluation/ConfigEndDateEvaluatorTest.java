@@ -31,6 +31,7 @@ import org.junit.Test;
 import org.olat.core.util.DateUtils;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.SPCourseNode;
+import org.olat.course.nodes.st.assessment.SequentialBlocker;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.Blocker;
 import org.olat.modules.assessment.Overridable;
@@ -51,7 +52,7 @@ public class ConfigEndDateEvaluatorTest {
 		AssessmentEvaluation currentEvaluation = createEvaluation(mandatory);
 
 		ConfigEndDateEvaluator sut = new ConfigEndDateEvaluator(cn -> configDate);
-		Overridable<Date> endDate = sut.getEndDate(currentEvaluation, courseNode, new Blocker());
+		Overridable<Date> endDate = sut.getEndDate(currentEvaluation, courseNode, new SequentialBlocker());
 		
 		assertThat(endDate.getCurrent()).isEqualTo(configDate);
 	}
@@ -66,7 +67,7 @@ public class ConfigEndDateEvaluatorTest {
 		currentEvaluation.getEndDate().override(overriddenDate, null, null);
 
 		ConfigEndDateEvaluator sut = new ConfigEndDateEvaluator(cn -> configDate);
-		Overridable<Date> endDate = sut.getEndDate(currentEvaluation, courseNode, new Blocker());
+		Overridable<Date> endDate = sut.getEndDate(currentEvaluation, courseNode, new SequentialBlocker());
 		
 		assertThat(endDate.getCurrent()).isEqualTo(overriddenDate);
 		assertThat(endDate.getOriginal()).isEqualTo(configDate);
@@ -82,7 +83,7 @@ public class ConfigEndDateEvaluatorTest {
 		currentEvaluation.getEndDate().override(overriddenDate, null, null);
 		
 		ConfigEndDateEvaluator sut = new ConfigEndDateEvaluator(cn -> configDate);
-		Overridable<Date> endDate = sut.getEndDate(currentEvaluation, courseNode, new Blocker());
+		Overridable<Date> endDate = sut.getEndDate(currentEvaluation, courseNode, new SequentialBlocker());
 		
 		assertThat(endDate.getCurrent()).isNull();
 		assertThat(endDate.getOriginal()).isNull();
@@ -90,7 +91,7 @@ public class ConfigEndDateEvaluatorTest {
 
 	@Test
 	public void shouldNotBlockIfNotFullyAssessedAndConfigDateNotOver() {
-		Blocker blocker = new Blocker();
+		Blocker blocker = new SequentialBlocker();
 		Date configDateNotOver = DateUtils.toDate(LocalDate.now().plusDays(3));
 		
 		ConfigEndDateEvaluator sut = new ConfigEndDateEvaluator();
@@ -101,7 +102,7 @@ public class ConfigEndDateEvaluatorTest {
 
 	@Test
 	public void shouldNotBlockIfFullyAssessedAndConfigDateNotOver() {
-		Blocker blocker = new Blocker();
+		Blocker blocker = new SequentialBlocker();
 		Date configDateNotOver = DateUtils.toDate(LocalDate.now().plusDays(3));
 		
 		ConfigEndDateEvaluator sut = new ConfigEndDateEvaluator();
@@ -112,7 +113,7 @@ public class ConfigEndDateEvaluatorTest {
 
 	@Test
 	public void shouldNotBlockIfUnknownFullyAssessedAndConfigDateNotOver() {
-		Blocker blocker = new Blocker();
+		Blocker blocker = new SequentialBlocker();
 		Date configDateNotOver = DateUtils.toDate(LocalDate.now().plusDays(3));
 		
 		ConfigEndDateEvaluator sut = new ConfigEndDateEvaluator();
@@ -123,7 +124,7 @@ public class ConfigEndDateEvaluatorTest {
 
 	@Test
 	public void shouldBlockIfNotFullyAssessedAndConfigDateOver() {
-		Blocker blocker = new Blocker();
+		Blocker blocker = new SequentialBlocker();
 		Date configDateOver = DateUtils.toDate(LocalDate.now().minusDays(3));
 		
 		ConfigEndDateEvaluator sut = new ConfigEndDateEvaluator();
@@ -134,7 +135,7 @@ public class ConfigEndDateEvaluatorTest {
 
 	@Test
 	public void shouldNotBlockIfFullyAssessedAndConfigDateOver() {
-		Blocker blocker = new Blocker();
+		Blocker blocker = new SequentialBlocker();
 		Date configDateOver = DateUtils.toDate(LocalDate.now().minusDays(3));
 		
 		ConfigEndDateEvaluator sut = new ConfigEndDateEvaluator();
@@ -145,7 +146,7 @@ public class ConfigEndDateEvaluatorTest {
 
 	@Test
 	public void shouldBlockIfUnknownFullyAssessedAndConfigDateOver() {
-		Blocker blocker = new Blocker();
+		Blocker blocker = new SequentialBlocker();
 		Date configDateOver = DateUtils.toDate(LocalDate.now().minusDays(3));
 		
 		ConfigEndDateEvaluator sut = new ConfigEndDateEvaluator();

@@ -59,7 +59,6 @@ public class AssessmentAccounting implements ScoreAccounting {
 	private final CourseConfig courseConfig;
 	private Map<String, AssessmentEntry> identToEntry = new HashMap<>();
 	private final Map<CourseNode, AssessmentEvaluation> courseNodeToEval = new HashMap<>();
-	private Blocker blocker;
 	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
@@ -92,7 +91,6 @@ public class AssessmentAccounting implements ScoreAccounting {
 	
 	@Override
 	public boolean evaluateAll(boolean update) {
-		blocker = new Blocker();
 		courseNodeToEval.clear();
 		
 		identToEntry = loadAssessmentEntries(getIdentity());
@@ -101,7 +99,9 @@ public class AssessmentAccounting implements ScoreAccounting {
 		fillCacheRecursiv(root);
 		
 		if (update) {
-			updateEntryRecursiv(root, true);
+			Blocker blocker = courseAssessmentService.getEvaluators(root, courseConfig).getBlockerEvaluator()
+					.getChildrenBlocker(null);
+			updateEntryRecursiv(root, true, blocker);
 		}
 		
 		return false;
@@ -147,7 +147,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 		return entry;
 	}
 	
-	private AccountingResult updateEntryRecursiv(CourseNode courseNode, boolean firstChild) {
+	private AccountingResult updateEntryRecursiv(CourseNode courseNode, boolean firstChild, Blocker blocker) {
 		log.debug("Evaluate course node: type '{}', ident: '{}'", courseNode.getType(), courseNode.getIdent());
 		
 		AssessmentEvaluation currentEvaluation = courseNodeToEval.get(courseNode);
@@ -187,7 +187,8 @@ public class AssessmentAccounting implements ScoreAccounting {
 		AssessmentEntryStatus status = statusEvaluator.getStatus(result, blocker);
 		result.setStatus(status);
 		
-		
+		BlockerEvaluator blockerEvaluator = evaluators.getBlockerEvaluator();
+		Blocker childrenBlocker = blockerEvaluator.getChildrenBlocker(blocker);
 		int childCount = courseNode.getChildCount();
 		List<AssessmentEvaluation> children = new ArrayList<>(childCount);
 		for (int i = 0; i < childCount; i++) {
@@ -195,10 +196,12 @@ public class AssessmentAccounting implements ScoreAccounting {
 			firstChild = i== 0;
 			if (child instanceof CourseNode) {
 				CourseNode childCourseNode = (CourseNode) child;
-				AccountingResult childResult = updateEntryRecursiv(childCourseNode, firstChild);
+				AccountingResult childResult = updateEntryRecursiv(childCourseNode, firstChild, childrenBlocker);
 				children.add(childResult);
 			}
 		}
+		
+		blockerEvaluator.mergeChildrenBlocker(blocker, childrenBlocker);
 		
 		if (durationEvaluator.isDependingOnChildNodes()) {
 			Integer duration = durationEvaluator.getDuration(children);
@@ -214,7 +217,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 		result.setObligation(obligation);
 		
 		FullyAssessedEvaluator fullyAssessedEvaluator = evaluators.getFullyAssessedEvaluator();
-		Boolean fullyAssessed = fullyAssessedEvaluator.getFullyAssessed(result, children);
+		Boolean fullyAssessed = fullyAssessedEvaluator.getFullyAssessed(result, children, blocker);
 		result.setFullyAssessed(fullyAssessed);
 		
 		CompletionEvaluator completionEvaluator = evaluators.getCompletionEvaluator();

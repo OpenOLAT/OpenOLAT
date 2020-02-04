@@ -37,6 +37,7 @@ import org.olat.repository.RepositoryEntry;
  */
 class AccountingEvaluatorsFactory {
 	
+	private static final BlockerEvaluator UNCHANGING_BLOCKER_EVALUATOR = new UnchangingBlockerEvaluator();
 	private static final StartDateEvaluator NO_BLOCKING_START_DATE_EVALUATOR = new NoBlockingStartDateEvaluator();
 	private static final EndDateEvaluator NO_BLOCKING_END_DATE_EVALUATOR = new NoBlockingEndDateEvaluator();
 	private static final ObligationEvaluator NONE_OBLIGATION_EVALUATOR = new NoneObligationEvaluator();
@@ -47,6 +48,10 @@ class AccountingEvaluatorsFactory {
 	private static final StatusEvaluator UNCHANGING_STATUS_EVALUATOR = new UnchangingStatusEvaluator();
 	private static final FullyAssessedEvaluator UNCHANGING_FULLY_ASSESSED_EVALUATOR = new UnchangingFullyAssessedEvaluator();
 	private static final LastModificationsEvaluator UNCHANGING_LAST_MODIFICATIONS_EVALUATOR = new UnchangingLastModificationEvaluator();
+	
+	static BlockerEvaluator createUnchangingBlockerEvaluator() {
+		return UNCHANGING_BLOCKER_EVALUATOR;
+	}
 	
 	static StartDateEvaluator createNoBlockingStartDateEvaluator() {
 		return NO_BLOCKING_START_DATE_EVALUATOR;
@@ -90,6 +95,20 @@ class AccountingEvaluatorsFactory {
 	
 	private AccountingEvaluatorsFactory() {
 		//
+	}
+	
+	private static class UnchangingBlockerEvaluator implements BlockerEvaluator {
+
+		@Override
+		public Blocker getChildrenBlocker(Blocker blocker) {
+			return blocker;
+		}
+
+		@Override
+		public void mergeChildrenBlocker(Blocker blocker, Blocker childrenBlocker) {
+			//
+		}
+		
 	}
 	
 	private static class NoBlockingStartDateEvaluator implements StartDateEvaluator {
@@ -196,7 +215,8 @@ class AccountingEvaluatorsFactory {
 	private static class UnchangingFullyAssessedEvaluator implements FullyAssessedEvaluator {
 
 		@Override
-		public Boolean getFullyAssessed(AssessmentEvaluation currentEvaluation, List<AssessmentEvaluation> children) {
+		public Boolean getFullyAssessed(AssessmentEvaluation currentEvaluation, List<AssessmentEvaluation> children,
+				Blocker blocker) {
 			return currentEvaluation.getFullyAssessed();
 		}
 		

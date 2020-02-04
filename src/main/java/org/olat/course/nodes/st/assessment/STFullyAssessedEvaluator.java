@@ -22,6 +22,7 @@ package org.olat.course.nodes.st.assessment;
 import java.util.List;
 
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.Blocker;
 import org.olat.course.run.scoring.FullyAssessedEvaluator;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
@@ -34,9 +35,11 @@ import org.olat.modules.assessment.model.AssessmentObligation;
 public class STFullyAssessedEvaluator implements FullyAssessedEvaluator {
 
 	@Override
-	public Boolean getFullyAssessed(AssessmentEvaluation currentEvaluation, List<AssessmentEvaluation> children) {
+	public Boolean getFullyAssessed(AssessmentEvaluation currentEvaluation, List<AssessmentEvaluation> children,
+			Blocker blocker) {
 		for (AssessmentEvaluation evaluation : children) {
 			if (isMandatory(evaluation) && isNotFullyAssessedYet(evaluation)) {
+				blocker.block();
 				return Boolean.FALSE;
 			}
 		}

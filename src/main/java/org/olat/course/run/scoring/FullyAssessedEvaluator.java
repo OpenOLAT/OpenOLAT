@@ -29,6 +29,7 @@ import java.util.List;
  */
 public interface FullyAssessedEvaluator {
 
-	public Boolean getFullyAssessed(AssessmentEvaluation currentEvaluation, List<AssessmentEvaluation> children);
+	public Boolean getFullyAssessed(AssessmentEvaluation currentEvaluation, List<AssessmentEvaluation> children,
+			Blocker blocker);
 
 }

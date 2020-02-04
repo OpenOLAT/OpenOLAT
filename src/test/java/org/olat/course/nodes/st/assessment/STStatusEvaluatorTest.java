@@ -37,12 +37,13 @@ import org.olat.modules.assessment.model.AssessmentObligation;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class STLinearStatusEvaluatorTest {
+public class STStatusEvaluatorTest {
 	
-	private STLinearStatusEvaluator sut = new STLinearStatusEvaluator();
+	private STStatusEvaluator sut = new STStatusEvaluator();
+	
 	@Test
 	public void shouldNotBlockIfMandatoryAndNotFullyAssessed() {
-		Blocker blocker = new Blocker();
+		Blocker blocker = new SequentialBlocker();
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(Boolean.FALSE, null, AssessmentObligation.mandatory);
 
 		sut.getStatus(currentEvaluation, blocker);
@@ -52,7 +53,7 @@ public class STLinearStatusEvaluatorTest {
 	
 	@Test
 	public void shouldNotBlockIfNotMandatoryAndNotFullyAssessed() {
-		Blocker blocker = new Blocker();
+		Blocker blocker = new SequentialBlocker();
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(Boolean.FALSE, null, AssessmentObligation.optional);
 
 		sut.getStatus(currentEvaluation, blocker);
@@ -62,7 +63,7 @@ public class STLinearStatusEvaluatorTest {
 	
 	@Test
 	public void shouldNotBlockIfMandatoryAndFullyAssessed() {
-		Blocker blocker = new Blocker();
+		Blocker blocker = new SequentialBlocker();
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(Boolean.TRUE, null, AssessmentObligation.mandatory);
 
 		sut.getStatus(currentEvaluation, blocker);
@@ -72,7 +73,7 @@ public class STLinearStatusEvaluatorTest {
 	
 	@Test
 	public void shouldInitStatusNotStartedIfNotBlocked() {
-		Blocker blocker = new Blocker();
+		Blocker blocker = new SequentialBlocker();
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(null, AssessmentEntryStatus.done, null);
 		
 		AssessmentEntryStatus status = sut.getStatus(currentEvaluation, blocker);
@@ -82,7 +83,7 @@ public class STLinearStatusEvaluatorTest {
 	
 	@Test
 	public void shouldInitStatusNotReadyIfBlocked() {
-		Blocker blocker = new Blocker();
+		Blocker blocker = new SequentialBlocker();
 		blocker.block();
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(null, AssessmentEntryStatus.done, null);
 		

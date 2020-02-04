@@ -101,9 +101,14 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 	private static final long serialVersionUID = -7460670977531082040L;
 	public static final String TYPE = "st";
 	private static final String ICON_CSS_CLASS = "o_st_icon";
+	
+	private static final int CURRENT_VERSION = 5;
+	public static final String CONFIG_LP_SEQUENCE_KEY = "learning.path.sequence";
+	public static final String CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL = "learning.path.sequence.sequential";
+	public static final String CONFIG_LP_SEQUENCE_VALUE_WITHOUT = "learning.path.sequence.without";
+	public static final String CONFIG_LP_SEQUENCE_DEFAULT = CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL;
 
 	private ScoreCalculator scoreCalculator;
-
 	transient private Condition scoreExpression;
 	transient private Condition passedExpression;
 	transient private Condition failedExpression;
@@ -395,9 +400,14 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 				config.setConfigurationVersion(4);
 			}
 		}
+		if (config.getConfigurationVersion() < 5) {
+			config.setStringValue(CONFIG_LP_SEQUENCE_KEY, CONFIG_LP_SEQUENCE_DEFAULT);
+		}
+		
+		config.setConfigurationVersion(CURRENT_VERSION);
 	}
-	
-    @Override
+
+	@Override
     public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse) {
         super.postCopy(envMapper, processType, course, sourceCrourse);
         postImportCopy(envMapper);

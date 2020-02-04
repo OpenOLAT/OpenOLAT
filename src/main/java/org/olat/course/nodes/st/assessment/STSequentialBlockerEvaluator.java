@@ -17,36 +17,43 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.run.scoring;
+package org.olat.course.nodes.st.assessment;
+
+import org.olat.course.run.scoring.Blocker;
+import org.olat.course.run.scoring.BlockerEvaluator;
 
 /**
  * 
- * Initial date: 16 Sep 2019<br>
+ * Initial date: 3 Feb 2020<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface AccountingEvaluators {
+public class STSequentialBlockerEvaluator implements BlockerEvaluator {
 
-	public BlockerEvaluator getBlockerEvaluator();
+	@Override
+	public Blocker getChildrenBlocker(Blocker blocker) {
+		Blocker childrenBlocker = new SequentialBlocker();
+		if (blocker != null) {
+			if (blocker.getStartDate() != null) {
+				childrenBlocker.block(blocker.getStartDate());
+			}
+			if (blocker.isBlocked()) {
+				childrenBlocker.block();
+			}
+		}
+		return childrenBlocker;
+	}
 
-	public StartDateEvaluator getStartDateEvaluator();
-
-	public EndDateEvaluator getEndDateEvaluator();
-
-	public ObligationEvaluator getObligationEvaluator();
-
-	public DurationEvaluator getDurationEvaluator();
-	
-	public ScoreEvaluator getScoreEvaluator();
-
-	public PassedEvaluator getPassedEvaluator();
-
-	public LastModificationsEvaluator getLastModificationsEvaluator();
-
-	public CompletionEvaluator getCompletionEvaluator();
-
-	public StatusEvaluator getStatusEvaluator();
-
-	public FullyAssessedEvaluator getFullyAssessedEvaluator();
+	@Override
+	public void mergeChildrenBlocker(Blocker blocker, Blocker childrenBlocker) {
+		if (childrenBlocker != null) {
+			if (childrenBlocker.getStartDate() != null) {
+				blocker.block(childrenBlocker.getStartDate());
+			}
+			if (childrenBlocker.isBlocked()) {
+				blocker.block();
+			}
+		}
+	}
 
 }

@@ -66,7 +66,8 @@ public class TabbableLeaningPathNodeConfigController extends ActivateableTabbabl
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == configCtrl && event.equals(Event.DONE_EVENT)) {
+		if (source == configCtrl) {
+			if (event == Event.DONE_EVENT || event == NodeEditController.NODECONFIG_CHANGED_EVENT)
 			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 		}
 	}

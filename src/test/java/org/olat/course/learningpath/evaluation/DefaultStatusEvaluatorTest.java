@@ -22,6 +22,7 @@ package org.olat.course.learningpath.evaluation;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
+import org.olat.course.nodes.st.assessment.SequentialBlocker;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.Blocker;
 import org.olat.modules.assessment.Overridable;
@@ -34,13 +35,13 @@ import org.olat.modules.assessment.model.AssessmentObligation;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class DefaultLinearStatusEvaluatorTest {
+public class DefaultStatusEvaluatorTest {
 	
-	private DefaultLinearStatusEvaluator sut = new DefaultLinearStatusEvaluator();
+	private DefaultStatusEvaluator sut = new DefaultStatusEvaluator();
 	
 	@Test
 	public void shouldBlockIfMandatoryAndNotFullyAssessed() {
-		Blocker blocker = new Blocker();
+		Blocker blocker = new SequentialBlocker();
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(Boolean.FALSE, null, AssessmentObligation.mandatory);
 
 		sut.getStatus(currentEvaluation, blocker);
@@ -50,7 +51,7 @@ public class DefaultLinearStatusEvaluatorTest {
 	
 	@Test
 	public void shouldNotBlockIfNotMandatoryAndNotFullyAssessed() {
-		Blocker blocker = new Blocker();
+		Blocker blocker = new SequentialBlocker();
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(Boolean.FALSE, null, AssessmentObligation.optional);
 
 		sut.getStatus(currentEvaluation, blocker);
@@ -60,7 +61,7 @@ public class DefaultLinearStatusEvaluatorTest {
 	
 	@Test
 	public void shouldNotBlockIfMandatoryAndFullyAssessed() {
-		Blocker blocker = new Blocker();
+		Blocker blocker = new SequentialBlocker();
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(Boolean.TRUE, null, AssessmentObligation.mandatory);
 
 		sut.getStatus(currentEvaluation, blocker);
@@ -70,7 +71,7 @@ public class DefaultLinearStatusEvaluatorTest {
 	
 	@Test
 	public void shouldNotChangeStatusIfBlockedButInProgress() {
-		Blocker blocker = new Blocker();
+		Blocker blocker = new SequentialBlocker();
 		blocker.block();
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(null, AssessmentEntryStatus.inProgress, null);
 		
@@ -81,7 +82,7 @@ public class DefaultLinearStatusEvaluatorTest {
 	
 	@Test
 	public void shouldNotChangeStatusIfBlockedButInReview() {
-		Blocker blocker = new Blocker();
+		Blocker blocker = new SequentialBlocker();
 		blocker.block();
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(null, AssessmentEntryStatus.inReview, null);
 		
@@ -92,7 +93,7 @@ public class DefaultLinearStatusEvaluatorTest {
 	
 	@Test
 	public void shouldNotChangeStatusIfBlockedButDone() {
-		Blocker blocker = new Blocker();
+		Blocker blocker = new SequentialBlocker();
 		blocker.block();
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(null, AssessmentEntryStatus.done, null);
 		
@@ -103,7 +104,7 @@ public class DefaultLinearStatusEvaluatorTest {
 	
 	@Test
 	public void shouldSetNotStartedIfNotBlocked() {
-		Blocker blocker = new Blocker();
+		Blocker blocker = new SequentialBlocker();
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(null, null, null);
 		
 		AssessmentEntryStatus status = sut.getStatus(currentEvaluation, blocker);
@@ -113,7 +114,7 @@ public class DefaultLinearStatusEvaluatorTest {
 	
 	@Test
 	public void shouldSetNotReadyIfBlocked() {
-		Blocker blocker = new Blocker();
+		Blocker blocker = new SequentialBlocker();
 		blocker.block();
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(null, null, null);
 		

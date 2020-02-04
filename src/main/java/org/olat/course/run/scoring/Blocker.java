@@ -21,25 +21,20 @@ package org.olat.course.run.scoring;
 
 import java.util.Date;
 
-public class Blocker {
-	
-	private boolean blocked = false;
-	private Date startDate = null;
-	
-	public boolean isBlocked() {
-		return blocked;
-	}
-	
-	public void block() {
-		blocked = true;
-	}
-	
-	public void block(Date startDate) {
-		this.startDate = startDate;
-		block();
-	}
-	
-	public Date getStartDate() {
-		return startDate;
-	}
+/**
+ * 
+ * Initial date: 3 Feb 2020<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ *
+ */
+public interface Blocker {
+
+	boolean isBlocked();
+
+	void block();
+
+	void block(Date startDate);
+
+	Date getStartDate();
+
 }

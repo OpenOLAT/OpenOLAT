@@ -17,36 +17,46 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.run.scoring;
+package org.olat.course.nodes.st.assessment;
+
+import java.util.Date;
+
+import org.olat.course.run.scoring.Blocker;
 
 /**
  * 
- * Initial date: 16 Sep 2019<br>
+ * Initial date: 3 Feb 2020<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface AccountingEvaluators {
+public class WithoutSequenceBlocker implements Blocker {
 
-	public BlockerEvaluator getBlockerEvaluator();
-
-	public StartDateEvaluator getStartDateEvaluator();
-
-	public EndDateEvaluator getEndDateEvaluator();
-
-	public ObligationEvaluator getObligationEvaluator();
-
-	public DurationEvaluator getDurationEvaluator();
+	private final boolean blocked;
+	private final Date startDate;
 	
-	public ScoreEvaluator getScoreEvaluator();
+	public WithoutSequenceBlocker(boolean blocked, Date startDate) {
+		this.blocked = blocked;
+		this.startDate = startDate;
+	}
 
-	public PassedEvaluator getPassedEvaluator();
+	@Override
+	public boolean isBlocked() {
+		return blocked;
+	}
 
-	public LastModificationsEvaluator getLastModificationsEvaluator();
+	@Override
+	public void block() {
+		//
+	}
 
-	public CompletionEvaluator getCompletionEvaluator();
+	@Override
+	public void block(Date startDate) {
+		//
+	}
 
-	public StatusEvaluator getStatusEvaluator();
-
-	public FullyAssessedEvaluator getFullyAssessedEvaluator();
+	@Override
+	public Date getStartDate() {
+		return startDate;
+	}
 
 }
