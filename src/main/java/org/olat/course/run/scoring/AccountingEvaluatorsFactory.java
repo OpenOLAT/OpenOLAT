@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.st.assessment.WithoutSequenceBlocker;
 import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
@@ -101,7 +102,7 @@ class AccountingEvaluatorsFactory {
 
 		@Override
 		public Blocker getChildrenBlocker(Blocker blocker) {
-			return blocker;
+			return blocker != null? blocker: new WithoutSequenceBlocker(false, null);
 		}
 
 		@Override
