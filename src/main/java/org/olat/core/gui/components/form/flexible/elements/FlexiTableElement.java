@@ -472,4 +472,12 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	 * @return The i18n key for the message to be displayed when the table is empty or NULL when no message should be displayed.
 	 */
 	public String getEmtpyTableMessageKey();
+	
+	/**
+	 * Add a button or an other component in the "button grouped"
+	 * panel under the table.
+	 * 
+	 * @param item An acceptable form item
+	 */
+	public void addBatchButton(FormItem item);
 }

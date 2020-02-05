@@ -95,6 +95,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			
 			sb.append("</table>");
 			renderFooterButtons(sb, ftC, translator);
+			renderFooterGroupedButtons(renderer, sb, ftC, ubu, translator, renderResult, args);
 			//draggable
 			if(ftE.getColumnIndexForDragAndDropLabel() > 0) {
 				sb.append("<script>")
@@ -402,7 +403,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	
 	protected void renderFormItem(Renderer renderer, StringOutput sb, FormItem item, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
-		if(item != null) {
+		if(item != null && item.isVisible()) {
 			Component cmp = item.getComponent();
 			cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, translator, renderResult, args);
 			cmp.setDirty(false);
@@ -465,6 +466,21 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		
 		if(ftE.getDefaultPageSize() > 0) {
 			renderPagesLinks(sb, ftC, translator);
+		}
+	}
+	
+	protected void renderFooterGroupedButtons(Renderer renderer, StringOutput sb, FlexiTableComponent ftC,
+			URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
+		List<FormItem> items = ftC.getFlexiTableElement().getBatchButtons();
+		if(items != null) {
+			boolean atLeastOneVisible = items.stream().anyMatch(FormItem::isVisible);
+			if(atLeastOneVisible) {
+				sb.append("<div class='o_button_group'>");
+				for(FormItem item:items) {
+					renderFormItem(renderer, sb, item, ubu, translator, renderResult, args);
+				}
+				sb.append("</div>");
+			}
 		}
 	}
 	

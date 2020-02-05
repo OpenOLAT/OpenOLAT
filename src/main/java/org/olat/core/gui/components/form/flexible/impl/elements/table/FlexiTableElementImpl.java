@@ -114,8 +114,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private VelocityContainer rowRenderer;
 	private VelocityContainer detailsRenderer;
 
-	private FormLink customButton, exportButton;
-	private FormLink searchButton, extendedSearchButton;
+	private FormLink customButton;
+	private FormLink exportButton;
+	private FormLink searchButton;
+	private FormLink extendedSearchButton;
 	private FormLink classicTypeButton;
 	private FormLink customTypeButton;
 	private FormLink extendedFilterButton;
@@ -147,8 +149,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	
 	private FlexiTreeTableNode rootCrumb;
 	private List<FlexiTreeTableNode> crumbs;
-	
 	private Map<String,FormItem> components = new HashMap<>();
+	private List<FormItem> batchButtons = new ArrayList<>();
 	
 	public FlexiTableElementImpl(WindowControl wControl, String name, Translator translator, FlexiTableDataModel<?> tableModel) {
 		this(wControl, name, translator, tableModel, -1, true);
@@ -845,6 +847,18 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	public void addFormItem(FormItem item) {
 		components.put(item.getName(), item);
 	}
+	
+	public List<FormItem> getBatchButtons() {
+		return batchButtons;
+	}
+	
+	@Override
+	public void addBatchButton(FormItem item) {
+		if(item != null) {
+			batchButtons.add(item);
+			addFormItem(item);
+		}
+	}
 
 	@Override
 	public void doDispatchFormRequest(UserRequest ureq) {
@@ -855,10 +869,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	protected void dispatchFormRequest(UserRequest ureq) {
 		super.dispatchFormRequest(ureq);
 	}
-	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormItemImpl#evalFormRequest(org.olat.core.gui.UserRequest)
-	 */
+
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
 		Form form = getRootForm();

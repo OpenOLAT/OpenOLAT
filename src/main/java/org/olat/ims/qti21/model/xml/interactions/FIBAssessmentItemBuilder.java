@@ -1393,10 +1393,11 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 			if(match(response, solution)) {
 				return true;
 			}
-			
-			for(TextEntryAlternative textEntryAlternative:alternatives) {
-				if(match(response, textEntryAlternative.getAlternative())) {
-					return true;
+			if(alternatives != null && !alternatives.isEmpty()) {
+				for(TextEntryAlternative textEntryAlternative:alternatives) {
+					if(match(response, textEntryAlternative.getAlternative())) {
+						return true;
+					}
 				}
 			}
 			return false;
