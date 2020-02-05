@@ -27,7 +27,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
-import org.olat.modules.forms.ui.model.CountResult;
+import org.olat.modules.forms.ui.model.CountRatioResult;
 
 /**
  * 
@@ -35,8 +35,8 @@ import org.olat.modules.forms.ui.model.CountResult;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class CountDataModel extends DefaultFlexiTableDataModel<CountResult>
-implements SortableFlexiTableDataModel<CountResult> {
+public class CountDataModel extends DefaultFlexiTableDataModel<CountRatioResult>
+implements SortableFlexiTableDataModel<CountRatioResult> {
 	
 	public CountDataModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
@@ -44,33 +44,35 @@ implements SortableFlexiTableDataModel<CountResult> {
 
 	@Override
 	public void sort(SortKey orderBy) {
-		List<CountResult> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, null).sort();
+		List<CountRatioResult> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, null).sort();
 		super.setObjects(rows);
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		CountResult countResult = getObject(row);
+		CountRatioResult countResult = getObject(row);
 		return getValueAt(countResult, col);
 	}
 
 	@Override
-	public Object getValueAt(CountResult row, int col) {
+	public Object getValueAt(CountRatioResult row, int col) {
 		switch(CountReportCols.values()[col]) {
 			case name: return row.getName();
 			case count: return row.getCount();
+			case percent: return row.getRatio();
 			default: return null;
 		}
 	}
 
 	@Override
-	public DefaultFlexiTableDataModel<CountResult> createCopyWithEmptyList() {
+	public DefaultFlexiTableDataModel<CountRatioResult> createCopyWithEmptyList() {
 		return new CountDataModel(getTableColumnModel());
 	}
 	
 	public enum CountReportCols implements FlexiSortableColumnDef {
 		name("report.count.name.title"),
-		count("report.count.count.title");
+		count("report.count.count.title"),
+		percent("report.count.percent.title");
 		
 		private final String i18nKey;
 		

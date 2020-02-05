@@ -19,18 +19,25 @@
  */
 package org.olat.modules.forms.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
+import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.ui.CountDataModel.CountReportCols;
+import org.olat.modules.forms.ui.component.PercentCellRenderer;
 import org.olat.modules.forms.ui.model.CountDataSource;
+import org.olat.modules.forms.ui.model.CountRatioResult;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -41,6 +48,9 @@ import org.olat.modules.forms.ui.model.CountDataSource;
 public class CountTableController extends FormBasicController {
 	
 	private final CountDataSource dataSource;
+	
+	@Autowired
+	private EvaluationFormManager evaluationFormManager;
 
 	public CountTableController(UserRequest ureq, WindowControl wControl, CountDataSource dataSource) {
 		super(ureq, wControl, LAYOUT_HORIZONTAL);
@@ -52,10 +62,19 @@ public class CountTableController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CountReportCols.name));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CountReportCols.count));
+		DefaultFlexiColumnModel countModel = new DefaultFlexiColumnModel(CountReportCols.count);
+		countModel.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		countModel.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		columnsModel.addFlexiColumnModel(countModel);
+		DefaultFlexiColumnModel percentModel = new DefaultFlexiColumnModel(CountReportCols.percent, new PercentCellRenderer());
+		percentModel.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		percentModel.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		columnsModel.addFlexiColumnModel(percentModel);
 		
 		CountDataModel dataModel = new CountDataModel(columnsModel);
-		dataModel.setObjects(dataSource.getResponses());
+		
+		List<CountRatioResult> calculateRatio = evaluationFormManager.calculateRatio(dataSource.getResponses());
+		dataModel.setObjects(calculateRatio);
 		FlexiTableElement tableEl = uifactory.addTableElement(getWindowControl(),
 				"counts" + CodeHelper.getRAMUniqueID(), dataModel, getTranslator(), formLayout);
 		tableEl.setNumOfRowsEnabled(false);
