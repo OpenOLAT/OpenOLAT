@@ -105,7 +105,7 @@ public abstract class AbstractCourseNodeWebService {
 			if(nodeId != null) {
 				node = updateCourseNode(nodeId, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, editSession);
 			} else {
-				CourseNode parentNode = getParentNode(course, parentNodeId);
+				CourseEditorTreeNode parentNode = getParentNode(course, parentNodeId);
 				if(parentNode == null) {
 					return Response.serverError().status(Status.NOT_FOUND).build();
 				}
@@ -131,7 +131,7 @@ public abstract class AbstractCourseNodeWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		CourseNode courseNode = getParentNode(course, nodeId);
+		CourseNode courseNode = getParentNode(course, nodeId).getCourseNode();
 		if(courseNode == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
@@ -159,10 +159,10 @@ public abstract class AbstractCourseNodeWebService {
 	
 	private CourseNodeVO createCourseNode(String type, String shortTitle, String longTitle, String learningObjectives,
 			String visibilityExpertRules, String accessExpertRules, CustomConfigDelegate delegateConfig,
-			CourseEditSession editSession, CourseNode parentNode, Integer position) {
+			CourseEditSession editSession, CourseEditorTreeNode parentNode, Integer position) {
 
 		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(type);
-		CourseNode insertedNode = newNodeConfig.getInstance();
+		CourseNode insertedNode = newNodeConfig.getInstance(parentNode);
 		insertedNode.setShortTitle(shortTitle);
 		insertedNode.setLongTitle(longTitle);
 		insertedNode.setLearningObjectives(learningObjectives);
@@ -185,9 +185,9 @@ public abstract class AbstractCourseNodeWebService {
 		}
 
 		if (position == null || position.intValue() < 0) {
-			course.getEditorTreeModel().addCourseNode(insertedNode, parentNode);
+			course.getEditorTreeModel().addCourseNode(insertedNode, parentNode.getCourseNode());
 		} else {
-			course.getEditorTreeModel().insertCourseNodeAt(insertedNode, parentNode, position);
+			course.getEditorTreeModel().insertCourseNodeAt(insertedNode, parentNode.getCourseNode(), position);
 		}
 		
 		CourseEditorTreeNode editorNode = course.getEditorTreeModel().getCourseEditorNodeContaining(insertedNode);
@@ -243,12 +243,15 @@ public abstract class AbstractCourseNodeWebService {
 		return cond;
 	}
 	
-	protected CourseNode getParentNode(ICourse course, String parentNodeId) {
+	protected CourseEditorTreeNode getParentNode(ICourse course, String parentNodeId) {
 		if (parentNodeId == null) {
-			return course.getRunStructure().getRootNode();
-		} else {
-			return course.getEditorTreeModel().getCourseNode(parentNodeId);
+			return (CourseEditorTreeNode)course.getEditorTreeModel().getRootNode();
 		}
+		TreeNode treeNode = course.getEditorTreeModel().getNodeById(parentNodeId);
+		if (treeNode instanceof CourseEditorTreeNode) {
+			return (CourseEditorTreeNode) treeNode;
+		}
+		return null;
 	}
 	
 	private void saveAndCloseCourse(CourseEditSession editSession) {

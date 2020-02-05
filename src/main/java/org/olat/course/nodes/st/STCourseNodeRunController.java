@@ -144,6 +144,8 @@ public class STCourseNodeRunController extends BasicController {
 							// use the first children as they appear in the list
 							if (i < STCourseNodeConfiguration.MAX_PEEKVIEW_CHILD_NODES) {
 								if(accessible) {
+									CourseNode parent = child.getParent() instanceof CourseNode? (CourseNode)child.getParent(): null;
+									child.updateModuleConfigDefaults(false, parent);
 									childPeekViewController = child.createPeekViewRunController(ureq, wControl, userCourseEnv, childCourseTreeNode);
 								}
 							} else {
@@ -154,6 +156,8 @@ public class STCourseNodeRunController extends BasicController {
 							// Only add configured children
 							if (peekviewChildNodes.contains(child.getIdent())) {
 								if(accessible) {
+									CourseNode parent = child.getParent() instanceof CourseNode? (CourseNode)child.getParent(): null;
+									child.updateModuleConfigDefaults(false, parent);
 									childPeekViewController = child.createPeekViewRunController(ureq, wControl, userCourseEnv, childCourseTreeNode);
 								}
 							} else {

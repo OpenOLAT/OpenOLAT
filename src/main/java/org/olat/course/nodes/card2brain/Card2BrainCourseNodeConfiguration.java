@@ -24,6 +24,7 @@ import java.util.Locale;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.nodes.AbstractCourseNodeConfiguration;
 import org.olat.course.nodes.Card2BrainCourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -50,8 +51,8 @@ public class Card2BrainCourseNodeConfiguration extends AbstractCourseNodeConfigu
 	}
 
 	@Override
-	public CourseNode getInstance() {
-		return new Card2BrainCourseNode();
+	public CourseNode getInstance(INode parent) {
+		return new Card2BrainCourseNode(parent);
 	}
 
 	@Override

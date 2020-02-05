@@ -306,7 +306,8 @@ public class MergedCourseElementDataContainer extends MergeSource {
 	
 	private VFSContainer getBCContainer(ICourse course, BCCourseNode bcNode, NodeEvaluation nodeEval,
 			UserCourseEnvironment userCourseEnv, boolean isOlatAdmin) {
-		bcNode.updateModuleConfigDefaults(false);
+		CourseNode parent = bcNode.getParent() instanceof CourseNode? (CourseNode)bcNode.getParent(): null;
+		bcNode.updateModuleConfigDefaults(false, parent);
 		// add folder not to merge source. Use name and node id to have unique name
 		VFSContainer rootFolder = null;
 		String subpath = bcNode.getModuleConfiguration().getStringValue(BCCourseNode.CONFIG_SUBPATH);

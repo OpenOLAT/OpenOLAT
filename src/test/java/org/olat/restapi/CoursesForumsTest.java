@@ -85,12 +85,13 @@ public class CoursesForumsTest  extends OlatRestTestCase {
 		dbInstance.intermediateCommit();
 		
 		//create a folder
+		CourseNode rootNode = course1.getRunStructure().getRootNode();
 		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration("fo");
-		forumNode = newNodeConfig.getInstance();
+		forumNode = newNodeConfig.getInstance(rootNode);
 		forumNode.setShortTitle("Forum");
 		forumNode.setLearningObjectives("forum objectives");
 		forumNode.setNoAccessExplanation("You don't have access");
-		course1.getEditorTreeModel().addCourseNode(forumNode, course1.getRunStructure().getRootNode());
+		course1.getEditorTreeModel().addCourseNode(forumNode, rootNode);
 		
 		CourseFactory.publishCourse(course1, RepositoryEntryStatusEnum.published, true, false, admin, Locale.ENGLISH);
 		

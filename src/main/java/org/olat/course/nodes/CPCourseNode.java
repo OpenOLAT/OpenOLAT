@@ -42,6 +42,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
@@ -77,13 +78,15 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 	private static final String TYPE = "cp";
 
 	public CPCourseNode() {
-		super(TYPE);
-		updateModuleConfigDefaults(true);
+		this(null);
+	}
+
+	public CPCourseNode(INode parent) {
+		super(TYPE, parent);
 	}
 
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
-		updateModuleConfigDefaults(false);
 		CPEditController childTabCntrllr = new CPEditController(ureq, wControl, stackPanel, this);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
@@ -97,7 +100,6 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
-		updateModuleConfigDefaults(false);
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ICourse.class, userCourseEnv.getCourseEnvironment().getCourseResourceableId());
 		CPRunController cprunC = new CPRunController(getModuleConfiguration(), ureq, wControl, this, nodecmd, ores, false);
 		return cprunC.createNodeRunConstructionResult(ureq, null);
@@ -105,7 +107,6 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
-		updateModuleConfigDefaults(false);
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ICourse.class, userCourseEnv.getCourseEnvironment().getCourseResourceableId());
 		return new CPRunController(getModuleConfiguration(), ureq, wControl, this, null, ores, true);
 	}
@@ -161,13 +162,12 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 	/**
 	 * Update the module configuration to have all mandatory configuration flags
 	 * set to usefull default values
-	 * 
 	 * @param isNewNode true: an initial configuration is set; false: upgrading
 	 *          from previous node configuration version, set default to maintain
 	 *          previous behaviour
 	 */
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
 		int CURRENTVERSION = 7;
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {

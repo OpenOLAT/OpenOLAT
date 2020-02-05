@@ -48,6 +48,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.ConditionAccessEditConfig;
@@ -130,12 +131,16 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 	private static final int CURRENT_CONFIG_VERSION = 3;
 
 	public ENCourseNode() {
-		super(TYPE);
-		initDefaultConfig();
+		this(null);
+	}
+
+	public ENCourseNode(INode parent) {
+		super(TYPE, parent);
 	}
 
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
+		//TODO uh 
 		migrateConfig();
 		ENEditController childTabCntrllr = new ENEditController(getModuleConfiguration(), ureq, wControl, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());

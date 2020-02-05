@@ -211,14 +211,14 @@ public class MultiSPController extends FormBasicController {
 			CourseNode newNode = null;
 			if(item instanceof VFSLeaf) {
 				//create node
-				newNode = createCourseNode(item, "sp");
+				newNode = createCourseNode(parentNode, item, "sp");
 				ModuleConfiguration moduleConfig = newNode.getModuleConfiguration();
 				String path = VFSManager.getRelativeItemPath(item, rootContainer, null);
 				moduleConfig.set(SPEditController.CONFIG_KEY_FILE, path);
 				moduleConfig.setBooleanEntry(SPEditController.CONFIG_KEY_ALLOW_RELATIVE_LINKS, true);
 			} else if (item instanceof VFSContainer) {
 				//add structure
-				newNode = createCourseNode(item, "st");
+				newNode = createCourseNode(parentNode, item, "st");
 			}
 			
 			int pos = -1;
@@ -244,9 +244,9 @@ public class MultiSPController extends FormBasicController {
 		}
 	}
 	
-	private CourseNode createCourseNode(VFSItem item, String type) {
+	private CourseNode createCourseNode(CourseNode parent, VFSItem item, String type) {
 		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(type);
-		CourseNode newNode = newNodeConfig.getInstance();
+		CourseNode newNode = newNodeConfig.getInstance(parent);
 		String name = item.getName();
 		if (name.length() > NodeConfigFormController.SHORT_TITLE_MAX_LENGTH) {
 			String shortName = name.substring(0, NodeConfigFormController.SHORT_TITLE_MAX_LENGTH - 1);

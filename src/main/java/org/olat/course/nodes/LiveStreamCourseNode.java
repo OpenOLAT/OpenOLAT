@@ -30,6 +30,7 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.ConditionAccessEditConfig;
@@ -68,14 +69,16 @@ public class LiveStreamCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONFIG_PLAYER_PROFILE = "playerProfile";
 
 	public LiveStreamCourseNode() {
-		super(TYPE);
-		updateModuleConfigDefaults(true);
+		this(null);
+	}
+
+	public LiveStreamCourseNode(INode parent) {
+		super(TYPE, parent);
 	}
 
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			ICourse course, UserCourseEnvironment euce) {
-		updateModuleConfigDefaults(false);
 		LiveStreamEditController editCtrl = new LiveStreamEditController(ureq, wControl, getModuleConfiguration());
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course, chosenNode, euce, editCtrl);
@@ -89,8 +92,6 @@ public class LiveStreamCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
-		updateModuleConfigDefaults(false);
-		
 		Controller runCtrl;
 		if (userCourseEnv.isCourseReadOnly()) {
 			Translator trans = Util.createPackageTranslator(Card2BrainCourseNode.class, ureq.getLocale());
@@ -130,7 +131,7 @@ public class LiveStreamCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
 			LiveStreamModule liveStreamModule = CoreSpringFactory.getImpl(LiveStreamModule.class);

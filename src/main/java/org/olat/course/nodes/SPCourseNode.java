@@ -35,6 +35,7 @@ import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseModule;
@@ -64,17 +65,16 @@ public class SPCourseNode extends AbstractAccessableCourseNode {
 	private static final long serialVersionUID = -4565145351110778757L;
 	public static final String TYPE = "sp";
 
-	/**
-	 * Default constructor for course node of type single page
-	 */
 	public SPCourseNode() {
-		super(TYPE);
-		updateModuleConfigDefaults(true);
+		this(null);
+	}
+	
+	public SPCourseNode(INode parent) {
+		super(TYPE, parent);
 	}
 
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
-		updateModuleConfigDefaults(false);
 		SPEditController childTabCntrllr = new SPEditController(getModuleConfiguration(), ureq, wControl, this, course, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		NodeEditController nodeEditController = new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
@@ -91,8 +91,6 @@ public class SPCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
-		updateModuleConfigDefaults(false);
-
 		VFSContainer container = userCourseEnv.getCourseEnvironment().getCourseFolderContainer();
 		SPRunController runController = new SPRunController(wControl, ureq, userCourseEnv, this, container);
 		return new NodeRunConstructionResult(runController);
@@ -174,13 +172,12 @@ public class SPCourseNode extends AbstractAccessableCourseNode {
 	/**
 	 * Update the module configuration to have all mandatory configuration flags
 	 * set to usefull default values
-	 * 
 	 * @param isNewNode true: an initial configuration is set; false: upgrading
 	 *          from previous node configuration version, set default to maintain
 	 *          previous behaviour
 	 */
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
 			// use defaults for new course building blocks

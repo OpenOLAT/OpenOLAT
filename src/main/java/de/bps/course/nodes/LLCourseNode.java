@@ -29,6 +29,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.ConditionAccessEditConfig;
@@ -66,7 +67,11 @@ public class LLCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONF_LINKLIST = "ll_link_list";
 
 	public LLCourseNode() {
-		super(TYPE);
+		this(null);
+	}
+
+	public LLCourseNode(INode parent) {
+		super(TYPE, parent);
 		initDefaultConfig();
 	}
 
@@ -81,7 +86,7 @@ public class LLCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
 		ModuleConfiguration config = getModuleConfiguration();
 		if(config.getConfigurationVersion() < 2) {
 			List<LLModel> links = (List<LLModel>)config.get(CONF_LINKLIST);
@@ -103,7 +108,6 @@ public class LLCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course,
 			UserCourseEnvironment userCourseEnv) {
-		updateModuleConfigDefaults(false);
 		LLEditController childTabCntrllr = new LLEditController(getModuleConfiguration(), ureq, wControl, course);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(userCourseEnv.getCourseEditorEnv().getCurrentCourseNodeId());
 		// needed for DENEditController.isConfigValid()
@@ -120,7 +124,6 @@ public class LLCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
-		updateModuleConfigDefaults(false);
 		Controller controller = new LLRunController(ureq, wControl, getModuleConfiguration(), this, userCourseEnv, true);
 		controller = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_ll_icon");
 		return new NodeRunConstructionResult(controller);
@@ -129,7 +132,6 @@ public class LLCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			CourseNodeSecurityCallback nodeSecCallback) {
-		updateModuleConfigDefaults(false);
 		// Use normal view as peekview
 		Controller controller = new LLRunController(ureq, wControl, getModuleConfiguration(), this, userCourseEnv, false);
 		return controller;

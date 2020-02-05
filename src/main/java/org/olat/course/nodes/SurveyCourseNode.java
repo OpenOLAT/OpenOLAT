@@ -39,6 +39,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.ConditionAccessEditConfig;
@@ -101,8 +102,11 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONFIG_KEY_REPORT_FOR_GUEST = "report.for.guest";
 
 	public SurveyCourseNode() {
-		super(TYPE);
-		updateModuleConfigDefaults(true);
+		this(null);
+	}
+	
+	public SurveyCourseNode(INode parent) {
+		super(TYPE, parent);
 	}
 
 	@Override
@@ -141,7 +145,6 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			ICourse course, UserCourseEnvironment euce) {
-		updateModuleConfigDefaults(false);
 		RepositoryEntry courseEntry = euce.getCourseEditorEnv().getCourseGroupManager().getCourseEntry();
 		TabbableController childTabCtrl	= new SurveyEditController(ureq, wControl, this, courseEntry);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
@@ -200,7 +203,7 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
 			config.setBooleanEntry(CONFIG_KEY_EXECUTION_BY_OWNER, false);

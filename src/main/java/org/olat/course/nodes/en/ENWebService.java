@@ -218,7 +218,7 @@ public class ENWebService extends AbstractCourseNodeWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
-		CourseNode node = getParentNode(course, nodeId);
+		CourseNode node = getParentNode(course, nodeId).getCourseNode();
 		ModuleConfiguration config = node.getModuleConfiguration();
 		String groupNames = (String)config.get(ENCourseNode.CONFIG_GROUPNAME);
 		@SuppressWarnings("unchecked")

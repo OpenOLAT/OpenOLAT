@@ -22,6 +22,7 @@ package org.olat.course.nodes;
 import java.util.Locale;
 
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.nodes.feed.blog.BlogCourseNodeConfiguration;
 import org.olat.fileresource.types.BlogFileResource;
 import org.olat.modules.webFeed.manager.FeedManager;
@@ -45,8 +46,8 @@ public class BlogCourseNode extends AbstractFeedCourseNode {
 	
 	public static final String TYPE = FeedManager.KIND_BLOG;
 
-	public BlogCourseNode() {
-		super(TYPE);
+	public BlogCourseNode(INode parent) {
+		super(TYPE, parent);
 	}
 
 	@Override

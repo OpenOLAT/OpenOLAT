@@ -32,6 +32,7 @@ import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.ConditionAccessEditConfig;
@@ -62,13 +63,15 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 	public static final String TYPE = "video";
 
 	public VideoCourseNode() {
-		super(TYPE);
-		updateModuleConfigDefaults(true);
+		this(null);
+	}
+	
+	public VideoCourseNode(INode parent) {
+		super(TYPE, parent);
 	}
 
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
-		updateModuleConfigDefaults(false);
 		VideoEditController childTabCntrllr = new VideoEditController(this, ureq, wControl, course, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
@@ -94,7 +97,6 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 			UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback,
 			String nodecmd) {
-		updateModuleConfigDefaults(false);
 		VideoRunController cprunC = new VideoRunController(getModuleConfiguration(), wControl, ureq, userCourseEnv, this);
 		return cprunC.createNodeRunConstructionResult(ureq);
 	}

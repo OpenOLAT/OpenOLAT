@@ -297,12 +297,13 @@ public class CoursesFoldersTest extends OlatRestTestCase {
 		dbInstance.intermediateCommit();
 		
 		//create a folder
+		CourseNode rootNode = course.getRunStructure().getRootNode();
 		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration("bc");
-		CourseNode bcNode = newNodeConfig.getInstance();
+		CourseNode bcNode = newNodeConfig.getInstance(rootNode);
 		bcNode.setShortTitle("Folder");
 		bcNode.setLearningObjectives("Folder objectives");
 		bcNode.setNoAccessExplanation("You don't have access");
-		course.getEditorTreeModel().addCourseNode(bcNode, course.getRunStructure().getRootNode());
+		course.getEditorTreeModel().addCourseNode(bcNode, rootNode);
 
 		CourseFactory.publishCourse(course, RepositoryEntryStatusEnum.published, true, false, admin, Locale.ENGLISH);
 		return new CourseWithBC(course, bcNode);

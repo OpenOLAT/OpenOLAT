@@ -46,6 +46,7 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
+import org.olat.core.util.nodes.INode;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -94,13 +95,15 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 	private Condition preConditionUploaders, preConditionDownloaders;
 
 	public BCCourseNode() {
-		super(TYPE);
-		updateModuleConfigDefaults(true);
+		this(null);
+	}
+	
+	public BCCourseNode(INode parent) {
+		super(TYPE, parent);
 	}
 
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
-		updateModuleConfigDefaults(false);
 		BCCourseNodeEditController childTabCntrllr = new BCCourseNodeEditController(ureq, wControl, stackPanel, this, course, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
@@ -116,7 +119,6 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
-		updateModuleConfigDefaults(false);
 		BCCourseNodeRunController bcCtrl = new BCCourseNodeRunController(ureq, wControl, userCourseEnv, this, nodeSecCallback.getNodeEvaluation());
 		if (StringHelper.containsNonWhitespace(nodecmd)) {
 			bcCtrl.activatePath(ureq, nodecmd);
@@ -129,8 +131,6 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			CourseNodeSecurityCallback nodeSecCallback) {
 		if (nodeSecCallback.isAccessible()) {
-			updateModuleConfigDefaults(false);
-			
 			// Create a folder peekview controller that shows the latest two entries
 			VFSContainer rootFolder = null;
 			if(getModuleConfiguration().getBooleanSafe(CONFIG_AUTO_FOLDER)) {
@@ -316,7 +316,8 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public StatusDescription isConfigValid() {
-		updateModuleConfigDefaults(false);
+		CourseNode parent = this.getParent() instanceof CourseNode? (CourseNode)this.getParent(): null;
+		updateModuleConfigDefaults(false, parent);
 
 		StatusDescription sd = StatusDescription.NOERROR;
 		if(!getModuleConfiguration().getBooleanSafe(CONFIG_AUTO_FOLDER)){
@@ -427,7 +428,7 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
 		ModuleConfiguration config = getModuleConfiguration();
 		int version = config.getConfigurationVersion();
 		

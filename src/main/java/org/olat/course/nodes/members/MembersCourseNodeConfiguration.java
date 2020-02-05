@@ -23,6 +23,7 @@ import java.util.Locale;
 
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.nodes.AbstractCourseNodeConfiguration;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
@@ -57,8 +58,8 @@ public class MembersCourseNodeConfiguration extends AbstractCourseNodeConfigurat
 	}
 
 	@Override
-	public CourseNode getInstance() {
-		return new MembersCourseNode();
+	public CourseNode getInstance(INode parent) {
+		return new MembersCourseNode(parent);
 	}
 
 	@Override

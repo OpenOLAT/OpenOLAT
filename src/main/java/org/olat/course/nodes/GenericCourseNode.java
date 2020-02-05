@@ -45,6 +45,7 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.GenericNode;
+import org.olat.core.util.nodes.INode;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
@@ -85,14 +86,13 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	 * Generic course node constructor
 	 * 
 	 * @param type The course node type
-	 *      
-	 *      ATTENTION:
-	 *      all course nodes must call updateModuleConfigDefaults(true) here
+	 * @param parent to init the module config
 	 */
-	public GenericCourseNode(String type) {
+	public GenericCourseNode(String type, INode parent) {
 		super();
 		this.type = type;
-		moduleConfiguration = new ModuleConfiguration();
+		this.moduleConfiguration = new ModuleConfiguration();
+		this.updateModuleConfigDefaults(true, parent);
 	}
 
 	/**
@@ -633,7 +633,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	}
 
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
 		//
 	}
 

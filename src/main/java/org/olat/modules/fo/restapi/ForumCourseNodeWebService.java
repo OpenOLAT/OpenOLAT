@@ -61,6 +61,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.FOCourseNode;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.userview.CourseTreeVisitor;
+import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.Message;
@@ -464,13 +465,13 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 
-		CourseNode courseNode = getParentNode(course, nodeId);
-		if(courseNode == null) {
+		CourseEditorTreeNode parentNode = getParentNode(course, nodeId);
+		if(parentNode == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
-		Property forumKeyProp = cpm.findCourseNodeProperty(courseNode, null, null, FOCourseNode.CONFIG_FORUM_KEY);
+		Property forumKeyProp = cpm.findCourseNodeProperty(parentNode.getCourseNode(), null, null, FOCourseNode.CONFIG_FORUM_KEY);
 		Forum forum = null;
 		if(forumKeyProp!=null) {
       // Forum does already exist, load forum with key from properties

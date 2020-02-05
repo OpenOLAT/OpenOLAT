@@ -45,6 +45,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
+import org.olat.core.util.nodes.INode;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -99,7 +100,11 @@ public class ChecklistCourseNode extends AbstractAccessableCourseNode {
 	public static final String PROPERTY_CHECKLIST_KEY = CONF_CHECKLIST;
 
 	public ChecklistCourseNode() {
-		super(TYPE);
+		this(null);
+	}
+	
+	public ChecklistCourseNode(INode parent) {
+		super(TYPE, parent);
 		initDefaultConfig();
 	}
 

@@ -47,6 +47,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.editor.ConditionAccessEditConfig;
@@ -105,8 +106,11 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 	public static final String TYPE = "iqself";
 
 	public IQSELFCourseNode() {
-		super(TYPE);
-		updateModuleConfigDefaults(true);
+		this(null);
+	}
+
+	public IQSELFCourseNode(INode parent) {
+		super(TYPE, parent);
 	}
 
 	@Override
@@ -305,13 +309,12 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 	/**
 	 * Update the module configuration to have all mandatory configuration flags
 	 * set to usefull default values
-	 * 
 	 * @param isNewNode true: an initial configuration is set; false: upgrading
 	 *          from previous node configuration version, set default to maintain
 	 *          previous behaviour
 	 */
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
 			// add default module configuration

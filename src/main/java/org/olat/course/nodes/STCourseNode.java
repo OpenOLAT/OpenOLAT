@@ -49,6 +49,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
@@ -74,6 +75,7 @@ import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
@@ -112,15 +114,17 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 	transient private Condition scoreExpression;
 	transient private Condition passedExpression;
 	transient private Condition failedExpression;
-
+	
 	public STCourseNode() {
-		super(TYPE);
-		updateModuleConfigDefaults(true);
+		this(null);
+	}
+	
+	public STCourseNode(INode parent) {
+		super(TYPE, parent);
 	}
 
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
-		updateModuleConfigDefaults(false);
 		STCourseNodeEditController childTabCntrllr = new STCourseNodeEditController(ureq, wControl, this, course, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		NodeEditController nodeEditController = new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
@@ -137,7 +141,6 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			final UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
-		updateModuleConfigDefaults(false);
 		Controller cont;
 		
 		String displayType = getModuleConfiguration().getStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE);
@@ -344,13 +347,12 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 	/**
 	 * Update the module configuration to have all mandatory configuration flags
 	 * set to usefull default values
-	 * 
 	 * @param isNewNode true: an initial configuration is set; false: upgrading
 	 *          from previous node configuration version, set default to maintain
 	 *          previous behaviour
 	 */
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
 			// use defaults for new course building blocks
@@ -401,10 +403,33 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 			}
 		}
 		if (config.getConfigurationVersion() < 5) {
-			config.setStringValue(CONFIG_LP_SEQUENCE_KEY, CONFIG_LP_SEQUENCE_DEFAULT);
+			STCourseNode stParent = getFirstSTParent(parent);
+			String sequence = stParent != null
+					? stParent.getModuleConfiguration().getStringValue(CONFIG_LP_SEQUENCE_KEY, CONFIG_LP_SEQUENCE_DEFAULT)
+					: CONFIG_LP_SEQUENCE_DEFAULT;
+			config.setStringValue(CONFIG_LP_SEQUENCE_KEY, sequence);
 		}
 		
 		config.setConfigurationVersion(CURRENT_VERSION);
+	}
+	
+	private STCourseNode getFirstSTParent(INode node) {
+		if (node != null) {
+			CourseNode courseNode = null;
+			if (node instanceof CourseEditorTreeNode) {
+				CourseEditorTreeNode cetn = (CourseEditorTreeNode)node;
+				courseNode = cetn.getCourseNode();
+			}
+			if (node instanceof CourseNode) {
+				courseNode = (CourseNode)node;
+			}
+			if (courseNode instanceof STCourseNode) {
+				return (STCourseNode)courseNode;
+			}
+			INode parentNode = node.getParent();
+			return getFirstSTParent(parentNode);
+		}
+		return null;
 	}
 
 	@Override

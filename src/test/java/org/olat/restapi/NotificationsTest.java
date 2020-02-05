@@ -50,6 +50,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -65,7 +66,6 @@ import org.olat.core.commons.services.notifications.restapi.vo.PublisherVO;
 import org.olat.core.commons.services.notifications.restapi.vo.SubscriptionInfoVO;
 import org.olat.core.commons.services.notifications.restapi.vo.SubscriptionListItemVO;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
@@ -73,6 +73,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.BCCourseNode;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.FOCourseNode;
@@ -370,13 +371,14 @@ public class NotificationsTest extends OlatRestTestCase {
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.intermediateCommit();
 		//create the forum
+		CourseNode rootNode = course.getRunStructure().getRootNode();
 		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration("fo");
-		FOCourseNode forumNode = (FOCourseNode)newNodeConfig.getInstance();
+		FOCourseNode forumNode = (FOCourseNode)newNodeConfig.getInstance(rootNode);
 		forumNode.setShortTitle("Forum");
 		forumNode.setLearningObjectives("forum objectives");
 		forumNode.setNoAccessExplanation("You don't have access");
 		Forum courseForum = forumNode.loadOrCreateForum(course.getCourseEnvironment());
-		course.getEditorTreeModel().addCourseNode(forumNode, course.getRunStructure().getRootNode());
+		course.getEditorTreeModel().addCourseNode(forumNode, rootNode);
 		CourseFactory.publishCourse(course, RepositoryEntryStatusEnum.published, true, false, id, Locale.ENGLISH);
 		dbInstance.intermediateCommit();
 		
@@ -420,14 +422,15 @@ public class NotificationsTest extends OlatRestTestCase {
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.intermediateCommit();
 		//create the folder
+		CourseNode rootNode = course.getRunStructure().getRootNode();
 		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration("bc");
-		BCCourseNode folderNode = (BCCourseNode)newNodeConfig.getInstance();
+		BCCourseNode folderNode = (BCCourseNode)newNodeConfig.getInstance(rootNode);
 		folderNode.setShortTitle("Folder");
 		folderNode.setLearningObjectives("folder objectives");
 		folderNode.setNoAccessExplanation("You don't have access");
 		String relPath = BCCourseNode.getFoldernodePathRelToFolderBase(course.getCourseEnvironment(), folderNode);
 		VFSContainer folder = BCCourseNode.getNodeFolderContainer(folderNode, course.getCourseEnvironment());
-		course.getEditorTreeModel().addCourseNode(folderNode, course.getRunStructure().getRootNode());
+		course.getEditorTreeModel().addCourseNode(folderNode, rootNode);
 		CourseFactory.publishCourse(course, RepositoryEntryStatusEnum.published, true, false, id, Locale.ENGLISH);
 		dbInstance.intermediateCommit();
 		

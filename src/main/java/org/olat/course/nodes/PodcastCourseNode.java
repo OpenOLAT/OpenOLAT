@@ -22,6 +22,7 @@ package org.olat.course.nodes;
 import java.util.Locale;
 
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.nodes.feed.podcast.PodcastCourseNodeConfiguration;
 import org.olat.fileresource.types.PodcastFileResource;
 import org.olat.modules.webFeed.manager.FeedManager;
@@ -45,8 +46,8 @@ public class PodcastCourseNode extends AbstractFeedCourseNode {
 	
 	public static final String TYPE = FeedManager.KIND_PODCAST;
 
-	public PodcastCourseNode() {
-		super(TYPE);
+	public PodcastCourseNode(INode parent) {
+		super(TYPE, parent);
 	}
 
 	@Override

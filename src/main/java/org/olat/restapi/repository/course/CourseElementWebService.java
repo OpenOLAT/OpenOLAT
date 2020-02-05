@@ -21,7 +21,6 @@
 package org.olat.restapi.repository.course;
 
 import java.io.File;
-
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -69,6 +68,7 @@ import org.olat.course.nodes.sp.SPEditController;
 import org.olat.course.nodes.st.STCourseNodeEditController;
 import org.olat.course.nodes.ta.TaskController;
 import org.olat.course.nodes.tu.TUConfigForm;
+import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
@@ -156,12 +156,12 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
-		CourseNode courseNode = getParentNode(course, nodeId);
-		if(courseNode == null) {
+		CourseEditorTreeNode parentNode = getParentNode(course, nodeId);
+		if(parentNode == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
-		CourseNodeVO vo = ObjectFactory.get(courseNode);
+		CourseNodeVO vo = ObjectFactory.get(parentNode.getCourseNode());
 		return Response.ok(vo).build();
 	}
 	
@@ -1577,13 +1577,13 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	public Response attachTaskFile(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
 			@Context HttpServletRequest request) {
 			ICourse course = CoursesWebService.loadCourse(courseId);
-	CourseNode node = getParentNode(course, nodeId);
+		CourseEditorTreeNode parentNode = getParentNode(course, nodeId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-		if(node == null) {
+		if(parentNode == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
-		} else if(!(node instanceof TACourseNode)) {
+		} else if(!(parentNode.getCourseNode() instanceof TACourseNode)) {
 			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
 		}
 		if (!isAuthorEditor(course, request)) {
@@ -1595,7 +1595,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		try {
 			reader = new MultipartReader(request);
 			String filename = reader.getValue("filename", "task");
-			String taskFolderPath = TACourseNode.getTaskFolderPathRelToFolderRoot(course, node);
+			String taskFolderPath = TACourseNode.getTaskFolderPathRelToFolderRoot(course, parentNode.getCourseNode());
 			VFSContainer taskFolder = VFSManager.olatRootContainer(taskFolderPath, null);
 			VFSLeaf singleFile = (VFSLeaf) taskFolder.resolve("/" + filename);
 			if (singleFile == null) {
@@ -1833,7 +1833,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		}
 
 		TaskConfigVO config = new TaskConfigVO();
-		CourseNode courseNode = getParentNode(course, nodeId);
+		CourseNode courseNode = getParentNode(course, nodeId).getCourseNode();
 		ModuleConfiguration moduleConfig = courseNode.getModuleConfiguration();
 		//build configuration with fallback to default values
 		Boolean isAssignmentEnabled = (Boolean)moduleConfig.get(TACourseNode.CONF_TASK_ENABLED);
@@ -2029,7 +2029,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		}
 
 		SurveyConfigVO config = new SurveyConfigVO();
-		CourseNode courseNode = getParentNode(course, nodeId);
+		CourseNode courseNode = getParentNode(course, nodeId).getCourseNode();
 		ModuleConfiguration moduleConfig = courseNode.getModuleConfiguration();
 		//build configuration with fallback to default values
 		Boolean allowCancel = (Boolean)moduleConfig.get(IQEditController.CONFIG_KEY_ENABLECANCEL);
@@ -2214,7 +2214,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		
 		TestConfigVO config = new TestConfigVO();
 		ICourse course = CoursesWebService.loadCourse(courseId);
-		CourseNode courseNode = getParentNode(course, nodeId);
+		CourseNode courseNode = getParentNode(course, nodeId).getCourseNode();
 		//build configuration with fallback to default values
 		ModuleConfiguration moduleConfig = courseNode.getModuleConfiguration();
 		Boolean allowCancel = (Boolean)moduleConfig.get(IQEditController.CONFIG_KEY_ENABLECANCEL);
@@ -2685,7 +2685,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 
 		@Override
 		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
-			newNode.updateModuleConfigDefaults(true);
+			newNode.updateModuleConfigDefaults(true, null);
 			//fxdiff FXOLAT-122: course management
 			if(text != null) {
 				moduleConfig.set(TACourseNode.CONF_TASK_TEXT, text);

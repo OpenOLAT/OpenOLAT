@@ -30,6 +30,7 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.ConditionAccessEditConfig;
@@ -63,13 +64,16 @@ public class Card2BrainCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONFIG_PRIVATE_SECRET = "privateSecret";
 	
 	public Card2BrainCourseNode() {
-		super(TYPE);
+		this(null);
+	}
+
+	public Card2BrainCourseNode(INode parent) {
+		super(TYPE, parent);
 	}
 
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			ICourse course, UserCourseEnvironment euce) {
-		updateModuleConfigDefaults(false);
 		Card2BrainEditController childTabCntrllr = new Card2BrainEditController(ureq, wControl, getModuleConfiguration());
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
@@ -83,9 +87,6 @@ public class Card2BrainCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
-		
-		updateModuleConfigDefaults(false);
-		
 		Controller runCtrl;
 		if(userCourseEnv.isCourseReadOnly()) {
 			Translator trans = Util.createPackageTranslator(Card2BrainCourseNode.class, ureq.getLocale());

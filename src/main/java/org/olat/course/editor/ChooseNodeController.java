@@ -139,28 +139,29 @@ public class ChooseNodeController extends BasicController {
 	
 	private void doCreateNode(String type) {
 		ICourse course = CourseFactory.getCourseEditSession(courseOres.getResourceableId());
+		CourseEditorTreeModel editorTreeModel = course.getEditorTreeModel();
+		CourseEditorTreeNode selectedNode = null;
+		int pos = 0;
+		if(editorTreeModel.getRootNode().equals(currentNode)) {
+			//root, add as last child
+			pos = currentNode.getChildCount();
+			selectedNode = currentNode;
+		} else {
+			selectedNode = (CourseEditorTreeNode)currentNode.getParent();
+			pos = currentNode.getPosition() + 1;
+		}
+		
 		// user chose a position to insert a new node
 		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(type);
-		createdNode = newNodeConfig.getInstance();
+		createdNode = newNodeConfig.getInstance(selectedNode);
 
 		// Set some default values
 		String title = newNodeConfig.getLinkText(getLocale());
 		createdNode.setShortTitle(title);
 		createdNode.setNoAccessExplanation(translate("form.noAccessExplanation.default"));
 		
-		// Insert it now
-		CourseEditorTreeModel editorTreeModel = course.getEditorTreeModel();
-		if(editorTreeModel.getRootNode().equals(currentNode)) {
-			//root, add as last child
-			int pos = currentNode.getChildCount();
-			CourseNode selectedNode = currentNode.getCourseNode();
-			editorTreeModel.insertCourseNodeAt(createdNode, selectedNode, pos);
-		} else {
-			CourseEditorTreeNode parentNode = (CourseEditorTreeNode)currentNode.getParent();
-			CourseNode selectedNode = parentNode.getCourseNode();
-			int pos = currentNode.getPosition();
-			editorTreeModel.insertCourseNodeAt(createdNode, selectedNode, pos + 1);
-		}
+		// Add node
+		editorTreeModel.insertCourseNodeAt(createdNode, selectedNode.getCourseNode(), pos);
 		CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
 	}
 	

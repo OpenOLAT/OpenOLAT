@@ -49,6 +49,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.editor.ConditionAccessEditConfig;
@@ -131,8 +132,11 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONFIG_DEFAULT_EVAL_FORM_SCALE = "1.0";
 
 	public MSCourseNode() {
-		super(TYPE);
-		updateModuleConfigDefaults(true);
+		this(null);
+	}
+	
+	public MSCourseNode(INode parent) {
+		super(TYPE, parent);
 	}
 
 	/**
@@ -153,7 +157,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
 			initDefaultConfig(config);
@@ -178,7 +182,6 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
-		updateModuleConfigDefaults(false);
 		MSCourseNodeEditController childTabCntrllr = new MSCourseNodeEditController(ureq, wControl, this, course, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);

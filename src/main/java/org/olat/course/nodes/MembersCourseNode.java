@@ -30,6 +30,7 @@ import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
@@ -92,8 +93,11 @@ public class MembersCourseNode extends AbstractAccessableCourseNode {
 
 
 	public MembersCourseNode() {
-		super(TYPE);
-		updateModuleConfigDefaults(true);
+		this(null);
+	}
+
+	public MembersCourseNode(INode parent) {
+		super(TYPE, parent);
 	}
 
 	@Override
@@ -122,7 +126,6 @@ public class MembersCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
-		updateModuleConfigDefaults(false);
 		MembersCourseNodeEditController childTabCntrllr = new MembersCourseNodeEditController(ureq, wControl, euce, this.getModuleConfiguration());
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
@@ -131,8 +134,6 @@ public class MembersCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
-		updateModuleConfigDefaults(false);
-
 		Controller controller;
 		Roles roles = ureq.getUserSession().getRoles();
 		if (roles.isGuestOnly()) {
@@ -149,12 +150,11 @@ public class MembersCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
-		updateModuleConfigDefaults(false);
 		return new MembersPeekViewController(ureq, wControl, userCourseEnv, getModuleConfiguration());
 	}
 	
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
 		ModuleConfiguration config = getModuleConfiguration();
 		int version = config.getConfigurationVersion();
 		if(isNewNode){
