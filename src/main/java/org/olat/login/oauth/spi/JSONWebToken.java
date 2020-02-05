@@ -19,8 +19,10 @@
  */
 package org.olat.login.oauth.spi;
 
+import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
 import com.github.scribejava.core.model.OAuth2AccessToken;
@@ -32,6 +34,8 @@ import com.github.scribejava.core.model.OAuth2AccessToken;
  *
  */
 public class JSONWebToken {
+	
+	private static final Logger log = Tracing.createLoggerFor(JSONWebToken.class);
 	
 	private final String header;
 	private final String payload;
@@ -56,24 +60,40 @@ public class JSONWebToken {
 	}
 
 	public static JSONWebToken parse(OAuth2AccessToken token) throws JSONException {
-		String accessToken= token.getAccessToken();
-		
-		int firstIndex = accessToken.indexOf('.');
-		int secondIndex = accessToken.indexOf('.', firstIndex + 1);
-		
-		String header = StringHelper.decodeBase64(accessToken.substring(0, firstIndex));
-		String payload = StringHelper.decodeBase64(accessToken.substring(firstIndex, secondIndex));
-		JSONObject jsonPayload = new JSONObject(payload);
-		return new JSONWebToken(header, payload, jsonPayload);
+		try {
+			String accessToken= token.getAccessToken();
+			
+			int firstIndex = accessToken.indexOf('.');
+			int secondIndex = accessToken.indexOf('.', firstIndex + 1);
+			
+			String header = StringHelper.decodeBase64(accessToken.substring(0, firstIndex));
+			String payload = StringHelper.decodeBase64(accessToken.substring(firstIndex, secondIndex));
+			JSONObject jsonPayload = new JSONObject(payload);
+			return new JSONWebToken(header, payload, jsonPayload);
+		} catch (JSONException e) {
+			log.error("Cannot parse token: {}", token.getAccessToken());
+			throw e;
+		} catch (Exception e) {
+			log.error("Cannot parse token: {}", token.getAccessToken());
+			throw new JSONException(e);
+		}
 	}
 	
 	public static JSONWebToken parse(String accessToken) throws JSONException {
-		int firstIndex = accessToken.indexOf('.');
-		int secondIndex = accessToken.indexOf('.', firstIndex + 1);
-		
-		String header = StringHelper.decodeBase64(accessToken.substring(0, firstIndex));
-		String payload = StringHelper.decodeBase64(accessToken.substring(firstIndex, secondIndex));
-		JSONObject jsonPayload = new JSONObject(payload);
-		return new JSONWebToken(header, payload, jsonPayload);
+		try {
+			int firstIndex = accessToken.indexOf('.');
+			int secondIndex = accessToken.indexOf('.', firstIndex + 1);
+			
+			String header = StringHelper.decodeBase64(accessToken.substring(0, firstIndex));
+			String payload = StringHelper.decodeBase64(accessToken.substring(firstIndex, secondIndex));
+			JSONObject jsonPayload = new JSONObject(payload);
+			return new JSONWebToken(header, payload, jsonPayload);
+		} catch (JSONException e) {
+			log.error("Cannot parse token: {}", accessToken);
+			throw e;
+		} catch (Exception e) {
+			log.error("Cannot parse token: {}", accessToken);
+			throw new JSONException(e);
+		}
 	}
 }
