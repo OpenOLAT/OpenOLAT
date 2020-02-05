@@ -27,6 +27,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -39,6 +44,8 @@ import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.RubricRating;
 import org.olat.modules.forms.model.xml.Rubric;
+import org.olat.modules.forms.ui.model.CountRatioResult;
+import org.olat.modules.forms.ui.model.CountResult;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -284,6 +291,25 @@ public class EvaluationFormMangerImplTest {
 			
 		assertThat(rating).isEqualTo(expectedRating);
 	}
+	
+	@Test
+	public void shouldCalculateRatioList() {
+		List<CountResult> countResults = new ArrayList<>();
+		countResults.add(new CountResult("1", 5));
+		countResults.add(new CountResult("2", 5));
+		countResults.add(new CountResult("3", 10));
+		countResults.add(new CountResult("4", 0));
+		
+		List<CountRatioResult> ratios = sut.calculateRatio(countResults);
+
+		Map<String, Double> percentMap = ratios.stream()
+				.collect(Collectors.toMap(CountRatioResult::getName, CountRatioResult::getRatio));
+		assertThat(percentMap.get("1")).isEqualTo(0.25);
+		assertThat(percentMap.get("2")).isEqualTo(0.25);
+		assertThat(percentMap.get("3")).isEqualTo(0.5);
+		assertThat(percentMap.get("4")).isEqualTo(0);
+	}
+
 
 
 }
