@@ -78,7 +78,7 @@ public class EvaluationFormOverviewController extends BasicController {
 		long numOfDoneSessions = statistic.getNumOfDoneSessions();
 		if (figures != null && figures.getNumberOfParticipations() != null) {
 			double percent = figures.getNumberOfParticipations() > 0
-					? numOfDoneSessions / figures.getNumberOfParticipations() * 100.0d
+					? (double)numOfDoneSessions / figures.getNumberOfParticipations() * 100.0d
 					: 0.0;
 			long percentRounded = Math.round(percent);
 			
