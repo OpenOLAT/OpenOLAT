@@ -19,29 +19,16 @@
  */
 package org.olat.course.learningpath;
 
-import java.util.List;
-
-import org.olat.core.id.Identity;
-import org.olat.course.ICourse;
-import org.olat.course.nodes.CourseNode;
-import org.olat.repository.RepositoryEntry;
-
 /**
  * 
- * Initial date: 1 Sep 2019<br>
+ * Initial date: 6 Feb 2020<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface LearningPathService {
-
-	public LearningPathConfigs getConfigs(CourseNode courseNode);
+public interface SequenceConfig {
 	
-	public LearningPathEditConfigs getEditConfigs(CourseNode courseNode);
+	public boolean isInSequence();
 	
-	public SequenceConfig getSequenceConfig(CourseNode courseNode);
-
-	public List<CourseNode> getUnsupportedCourseNodes(ICourse course);
-
-	public RepositoryEntry migrate(RepositoryEntry courseEntry, Identity identity);
+	public boolean hasSequentialChildren();
 
 }

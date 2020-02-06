@@ -19,6 +19,9 @@
  */
 package org.olat.course.learningpath.manager;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.course.learningpath.LearningPathService;
+import org.olat.course.learningpath.SequenceConfig;
 import org.olat.course.learningpath.evaluation.AccessEvaluator;
 import org.olat.course.learningpath.evaluation.LinearAccessEvaluator;
 import org.olat.course.learningpath.ui.LearningPathTreeNode;
@@ -28,6 +31,7 @@ import org.olat.course.run.userview.CourseTreeModelBuilder;
 import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -39,14 +43,19 @@ public class LearningPathCourseTreeModelBuilder extends CourseTreeModelBuilder {
 
 	private static final AccessEvaluator accessEvaluator = new LinearAccessEvaluator();
 	
+	@Autowired
+	private LearningPathService learningPathService;
+	
 	public LearningPathCourseTreeModelBuilder(UserCourseEnvironment userCourseEnv) {
 		super(userCourseEnv);
+		CoreSpringFactory.autowireObject(this);
 	}
 
 	@Override
 	protected CourseTreeNode createCourseTreeNode(CourseNode courseNode, int treeLevel) {
 		AssessmentEvaluation assessmentEvaluation = userCourseEnv.getScoreAccounting().evalCourseNode(courseNode);
-		LearningPathTreeNode learningPathTreeNode = new LearningPathTreeNode(courseNode, treeLevel, assessmentEvaluation);
+		SequenceConfig sequenceConfig = learningPathService.getSequenceConfig(courseNode);
+		LearningPathTreeNode learningPathTreeNode = new LearningPathTreeNode(courseNode, treeLevel, sequenceConfig, assessmentEvaluation);
 		
 		learningPathTreeNode.setVisible(true);
 		boolean accessible = accessEvaluator.isAccessible(learningPathTreeNode, userCourseEnv);

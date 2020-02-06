@@ -17,31 +17,34 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath;
+package org.olat.course.learningpath.model;
 
-import java.util.List;
-
-import org.olat.core.id.Identity;
-import org.olat.course.ICourse;
-import org.olat.course.nodes.CourseNode;
-import org.olat.repository.RepositoryEntry;
+import org.olat.course.learningpath.SequenceConfig;
 
 /**
  * 
- * Initial date: 1 Sep 2019<br>
+ * Initial date: 6 Feb 2020<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface LearningPathService {
-
-	public LearningPathConfigs getConfigs(CourseNode courseNode);
+public class SequenceConfigImpl implements SequenceConfig {
 	
-	public LearningPathEditConfigs getEditConfigs(CourseNode courseNode);
+	private final boolean inSequence;
+	private final boolean sequentialChildren;
 	
-	public SequenceConfig getSequenceConfig(CourseNode courseNode);
+	public SequenceConfigImpl(boolean inSequence, boolean sequentialChildren) {
+		this.inSequence = inSequence;
+		this.sequentialChildren = sequentialChildren;
+	}
 
-	public List<CourseNode> getUnsupportedCourseNodes(ICourse course);
+	@Override
+	public boolean isInSequence() {
+		return inSequence;
+	}
 
-	public RepositoryEntry migrate(RepositoryEntry courseEntry, Identity identity);
+	@Override
+	public boolean hasSequentialChildren() {
+		return sequentialChildren;
+	}
 
 }

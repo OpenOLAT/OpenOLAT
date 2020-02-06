@@ -22,12 +22,15 @@ package org.olat.course.learningpath.manager;
 import java.util.List;
 
 import org.olat.core.id.Identity;
+import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathEditConfigs;
 import org.olat.course.learningpath.LearningPathService;
+import org.olat.course.learningpath.SequenceConfig;
+import org.olat.course.learningpath.model.SequenceConfigImpl;
 import org.olat.course.nodes.CollectingVisitor;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.tree.CourseEditorTreeModel;
@@ -60,6 +63,38 @@ public class LearningPathServiceImpl implements LearningPathService {
 		return registry.getLearningPathNodeHandler(courseNode).getEditConfigs();
 	}
 
+	@Override
+	public SequenceConfig getSequenceConfig(CourseNode courseNode) {
+		LearningPathConfigs lpConfig = registry.getLearningPathNodeHandler(courseNode).getConfigs(courseNode);
+		Boolean hasSequentialChildren = lpConfig.hasSequentialChildren();
+		Boolean inheritedSequencialChildren = getInheritedSequencialChildren(courseNode);
+		
+		boolean sequentialChildren = hasSequentialChildren != null
+				? hasSequentialChildren.booleanValue()                // Node defines config itself
+				: Boolean.TRUE.equals(inheritedSequencialChildren);   // use the inherited config
+		boolean inSequence = inheritedSequencialChildren != null
+				? inheritedSequencialChildren.booleanValue()
+				: sequentialChildren;                                 // root has no inherited config, take the config from the root itself
+		
+		return new SequenceConfigImpl( inSequence, sequentialChildren);
+	}
+	
+	private Boolean getInheritedSequencialChildren(CourseNode courseNode) {
+		INode parentNode = courseNode.getParent();
+		if (parentNode instanceof CourseNode) {
+			CourseNode parent = (CourseNode)parentNode;
+			LearningPathConfigs parentConfig = registry.getLearningPathNodeHandler(parent).getConfigs(parent);
+			
+			Boolean hasSequentialChildren = parentConfig.hasSequentialChildren();
+			if (hasSequentialChildren != null) {
+				return hasSequentialChildren;
+			}
+			
+			return getInheritedSequencialChildren(parent);
+		}
+		return null;
+	}
+	
 	@Override
 	public List<CourseNode> getUnsupportedCourseNodes(ICourse course) {
 		CourseEditorTreeModel editorTreeModel = course.getEditorTreeModel();

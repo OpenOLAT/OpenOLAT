@@ -21,6 +21,7 @@ package org.olat.course.learningpath.ui;
 
 import java.util.Date;
 
+import org.olat.course.learningpath.SequenceConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.CourseTreeNode;
@@ -38,13 +39,20 @@ public class LearningPathTreeNode extends CourseTreeNode {
 
 	private static final long serialVersionUID = -9033714563825036957L;
 	
+	private final SequenceConfig sequenceConfig;
 	private final AssessmentEvaluation assessmentEvaluation;
 
-	public LearningPathTreeNode(CourseNode courseNode, int treeLevel, AssessmentEvaluation assessmentEvaluation) {
+	public LearningPathTreeNode(CourseNode courseNode, int treeLevel, SequenceConfig sequenceConfig,
+			AssessmentEvaluation assessmentEvaluation) {
 		super(courseNode, treeLevel);
+		this.sequenceConfig = sequenceConfig;
 		this.assessmentEvaluation = assessmentEvaluation;
 	}
-	
+
+	public SequenceConfig getSequenceConfig() {
+		return sequenceConfig;
+	}
+
 	public Date getStartDate() {
 		return assessmentEvaluation != null? assessmentEvaluation.getStartDate(): null;
 	}
