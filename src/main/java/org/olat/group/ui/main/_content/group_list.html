@@ -1,39 +1,4 @@
-#set ($notEmpty = $r.isNotZero($r.getComponent("table").getFlexiTableElement().getRowCount()))
-## inSearch to detect group management
-#set ($inSearch = $r.isTrue($r.getComponent("table").getFlexiTableElement().isExtendedSearchExpanded()))
-
-#if($notEmpty || $inSearch)
-	$r.render("table")
-	
-	<div class="o_table_buttons">
-		#if($r.available("select"))
-			$r.render("select")
-		#end
-		#if($r.available("table.duplicate"))
-			$r.render("table.duplicate")
-		#end
-		#if($r.available("table.merge"))
-			$r.render("table.merge")
-		#end
-		#if($r.available("table.users.management"))
-			$r.render("table.users.management")
-		#end
-		#if($r.available("table.config"))
-			$r.render("table.config")
-		#end
-		#if($r.available("table.email"))
-			$r.render("table.email")
-		#end
-		#if($r.available("table.delete"))
-			$r.render("table.delete")
-		#end
-	</div>
-#else
-	<div class="o_info">
-		$r.translate("table.empty")
-	</div>
-#end 
-
+$r.render("table")
 #if($r.available("create.group"))
 	<div class="clearfix o_block_large">
 		<div class="panel panel-placeholder">

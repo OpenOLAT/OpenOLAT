@@ -39,7 +39,7 @@ import org.olat.group.model.StatisticsBusinessGroupRow;
 public class FavoritBusinessGroupListController extends AbstractStandardBusinessGroupListController {
 
 	public FavoritBusinessGroupListController(UserRequest ureq, WindowControl wControl, String prefsKey) {
-		super(ureq, wControl, "group_list", prefsKey);
+		super(ureq, wControl, "group_list", prefsKey, false);
 	}
 
 	@Override

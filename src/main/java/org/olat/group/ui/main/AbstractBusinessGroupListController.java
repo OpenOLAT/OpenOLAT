@@ -175,13 +175,14 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	private BusinessGroupViewFilter filter;
 	private Object userObject;
 	private final String prefsKey;
+	private final boolean showAlwaysSearch;
 	
-	public AbstractBusinessGroupListController(UserRequest ureq, WindowControl wControl, String page, String prefsKey) {
-		this(ureq, wControl, page, false, false, false, prefsKey, null);
+	public AbstractBusinessGroupListController(UserRequest ureq, WindowControl wControl, String page, String prefsKey, boolean showAlwaysSearch) {
+		this(ureq, wControl, page, false, false, false, prefsKey, showAlwaysSearch, null);
 	}
 	
 	public AbstractBusinessGroupListController(UserRequest ureq, WindowControl wControl, String page,
-			boolean showAdminTools, boolean startExtendedSearch, boolean readOnly, String prefsKey, Object userObject) {
+			boolean showAdminTools, boolean startExtendedSearch, boolean readOnly, String prefsKey, boolean showAlwaysSearch, Object userObject) {
 		super(ureq, wControl, page);
 		setTranslator(Util.createPackageTranslator(AbstractBusinessGroupListController.class, ureq.getLocale(), getTranslator()));
 
@@ -190,6 +191,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		this.readOnly = readOnly;
 		this.showAdminTools = showAdminTools && admin;
 		this.userObject = userObject;
+		this.showAlwaysSearch = showAlwaysSearch;
 		this.startExtendedSearch = startExtendedSearch;
 		this.prefsKey = prefsKey;
 
@@ -218,6 +220,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		if(startExtendedSearch) {
 			tableEl.expandExtendedSearch(ureq);
 		}
+		tableEl.setEmptyTableSettings("table.empty", showAlwaysSearch);
 		
 		initButtons(formLayout, ureq);
 	}
@@ -252,6 +255,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			tableEl.setMultiSelect(true);
 			tableEl.setSelectAllEnable(true);
 			selectButton = uifactory.addFormLink("select", TABLE_ACTION_SELECT, "select", null, formLayout, Link.BUTTON);
+			tableEl.addBatchButton(selectButton);
 		}
 
 		if(adminTools) {
@@ -261,14 +265,20 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			boolean canCreateGroup = canCreateBusinessGroup(ureq);
 			if(canCreateGroup) {
 				duplicateButton = uifactory.addFormLink("table.duplicate", TABLE_ACTION_DUPLICATE, "table.duplicate", null, formLayout, Link.BUTTON);
+				tableEl.addBatchButton(duplicateButton);
 				mergeButton = uifactory.addFormLink("table.merge", TABLE_ACTION_MERGE, "table.merge", null, formLayout, Link.BUTTON);
+				tableEl.addBatchButton(mergeButton);
 			}
 			usersButton = uifactory.addFormLink("table.users.management", TABLE_ACTION_USERS, "table.users.management", null, formLayout, Link.BUTTON);
+			tableEl.addBatchButton(usersButton);
 			configButton = uifactory.addFormLink("table.config", TABLE_ACTION_CONFIG, "table.config", null, formLayout, Link.BUTTON);
+			tableEl.addBatchButton(configButton);
 			emailButton = uifactory.addFormLink("table.email", TABLE_ACTION_EMAIL, "table.email", null, formLayout, Link.BUTTON);
-
+			tableEl.addBatchButton(emailButton);
+			
 			if(canCreateGroup) {
 				deleteButton = uifactory.addFormLink("table.delete", TABLE_ACTION_DELETE, "table.delete", null, formLayout, Link.BUTTON);
+				tableEl.addBatchButton(deleteButton);
 			}
 		}
 	}

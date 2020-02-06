@@ -86,7 +86,7 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 	
 	public CourseBusinessGroupListController(UserRequest ureq, WindowControl wControl, RepositoryEntry re,
 			boolean groupManagementRight, boolean readOnly) {
-		super(ureq, wControl, "group_list", false, false, readOnly, "course", re);
+		super(ureq, wControl, "group_list", false, false, readOnly, "course", true, re);
 		this.re = re;
 		this.groupManagementRight = groupManagementRight;
 	}
@@ -101,16 +101,22 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 		boolean managed = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.groups);
 		if(!managed && !readOnly) {
 			duplicateButton = uifactory.addFormLink("table.duplicate", TABLE_ACTION_DUPLICATE, "table.duplicate", null, formLayout, Link.BUTTON);
+			tableEl.addBatchButton(duplicateButton);
 			mergeButton = uifactory.addFormLink("table.merge", TABLE_ACTION_MERGE, "table.merge", null, formLayout, Link.BUTTON);
+			tableEl.addBatchButton(mergeButton);
 		}
 		if(!readOnly) {
 			usersButton = uifactory.addFormLink("table.users.management", TABLE_ACTION_USERS, "table.users.management", null, formLayout, Link.BUTTON);
+			tableEl.addBatchButton(usersButton);
 			configButton = uifactory.addFormLink("table.config", TABLE_ACTION_CONFIG, "table.config", null, formLayout, Link.BUTTON);
+			tableEl.addBatchButton(configButton);
 			emailButton = uifactory.addFormLink("table.email", TABLE_ACTION_EMAIL, "table.email", null, formLayout, Link.BUTTON);
+			tableEl.addBatchButton(emailButton);
 		}
 
 		if(!managed && !readOnly) {
 			removeGroups = uifactory.addFormLink("table.header.remove", TABLE_ACTION_MULTI_UNLINK, "table.header.remove", null, formLayout, Link.BUTTON);
+			tableEl.addBatchButton(removeGroups);
 		}
 
 		createGroup = uifactory.addFormLink("group.create", formLayout, Link.BUTTON);

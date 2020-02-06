@@ -109,7 +109,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private boolean extendedSearchExpanded = false;
 	private boolean hasAlwaysVisibleColumns = false;
 	private int columnLabelForDragAndDrop;
-	private String emptyTableMessageKey = null;
+	private String emptyTableMessageKey;
+	private boolean emptyShowSearch = true;
 	
 	private VelocityContainer rowRenderer;
 	private VelocityContainer detailsRenderer;
@@ -1946,11 +1947,21 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	@Override
 	public void setEmtpyTableMessageKey(String i18key) {
-		this.emptyTableMessageKey  = i18key;
+		setEmptyTableSettings(i18key, true);
 	}
+	
 	@Override
+	public void setEmptyTableSettings(String emtpyMessagei18key, boolean showAlwaysSearchFields) {
+		this.emptyTableMessageKey = emtpyMessagei18key;
+		this.emptyShowSearch = showAlwaysSearchFields;
+	}
+	
+	public boolean isShowAlwaysSearchFields() {
+		return emptyShowSearch;
+	}
+	
 	public String getEmtpyTableMessageKey() {
-		return this.emptyTableMessageKey;
+		return emptyTableMessageKey;
 	}
 
 	@Override

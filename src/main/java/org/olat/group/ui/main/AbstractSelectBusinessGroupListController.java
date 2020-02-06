@@ -48,8 +48,8 @@ import org.olat.group.ui.main.BusinessGroupListFlexiTableModel.Cols;
  */
 public abstract class AbstractSelectBusinessGroupListController extends AbstractBusinessGroupListController {
 	
-	public AbstractSelectBusinessGroupListController(UserRequest ureq, WindowControl wControl, String page, String prefsKey) {
-		super(ureq, wControl, page, prefsKey);
+	public AbstractSelectBusinessGroupListController(UserRequest ureq, WindowControl wControl, String page, String prefsKey, boolean showAlwaysSearch) {
+		super(ureq, wControl, page, prefsKey, showAlwaysSearch);
 	}
 	
 	@Override

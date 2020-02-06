@@ -52,7 +52,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		FlexiTableComponent ftC = (FlexiTableComponent) source;
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 		String id = ftC.getFormDispatchId();
-
+		
 		renderHeaderButtons(renderer, sb, ftE, ubu, translator, renderResult, args);
 		renderBreadcrumbs(sb, ftE);
 		
@@ -148,19 +148,24 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			return;
 		}
 		
+		boolean empty = ftE.getTableDataModel().getRowCount() == 0;
+		boolean hideSearch = empty && StringHelper.containsNonWhitespace(ftE.getEmtpyTableMessageKey()) && !ftE.isFilterEnabled() 
+				&& !ftE.isExtendedSearchExpanded() && !StringHelper.containsNonWhitespace(ftE.getQuickSearchString())
+				&& !ftE.isShowAlwaysSearchFields();
+		
 		if(searchCmp != null && ftE.isExtendedSearchExpanded()) {
 			renderer.render(searchCmp, sb, args);
 		}
 		
 		sb.append("<div class='row clearfix o_table_toolbar'>")
 		  .append("<div class='col-sm-6 col-xs-12 o_table_toolbar_left'>");
-		if(searchCmp == null || !ftE.isExtendedSearchExpanded()) {
+		if(!hideSearch && (searchCmp == null || !ftE.isExtendedSearchExpanded())) {
 			renderHeaderSearch(renderer, sb, ftE, ubu, translator, renderResult, args);
 		}
 		sb.append("</div>");
 
 		sb.append("<div class='col-sm-2 col-xs-4 o_table_row_count'>");
-		if(ftE.isNumOfRowsEnabled()) {
+		if(!empty && ftE.isNumOfRowsEnabled()) {
 			int rowCount = ftE.getTableDataModel().getRowCount();
 			if(rowCount == 1) {
 				sb.append(rowCount).append(" ").append(ftE.getTranslator().translate("table.entry"));
@@ -170,8 +175,6 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		}
 		sb.append("</div><div class='col-sm-4 col-xs-8'><div class='pull-right'><div class='o_table_tools o_noprint'>");
 		
-		boolean empty = ftE.getTableDataModel().getRowCount() == 0;
-
 		String filterIndication = null;
 		//filter
 		if(ftE.isFilterEnabled()) {
@@ -182,20 +185,20 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		}
 		
 		//sort
-		if(ftE.isSortEnabled()) {
+		if(!empty && ftE.isSortEnabled()) {
 			List<FlexiTableSort> sorts = ftE.getSorts();
 			if(sorts != null && !sorts.isEmpty()) {
 				renderSortDropdown(sb, ftE, sorts, translator);
 			}
 		}
 		
-		if(ftE.getExportButton() != null && ftE.isExportEnabled()) {
+		if(!empty && ftE.getExportButton() != null && ftE.isExportEnabled()) {
 			sb.append("<div class='btn-group'>");
 			ftE.getExportButton().setEnabled(!empty);
 			renderFormItem(renderer, sb, ftE.getExportButton(), ubu, translator, renderResult, args);
 			sb.append("</div> ");
 		}
-		if(ftE.getCustomButton() != null && ftE.isCustomizeColumns()
+		if(!empty && ftE.getCustomButton() != null && ftE.isCustomizeColumns()
 				&& (ftE.getRendererType() == null || ftE.getRendererType() == FlexiTableRendererType.classic)) {
 			sb.append("<div class='btn-group'>");
 			renderFormItem(renderer, sb, ftE.getCustomButton(), ubu, translator, renderResult, args);
@@ -204,7 +207,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		
 		//switch type of tables
 		FlexiTableRendererType[] types = ftE.getAvailableRendererTypes();
-		if(types.length > 1) {
+		if(!empty && types.length > 1) {
 			sb.append("<div class='btn-group'>");
 			for(FlexiTableRendererType type:types) {
 				renderHeaderSwitchType(type, renderer, sb, ftE, ubu, translator, renderResult, args);

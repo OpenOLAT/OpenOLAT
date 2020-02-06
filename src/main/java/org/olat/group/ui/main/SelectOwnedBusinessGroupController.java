@@ -32,7 +32,7 @@ import org.olat.group.model.BusinessGroupQueryParams;
 public class SelectOwnedBusinessGroupController extends AbstractSelectBusinessGroupListController {
 	
 	public SelectOwnedBusinessGroupController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "group_list", "sel-owned");
+		super(ureq, wControl, "group_list", "sel-owned", false);
 		
 		searchCtrl.setPreselectedRoles(GroupRoles.coach);
 	}

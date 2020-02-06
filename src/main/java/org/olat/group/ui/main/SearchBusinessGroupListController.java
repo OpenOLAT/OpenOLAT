@@ -45,7 +45,7 @@ import org.olat.group.ui.main.BusinessGroupListFlexiTableModel.Cols;
 public class SearchBusinessGroupListController extends AbstractStandardBusinessGroupListController {
 	
 	public SearchBusinessGroupListController(UserRequest ureq, WindowControl wControl, String prefsKey) {
-		super(ureq, wControl, "group_list", true, true, prefsKey, null);
+		super(ureq, wControl, "group_list", true, true, prefsKey, true, null);
 	}
 
 	@Override

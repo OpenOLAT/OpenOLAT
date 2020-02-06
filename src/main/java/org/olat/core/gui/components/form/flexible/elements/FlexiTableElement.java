@@ -468,10 +468,8 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	 * @param i18key
 	 */
 	public void setEmtpyTableMessageKey(String i18key);
-	/**
-	 * @return The i18n key for the message to be displayed when the table is empty or NULL when no message should be displayed.
-	 */
-	public String getEmtpyTableMessageKey();
+	
+	public void setEmptyTableSettings(String emtpyMessagei18key, boolean showAlwaysSearchFields);
 	
 	/**
 	 * Add a button or an other component in the "button grouped"

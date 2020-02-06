@@ -40,13 +40,13 @@ import org.olat.group.ui.main.BusinessGroupListFlexiTableModel.Cols;
  */
 public abstract class AbstractStandardBusinessGroupListController extends AbstractBusinessGroupListController {
 
-	public AbstractStandardBusinessGroupListController(UserRequest ureq, WindowControl wControl, String page, String prefsKey) {
-		super(ureq, wControl, page, prefsKey);
+	public AbstractStandardBusinessGroupListController(UserRequest ureq, WindowControl wControl, String page, String prefsKey, boolean showAlwaysSearch) {
+		super(ureq, wControl, page, prefsKey, showAlwaysSearch);
 	}
 	
 	public AbstractStandardBusinessGroupListController(UserRequest ureq, WindowControl wControl, String page,
-			boolean showAdminTools, boolean startExtendedSearch, String prefsKey, Object userObject) {
-		super(ureq, wControl, page, showAdminTools, startExtendedSearch, false, prefsKey, userObject);
+			boolean showAdminTools, boolean startExtendedSearch, String prefsKey, boolean showAlwaysSearch, Object userObject) {
+		super(ureq, wControl, page, showAdminTools, startExtendedSearch, false, prefsKey, showAlwaysSearch, userObject);
 	}
 
 	@Override
