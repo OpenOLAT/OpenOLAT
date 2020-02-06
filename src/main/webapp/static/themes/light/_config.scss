@@ -369,8 +369,8 @@ $o-lp-in-progress				: $o-lp-ready !default;
 $o-lp-done						: $state-success-text !default;
 $o-lp-default					: #888 !default;
 $o-lp-border					: 1px solid $navbar-default-border;
-$o-lp-bg						: rgba(0,0,0,0.02);	
-$o-lp-step-top					: floor($o-tree-font-size / 2) + 10px; // + padding from span
+$o-lp-bg						: rgba(0,0,0,0.025);	
+$o-lp-step-top					: 13px;
 $o-lp-step-size					: 12px;
 $o-lp-path-width				: 2px;
 $o-lp-left						: 3px;

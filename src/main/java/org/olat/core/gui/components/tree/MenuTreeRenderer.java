@@ -166,6 +166,10 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 			// add css class to identify parents of active element
 			target.append(" active_parent");			
 		}
+		if (hasChildren && renderChildren) {
+			// add css class to identify opened elements
+			target.append(" children_visible");	
+		}
 		String ident = curRoot.getIdent();
 		target.append("' data-nodeid='").append(ident).append("'>");			
 		target.append("<div id='dd").append(ident).append("' class='o_tree_l").append(level);

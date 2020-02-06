@@ -56,11 +56,11 @@ public class LearningPathCourseTreeModelBuilder extends CourseTreeModelBuilder {
 		AssessmentEvaluation assessmentEvaluation = userCourseEnv.getScoreAccounting().evalCourseNode(courseNode);
 		SequenceConfig sequenceConfig = learningPathService.getSequenceConfig(courseNode);
 		LearningPathTreeNode learningPathTreeNode = new LearningPathTreeNode(courseNode, treeLevel, sequenceConfig, assessmentEvaluation);
-		
+				
 		learningPathTreeNode.setVisible(true);
 		boolean accessible = accessEvaluator.isAccessible(learningPathTreeNode, userCourseEnv);
 		learningPathTreeNode.setAccessible(accessible);
-		String iconDecorator1CssClass = getIconDecorator1CssClass(assessmentEvaluation, userCourseEnv);
+		String iconDecorator1CssClass = getIconDecorator1CssClass(sequenceConfig, assessmentEvaluation, userCourseEnv);
 		if (userCourseEnv.isParticipant()) {
 			learningPathTreeNode.setIconCssClass(iconDecorator1CssClass);
 			learningPathTreeNode.setCssClass(iconDecorator1CssClass);
@@ -71,25 +71,54 @@ public class LearningPathCourseTreeModelBuilder extends CourseTreeModelBuilder {
 		return learningPathTreeNode;
 	}
 
-	private String getIconDecorator1CssClass(AssessmentEvaluation assessmentEvaluation, UserCourseEnvironment userCourseEnv) {
+	private String getIconDecorator1CssClass(SequenceConfig sequenceConfig, AssessmentEvaluation assessmentEvaluation, UserCourseEnvironment userCourseEnv) {
 		if (assessmentEvaluation == null || userCourseEnv.isAdmin() || userCourseEnv.isCoach()) return null;
-		
+		String cssClasses = "";
+
 		if (assessmentEvaluation.getFullyAssessed() != null && assessmentEvaluation.getFullyAssessed().booleanValue()) {
-			return "o_lp_done";
+			cssClasses += "o_lp_done";
+		} else {
+			AssessmentEntryStatus status = assessmentEvaluation.getAssessmentStatus();
+			if (status != null) {
+				switch(status) {
+				case notReady: 
+					cssClasses += "o_lp_not_accessible"; 
+					break;
+				case notStarted: 
+					cssClasses += "o_lp_ready"; 
+					break;
+				case inProgress: 
+					cssClasses += "o_lp_in_progress";
+					break;
+				case inReview: 
+					cssClasses += "o_lp_in_progress";
+					break;
+				case done: 
+					cssClasses += "o_lp_in_progress";
+					break;
+				default:
+				}
+			}			
 		}
 		
-		AssessmentEntryStatus status = assessmentEvaluation.getAssessmentStatus();
-		if (status != null) {
-			switch(status) {
-			case notReady: return "o_lp_not_accessible";
-			case notStarted: return "o_lp_ready";
-			case inProgress: return "o_lp_in_progress";
-			case inReview: return "o_lp_in_progress";
-			case done: return "o_lp_in_progress";
-			default:
-			}
+		if (sequenceConfig.isInSequence()) {
+			// nodes that take part in a linear sequence
+			cssClasses += " o_lp_in_sequence";			
+		} else {
+			// nodes that can be accessed in free order
+			cssClasses += " o_lp_not_in_sequence";			
 		}
-		return null;
+		// marker for nodes that contains sequenced children
+		if (sequenceConfig.hasSequentialChildren()) {
+			cssClasses += " o_lp_contains_sequence";
+		} else {
+			cssClasses += " o_lp_contains_no_sequence";
+		}	
+		
+		
+		
+		
+		return cssClasses;
 	}
 
 }

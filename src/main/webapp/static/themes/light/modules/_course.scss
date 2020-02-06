@@ -51,7 +51,7 @@
 	
 	/* Add box and alpha transparent backgrounds to visualize menu level */
 	border: $o-lp-border;	
-	ul {
+	li.children_visible {
 		background: $o-lp-bg;	
 	}
 	
@@ -63,15 +63,15 @@
 		&:before {
 			content: ' ';
 			position: absolute;
-			top: $o-lp-step-top + $o-lp-step-size - 1px;
+			top: $o-lp-step-top + $o-lp-step-size;
 			left: $o-lp-left + (($o-lp-step-size - $o-lp-path-width) / 2);
-			height: (($o-lp-step-top - $o-lp-path-width) * 2);
+			height: (($o-tree-padding-vertical * 2 + $line-height-computed) - $o-lp-step-size + 1px);
 			width: $o-lp-path-width;
 		}	
 		/* step indicator */
 		&:after {
 			position: absolute;
-			top: ($o-lp-step-top - 1px); 
+			top: ($o-lp-step-top); 
 			left: $o-lp-left;
 			height: $o-lp-step-size;
 			width: $o-lp-step-size;
@@ -111,6 +111,13 @@
 	/* Path stops on last element */
 	li.o_last_node:before {
 		border: none;
+	}
+	
+	/* Nodes that are not in a sequence have different path rendering */
+	li.o_lp_not_in_sequence:not(:last-child):before,
+	li.o_lp_contains_no_sequence.children_visible:before,
+	li.o_lp_contains_no_sequence.children_visible li.o_lp_not_in_sequence:before{
+	 	border-left: $o-lp-path-width solid $o-lp-default; 
 	}
 	
 }
