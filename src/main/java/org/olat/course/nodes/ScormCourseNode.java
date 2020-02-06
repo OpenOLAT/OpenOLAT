@@ -51,6 +51,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
@@ -96,13 +97,15 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 	private final static String CONFIG_HEIGHT_AUTO = "auto";
 	
 	public ScormCourseNode() {
-		super(TYPE);
-		updateModuleConfigDefaults(true);
+		this(null);
+	}
+
+	public ScormCourseNode(INode parent) {
+		super(TYPE, parent);
 	}
 
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
-		updateModuleConfigDefaults(false);
 		ScormEditController childTabCntrllr = new ScormEditController(this, ureq, wControl, course);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
@@ -116,7 +119,6 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
-		updateModuleConfigDefaults(false);
 		ScormRunController cprunC = new ScormRunController(getModuleConfiguration(), ureq, userCourseEnv, wControl, this, false);
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, cprunC, this, "o_scorm_icon");
 		// no inline-in-olat-menu integration possible: no display configuration option
@@ -125,7 +127,6 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
-		updateModuleConfigDefaults(false);
 		ScormRunController cprunC = new ScormRunController(getModuleConfiguration(), ureq, userCourseEnv, wControl, this, true);
 		return new NodeRunConstructionResult(cprunC).getRunController();
 	}
@@ -225,13 +226,12 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 	/**
 	 * Update the module configuration to have all mandatory configuration flags
 	 * set to usefull default values
-	 * 
 	 * @param isNewNode true: an initial configuration is set; false: upgrading
 	 *          from previous node configuration version, set default to maintain
 	 *          previous behaviour
 	 */
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
 			// use defaults for new course building blocks

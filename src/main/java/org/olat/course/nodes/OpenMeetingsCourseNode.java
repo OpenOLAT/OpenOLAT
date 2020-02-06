@@ -31,6 +31,7 @@ import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
@@ -69,11 +70,15 @@ public class OpenMeetingsCourseNode extends AbstractAccessableCourseNode {
 	private transient CourseGroupManager groupMgr;
 
 	public OpenMeetingsCourseNode() {
-		super(TYPE);
+		this(null);
+	}
+	
+	public OpenMeetingsCourseNode(INode parent) {
+		super(TYPE, parent);
 	}
 
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
 		// no update to default config necessary
 	}
 	
@@ -86,7 +91,6 @@ public class OpenMeetingsCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course,
 			UserCourseEnvironment userCourseEnv) {
-		updateModuleConfigDefaults(false);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(userCourseEnv.getCourseEditorEnv().getCurrentCourseNodeId());
 		// create edit controller
 		OpenMeetingsEditController childTabCntrllr = new OpenMeetingsEditController(ureq, wControl, this, course);
@@ -105,8 +109,6 @@ public class OpenMeetingsCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
-		updateModuleConfigDefaults(false);
-
 		// check if user is moderator of the virtual classroom
 		boolean admin = userCourseEnv.isAdmin();
 		boolean moderator = admin || userCourseEnv.isCoach();

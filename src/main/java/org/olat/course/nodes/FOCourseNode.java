@@ -52,6 +52,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
+import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
@@ -115,14 +116,16 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 	private Condition preConditionReader, preConditionPoster, preConditionModerator;
 
 	public FOCourseNode() {
-		super(TYPE);
-		updateModuleConfigDefaults(true);
+		this(null);
+	}
+	
+	public FOCourseNode(INode parent) {
+		super(TYPE, parent);
 	}
 
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			ICourse course, UserCourseEnvironment euce) {
-		updateModuleConfigDefaults(false);
 		FOCourseNodeEditController childTabCntrllr = new FOCourseNodeEditController(ureq, wControl, this, course, euce);
 		CourseNode chosenNode = course.getEditorTreeModel()
 				.getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
@@ -137,7 +140,6 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			final UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
-		updateModuleConfigDefaults(false);
 		Roles roles = ureq.getUserSession().getRoles();
 		Forum theForum = loadOrCreateForum(userCourseEnv.getCourseEnvironment());
 		boolean isAdministrator = userCourseEnv.isAdmin();
@@ -211,7 +213,8 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 	 * @return the loaded forum
 	 */
 	public Forum loadOrCreateForum(final CourseEnvironment courseEnv) {
-		updateModuleConfigDefaults(false);
+		CourseNode parent = this.getParent() instanceof CourseNode? (CourseNode)this.getParent(): null;
+		updateModuleConfigDefaults(false, parent);
 
 		Forum forum = null;
 		List<Property> forumKeyProps = courseEnv.getCoursePropertyManager().findCourseNodeProperties(this, null, null,
@@ -491,13 +494,12 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 	/**
 	 * Update the module configuration to have all mandatory configuration flags set
 	 * to usefull default values
-	 * 
 	 * @param isNewNode true: an initial configuration is set; false: upgrading from
 	 *                  previous node configuration version, set default to maintain
 	 *                  previous behaviour
 	 */
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
 		ModuleConfiguration config = getModuleConfiguration();
 		int version = config.getConfigurationVersion();
 

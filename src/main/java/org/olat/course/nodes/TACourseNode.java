@@ -62,6 +62,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.io.ShieldOutputStream;
+import org.olat.core.util.nodes.INode;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -172,13 +173,15 @@ public class TACourseNode extends GenericCourseNode {
 	private static final Logger log = Tracing.createLoggerFor(TACourseNode.class);
 
 	public TACourseNode() {
-		super(TYPE);
-		updateModuleConfigDefaults(true);
+		this(null);
+	}
+	
+	public TACourseNode(INode parent) {
+		super(TYPE, parent);
 	}
 
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
-		updateModuleConfigDefaults(false);
 		TACourseNodeEditController childTabCntrllr = new TACourseNodeEditController(ureq, wControl, course, this, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
@@ -187,7 +190,6 @@ public class TACourseNode extends GenericCourseNode {
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
-		updateModuleConfigDefaults(false);
 		Controller controller;
 		// Do not allow guests to access tasks
 		Roles roles = ureq.getUserSession().getRoles();
@@ -715,7 +717,7 @@ public class TACourseNode extends GenericCourseNode {
 	 * Init config parameter with default values for a new course node.
 	 */
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
 			// use defaults for new course building blocks

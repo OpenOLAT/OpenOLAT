@@ -32,6 +32,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
@@ -68,18 +69,21 @@ public class ViteroCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONF_VC_CONFIGURATION = "vc_configuration";
 
 	public ViteroCourseNode() {
-		super(TYPE);
+		this(null);
+	}
+	
+	public ViteroCourseNode(INode parent) {
+		super(TYPE, parent);
 	}
 
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
 		// no update to default config necessary
 	}
 
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course,
 			UserCourseEnvironment userCourseEnv) {
-		updateModuleConfigDefaults(false);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(userCourseEnv.getCourseEditorEnv().getCurrentCourseNodeId());
 		// create edit controller
 		ViteroEditController childTabCntrllr = new ViteroEditController(ureq, wControl, this, course, userCourseEnv);
@@ -98,7 +102,6 @@ public class ViteroCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
-		updateModuleConfigDefaults(false);
 		Controller runCtr;
 		Roles roles = ureq.getUserSession().getRoles();
 		if (roles.isGuestOnly()) {

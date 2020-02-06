@@ -29,6 +29,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
@@ -63,16 +64,16 @@ public class CalCourseNode extends AbstractAccessableCourseNode {
 	public static final String EDIT_CONDITION_ID = "editarticle";
 	private Condition preConditionEdit;
 
-	/**
-	 * Default constructor for course node of type calendar
-	 */
 	public CalCourseNode() {
-		super(TYPE);
-		updateModuleConfigDefaults(true);
+		this(null);
+	}
+	
+	public CalCourseNode(INode parent) {
+		super(TYPE, parent);
 	}
 
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
 			// use defaults for new course building blocks
@@ -103,29 +104,17 @@ public class CalCourseNode extends AbstractAccessableCourseNode {
 		postExportCondition(preConditionEdit, envMapper, backwardsCompatible);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createEditController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl, org.olat.course.ICourse)
-	 */
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
-		updateModuleConfigDefaults(false);
 		CalEditController childTabCntrllr = new CalEditController(getModuleConfiguration(), ureq, wControl, this, course, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
 
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createNodeRunConstructionResult(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.course.run.userview.NodeEvaluation)
-	 */
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
-		updateModuleConfigDefaults(false);
 		CalRunController calCtlr = new CalRunController(wControl, ureq, this, userCourseEnv, nodeSecCallback.getNodeEvaluation());
 		Controller wrapperCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, calCtlr, this, "o_cal_icon");
 		return new NodeRunConstructionResult(wrapperCtrl);

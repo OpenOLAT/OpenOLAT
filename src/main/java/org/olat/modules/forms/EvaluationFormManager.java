@@ -34,6 +34,8 @@ import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.Rubric;
+import org.olat.modules.forms.ui.model.CountRatioResult;
+import org.olat.modules.forms.ui.model.CountResult;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -235,5 +237,7 @@ public interface EvaluationFormManager {
 	public RubricStatistic getRubricStatistic(Rubric rubric, SlidersStatistic slidersStatistic);
 	
 	public RubricRating getRubricRating(Rubric rubric, Double value);
+	
+	public List<CountRatioResult> calculateRatio(List<CountResult> countResults);
 
 }

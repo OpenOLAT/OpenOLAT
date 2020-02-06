@@ -23,6 +23,8 @@ import java.util.Date;
 
 import org.olat.course.learningpath.FullyAssessedTrigger;
 import org.olat.course.learningpath.LearningPathConfigs;
+import org.olat.course.nodes.STCourseNode;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
@@ -34,6 +36,18 @@ import org.olat.modules.assessment.model.AssessmentObligation;
  */
 public class STLearningPathConfigs implements LearningPathConfigs {
 
+	private final ModuleConfiguration moduleConfigs;
+
+	public STLearningPathConfigs(ModuleConfiguration moduleConfigs) {
+		this.moduleConfigs = moduleConfigs;
+	}
+
+	@Override
+	public Boolean hasSequentialChildren() {
+		String sequenceConfig = moduleConfigs.getStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY);
+		return STCourseNode.CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL.equals(sequenceConfig);
+	}
+	
 	@Override
 	public Integer getDuration() {
 		return null;

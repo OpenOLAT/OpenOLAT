@@ -173,6 +173,7 @@ import org.junit.runners.Suite;
 	org.olat.course.condition.ConditionTest.class,
 	org.olat.course.condition.KeyAndNameConverterTest.class,
 	org.olat.course.highscore.HighScoreManagerTest.class,
+	org.olat.course.learningpath.LearningPathServiceTest.class,
 	org.olat.course.nodes.dialog.manager.DialogElementsManagerTest.class,
 	org.olat.course.nodes.en.EnrollmentManagerSerialTest.class,
 	org.olat.course.nodes.en.EnrollmentManagerConcurrentTest.class,

@@ -436,16 +436,18 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	 */
 	private void doCreateAlternateBuildingBlock(UserRequest ureq, ICourse course, CourseNode chosenNode, String selectAlternative) {
 		if(!StringHelper.containsNonWhitespace(selectAlternative)) return;
-
-		//create the alternative node
-		CourseNodeConfiguration newConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(selectAlternative);
-		CourseNode newNode = newConfig.getInstance();
-		//copy configurations
-		chosenNode.copyConfigurationTo(newNode, course);
-		//insert the node
+		
+		//get the parrent node
 		CourseEditorTreeNode cetn = (CourseEditorTreeNode)cetm.getNodeById(chosenNode.getIdent());
 		CourseEditorTreeNode parentNode = (CourseEditorTreeNode)cetn.getParent();
 		int position = cetn.getPosition() + 1;
+
+		//create the alternative node
+		CourseNodeConfiguration newConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(selectAlternative);
+		CourseNode newNode = newConfig.getInstance(parentNode);
+		//copy configurations
+		chosenNode.copyConfigurationTo(newNode, course);
+		//insert the node
 		CourseEditorTreeNode newCetn = course.getEditorTreeModel().insertCourseNodeAt(newNode, parentNode.getCourseNode(), position);
 		doInsert(ureq, newNode);
 		
@@ -521,6 +523,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		String type = chosenNode.getType();
 		CourseNodeConfiguration cnConfig = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(type);
 		if (cnConfig.isEnabled()) {
+			CourseEditorTreeNode parent = (CourseEditorTreeNode) cetm.getNodeById(chosenNode.getIdent());
+			chosenNode.updateModuleConfigDefaults(false, parent);
 			nodeEditCntrllr = chosenNode.createEditController(ureq, getWindowControl(), stackPanel, course, euce);
 			listenTo(nodeEditCntrllr);
 			nodeEditCntrllr.addTabs(tabbedNodeConfig);

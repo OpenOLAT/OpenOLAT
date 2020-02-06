@@ -40,6 +40,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.ValidationStatus;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
@@ -91,9 +92,8 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 	
 	protected Condition preConditionReader, preConditionPoster, preConditionModerator;
 
-	public AbstractFeedCourseNode(String type) {
-		super(type);
-		updateModuleConfigDefaults(true);
+	public AbstractFeedCourseNode(String type, INode parent) {
+		super(type, parent);
 	}
 	
 	protected abstract String getTranslatorPackage();
@@ -111,8 +111,6 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			ICourse course, UserCourseEnvironment euce) {
-		updateModuleConfigDefaults(false);
-		
 		String translatorPackage = getTranslatorPackage();
 		FeedUIFactory uiFactory = getFeedUIFactory(ureq.getLocale());
 		String resourceablTypeName = getResourceablTypeName();
@@ -131,8 +129,6 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
-		updateModuleConfigDefaults(false);
-		
 		RepositoryEntry entry = getReferencedRepositoryEntry();
 		FeedSecurityCallback callback = getFeedSecurityCallback(ureq, entry, userCourseEnv, nodeSecCallback);
 		SubscriptionContext subsContext = CourseModule.createSubscriptionContext(userCourseEnv.getCourseEnvironment(),
@@ -204,7 +200,7 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 	}
 
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
 		ModuleConfiguration config = getModuleConfiguration();
 		int version = config.getConfigurationVersion();
 		

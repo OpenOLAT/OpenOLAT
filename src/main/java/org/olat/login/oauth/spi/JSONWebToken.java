@@ -19,6 +19,9 @@
  */
 package org.olat.login.oauth.spi;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+
 import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -60,32 +63,15 @@ public class JSONWebToken {
 	}
 
 	public static JSONWebToken parse(OAuth2AccessToken token) throws JSONException {
-		try {
-			String accessToken= token.getAccessToken();
-			
-			int firstIndex = accessToken.indexOf('.');
-			int secondIndex = accessToken.indexOf('.', firstIndex + 1);
-			
-			String header = StringHelper.decodeBase64(accessToken.substring(0, firstIndex));
-			String payload = StringHelper.decodeBase64(accessToken.substring(firstIndex, secondIndex));
-			JSONObject jsonPayload = new JSONObject(payload);
-			return new JSONWebToken(header, payload, jsonPayload);
-		} catch (JSONException e) {
-			log.error("Cannot parse token: {}", token.getAccessToken());
-			throw e;
-		} catch (Exception e) {
-			log.error("Cannot parse token: {}", token.getAccessToken());
-			throw new JSONException(e);
-		}
+		return parse(token.getAccessToken());
 	}
-	
+
 	public static JSONWebToken parse(String accessToken) throws JSONException {
 		try {
 			int firstIndex = accessToken.indexOf('.');
 			int secondIndex = accessToken.indexOf('.', firstIndex + 1);
-			
 			String header = StringHelper.decodeBase64(accessToken.substring(0, firstIndex));
-			String payload = StringHelper.decodeBase64(accessToken.substring(firstIndex, secondIndex));
+			String payload = decodeBase64(accessToken.substring(firstIndex + 1, secondIndex));
 			JSONObject jsonPayload = new JSONObject(payload);
 			return new JSONWebToken(header, payload, jsonPayload);
 		} catch (JSONException e) {
@@ -94,6 +80,31 @@ public class JSONWebToken {
 		} catch (Exception e) {
 			log.error("Cannot parse token: {}", accessToken);
 			throw new JSONException(e);
+		}
+	}
+	
+	/**
+	 * The method try 2 different way to decode the content and check
+	 * that we can parse the JSON content.
+	 * 
+	 * @param content The content to decode
+	 * @return The decoded string
+	 * @throws Exception
+	 */
+	private static final String decodeBase64(String content) throws Exception {
+		try {
+			String decodedContent = StringHelper.decodeBase64(content);
+			new JSONObject(decodedContent);
+			return decodedContent;
+		} catch (JSONException e) {
+			try {
+				byte[] contentBytes = Base64.getUrlDecoder().decode(content);
+				String decodedContent = new String(contentBytes, StandardCharsets.UTF_8);
+				new JSONObject(decodedContent);
+				return decodedContent;
+			} catch (Exception e1) {
+				throw e;
+			}
 		}
 	}
 }

@@ -26,6 +26,7 @@ import org.olat.commons.calendar.CalendarModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.nodes.AbstractCourseNodeConfiguration;
 import org.olat.course.nodes.CalCourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -47,8 +48,8 @@ public class CalCourseNodeConfiguration extends AbstractCourseNodeConfiguration 
 	}
 
 	@Override
-	public CourseNode getInstance() {
-		return new CalCourseNode();
+	public CourseNode getInstance(INode parent) {
+		return new CalCourseNode(parent);
 	}
 
 	@Override

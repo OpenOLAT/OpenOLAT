@@ -55,6 +55,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.io.ShieldOutputStream;
+import org.olat.core.util.nodes.INode;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
@@ -162,13 +163,11 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 	public static final String TYPE_INDIVIDUAL = "ita";
 
 	public GTACourseNode() {
-		super(TYPE_GROUP);
-        updateModuleConfigDefaults(true);
+		this(TYPE_GROUP, null);
 	}
 	
-	public GTACourseNode(String type) {
-		super(type);
-        updateModuleConfigDefaults(true);
+	public GTACourseNode(String type, INode parent) {
+		super(type, parent);
 	}
 
 	@Override
@@ -182,7 +181,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
 		if(isNewNode) {
 			//setup default configuration
 			ModuleConfiguration config = getModuleConfiguration();
@@ -798,7 +797,6 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
-		
 		Controller controller;
 		Roles roles = ureq.getUserSession().getRoles();
 		if (roles.isGuestOnly()) {

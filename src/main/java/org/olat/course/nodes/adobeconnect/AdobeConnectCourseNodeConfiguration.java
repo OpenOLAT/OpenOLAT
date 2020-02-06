@@ -24,6 +24,7 @@ import java.util.Locale;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.nodes.AbstractCourseNodeConfiguration;
 import org.olat.course.nodes.AdobeConnectCourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -70,7 +71,7 @@ public class AdobeConnectCourseNodeConfiguration extends AbstractCourseNodeConfi
 	}
 
 	@Override
-	public CourseNode getInstance() {
+	public CourseNode getInstance(INode parent) {
 		return new AdobeConnectCourseNode();
 	}
 

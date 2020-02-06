@@ -122,16 +122,18 @@ public class CourseExtensionHelper {
 	 * @return created course node
 	 */
 	public static final CourseNode createNode(ICourse course, final String shortTitle, final String longTitle, final String type) {
+		// edit session
+		course = CourseFactory.openCourseEditSession(course.getResourceableId());
+		final CourseEditorTreeModel cetm = course.getEditorTreeModel();
+		final CourseNode rootNode = cetm.getCourseNode(course.getRunStructure().getRootNode().getIdent());
+
 		// create a node with default data
 		CourseNodeConfiguration nodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(type);
-		CourseNode node = nodeConfig.getInstance();
+		CourseNode node = nodeConfig.getInstance(cetm.getRootNode());
 		node.setShortTitle(shortTitle);
 		node.setLongTitle(longTitle);
 
 		// append node to course
-		course = CourseFactory.openCourseEditSession(course.getResourceableId());
-		final CourseEditorTreeModel cetm = course.getEditorTreeModel();
-		final CourseNode rootNode = cetm.getCourseNode(course.getRunStructure().getRootNode().getIdent());
 		course.getEditorTreeModel().addCourseNode(node, rootNode);
 		CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);

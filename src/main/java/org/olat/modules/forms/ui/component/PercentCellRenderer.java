@@ -17,31 +17,30 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath;
+package org.olat.modules.forms.ui.component;
 
-import java.util.List;
-
-import org.olat.core.id.Identity;
-import org.olat.course.ICourse;
-import org.olat.course.nodes.CourseNode;
-import org.olat.repository.RepositoryEntry;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
+import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.translator.Translator;
 
 /**
  * 
- * Initial date: 1 Sep 2019<br>
+ * Initial date: 05.02.2020<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface LearningPathService {
+public class PercentCellRenderer implements FlexiCellRenderer {
 
-	public LearningPathConfigs getConfigs(CourseNode courseNode);
-	
-	public LearningPathEditConfigs getEditConfigs(CourseNode courseNode);
-	
-	public SequenceConfig getSequenceConfig(CourseNode courseNode);
-
-	public List<CourseNode> getUnsupportedCourseNodes(ICourse course);
-
-	public RepositoryEntry migrate(RepositoryEntry courseEntry, Identity identity);
-
+	@Override
+	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
+			URLBuilder ubu, Translator translator) {
+		if(cellValue instanceof Double) {
+			double percent = ((Double)cellValue).doubleValue() * 100.0d;
+			long rounded = Math.round(percent);
+			target.append(rounded).append("%");
+		}
+	}
 }

@@ -40,6 +40,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.ConditionAccessEditConfig;
@@ -72,14 +73,16 @@ public class COCourseNode extends AbstractAccessableCourseNode {
 
     private static final String TYPE = "co";
 
-    public COCourseNode() {
-        super(TYPE);
-        updateModuleConfigDefaults(true);
-    }
+	public COCourseNode() {
+		this(null);
+	}
+	
+	public COCourseNode(INode parent) {
+		super(TYPE, parent);
+	}
 
     @Override
     public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
-        updateModuleConfigDefaults(false);
         COEditController childTabCntrllr = new COEditController(getModuleConfiguration(), ureq, wControl, euce);
         CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
         return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
@@ -93,7 +96,6 @@ public class COCourseNode extends AbstractAccessableCourseNode {
     @Override
     public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
             UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
-    	updateModuleConfigDefaults(false);
         Controller controller;
         // Do not allow guests to send anonymous emails
         Roles roles = ureq.getUserSession().getRoles();
@@ -220,7 +222,8 @@ public class COCourseNode extends AbstractAccessableCourseNode {
 
     @Override
     public StatusDescription isConfigValid() {
-    	updateModuleConfigDefaults(false);
+		CourseNode parent = this.getParent() instanceof CourseNode? (CourseNode)this.getParent(): null;
+    	updateModuleConfigDefaults(false, parent);
         if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
 
         /**
@@ -360,7 +363,7 @@ public class COCourseNode extends AbstractAccessableCourseNode {
     }
 
     @Override
-    public void updateModuleConfigDefaults(boolean isNewNode) {
+    public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
         ModuleConfiguration mc = getModuleConfiguration();
         int version = mc.getConfigurationVersion();
         

@@ -210,6 +210,8 @@ public class NavigationHandler implements Disposable {
 				final OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseNode.class, Long.parseLong(internCourseNode.getIdent()));
 				ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(ores);
 				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, wControl);
+				CourseNode parent = internCourseNode.getParent() instanceof CourseNode? (CourseNode)internCourseNode.getParent(): null;
+				internCourseNode.updateModuleConfigDefaults(false, parent);
 				nrcr = internCourseNode.createNodeRunConstructionResult(ureq, bwControl, userCourseEnv, internNode, nodecmd);
 				// remember as instance variable for next click
 				subtreemodelListener = nrcr.getSubTreeListener();
@@ -402,6 +404,8 @@ public class NavigationHandler implements Disposable {
 						}
 					}
 					
+					CourseNode parent = courseNode.getParent() instanceof CourseNode? (CourseNode)courseNode.getParent(): null;
+					courseNode.updateModuleConfigDefaults(false, parent);
 					ncr = courseNode.createNodeRunConstructionResult(ureq, bwControl, userCourseEnv, newCalledTreeNode, nodecmd);
 
 					// remember as instance variable for next click

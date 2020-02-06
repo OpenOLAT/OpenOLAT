@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.additionalconditions.AdditionalCondition;
@@ -59,9 +60,10 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 	 * Constructor, only used by implementing course nodes
 	 * 
 	 * @param type The course node type
+	 * @param parent to init the module configuration
 	 */
-	protected AbstractAccessableCourseNode(String type) {
-		super(type);
+	protected AbstractAccessableCourseNode(String type, INode parent) {
+		super(type, parent);
 	}
 	
 	@Override

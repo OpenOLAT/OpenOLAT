@@ -409,14 +409,16 @@ public interface CourseNode extends INode, ShortName {
 	 * @return
 	 */
 	public List<StatusDescription> publishUpdatesExplanations(CourseEditorEnv cev);
-
+	
 	/**
 	 * Update the module configuration to have all mandatory configuration flags
-	 * set to usefull default values
+	 * set to usefull default values.
 	 * 
 	 * @param isNewNode true: an initial configuration is set; false: upgrading
 	 *          from previous node configuration version, set default to maintain
-	 *          previous behaviour
+	 *          previous behavior.
+	 * @param parent Can be used to inherit default values.
+	 *          May be null if root node. Is of type CourseNode or CourseEditorTreeNode.
 	 *          
 	 * This is the workflow:
 	 * On every click on a entry of the navigation tree, this method will be called
@@ -429,7 +431,7 @@ public interface CourseNode extends INode, ShortName {
 	 * otherwise the editortree.xml and runstructure.xml of old courses would no longer be compatible. 
 	 *  
 	 */
-	public void updateModuleConfigDefaults(boolean isNewNode);
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent);
 	
 	/**
 	 * Calculate the access and the visibility in the conventional node access type.

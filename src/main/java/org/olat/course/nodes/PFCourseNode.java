@@ -40,6 +40,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseModule;
@@ -78,12 +79,15 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 	public static final long serialVersionUID = 1L;
 
 	public PFCourseNode() {
-		super(TYPE);
-		updateModuleConfigDefaults(true);
+		this(null);
+	}
+
+	public PFCourseNode(INode parent) {
+		super(TYPE, parent);
 	}
 
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
 		if (isNewNode) {
 			// default is to enable both boxes without restrictions
 			updateModuleConfig(true,true,true, false, 0, false, null, null);

@@ -42,6 +42,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
@@ -93,12 +94,15 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 	private Condition preConditionEdit;
 	
 	public PortfolioCourseNode() {
-		super(TYPE);
-		updateModuleConfigDefaults(true);
+		this(null);
+	}
+
+	public PortfolioCourseNode(INode parent) {
+		super(TYPE, parent);
 	}
 	
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
 			MSCourseNode.initDefaultConfig(config);
@@ -133,7 +137,6 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		PortfolioCourseNodeEditController childTabCntrllr = new PortfolioCourseNodeEditController(ureq, wControl, stackPanel,
 				course, this, getModuleConfiguration(), euce);
-		updateModuleConfigDefaults(false);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
 	}
@@ -146,7 +149,6 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
-		updateModuleConfigDefaults(false);
 		Controller controller;
 		Roles roles = ureq.getUserSession().getRoles();
 		if (roles.isGuestOnly()) {

@@ -50,6 +50,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
@@ -89,16 +90,15 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 	public static final String TYPE = "wiki";
 	private Condition preConditionEdit;
 
-	/**
-	 * Default constructor for course node of type single page
-	 */
 	public WikiCourseNode() {
-		super(TYPE);
-		updateModuleConfigDefaults(true);
+		this(null);
+	}
+	public WikiCourseNode(INode parent) {
+		super(TYPE, parent);
 	}
 
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
 			// use defaults for new course building blocks
@@ -124,7 +124,6 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 		WikiEditController childTabCntrllr = new WikiEditController(getModuleConfiguration(), ureq, wControl, this, course,euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
-
 	}
 
 	@Override

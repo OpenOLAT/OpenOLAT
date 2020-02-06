@@ -33,6 +33,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.ConditionAccessEditConfig;
@@ -68,11 +69,15 @@ public class GoToMeetingCourseNode extends AbstractAccessableCourseNode {
 	private transient CourseGroupManager groupMgr;
 
 	public GoToMeetingCourseNode() {
-		super(TYPE);
+		this(null);
+	}
+
+	public GoToMeetingCourseNode(INode parent) {
+		super(TYPE, parent);
 	}
 
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
 		// no update to default config necessary
 	}
 	
@@ -85,7 +90,6 @@ public class GoToMeetingCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			ICourse course, UserCourseEnvironment userCourseEnv) {
-		updateModuleConfigDefaults(false);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(userCourseEnv.getCourseEditorEnv().getCurrentCourseNodeId());
 		// create edit controller
 		GoToMeetingEditController childTabCntrllr = new GoToMeetingEditController(ureq, wControl);
@@ -104,8 +108,6 @@ public class GoToMeetingCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
-		updateModuleConfigDefaults(false);
-
 		Controller controller;
 		Roles roles = ureq.getUserSession().getRoles();
 		if (roles.isGuestOnly()) {

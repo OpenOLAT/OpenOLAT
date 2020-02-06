@@ -59,6 +59,11 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 	}
 
 	@Override
+	public Boolean hasSequentialChildren() {
+		return null;
+	}
+
+	@Override
 	public Integer getDuration() {
 		String duration = moduleConfiguration.getStringValue(CONFIG_KEY_DURATION);
 		return integerOrNull(duration);

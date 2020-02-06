@@ -39,8 +39,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class STLearningPathNodeHandler implements LearningPathNodeHandler {
 
-	private static final STLearningPathConfigs LEARNING_PATH_CONFIGS = new STLearningPathConfigs();
-
 	@Override
 	public String acceptCourseNodeType() {
 		return STCourseNode.TYPE;
@@ -53,7 +51,7 @@ public class STLearningPathNodeHandler implements LearningPathNodeHandler {
 
 	@Override
 	public LearningPathConfigs getConfigs(CourseNode courseNode) {
-		return LEARNING_PATH_CONFIGS;
+		return new STLearningPathConfigs(courseNode.getModuleConfiguration());
 	}
 
 	@Override

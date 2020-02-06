@@ -48,6 +48,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
@@ -105,8 +106,11 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 	private static final String PACKAGE_IQ = Util.getPackageName(IQRunController.class);
 	
 	public IQSURVCourseNode() {
-		super(TYPE);
-		updateModuleConfigDefaults(true);
+		this(null);
+	}
+
+	public IQSURVCourseNode(INode parent) {
+		super(TYPE, parent);
 	}
 
 	@Override
@@ -324,13 +328,12 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 	/**
 	 * Update the module configuration to have all mandatory configuration flags
 	 * set to usefull default values
-	 *
 	 * @param isNewNode true: an initial configuration is set; false: upgrading
 	 *          from previous node configuration version, set default to maintain
 	 *          previous behaviour
 	 */
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
 			// add default module configuration

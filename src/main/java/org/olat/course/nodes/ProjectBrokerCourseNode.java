@@ -68,6 +68,7 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
+import org.olat.core.util.nodes.INode;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -169,13 +170,15 @@ public class ProjectBrokerCourseNode extends GenericCourseNode {
 	private Condition  conditionProjectBroker;
 
 	public ProjectBrokerCourseNode() {
-		super(TYPE);
-		updateModuleConfigDefaults(true);
+		this(null);
+	}
+	
+	public ProjectBrokerCourseNode(INode parent) {
+		super(TYPE, parent);
 	}
 
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
-		updateModuleConfigDefaults(false);
 		ProjectBrokerCourseEditorController childTabCntrllr = ProjectBrokerControllerFactory.createCourseEditController(ureq, wControl, course, euce, this );
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		NodeEditController editController = new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
@@ -186,7 +189,6 @@ public class ProjectBrokerCourseNode extends GenericCourseNode {
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
-		updateModuleConfigDefaults(false);
 		Controller controller;
 		// Do not allow guests to access tasks
 		Roles roles = ureq.getUserSession().getRoles();
@@ -662,7 +664,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode {
 	}
 
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
 			// use defaults for new course building blocks

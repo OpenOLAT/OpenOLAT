@@ -35,6 +35,11 @@ import org.olat.modules.assessment.model.AssessmentObligation;
 public class UnsupportedLearningPathConfigs implements LearningPathConfigs {
 
 	@Override
+	public Boolean hasSequentialChildren() {
+		return null;
+	}
+	
+	@Override
 	public Integer getDuration() {
 		return null;
 	}

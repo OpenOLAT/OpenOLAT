@@ -76,6 +76,8 @@ import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.FormXStream;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Slider;
+import org.olat.modules.forms.ui.model.CountRatioResult;
+import org.olat.modules.forms.ui.model.CountResult;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -579,5 +581,20 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	@Override
 	public RubricRating getRubricRating(Rubric rubric, Double value) {
 		return RubricRatingEvaluator.rate(rubric, value);
+	}
+
+	@Override
+	public List<CountRatioResult> calculateRatio(List<CountResult> countResults) {
+		if (countResults == null || countResults.isEmpty()) return new ArrayList<>(0);
+		
+		long sum = countResults.stream().mapToLong(CountResult::getCount).sum();
+		if (sum == 0) return new ArrayList<>(0);
+		
+		List<CountRatioResult> ratios = new ArrayList<>(countResults.size());
+		for (CountResult countResult : countResults) {
+			double ratio = (double)countResult.getCount() / sum;
+			ratios.add(new CountRatioResult(countResult, ratio));
+		}
+		return ratios;
 	}
 }
