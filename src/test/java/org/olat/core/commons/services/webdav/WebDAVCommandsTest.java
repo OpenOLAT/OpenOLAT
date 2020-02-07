@@ -153,6 +153,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		//head file
 		URI publicUri = conn.getBaseURI().path("webdav").path("home").path("public").path("test_head.txt").build();
 		HttpResponse response = conn.head(publicUri);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
 		Header lengthHeader = response.getFirstHeader("Content-Length");
 		Assert.assertNotNull(lengthHeader);
 		Assert.assertEquals("10", lengthHeader.getValue());
@@ -876,6 +877,49 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		EntityUtils.consume(response.getEntity());
 
 		conn.close();
+	}
+	
+	/**
+	 * Default are the following User-Agent forbidden: empty, -
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void forbiddenUserAgent()
+	throws IOException, URISyntaxException {
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("webdav-2-");
+		
+		//create a file
+		String publicPath = FolderConfig.getUserHomes() + "/" + user.getName() + "/public";
+		VFSContainer vfsPublic = VFSManager.olatRootContainer(publicPath, null);
+		createFile(vfsPublic, "test_head.txt");
+		
+		WebDAVConnection conn = new WebDAVConnection();
+		URI publicUri = conn.getBaseURI().path("webdav").path("home").path("public").path("test_head.txt").build();
+
+		//head file with standard Apache User Agent -> Ok
+		conn.setCredentials(user.getName(), "A6B7C8");
+		HttpResponse response = conn.head(publicUri);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		conn.close();
+		
+		// check with  "-" as User-Agent -> Forbidden
+		WebDAVConnection hyphenConn = new WebDAVConnection("-");
+		hyphenConn.setCredentials(user.getName(), "A6B7C8");
+		HttpResponse hyphenResponse = hyphenConn.head(publicUri);
+		Assert.assertEquals(403, hyphenResponse.getStatusLine().getStatusCode());
+		EntityUtils.consume(hyphenResponse.getEntity());
+		hyphenConn.close();
+		
+		// check with  "" as User-Agent -> Forbidden
+		WebDAVConnection emptyConn = new WebDAVConnection("-");
+		emptyConn.setCredentials(user.getName(), "A6B7C8");
+		HttpResponse emptyResponse = emptyConn.head(publicUri);
+		Assert.assertEquals(403, emptyResponse.getStatusLine().getStatusCode());
+		EntityUtils.consume(emptyResponse.getEntity());
+		emptyConn.close();
 	}
 	
 	private VFSItem createFile(VFSContainer container, String filename) throws IOException {

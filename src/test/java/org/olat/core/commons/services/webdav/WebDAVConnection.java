@@ -39,8 +39,6 @@ import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpOptions;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLContexts;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.BasicCredentialsProvider;
@@ -76,22 +74,25 @@ public class WebDAVConnection implements Closeable {
 	private final CloseableHttpClient httpclient;
 
 	public WebDAVConnection() {
-		this(WebDAVTestCase.PROTOCOL, WebDAVTestCase.HOST, WebDAVTestCase.PORT);
+		this(WebDAVTestCase.PROTOCOL, WebDAVTestCase.HOST, WebDAVTestCase.PORT, null);
 	}
 	
-	public WebDAVConnection(String protocol, String host, int port) {
+	public WebDAVConnection(String userAgent) {
+		this(WebDAVTestCase.PROTOCOL, WebDAVTestCase.HOST, WebDAVTestCase.PORT, userAgent);
+	}
+	
+	public WebDAVConnection(String protocol, String host, int port, String userAgent) {
 		this.protocol = protocol;
 		this.host = host;
 		this.port = port;
 		
-		SSLConnectionSocketFactory sslFactory
-			= new SSLConnectionSocketFactory(SSLContexts.createDefault(), SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-		
-		httpclient = HttpClientBuilder.create()
+		HttpClientBuilder builder = HttpClientBuilder.create()
 				.setDefaultCookieStore(cookieStore)
-				.setDefaultCredentialsProvider(provider)
-				.setSSLSocketFactory(sslFactory)
-				.build();
+				.setDefaultCredentialsProvider(provider);
+		if(userAgent != null) {
+			builder.setUserAgent(userAgent);
+		}
+		httpclient = builder.build();
 	}
 	
 	public CookieStore getCookieStore() {
@@ -112,9 +113,7 @@ public class WebDAVConnection implements Closeable {
 	
 	public HttpResponse head(URI uri) throws IOException, URISyntaxException {
 		HttpHead propfind = new HttpHead(uri);
-		HttpResponse response = execute(propfind);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		return response;
+		return execute(propfind);
 	}
 	
 	public String propfind(URI uri, int depth) throws IOException, URISyntaxException {
