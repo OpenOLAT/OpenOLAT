@@ -350,7 +350,7 @@ public class AuthoringEditAccessAndBookingController extends FormBasicController
 	private void initFormOrganisations(FormItemContainer formLayout, UserSession usess) {
 		Roles roles = usess.getRoles();
 		List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), roles,
-				OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager);
+				OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, OrganisationRoles.author);
 		List<Organisation> organisationList = new ArrayList<>(organisations);
 
 		List<Organisation> reOrganisations = repositoryService.getOrganisations(entry);
