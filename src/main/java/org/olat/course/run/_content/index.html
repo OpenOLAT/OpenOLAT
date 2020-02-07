@@ -13,6 +13,12 @@ function o_activateCourseNode(nodeid) {
 }
 /* ]]> */ 
 </script>
+#if($r.available("courseProgress"))
+<div class="o_course_progress container-fluid">
+	$r.render("courseProgress")
+</div>
+#end
+
 <div class="o_course_run" data-nodeid="$initNodeId">
 	$r.render("coursemain")
 </div>

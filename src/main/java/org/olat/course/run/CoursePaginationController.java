@@ -26,8 +26,6 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
-import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -48,7 +46,6 @@ public class CoursePaginationController extends FormBasicController {
 	private FormLink previousButton;
 	private FormLink nextButton;
 	private FormLink confirmButton;
-	private ProgressBarItem progressBar;
 	
 	public CoursePaginationController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "pagination");
@@ -57,11 +54,6 @@ public class CoursePaginationController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		progressBar = uifactory.addProgressBar("progress", null, formLayout);
-		progressBar.setMax(1);
-		progressBar.setLabelAlignment(LabelAlignment.none);
-		progressBar.setWidthInPercent(true);
-		
 		confirmButton = uifactory.addFormLink("confirm", "confirm", "command.assessment.done", null, formLayout, Link.BUTTON_XSMALL);
 		confirmButton.setIconLeftCSS("o_icon o_icon_status_done");
 		confirmButton.setUserObject(Boolean.TRUE);
@@ -87,10 +79,6 @@ public class CoursePaginationController extends FormBasicController {
 		confirmButton.setUserObject(doConfirm? Boolean.TRUE: Boolean.FALSE);
 		confirmButton.setVisible(confirmVisible);
 		flc.setDirty(true);
-	}
-	
-	public void updateProgressUI(float actual) {
-		progressBar.setActual(actual);
 	}
 
 	@Override

@@ -114,9 +114,9 @@
 	}
 	
 	/* Nodes that are not in a sequence have different path rendering */
-	li.o_lp_not_in_sequence:not(:last-child):before,
-	li.o_lp_contains_no_sequence.children_visible:before,
-	li.o_lp_contains_no_sequence.children_visible li.o_lp_not_in_sequence:before{
+	li.o_lp_not_in_sequence:not(:last-child):not(.o_last_node):before,
+	li.o_lp_contains_no_sequence.children_visible:not(.o_last_node):before,
+	li.o_lp_contains_no_sequence.children_visible:not(.o_last_node) li.o_lp_not_in_sequence:before{
 	 	border-left: $o-lp-path-width solid $o-lp-default; 
 	}
 	
@@ -128,6 +128,66 @@
 	}
 }
 
+/* progress bar in tools */
+.o_course_progress {
+	position: absolute; 
+	left: 0;
+	width: 100%;
+
+	.progress {
+		height: 3px;
+		line-height: 3px;
+		-webkit-box-shadow: none;
+		box-shadow: none;
+		border-top-left-radius: 0;
+		border-top-right-radius: 0;
+	}
+}
+/* position without toolbar / breadcrumb */
+.o_course_progress {
+	top: -37px;
+	@media (max-width: $screen-sm-max) { 
+		top: -37px;
+	}
+	@media (max-width: $screen-xs-max) { 
+		top: -37px;
+	}
+}
+/* position without breadcrumb but with toolbar */
+.o_with_toolbar .o_course_progress {
+	top: $o-toolbar-height-md + $o-toolbar-margin-top - 4px ;
+	@media (max-width: $screen-sm-max) { 
+		top: $o-toolbar-height-sm + $o-toolbar-margin-top - 8px ;
+	}
+	@media (max-width: $screen-xs-max) { 
+		top: $o-toolbar-height-xs + $o-toolbar-margin-top - 7px ;
+	}
+}
+
+/* position without toolbar but with breadcrumb */
+.o_with_breadcrumb .o_course_progress {
+	top: $o-toolbar-breadcrumb-line-height + $o-toolbar-margin-top - 7px;
+	@media (max-width: $screen-sm-max) { 
+		top: $o-toolbar-breadcrumb-line-height + $o-toolbar-margin-top - 7px;
+	}
+	@media (max-width: $screen-xs-max) { 
+		top: $o-toolbar-breadcrumb-line-height + $o-toolbar-margin-top - 7px;
+	}
+}
+/* position with breadcrumb and with toolbar */
+.o_with_breadcrumb.o_with_toolbar .o_course_progress {
+	top: $o-toolbar-height-md + $o-toolbar-breadcrumb-line-height + $o-toolbar-margin-top + 7px ;
+	@media (max-width: $screen-sm-max) { 
+		top: $o-toolbar-height-sm + $o-toolbar-breadcrumb-line-height + $o-toolbar-margin-top + 4px ;
+	}
+	@media (max-width: $screen-xs-max) { 
+		top: $o-toolbar-height-xs + $o-toolbar-breadcrumb-line-height + $o-toolbar-margin-top + 5px ;
+	}
+}
+
+.gugs > .o_course_progress {
+	top: 10px;
+}
 
 /* score info status classes */
 .o_passed {
@@ -277,7 +337,8 @@
 .o_course_pagination {
 	margin-bottom: 10px;
 	display: flex;
-	align-items: center;
+	justify-content: flex-end;
+	
 	:not(:first-child) {
 		margin-left: 5px;
 	}
@@ -287,14 +348,6 @@
 		a {
 			width: 60px;
 		}
-	}
-	
-	.o_progress {
-		flex-grow: 1;
-	}
-	
-	.progress {
-		height: 21px;
 	}
 }
 

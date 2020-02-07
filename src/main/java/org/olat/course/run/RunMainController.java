@@ -37,6 +37,11 @@ import org.olat.core.gui.components.htmlsite.OlatCmdEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.progressbar.ProgressBar;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.tree.GenericTreeModel;
@@ -128,6 +133,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 	private CourseContentController contentCtrl;
 	private CoursePaginationController paginationCtrl;
+	private ProgressBar courseProgress;
 	private Controller currentNodeController;
 
 	private boolean isInEditor = false;
@@ -273,6 +279,20 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			}
 			coursemain.contextPut("initNodeId", initNodeId);
 		}
+		if (paginationCtrl != null) {
+			// progress bar only for learning path courses
+			courseProgress = new ProgressBar("courseProgress");	
+			courseProgress.setWidth(100);
+			courseProgress.setMax(100);
+			courseProgress.setWidthInPercent(true);
+			courseProgress.setRenderStyle(RenderStyle.horizontal);
+			courseProgress.setRenderSize(RenderSize.small);
+			courseProgress.setLabelAlignment(LabelAlignment.none);
+			courseProgress.setPercentagesEnabled(false);		
+			coursemain.put("courseProgress", courseProgress);
+			updateProgressUI();
+		}
+
 		putInitialPanel(coursemain);
 
 		// disposed message controller must be created beforehand
@@ -510,13 +530,25 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	}
 	
 	private void updateProgressUI() {
-		if (paginationCtrl != null) {
-			CourseNode rootNode = getUce().getCourseEnvironment().getRunStructure().getRootNode();
-			AssessmentEvaluation assessmentEvaluation = getUce().getScoreAccounting().evalCourseNode(rootNode);
-			Double completion = assessmentEvaluation.getCompletion();
-			float actual = completion != null? completion.floatValue(): 0;
-			paginationCtrl.updateProgressUI(actual);
-		}
+		if (courseProgress != null) {
+			// update visibility on role change
+			if (courseProgress.isVisible() && !uce.isParticipant()) {
+				courseProgress.setVisible(false);				
+			} else if (!courseProgress.isVisible() && uce.isParticipant()) {
+				courseProgress.setVisible(true);				
+			} 
+			// Update progress only if visible
+			if (courseProgress.isVisible()) {				
+				CourseNode rootNode = getUce().getCourseEnvironment().getRunStructure().getRootNode();
+				AssessmentEvaluation assessmentEvaluation = getUce().getScoreAccounting().evalCourseNode(rootNode);
+				Double completion = assessmentEvaluation.getCompletion();
+				float actual = completion != null? completion.floatValue(): 0;
+				if (actual * 100 != courseProgress.getActual()) {
+					courseProgress.setActual(actual * 100);
+					courseProgress.setBarColor(BarColor.success);					
+				}
+			}
+		}		
 	}
 
 	@Override

@@ -48,9 +48,16 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 		List<Link> breadCrumbs = panel.getBreadCrumbs();
 		List<Tool> tools = panel.getTools();
 		
+		boolean hasBreadcrumb = panel.isBreadcrumbEnabled() && breadCrumbs.size() > panel.getInvisibleCrumb();
+		boolean hasToolbar = panel.isToolbarAutoEnabled() || panel.isToolbarEnabled();
+		
 		// panel div
 		String mainCssClass = panel.getCssClass();
-		sb.append("<div id='o_c").append(source.getDispatchID()).append("' class='").append(mainCssClass, mainCssClass != null).append("'>");
+		sb.append("<div id='o_c").append(source.getDispatchID()).append("' class='")
+			.append("o_with_toolbar ", hasToolbar)
+			.append("o_with_breadcrumb ", hasBreadcrumb)
+			.append(mainCssClass, mainCssClass != null)
+			.append("'>");
 		
 		if((panel.isBreadcrumbEnabled() && breadCrumbs.size() > panel.getInvisibleCrumb()) || (!tools.isEmpty() && panel.isToolbarEnabled())) {
 			sb.append("<div id='o_main_toolbar' class='o_toolbar");
@@ -59,11 +66,11 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 			}
 			sb.append("'>");
 
-			if(panel.isBreadcrumbEnabled() && breadCrumbs.size() > panel.getInvisibleCrumb()) {	
+			if(hasBreadcrumb) {	
 				renderer.render(panel.getBreadcrumbBar(), sb, args);
 			}
 			
-			if (panel.isToolbarAutoEnabled() || panel.isToolbarEnabled()) {
+			if (hasToolbar) {
 				renderer.render(panel.getToolBar(), sb, args);
 			}
 			sb.append("</div>"); // o_toolbar
