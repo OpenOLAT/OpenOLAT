@@ -46,6 +46,7 @@ public class MSLearningPathNodeHandler implements LearningPathNodeHandler {
 			.enableConfirmed()
 			.enableScore()
 			.enablePassed()
+			.enableStatusDone()
 			.withTranslations(MSEditFormController.class)
 				.withTriggerStatusDone("fully.assessed.trigger.status.done")
 				.buildTranslations()

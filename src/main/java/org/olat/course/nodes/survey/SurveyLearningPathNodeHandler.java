@@ -45,6 +45,7 @@ public class SurveyLearningPathNodeHandler implements LearningPathNodeHandler {
 	private static final LearningPathEditConfigs EDIT_CONFIGS = LearningPathEditConfigs.builder()
 			.enableNodeVisited()
 			.enableConfirmed()
+			.enableStatusDone()
 			.withTranslations(SurveyRunController.class)
 				.withTriggerStatusDone("fully.assessed.trigger.status.done")
 				.buildTranslations()

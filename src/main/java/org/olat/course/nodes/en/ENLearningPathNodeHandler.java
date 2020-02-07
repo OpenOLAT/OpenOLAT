@@ -44,6 +44,7 @@ public class ENLearningPathNodeHandler implements LearningPathNodeHandler {
 	private static final LearningPathEditConfigs EDIT_CONFIGS = LearningPathEditConfigs.builder()
 			.enableNodeVisited()
 			.enableConfirmed()
+			.enableStatusDone()
 			.withTranslations(ENEditController.class)
 				.withTriggerStatusDone("fully.assessed.trigger.status.done")
 				.buildTranslations()
