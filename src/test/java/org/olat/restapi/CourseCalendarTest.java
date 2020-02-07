@@ -228,8 +228,6 @@ public class CourseCalendarTest extends OlatRestTestCase {
 		Identity admin = securityManager.findIdentityByName("administrator");
 
 		Assert.assertTrue(conn.login("administrator", "openolat"));
-		CourseConfigVO config = new CourseConfigVO();
-		config.setCalendar(Boolean.TRUE);
 		
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin,
 				RepositoryEntryStatusEnum.preparation, false, false);

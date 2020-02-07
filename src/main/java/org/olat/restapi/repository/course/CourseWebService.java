@@ -115,7 +115,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * Description:<br>
@@ -276,12 +275,11 @@ public class CourseWebService {
 	@POST
 	@Path("publish")
 	@Operation(summary = "Publish the course", description = "Publish the course")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The metadatas of the created course", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = CourseVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course not found")})
+	@ApiResponse(responseCode = "200", description = "The metadatas of the created course", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response publishCourse(@QueryParam("locale") Locale locale,
 			@QueryParam("access") Integer access, @QueryParam("membersOnly") Boolean membersOnly,
@@ -326,12 +324,11 @@ public class CourseWebService {
 	@GET
 	@Path("access")
 	@Operation(summary = "Get the access configuration of the course by id", description = "Get the access configuration of the course by id")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The access configuration of the course", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryAccessVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryAccessVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course not found")})
+	@ApiResponse(responseCode = "200", description = "The access configuration of the course", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryAccessVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryAccessVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getAccess(@Context HttpServletRequest request) {
 		if(!isAuthor(request) && !isManager(request)) {
@@ -355,12 +352,11 @@ public class CourseWebService {
 	 */
 	@GET
 	@Operation(summary = "Get the metadatas of the course by id", description = "Get the metadatas of the course by id")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The metadatas of the created course", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = CourseVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course not found")})
+	@ApiResponse(responseCode = "200", description = "The metadatas of the created course", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response findById(@Context HttpServletRequest request) {
 		if (!isCourseAccessible(course, request)) {
@@ -386,12 +382,11 @@ public class CourseWebService {
 	@GET
 	@Path("resource")
 	@Operation(summary = "Get the OLAT resource of the course specified by its id", description = "Get the OLAT resource of the course specified by its id")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The OLAT resource of the course", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = OlatResourceVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = OlatResourceVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course not found")})	
+	@ApiResponse(responseCode = "200", description = "The OLAT resource of the course", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = OlatResourceVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = OlatResourceVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getOlatResource(@Context HttpServletRequest request) {
 		if(!isManager(request)) {
@@ -413,10 +408,9 @@ public class CourseWebService {
 	@GET
 	@Path("file")
 	@Operation(summary = "Export the course", description = "Export the course")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The course as a ZIP file"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course not found")})	
+	@ApiResponse(responseCode = "200", description = "The course as a ZIP file")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces({ "application/zip", MediaType.APPLICATION_OCTET_STREAM })
 	public Response getRepoFileById(@Context HttpServletRequest request) {
 		RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
@@ -484,10 +478,9 @@ public class CourseWebService {
 	 */
 	@DELETE
 	@Operation(summary = "Delete a course by id", description = "Delete a course by id")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The metadatas of the deleted course"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course not found")})	
+	@ApiResponse(responseCode = "200", description = "The metadatas of the deleted course")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response deleteCourse(@Context HttpServletRequest request) {
 		if(!isManager(request)) {
@@ -534,10 +527,9 @@ public class CourseWebService {
 			"	  	<li>restored</li>\n" + 
 			"	  </ul>\n" + 
 			"	 ")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The metadatas of the deleted course"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course not found")})	
+	@ApiResponse(responseCode = "200", description = "The metadatas of the deleted course")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course not found")
 	public Response deleteCoursePermanently(@FormParam("newStatus") String newStatus, @Context HttpServletRequest request) {
 		if(!isManager(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -546,23 +538,23 @@ public class CourseWebService {
 		RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		if("closed".equals(newStatus)) {
 			repositoryService.closeRepositoryEntry(re, null, false);
-			log.info(Tracing.M_AUDIT, "REST closing course: " + re.getDisplayname() + " [" + re.getKey() + "]");
+			log.info(Tracing.M_AUDIT, "REST closing course: {} [{}]", re.getDisplayname(), re.getKey());
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CLOSE, getClass(),
 					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
 		} else if("unclosed".equals(newStatus)) {
 			repositoryService.uncloseRepositoryEntry(re);
-			log.info(Tracing.M_AUDIT, "REST unclosing course: " + re.getDisplayname() + " [" + re.getKey() + "]");
+			log.info(Tracing.M_AUDIT, "REST unclosing course: {} [{}]", re.getDisplayname(), re.getKey());
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_UPDATE, getClass(),
 					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
 		} else if("deleted".equals(newStatus)) {
 			Identity identity = getIdentity(request);
 			repositoryService.deleteSoftly(re, identity, true, false);
-			log.info(Tracing.M_AUDIT, "REST deleting (soft) course: " + re.getDisplayname() + " [" + re.getKey() + "]");
+			log.info(Tracing.M_AUDIT, "REST deleting (soft) course: {} [{}]", re.getDisplayname(), re.getKey());
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_TRASH, getClass(),
 					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
 		} else if("restored".equals(newStatus)) {
 			repositoryService.restoreRepositoryEntry(re);
-			log.info(Tracing.M_AUDIT, "REST restoring course: " + re.getDisplayname() + " [" + re.getKey() + "]");
+			log.info(Tracing.M_AUDIT, "REST restoring course: {} [{}]", re.getDisplayname(), re.getKey());
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_RESTORE, getClass(),
 					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
 		}
@@ -584,12 +576,11 @@ public class CourseWebService {
 	@GET
 	@Path("configuration")
 	@Operation(summary = "Get the configuration of the course", description = "Get the configuration of the course")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The configuration of the course", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = CourseConfigVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseConfigVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course not found")})	
+	@ApiResponse(responseCode = "200", description = "The configuration of the course", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseConfigVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseConfigVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getConfiguration(@Context HttpServletRequest request) {
 		if(!isManager(request)) {
@@ -621,12 +612,11 @@ public class CourseWebService {
 	@POST
 	@Path("configuration")
 	@Operation(summary = "Update the course configuration", description = "Update the course configuration")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The metadatas of the created course", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = CourseConfigVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseConfigVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course not found")})	
+	@ApiResponse(responseCode = "200", description = "The metadatas of the created course", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseConfigVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseConfigVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updateConfiguration(@PathParam("courseId") Long courseId,
@@ -668,6 +658,65 @@ public class CourseWebService {
 	}
 	
 	/**
+	 * Update the course configuration
+	 * @response.representation.200.qname {http://www.example.com}courseConfigVO
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The metadatas of the created course
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSECONFIGVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The course not found
+	 * @param courseId The course resourceable's id
+	 * @param configuration The new configuration (null elements are ignored)
+	 * @param request The HTTP request
+	 * @return It returns the XML/Json representation of the <code>CourseConfig</code>
+	 *         object representing the course configuration.
+	 */
+	@PUT
+	@Path("configuration")
+	@Operation(summary = "Update the course configuration", description = "Update the course configuration")
+	@ApiResponse(responseCode = "200", description = "The metadatas of the created course", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseConfigVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseConfigVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course not found")
+	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response updateConfiguration(@PathParam("courseId") Long courseId, CourseConfigVO configuration,
+			@Context HttpServletRequest request) {
+		if(!isManager(request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+
+		ICourse editedCourse = CourseFactory.openCourseEditSession(courseId);
+		//change course config
+		CourseConfig courseConfig = editedCourse.getCourseEnvironment().getCourseConfig();
+		if(configuration.getCalendar() != null) {
+			courseConfig.setCalendarEnabled(configuration.getCalendar().booleanValue());
+		}
+		if(configuration.getChat() != null) {
+			courseConfig.setChatIsEnabled(configuration.getChat().booleanValue());
+		}
+		if(StringHelper.containsNonWhitespace(configuration.getCssLayoutRef())) {
+			courseConfig.setCssLayoutRef(configuration.getCssLayoutRef());
+		}
+		if(configuration.getEfficencyStatement() != null) {
+			courseConfig.setEfficencyStatementIsEnabled(configuration.getEfficencyStatement().booleanValue());
+		}
+		if(StringHelper.containsNonWhitespace(configuration.getGlossarySoftkey())) {
+			courseConfig.setGlossarySoftKey(configuration.getGlossarySoftkey());
+		}
+		if(StringHelper.containsNonWhitespace(configuration.getSharedFolderSoftKey())) {
+			courseConfig.setSharedFolderSoftkey(configuration.getSharedFolderSoftKey());
+		}
+
+		CourseFactory.setCourseConfig(editedCourse.getResourceableId(), courseConfig);
+		CourseFactory.closeCourseEditSession(editedCourse.getResourceableId(),true);
+		
+		CourseConfigVO vo = ObjectFactory.getConfig(editedCourse);
+		return Response.ok(vo).build();
+	}
+	
+	/**
 	 * Get the runstructure of the course by id
 	 * @response.representation.200.mediaType application/xml
 	 * @response.representation.200.doc The run structure of the course
@@ -681,10 +730,9 @@ public class CourseWebService {
 	@GET
 	@Path("runstructure")
 	@Operation(summary = "Get the runstructure", description = "Get the runstructure of the course by id")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The run structure of the course"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course not found") })
+	@ApiResponse(responseCode = "200", description = "The run structure of the course")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces(MediaType.APPLICATION_XML)
 	public Response findRunStructureById(@Context HttpServletRequest httpRequest, @Context Request request) {
 		if (!isManager(httpRequest)) {
@@ -714,10 +762,9 @@ public class CourseWebService {
 	@GET
 	@Path("editortreemodel")
 	@Operation(summary = "Get the editor tree model", description = "Get the editor tree model of the course by id")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The editor tree model of the course"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course not found") })
+	@ApiResponse(responseCode = "200", description = "The editor tree model of the course")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces(MediaType.APPLICATION_XML)
 	public Response findEditorTreeModelById(@Context HttpServletRequest httpRequest, @Context Request request) {
 		if (!isManager(httpRequest)) {
@@ -736,12 +783,11 @@ public class CourseWebService {
 	@GET
 	@Path("organisations")
 	@Operation(summary = "Get all organisations", description = "Get all organisations")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The array of organisations", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = OrganisationVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = OrganisationVO.class))) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "Not found") })	
+	@ApiResponse(responseCode = "200", description = "The array of organisations", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = OrganisationVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = OrganisationVO.class))) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "Not found")
 	public Response getOrganisations(@Context HttpServletRequest httpRequest) {
 		if (!isManager(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -758,11 +804,10 @@ public class CourseWebService {
 	
 	@PUT
 	@Path("organisations/{organisationKey}")
-	@Operation(summary = "Put Organisation", description = "Put Organisation")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "Organisation was put successfully"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "Organisation not found") })
+	@Operation(summary = "Put Organisation", description = "Link a new organisation to the course")
+	@ApiResponse(responseCode = "200", description = "Organisation was put successfully")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "Organisation not found")
 	public Response addOrganisation(@PathParam("organisationKey") Long organisationKey, @Context HttpServletRequest httpRequest) {
 		if (!isManager(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -785,11 +830,10 @@ public class CourseWebService {
 	
 	@DELETE
 	@Path("organisations/{organisationKey}")
-	@Operation(summary = "Delete Organisation", description = "Delete Organisation")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "Organisation Deleted"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "Organisation not found") })	
+	@Operation(summary = "Delete Organisation", description = "Remove the link to the organisation")
+	@ApiResponse(responseCode = "200", description = "Organisation Deleted")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "Organisation not found")
 	public Response removeOrganisation(@PathParam("organisationKey") Long organisationKey, @Context HttpServletRequest httpRequest) {
 		if (!isManager(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -816,12 +860,11 @@ public class CourseWebService {
 	@GET
 	@Path("authors")
 	@Operation(summary = "Get all owners and authors of the course", description = "Get all owners and authors of the course")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The array of authors", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course not found") })	
+	@ApiResponse(responseCode = "200", description = "The array of authors", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getAuthors(@Context HttpServletRequest httpRequest) {
 		if (!isManager(httpRequest)) {
@@ -851,13 +894,12 @@ public class CourseWebService {
 	 */
 	@GET
 	@Path("tutors")
-	@Operation(summary = "Get all coaches of the course", description = "Get all coaches of the course (don't follow the groups)")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The array of coaches", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course not found") })	
+	@Operation(summary = "Get all coaches of the course", description = "Get all coaches of the course (don't follow the groups or curriculums)")
+	@ApiResponse(responseCode = "200", description = "The array of coaches", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getTutors(@Context HttpServletRequest httpRequest) {
 		if (!isManager(httpRequest)) {
@@ -887,13 +929,12 @@ public class CourseWebService {
 	 */
 	@GET
 	@Path("participants")
-	@Operation(summary = "Get all participants of the course", description = "Get all participants of the course (don't follow the groups)")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The array of participants", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course not found") })	
+	@Operation(summary = "Get all participants of the course", description = "Get all participants of the course (don't follow the groups or curriculums)")
+	@ApiResponse(responseCode = "200", description = "The array of participants", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getParticipants(@Context HttpServletRequest httpRequest) {
 		if (!isManager(httpRequest)) {
@@ -925,12 +966,11 @@ public class CourseWebService {
 	@GET
 	@Path("authors/{identityKey}")
 	@Operation(summary = "Get this specific author and owner of the course", description = "Get this specific author and owner of the course")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The author", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = UserVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = UserVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course not found or the user is not an onwer or author of the course") })	
+	@ApiResponse(responseCode = "200", description = "The author", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = UserVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = UserVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course not found or the user is not an onwer or author of the course")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getAuthor(@PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {
@@ -960,10 +1000,9 @@ public class CourseWebService {
 	@PUT
 	@Path("authors/{identityKey}")
 	@Operation(summary = "Add an owner and author to the course", description = "Add an owner and author to the course")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The user is an author and owner of the course"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or the user not found") })	
+	@ApiResponse(responseCode = "200", description = "The user is an author and owner of the course")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or the user not found")
 	public Response addAuthor(@PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {
 		if (!isManager(httpRequest)) {
@@ -980,7 +1019,8 @@ public class CourseWebService {
 		if(!hasBeenAuthor) {
 			//not an author already, add this identity to the security group "authors"
 			organisationService.addMember(author, OrganisationRoles.author);
-			log.info(Tracing.M_AUDIT, "User::" + identity.getKey() + " added system role::" + OrganisationRoles.author + " to user::" + author.getKey() + " via addAuthor method in course REST API");
+			log.info(Tracing.M_AUDIT, "User::{} added system role::{} to user::{} via addAuthor method in course REST API",
+					identity.getKey(), OrganisationRoles.author, author.getKey());
 		}
 		
 		//add the author as owner of the course
@@ -995,10 +1035,9 @@ public class CourseWebService {
 	@PUT
 	@Path("authors")
 	@Operation(summary = "Add authors to the course", description = "Add authors to the course")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The authors have been added"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or the user not found") })
+	@ApiResponse(responseCode = "200", description = "The authors have been added")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or the user not found")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response addAuthors(UserVO[] authors, @Context HttpServletRequest httpRequest) {
 		if (!isManager(httpRequest)) {
@@ -1013,7 +1052,8 @@ public class CourseWebService {
 			if(!hasBeenAuthor) {
 				//not an author already, add this identity to the security group "authors"
 				organisationService.addMember(author, OrganisationRoles.author);
-				log.info(Tracing.M_AUDIT, "User::" + identity.getKey() + " added system role::" + OrganisationRoles.author + " to user::" + author.getKey() + " via addAuthor method in course REST API");
+				log.info(Tracing.M_AUDIT, "User::{} added system role::{} to user::{} via addAuthor method in course REST API",
+						identity.getKey(), OrganisationRoles.author, author.getKey());
 			}
 		}
 		
@@ -1036,10 +1076,9 @@ public class CourseWebService {
 	@DELETE
 	@Path("authors/{identityKey}")
 	@Operation(summary = "Remove an owner and author to the course", description = "Remove an owner and author to the course")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The user was successfully removed as owner of the course"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or the user not found") })
+	@ApiResponse(responseCode = "200", description = "The user was successfully removed as owner of the course")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or the user not found")
 	public Response removeAuthor(@PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {
 		if (!isManager(httpRequest)) {
@@ -1072,10 +1111,9 @@ public class CourseWebService {
 	@PUT
 	@Path("tutors/{identityKey}")
 	@Operation(summary = "Add a coach to the course", description = "Add a coach to the course")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The user is a coach of the course"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or the user not found") })
+	@ApiResponse(responseCode = "200", description = "The user is a coach of the course")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or the user not found")
 	public Response addCoach(@PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {
 		if (!isManager(httpRequest)) {
@@ -1101,10 +1139,9 @@ public class CourseWebService {
 	@PUT
 	@Path("tutors")
 	@Operation(summary = "Add tutors to the course", description = "Add tutors to the course")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The tutors have been added"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or the user not found") })
+	@ApiResponse(responseCode = "200", description = "The tutors have been added")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or the user not found")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response addCoaches(UserVO[] coaches, @Context HttpServletRequest httpRequest) {
 		if (!isManager(httpRequest)) {
@@ -1134,10 +1171,9 @@ public class CourseWebService {
 	@DELETE
 	@Path("tutors/{identityKey}")
 	@Operation(summary = "Remove a coach from the course", description = "Remove a coach from the course")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The user was successfully removed as coach of the course"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or the user not found") })
+	@ApiResponse(responseCode = "200", description = "The user was successfully removed as coach of the course")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or the user not found")
 	public Response removeCoach(@PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {
 		if (!isManager(httpRequest)) {
@@ -1170,10 +1206,9 @@ public class CourseWebService {
 	@PUT
 	@Path("participants/{identityKey}")
 	@Operation(summary = "Add an participant to the course", description = "Add an participant to the course")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The user is a participant of the course"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or the user not found") })
+	@ApiResponse(responseCode = "200", description = "The user is a participant of the course")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or the user not found")
 	public Response addParticipant(@PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {
 		if (!isManager(httpRequest)) {
@@ -1208,10 +1243,9 @@ public class CourseWebService {
 	@PUT
 	@Path("participants")
 	@Operation(summary = "Add an participant to the course", description = "Add an participant to the course")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The user is a participant of the course"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or the user not found") })
+	@ApiResponse(responseCode = "200", description = "The user is a participant of the course")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or the user not found")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response addParticipants(UserVO[] participants,
 			@Context HttpServletRequest httpRequest) {
@@ -1242,10 +1276,9 @@ public class CourseWebService {
 	@DELETE
 	@Path("participants/{identityKey}")
 	@Operation(summary = "Remove a participant from the course", description = "Remove a participant from the course")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The user was successfully removed as participant of the course"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or the user not found") })
+	@ApiResponse(responseCode = "200", description = "The user was successfully removed as participant of the course")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or the user not found")
 	public Response removeParticipant(@PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {
 		if (!isManager(httpRequest)) {

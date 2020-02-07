@@ -67,7 +67,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
-import org.olat.restapi.support.vo.CourseConfigVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -106,8 +105,6 @@ public class CalendarTest extends OlatRestTestCase {
 		
 		if(course1 == null) {
 			//create a course with a calendar
-			CourseConfigVO config = new CourseConfigVO();
-			config.setCalendar(Boolean.TRUE);
 			RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(id1,
 					RepositoryEntryStatusEnum.preparation, false, false);
 			course1 = CourseFactory.loadCourse(courseEntry);
@@ -145,8 +142,6 @@ public class CalendarTest extends OlatRestTestCase {
 		
 		if(course2 == null) {
 			//create a course with a calendar
-			CourseConfigVO config = new CourseConfigVO();
-			config.setCalendar(Boolean.TRUE);
 			RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(id2,
 					RepositoryEntryStatusEnum.preparation, false, false);
 			course2 = CourseFactory.loadCourse(courseEntry);
@@ -513,8 +508,6 @@ public class CalendarTest extends OlatRestTestCase {
 		conn.login(identtiy.getName(), JunitTestHelper.PWD);
 		
 		//create a course with a calendar
-		CourseConfigVO config = new CourseConfigVO();
-		config.setCalendar(Boolean.TRUE);
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(identtiy, RepositoryEntryStatusEnum.published,
 				false, false);
 		ICourse course = CourseFactory.loadCourse(courseEntry);

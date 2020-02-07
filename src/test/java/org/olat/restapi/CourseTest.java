@@ -171,6 +171,32 @@ public class CourseTest extends OlatRestTestCase {
 	}
 	
 	@Test
+	public void updateCourseConfig() throws IOException, URISyntaxException {
+		assertTrue("Cannot login as administrator", conn.login("administrator", "openolat"));
+		
+		CourseConfigVO config = new CourseConfigVO();
+		config.setCalendar(Boolean.TRUE);
+		config.setChat(Boolean.TRUE);
+		config.setEfficencyStatement(Boolean.TRUE);
+		config.setCssLayoutRef("pink");
+
+		URI uri = conn.getContextURI().path("repo").path("courses")
+				.path(course1.getResourceableId().toString()).path("configuration")
+				.build();
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, config);
+		
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		CourseConfigVO courseConfig = conn.parse(response, CourseConfigVO.class);
+		Assert.assertNotNull(courseConfig);
+		Assert.assertEquals("pink", courseConfig.getCssLayoutRef());
+		Assert.assertEquals(Boolean.TRUE, courseConfig.getCalendar());
+		Assert.assertEquals(Boolean.TRUE, courseConfig.getChat());
+		Assert.assertEquals(Boolean.TRUE, courseConfig.getEfficencyStatement());
+	}
+	
+	@Test
 	public void testGetCourse_keyRoundTrip() throws IOException, URISyntaxException {
 		RepositoryEntry courseRe = repositoryManager.lookupRepositoryEntry(course1, false);
 		Assert.assertNotNull(courseRe);
