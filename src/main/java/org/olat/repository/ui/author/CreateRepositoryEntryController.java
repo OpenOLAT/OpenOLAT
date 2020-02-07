@@ -252,6 +252,8 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		if(organisationEl.isVisible() && organisationEl.isOneSelected()) {
 			Long organisationKey = Long.valueOf(organisationEl.getSelectedKey());
 			organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
+		} else if(manageableOrganisations.size() == 1) {
+			organisation = organisationService.getOrganisation(manageableOrganisations.get(0));
 		} else {
 			organisation = organisationService.getDefaultOrganisation();
 		}
