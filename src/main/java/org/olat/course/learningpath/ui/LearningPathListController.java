@@ -144,6 +144,7 @@ public class LearningPathListController extends FormBasicController implements T
 		dataModel = new LearningPathDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 250, false, getTranslator(), formLayout);
 		tableEl.setEmtpyTableMessageKey("table.empty");
+		tableEl.setAndLoadPersistedPreferences(ureq, "learning-path-list");
 		tableEl.setBordered(true);
 		tableEl.setNumOfRowsEnabled(false);
 		
