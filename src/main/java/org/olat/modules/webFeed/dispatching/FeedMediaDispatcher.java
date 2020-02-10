@@ -403,21 +403,22 @@ public class FeedMediaDispatcher implements Dispatcher, GenericEventListener {
 		
 		boolean hasAccess = false;
 		if(identity != null && roles != null && reSecurity != null) {
-			String courseNodeId = BlogToolController.SUBSCRIPTION_SUBIDENTIFIER.equals(pathNodeId)
-					? course.getRunStructure().getRootNode().getIdent()
-					: pathNodeId;
-			IdentityEnvironment ienv = new IdentityEnvironment(identity, roles);
-			UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment(), null, null, null, null,
-					reSecurity.isCourseCoach() || reSecurity.isGroupCoach(), reSecurity.isEntryAdmin(), reSecurity.isCourseParticipant() || reSecurity.isGroupParticipant(),
-					false);
-			// Build an evaluation tree
-			NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
-			TreeNode treeNode = nodeAccessService.getCourseTreeModelBuilder(userCourseEnv)
-					.withFilter(AccessibleFilter.create())
-					.build()
-					.getNodeById(courseNodeId);
-			if (treeNode != null && treeNode.isAccessible()) {
-				hasAccess = true;
+			if(BlogToolController.SUBSCRIPTION_SUBIDENTIFIER.equals(pathNodeId)) {
+				hasAccess = reSecurity.canLaunch();
+			} else {
+				IdentityEnvironment ienv = new IdentityEnvironment(identity, roles);
+				UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment(), null, null, null, null,
+						reSecurity.isCourseCoach() || reSecurity.isGroupCoach(), reSecurity.isEntryAdmin(), reSecurity.isCourseParticipant() || reSecurity.isGroupParticipant(),
+						false);
+				// Build an evaluation tree
+				NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
+				TreeNode treeNode = nodeAccessService.getCourseTreeModelBuilder(userCourseEnv)
+						.withFilter(AccessibleFilter.create())
+						.build()
+						.getNodeById(pathNodeId);
+				if (treeNode != null && treeNode.isAccessible()) {
+					hasAccess = true;
+				}
 			}
 		}
 		
