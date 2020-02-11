@@ -898,6 +898,7 @@ public class CoachingDAO {
 			  .append("    and sg_ae.a_entry_root=").appendTrue();
 		}
 		sb.append(")")
+		  .append(" and ae.a_completion is not null")
 		  .append(" group by ae.fk_identity");
 		
 		List<?> rawList = dbInstance.getCurrentEntityManager()

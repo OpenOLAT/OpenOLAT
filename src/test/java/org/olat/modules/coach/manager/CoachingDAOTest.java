@@ -778,7 +778,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		RepositoryEntry re4 = JunitTestHelper.deployCourse(null, "Coaching course 4", courseUrl);
 		dbInstance.commitAndCloseSession();
 		
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsAuthor("Coach-1-" + UUID.randomUUID());
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndAuthor("Coach-1-");
 		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-1");
 		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-2");
 		Identity participant3 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-3");
