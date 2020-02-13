@@ -344,9 +344,9 @@ public class GradingAssignmentDAO {
 		  .append(" and assignment.status ").in(GradingAssignmentStatus.assigned, GradingAssignmentStatus.inProcess)
 		  .append(" and assignment.assignmentDate is not null")
 		  .append(" and (")
-		  .append("   (assignment.reminder1Date is null and assignment.assignmentDate <= (current_date - cast(config.firstReminder as int)))")
+		  .append("   (assignment.reminder1Date is null and assignment.assignmentDate <= cast((current_date - cast(config.firstReminder as integer)) as date))")
 		  .append("   or")
-		  .append("   (assignment.reminder2Date is null and assignment.assignmentDate <= (current_date - cast(config.secondReminder as int)))")
+		  .append("   (assignment.reminder2Date is null and assignment.assignmentDate <= cast((current_date - cast(config.secondReminder as integer)) as date))")
 		  .append(" )");
 		
 		return dbInstance.getCurrentEntityManager()
