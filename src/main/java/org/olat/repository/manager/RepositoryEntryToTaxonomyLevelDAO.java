@@ -19,8 +19,13 @@
  */
 package org.olat.repository.manager;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -61,6 +66,33 @@ public class RepositoryEntryToTaxonomyLevelDAO {
 				.createQuery(sb.toString(), TaxonomyLevel.class)
 				.setParameter("entryKey", entry.getKey())
 				.getResultList();
+	}
+	
+	public Map<RepositoryEntryRef,List<TaxonomyLevel>> getTaxonomyLevels(List<RepositoryEntryRef> entries) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select rel from repositoryentrytotaxonomylevel rel")
+		  .append(" inner join fetch rel.entry v")
+		  .append(" inner join fetch rel.taxonomyLevel as level")
+		  .append(" where v.key in (:entryKeys)");
+
+		List<Long> entryKeys = entries.stream()
+				.map(RepositoryEntryRef::getKey)
+				.collect(Collectors.toList());
+		List<RepositoryEntryToTaxonomyLevel> entryToLevels = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntryToTaxonomyLevel.class)
+				.setParameter("entryKeys", entryKeys)
+				.getResultList();
+
+		Map<Long,RepositoryEntryRef> entryMap = entries.stream()
+				.collect(Collectors.toMap(RepositoryEntryRef::getKey, Function.identity(), (u, v) -> u));
+		Map<RepositoryEntryRef, List<TaxonomyLevel>> levelsMap = new HashMap<>();
+		for(RepositoryEntryToTaxonomyLevel entryToLevel:entryToLevels) {
+			RepositoryEntryRef entryRef = entryMap.get(entryToLevel.getEntry().getKey());
+			List<TaxonomyLevel> levels = levelsMap
+					.computeIfAbsent(entryRef, ref -> new ArrayList<>());
+			levels.add(entryToLevel.getTaxonomyLevel());
+		}
+		return levelsMap;
 	}
 	
 	public List<RepositoryEntry> getRepositoryEntries(TaxonomyLevelRef level) {

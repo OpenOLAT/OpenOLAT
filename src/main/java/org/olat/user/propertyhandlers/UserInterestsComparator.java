@@ -38,10 +38,4 @@ public class UserInterestsComparator implements Comparator<String> {
 			return level00.compareTo(level10);
 		}
 	}
-	
-	@Override
-	public boolean equals(Object arg0) {
-		return super.equals(arg0);
-	}
-
 }

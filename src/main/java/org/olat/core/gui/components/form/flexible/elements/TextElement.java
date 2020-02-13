@@ -176,6 +176,17 @@ public interface TextElement extends FormItem{
 	 */
 	public boolean hasPlaceholder();
 	
+	public String getTextAddOn();
+	
+	/**
+	 * Place an add-on after the field for, e.g., a
+	 * unit.
+	 * 
+	 * @param text The text to place after the field
+	 */
+	public void setTextAddOn(String text);
+
+	
 	public String getAriaLabel();
 	
 	/**

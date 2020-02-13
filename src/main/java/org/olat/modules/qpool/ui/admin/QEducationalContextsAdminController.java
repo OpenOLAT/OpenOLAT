@@ -170,9 +170,7 @@ public class QEducationalContextsAdminController extends FormBasicController {
 	
 	private void doOpenTranslationTool(UserRequest ureq, QEducationalContext row) {
 		String key2Translate = "item.level." + row.getLevel().toLowerCase();
-
-		String[] keys2Translate = { key2Translate };
-		singleKeyTrnsCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), keys2Translate,
+		singleKeyTrnsCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), key2Translate,
 				QuestionsController.class);
 		listenTo(singleKeyTrnsCtrl);
 

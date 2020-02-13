@@ -20,6 +20,7 @@
 package org.olat.ims.qti21.ui;
 
 import java.io.File;
+import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -32,6 +33,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.fileresource.FileResourceManager;
@@ -45,6 +48,7 @@ import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.ui.AssessableResource;
 import org.olat.modules.assessment.ui.AssessmentToolController;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.modules.grading.ui.GradingRepositoryOverviewController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
@@ -64,11 +68,13 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
  */
 public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 	
+	private Link gradingLink;
 	private Link assessmentLink;
 	private Link testStatisticLink;
 
 	private AssessmentToolController assessmentToolCtrl;
 	private QTI21RuntimeStatisticsController statsToolCtr;
+	private GradingRepositoryOverviewController gradingCtr;
 	
 	private boolean reloadRuntime = false;
 
@@ -86,7 +92,13 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 			assessmentLink = LinkFactory.createToolLink("assessment", translate("command.openassessment"), this, "o_icon_assessment_tool");
 			assessmentLink.setElementCssClass("o_sel_course_assessment_tool");
 			toolsDropdown.addComponent(assessmentLink);
-
+		}
+		if (reSecurity.isEntryAdmin()) {
+			gradingLink = LinkFactory.createToolLink("grading", translate("command.grading"), this, "o_icon_assessment_tool");
+			gradingLink.setElementCssClass("o_sel_grading");
+			toolsDropdown.addComponent(gradingLink);
+		}
+		if (reSecurity.isEntryAdmin() || reSecurity.isCoach()) {
 			testStatisticLink = LinkFactory.createToolLink("qtistatistic", translate("command.openteststatistic"), this, "o_icon_statistics_tool");
 			toolsDropdown.addComponent(testStatisticLink);
 		}
@@ -97,6 +109,34 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 	@Override
 	protected RepositoryEntrySettingsController createSettingsController(UserRequest ureq, WindowControl bwControl, RepositoryEntry refreshedEntry) {
 		return new QTI21SettingsController(ureq, bwControl, toolbarPanel, refreshedEntry);
+	}
+	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		entries = removeRepositoryEntry(entries);
+		if(entries != null && !entries.isEmpty()) {
+			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+			if("Grading".equalsIgnoreCase(type)) {
+				entries = entries.subList(1, entries.size());
+				Activateable2 ctrl = doGrading(ureq);
+				if(ctrl != null) {
+					ctrl.activate(ureq, entries, null);
+				}
+			} else if("TestStatistics".equalsIgnoreCase(type)) {
+				entries = entries.subList(1, entries.size());
+				Activateable2 ctrl = doAssessmentTestStatistics(ureq);
+				if(ctrl != null) {
+					ctrl.activate(ureq, entries, null);
+				}
+			} else if("AssessmentTool".equalsIgnoreCase(type)) {
+				entries = entries.subList(1, entries.size());
+				Activateable2 ctrl = doAssessmentTool(ureq);
+				if(ctrl != null) {
+					ctrl.activate(ureq, entries, null);
+				}
+			}
+		}
+		super.activate(ureq, entries, state);
 	}
 
 	@Override
@@ -122,6 +162,8 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 			doAssessmentTestStatistics(ureq);
 		} else if(assessmentLink == source) {
 			doAssessmentTool(ureq);
+		} else if(gradingLink == source) {
+			doGrading(ureq);
 		} else if(toolbarPanel == source) {
 			if(event instanceof PopEvent) {
 				PopEvent pe = (PopEvent)event;
@@ -199,7 +241,7 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 	}
 	
 	private Activateable2 doAssessmentTool(UserRequest ureq) {
-		OLATResourceable ores = OresHelper.createOLATResourceableType("TestStatistics");
+		OLATResourceable ores = OresHelper.createOLATResourceableType("AssessmentTool");
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl swControl = addToHistory(ureq, ores, null);
 		
@@ -216,6 +258,23 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 			currentToolCtr = assessmentToolCtrl;
 			setActiveTool(assessmentLink);
 			return assessmentToolCtrl;
+		}
+		return null;
+	}
+	
+	private Activateable2 doGrading(UserRequest ureq) {
+		OLATResourceable ores = OresHelper.createOLATResourceableType("Grading");
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl swControl = addToHistory(ureq, ores, null);
+
+		if (reSecurity.isEntryAdmin()) {
+			GradingRepositoryOverviewController ctrl = new GradingRepositoryOverviewController(ureq, swControl, toolbarPanel,
+					getRepositoryEntry());
+			listenTo(ctrl);
+			gradingCtr = pushController(ureq, translate("command.grading"), ctrl);
+			currentToolCtr = gradingCtr;
+			setActiveTool(gradingLink);
+			return gradingCtr;
 		}
 		return null;
 	}

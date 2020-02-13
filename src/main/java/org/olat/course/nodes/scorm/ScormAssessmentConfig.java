@@ -129,6 +129,11 @@ public class ScormAssessmentConfig implements AssessmentConfig {
 	public boolean hasEditableDetails() {
 		return config.getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true);
 	}
+	
+	@Override
+	public boolean isExternalGrading() {
+		return false;
+	}
 
 	@Override
 	public boolean isObligationOverridable() {

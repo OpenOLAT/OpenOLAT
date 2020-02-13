@@ -44,9 +44,12 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 	private Boolean userVisibility;
 	private BigDecimal score;
 	private Boolean passed;
-	private Date lastModified, lastUserModified, lastCoachModified;
+	private Date lastModified;
+	private Date lastUserModified;
+	private Date lastCoachModified;
 	private int numOfAssessmentDocs;
 	private AssessmentEntryStatus status;
+	private String graderFullName;
 	
 	private Object details;
 	private Date initialCourseLaunchDate;
@@ -54,15 +57,15 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 	private FormLink toolsLink;
 	private CompletionItem currentCompletion;
 	
-	public AssessedIdentityElementRow(Identity identity, AssessmentEntry entry,
+	public AssessedIdentityElementRow(Identity identity, AssessmentEntry entry, String graderFullName,
 			CompletionItem currentCompletion, FormLink toolsLink, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(identity, userPropertyHandlers, locale);
 		this.currentCompletion = currentCompletion;
 		this.toolsLink = toolsLink;
-		setAssessmentEntry(entry);
+		setAssessmentEntry(entry, graderFullName);
 	}
 	
-	public void setAssessmentEntry(AssessmentEntry entry) {
+	public void setAssessmentEntry(AssessmentEntry entry, String graderFullName) {
 		if(entry != null) {
 			attempts = entry.getAttempts();
 			score = entry.getScore();
@@ -73,6 +76,7 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 			lastCoachModified = entry.getLastCoachModified();
 			status = entry.getAssessmentStatus();
 			numOfAssessmentDocs = entry.getNumberOfAssessmentDocuments();
+			this.graderFullName = graderFullName;
 		} else {
 			attempts = null;
 			score = null;
@@ -81,6 +85,7 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 			lastModified = lastUserModified = lastCoachModified = null;
 			status = null;
 			numOfAssessmentDocs = 0;
+			this.graderFullName = null;
 		}
 	}
 
@@ -134,6 +139,10 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 
 	public Boolean getUserVisibility() {
 		return userVisibility;
+	}
+	
+	public String getGraderFullName() {
+		return graderFullName;
 	}
 
 	public Object getDetails() {

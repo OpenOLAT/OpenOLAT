@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -104,6 +105,8 @@ import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
 import org.olat.modules.assessment.ui.event.CompletionEvent;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.grading.GradingAssignment;
+import org.olat.modules.grading.GradingService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
@@ -133,9 +136,12 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	protected final AssessmentToolSecurityCallback assessmentCallback;
 	
-	private Link nextLink, previousLink;
+	private Link nextLink;
+	private Link previousLink;
 	protected FlexiTableElement tableEl;
-	private FormLink bulkDoneButton, bulkVisibleButton, bulkEmailButton;
+	private FormLink bulkDoneButton;
+	private FormLink bulkEmailButton;
+	private FormLink bulkVisibleButton;
 	protected final TooledStackedPanel stackPanel;
 	private final AssessmentToolContainer toolContainer;
 	protected IdentityListCourseNodeTableModel usersTableModel;
@@ -152,6 +158,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private GradingService gradingService;
 	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
@@ -282,6 +290,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		initAssessmentColumns(columnsModel, assessmentConfig);
 		initStatusColumns(columnsModel);
 		initModificationDatesColumns(columnsModel);
+		initExternalGradingColumns(columnsModel, assessmentConfig);
 		initCalloutColumns(columnsModel, assessmentConfig);
 
 		usersTableModel = new IdentityListCourseNodeTableModel(columnsModel, courseNode, getLocale()); 
@@ -404,6 +413,12 @@ public class IdentityListCourseNodeController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCourseElementCols.lastCoachModified, select));
 	}
 	
+	protected void initExternalGradingColumns(FlexiTableColumnModel columnsModel, AssessmentConfig assessmentConfig) {
+		if(assessmentConfig.isExternalGrading()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCourseElementCols.externalGrader));
+		}
+	}
+	
 	protected void initCalloutColumns(FlexiTableColumnModel columnsModel, AssessmentConfig assessmentConfig) {
 		if(assessmentConfig.isAssessable()) {
 			DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(IdentityCourseElementCols.tools);
@@ -447,22 +462,33 @@ public class IdentityListCourseNodeController extends FormBasicController
 		assessmentEntries.stream()
 			.filter(entry -> entry.getIdentity() != null)
 			.forEach(entry -> entryMap.put(entry.getIdentity().getKey(), entry));
+		
+		Map<Long,String> assessmentEntriesKeysToGraders = Collections.emptyMap();
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		if(assessmentConfig.isExternalGrading()) {
+			List<GradingAssignment> assignments = assessmentToolManager.getGradingAssignments(getIdentity(), params, null);
+			assessmentEntriesKeysToGraders = assignments.stream()
+					.collect(Collectors.toMap(assignment -> assignment.getAssessmentEntry().getKey(),
+							assignment -> userManager.getUserDisplayName(assignment.getGrader().getIdentity())));
+		}
 
 		List<AssessedIdentityElementRow> rows = new ArrayList<>(assessedIdentities.size());
 		for(Identity assessedIdentity:assessedIdentities) {
 			AssessmentEntry entry = entryMap.get(assessedIdentity.getKey());
 			
+			String grader = null;
 			CompletionItem currentCompletion = new CompletionItem("current-completion-" + (++counter), getLocale());
 			if(entry != null) {
 				currentCompletion.setCompletion(entry.getCurrentRunCompletion());
 				AssessmentRunStatus status = entry.getCurrentRunStatus();
 				currentCompletion.setEnded(status != null && AssessmentRunStatus.done.equals(status));
+				grader = assessmentEntriesKeysToGraders.get(entry.getKey());
 			}
 			
 			FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
 			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
 		
-			AssessedIdentityElementRow row = new AssessedIdentityElementRow(assessedIdentity, entry,
+			AssessedIdentityElementRow row = new AssessedIdentityElementRow(assessedIdentity, entry, grader,
 					currentCompletion, toolsLink, userPropertyHandlers, getLocale());
 			toolsLink.setUserObject(row);
 			rows.add(row);
@@ -957,7 +983,16 @@ public class IdentityListCourseNodeController extends FormBasicController
 		if(endedEvent && !endedRow) {
 			IdentityRef assessedIdentity = new IdentityRefImpl(row.getIdentityKey());
 			AssessmentEntry assessmentEntry = assessmentToolManager.getAssessmentEntries(assessedIdentity, courseEntry, courseNode.getIdent());
-			row.setAssessmentEntry(assessmentEntry);
+
+			String grader = null;
+			if(courseAssessmentService.getAssessmentConfig(courseNode).isExternalGrading()) {
+				RepositoryEntry testEntry = referenceEntry == null ? courseEntry : referenceEntry;
+				GradingAssignment assignment = gradingService.getGradingAssignment(testEntry, assessmentEntry);
+				if(assignment != null && assignment.getGrader() != null) {
+					grader = userManager.getUserDisplayName(assignment.getGrader().getIdentity());
+				}
+			}
+			row.setAssessmentEntry(assessmentEntry, grader);
 			tableEl.getComponent().setDirty(true);
 		}
 	}

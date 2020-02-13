@@ -30,6 +30,7 @@ import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentMembersStatistics;
+import org.olat.modules.grading.GradingAssignment;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -70,6 +71,8 @@ public interface AssessmentToolManager {
 	public List<IdentityShort> getShortAssessedIdentities(Identity coach, SearchAssessedIdentityParams params, int maxResults);
 	
 	public List<AssessmentEntry> getAssessmentEntries(Identity coach, SearchAssessedIdentityParams params, AssessmentEntryStatus status);
+	
+	public List<GradingAssignment> getGradingAssignments(Identity coach, SearchAssessedIdentityParams params, AssessmentEntryStatus status) ;
 	
 	/**
 	 * 

@@ -1,0 +1,25 @@
+<ul class="o_dropdown list-unstyled" role="menu">
+	#if($r.available("tool.change.grader"))
+		<li>$r.render("tool.change.grader")</li>
+	#end
+	#if($r.available("tool.assign.grader"))
+		<li>$r.render("tool.assign.grader")</li>
+	#end
+	#if($r.available("tool.send.mail"))
+		<li class='divider'></li>
+		<li>$r.render("tool.send.mail")</li>
+	#end
+	#if($r.available("tool.reopen.assignment"))
+		<li>$r.render("tool.reopen.assignment")</li>
+	#end
+	#if($r.available("tool.view.grading"))
+		<li>$r.render("tool.view.grading")</li>
+	#end
+	#if($r.available("tool.extend.deadline"))
+		<li>$r.render("tool.extend.deadline")</li>
+	#end
+	#if($r.available("tool.unassign"))
+		<li class='divider'></li>
+		<li>$r.render("tool.unassign")</li>
+	#end
+</ul>

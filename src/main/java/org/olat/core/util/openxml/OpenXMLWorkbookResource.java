@@ -24,6 +24,7 @@ import java.io.OutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.media.DefaultMediaResource;
 import org.olat.core.gui.media.ServletUtil;
 import org.apache.logging.log4j.Logger;
@@ -47,6 +48,7 @@ public abstract class OpenXMLWorkbookResource extends DefaultMediaResource {
 	 * @param filename The label.
 	 */
 	public OpenXMLWorkbookResource(String label) {
+		CoreSpringFactory.autowireObject(this);
 		this.label = label;
 	}
 	

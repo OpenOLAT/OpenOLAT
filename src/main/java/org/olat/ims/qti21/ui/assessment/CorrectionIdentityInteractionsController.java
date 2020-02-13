@@ -133,6 +133,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 	
 	private BigDecimal overrideAutoScore;
 	private boolean manualScore = false;
+	private final boolean readOnly;
 	private final AssessmentHtmlBuilder htmlBuilder;
 	
 	private int count = 0;
@@ -145,11 +146,12 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 	
 	public CorrectionIdentityInteractionsController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry testEntry, ResolvedAssessmentTest resolvedAssessmentTest,
-			AssessmentItemCorrection correction, Map<Long, File> submissionDirectoryMaps,
+			AssessmentItemCorrection correction, Map<Long, File> submissionDirectoryMaps, boolean readOnly,
 			String mapperUri, Form rootForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "correction_identity_interactions", rootForm);
 		setTranslator(Util.createPackageTranslator(AssessmentTestDisplayController.class, getLocale(), getTranslator()));
 		
+		this.readOnly = readOnly;
 		this.mapperUri = mapperUri;
 		this.correction = correction;
 		this.resolvedAssessmentTest = resolvedAssessmentTest;
@@ -232,6 +234,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		if(manualScore) {
 			scoreEl = uifactory.addTextElement("scoreItem", "score", 6, mScore, scoreCont);
 			scoreEl.setElementCssClass("o_sel_assessment_item_score");
+			scoreEl.setEnabled(!readOnly);
 		} else {
 			overrideAutoScore = itemSession == null ? null : itemSession.getManualScore();
 			
@@ -252,13 +255,16 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 			
 			overrideScoreButton = uifactory.addFormLink("override.score", overrideScoreCont, Link.BUTTON_SMALL);
 			overrideScoreButton.setDomReplacementWrapperRequired(false);
+			overrideScoreButton.setVisible(!readOnly);
 		}
 		commentEl = uifactory.addTextAreaElement("commentItem", "comment", 2500, 4, 60, false, false, coachComment, scoreCont);
 		commentEl.setHelpText(translate("comment.help"));
+		commentEl.setEnabled(!readOnly);
 		IdentityAssessmentItemWrapper wrapper = new IdentityAssessmentItemWrapper(fullname, assessmentItem, correction, responseItems,
 				scoreEl, commentEl, statusEl);
 		
 		toReviewEl = uifactory.addCheckboxesHorizontal("to.review", "to.review", scoreCont, onKeys, new String[] { "" });
+		toReviewEl.setEnabled(!readOnly);
 		if(itemSession != null && itemSession.isToReview()) {
 			toReviewEl.select(onKeys[0], true);
 		}
@@ -526,6 +532,8 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
+		if(readOnly) return true;
+		
 		boolean allOk = super.validateFormLogic(ureq);
 		if(scoreEl != null) {
 			allOk &= validateScore(scoreEl);

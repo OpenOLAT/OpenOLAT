@@ -61,6 +61,7 @@ public class SingleKeyTranslatorController extends FormBasicController {
 	private static final String TXT_NAME_PREFIX = "text.";
 	private static final String LBL_NAME_PREFIX = "lbl.";
 	private Map<String, TextElement> textElements;
+	private Object uobject;
 
 	@Autowired
 	private I18nManager i18nMng;
@@ -95,6 +96,14 @@ public class SingleKeyTranslatorController extends FormBasicController {
 		this.translatorBaseClass = translatorBaseClass;
 		initForm(ureq);
 	}
+	
+	public Object getUserObject() {
+		return uobject;
+	}
+	
+	public void setUserObject(Object uobject) {
+		this.uobject = uobject;
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -126,8 +135,8 @@ public class SingleKeyTranslatorController extends FormBasicController {
 
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("ok_cancel", getTranslator());
 		buttonLayout.setRootForm(mainForm);
-		uifactory.addFormSubmitButton("ok", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+		uifactory.addFormSubmitButton("ok", buttonLayout);
 		formLayout.add(buttonLayout);
 	}
 

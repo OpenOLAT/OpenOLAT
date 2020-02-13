@@ -202,13 +202,10 @@ public class QTI21RetrieveTestsController extends FormBasicController {
 		RepositoryEntry courseEntry = session.getRepositoryEntry();
 		QTI21DeliveryOptions deliveryOptions = qtiService.getDeliveryOptions(testEntry);
 		
-		boolean digitalSignature = deliveryOptions.isDigitalSignature();
-		boolean sendMail = deliveryOptions.isDigitalSignatureMail();
-
 		ModuleConfiguration config = courseNode.getModuleConfiguration();
-		digitalSignature = config.getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE,
+		boolean digitalSignature = config.getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE,
 			deliveryOptions.isDigitalSignature());
-		sendMail = config.getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE_SEND_MAIL,
+		boolean sendMail = config.getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE_SEND_MAIL,
 			deliveryOptions.isDigitalSignatureMail());
 
 		DigitalSignatureOptions options = new DigitalSignatureOptions(digitalSignature, sendMail, courseEntry, testEntry);

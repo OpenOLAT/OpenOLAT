@@ -44,6 +44,11 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.modules.coach.model.CoachingSecurity;
+import org.olat.modules.grading.GradingModule;
+import org.olat.modules.grading.GradingSecurityCallback;
+import org.olat.modules.grading.GradingSecurityCallbackFactory;
+import org.olat.modules.grading.model.GradingSecurity;
+import org.olat.modules.grading.ui.GradingCoachingOverviewController;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.LectureRoles;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
@@ -71,18 +76,22 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 	private CourseListController courseListCtrl;
 	private StudentListController studentListCtrl;
 	private LayoutMain3ColsController columnLayoutCtr;
+	private GradingCoachingOverviewController gradingCtrl;
 	private LecturesCoachingController lecturesTeacherCtrl;
 	private LecturesCoachingController lecturesMasterCoachCtrl;
-	
 
 	private final boolean userSearchAllowed;
+	private final GradingSecurity gradingSec;
 	private final CoachingSecurity coachingSec;
 	
 	@Autowired
+	private GradingModule gradingModule;
+	@Autowired
 	private LectureModule lectureModule;
 	
-	public CoachMainController(UserRequest ureq, WindowControl control, CoachingSecurity coachingSec) {
+	public CoachMainController(UserRequest ureq, WindowControl control, CoachingSecurity coachingSec, GradingSecurity gradingSec) {
 		super(ureq, control);
+		this.gradingSec = gradingSec;
 		this.coachingSec = coachingSec;
 		
 		Roles roles = ureq.getUserSession().getRoles();
@@ -151,6 +160,9 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 		if(userSearchAllowed) {
 			return "Search";
 		}
+		if(gradingModule.isEnabled() && (gradingSec.isGrader() || gradingSec.isGradedResourcesManager())) {
+			return "Grading";
+		}
 		return "Members";
 	}
 	
@@ -212,6 +224,16 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 				listenTo(userSearchCtrl);
 			}
 			selectedCtrl = userSearchCtrl;
+		} else if("grading".equalsIgnoreCase(cmd) && gradingModule.isEnabled() && (gradingSec.isGrader() || gradingSec.isGradedResourcesManager())) {
+			if(gradingCtrl == null) {
+				OLATResourceable ores = OresHelper.createOLATResourceableInstance("Grading", 0l);
+				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+				GradingSecurityCallback secCallback = GradingSecurityCallbackFactory.getSecurityCalllback(getIdentity(), gradingSec);
+				gradingCtrl = new GradingCoachingOverviewController(ureq, bwControl, content, secCallback);
+				listenTo(gradingCtrl);
+			}
+			selectedCtrl = gradingCtrl;
 		}
 		
 		if(selectedCtrl != null) {
@@ -268,6 +290,14 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 			courses.setUserObject("Courses");
 			courses.setTitle(translate("courses.menu.title"));
 			courses.setAltText(translate("courses.menu.title.alt"));
+			root.addChild(courses);
+		}
+		
+		if(gradingModule.isEnabled() && (gradingSec.isGrader() || gradingSec.isGradedResourcesManager())) {
+			GenericTreeNode courses = new GenericTreeNode();
+			courses.setUserObject("Grading");
+			courses.setTitle(translate("grading.menu.title"));
+			courses.setAltText(translate("grading.menu.title.alt"));
 			root.addChild(courses);
 		}
 

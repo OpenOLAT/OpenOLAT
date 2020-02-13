@@ -1,0 +1,45 @@
+<div class="o_warning">
+	<p>$r.translate("configuration.informations")</p>
+	#if($r.isNotEmpty($resourceDisplayname))
+		<p><i class="o_icon o_icon-lg o_FileResource-IMSQTI21_icon"> </i> $r.escapeHtml($resourceDisplayname) #if($r.visible("open"))$r.render("open")#end<br>
+		$r.translate("configuration.informations.resource.id"): $r.escapeHtml($externalId)<br>
+		$r.translate("configuration.informations.resource.owners"): $r.escapeHtml($owners) $r.render("contact")</p>
+	#end
+</div>
+<fieldset>
+	<legend>$r.translate("grading.infos.configuration")</legend>
+	<table class="table">
+		<tbody>
+			<tr>
+				<th scope="row">$r.translate("configuration.assessed.identity.visibility")</th>
+				<td>$visibility</td>
+			</tr>
+			<tr>
+				<th scope="row">$r.translate("configuration.notification.type")</th>
+				<td>$notification</td>
+			</tr>
+			#if($r.isNotNull($gradingPeriod))
+			<tr>
+				<th scope="row">$r.translate("configuration.grading.period")</th>
+				<td>$gradingPeriod</td>
+			</tr>
+			#end
+			#if($r.isNotNull($firstReminder))
+			<tr>
+				<th scope="row">$r.translate("configuration.first.reminder.period")</th>
+				<td>$firstReminder</td>
+			</tr>
+			#end
+			#if($r.isNotNull($secondReminder))
+			<tr>
+				<th scope="row">$r.translate("configuration.second.reminder.period")</th>
+				<td>$secondReminder</td>
+			</tr>
+			#end
+		</tbody>
+	</table>
+</fieldset>
+<fieldset>
+	<legend>$r.translate("grading.infos.graders")</legend>
+	$r.render("graders")
+</fieldset>

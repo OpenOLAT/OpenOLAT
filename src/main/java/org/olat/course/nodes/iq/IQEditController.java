@@ -25,6 +25,7 @@
 
 package org.olat.course.nodes.iq;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -35,6 +36,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.highscore.ui.HighScoreEditController;
@@ -45,6 +47,8 @@ import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.grading.GradingService;
+import org.olat.modules.grading.ui.GradingInformationsController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 
@@ -64,6 +68,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	public static final String PANE_TAB_IQCONFIG_SELF = "pane.tab.iqconfig.self";
 	public static final String PANE_TAB_IQCONFIG_TEST = "pane.tab.iqconfig.test";
 	private static final String PANE_TAB_HIGHSCORE = "pane.tab.highscore"; 
+	private static final String PANE_TAB_GRADING_INFOS = "pane.tab.grading.infos";
 
 	/** configuration key: repository sof key reference to qti file*/
 	public static final String CONFIG_KEY_REPOSITORY_SOFTKEY = "repoSoftkey";
@@ -136,6 +141,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	
 	public static final String CORRECTION_AUTO = "auto";
 	public static final String CORRECTION_MANUAL = "manual";
+	public static final String CORRECTION_GRADING = "grading";
 
 	public static final String CONFIG_KEY_DATE_DEPENDENT_RESULTS = "dateDependentResults";
 	public static final String CONFIG_KEY_RESULTS_START_DATE = "resultsStartDate";
@@ -161,7 +167,6 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	private ICourse course;
 	
 	private String type;
-	private UserCourseEnvironment euce;
 	private AbstractAccessableCourseNode courseNode;
 	private ModuleConfiguration moduleConfiguration;
 
@@ -171,6 +176,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	private final BreadcrumbPanel stackPanel;
 	
 	private IQConfigurationController configurationCtrl;
+	private GradingInformationsController gradingInfosCtrl;
 	private IQLayoutConfigurationController layoutConfigurationCtrl;
 	private HighScoreEditController highScoreNodeConfigController;
 
@@ -190,8 +196,6 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		this.moduleConfiguration = courseNode.getModuleConfiguration();
 		this.course = course;
 		this.courseNode = courseNode;
-		this.euce = euce;
-		
 		
 		type = AssessmentInstance.QMD_ENTRY_TYPE_ASSESS;
 		this.paneTabIQConfiguration = PANE_TAB_IQCONFIG_TEST;
@@ -226,8 +230,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		this.moduleConfiguration = courseNode.getModuleConfiguration();
 		this.course = course;
 		this.courseNode = courseNode;
-		this.euce = euce;
-
+		
 		type = AssessmentInstance.QMD_ENTRY_TYPE_SELF;
 		this.paneTabIQConfiguration = PANE_TAB_IQCONFIG_SELF;
 		paneKeys = new String[]{paneTabIQConfiguration};
@@ -258,8 +261,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		this.moduleConfiguration = courseNode.getModuleConfiguration();
 		this.course = course;
 		this.courseNode = courseNode;
-		this.euce = euce;
-
+		
 		type = AssessmentInstance.QMD_ENTRY_TYPE_SURVEY;
 		this.paneTabIQConfiguration = PANE_TAB_IQCONFIG_SURV;
 		paneKeys = new String[]{paneTabIQConfiguration};
@@ -284,6 +286,9 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 			highScoreNodeConfigController = new HighScoreEditController(ureq, getWindowControl(), moduleConfiguration);
 			listenTo(highScoreNodeConfigController);
 		}
+		RepositoryEntry referenceEntry = courseNode.getReferencedRepositoryEntry();
+		gradingInfosCtrl = new GradingInformationsController(ureq, getWindowControl(), referenceEntry);
+		listenTo(gradingInfosCtrl);
 	}
 
 	@Override
@@ -297,6 +302,8 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 			if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 				layoutConfigurationCtrl.updateEditController(urequest);
+				updateGradingTab();
+				gradingInfosCtrl.reloadRepositoryEntry(getIQReference(moduleConfiguration, false));
 			}
 		} else if (source == highScoreNodeConfigController){
 			if (event == Event.DONE_EVENT) {
@@ -319,6 +326,15 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		if (AssessmentInstance.QMD_ENTRY_TYPE_ASSESS.equals(type)) {
 			tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE) , highScoreNodeConfigController.getInitialComponent());
 		}
+		tabbedPane.addTab(translate(PANE_TAB_GRADING_INFOS) , gradingInfosCtrl.getInitialComponent());
+		updateGradingTab();
+	}
+	
+	private void updateGradingTab() {
+		boolean hasGrading = CORRECTION_GRADING.equals(moduleConfiguration.getStringValue(CONFIG_CORRECTION_MODE, CORRECTION_AUTO))
+				&& StringHelper.containsNonWhitespace((String)moduleConfiguration.get(CONFIG_KEY_REPOSITORY_SOFTKEY));
+		myTabbedPane.setEnabled(myTabbedPane.indexOfTab(gradingInfosCtrl.getInitialComponent()),
+				hasGrading);
 	}
 	
 	/**
@@ -345,6 +361,11 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		}
 		RepositoryManager rm = RepositoryManager.getInstance();
 		return rm.lookupRepositoryEntryBySoftkey(repoSoftkey, strict);
+	}
+	
+	public static boolean isGradingEnabled(ModuleConfiguration config) {
+		String repoSoftkey = (String) config.get(CONFIG_KEY_REPOSITORY_SOFTKEY);
+		return CoreSpringFactory.getImpl(GradingService.class).isGradingEnabled(null, repoSoftkey);
 	}
 
 	/**

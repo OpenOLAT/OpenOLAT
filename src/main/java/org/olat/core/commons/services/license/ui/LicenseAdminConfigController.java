@@ -403,8 +403,7 @@ public class LicenseAdminConfigController extends FormBasicController {
 	private void doOpenTranslator(UserRequest ureq, LicenseType licenseType) {
 		String i18nKey = LicenseUIFactory.LICENSE_TYPE_TRANS + licenseType.getName().toLowerCase();
 
-		String[] keys2Translate = { i18nKey };
-		translatorCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), keys2Translate,
+		translatorCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), i18nKey,
 				LicenseAdminController.class);
 		listenTo(translatorCtrl);
 

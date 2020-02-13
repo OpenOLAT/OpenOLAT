@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -61,7 +62,9 @@ public class QTI21EditForm extends FormBasicController {
 	
 	private static final String[] onKeys = new String[]{ "on" };
 	private static final String[] onValues = new String[]{ "" };
-	private static final String[] correctionModeKeys = new String[]{ "auto", "manual" };
+	private static final String[] correctionModeKeys = new String[] { 
+			IQEditController.CORRECTION_AUTO, IQEditController.CORRECTION_MANUAL, IQEditController.CORRECTION_GRADING
+	};
 	private static final String[] resultsOptionsKeys = new String[] {
 			QTI21AssessmentResultsOptions.METADATA, QTI21AssessmentResultsOptions.SECTION_SUMMARY,
 			QTI21AssessmentResultsOptions.QUESTION_SUMMARY,
@@ -70,12 +73,18 @@ public class QTI21EditForm extends FormBasicController {
 
 	private SingleSelection correctionModeEl;
 	private MultipleSelectionElement showResultsOnHomePage;
-	private MultipleSelectionElement scoreInfo, showResultsDateDependentButton;
-	private DateChooser startDateElement, endDateElement;
+	private MultipleSelectionElement scoreInfo;
+	private MultipleSelectionElement showResultsDateDependentButton;
+	private DateChooser endDateElement;
+	private DateChooser startDateElement;
 	private MultipleSelectionElement testDateDependentEl;
-	private DateChooser startTestDateElement, endTestDateElement;
-	private StaticTextElement minScoreEl, maxScoreEl, cutValueEl;
-	private MultipleSelectionElement showResultsOnFinishEl, assessmentResultsOnFinishEl;
+	private DateChooser startTestDateElement;
+	private DateChooser endTestDateElement;
+	private StaticTextElement minScoreEl;
+	private StaticTextElement maxScoreEl;
+	private StaticTextElement cutValueEl;
+	private MultipleSelectionElement showResultsOnFinishEl;
+	private MultipleSelectionElement assessmentResultsOnFinishEl;
 	private FormLayoutContainer reportLayout;
 	
 	private final boolean needManualCorrection;
@@ -103,7 +112,14 @@ public class QTI21EditForm extends FormBasicController {
 		FormLayoutContainer testLayout = FormLayoutContainer.createDefaultFormLayout("testInfos", getTranslator());
 		testLayout.setRootForm(mainForm);
 		formLayout.add(testLayout);
-		initFormInfos(testLayout);
+		initFormAssessmentInfos(testLayout);
+
+		FormLayoutContainer correctionLayout = FormLayoutContainer.createDefaultFormLayout("correction", getTranslator());
+		correctionLayout.setElementCssClass("o_qti_21_correction");
+		correctionLayout.setFormTitle(translate("correction.config"));
+		correctionLayout.setRootForm(mainForm);
+		formLayout.add(correctionLayout);
+		initFormCorrection(correctionLayout);
 		
 		reportLayout = FormLayoutContainer.createDefaultFormLayout("report", getTranslator());
 		reportLayout.setElementCssClass("o_qti_21_configuration");
@@ -113,16 +129,14 @@ public class QTI21EditForm extends FormBasicController {
 		initFormReport(reportLayout);
 	}
 	
-	protected void initFormInfos(FormItemContainer formLayout) {
+	protected void initFormAssessmentInfos(FormItemContainer formLayout) {
 		minScoreEl = uifactory.addStaticTextElement("score.min", "", formLayout);
 		minScoreEl.setVisible(false);
 		maxScoreEl = uifactory.addStaticTextElement("score.max", "", formLayout);
 		maxScoreEl.setVisible(false);
 		cutValueEl = uifactory.addStaticTextElement("score.cut", "", formLayout);
 		cutValueEl.setVisible(false);
-	}
-
-	protected void initFormReport(FormItemContainer formLayout) {
+		
 		boolean testDateDependent = modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_DATE_DEPENDENT_TEST);
 		testDateDependentEl = uifactory.addCheckboxesHorizontal("qti_datetest", "qti.form.test.date", formLayout, new String[]{"xx"}, new String[]{null});
 		testDateDependentEl.select("xx", testDateDependent);
@@ -137,18 +151,25 @@ public class QTI21EditForm extends FormBasicController {
 		Date endTestDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_TEST_DATE);
 		endTestDateElement = uifactory.addDateChooser("qti_form_end_test_date", "qti.form.date.end", endTestDate, formLayout);
 		endTestDateElement.setDateChooserTimeEnabled(true);
+	}
+	
+	protected void initFormCorrection(FormItemContainer formLayout) {
+		String mode = modConfig.getStringValue(IQEditController.CONFIG_CORRECTION_MODE);
 		
-		String [] correctionModeValues = new String[]{
-			translate("correction.auto"),
-			translate("correction.manual")
-		};
-		correctionModeEl = uifactory.addRadiosVertical("correction.mode", "correction.mode", formLayout, correctionModeKeys, correctionModeValues);
+		KeyValues correctionKeyValues = new KeyValues();
+		correctionKeyValues.add(KeyValues.entry(correctionModeKeys[0], translate("correction.auto")));
+		correctionKeyValues.add(KeyValues.entry(correctionModeKeys[1], translate("correction.manual")));
+		if(correctionModeKeys[2].equals(mode) || IQEditController.isGradingEnabled(modConfig)) {
+			correctionKeyValues.add(KeyValues.entry(correctionModeKeys[2], translate("correction.grading")));
+		}
+		
+		correctionModeEl = uifactory.addRadiosVertical("correction.mode", "correction.mode", formLayout,
+				correctionKeyValues.keys(), correctionKeyValues.values());
 		correctionModeEl.setHelpText(translate("correction.mode.help"));
 		correctionModeEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_test_konf_kurs");
 
-		String mode = modConfig.getStringValue(IQEditController.CONFIG_CORRECTION_MODE);
 		boolean selected = false;
-		for(String correctionModeKey:correctionModeKeys) {
+		for(String correctionModeKey:correctionKeyValues.keys()) {
 			if(correctionModeKey.equals(mode)) {
 				correctionModeEl.select(correctionModeKey, true);
 				selected = true;
@@ -161,7 +182,9 @@ public class QTI21EditForm extends FormBasicController {
 				correctionModeEl.select(correctionModeKeys[0], true);
 			}
 		}
+	}
 
+	protected void initFormReport(FormItemContainer formLayout) {
 		//Show score informations on start page
 		boolean enableScoreInfos = modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_ENABLESCOREINFO);
 		scoreInfo = uifactory.addCheckboxesHorizontal("qti_scoreInfo", "qti.form.scoreinfo", formLayout, new String[]{"xx"}, new String[]{null});

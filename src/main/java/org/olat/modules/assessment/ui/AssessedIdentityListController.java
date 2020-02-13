@@ -260,15 +260,16 @@ public class AssessedIdentityListController extends FormBasicController implemen
 		List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentities(getIdentity(), params);
 		List<AssessmentEntry> assessmentEntries = assessmentToolManager.getAssessmentEntries(getIdentity(), params, null);
 		Map<Long,AssessmentEntry> entryMap = new HashMap<>();
-		assessmentEntries.stream().filter((entry) -> entry.getIdentity() != null)
-			.forEach((entry) -> entryMap.put(entry.getIdentity().getKey(), entry));
+		assessmentEntries.stream().filter(entry -> entry.getIdentity() != null)
+			.forEach(entry -> entryMap.put(entry.getIdentity().getKey(), entry));
 
 		Map<Long,Date> initialLaunchDates = userInfosMgr.getInitialLaunchDates(testEntry.getOlatResource());
 
 		List<AssessedIdentityElementRow> rows = new ArrayList<>(assessedIdentities.size());
 		for(Identity assessedIdentity:assessedIdentities) {
 			AssessmentEntry entry = entryMap.get(assessedIdentity.getKey());
-			AssessedIdentityElementRow row = new AssessedIdentityElementRow(assessedIdentity, entry, null, null, userPropertyHandlers, getLocale());
+			AssessedIdentityElementRow row = new AssessedIdentityElementRow(assessedIdentity, entry,
+					null, null, null, userPropertyHandlers, getLocale());
 			row.setInitialCourseLaunchDate(initialLaunchDates.get(assessedIdentity.getKey()));
 			rows.add(row);
 		}

@@ -59,6 +59,7 @@ public class CalendarImportTest {
 		CalendarBuilder builder = new CalendarBuilder();
 		Calendar calendar = builder.build(in);
         assertNotNull(calendar);
+        in.close();
 	}
 	
 	@Test
@@ -67,6 +68,7 @@ public class CalendarImportTest {
 		CalendarBuilder builder = new CalendarBuilder();
 		Calendar calendar = builder.build(in);
         assertNotNull(calendar);
+        in.close();
 	}
 	
 	@Test
@@ -75,6 +77,7 @@ public class CalendarImportTest {
 		CalendarBuilder builder = new CalendarBuilder();
 		Calendar calendar = builder.build(in);
         assertNotNull(calendar);
+        in.close();
 	}
 	
 	@Test
@@ -83,6 +86,7 @@ public class CalendarImportTest {
 		CalendarBuilder builder = new CalendarBuilder();
 		Calendar calendar = builder.build(in);
         assertNotNull(calendar);
+        in.close();
 	}
 	
 	@Test
@@ -91,6 +95,7 @@ public class CalendarImportTest {
 		CalendarBuilder builder = new CalendarBuilder();
 		Calendar calendar = builder.build(in);
         assertNotNull(calendar);
+        in.close();
 	}
 	
 	/*
@@ -122,6 +127,7 @@ public class CalendarImportTest {
 		CalendarBuilder builder = new CalendarBuilder();
 		Calendar calendar = builder.build(in);
         assertNotNull(calendar);
+        in.close();
         
         VEvent rootEvent = null;
         VEvent exceptionEvent = null;

@@ -235,9 +235,7 @@ public class RelationRolesAdminController extends FormBasicController {
 	
 	private void doTranslate(UserRequest ureq, String prefix, RelationRoleRow relationRole) {
 		String i18nKey = prefix.concat(relationRole.getKey().toString());
-
-		String[] keys2Translate = { i18nKey };
-		translatorCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), keys2Translate, UserModule.class);
+		translatorCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), i18nKey, UserModule.class);
 		listenTo(translatorCtrl);
 		String title = translate("translate.title", new String[] { relationRole.getRole() });
 		cmc = new CloseableModalController(getWindowControl(), "close", translatorCtrl.getInitialComponent(), true, title);

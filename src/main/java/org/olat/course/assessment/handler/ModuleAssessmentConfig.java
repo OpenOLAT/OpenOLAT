@@ -105,6 +105,11 @@ public abstract class ModuleAssessmentConfig implements AssessmentConfig {
 	public boolean isAssessedBusinessGroups() {
 		return false;
 	}
+	
+	@Override
+	public boolean isExternalGrading() {
+		return false;
+	}
 
 	@Override
 	public boolean isObligationOverridable() {

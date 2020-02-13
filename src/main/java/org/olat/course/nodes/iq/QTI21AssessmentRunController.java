@@ -97,6 +97,7 @@ import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.modules.assessment.ui.event.CompletionEvent;
+import org.olat.modules.grading.GradingService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -116,7 +117,10 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private static final OLATResourceable assessmentEventOres = OresHelper.createOLATResourceableType(AssessmentEvent.class);
 	private static final OLATResourceable assessmentInstanceOres = OresHelper.createOLATResourceableType(AssessmentInstance.class);
 	
-	private Link startButton, showResultsButton, hideResultsButton, signatureDownloadLink;
+	private Link startButton;
+	private Link showResultsButton;
+	private Link hideResultsButton;
+	private Link signatureDownloadLink;
 	private final VelocityContainer mainVC;
 	private final VelocityContainer disclaimerVC;
 	
@@ -143,6 +147,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private QTI21Service qtiService;
 	@Autowired
 	private CourseModule courseModule;
+	@Autowired
+	private GradingService gradingService;
 	@Autowired
 	private CoordinatorManager coordinatorManager;
 	@Autowired
@@ -813,19 +819,19 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		Date assessedDate = candidateSession.getFinishTime() == null ? timestamp : candidateSession.getFinishTime();
 
 		String[] args = new String[] {
-				courseEnv.getCourseTitle(),						// {0}
-				courseEnv.getCourseResourceableId().toString(),	// {1}
-				courseNode.getShortTitle(),						// {2}
-				courseNode.getIdent(),							// {3}
-				testEntry.getDisplayname(),						// {4}
-				fullname,										// {5}
+				courseEnv.getCourseTitle(),						// 0
+				courseEnv.getCourseResourceableId().toString(),	// 1
+				courseNode.getShortTitle(),						// 2
+				courseNode.getIdent(),							// 3
+				testEntry.getDisplayname(),						// 4
+				fullname,										// 5
 				Formatter.getInstance(locale)
-					.formatDateAndTime(assessedDate), 			// {6}
-				assessedIdentity.getName(),											// {7}
+					.formatDateAndTime(assessedDate), 			// 6
+				assessedIdentity.getName(),						// 7
 				assessedIdentity.getUser()
-					.getProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, locale),	// {8}
+					.getProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, locale),// 8
 				assessedIdentity.getUser()
-					.getProperty(UserConstants.INSTITUTIONALNAME, locale),			// {9}
+					.getProperty(UserConstants.INSTITUTIONALNAME, locale),			// 9
 		};
 
 		Translator translator = Util.createPackageTranslator(QTI21AssessmentRunController.class, locale);
@@ -857,7 +863,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		if(courseNode instanceof IQTESTCourseNode) {
 			Boolean visibility;
 			AssessmentEntryStatus assessmentStatus;
-			if(IQEditController.CORRECTION_MANUAL.equals(courseNode.getModuleConfiguration().getStringValue(IQEditController.CONFIG_CORRECTION_MODE))) {
+			String correctionMode = courseNode.getModuleConfiguration().getStringValue(IQEditController.CONFIG_CORRECTION_MODE);
+			if(IQEditController.CORRECTION_MANUAL.equals(correctionMode) || IQEditController.CORRECTION_GRADING.equals(correctionMode)) {
 				assessmentStatus = AssessmentEntryStatus.inReview;
 				visibility = Boolean.FALSE;
 			} else {
@@ -876,6 +883,11 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			coordinatorManager.getCoordinator().getEventBus()
 				.fireEventToListenersOf(new CompletionEvent(CompletionEvent.PROGRESS, courseNode.getIdent(), completion, AssessmentRunStatus.done, getIdentity().getKey()),
 					userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource());
+			
+			if(IQEditController.CORRECTION_GRADING.equals(correctionMode)) {
+				AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, userCourseEnv);
+				gradingService.assignGrader(testEntry, assessmentEntry, true);
+			}
 
 			assessmentNotificationsHandler.markPublisherNews(getIdentity(), userCourseEnv.getCourseEnvironment().getCourseResourceableId());
 		} else if(courseNode instanceof SelfAssessableCourseNode) {

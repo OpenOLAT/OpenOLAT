@@ -39,8 +39,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.PopEvent;
-import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -72,6 +72,8 @@ import org.olat.ims.qti21.ui.editor.AssessmentTestComposerController;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.assessment.ui.event.CompleteAssessmentTestSessionEvent;
+import org.olat.modules.grading.GradingAssignment;
+import org.olat.modules.grading.GradingTimeRecordRef;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -101,7 +103,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 	private FormLink backLink;
 	private FormLink backOverviewButton;
 	private FlexiTableElement tableEl;
-	private final TooledStackedPanel stackPanel;
+	private final BreadcrumbPanel stackPanel;
 	private CorrectionIdentityAssessmentItemTableModel tableModel;
 
 	private CloseableModalController cmc;
@@ -110,16 +112,19 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 
 	private final String title;
 	private LockResult lockResult;
+	private final boolean readOnly;
 	private final boolean saveEnabled;
+	private GradingAssignment assignment;
 	private final Identity assessedIdentity;
 	private final CorrectionOverviewModel model;
+	private GradingTimeRecordRef gradingTimeRecord;
 
 	@Autowired
 	private QTI21Service qtiService;
 	@Autowired
 	private UserManager userManager;
 	
-	public CorrectionIdentityAssessmentItemListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+	public CorrectionIdentityAssessmentItemListController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			CorrectionOverviewModel model, Identity assessedIdentity) {
 		super(ureq, wControl, "correction_identity_assessment_item_list");
 		
@@ -127,13 +132,32 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 		this.model = model;
 		this.assessedIdentity = assessedIdentity;
 		saveEnabled = true;
+		readOnly = false;
 		title = userManager.getUserDisplayName(assessedIdentity);
 		
 		initForm(ureq);
 		loadModel(true);
 	}
 	
-	public CorrectionIdentityAssessmentItemListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+	public CorrectionIdentityAssessmentItemListController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+			CorrectionOverviewModel model, Identity assessedIdentity, GradingAssignment assignment, GradingTimeRecordRef gradingTimeRecord,
+			boolean readOnly) {
+		super(ureq, wControl, "correction_identity_assessment_item_list");
+		
+		this.stackPanel = stackPanel;
+		this.model = model;
+		this.assessedIdentity = assessedIdentity;
+		this.readOnly = readOnly;
+		this.saveEnabled = !readOnly;
+		this.assignment = assignment;
+		this.gradingTimeRecord = gradingTimeRecord;
+		title = userManager.getUserDisplayName(assessedIdentity);
+		
+		initForm(ureq);
+		loadModel(true);
+	}
+	
+	public CorrectionIdentityAssessmentItemListController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			CorrectionOverviewModel model, Identity assessedIdentity, String title) {
 		super(ureq, wControl, "correction_identity_assessment_item_list");
 		this.stackPanel = stackPanel;
@@ -141,6 +165,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 		this.title = title;
 		this.assessedIdentity = assessedIdentity;
 		saveEnabled = false;
+		readOnly = false;
 		
 		initForm(ureq);
 		loadModel(true);
@@ -148,6 +173,10 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 	
 	public AssessmentTestSession getAssessmentTestSession() {
 		return model.getLastSessions().get(assessedIdentity);
+	}
+	
+	public GradingAssignment getGradingAssignment() {
+		return assignment;
 	}
 
 	@Override
@@ -365,7 +394,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 		String lockSubKey = "item-" + reloadItemSession.getKey();
 		OLATResourceable testOres = OresHelper.clone(model.getTestEntry().getOlatResource());
 		lockResult = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(testOres, getIdentity(), lockSubKey);
-		if(lockResult.isSuccess()) {
+		if(lockResult.isSuccess() || readOnly) {
 			if(nodes.size() == 1) {
 				TestPlanNode itemNode = nodes.get(0);
 				ItemSessionState itemSessionState = testSessionState.getItemSessionStates().get(itemNode.getKey());
@@ -378,7 +407,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 				AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
 				identityItemCtrl = new CorrectionIdentityAssessmentItemNavigationController(ureq, getWindowControl(),
 						model.getTestEntry(), model.getResolvedAssessmentTest(), itemCorrection, row,
-						tableModel.getObjects(), model);
+						tableModel.getObjects(), model, gradingTimeRecord, readOnly);
 				listenTo(identityItemCtrl);
 				stackPanel.pushController(assessmentItem.getTitle(), identityItemCtrl);
 				updatePreviousNext();

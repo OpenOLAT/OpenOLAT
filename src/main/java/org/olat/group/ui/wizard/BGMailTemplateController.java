@@ -53,7 +53,7 @@ public class BGMailTemplateController extends FormBasicController {
 	private SelectionElement sendMail;
 	private SelectionElement ccSender;
 	private SelectionElement defaultTemplate;
-	private final static String NLS_CONTACT_SEND_CP_FROM = "contact.cp.from";
+	private static final String NLS_CONTACT_SEND_CP_FROM = "contact.cp.from";
 	
 	private final boolean useCancel;
 	private final boolean useSubmit;

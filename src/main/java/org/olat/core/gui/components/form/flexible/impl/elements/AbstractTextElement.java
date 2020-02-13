@@ -63,6 +63,7 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 
 	protected String original;
 	protected String value;
+	private String textAddOn;
 	private boolean checkForNotEmpty = false;
 	private boolean checkForLength = false;
 	private boolean checkForEquals = false; 
@@ -139,7 +140,17 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	public String getValue(Filter filter) {
 		return filter.filter(value);
 	}
-	
+
+	@Override
+	public String getTextAddOn() {
+		return textAddOn;
+	}
+
+	@Override
+	public void setTextAddOn(String textAddOn) {
+		this.textAddOn = textAddOn;
+	}
+
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.TextElement#preventValueTrim()
 	 */

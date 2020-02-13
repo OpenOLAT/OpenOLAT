@@ -64,6 +64,7 @@ import org.olat.core.util.filter.impl.HtmlMathScanner;
 public class Formatter {
 
 	public static final int BYTE_UNIT = 1000;
+	private static final DateFormat formatterDateFilesystem = new SimpleDateFormat("yyyy-MM-dd");
 	private static final DateFormat formatterDatetimeFilesystem = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss_SSS");
 	private static final DateFormat formatterDatetimeWithMinutes = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm");
 	private static final DateFormat formatDateTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
@@ -294,6 +295,18 @@ public class Formatter {
 	public static String formatDatetimeFilesystemSave(Date d) {
 		synchronized (formatterDatetimeFilesystem) {
 			return formatterDatetimeFilesystem.format(d);
+		}
+	}
+	
+	/**
+	 * Use this for naming files or directories with a date.
+	 * 
+	 * @param d The date to be formatted
+	 * @return a String with the formatted date
+	 */
+	public static String formatDateFilesystemSave(Date d) {
+		synchronized (formatterDateFilesystem) {
+			return formatterDateFilesystem.format(d);
 		}
 	}
 	

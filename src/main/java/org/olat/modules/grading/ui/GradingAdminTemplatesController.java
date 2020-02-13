@@ -1,0 +1,158 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.modules.grading.ui;
+
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
+
+/**
+ * 
+ * Initial date: 11 févr. 2020<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
+public class GradingAdminTemplatesController extends FormBasicController {
+	
+	private int counter = 0;
+	
+	private CloseableModalController cmc;
+	private SingleKeyTranslatorController translatorCtrl;
+	
+	public GradingAdminTemplatesController(UserRequest ureq, WindowControl wControl) {
+		super(ureq, wControl);
+		
+		initForm(ureq);
+	}
+
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		// notifications
+		initForm("notification.subject", "mail.notification.subject", formLayout);
+		initForm("notification.body", "mail.notification.body", formLayout);
+		
+		// reminder 1
+		initForm("reminder.1.subject", "mail.reminder1.subject", formLayout);
+		initForm("reminder.1.body", "mail.reminder1.body", formLayout);
+		
+		// reminder 2
+		initForm("reminder.2.subject", "mail.reminder2.subject", formLayout);
+		initForm("reminder.2.body", "mail.reminder2.body", formLayout);
+	}
+
+	private void initForm(String labelI18nKey, String textI18nKey, FormItemContainer formLayout) {
+		String text = translate(textI18nKey);
+		StaticTextElement viewEl = uifactory.addStaticTextElement("view." + counter++, labelI18nKey, text, formLayout);
+		FormLink translationLink = uifactory.addFormLink("translate." + counter++, "translate", null, formLayout, Link.LINK);
+		translationLink.setUserObject(new TranslationBundle(textI18nKey, labelI18nKey, viewEl));
+	}
+
+	@Override
+	protected void doDispose() {
+		//
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(translatorCtrl == source) {
+			doUpdate((TranslationBundle)translatorCtrl.getUserObject());
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(translatorCtrl);
+		removeAsListenerAndDispose(cmc);
+		translatorCtrl = null;
+		cmc = null;
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(source instanceof FormLink) {
+			if(source.getUserObject() instanceof TranslationBundle) {
+				doTranslate(ureq, (TranslationBundle)source.getUserObject());
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void doTranslate(UserRequest ureq, TranslationBundle bundle) {
+		if(guardModalController(translatorCtrl)) return;
+		
+		translatorCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), bundle.getI18nKey(),
+				GradingAdminTemplatesController.class);
+		translatorCtrl.setUserObject(bundle);
+		listenTo(translatorCtrl);
+
+		String title = translate("translate.title", new String[] { translate(bundle.getLabelI18nKey()) });
+		cmc = new CloseableModalController(getWindowControl(), "close", translatorCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doUpdate(TranslationBundle bundle) {
+		bundle.getViewEl().setValue(translate(bundle.getI18nKey()));
+	}
+	
+	private static class TranslationBundle {
+		
+		private final String i18nKey;
+		private final String labelI18nKey;
+		private final StaticTextElement viewEl;
+		
+		public TranslationBundle(String i18nKey, String labelI18nKey, StaticTextElement viewEl) {
+			this.i18nKey = i18nKey;
+			this.viewEl = viewEl;
+			this.labelI18nKey = labelI18nKey;
+		}
+
+		public StaticTextElement getViewEl() {
+			return viewEl;
+		}
+
+		public String getI18nKey() {
+			return i18nKey;
+		}
+		
+		public String getLabelI18nKey() {
+			return labelI18nKey;
+		}
+	}
+}

@@ -66,6 +66,8 @@ import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.ui.CurriculumListController;
+import org.olat.modules.grading.GradingModule;
+import org.olat.modules.grading.ui.GraderUserOverviewController;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.ParticipantLecturesOverviewController;
 import org.olat.modules.taxonomy.TaxonomyModule;
@@ -116,6 +118,8 @@ public class UserAdminController extends BasicController implements Activateable
 	private static final String NLS_VIEW_LECTURES		= "view.lectures";
 	private static final String NLS_VIEW_COMPETENCES	= "view.competences";
 	private static final String NLS_VIEW_CURRICULUM		= "view.curriculum";
+	private static final String NLS_VIEW_GRADER			= "view.grader";
+	
 
 	private VelocityContainer myContent;
 	private final TooledStackedPanel stackPanel;
@@ -128,10 +132,16 @@ public class UserAdminController extends BasicController implements Activateable
 
 	// controllers used in tabbed pane
 	private TabbedPane userTabP;
-	private Controller prefsCtr, propertiesCtr, pwdCtr, quotaCtr, rolesCtr, userShortDescrCtr;
+	private Controller prefsCtr;
+	private Controller pwdCtr;
+	private Controller quotaCtr;
+	private Controller rolesCtr;
+	private Controller propertiesCtr;
+	private Controller userShortDescrCtr;
 	private CurriculumListController curriculumCtr;
 	private UserRelationsController relationsCtrl;
 	private DisplayPortraitController portraitCtr;
+	private GraderUserOverviewController graderOverviewCtrl;
 	private UserAuthenticationsEditorController authenticationsCtr;
 	private Link backLink;
 	private Link exportDataButton;
@@ -163,6 +173,8 @@ public class UserAdminController extends BasicController implements Activateable
 	private CurriculumModule curriculumModule;
 	@Autowired
 	private QuotaManager quotaManager;
+	@Autowired
+	private GradingModule gradingModule;
 	@Autowired
 	private OrganisationService organisationService;
 
@@ -500,11 +512,23 @@ public class UserAdminController extends BasicController implements Activateable
 			userTabP.addTab(translate(NLS_VIEW_CURRICULUM),  uureq -> {
 				curriculumCtr = new CurriculumListController(uureq, getWindowControl(), identity);
 				listenTo(curriculumCtr);
-				BreadcrumbedStackedPanel competencePanel = new BreadcrumbedStackedPanel("curriculums", getTranslator(), curriculumCtr);
-				competencePanel.pushController(translate(NLS_VIEW_CURRICULUM), curriculumCtr);
-				curriculumCtr.setBreadcrumbPanel(competencePanel);
-				competencePanel.setInvisibleCrumb(1);
-				return competencePanel;
+				BreadcrumbedStackedPanel curriculumPanel = new BreadcrumbedStackedPanel("curriculums", getTranslator(), curriculumCtr);
+				curriculumPanel.pushController(translate(NLS_VIEW_CURRICULUM), curriculumCtr);
+				curriculumCtr.setBreadcrumbPanel(curriculumPanel);
+				curriculumPanel.setInvisibleCrumb(1);
+				return curriculumPanel;
+			});
+		}
+		
+		if(gradingModule.isEnabled()) {
+			userTabP.addTab(translate(NLS_VIEW_GRADER),  uureq -> {
+				graderOverviewCtrl = new GraderUserOverviewController(uureq, getWindowControl(), identity);
+				listenTo(graderOverviewCtrl);
+				BreadcrumbedStackedPanel gradingPanel = new BreadcrumbedStackedPanel("curriculums", getTranslator(), graderOverviewCtrl);
+				gradingPanel.pushController(translate(NLS_VIEW_GRADER), graderOverviewCtrl);
+				graderOverviewCtrl.setBreadcrumbPanel(gradingPanel);
+				gradingPanel.setInvisibleCrumb(1);
+				return gradingPanel;
 			});
 		}
 

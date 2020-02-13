@@ -658,9 +658,6 @@ public class IQConfigurationController extends BasicController {
 		return repositoryManager.lookupRepositoryEntryBySoftkey(repoSoftkey, false);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		//child controllers registered with listenTo() get disposed in BasicController

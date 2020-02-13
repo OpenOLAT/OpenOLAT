@@ -455,7 +455,7 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 
 				identityItemCtrl = new CorrectionIdentityAssessmentItemNavigationController(ureq, getWindowControl(),
 						model.getTestEntry(), model.getResolvedAssessmentTest(), itemCorrection, listEntry,
-						selectedItemSessions, model);
+						selectedItemSessions, model, null, false);
 				listenTo(identityItemCtrl);
 				updatePreviousNext();
 				

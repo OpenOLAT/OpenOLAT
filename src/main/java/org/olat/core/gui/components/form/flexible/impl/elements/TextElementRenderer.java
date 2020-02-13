@@ -103,5 +103,9 @@ class TextElementRenderer extends DefaultComponentRenderer {
 			  .append("\" value=\"").append(htmlVal).append("\" />")
 			  .append("</span>");
 		}
+		
+		if(StringHelper.containsNonWhitespace(te.getTextAddOn())) {
+			sb.append("<span class=''>").append(translator.translate(te.getTextAddOn())).append("</span>");
+		}
 	}
 }

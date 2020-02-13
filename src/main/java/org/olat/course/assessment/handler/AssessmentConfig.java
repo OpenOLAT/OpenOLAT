@@ -122,6 +122,11 @@ public interface AssessmentConfig {
 	 */
 	public boolean hasEditableDetails();
 	
+	/**
+	 * @return True if this course node will be graded by external graders and not the coaches.
+	 */
+	public boolean isExternalGrading();
+	
 	public boolean isObligationOverridable();
 
 }

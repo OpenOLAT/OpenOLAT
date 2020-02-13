@@ -44,6 +44,7 @@ import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentMembersStatistics;
+import org.olat.modules.grading.GradingAssignment;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -601,8 +602,54 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select aentry from assessmententry aentry")
 		  .append(" inner join fetch aentry.identity as assessedIdentity")
-		  .append(" inner join fetch assessedIdentity.user as assessedUser")
-		  .append(" where aentry.repositoryEntry.key=:repoEntryKey");
+		  .append(" inner join fetch assessedIdentity.user as assessedUser");
+		applySearchAssessedIdentityParams(sb, params, status);
+		
+		TypedQuery<AssessmentEntry> list = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), AssessmentEntry.class);
+		
+		applySearchAssessedIdentityParams(list, coach, params, status);
+		
+		return list.getResultList();
+	}
+	
+	@Override
+	public List<GradingAssignment> getGradingAssignments(Identity coach, SearchAssessedIdentityParams params, AssessmentEntryStatus status) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select assignment from gradingassignment as assignment")
+		  .append(" inner join fetch assignment.assessmentEntry as aentry")
+		  .append(" inner join aentry.identity as assessedIdentity")
+		  .append(" inner join fetch assignment.grader as grader")
+		  .append(" inner join fetch grader.identity as graderIdent")
+		  .append(" inner join fetch graderIdent.user as graderUser");
+		applySearchAssessedIdentityParams(sb, params, status);
+		
+		TypedQuery<GradingAssignment> list = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), GradingAssignment.class);
+
+		applySearchAssessedIdentityParams(list, coach, params, status);
+		
+		return list.getResultList();
+	}
+	
+	private void applySearchAssessedIdentityParams(TypedQuery<?> list, Identity coach, SearchAssessedIdentityParams params, AssessmentEntryStatus status) {
+		list.setParameter("repoEntryKey", params.getEntry().getKey());
+		if(params.getReferenceEntry() != null) {
+			list.setParameter("referenceKey", params.getReferenceEntry().getKey());
+		}
+		if(params.getSubIdent() != null) {
+			list.setParameter("subIdent", params.getSubIdent());
+		}
+		if(!params.isAdmin()) {
+			list.setParameter("identityKey", coach.getKey());
+		}
+		if(status != null) {
+			list.setParameter("assessmentStatus", status.name());
+		}
+	}
+	
+	private void applySearchAssessedIdentityParams(QueryBuilder sb, SearchAssessedIdentityParams params, AssessmentEntryStatus status) {
+		sb.append(" where aentry.repositoryEntry.key=:repoEntryKey");
 		if(params.getReferenceEntry() != null) {
 			sb.append(" and aentry.referenceEntry.key=:referenceKey");
 		}
@@ -632,23 +679,6 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 	          .append("  )");
 		}
 		sb.append(" )");
-		
-		TypedQuery<AssessmentEntry> list = dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), AssessmentEntry.class)
-			.setParameter("repoEntryKey", params.getEntry().getKey());
-		if(params.getReferenceEntry() != null) {
-			list.setParameter("referenceKey", params.getReferenceEntry().getKey());
-		}
-		if(params.getSubIdent() != null) {
-			list.setParameter("subIdent", params.getSubIdent());
-		}
-		if(!params.isAdmin()) {
-			list.setParameter("identityKey", coach.getKey());
-		}
-		if(status != null) {
-			list.setParameter("assessmentStatus", status.name());
-		}
-		return list.getResultList();
 	}
 
 	@Override

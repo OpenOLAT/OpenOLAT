@@ -19,7 +19,9 @@
  */
 package org.olat.repository.manager;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -30,6 +32,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.manager.TaxonomyDAO;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryEntryToTaxonomyLevel;
 import org.olat.repository.RepositoryService;
@@ -102,6 +105,28 @@ public class RepositoryEntryToTaxonomyLevelDAOTest extends OlatTestCase {
 		Assert.assertNotNull(loadedLevels);
 		Assert.assertEquals(1, loadedLevels.size());
 		Assert.assertEquals(level, loadedLevels.get(0));
+	}
+	
+	@Test
+	public void getTaxonomyLevels_entries() {
+		RepositoryEntry re = repositoryService.create(null, "Asuka Langley", "rel", "rel", null, null,
+				RepositoryEntryStatusEnum.trash, null);
+		
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-402", "Leveled taxonomy", null, null);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		repositoryEntryToTaxonomyLevelDao.createRelation(re, level);
+		dbInstance.commitAndCloseSession();
+		
+		Map<RepositoryEntryRef,List<TaxonomyLevel>> loadedLevels = repositoryEntryToTaxonomyLevelDao
+				.getTaxonomyLevels(Collections.singletonList(re));
+		Assert.assertNotNull(loadedLevels);
+		Assert.assertEquals(1, loadedLevels.size());
+		Assert.assertEquals(re, loadedLevels.keySet().iterator().next());
+		
+		List<TaxonomyLevel> entryLevels = loadedLevels.get(re);
+		Assert.assertNotNull(entryLevels);
+		Assert.assertEquals(1, entryLevels.size());
+		Assert.assertEquals(level, entryLevels.get(0));
 	}
 	
 	@Test

@@ -1,0 +1,19 @@
+<ul class="o_dropdown list-unstyled" role="menu">
+	<li>$r.render("tool.show.assignments")</li>
+	<li>$r.render("tool.send.mail")</li>
+	<li>$r.render("tool.download.report")</li>
+	<li class='divider'></li>
+	#if($r.available("tool.activate"))
+	<li>$r.render("tool.activate")</li>
+	#end
+	#if($r.available("tool.absence"))
+	<li>$r.render("tool.absence")</li>
+	#end
+	#if($r.available("tool.deactivate"))
+	<li>$r.render("tool.deactivate")</li>
+	#end
+	#if($r.available("tool.remove"))
+	<li class='divider'></li>
+	<li>$r.render("tool.remove")</li>
+	#end
+</ul>

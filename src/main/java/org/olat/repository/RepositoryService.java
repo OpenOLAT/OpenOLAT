@@ -352,7 +352,17 @@ public interface RepositoryService {
 	 * @param entry A repository entry
 	 * @return A list of taxonomy level
 	 */
-	public List<TaxonomyLevel> getTaxonomy(RepositoryEntry entry);
+	public List<TaxonomyLevel> getTaxonomy(RepositoryEntryRef entry);
+	
+	/**
+	 * Retrieve where the repository entries are linked to taxonomy. The method
+	 * doesn't fetch any thing of the levels but returns the same instances of
+	 * repository entries.
+	 * 
+	 * @param entry A list of repository entries
+	 * @return A map entries to taxonomy level
+	 */
+	public Map<RepositoryEntryRef,List<TaxonomyLevel>> getTaxonomy(List<RepositoryEntryRef> entries);
 	
 	/**
 	 * Add a link between a taxonomy level and the specified repository entry.

@@ -3,8 +3,20 @@
 	$r.render("interactions")
 	<div class="o_button_group o_assessmentitem_scoring_buttons">
 		$r.render("cancel")
-		$r.render("save")
-		$r.render("save.next")
-		$r.render("save.back")
+		#if($r.visible("next.item"))
+			$r.render("next.item")
+		#end
+		#if($r.visible("save"))
+			$r.render("save")
+		#end
+		#if($r.visible("save.next"))
+			$r.render("save.next")
+		#end
+		#if($r.visible("save.back"))
+			$r.render("save.back")
+		#end
+		#if($r.visible("back.overview"))
+			$r.render("back.overview")
+		#end
 	</div>
 </div>

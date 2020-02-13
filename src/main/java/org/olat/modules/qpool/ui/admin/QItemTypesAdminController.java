@@ -169,9 +169,7 @@ public class QItemTypesAdminController extends FormBasicController {
 	
 	private void doOpenTranslationTool(UserRequest ureq, QItemType row) {
 		String key2Translate = "item.type." + row.getType().toLowerCase();
-
-		String[] keys2Translate = { key2Translate };
-		singleKeyTrnsCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), keys2Translate,
+		singleKeyTrnsCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), key2Translate,
 				QuestionsController.class);
 		listenTo(singleKeyTrnsCtrl);
 

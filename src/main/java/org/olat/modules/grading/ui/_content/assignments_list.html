@@ -1,0 +1,11 @@
+<fieldset>
+	#if($r.isTrue($myTitle))<legend>$r.translate("grading.my.assignments.title")</legend>#end
+
+	<div class="clearfix">$r.render("search")</div>
+	#if($r.available("report"))
+		<div class="o_button_group o_button_group_right">
+		$r.render("report")
+		</div>
+	#end
+	$r.render("assignments")
+</fieldset>

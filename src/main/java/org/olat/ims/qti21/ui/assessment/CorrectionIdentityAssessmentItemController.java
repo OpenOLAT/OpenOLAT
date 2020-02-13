@@ -26,6 +26,7 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -39,6 +40,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.session.UserSessionModule;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.nodes.IQTESTCourseNode;
@@ -58,6 +60,8 @@ import org.olat.ims.qti21.ui.assessment.event.NextAssessmentItemEvent;
 import org.olat.ims.qti21.ui.assessment.model.AssessmentItemCorrection;
 import org.olat.ims.qti21.ui.assessment.model.AssessmentItemListEntry;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.grading.GradingService;
+import org.olat.modules.grading.GradingTimeRecordRef;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -73,7 +77,9 @@ import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
  *
  */
 public class CorrectionIdentityAssessmentItemController extends FormBasicController {
-	
+
+	private FormLink nextQuestionButton;
+	private FormLink backOverviewButton;
 	private FormLink saveNextQuestionButton;
 	private FormLink saveBackOverviewButton;
 
@@ -81,6 +87,7 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 	private final URI assessmentObjectUri;
 	private final ResourcesMapper resourcesMapper;
 	
+	private final boolean readOnly;
 	private CorrectionOverviewModel model;
 	private final RepositoryEntry testEntry;
 	private AssessmentItemCorrection itemCorrection;
@@ -89,19 +96,30 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 	private final List<? extends AssessmentItemListEntry> assessmentEntryList;
 	private Map<Long, File> submissionDirectoryMaps = new HashMap<>();
 	
+	private long timeStartInMilliSeconds;
+	private GradingTimeRecordRef gradingTimeRecord;
+	
 	private CorrectionIdentityInteractionsController identityInteractionsCtrl;
 
 	@Autowired
 	private QTI21Service qtiService;
+	@Autowired
+	private GradingService gradingService;
+	@Autowired
+	private UserSessionModule sessionModule;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	
 	public CorrectionIdentityAssessmentItemController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry testEntry, ResolvedAssessmentTest resolvedAssessmentTest,
 			AssessmentItemCorrection itemCorrection, AssessmentItemListEntry assessmentEntry,
-			List<? extends AssessmentItemListEntry> assessmentEntryList, CorrectionOverviewModel model) {
+			List<? extends AssessmentItemListEntry> assessmentEntryList, CorrectionOverviewModel model,
+			GradingTimeRecordRef gradingTimeRecord, boolean readOnly) {
 		super(ureq, wControl, "correction_identity_assessment_item");
-
+		this.readOnly = readOnly;
+		this.gradingTimeRecord = gradingTimeRecord;
+		timeStartInMilliSeconds = System.currentTimeMillis();
+		
 		FileResourceManager frm = FileResourceManager.getInstance();
 		File fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
 		assessmentObjectUri = qtiService.createAssessmentTestUri(fUnzippedDirRoot);
@@ -142,25 +160,59 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 		}
 
 		identityInteractionsCtrl = new CorrectionIdentityInteractionsController(ureq, getWindowControl(), 
-				testEntry, resolvedAssessmentTest, itemCorrection, submissionDirectoryMaps, mapperUri,
-				mainForm);
+				testEntry, resolvedAssessmentTest, itemCorrection, submissionDirectoryMaps, readOnly,
+				mapperUri, mainForm);
 		listenTo(identityInteractionsCtrl);
 		formLayout.add("interactions", identityInteractionsCtrl.getInitialFormItem());
 		
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
-		uifactory.addFormSubmitButton("save", formLayout);
-		saveNextQuestionButton = uifactory.addFormLink("save.next", formLayout, Link.BUTTON);
-		saveBackOverviewButton = uifactory.addFormLink("save.back", formLayout, Link.BUTTON);
+		if(readOnly) {
+			nextQuestionButton = uifactory.addFormLink("next.item", formLayout, Link.BUTTON);
+			backOverviewButton = uifactory.addFormLink("back.overview", formLayout, Link.BUTTON);
+		} else {
+			uifactory.addFormSubmitButton("save", formLayout);
+			saveNextQuestionButton = uifactory.addFormLink("save.next", formLayout, Link.BUTTON);
+			saveBackOverviewButton = uifactory.addFormLink("save.back", formLayout, Link.BUTTON);
+		}
 	}
 	
 	protected void updateNext(boolean nextEnable) {
-		saveNextQuestionButton.setVisible(nextEnable);
-		saveBackOverviewButton.setVisible(!nextEnable);
+		if(nextQuestionButton != null) {
+			nextQuestionButton.setVisible(nextEnable);
+		}
+		if(saveNextQuestionButton != null) {
+			saveNextQuestionButton.setVisible(nextEnable);
+		}
+		if(saveBackOverviewButton != null) {
+			saveBackOverviewButton.setVisible(!nextEnable);
+		}
+		if(backOverviewButton != null) {
+			backOverviewButton.setVisible(!nextEnable);
+		}
 	}
 	
 	@Override
 	protected void doDispose() {
-		//
+		recordDisposedTime();
+	}
+	
+	private void recordDisposedTime() {
+		if(gradingTimeRecord == null || timeStartInMilliSeconds == 0l) return;
+		
+		long time = System.currentTimeMillis() - timeStartInMilliSeconds;
+		timeStartInMilliSeconds = 0l;
+		if(time > sessionModule.getSessionTimeoutAuthenticated()) {
+			time -= sessionModule.getSessionTimeoutAuthenticated();
+		}
+		gradingService.appendTimeTo(gradingTimeRecord, time, TimeUnit.MILLISECONDS);
+	}
+	
+	private void recordTime(boolean continueRecording) {
+		if(gradingTimeRecord == null || timeStartInMilliSeconds == 0l) return;
+		
+		long time = System.currentTimeMillis() - timeStartInMilliSeconds;
+		timeStartInMilliSeconds = continueRecording ? System.currentTimeMillis() : 0l;
+		gradingService.appendTimeTo(gradingTimeRecord, time, TimeUnit.MILLISECONDS);
 	}
 	
 	@Override
@@ -172,27 +224,39 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		doSave();
+		if(!readOnly) {
+			doSave();
+		}
+		recordTime(true);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 		identityInteractionsCtrl.updateStatus();
 	}
 
 	@Override
 	protected void formCancelled(UserRequest ureq) {
+		recordTime(false);
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(saveNextQuestionButton == source) {
-			if(identityInteractionsCtrl.validateFormLogic(ureq)) {
+		if(nextQuestionButton == source) {
+			recordTime(false);
+			fireEvent(ureq, new NextAssessmentItemEvent());
+		} else if(backOverviewButton == source) {
+			recordTime(false);
+			fireEvent(ureq, Event.BACK_EVENT);
+		} else if(saveNextQuestionButton == source) {
+			if(!readOnly && identityInteractionsCtrl.validateFormLogic(ureq)) {
 				doSave();
+				recordTime(false);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 				fireEvent(ureq, new NextAssessmentItemEvent());
 			}
 		} else if(saveBackOverviewButton == source) {
-			if(identityInteractionsCtrl.validateFormLogic(ureq)) {
+			if(!readOnly && identityInteractionsCtrl.validateFormLogic(ureq)) {
 				doSave();
+				recordTime(false);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 				fireEvent(ureq, Event.BACK_EVENT);
 			}

@@ -131,6 +131,11 @@ public class STAssessmentConfig implements AssessmentConfig {
 	public boolean hasEditableDetails() {
 		return false;
 	}
+	
+	@Override
+	public boolean isExternalGrading() {
+		return false;
+	}
 
 	@Override
 	public boolean isObligationOverridable() {

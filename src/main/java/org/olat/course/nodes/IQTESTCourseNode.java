@@ -108,9 +108,11 @@ import org.olat.ims.qti21.resultexport.QTI21ResultsExportMediaResource;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticsSecurityCallback;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
+import org.olat.modules.grading.GradingService;
 import org.olat.modules.iq.IQSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
@@ -547,10 +549,11 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		}
 	}
 
-	public void pullAssessmentTestSession(AssessmentTestSession session, UserCourseEnvironment assessedUserCourseenv, Identity coachingIdentity, Role by) {
+	public void pullAssessmentTestSession(AssessmentTestSession session, UserCourseEnvironment assessedUserCourseEnv, Identity coachingIdentity, Role by) {
 		Boolean visibility;
 		AssessmentEntryStatus assessmentStatus;
-		if(IQEditController.CORRECTION_MANUAL.equals(getModuleConfiguration().getStringValue(IQEditController.CONFIG_CORRECTION_MODE))) {
+		String correctionMode = getModuleConfiguration().getStringValue(IQEditController.CONFIG_CORRECTION_MODE);
+		if(IQEditController.CORRECTION_MANUAL.equals(correctionMode)) {
 			assessmentStatus = AssessmentEntryStatus.inReview;
 			visibility = Boolean.FALSE;
 		} else {
@@ -560,7 +563,13 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		ScoreEvaluation sceval = new ScoreEvaluation(session.getScore().floatValue(), session.getPassed(), assessmentStatus, visibility, 1.0d,
 				AssessmentRunStatus.done, session.getKey());
-		courseAssessmentService.updateScoreEvaluation(this, sceval, assessedUserCourseenv, coachingIdentity, true, by);
+		courseAssessmentService.updateScoreEvaluation(this, sceval, assessedUserCourseEnv, coachingIdentity, true, by);
+		
+		if(IQEditController.CORRECTION_GRADING.equals(correctionMode)) {
+			AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(this, assessedUserCourseEnv);
+			RepositoryEntry testEntry = IQEditController.getIQReference(getModuleConfiguration(), false);
+			CoreSpringFactory.getImpl(GradingService.class).assignGrader(testEntry, assessmentEntry, true);
+		}
 	}
 
 	/**
@@ -588,7 +597,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 				if (version == 1) {
 					// migrate V1 => V2, new parameter 'enableScoreInfo'
 					version = 2;
-					config.set(IQEditController.CONFIG_KEY_ENABLESCOREINFO, new Boolean(true));
+					config.set(IQEditController.CONFIG_KEY_ENABLESCOREINFO, Boolean.TRUE);
 				}
 				config.setConfigurationVersion(CURRENT_CONFIG_VERSION);
 			}

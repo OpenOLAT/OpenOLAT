@@ -36,6 +36,7 @@ import org.olat.ims.qti21.ui.assessment.event.NextAssessmentItemEvent;
 import org.olat.ims.qti21.ui.assessment.event.SelectAssessmentItemEvent;
 import org.olat.ims.qti21.ui.assessment.model.AssessmentItemCorrection;
 import org.olat.ims.qti21.ui.assessment.model.AssessmentItemListEntry;
+import org.olat.modules.grading.GradingTimeRecordRef;
 import org.olat.repository.RepositoryEntry;
 
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
@@ -62,13 +63,13 @@ public class CorrectionIdentityAssessmentItemNavigationController extends BasicC
 	public CorrectionIdentityAssessmentItemNavigationController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry testEntry, ResolvedAssessmentTest resolvedAssessmentTest,
 			AssessmentItemCorrection itemCorrection, AssessmentItemListEntry assessmentEntry,
-			List<? extends AssessmentItemListEntry> assessmentEntryList, CorrectionOverviewModel model) {
+			List<? extends AssessmentItemListEntry> assessmentEntryList, CorrectionOverviewModel model,
+			GradingTimeRecordRef gradingTimeRecord, boolean readOnly) {
 		super(ureq, wControl);
-		
 		mainVC = createVelocityContainer("corrections_navigation");
 		
-		itemCtrl = new CorrectionIdentityAssessmentItemController(ureq, wControl,
-				testEntry, resolvedAssessmentTest, itemCorrection, assessmentEntry, assessmentEntryList, model);
+		itemCtrl = new CorrectionIdentityAssessmentItemController(ureq, wControl, testEntry, resolvedAssessmentTest,
+				itemCorrection, assessmentEntry, assessmentEntryList, model, gradingTimeRecord, readOnly);
 		listenTo(itemCtrl);
 		mainVC.put("items", itemCtrl.getInitialComponent());
 		

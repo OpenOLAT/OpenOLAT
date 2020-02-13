@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.iq;
 
+import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
@@ -198,6 +199,13 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 	@Override
 	public boolean hasEditableDetails() {
 		return true;
+	}
+
+	@Override
+	public boolean isExternalGrading() {
+		return IQEditController.CORRECTION_GRADING.equals(courseNode.getModuleConfiguration()
+				.getStringValue(IQEditController.CONFIG_CORRECTION_MODE, IQEditController.CORRECTION_AUTO))
+				&& StringHelper.containsNonWhitespace((String)courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY));
 	}
 
 	@Override

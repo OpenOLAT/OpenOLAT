@@ -370,4 +370,46 @@ public class CalendarUtils {
 		return otherCal.get(Calendar.YEAR) == cal.get(Calendar.YEAR)
 				&& otherCal.get(Calendar.DAY_OF_YEAR) == cal.get(Calendar.DAY_OF_YEAR);
 	}
+	
+	public static long numOfDays(Date date1, Date date2) {
+		final double daysConst = 24 * 60 * 60 * 1000d;
+		final long milliSeconds = Math.abs(date2.getTime() - date1.getTime());
+		return Math.round(milliSeconds / daysConst);
+	}
+	
+	/**
+	 * The method only add days (doesn't not subtract them as
+	 * specified in the method name).
+	 * 
+	 * @param date The starting date
+	 * @param days Number of days to add
+	 * @return The changed date
+	 */
+	public static Date addWorkingDays(Date date, int days) {
+		if(days == 0) return date;
+		
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		for(int i=0; i<days; ) {
+	        cal.add(Calendar.DAY_OF_MONTH, 1);
+	        int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
+	        if(dayOfWeek != Calendar.SATURDAY && dayOfWeek != Calendar.SUNDAY) {
+	            i++;
+	        }
+	    }
+		return cal.getTime();
+	}
+	
+	
+	public static Long convertSecondsToMinutes(Long timeInSeconds) {
+		if(timeInSeconds != null && timeInSeconds.longValue() > 0) {
+			long d = timeInSeconds.longValue();
+			long rd = d / 60;
+			if(d % 60 != 0) {
+				rd++;
+			}
+			return rd;
+		}
+		return null;
+	}
 }

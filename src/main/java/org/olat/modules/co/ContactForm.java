@@ -140,7 +140,7 @@ public class ContactForm extends FormBasicController {
 	}
 		
 
-	protected void setSubject(final String defaultSubject) {
+	public void setSubject(final String defaultSubject) {
 		tsubject.setValue(defaultSubject);
 		tsubject.setEnabled(!readOnly);
 		tsubject.setMandatory(tsubject.isEnabled());
@@ -245,12 +245,12 @@ public class ContactForm extends FormBasicController {
 		String sep = "";
 		int i = 0;
 		int j = -1;
-		i = value.indexOf("[", j + 1);
-		j = value.indexOf("]", j + 2);
+		i = value.indexOf('[', j + 1);
+		j = value.indexOf(']', j + 2);
 		while (i > -1 && j > 0) {
 			String contactListName = value.substring(i + 1, j);
-			i = value.indexOf("[", j + 1);
-			j = value.indexOf("]", j + 2);
+			i = value.indexOf('[', j + 1);
+			j = value.indexOf(']', j + 2);
 			if (contactLists.containsKey(contactListName)) {
 				ContactList found = contactLists.get(contactListName);
 				retVal += sep + found.toString();
@@ -398,8 +398,8 @@ public class ContactForm extends FormBasicController {
 		tbody.getEditorConfiguration().setRelativeUrls(false);
 		tbody.getEditorConfiguration().setRemoveScriptHost(false);
 		
-		String VELOCITY_ROOT = Util.getPackageVelocityRoot(this.getClass());
-		uploadCont = FormLayoutContainer.createCustomFormLayout("file_upload_inner", getTranslator(), VELOCITY_ROOT + "/attachments.html");
+		String attachmentPage = Util.getPackageVelocityRoot(this.getClass()) + "/attachments.html";
+		uploadCont = FormLayoutContainer.createCustomFormLayout("file_upload_inner", getTranslator(), attachmentPage);
 		uploadCont.setRootForm(mainForm);
 		formLayout.add(uploadCont);
 		

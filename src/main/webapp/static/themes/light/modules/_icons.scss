@@ -28,6 +28,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_accepted:before { content: $fa-var-thumbs-up;}
 .o_icon_accessibility:before { content: $fa-var-wheelchair; }
 .o_icon_actions:before { content: $fa-var-gears;}
+.o_icon_activate:before { content: $fa-var-check-circle-o; }
 .o_icon_add_html:before { content: $fa-var-code; }
 .o_icon_align_left:before { content: $fa-var-align-left; }
 .o_icon_align_middle:before { content: $fa-var-align-center; }
@@ -104,6 +105,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_correction:before { content: $fa-var-pencil; }
 .o_icon_curriculum_element:before { content: $fa-var-cube; }
 .o_icon_customize:before { content: $fa-var-gear;}
+.o_icon_deactivate:before { content: $fa-var-ban; }
 .o_icon_delete_item:before { content: $fa-var-trash;}
 .o_icon_delete:before { content: $fa-var-minus-circle; color: #A87E7E;}
 .o_icon_deleted:before { content: $fa-var-trash;}
@@ -129,6 +131,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_expand:before { content: $fa-var-expand;}
 .o_icon_expenditure:before { content: $fa-var-clock-o;}
 .o_icon_export:before { content: $fa-var-share-square-o;}
+.o_icon_extend:before { content: $fa-var-refresh }
 .o_icon_external_link:before { content: $fa-var-external-link }
 .o_icon_extra_time:before { content: $fa-var-clock-o;}
 .o_icon_failed:before { content: $fa-var-times-circle;}
@@ -271,6 +274,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_replace:before { content: $fa-var-files-o; }
 .o_icon_reply:before { content: $fa-var-reply; }
 .o_icon_reply_with_quote:before { content: $fa-var-reply-all; }
+.o_icon_report:before { content: $fa-var-table; }
 .o_icon_reset:before { content: $fa-var-step-backward; }
 .o_icon_response_feedback:before { content: $fa-var-refresh; }
 .o_icon_restore:before { content: $fa-var-thumbs-up; }
@@ -596,6 +600,15 @@ $fa-css-prefix: "o_icon" !default;
 .o_green_led:before { content: $fa-var-circle; color: $brand-success; }
 .o_yellow_led:before { content: $fa-var-circle; color: $brand-warning; }
 .o_red_led:before { content: $fa-var-circle; color: $brand-danger; }
+
+/* grading */
+.o_grader_active:before { content: $fa-var-check-circle-o; color: $brand-success; }
+.o_grader_inactive:before { content: $fa-var-ban; color: $brand-danger; }
+.o_grader_absence:before { content: $fa-var-clock-o; color: $brand-warning; }
+.o_grad_assignment_unassigned:before { content: $fa-var-exclamation-circle; color: $brand-danger; }
+.o_grad_assignment_assigned:before { content: $fa-var-square-o; }
+.o_grad_assignment_inprocess:before { content: $fa-var-refresh; }
+.o_grad_assignment_done:before { content: $fa-var-check-square-o; }
 
 /* user */
 .o_icon_identity_permanent:before { content: $fa-var-lock; }
