@@ -56,7 +56,7 @@ public class GradingServiceTest extends OlatTestCase {
 	@Autowired
 	private AssessmentEntryDAO assessmentEntryDao;
 	@Autowired
-	private GradedToIdentityDAO gradedToIdentityDao;
+	private GraderToIdentityDAO gradedToIdentityDao;
 	@Autowired
 	private GradingTimeRecordDAO gradingTimesheetDao;
 	@Autowired

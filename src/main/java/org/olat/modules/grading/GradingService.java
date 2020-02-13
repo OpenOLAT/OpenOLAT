@@ -172,6 +172,15 @@ public interface GradingService {
 	public List<RepositoryEntry> getReferenceRepositoryEntriesWithGrading(Identity identity);
 	
 	/**
+	 * Return a list of repository entries with grading enabled and
+	 * where the specified identity is grader.
+	 * 
+	 * @param identity The grader which want to access the list
+	 * @return A list of entries (nothing fetched)
+	 */
+	public List<RepositoryEntry> getReferenceRepositoryEntriesAsGrader(IdentityRef grader);
+	
+	/**
 	 * Typically the courses which have this test for
 	 * grading purpose.
 	 * 

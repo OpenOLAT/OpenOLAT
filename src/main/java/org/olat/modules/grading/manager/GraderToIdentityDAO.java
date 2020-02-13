@@ -44,6 +44,7 @@ import org.olat.modules.grading.model.GradersSearchParameters;
 import org.olat.modules.grading.model.ReferenceEntryWithStatistics;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.resource.OLATResourceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -55,7 +56,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class GradedToIdentityDAO {
+public class GraderToIdentityDAO {
 	
 	@Autowired
 	private DB dbInstance;
@@ -114,6 +115,7 @@ public class GradedToIdentityDAO {
 		  .append(" inner join gradingconfiguration as config on (v.key=config.entry.key)")
 		  .append(" where membership.identity.key=:identityKey and membership.role ").in(GroupRoles.owner,
 				  OrganisationRoles.learnresourcemanager, OrganisationRoles.administrator, OrganisationRoles.principal)
+		  .append("  and v.status ").in(RepositoryEntryStatusEnum.preparationToPublished())
 		  .append("  and config.gradingEnabled=true")
 		  .append("  and exists (select oresname.key from ").append(OLATResourceImpl.class.getName()).append(" as oresname")
 		  .append("    where oresname.key=v.olatResource.key and oresname.resName=:resourceName")
@@ -141,6 +143,19 @@ public class GradedToIdentityDAO {
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
 				.setParameter("identityKey", identity.getKey())
+				.getResultList();
+	}
+	
+	public List<RepositoryEntry> getReferenceRepositoryEntriesAsGrader(IdentityRef grader) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select v from grader2identity as rel")
+		  .append(" inner join rel.entry as v")
+		  .append(" inner join v.olatResource as vResource")
+		  .append(" where rel.identity.key=:identityKey");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntry.class)
+				.setParameter("identityKey", grader.getKey())
 				.getResultList();
 	}
 	

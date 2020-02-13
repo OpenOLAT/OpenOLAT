@@ -113,7 +113,7 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, In
 	@Autowired
 	private CoordinatorManager coordinatorManager;
 	@Autowired
-	private GradedToIdentityDAO gradedToIdentityDao;
+	private GraderToIdentityDAO gradedToIdentityDao;
 	@Autowired
 	private GradingAssignmentDAO gradingAssignmentDao;
 	@Autowired
@@ -729,6 +729,12 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, In
 	@Override
 	public List<RepositoryEntry> getReferenceRepositoryEntriesWithGrading(Identity identity) {
 		List<RepositoryEntry> entries = gradedToIdentityDao.getReferenceRepositoryEntries(identity, ImsQTI21Resource.TYPE_NAME);
+		return new ArrayList<>(new HashSet<>(entries));
+	}
+
+	@Override
+	public List<RepositoryEntry> getReferenceRepositoryEntriesAsGrader(IdentityRef grader) {
+		List<RepositoryEntry> entries = gradedToIdentityDao.getReferenceRepositoryEntriesAsGrader(grader);
 		return new ArrayList<>(new HashSet<>(entries));
 	}
 

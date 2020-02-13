@@ -211,7 +211,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 		assessedUserPropertyHandlers = userManager.getUserPropertyHandlersFor(ASSESSED_PROPS_ID, isAdministrativeUser);
 		
-		searchCtrl = new AssignmentsSearchController(ureq, getWindowControl(), testEntry, grader, mainForm);
+		searchCtrl = new AssignmentsSearchController(ureq, getWindowControl(), testEntry, grader, myView, mainForm);
 		listenTo(searchCtrl);
 		
 		initForm(ureq);

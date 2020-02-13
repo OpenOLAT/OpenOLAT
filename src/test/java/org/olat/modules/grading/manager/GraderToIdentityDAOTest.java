@@ -59,7 +59,7 @@ public class GraderToIdentityDAOTest extends OlatTestCase {
 	@Autowired
 	private AssessmentEntryDAO assessmentEntryDao;
 	@Autowired
-	private GradedToIdentityDAO gradedToIdentityDao;
+	private GraderToIdentityDAO gradedToIdentityDao;
 	@Autowired
 	private GradingAssignmentDAO gradingAssignmentDao;
 	@Autowired
@@ -273,6 +273,28 @@ public class GraderToIdentityDAOTest extends OlatTestCase {
 		Assert.assertNotNull(referenceEntries);
 		Assert.assertEquals(1, referenceEntries.size());
 		Assert.assertEquals(entry, referenceEntries.get(0));
+	}
+	
+	@Test
+	public void getReferenceRepositoryEntriesAsGrader() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("grader-36");
+		Identity grader = JunitTestHelper.createAndPersistIdentityAsRndUser("grader-37");
+		RepositoryEntry entry1 = JunitTestHelper.createRandomRepositoryEntry(author);
+		RepositoryEntry entry2 = JunitTestHelper.createRandomRepositoryEntry(author);
+		GraderToIdentity relation1 = gradedToIdentityDao.createRelation(entry1, grader);
+		GraderToIdentity relation2 = gradedToIdentityDao.createRelation(entry2, grader);
+		dbInstance.commitAndCloseSession();
+		
+		List<RepositoryEntry> graderEntries = gradedToIdentityDao.getReferenceRepositoryEntriesAsGrader(grader);
+		Assert.assertNotNull(graderEntries);
+		Assert.assertEquals(2, graderEntries.size());
+		Assert.assertTrue(graderEntries.contains(entry1));
+		Assert.assertTrue(graderEntries.contains(entry2));
+		Assert.assertNotNull(relation1);
+		Assert.assertNotNull(relation2);
+		
+		List<RepositoryEntry> authorEntries = gradedToIdentityDao.getReferenceRepositoryEntriesAsGrader(author);
+		Assert.assertTrue(authorEntries.isEmpty());
 	}
 	
 	@Test

@@ -30,27 +30,29 @@ import org.olat.core.util.mail.MailTemplate;
 
 /**
  * 
+ * Initial date: 13 févr. 2020<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class ImportGrader1ChooseMemberStep extends BasicStep {
+public class ImportGrader3SearchResourceStep extends BasicStep {
 	
 	private final ImportGraders graders;
 	
-	public ImportGrader1ChooseMemberStep(UserRequest ureq, ImportGraders graders,
-			MailTemplate mailTemplate, boolean searchResource) {
+	public ImportGrader3SearchResourceStep(UserRequest ureq, ImportGraders graders, MailTemplate mailTemplate) {
 		super(ureq);
 		this.graders = graders;
-		setNextStep(new ImportGrader2ConfirmMemberChoiceStep(ureq, graders, mailTemplate, searchResource));
-		setI18nTitleAndDescr("import.choose.title", "import.choose.title");
+		setNextStep(new ImportGrader5MailStep(ureq, graders, mailTemplate));
+		setI18nTitleAndDescr("import.search.resource.title", "import.search.resource.title");
 	}
 
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return new PrevNextFinishConfig(false, true, false);
+		return new PrevNextFinishConfig(true, true, false);
 	}
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new ImportGraderBySearchController(ureq, wControl, graders, form, runContext);
+		return new SearchResourceListController(ureq, wControl, graders, form, runContext);
 	}
+
 }

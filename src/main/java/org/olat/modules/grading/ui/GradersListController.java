@@ -318,22 +318,15 @@ public class GradersListController extends FormBasicController {
 	
 	private void doAddGrader(UserRequest ureq) {
 		removeAsListenerAndDispose(importGradersWizard);
-		if(referenceEntry == null) {
-			
-		} else {
-			doAddGraderWithPreSelectedReferenceEntry(ureq, referenceEntry);
-		}
-	}
 
-	private void doAddGraderWithPreSelectedReferenceEntry(UserRequest ureq, RepositoryEntry testEntry) {
-		final ImportGraders graders = new ImportGraders(testEntry);
-		GraderMailTemplate mailTemplate = new GraderMailTemplate(null, null, testEntry);
-		Step start = new ImportGrader1ChooseMemberStep(ureq, graders, mailTemplate);
+		final ImportGraders graders = new ImportGraders(referenceEntry);
+		GraderMailTemplate mailTemplate = new GraderMailTemplate(null, null, referenceEntry);
+		Step start = new ImportGrader1ChooseMemberStep(ureq, graders, mailTemplate, referenceEntry == null);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			List<Identity> futureGraders = graders.getGraders();
 			if(!futureGraders.isEmpty()) {
 				MailerResult result = new MailerResult();
-				gradingService.addGraders(testEntry, futureGraders, mailTemplate, result);
+				gradingService.addGraders(graders.getEntry(), futureGraders, mailTemplate, result);
 			}
 			return StepsMainRunController.DONE_MODIFIED;
 		};

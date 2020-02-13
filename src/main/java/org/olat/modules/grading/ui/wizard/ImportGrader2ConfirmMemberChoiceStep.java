@@ -36,10 +36,15 @@ public class ImportGrader2ConfirmMemberChoiceStep extends BasicStep {
 	
 	private final ImportGraders graders;
 	
-	public ImportGrader2ConfirmMemberChoiceStep(UserRequest ureq, ImportGraders graders, MailTemplate mailTemplate) {
+	public ImportGrader2ConfirmMemberChoiceStep(UserRequest ureq,
+			ImportGraders graders, MailTemplate mailTemplate, boolean searchResource) {
 		super(ureq);
 		this.graders = graders;
-		setNextStep(new ImportGrader3MailStep(ureq, graders, mailTemplate));
+		if(searchResource) {
+			setNextStep(new ImportGrader3SearchResourceStep(ureq, graders, mailTemplate));
+		} else {
+			setNextStep(new ImportGrader5MailStep(ureq, graders, mailTemplate));
+		}
 		setI18nTitleAndDescr("import.confirm.title", "import.confirm.title");
 	}
 

@@ -33,12 +33,12 @@ import org.olat.core.util.mail.MailTemplate;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class ImportGrader3MailStep extends BasicStep {
+public class ImportGrader5MailStep extends BasicStep {
 
 	private final ImportGraders graders;
 	private final MailTemplate mailTemplate;
 	
-	public ImportGrader3MailStep(UserRequest ureq, ImportGraders graders, MailTemplate mailTemplate) {
+	public ImportGrader5MailStep(UserRequest ureq, ImportGraders graders, MailTemplate mailTemplate) {
 		super(ureq);
 		this.graders = graders;
 		this.mailTemplate = mailTemplate;
