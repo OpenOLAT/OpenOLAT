@@ -64,8 +64,9 @@ public class StudentsTableDataModel extends DefaultFlexiTableDataModel<StudentSt
 						.filter(entry ->  entry.getIdentityKey().equals(identityKey))
 						.collect(Collectors.toList());
 				} else {
+					final String loweredSearchString = searchString.toLowerCase();
 					filteredList = backupList.stream()
-						.filter(entry -> StudentListProvider.contains(searchString, entry))
+						.filter(entry -> StudentListProvider.contains(loweredSearchString, entry))
 						.collect(Collectors.toList());
 				}
 				super.setObjects(filteredList);
