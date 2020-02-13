@@ -31,13 +31,19 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.course.CourseFactory;
+import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.DrawingInteraction;
@@ -70,13 +76,17 @@ public class CorrectionOverviewModel {
 
 	private Map<Identity,AssessmentTestSession> lastSessions;
 	private final Map<AssessmentTestSession,Identity> reversedLastSessions = new HashMap<>();
+	private final Map<Identity,Boolean> assessedIdentitiesDone = new HashMap<>();
 	
-	private final QTI21Service qtiService;
+	@Autowired
+	private QTI21Service qtiService;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	public CorrectionOverviewModel(RepositoryEntry courseEntry, IQTESTCourseNode courseNode, RepositoryEntry testEntry,
 			ResolvedAssessmentTest resolvedAssessmentTest, ManifestBuilder manifestBuilder,
 			Map<Identity,AssessmentTestSession> lastSessions, Map<Identity, TestSessionState> testSessionStates) {
-		qtiService = CoreSpringFactory.getImpl(QTI21Service.class);
+		CoreSpringFactory.autowireObject(this);
 		this.courseEntry = courseEntry;
 		this.courseNode = courseNode;
 		this.testEntry = testEntry;
@@ -94,7 +104,7 @@ public class CorrectionOverviewModel {
 	public CorrectionOverviewModel(RepositoryEntry courseEntry, IQTESTCourseNode courseNode, RepositoryEntry testEntry,
 			ResolvedAssessmentTest resolvedAssessmentTest, ManifestBuilder manifestBuilder,
 			List<Identity> assessedIdentities) {
-		qtiService = CoreSpringFactory.getImpl(QTI21Service.class);
+		CoreSpringFactory.autowireObject(this);
 		this.courseEntry = courseEntry;
 		this.courseNode = courseNode;
 		this.testEntry = testEntry;
@@ -232,5 +242,18 @@ public class CorrectionOverviewModel {
 	
 	public ManifestMetadataBuilder getMetadata(AssessmentItemRef itemRef) {
 		return manifestBuilder.getResourceBuilderByHref(itemRef.getHref().toString());
+	}
+	
+	public boolean isReadOnly(Identity assessedIdentity) {
+		Boolean done = assessedIdentitiesDone.computeIfAbsent(assessedIdentity, identity -> {
+			if(getCourseNode() != null) {
+				UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
+					.createAndInitUserCourseEnvironment(assessedIdentity, getCourseEnvironment());
+				AssessmentEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(getCourseNode(), assessedUserCourseEnv);
+				return scoreEval != null && scoreEval.getAssessmentStatus() == AssessmentEntryStatus.done;
+			}
+			return Boolean.FALSE;
+		});
+		return done != null && done.booleanValue();
 	}
 }

@@ -72,6 +72,7 @@ import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.nodes.iq.QTI21AssessmentRunController;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
@@ -177,9 +178,9 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		entry = assessableEntry;
 		this.stackPanel = stackPanel;
 		this.courseNode = courseNode;
+		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		subIdent = courseNode.getIdent();
 		readOnly = coachCourseEnv.isCourseReadOnly();
-		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		testEntry = courseNode.getReferencedRepositoryEntry();
 		assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
 		manualCorrections = qtiService.needManualCorrection(testEntry)
@@ -238,7 +239,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("results.report"), "open"),
 							new StaticFlexiCellRenderer(translate("pull"), "open"))));
 		}
-		if(manualCorrections && !readOnly) {
+		if(manualCorrections) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.correction.i18nHeaderKey(), TSCols.correction.ordinal(), "correction",
 					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("correction"), "correction"), null)));
 		}
@@ -422,11 +423,23 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		lastSessions.put(assessedIdentity, session);
 		Map<Identity, TestSessionState> testSessionStates = new HashMap<>();
 		testSessionStates.put(assessedIdentity, testSessionState);
+		boolean assessmentEntryDone = isCorrectionReadOnly();
 		CorrectionOverviewModel model = new CorrectionOverviewModel(entry, courseNode, testEntry,
 				resolvedAssessmentTest, manifestBuilder, lastSessions, testSessionStates);
-		correctionCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel, model, assessedIdentity);
+		correctionCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel,
+				model, assessedIdentity, assessmentEntryDone);
 		listenTo(correctionCtrl);
 		stackPanel.pushController(translate("correction"), correctionCtrl);
+	}
+	
+	private boolean isCorrectionReadOnly() {
+		if(readOnly) return true;
+		
+		if(assessedUserCourseEnv != null) {
+			AssessmentEvaluation eval = assessedUserCourseEnv.getScoreAccounting().getScoreEvaluation(courseNode);
+			return eval != null && eval.getAssessmentStatus() == AssessmentEntryStatus.done;
+		}
+		return false;
 	}
 	
 	private void doUpdateCourseNode(AssessmentTestSession session, AssessmentTest assessmentTest, AssessmentEntryStatus entryStatus) {

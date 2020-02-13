@@ -125,14 +125,14 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 	private UserManager userManager;
 	
 	public CorrectionIdentityAssessmentItemListController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
-			CorrectionOverviewModel model, Identity assessedIdentity) {
+			CorrectionOverviewModel model, Identity assessedIdentity, boolean readOnly) {
 		super(ureq, wControl, "correction_identity_assessment_item_list");
 		
 		this.stackPanel = stackPanel;
 		this.model = model;
+		this.readOnly = readOnly;
 		this.assessedIdentity = assessedIdentity;
 		saveEnabled = true;
-		readOnly = false;
 		title = userManager.getUserDisplayName(assessedIdentity);
 		
 		initForm(ureq);
@@ -158,15 +158,15 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 	}
 	
 	public CorrectionIdentityAssessmentItemListController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
-			CorrectionOverviewModel model, Identity assessedIdentity, String title) {
+			CorrectionOverviewModel model, Identity assessedIdentity, String title, boolean readOnly) {
 		super(ureq, wControl, "correction_identity_assessment_item_list");
 		this.stackPanel = stackPanel;
 		this.model = model;
 		this.title = title;
+		this.readOnly = readOnly;
 		this.assessedIdentity = assessedIdentity;
 		saveEnabled = false;
-		readOnly = false;
-		
+
 		initForm(ureq);
 		loadModel(true);
 	}
@@ -207,7 +207,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 		tableEl.setAndLoadPersistedPreferences(ureq, "corr-identity-assessment-item-list");
 		
 		backLink = uifactory.addFormLink("back", formLayout, Link.LINK_BACK);
-		if(saveEnabled) {
+		if(saveEnabled && !readOnly) {
 			saveButton = uifactory.addFormLink("save.tests", formLayout, Link.BUTTON);
 		} else {
 			backOverviewButton = uifactory.addFormLink("back.overview", formLayout, Link.BUTTON);

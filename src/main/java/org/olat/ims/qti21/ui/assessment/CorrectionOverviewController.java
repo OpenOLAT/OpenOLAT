@@ -60,6 +60,8 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 
 /**
+ * The overview to correct all the users of a course element.
+ * 
  * 
  * Initial date: 26 févr. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
