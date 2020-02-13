@@ -61,8 +61,17 @@ public class GraderMailTemplate extends MailTemplate {
 		this.referenceEntry = referenceEntry;
 	}
 	
-	public GraderMailTemplate(String subject, String body, RepositoryEntry entry, CourseNode courseNode, RepositoryEntry referenceEntry) {
+	public GraderMailTemplate(String name, RepositoryEntry entry, CourseNode courseNode, RepositoryEntry referenceEntry) {
+		super(null, null, null);
+		setTemplateName(name);
+		this.entry = entry;
+		this.courseNode = courseNode;
+		this.referenceEntry = referenceEntry;
+	}
+	
+	public GraderMailTemplate(String templateName, String subject, String body, RepositoryEntry entry, CourseNode courseNode, RepositoryEntry referenceEntry) {
 		super(subject, body, null);
+		setTemplateName(templateName);
 		this.entry = entry;
 		this.courseNode = courseNode;
 		this.referenceEntry = referenceEntry;

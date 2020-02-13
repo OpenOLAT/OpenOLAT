@@ -123,6 +123,41 @@ public class GradingAssignmentDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void loadFullByKey() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("assignment-author1");
+		Identity grader = JunitTestHelper.createAndPersistIdentityAsRndUser("assignment-grader-2");
+		Identity student = JunitTestHelper.createAndPersistIdentityAsRndUser("assignment-student-3");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+		GraderToIdentity relation = gradedToIdentityDao.createRelation(entry, grader);
+		dbInstance.commitAndCloseSession();
+		
+		AssessmentEntry assessment = assessmentEntryDao
+				.createAssessmentEntry(student, null, entry, null, false, entry);
+		Assert.assertNotNull(assessment);
+		dbInstance.commitAndCloseSession();
+		
+		GradingAssignment assignment = gradingAssignmentDao.createGradingAssignment(relation, entry, assessment, new Date(), new Date());
+		dbInstance.commit();
+		
+		GradingAssignment reloadedAssignment = gradingAssignmentDao.loadFullByKey(assignment.getKey());
+		dbInstance.commitAndCloseSession();
+		
+		// grader and identity of grader are fetched
+		Assert.assertNotNull(reloadedAssignment);
+		Assert.assertEquals(assignment, reloadedAssignment);
+		Assert.assertEquals(relation, reloadedAssignment.getGrader());
+		Assert.assertEquals(grader, reloadedAssignment.getGrader().getIdentity());
+		Assert.assertNotNull(reloadedAssignment.getGrader().getIdentity().getUser());
+		// reference entry is fetch
+		Assert.assertNotNull(reloadedAssignment.getReferenceEntry());
+		Assert.assertNotNull(reloadedAssignment.getReferenceEntry().getDisplayname());
+		// assessment entry repository entry is fetch
+		Assert.assertNotNull(reloadedAssignment.getAssessmentEntry());
+		Assert.assertNotNull(reloadedAssignment.getAssessmentEntry().getRepositoryEntry());
+		Assert.assertNotNull(reloadedAssignment.getAssessmentEntry().getRepositoryEntry().getDisplayname());
+	}
+	
+	@Test
 	public void getEntries_repositoryEntries() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("assignment-author1");
 		Identity grader = JunitTestHelper.createAndPersistIdentityAsRndUser("assignment-grader-2");

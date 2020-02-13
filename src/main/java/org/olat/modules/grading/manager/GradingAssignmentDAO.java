@@ -117,6 +117,10 @@ public class GradingAssignmentDAO {
 				.getResultList();
 	}
 	
+	/**
+	 * @param key The assignment primary key
+	 * @return The assignment with the grader's identity fetched
+	 */
 	public GradingAssignment loadByKey(Long key) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select assignment from gradingassignment as assignment")
@@ -131,6 +135,32 @@ public class GradingAssignmentDAO {
 				.getResultList();
 		return assignments == null || assignments.isEmpty() ? null : assignments.get(0);
 	}
+	
+	/**
+	 * @param key The assignment primary key
+	 * @return The assignment with the grader's identity fetched, reference entry,
+	 * 		assessment entry, repository entry in assessment entry
+	 */
+	public GradingAssignment loadFullByKey(Long key) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select assignment from gradingassignment as assignment")
+		  .append(" left join fetch assignment.grader as grader")
+		  .append(" left join fetch grader.identity as graderIdent")
+		  .append(" left join fetch graderIdent.user as graderUser")
+		  .append(" left join fetch assignment.referenceEntry as refEntry")
+		  .append(" left join fetch refEntry.olatResource as refEntryResource")
+		  .append(" left join fetch assignment.assessmentEntry as assessmentEntry")
+		  .append(" left join fetch assessmentEntry.repositoryEntry as assessmentRe")
+		  .append(" left join fetch assessmentRe.olatResource as assessmentReResource")
+		  .append(" where assignment.key=:assignmentKey");
+		
+		List<GradingAssignment> assignments = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), GradingAssignment.class)
+				.setParameter("assignmentKey", key)
+				.getResultList();
+		return assignments == null || assignments.isEmpty() ? null : assignments.get(0);
+	}
+	
 	
 	public List<RepositoryEntry> getEntries(RepositoryEntryRef referenceEntry) {
 		QueryBuilder sb = new QueryBuilder();

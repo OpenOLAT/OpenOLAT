@@ -28,7 +28,6 @@ package org.olat.modules.co;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
@@ -41,12 +40,14 @@ import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -60,6 +61,7 @@ import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.EmailAddressValidator;
 import org.olat.core.util.mail.MailModule;
+import org.olat.core.util.mail.MailTemplate;
 import org.olat.user.UserManager;
 
 /**
@@ -107,12 +109,15 @@ public class ContactForm extends FormBasicController {
 	private boolean hasMsgSave=true;
 	private static final String NLS_CONTACT_SEND_CP_FROM = "contact.cp.from";
 	private SelectionElement tcpfrom;
+	private static final String NLS_CONTACT_TEMPLATES = "contact.templates";
+	private SingleSelection templateEl;
 	private Identity emailFrom;
 	private File attachementTempDir;
 	private long attachmentSize = 0l;
+	private List<MailTemplate> mailTemplates;
 	private Map<String,String> attachmentCss = new HashMap<>();
 	private Map<String,String> attachmentNames = new HashMap<>();
-	private Map<String,ContactList> contactLists = new Hashtable<>();
+	private Map<String,ContactList> contactLists = new HashMap<>();
 	
 	private final UserManager userManager;
 
@@ -137,8 +142,7 @@ public class ContactForm extends FormBasicController {
 		this.contactAttachmentMaxSizeInMb = CoreSpringFactory.getImpl(MailModule.class).getMaxSizeForAttachement();
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		initForm(ureq);
-	}
-		
+	}	
 
 	public void setSubject(final String defaultSubject) {
 		tsubject.setValue(defaultSubject);
@@ -152,6 +156,29 @@ public class ContactForm extends FormBasicController {
 		ttoBig.setValue("");
 		for (ContactList contactList : recipientsLists) {
 			addEmailTo(contactList);
+		}
+	}
+	
+	public void setTemplates(List<MailTemplate> templates) {
+		this.mailTemplates = templates;
+		if(templates == null || templates.isEmpty()) {
+			templateEl.setVisible(false);
+		} else {
+			templateEl.setVisible(templates.size() > 1);
+			templateEl.setAllowNoSelection(templates.size() == 1);
+			
+			KeyValues templatesKeyValues = new KeyValues();
+			for(int i=0; i<templates.size(); i++) {
+				String templateName = templates.get(i).getTemplateName();
+				if(!StringHelper.containsNonWhitespace(templateName)) {
+					templateName = Integer.toString(i);
+				}
+				templatesKeyValues.add(KeyValues.entry(Integer.toString(i), templateName));
+			}
+			String[] templateKeys = templatesKeyValues.keys();
+			templateEl.setKeysAndValues(templatesKeyValues.keys(), templatesKeyValues.values(), null);
+			templateEl.select(templateKeys[0], true);
+			selectTemplate(0);
 		}
 	}
 
@@ -268,6 +295,22 @@ public class ContactForm extends FormBasicController {
  		return tbody.getValue(FilterFactory.getSmileysCssToDataUriFilter());
 	}
  	
+ 	public MailTemplate getTemplate() {
+ 		if(mailTemplates == null || mailTemplates.isEmpty()) {
+ 			return null;
+ 		}
+ 		if(mailTemplates.size() == 1) {
+ 			return mailTemplates.get(0);
+ 		}
+ 		if(templateEl.isVisible() && templateEl.isOneSelected()) {
+ 			int selected = templateEl.getSelected();
+ 			if(selected >= 0 && selected < mailTemplates.size()) {
+ 				return mailTemplates.get(selected);
+ 			}
+ 		}
+ 		return null;
+ 	}
+ 	
  	public File[] getAttachments() {
  		List<File> attachments = new ArrayList<>();
  		for(FormLink removeLink : attachmentLinks) {
@@ -363,8 +406,20 @@ public class ContactForm extends FormBasicController {
 				uploadCont.setLabel(null, null);
 				attachmentEl.setLabel(NLS_CONTACT_ATTACHMENT, null);
 			}
+		} else if(templateEl == source) {
+			if(templateEl.isOneSelected() && StringHelper.isLong(templateEl.getSelectedKey())) {
+				selectTemplate(Integer.parseInt(templateEl.getSelectedKey()));
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void selectTemplate(int index) {
+		if(index >= 0 && index < mailTemplates.size()) {
+			MailTemplate template = mailTemplates.get(index);
+			setSubject(template.getSubjectTemplate());
+			setBody(template.getBodyTemplate());
+		}
 	}
 
 	@Override
@@ -372,6 +427,12 @@ public class ContactForm extends FormBasicController {
 		formLayout.setElementCssClass("o_sel_contact_form");
 		
 		setFormTitle("header.newcntctmsg");
+		
+		templateEl = uifactory.addDropdownSingleselect("ttemplates", NLS_CONTACT_TEMPLATES, formLayout, new String[0], new String[0]);
+		templateEl.setVisible(false);
+		templateEl.setAllowNoSelection(true);
+		templateEl.addActionListener(FormEvent.ONCHANGE);
+		
 		String fullName = userManager.getUserDisplayName(emailFrom);
 		if(StringHelper.containsNonWhitespace(fullName)) {
 			fullName = "[" + fullName + "]";
@@ -408,18 +469,17 @@ public class ContactForm extends FormBasicController {
 		attachmentEl.addActionListener(FormEvent.ONCHANGE);
 		attachmentEl.setExampleKey(NLS_CONTACT_ATTACHMENT_EXPL, new String[]{Integer.toString(contactAttachmentMaxSizeInMb)});
 		
-
 		tcpfrom = uifactory.addCheckboxesVertical("tcpfrom", "", formLayout, new String[]{"xx"}, new String[]{translate(NLS_CONTACT_SEND_CP_FROM)}, 1);
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
 		buttonGroupLayout.setElementCssClass("o_sel_contact_buttons");
 		formLayout.add(buttonGroupLayout);
 		
-		if(hasMsgSave) {
-			uifactory.addFormSubmitButton("msg.save", buttonGroupLayout);
-		}
 		if (hasMsgCancel) {
 			uifactory.addFormCancelButton("msg.cancel", buttonGroupLayout, ureq, getWindowControl());
+		}
+		if(hasMsgSave) {
+			uifactory.addFormSubmitButton("msg.save", buttonGroupLayout);
 		}
 	}
 

@@ -387,6 +387,7 @@ public class GradersListController extends FormBasicController {
 
 		MailTemplate template = new GraderMailTemplate(null, null, null);
 		contactGraderCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, msg, template);
+		contactGraderCtrl.getAndRemoveTitle();
 		listenTo(contactGraderCtrl);
 		
 		String graderName = userManager.getUserDisplayName(row.getGrader());

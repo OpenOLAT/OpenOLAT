@@ -504,7 +504,7 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 			cmsg.addEmailTo(contactList);
 			// preset body template from i18n
 			cmsg.setBodyText(createBodyTemplate());
-			emailController = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg, null);
+			emailController = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg);
 			listenTo(emailController);
 			
 			String title = translate("members.email.title");

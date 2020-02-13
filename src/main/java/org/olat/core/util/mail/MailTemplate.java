@@ -45,6 +45,7 @@ import org.olat.core.id.Identity;
  *         http://www.frentix.com
  */
 public abstract class MailTemplate {
+	private String templateName;
 	private String subjectTemplate;
 	private String bodyTemplate;
 	private File[] attachments;
@@ -64,6 +65,24 @@ public abstract class MailTemplate {
 		this.context = new VelocityContext();
 		this.cpfrom = true;
 	}
+	
+	/**
+	 * @return A name for UI
+	 */
+	public String getTemplateName() {
+		return templateName;
+	}
+
+	/**
+	 * Only used for UI
+	 * 
+	 * @param templateName The name of the template
+	 */
+	public void setTemplateName(String templateName) {
+		this.templateName = templateName;
+	}
+
+
 
 	/**
 	 * @return

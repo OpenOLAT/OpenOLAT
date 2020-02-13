@@ -26,6 +26,7 @@
 package org.olat.modules.co;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -91,15 +92,19 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ContactFormController extends BasicController {
 
-	private ContactForm cntctForm;
+	private final ContactForm cntctForm;
 	private DialogBoxController noUsersErrorCtr;
 
 	private Object userObject;
 	private Identity emailFrom;
-	private MailTemplate template;
+	private List<MailTemplate> templates;
 	
 	@Autowired
 	private MailManager mailService;
+	
+	public ContactFormController(UserRequest ureq, WindowControl windowControl, boolean isCanceable, boolean isReadonly, boolean hasRecipientsEditable, ContactMessage cmsg) {
+		this(ureq, windowControl, isCanceable, isReadonly, hasRecipientsEditable, cmsg, Collections.emptyList());
+	}
 	
 	/**
 	 * 
@@ -113,17 +118,28 @@ public class ContactFormController extends BasicController {
 	 */
 	public ContactFormController(UserRequest ureq, WindowControl windowControl, boolean isCanceable, boolean isReadonly, boolean hasRecipientsEditable,
 			ContactMessage cmsg, MailTemplate template) {
+		this(ureq, windowControl, isCanceable, isReadonly, hasRecipientsEditable, cmsg,
+				template == null ? null : Collections.singletonList(template));
+	}
+	
+	public ContactFormController(UserRequest ureq, WindowControl windowControl, boolean isCanceable, boolean isReadonly, boolean hasRecipientsEditable,
+			ContactMessage cmsg, List<MailTemplate> templates) {
 		super(ureq, windowControl);
 		
-		this.template = template;
+		this.templates = templates;
 		//init email form
 		emailFrom = cmsg.getFrom();
 		
-		cntctForm = new ContactForm(ureq, windowControl, emailFrom, isReadonly,isCanceable,hasRecipientsEditable);
+		cntctForm = new ContactForm(ureq, windowControl, emailFrom, isReadonly, isCanceable, hasRecipientsEditable);
 		listenTo(cntctForm);
 		
 		List<ContactList> recipList = cmsg.getEmailToContactLists();
 		boolean hasAtLeastOneAddress = hasAtLeastOneAddress(recipList);
+		
+		if(templates != null && !templates.isEmpty()) {
+			cntctForm.setTemplates(templates);
+		}
+		MailTemplate template = templates != null && templates.size() == 1 ? templates.get(0) : null;
 		if(StringHelper.containsNonWhitespace(cmsg.getBodyText())) {
 			cntctForm.setBody(cmsg.getBodyText());
 		} else if(template != null && StringHelper.containsNonWhitespace(template.getBodyTemplate())) {
@@ -148,26 +164,26 @@ public class ContactFormController extends BasicController {
 		this.userObject = userObject;
 	}
 	
+	public String getAndRemoveTitle() {
+		return cntctForm.getAndRemoveFormTitle();
+	}
+	
 	public void setContactFormTitle(String translatedTitle) {
-		if(cntctForm != null) {
-			cntctForm.setFormTranslatedTitle(translatedTitle);
-		}
+		cntctForm.setFormTranslatedTitle(translatedTitle);
 	}
 	
 	public void setContactFormDescription(String translatedDescription) {
-		if(cntctForm != null) {
-			cntctForm.setFormTranslatedDescription(translatedDescription);
-		}
+		cntctForm.setFormTranslatedDescription(translatedDescription);
 	}
 
 	private boolean hasAtLeastOneAddress(List<ContactList> recipList) {
 		boolean hasAtLeastOneAddress = false;
-		if (recipList != null && recipList.size() > 0 ) {
+		if (recipList != null && !recipList.isEmpty()) {
 			for (ContactList cl: recipList) {
 				if (!hasAtLeastOneAddress && cl != null && cl.hasAddresses()) {
 					hasAtLeastOneAddress = true;
 				}
-				if (cl.hasAddresses()) {
+				if (cl != null && cl.hasAddresses()) {
 					cntctForm.addEmailTo(cl);
 				}
 			}
@@ -176,23 +192,15 @@ public class ContactFormController extends BasicController {
 	}
 	
 	public String getSubject() {
-		if(cntctForm != null) {
-			return cntctForm.getSubject();
-		}
-		return null;
+		return cntctForm.getSubject();
 	}
 	
 	public String getBody() {
-		if(cntctForm != null) {
-			return cntctForm.getBody();
-		}
-		return null;
+		return cntctForm.getBody();
 	}
 	
 	public void setRecipientsLists(List<ContactList> recipientsLists) {
-		if (cntctForm != null) {
-			cntctForm.setRecipientsLists(recipientsLists);
-		}	
+		cntctForm.setRecipientsLists(recipientsLists);
 	}
 
 	private void init(UserRequest ureq, boolean hasAtLeastOneAddress, List<Identity> disabledIdentities) {
@@ -246,10 +254,16 @@ public class ContactFormController extends BasicController {
 	private MailBundle createBundle(MailerResult result) {
 		MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
 		MailBundle bundle;
-		if(template == null) {
+		if(templates == null || templates.isEmpty()) {
 			bundle = new MailBundle(context);
 			bundle.setContent(cntctForm.getSubject(), cntctForm.getBody(), cntctForm.getAttachments());
 		} else {
+			MailTemplate template;
+			if(templates.size() == 1) {
+				template = templates.get(0);
+			} else {
+				template = cntctForm.getTemplate();
+			}
 			template.setSubjectTemplate(cntctForm.getSubject());
 			template.setBodyTemplate(cntctForm.getBody());
 			template.setAttachments(cntctForm.getAttachments());

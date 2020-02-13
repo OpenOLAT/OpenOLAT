@@ -384,7 +384,7 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		cmsg.addEmailTo(contactList);
 		cmsg.setSubject(translate("appeal.subject", args));
 		cmsg.setBodyText(body.toString());
-		appealCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg, null);
+		appealCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg);
 		appealCtrl.setUserObject(row);
 		appealCtrl.setContactFormTitle(translate("new.appeal.title"));
 		listenTo(appealCtrl);

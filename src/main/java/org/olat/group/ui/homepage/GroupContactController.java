@@ -57,7 +57,7 @@ public class GroupContactController extends BasicController {
 		// per default contact the group owners.
 		if (businessGroupService.countMembers(businessGroup, GroupRoles.coach.name()) != 0) {
 			ContactMessage contactMessage = createContactMessage(ureq.getIdentity(), "form.to.owners", businessGroup);
-			contactForm = new ContactFormController(ureq, getWindowControl(), false, false, false, contactMessage, null);
+			contactForm = new ContactFormController(ureq, getWindowControl(), false, false, false, contactMessage);
 			listenTo(contactForm);
 			content.put("contactForm",	contactForm.getInitialComponent());
 		} else {

@@ -48,6 +48,7 @@ public class ImportGraderMailController extends StepFormBasicController {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "mail_template");
 		this.mailTemplate = mailTemplate;
 		mailCtrl = new ContactForm(ureq, getWindowControl(), rootForm, getIdentity(), false, false, false, false);
+		mailCtrl.getAndRemoveFormTitle();
 		mailCtrl.setSubject(mailTemplate.getSubjectTemplate());
 		mailCtrl.setBody(mailTemplate.getBodyTemplate());
 		mailCtrl.setRecipientsLists(Collections.singletonList(contactList));

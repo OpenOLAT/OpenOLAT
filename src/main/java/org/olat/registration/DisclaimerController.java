@@ -263,7 +263,7 @@ public class DisclaimerController extends BasicController {
 		contact.add(mailAddress);
 		contactMessage.addEmailTo(contact);
 
-		contactCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, contactMessage, null);
+		contactCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, contactMessage);
 		listenTo(contactCtrl);
 		
 		String title = translate("request.delete.account");

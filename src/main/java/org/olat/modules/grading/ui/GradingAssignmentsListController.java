@@ -718,8 +718,9 @@ public class GradingAssignmentsListController extends FormBasicController implem
 			
 			RepositoryEntry entry = entries.size() == 1 ? entries.iterator().next() : null;
 			RepositoryEntry referenceEntry = referenceEntries.size() == 1 ? referenceEntries.iterator().next() : null; 
-			MailTemplate template = new GraderMailTemplate(entry, null, referenceEntry);
-			contactGraderCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, msg, template);
+			List<MailTemplate> templates = getTemplates(entry, referenceEntry);
+			contactGraderCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, msg, templates);
+			contactGraderCtrl.getAndRemoveTitle();
 			listenTo(contactGraderCtrl);
 			
 			String graderName = getGradersNames(assignmentRows);
@@ -741,8 +742,9 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		AssessmentEntry assessmentEntry = assignment.getAssessmentEntry();
 		RepositoryEntry entry = assessmentEntry.getRepositoryEntry();
 		
-		MailTemplate template = new GraderMailTemplate(entry, null, referenceEntry);
-		contactGraderCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, msg, template);
+		List<MailTemplate> templates = getTemplates(entry, referenceEntry);
+		contactGraderCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, msg, templates);
+		contactGraderCtrl.getAndRemoveTitle();
 		listenTo(contactGraderCtrl);
 		
 		String graderName = userManager.getUserDisplayName(row.getGrader());
@@ -750,6 +752,18 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		cmc = new CloseableModalController(getWindowControl(), "close", contactGraderCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();	
+	}
+	
+	private List<MailTemplate> getTemplates(RepositoryEntry entry, RepositoryEntry referenceEntry) {
+		List<MailTemplate> templates = new ArrayList<>();
+		templates.add(new GraderMailTemplate(translate("template.empty"), entry, null, referenceEntry));
+		templates.add(new GraderMailTemplate(translate("template.notification"), 
+				translate("mail.notification.subject"), translate("mail.notification.subject"), entry, null, referenceEntry));
+		templates.add(new GraderMailTemplate(translate("template.reminder1"),
+				translate("mail.reminder1.subject"), translate("mail.reminder1.body"), entry, null, referenceEntry));
+		templates.add(new GraderMailTemplate(translate("template.reminder2"), 
+				translate("mail.reminder2.subject"), translate("mail.reminder2.body"), entry, null, referenceEntry));
+		return templates;
 	}
 	
 	private void doBatchUnassignGrader(UserRequest ureq) {

@@ -360,7 +360,7 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, In
 
 	@Override
 	public GradingAssignment getGradingAssignment(GradingAssignmentRef ref) {
-		return gradingAssignmentDao.loadByKey(ref.getKey());
+		return gradingAssignmentDao.loadFullByKey(ref.getKey());
 	}
 	
 	@Override
@@ -507,7 +507,7 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, In
 	private GradingAssignment decorateGraderMailTemplate(GradingAssignment assignment, GraderMailTemplate template) {
 		if(template == null) return assignment;
 		
-		assignment = gradingAssignmentDao.loadByKey(assignment.getKey());
+		assignment = gradingAssignmentDao.loadFullByKey(assignment.getKey());
 		template.setAssessmentDate(assignment.getAssessmentDate());
 
 		RepositoryEntry entry = assignment.getAssessmentEntry().getRepositoryEntry();

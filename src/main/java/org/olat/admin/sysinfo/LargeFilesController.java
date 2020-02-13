@@ -531,7 +531,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 						.append("<li>")
 							.append("Path: " + row.getPath())
 						.append("</li>");
-						if (row.getContext() != VFSContextInfoUnknownPathResolver.UNKNOWN_TYPE ) {
+						if (!row.getContext().equals(VFSContextInfoUnknownPathResolver.UNKNOWN_TYPE)) {
 							bodyFiles.append("<li>")
 								.append("<span>URL: " + "<a href='" + vfsRepositoryService.getContextInfoFor(row.getPath(), getLocale()).getContextUrl() + "'>" + vfsRepositoryService.getContextInfoFor(row.getPath(), getLocale()).getContextUrl() + "</a></span>")
 							.append("</li>");
@@ -543,7 +543,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 		bodyFiles.append("</ul>");
 
 		cmsg.setBodyText(bodyStart + bodyFiles.toString() + bodyEnd);
-		contactCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg, null);
+		contactCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg);
 		listenTo(contactCtrl);
 		cmc = new CloseableModalController(getWindowControl(), "close", contactCtrl.getInitialComponent());
 		cmc.activate();

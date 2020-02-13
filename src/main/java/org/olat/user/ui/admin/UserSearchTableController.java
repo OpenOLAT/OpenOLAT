@@ -419,7 +419,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		cmsg.addEmailTo(contacts);
 
 		// create contact form controller with ContactMessage
-		contactCtr = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg, null);
+		contactCtr = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg);
 		listenTo(contactCtr);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", contactCtr.getInitialComponent(),

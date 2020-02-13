@@ -81,7 +81,7 @@ public class COToolController extends BasicController {
 		ContactList dummyList = new ContactList("dummy");
 		dummyList.add(getIdentity());
 		cmsg.addEmailTo(dummyList);
-		emailCtrl = new ContactFormController(ureq, getWindowControl(), false, false, false, cmsg, null);
+		emailCtrl = new ContactFormController(ureq, getWindowControl(), false, false, false, cmsg);
 		emailCtrl.setContactFormTitle(null);
 		Set<Recipients> recipients = recipientCtrl.getSelectedRecipients();
 		doSetReciepients(recipients);

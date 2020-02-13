@@ -160,7 +160,7 @@ public class ConfirmDeactivationGraderController extends FormBasicController {
 		MailerResult result = new MailerResult();
 		GraderMailTemplate reassignmentTemplate = null;
 		if(replacement != null) {
-			reassignmentTemplate = new GraderMailTemplate("", "", null, null, referenceEntry);
+			reassignmentTemplate = new GraderMailTemplate(null, null, referenceEntry);
 		}
 		
 		if(remove) {

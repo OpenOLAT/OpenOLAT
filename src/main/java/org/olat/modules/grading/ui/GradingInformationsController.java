@@ -261,7 +261,8 @@ public class GradingInformationsController extends FormBasicController {
 		ownersList.addAllIdentites(owners);
 		cmsg.addEmailTo(ownersList);
 
-		contactCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg, null);
+		contactCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg);
+		contactCtrl.getAndRemoveTitle();
 		listenTo(contactCtrl);
 		
 		String title = translate("contact.owners.title");

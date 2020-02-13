@@ -894,7 +894,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			contactMessage.addEmailTo(contactList);
 
 			removeAsListenerAndDispose(contactCtrl);
-			contactCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, contactMessage, null);
+			contactCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, contactMessage);
 			listenTo(contactCtrl);
 
 			cmc = new CloseableModalController(getWindowControl(), translate("close"),

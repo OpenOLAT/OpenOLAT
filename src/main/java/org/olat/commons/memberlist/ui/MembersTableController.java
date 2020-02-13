@@ -318,7 +318,7 @@ public class MembersTableController extends FormBasicController {
 	}
 	
 	private void doSendEmailToMember(ContactList contactList, UserRequest ureq) {
-		if (contactList.getEmailsAsStrings().size() > 0) {
+		if (!contactList.getEmailsAsStrings().isEmpty()) {
 			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose(emailController);
 			
@@ -326,7 +326,7 @@ public class MembersTableController extends FormBasicController {
 			cmsg.addEmailTo(contactList);
 			// preset body template from i18n
 			cmsg.setBodyText(createBodyTemplate());
-			emailController = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg, null);
+			emailController = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg);
 			listenTo(emailController);
 			
 			String title = translate("members.email.title");

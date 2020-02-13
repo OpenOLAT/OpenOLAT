@@ -228,7 +228,7 @@ public class AssignedReferenceEntryListController extends FormBasicController {
 		msg.addEmailTo(contact);
 		
 		RepositoryEntry referenceEntry = row.getReferenceEntry();
-		MailTemplate template = new GraderMailTemplate(null, null, referenceEntry);
+		MailTemplate template = new GraderMailTemplate(null, null, null, referenceEntry);
 		contactGraderCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, msg, template);
 		listenTo(contactGraderCtrl);
 		
