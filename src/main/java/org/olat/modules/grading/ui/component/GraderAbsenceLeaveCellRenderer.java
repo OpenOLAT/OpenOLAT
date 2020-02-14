@@ -30,6 +30,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.modules.grading.ui.AssignedReferenceEntryRow;
 import org.olat.modules.grading.ui.GraderRow;
+import org.olat.modules.grading.ui.GradingInformationsRow;
 import org.olat.user.AbsenceLeave;
 
 /**
@@ -53,6 +54,8 @@ public class GraderAbsenceLeaveCellRenderer implements FlexiCellRenderer {
 			render(target, ((GraderRow)cellValue).getAbsenceLeaves());
 		} else if(cellValue instanceof AssignedReferenceEntryRow) {
 			render(target, ((AssignedReferenceEntryRow)cellValue).getAbsenceLeaves());
+		} else if(cellValue instanceof GradingInformationsRow) {
+			render(target, ((GradingInformationsRow)cellValue).getAbsenceLeaves());
 		}
 	}
 	

@@ -242,6 +242,11 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, In
 	@Override
 	public List<GraderToIdentity> getGraders(RepositoryEntry entry) {
 		return gradedToIdentityDao.getGraders(entry);
+	}	
+
+	@Override
+	public List<AbsenceLeave> getGradersAbsenceLeaves(RepositoryEntry entry) {
+		return gradedToIdentityDao.getGradersAbsenceLeaves(entry);
 	}
 
 	@Override

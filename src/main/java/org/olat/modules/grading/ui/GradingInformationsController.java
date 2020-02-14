@@ -21,6 +21,9 @@ package org.olat.modules.grading.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -51,10 +54,12 @@ import org.olat.modules.grading.GradingService;
 import org.olat.modules.grading.RepositoryEntryGradingConfiguration;
 import org.olat.modules.grading.ui.GradersListTableModel.GradersCol;
 import org.olat.modules.grading.ui.GradingInformationsTableModel.GInfosCol;
+import org.olat.modules.grading.ui.component.GraderAbsenceLeaveCellRenderer;
 import org.olat.modules.grading.ui.component.GraderStatusCellRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
+import org.olat.user.AbsenceLeave;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -135,7 +140,7 @@ public class GradingInformationsController extends FormBasicController {
 		}
 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GInfosCol.status, new GraderStatusCellRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GInfosCol.absence));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GInfosCol.absence, new GraderAbsenceLeaveCellRenderer(getTranslator())));
 
 		tableModel = new GradingInformationsTableModel(columnsModel, userPropertyHandlers, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "graders", tableModel, 24, false, getTranslator(), formLayout);
@@ -207,11 +212,17 @@ public class GradingInformationsController extends FormBasicController {
 		flc.contextPut("resourceDisplayname", entry.getDisplayname());
 		
 		List<GraderToIdentity> graders = gradingService.getGraders(entry);
-		List<GradingInformationsRow> rows = new ArrayList<>(graders.size());
-		for(GraderToIdentity rawGrader:graders) {
-			rows.add(new GradingInformationsRow(rawGrader.getIdentity(), rawGrader.getGraderStatus()));
+		Map<Long,GradingInformationsRow> rows = graders.stream()
+				.map(grader -> new GradingInformationsRow(grader.getIdentity(), grader.getGraderStatus()))
+				.collect(Collectors.toMap(GradingInformationsRow::getKey, Function.identity(), (u, v) -> u));
+		List<AbsenceLeave> gradersAbsenceLeaves = gradingService.getGradersAbsenceLeaves(entry);			
+		for(AbsenceLeave graderAbsenceLeave:gradersAbsenceLeaves) {
+			GradingInformationsRow row = rows.get(graderAbsenceLeave.getIdentity().getKey());
+			if(row != null) {
+				row.addAbsenceLeave(graderAbsenceLeave);
+			}
 		}
-		return rows;
+		return new ArrayList<>(rows.values());
 	}
 
 	@Override

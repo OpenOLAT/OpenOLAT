@@ -19,8 +19,13 @@
  */
 package org.olat.modules.grading.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.modules.grading.GraderStatus;
+import org.olat.user.AbsenceLeave;
 
 /**
  * 
@@ -28,14 +33,20 @@ import org.olat.modules.grading.GraderStatus;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class GradingInformationsRow {
+public class GradingInformationsRow implements IdentityRef {
 	
-	private Identity grader;
-	private GraderStatus graderStatus;
+	private final Identity grader;
+	private final GraderStatus graderStatus;
+	private final List<AbsenceLeave> absenceLeaves = new ArrayList<>(4);
 	
 	public GradingInformationsRow(Identity grader, GraderStatus graderStatus) {
 		this.grader = grader;
 		this.graderStatus = graderStatus;
+	}
+	
+	@Override
+	public Long getKey() {
+		return grader.getKey();
 	}
 	
 	public Identity getGrader() {
@@ -45,5 +56,12 @@ public class GradingInformationsRow {
 	public GraderStatus getGraderStatus() {
 		return graderStatus;
 	}
-
+	
+	public List<AbsenceLeave> getAbsenceLeaves() {
+		return absenceLeaves;
+	}
+	
+	public void addAbsenceLeave(AbsenceLeave absenceLeave) {
+		absenceLeaves.add(absenceLeave);
+	}
 }

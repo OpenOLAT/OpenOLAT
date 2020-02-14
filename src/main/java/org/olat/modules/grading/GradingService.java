@@ -39,6 +39,7 @@ import org.olat.modules.grading.model.ReferenceEntryWithStatistics;
 import org.olat.modules.grading.ui.component.GraderMailTemplate;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.user.AbsenceLeave;
 
 /**
  * 
@@ -68,6 +69,8 @@ public interface GradingService {
 	public void addGraders(RepositoryEntry entry, List<Identity> identities, GraderMailTemplate template, MailerResult mailerResult);
 
 	public List<GraderToIdentity> getGraders(RepositoryEntry entry);
+	
+	public List<AbsenceLeave> getGradersAbsenceLeaves(RepositoryEntry entry);
 	
 	public List<GraderWithStatistics> getGradersWithStatistics(GradersSearchParameters searchParams);
 	
