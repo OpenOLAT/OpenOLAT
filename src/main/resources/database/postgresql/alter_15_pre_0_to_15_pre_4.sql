@@ -81,3 +81,24 @@ alter table o_grad_configuration add constraint grad_config_to_entry_idx foreign
 create index idx_grad_config_to_entry_idx on o_grad_configuration (fk_entry);
 
 
+-- absence leave
+create table o_user_absence_leave (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   u_absent_from timestamp,
+   u_absent_to timestamp,
+   u_resname varchar(50),
+   u_resid int8,
+   u_sub_ident varchar(2048),
+   fk_identity int8 not null,
+   primary key (id)
+);
+
+alter table o_user_absence_leave add constraint abs_leave_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_abs_leave_to_ident_idx on o_user_absence_leave (fk_identity);
+
+
+
+
+

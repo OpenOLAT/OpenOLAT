@@ -74,6 +74,7 @@ implements SortableFlexiTableDataModel<AssignedReferenceEntryRow> {
 			case overdue: return row.getNumOfOverdueAssignments();
 			case oldestOpenAssignment: return row.getOldestOpenAssignment();
 			case recordedTime: return getCorrectionTimeInMinutes(row);
+			case absence: return row;
 			case tools: return row.getToolsLink();
 			default: return "ERROR";
 		}
@@ -102,6 +103,7 @@ implements SortableFlexiTableDataModel<AssignedReferenceEntryRow> {
 		overdue("table.header.assignments.overdue"),
 		oldestOpenAssignment("table.header.assignments.oldest.open"),
 		recordedTime("table.header.recorded.time"),
+		absence("table.header.absence.leave"),
 		tools("table.header.tools");
 		
 		private final String i18nKey;

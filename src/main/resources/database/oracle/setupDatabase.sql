@@ -425,6 +425,19 @@ CREATE TABLE o_user_data_export (
    PRIMARY KEY (id)
 );
 
+CREATE TABLE o_user_absence_leave (
+   id number(20) generated always as identity,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   u_absent_from timestamp,
+   u_absent_to timestamp,
+   u_resname varchar(50),
+   u_resid number(20),
+   u_sub_ident varchar(2048),
+   fk_identity number(20) not null,
+   primary key (id)
+);
+
 CREATE TABLE o_message (
   message_id number(20) NOT NULL,
   version number(20) NOT NULL,
@@ -3432,6 +3445,9 @@ alter table o_user_data_export add constraint usr_dataex_to_ident_idx foreign ke
 create index idx_usr_dataex_to_ident_idx on o_user_data_export (fk_identity);
 alter table o_user_data_export add constraint usr_dataex_to_requ_idx foreign key (fk_request_by) references o_bs_identity (id);
 create index idx_usr_dataex_to_requ_idx on o_user_data_export (fk_request_by);
+
+alter table o_user_absence_leave add constraint abs_leave_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_abs_leave_to_ident_idx on o_user_absence_leave (fk_identity);
 
 -- csp
 create index idx_csp_log_to_ident_idx on o_csp_log (fk_identity);

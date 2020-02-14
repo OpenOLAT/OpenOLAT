@@ -19,12 +19,10 @@
  */
 package org.olat.modules.grading.model;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Date;
 
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
-import org.olat.user.AbsenceLeave;
 
 /**
  * 
@@ -32,20 +30,28 @@ import org.olat.user.AbsenceLeave;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ReferenceEntryWithStatistics implements RepositoryEntryRef {
+public class ReferenceEntryStatistics implements RepositoryEntryRef {
 	
+	private final long total;
+	private final long done;
+	private final long open;
+	private final long overdue;
+	private final Date oldest;
+	private final long timeInSeconds;
 	private final RepositoryEntry entry;
-	private final ReferenceEntryStatistics statistics;
-	private final List<AbsenceLeave> absenceLeaves = new ArrayList<>(4);
-
-	public ReferenceEntryWithStatistics(RepositoryEntry entry) {
+	
+	public ReferenceEntryStatistics(RepositoryEntry entry, long total, long done, long open, long overdue, Date oldest, long timeInSeconds) {
 		this.entry = entry;
-		statistics = ReferenceEntryStatistics.empty(entry); 
+		this.total = total;
+		this.done = done;
+		this.open = open;
+		this.overdue = overdue;
+		this.oldest = oldest;
+		this.timeInSeconds = timeInSeconds;
 	}
 	
-	public ReferenceEntryWithStatistics(ReferenceEntryStatistics statistics) {
-		this.entry = statistics.getEntry();
-		this.statistics = statistics;
+	public static ReferenceEntryStatistics empty(RepositoryEntry entry) {
+		return new ReferenceEntryStatistics(entry, 0l, 0l, 0l, 0l, null, 0l);
 	}
 	
 	@Override
@@ -56,16 +62,28 @@ public class ReferenceEntryWithStatistics implements RepositoryEntryRef {
 	public RepositoryEntry getEntry() {
 		return entry;
 	}
-
-	public ReferenceEntryStatistics getStatistics() {
-		return statistics;
+	
+	public long getRecordedTimeInSeconds() {
+		return timeInSeconds;
 	}
 	
-	public List<AbsenceLeave> getAbsenceLeaves() {
-		return absenceLeaves;
+	public long getTotalAssignments() {
+		return total;
 	}
 	
-	public void addAbsenceLeave(AbsenceLeave absenceLeave) {
-		absenceLeaves.add(absenceLeave);
+	public long getNumOfDoneAssignments() {
+		return done;
+	}
+	
+	public long getNumOfOpenAssignments() {
+		return open;
+	}
+	
+	public long getNumOfOverdueAssignments() {
+		return overdue;
+	}
+	
+	public Date getOldestOpenAssignment() {
+		return oldest;
 	}
 }

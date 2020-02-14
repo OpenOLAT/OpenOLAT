@@ -41,11 +41,12 @@ import org.olat.modules.grading.GradingAssignmentStatus;
 import org.olat.modules.grading.model.GraderStatistics;
 import org.olat.modules.grading.model.GraderToIdentityImpl;
 import org.olat.modules.grading.model.GradersSearchParameters;
-import org.olat.modules.grading.model.ReferenceEntryWithStatistics;
+import org.olat.modules.grading.model.ReferenceEntryStatistics;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.resource.OLATResourceImpl;
+import org.olat.user.AbsenceLeave;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -213,6 +214,19 @@ public class GraderToIdentityDAO {
 			.getResultList();
 	}
 	
+	public List<AbsenceLeave> getGradersAbsenceLeaves(RepositoryEntryRef entry) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select leave from userabsenceleave as leave")
+		  .append(" inner join fetch leave.identity as ident")
+		  .append(" inner join grader2identity as rel on (rel.identity.key=leave.identity.key)")
+		  .append(" where rel.entry.key=:entryKey");
+		
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), AbsenceLeave.class)
+			.setParameter("entryKey", entry.getKey())
+			.getResultList();
+	}
+	
 	public List<GraderToIdentity> findGraders(GradersSearchParameters searchParams) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select rel from grader2identity as rel")
@@ -222,7 +236,50 @@ public class GraderToIdentityDAO {
 			sb.append(" inner join fetch rel.entry as refEntry")
 			  .append(" inner join fetch refEntry.olatResource as refResource");
 		}
+
+		applyGradersSearchParameters(sb, searchParams);
+
+		TypedQuery<GraderToIdentity> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), GraderToIdentity.class);
+		applyGradersSearchParameters(query, searchParams);
+		return query.getResultList();
+	}
+	
+	public List<AbsenceLeave> findGradersAbsenceLeaves(GradersSearchParameters searchParams, Date from, Date to) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select distinct leave from userabsenceleave as leave")
+		  .append(" inner join fetch leave.identity as ident")
+		  .append(" inner join grader2identity as rel on (rel.identity.key=leave.identity.key)")
+		  .append(" left join rel.entry as refEntry");
+		if(searchParams.getReferenceEntry() != null) {
+			sb.append(" left join refEntry.olatResource as refResource");
+		}
+
+		applyGradersSearchParameters(sb, searchParams);
 		
+		if(searchParams.getReferenceEntry() != null) {
+			sb.and().append("(leave.resName is null or (leave.resName=refResource.resName and leave.resId=refResource.resId))");	
+		}
+		if(from != null) {
+			sb.and().append(" (leave.absentFrom is null or leave.absentFrom >= :absentFrom)");	
+		}
+		if(to != null) {
+			sb.and().append(" (leave.absentTo is null or leave.absentTo <= :absentTo)");	
+		}
+
+		TypedQuery<AbsenceLeave> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), AbsenceLeave.class);
+		applyGradersSearchParameters(query, searchParams);
+		if(from != null) {
+			query.setParameter("absentFrom", from);
+		}
+		if(to != null) {
+			query.setParameter("absentTo", to);
+		}
+		return query.getResultList();
+	}
+	
+	private void applyGradersSearchParameters(QueryBuilder sb, GradersSearchParameters searchParams) {
 		if(searchParams.getManager() != null) {
 			sb.and()
 			  .append("exists (select membership.key from repoentrytogroup as relGroup")
@@ -254,14 +311,9 @@ public class GraderToIdentityDAO {
 			}
 			sb.append(")");
 		}
-
-		TypedQuery<GraderToIdentity> query = dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), GraderToIdentity.class);
-		applyGradersSearchParameters(query, searchParams);
-		return query.getResultList();
 	}
 
-	public List<ReferenceEntryWithStatistics> getReferenceEntriesStatistics(Identity grader) {
+	public List<ReferenceEntryStatistics> getReferenceEntriesStatistics(Identity grader) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select refEntry,")
 		  .append(" count(distinct assignment.key) as totalAssignments,")
@@ -283,7 +335,7 @@ public class GraderToIdentityDAO {
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("graderKey", grader.getKey())
 				.getResultList();
-		List<ReferenceEntryWithStatistics> statistics = new ArrayList<>(rawObjects.size());
+		List<ReferenceEntryStatistics> statistics = new ArrayList<>(rawObjects.size());
 		for(Object[] rawObject:rawObjects) {
 			int pos = 0;
 			RepositoryEntry referenceEntry = (RepositoryEntry)rawObject[pos++];
@@ -293,7 +345,7 @@ public class GraderToIdentityDAO {
 			long overdue = PersistenceHelper.extractPrimitiveLong(rawObject, pos++);
 			Date oldest = (Date)rawObject[pos++];
 			long time = PersistenceHelper.extractPrimitiveLong(rawObject, pos);
-			statistics.add(new ReferenceEntryWithStatistics(referenceEntry, total, done, open, overdue, oldest, time));
+			statistics.add(new ReferenceEntryStatistics(referenceEntry, total, done, open, overdue, oldest, time));
 		}
 		return statistics;
 	}

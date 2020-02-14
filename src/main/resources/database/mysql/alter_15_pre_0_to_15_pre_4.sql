@@ -77,3 +77,22 @@ alter table o_grad_configuration ENGINE = InnoDB;
 alter table o_grad_configuration add constraint grad_config_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 
 
+-- absence leave
+create table o_user_absence_leave (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   u_absent_from datetime,
+   u_absent_to datetime,
+   u_resname varchar(50),
+   u_resid bigint,
+   u_sub_ident varchar(2048),
+   fk_identity bigint not null,
+   primary key (id)
+);
+alter table o_user_absence_leave ENGINE = InnoDB;
+
+alter table o_user_absence_leave add constraint abs_leave_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+
+
+

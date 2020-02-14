@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.grading.GraderStatus;
@@ -37,11 +38,13 @@ import org.olat.modules.grading.GradingAssignmentStatus;
 import org.olat.modules.grading.RepositoryEntryGradingConfiguration;
 import org.olat.modules.grading.model.GraderStatistics;
 import org.olat.modules.grading.model.GradersSearchParameters;
-import org.olat.modules.grading.model.ReferenceEntryWithStatistics;
+import org.olat.modules.grading.model.ReferenceEntryStatistics;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.olat.user.AbsenceLeave;
+import org.olat.user.manager.AbsenceLeaveDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.emory.mathcs.backport.java.util.Arrays;
@@ -56,6 +59,8 @@ public class GraderToIdentityDAOTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private AbsenceLeaveDAO absenceLeaveDao;
 	@Autowired
 	private AssessmentEntryDAO assessmentEntryDao;
 	@Autowired
@@ -106,6 +111,24 @@ public class GraderToIdentityDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getGradersAbsenceLeaves() {
+		Identity grader = JunitTestHelper.createAndPersistIdentityAsRndUser("grader-3");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(grader);
+		dbInstance.commitAndCloseSession();
+		
+		GraderToIdentity relation = gradedToIdentityDao.createRelation(entry, grader);
+		AbsenceLeave absenceLeave = absenceLeaveDao.createAbsenceLeave(grader, null, null, entry, null);
+		dbInstance.commit();
+		
+		Assert.assertNotNull(relation);
+		
+		List<AbsenceLeave> gradersAbsenceLeaves = gradedToIdentityDao.getGradersAbsenceLeaves(entry);
+		Assert.assertNotNull(gradersAbsenceLeaves);
+		Assert.assertEquals(1, gradersAbsenceLeaves.size());
+		Assert.assertEquals(absenceLeave, gradersAbsenceLeaves.get(0));
+	}
+	
+	@Test
 	public void findGraders_all() {
 		Identity grader = JunitTestHelper.createAndPersistIdentityAsRndUser("grader-3");
 		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(grader);
@@ -139,6 +162,49 @@ public class GraderToIdentityDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, graders.size());
 		Assert.assertEquals(grader, graders.get(0).getIdentity());
 		Assert.assertEquals(entry, graders.get(0).getEntry());
+	}
+	
+	@Test
+	public void findGraderAbsenceLeaves_all() {
+		Identity grader = JunitTestHelper.createAndPersistIdentityAsRndUser("grader-3");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(grader);
+		dbInstance.commitAndCloseSession();
+		
+		GraderToIdentity relation = gradedToIdentityDao.createRelation(entry, grader);
+		AbsenceLeave absenceLeave = absenceLeaveDao.createAbsenceLeave(grader, null, null, null, null);
+		dbInstance.commit();
+		Assert.assertNotNull(relation);
+		
+		GradersSearchParameters searchParams = new GradersSearchParameters();
+		List<AbsenceLeave> graderAbsenceLeaves = gradedToIdentityDao.findGradersAbsenceLeaves(searchParams, null, null);
+		Assert.assertNotNull(graderAbsenceLeaves);
+		Assert.assertTrue(graderAbsenceLeaves.size() >= 1);
+		Assert.assertTrue(graderAbsenceLeaves.contains(absenceLeave));
+	}
+	
+	@Test
+	public void findGraderAbsenceLeaves_entry() {
+		Identity grader = JunitTestHelper.createAndPersistIdentityAsRndUser("grader-3");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(grader);
+		dbInstance.commitAndCloseSession();
+		
+		GraderToIdentity relation = gradedToIdentityDao.createRelation(entry, grader);
+		AbsenceLeave absenceLeave1 = absenceLeaveDao.createAbsenceLeave(grader, addDaysToNow(-25), addDaysToNow(-10), null, null);
+		AbsenceLeave absenceLeave2 = absenceLeaveDao.createAbsenceLeave(grader, addDaysToNow(23), addDaysToNow(35), entry.getOlatResource(), "76325457");
+		AbsenceLeave absenceLeave3 = absenceLeaveDao.createAbsenceLeave(grader, null, null, null, null);
+		AbsenceLeave absenceLeave4 = absenceLeaveDao.createAbsenceLeave(grader, null, null, OresHelper.createOLATResourceableType("Nobody wants me"), null);
+		dbInstance.commit();
+		Assert.assertNotNull(relation);
+		
+		GradersSearchParameters searchParams = new GradersSearchParameters();
+		searchParams.setReferenceEntry(entry);
+		List<AbsenceLeave> graderAbsenceLeaves = gradedToIdentityDao.findGradersAbsenceLeaves(searchParams, addDaysToNow(3), addDaysToNow(133));
+		Assert.assertNotNull(graderAbsenceLeaves);
+		Assert.assertTrue(graderAbsenceLeaves.size() >= 1);
+		Assert.assertFalse(graderAbsenceLeaves.contains(absenceLeave1));
+		Assert.assertTrue(graderAbsenceLeaves.contains(absenceLeave2));
+		Assert.assertTrue(graderAbsenceLeaves.contains(absenceLeave3));
+		Assert.assertFalse(graderAbsenceLeaves.contains(absenceLeave4));
 	}
 	
 	@Test
@@ -336,11 +402,11 @@ public class GraderToIdentityDAOTest extends OlatTestCase {
 		Assert.assertNotNull(assignment1);
 		Assert.assertNotNull(assignment2);
 		
-		List<ReferenceEntryWithStatistics> statistics = gradedToIdentityDao.getReferenceEntriesStatistics(grader);
+		List<ReferenceEntryStatistics> statistics = gradedToIdentityDao.getReferenceEntriesStatistics(grader);
 		Assert.assertNotNull(statistics);
 		Assert.assertEquals(1, statistics.size());
 		
-		ReferenceEntryWithStatistics stats = statistics.get(0);
+		ReferenceEntryStatistics stats = statistics.get(0);
 		Assert.assertEquals(entry, stats.getEntry());
 		Assert.assertEquals(2, stats.getTotalAssignments());
 		Assert.assertEquals(2, stats.getNumOfOpenAssignments());
@@ -482,5 +548,11 @@ public class GraderToIdentityDAOTest extends OlatTestCase {
 		Assert.assertEquals(2, stats.getNumOfOpenAssignments());
 		Assert.assertEquals(1, stats.getNumOfDoneAssignments());
 		Assert.assertEquals(1, stats.getNumOfOverdueAssignments());
+	}
+	
+	private Date addDaysToNow(int days) {
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.DATE, days);
+		return cal.getTime();
 	}
 }

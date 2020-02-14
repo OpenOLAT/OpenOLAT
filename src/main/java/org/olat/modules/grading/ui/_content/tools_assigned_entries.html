@@ -2,4 +2,7 @@
 	#if($r.available("tool.send.mail"))
 	<li>$r.render("tool.send.mail")</li>
 	#end
+	#if($r.available("tool.absence"))
+	<li>$r.render("tool.absence")</li>
+	#end
 </ul>

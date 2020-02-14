@@ -49,6 +49,7 @@ import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
@@ -61,6 +62,7 @@ import org.olat.modules.grading.model.GraderWithStatistics;
 import org.olat.modules.grading.model.GradersSearchParameters;
 import org.olat.modules.grading.model.GradingAssignmentSearchParameters.SearchStatus;
 import org.olat.modules.grading.ui.GradersListTableModel.GradersCol;
+import org.olat.modules.grading.ui.component.GraderAbsenceLeaveCellRenderer;
 import org.olat.modules.grading.ui.component.GraderMailTemplate;
 import org.olat.modules.grading.ui.component.GraderStatusCellRenderer;
 import org.olat.modules.grading.ui.confirmation.ConfirmDeactivationGraderController;
@@ -70,6 +72,7 @@ import org.olat.modules.grading.ui.wizard.ImportGraders;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.olat.user.ui.absenceleave.CreateAbsenceLeaveController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -99,6 +102,7 @@ public class GradersListController extends FormBasicController {
 	private ReportCalloutController reportCtrl;
 	private ContactFormController contactGraderCtrl;
 	private StepsMainRunController importGradersWizard;
+	private CreateAbsenceLeaveController addAbsenceLeaveCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private CloseableCalloutWindowController reportCalloutCtrl;
 	private ConfirmDeactivationGraderController confirmRemoveCtrl;
@@ -161,7 +165,7 @@ public class GradersListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradersCol.overdue, "overdue"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradersCol.oldestOpenAssignment));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradersCol.recordedTime));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradersCol.absence));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradersCol.absence, new GraderAbsenceLeaveCellRenderer(getTranslator())));
 		
 		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(GradersCol.tools);
 		toolsCol.setIconHeader("o_icon o_icon_actions o_icon-lg");
@@ -189,7 +193,8 @@ public class GradersListController extends FormBasicController {
 	}
 	
 	private GraderRow forgeRow(GraderWithStatistics rawGrader) {
-		GraderRow row = new GraderRow(rawGrader.getGrader(), rawGrader.getStatistics(), rawGrader.getGraderStatus());
+		GraderRow row = new GraderRow(rawGrader.getGrader(), rawGrader.getStatistics(),
+				rawGrader.getAbsenceLeaves(), rawGrader.getGraderStatus());
 		// tools
 		String linkName = "tools-" + counter++;
 		FormLink toolsLink = uifactory.addFormLink(linkName, "tools", "", null, flc, Link.LINK | Link.NONTRANSLATED);
@@ -264,6 +269,13 @@ public class GradersListController extends FormBasicController {
 			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT) {
 				loadModel(true);
 			}
+		} else if(addAbsenceLeaveCtrl == source) {
+			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
+				doReassignAfterAbsenceLeave();
+				loadModel(true);
+			}
+			cmc.deactivate();
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
@@ -390,6 +402,26 @@ public class GradersListController extends FormBasicController {
 		cmc.activate();	
 	}
 	
+	private void doAddAbsenceLeave(UserRequest ureq, GraderRow row) {
+		Identity grader = row.getGrader();
+		OLATResourceable resource = null;
+		if(referenceEntry != null) {
+			resource = referenceEntry.getOlatResource();
+		}
+		addAbsenceLeaveCtrl = new CreateAbsenceLeaveController(ureq, getWindowControl(), grader, resource, null);
+		listenTo(addAbsenceLeaveCtrl);
+		
+		String graderName = userManager.getUserDisplayName(row.getGrader());
+		String title = translate("absence.grader.title", new String[] { graderName });
+		cmc = new CloseableModalController(getWindowControl(), "close", addAbsenceLeaveCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();	
+	}
+	
+	private void doReassignAfterAbsenceLeave() {
+		//TODO correction
+	}
+	
 	private void doShowAssignments(UserRequest ureq, GraderRow row, SearchStatus searchStatus) {
 		OpenAssignmentsEvent event = new OpenAssignmentsEvent(row.getGrader(), searchStatus);
 		fireEvent(ureq, event);
@@ -433,7 +465,7 @@ public class GradersListController extends FormBasicController {
 			
 			if(row.hasGraderStatus(GraderStatus.activated)) {
 				deactivateLink = addLink("tool.deactivate", "deactivate", "o_icon o_icon_deactivate", mainVC);
-				absenceLink = addLink("tool.absence", "absence", "o_icon o_icon_absence", mainVC);
+				absenceLink = addLink("tool.absence", "absence", "o_icon o_icon_absence_leave", mainVC);
 			} else {
 				activateLink = addLink("tool.activate", "activate", "o_icon o_icon_activate", mainVC);
 			}
@@ -485,7 +517,7 @@ public class GradersListController extends FormBasicController {
 				doConfirmRemove(ureq, getGraderRow());
 			} else if(absenceLink == source) {
 				close();
-				//TODO correction
+				doAddAbsenceLeave(ureq, getGraderRow());
 			} else if(activateLink == source) {
 				close();
 				doActivate(getGraderRow().getGrader());
