@@ -260,6 +260,8 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, In
 		Date absentTo = cal.getTime();
 		List<AbsenceLeave> absenceLeaves = gradedToIdentityDao.findGradersAbsenceLeaves(searchParams, absentFrom, absentTo);
 		
+		List<GradingTimeRecord> offSetRecords = gradedToIdentityDao.findOffsetGradersRecordedTime(searchParams);
+
 		List<GraderStatistics> rawStatistics = gradedToIdentityDao.getGradersStatistics(searchParams);
 		Map<Long,GraderStatistics> rawStatisticsMap = rawStatistics.stream()
 				.collect(Collectors.toMap(GraderStatistics::getKey, Function.identity(), (u, v) -> u));
@@ -271,6 +273,12 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, In
 			GraderWithStatistics statistics = identityToStatistics.computeIfAbsent(identity.getKey(), key
 					-> new GraderWithStatistics(identity, rawStats));
 			statistics.addGraderStatus(grader.getGraderStatus());
+		}
+		
+		for(GradingTimeRecord offSetRecord:offSetRecords) {
+			Identity graderIdentity = offSetRecord.getGrader().getIdentity();
+			GraderWithStatistics statistics = identityToStatistics.get(graderIdentity.getKey());
+			statistics.addOffsetRecordedTimeInSeconds(offSetRecord.getTime());
 		}
 		
 		for(AbsenceLeave absenceLeave:absenceLeaves) {
@@ -287,7 +295,10 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, In
 		final List<ReferenceEntryStatistics> entriesStatistics = gradedToIdentityDao.getReferenceEntriesStatistics(grader);
 		final Map<Long,ReferenceEntryStatistics> entryKeyStatistics = entriesStatistics.stream()
 				.collect(Collectors.toMap(ReferenceEntryStatistics::getKey, Function.identity(), (u, v) -> u));
-
+		
+		GradersSearchParameters searchParams = new GradersSearchParameters();
+		searchParams.setGrader(grader);
+		
 		final List<RepositoryEntry> entries = gradedToIdentityDao.getReferenceRepositoryEntriesAsGrader(grader);
 		Map<OlatResourceMapKey,ReferenceEntryWithStatistics> resourceKeyStatistics = entries.stream().map(entry -> {
 			ReferenceEntryStatistics stats = entryKeyStatistics.get(entry.getKey());
@@ -310,6 +321,17 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, In
 				for(ReferenceEntryWithStatistics stats:statistics) {
 					stats.addAbsenceLeave(absenceLeave);
 				}
+			}
+		}
+		
+		List<GradingTimeRecord> offsetRecords = gradedToIdentityDao.findOffsetGradersRecordedTime(searchParams);
+		if(!offsetRecords.isEmpty()) {
+			Map<Long,ReferenceEntryWithStatistics> keyStatistics = statistics.stream()
+					.collect(Collectors.toMap(ReferenceEntryWithStatistics::getKey, Function.identity(), (u, v) -> u));
+			for(GradingTimeRecord offsetRecord:offsetRecords) {
+				Long entryKey = offsetRecord.getGrader().getEntry().getKey();
+				ReferenceEntryWithStatistics stats = keyStatistics.get(entryKey);
+				stats.addOffsetRecordedTimeInSeconds(offsetRecord.getTime());
 			}
 		}
 		return statistics;

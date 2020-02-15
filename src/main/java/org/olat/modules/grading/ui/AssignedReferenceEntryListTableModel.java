@@ -21,8 +21,8 @@ package org.olat.modules.grading.ui;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
@@ -81,9 +81,9 @@ implements SortableFlexiTableDataModel<AssignedReferenceEntryRow> {
 	}
 	
 	private Long getCorrectionTimeInMinutes(AssignedReferenceEntryRow row) {
-		Long timeInSeconds = row.getRecordedTimeInSeconds();
-		if(timeInSeconds != null && timeInSeconds.longValue() > 0) {
-			return TimeUnit.SECONDS.toMinutes(timeInSeconds.longValue());
+		long timeInSeconds = row.getAssignedRecordedTimeInSeconds() + row.getOffsetRecordedTimeInSeconds();
+		if(timeInSeconds > 0) {
+			return CalendarUtils.convertSecondsToMinutes(timeInSeconds);
 		}
 		return null;
 	}

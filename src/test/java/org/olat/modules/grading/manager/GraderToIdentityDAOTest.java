@@ -35,6 +35,7 @@ import org.olat.modules.grading.GraderStatus;
 import org.olat.modules.grading.GraderToIdentity;
 import org.olat.modules.grading.GradingAssignment;
 import org.olat.modules.grading.GradingAssignmentStatus;
+import org.olat.modules.grading.GradingTimeRecord;
 import org.olat.modules.grading.RepositoryEntryGradingConfiguration;
 import org.olat.modules.grading.model.GraderStatistics;
 import org.olat.modules.grading.model.GradersSearchParameters;
@@ -69,6 +70,8 @@ public class GraderToIdentityDAOTest extends OlatTestCase {
 	private GradingAssignmentDAO gradingAssignmentDao;
 	@Autowired
 	private GradingConfigurationDAO gradingConfigurationDao;
+	@Autowired
+	private GradingTimeRecordDAO gradingTimeRecordDao;
 	
 	@Test
 	public void createGraderRelation() {
@@ -550,6 +553,59 @@ public class GraderToIdentityDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, stats.getNumOfOverdueAssignments());
 	}
 	
+	@Test
+	public void getGradersStatistics_recordingReassigned() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("grader-28");
+		Identity graderId = JunitTestHelper.createAndPersistIdentityAsRndUser("grader-29");
+		Identity student1 = JunitTestHelper.createAndPersistIdentityAsRndUser("graded-30");
+		Identity student2 = JunitTestHelper.createAndPersistIdentityAsRndUser("graded-31");
+		Identity student3 = JunitTestHelper.createAndPersistIdentityAsRndUser("graded-32");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+		dbInstance.commitAndCloseSession();
+		
+		AssessmentEntry assessment1 = assessmentEntryDao
+				.createAssessmentEntry(student1, null, entry, null, Boolean.TRUE, entry);
+		AssessmentEntry assessment2 = assessmentEntryDao
+				.createAssessmentEntry(student2, null, entry, null, Boolean.TRUE, entry);
+		AssessmentEntry assessment3 = assessmentEntryDao
+				.createAssessmentEntry(student3, null, entry, null, Boolean.TRUE, entry);
+		
+		GraderToIdentity relation = gradedToIdentityDao.createRelation(entry, graderId);
+		GraderToIdentity authorRelation = gradedToIdentityDao.createRelation(entry, author);
+		
+		GradingAssignment assignment1 = gradingAssignmentDao.createGradingAssignment(relation, entry, assessment1, null, null);
+		GradingAssignment assignment2 = gradingAssignmentDao.createGradingAssignment(relation, entry, assessment2, null, null);
+		GradingAssignment assignment3 = gradingAssignmentDao.createGradingAssignment(authorRelation, entry, assessment3, null, null);
+		dbInstance.commit();
+		
+		// record 3 is off
+		GradingTimeRecord record1 = gradingTimeRecordDao.createRecord(relation, assignment1);
+		GradingTimeRecord record2 = gradingTimeRecordDao.createRecord(relation, assignment2);
+		GradingTimeRecord record3 = gradingTimeRecordDao.createRecord(relation, assignment3);
+		GradingTimeRecord recordAuthor3 = gradingTimeRecordDao.createRecord(authorRelation, assignment3);
+		dbInstance.commit();
+		
+		gradingTimeRecordDao.appendTimeInSeconds(record1, 120l);
+		gradingTimeRecordDao.appendTimeInSeconds(record2, 1300l);
+		gradingTimeRecordDao.appendTimeInSeconds(record3, 14000l);
+		gradingTimeRecordDao.appendTimeInSeconds(recordAuthor3, 555l);
+		dbInstance.commit();
+		
+		GradersSearchParameters searchParams = new GradersSearchParameters();
+		searchParams.setReferenceEntry(entry);
+		List<GraderStatistics> statistics = gradedToIdentityDao.getGradersStatistics(searchParams);
+		Assert.assertNotNull(statistics);
+		Assert.assertEquals(2, statistics.size());
+		
+		GraderStatistics graderStatistics = statistics.stream()
+				.filter(stats -> graderId.getKey().equals(stats.getKey())).findFirst().orElse(null);
+		Assert.assertEquals(1420l, graderStatistics.getRecordedAssignedTimeInSeconds());
+		
+		GraderStatistics authorStatistics = statistics.stream()
+				.filter(stats -> author.getKey().equals(stats.getKey())).findFirst().orElse(null);
+		Assert.assertEquals(555l, authorStatistics.getRecordedAssignedTimeInSeconds());
+	}
+
 	private Date addDaysToNow(int days) {
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.DATE, days);

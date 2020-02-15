@@ -38,6 +38,7 @@ import org.olat.core.id.Identity;
 import org.olat.modules.grading.GraderStatus;
 import org.olat.modules.grading.GraderToIdentity;
 import org.olat.modules.grading.GradingAssignmentStatus;
+import org.olat.modules.grading.GradingTimeRecord;
 import org.olat.modules.grading.model.GraderStatistics;
 import org.olat.modules.grading.model.GraderToIdentityImpl;
 import org.olat.modules.grading.model.GradersSearchParameters;
@@ -237,11 +238,39 @@ public class GraderToIdentityDAO {
 			  .append(" inner join fetch refEntry.olatResource as refResource");
 		}
 
-		applyGradersSearchParameters(sb, searchParams);
+		applyGradersSearchParameters(sb, searchParams, true);
 
 		TypedQuery<GraderToIdentity> query = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), GraderToIdentity.class);
 		applyGradersSearchParameters(query, searchParams);
+		return query.getResultList();
+	}
+	
+	public List<GradingTimeRecord> findOffsetGradersRecordedTime(GradersSearchParameters searchParams) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select record")
+		  .append(" from gradingtimerecord as record ")
+		  .append(" inner join fetch record.grader as rel")
+		  .append(" inner join fetch rel.identity as ident")
+		  .append(" inner join record.assignment as assignment");
+		if(searchParams.getReferenceEntry() == null) {
+			sb.append(" inner join fetch rel.entry as refEntry")
+			  .append(" inner join refEntry.olatResource as refResource");
+		}
+		sb.where().append("not(assignment.grader.key=rel.key)");
+
+		applyGradersSearchParameters(sb, searchParams, false);
+		if(searchParams.getGradingFrom() != null) {
+			sb.and().append("record.creationDate>=:gradingFromDate");
+		}
+		if(searchParams.getGradingTo() != null) {
+			sb.append(" and record.creationDate<=:gradingToDate");
+		}
+
+		TypedQuery<GradingTimeRecord> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), GradingTimeRecord.class);
+		applyGradersSearchParameters(query, searchParams);
+		
 		return query.getResultList();
 	}
 	
@@ -255,7 +284,7 @@ public class GraderToIdentityDAO {
 			sb.append(" left join refEntry.olatResource as refResource");
 		}
 
-		applyGradersSearchParameters(sb, searchParams);
+		applyGradersSearchParameters(sb, searchParams, true);
 		
 		if(searchParams.getReferenceEntry() != null) {
 			sb.and().append("(leave.resName is null or (leave.resName=refResource.resName and leave.resId=refResource.resId))");	
@@ -279,7 +308,7 @@ public class GraderToIdentityDAO {
 		return query.getResultList();
 	}
 	
-	private void applyGradersSearchParameters(QueryBuilder sb, GradersSearchParameters searchParams) {
+	private void applyGradersSearchParameters(QueryBuilder sb, GradersSearchParameters searchParams, boolean applyFromTo) {
 		if(searchParams.getManager() != null) {
 			sb.and()
 			  .append("exists (select membership.key from repoentrytogroup as relGroup")
@@ -299,17 +328,32 @@ public class GraderToIdentityDAO {
 		if(searchParams.getStatus() != null && !searchParams.getStatus().isEmpty()) {
 			sb.and().append("rel.status in (:statusList)");
 		}
-		if(searchParams.getGradingFrom() != null || searchParams.getGradingTo() != null) {
+		if(applyFromTo && (searchParams.getGradingFrom() != null || searchParams.getGradingTo() != null)) {
 			sb.and()
 			  .append(" exists (select assignment from gradingassignment as assignment")
 			  .append("  where assignment.grader.key=rel.key");
-			if(searchParams.getGradingFrom() != null) {
-				sb.and().append("assignment.assignmentDate>=:gradingFromDate");
-			}
-			if(searchParams.getGradingTo() != null) {
-				sb.append(" and assignment.assignmentDate<=:gradingToDate");
-			}
+			applyAssignmentSearchParameters(sb, searchParams.getGradingFrom(), searchParams.getGradingTo());
 			sb.append(")");
+		}
+	}
+	
+	private void applyAssignmentSearchParameters(QueryBuilder sb, Date from, Date to) {
+		if(from != null && to != null) {
+			sb.and()
+			  .append("(")
+			  .append(" (assignment.assignmentDate<=:gradingFromDate and assignment.assignmentDate<=:gradingToDate)")
+			  .append(" or")
+			  .append(" (assignment.assignmentDate<=:gradingFromDate and assignment.assignmentDate<=:gradingToDate)")
+			  .append(" or")
+			  .append(" (assignment.assignmentDate<=:gradingFromDate and assignment.assignmentDate<=:gradingToDate)")
+			  
+			  
+			  .append(")");
+			
+		} else if(from != null) {
+			sb.and().append("assignment.assignmentDate>=:gradingFromDate");
+		} else if(to != null) {
+			sb.and().append("(assignment.assignmentDate<=:gradingToDate or assignment.closingDate<=:gradingToDate) ");
 		}
 	}
 
@@ -384,12 +428,8 @@ public class GraderToIdentityDAO {
 		if(searchParams.getStatus() != null && !searchParams.getStatus().isEmpty()) {
 			sb.and().append("rel.status in (:statusList)");
 		}
-		if(searchParams.getGradingFrom() != null) {
-			sb.and().append("assignment.assignmentDate>=:gradingFromDate");
-		}
-		if(searchParams.getGradingTo() != null) {
-			sb.and().append("assignment.assignmentDate<=:gradingToDate");
-		}
+		
+		applyAssignmentSearchParameters(sb, searchParams.getGradingFrom(), searchParams.getGradingTo());
 		
 		sb.append(" group by rel.identity.key");
 		

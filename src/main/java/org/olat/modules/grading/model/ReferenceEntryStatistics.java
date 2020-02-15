@@ -63,7 +63,7 @@ public class ReferenceEntryStatistics implements RepositoryEntryRef {
 		return entry;
 	}
 	
-	public long getRecordedTimeInSeconds() {
+	protected long getAssignedRecordedTimeInSeconds() {
 		return timeInSeconds;
 	}
 	

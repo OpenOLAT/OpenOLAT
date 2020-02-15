@@ -38,10 +38,13 @@ public class GraderWithStatistics {
 	private final GraderStatistics statistics;
 	private final List<GraderStatus> graderStatus = new ArrayList<>(4);
 	private final List<AbsenceLeave> absenceLeaves = new ArrayList<>(4);
+	private final long recordedAssignedTimeInSeconds;
+	private long offsetRecordedTimeInSeconds = 0l;
 	
 	public GraderWithStatistics(Identity grader, GraderStatistics statistics) {
 		this.grader = grader;
 		this.statistics = statistics;
+		recordedAssignedTimeInSeconds = statistics.getRecordedAssignedTimeInSeconds();
 	}
 	
 	public Identity getGrader() {
@@ -64,6 +67,18 @@ public class GraderWithStatistics {
 	
 	public void addAbsenceLeave(AbsenceLeave absence) {
 		absenceLeaves.add(absence);
+	}
+
+	public long getOffsetRecordedTimeInSeconds() {
+		return offsetRecordedTimeInSeconds;
+	}
+
+	public void addOffsetRecordedTimeInSeconds(long seconds) {
+		offsetRecordedTimeInSeconds += seconds;
+	}
+
+	public long getAssignedRecordedTimeInSeconds() {
+		return recordedAssignedTimeInSeconds;
 	}
 
 	public GraderStatistics getStatistics() {

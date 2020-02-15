@@ -42,12 +42,19 @@ public class GraderRow {
 	private final GraderStatistics statistics;
 	private final List<AbsenceLeave> absenceLeaves;
 	
+	private final long offsetRecordedTimeInSeconds;
+	private final long assignedRecordedTimeInSeconds;
+	
 	private FormLink toolsLink;
 	
-	public GraderRow(Identity grader, GraderStatistics statistics, List<AbsenceLeave> absenceLeaves, List<GraderStatus> status) {
+	public GraderRow(Identity grader, GraderStatistics statistics,
+			long assignedRecordedTimeInSeconds, long offsetRecordedTimeInSeconds, 
+			List<AbsenceLeave> absenceLeaves, List<GraderStatus> status) {
 		this.grader = grader;
 		this.graderStatus = status;
 		this.statistics = statistics;
+		this.offsetRecordedTimeInSeconds = offsetRecordedTimeInSeconds;
+		this.assignedRecordedTimeInSeconds = assignedRecordedTimeInSeconds;
 		if(absenceLeaves != null && !absenceLeaves.isEmpty()) {
 			this.absenceLeaves = absenceLeaves;
 		} else {
@@ -95,8 +102,12 @@ public class GraderRow {
 		return statistics == null ? null : statistics.getOldestOpenAssignment();
 	}
 	
-	public Long getRecordedTimeInSeconds() {
-		return statistics == null ? null : statistics.getRecordedTimeInSeconds();
+	public Long getOffsetRecordedTimeInSeconds() {
+		return offsetRecordedTimeInSeconds;
+	}
+	
+	public Long getAssignedRecordedTimeInSeconds() {
+		return assignedRecordedTimeInSeconds;
 	}
 
 	public FormLink getToolsLink() {

@@ -194,6 +194,7 @@ public class GradersListController extends FormBasicController {
 	
 	private GraderRow forgeRow(GraderWithStatistics rawGrader) {
 		GraderRow row = new GraderRow(rawGrader.getGrader(), rawGrader.getStatistics(),
+				rawGrader.getAssignedRecordedTimeInSeconds(), rawGrader.getOffsetRecordedTimeInSeconds(),
 				rawGrader.getAbsenceLeaves(), rawGrader.getGraderStatus());
 		// tools
 		String linkName = "tools-" + counter++;

@@ -39,6 +39,9 @@ import org.olat.modules.grading.GradingAssignmentStatus;
 import org.olat.modules.grading.GradingService;
 import org.olat.modules.grading.GradingTimeRecord;
 import org.olat.modules.grading.RepositoryEntryGradingConfiguration;
+import org.olat.modules.grading.model.GraderWithStatistics;
+import org.olat.modules.grading.model.GradersSearchParameters;
+import org.olat.modules.grading.model.ReferenceEntryWithStatistics;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -64,7 +67,7 @@ public class GradingServiceTest extends OlatTestCase {
 	@Autowired
 	private GraderToIdentityDAO gradedToIdentityDao;
 	@Autowired
-	private GradingTimeRecordDAO gradingTimesheetDao;
+	private GradingTimeRecordDAO gradingTimeRecordDao;
 	@Autowired
 	private GradingAssignmentDAO gradingAssignmentDao;
 	
@@ -94,7 +97,7 @@ public class GradingServiceTest extends OlatTestCase {
 		dbInstance.commit();
 		Assert.assertNotNull(assignment);
 		
-		GradingTimeRecord timeRecord = gradingTimesheetDao.createRecord(grader, assignment);
+		GradingTimeRecord timeRecord = gradingTimeRecordDao.createRecord(grader, assignment);
 		dbInstance.commit();
 		Assert.assertNotNull(timeRecord);
 
@@ -409,6 +412,111 @@ public class GradingServiceTest extends OlatTestCase {
 		Assert.assertNotNull(assignments);
 		Assert.assertEquals(1, assignments.size());
 		Assert.assertEquals(GradingAssignmentStatus.assigned, assignments.get(0).getAssignmentStatus());
+	}
+	
+	@Test
+	public void getGradersWithStatistics_recordingReassigned() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("grader-28");
+		Identity graderId = JunitTestHelper.createAndPersistIdentityAsRndUser("grader-29");
+		Identity student1 = JunitTestHelper.createAndPersistIdentityAsRndUser("graded-30");
+		Identity student2 = JunitTestHelper.createAndPersistIdentityAsRndUser("graded-31");
+		Identity student3 = JunitTestHelper.createAndPersistIdentityAsRndUser("graded-32");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+		dbInstance.commitAndCloseSession();
+		
+		AssessmentEntry assessment1 = assessmentEntryDao
+				.createAssessmentEntry(student1, null, entry, null, Boolean.TRUE, entry);
+		AssessmentEntry assessment2 = assessmentEntryDao
+				.createAssessmentEntry(student2, null, entry, null, Boolean.TRUE, entry);
+		AssessmentEntry assessment3 = assessmentEntryDao
+				.createAssessmentEntry(student3, null, entry, null, Boolean.TRUE, entry);
+		
+		GraderToIdentity relation = gradedToIdentityDao.createRelation(entry, graderId);
+		GraderToIdentity authorRelation = gradedToIdentityDao.createRelation(entry, author);
+		
+		GradingAssignment assignment1 = gradingAssignmentDao.createGradingAssignment(relation, entry, assessment1, null, null);
+		GradingAssignment assignment2 = gradingAssignmentDao.createGradingAssignment(relation, entry, assessment2, null, null);
+		GradingAssignment assignment3 = gradingAssignmentDao.createGradingAssignment(authorRelation, entry, assessment3, null, null);
+		dbInstance.commit();
+		
+		// record 3 is off
+		GradingTimeRecord record1 = gradingTimeRecordDao.createRecord(relation, assignment1);
+		GradingTimeRecord record2 = gradingTimeRecordDao.createRecord(relation, assignment2);
+		GradingTimeRecord record3 = gradingTimeRecordDao.createRecord(relation, assignment3);
+		GradingTimeRecord recordAuthor3 = gradingTimeRecordDao.createRecord(authorRelation, assignment3);
+		dbInstance.commit();
+		
+		gradingTimeRecordDao.appendTimeInSeconds(record1, 120l);
+		gradingTimeRecordDao.appendTimeInSeconds(record2, 1300l);
+		gradingTimeRecordDao.appendTimeInSeconds(record3, 14000l);
+		gradingTimeRecordDao.appendTimeInSeconds(recordAuthor3, 555l);
+		dbInstance.commitAndCloseSession();
+		
+		GradersSearchParameters searchParams = new GradersSearchParameters();
+		searchParams.setReferenceEntry(entry);
+		List<GraderWithStatistics> statistics = gradingService.getGradersWithStatistics(searchParams);
+		Assert.assertNotNull(statistics);
+		Assert.assertEquals(2, statistics.size());
+		
+		GraderWithStatistics graderStatistics = statistics.stream()
+				.filter(stats -> graderId.getKey().equals(stats.getGrader().getKey())).findFirst().orElse(null);
+		Assert.assertEquals(1420l, graderStatistics.getAssignedRecordedTimeInSeconds());
+		Assert.assertEquals(14000l, graderStatistics.getOffsetRecordedTimeInSeconds());
+		
+		GraderWithStatistics authorStatistics = statistics.stream()
+				.filter(stats -> author.getKey().equals(stats.getGrader().getKey())).findFirst().orElse(null);
+		Assert.assertEquals(555l, authorStatistics.getAssignedRecordedTimeInSeconds());
+		Assert.assertEquals(0l, authorStatistics.getOffsetRecordedTimeInSeconds());
+	}
+	
+	@Test
+	public void getGradedEntriesWithStatistics_recordingReassigned() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("grader-28");
+		Identity graderId = JunitTestHelper.createAndPersistIdentityAsRndUser("grader-29");
+		Identity student1 = JunitTestHelper.createAndPersistIdentityAsRndUser("graded-30");
+		Identity student2 = JunitTestHelper.createAndPersistIdentityAsRndUser("graded-31");
+		Identity student3 = JunitTestHelper.createAndPersistIdentityAsRndUser("graded-32");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+		dbInstance.commitAndCloseSession();
+		
+		AssessmentEntry assessment1 = assessmentEntryDao
+				.createAssessmentEntry(student1, null, entry, null, Boolean.TRUE, entry);
+		AssessmentEntry assessment2 = assessmentEntryDao
+				.createAssessmentEntry(student2, null, entry, null, Boolean.TRUE, entry);
+		AssessmentEntry assessment3 = assessmentEntryDao
+				.createAssessmentEntry(student3, null, entry, null, Boolean.TRUE, entry);
+		
+		GraderToIdentity relation = gradedToIdentityDao.createRelation(entry, graderId);
+		GraderToIdentity authorRelation = gradedToIdentityDao.createRelation(entry, author);
+		
+		GradingAssignment assignment1 = gradingAssignmentDao.createGradingAssignment(relation, entry, assessment1, null, null);
+		GradingAssignment assignment2 = gradingAssignmentDao.createGradingAssignment(relation, entry, assessment2, null, null);
+		GradingAssignment assignment3 = gradingAssignmentDao.createGradingAssignment(authorRelation, entry, assessment3, null, null);
+		dbInstance.commit();
+		
+		// record 3 is off
+		GradingTimeRecord record1 = gradingTimeRecordDao.createRecord(relation, assignment1);
+		GradingTimeRecord record2 = gradingTimeRecordDao.createRecord(relation, assignment2);
+		GradingTimeRecord record3 = gradingTimeRecordDao.createRecord(relation, assignment3);
+		GradingTimeRecord recordAuthor3 = gradingTimeRecordDao.createRecord(authorRelation, assignment3);
+		dbInstance.commit();
+		
+		gradingTimeRecordDao.appendTimeInSeconds(record1, 120l);
+		gradingTimeRecordDao.appendTimeInSeconds(record2, 1300l);
+		gradingTimeRecordDao.appendTimeInSeconds(record3, 14000l);
+		gradingTimeRecordDao.appendTimeInSeconds(recordAuthor3, 555l);
+		dbInstance.commitAndCloseSession();
+		
+		GradersSearchParameters searchParams = new GradersSearchParameters();
+		searchParams.setReferenceEntry(entry);
+		List<ReferenceEntryWithStatistics> statistics = gradingService.getGradedEntriesWithStatistics(graderId);
+		Assert.assertNotNull(statistics);
+		Assert.assertEquals(1, statistics.size());
+		
+		ReferenceEntryWithStatistics stats = statistics.get(0);
+		Assert.assertEquals(1420l, stats.getAssignedRecordedTimeInSeconds());
+		Assert.assertEquals(14000l, stats.getOffsetRecordedTimeInSeconds());
+		
 	}
 	
 	private Date addDaysToNow(int days) {

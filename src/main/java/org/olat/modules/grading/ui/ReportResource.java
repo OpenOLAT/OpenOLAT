@@ -164,7 +164,7 @@ public class ReportResource extends OpenXMLWorkbookResource {
 		row.addCell(pos++, graderStatistics.getStatistics().getNumOfOpenAssignments(), null);
 		row.addCell(pos++, graderStatistics.getStatistics().getNumOfOverdueAssignments(), null);
 		row.addCell(pos++, graderStatistics.getStatistics().getOldestOpenAssignment(), workbook.getStyles().getDateStyle());
-		row.addCell(pos, graderStatistics.getStatistics().getRecordedTimeInSeconds(), null);
+		row.addCell(pos, graderStatistics.getAssignedRecordedTimeInSeconds() + graderStatistics.getOffsetRecordedTimeInSeconds(), null);
 	}
 	
 	private void createGradersData(OpenXMLWorksheet gradersSheet, OpenXMLWorkbook workbook) {
