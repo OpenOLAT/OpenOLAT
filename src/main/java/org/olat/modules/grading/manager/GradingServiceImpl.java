@@ -642,7 +642,7 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 			return;
 		}
 		
-		GraderToIdentity choosedGrader = selectGrader(referenceEntry, assessmentEntry.getSubIdent());
+		GraderToIdentity choosedGrader = selectGrader(referenceEntry);
 		
 		Date deadLine = null;
 		RepositoryEntryGradingConfiguration config = gradingConfigurationDao.getConfiguration(referenceEntry);
@@ -654,8 +654,8 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 		dbInstance.commit();
 	}
 	
-	protected GraderToIdentity selectGrader(RepositoryEntry referenceEntry, String subIdent) {
-		List<GraderToIdentity> activeGraders = activeGraders(referenceEntry, subIdent);
+	protected GraderToIdentity selectGrader(RepositoryEntry referenceEntry) {
+		List<GraderToIdentity> activeGraders = activeGraders(referenceEntry);
 		GraderToIdentity choosedGrader = null;
 		if(activeGraders.size() == 1) {
 			choosedGrader = activeGraders.get(0);
@@ -672,14 +672,15 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 	 * @param referenceEntry The reference / test entry (mandatory)
 	 * @return A list of graders, active and not in vacation
 	 */
-	private List<GraderToIdentity> activeGraders(RepositoryEntry referenceEntry, String subIdent) {
+	private List<GraderToIdentity> activeGraders(RepositoryEntry referenceEntry) {
 		OLATResource resource = referenceEntry.getOlatResource();
 		List<GraderToIdentity> graders = gradedToIdentityDao.getGraders(referenceEntry);
 		List<AbsenceLeave> absenceLeaves = gradedToIdentityDao.getGradersAbsenceLeaves(referenceEntry);
 		final Set<Long> excludedGraderKeys = new HashSet<>();
 		Date nextWorkingDay = CalendarUtils.addWorkingDays(new Date(), 1);
 		for(AbsenceLeave absenceLeave:absenceLeaves) {
-			if(AbsenceLeaveHelper.isOnLeave(nextWorkingDay, absenceLeave, resource, subIdent)) {
+			// the absence leaves are on the reference entry (no sub-identifier needed)
+			if(AbsenceLeaveHelper.isOnLeave(nextWorkingDay, absenceLeave, resource, null)) {
 				excludedGraderKeys.add(absenceLeave.getIdentity().getKey());
 			}
 		}
