@@ -222,7 +222,7 @@ public interface GradingService {
 	 * @param assignment The assignment
 	 * @return A reference of the record
 	 */
-	public GradingTimeRecordRef getCurrentTimeRecord(GradingAssignment assignment);
+	public GradingTimeRecordRef getCurrentTimeRecord(GradingAssignment assignment, Date date);
 	
 	public void appendTimeTo(GradingTimeRecordRef record, long addedTime, TimeUnit unit);
 	

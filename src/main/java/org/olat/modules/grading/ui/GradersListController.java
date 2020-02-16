@@ -194,8 +194,7 @@ public class GradersListController extends FormBasicController {
 	
 	private GraderRow forgeRow(GraderWithStatistics rawGrader) {
 		GraderRow row = new GraderRow(rawGrader.getGrader(), rawGrader.getStatistics(),
-				rawGrader.getAssignedRecordedTimeInSeconds(), rawGrader.getOffsetRecordedTimeInSeconds(),
-				rawGrader.getAbsenceLeaves(), rawGrader.getGraderStatus());
+				rawGrader.getRecordedTimeInSeconds(), rawGrader.getAbsenceLeaves(), rawGrader.getGraderStatus());
 		// tools
 		String linkName = "tools-" + counter++;
 		FormLink toolsLink = uifactory.addFormLink(linkName, "tools", "", null, flc, Link.LINK | Link.NONTRANSLATED);

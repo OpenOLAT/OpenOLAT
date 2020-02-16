@@ -247,12 +247,9 @@ public class GradingAssignmentDAO {
 		if(searchParams.getPassed() != null) {
 			sb.and().append("assessmentEntry.passed=:passed");
 		}
-		if(searchParams.getGradingFromDate() != null) {
-			sb.and().append("assignment.assignmentDate>=:gradingFromDate");
-		}
-		if(searchParams.getGradingToDate() != null) {
-			sb.and().append("assignment.assignmentDate<=:gradingToDate");
-		}
+
+		applyAssignmentSearchParameters(sb, searchParams.getGradingFromDate(), searchParams.getGradingToDate());
+		
 		if(searchParams.getScoreFrom() != null) {
 			sb.and().append("assessmentEntry.score>=:scoreFrom");
 		}
@@ -297,6 +294,23 @@ public class GradingAssignmentDAO {
 		}
 	}
 	
+	protected static void applyAssignmentSearchParameters(QueryBuilder sb, Date from, Date to) {
+		if(from != null && to != null) {
+			sb.and()
+			  .append("(")
+			  .append(" (assignment.assignmentDate>=:gradingFromDate and assignment.assignmentDate<=:gradingToDate)")
+			  .append(" or")
+			  .append(" (assignment.closingDate>=:gradingFromDate and assignment.closingDate<=:gradingToDate)")
+			  .append(" or")
+			  .append(" (assignment.assignmentDate>=:gradingFromDate and (assignment.closingDate is null or assignment.closingDate<=:gradingToDate))")
+			  .append(")");	
+		} else if(from != null) {
+			sb.and().append("assignment.assignmentDate>=:gradingFromDate");
+		} else if(to != null) {
+			sb.and().append("(assignment.assignmentDate<=:gradingToDate or assignment.closingDate<=:gradingToDate) ");
+		}
+	}
+	
 	private void applyGradingAssignmentSearchParameters(TypedQuery<?> query, GradingAssignmentSearchParameters searchParams) {
 		if(searchParams.getReferenceEntry() != null) {
 			query.setParameter("referenceEntryKey", searchParams.getReferenceEntry().getKey());
@@ -331,6 +345,20 @@ public class GradingAssignmentDAO {
 		if(searchParams.getManager() != null) {
 			query.setParameter("managerKey", searchParams.getManager().getKey());
 		}
+	}
+	
+	public boolean hasGradingAssignment(RepositoryEntryRef referenceEntry) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select assignment.key from gradingassignment as assignment")
+		  .append(" where assignment.referenceEntry.key=:referenceEntryKey");
+		
+		List<Long> assignments = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("referenceEntryKey", referenceEntry.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return !assignments.isEmpty() && assignments.get(0) != null && assignments.get(0).longValue() > 0;
 	}
 	
 	public boolean hasGradingAssignment(RepositoryEntryRef referenceEntry, AssessmentEntry assessmentEntry) {

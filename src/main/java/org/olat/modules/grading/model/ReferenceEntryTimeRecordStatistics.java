@@ -17,32 +17,32 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.grading;
+package org.olat.modules.grading.model;
 
-import java.util.Date;
-
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.ModifiedInfo;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
- * Initial date: 4 févr. 2020<br>
+ * Initial date: 15 févr. 2020<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface GradingTimeRecord extends GradingTimeRecordRef, CreateInfo, ModifiedInfo {
-	
-	/**
-	 * The duration in seconds.
-	 * 
-	 * @return time in seconds
-	 */
-	public long getTime();
-	
-	public Date getDateOfRecord();
-	
-	public GraderToIdentity getGrader();
-	
-	public GradingAssignment getAssignment();
+public class ReferenceEntryTimeRecordStatistics implements RepositoryEntryRef {
 
+	private final Long entryKey;
+	private final long time;
+	
+	public ReferenceEntryTimeRecordStatistics(Long entryKey, long time) {
+		this.entryKey = entryKey;
+		this.time = time;
+	}
+	
+	@Override
+	public Long getKey() {
+		return entryKey;
+	}
+	
+	public long getTime() {
+		return time;
+	}
 }

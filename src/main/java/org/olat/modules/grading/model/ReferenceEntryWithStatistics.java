@@ -36,7 +36,7 @@ public class ReferenceEntryWithStatistics implements RepositoryEntryRef {
 	
 	private final RepositoryEntry entry;
 	private final ReferenceEntryStatistics statistics;
-	private long offsetRecordedTimeInSeconds = 0l;
+	private long recordedTimeInSeconds = 0l;
 	private final List<AbsenceLeave> absenceLeaves = new ArrayList<>(4);
 
 	public ReferenceEntryWithStatistics(RepositoryEntry entry) {
@@ -69,16 +69,12 @@ public class ReferenceEntryWithStatistics implements RepositoryEntryRef {
 	public void addAbsenceLeave(AbsenceLeave absenceLeave) {
 		absenceLeaves.add(absenceLeave);
 	}
-	
-	public long getAssignedRecordedTimeInSeconds() {
-		return statistics.getAssignedRecordedTimeInSeconds();
+
+	public long getRecordedTimeInSeconds() {
+		return recordedTimeInSeconds;
 	}
 
-	public long getOffsetRecordedTimeInSeconds() {
-		return offsetRecordedTimeInSeconds;
-	}
-
-	public void addOffsetRecordedTimeInSeconds(long seconds) {
-		offsetRecordedTimeInSeconds += seconds;
+	public void addRecordedTimeInSeconds(long seconds) {
+		recordedTimeInSeconds += seconds;
 	}
 }

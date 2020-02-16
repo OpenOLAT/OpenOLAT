@@ -74,14 +74,17 @@ import org.olat.modules.grading.model.GradingAssignmentImpl;
 import org.olat.modules.grading.model.GradingAssignmentSearchParameters;
 import org.olat.modules.grading.model.GradingAssignmentWithInfos;
 import org.olat.modules.grading.model.GradingSecurity;
+import org.olat.modules.grading.model.IdentityTimeRecordStatistics;
 import org.olat.modules.grading.model.OlatResourceMapKey;
 import org.olat.modules.grading.model.ReferenceEntryStatistics;
+import org.olat.modules.grading.model.ReferenceEntryTimeRecordStatistics;
 import org.olat.modules.grading.model.ReferenceEntryWithStatistics;
 import org.olat.modules.grading.ui.component.GraderMailTemplate;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryDataDeletable;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.manager.RepositoryEntryToTaxonomyLevelDAO;
 import org.olat.resource.OLATResource;
@@ -102,7 +105,7 @@ import edu.emory.mathcs.backport.java.util.Collections;
  *
  */
 @Service
-public class GradingServiceImpl implements GradingService, UserDataDeletable, InitializingBean {
+public class GradingServiceImpl implements GradingService, UserDataDeletable, RepositoryEntryDataDeletable, InitializingBean {
 	
 	private static final Logger log = Tracing.createLoggerFor(GradingServiceImpl.class);
 	
@@ -137,6 +140,12 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, In
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		courseElementTitleCache = coordinatorManager.getCoordinator().getCacher().getCache(GradingService.class.getSimpleName(), "courseElementsTitle");
+	}
+	
+	@Override
+	public boolean deleteRepositoryEntryData(RepositoryEntry re) {
+		boolean hasAssignment = gradingAssignmentDao.hasGradingAssignment(re);
+		return !hasAssignment;
 	}
 
 	@Override
@@ -251,7 +260,8 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, In
 
 	@Override
 	public List<GraderWithStatistics> getGradersWithStatistics(GradersSearchParameters searchParams) {
-		List<GraderToIdentity> graders = gradedToIdentityDao.findGraders(searchParams);
+		boolean useDatesForGraders = searchParams.getReferenceEntry() == null;
+		List<GraderToIdentity> graders = gradedToIdentityDao.findGraders(searchParams, useDatesForGraders);
 		
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.YEAR, -1);
@@ -260,7 +270,7 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, In
 		Date absentTo = cal.getTime();
 		List<AbsenceLeave> absenceLeaves = gradedToIdentityDao.findGradersAbsenceLeaves(searchParams, absentFrom, absentTo);
 		
-		List<GradingTimeRecord> offSetRecords = gradedToIdentityDao.findOffsetGradersRecordedTime(searchParams);
+		List<IdentityTimeRecordStatistics> records = gradedToIdentityDao.findGradersRecordedTimeGroupByIdentity(searchParams);
 
 		List<GraderStatistics> rawStatistics = gradedToIdentityDao.getGradersStatistics(searchParams);
 		Map<Long,GraderStatistics> rawStatisticsMap = rawStatistics.stream()
@@ -275,10 +285,9 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, In
 			statistics.addGraderStatus(grader.getGraderStatus());
 		}
 		
-		for(GradingTimeRecord offSetRecord:offSetRecords) {
-			Identity graderIdentity = offSetRecord.getGrader().getIdentity();
-			GraderWithStatistics statistics = identityToStatistics.get(graderIdentity.getKey());
-			statistics.addOffsetRecordedTimeInSeconds(offSetRecord.getTime());
+		for(IdentityTimeRecordStatistics record:records) {
+			GraderWithStatistics statistics = identityToStatistics.get(record.getKey());
+			statistics.addRecordedTimeInSeconds(record.getTime());
 		}
 		
 		for(AbsenceLeave absenceLeave:absenceLeaves) {
@@ -324,14 +333,13 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, In
 			}
 		}
 		
-		List<GradingTimeRecord> offsetRecords = gradedToIdentityDao.findOffsetGradersRecordedTime(searchParams);
-		if(!offsetRecords.isEmpty()) {
+		List<ReferenceEntryTimeRecordStatistics> records = gradedToIdentityDao.findGradersRecordedTimeGroupByEntry(searchParams);
+		if(!records.isEmpty()) {
 			Map<Long,ReferenceEntryWithStatistics> keyStatistics = statistics.stream()
 					.collect(Collectors.toMap(ReferenceEntryWithStatistics::getKey, Function.identity(), (u, v) -> u));
-			for(GradingTimeRecord offsetRecord:offsetRecords) {
-				Long entryKey = offsetRecord.getGrader().getEntry().getKey();
-				ReferenceEntryWithStatistics stats = keyStatistics.get(entryKey);
-				stats.addOffsetRecordedTimeInSeconds(offsetRecord.getTime());
+			for(ReferenceEntryTimeRecordStatistics record:records) {
+				ReferenceEntryWithStatistics stats = keyStatistics.get(record.getKey());
+				stats.addRecordedTimeInSeconds(record.getTime());
 			}
 		}
 		return statistics;
@@ -852,10 +860,11 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, In
 	}
 
 	@Override
-	public GradingTimeRecordRef getCurrentTimeRecord(GradingAssignment assignment) {
-		GradingTimeRecord record = gradingTimeRecordDao.loadRecord(assignment.getGrader(), assignment);
+	public GradingTimeRecordRef getCurrentTimeRecord(GradingAssignment assignment, Date date) {
+		date = CalendarUtils.startOfDay(date);
+		GradingTimeRecord record = gradingTimeRecordDao.loadRecord(assignment.getGrader(), assignment, date);
 		if(record == null) {
-			record = gradingTimeRecordDao.createRecord(assignment.getGrader(), assignment);
+			record = gradingTimeRecordDao.createRecord(assignment.getGrader(), assignment, date);
 			dbInstance.commit();
 		}
 		return record;

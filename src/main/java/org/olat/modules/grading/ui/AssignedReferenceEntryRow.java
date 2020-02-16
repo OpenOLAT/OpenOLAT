@@ -70,12 +70,8 @@ public class AssignedReferenceEntryRow implements RepositoryEntryRef {
 		return entry.getExternalRef();
 	}
 
-	public long getAssignedRecordedTimeInSeconds() {
-		return statistics.getAssignedRecordedTimeInSeconds();
-	}
-	
-	public long getOffsetRecordedTimeInSeconds() {
-		return statistics.getOffsetRecordedTimeInSeconds();
+	public long getRecordedTimeInSeconds() {
+		return statistics.getRecordedTimeInSeconds();
 	}
 	
 	public long getTotalAssignments() {

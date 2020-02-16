@@ -81,7 +81,7 @@ implements SortableFlexiTableDataModel<AssignedReferenceEntryRow> {
 	}
 	
 	private Long getCorrectionTimeInMinutes(AssignedReferenceEntryRow row) {
-		long timeInSeconds = row.getAssignedRecordedTimeInSeconds() + row.getOffsetRecordedTimeInSeconds();
+		long timeInSeconds = row.getRecordedTimeInSeconds();
 		if(timeInSeconds > 0) {
 			return CalendarUtils.convertSecondsToMinutes(timeInSeconds);
 		}

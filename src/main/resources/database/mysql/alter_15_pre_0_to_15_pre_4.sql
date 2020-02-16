@@ -43,6 +43,7 @@ create table o_grad_time_record (
    creationdate datetime not null,
    lastmodified datetime not null,
    g_time int8 default 0 not null,
+   g_date_record date not null,
    fk_assignment bigint,
    fk_grader bigint not null,
    primary key (id)

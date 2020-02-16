@@ -37,21 +37,19 @@ public class ReferenceEntryStatistics implements RepositoryEntryRef {
 	private final long open;
 	private final long overdue;
 	private final Date oldest;
-	private final long timeInSeconds;
 	private final RepositoryEntry entry;
 	
-	public ReferenceEntryStatistics(RepositoryEntry entry, long total, long done, long open, long overdue, Date oldest, long timeInSeconds) {
+	public ReferenceEntryStatistics(RepositoryEntry entry, long total, long done, long open, long overdue, Date oldest) {
 		this.entry = entry;
 		this.total = total;
 		this.done = done;
 		this.open = open;
 		this.overdue = overdue;
 		this.oldest = oldest;
-		this.timeInSeconds = timeInSeconds;
 	}
 	
 	public static ReferenceEntryStatistics empty(RepositoryEntry entry) {
-		return new ReferenceEntryStatistics(entry, 0l, 0l, 0l, 0l, null, 0l);
+		return new ReferenceEntryStatistics(entry, 0l, 0l, 0l, 0l, null);
 	}
 	
 	@Override
@@ -61,10 +59,6 @@ public class ReferenceEntryStatistics implements RepositoryEntryRef {
 	
 	public RepositoryEntry getEntry() {
 		return entry;
-	}
-	
-	protected long getAssignedRecordedTimeInSeconds() {
-		return timeInSeconds;
 	}
 	
 	public long getTotalAssignments() {

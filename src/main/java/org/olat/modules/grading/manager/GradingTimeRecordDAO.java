@@ -22,7 +22,10 @@ package org.olat.modules.grading.manager;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.TemporalType;
+
 import org.apache.logging.log4j.Logger;
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.logging.Tracing;
@@ -49,11 +52,12 @@ public class GradingTimeRecordDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public GradingTimeRecord createRecord(GraderToIdentity grader, GradingAssignment assignment) {
+	public GradingTimeRecord createRecord(GraderToIdentity grader, GradingAssignment assignment, Date date) {
 		GradingTimeRecordImpl timesheet = new GradingTimeRecordImpl();
 		timesheet.setCreationDate(new Date());
 		timesheet.setLastModified(timesheet.getCreationDate());
-		timesheet.setTime(0);
+		timesheet.setTime(0l);
+		timesheet.setDateOfRecord(CalendarUtils.startOfDay(date));
 		timesheet.setGrader(grader);
 		timesheet.setAssignment(assignment);
 		dbInstance.getCurrentEntityManager().persist(timesheet);
@@ -74,24 +78,31 @@ public class GradingTimeRecordDAO {
 		return records != null && !records.isEmpty() ? records.get(0) : null;
 	}
 	
-	public GradingTimeRecord loadRecord(GraderToIdentity grader, GradingAssignmentRef assignment) {
+	public GradingTimeRecord loadRecord(GraderToIdentity grader, GradingAssignmentRef assignment, Date date) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select record from gradingtimerecord as record ")
-		  .append(" where record.assignment.key=:assignmentKey and record.grader.key=:graderKey");
+		  .append(" where record.assignment.key=:assignmentKey and record.grader.key=:graderKey")
+		  .append(" and record.dateOfRecord=:date");
 		
 		List<GradingTimeRecord> records = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), GradingTimeRecord.class)
 				.setParameter("assignmentKey", assignment.getKey())
 				.setParameter("graderKey", grader.getKey())
+				.setParameter("date", date, TemporalType.DATE)
 				.getResultList();
 		return records != null && !records.isEmpty() ? records.get(0) : null;
 	}
 	
-	public void appendTimeInSeconds(GraderToIdentity grader, GradingAssignmentRef assignment, Long addedTime) {
-		String updateQuery = "update gradingtimerecordappender set time=time+:addedTime, lastModified=:now where graderKey=:graderKey and assignmentKey=:assignmentKey";
-		int updated = dbInstance.getCurrentEntityManager().createQuery(updateQuery)
+	public void appendTimeInSeconds(GraderToIdentity grader, GradingAssignmentRef assignment, Long addedTime, Date date) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("update gradingtimerecordappender set time=time+:addedTime, lastModified=:now")
+		  .append(" where graderKey=:graderKey and assignmentKey=:assignmentKey")
+		  .append(" and dateOfRecord=:date");
+		
+		int updated = dbInstance.getCurrentEntityManager().createQuery(sb.toString())
 			.setParameter("graderKey", grader.getKey())
 			.setParameter("assignmentKey", assignment.getKey())
+			.setParameter("date", date, TemporalType.DATE)
 			.setParameter("addedTime", addedTime)
 			.setParameter("now", new Date())
 			.executeUpdate();

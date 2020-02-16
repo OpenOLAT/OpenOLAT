@@ -46,6 +46,7 @@ create table o_grad_time_record (
    creationdate timestamp not null,
    lastmodified timestamp not null,
    g_time number(20) default 0 not null,
+   g_date_record date not null,
    fk_assignment number(20),
    fk_grader number(20) not null,
    primary key (id)

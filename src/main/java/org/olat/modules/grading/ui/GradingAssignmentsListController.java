@@ -573,7 +573,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		testSessionStates.put(assessedIdentity, testSessionState);
 		CorrectionOverviewModel model = new CorrectionOverviewModel(entry, courseNode, referenceEntry,
 				resolvedAssessmentTest, manifestBuilder, lastSessions, testSessionStates);
-		GradingTimeRecordRef record = gradingService.getCurrentTimeRecord(assignment);
+		GradingTimeRecordRef record = gradingService.getCurrentTimeRecord(assignment, ureq.getRequestTimestamp());
 		
 		correctionCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel,
 				model, assessedIdentity, assignment, record, readOnly);

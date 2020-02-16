@@ -316,6 +316,24 @@ public class GradingAssignmentDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void hasGradingAssignment_entryOnly() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("assignment-author-40");
+		Identity student = JunitTestHelper.createAndPersistIdentityAsRndUser("assignment-student-41");
+		RepositoryEntry entry1 = JunitTestHelper.createRandomRepositoryEntry(author);
+		RepositoryEntry entry2 = JunitTestHelper.createRandomRepositoryEntry(author);
+		AssessmentEntry assessment = assessmentEntryDao
+				.createAssessmentEntry(student, null, entry1, null, false, entry1);
+		GradingAssignment assignment = gradingAssignmentDao.createGradingAssignment(null, entry1, assessment, null, null);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(assignment);
+		
+		boolean hasAssignment = gradingAssignmentDao.hasGradingAssignment(entry1);
+		Assert.assertTrue(hasAssignment);
+		boolean hasNotAssignment = gradingAssignmentDao.hasGradingAssignment(entry2);
+		Assert.assertFalse(hasNotAssignment);
+	}
+	
+	@Test
 	public void getGradingAssignment() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("assignment-author-8");
 		Identity student = JunitTestHelper.createAndPersistIdentityAsRndUser("assignment-student-9");
