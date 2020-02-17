@@ -1349,6 +1349,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		extendedSearchExpanded = true;
 		extendedSearchCtrl.setEnabled(true);
 		if(searchFieldEl != null) {
+			searchFieldEl.setValue("");
 			searchFieldEl.setVisible(false);
 		}
 	}
@@ -1367,6 +1368,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		extendedSearchExpanded = false;
 		extendedSearchCtrl.setEnabled(false);
 		if(searchFieldEl != null) {
+			searchFieldEl.setValue("");
 			searchFieldEl.setVisible(true);
 		}
 	}
