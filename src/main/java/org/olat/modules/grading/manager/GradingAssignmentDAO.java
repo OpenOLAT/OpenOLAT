@@ -32,6 +32,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.core.id.Identity;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.grading.GraderToIdentity;
 import org.olat.modules.grading.GradingAssignment;
@@ -409,6 +410,43 @@ public class GradingAssignmentDAO {
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), GradingAssignment.class)
+				.getResultList();
+	}
+	
+	public List<GradingAssignment> getAssignmentsForGradersNotify(IdentityRef grader) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select assignment from gradingassignment assignment")
+		  .append(" inner join fetch assignment.referenceEntry referenceEntry")
+		  .append(" inner join assignment.grader as grader")
+		  .append(" inner join grader.identity as ident")
+		  .append(" where assignment.status<>'").append(GradingAssignmentStatus.done).append("'")
+		  .append(" and (assignment.assignmentNotificationDate is null or (")
+		  .append("  (assignment.extendedDeadline is null and assignment.deadline < current_date) or assignment.extendedDeadline < current_date")
+		  .append(" ))")
+		  .append(" and ident.key=:graderKey");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), GradingAssignment.class)
+				.setParameter("graderKey", grader.getKey())
+				.getResultList();
+	}
+	
+	/**
+	 * @return A list of identities with new assignment or overdue assignments
+	 */
+	public List<Identity> getGradersIdentityToNotify() {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select distinct ident from gradingassignment assignment")
+		  .append(" inner join assignment.grader as grader")
+		  .append(" inner join grader.identity as ident")
+		  .append(" inner join ident.user as identUser")
+		  .append(" where assignment.status<>'").append(GradingAssignmentStatus.done).append("'")
+		  .append(" and (assignment.assignmentNotificationDate is null or (")
+		  .append("  (assignment.extendedDeadline is null and assignment.deadline < current_date) or assignment.extendedDeadline < current_date")
+		  .append(" ))");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
 				.getResultList();
 	}
 	

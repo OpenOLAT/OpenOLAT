@@ -228,7 +228,15 @@ public interface GradingService {
 	
 	public String getCachedCourseElementTitle(RepositoryEntry entry, String subIdenty);
 	
+	/**
+	 * Send reminder 1 and 2
+	 */
 	public void sendReminders();
+	
+	/**
+	 * Send notification to graders with new and overdue assignments.
+	 */
+	public void sendGradersAsssignmentsNotification();
 
 
 }

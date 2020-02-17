@@ -589,6 +589,20 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 		return sendResult;
 	}
 	
+	private MailerResult reminder(Identity recipient, RepositoryEntry entry, String subject, String body) {
+		
+		GraderMailTemplate template = new GraderMailTemplate(subject, body);
+		decorateGraderMailTemplate(entry, template);
+
+		MailContext context = new MailContextImpl("[CoachSite:0][Grading:0]");
+		
+		MailerResult result = new MailerResult();
+		MailBundle bundle = mailManager.makeMailBundle(context, recipient, template, null, null, result);
+		MailerResult sendResult = mailManager.sendMessage(bundle);
+		result.append(sendResult);
+		return sendResult;
+	}
+	
 	private GradingAssignment decorateGraderMailTemplate(GradingAssignment assignment, GraderMailTemplate template) {
 		if(template == null) return assignment;
 		
@@ -629,6 +643,38 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 				sb.append(parent.getDisplayName());
 			}
 		}
+	}
+	
+	@Override
+	public void sendGradersAsssignmentsNotification() {
+		List<Identity> gradersToNotify = gradingAssignmentDao.getGradersIdentityToNotify();
+		dbInstance.commit();
+
+		for(Identity graderToNotify:gradersToNotify) {
+			sendGraderAsssignmentsNotification(graderToNotify);
+		}	
+	}
+	
+	public void sendGraderAsssignmentsNotification(Identity grader) {
+		List<GradingAssignment> assignmentsToNotify = gradingAssignmentDao.getAssignmentsForGradersNotify(grader);
+
+		List<RepositoryEntry> newReferenceEntries = assignmentsToNotify.stream()
+				.filter(assignment -> assignment.getAssignmentNotificationDate() == null)
+				.map(GradingAssignment::getReferenceEntry)
+				.distinct().collect(Collectors.toList());
+		for(RepositoryEntry newReferenceEntry:newReferenceEntries) {
+			RepositoryEntryGradingConfiguration config = gradingConfigurationDao.getConfiguration(newReferenceEntry);
+			if(StringHelper.containsNonWhitespace(config.getNotificationBody())) {
+				reminder(grader, newReferenceEntry, config.getNotificationSubject(), config.getNotificationBody());
+			}
+		}
+		
+		Date now = new Date();
+		for(GradingAssignment assignmentToNotify:assignmentsToNotify) {
+			assignmentToNotify.setAssignmentNotificationDate(now);
+			gradingAssignmentDao.updateAssignment(assignmentToNotify);
+		}
+		dbInstance.commitAndCloseSession();
 	}
 
 	@Override
