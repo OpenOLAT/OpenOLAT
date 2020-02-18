@@ -4,3 +4,41 @@
 .o_tm_blue { background-color: #33FFFF; }
 .o_tm_red { background-color: #FF3333; }
 .o_tm_green { background-color: #99FF00; }
+
+.tooltip {
+	position: absolute;
+	z-index: 10000;
+	display: block;
+	visibility: visible;
+}
+
+.tooltip.bottom {
+	margin-top: 3px;
+	padding: 5px 0 0 0;
+}
+
+.tooltip.bottom .tooltip-arrow {
+    top: 0;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 0 5px 5px;
+    border-bottom-color: #aaa;
+}
+
+.tooltip-inner {
+	max-width: 400px;
+	padding: 3px 8px;
+	text-align: left;
+	text-decoration: none;
+	background-color: white;
+	border-radius: 5px;
+	border: 2px solid #aaa;
+}
+
+.tooltip-arrow {
+	position: absolute;
+	width: 0;
+	height: 0;
+	border-color: transparent;
+	border-style: solid;
+}

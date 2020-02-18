@@ -190,6 +190,7 @@ function o_tm_addExtToolTip(glossaryMainTerm, highlightString, occurrence){
 					//bootstrap tooltip
 					html: true,
 					container:'body',
+					placement: 'bottom',
 					title: function() {
 				        var elem = jQuery(this);
 				        jQuery.ajax(glossUrl).always(function(data, textStatus, jqXHR) {
@@ -197,16 +198,9 @@ function o_tm_addExtToolTip(glossaryMainTerm, highlightString, occurrence){
 				        			(elem.attr('data-original-title') == null || elem.attr('data-original-title') == "")) {
 				        		jQuery('.tooltip').remove();
 				        		elem.attr('data-original-title', data);
-				        		elem.tooltip('show');
+				        		var tool = elem.tooltip('show');
+				        		tool.data('bs.tooltip').tip().addClass('o_gloss_tooltip');
 				        	}
-				         });
-				    },
-				    //jquery tooltip
-					items: '#' + targetId,
-					content: function(evt, ui) {
-				        var elem = jQuery(this);
-				        jQuery.ajax(glossUrl).always(function(data, textStatus, jqXHR) {
-				        	elem.tooltip('option', 'content', data).tooltip('open');
 				         });
 				    }
 				});
