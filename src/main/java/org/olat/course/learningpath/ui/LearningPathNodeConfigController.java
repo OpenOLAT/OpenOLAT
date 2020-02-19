@@ -65,10 +65,10 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	public static final String CONFIG_VALUE_TRIGGER_SCORE = FullyAssessedTrigger.score.name();
 	public static final String CONFIG_VALUE_TRIGGER_PASSED = FullyAssessedTrigger.passed.name();
 	
-	private TextElement durationEl;
 	private SingleSelection obligationEl;
 	private DateChooser startDateEl;
 	private DateChooser endDateEl;
+	private TextElement durationEl;
 	private SingleSelection triggerEl;
 	private TextElement scoreCutEl;
 
@@ -92,9 +92,6 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("config.title");
 		
-		String duration = learningPathConfigs.getDuration() != null? learningPathConfigs.getDuration().toString(): null;
-		durationEl = uifactory.addTextElement("config.duration", 128, duration , formLayout);
-		
 		KeyValues obligationKV = new KeyValues();
 		obligationKV.add(entry(AssessmentObligation.mandatory.name(), translate("config.obligation.mandatory")));
 		obligationKV.add(entry(AssessmentObligation.optional.name(), translate("config.obligation.optional")));
@@ -116,6 +113,9 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		Date endDate = learningPathConfigs.getEndDate();
 		endDateEl = uifactory.addDateChooser("config.end.date", endDate, formLayout);
 		endDateEl.setDateChooserTimeEnabled(true);
+		
+		String duration = learningPathConfigs.getDuration() != null? learningPathConfigs.getDuration().toString(): null;
+		durationEl = uifactory.addTextElement("config.duration", 128, duration , formLayout);
 		
 		KeyValues triggerKV = getTriggerKV();
 		triggerEl = uifactory.addRadiosVertical("config.trigger", formLayout,
@@ -173,14 +173,14 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	}
 	
 	private void updateUI() {
-		durationEl.setMandatory(isDurationMandatory());
-		
 		AssessmentObligation obligation = obligationEl.isOneSelected()
 				? AssessmentObligation.valueOf(obligationEl.getSelectedKey())
 				: LearningPathConfigs.OBLIGATION_DEFAULT;
 		boolean obligationMandatory = AssessmentObligation.mandatory.equals(obligation);
 		endDateEl.setVisible(obligationMandatory);
 				
+		durationEl.setMandatory(isDurationMandatory());
+		
 		boolean triggerScore = triggerEl.isOneSelected() && triggerEl.getSelectedKey().equals(CONFIG_VALUE_TRIGGER_SCORE);
 		scoreCutEl.setVisible(triggerScore);
 	}
@@ -233,11 +233,6 @@ public class LearningPathNodeConfigController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		Integer duration = StringHelper.containsNonWhitespace(durationEl.getValue())
-				? Integer.valueOf(durationEl.getValue())
-				: null;
-		learningPathConfigs.setDuration(duration);
-		
 		AssessmentObligation obligation = obligationEl.isOneSelected()
 				? AssessmentObligation.valueOf(obligationEl.getSelectedKey())
 				: LearningPathConfigs.OBLIGATION_DEFAULT;
@@ -251,6 +246,11 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		}
 		Date endDate = endDateEl.getDate();
 		learningPathConfigs.setEndDate(endDate);
+		
+		Integer duration = StringHelper.containsNonWhitespace(durationEl.getValue())
+				? Integer.valueOf(durationEl.getValue())
+				: null;
+		learningPathConfigs.setDuration(duration);
 		
 		FullyAssessedTrigger trigger = triggerEl.isOneSelected()
 				? FullyAssessedTrigger.valueOf(triggerEl.getSelectedKey())
