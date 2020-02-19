@@ -66,6 +66,10 @@ public class GradingTimeRecordImpl implements GradingTimeRecord, Persistable {
 	@Column(name="g_time", nullable=false, insertable=true, updatable=false)
 	private long time;
 	
+	@Temporal(TemporalType.DATE)
+	@Column(name="g_date_record", nullable=false, insertable=true, updatable=false)
+	private Date dateOfRecord;
+	
 	@ManyToOne(targetEntity=GraderToIdentityImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_grader", nullable=false, insertable=true, updatable=false)
 	private GraderToIdentity grader;
@@ -109,7 +113,17 @@ public class GradingTimeRecordImpl implements GradingTimeRecord, Persistable {
 	public void setTime(long time) {
 		this.time = time;
 	}
+	
+	@Override
+	public Date getDateOfRecord() {
+		return dateOfRecord;
+	}
 
+	public void setDateOfRecord(Date dateOfRecord) {
+		this.dateOfRecord = dateOfRecord;
+	}
+
+	@Override
 	public GraderToIdentity getGrader() {
 		return grader;
 	}
@@ -118,6 +132,7 @@ public class GradingTimeRecordImpl implements GradingTimeRecord, Persistable {
 		this.grader = grader;
 	}
 
+	@Override
 	public GradingAssignment getAssignment() {
 		return assignment;
 	}

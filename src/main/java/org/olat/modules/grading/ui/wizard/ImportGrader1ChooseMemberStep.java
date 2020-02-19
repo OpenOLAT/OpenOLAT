@@ -36,10 +36,11 @@ public class ImportGrader1ChooseMemberStep extends BasicStep {
 	
 	private final ImportGraders graders;
 	
-	public ImportGrader1ChooseMemberStep(UserRequest ureq, ImportGraders graders, MailTemplate mailTemplate) {
+	public ImportGrader1ChooseMemberStep(UserRequest ureq, ImportGraders graders,
+			MailTemplate mailTemplate, boolean searchResource) {
 		super(ureq);
 		this.graders = graders;
-		setNextStep(new ImportGrader2ConfirmMemberChoiceStep(ureq, graders, mailTemplate));
+		setNextStep(new ImportGrader2ConfirmMemberChoiceStep(ureq, graders, mailTemplate, searchResource));
 		setI18nTitleAndDescr("import.choose.title", "import.choose.title");
 	}
 

@@ -44,6 +44,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.mail.MailTemplate;
@@ -52,10 +53,12 @@ import org.olat.modules.grading.GradingService;
 import org.olat.modules.grading.model.GradingAssignmentSearchParameters.SearchStatus;
 import org.olat.modules.grading.model.ReferenceEntryWithStatistics;
 import org.olat.modules.grading.ui.AssignedReferenceEntryListTableModel.GEntryCol;
+import org.olat.modules.grading.ui.component.GraderAbsenceLeaveCellRenderer;
 import org.olat.modules.grading.ui.component.GraderMailTemplate;
 import org.olat.modules.grading.ui.event.OpenEntryAssignmentsEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
+import org.olat.user.ui.absenceleave.CreateAbsenceLeaveController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -75,6 +78,7 @@ public class AssignedReferenceEntryListController extends FormBasicController {
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
 	private ContactFormController contactGraderCtrl;
+	private CreateAbsenceLeaveController addAbsenceLeaveCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	
 	@Autowired
@@ -86,7 +90,7 @@ public class AssignedReferenceEntryListController extends FormBasicController {
 		super(ureq, wControl, "assigned_entries");
 		this.grader = grader;
 		initForm(ureq);
-		loadModel();
+		loadModel(true);
 	}
 
 	@Override
@@ -100,6 +104,8 @@ public class AssignedReferenceEntryListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GEntryCol.open, "open"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GEntryCol.overdue, "overdue"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GEntryCol.oldestOpenAssignment));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GEntryCol.absence,
+				new GraderAbsenceLeaveCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GEntryCol.recordedTime));
 		
 		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(GEntryCol.tools);
@@ -120,14 +126,14 @@ public class AssignedReferenceEntryListController extends FormBasicController {
 		//
 	}
 	
-	private void loadModel() {
+	private void loadModel(boolean reaload) {
 		List<ReferenceEntryWithStatistics> statistics = gradingService.getGradedEntriesWithStatistics(grader);
 		List<AssignedReferenceEntryRow> rows = new ArrayList<>(statistics.size());
 		for(ReferenceEntryWithStatistics stats:statistics) {
 			rows.add(forgeRow(stats));
 		}
 		tableModel.setObjects(rows);
-		tableEl.reset(true, true, true);
+		tableEl.reset(reaload, reaload, true);
 	}
 	
 	private AssignedReferenceEntryRow forgeRow(ReferenceEntryWithStatistics statistics) {
@@ -149,6 +155,12 @@ public class AssignedReferenceEntryListController extends FormBasicController {
 		if(toolsCalloutCtrl == source || cmc == source) {
 			cleanUp();
 		} else if(contactGraderCtrl == source) {
+			cmc.deactivate();
+			cleanUp();
+		} else if(addAbsenceLeaveCtrl == source) {
+			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
+				loadModel(false);
+			}
 			cmc.deactivate();
 			cleanUp();
 		} else if(toolsCtrl == source) {
@@ -239,10 +251,21 @@ public class AssignedReferenceEntryListController extends FormBasicController {
 		cmc.activate();	
 	}
 	
+	private void doAddAbsenceLeave(UserRequest ureq, AssignedReferenceEntryRow row) {
+		OLATResourceable resource = row.getReferenceEntry().getOlatResource();
+		addAbsenceLeaveCtrl = new CreateAbsenceLeaveController(ureq, getWindowControl(), grader, resource, null);
+		listenTo(addAbsenceLeaveCtrl);
+		
+		String title = translate("absence.grader.title", new String[] { row.getDisplayname() });
+		cmc = new CloseableModalController(getWindowControl(), "close", addAbsenceLeaveCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();	
+	}
 
 	private class ToolsController extends BasicController {
 		
-		private Link sendMailLink;
+		private final Link sendMailLink;
+		private final Link absenceLink;
 		
 		private final AssignedReferenceEntryRow row;
 		
@@ -252,8 +275,8 @@ public class AssignedReferenceEntryListController extends FormBasicController {
 
 			VelocityContainer mainVC = createVelocityContainer("tools_assigned_entries");
 			
-			sendMailLink =addLink("tool.send.mail", "send_mail", "o_icon o_icon_mail", mainVC);
-			
+			sendMailLink = addLink("tool.send.mail", "send_mail", "o_icon o_icon_mail", mainVC);
+			absenceLink = addLink("tool.absence", "absence", "o_icon o_icon_absence_leave", mainVC);
 			putInitialPanel(mainVC);
 		}
 		
@@ -276,6 +299,9 @@ public class AssignedReferenceEntryListController extends FormBasicController {
 			if(sendMailLink == source) {
 				close();
 				doContact(ureq, row);
+			} else if(absenceLink == source) {
+				close();
+				doAddAbsenceLeave(ureq, row);
 			}
 		}
 		

@@ -20,6 +20,7 @@
 package org.olat.modules.grading.manager;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -73,16 +74,24 @@ import org.olat.modules.grading.model.GradingAssignmentImpl;
 import org.olat.modules.grading.model.GradingAssignmentSearchParameters;
 import org.olat.modules.grading.model.GradingAssignmentWithInfos;
 import org.olat.modules.grading.model.GradingSecurity;
+import org.olat.modules.grading.model.IdentityTimeRecordStatistics;
+import org.olat.modules.grading.model.OlatResourceMapKey;
+import org.olat.modules.grading.model.ReferenceEntryStatistics;
+import org.olat.modules.grading.model.ReferenceEntryTimeRecordStatistics;
 import org.olat.modules.grading.model.ReferenceEntryWithStatistics;
 import org.olat.modules.grading.ui.component.GraderMailTemplate;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryDataDeletable;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.manager.RepositoryEntryToTaxonomyLevelDAO;
 import org.olat.resource.OLATResource;
+import org.olat.user.AbsenceLeave;
 import org.olat.user.UserDataDeletable;
+import org.olat.user.manager.AbsenceLeaveDAO;
+import org.olat.user.manager.AbsenceLeaveHelper;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -96,7 +105,7 @@ import edu.emory.mathcs.backport.java.util.Collections;
  *
  */
 @Service
-public class GradingServiceImpl implements GradingService, UserDataDeletable, InitializingBean {
+public class GradingServiceImpl implements GradingService, UserDataDeletable, RepositoryEntryDataDeletable, InitializingBean {
 	
 	private static final Logger log = Tracing.createLoggerFor(GradingServiceImpl.class);
 	
@@ -109,11 +118,13 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, In
 	@Autowired
 	private TaxonomyModule taxonomyModule;
 	@Autowired
+	private AbsenceLeaveDAO absenceLeaveDao;
+	@Autowired
 	private TaxonomyLevelDAO taxonomyLevelDao;
 	@Autowired
 	private CoordinatorManager coordinatorManager;
 	@Autowired
-	private GradedToIdentityDAO gradedToIdentityDao;
+	private GraderToIdentityDAO gradedToIdentityDao;
 	@Autowired
 	private GradingAssignmentDAO gradingAssignmentDao;
 	@Autowired
@@ -129,6 +140,12 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, In
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		courseElementTitleCache = coordinatorManager.getCoordinator().getCacher().getCache(GradingService.class.getSimpleName(), "courseElementsTitle");
+	}
+	
+	@Override
+	public boolean deleteRepositoryEntryData(RepositoryEntry re) {
+		boolean hasAssignment = gradingAssignmentDao.hasGradingAssignment(re);
+		return !hasAssignment;
 	}
 
 	@Override
@@ -234,11 +251,27 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, In
 	@Override
 	public List<GraderToIdentity> getGraders(RepositoryEntry entry) {
 		return gradedToIdentityDao.getGraders(entry);
+	}	
+
+	@Override
+	public List<AbsenceLeave> getGradersAbsenceLeaves(RepositoryEntry entry) {
+		return gradedToIdentityDao.getGradersAbsenceLeaves(entry);
 	}
 
 	@Override
 	public List<GraderWithStatistics> getGradersWithStatistics(GradersSearchParameters searchParams) {
-		List<GraderToIdentity> graders = gradedToIdentityDao.findGraders(searchParams);
+		boolean useDatesForGraders = searchParams.getReferenceEntry() == null;
+		List<GraderToIdentity> graders = gradedToIdentityDao.findGraders(searchParams, useDatesForGraders);
+		
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.YEAR, -1);
+		Date absentFrom = cal.getTime();
+		cal.add(Calendar.YEAR, 2);
+		Date absentTo = cal.getTime();
+		List<AbsenceLeave> absenceLeaves = gradedToIdentityDao.findGradersAbsenceLeaves(searchParams, absentFrom, absentTo);
+		
+		List<IdentityTimeRecordStatistics> records = gradedToIdentityDao.findGradersRecordedTimeGroupByIdentity(searchParams);
+
 		List<GraderStatistics> rawStatistics = gradedToIdentityDao.getGradersStatistics(searchParams);
 		Map<Long,GraderStatistics> rawStatisticsMap = rawStatistics.stream()
 				.collect(Collectors.toMap(GraderStatistics::getKey, Function.identity(), (u, v) -> u));
@@ -252,12 +285,64 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, In
 			statistics.addGraderStatus(grader.getGraderStatus());
 		}
 		
+		for(IdentityTimeRecordStatistics record:records) {
+			GraderWithStatistics statistics = identityToStatistics.get(record.getKey());
+			statistics.addRecordedTimeInSeconds(record.getTime());
+		}
+		
+		for(AbsenceLeave absenceLeave:absenceLeaves) {
+			Identity absentIdentity = absenceLeave.getIdentity();
+			GraderWithStatistics statistics = identityToStatistics.get(absentIdentity.getKey());
+			statistics.addAbsenceLeave(absenceLeave);
+		}
+		
 		return new ArrayList<>(identityToStatistics.values());
 	}
 
 	@Override
 	public List<ReferenceEntryWithStatistics> getGradedEntriesWithStatistics(Identity grader) {
-		return gradedToIdentityDao.getReferenceEntriesStatistics(grader);
+		final List<ReferenceEntryStatistics> entriesStatistics = gradedToIdentityDao.getReferenceEntriesStatistics(grader);
+		final Map<Long,ReferenceEntryStatistics> entryKeyStatistics = entriesStatistics.stream()
+				.collect(Collectors.toMap(ReferenceEntryStatistics::getKey, Function.identity(), (u, v) -> u));
+		
+		GradersSearchParameters searchParams = new GradersSearchParameters();
+		searchParams.setGrader(grader);
+		
+		final List<RepositoryEntry> entries = gradedToIdentityDao.getReferenceRepositoryEntriesAsGrader(grader);
+		Map<OlatResourceMapKey,ReferenceEntryWithStatistics> resourceKeyStatistics = entries.stream().map(entry -> {
+			ReferenceEntryStatistics stats = entryKeyStatistics.get(entry.getKey());
+			if(stats == null) {
+				return new ReferenceEntryWithStatistics(entry);
+			}
+			return new ReferenceEntryWithStatistics(stats);
+		}).collect(Collectors.toMap(OlatResourceMapKey::new, Function.identity(), (u, v) -> u));
+
+		List<ReferenceEntryWithStatistics> statistics = new ArrayList<>(resourceKeyStatistics.values());
+		List<AbsenceLeave> absenceLeaves = absenceLeaveDao.getAbsenceLeaves(grader);
+		for(AbsenceLeave absenceLeave:absenceLeaves) {
+			if(StringHelper.containsNonWhitespace(absenceLeave.getResName())) {
+				ReferenceEntryWithStatistics stats = resourceKeyStatistics
+						.get(new OlatResourceMapKey(absenceLeave.getResName(), absenceLeave.getResId()));
+				if(stats != null) {
+					stats.addAbsenceLeave(absenceLeave);
+				}
+			} else {
+				for(ReferenceEntryWithStatistics stats:statistics) {
+					stats.addAbsenceLeave(absenceLeave);
+				}
+			}
+		}
+		
+		List<ReferenceEntryTimeRecordStatistics> records = gradedToIdentityDao.findGradersRecordedTimeGroupByEntry(searchParams);
+		if(!records.isEmpty()) {
+			Map<Long,ReferenceEntryWithStatistics> keyStatistics = statistics.stream()
+					.collect(Collectors.toMap(ReferenceEntryWithStatistics::getKey, Function.identity(), (u, v) -> u));
+			for(ReferenceEntryTimeRecordStatistics record:records) {
+				ReferenceEntryWithStatistics stats = keyStatistics.get(record.getKey());
+				stats.addRecordedTimeInSeconds(record.getTime());
+			}
+		}
+		return statistics;
 	}
 	
 	@Override
@@ -504,6 +589,20 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, In
 		return sendResult;
 	}
 	
+	private MailerResult reminder(Identity recipient, RepositoryEntry entry, String subject, String body) {
+		
+		GraderMailTemplate template = new GraderMailTemplate(subject, body);
+		decorateGraderMailTemplate(entry, template);
+
+		MailContext context = new MailContextImpl("[CoachSite:0][Grading:0]");
+		
+		MailerResult result = new MailerResult();
+		MailBundle bundle = mailManager.makeMailBundle(context, recipient, template, null, null, result);
+		MailerResult sendResult = mailManager.sendMessage(bundle);
+		result.append(sendResult);
+		return sendResult;
+	}
+	
 	private GradingAssignment decorateGraderMailTemplate(GradingAssignment assignment, GraderMailTemplate template) {
 		if(template == null) return assignment;
 		
@@ -545,6 +644,38 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, In
 			}
 		}
 	}
+	
+	@Override
+	public void sendGradersAsssignmentsNotification() {
+		List<Identity> gradersToNotify = gradingAssignmentDao.getGradersIdentityToNotify();
+		dbInstance.commit();
+
+		for(Identity graderToNotify:gradersToNotify) {
+			sendGraderAsssignmentsNotification(graderToNotify);
+		}	
+	}
+	
+	public void sendGraderAsssignmentsNotification(Identity grader) {
+		List<GradingAssignment> assignmentsToNotify = gradingAssignmentDao.getAssignmentsForGradersNotify(grader);
+
+		List<RepositoryEntry> newReferenceEntries = assignmentsToNotify.stream()
+				.filter(assignment -> assignment.getAssignmentNotificationDate() == null)
+				.map(GradingAssignment::getReferenceEntry)
+				.distinct().collect(Collectors.toList());
+		for(RepositoryEntry newReferenceEntry:newReferenceEntries) {
+			RepositoryEntryGradingConfiguration config = gradingConfigurationDao.getConfiguration(newReferenceEntry);
+			if(StringHelper.containsNonWhitespace(config.getNotificationBody())) {
+				reminder(grader, newReferenceEntry, config.getNotificationSubject(), config.getNotificationBody());
+			}
+		}
+		
+		Date now = new Date();
+		for(GradingAssignment assignmentToNotify:assignmentsToNotify) {
+			assignmentToNotify.setAssignmentNotificationDate(now);
+			gradingAssignmentDao.updateAssignment(assignmentToNotify);
+		}
+		dbInstance.commitAndCloseSession();
+	}
 
 	@Override
 	public void assignGrader(RepositoryEntry referenceEntry, AssessmentEntry assessmentEntry, boolean updateAssessmentDate) {	
@@ -570,11 +701,7 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, In
 	}
 	
 	protected GraderToIdentity selectGrader(RepositoryEntry referenceEntry) {
-		List<GraderToIdentity> graders = gradedToIdentityDao.getGraders(referenceEntry);
-		List<GraderToIdentity> activeGraders = graders.stream()
-				.filter(grader -> grader.getGraderStatus().equals(GraderStatus.activated))
-				.collect(Collectors.toList());
-		
+		List<GraderToIdentity> activeGraders = activeGraders(referenceEntry);
 		GraderToIdentity choosedGrader = null;
 		if(activeGraders.size() == 1) {
 			choosedGrader = activeGraders.get(0);
@@ -585,6 +712,29 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, In
 			choosedGrader = selectedLessAssigned(gradersStatistics, activeGraders);
 		}
 		return choosedGrader;
+	}
+	
+	/**
+	 * @param referenceEntry The reference / test entry (mandatory)
+	 * @return A list of graders, active and not in vacation
+	 */
+	private List<GraderToIdentity> activeGraders(RepositoryEntry referenceEntry) {
+		OLATResource resource = referenceEntry.getOlatResource();
+		List<GraderToIdentity> graders = gradedToIdentityDao.getGraders(referenceEntry);
+		List<AbsenceLeave> absenceLeaves = gradedToIdentityDao.getGradersAbsenceLeaves(referenceEntry);
+		final Set<Long> excludedGraderKeys = new HashSet<>();
+		Date nextWorkingDay = CalendarUtils.addWorkingDays(new Date(), 1);
+		for(AbsenceLeave absenceLeave:absenceLeaves) {
+			// the absence leaves are on the reference entry (no sub-identifier needed)
+			if(AbsenceLeaveHelper.isOnLeave(nextWorkingDay, absenceLeave, resource, null)) {
+				excludedGraderKeys.add(absenceLeave.getIdentity().getKey());
+			}
+		}
+
+		return graders.stream()
+				.filter(grader -> grader.getGraderStatus().equals(GraderStatus.activated))
+				.filter(grader -> !excludedGraderKeys.contains(grader.getIdentity().getKey()))
+				.collect(Collectors.toList());
 	}
 	
 	private GraderToIdentity selectedLessAssigned(List<GraderStatistics> gradersStatistics, List<GraderToIdentity> activeGraders) {
@@ -733,6 +883,12 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, In
 	}
 
 	@Override
+	public List<RepositoryEntry> getReferenceRepositoryEntriesAsGrader(IdentityRef grader) {
+		List<RepositoryEntry> entries = gradedToIdentityDao.getReferenceRepositoryEntriesAsGrader(grader);
+		return new ArrayList<>(new HashSet<>(entries));
+	}
+
+	@Override
 	public List<RepositoryEntry> getEntriesWithGrading(RepositoryEntryRef referenceEntry) {
 		return gradingAssignmentDao.getEntries(referenceEntry);
 	}
@@ -751,10 +907,11 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, In
 	}
 
 	@Override
-	public GradingTimeRecordRef getCurrentTimeRecord(GradingAssignment assignment) {
-		GradingTimeRecord record = gradingTimeRecordDao.loadRecord(assignment.getGrader(), assignment);
+	public GradingTimeRecordRef getCurrentTimeRecord(GradingAssignment assignment, Date date) {
+		date = CalendarUtils.startOfDay(date);
+		GradingTimeRecord record = gradingTimeRecordDao.loadRecord(assignment.getGrader(), assignment, date);
 		if(record == null) {
-			record = gradingTimeRecordDao.createRecord(assignment.getGrader(), assignment);
+			record = gradingTimeRecordDao.createRecord(assignment.getGrader(), assignment, date);
 			dbInstance.commit();
 		}
 		return record;

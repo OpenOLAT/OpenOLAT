@@ -61,6 +61,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.iq.QTI21IdentityListCourseNodeToolsController.AssessmentTestSessionDetailsComparator;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.types.ImsQTI21Resource;
@@ -81,6 +82,7 @@ import org.olat.ims.qti21.ui.assessment.CorrectionOverviewController;
 import org.olat.ims.qti21.ui.assessment.ValidationXmlSignatureController;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticsToolController;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -88,6 +90,8 @@ import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.assessment.ui.event.CompleteAssessmentTestSessionEvent;
+import org.olat.modules.grading.GradingAssignment;
+import org.olat.modules.grading.GradingService;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -119,6 +123,8 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 
 	@Autowired
 	private QTI21Service qtiService;
+	@Autowired
+	private GradingService gradingService;
 	@Autowired
 	private BusinessGroupService groupService;
 	@Autowired
@@ -437,10 +443,14 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		
 		Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
 		
+		CourseEnvironment courseEnv = getCourseEnvironment();
+		RepositoryEntry testEntry = getReferencedRepositoryEntry();
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+
 		for(AssessmentTestSession testSession:testSessionsToComplete) {
 			UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
-					.createAndInitUserCourseEnvironment(testSession.getIdentity(), getCourseEnvironment());
-			ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
+					.createAndInitUserCourseEnvironment(testSession.getIdentity(), courseEnv);
+			AssessmentEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
 			
 			BigDecimal finalScore = testSession.getFinalScore();
 			Float score = finalScore == null ? null : finalScore.floatValue();
@@ -455,6 +465,14 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 					scoreEval.getCurrentRunStatus(), testSession.getKey());
 			courseAssessmentService.updateScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,
 					getIdentity(), false, Role.coach);
+			
+			if(assessmentConfig.isExternalGrading() && status == AssessmentEntryStatus.done) {
+				AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, assessedUserCourseEnv);
+				GradingAssignment assignment = gradingService.getGradingAssignment(testEntry, assessmentEntry);
+				if(assignment != null) {
+					gradingService.assignmentDone(assignment);
+				}
+			}
 		}
 	}
 	

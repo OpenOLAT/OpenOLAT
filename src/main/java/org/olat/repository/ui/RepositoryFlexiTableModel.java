@@ -19,6 +19,7 @@
  */
 package org.olat.repository.ui;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,7 +30,9 @@ import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
@@ -52,9 +55,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class RepositoryFlexiTableModel extends DefaultFlexiTableDataModel<RepositoryEntry>
-implements SortableFlexiTableDataModel<RepositoryEntry> {
+implements SortableFlexiTableDataModel<RepositoryEntry>, FilterableFlexiTableModel {
 	
 	private final Translator translator;
+	private List<RepositoryEntry> backups;
 	private final Map<String,String> fullNames = new HashMap<>();
 	private final Map<Long,OLATResourceAccess> repoEntriesWithOffer = new HashMap<>();
 	
@@ -80,6 +84,31 @@ implements SortableFlexiTableDataModel<RepositoryEntry> {
 		}
 	}
 	
+	@Override
+	public void filter(String searchString, List<FlexiTableFilter> filters) {
+		if(StringHelper.containsNonWhitespace(searchString)) {
+			List<RepositoryEntry> filteredRows = new ArrayList<>();
+			searchString = searchString.toLowerCase();
+			for(RepositoryEntry row:backups) {
+				if(accept(searchString, row)) {
+					filteredRows.add(row);
+				}
+			}
+			super.setObjects(filteredRows);
+		} else {
+			super.setObjects(backups);
+		}
+	}
+	
+	private boolean accept(String searchString, RepositoryEntry entry) {
+		return accept(searchString, entry.getDisplayname())
+				|| accept(searchString, entry.getExternalRef());
+	}
+	
+	private boolean accept(String searchString, String value) {
+		return StringHelper.containsNonWhitespace(value) && value.toLowerCase().contains(searchString);
+	}
+
 	@Override
 	public Object getValueAt(int row, int col) {
 		RepositoryEntry entry = getObject(row);
@@ -120,6 +149,7 @@ implements SortableFlexiTableDataModel<RepositoryEntry> {
 	
 	@Override
 	public void setObjects(List<RepositoryEntry> objects) {
+		backups = objects;
 		super.setObjects(objects);
 		repoEntriesWithOffer.clear();
 		secondaryInformations(objects);

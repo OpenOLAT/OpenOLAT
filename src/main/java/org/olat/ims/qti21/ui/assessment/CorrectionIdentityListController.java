@@ -343,9 +343,12 @@ public class CorrectionIdentityListController extends FormBasicController {
 		if(identityItemListCtrl != null) {
 			stackPanel.popController(identityItemListCtrl);
 		}
+		
+		Identity assessedIdentity = row.getIdentity();
+		boolean readOnly = model.isReadOnly(assessedIdentity); 
 		String title = anonymous ? row.getUser() : userManager.getUserDisplayName(row.getIdentity());
 		identityItemListCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel,
-				model, row.getIdentity(), title);
+				model, assessedIdentity, title, readOnly);
 		listenTo(identityItemListCtrl);
 		
 		String crumb;

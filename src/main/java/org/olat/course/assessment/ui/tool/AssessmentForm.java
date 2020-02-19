@@ -518,7 +518,7 @@ public class AssessmentForm extends FormBasicController {
 		if (hasAttempts) {
 			attemptsValue = courseAssessmentService.getAttempts(courseNode, assessedUserCourseEnv);
 			if(attemptsValue == null) {
-				attemptsValue = new Integer(0);
+				attemptsValue = Integer.valueOf(0);
 			}
 			attempts = uifactory.addIntegerElement("attempts", "form.attempts", attemptsValue.intValue(), formLayout);
 			attempts.setDisplaySize(3);
@@ -567,7 +567,6 @@ public class AssessmentForm extends FormBasicController {
 					translate("form.passed.false")
 			};
 
-			//passed = new StaticSingleSelectionElement("form.passed", trueFalseKeys, passedNotPassedValues);
 			passed = uifactory.addRadiosVertical("passed", "form.passed", formLayout, trueFalseKeys, passedNotPassedValues);	
 			passed.setElementCssClass("o_sel_assessment_form_passed");
 			

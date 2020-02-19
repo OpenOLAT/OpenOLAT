@@ -39,6 +39,7 @@ import org.olat.modules.grading.model.ReferenceEntryWithStatistics;
 import org.olat.modules.grading.ui.component.GraderMailTemplate;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.user.AbsenceLeave;
 
 /**
  * 
@@ -68,6 +69,8 @@ public interface GradingService {
 	public void addGraders(RepositoryEntry entry, List<Identity> identities, GraderMailTemplate template, MailerResult mailerResult);
 
 	public List<GraderToIdentity> getGraders(RepositoryEntry entry);
+	
+	public List<AbsenceLeave> getGradersAbsenceLeaves(RepositoryEntry entry);
 	
 	public List<GraderWithStatistics> getGradersWithStatistics(GradersSearchParameters searchParams);
 	
@@ -172,6 +175,15 @@ public interface GradingService {
 	public List<RepositoryEntry> getReferenceRepositoryEntriesWithGrading(Identity identity);
 	
 	/**
+	 * Return a list of repository entries with grading enabled and
+	 * where the specified identity is grader.
+	 * 
+	 * @param identity The grader which want to access the list
+	 * @return A list of entries (nothing fetched)
+	 */
+	public List<RepositoryEntry> getReferenceRepositoryEntriesAsGrader(IdentityRef grader);
+	
+	/**
 	 * Typically the courses which have this test for
 	 * grading purpose.
 	 * 
@@ -210,13 +222,21 @@ public interface GradingService {
 	 * @param assignment The assignment
 	 * @return A reference of the record
 	 */
-	public GradingTimeRecordRef getCurrentTimeRecord(GradingAssignment assignment);
+	public GradingTimeRecordRef getCurrentTimeRecord(GradingAssignment assignment, Date date);
 	
 	public void appendTimeTo(GradingTimeRecordRef record, long addedTime, TimeUnit unit);
 	
 	public String getCachedCourseElementTitle(RepositoryEntry entry, String subIdenty);
 	
+	/**
+	 * Send reminder 1 and 2
+	 */
 	public void sendReminders();
+	
+	/**
+	 * Send notification to graders with new and overdue assignments.
+	 */
+	public void sendGradersAsssignmentsNotification();
 
 
 }

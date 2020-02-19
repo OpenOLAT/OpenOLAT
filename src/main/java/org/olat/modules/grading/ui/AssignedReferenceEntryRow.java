@@ -19,12 +19,15 @@
  */
 package org.olat.modules.grading.ui;
 
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.modules.grading.model.ReferenceEntryWithStatistics;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.user.AbsenceLeave;
 
 /**
  * 
@@ -34,29 +37,37 @@ import org.olat.repository.RepositoryEntryRef;
  */
 public class AssignedReferenceEntryRow implements RepositoryEntryRef {
 	
+	private final RepositoryEntry entry;
 	private final ReferenceEntryWithStatistics statistics;
+	private final List<AbsenceLeave> absenceLeaves;
 
 	private FormLink toolsLink;
 	
 	public AssignedReferenceEntryRow(ReferenceEntryWithStatistics statistics) {
+		entry = statistics.getEntry();
 		this.statistics = statistics;
+		if(statistics.getAbsenceLeaves() != null && !statistics.getAbsenceLeaves().isEmpty()) {
+			absenceLeaves = statistics.getAbsenceLeaves();
+		} else {
+			absenceLeaves = Collections.emptyList();
+		}
 	}
 	
 	@Override
 	public Long getKey() {
-		return statistics.getEntry().getKey();
+		return entry.getKey();
 	}
 	
 	public RepositoryEntry getReferenceEntry() {
-		return statistics.getEntry();
+		return entry;
 	}
 	
 	public String getDisplayname() {
-		return statistics.getEntry().getDisplayname();
+		return entry.getDisplayname();
 	}
 	
 	public String getExternalRef() {
-		return statistics.getEntry().getExternalRef();
+		return entry.getExternalRef();
 	}
 
 	public long getRecordedTimeInSeconds() {
@@ -64,23 +75,27 @@ public class AssignedReferenceEntryRow implements RepositoryEntryRef {
 	}
 	
 	public long getTotalAssignments() {
-		return statistics.getTotalAssignments();
+		return statistics.getStatistics().getTotalAssignments();
 	}
 	
 	public long getNumOfDoneAssignments() {
-		return statistics.getNumOfDoneAssignments();
+		return statistics.getStatistics().getNumOfDoneAssignments();
 	}
 	
 	public long getNumOfOpenAssignments() {
-		return statistics.getNumOfOpenAssignments();
+		return statistics.getStatistics().getNumOfOpenAssignments();
 	}
 	
 	public long getNumOfOverdueAssignments() {
-		return statistics.getNumOfOverdueAssignments();
+		return statistics.getStatistics().getNumOfOverdueAssignments();
 	}
 	
 	public Date getOldestOpenAssignment() {
-		return statistics.getOldestOpenAssignment();
+		return statistics.getStatistics().getOldestOpenAssignment();
+	}
+	
+	public List<AbsenceLeave> getAbsenceLeaves() {
+		return absenceLeaves;
 	}
 
 	public FormLink getToolsLink() {

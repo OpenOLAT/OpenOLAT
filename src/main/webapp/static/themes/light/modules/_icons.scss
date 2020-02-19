@@ -24,6 +24,7 @@ $fa-css-prefix: "o_icon" !default;
 /* OpenOLAT Icons */
 .o_icon_absence:before { content: $fa-var-times; }
 .o_icon_absence_authorized:before { content: $fa-var-check-circle-o; color: $brand-success }
+.o_icon_absence_leave:before { content: $fa-var-clock-o; }
 .o_icon_absence_unauthorized:before { content: $fa-var-exclamation-circle; color: $brand-danger }
 .o_icon_accepted:before { content: $fa-var-thumbs-up;}
 .o_icon_accessibility:before { content: $fa-var-wheelchair; }

@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.modules.grading.GraderStatus;
+import org.olat.user.AbsenceLeave;
 
 /**
  * 
@@ -36,10 +37,12 @@ public class GraderWithStatistics {
 	private final Identity grader;
 	private final GraderStatistics statistics;
 	private final List<GraderStatus> graderStatus = new ArrayList<>(4);
+	private final List<AbsenceLeave> absenceLeaves = new ArrayList<>(4);
+	private long recordedTimeInSeconds = 0l;
 	
 	public GraderWithStatistics(Identity grader, GraderStatistics statistics) {
 		this.grader = grader;
-		this.statistics = statistics;
+		this.statistics = statistics == null ? GraderStatistics.empty(grader.getKey()) : statistics;
 	}
 	
 	public Identity getGrader() {
@@ -54,6 +57,22 @@ public class GraderWithStatistics {
 		if(!graderStatus.contains(status)) {
 			graderStatus.add(status);
 		}
+	}
+	
+	public List<AbsenceLeave> getAbsenceLeaves() {
+		return absenceLeaves;
+	}
+	
+	public void addAbsenceLeave(AbsenceLeave absence) {
+		absenceLeaves.add(absence);
+	}
+
+	public long getRecordedTimeInSeconds() {
+		return recordedTimeInSeconds;
+	}
+
+	public void addRecordedTimeInSeconds(long seconds) {
+		recordedTimeInSeconds += seconds;
 	}
 
 	public GraderStatistics getStatistics() {

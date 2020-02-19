@@ -41,19 +41,19 @@ public class StatisticsBusinessGroupRow extends BusinessGroupRow {
 		numPending = pending == null ? 0 : pending.intValue();
 	}
 
-	public long getNumOfCoaches() {
+	public int getNumOfCoaches() {
 		return numOfCoaches;
 	}
 	
-	public long getNumOfParticipants() {
+	public int getNumOfParticipants() {
 		return numOfParticipants;
 	}
 	
-	public long getNumWaiting() {
+	public int getNumWaiting() {
 		return numWaiting;
 	}
 
-	public long getNumPending() {
+	public int getNumPending() {
 		return numPending;
 	}
 

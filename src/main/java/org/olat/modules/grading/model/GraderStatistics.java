@@ -37,25 +37,23 @@ public class GraderStatistics implements IdentityRef {
 	private final long open;
 	private final long overdue;
 	private final Date oldest;
-	private final long timeInSeconds;
 	
-	public GraderStatistics(Long identityKey, long total, long done, long open, long overdue, Date oldest, long timeInSeconds) {
+	public GraderStatistics(Long identityKey, long total, long done, long open, long overdue, Date oldest) {
 		this.identityKey = identityKey;
 		this.total = total;
 		this.done = done;
 		this.open = open;
 		this.overdue = overdue;
 		this.oldest = oldest;
-		this.timeInSeconds = timeInSeconds;
+	}
+	
+	public static GraderStatistics empty(Long identityKey) {
+		return new GraderStatistics(identityKey, 0l, 0l, 0l, 0l, null);
 	}
 	
 	@Override
 	public Long getKey() {
 		return identityKey;
-	}
-	
-	public long getRecordedTimeInSeconds() {
-		return timeInSeconds;
 	}
 	
 	public long getTotalAssignments() {

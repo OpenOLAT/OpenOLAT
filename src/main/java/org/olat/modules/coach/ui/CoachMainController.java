@@ -101,12 +101,13 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 		menu.setExpandSelectedNode(false);
 		menu.setRootVisible(false);
 		menu.setTreeModel(buildTreeModel());
+		boolean hideCol1 = menu.getTreeModel().getRootNode().getChildCount() == 1;
 
 		content = new TooledStackedPanel("coaching-stack", getTranslator(), this);
 		content.setNeverDisposeRootController(true);
 		content.setToolbarAutoEnabled(true);
 
-		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menu, content, "coaching");
+		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), hideCol1 ? null : menu, content, "coaching");
 		columnLayoutCtr.addCssClassToMain("o_coaching");
 		listenTo(columnLayoutCtr); // auto dispose later
 		putInitialPanel(columnLayoutCtr.getInitialComponent());

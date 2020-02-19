@@ -74,7 +74,10 @@ public class GradingAssignmentImpl implements GradingAssignment, Persistable {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="g_assignment_date", nullable=true, insertable=true, updatable=true)
 	private Date assignmentDate;
-
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="g_assignment_notification", nullable=true, insertable=true, updatable=true)
+	private Date assignmentNotificationDate;
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="g_reminder_1", nullable=true, insertable=true, updatable=true)
 	private Date reminder1Date;
@@ -171,6 +174,16 @@ public class GradingAssignmentImpl implements GradingAssignment, Persistable {
 	@Override
 	public void setAssignmentDate(Date assignmentDate) {
 		this.assignmentDate = assignmentDate;
+	}
+
+	@Override
+	public Date getAssignmentNotificationDate() {
+		return assignmentNotificationDate;
+	}
+
+	@Override
+	public void setAssignmentNotificationDate(Date assignmentNotificationDate) {
+		this.assignmentNotificationDate = assignmentNotificationDate;
 	}
 
 	@Override

@@ -19,6 +19,8 @@
  */
 package org.olat.modules.grading;
 
+import java.util.Date;
+
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 
@@ -36,6 +38,8 @@ public interface GradingTimeRecord extends GradingTimeRecordRef, CreateInfo, Mod
 	 * @return time in seconds
 	 */
 	public long getTime();
+	
+	public Date getDateOfRecord();
 	
 	public GraderToIdentity getGrader();
 	

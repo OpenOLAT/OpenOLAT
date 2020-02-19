@@ -88,6 +88,7 @@ public class AssignmentsSearchController extends FormBasicController {
 	private SingleSelection referenceEntriesEl;
 	private MultipleSelectionElement taxonomyLevelEl;
 	
+	private final boolean myView;
 	private final Identity grader;
 	private List<Identity> graders;
 	private List<RepositoryEntry> entries;
@@ -107,9 +108,10 @@ public class AssignmentsSearchController extends FormBasicController {
 	private RepositoryModule repositoryModule;
 	
 	public AssignmentsSearchController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry referenceEntry, Identity grader, Form rootForm) {
+			RepositoryEntry referenceEntry, Identity grader, boolean myView, Form rootForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "assignments_search", rootForm);
 		this.grader = grader;
+		this.myView = myView;
 		this.referenceEntry = referenceEntry;
 		initForm(ureq);
 		loadSearchLists();
@@ -240,7 +242,11 @@ public class AssignmentsSearchController extends FormBasicController {
 		entriesEl.setKeysAndValues(entriesKeyValues.keys(), entriesKeyValues.values(), null);
 		
 		if(referenceEntry == null) {
-			referenceEntries = gradingService.getReferenceRepositoryEntriesWithGrading(getIdentity());
+			if(myView) {
+				referenceEntries = gradingService.getReferenceRepositoryEntriesAsGrader(getIdentity());
+			} else {
+				referenceEntries = gradingService.getReferenceRepositoryEntriesWithGrading(getIdentity());
+			}
 			Collections.sort(referenceEntries, new RepositoryEntryComparator(getLocale()));
 			
 			KeyValues referenceKeyValues = new KeyValues();

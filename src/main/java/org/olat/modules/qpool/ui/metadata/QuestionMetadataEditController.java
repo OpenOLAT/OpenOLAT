@@ -190,6 +190,7 @@ public class QuestionMetadataEditController extends FormBasicController {
 		differentiationEl.setEnabled(canEditMetadata);
 		numAnswerAltEl.setEnabled(canEditMetadata);
 		usageEl.setEnabled(canEditMetadata);
+		correctionTimeMinuteElement.setEnabled(canEditMetadata);
 		buttonsCont.setVisible(canEditMetadata);
 	}
 

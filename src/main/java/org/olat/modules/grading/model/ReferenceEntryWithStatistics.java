@@ -19,9 +19,12 @@
  */
 package org.olat.modules.grading.model;
 
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
+import org.olat.user.AbsenceLeave;
 
 /**
  * 
@@ -29,51 +32,49 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ReferenceEntryWithStatistics {
+public class ReferenceEntryWithStatistics implements RepositoryEntryRef {
 	
-	private final long total;
-	private final long done;
-	private final long open;
-	private final long overdue;
-	private final Date oldest;
-	private final long timeInSeconds;
 	private final RepositoryEntry entry;
-	
-	public ReferenceEntryWithStatistics(RepositoryEntry entry, long total, long done, long open, long overdue, Date oldest, long timeInSeconds) {
+	private final ReferenceEntryStatistics statistics;
+	private long recordedTimeInSeconds = 0l;
+	private final List<AbsenceLeave> absenceLeaves = new ArrayList<>(4);
+
+	public ReferenceEntryWithStatistics(RepositoryEntry entry) {
 		this.entry = entry;
-		this.total = total;
-		this.done = done;
-		this.open = open;
-		this.overdue = overdue;
-		this.oldest = oldest;
-		this.timeInSeconds = timeInSeconds;
+		statistics = ReferenceEntryStatistics.empty(entry); 
+	}
+	
+	public ReferenceEntryWithStatistics(ReferenceEntryStatistics statistics) {
+		this.entry = statistics.getEntry();
+		this.statistics = statistics;
+	}
+	
+	@Override
+	public Long getKey() {
+		return entry.getKey();
 	}
 	
 	public RepositoryEntry getEntry() {
 		return entry;
 	}
+
+	public ReferenceEntryStatistics getStatistics() {
+		return statistics;
+	}
 	
+	public List<AbsenceLeave> getAbsenceLeaves() {
+		return absenceLeaves;
+	}
+	
+	public void addAbsenceLeave(AbsenceLeave absenceLeave) {
+		absenceLeaves.add(absenceLeave);
+	}
+
 	public long getRecordedTimeInSeconds() {
-		return timeInSeconds;
+		return recordedTimeInSeconds;
 	}
-	
-	public long getTotalAssignments() {
-		return total;
-	}
-	
-	public long getNumOfDoneAssignments() {
-		return done;
-	}
-	
-	public long getNumOfOpenAssignments() {
-		return open;
-	}
-	
-	public long getNumOfOverdueAssignments() {
-		return overdue;
-	}
-	
-	public Date getOldestOpenAssignment() {
-		return oldest;
+
+	public void addRecordedTimeInSeconds(long seconds) {
+		recordedTimeInSeconds += seconds;
 	}
 }

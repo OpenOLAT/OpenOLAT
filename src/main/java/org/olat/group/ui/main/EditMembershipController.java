@@ -204,7 +204,9 @@ public class EditMembershipController extends FormBasicController {
 		Roles roles = ureq.getUserSession().getRoles();
 		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
 		if(repoEntry == null && businessGroup != null) {
-			params.setBusinessGroupKey(businessGroup.getKey());
+			List<Long> keys = new ArrayList<>();
+			keys.add(businessGroup.getKey());
+			params.setBusinessGroupKeys(keys);
 		} else {
 			params.setRepositoryEntry(repoEntry);
 		}

@@ -991,8 +991,8 @@ public class BusinessGroupDAO {
 			query.setParameter("identityKey", identity.getKey());
 		}
 		
-		if(params.getBusinessGroupKey() != null) {
-			query.setParameter("businessGroupKey", params.getBusinessGroupKey());
+		if(params.getBusinessGroupKeys() != null && !params.getBusinessGroupKeys().isEmpty()) {
+			query.setParameter("businessGroupKeys", params.getBusinessGroupKeys());
 		}
 		
 		if(params.getRepositoryEntry() != null) {
@@ -1068,9 +1068,9 @@ public class BusinessGroupDAO {
 			sb.append(")");
 		}
 		
-		if(params.getBusinessGroupKey() != null) {
+		if(params.getBusinessGroupKeys() != null) {
 			where = PersistenceHelper.appendAnd(sb, where);
-			sb.append(" bgi.key=:businessGroupKey");
+			sb.append(" bgi.key in (:businessGroupKeys)");
 		}
 		
 		if(params.isMarked()) {

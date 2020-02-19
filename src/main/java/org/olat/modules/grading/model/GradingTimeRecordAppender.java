@@ -57,6 +57,10 @@ public class GradingTimeRecordAppender implements Persistable {
 	@Column(name="g_time", nullable=false, insertable=false, updatable=true)
 	private long time;
 	
+	@Temporal(TemporalType.DATE)
+	@Column(name="g_date_record", nullable=false, insertable=true, updatable=false)
+	private Date dateOfRecord;
+	
 	@Column(name="fk_grader", nullable=false, insertable=false, updatable=false)
 	private Long graderKey;
 	@Column(name="fk_assignment", nullable=true, insertable=false, updatable=false)

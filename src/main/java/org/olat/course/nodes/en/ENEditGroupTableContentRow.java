@@ -19,6 +19,11 @@
  */
 package org.olat.course.nodes.en;
 
+import org.olat.group.BusinessGroup;
+import org.olat.group.model.StatisticsBusinessGroupRow;
+
+import com.rometools.rome.feed.rss.Description;
+
 /**
  * 
  * Initial date: 23 Dec 2019<br>
@@ -29,15 +34,44 @@ public class ENEditGroupTableContentRow {
 	
 	private final Long key;
 	private final String groupName;
+	private final String description;
+	private final int minParticipants;
+	private final int maxParticipants;
+	private final int participants;
+	private final int onWaitinglist;
+	private final boolean waitinglistEnabled;
 	
 	public ENEditGroupTableContentRow() {
 		key = null;
 		groupName = null;
+		description = null;
+		minParticipants = 0;
+		maxParticipants = 0;
+		participants = 0;
+		onWaitinglist = 0;
+		waitinglistEnabled = false;
 	}
 	
-	public ENEditGroupTableContentRow(Long key, String groupName) {
-		this.key = key;
-		this.groupName = groupName;
+	public ENEditGroupTableContentRow(BusinessGroup group, EnrollmentRow enrollment) {
+		this.key = group.getKey();
+		this.groupName = group.getName();
+		this.description = group.getDescription() != null ? group.getDescription() : "";
+		this.maxParticipants = group.getMaxParticipants() != null ? group.getMaxParticipants() : -1;
+		this.minParticipants = group.getMinParticipants() != null ? group.getMinParticipants() : -1;
+		this.waitinglistEnabled = group.getWaitingListEnabled();
+		this.onWaitinglist = enrollment.getNumInWaitingList();
+		this.participants = enrollment.getNumOfParticipants();
+	}
+	
+	public ENEditGroupTableContentRow(BusinessGroup group, StatisticsBusinessGroupRow stats) {
+		this.key = group.getKey();
+		this.groupName = group.getName();
+		this.description = group.getDescription() != null ? group.getDescription() : "";
+		this.maxParticipants = group.getMaxParticipants() != null ? group.getMaxParticipants() : -1;
+		this.minParticipants = group.getMinParticipants() != null ? group.getMinParticipants() : -1;
+		this.waitinglistEnabled = group.getWaitingListEnabled();
+		this.onWaitinglist = stats.getNumWaiting();
+		this.participants = stats.getNumOfParticipants();
 	}
 	
 	
@@ -48,4 +82,30 @@ public class ENEditGroupTableContentRow {
 	public String getGroupName() {
 		return groupName;
 	}
+	
+	public String getDescription() {
+		return description;
+	}
+
+	public String getMinParticipants() {
+		return minParticipants > -1 ? String.valueOf(minParticipants) : " - ";
+	}
+
+	public String getMaxParticipants() {
+		return maxParticipants > -1 ? String.valueOf(maxParticipants) : " - ";
+	}
+
+	public int getParticipants() {
+		return participants;
+	}
+
+	public int getOnWaitinglist() {
+		return onWaitinglist;
+	}
+
+	public boolean isWaitinglistEnabled() {
+		return waitinglistEnabled;
+	}
+	
+	
 }

@@ -20,6 +20,7 @@
 package org.olat.modules.grading.ui;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -74,16 +76,25 @@ import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
+import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
+import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.assessment.CorrectionIdentityAssessmentItemListController;
 import org.olat.ims.qti21.ui.assessment.CorrectionOverviewModel;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.assessment.ui.event.CompleteAssessmentTestSessionEvent;
 import org.olat.modules.co.ContactFormController;
@@ -112,6 +123,7 @@ import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
 
@@ -166,6 +178,8 @@ public class GradingAssignmentsListController extends FormBasicController implem
 	private CorrectionIdentityAssessmentItemListController correctionCtrl; 
 
 	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private QTI21Service qtiService;
 	@Autowired
 	private UserManager userManager;
@@ -175,6 +189,8 @@ public class GradingAssignmentsListController extends FormBasicController implem
 	private GradingService gradingService;
 	@Autowired
 	private BaseSecurityModule securityModule;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	public GradingAssignmentsListController(UserRequest ureq, WindowControl wControl, GradingSecurityCallback secCallback) {
 		this(ureq, wControl, null, null, secCallback);
@@ -211,7 +227,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 		assessedUserPropertyHandlers = userManager.getUserPropertyHandlersFor(ASSESSED_PROPS_ID, isAdministrativeUser);
 		
-		searchCtrl = new AssignmentsSearchController(ureq, getWindowControl(), testEntry, grader, mainForm);
+		searchCtrl = new AssignmentsSearchController(ureq, getWindowControl(), testEntry, grader, myView, mainForm);
 		listenTo(searchCtrl);
 		
 		initForm(ureq);
@@ -457,7 +473,10 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		} else if(correctionCtrl == source) {
 			if(event instanceof CompleteAssessmentTestSessionEvent) {
 				stackPanel.popController(correctionCtrl);
-				doCompleteCorrection(correctionCtrl.getGradingAssignment());
+				CompleteAssessmentTestSessionEvent catse = (CompleteAssessmentTestSessionEvent)event;
+				doUpdateCourseNode(catse.getTestSessions(), catse.getAssessmentTest(), catse.getStatus(),
+						correctionCtrl.getGradingAssignment());
+				loadModel();
 				cleanUp();
 			} else if(event == Event.CANCELLED_EVENT || event == Event.BACK_EVENT) {
 				stackPanel.popController(correctionCtrl);
@@ -573,7 +592,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		testSessionStates.put(assessedIdentity, testSessionState);
 		CorrectionOverviewModel model = new CorrectionOverviewModel(entry, courseNode, referenceEntry,
 				resolvedAssessmentTest, manifestBuilder, lastSessions, testSessionStates);
-		GradingTimeRecordRef record = gradingService.getCurrentTimeRecord(assignment);
+		GradingTimeRecordRef record = gradingService.getCurrentTimeRecord(assignment, ureq.getRequestTimestamp());
 		
 		correctionCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel,
 				model, assessedIdentity, assignment, record, readOnly);
@@ -581,9 +600,48 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		stackPanel.pushController(translate("correction"), correctionCtrl);
 	}
 	
-	private void doCompleteCorrection(GradingAssignment assignment) {
-		gradingService.assignmentDone(assignment);
-		loadModel();
+	private void doUpdateCourseNode(List<AssessmentTestSession> testSessionsToComplete, AssessmentTest assessmentTest,
+			AssessmentEntryStatus status, GradingAssignment assignment) {
+		if(testSessionsToComplete == null || testSessionsToComplete.isEmpty()) return;
+		
+		assignment = gradingService.getGradingAssignment(assignment);
+		AssessmentEntry assessment = assignment.getAssessmentEntry();
+		assessment = gradingService.loadFullAssessmentEntry(assessment);
+
+		RepositoryEntry entry = assessment.getRepositoryEntry();
+		if(StringHelper.containsNonWhitespace(assessment.getSubIdent())) {
+			ICourse course = CourseFactory.loadCourse(entry);
+			CourseNode courseNode = course.getRunStructure().getNode(assessment.getSubIdent());
+			
+			CourseEnvironment courseEnv = course.getCourseEnvironment();
+			Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
+			
+			for(AssessmentTestSession testSession:testSessionsToComplete) {
+				UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
+						.createAndInitUserCourseEnvironment(testSession.getIdentity(), courseEnv);
+				AssessmentEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
+				
+				BigDecimal finalScore = testSession.getFinalScore();
+				Float score = finalScore == null ? null : finalScore.floatValue();
+				Boolean passed = scoreEval.getPassed();
+				if(testSession.getManualScore() != null && finalScore != null && cutValue != null) {
+					boolean calculated = finalScore.compareTo(BigDecimal.valueOf(cutValue.doubleValue())) >= 0;
+					passed = Boolean.valueOf(calculated);
+				}
+				AssessmentEntryStatus finalStatus = status == null ? scoreEval.getAssessmentStatus() : status;
+				ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, passed,
+						finalStatus, scoreEval.getUserVisible(), scoreEval.getCurrentRunCompletion(),
+						scoreEval.getCurrentRunStatus(), testSession.getKey());
+				courseAssessmentService.updateScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,
+						getIdentity(), false, Role.coach);
+			}
+		}
+		
+		if(status == AssessmentEntryStatus.done) {
+			gradingService.assignmentDone(assignment);
+		}
+		
+		dbInstance.commit();// commit all
 	}
 	
 	private void doOpenReportConfiguration(UserRequest ureq) {

@@ -67,6 +67,7 @@ implements SortableFlexiTableDataModel<GradingInformationsRow> {
 			switch(COLS[col]) {
 				case username: return row.getGrader().getName();
 				case status: return row.getGraderStatus();
+				case absence: return row;
 				default: return "ERROR";
 			}
 		}

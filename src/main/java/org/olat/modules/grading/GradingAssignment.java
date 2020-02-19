@@ -46,6 +46,10 @@ public interface GradingAssignment extends GradingAssignmentRef, CreateInfo, Mod
 
 	public void setAssignmentDate(Date assignmentDate);
 	
+	public Date getAssignmentNotificationDate();
+
+	public void setAssignmentNotificationDate(Date date);
+	
 	public Date getReminder1Date();
 
 	public void setReminder1Date(Date reminder1Date);

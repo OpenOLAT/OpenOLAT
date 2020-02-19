@@ -22,6 +22,7 @@ create table o_grad_assignment (
    g_status varchar(16) default 'unassigned' not null,
    g_assessment_date timestamp,
    g_assignment_date timestamp,
+   g_assignment_notification timestamp,
    g_reminder_1 timestamp,
    g_reminder_2 timestamp,
    g_deadline timestamp,
@@ -46,6 +47,7 @@ create table o_grad_time_record (
    creationdate timestamp not null,
    lastmodified timestamp not null,
    g_time int8 default 0 not null,
+   g_date_record date not null default current_date,
    fk_assignment int8,
    fk_grader int8 not null,
    primary key (id)
@@ -82,3 +84,21 @@ create index idx_grad_config_to_entry_idx on o_grad_configuration (fk_entry);
 
 -- Catalog sorting
 alter table o_catentry add column order_index int8 default 0;
+
+-- absence leave
+create table o_user_absence_leave (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   u_absent_from timestamp,
+   u_absent_to timestamp,
+   u_resname varchar(50),
+   u_resid int8,
+   u_sub_ident varchar(2048),
+   fk_identity int8 not null,
+   primary key (id)
+);
+
+alter table o_user_absence_leave add constraint abs_leave_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_abs_leave_to_ident_idx on o_user_absence_leave (fk_identity);
+

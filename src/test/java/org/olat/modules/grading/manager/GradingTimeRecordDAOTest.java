@@ -48,7 +48,7 @@ public class GradingTimeRecordDAOTest extends OlatTestCase {
 	@Autowired
 	private AssessmentEntryDAO assessmentEntryDao;
 	@Autowired
-	private GradedToIdentityDAO gradedToIdentityDao;
+	private GraderToIdentityDAO gradedToIdentityDao;
 	@Autowired
 	private GradingTimeRecordDAO gradingTimesheetDao;
 	@Autowired
@@ -64,7 +64,7 @@ public class GradingTimeRecordDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		Assert.assertNotNull(assignment);
 
-		GradingTimeRecord timerecord = gradingTimesheetDao.createRecord(grader, assignment);
+		GradingTimeRecord timerecord = gradingTimesheetDao.createRecord(grader, assignment, new Date());
 		dbInstance.commit();
 		Assert.assertNotNull(timerecord);
 		Assert.assertNotNull(timerecord.getCreationDate());
@@ -84,7 +84,7 @@ public class GradingTimeRecordDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		Assert.assertNotNull(assignment);
 
-		GradingTimeRecord record = gradingTimesheetDao.createRecord(grader, assignment);
+		GradingTimeRecord record = gradingTimesheetDao.createRecord(grader, assignment, new Date());
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(record);
 		
@@ -108,11 +108,11 @@ public class GradingTimeRecordDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		Assert.assertNotNull(assignment);
 
-		GradingTimeRecord record = gradingTimesheetDao.createRecord(grader, assignment);
+		GradingTimeRecord record = gradingTimesheetDao.createRecord(grader, assignment, new Date());
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(record);
 		
-		GradingTimeRecord reloadedRecord = gradingTimesheetDao.loadRecord(grader, assignment);
+		GradingTimeRecord reloadedRecord = gradingTimesheetDao.loadRecord(grader, assignment, new Date());
 		Assert.assertNotNull(reloadedRecord);
 		Assert.assertEquals(record, reloadedRecord);
 		Assert.assertEquals(grader, reloadedRecord.getGrader());
@@ -130,15 +130,15 @@ public class GradingTimeRecordDAOTest extends OlatTestCase {
 		Assert.assertNotNull(assignment);
 
 		// create record
-		GradingTimeRecord record = gradingTimesheetDao.createRecord(grader, assignment);
+		GradingTimeRecord record = gradingTimesheetDao.createRecord(grader, assignment, new Date());
 		dbInstance.commit();
 		Assert.assertNotNull(record);
 		Assert.assertEquals(0l, record.getTime());
 		
 		// append time
-		gradingTimesheetDao.appendTimeInSeconds(grader, assignment, 2l);
+		gradingTimesheetDao.appendTimeInSeconds(grader, assignment, 2l, new Date());
 		dbInstance.commitAndCloseSession();
-		gradingTimesheetDao.appendTimeInSeconds(grader, assignment, 9l);
+		gradingTimesheetDao.appendTimeInSeconds(grader, assignment, 9l, new Date());
 		dbInstance.commit();
 		
 		// retrieve the record
@@ -157,7 +157,7 @@ public class GradingTimeRecordDAOTest extends OlatTestCase {
 		Assert.assertNotNull(assignment);
 
 		// create record
-		GradingTimeRecord record = gradingTimesheetDao.createRecord(grader, assignment);
+		GradingTimeRecord record = gradingTimesheetDao.createRecord(grader, assignment, new Date());
 		dbInstance.commit();
 		Assert.assertNotNull(record);
 		Assert.assertEquals(0l, record.getTime());

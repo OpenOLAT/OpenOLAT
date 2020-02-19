@@ -387,6 +387,18 @@ create table o_user_data_export (
    fk_request_by bigint,
    primary key (id)
 );
+create table o_user_absence_leave (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   u_absent_from datetime,
+   u_absent_to datetime,
+   u_resname varchar(50),
+   u_resid bigint,
+   u_sub_ident varchar(2048),
+   fk_identity bigint not null,
+   primary key (id)
+);
 
 create table if not exists o_message (
    message_id bigint not null,
@@ -2967,6 +2979,7 @@ create table o_grad_assignment (
    g_status varchar(16) default 'unassigned' not null,
    g_assessment_date datetime,
    g_assignment_date datetime,
+   g_assignment_notification datetime,
    g_reminder_1 datetime,
    g_reminder_2 datetime,
    g_deadline datetime,
@@ -2983,6 +2996,7 @@ create table o_grad_time_record (
    creationdate datetime not null,
    lastmodified datetime not null,
    g_time int8 default 0 not null,
+   g_date_record date not null,
    fk_assignment bigint,
    fk_grader bigint not null,
    primary key (id)
@@ -3231,6 +3245,7 @@ alter table o_lti_outcome ENGINE = InnoDB;
 alter table o_user ENGINE = InnoDB;
 alter table o_userproperty ENGINE = InnoDB;
 alter table o_user_data_export ENGINE = InnoDB;
+alter table o_user_absence_leave ENGINE = InnoDB;
 alter table o_message ENGINE = InnoDB;
 alter table o_temporarykey ENGINE = InnoDB;
 alter table o_bs_authentication ENGINE = InnoDB;
@@ -3518,6 +3533,8 @@ alter table o_user add constraint idx_un_user_to_ident_idx UNIQUE (fk_identity);
 
 alter table o_user_data_export add constraint usr_dataex_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
 alter table o_user_data_export add constraint usr_dataex_to_requ_idx foreign key (fk_request_by) references o_bs_identity (id);
+
+alter table o_user_absence_leave add constraint abs_leave_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
 
 -- csp
 create index idx_csp_log_to_ident_idx on o_csp_log (fk_identity);

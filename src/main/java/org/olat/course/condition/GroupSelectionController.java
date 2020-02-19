@@ -28,7 +28,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -47,12 +49,19 @@ import org.olat.course.condition.model.GroupSelectionTableContentRow;
 import org.olat.course.condition.model.GroupSelectionTableModel;
 import org.olat.course.condition.model.GroupSelectionTableModel.GroupSelectionTableColumns;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.nodes.en.ENEditGroupTableContentRow;
+import org.olat.course.nodes.en.ENEditGroupTableModel;
+import org.olat.course.nodes.en.ENEditGroupTableModel.ENEditGroupTableColumns;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.model.BusinessGroupQueryParams;
+import org.olat.group.model.StatisticsBusinessGroupRow;
 import org.olat.group.ui.NewBGController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.springframework.beans.factory.annotation.Autowired;
+
 
 /**
  * Initial Date: 15.06.2007 <br>
@@ -70,11 +79,13 @@ public class GroupSelectionController extends FormBasicController {
 	private boolean createEnable;
 	
 	private FlexiTableElement groupTableElement;
-	private GroupSelectionTableModel groupTableModel;
-	private List<GroupSelectionTableContentRow> groupTableRows;
+	private ENEditGroupTableModel groupTableModel;
+	private List<ENEditGroupTableContentRow> groupTableRows;
 	
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 
 	public GroupSelectionController(UserRequest ureq, WindowControl wControl, boolean allowCreate,
 			CourseGroupManager courseGrpMngr, List<Long> selectionKeys) {
@@ -92,13 +103,21 @@ public class GroupSelectionController extends FormBasicController {
 	public void loadModel(List<Long> selectionKeys) {
 		List<BusinessGroup> groups = courseGrpMngr.getAllBusinessGroups();
 		
-		groupTableRows = new ArrayList<GroupSelectionTableContentRow>();
+		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
+		
+		List<Long> keys = new ArrayList<>();
+		for (BusinessGroup group : groups) {
+			keys.add(group.getKey());
+		}
+		
+		params.setBusinessGroupKeys(keys);
+		Map<Long, StatisticsBusinessGroupRow> stats = businessGroupService.findBusinessGroupsStatistics(params).stream().collect(Collectors.toMap(StatisticsBusinessGroupRow::getKey, g -> g, (u, v) -> u));
+		
+		groupTableRows = new ArrayList<>();
 		Set<Integer> selectedRows = new HashSet<Integer>();
 		
-		
-		
 		for (BusinessGroup businessGroup : groups) {
-			groupTableRows.add(new GroupSelectionTableContentRow(businessGroup.getKey(), businessGroup.getName()));
+			groupTableRows.add(new ENEditGroupTableContentRow(businessGroup, stats.get(businessGroup.getKey())));
 			for (Long selectionKey : selectionKeys) {
 				if (selectionKey.equals(businessGroup.getKey())) {
 					selectedRows.add(groupTableRows.size() - 1);
@@ -140,8 +159,19 @@ public class GroupSelectionController extends FormBasicController {
 				// select new value
 				Collection<BusinessGroup> newGroups = groupCreateCntrllr.getCreatedGroups();
 				List<Integer> selectedRows = new ArrayList<>(groupTableElement.getMultiSelectedIndex());
+				List<Long> keys = new ArrayList<>();
+				
+				for (BusinessGroup businessGroup : newGroups) {
+					keys.add(businessGroup.getKey());
+				}
+				
+				BusinessGroupQueryParams params = new BusinessGroupQueryParams();
+				params.setBusinessGroupKeys(keys);
+				
+				Map<Long, StatisticsBusinessGroupRow> stats = businessGroupService.findBusinessGroupsStatistics(params).stream().collect(Collectors.toMap(StatisticsBusinessGroupRow::getKey, g -> g, (u, v) -> u));
+				
 				for(BusinessGroup newGroup : newGroups) {
-					groupTableRows.add(new GroupSelectionTableContentRow(newGroup.getKey(), newGroup.getName()));
+					groupTableRows.add(new ENEditGroupTableContentRow(newGroup, stats.get(newGroup.getKey())));
 					selectedRows.add(groupTableRows.size() - 1);
 				}
 				groupTableModel.setObjects(groupTableRows);
@@ -165,11 +195,38 @@ public class GroupSelectionController extends FormBasicController {
 			createNew = uifactory.addFormLink("create", formLayout, Link.BUTTON);
 		}
 		
-		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupSelectionTableColumns.key));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupSelectionTableColumns.groupName));
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		DefaultFlexiColumnModel keyColumn = new DefaultFlexiColumnModel(ENEditGroupTableColumns.key);
+		keyColumn.setDefaultVisible(true);
+		keyColumn.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(keyColumn);
+
+		DefaultFlexiColumnModel groupColumn = new DefaultFlexiColumnModel(ENEditGroupTableColumns.groupName);
+		groupColumn.setDefaultVisible(true);
+		groupColumn.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(groupColumn);
 		
-		groupTableModel = new GroupSelectionTableModel(columnModel, getTranslator());
+		DefaultFlexiColumnModel descriptionColumn = new DefaultFlexiColumnModel(ENEditGroupTableColumns.description);
+		descriptionColumn.setDefaultVisible(true);
+		descriptionColumn.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(descriptionColumn);
+		
+		DefaultFlexiColumnModel participantsColumn = new DefaultFlexiColumnModel(ENEditGroupTableColumns.participants);
+		participantsColumn.setDefaultVisible(true);
+		participantsColumn.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(participantsColumn);
+		
+		DefaultFlexiColumnModel maxParticipantsColumn = new DefaultFlexiColumnModel(ENEditGroupTableColumns.maxParticipants);
+		maxParticipantsColumn.setDefaultVisible(true);
+		maxParticipantsColumn.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(maxParticipantsColumn);
+		
+		DefaultFlexiColumnModel minParticipantsColumn = new DefaultFlexiColumnModel(ENEditGroupTableColumns.minParticipants);
+		minParticipantsColumn.setDefaultVisible(true);
+		minParticipantsColumn.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(minParticipantsColumn);
+		
+		groupTableModel = new ENEditGroupTableModel(columnsModel, getLocale(), getTranslator());
 		groupTableElement = uifactory.addTableElement(getWindowControl(), "entries", groupTableModel, getTranslator(), formLayout);
 		groupTableElement.setEmtpyTableMessageKey("groupselection.noentries");
 		groupTableElement.setMultiSelect(true);		

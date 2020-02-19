@@ -41,10 +41,14 @@ import org.olat.modules.grading.GradingAssignmentStatus;
 import org.olat.modules.grading.model.GraderStatistics;
 import org.olat.modules.grading.model.GraderToIdentityImpl;
 import org.olat.modules.grading.model.GradersSearchParameters;
-import org.olat.modules.grading.model.ReferenceEntryWithStatistics;
+import org.olat.modules.grading.model.IdentityTimeRecordStatistics;
+import org.olat.modules.grading.model.ReferenceEntryStatistics;
+import org.olat.modules.grading.model.ReferenceEntryTimeRecordStatistics;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.resource.OLATResourceImpl;
+import org.olat.user.AbsenceLeave;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -55,7 +59,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class GradedToIdentityDAO {
+public class GraderToIdentityDAO {
 	
 	@Autowired
 	private DB dbInstance;
@@ -114,6 +118,7 @@ public class GradedToIdentityDAO {
 		  .append(" inner join gradingconfiguration as config on (v.key=config.entry.key)")
 		  .append(" where membership.identity.key=:identityKey and membership.role ").in(GroupRoles.owner,
 				  OrganisationRoles.learnresourcemanager, OrganisationRoles.administrator, OrganisationRoles.principal)
+		  .append("  and v.status ").in(RepositoryEntryStatusEnum.preparationToPublished())
 		  .append("  and config.gradingEnabled=true")
 		  .append("  and exists (select oresname.key from ").append(OLATResourceImpl.class.getName()).append(" as oresname")
 		  .append("    where oresname.key=v.olatResource.key and oresname.resName=:resourceName")
@@ -141,6 +146,19 @@ public class GradedToIdentityDAO {
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
 				.setParameter("identityKey", identity.getKey())
+				.getResultList();
+	}
+	
+	public List<RepositoryEntry> getReferenceRepositoryEntriesAsGrader(IdentityRef grader) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select v from grader2identity as rel")
+		  .append(" inner join rel.entry as v")
+		  .append(" inner join v.olatResource as vResource")
+		  .append(" where rel.identity.key=:identityKey");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntry.class)
+				.setParameter("identityKey", grader.getKey())
 				.getResultList();
 	}
 	
@@ -198,7 +216,20 @@ public class GradedToIdentityDAO {
 			.getResultList();
 	}
 	
-	public List<GraderToIdentity> findGraders(GradersSearchParameters searchParams) {
+	public List<AbsenceLeave> getGradersAbsenceLeaves(RepositoryEntryRef entry) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select leave from userabsenceleave as leave")
+		  .append(" inner join fetch leave.identity as ident")
+		  .append(" inner join grader2identity as rel on (rel.identity.key=leave.identity.key)")
+		  .append(" where rel.entry.key=:entryKey");
+		
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), AbsenceLeave.class)
+			.setParameter("entryKey", entry.getKey())
+			.getResultList();
+	}
+	
+	public List<GraderToIdentity> findGraders(GradersSearchParameters searchParams, boolean useDates) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select rel from grader2identity as rel")
 		  .append(" inner join fetch rel.identity as ident")
@@ -207,7 +238,115 @@ public class GradedToIdentityDAO {
 			sb.append(" inner join fetch rel.entry as refEntry")
 			  .append(" inner join fetch refEntry.olatResource as refResource");
 		}
+		applyGradersSearchParameters(sb, searchParams, useDates);
+
+		TypedQuery<GraderToIdentity> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), GraderToIdentity.class);
+		applyGradersSearchParameters(query, searchParams, useDates);
+		return query.getResultList();
+	}
+	
+	public List<ReferenceEntryTimeRecordStatistics> findGradersRecordedTimeGroupByEntry(GradersSearchParameters searchParams) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select refEntry.key, sum(record.time)")
+		  .append(" from gradingtimerecord as record ")
+		  .append(" inner join record.grader as rel")
+		  .append(" inner join rel.identity as ident")
+		  .append(" inner join rel.entry as refEntry");
+
+		applyGradersSearchParameters(sb, searchParams, false);
+		if(searchParams.getGradingFrom() != null) {
+			sb.and().append("record.dateOfRecord>=:gradingFromDate");
+		}
+		if(searchParams.getGradingTo() != null) {
+			sb.and().append("record.dateOfRecord<=:gradingToDate");
+		}
+		sb.append(" group by refEntry.key");
+
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Object[].class);
+		applyGradersSearchParameters(query, searchParams, true);
 		
+		List<Object[]> rawObjects = query.getResultList();
+		List<ReferenceEntryTimeRecordStatistics> records = new ArrayList<>(rawObjects.size());
+		for(Object[] objects:rawObjects) {
+			Long identityKey = (Long)objects[0];
+			long time = PersistenceHelper.extractPrimitiveLong(objects, 1);
+			records.add(new ReferenceEntryTimeRecordStatistics(identityKey, time));
+		}
+		return records;
+	}
+	
+	public List<IdentityTimeRecordStatistics> findGradersRecordedTimeGroupByIdentity(GradersSearchParameters searchParams) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select ident.key, sum(record.time)")
+		  .append(" from gradingtimerecord as record ")
+		  .append(" inner join record.grader as rel")
+		  .append(" inner join rel.identity as ident");
+		if(searchParams.getReferenceEntry() == null) {
+			sb.append(" inner join rel.entry as refEntry")
+			  .append(" inner join refEntry.olatResource as refResource");
+		}
+
+		applyGradersSearchParameters(sb, searchParams, false);
+		if(searchParams.getGradingFrom() != null) {
+			sb.and().append("record.dateOfRecord>=:gradingFromDate");
+		}
+		if(searchParams.getGradingTo() != null) {
+			sb.and().append("record.dateOfRecord<=:gradingToDate");
+		}
+		sb.append(" group by ident.key");
+
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Object[].class);
+		applyGradersSearchParameters(query, searchParams, true);
+		
+		List<Object[]> rawObjects = query.getResultList();
+		List<IdentityTimeRecordStatistics> records = new ArrayList<>(rawObjects.size());
+		for(Object[] objects:rawObjects) {
+			Long identityKey = (Long)objects[0];
+			long time = PersistenceHelper.extractPrimitiveLong(objects, 1);
+			records.add(new IdentityTimeRecordStatistics(identityKey, time));
+		}
+		return records;
+	}
+	
+	public List<AbsenceLeave> findGradersAbsenceLeaves(GradersSearchParameters searchParams, Date from, Date to) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select distinct leave from userabsenceleave as leave")
+		  .append(" inner join fetch leave.identity as ident")
+		  .append(" inner join grader2identity as rel on (rel.identity.key=leave.identity.key)")
+		  .append(" left join rel.entry as refEntry");
+		if(searchParams.getReferenceEntry() != null) {
+			sb.append(" left join refEntry.olatResource as refResource");
+		}
+
+		applyGradersSearchParameters(sb, searchParams, true);
+		
+		if(searchParams.getReferenceEntry() != null) {
+			sb.and().append("(leave.resName is null or (leave.resName=refResource.resName and leave.resId=refResource.resId))");	
+		}
+		
+		if(from != null) {
+			sb.and().append(" (leave.absentFrom is null or leave.absentFrom>=:absentFrom)");	
+		}
+		if(to != null) {
+			sb.and().append(" (leave.absentTo is null or leave.absentTo<=:absentTo)");	
+		}
+
+		TypedQuery<AbsenceLeave> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), AbsenceLeave.class);
+		applyGradersSearchParameters(query, searchParams, true);
+		if(from != null) {
+			query.setParameter("absentFrom", from);
+		}
+		if(to != null) {
+			query.setParameter("absentTo", to);
+		}
+		return query.getResultList();
+	}
+	
+	private void applyGradersSearchParameters(QueryBuilder sb, GradersSearchParameters searchParams, boolean applyFromTo) {
 		if(searchParams.getManager() != null) {
 			sb.and()
 			  .append("exists (select membership.key from repoentrytogroup as relGroup")
@@ -227,26 +366,18 @@ public class GradedToIdentityDAO {
 		if(searchParams.getStatus() != null && !searchParams.getStatus().isEmpty()) {
 			sb.and().append("rel.status in (:statusList)");
 		}
-		if(searchParams.getGradingFrom() != null || searchParams.getGradingTo() != null) {
+		if(applyFromTo && (searchParams.getGradingFrom() != null || searchParams.getGradingTo() != null)) {
 			sb.and()
 			  .append(" exists (select assignment from gradingassignment as assignment")
 			  .append("  where assignment.grader.key=rel.key");
-			if(searchParams.getGradingFrom() != null) {
-				sb.and().append("assignment.assignmentDate>=:gradingFromDate");
-			}
-			if(searchParams.getGradingTo() != null) {
-				sb.append(" and assignment.assignmentDate<=:gradingToDate");
-			}
+			GradingAssignmentDAO.applyAssignmentSearchParameters(sb, searchParams.getGradingFrom(), searchParams.getGradingTo());
 			sb.append(")");
 		}
-
-		TypedQuery<GraderToIdentity> query = dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), GraderToIdentity.class);
-		applyGradersSearchParameters(query, searchParams);
-		return query.getResultList();
 	}
+	
 
-	public List<ReferenceEntryWithStatistics> getReferenceEntriesStatistics(Identity grader) {
+
+	public List<ReferenceEntryStatistics> getReferenceEntriesStatistics(Identity grader) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select refEntry,")
 		  .append(" count(distinct assignment.key) as totalAssignments,")
@@ -255,12 +386,10 @@ public class GradedToIdentityDAO {
 		  .append(" sum(case when assignment.status ").in(GradingAssignmentStatus.assigned, GradingAssignmentStatus.inProcess)
 		  .append("   and ((assignment.extendedDeadline is null and assignment.deadline < current_date) or assignment.extendedDeadline < current_date )")
 		  .append("   then 1 else 0 end) as overdueAssignments,")
-		  .append(" min(assignment.creationDate),")
-		  .append(" sum(record.time) as recordedTime")
+		  .append(" min(assignment.creationDate)")
 		  .append(" from gradingassignment as assignment")
 		  .append(" inner join assignment.referenceEntry as refEntry")
 		  .append(" inner join grader2identity rel on (assignment.grader.key=rel.key)")
-		  .append(" left join gradingtimerecord record on (record.assignment.key=assignment.key and record.grader.key=assignment.grader.key)")
 		  .append(" where rel.identity.key=:graderKey")
 		  .append(" group by refEntry");
 		
@@ -268,7 +397,7 @@ public class GradedToIdentityDAO {
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("graderKey", grader.getKey())
 				.getResultList();
-		List<ReferenceEntryWithStatistics> statistics = new ArrayList<>(rawObjects.size());
+		List<ReferenceEntryStatistics> statistics = new ArrayList<>(rawObjects.size());
 		for(Object[] rawObject:rawObjects) {
 			int pos = 0;
 			RepositoryEntry referenceEntry = (RepositoryEntry)rawObject[pos++];
@@ -276,9 +405,8 @@ public class GradedToIdentityDAO {
 			long done = PersistenceHelper.extractPrimitiveLong(rawObject, pos++);
 			long open = PersistenceHelper.extractPrimitiveLong(rawObject, pos++);
 			long overdue = PersistenceHelper.extractPrimitiveLong(rawObject, pos++);
-			Date oldest = (Date)rawObject[pos++];
-			long time = PersistenceHelper.extractPrimitiveLong(rawObject, pos);
-			statistics.add(new ReferenceEntryWithStatistics(referenceEntry, total, done, open, overdue, oldest, time));
+			Date oldest = (Date)rawObject[pos];
+			statistics.add(new ReferenceEntryStatistics(referenceEntry, total, done, open, overdue, oldest));
 		}
 		return statistics;
 	}
@@ -292,11 +420,9 @@ public class GradedToIdentityDAO {
 		  .append(" sum(case when assignment.status ").in(GradingAssignmentStatus.assigned, GradingAssignmentStatus.inProcess)
 		  .append("   and ((assignment.extendedDeadline is null and assignment.deadline < current_date) or assignment.extendedDeadline < current_date )")
 		  .append("   then 1 else 0 end) as overdueAssignments,")
-		  .append(" min(assignment.creationDate),")
-		  .append(" sum(record.time) as recordedTime")
+		  .append(" min(assignment.creationDate)")
 		  .append(" from gradingassignment as assignment")
-		  .append(" inner join grader2identity rel on (assignment.grader.key=rel.key)")
-		  .append(" left join gradingtimerecord record on (record.assignment.key=assignment.key and record.grader.key=assignment.grader.key)");
+		  .append(" inner join grader2identity rel on (assignment.grader.key=rel.key)");
 
 		if(searchParams.getManager() != null) {
 			sb.and()
@@ -317,18 +443,14 @@ public class GradedToIdentityDAO {
 		if(searchParams.getStatus() != null && !searchParams.getStatus().isEmpty()) {
 			sb.and().append("rel.status in (:statusList)");
 		}
-		if(searchParams.getGradingFrom() != null) {
-			sb.and().append("assignment.assignmentDate>=:gradingFromDate");
-		}
-		if(searchParams.getGradingTo() != null) {
-			sb.and().append("assignment.assignmentDate<=:gradingToDate");
-		}
+		
+		GradingAssignmentDAO.applyAssignmentSearchParameters(sb, searchParams.getGradingFrom(), searchParams.getGradingTo());
 		
 		sb.append(" group by rel.identity.key");
 		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Object[].class);
-		applyGradersSearchParameters(query, searchParams);
+		applyGradersSearchParameters(query, searchParams, true);
 
 		List<Object[]> rawObjects = query.getResultList();
 		List<GraderStatistics> statistics = new ArrayList<>(rawObjects.size());
@@ -339,15 +461,14 @@ public class GradedToIdentityDAO {
 			long done = PersistenceHelper.extractPrimitiveLong(rawObject, pos++);
 			long open = PersistenceHelper.extractPrimitiveLong(rawObject, pos++);
 			long overdue = PersistenceHelper.extractPrimitiveLong(rawObject, pos++);
-			Date oldest = (Date)rawObject[pos++];
-			long time = PersistenceHelper.extractPrimitiveLong(rawObject, pos);
-			statistics.add(new GraderStatistics(identityKey, total, done, open, overdue, oldest, time));
+			Date oldest = (Date)rawObject[pos];
+			statistics.add(new GraderStatistics(identityKey, total, done, open, overdue, oldest));
 		}
 	
 		return statistics;
 	}
 	
-	private void applyGradersSearchParameters(TypedQuery<?> query, GradersSearchParameters searchParams) {
+	private void applyGradersSearchParameters(TypedQuery<?> query, GradersSearchParameters searchParams, boolean applyDates) {
 		if(searchParams.getReferenceEntry() != null) {
 			query.setParameter("entryKey", searchParams.getReferenceEntry().getKey());
 		}
@@ -359,10 +480,10 @@ public class GradedToIdentityDAO {
 					.map(GraderStatus::name).collect(Collectors.toList());
 			query.setParameter("statusList", statusList);
 		}
-		if(searchParams.getGradingFrom() != null) {
+		if(applyDates && searchParams.getGradingFrom() != null) {
 			query.setParameter("gradingFromDate", searchParams.getGradingFrom(), TemporalType.TIMESTAMP);
 		}
-		if(searchParams.getGradingTo() != null) {
+		if(applyDates && searchParams.getGradingTo() != null) {
 			query.setParameter("gradingToDate", searchParams.getGradingTo(), TemporalType.TIMESTAMP);
 		}
 		if(searchParams.getManager() != null) {

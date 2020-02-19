@@ -276,6 +276,7 @@
 		<class>org.olat.portfolio.model.structel.EPStructureElementToGroupRelation</class>
 		<class>org.olat.shibboleth.manager.ShibbolethAutoAccessMethod</class>
 		<class>org.olat.user.UserImpl</class>
+		<class>org.olat.user.model.AbsenceLeaveImpl</class>
 		<class>org.olat.user.model.UserDataExportImpl</class>
 		
 		<exclude-unlisted-classes>true</exclude-unlisted-classes>

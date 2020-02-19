@@ -19,6 +19,7 @@
  */
 package org.olat.modules.grading.ui;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -26,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.Identity;
 import org.olat.modules.grading.GraderStatus;
 import org.olat.modules.grading.model.GraderStatistics;
+import org.olat.user.AbsenceLeave;
 
 /**
  * 
@@ -38,13 +40,23 @@ public class GraderRow {
 	private final Identity grader;
 	private final List<GraderStatus> graderStatus;
 	private final GraderStatistics statistics;
+	private final List<AbsenceLeave> absenceLeaves;
+	
+	private final long recordedTimeInSeconds;
 	
 	private FormLink toolsLink;
 	
-	public GraderRow(Identity grader, GraderStatistics statistics, List<GraderStatus> status) {
+	public GraderRow(Identity grader, GraderStatistics statistics,
+			long recordedTimeInSeconds, List<AbsenceLeave> absenceLeaves, List<GraderStatus> status) {
 		this.grader = grader;
 		this.graderStatus = status;
 		this.statistics = statistics;
+		this.recordedTimeInSeconds = recordedTimeInSeconds;
+		if(absenceLeaves != null && !absenceLeaves.isEmpty()) {
+			this.absenceLeaves = absenceLeaves;
+		} else {
+			this.absenceLeaves = Collections.emptyList();
+		}
 	}
 	
 	public Identity getGrader() {
@@ -53,6 +65,10 @@ public class GraderRow {
 	
 	public List<GraderStatus> getGraderStatus() {
 		return graderStatus;
+	}
+	
+	public List<AbsenceLeave> getAbsenceLeaves() {
+		return absenceLeaves;
 	}
 	
 	public boolean hasGraderStatus(GraderStatus status) {
@@ -84,7 +100,7 @@ public class GraderRow {
 	}
 	
 	public Long getRecordedTimeInSeconds() {
-		return statistics == null ? null : statistics.getRecordedTimeInSeconds();
+		return recordedTimeInSeconds;
 	}
 
 	public FormLink getToolsLink() {
