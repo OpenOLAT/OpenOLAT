@@ -34,7 +34,7 @@ body.o_dmz {
 			left: 0;
 			width: 100%;
 			height: 100%;
-			background: linear-gradient(to $o-login-bg-gradient-to, $o-login-form-bg-gradient-steps...);
+			background: linear-gradient(to $o-login-bg-gradient-to, $o-login-form-bg-gradient-steps);
 			background-size: cover;
 			background-position: $o-login-form-bg-position-left $o-login-form-bg-position-top;
 			background-repeat: no-repeat;
