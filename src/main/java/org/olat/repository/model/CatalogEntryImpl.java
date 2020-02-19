@@ -25,6 +25,7 @@
 
 package org.olat.repository.model;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -105,7 +106,6 @@ public class CatalogEntryImpl implements CatalogEntry {
 	private CatalogEntry parent;
 	
 	@OneToMany(targetEntity = CatalogEntryImpl.class, mappedBy = "parent")
-//	@OrderColumn(name = "order_index", updatable = true, insertable = true, nullable = true)
 	@OrderColumn(name = "order_index")
 	private List<CatalogEntry> children;
 
@@ -125,33 +125,21 @@ public class CatalogEntryImpl implements CatalogEntry {
 	// for hibernate
 	}
 
-	/**
-	 * @see org.olat.repository.CatalogEntry#getDescription()
-	 */
 	@Override
 	public String getDescription() {
 		return description;
 	}
 
-	/**
-	 * @see org.olat.repository.CatalogEntry#setDescription(java.lang.String)
-	 */
 	@Override
 	public void setDescription(String description) {
 		this.description = description;
 	}
 
-	/**
-	 * @see org.olat.repository.CatalogEntry#getName()
-	 */
 	@Override
 	public String getName() {
 		return name;
 	}
 
-	/**
-	 * @see org.olat.repository.CatalogEntry#setName(java.lang.String)
-	 */
 	@Override
 	public void setName(String name) {
 		if (name.length() > 100)
@@ -181,121 +169,79 @@ public class CatalogEntryImpl implements CatalogEntry {
 		}
 	}
 
-	/**
-	 * @see org.olat.repository.CatalogEntry#getRepositoryEntry()
-	 */
 	@Override
 	public RepositoryEntry getRepositoryEntry() {
 		return repositoryEntry;
 	}
 
-	/**
-	 * @see org.olat.repository.CatalogEntry#setRepositoryEntry(org.olat.repository.RepositoryEntry)
-	 */
 	@Override
 	public void setRepositoryEntry(RepositoryEntry repositoryEntry) {
 		this.repositoryEntry = repositoryEntry;
 	}
 
-	/**
-	 * @see org.olat.repository.CatalogEntry#getOwnerGroup()
-	 */
 	@Override
 	public SecurityGroup getOwnerGroup() {
 		return ownerGroup;
 	}
 
-	/**
-	 * @see org.olat.repository.CatalogEntry#setOwnerGroup(org.olat.basesecurity.SecurityGroup)
-	 */
 	@Override
 	public void setOwnerGroup(SecurityGroup ownerGroup) {
 		this.ownerGroup = ownerGroup;
 	}
 
-	/**
-	 * @see org.olat.repository.CatalogEntry#getType()
-	 */
 	@Override
 	public int getType() {
 		return type;
 	}
 
-	/**
-	 * @see org.olat.repository.CatalogEntry#setType(int)
-	 */
 	@Override
 	public void setType(int type) {
 		this.type = type;
 	}
 
-	/**
-	 * @see org.olat.repository.CatalogEntry#getExternalURL()
-	 */
 	@Override
 	public String getExternalURL() {
 		return externalURL;
 	}
 
-	/**
-	 * @see org.olat.repository.CatalogEntry#setExternalURL(java.lang.String)
-	 */
 	@Override
 	public void setExternalURL(String externalURL) {
 		this.externalURL = externalURL;
 	}
 
-	/**
-	 * @see org.olat.repository.CatalogEntry#getParent()
-	 */
 	@Override
 	public CatalogEntry getParent() {
 		return parent;
 	}
 
-	/**
-	 * @see org.olat.repository.CatalogEntry#setParent(org.olat.repository.CatalogEntry)
-	 */
 	@Override
 	public void setParent(CatalogEntry parent) {
 		this.parent = parent;
 	}
-	
-	/**
-	 * @see org.olat.repository.CatalogEntry#getParent()
-	 */
+
 	@Override
 	public List<CatalogEntry> getChildren() {
+		if(children == null) {
+			children = new ArrayList<>();
+		}
 		return children;
 	}
-	
-	/**
-	 * @see org.olat.repository.CatalogEntry#getPosition()
-	 */
+
 	@Override
 	public int getPosition() {
 		return position;
 	}
 
-	/**
-	 * @see org.olat.core.commons.persistence.PersistentObject#toString()
-	 */
 	@Override
 	public String toString() {
 		return "cat:" + getName() + "=" + super.toString();
 	}
 
-	/**
-	 * @see org.olat.core.id.OLATResourceablegetResourceableTypeName()
-	 */
 	@Override
 	public String getResourceableTypeName() {
 		return this.getClass().getName();
 	}
 
-	/**
-	 * @see org.olat.core.id.OLATResourceablegetResourceableId()
-	 */
 	@Override
 	public Long getResourceableId() {
 		Long key = getKey();

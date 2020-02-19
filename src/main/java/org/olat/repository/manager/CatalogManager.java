@@ -608,7 +608,9 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 
 	private CatalogEntry saveCatEntry(String name, String desc, int type, SecurityGroup ownerGroup, RepositoryEntry repoEntry,
 			CatalogEntry parent) {
-		parent = getCatalogEntryByKey(parent.getKey());
+		if(parent != null) {
+			parent = getCatalogEntryByKey(parent.getKey());
+		}
 		CatalogEntry ce = createCatalogEntry();
 		ce.setName(name);
 		ce.setDescription(desc);
@@ -617,13 +619,15 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 		ce.setParent(parent);
 		ce.setType(type);
 		saveCatalogEntry(ce);
-		List<CatalogEntry> catEntries = parent.getChildren();
 		
-		for (CatalogEntry catalogEntry : catEntries) {
-			if (catalogEntry.getType() == type) {
-				catEntries.add(catEntries.indexOf(catalogEntry), ce);
-				updateCatalogEntry(parent);
-				break;
+		if(parent != null) {
+			List<CatalogEntry> catEntries = parent.getChildren();
+			for (CatalogEntry catalogEntry : catEntries) {
+				if (catalogEntry.getType() == type) {
+					catEntries.add(catEntries.indexOf(catalogEntry), ce);
+					updateCatalogEntry(parent);
+					break;
+				}
 			}
 		}
 		
