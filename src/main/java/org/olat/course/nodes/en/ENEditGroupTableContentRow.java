@@ -22,8 +22,6 @@ package org.olat.course.nodes.en;
 import org.olat.group.BusinessGroup;
 import org.olat.group.model.StatisticsBusinessGroupRow;
 
-import com.rometools.rome.feed.rss.Description;
-
 /**
  * 
  * Initial date: 23 Dec 2019<br>
