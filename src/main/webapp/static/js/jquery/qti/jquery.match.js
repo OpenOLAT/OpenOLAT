@@ -124,6 +124,7 @@
 								if(inputRightId === elementRightId) {
 									element.checked = false;
 									left.matchCount--;
+					                right.matchCount--;
 									settings.matchCount--;
 								}
 							}

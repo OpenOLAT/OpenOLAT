@@ -385,6 +385,65 @@ public class GradingAssignmentDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getGradersIdentityWithNewAssignments() {
+		Identity grader1 = JunitTestHelper.createAndPersistIdentityAsRndUser("assignment-grader-20");
+		Identity grader2 = JunitTestHelper.createAndPersistIdentityAsRndUser("assignment-grader-21");
+		Identity student = JunitTestHelper.createAndPersistIdentityAsRndUser("assignment-student-22");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(grader1);
+	
+		GraderToIdentity relation1 = gradedToIdentityDao.createRelation(entry, grader1);
+		GraderToIdentity relation2 = gradedToIdentityDao.createRelation(entry, grader2);
+		AssessmentEntry assessment1 = assessmentEntryDao
+				.createAssessmentEntry(student, null, entry, null, false, entry);
+		GradingAssignment assignment1 = gradingAssignmentDao.createGradingAssignment(relation1, entry, assessment1,  null, null);
+		
+		AssessmentEntry assessment2 = assessmentEntryDao
+				.createAssessmentEntry(student, null, entry, null, false, entry);
+		GradingAssignment assignment2 = gradingAssignmentDao.createGradingAssignment(relation2, entry, assessment2,  null, null);
+		dbInstance.commit();
+		Assert.assertNotNull(assignment1);
+		
+		assignment2.setAssignmentNotificationDate(new Date());
+		assignment2 = gradingAssignmentDao.updateAssignment(assignment2);
+		dbInstance.commitAndCloseSession();
+		
+		List<Identity> graders = gradingAssignmentDao.getGradersIdentityToNotify();
+		Assert.assertNotNull(graders);
+		Assert.assertFalse(graders.isEmpty());
+		Assert.assertTrue(graders.contains(grader1));
+		Assert.assertFalse(graders.contains(grader2));
+	}
+	
+	@Test
+	public void getAssignmentsForGradersNotify() {
+		Identity grader = JunitTestHelper.createAndPersistIdentityAsRndUser("assignment-grader-24");
+		Identity student1 = JunitTestHelper.createAndPersistIdentityAsRndUser("assignment-student-25");
+		Identity student2 = JunitTestHelper.createAndPersistIdentityAsRndUser("assignment-student-26");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(grader);
+	
+		GraderToIdentity relation = gradedToIdentityDao.createRelation(entry, grader);
+		AssessmentEntry assessment1 = assessmentEntryDao
+				.createAssessmentEntry(student1, null, entry, null, false, entry);
+		GradingAssignment assignment1 = gradingAssignmentDao.createGradingAssignment(relation, entry, assessment1,  null, null);
+		
+		AssessmentEntry assessment2 = assessmentEntryDao
+				.createAssessmentEntry(student2, null, entry, null, false, entry);
+		GradingAssignment assignment2 = gradingAssignmentDao.createGradingAssignment(relation, entry, assessment2,  null, null);
+		dbInstance.commit();
+		Assert.assertNotNull(assignment1);
+		
+		assignment2.setAssignmentNotificationDate(new Date());
+		assignment2 = gradingAssignmentDao.updateAssignment(assignment2);
+		dbInstance.commitAndCloseSession();
+		
+		List<GradingAssignment> assignments = gradingAssignmentDao.getAssignmentsForGradersNotify(grader);
+		Assert.assertNotNull(assignments);
+		Assert.assertEquals(1, assignments.size());
+		Assert.assertTrue(assignments.contains(assignment1));
+		Assert.assertFalse(assignments.contains(assignment2));
+	}
+
+	@Test
 	public void removeDeadline() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("assignment-author-10");
 		Identity student = JunitTestHelper.createAndPersistIdentityAsRndUser("assignment-student-11");

@@ -119,7 +119,7 @@ public class GradingServiceTest extends OlatTestCase {
 		dbInstance.commit();
 		Assert.assertNotNull(assessment);
 		
-		GraderToIdentity proposedGrader = ((GradingServiceImpl)gradingService).selectGrader(entry, null);
+		GraderToIdentity proposedGrader = ((GradingServiceImpl)gradingService).selectGrader(entry);
 		Assert.assertNotNull(proposedGrader);
 		Assert.assertEquals(grader, proposedGrader);
 	}
@@ -132,7 +132,7 @@ public class GradingServiceTest extends OlatTestCase {
 		dbInstance.commit();
 		Assert.assertNotNull(assessment);
 		
-		GraderToIdentity proposedGrader = ((GradingServiceImpl)gradingService).selectGrader(entry, null);
+		GraderToIdentity proposedGrader = ((GradingServiceImpl)gradingService).selectGrader(entry);
 		Assert.assertNull(proposedGrader);
 	}
 	
@@ -340,7 +340,7 @@ public class GradingServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		absenceLeaveDao.createAbsenceLeave(grader, addDaysToNow(-12), addDaysToNow(12),
-				entry.getOlatResource(), "1200012");
+				entry.getOlatResource(), null);
 		dbInstance.commitAndCloseSession();
 
 		gradingService.assignGrader(entry, assessment, true);
@@ -371,7 +371,7 @@ public class GradingServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		absenceLeaveDao.createAbsenceLeave(grader, addDaysToNow(1), addDaysToNow(12),
-				entry.getOlatResource(), "1200012");
+				entry.getOlatResource(), null);
 		dbInstance.commitAndCloseSession();
 
 		gradingService.assignGrader(entry, assessment, true);

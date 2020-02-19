@@ -278,9 +278,13 @@ public class QItemQueriesDAO {
 			PersistenceHelper.appendFuzzyLike(sb, "item.keywords", "searchString", dbInstance.getDbVendor());
 			sb.append(" or ");
 			PersistenceHelper.appendFuzzyLike(sb, "item.topic", "searchString", dbInstance.getDbVendor());
+			sb.append(" or ");
+			PersistenceHelper.appendFuzzyLike(sb, "item.coverage", "searchString", dbInstance.getDbVendor());
+			sb.append(" or ");
+			PersistenceHelper.appendFuzzyLike(sb, "item.additionalInformations", "searchString", dbInstance.getDbVendor());
 			sb.append(")");
 		}
-		
+
 		if(params.getItemType() != null) {
 			sb.and().append(" itemType.key=:itemTypeKey");
 		}

@@ -3061,6 +3061,7 @@ create table o_grad_assignment (
    g_status varchar(16) default 'unassigned' not null,
    g_assessment_date timestamp,
    g_assignment_date timestamp,
+   g_assignment_notification timestamp,
    g_reminder_1 timestamp,
    g_reminder_2 timestamp,
    g_deadline timestamp,

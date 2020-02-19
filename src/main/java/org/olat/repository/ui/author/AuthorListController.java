@@ -163,8 +163,10 @@ public class AuthorListController extends FormBasicController implements Activat
 	
 	private Link importLink;
 	private Link importUrlLink;
-	private Dropdown createDropdown;
-	private FormLink sendMailButton, addOwnersButton, deleteButton, copyButton;
+	private FormLink copyButton;
+	private FormLink deleteButton;
+	private FormLink sendMailButton;
+	private FormLink addOwnersButton;
 
 	private LockResult lockResult;
 	private final AtomicInteger counter = new AtomicInteger();
@@ -232,7 +234,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			stackPanel.addTool(importUrlLink, Align.left);
 			
 			List<OrderedRepositoryHandler> handlers = repositoryHandlerFactory.getOrderRepositoryHandlers();
-			createDropdown = new Dropdown("cmd.create.ressource", "cmd.create.ressource", false, getTranslator());
+			Dropdown createDropdown = new Dropdown("cmd.create.ressource", "cmd.create.ressource", false, getTranslator());
 			createDropdown.setElementCssClass("o_sel_author_create");
 			createDropdown.setIconCSS("o_icon o_icon_add");
 			int lastGroup = 0;
@@ -458,7 +460,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			}
 			if(se.getSearchEvent() != null) {
 				searchCtrl.update(se.getSearchEvent());
-				doSearch(ureq, se.getSearchEvent());
+				doExtendedSearch(ureq, se.getSearchEvent());
 			}
 		}
 	}
@@ -525,17 +527,9 @@ public class AuthorListController extends FormBasicController implements Activat
 		} else if(searchCtrl == source) {
 			if(event instanceof SearchEvent) {
 				SearchEvent se = (SearchEvent)event;
-				doSearch(ureq, se);
+				doExtendedSearch(ureq, se);
 			} else if(event == Event.CANCELLED_EVENT) {
-				searchParams.setResourceTypes(null);
-				searchParams.setIdAndRefs(null);
-				searchParams.setAuthor(null);
-				searchParams.setDisplayname(null);
-				searchParams.setDescription(null);
-				searchParams.setOwnedResourcesOnly(false);
-				searchParams.setResourceUsage(ResourceUsage.all);
-				searchParams.setLicenseTypeKeys(null);
-				searchParams.setEntryOrganisations(null);
+				doResetExtendedSearch(ureq);
 			}
 		} else if(userSearchCtr == source) {
 			@SuppressWarnings("unchecked")
@@ -826,7 +820,22 @@ public class AuthorListController extends FormBasicController implements Activat
 		getWindowControl().pushAsModalDialog(wizardCtrl.getInitialComponent());
 	}
 	
-	private void doSearch(UserRequest ureq, SearchEvent se) {
+	private void doResetExtendedSearch(UserRequest ureq) {
+		searchParams.setResourceTypes(null);
+		searchParams.setIdAndRefs(null);
+		searchParams.setAuthor(null);
+		searchParams.setOwnedResourcesOnly(false);
+		searchParams.setResourceUsage(ResourceUsage.all);
+		searchParams.setClosed(null);
+		searchParams.setDisplayname(null);
+		searchParams.setDescription(null);
+		searchParams.setLicenseTypeKeys(null);
+		searchParams.setEntryOrganisations(null);
+		
+		tableEl.resetSearch(ureq);
+	}
+	
+	private void doExtendedSearch(UserRequest ureq, SearchEvent se) {
 		if(se.getTypes() != null && !se.getTypes().isEmpty()) {
 			searchParams.setResourceTypes(new ArrayList<>(se.getTypes()));
 		} else {
@@ -853,9 +862,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	protected List<AuthoringEntryRow> getMultiSelectedRows() {
 		Set<Integer> selections = tableEl.getMultiSelectedIndex();
 		List<AuthoringEntryRow> rows = new ArrayList<>(selections.size());
-		if(selections.isEmpty()) {
-			
-		} else {
+		if(!selections.isEmpty()) {
 			for(Integer i:selections) {
 				AuthoringEntryRow row = model.getObject(i.intValue());
 				if(row != null) {
