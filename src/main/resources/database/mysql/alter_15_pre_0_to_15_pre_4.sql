@@ -80,6 +80,7 @@ alter table o_grad_configuration add constraint grad_config_to_entry_idx foreign
 
 -- Catalog sorting
 alter table o_catentry add column order_index bigint default 0;
+alter table o_catentry add column short_title varchar(255);
 
 -- absence leave
 create table o_user_absence_leave (
