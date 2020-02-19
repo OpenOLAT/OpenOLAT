@@ -25,6 +25,8 @@
 
 package org.olat.repository;
 
+import java.util.List;
+
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.OLATResourceable;
@@ -156,6 +158,20 @@ public interface CatalogEntry extends CatalogEntryRef, CreateInfo, Persistable, 
 	 * @return CatalogEntry
 	 */
 	public CatalogEntry getParent();
+	
+	/**
+	 * children of this catalog entry
+	 *
+	 * @return List<CatalogEntry>
+	 */
+	public List<CatalogEntry> getChildren();
+	
+	/**
+	 * get position of entry
+	 * 
+	 * @return
+	 */
+	public int getPosition();
 	
 	
 	public enum OrderBy {

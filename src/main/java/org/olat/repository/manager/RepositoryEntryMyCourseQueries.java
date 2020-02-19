@@ -51,7 +51,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryModule;
-import org.olat.repository.model.CatalogEntryImpl;
 import org.olat.repository.model.RepositoryEntryMyCourseImpl;
 import org.olat.repository.model.RepositoryEntryStatistics;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
@@ -218,6 +217,10 @@ public class RepositoryEntryMyCourseQueries {
 		//user course informations
 		//efficiency statements
 		
+		if(params.getParentEntry() != null) {
+			sb.append(" inner join catalogentry as cei on (v.key = cei.repositoryEntry.key)");
+		}
+		
 		// join seems to be quicker
 		if(params.getMarked() != null && params.getMarked().booleanValue()) {
 			sb.append(" inner join ").append(MarkImpl.class.getName()).append(" as mark2 on (mark2.creator.key=:identityKey and mark2.resId=v.key and mark2.resName='RepositoryEntry')");
@@ -247,10 +250,9 @@ public class RepositoryEntryMyCourseQueries {
 		}
 		
 		if(params.getParentEntry() != null) {
-			sb.append(" and exists (select cei.parent.key from ").append(CatalogEntryImpl.class.getName()).append(" as cei")
-			  .append("   where cei.parent.key=:parentCeiKey and cei.repositoryEntry.key=v.key")
-			  .append(" )");
+			sb.append(" and cei.parent.key=:parentCeiKey");
 		}
+		
 		if (params.isResourceTypesDefined()) {
 			sb.append(" and res.resName in (:resourcetypes)");
 		}
@@ -638,6 +640,10 @@ public class RepositoryEntryMyCourseQueries {
 				case type:
 					sb.append(" order by res.resName ");
 					appendAsc(sb, asc).append(", lower(v.displayname) asc");
+					break;
+				case custom: 
+					sb.append(" order by cei.position ");
+					appendAsc(sb, asc);
 					break;
 				default:
 					if(asc) {

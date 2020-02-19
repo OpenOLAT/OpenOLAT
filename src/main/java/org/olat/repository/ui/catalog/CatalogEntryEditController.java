@@ -86,6 +86,7 @@ public class CatalogEntryEditController extends FormBasicController {
 	};
 
 	private TextElement nameEl;
+	private TextElement shortTitleEl;
 	private SingleSelection styleEl;
 	private RichTextElement descriptionEl;
 	private FileElement fileUpload;
@@ -115,6 +116,11 @@ public class CatalogEntryEditController extends FormBasicController {
 		nameEl = uifactory.addTextElement("name", "entry.category", 255, name, formLayout);
 		nameEl.setMandatory(true);
 		nameEl.setNotEmptyCheck("form.legende.mandatory");
+		
+		String shortTitle = catalogEntry == null ? "" : catalogEntry.getDescription() != null ? catalogEntry.getDescription() : "";
+		shortTitleEl = uifactory.addTextElement("shortTitle", "entry.shorttitle", 255, shortTitle, formLayout);
+		shortTitleEl.setMandatory(true);
+		shortTitleEl.setNotEmptyCheck("form.legende.mandatory");
 		
 		String desc = catalogEntry == null ? "" : catalogEntry.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("description", "entry.description", desc, 10, -1, formLayout, getWindowControl());
@@ -215,6 +221,7 @@ public class CatalogEntryEditController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		catalogEntry = catalogManager.getCatalogEntryByKey(catalogEntry.getKey());
 		catalogEntry.setName(nameEl.getValue());
 		if(styleEl.isOneSelected()) {
 			catalogEntry.setStyle(Style.valueOf(styleEl.getSelectedKey()));
@@ -227,9 +234,9 @@ public class CatalogEntryEditController extends FormBasicController {
 			//a new one
 			catalogEntry.setRepositoryEntry(null);
 			catalogEntry.setParent(parentEntry);
-			catalogEntry = catalogManager.saveCatalogEntry(catalogEntry);
+			catalogEntry = catalogManager.addCatalogCategory(catalogEntry);
 		} else {
-			catalogEntry = catalogManager.updateCatalogEntry(catalogEntry);
+			catalogEntry = catalogManager.updateCatalogCategory(catalogEntry);
 		}
 		
 		File uploadedFile = fileUpload.getUploadFile();

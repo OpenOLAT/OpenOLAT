@@ -31,7 +31,6 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
-import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
@@ -76,7 +75,7 @@ public class RepositoryEntryQueries {
 			query.append("select count(distinct v.key) from repositoryentry v ");
 			query.append(" inner join v.olatResource as res");
 		} else if(params.getParentEntry() != null) {
-			query.append("select distinct v from ").append(CatalogEntry.class.getName()).append(" cei ")
+			query.append("select distinct v from catalogentry cei ")
 			     .append(" inner join cei.parent parentCei")
 			     .append(" inner join cei.repositoryEntry v")
 			     .append(" inner join fetch v.olatResource as res")
@@ -150,8 +149,8 @@ public class RepositoryEntryQueries {
 
 		if(orderBy) {
 			query.append(" order by v.displayname, v.key ASC");
-		}
-
+		}		
+		
 		TypedQuery<T> dbQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(query.toString(), type);
 		if(params.getParentEntry() != null) {

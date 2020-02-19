@@ -25,6 +25,7 @@ import java.util.List;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryLight;
 import org.olat.repository.RepositoryEntryManagedFlag;
@@ -42,6 +43,8 @@ import org.olat.repository.ui.PriceMethod;
 public class CatalogEntryRow implements RepositoryEntryRef, RepositoryEntryLight {
 
 	private Long key;
+	private Long catEntryKey;
+	private int position;
 	private String name;
 	private String authors;
 	private String shortenedDescription;
@@ -97,6 +100,13 @@ public class CatalogEntryRow implements RepositoryEntryRef, RepositoryEntryLight
 		}
 	}
 	
+	public CatalogEntryRow(RepositoryEntry view, CatalogEntry cat) {
+		this(view);
+		
+		position = cat.getPosition();
+		catEntryKey = cat.getKey();
+	}
+		
 	public String getCssClass() {
 		return "o_CourseModule_icon";
 	}
@@ -174,6 +184,14 @@ public class CatalogEntryRow implements RepositoryEntryRef, RepositoryEntryLight
 
 	public Date getLifecycleEnd() {
 		return lifecycleEnd;
+	}
+	
+	public int getPosition() {
+		return position;
+	}
+	
+	public Long getCatEntryKey() {
+		return catEntryKey;
 	}
 	
 	public List<PriceMethod> getAccessTypes() {

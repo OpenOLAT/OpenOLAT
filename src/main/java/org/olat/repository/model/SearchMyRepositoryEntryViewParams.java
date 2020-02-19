@@ -221,7 +221,8 @@ public class SearchMyRepositoryEntryViewParams {
 		lifecycleSoftkey,
 		lifecycleStart,
 		lifecycleEnd,
-		type
+		type,
+		custom
 	}
 	
 	public enum Filter {

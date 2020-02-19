@@ -114,8 +114,8 @@ public class CatalogNodeController extends BasicController implements Activateab
 			mainVC.contextPut("catThumbnail", image.getName());
 		}
 		
-		List<CatalogEntry> childCe = catalogManager.getNodesChildrenOf(catalogEntry);
-		Collections.sort(childCe, new CatalogEntryComparator(getLocale()));
+		List<CatalogEntry> childCe = catalogEntry.getChildren();
+//		Collections.sort(childCe, new CatalogEntryComparator(getLocale()));
 		List<String> subCategories = new ArrayList<>();
 		int count = 0;
 		for (CatalogEntry entry : childCe) {

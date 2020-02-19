@@ -25,8 +25,27 @@
 
 package org.olat.repository.model;
 
+import java.util.Date;
+import java.util.List;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OrderColumn;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Version;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.olat.basesecurity.SecurityGroup;
-import org.olat.core.commons.persistence.PersistentObject;
+import org.olat.basesecurity.SecurityGroupImpl;
+import org.olat.core.id.Persistable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.StringHelper;
 import org.olat.repository.CatalogEntry;
@@ -39,19 +58,69 @@ import org.olat.repository.RepositoryEntry;
  * @see org.olat.repository.CatalogEntry
  * @author Felix Jost
  */
-public class CatalogEntryImpl extends PersistentObject implements CatalogEntry {
+@Entity(name="catalogentry")
+@Table(name="o_catentry")
+public class CatalogEntryImpl implements CatalogEntry {
 
 	private static final long serialVersionUID = 2834235462805397562L;
+	
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "enhanced-sequence", parameters={
+		@Parameter(name="sequence_name", value="hibernate_unique_key"),
+		@Parameter(name="force_table_use", value="true"),
+		@Parameter(name="optimizer", value="legacy-hilo"),
+		@Parameter(name="value_column", value="next_hi"),
+		@Parameter(name="increment_size", value="32767"),
+		@Parameter(name="initial_value", value="32767")
+	})
+	@Column(name = "id", nullable = false, unique = true, insertable = true, updatable = false)
+	private Long key;
+	
+	@Version
+	private int version = 0;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
+	
+	@Column(name = "name", unique = false, nullable = false, length = 100)
 	private String name;
+	
+	@Column(name = "style", unique = false, nullable = true)
 	private String styleString;
+	
+	@Column(name = "description", unique = false, nullable = true)
 	private String description;
+	
+	@Column(name = "externalurl", unique = false, nullable = true)
 	private String externalURL;
+	
+	@ManyToOne(targetEntity = RepositoryEntry.class, optional = true)
+	@JoinColumn(name = "fk_repoentry", nullable = true, insertable = true, updatable = true)
 	private RepositoryEntry repositoryEntry;
+	
+	@ManyToOne(targetEntity = CatalogEntryImpl.class, optional = true)
+	@JoinColumn(name = "parent_id", nullable = true, insertable = true, updatable = true)
 	private CatalogEntry parent;
+	
+	@OneToMany(targetEntity = CatalogEntryImpl.class, mappedBy = "parent")
+//	@OrderColumn(name = "order_index", updatable = true, insertable = true, nullable = true)
+	@OrderColumn(name = "order_index")
+	private List<CatalogEntry> children;
 
+	@ManyToOne(targetEntity = SecurityGroupImpl.class, optional = true)
+	@JoinColumn(name = "fk_ownergroup", nullable = true, insertable = true, updatable = true)
 	private SecurityGroup ownerGroup;
+	
+	@Column(name = "type", unique = false, nullable = false)
 	private int type;
-
+	
+	@GeneratedValue
+	@Column(name = "order_index", updatable = false, insertable = false)
+	private int position;
+	
+	
 	public CatalogEntryImpl() {
 	// for hibernate
 	}
@@ -59,6 +128,7 @@ public class CatalogEntryImpl extends PersistentObject implements CatalogEntry {
 	/**
 	 * @see org.olat.repository.CatalogEntry#getDescription()
 	 */
+	@Override
 	public String getDescription() {
 		return description;
 	}
@@ -66,6 +136,7 @@ public class CatalogEntryImpl extends PersistentObject implements CatalogEntry {
 	/**
 	 * @see org.olat.repository.CatalogEntry#setDescription(java.lang.String)
 	 */
+	@Override
 	public void setDescription(String description) {
 		this.description = description;
 	}
@@ -73,6 +144,7 @@ public class CatalogEntryImpl extends PersistentObject implements CatalogEntry {
 	/**
 	 * @see org.olat.repository.CatalogEntry#getName()
 	 */
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -80,6 +152,7 @@ public class CatalogEntryImpl extends PersistentObject implements CatalogEntry {
 	/**
 	 * @see org.olat.repository.CatalogEntry#setName(java.lang.String)
 	 */
+	@Override
 	public void setName(String name) {
 		if (name.length() > 100)
 			throw new AssertException("CatalogEntry: Name is limited to 100 characters.");
@@ -111,6 +184,7 @@ public class CatalogEntryImpl extends PersistentObject implements CatalogEntry {
 	/**
 	 * @see org.olat.repository.CatalogEntry#getRepositoryEntry()
 	 */
+	@Override
 	public RepositoryEntry getRepositoryEntry() {
 		return repositoryEntry;
 	}
@@ -118,6 +192,7 @@ public class CatalogEntryImpl extends PersistentObject implements CatalogEntry {
 	/**
 	 * @see org.olat.repository.CatalogEntry#setRepositoryEntry(org.olat.repository.RepositoryEntry)
 	 */
+	@Override
 	public void setRepositoryEntry(RepositoryEntry repositoryEntry) {
 		this.repositoryEntry = repositoryEntry;
 	}
@@ -125,6 +200,7 @@ public class CatalogEntryImpl extends PersistentObject implements CatalogEntry {
 	/**
 	 * @see org.olat.repository.CatalogEntry#getOwnerGroup()
 	 */
+	@Override
 	public SecurityGroup getOwnerGroup() {
 		return ownerGroup;
 	}
@@ -132,6 +208,7 @@ public class CatalogEntryImpl extends PersistentObject implements CatalogEntry {
 	/**
 	 * @see org.olat.repository.CatalogEntry#setOwnerGroup(org.olat.basesecurity.SecurityGroup)
 	 */
+	@Override
 	public void setOwnerGroup(SecurityGroup ownerGroup) {
 		this.ownerGroup = ownerGroup;
 	}
@@ -139,6 +216,7 @@ public class CatalogEntryImpl extends PersistentObject implements CatalogEntry {
 	/**
 	 * @see org.olat.repository.CatalogEntry#getType()
 	 */
+	@Override
 	public int getType() {
 		return type;
 	}
@@ -146,6 +224,7 @@ public class CatalogEntryImpl extends PersistentObject implements CatalogEntry {
 	/**
 	 * @see org.olat.repository.CatalogEntry#setType(int)
 	 */
+	@Override
 	public void setType(int type) {
 		this.type = type;
 	}
@@ -153,6 +232,7 @@ public class CatalogEntryImpl extends PersistentObject implements CatalogEntry {
 	/**
 	 * @see org.olat.repository.CatalogEntry#getExternalURL()
 	 */
+	@Override
 	public String getExternalURL() {
 		return externalURL;
 	}
@@ -160,6 +240,7 @@ public class CatalogEntryImpl extends PersistentObject implements CatalogEntry {
 	/**
 	 * @see org.olat.repository.CatalogEntry#setExternalURL(java.lang.String)
 	 */
+	@Override
 	public void setExternalURL(String externalURL) {
 		this.externalURL = externalURL;
 	}
@@ -167,6 +248,7 @@ public class CatalogEntryImpl extends PersistentObject implements CatalogEntry {
 	/**
 	 * @see org.olat.repository.CatalogEntry#getParent()
 	 */
+	@Override
 	public CatalogEntry getParent() {
 		return parent;
 	}
@@ -174,13 +256,31 @@ public class CatalogEntryImpl extends PersistentObject implements CatalogEntry {
 	/**
 	 * @see org.olat.repository.CatalogEntry#setParent(org.olat.repository.CatalogEntry)
 	 */
+	@Override
 	public void setParent(CatalogEntry parent) {
 		this.parent = parent;
+	}
+	
+	/**
+	 * @see org.olat.repository.CatalogEntry#getParent()
+	 */
+	@Override
+	public List<CatalogEntry> getChildren() {
+		return children;
+	}
+	
+	/**
+	 * @see org.olat.repository.CatalogEntry#getPosition()
+	 */
+	@Override
+	public int getPosition() {
+		return position;
 	}
 
 	/**
 	 * @see org.olat.core.commons.persistence.PersistentObject#toString()
 	 */
+	@Override
 	public String toString() {
 		return "cat:" + getName() + "=" + super.toString();
 	}
@@ -188,6 +288,7 @@ public class CatalogEntryImpl extends PersistentObject implements CatalogEntry {
 	/**
 	 * @see org.olat.core.id.OLATResourceablegetResourceableTypeName()
 	 */
+	@Override
 	public String getResourceableTypeName() {
 		return this.getClass().getName();
 	}
@@ -195,6 +296,7 @@ public class CatalogEntryImpl extends PersistentObject implements CatalogEntry {
 	/**
 	 * @see org.olat.core.id.OLATResourceablegetResourceableId()
 	 */
+	@Override
 	public Long getResourceableId() {
 		Long key = getKey();
 		if (key == null) throw new AssertException("no key yet!");
@@ -216,5 +318,20 @@ public class CatalogEntryImpl extends PersistentObject implements CatalogEntry {
 			return getKey() != null && getKey().equals(entry.getKey());
 		}
 		return false;
+	}
+
+	@Override
+	public Date getCreationDate() {
+		return this.creationDate;
+	}
+
+	@Override
+	public Long getKey() {
+		return this.key;
+	}
+
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return this.equals(persistable);
 	}
 }

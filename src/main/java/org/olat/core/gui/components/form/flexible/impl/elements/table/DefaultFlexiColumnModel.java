@@ -176,6 +176,11 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 				new TextFlexiCellRenderer());
 	}
 	
+	public DefaultFlexiColumnModel(boolean defVisible, String headerKey, int columnIndex, boolean sortable, String sortKey, int alignment) {
+		this(defVisible, false, headerKey, null, columnIndex, null, sortable, sortKey, alignment,
+				new TextFlexiCellRenderer());
+	}
+	
 	public DefaultFlexiColumnModel(boolean defVisible, String headerKey, int columnIndex, String action, boolean sortable, String sortKey) {
 		this(defVisible, false, headerKey, null, columnIndex, action, sortable, sortKey, FlexiColumnModel.ALIGNMENT_LEFT,
 				new StaticFlexiCellRenderer(action, new TextFlexiCellRenderer()));

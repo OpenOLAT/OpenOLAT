@@ -133,7 +133,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	
 	public List<CatalogEntry> getNodesChildrenOf(CatalogEntry ce) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select cei from ").append(CatalogEntryImpl.class.getName()).append(" as cei ")
+		sb.append("select cei from catalogentry as cei ")
 		  .append(" inner join fetch cei.ownerGroup as ownerGroup")
 		  .append(" inner join fetch cei.parent as parentCei")
 		  .append(" inner join fetch parentCei.ownerGroup as parentOwnerGroup")
@@ -170,7 +170,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 		}
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select cei from ").append(CatalogEntryImpl.class.getName()).append(" as cei ")
+		sb.append("select cei from catalogentry as cei ")
 		  .append(" inner join fetch cei.ownerGroup as ownerGroup")
 		  .append(" inner join fetch cei.parent as parentCei")
 		  .append(" inner join fetch parentCei.ownerGroup as parentOwnerGroup")
@@ -201,7 +201,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	 */
 	public List<CatalogEntry> getAllCatalogNodes() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select cei from ").append(CatalogEntryImpl.class.getName()).append(" as cei ")
+		sb.append("select cei from catalogentry as cei ")
 		  .append(" inner join fetch cei.ownerGroup as ownerGroup")
 		  .append(" where cei.type=").append(CatalogEntry.TYPE_NODE);
 		
@@ -230,7 +230,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	 */
 	public int countChildrenOf(CatalogEntry ce, int type) {
 		StringBuilder query = new StringBuilder();
-		query.append("select count(cei) from ").append(CatalogEntryImpl.class.getName()).append(" as cei ")
+		query.append("select count(cei) from catalogentry as cei ")
 		     .append(" where cei.parent.key=:parentKey");
 		if(type >= 0) {
 			query.append(" and cei.type=:type");
@@ -377,12 +377,12 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	 * @return List of catalog entries
 	 */
 	public List<CatalogEntry> getCatalogEntriesReferencing(RepositoryEntryRef repoEntry) {
-		String sqlQuery = "select cei from " + CatalogEntryImpl.class.getName() + "  as cei " + " ,org.olat.repository.RepositoryEntry as re "
-				+ " where cei.repositoryEntry = re AND re.key= :reKey ";
+		String sqlQuery = "select cei from catalogentry as cei, repositoryentry as re "
+				+ " where cei.repositoryEntry = re AND re.key=:repoEntryKey ";
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sqlQuery, CatalogEntry.class)
-				.setParameter("reKey", repoEntry.getKey())
+				.setParameter("repoEntryKey", repoEntry.getKey())
 				.getResultList();
 	}
 
@@ -394,21 +394,21 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	 */
 	public List<CatalogEntry> getCatalogCategoriesFor(RepositoryEntryRef repoEntry) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select parentCei from ").append(CatalogEntryImpl.class.getName()).append(" as cei ")
+		sb.append("select parentCei from catalogentry as cei ")
 		  .append(" inner join cei.ownerGroup ownerGroup ")
 		  .append(" inner join cei.parent parentCei ")
 		  .append(" inner join fetch parentCei.ownerGroup parentOwnerGroup ")
 		  .append(" inner join cei.repositoryEntry re ")
-		  .append(" where re.key=:reKey");
+		  .append(" where re.key=:repoEntryKey");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), CatalogEntry.class)
-				.setParameter("reKey", repoEntry.getKey())
+				.setParameter("repoEntryKey", repoEntry.getKey())
 				.getResultList();
 	}
 	
 	public CatalogEntry getCatalogEntryByKey(Long key) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select cei from ").append(CatalogEntryImpl.class.getName()).append(" as cei")
+		sb.append("select cei from catalogentry as cei")
 		  .append(" left join fetch cei.repositoryEntry as entry")
 		  .append(" left join fetch cei.ownerGroup ownerGroup ")
 		  .append(" left join fetch cei.parent parentCei ")
@@ -428,17 +428,17 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	
 	public CatalogEntry getCatalogEntryBy(RepositoryEntryRef entry, CatalogEntry parent) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select cei from ").append(CatalogEntryImpl.class.getName()).append(" as cei")
+		sb.append("select cei from catalogentry as cei")
 		  .append(" left join fetch cei.repositoryEntry as entry")
 		  .append(" left join fetch cei.ownerGroup ownerGroup ")
 		  .append(" inner join fetch cei.parent parentCei ")
 		  .append(" left join fetch parentCei.ownerGroup parentOwnerGroup ")
-		  .append(" where parentCei.key=:parentKey and entry.key=:entryKey");
+		  .append(" where parentCei.key=:parentKey and entry.key=:repoEntryKey");
 
 		List<CatalogEntry> entries = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), CatalogEntry.class)
 				.setParameter("parentKey", parent.getKey())
-				.setParameter("entryKey", entry.getKey())
+				.setParameter("repoEntryKey", entry.getKey())
 				.getResultList();
 		
 		if(entries.isEmpty()) {
@@ -449,7 +449,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	
 	public CatalogEntry getCatalogNodeByKey(Long key) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select cei from ").append(CatalogEntryImpl.class.getName()).append(" as cei")
+		sb.append("select cei from catalogentry as cei")
 		  .append(" left join fetch cei.ownerGroup ownerGroup ")
 		  .append(" left join fetch cei.parent parentCei ")
 		  .append(" left join fetch parentCei.ownerGroup parentOwnerGroup ")
@@ -493,7 +493,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	 * @return List of catalog entries
 	 */
 	public List<CatalogEntry> getCatalogEntriesOwnedBy(Identity identity) {
-		String sqlQuery = "select cei from " + CatalogEntryImpl.class.getName() + " as cei inner join fetch cei.ownerGroup, " + 
+		String sqlQuery = "select cei from catalogentry as cei inner join fetch cei.ownerGroup, " + 
 			" org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi" +
 			" where cei.ownerGroup = sgmsi.securityGroup and sgmsi.identity.key = :identityKey";
 		
@@ -505,7 +505,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	
 	public boolean isOwner(Identity identity) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select cei.key from ").append(CatalogEntryImpl.class.getName()).append(" as cei ")
+		sb.append("select cei.key from catalogentry as cei ")
 		  .append(" where exists (select sgmsi.key from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
 		  .append("   where  cei.ownerGroup=sgmsi.securityGroup and sgmsi.identity.key=:identityKey")
 		  .append(" )");
@@ -550,12 +550,19 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	 * @param newEntry
 	 */
 	public void addCatalogEntry(CatalogEntry parent, CatalogEntry newEntry) {
+		parent = getCatalogEntryByKey(parent.getKey());
+		
 		boolean debug = log.isDebugEnabled();
 		if(debug) log.debug("addCatalogEntry parent={}", parent);
-		newEntry.setParent(parent);
 		if(debug) log.debug("addCatalogEntry newEntry={}", newEntry);
 		if(debug) log.debug("addCatalogEntry newEntry.getOwnerGroup()={}", newEntry.getOwnerGroup());
+		
+		List<CatalogEntry> catEntries = parent.getChildren();
+		newEntry.setParent(parent);
 		saveCatalogEntry(newEntry);
+		catEntries.add(newEntry);
+		updateCatalogEntry(parent);
+		dbInstance.commitAndCloseSession();
 	}
 
 	/**
@@ -567,7 +574,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	 */
 	public List<CatalogEntry> getRootCatalogEntries() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select cei from ").append(CatalogEntryImpl.class.getName()).append(" as cei ")
+		sb.append("select cei from catalogentry as cei ")
 		  .append("inner join fetch cei.ownerGroup ownerGroup ")
 		  .append("where cei.parent is null");
 		return dbInstance.getCurrentEntityManager()
@@ -601,6 +608,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 
 	private CatalogEntry saveCatEntry(String name, String desc, int type, SecurityGroup ownerGroup, RepositoryEntry repoEntry,
 			CatalogEntry parent) {
+		parent = getCatalogEntryByKey(parent.getKey());
 		CatalogEntry ce = createCatalogEntry();
 		ce.setName(name);
 		ce.setDescription(desc);
@@ -609,8 +617,60 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 		ce.setParent(parent);
 		ce.setType(type);
 		saveCatalogEntry(ce);
+		List<CatalogEntry> catEntries = parent.getChildren();
+		
+		for (CatalogEntry catalogEntry : catEntries) {
+			if (catalogEntry.getType() == type) {
+				catEntries.add(catEntries.indexOf(catalogEntry), ce);
+				updateCatalogEntry(parent);
+				break;
+			}
+		}
+		
 		return ce;
 	}
+	
+	public CatalogEntry addCatalogCategory(CatalogEntry ce) {
+		saveCatalogEntry(ce);		
+		
+		if (ce.getParent() != null) {
+			CatalogEntry parent = ce.getParent();
+			List<CatalogEntry> catEntries = parent.getChildren();
+			List<CatalogEntry> catalogEntries = new ArrayList<>(catEntries);
+			
+			for (CatalogEntry catalogEntry : catalogEntries) {
+				if (catalogEntry.getType() == ce.getType()) {
+					catEntries.add(catEntries.indexOf(catalogEntry), ce);
+					updateCatalogEntry(parent);
+					break;
+				}
+			}
+		}
+		
+		return ce;
+	}
+	
+	public CatalogEntry updateCatalogCategory(CatalogEntry ce) {
+		CatalogEntry catEntry = getCatalogEntryByKey(ce.getKey());
+		updateCatalogEntry(catEntry);
+		
+		if (catEntry.getParent() != null) {
+			CatalogEntry parent = catEntry.getParent();
+			List<CatalogEntry> catEntries = parent.getChildren();
+			updateCatalogEntry(parent);
+			
+//			for (CatalogEntry catalogEntry : catEntries) {
+//				if (catalogEntry.getType() == ce.getType()) {
+//					catEntries.add(catEntries.indexOf(catalogEntry), ce);
+//					updateCatalogEntry(parent);
+//				}
+//			}
+		}
+		
+		return ce;
+	}
+	
+	
 
 	/**
 	 * Move the given catalog entry to the new parent
@@ -789,5 +849,35 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	
 	public VFSContainer getCatalogResourcesHome() {
 		return new LocalFolderImpl(new File(FolderConfig.getCanonicalResourcesHome(), "catalog"));
+	}
+	
+	public int reorderCatalogEntry(Long parentKey, Long entryKey, boolean moveUp) {
+		CatalogEntry catParent = getCatalogEntryByKey(parentKey);
+		List<CatalogEntry> catChildren = catParent.getChildren();
+		
+		for (CatalogEntry cat : catChildren) {
+			if (cat.getKey().equals(entryKey)) {
+				int catIndex = catChildren.indexOf(cat);
+				
+				// Move down
+				if (!moveUp && catIndex < catChildren.size() - 1 && catChildren.get(catIndex + 1).getType() == cat.getType()) {
+					CatalogEntry a = catChildren.get(catIndex);
+					catChildren.remove(catIndex);
+					catChildren.add(catIndex + 1, a);
+				} 
+				// Move up
+				else if (moveUp && catIndex > 0 && catChildren.get(catIndex - 1).getType() == cat.getType()) {
+					CatalogEntry a = catChildren.get(catIndex - 1);
+					catChildren.remove(catIndex - 1);
+					catChildren.add(catIndex, a);
+				}
+				updateCatalogEntry(catParent);
+				dbInstance.commitAndCloseSession();
+				
+				return 0;
+			}
+		}
+		
+		return 1;
 	}
 }

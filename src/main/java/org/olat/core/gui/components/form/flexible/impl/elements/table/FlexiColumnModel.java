@@ -35,6 +35,7 @@ public interface FlexiColumnModel {
 	public static int ALIGNMENT_LEFT = 1;
 	public static int ALIGNMENT_RIGHT = 2;
 	public static int ALIGNMENT_CENTER = 3;
+	public static int ALIGNMENT_ICON = 4;
 	
 
 	

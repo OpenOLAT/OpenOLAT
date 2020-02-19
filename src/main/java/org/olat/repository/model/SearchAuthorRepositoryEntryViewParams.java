@@ -217,7 +217,7 @@ public class SearchAuthorRepositoryEntryViewParams {
 
 	public enum OrderBy {
 		key,
-		favorit,
+		favorit,	
 		type,
 		displayname,
 		authors,

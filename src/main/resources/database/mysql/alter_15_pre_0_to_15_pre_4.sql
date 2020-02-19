@@ -76,4 +76,5 @@ alter table o_grad_configuration ENGINE = InnoDB;
 
 alter table o_grad_configuration add constraint grad_config_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 
-
+-- Catalog sorting
+alter table o_catentry add column order_index bigint default 0;

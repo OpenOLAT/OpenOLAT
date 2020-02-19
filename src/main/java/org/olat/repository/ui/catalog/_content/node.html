@@ -23,54 +23,59 @@
 				#end
 			</div>
 		</div>
-
-	#if($subCategories.size() != 0)	
-		#if($listStyle == "list")
-			<div class="o_sublevels_list row clearfix">
-				#foreach($id in $subCategories)
-					#set($imgId = "image_${id}")
-					#set($catId = "kcat_${id}")
-					<div class="o_sublevel" >
-						<div class="o_visual" ><a $r.hrefAndOnclick("img_select",false,false,"node","$r.get($catId)")>
-							<span class="o_visual_not_available" #if($r.get($imgId)) style="background-image:url('$mapperThumbnailUrl/${r.get($imgId)}');" #end></span>
-						</a></div>
-						<div class="o_meta">
-							<h4 class="o_title">$r.render("cat_${id}")</h4>
+	#if(!$isOrdering)
+		#if($subCategories.size() != 0)	
+			#if($listStyle == "list")
+				<div class="o_sublevels_list row clearfix">
+					#foreach($id in $subCategories)
+						#set($imgId = "image_${id}")
+						#set($catId = "kcat_${id}")
+						<div class="o_sublevel" >
+							<div class="o_visual" ><a $r.hrefAndOnclick("img_select",false,false,"node","$r.get($catId)")>
+								<span class="o_visual_not_available" #if($r.get($imgId)) style="background-image:url('$mapperThumbnailUrl/${r.get($imgId)}');" #end></span>
+							</a></div>
+							<div class="o_meta">
+								<h4 class="o_title">$r.render("cat_${id}")</h4>
+							</div>
 						</div>
-					</div>
-				#end
-				#if($subCategories && $subCategories.size() % 2 == 1)
-					<div class="o_sublevel o_fill_sublevels">
-						<div class="o_visual"></div>
-						<div class="o_meta"><h4 class="o_title">&nbsp;</h4></div>
-					</div>
-				#end
-			</div>
-		#elseif($listStyle == "compact")
-			<ul class="o_sublevels_compact list-unstyled">
-				#foreach($id in $subCategories)
-					<li class="o_sublevel">$r.render("cat_${id}")</li>
-				#end
-			</ul>
-		#else
-			<div class="o_sublevels row clearfix">
-				#foreach($id in $subCategories)
-					#set($imgId = "image_${id}")
-					#set($catId = "kcat_${id}")
-					<div class="o_sublevel">
-						<div class="o_visual"><a $r.hrefAndOnclick("img_select",false,false,"node","$r.get($catId)")>
-							<span class="o_visual_not_available" #if($r.get($imgId)) style="background-image:url('$mapperThumbnailUrl/${r.get($imgId)}');" #end></span>
-						</a></div>
-						<div class="o_meta">
-							<h4 class="o_title">$r.render("cat_${id}")</h4>
+					#end
+					#if($subCategories && $subCategories.size() % 2 == 1)
+						<div class="o_sublevel o_fill_sublevels">
+							<div class="o_visual"></div>
+							<div class="o_meta"><h4 class="o_title">&nbsp;</h4></div>
 						</div>
-					</div>
-				#end
-			</div>
+					#end
+				</div>
+			#elseif($listStyle == "compact")
+				<ul class="o_sublevels_compact list-unstyled">
+					#foreach($id in $subCategories)
+						<li class="o_sublevel">$r.render("cat_${id}")</li>
+					#end
+				</ul>
+			#else
+				<div class="o_sublevels row clearfix">
+					#foreach($id in $subCategories)
+						#set($imgId = "image_${id}")
+						#set($catId = "kcat_${id}")
+						<div class="o_sublevel">
+							<div class="o_visual"><a $r.hrefAndOnclick("img_select",false,false,"node","$r.get($catId)")>
+								<span class="o_visual_not_available" #if($r.get($imgId)) style="background-image:url('$mapperThumbnailUrl/${r.get($imgId)}');" #end></span>
+							</a></div>
+							<div class="o_meta">
+								<h4 class="o_title">$r.render("cat_${id}")</h4>
+							</div>
+						</div>
+					#end
+				</div>
+			#end
 		#end
+		</div>	## END o_catalog
 	#end
-	</div>	## END o_catalog
-
+	## Render node list component
+	#if($isOrdering)
+		$r.render("nodeEntries")
+	#end
+	
 	## Render course list component
 	#if($r.available("entries"))
 		$r.render("entries")

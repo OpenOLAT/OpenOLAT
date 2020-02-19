@@ -359,6 +359,17 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements Co
 	}
 
 	private String getAlignmentCssClass(int alignment) {
-		return alignment == FlexiColumnModel.ALIGNMENT_LEFT ? "text-left" : (alignment == FlexiColumnModel.ALIGNMENT_RIGHT ? "text-right" : "text-center");
+		switch (alignment) {
+		case FlexiColumnModel.ALIGNMENT_LEFT:
+			return "text-left";
+		case FlexiColumnModel.ALIGNMENT_RIGHT:
+			return "text-right";
+		case FlexiColumnModel.ALIGNMENT_CENTER:
+			return "text-center";
+		case FlexiColumnModel.ALIGNMENT_ICON:
+			return "o_table_header_fw";
+		default:
+			return "";
+		}
 	}
 }

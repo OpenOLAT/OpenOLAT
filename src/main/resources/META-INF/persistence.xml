@@ -24,7 +24,6 @@
 		<mapping-file>org/olat/basesecurity/NamedGroupImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/basesecurity/SecurityGroupImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/basesecurity/SecurityGroupMembershipImpl.hbm.xml</mapping-file>
-		<mapping-file>org/olat/repository/model/CatalogEntryImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/course/nodes/projectbroker/datamodel/Project.hbm.xml</mapping-file>
 		<mapping-file>org/olat/course/nodes/projectbroker/datamodel/ProjectBroker.hbm.xml</mapping-file>
 		<mapping-file>org/olat/modules/openmeetings/model/OpenMeetingsReference.hbm.xml</mapping-file>
@@ -56,8 +55,8 @@
 		<class>org.olat.upgrade.model.UpgradeTaxonomyLevel</class>
 		<class>org.olat.upgrade.model.UpgradeQuestionItem</class>
 		<class>org.olat.upgrade.model.CurriculumElementPos</class>
+		<class>org.olat.upgrade.model.UpgradeCatalogEntry</class>
 		<!-- End upgraders mapping -->
-
 
 		<class>org.olat.basesecurity.IdentityShort</class>
 		<class>org.olat.basesecurity.model.GroupImpl</class>
@@ -137,6 +136,7 @@
 		<class>org.olat.note.NoteImpl</class>
 		<class>org.olat.registration.TemporaryKeyImpl</class>
 		<class>org.olat.repository.RepositoryEntry</class>
+		<class>org.olat.repository.model.CatalogEntryImpl</class>
 		<class>org.olat.repository.model.RepositoryEntryShortImpl</class>
 		<class>org.olat.repository.model.RepositoryEntryToGroupRelation</class>
 		<class>org.olat.repository.model.RepositoryEntryLifecycle</class>

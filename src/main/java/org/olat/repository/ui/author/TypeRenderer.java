@@ -72,6 +72,7 @@ public class TypeRenderer implements FlexiCellRenderer {
 		} else if (cellValue instanceof RepositoryEntryShort) {
 			RepositoryEntryShort re = (RepositoryEntryShort) cellValue;
 			cssClass = RepositoyUIFactory.getIconCssClass(re.getResourceType());
+			status = re.getEntryStatus();
 		} else if (cellValue instanceof RepositoryEntry) {
 			RepositoryEntry re = (RepositoryEntry) cellValue;
 			cssClass = RepositoyUIFactory.getIconCssClass(re.getOlatResource().getResourceableTypeName());

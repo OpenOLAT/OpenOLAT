@@ -21,6 +21,7 @@ package org.olat.repository.ui.catalog;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -38,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
@@ -95,6 +97,7 @@ import org.olat.repository.ui.author.ACRenderer;
 import org.olat.repository.ui.author.AccessRenderer;
 import org.olat.repository.ui.author.TypeRenderer;
 import org.olat.repository.ui.catalog.CatalogEntryRowModel.Cols;
+import org.olat.repository.ui.catalog.NodeEntryRowModel.NodeCols;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
@@ -130,13 +133,33 @@ public class CatalogNodeManagerController extends FormBasicController implements
 	private CatalogEntryEditController addEntryCtrl, editEntryCtrl;
 	private DialogBoxController dialogDeleteLink, dialogDeleteSubtree;
 	
-	private FlexiTableElement entriesEl, closedEntriesEl;
-	private CatalogEntryRowModel entriesModel, closedEntriesModel;
+	private FlexiTableElement entriesEl;
+	private FlexiTableElement closedEntriesEl;
+	private FlexiTableElement nodeEntriesEl;
+	private CatalogEntryRowModel entriesModel;
+	private CatalogEntryRowModel closedEntriesModel;
+	private NodeEntryRowModel nodeEntriesModel;
 	
-	private Link editLink, moveLink, deleteLink;
-	private Link nominateLink, contactLink;
-	private Link addCategoryLink, addResourceLink;
-
+	private Link editLink;
+	private Link moveLink;
+	private Link deleteLink;
+	private Link nominateLink;
+	private Link contactLink;
+	private Link addCategoryLink;
+	private Link addResourceLink;
+	private Link orderLink;
+	
+	private DefaultFlexiColumnModel leafUpColumnModel;
+	private DefaultFlexiColumnModel leafDownColumnModel;
+	private DefaultFlexiColumnModel leafPositionColumnModel;
+	private DefaultFlexiColumnModel nodeUpColumnModel;
+	private DefaultFlexiColumnModel nodeDownColumnModel;
+	private DefaultFlexiColumnModel nodePositionColumnModel;
+	private List<DefaultFlexiColumnModel> leafColumns;
+	
+	private static final String CMD_UP = "leaf_up";
+	private static final String CMD_DOWN = "leaf_down";
+	
 	private LockResult catModificationLock;
 	private final MapperKey mapperThumbnailKey;
 	private final WindowControl rootwControl;
@@ -145,6 +168,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 	private final boolean isAuthor;
 	private final boolean isAdministrator;
 	private final boolean isLocalTreeAdmin;
+	private boolean isOrdering;
 	
 	private CatalogEntry catalogEntry;
 
@@ -179,6 +203,8 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		isAuthor = roles.isAuthor();
 		isGuest = roles.isGuestOnly();
 		isAdministrator = roles.isAdministrator() || roles.isLearnResourceManager();
+		isOrdering = false;
+		flc.contextPut("isOrdering", isOrdering);
 		
 		if(isAdministrator) {
 			isLocalTreeAdmin = false;
@@ -216,52 +242,150 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			flc.contextPut("extLink", url);
 		}
 		
-		FlexiTableColumnModel entriesColumnsModel = getCatalogFlexiTableColumnModel("opened-");
+		leafColumns = new ArrayList<>();
+		
+		FlexiTableColumnModel entriesColumnsModel = getCatalogFlexiTableColumnModel("opened-", true);
 		entriesModel = new CatalogEntryRowModel(entriesColumnsModel);
 		entriesEl = uifactory.addTableElement(getWindowControl(), "entries", entriesModel, getTranslator(), formLayout);
 		
-		FlexiTableColumnModel closedEntriesColumnsModel = getCatalogFlexiTableColumnModel("closed-");
+		FlexiTableColumnModel closedEntriesColumnsModel = getCatalogFlexiTableColumnModel("closed-", true);
 		closedEntriesModel = new CatalogEntryRowModel(closedEntriesColumnsModel);
 		closedEntriesEl = uifactory.addTableElement(getWindowControl(), "closedEntries", closedEntriesModel, getTranslator(), formLayout);
+		
+		FlexiTableColumnModel nodeEntriesColumnsModel = getNodeFlexiTableColumnModel("nodes-");
+		nodeEntriesModel = new NodeEntryRowModel(nodeEntriesColumnsModel);
+		nodeEntriesEl = uifactory.addTableElement(getWindowControl(), "nodeEntries", nodeEntriesModel, getTranslator(), formLayout);
 	}
 	
-	private FlexiTableColumnModel getCatalogFlexiTableColumnModel(String cmdPrefix) {
+	private FlexiTableColumnModel getCatalogFlexiTableColumnModel(String cmdPrefix, boolean sortEnabled) {
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key.i18nKey(), Cols.key.ordinal(), true, OrderBy.key.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.type.i18nKey(), Cols.type.ordinal(), true, OrderBy.type.name(),
-				FlexiColumnModel.ALIGNMENT_LEFT, new TypeRenderer()));
+		DefaultFlexiColumnModel columnModel;
+		
+		leafUpColumnModel = new DefaultFlexiColumnModel(false, Cols.up.i18nKey(), Cols.up.ordinal(), CMD_UP, false, null);
+		leafUpColumnModel.setCellRenderer(new BooleanCellRenderer(
+				new StaticFlexiCellRenderer("", CMD_UP, "o_icon o_icon-lg o_icon_move_up"),
+				null));
+		leafUpColumnModel.setIconHeader("o_icon o_icon_fw o_icon-lg o_icon_move_up");
+		leafUpColumnModel.setAlignment(FlexiColumnModel.ALIGNMENT_ICON);
+		columnsModel.addFlexiColumnModel(leafUpColumnModel);
+		
+		leafDownColumnModel = new DefaultFlexiColumnModel(false, Cols.down.i18nKey(), Cols.down.ordinal(), CMD_DOWN, false, null);
+		leafDownColumnModel.setCellRenderer(new BooleanCellRenderer(
+				new StaticFlexiCellRenderer("", CMD_DOWN, "o_icon o_icon-lg o_icon_move_down"),
+				null));
+		leafDownColumnModel.setIconHeader("o_icon o_icon_fw o_icon-lg o_icon_move_down");
+		leafDownColumnModel.setAlignment(FlexiColumnModel.ALIGNMENT_ICON);	
+		columnsModel.addFlexiColumnModel(leafDownColumnModel);
+		
+		leafPositionColumnModel = new DefaultFlexiColumnModel(false, Cols.position.i18nKey(), Cols.position.ordinal(), sortEnabled, Cols.position.name());
+		columnsModel.addFlexiColumnModel(leafPositionColumnModel);
+		leafColumns.add(leafPositionColumnModel);
+		
+		columnModel = new DefaultFlexiColumnModel(false, Cols.key.i18nKey(), Cols.key.ordinal(), sortEnabled, OrderBy.key.name());
+		leafColumns.add(columnModel);
+		columnsModel.addFlexiColumnModel(columnModel);
+		
+		columnModel = new DefaultFlexiColumnModel(true, Cols.type.i18nKey(), Cols.type.ordinal(), sortEnabled, OrderBy.type.name(),
+				FlexiColumnModel.ALIGNMENT_LEFT, new TypeRenderer());
+		leafColumns.add(columnModel);
+		columnsModel.addFlexiColumnModel(columnModel);
+		
 		FlexiCellRenderer renderer = new StaticFlexiCellRenderer(cmdPrefix + "select", new TextFlexiCellRenderer());
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.displayName.i18nKey(), Cols.displayName.ordinal(), cmdPrefix + "select",
-				true, OrderBy.displayname.name(), renderer));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.authors.i18nKey(), Cols.authors.ordinal(),
-				true, OrderBy.authors.name()));
+		columnModel = new DefaultFlexiColumnModel(Cols.displayName.i18nKey(), Cols.displayName.ordinal(), cmdPrefix + "select",
+				sortEnabled, OrderBy.displayname.name(), renderer);
+		leafColumns.add(columnModel);
+		columnsModel.addFlexiColumnModel(columnModel);
+		
+		columnModel = new DefaultFlexiColumnModel(false, Cols.authors.i18nKey(), Cols.authors.ordinal(),
+				sortEnabled, OrderBy.authors.name());
+		leafColumns.add(columnModel);
+		columnsModel.addFlexiColumnModel(columnModel);
+		
 		if(repositoryModule.isManagedRepositoryEntries()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.externalId.i18nKey(), Cols.externalId.ordinal(),
-					true, OrderBy.externalId.name()));
+			columnModel = new DefaultFlexiColumnModel(false, Cols.externalId.i18nKey(), Cols.externalId.ordinal(),
+					sortEnabled, OrderBy.externalId.name());
+			leafColumns.add(columnModel);
+			columnsModel.addFlexiColumnModel(columnModel);
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.externalRef.i18nKey(), Cols.externalRef.ordinal(),
-				true, OrderBy.externalRef.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lifecycleLabel.i18nKey(), Cols.lifecycleLabel.ordinal(),
-				true, OrderBy.lifecycleLabel.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lifecycleSoftkey.i18nKey(), Cols.lifecycleSoftkey.ordinal(),
-				true, OrderBy.lifecycleSoftkey.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.lifecycleStart.i18nKey(), Cols.lifecycleStart.ordinal(),
-				true, OrderBy.lifecycleStart.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.lifecycleEnd.i18nKey(), Cols.lifecycleEnd.ordinal(),
-				true, OrderBy.lifecycleEnd.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.access.i18nKey(), Cols.access.ordinal(),
-				true, OrderBy.access.name(), FlexiColumnModel.ALIGNMENT_LEFT, new AccessRenderer(getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.ac.i18nKey(), Cols.ac.ordinal(),
-				true, OrderBy.ac.name(), FlexiColumnModel.ALIGNMENT_LEFT, new ACRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.creationDate.i18nKey(), Cols.creationDate.ordinal(),
-				true, OrderBy.creationDate.name()));
+		
+		columnModel = new DefaultFlexiColumnModel(false, Cols.externalRef.i18nKey(), Cols.externalRef.ordinal(),
+				sortEnabled, OrderBy.externalRef.name());
+		leafColumns.add(columnModel);
+		columnsModel.addFlexiColumnModel(columnModel);
+		
+		columnModel = new DefaultFlexiColumnModel(false, Cols.lifecycleLabel.i18nKey(), Cols.lifecycleLabel.ordinal(),
+				sortEnabled, OrderBy.lifecycleLabel.name());
+		leafColumns.add(columnModel);
+		columnsModel.addFlexiColumnModel(columnModel);
+		
+		columnModel = new DefaultFlexiColumnModel(false, Cols.lifecycleSoftkey.i18nKey(), Cols.lifecycleSoftkey.ordinal(),
+				sortEnabled, OrderBy.lifecycleSoftkey.name());
+		leafColumns.add(columnModel);
+		columnsModel.addFlexiColumnModel(columnModel);
+		
+		columnModel = new DefaultFlexiColumnModel(true, Cols.lifecycleStart.i18nKey(), Cols.lifecycleStart.ordinal(),
+				sortEnabled, OrderBy.lifecycleStart.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale()));
+		leafColumns.add(columnModel);
+		columnsModel.addFlexiColumnModel(columnModel);
+		
+		columnModel = new DefaultFlexiColumnModel(true, Cols.lifecycleEnd.i18nKey(), Cols.lifecycleEnd.ordinal(),
+				sortEnabled, OrderBy.lifecycleEnd.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale()));
+		leafColumns.add(columnModel);
+		columnsModel.addFlexiColumnModel(columnModel);
+		
+		columnModel = new DefaultFlexiColumnModel(true, Cols.access.i18nKey(), Cols.access.ordinal(),
+				sortEnabled, OrderBy.access.name(), FlexiColumnModel.ALIGNMENT_LEFT, new AccessRenderer(getLocale()));
+		leafColumns.add(columnModel);
+		columnsModel.addFlexiColumnModel(columnModel);
+		
+		columnModel = new DefaultFlexiColumnModel(true, Cols.ac.i18nKey(), Cols.ac.ordinal(),
+				sortEnabled, OrderBy.ac.name(), FlexiColumnModel.ALIGNMENT_LEFT, new ACRenderer());
+		leafColumns.add(columnModel);
+		columnsModel.addFlexiColumnModel(columnModel);
+		
+		columnModel = new DefaultFlexiColumnModel(false, Cols.creationDate.i18nKey(), Cols.creationDate.ordinal(),
+				sortEnabled, OrderBy.creationDate.name());
+		leafColumns.add(columnModel);
+		columnsModel.addFlexiColumnModel(columnModel);
+		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.delete.i18nKey(), translate(Cols.delete.i18nKey()), cmdPrefix + "delete"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.move.i18nKey(), translate(Cols.move.i18nKey()), cmdPrefix + "move"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.detailsSupported.i18nKey(), Cols.detailsSupported.ordinal(), cmdPrefix + "details",
 				new StaticFlexiCellRenderer("", cmdPrefix + "details", "o_icon o_icon-lg o_icon_details", translate("details"))));
 		return columnsModel;
 	}
+	
+	private FlexiTableColumnModel getNodeFlexiTableColumnModel(String cmdPrefix) {
+		//add the table
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		
+		nodeUpColumnModel = new DefaultFlexiColumnModel(false, NodeCols.up.i18nKey(), NodeCols.up.ordinal(), CMD_UP, false, null);
+		nodeUpColumnModel.setCellRenderer(new BooleanCellRenderer(
+				new StaticFlexiCellRenderer("", CMD_UP, "o_icon o_icon_fw o_icon-lg o_icon_move_up"),
+				null));
+		nodeUpColumnModel.setIconHeader("o_icon o_icon_fw o_icon-lg o_icon_move_up");
+		nodeUpColumnModel.setAlignment(FlexiColumnModel.ALIGNMENT_ICON);
+
+		
+		nodeDownColumnModel = new DefaultFlexiColumnModel(false, NodeCols.down.i18nKey(), NodeCols.down.ordinal(), CMD_DOWN, false, null);
+		nodeDownColumnModel.setCellRenderer(new BooleanCellRenderer(
+				new StaticFlexiCellRenderer("", CMD_DOWN, "o_icon o_icon_fw o_icon-lg o_icon_move_down"),
+				null));
+		nodeDownColumnModel.setIconHeader("o_icon o_icon_fw o_icon-lg o_icon_move_down");
+		nodeDownColumnModel.setAlignment(FlexiColumnModel.ALIGNMENT_ICON);
+		
+		nodePositionColumnModel = new DefaultFlexiColumnModel(true, NodeCols.position.i18nKey(), NodeCols.position.ordinal(), false, null);
+
+		
+		columnsModel.addFlexiColumnModel(nodeUpColumnModel);
+		columnsModel.addFlexiColumnModel(nodeDownColumnModel);
+		columnsModel.addFlexiColumnModel(nodePositionColumnModel);
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NodeCols.key.i18nKey(), NodeCols.key.ordinal(), false, null));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, NodeCols.displayName.i18nKey(), NodeCols.displayName.ordinal(), false, null));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NodeCols.creationDate.i18nKey(), NodeCols.creationDate.ordinal(), false, null));
+		return columnsModel;
+	} 
 
 	private void loadEntryInfos() {
 		flc.contextPut("catalogEntryName", catalogEntry.getName());
@@ -280,6 +404,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 	}
 
 	private void loadResources(UserRequest ureq) {
+		catalogEntry = catalogManager.getCatalogEntryByKey(catalogEntry.getKey());
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(getIdentity(), ureq.getUserSession().getRoles());
 		params.setParentEntry(catalogEntry);
 		List<RepositoryEntry> repoEntries = repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, false);
@@ -295,6 +420,13 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		List<CatalogEntryRow> closedItems = new ArrayList<>();
 		for(RepositoryEntry entry:repoEntries) {
 			CatalogEntryRow row = new CatalogEntryRow(entry);
+			for (CatalogEntry catEntry : catalogEntry.getChildren()) {
+				if (catEntry.getType() == CatalogEntry.TYPE_LEAF && catEntry.getRepositoryEntry().equals(entry)) {
+					row = new CatalogEntryRow(entry, catEntry);
+					break;
+				} 
+			}
+			
 			List<PriceMethod> types = new ArrayList<>(3);
 			
 			if(entry.isBookable()) {
@@ -327,31 +459,40 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			}
 		}
 		
+		Comparator<CatalogEntryRow> comparator = (row1, row2) -> {
+			return ((Integer)row1.getPosition()).compareTo(row2.getPosition());
+		};
+
+		Collections.sort(items, comparator);
+		Collections.sort(closedItems, comparator);
+		
 		entriesModel.setObjects(items);
-		entriesEl.reset();
+		entriesEl.reset(true, true, true);
 		entriesEl.setVisible(entriesModel.getRowCount() > 0);
 		
 		closedEntriesModel.setObjects(closedItems);
-		closedEntriesEl.reset();
+		closedEntriesEl.reset(true, true, true);
 		closedEntriesEl.setVisible(closedEntriesModel.getRowCount() > 0);
 	}
 	
 	protected void loadNodesChildren() {
-		List<CatalogEntry> childCe = catalogManager.getNodesChildrenOf(catalogEntry);
-		Collections.sort(childCe, new CatalogEntryComparator(getLocale()));
+		List<CatalogEntry> catalogChildren = catalogManager.getCatalogNodeByKey(catalogEntry.getKey()).getChildren();
 		List<String> subCategories = new ArrayList<>();
+		List<NodeEntryRow> nodeEntries = new ArrayList<>();
 		int count = 0;
-		for (CatalogEntry entry : childCe) {
+		for (CatalogEntry entry : catalogChildren) {
 			if(entry.getType() == CatalogEntry.TYPE_NODE) {
+				nodeEntries.add(new NodeEntryRow(entry));
+
 				String cmpId = "cat_" + (++count);
-				
+
 				VFSLeaf img = catalogManager.getImage(entry);
 				if(img != null) {
 					String imgId = "image_" + count;
 					flc.contextPut(imgId, img.getName());
 				}
 				flc.contextPut("k" + cmpId, entry.getKey());
-				
+
 				String title = StringHelper.escapeHtml(entry.getName());
 				Link link = LinkFactory.createCustomLink(cmpId, "select_node", cmpId, Link.LINK + Link.NONTRANSLATED, flc.getFormItemComponent(), this);
 				link.setIconLeftCSS("o_icon o_icon_catalog_sub");
@@ -363,6 +504,16 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			}
 		}
 		flc.contextPut("subCategories", subCategories);
+
+		Comparator<NodeEntryRow> comparator = (row1, row2) -> {
+			return ((Integer)row1.getPosition()).compareTo(row2.getPosition());
+		};
+
+		Collections.sort(nodeEntries, comparator);
+	
+		nodeEntriesModel.setObjects(nodeEntries);
+		nodeEntriesEl.reset(true, true, true);
+		nodeEntriesEl.setVisible(nodeEntriesModel.getRowCount() > 0);
 	}
 	
 	protected void initToolbar() {
@@ -371,6 +522,11 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		boolean canAddSubCategories = isAdministrator || isLocalTreeAdmin;
 	
 		if (canAdministrateCategory || canAddLinks) {
+			if (canAdministrateCategory) {
+				orderLink = LinkFactory.createToolLink("order", translate("tools.order.catalog"), this, "o_icon_order");
+				orderLink.setElementCssClass("o_sel_catalog_order_category");
+				toolbarPanel.addTool(orderLink, Align.right);
+			}
 			if (canAdministrateCategory) {
 				editLink = LinkFactory.createToolLink("edit", translate("tools.edit.catalog.category"), this, "o_icon_edit");
 				editLink.setElementCssClass("o_sel_catalog_edit_category");
@@ -474,8 +630,8 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
+				CatalogEntryRow row = entriesModel.getObject(se.getIndex());
 				if(cmd != null && cmd.startsWith("opened-")) {
-					CatalogEntryRow row = entriesModel.getObject(se.getIndex());
 					if("opened-details".equals(cmd) || "opened-select".equals(cmd)) {
 						launchDetails(ureq, row);	
 					} else if("opened-move".equals(cmd)) {
@@ -483,21 +639,40 @@ public class CatalogNodeManagerController extends FormBasicController implements
 					} else if("opened-delete".equals(cmd)) {
 						doConfirmDelete(ureq, row);
 					}
+				} else if (cmd.equals(CMD_DOWN)) {
+					doMoveCatalogEntry(row.getCatEntryKey(), cmd, ureq);
+				} else if (cmd.equals(CMD_UP)) {
+					doMoveCatalogEntry(row.getCatEntryKey(), cmd, ureq);
 				}
 			}
 		} else if(closedEntriesEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
+				CatalogEntryRow row = closedEntriesModel.getObject(se.getIndex());
 				if(cmd != null && cmd.startsWith("closed-")) {
-					CatalogEntryRow row = closedEntriesModel.getObject(se.getIndex());
 					if("closed-details".equals(cmd) || "closed-select".equals(cmd)) {
 						launchDetails(ureq, row);	
 					} else if("closed-move".equals(cmd)) {
 						doMoveCategory(ureq, row);
 					} else if("closed-delete".equals(cmd)) {
 						doConfirmDelete(ureq, row);
-					}
+					} 
+				} else if (cmd.equals(CMD_DOWN)) {
+					doMoveCatalogEntry(row.getCatEntryKey(), cmd, ureq);
+				} else if (cmd.equals(CMD_UP)) {
+					doMoveCatalogEntry(row.getCatEntryKey(), cmd, ureq);
+				}
+			}
+		} else if (nodeEntriesEl == source) {		
+			if (event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				String cmd = se.getCommand();
+				NodeEntryRow row = nodeEntriesModel.getObject(se.getIndex());
+				if (cmd.equals(CMD_DOWN)) {
+					doMoveCatalogEntry(row.getKey(), cmd, ureq);
+				} else if (cmd.equals(CMD_UP)) {
+					doMoveCatalogEntry(row.getKey(), cmd, ureq);
 				}
 			}
 		}
@@ -517,6 +692,8 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			doConfirmDelete(ureq);
 		} else if(moveLink == source) {
 			doMoveCategory(ureq);
+		} else if (orderLink == source) {
+			doActivateOrdering(ureq);
 		} else if(addCategoryLink == source) {
 			doAddCategory(ureq);
 		} else if(addResourceLink == source) {
@@ -674,6 +851,69 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			addToHistory(ureq, childNodeCtrl);
 		}
 		return childNodeCtrl;
+	}
+	
+	private void doActivateOrdering(UserRequest ureq) {
+		initForm(ureq);
+		
+		loadEntryInfos();
+		loadNodesChildren();
+		loadResources(ureq);
+		
+		if (isOrdering) {
+			entriesEl.setColumnModelVisible(leafUpColumnModel, false);
+			entriesEl.setColumnModelVisible(leafDownColumnModel, false);
+			entriesEl.setColumnModelVisible(leafPositionColumnModel, false);
+			
+			closedEntriesEl.setColumnModelVisible(leafUpColumnModel, false);
+			closedEntriesEl.setColumnModelVisible(leafDownColumnModel, false);
+			closedEntriesEl.setColumnModelVisible(leafPositionColumnModel, false);
+			
+			entriesEl.reset();
+			closedEntriesEl.reset();
+			
+			for (DefaultFlexiColumnModel columnModel : leafColumns) {
+				columnModel.setSortable(true);
+			}
+			
+//			for (int i =entriesModel.getColumnCount(); i) {
+//				entriesModel.getTableColumnModel().getColumnModel(i).setSortable(false);
+//			}
+			
+			nodeEntriesEl.setColumnModelVisible(nodeUpColumnModel, false);
+			nodeEntriesEl.setColumnModelVisible(nodeDownColumnModel, false);
+			nodeEntriesEl.reset();
+		} else {
+			entriesEl.setColumnModelVisible(leafUpColumnModel, true);
+			entriesEl.setColumnModelVisible(leafDownColumnModel, true); 
+			entriesEl.setColumnModelVisible(leafPositionColumnModel, true);
+			
+			closedEntriesEl.setColumnModelVisible(leafUpColumnModel, true);
+			closedEntriesEl.setColumnModelVisible(leafDownColumnModel, true);
+			closedEntriesEl.setColumnModelVisible(leafPositionColumnModel, true);
+			
+			entriesEl.reset();
+			closedEntriesEl.reset();
+			
+			for (DefaultFlexiColumnModel columnModel : leafColumns) {
+				columnModel.setSortable(false);
+			}
+			
+			nodeEntriesEl.setColumnModelVisible(nodeUpColumnModel, true);
+			nodeEntriesEl.setColumnModelVisible(nodeDownColumnModel, true);
+			nodeEntriesEl.reset();
+		}
+		isOrdering = !isOrdering;
+		flc.contextPut("isOrdering", isOrdering);
+	}
+	
+	private void doMoveCatalogEntry(Long key, String command, UserRequest ureq) {
+		if(catalogManager.reorderCatalogEntry(catalogEntry.getKey(), key, command.equals(CMD_UP) ? true : false) != 0) {
+			getWindowControl().setWarning("Catalog has been modified, please try again!");
+		};
+		
+		loadNodesChildren();
+		loadResources(ureq);
 	}
 	
 	private void doAddResource(UserRequest ureq) {
