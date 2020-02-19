@@ -258,6 +258,8 @@ create table if not exists o_catentry (
    fk_ownergroup bigint unique,
    type integer not null,
    parent_id bigint,
+   order_index bigint, 
+   short_title varchar(255),
    primary key (id)
 );
 create table if not exists o_note (

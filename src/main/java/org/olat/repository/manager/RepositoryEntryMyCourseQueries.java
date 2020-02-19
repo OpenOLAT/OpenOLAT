@@ -333,7 +333,7 @@ public class RepositoryEntryMyCourseQueries {
 		}
 		
 		if(!count) {
-			appendOrderBy(params.getOrderBy(), params.isOrderByAsc(), sb);
+			appendOrderBy(params, sb);
 		}
 
 		TypedQuery<T> dbQuery = dbInstance.getCurrentEntityManager()
@@ -526,7 +526,11 @@ public class RepositoryEntryMyCourseQueries {
 		return needIdentityKey;
 	}
 	
-	private void appendOrderBy(OrderBy orderBy, boolean asc, QueryBuilder sb) {
+//	private void appendOrderBy(OrderBy orderBy, boolean asc, QueryBuilder sb, SearchMyRepositoryEntryViewParams params) {
+	private void appendOrderBy(SearchMyRepositoryEntryViewParams params, QueryBuilder sb) {
+		OrderBy orderBy = params.getOrderBy();
+		boolean asc = params.isOrderByAsc();
+		
 		if(orderBy != null) {
 			switch(orderBy) {
 				case automatic://! the sorting is reverse
@@ -642,8 +646,10 @@ public class RepositoryEntryMyCourseQueries {
 					appendAsc(sb, asc).append(", lower(v.displayname) asc");
 					break;
 				case custom: 
-					sb.append(" order by cei.position ");
-					appendAsc(sb, asc);
+					if (params.getParentEntry() != null) {
+						sb.append(" order by cei.position ");
+						appendAsc(sb, asc);
+					}					
 					break;
 				default:
 					if(asc) {

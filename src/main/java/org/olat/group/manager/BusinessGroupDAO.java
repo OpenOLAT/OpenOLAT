@@ -1068,7 +1068,7 @@ public class BusinessGroupDAO {
 			sb.append(")");
 		}
 		
-		if(params.getBusinessGroupKeys() != null) {
+		if(params.getBusinessGroupKeys() != null && !params.getBusinessGroupKeys().isEmpty()) {
 			where = PersistenceHelper.appendAnd(sb, where);
 			sb.append(" bgi.key in (:businessGroupKeys)");
 		}

@@ -21,7 +21,6 @@ create table o_grad_assignment (
    g_status varchar(16) default 'unassigned' not null,
    g_assessment_date datetime,
    g_assignment_date datetime,
-   g_assignment_notification datetime,
    g_reminder_1 datetime,
    g_reminder_2 datetime,
    g_deadline datetime,
@@ -44,7 +43,6 @@ create table o_grad_time_record (
    creationdate datetime not null,
    lastmodified datetime not null,
    g_time int8 default 0 not null,
-   g_date_record date not null,
    fk_assignment bigint,
    fk_grader bigint not null,
    primary key (id)
@@ -80,21 +78,3 @@ alter table o_grad_configuration add constraint grad_config_to_entry_idx foreign
 
 -- Catalog sorting
 alter table o_catentry add column order_index bigint default 0;
-alter table o_catentry add column short_title varchar(255);
-
--- absence leave
-create table o_user_absence_leave (
-   id bigint not null auto_increment,
-   creationdate datetime not null,
-   lastmodified datetime not null,
-   u_absent_from datetime,
-   u_absent_to datetime,
-   u_resname varchar(50),
-   u_resid bigint,
-   u_sub_ident varchar(2048),
-   fk_identity bigint not null,
-   primary key (id)
-);
-alter table o_user_absence_leave ENGINE = InnoDB;
-
-alter table o_user_absence_leave add constraint abs_leave_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);

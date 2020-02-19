@@ -286,6 +286,8 @@ CREATE TABLE o_catentry (
   fk_ownergroup number(20),
   type number(11) NOT NULL,
   parent_id number(20),
+  order_index number(20),
+  short_title varchar2(255 char),
   CONSTRAINT u_o_catentry UNIQUE (fk_ownergroup),
   PRIMARY KEY (id)
 );
