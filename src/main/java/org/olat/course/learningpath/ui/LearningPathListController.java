@@ -50,7 +50,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.helpers.Settings;
-import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -61,7 +60,6 @@ import org.olat.course.learningpath.manager.LearningPathCourseTreeModelBuilder;
 import org.olat.course.learningpath.ui.LearningPathDataModel.LearningPathCols;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.Overridable;
@@ -101,20 +99,13 @@ public class LearningPathListController extends FormBasicController implements T
 	private CourseAssessmentService courseAssessmentService;
 
 	public LearningPathListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			UserCourseEnvironment userCourseEnv) {
+			UserCourseEnvironment userCourseEnv, boolean canEdit) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.userCourseEnv = userCourseEnv;
 		this.stackPanel = stackPanel;
 		this.courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		this.canEdit = getCanEdit();
+		this.canEdit = canEdit;
 		initForm(ureq);
-	}
-	
-	private boolean getCanEdit() {
-		IdentityEnvironment identityEnv = new IdentityEnvironment();
-		identityEnv.setIdentity(getIdentity());
-		UserCourseEnvironment myCourseEnv = new UserCourseEnvironmentImpl(identityEnv, userCourseEnv.getCourseEnvironment());
-		return !myCourseEnv.isCourseReadOnly() && (myCourseEnv.isAdmin() || myCourseEnv.isCoach());
 	}
 
 	@Override

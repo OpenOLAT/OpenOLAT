@@ -46,7 +46,7 @@ public class MyLearningPathController extends BasicController {
 		String courseTitle = userCourseEnv.getCourseEnvironment().getCourseTitle();
 		mainVC.contextPut("courseTitle", courseTitle);
 		
-		learningPathListCtrl = new LearningPathListController(ureq, wControl, stackPanel, userCourseEnv);
+		learningPathListCtrl = new LearningPathListController(ureq, wControl, stackPanel, userCourseEnv, false);
 		listenTo(learningPathListCtrl);
 		mainVC.put("list", learningPathListCtrl.getInitialComponent());
 		
