@@ -659,7 +659,7 @@ public class IFrameDeliveryMapper implements Mapper {
 		
 		public void appendGlossary() {
 			appendStaticJs("js/openolat/glossaryhighlighter.js");
-			appendStaticJs("bootstrap/javascripts/bootstrap/tooltip.js");
+			appendStaticJs("js/openolat/glossary.bootstrap.tooltip.js");
 			appendStaticCss("js/openolat/glossaryhighlighter.css", "textmarkercss");
 		}
 
