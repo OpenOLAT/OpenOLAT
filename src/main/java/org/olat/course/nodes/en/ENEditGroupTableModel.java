@@ -23,10 +23,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.util.Formatter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.filter.FilterFactory;
 
 /**
  * 
@@ -39,10 +42,12 @@ public class ENEditGroupTableModel extends DefaultFlexiTableDataModel<ENEditGrou
 		implements FlexiTableDataModel<ENEditGroupTableContentRow> {
 
 	private final Locale locale;
+	private final Translator translator;
 
-	public ENEditGroupTableModel(FlexiTableColumnModel columnModel, Locale locale) {
+	public ENEditGroupTableModel(FlexiTableColumnModel columnModel, Locale locale, Translator translator) {
 		super(columnModel);
 		this.locale = locale;
+		this.translator = translator;
 	}
 
 	@Override
@@ -64,6 +69,20 @@ public class ENEditGroupTableModel extends DefaultFlexiTableDataModel<ENEditGrou
 			return row.getKey();
 		case groupName:
 			return row.getGroupName();
+		case remove:
+			return translator.translate(ENEditGroupTableColumns.remove.i18nHeaderKey);
+		case minParticipants: 
+			return row.getMinParticipants();
+		case maxParticipants: 
+			return row.getMaxParticipants();
+		case description: 
+			return Formatter.truncate(FilterFactory.getHtmlTagAndDescapingFilter().filter(row.getDescription()), 250);
+		case waitinglistEnabled: 
+			return row.isWaitinglistEnabled();
+		case onWaitinglist: 
+			return row.getOnWaitinglist();
+		case participants: 
+			return row.getParticipants();
 
 		default:
 			return "ERROR";
@@ -72,7 +91,7 @@ public class ENEditGroupTableModel extends DefaultFlexiTableDataModel<ENEditGrou
 
 	@Override
 	public DefaultFlexiTableDataModel<ENEditGroupTableContentRow> createCopyWithEmptyList() {
-		return new ENEditGroupTableModel(getTableColumnModel(), locale);
+		return new ENEditGroupTableModel(getTableColumnModel(), locale, translator);
 	}
 
 	public List<String> getNames() {
@@ -96,8 +115,18 @@ public class ENEditGroupTableModel extends DefaultFlexiTableDataModel<ENEditGrou
 	}
 
 	public enum ENEditGroupTableColumns implements FlexiColumnDef {
-		key("engroupedit.table.key"), groupName("engroupedit.table.groupName"), up("engroupedit.table.up"),
-		down("engroupedit.table.down"), remove("engroupedit.table.remove");
+		key("engroupedit.table.key"), 
+		groupName("engroupedit.table.groupName"), 
+		up("engroupedit.table.up"),
+		down("engroupedit.table.down"), 
+		remove("engroupedit.table.remove"),
+		minParticipants("engroupedit.table.minPart"),
+		maxParticipants("engroupedit.table.maxPart"),
+		description("engroupedit.table.description"),
+		participants("engroupedit.table.enrolled"),
+		waitinglistEnabled("engroupedit.table.waitinglist"),
+		onWaitinglist("engroupedit.table.waitinglistParticipants"),
+		isProtected("engroupedit.table.isProteced");
 
 		private final String i18nHeaderKey;
 

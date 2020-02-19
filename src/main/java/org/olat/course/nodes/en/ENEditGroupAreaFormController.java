@@ -71,6 +71,7 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.ENCourseNode;
 import org.olat.course.nodes.en.ENEditGroupTableModel.ENEditGroupTableColumns;
+import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.area.BGArea;
@@ -129,7 +130,6 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 	private final boolean managedGroups;
 
 	private final BGAreaManager areaManager;
-	private final BusinessGroupService businessGroupService;
 
 	private static final String CMD_UP = "up";
 	private static final String CMD_DOWN = "down";
@@ -137,6 +137,10 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 	
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private EnrollmentManager enrollmentManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 
 	public ENEditGroupAreaFormController(UserRequest ureq, WindowControl wControl, ModuleConfiguration moduleConfig, CourseEditorEnv cev) {
 		super(ureq, wControl);
@@ -144,7 +148,6 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		this.setTranslator(pT);
 
 		areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		singleUserEventCenter = ureq.getUserSession().getSingleUserEventCenter();
 		groupConfigChangeEventOres = OresHelper.createOLATResourceableType(MultiUserEvent.class);
@@ -179,12 +182,17 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 	}
 
 	public void updateModel(List<Long> groupKeys) {
-		List<BusinessGroupShort> groups = businessGroupService.loadShortBusinessGroups(groupKeys);
-		Map<Long,BusinessGroupShort> groupMap = groups.stream().collect(Collectors.toMap(BusinessGroupShort::getKey, g -> g, (u, v) -> u));
+		List<BusinessGroup> groups = businessGroupService.loadBusinessGroups(groupKeys);
+		Map<Long,BusinessGroup> groupMap = groups.stream().collect(Collectors.toMap(BusinessGroup::getKey, g -> g, (u, v) -> u));
+		List<EnrollmentRow> enrollmentRows = enrollmentManager.getEnrollments(getIdentity(), groupKeys, null, 256);
+		Map<Long,EnrollmentRow> enrollmentMap = enrollmentRows.stream().collect(Collectors.toMap(EnrollmentRow::getKey, g -> g, (u, v) -> u));
 
 		easyGroupTableRows = new ArrayList<ENEditGroupTableContentRow>();
 		for (Long groupKey : groupKeys) {
-			easyGroupTableRows.add(new ENEditGroupTableContentRow(groupKey, groupMap.get(groupKey).getName()));
+			BusinessGroup group = groupMap.get(groupKey);
+			EnrollmentRow enrollment = enrollmentMap.get(groupKey);
+			
+			easyGroupTableRows.add(new ENEditGroupTableContentRow(group, enrollment));
 		}
 
 		easyGroupTableModel.setObjects(easyGroupTableRows);
@@ -231,7 +239,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		// groups
 		String page = this.velocity_root + "/chooseGroups.html";
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createCustomFormLayout("chooseGroups", getTranslator(), page);
-		formLayout.add("asdfasdf",buttonLayout);
+		formLayout.add("buttonLayout",buttonLayout);
 		
 		chooseGroupsLink = uifactory.addFormLink("chooseGroup", buttonLayout, "btn btn-default o_xsmall o_form_groupchooser");
 		chooseGroupsLink.setI18nKey("choose");
@@ -274,11 +282,30 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		groupColumn.setDefaultVisible(true);
 		groupColumn.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(groupColumn);
+		
+		DefaultFlexiColumnModel descriptionColumn = new DefaultFlexiColumnModel(ENEditGroupTableColumns.description);
+		descriptionColumn.setDefaultVisible(true);
+		descriptionColumn.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(descriptionColumn);
+		
+		DefaultFlexiColumnModel participantsColumn = new DefaultFlexiColumnModel(ENEditGroupTableColumns.participants);
+		participantsColumn.setDefaultVisible(true);
+		participantsColumn.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(participantsColumn);
+		
+		DefaultFlexiColumnModel maxParticipantsColumn = new DefaultFlexiColumnModel(ENEditGroupTableColumns.maxParticipants);
+		maxParticipantsColumn.setDefaultVisible(true);
+		maxParticipantsColumn.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(maxParticipantsColumn);
+		
+		DefaultFlexiColumnModel minParticipantsColumn = new DefaultFlexiColumnModel(ENEditGroupTableColumns.minParticipants);
+		minParticipantsColumn.setDefaultVisible(true);
+		minParticipantsColumn.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(minParticipantsColumn);
+		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ENEditGroupTableColumns.remove, CMD_REMOVE));
 
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ENEditGroupTableColumns.remove, CMD_REMOVE,
-				new StaticFlexiCellRenderer("", CMD_REMOVE, "o_icon o_icon-lg o_icon_delete_item")));
-
-		easyGroupTableModel = new ENEditGroupTableModel(columnsModel, getLocale());
+		easyGroupTableModel = new ENEditGroupTableModel(columnsModel, getLocale(), getTranslator());
 		easyGroupTableElement = uifactory.addTableElement(getWindowControl(), "en_edit_group_table", easyGroupTableModel, getTranslator(), formLayout);
 		easyGroupTableElement.setCustomizeColumns(false);
 		easyGroupTableElement.setNumOfRowsEnabled(false);
