@@ -46,6 +46,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.id.UserConstants;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.modules.co.ContactFormController;
@@ -204,7 +206,15 @@ public class GradingInformationsController extends FormBasicController {
 		StringBuilder sb = new StringBuilder(128);
 		for(Identity owner:owners) {
 			if(sb.length() > 0) sb.append(", ");
-			sb.append(userManager.getUserDisplayName(owner));
+			
+			String firstName = owner.getUser().getProperty(UserConstants.FIRSTNAME, getLocale());
+			String lastName = owner.getUser().getProperty(UserConstants.LASTNAME, getLocale());
+			if(StringHelper.containsNonWhitespace(firstName)) {
+				sb.append(firstName);
+			}
+			if(StringHelper.containsNonWhitespace(lastName)) {
+				sb.append(" ").append(lastName);
+			}
 		}
 		flc.contextPut("owners", sb.toString());
 

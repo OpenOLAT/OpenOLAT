@@ -149,7 +149,7 @@ implements SortableFlexiTableDataModel<GradingAssignmentRow> {
 		doneDate("table.header.done.date"),
 		score("table.header.score"),
 		passed("table.header.passed"),
-		grade("table.header.tools"),
+		grade("table.header.grade"),
 		tools("table.header.tools");
 		
 		private final String i18nKey;
