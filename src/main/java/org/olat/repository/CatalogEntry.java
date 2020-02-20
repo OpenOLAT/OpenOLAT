@@ -171,7 +171,7 @@ public interface CatalogEntry extends CatalogEntryRef, CreateInfo, Persistable, 
 	 * 
 	 * @return
 	 */
-	public int getPosition();
+	public Integer getPosition();
 	
 	
 	public enum OrderBy {

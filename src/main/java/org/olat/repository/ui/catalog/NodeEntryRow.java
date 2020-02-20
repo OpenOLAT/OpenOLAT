@@ -39,7 +39,7 @@ public class NodeEntryRow {
 	public NodeEntryRow(CatalogEntry view) {
 		key = view.getKey();
 		name = view.getName();
-		position = view.getPosition();
+		position = view.getPosition() == null ? 0 :view.getPosition().intValue();
 		creationDate = view.getCreationDate();
 	}
 	
