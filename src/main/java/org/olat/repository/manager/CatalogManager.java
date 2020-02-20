@@ -686,6 +686,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 		// set new parent and save
 		toBeMovedEntry.setParent(newParentEntry);
 		updateCatalogEntry(toBeMovedEntry);
+		dbInstance.commitAndCloseSession();
 		return true;
 	}
 
