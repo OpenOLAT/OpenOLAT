@@ -217,7 +217,7 @@ public class PaellaMapper implements Mapper {
 		sb.append("      'es.upv.paella.windowTitlePlugin': {'enabled': true}");
 		sb.append("    }");
 		sb.append("  },");
-		sb.append("  'defaultProfile':'presenter_presentation',");
+		sb.append("  'defaultProfile':'slide_over_professor',");
 		sb.append("  'standalone' : {");
 		sb.append("    'repository': '../repository/'");
 		sb.append("  },");
