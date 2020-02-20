@@ -75,7 +75,7 @@ public class UpgradeCatalogEntry {
 	private int type;
 	
 	@Column(name = "order_index")
-	private int position;
+	private Integer position;
 	
 	@ManyToOne(targetEntity = RepositoryEntry.class, optional = true)
 	@JoinColumn(name = "fk_repoentry", nullable = true, insertable = true, updatable = true)
@@ -114,7 +114,7 @@ public class UpgradeCatalogEntry {
 	/**
 	 * @see org.olat.repository.CatalogEntry#getPosition()
 	 */
-	public int getPosition() {
+	public Integer getPosition() {
 		return position;
 	}
 	
@@ -123,7 +123,7 @@ public class UpgradeCatalogEntry {
 	 * 
 	 * @param position
 	 */
-	public void setPosition(int position) {
+	public void setPosition(Integer position) {
 		this.position = position;
 	}
 

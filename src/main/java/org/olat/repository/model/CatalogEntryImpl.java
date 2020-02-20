@@ -118,7 +118,7 @@ public class CatalogEntryImpl implements CatalogEntry {
 	
 	@GeneratedValue
 	@Column(name = "order_index", updatable = false, insertable = false)
-	private int position;
+	private Integer position;
 	
 	
 	public CatalogEntryImpl() {
@@ -228,7 +228,7 @@ public class CatalogEntryImpl implements CatalogEntry {
 	}
 
 	@Override
-	public int getPosition() {
+	public Integer getPosition() {
 		return position;
 	}
 

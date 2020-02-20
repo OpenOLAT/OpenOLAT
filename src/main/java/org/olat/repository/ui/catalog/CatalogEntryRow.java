@@ -103,7 +103,7 @@ public class CatalogEntryRow implements RepositoryEntryRef, RepositoryEntryLight
 	public CatalogEntryRow(RepositoryEntry view, CatalogEntry cat) {
 		this(view);
 		
-		position = cat.getPosition();
+		position = cat.getPosition() == null ? 0 : cat.getPosition().intValue();
 		catEntryKey = cat.getKey();
 	}
 		

@@ -256,7 +256,7 @@ create table o_catentry (
    fk_ownergroup int8 unique,
    type int4 not null,
    parent_id int8,
-   order_index int8 default 0,
+   order_index int8,
    short_title varchar(255),
    primary key (id)
 );

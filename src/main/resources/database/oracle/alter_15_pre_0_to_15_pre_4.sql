@@ -83,7 +83,7 @@ alter table o_grad_configuration add constraint grad_config_to_entry_idx foreign
 create index idx_grad_config_to_entry_idx on o_grad_configuration (fk_entry);
 
 -- Catalog sorting
-alter table o_catentry add order_index number(20) default 0;
+alter table o_catentry add order_index number(20) default null;
 alter table o_catentry add short_title varchar2(255 char);
 
 
