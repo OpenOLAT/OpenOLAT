@@ -111,29 +111,54 @@ public class LearningPathListController extends FormBasicController implements T
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+
+		// Learning path status icon
+		// Do not show before the css with the pathes is done
+//		LearningPathStatusCellRenderer lpStatusRenderer = new LearningPathStatusCellRenderer(getLocale(), true, false);
+//		DefaultFlexiColumnModel learningPathStatusModel = new DefaultFlexiColumnModel(LearningPathCols.learningPathStatus);
+//		learningPathStatusModel.setCellRenderer(lpStatusRenderer);
+//		columnsModel.addFlexiColumnModel(learningPathStatusModel);
 		
+		// Course node
 		IndentedNodeRenderer intendedNodeRenderer = new IndentedNodeRenderer();
 		intendedNodeRenderer.setIndentationEnabled(false);
 		FlexiCellRenderer nodeRenderer = new TreeNodeFlexiCellRenderer(intendedNodeRenderer);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.node, nodeRenderer));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.start));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.end));
+		FlexiCellRenderer progressRenderer = new LearningPathProgressRenderer(getLocale(), true, false);
+		
+		// Progress icon
+		DefaultFlexiColumnModel progressModel = new DefaultFlexiColumnModel(LearningPathCols.progress, progressRenderer);
+		progressModel.setExportable(false);
+		columnsModel.addFlexiColumnModel(progressModel);
+		
+		// Progress text
+		LearningPathProgressRenderer learningProgressRenderer = new LearningPathProgressRenderer(getLocale(), false, true);
+		DefaultFlexiColumnModel learningProgressModel = new DefaultFlexiColumnModel(LearningPathCols.learningProgress);
+		learningProgressModel.setCellRenderer(learningProgressRenderer);
+		columnsModel.addFlexiColumnModel(learningProgressModel);
+		
+		// Status
+		FlexiCellRenderer statusRenderer = new AssessmentStatusCellRenderer(getTranslator());
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.status, statusRenderer));
+		
+		// Course element configs
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.obligation));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.duration));
+		
+		// Dates
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.start));
 		DefaultFlexiColumnModel firstVisitColumnModel = new DefaultFlexiColumnModel(LearningPathCols.firstVisit);
 		firstVisitColumnModel.setDefaultVisible(false);
 		columnsModel.addFlexiColumnModel(firstVisitColumnModel);
 		DefaultFlexiColumnModel lastVisitColumnModel = new DefaultFlexiColumnModel(LearningPathCols.lastVisit);
 		lastVisitColumnModel.setDefaultVisible(false);
 		columnsModel.addFlexiColumnModel(lastVisitColumnModel);
-		FlexiCellRenderer statusRenderer = new AssessmentStatusCellRenderer(getTranslator());
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.status, statusRenderer));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.end));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.fullyAssessedDate));
-		FlexiCellRenderer progressRenderer = new LearningPathProgressRenderer(getLocale());
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.progress, progressRenderer));
 
 		dataModel = new LearningPathDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 250, false, getTranslator(), formLayout);
+		tableEl.setElementCssClass("o_lp_list");
 		tableEl.setEmtpyTableMessageKey("table.empty");
 		tableEl.setAndLoadPersistedPreferences(ureq, "learning-path-list");
 		tableEl.setBordered(true);

@@ -39,9 +39,17 @@ import org.olat.course.run.scoring.AssessmentEvaluation;
 public abstract class AbstractLearningProgressCellRenderer implements FlexiCellRenderer {
 	
 	private final Locale locale;
+	private final boolean chartVisible;
+	private final boolean labelVisible;
 	
 	public AbstractLearningProgressCellRenderer(Locale locale) {
+		this(locale, true, true);
+	}
+	
+	public AbstractLearningProgressCellRenderer(Locale locale, boolean chartVisible, boolean labelVisible) {
 		this.locale = locale;
+		this.chartVisible = chartVisible;
+		this.labelVisible = labelVisible;
 	}
 	
 	@Override
@@ -50,6 +58,8 @@ public abstract class AbstractLearningProgressCellRenderer implements FlexiCellR
 		AssessmentEvaluation assessmentEvaluation = getAssessmentEvaluation(cellValue);
 		if (assessmentEvaluation != null) {
 			LearningProgressComponent learningProgressComponent = new LearningProgressComponent("progress-" + CodeHelper.getRAMUniqueID(), locale);
+			learningProgressComponent.setChartVisible(chartVisible);
+			learningProgressComponent.setLabelVisible(labelVisible);
 			learningProgressComponent.setFullyAssessed(assessmentEvaluation.getFullyAssessed());
 			learningProgressComponent.setStatus(assessmentEvaluation.getAssessmentStatus());
 			learningProgressComponent.setCompletion(getActual(cellValue));

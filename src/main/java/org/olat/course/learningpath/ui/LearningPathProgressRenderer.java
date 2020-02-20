@@ -45,6 +45,11 @@ public class LearningPathProgressRenderer extends AbstractLearningProgressCellRe
 		super(locale);
 		courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 	}
+	
+	public LearningPathProgressRenderer(Locale locale, boolean chartVisible, boolean labelVisible) {
+		super(locale, chartVisible, labelVisible);
+		courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+	}
 
 	@Override
 	protected AssessmentEvaluation getAssessmentEvaluation(Object cellValue) {

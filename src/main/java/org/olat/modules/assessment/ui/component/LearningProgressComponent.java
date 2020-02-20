@@ -44,6 +44,9 @@ public class LearningProgressComponent extends FormBaseComponentImpl {
 	private AssessmentEntryStatus status;
 	private float completion;
 	
+	private boolean chartVisible = true;
+	private boolean labelVisible = true;
+	
 	public LearningProgressComponent(String name, Locale locale) {
 		super(name);
 		setDomReplacementWrapperRequired(false);
@@ -85,6 +88,22 @@ public class LearningProgressComponent extends FormBaseComponentImpl {
 
 	public void setCompletion(Double completion) {
 		setCompletion(completion != null? completion.floatValue(): 0);
+	}
+
+	public boolean isChartVisible() {
+		return chartVisible;
+	}
+
+	public void setChartVisible(boolean chartVisible) {
+		this.chartVisible = chartVisible;
+	}
+
+	public boolean isLabelVisible() {
+		return labelVisible;
+	}
+
+	public void setLabelVisible(Boolean labelVisible) {
+		this.labelVisible = labelVisible;
 	}
 
 }

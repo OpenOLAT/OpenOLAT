@@ -49,11 +49,27 @@ public class LearningProgressRenderer extends DefaultComponentRenderer {
 		LearningProgressComponent lpc = (LearningProgressComponent) source;
 		
 		if (Boolean.TRUE.equals(lpc.getFullyAssessed())) {
-			sb.append("<i class='o_icon o_icon-fw o_lp_done'> </i> ").append(lpc.getTranslator().translate("fully.assessed"));
+			if (lpc.isChartVisible()) {
+				sb.append("<i class='o_icon o_icon-fw o_lp_done'> </i>");
+			}
+			if (lpc.isChartVisible() && lpc.isLabelVisible()) {
+				sb.append(" ");
+			}
+			if (lpc.isLabelVisible()) {
+				sb.append(lpc.getTranslator().translate("fully.assessed"));
+			}
 		} else if (AssessmentEntryStatus.notReady.equals(lpc.getStatus())) {
 			// render nothing
 		} else {
-			renderProgressBar(renderer, sb, ubu, translator, lpc.getCompletion());
+			if (lpc.isChartVisible()) {
+				renderProgressBar(renderer, sb, ubu, translator, lpc.getCompletion());
+			}
+			if (lpc.isChartVisible() && lpc.isLabelVisible()) {
+				sb.append(" ");
+			}
+			if (lpc.isLabelVisible()) {
+				sb.append(String.valueOf(Math.round(lpc.getCompletion() * 100d))).append("%");
+			}
 		}
 	}
 

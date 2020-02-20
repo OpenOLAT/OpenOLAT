@@ -122,6 +122,25 @@
 	
 }
 
+.o_lp_list {
+	i.o_status.o_lp_not_accessible::before {
+		color: $o-lp-not-accessible;
+		content: $fa-var-ban;
+	}
+	i.o_status.o_lp_ready::before {
+		color: $o-lp-not-accessible;
+		content: $fa-var-circle-o;
+	}
+	i.o_status.o_lp_in_progress::before {
+		color: $o-lp-in-progress;
+		content: $fa-var-play-circle-o;
+	}
+	i.o_status.o_lp_done::before {
+		color: $o-lp-done;
+		content: $fa-var-check-circle;
+	}
+}
+
 .o_lp_identity {
 	.o_user_infos {
 		margin-top: 20px;

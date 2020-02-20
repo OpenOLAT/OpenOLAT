@@ -58,6 +58,9 @@ public class LearningPathDataModel extends DefaultFlexiTreeTableDataModel<Learni
 
 	public Object getValueAt(LearningPathRow row, int col) {
 		switch(LearningPathCols.values()[col]) {
+			case learningPathStatus: return row.getLearningPathNode();
+			case progress: return row.getLearningPathNode();
+			case learningProgress: return row.getLearningPathNode();
 			case node: return row;
 			case start: return row.getStartDate();
 			case end: return row.getEndDateFormItem() != null
@@ -71,7 +74,6 @@ public class LearningPathDataModel extends DefaultFlexiTreeTableDataModel<Learni
 			case lastVisit: return row.getLastVisit();
 			case status: return row.getStatus();
 			case fullyAssessedDate: return row.getFullyAssessedDate();
-			case progress: return row.getLearningPathNode();
 			default: return null;
 		}
 	}
@@ -82,7 +84,10 @@ public class LearningPathDataModel extends DefaultFlexiTreeTableDataModel<Learni
 	}
 	
 	public enum LearningPathCols implements FlexiColumnDef {
+		learningPathStatus("table.header.learning.path.status"),
 		node("table.header.node"),
+		progress("table.header.progress"),
+		learningProgress("table.header.learning.progress"),
 		start("table.header.start"),
 		end("table.header.end"),
 		obligation("table.header.obligation"),
@@ -90,8 +95,7 @@ public class LearningPathDataModel extends DefaultFlexiTreeTableDataModel<Learni
 		firstVisit("table.header.first.visit"),
 		lastVisit("table.header.last.visit"),
 		status("table.header.status"),
-		fullyAssessedDate("table.header.fully.assessed.date"),
-		progress("table.header.progress");
+		fullyAssessedDate("table.header.fully.assessed.date");
 		
 		private final String i18nKey;
 		
