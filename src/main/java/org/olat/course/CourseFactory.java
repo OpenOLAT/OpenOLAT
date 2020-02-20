@@ -449,6 +449,8 @@ public class CourseFactory {
 		synchronized (sourceCourse) { // o_clusterNOK - cannot be solved with doInSync since could take too long (leads to error: "Lock wait timeout exceeded")
 			// copy configuration
 			CourseConfig courseConf = CoreSpringFactory.getImpl(CourseConfigManager.class).copyConfigOf(sourceCourse);
+			courseConf.setBlogEnabled(false);
+			courseConf.setBlogSoftKey(null);
 			targetCourse.setCourseConfig(courseConf);
 			// save structures
 			targetCourse.setRunStructure((Structure) XStreamHelper.xstreamClone(sourceCourse.getRunStructure()));

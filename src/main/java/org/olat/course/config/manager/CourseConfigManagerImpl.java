@@ -66,7 +66,7 @@ public class CourseConfigManagerImpl implements CourseConfigManager {
 
 	@Override
 	public CourseConfig copyConfigOf(ICourse course) {
-		return course.getCourseEnvironment().getCourseConfig();
+		return course.getCourseEnvironment().getCourseConfig().clone();
 	}
 
 	@Override
