@@ -140,11 +140,15 @@ public class GradingRepositoryEntryConfigurationController extends FormBasicCont
 		notificationSubjectEl = uifactory.addTextElement("configuration.notification.subject", 255, configuration.getNotificationSubject(), formLayout);
 		notificationBodyEl = uifactory.addTextAreaElement("configuration.notification.body", 4, 60, configuration.getNotificationBody(), formLayout);
 
+		uifactory.addSpacerElement("spacer-notification", formLayout, false);
+		
 		String firstReminder = configuration.getFirstReminder() == null ? null : configuration.getFirstReminder().toString();
 		firstReminderPeriodEl = uifactory.addTextElement("configuration.first.reminder.period", 6, firstReminder, formLayout);
 		initWorkingDays(firstReminderPeriodEl);
 		firstReminderSubjectEl = uifactory.addTextElement("configuration.first.reminder.subject", 255, configuration.getFirstReminderSubject(), formLayout);
 		firstReminderBodyEl = uifactory.addTextAreaElement("configuration.first.reminder.body", 4, 60, configuration.getFirstReminderBody(), formLayout);
+
+		uifactory.addSpacerElement("spacer-reminder", formLayout, false);
 		
 		String secondReminder = configuration.getSecondReminder() == null ? null : configuration.getSecondReminder().toString();
 		secondReminderPeriodEl = uifactory.addTextElement("configuration.second.reminder.period", 6, secondReminder, formLayout);
