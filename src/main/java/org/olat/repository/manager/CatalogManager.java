@@ -151,7 +151,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	 * @return List of catalog entries that are childern entries of given entry
 	 */
 	public List<CatalogEntry> getChildrenOf(CatalogEntry ce) {
-		return getChildrenOf(ce, 0, -1, CatalogEntry.OrderBy.name, true);
+		return getChildrenOf(ce, 0, -1, CatalogEntry.OrderBy.position, true);
 	}
 
 	/**

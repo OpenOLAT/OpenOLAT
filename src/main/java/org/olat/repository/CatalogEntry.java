@@ -176,6 +176,7 @@ public interface CatalogEntry extends CatalogEntryRef, CreateInfo, Persistable, 
 	
 	public enum OrderBy {
 		name,
+		position
 	}
 	
 	public enum Style {
