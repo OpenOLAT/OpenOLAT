@@ -137,7 +137,7 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 		// indentation
 		int indentation = treeTableModel.getIndentation(row);
 		boolean hasChildren = treeTableModel.hasChildren(row);
-		target.append("<div class='o_table_flexi_l").append(indentation)
+		target.append("<div class='o_nowrap o_table_flexi_l").append(indentation)
 		      .append(" o_table_flexi_leaf", !hasChildren).append("'>");
 		
 		if(hasChildren) {
