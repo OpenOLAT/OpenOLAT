@@ -200,24 +200,35 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 		} else if (ProgressBar.BarColor.danger.equals(ubar.getBarColor())) {
 			target.append(" radial-progress-danger");
 		}
-		
-		target.append("' data-progress='").append((ubar.isProgressAnimationEnabled() ? Math.round(0): Math.round(percent))).append("'>");
+		// Current progress
+		target.append("' data-progress='").append((ubar.isProgressAnimationEnabled() ? Math.round(0): Math.round(percent))).append("'");
+		// Title for usability, in case to small or something
+		target.append(" title='")
+			.append(Math.round(percent))
+			.append("% (").append(Math.round(ubar.getActual())).append("/");
+		if (ubar.getIsNoMax()) {
+			target.append("-");			
+		} else {
+			target.append(Math.round(ubar.getMax()));
+		}
+		if (StringHelper.containsNonWhitespace(ubar.getUnitLabel())) {
+			target.append(" ").append(ubar.getUnitLabel());
+		}
+		target.append(")'>");
 		
 		// 2) Circle (the outer colored circle)
 		target.append("<div class='circle'><div class='mask full'><div class='fill'></div></div>")
-				.append("<div class='mask half'><div class='fill'></div><div class='fill fix'></div></div>")
-				.append("<div class='shadow'></div></div>");
+			.append("<div class='mask half'><div class='fill'></div><div class='fill fix'></div></div>")
+			.append("<div class='shadow'></div></div>");
 		
 		// 3a) Inset (the inner circle)
-		if (ProgressBar.RenderStyle.radial.equals(ubar.getRenderStyle())) {
-			target.append("<div class='inset'></div>");
-		}
+		target.append("<div class='inset'></div>", ProgressBar.RenderStyle.radial.equals(ubar.getRenderStyle()));
 
 		if (renderLabels && !ProgressBar.RenderSize.inline.equals(ubar.getRenderSize())) {
 			target.append("<div class='percentage'><div class='centeredWrapper'>");
 			if (ubar.isPercentagesEnabled()) {
 				target.append("<div class='number'><span>");
-				target.append(percent);
+				target.append(Math.round(percent));
 				target.append("%</span></div>");
 			}
 			if (left.equals(ubar.getLabelAlignment())) {

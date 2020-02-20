@@ -8,7 +8,6 @@ https://gist.github.com/digitalbreed/84a19db69244b22519e03550ba010a25
 	/* derived variables */
 	$o-radial-progress-inset-size			: $o-radial-progress-circle-size * 0.75 !default; // 90px
 	$o-radial-progress-percentage-font-size	: $o-radial-progress-circle-size * 0.18 !default; // 22px
-	$o-radial-progress-percentage-text-width: $o-radial-progress-circle-size * 0.48 !default; // 57px
 			
 	margin: $o-radial-progress-margin;
 	width: $o-radial-progress-circle-size;
@@ -82,14 +81,15 @@ https://gist.github.com/digitalbreed/84a19db69244b22519e03550ba010a25
 			display: table-cell;
 			vertical-align: middle;
 			text-align: center;
-			font-size: 0.8em; 
 			.number {
+				margin-right: -0.5em; // visually center
 				font-weight: 800;
 				color: $o-radial-progress-number-color;
 			}
 			.addon {
 				color: $o-radial-progress-addon-color;	
-				margin-top: 5px; 
+				margin-top: 0.2em; 
+				margin-bottom: -0.4em; 
 				div:nth-of-type(1) {
 					font-size: 0.6em; 
 					font-weight: bold;
@@ -135,8 +135,7 @@ https://gist.github.com/digitalbreed/84a19db69244b22519e03550ba010a25
 	&.radial-progress-sm {
 		/* derived variables */
 		$o-radial-progress-inset-size-sm				: $o-radial-progress-circle-size-sm * 0.75 !default;
-		$o-radial-progress-percentage-font-size-sm		: $o-radial-progress-circle-size-sm * 0.22 !default;
-		$o-radial-progress-percentage-text-width-sm		: $o-radial-progress-circle-size-sm * 0.48 !default;
+		$o-radial-progress-percentage-font-size-sm		: $o-radial-progress-circle-size-sm * 0.24 !default;
 
 		width: $o-radial-progress-circle-size-sm;
 		height: $o-radial-progress-circle-size-sm;
@@ -170,7 +169,6 @@ https://gist.github.com/digitalbreed/84a19db69244b22519e03550ba010a25
 		/* derived variables */
 		$o-radial-progress-inset-size-lg				: $o-radial-progress-circle-size-lg * 0.75 !default;
 		$o-radial-progress-percentage-font-size-lg		: $o-radial-progress-circle-size-lg * 0.18 !default;
-		$o-radial-progress-percentage-text-width-lg		: $o-radial-progress-circle-size-lg * 0.48 !default;
 
 		width: $o-radial-progress-circle-size-lg;
 		height: $o-radial-progress-circle-size-lg;
@@ -204,7 +202,6 @@ https://gist.github.com/digitalbreed/84a19db69244b22519e03550ba010a25
 		/* derived variables */		
 		$o-radial-progress-inset-size-inline				: $o-radial-progress-circle-size-inline * 0.70 !default;
 		$o-radial-progress-percentage-font-size-inline		: $o-radial-progress-circle-size-inline * 0.18 !default;
-		$o-radial-progress-percentage-text-width-inline		: $o-radial-progress-circle-size-inline * 0.48 !default;
 
 		width: $o-radial-progress-circle-size-inline;
 		height: $o-radial-progress-circle-size-inline;
@@ -235,7 +232,6 @@ https://gist.github.com/digitalbreed/84a19db69244b22519e03550ba010a25
 			}
 		}
 	}
-
 
 	/* pie style without inset*/
 	&.radial-progress-pie {
@@ -281,6 +277,121 @@ https://gist.github.com/digitalbreed/84a19db69244b22519e03550ba010a25
 			color: $o-radial-progress-percentage-warning-color;
 		}
 	}
+}
+
+
+	/* toolbar variant */
+.o_tool .o_progress {
+	width: $o-toolbar-height-md;
+	height: $o-toolbar-height-md;
+	position: relative;
+	
+	.radial-progress {
+		/* derived variables */
+		$o-radial-progress-circle-size-toolbar				: $o-toolbar-height-md + 8px;
+		$o-radial-progress-inset-size-toolbar				: $o-radial-progress-circle-size-toolbar - 8px !default;
+		$o-radial-progress-percentage-font-size-toolbar		: $o-toolbar-size-text-md !default;
+	
+		width: $o-radial-progress-circle-size-toolbar;
+		height: $o-radial-progress-circle-size-toolbar;
+		font-size: $o-radial-progress-percentage-font-size-toolbar;
+		
+		position: absolute;
+		top: -5px;
+		left: 0;
+		margin: 0;
+	
+		.circle {
+			.mask {
+				clip: rect(0px, $o-radial-progress-circle-size-toolbar, $o-radial-progress-circle-size-toolbar, $o-radial-progress-circle-size-toolbar/2);
+				.fill {
+					clip: rect(0px, $o-radial-progress-circle-size-toolbar/2, $o-radial-progress-circle-size-toolbar, 0px);
+				}
+			}
+		}
+		.inset {
+			width: $o-radial-progress-inset-size-toolbar;
+			height: $o-radial-progress-inset-size-toolbar;
+			margin-left: ($o-radial-progress-circle-size-toolbar - $o-radial-progress-inset-size-toolbar)/2;
+			margin-top: ($o-radial-progress-circle-size-toolbar - $o-radial-progress-inset-size-toolbar)/2;
+			font-size: $o-radial-progress-percentage-font-size-toolbar;
+			background: $o-toolbar-bg-color;
+			.bgIcon {
+				position: absolute;
+				font-size: $o-radial-progress-inset-size-toolbar - 10px;
+				top: 5px;
+				left: -2px;
+			}
+		}
+		.percentage {
+			.centeredWrapper {
+				.number {
+					color: $o-toolbar-link-color;
+				}
+			}
+		}
+	}
+	@media (max-width: $screen-sm-max) { 
+		width: $o-toolbar-height-sm;
+		height: $o-toolbar-height-sm;
+		.radial-progress {
+			$o-radial-progress-circle-size-toolbar				: $o-toolbar-height-sm + 6px;
+			$o-radial-progress-inset-size-toolbar				: $o-radial-progress-circle-size-toolbar - 6px !default;
+			$o-radial-progress-percentage-font-size-toolbar		: $o-toolbar-size-text-sm !default;
+		
+			width: $o-radial-progress-circle-size-toolbar;
+			height: $o-radial-progress-circle-size-toolbar;
+			font-size: $o-radial-progress-percentage-font-size-toolbar;			
+			top: -3px;
+		
+			.circle {
+				.mask {
+					clip: rect(0px, $o-radial-progress-circle-size-toolbar, $o-radial-progress-circle-size-toolbar, $o-radial-progress-circle-size-toolbar/2);
+					.fill {
+						clip: rect(0px, $o-radial-progress-circle-size-toolbar/2, $o-radial-progress-circle-size-toolbar, 0px);
+					}
+				}
+			}
+			.inset {
+				width: $o-radial-progress-inset-size-toolbar;
+				height: $o-radial-progress-inset-size-toolbar;
+				margin-left: ($o-radial-progress-circle-size-toolbar - $o-radial-progress-inset-size-toolbar)/2;
+				margin-top: ($o-radial-progress-circle-size-toolbar - $o-radial-progress-inset-size-toolbar)/2;
+				font-size: $o-radial-progress-percentage-font-size-toolbar;
+			}
+		}
+	}
+	@media (max-width: $screen-xs-max) { 
+		width: $o-toolbar-height-xs;
+		height: $o-toolbar-height-xs;
+		.radial-progress {
+			$o-radial-progress-circle-size-toolbar				: $o-toolbar-height-xs + 4px;
+			$o-radial-progress-inset-size-toolbar				: $o-radial-progress-circle-size-toolbar - 6px !default;
+		
+			width: $o-radial-progress-circle-size-toolbar;
+			height: $o-radial-progress-circle-size-toolbar;
+			top: -2px;
+		
+			.circle {
+				.mask {
+					clip: rect(0px, $o-radial-progress-circle-size-toolbar, $o-radial-progress-circle-size-toolbar, $o-radial-progress-circle-size-toolbar/2);
+					.fill {
+						clip: rect(0px, $o-radial-progress-circle-size-toolbar/2, $o-radial-progress-circle-size-toolbar, 0px);
+					}
+				}
+			}
+			.inset {
+				width: $o-radial-progress-inset-size-toolbar;
+				height: $o-radial-progress-inset-size-toolbar;
+				margin-left: ($o-radial-progress-circle-size-toolbar - $o-radial-progress-inset-size-toolbar)/2;
+				margin-top: ($o-radial-progress-circle-size-toolbar - $o-radial-progress-inset-size-toolbar)/2;
+			}
+			.percentage {
+				display: none;
+			}
+		}
+	}
+	
 }
 
 

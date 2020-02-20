@@ -459,7 +459,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		
 		RunMainController rmc = getRunMainController();
 		if(rmc != null) {
-			rmc.initToolbar();
+			rmc.initToolbarAndProgressbar();
 		}
 		setCourseClosedMessage();
 	}
@@ -1721,7 +1721,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		super.launchContent(ureq);
 		if(getRunMainController() != null) {
 			addCustomCSS(ureq);
-			getRunMainController().initToolbar();
+			getRunMainController().initToolbarAndProgressbar();
 		}
 	}
 	

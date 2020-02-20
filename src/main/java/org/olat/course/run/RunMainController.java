@@ -279,20 +279,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			}
 			coursemain.contextPut("initNodeId", initNodeId);
 		}
-		if (paginationCtrl != null) {
-			// progress bar only for learning path courses
-			courseProgress = new ProgressBar("courseProgress");	
-			courseProgress.setWidth(100);
-			courseProgress.setMax(100);
-			courseProgress.setWidthInPercent(true);
-			courseProgress.setRenderStyle(RenderStyle.horizontal);
-			courseProgress.setRenderSize(RenderSize.small);
-			courseProgress.setLabelAlignment(LabelAlignment.none);
-			courseProgress.setPercentagesEnabled(false);		
-			coursemain.put("courseProgress", courseProgress);
-			updateProgressUI();
-		}
-
 		putInitialPanel(coursemain);
 
 		// disposed message controller must be created beforehand
@@ -315,7 +301,30 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		}
 	}
 	
-	protected void initToolbar() {
+	protected void initToolbarAndProgressbar() {
+		// Progress bar only for learning path courses
+		if (paginationCtrl != null) {
+			courseProgress = new ProgressBar("courseProgress");	
+			courseProgress.setWidth(100);
+			courseProgress.setMax(100);
+			courseProgress.setWidthInPercent(true);
+			courseProgress.setLabelAlignment(LabelAlignment.none);
+			if (course.getCourseConfig().isToolbarEnabled() && toolbarPanel != null) {
+				// Normally progress is showed in the toolbar. 
+				courseProgress.setRenderStyle(RenderStyle.radial);
+				courseProgress.setPercentagesEnabled(true);		
+				toolbarPanel.addTool(courseProgress, Align.right);
+			} else {
+				// If toolbar is not visible, show the progress below the breadcrumb. If
+				// breadcrub is also disabled, showprogress at top of page.
+				courseProgress.setRenderStyle(RenderStyle.horizontal);
+				courseProgress.setRenderSize(RenderSize.small);
+				courseProgress.setPercentagesEnabled(false);		
+				coursemain.put("courseProgress", courseProgress);			
+			}
+			updateProgressUI();
+		}
+		// Next-next navigation for old courses
 		if(toolbarPanel != null && ConditionNodeAccessProvider.TYPE.equals(course.getCourseConfig().getNodeAccessType().getType())) {
 			previousLink = LinkFactory.createToolLink("previouselement","", this, "o_icon_previous_toolbar");
 			previousLink.setTitle(translate("command.previous"));
