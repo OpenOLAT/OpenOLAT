@@ -24,13 +24,11 @@ import static org.olat.modules.forms.ui.EvaluationFormFormatter.oneDecimal;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -44,12 +42,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.updown.UpDown;
-import org.olat.core.gui.components.updown.UpDownEvent;
-import org.olat.core.gui.components.updown.UpDownEvent.Direction;
-import org.olat.core.gui.components.updown.UpDownFactory;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
@@ -143,7 +136,9 @@ public class RubricEditorController extends FormBasicController implements PageE
 		rubricCtrl = new RubricController(ureq, getWindowControl(), rubric, mainForm);
 		listenTo(rubricCtrl);
 		formLayout.add("rubric", rubricCtrl.getInitialFormItem());
-		
+	}
+
+	private void initEditForm(FormItemContainer formLayout) {
 		settingsLayout = FormLayoutContainer.createDefaultFormLayout("settings", getTranslator());
 		settingsLayout.setRootForm(mainForm);
 		formLayout.add("settings", settingsLayout);
@@ -310,6 +305,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 		updateTypeSettings();
 		updateSteps();
 		
+		sliders.clear();
 		for(Slider slider:rubric.getSliders()) {
 			SliderRow row = forgeSliderRow(slider);
 			sliders.add(row);
@@ -500,19 +496,27 @@ public class RubricEditorController extends FormBasicController implements PageE
 		weightEl.setEnabled(!restrictedEditWeight);
 		
 		SliderRow row = new SliderRow(slider, startLabelEl, endLabelEl, weightEl, createSliderEl());
-		if(!restrictedEdit) {FormLink deleteButton = uifactory.addFormLink("del." + count.incrementAndGet(), "delete_slider", "", null, flc, Link.BUTTON | Link.NONTRANSLATED);
+		
+		FormLink upButton = uifactory.addFormLink("up." + count.incrementAndGet(), "up", "", null, flc, Link.BUTTON | Link.NONTRANSLATED);
+		upButton.setDomReplacementWrapperRequired(false);
+		upButton.setIconLeftCSS("o_icon o_icon-lg o_icon_move_up");
+		upButton.setUserObject(row);
+		row.setUpButton(upButton);
+		
+		FormLink downButton = uifactory.addFormLink("down." + count.incrementAndGet(), "down", "", null, flc, Link.BUTTON | Link.NONTRANSLATED);
+		downButton.setDomReplacementWrapperRequired(false);
+		downButton.setIconLeftCSS("o_icon o_icon-lg o_icon_move_down");
+		downButton.setUserObject(row);
+		row.setDownButton(downButton);
+		
+		if(!restrictedEdit) {
+			FormLink deleteButton = uifactory.addFormLink("del." + count.incrementAndGet(), "delete_slider", "", null, flc, Link.BUTTON | Link.NONTRANSLATED);
 			deleteButton.setDomReplacementWrapperRequired(false);
 			deleteButton.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
 			deleteButton.setUserObject(row);
 			row.setDeleteButton(deleteButton);
 			flc.contextPut("deleteButtons", Boolean.TRUE);
 		}
-		
-		String name = "ud." + count.incrementAndGet();
-		UpDown upDown = UpDownFactory.createUpDown(name, UpDown.Layout.BUTTON_HORIZONTAL, flc.getFormItemComponent(), this);
-		upDown.setUserObject(row);
-		row.setUpDown(upDown);
-		flc.put(name, upDown);
 		
 		return row;
 	}
@@ -581,6 +585,9 @@ public class RubricEditorController extends FormBasicController implements PageE
 	@Override
 	public void setEditMode(boolean editMode) {
 		this.editMode = editMode;
+		if (editMode) {
+			initEditForm(flc);
+		}
 		flc.getFormItemComponent().contextPut("editMode", Boolean.valueOf(editMode));
 	}
 
@@ -615,43 +622,37 @@ public class RubricEditorController extends FormBasicController implements PageE
 			}
 		} else if(source instanceof FormLink) {
 			FormLink button = (FormLink)source;
-			if("delete_slider".equals(button.getCmd())) {
+			if ("up".equals(button.getCmd())) {
+				doMoveUp((SliderRow)button.getUserObject());
+			} else if ("down".equals(button.getCmd())) {
+				doMoveDown((SliderRow)button.getUserObject());
+			} else if ("delete_slider".equals(button.getCmd())) {
 				doRemoveSlider((SliderRow)button.getUserObject());
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
-	
-	@Override
-	public void event(UserRequest ureq, Component source, Event event) {
-		if (event instanceof UpDownEvent) {
-			UpDownEvent ude = (UpDownEvent) event;
-			SliderRow row = (SliderRow) ude.getUserObject();
-			doMove(row.getSlider(), ude.getDirection());
-		}
-		super.event(ureq, source, event);
-	}
 
-	private void doMove(Slider slider, Direction direction) {
-		int index = rubric.getSliders().indexOf(slider);
+	private void doMoveUp(SliderRow slideRow) {
+		int index = sliders.indexOf(slideRow);
 		if (index > -1) {
-			if (Direction.UP.equals(direction)) {
-				swapSliders(index - 1, index);
-			} else if (Direction.DOWN.equals(direction)) {
-				swapSliders(index, index + 1);
-			}
+			swapSliders(index - 1, index);
 			setUpDownVisibility();
 			flc.setDirty(true);
 		}
 	}
-	
+
+	private void doMoveDown(SliderRow slideRow) {
+		int index = sliders.indexOf(slideRow);
+		if (index > -1) {
+			swapSliders(index, index + 1);
+			setUpDownVisibility();
+			flc.setDirty(true);
+		}
+	}
+
 	private void swapSliders(int i, int j) {
-		List<Slider> rubricSliders = rubric.getSliders();
-		if(i >= 0 && j >= 0 && i < rubricSliders.size() && j < rubricSliders.size()) {
-			Slider tempRubricSlider = rubricSliders.get(i);
-			rubricSliders.set(i, rubricSliders.get(j));
-			rubricSliders.set(j, tempRubricSlider);
-			
+		if(i >= 0 && j >= 0 && i < sliders.size() && j < sliders.size()) {
 			SliderRow tempSlider = sliders.get(i);
 			sliders.set(i, sliders.get(j));
 			sliders.set(j, tempSlider);
@@ -661,7 +662,6 @@ public class RubricEditorController extends FormBasicController implements PageE
 	private void doRemoveSlider(SliderRow row) {
 		updateSteps();
 		sliders.remove(row);
-		rubric.getSliders().remove(row.getSlider());
 		setUpDownVisibility();
 		flc.setDirty(true);
 	}
@@ -669,7 +669,6 @@ public class RubricEditorController extends FormBasicController implements PageE
 	private void doAddSlider() {
 		Slider slider = new Slider();
 		slider.setId(UUID.randomUUID().toString());
-		rubric.getSliders().add(slider);
 		SliderRow row = forgeSliderRow(slider);
 		sliders.add(row);
 		setUpDownVisibility();
@@ -679,14 +678,13 @@ public class RubricEditorController extends FormBasicController implements PageE
 	private void setUpDownVisibility() {
 		for (int i = 0; i < sliders.size(); i++) {
 			SliderRow sliderRow = sliders.get(i);
-			UpDown upDown = sliderRow.getUpDown();
-			upDown.setTopmost(false);
-			upDown.setLowermost(false);
+			sliderRow.getUpButton().setEnabled(true);
+			sliderRow.getDownButton().setEnabled(true);
 			if (i == 0) {
-				upDown.setTopmost(true);
+				sliderRow.getUpButton().setEnabled(false);
 			}
 			if (i == sliders.size() -1) {
-				upDown.setLowermost(true);
+				sliderRow.getDownButton().setEnabled(false);
 			}
 		}
 	}
@@ -877,15 +875,6 @@ public class RubricEditorController extends FormBasicController implements PageE
 		ScaleType scaleType = ScaleType.getEnum(selectedScaleTypeKey);
 		rubric.setScaleType(scaleType);
 		
-		for(Iterator<Slider> sliderIt=rubric.getSliders().iterator(); sliderIt.hasNext(); ) {
-			Slider slider = sliderIt.next();
-			if(!StringHelper.containsNonWhitespace(slider.getStartLabel()) && !StringHelper.containsNonWhitespace(slider.getEndLabel())) {
-				sliderIt.remove();
-				sliders.removeIf(row -> row.getSlider().equals(slider));
-				flc.setDirty(true);
-			}
-		}
-		
 		boolean noResonse = noAnswerEl.isAtLeastSelected(1);
 		rubric.setNoResponseEnabled(noResonse);
 		
@@ -975,6 +964,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 	}
 	
 	private void commitFields() {
+		List<Slider> editedSliders = new ArrayList<>(sliders.size());
 		for(SliderRow row:sliders) {
 			String start = row.getStartLabelEl().getValue();
 			if(StringHelper.containsNonWhitespace(start)) {
@@ -993,7 +983,11 @@ public class RubricEditorController extends FormBasicController implements PageE
 			
 			Integer weight = getIntOrNull(row.getWeightEl());
 			row.getSlider().setWeight(weight);
+			if (row.getSlider().getStartLabel() != null || row.getSlider().getEndLabel() != null) {
+				editedSliders.add(row.getSlider());
+			}
 		}
+		rubric.setSliders(editedSliders);
 	}
 	
 	private Integer getIntOrNull(TextElement weightEl) {
@@ -1035,8 +1029,9 @@ public class RubricEditorController extends FormBasicController implements PageE
 		private final TextElement startLabelEl;
 		private final TextElement endLabelEl;
 		private final TextElement weightEl;
+		private FormLink upButton;
+		private FormLink downButton;
 		private FormLink deleteButton;
-		private UpDown upDown;
 		private FormItem sliderEl;
 		
 		private final Slider slider;
@@ -1073,12 +1068,20 @@ public class RubricEditorController extends FormBasicController implements PageE
 			this.deleteButton = deleteButton;
 		}
 		
-		public UpDown getUpDown() {
-			return upDown;
+		public FormLink getUpButton() {
+			return upButton;
 		}
 
-		void setUpDown(UpDown upDown) {
-			this.upDown = upDown;
+		public void setUpButton(FormLink upButton) {
+			this.upButton = upButton;
+		}
+
+		public FormLink getDownButton() {
+			return downButton;
+		}
+
+		public void setDownButton(FormLink downButton) {
+			this.downButton = downButton;
 		}
 
 		public FormItem getSliderEl() {
@@ -1101,6 +1104,38 @@ public class RubricEditorController extends FormBasicController implements PageE
 				return "o_slider_descrete";
 			}
 			return "";
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + getOuterType().hashCode();
+			result = prime * result + ((slider == null) ? 0 : slider.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			SliderRow other = (SliderRow) obj;
+			if (!getOuterType().equals(other.getOuterType()))
+				return false;
+			if (slider == null) {
+				if (other.slider != null)
+					return false;
+			} else if (!slider.equals(other.slider))
+				return false;
+			return true;
+		}
+
+		private RubricEditorController getOuterType() {
+			return RubricEditorController.this;
 		}
 		
 	}

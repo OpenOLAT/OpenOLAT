@@ -70,7 +70,7 @@
 					$r.render("${slider.weightEl.getComponent().getComponentName()}_EXAMPLE")
 					$r.render($slider.weightEl)
 					<div>
-						$r.render($slider.upDown)
+						<div class='btn-group o_updown'>$r.render($slider.upButton)$r.render($slider.downButton)</div>
 						#if($r.isNotNull($slider.deleteButton) && $r.visible($slider.deleteButton))
 							$r.render($slider.deleteButton)
 						#end
