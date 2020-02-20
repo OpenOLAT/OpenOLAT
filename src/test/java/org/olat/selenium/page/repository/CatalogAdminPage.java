@@ -49,16 +49,20 @@ public class CatalogAdminPage {
 	 * @param description
 	 * @return
 	 */
-	public CatalogAdminPage addCatalogNode(String title, String description) {
+	public CatalogAdminPage addCatalogNode(String title, String shortTitle, String description) {
 		//click in toolbox
 		By addNodeBy = By.className("o_sel_catalog_add_category");
 		browser.findElement(addNodeBy).click();
 		OOGraphene.waitModalDialog(browser);
 		
 		//fill the form
-		By titleBy = By.cssSelector(".o_sel_catalog_add_category_popup input[type='text']");
+		By titleBy = By.cssSelector(".o_sel_catalog_add_category_popup .o_sel_cat_name input[type='text']");
 		OOGraphene.waitElement(titleBy, browser);
 		browser.findElement(titleBy).sendKeys(title);
+		/*
+		By shortTitleBy = By.cssSelector(".o_sel_catalog_add_category_popup .o_sel_cat_short_title input[type='text']");
+		browser.findElement(shortTitleBy).sendKeys(shortTitle);
+		*/
 		
 		OOGraphene.tinymce(description, browser);
 		
@@ -67,7 +71,7 @@ public class CatalogAdminPage {
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
 		By nodeTitleBy = By.xpath("//div[contains(@class,'o_meta')]//h4[contains(@class,'o_title')]//a/span[contains(text(),'" + title + "')]");
-		OOGraphene.waitElement(nodeTitleBy, 5, browser);
+		OOGraphene.waitElement(nodeTitleBy, browser);
 		return this;
 	}
 	

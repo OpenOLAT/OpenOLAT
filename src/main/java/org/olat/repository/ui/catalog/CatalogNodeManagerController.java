@@ -405,6 +405,8 @@ public class CatalogNodeManagerController extends FormBasicController implements
 
 	private void loadResources(UserRequest ureq) {
 		catalogEntry = catalogManager.getCatalogEntryByKey(catalogEntry.getKey());
+		List<CatalogEntry> detachedChildren = catalogManager.getChildrenOf(catalogEntry);
+		
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(getIdentity(), ureq.getUserSession().getRoles());
 		params.setParentEntry(catalogEntry);
 		List<RepositoryEntry> repoEntries = repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, false);
@@ -420,8 +422,8 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		List<CatalogEntryRow> closedItems = new ArrayList<>();
 		for(RepositoryEntry entry:repoEntries) {
 			CatalogEntryRow row = new CatalogEntryRow(entry);
-			for (CatalogEntry catEntry : catalogEntry.getChildren()) {
-				if (catEntry.getType() == CatalogEntry.TYPE_LEAF && catEntry.getRepositoryEntry().equals(entry)) {
+			for (CatalogEntry catEntry : detachedChildren) {
+				if (catEntry != null && catEntry.getType() == CatalogEntry.TYPE_LEAF && catEntry.getRepositoryEntry().equals(entry)) {
 					row = new CatalogEntryRow(entry, catEntry);
 					break;
 				} 
@@ -476,12 +478,12 @@ public class CatalogNodeManagerController extends FormBasicController implements
 	}
 	
 	protected void loadNodesChildren() {
-		List<CatalogEntry> catalogChildren = catalogManager.getCatalogNodeByKey(catalogEntry.getKey()).getChildren();
+		List<CatalogEntry> catalogChildren = catalogManager.getChildrenOf(catalogEntry);
 		List<String> subCategories = new ArrayList<>();
 		List<NodeEntryRow> nodeEntries = new ArrayList<>();
 		int count = 0;
 		for (CatalogEntry entry : catalogChildren) {
-			if(entry.getType() == CatalogEntry.TYPE_NODE) {
+			if(entry != null && entry.getType() == CatalogEntry.TYPE_NODE) {
 				nodeEntries.add(new NodeEntryRow(entry));
 
 				String cmpId = "cat_" + (++count);

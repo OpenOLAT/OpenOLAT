@@ -563,10 +563,10 @@ public class CourseTest extends Deployments {
 		String node2_2 = "Second level second element " + UUID.randomUUID();
 		adminNavBar
 				.openCatalogAdministration()
-				.addCatalogNode(node1, "First level of the catalog")
+				.addCatalogNode(node1, "First level of the catalog", "First level of the catalog")
 				.selectNode(node1)
-				.addCatalogNode(node2_1, "First element of the second level")
-				.addCatalogNode(node2_2, "Second element of the second level");
+				.addCatalogNode(node2_1, "First element of the second level", "First element of the second level")
+				.addCatalogNode(node2_2, "Second element of the second level", "Second element of the second level");
 		
 		//An author create a course and publish it under a category
 		//created above

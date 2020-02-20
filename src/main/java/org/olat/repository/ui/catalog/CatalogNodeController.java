@@ -115,11 +115,10 @@ public class CatalogNodeController extends BasicController implements Activateab
 		}
 		
 		List<CatalogEntry> childCe = catalogEntry.getChildren();
-//		Collections.sort(childCe, new CatalogEntryComparator(getLocale()));
 		List<String> subCategories = new ArrayList<>();
 		int count = 0;
 		for (CatalogEntry entry : childCe) {
-			if(entry.getType() == CatalogEntry.TYPE_NODE) {
+			if(entry != null && entry.getType() == CatalogEntry.TYPE_NODE) {
 				String cmpId = "cat_" + (++count);
 				
 				VFSLeaf img = catalogManager.getImage(entry);

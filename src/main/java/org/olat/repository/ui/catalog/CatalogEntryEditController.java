@@ -114,13 +114,17 @@ public class CatalogEntryEditController extends FormBasicController {
 		setFormStyle("o_catalog");
 		String name = catalogEntry == null ? "" : catalogEntry.getName();
 		nameEl = uifactory.addTextElement("name", "entry.category", 255, name, formLayout);
+		nameEl.setElementCssClass("o_sel_cat_name");
 		nameEl.setMandatory(true);
 		nameEl.setNotEmptyCheck("form.legende.mandatory");
 		
-		String shortTitle = catalogEntry == null ? "" : catalogEntry.getDescription() != null ? catalogEntry.getDescription() : "";
+		/*
+		String shortTitle = catalogEntry == null ? "" : catalogEntry.get() != null ? catalogEntry.getDescription() : "";
 		shortTitleEl = uifactory.addTextElement("shortTitle", "entry.shorttitle", 255, shortTitle, formLayout);
+		shortTitleEl.setElementCssClass("o_sel_cat_short_title");
 		shortTitleEl.setMandatory(true);
 		shortTitleEl.setNotEmptyCheck("form.legende.mandatory");
+		*/
 		
 		String desc = catalogEntry == null ? "" : catalogEntry.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("description", "entry.description", desc, 10, -1, formLayout, getWindowControl());
@@ -173,7 +177,7 @@ public class CatalogEntryEditController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		nameEl.clearError();
 		if(StringHelper.containsNonWhitespace(nameEl.getValue())) {
@@ -192,7 +196,7 @@ public class CatalogEntryEditController extends FormBasicController {
 			allOk &= false;
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override
@@ -221,7 +225,9 @@ public class CatalogEntryEditController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		catalogEntry = catalogManager.getCatalogEntryByKey(catalogEntry.getKey());
+		if(catalogEntry.getKey() != null) {
+			catalogEntry = catalogManager.getCatalogEntryByKey(catalogEntry.getKey());
+		}
 		catalogEntry.setName(nameEl.getValue());
 		if(styleEl.isOneSelected()) {
 			catalogEntry.setStyle(Style.valueOf(styleEl.getSelectedKey()));
@@ -233,10 +239,9 @@ public class CatalogEntryEditController extends FormBasicController {
 		if(catalogEntry.getKey() == null) {
 			//a new one
 			catalogEntry.setRepositoryEntry(null);
-			catalogEntry.setParent(parentEntry);
-			catalogEntry = catalogManager.addCatalogCategory(catalogEntry);
+			catalogEntry = catalogManager.addCatalogCategory(catalogEntry, parentEntry);
 		} else {
-			catalogEntry = catalogManager.updateCatalogCategory(catalogEntry);
+			catalogEntry = catalogManager.updateCatalogEntry(catalogEntry);
 		}
 		
 		File uploadedFile = fileUpload.getUploadFile();

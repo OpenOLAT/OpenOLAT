@@ -601,80 +601,66 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 			 * name you like later as OLATAdmin
 			 */
 			// parent == null -> no parent -> I am a root node.
-			saveCatEntry(CATALOGROOT, null, CatalogEntry.TYPE_NODE, catalogAdmins, null, null);
+			saveRootCatalogEntry(CATALOGROOT, CatalogEntry.TYPE_NODE, catalogAdmins);
 			dbInstance.intermediateCommit();
 		}
 	}
 
-	private CatalogEntry saveCatEntry(String name, String desc, int type, SecurityGroup ownerGroup, RepositoryEntry repoEntry,
-			CatalogEntry parent) {
-		if(parent != null) {
-			parent = getCatalogEntryByKey(parent.getKey());
-		}
+	private CatalogEntry saveRootCatalogEntry(String name, int type, SecurityGroup ownerGroup) {
 		CatalogEntry ce = createCatalogEntry();
 		ce.setName(name);
-		ce.setDescription(desc);
 		ce.setOwnerGroup(ownerGroup);
-		ce.setRepositoryEntry(repoEntry);
-		ce.setParent(parent);
 		ce.setType(type);
 		saveCatalogEntry(ce);
-		
-		if(parent != null) {
-			List<CatalogEntry> catEntries = parent.getChildren();
-			for (CatalogEntry catalogEntry : catEntries) {
-				if (catalogEntry.getType() == type) {
-					catEntries.add(catEntries.indexOf(catalogEntry), ce);
-					updateCatalogEntry(parent);
-					break;
+		return ce;
+	}
+	
+	public CatalogEntry addCatalogCategory(CatalogEntry ce, CatalogEntry parentCe) {
+		if(parentCe != null) {
+			parentCe = loadCatalogEntry(parentCe.getKey());
+		}
+		ce.setParent(parentCe);
+		saveCatalogEntry(ce);	
+
+		if (parentCe != null) {
+			List<CatalogEntry> catEntries = parentCe.getChildren();
+			if(catEntries.isEmpty()) {
+				catEntries.add(ce);
+			} else {
+				cleanNullEntries(catEntries);
+				
+				boolean added = false;
+				List<CatalogEntry> catalogEntries = new ArrayList<>(catEntries);
+				for (CatalogEntry catalogEntry : catalogEntries) {
+					if (catalogEntry.getType() == ce.getType()) {
+						catEntries.add(catEntries.indexOf(catalogEntry), ce);
+						added = true;
+						break;
+					}
 				}
+				
+				if(!added) {
+					if(ce.getType() == CatalogEntry.TYPE_NODE) {
+						catEntries.add(0, ce);
+					} else {
+						catEntries.add(ce);
+					}
+				}
+				updateCatalogEntry(parentCe);
 			}
 		}
 		
+		dbInstance.commitAndCloseSession();
 		return ce;
 	}
 	
-	public CatalogEntry addCatalogCategory(CatalogEntry ce) {
-		saveCatalogEntry(ce);		
-		
-		if (ce.getParent() != null) {
-			CatalogEntry parent = ce.getParent();
-			List<CatalogEntry> catEntries = parent.getChildren();
-			List<CatalogEntry> catalogEntries = new ArrayList<>(catEntries);
-			
-			for (CatalogEntry catalogEntry : catalogEntries) {
-				if (catalogEntry.getType() == ce.getType()) {
-					catEntries.add(catEntries.indexOf(catalogEntry), ce);
-					updateCatalogEntry(parent);
-					break;
-				}
+	private void cleanNullEntries(List<CatalogEntry> catEntries) {
+		for(Iterator<CatalogEntry> entryIt=catEntries.iterator(); entryIt.hasNext(); ) {
+			if(entryIt.next() == null) {
+				entryIt.remove();
 			}
 		}
-		
-		return ce;
 	}
-	
-	public CatalogEntry updateCatalogCategory(CatalogEntry ce) {
-		CatalogEntry catEntry = getCatalogEntryByKey(ce.getKey());
-		updateCatalogEntry(catEntry);
-		
-		if (catEntry.getParent() != null) {
-			CatalogEntry parent = catEntry.getParent();
-			List<CatalogEntry> catEntries = parent.getChildren();
-			updateCatalogEntry(parent);
-			
-//			for (CatalogEntry catalogEntry : catEntries) {
-//				if (catalogEntry.getType() == ce.getType()) {
-//					catEntries.add(catEntries.indexOf(catalogEntry), ce);
-//					updateCatalogEntry(parent);
-//				}
-//			}
-		}
-		
-		return ce;
-	}
-	
-	
 
 	/**
 	 * Move the given catalog entry to the new parent
@@ -710,7 +696,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	public void resourceableDeleted(RepositoryEntry repositoryEntry) {
 		// if a repository entry gets deleted, the referencing Catalog Entries gets
 		// retired to
-		if(log.isDebugEnabled()) log.debug("sourceableDeleted start... repositoryEntry=" + repositoryEntry);
+		log.debug("sourceableDeleted start... repositoryEntry={}", repositoryEntry);
 		List<CatalogEntry> references = getCatalogEntriesReferencing(repositoryEntry);
 		if (references != null && !references.isEmpty()) {
 			for (int i = 0; i < references.size(); i++) {
@@ -736,10 +722,10 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 				// This group has no owner anymore => add OLAT-Admin as owner
 				Identity admin = CoreSpringFactory.getImpl(RepositoryDeletionModule.class).getAdminUserIdentity();
 				securityGroupDao.addIdentityToSecurityGroup(admin, catalogEntry.getOwnerGroup());
-				log.info("Delete user-data, add Administrator-identity as owner of catalogEntry=" + catalogEntry.getName());
+				log.info("Delete user-data, add Administrator-identity as owner of catalogEntry={}", catalogEntry.getName());
 			}
 		}
-		if(log.isDebugEnabled()) log.debug("All owner entries in catalog deleted for identity=" + identity);
+		log.debug("All owner entries in catalog deleted for identity={}", identity);
 	}
 
 	/**

@@ -1427,7 +1427,7 @@ public class CourseElementTest extends Deployments {
 		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openCatalogAdministration()
-			.addCatalogNode(node1, "First level of the catalog");
+			.addCatalogNode(node1, "First level of the catalog", "First level of the catalog");
 		
 		//create a course
 		String courseTitle = "Guest FO " + UUID.randomUUID();
