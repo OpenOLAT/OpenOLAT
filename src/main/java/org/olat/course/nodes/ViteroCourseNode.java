@@ -63,7 +63,7 @@ public class ViteroCourseNode extends AbstractAccessableCourseNode {
 
 	private static final long serialVersionUID = 8680935159748506305L;
 
-	private static final String TYPE = "vitero";
+	public static final String TYPE = "vitero";
 
 	// configuration
 	public static final String CONF_VC_CONFIGURATION = "vc_configuration";
