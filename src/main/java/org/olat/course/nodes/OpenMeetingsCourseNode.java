@@ -62,7 +62,7 @@ public class OpenMeetingsCourseNode extends AbstractAccessableCourseNode {
 	private static final long serialVersionUID = 8680935159748506305L;
 	private static final Logger log = Tracing.createLoggerFor(OpenMeetingsCourseNode.class);
 
-	private static final String TYPE = "openmeetings";
+	public static final String TYPE = "openmeetings";
 
 	// configuration
 	public static final String CONF_VC_CONFIGURATION = "vc_configuration";
