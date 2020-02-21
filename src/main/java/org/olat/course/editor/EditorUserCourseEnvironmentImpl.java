@@ -145,6 +145,11 @@ public class EditorUserCourseEnvironmentImpl implements UserCourseEnvironment {
 	}
 
 	@Override
+	public boolean isMemberParticipant() {
+		return false;
+	}
+
+	@Override
 	public boolean isAdministratorOfAnyCourse() {
 		return false;
 	}

@@ -70,7 +70,7 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 	
 	private final WindowControl windowControl;
 	
-	private Boolean admin, coach, participant;
+	private Boolean admin, coach, participant, allUsersParticipant;
 	private Boolean adminAnyCourse, coachAnyCourse, participantAnyCourse;
 	
 	private Boolean certification;
@@ -101,7 +101,6 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 		this.participant = participant;
 		this.windowControl = windowControl;
 		this.courseReadOnly = courseReadOnly;
-		initScoreAccounting();
 	}
 
 	public static UserCourseEnvironmentImpl load(UserRequest ureq, ICourse course, RepositoryEntrySecurity reSecurity, WindowControl wControl) {
@@ -130,14 +129,6 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 				reSecurity.isCoach(), reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach() , reSecurity.isParticipant(),
 				reSecurity.isReadOnly() || reSecurity.isOnlyPrincipal() || reSecurity.isOnlyMasterCoach());
 	}
-
-	private void initScoreAccounting() {
-		if (isParticipant()) {
-			scoreAccounting =  new AssessmentAccounting(this);
-		} else {
-			scoreAccounting = new NoEvaluationAccounting();
-		}
-	}
 	
 	@Override
 	public CourseEnvironment getCourseEnvironment() {
@@ -161,7 +152,14 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 
 	@Override
 	public ScoreAccounting getScoreAccounting() {
+		if (scoreAccounting == null) {
+			initScoreAccounting();
+		}
 		return scoreAccounting;
+	}
+	
+	private void initScoreAccounting() {
+		scoreAccounting = isParticipant()? new AssessmentAccounting(this): new NoEvaluationAccounting();
 	}
 
 	@Override
@@ -212,14 +210,36 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 
 	@Override
 	public boolean isParticipant() {
-		if(participant != null) {
-			return participant.booleanValue();
+		// User is membership participant
+		if(participant != null && participant.booleanValue()) {
+			return true;
 		}
+		
+		// If a course is open to all users, a user may is not a member but has access as well.
+		// Such a user has to act as a participant as well.
+		if (allUsersParticipant == null) {
+			boolean allUsersOnly = !isAdmin() && !isCoach() && !getIdentityEnvironment().getRoles().isGuestOnly();
+			allUsersParticipant = Boolean.valueOf(allUsersOnly);
+		}
+		if (allUsersParticipant.booleanValue()) {
+			return true;
+		}
+		
+		// User is not membership participant
+		if(participant != null && !participant.booleanValue()) {
+			return false;
+		}
+		
 		//lazy loading
 		CourseGroupManager cgm = courseEnvironment.getCourseGroupManager();
 		boolean partLazy = cgm.isIdentityCourseParticipant(identityEnvironment.getIdentity());
 		participant = Boolean.valueOf(partLazy);
 		return partLazy;
+	}
+	
+	@Override
+	public boolean isMemberParticipant() {
+		return courseEnvironment.getCourseGroupManager().isIdentityCourseParticipant(identityEnvironment.getIdentity());
 	}
 
 	@Override
@@ -354,5 +374,6 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 		if (participantChanged) {
 			initScoreAccounting();
 		}
+		this.allUsersParticipant = null;
 	}
 }

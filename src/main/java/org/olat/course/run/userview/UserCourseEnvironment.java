@@ -81,9 +81,18 @@ public interface UserCourseEnvironment {
 
 	/**
 	 * Is a participant of the course, within the course as in relation of a group.
+	 * Users in a open course are participants as well.
+	 * 
 	 * @return
 	 */
 	public boolean isParticipant();
+	
+	/**
+	 * Is the identity a member with the role participant of the course?
+	 * 
+	 * @return
+	 */
+	public boolean isMemberParticipant();
 	
 	public boolean isIdentityInCourseGroup(Long groupKey);
 	

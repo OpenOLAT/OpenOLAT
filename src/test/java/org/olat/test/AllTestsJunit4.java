@@ -487,6 +487,7 @@ import org.junit.runners.Suite;
 	org.olat.course.nodes.st.assessment.STLastModificationsEvaluatorTest.class,
 	org.olat.course.nodes.st.assessment.STStatusEvaluatorTest.class,
 	org.olat.course.run.scoring.AverageCompletionEvaluatorTest.class,
+	org.olat.course.run.userview.UserCourseEnvironmentImplTest.class,
 	org.olat.login.validation.PasswordSyntaxValidatorTest.class,
 	org.olat.login.validation.PasswordValidationRuleFactoryTest.class,
 	org.olat.modules.assessment.model.OverridableImplTest.class,

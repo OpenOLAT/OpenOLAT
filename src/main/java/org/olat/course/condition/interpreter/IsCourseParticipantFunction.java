@@ -21,8 +21,8 @@
 
 package org.olat.course.condition.interpreter;
 
-import org.olat.core.id.Identity;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -70,7 +70,7 @@ public class IsCourseParticipantFunction extends AbstractFunction {
 			//administrator of any course
 			isParticipant = getUserCourseEnv().isParticipantOfAnyCourse();
 		} else {
-			isParticipant = getUserCourseEnv().isParticipant();
+			isParticipant = getUserCourseEnv().isMemberParticipant();
 		}
 		if (log.isDebugEnabled()) {
 			Identity ident = getUserCourseEnv().getIdentityEnvironment().getIdentity();
