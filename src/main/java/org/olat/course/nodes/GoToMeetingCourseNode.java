@@ -61,7 +61,7 @@ public class GoToMeetingCourseNode extends AbstractAccessableCourseNode {
 	private static final long serialVersionUID = 8680935159748506305L;
 	private static final Logger log = Tracing.createLoggerFor(GoToMeetingCourseNode.class);
 
-	private static final String TYPE = "gotomeeting";
+	public static final String TYPE = "gotomeeting";
 
 	// configuration
 	public static final String CONF_VC_CONFIGURATION = "vc_configuration";
