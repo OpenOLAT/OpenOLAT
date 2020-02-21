@@ -55,11 +55,12 @@ https://gist.github.com/digitalbreed/84a19db69244b22519e03550ba010a25
 		overflow: hidden;
 		background-color: $o-radial-progress-inset-color;
 		box-shadow: $o-radial-progress-shadow;
-		font-size: $o-radial-progress-percentage-font-size;
+		font-size: $o-radial-progress-inset-size - 10px; /* for bgIcon */
+		line-height: $o-radial-progress-inset-size - 10px;
+		text-align: center;
 		
 		.bgIcon {
 			position: absolute;
-			font-size: $o-radial-progress-inset-size - 10px;
 			top: 5px;
 			left: -5px;
 			opacity: 0;
@@ -154,12 +155,12 @@ https://gist.github.com/digitalbreed/84a19db69244b22519e03550ba010a25
 			height: $o-radial-progress-inset-size-sm;
 			margin-left: ($o-radial-progress-circle-size-sm - $o-radial-progress-inset-size-sm)/2;
 			margin-top: ($o-radial-progress-circle-size-sm - $o-radial-progress-inset-size-sm)/2;
-			font-size: $o-radial-progress-percentage-font-size-sm;
+			font-size: $o-radial-progress-inset-size - 10px; /* for bgIcon */
+			line-height: $o-radial-progress-inset-size-sm - 10px;
+			font-size: $o-radial-progress-inset-size-sm - 5px;
 			.bgIcon {
 				position: absolute;
-				font-size: $o-radial-progress-inset-size-sm - 10px;
 				top: 5px;
-				left: -2px;
 			}
 		}
 	}
@@ -187,12 +188,11 @@ https://gist.github.com/digitalbreed/84a19db69244b22519e03550ba010a25
 			height: $o-radial-progress-inset-size-lg;
 			margin-left: ($o-radial-progress-circle-size-lg - $o-radial-progress-inset-size-lg)/2;
 			margin-top: ($o-radial-progress-circle-size-lg - $o-radial-progress-inset-size-lg)/2;
-			font-size: $o-radial-progress-percentage-font-size-lg;
+			font-size: $o-radial-progress-inset-size-lg - 20px;
+			line-height: $o-radial-progress-inset-size-lg - 10px;
 			.bgIcon {
 				position: absolute;
-				font-size: $o-radial-progress-inset-size-lg - 20px;
 				top: 5px;
-				left: -6px;
 			}
 		}
 	}
@@ -223,12 +223,8 @@ https://gist.github.com/digitalbreed/84a19db69244b22519e03550ba010a25
 			height: $o-radial-progress-inset-size-inline;
 			margin-left: ($o-radial-progress-circle-size-inline - $o-radial-progress-inset-size-inline)/2;
 			margin-top: ($o-radial-progress-circle-size-inline - $o-radial-progress-inset-size-inline)/2;
-			font-size: $o-radial-progress-percentage-font-size-inline;
 			.bgIcon {
-				position: absolute;
-				font-size: $o-radial-progress-inset-size-inline - 10px;
-				top: 5px;
-				left: -2px;
+				display: none;
 			}
 		}
 	}
@@ -279,8 +275,7 @@ https://gist.github.com/digitalbreed/84a19db69244b22519e03550ba010a25
 	}
 }
 
-
-	/* toolbar variant */
+/* toolbar variant */
 .o_tool .o_progress {
 	width: $o-toolbar-height-md;
 	height: $o-toolbar-height-md;
@@ -314,20 +309,26 @@ https://gist.github.com/digitalbreed/84a19db69244b22519e03550ba010a25
 			height: $o-radial-progress-inset-size-toolbar;
 			margin-left: ($o-radial-progress-circle-size-toolbar - $o-radial-progress-inset-size-toolbar)/2;
 			margin-top: ($o-radial-progress-circle-size-toolbar - $o-radial-progress-inset-size-toolbar)/2;
-			font-size: $o-radial-progress-percentage-font-size-toolbar;
+			font-size: $o-radial-progress-inset-size-toolbar;
+			line-height: $o-radial-progress-inset-size-toolbar;
 			background: $o-toolbar-bg-color;
-			.bgIcon {
-				position: absolute;
-				font-size: $o-radial-progress-inset-size-toolbar - 10px;
-				top: 5px;
-				left: -2px;
-			}
 		}
 		.percentage {
 			.centeredWrapper {
 				.number {
 					color: $o-toolbar-link-color;
 				}
+				.addon {
+					margin-top: 0.1em; 
+					margin-bottom: -0.3em; 
+					div:nth-of-type(1) {
+						font-size: 0.8em; 
+						font-weight: normal;
+					}
+				}
+			}
+			.o_progress_label {
+				display: none;
 			}
 		}
 	}
@@ -357,7 +358,8 @@ https://gist.github.com/digitalbreed/84a19db69244b22519e03550ba010a25
 				height: $o-radial-progress-inset-size-toolbar;
 				margin-left: ($o-radial-progress-circle-size-toolbar - $o-radial-progress-inset-size-toolbar)/2;
 				margin-top: ($o-radial-progress-circle-size-toolbar - $o-radial-progress-inset-size-toolbar)/2;
-				font-size: $o-radial-progress-percentage-font-size-toolbar;
+				font-size: $o-radial-progress-inset-size-toolbar;
+				line-height: $o-radial-progress-inset-size-toolbar;			
 			}
 		}
 	}
@@ -385,18 +387,43 @@ https://gist.github.com/digitalbreed/84a19db69244b22519e03550ba010a25
 				height: $o-radial-progress-inset-size-toolbar;
 				margin-left: ($o-radial-progress-circle-size-toolbar - $o-radial-progress-inset-size-toolbar)/2;
 				margin-top: ($o-radial-progress-circle-size-toolbar - $o-radial-progress-inset-size-toolbar)/2;
+				&:after {
+					display: none;
+				}
 			}
 			.percentage {
 				display: none;
 			}
 		}
+	}	
+}
+
+
+/* Styles with background images triggered by element css class */
+.o_progress_failed, .o_progress_passed {	
+	.inset:after {
+		@extend .o_icon; 
 	}
-	
+	.radial-progress-inline .inset {
+		display: none;	
+	}
+	.radial-progress-toolbar .inset {
+		font-size: $o-toolbar-height-md;
+		line-height: $o-toolbar-height-md;
+	}
+}
+.o_progress_failed .inset:after {
+	content: $fa-var-times; 
+	color: #efe5e5;
+}
+.o_progress_passed .inset:after {
+	content: $fa-var-check; 
+	color: #e5efe5;
 }
 
 
 
-/* Markup example, see also ProgressBarRenderer
+/* Markup example, see also ProgressBarRenderer for more stuff
 
 <div class="radial-progress radial-progress #if(${itemResult.hasPass()}) #if(${itemResult.getPass().booleanValue()}) radial-progress-success #elseif(!${itemResult.getPass().booleanValue()}) radial-progress-danger #end #end " id="$foreach.count" data-progress="0">
 	<div class="circle">
@@ -412,31 +439,31 @@ https://gist.github.com/digitalbreed/84a19db69244b22519e03550ba010a25
 	<div class="inset">
 		#if(${itemResult.hasPass()})
 			#if(${itemResult.getPass().booleanValue()})	
-			<i class="bgIcon o_icon o_icon-fw o_icon_progress_success"  title="$r.translateInAttribute("passed.yourpassed") $r.translateInAttribute("passed.yes")" > </i>	
+					
 			#elseif(!${itemResult.getPass().booleanValue()})
 			<i class="bgIcon o_icon o_icon-fw o_icon_progress_danger"  title="$r.translateInAttribute("passed.yourpassed") $r.translateInAttribute("passed.no")" > </i>	
 			#end
 		#end
+	</div>
 							
-		<div class="percentage">
-			<div class="centeredWrapper">
-				<div class="number">
-					<span>${itemResult.scorePercent}%</span>
-				</div>
-
-				<div class="text-muted" style="text-align:center">
-					<div class="o_score" style="margin-top: 5px; font-size: 0.6em; font-weight: bold">
-						$r.translate("table.header.score"): 
-						<span title="$r.translateInAttribute("results.score.yourscore")" class="o_sel_assessmentitem_score text-muted xsmall">$itemResult.score</span>
-					</div>
-					#if(${itemResult.hasMaxScore()})
-					<div class="o_score_max o_small" style="margin-top: 2px; font-size:0.5em;">
-						von <span title="$r.translateInAttribute("score.max")" class="o_sel_assessmentitem_maxscore text-muted xsmall">$itemResult.maxScore</span>
-					</div>
-					#end
-				</div>						
-			
+	<div class="percentage">
+		<div class="centeredWrapper">
+			<div class="number">
+				<span>${itemResult.scorePercent}%</span>
 			</div>
+
+			<div class="text-muted" style="text-align:center">
+				<div class="o_score" style="margin-top: 5px; font-size: 0.6em; font-weight: bold">
+					$r.translate("table.header.score"): 
+					<span title="$r.translateInAttribute("results.score.yourscore")" class="o_sel_assessmentitem_score text-muted xsmall">$itemResult.score</span>
+				</div>
+				#if(${itemResult.hasMaxScore()})
+				<div class="o_score_max o_small" style="margin-top: 2px; font-size:0.5em;">
+					von <span title="$r.translateInAttribute("score.max")" class="o_sel_assessmentitem_maxscore text-muted xsmall">$itemResult.maxScore</span>
+				</div>
+				#end
+			</div>						
+		
 		</div>
 	</div>
 </div>

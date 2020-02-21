@@ -64,7 +64,8 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 		
 		String compId = "o_c" + ubar.getDispatchID();	
 		target.append("<div class='o_progress ")
-			.append(" o_progress_inline ", ProgressBar.RenderSize.inline.equals(ubar.getRenderSize()))
+			.append("o_progress_inline ", ProgressBar.RenderSize.inline.equals(ubar.getRenderSize()))
+			.append(ubar.getCssClass(), StringHelper.containsNonWhitespace(ubar.getCssClass()))
 			.append("' id='").append(compId).append("' ")
 			.append(">");
 		
@@ -232,9 +233,16 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 				target.append("%</span></div>");
 			}
 			if (left.equals(ubar.getLabelAlignment())) {
+				// Includes label and progress info
 				target.append("<div class='addon text-muted'>");
 				renderLabel(target, ubar);				
 				target.append("</div>");
+			} else {
+				// Show progress info in circle anyway if available
+				String info = ubar.getInfo();
+				if(StringHelper.containsNonWhitespace(info)) {
+					target.append("<div class='addon text-muted'><div class='o_progress_info'>").append(info).append("</div></div>");
+				}				
 			}
 			target.append("</div></div>");
 		}

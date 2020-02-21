@@ -210,26 +210,26 @@
 					<i class="bgIcon o_icon o_icon-fw o_icon_progress_danger"  title="$r.translateInAttribute("passed.yourpassed") $r.translateInAttribute("passed.no")" > </i>	
 					#end
 				#end
+			</div>
 									
-				<div class="percentage">
-					<div class="centeredWrapper">
-						<div class="number">
-							<span>${testResults.scorePercent}%</span>
-						</div>
-	
-						<div class="addon">
-							<div class="o_score">
-								$r.translate("table.header.score"): 
-								<span title="$r.translateInAttribute("results.score.yourscore")" class="o_sel_assessmentitem_score text-muted xsmall">$testResults.score</span>
-							</div>
-							#if(${itemResult.hasMaxScore()})
-							<div class="o_score_max o_small">
-								$r.translate("results.of") <span title="$r.translateInAttribute("score.max")" class="o_sel_assessmentitem_maxscore text-muted xsmall">$testResults.maxScore</span>
-							</div>
-							#end
-						</div>						
-					
+			<div class="percentage">
+				<div class="centeredWrapper">
+					<div class="number">
+						<span>${testResults.scorePercent}%</span>
 					</div>
+
+					<div class="addon">
+						<div class="o_score">
+							$r.translate("table.header.score"): 
+							<span title="$r.translateInAttribute("results.score.yourscore")" class="o_sel_assessmentitem_score text-muted xsmall">$testResults.score</span>
+						</div>
+						#if(${itemResult.hasMaxScore()})
+						<div class="o_score_max o_small">
+							$r.translate("results.of") <span title="$r.translateInAttribute("score.max")" class="o_sel_assessmentitem_maxscore text-muted xsmall">$testResults.maxScore</span>
+						</div>
+						#end
+					</div>						
+				
 				</div>
 			</div>
 		</div>
@@ -276,24 +276,24 @@
 						<i class="bgIcon o_icon o_icon-fw o_icon_progress_danger"  title="$r.translateInAttribute("passed.yourpassed") $r.translateInAttribute("passed.no")" > </i>	
 						#end
 					#end										
-					<div class="percentage">
-						<div class="centeredWrapper">
-							<div class="number">
-								<span>${itemResult.scorePercent}%</span>
-							</div>
-							<div class="addon">
-								<div class="o_score">
-									$r.translate("table.header.score"): 
-									<span title="$r.translateInAttribute("results.score.yourscore")" class="o_sel_assessmentitem_score text-muted xsmall">$itemResult.score</span>
-								</div>
-								#if(${itemResult.hasMaxScore()})
-								<div class="o_score_max">
-									$r.translate("results.of") <span title="$r.translateInAttribute("score.max")" class="o_sel_assessmentitem_maxscore text-muted xsmall">$itemResult.maxScore</span>
-								</div>
-								#end
-							</div>						
-						
+				</div>
+				<div class="percentage">
+					<div class="centeredWrapper">
+						<div class="number">
+							<span>${itemResult.scorePercent}%</span>
 						</div>
+						<div class="addon">
+							<div class="o_score">
+								$r.translate("table.header.score"): 
+								<span title="$r.translateInAttribute("results.score.yourscore")" class="o_sel_assessmentitem_score text-muted xsmall">$itemResult.score</span>
+							</div>
+							#if(${itemResult.hasMaxScore()})
+							<div class="o_score_max">
+								$r.translate("results.of") <span title="$r.translateInAttribute("score.max")" class="o_sel_assessmentitem_maxscore text-muted xsmall">$itemResult.maxScore</span>
+							</div>
+							#end
+						</div>						
+					
 					</div>
 				</div>
 			</div> ## END of radial-progress

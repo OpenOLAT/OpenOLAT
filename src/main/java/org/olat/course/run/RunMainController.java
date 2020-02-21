@@ -548,6 +548,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			} 
 			// Update progress only if visible
 			if (courseProgress.isVisible()) {				
+				// 1) Progress
 				CourseNode rootNode = getUce().getCourseEnvironment().getRunStructure().getRootNode();
 				AssessmentEvaluation assessmentEvaluation = getUce().getScoreAccounting().evalCourseNode(rootNode);
 				Double completion = assessmentEvaluation.getCompletion();
@@ -556,6 +557,24 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 					courseProgress.setActual(actual * 100);
 					courseProgress.setBarColor(BarColor.success);					
 				}
+				// 2) SCORE
+				Float score = assessmentEvaluation.getScore();
+				if (score != null && score > 0) {
+					courseProgress.setInfo(Math.round(score) + "pt");
+				}
+				// 3) Status
+				Boolean passed = assessmentEvaluation.getPassed();
+				if (passed != null) {
+					if (passed.booleanValue()) {
+						courseProgress.setBarColor(BarColor.success);					
+						courseProgress.setCssClass("o_progress_passed");
+					} else {
+						courseProgress.setBarColor(BarColor.danger);											
+						courseProgress.setCssClass("o_progress_failed");
+					}
+				}
+				
+				
 			}
 		}		
 	}
