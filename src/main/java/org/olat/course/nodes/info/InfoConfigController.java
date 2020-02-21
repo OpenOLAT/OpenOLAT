@@ -20,16 +20,23 @@
 
 package org.olat.course.nodes.info;
 
+import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
+
+import java.util.Collection;
+
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.course.editor.NodeEditController;
+import org.olat.course.nodes.InfoCourseNode;
 import org.olat.modules.ModuleConfiguration;
 
 /**
@@ -41,7 +48,7 @@ import org.olat.modules.ModuleConfiguration;
  * Initial Date:  3 aug. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class InfoConfigForm extends FormBasicController {
+public class InfoConfigController extends FormBasicController {
 
 	
 	private static final String[] maxDurationValues = new String[] {
@@ -60,34 +67,50 @@ public class InfoConfigForm extends FormBasicController {
 		null
 	};
 	
+	private static final String ROLE_COACH = "config.role.coach";
+	private static final String ROLE_PARTICIPANT = "config.role.participant";
+	private static final String[] ADMIN_KEYS = new String[] {
+			ROLE_COACH
+	};
+	private static final String[] EDIT_KEYS = new String[] {
+			ROLE_COACH,
+			ROLE_PARTICIPANT
+	};
+	
+	private final InfoCourseNode courseNode;
 	private final ModuleConfiguration config;
 	
 	private SingleSelection durationSelection;
 	private SingleSelection lengthSelection;
 	private MultipleSelectionElement autoSubscribeSelection;
-	
-	public InfoConfigForm(UserRequest ureq, WindowControl wControl, ModuleConfiguration config) {
-		super(ureq, wControl);
-		
-		this.config = config;
+	private MultipleSelectionElement adminRolesEl;
+	private MultipleSelectionElement editRolesEl;
+
+	public InfoConfigController(UserRequest ureq, WindowControl wControl, InfoCourseNode courseNode) {
+		super(ureq, wControl, LAYOUT_BAREBONE);
+		this.courseNode = courseNode;
+		this.config = courseNode.getModuleConfiguration();
 		autoSubscribeValues[0] = translate("pane.tab.infos_config.auto_subscribe.on");
 		initForm(ureq);
 	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		formLayout.setElementCssClass("o_sel_course_info_form");
-		setFormTitle("pane.tab.infos_config.title");
-		setFormContextHelp("Administration and Organisation#_mitteilung_zugang");
-
+		FormLayoutContainer generalCont = FormLayoutContainer.createDefaultFormLayout("general", getTranslator());
+		generalCont.setFormTitle(translate("pane.tab.infos_config.title"));
+		generalCont.setFormContextHelp("Administration and Organisation#_mitteilung_zugang");
+		generalCont.setElementCssClass("o_sel_course_info_form");
+		formLayout.add(generalCont);
+		
 		String page = velocity_root + "/editShow.html";
 		final FormLayoutContainer showLayout = FormLayoutContainer.createCustomFormLayout("pane.tab.infos_config.shown", getTranslator(), page);
 		showLayout.setLabel("pane.tab.infos_config.shown", null);
-		formLayout.add(showLayout);
+		generalCont.add(showLayout);
 
 		durationSelection = uifactory.addDropdownSingleselect("pane.tab.infos_config.max_duration", showLayout, maxDurationValues, maxDurationValues, null);
 		durationSelection.setLabel("pane.tab.infos_config.max", null);
 		durationSelection.setElementCssClass("o_sel_course_info_duration");
+		durationSelection.addActionListener(FormEvent.ONCHANGE);
 		String durationStr = (String)config.get(InfoCourseNodeConfiguration.CONFIG_DURATION);
 		if(StringHelper.containsNonWhitespace(durationStr)) {
 			durationSelection.select(durationStr, true);
@@ -98,6 +121,7 @@ public class InfoConfigForm extends FormBasicController {
 		lengthSelection = uifactory.addDropdownSingleselect("pane.tab.infos_config.max_shown", null, showLayout, maxLengthValues, maxLengthValues, null);
 		lengthSelection.setElementCssClass("o_sel_course_info_length");
 		lengthSelection.setLabel("pane.tab.infos_config.max", null);
+		lengthSelection.addActionListener(FormEvent.ONCHANGE);
 		String lengthStr = (String)config.get(InfoCourseNodeConfiguration.CONFIG_LENGTH);
 		if(StringHelper.containsNonWhitespace(lengthStr)) {
 			lengthSelection.select(lengthStr, true);
@@ -105,16 +129,49 @@ public class InfoConfigForm extends FormBasicController {
 			lengthSelection.select("5", true);
 		}
 		
-		autoSubscribeSelection = uifactory.addCheckboxesHorizontal("auto_subscribe", formLayout, autoSubscribeKeys, autoSubscribeValues);
+		autoSubscribeSelection = uifactory.addCheckboxesHorizontal("auto_subscribe", generalCont, autoSubscribeKeys, autoSubscribeValues);
+		autoSubscribeSelection.addActionListener(FormEvent.ONCHANGE);
 		String autoSubscribeStr = (String)config.get(InfoCourseNodeConfiguration.CONFIG_AUTOSUBSCRIBE);
 		if("on".equals(autoSubscribeStr) || !StringHelper.containsNonWhitespace(autoSubscribeStr)) {
 			autoSubscribeSelection.select("on", true);
 		}
 		
-		uifactory.addFormSubmitButton("save", formLayout);
+		if (!courseNode.hasCustomPreConditions()) {
+			FormLayoutContainer rightsCont = FormLayoutContainer.createDefaultFormLayout("rights", getTranslator());
+			formLayout.add(rightsCont);
+			rightsCont.setFormTitle(translate("config.rights"));
+			
+			adminRolesEl = uifactory.addCheckboxesVertical("config.admin", rightsCont, ADMIN_KEYS,
+					translateAll(getTranslator(), ADMIN_KEYS), 1);
+			adminRolesEl.select(ROLE_COACH, config.getBooleanSafe(InfoCourseNode.CONFIG_KEY_ADMIN_BY_COACH));
+			adminRolesEl.addActionListener(FormEvent.ONCHANGE);
+			
+			editRolesEl = uifactory.addCheckboxesVertical("config.edit", rightsCont, EDIT_KEYS,
+					translateAll(getTranslator(), EDIT_KEYS), 1);
+			editRolesEl.select(ROLE_COACH, config.getBooleanSafe(InfoCourseNode.CONFIG_KEY_EDIT_BY_COACH));
+			editRolesEl.select(ROLE_PARTICIPANT,
+					config.getBooleanSafe(InfoCourseNode.CONFIG_KEY_EDIT_BY_PARTICIPANT));
+			editRolesEl.addActionListener(FormEvent.ONCHANGE);
+		}
 	}
 	
-	protected ModuleConfiguration getUpdatedConfig() {
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == durationSelection) {
+			doUpdatedConfig(ureq);
+		} else if (source == lengthSelection) {
+			doUpdatedConfig(ureq);
+		} else if (source == autoSubscribeSelection) {
+			doUpdatedConfig(ureq);
+		} else if (source == adminRolesEl) {
+			doUpdatedConfig(ureq);
+		} else if (source == editRolesEl) {
+			doUpdatedConfig(ureq);
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void doUpdatedConfig(UserRequest ureq) {
 		String durationStr = durationSelection.getSelectedKey();
 		config.set(InfoCourseNodeConfiguration.CONFIG_DURATION, durationStr);
 		
@@ -123,7 +180,15 @@ public class InfoConfigForm extends FormBasicController {
 		
 		String autoSubscribeStr = autoSubscribeSelection.isSelected(0) ? "on" : "off";
 		config.set(InfoCourseNodeConfiguration.CONFIG_AUTOSUBSCRIBE, autoSubscribeStr);
-		return config;
+		
+		Collection<String> selectedAdminKeys = adminRolesEl.getSelectedKeys();
+		config.setBooleanEntry(InfoCourseNode.CONFIG_KEY_ADMIN_BY_COACH, selectedAdminKeys.contains(ROLE_COACH));
+		
+		Collection<String> selectedEditKeys = editRolesEl.getSelectedKeys();
+		config.setBooleanEntry(InfoCourseNode.CONFIG_KEY_EDIT_BY_COACH, selectedEditKeys.contains(ROLE_COACH));
+		config.setBooleanEntry(InfoCourseNode.CONFIG_KEY_EDIT_BY_PARTICIPANT, selectedEditKeys.contains(ROLE_PARTICIPANT));
+		
+		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 	}
 	
 	@Override
@@ -133,6 +198,6 @@ public class InfoConfigForm extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		fireEvent (ureq, Event.DONE_EVENT);
+		//
 	}
 }

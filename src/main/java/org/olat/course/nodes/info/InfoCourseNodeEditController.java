@@ -57,47 +57,45 @@ public class InfoCourseNodeEditController extends ActivateableTabbableDefaultCon
 	private final InfoCourseNode courseNode;
 
 	private TabbedPane myTabbedPane;
-	private VelocityContainer configContent;
-	private InfoConfigForm infoConfigForm;
+	private InfoConfigController configCtrl;
 	private VelocityContainer editAccessVc;
 	private ConditionEditController accessCondContr;
 	private ConditionEditController editCondContr;
 	private ConditionEditController adminCondContr;
 	
-	public InfoCourseNodeEditController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config, InfoCourseNode courseNode, ICourse course,
-			UserCourseEnvironment euce) {
+	public InfoCourseNodeEditController(UserRequest ureq, WindowControl wControl, InfoCourseNode courseNode,
+			ICourse course, UserCourseEnvironment euce) {
 		super(ureq,wControl);
 		
 		this.courseNode = courseNode;
 		
-		infoConfigForm = new InfoConfigForm(ureq, wControl, config);
-		listenTo(infoConfigForm);
+		configCtrl = new InfoConfigController(ureq, wControl, courseNode);
+		listenTo(configCtrl);
 		
-		editAccessVc = createVelocityContainer("edit_access");
-		CourseEditorTreeModel editorModel = course.getEditorTreeModel();
-		// Accessibility precondition
-		Condition accessCondition = courseNode.getPreConditionAccess();
-		accessCondContr = new ConditionEditController(ureq, getWindowControl(), euce, accessCondition,
-				AssessmentHelper.getAssessableNodes(editorModel, courseNode));
-		listenTo(accessCondContr);
-		editAccessVc.put("readerCondition", accessCondContr.getInitialComponent());
+		if (courseNode.hasCustomPreConditions()) {
+			editAccessVc = createVelocityContainer("edit_access");
+			CourseEditorTreeModel editorModel = course.getEditorTreeModel();
+			// Accessibility precondition
+			Condition accessCondition = courseNode.getPreConditionAccess();
+			accessCondContr = new ConditionEditController(ureq, getWindowControl(), euce, accessCondition,
+					AssessmentHelper.getAssessableNodes(editorModel, courseNode));
+			listenTo(accessCondContr);
+			editAccessVc.put("readerCondition", accessCondContr.getInitialComponent());
 
-		// read / write preconditions
-		Condition editCondition = courseNode.getPreConditionEdit();
-		editCondContr = new ConditionEditController(ureq, getWindowControl(), euce, editCondition, AssessmentHelper
-				.getAssessableNodes(editorModel, courseNode));
-		listenTo(editCondContr);
-		editAccessVc.put("editCondition", editCondContr.getInitialComponent());
-		
-		// administration preconditions
-		Condition adminCondition = courseNode.getPreConditionAdmin();
-		adminCondContr = new ConditionEditController(ureq, getWindowControl(), euce, adminCondition, AssessmentHelper
-				.getAssessableNodes(editorModel, courseNode));
-		listenTo(adminCondContr);
-		editAccessVc.put("adminCondition", adminCondContr.getInitialComponent());
-		
-		configContent = createVelocityContainer("edit");
-		configContent.put("infoConfigForm", infoConfigForm.getInitialComponent());
+			// read / write preconditions
+			Condition editCondition = courseNode.getPreConditionEdit();
+			editCondContr = new ConditionEditController(ureq, getWindowControl(), euce, editCondition, AssessmentHelper
+					.getAssessableNodes(editorModel, courseNode));
+			listenTo(editCondContr);
+			editAccessVc.put("editCondition", editCondContr.getInitialComponent());
+			
+			// administration preconditions
+			Condition adminCondition = courseNode.getPreConditionAdmin();
+			adminCondContr = new ConditionEditController(ureq, getWindowControl(), euce, adminCondition, AssessmentHelper
+					.getAssessableNodes(editorModel, courseNode));
+			listenTo(adminCondContr);
+			editAccessVc.put("adminCondition", adminCondContr.getInitialComponent());
+		}
 	}
 	
 	@Override
@@ -118,8 +116,10 @@ public class InfoCourseNodeEditController extends ActivateableTabbableDefaultCon
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), editAccessVc);
-		tabbedPane.addTab(translate(PANE_TAB_CONFIG), configContent);
+		if (editAccessVc != null) {
+			tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), editAccessVc);
+		}
+		tabbedPane.addTab(translate(PANE_TAB_CONFIG), configCtrl.getInitialComponent());
 	}
 
 
@@ -130,11 +130,8 @@ public class InfoCourseNodeEditController extends ActivateableTabbableDefaultCon
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == infoConfigForm) {
-			if (event == Event.DONE_EVENT) {
-				infoConfigForm.getUpdatedConfig();
-				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-			}
+		if (source == configCtrl) {
+			fireEvent(ureq, event);
 		} else if (source == accessCondContr) {
 			if (event == Event.CHANGED_EVENT) {
 				Condition cond = accessCondContr.getCondition();

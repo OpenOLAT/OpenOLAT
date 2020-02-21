@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.NewControllerFactory;
 import org.olat.commons.calendar.CalendarModule;
+import org.olat.commons.info.ui.InfoSecurityCallback;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -109,6 +110,7 @@ import org.olat.course.nodes.bc.CourseDocumentsController;
 import org.olat.course.nodes.co.COToolController;
 import org.olat.course.nodes.feed.blog.BlogToolController;
 import org.olat.course.nodes.fo.FOToolController;
+import org.olat.course.nodes.info.InfoCourseSecurityCallback;
 import org.olat.course.nodes.info.InfoRunController;
 import org.olat.course.nodes.members.MembersToolRunController;
 import org.olat.course.reminder.ui.CourseRemindersController;
@@ -1812,11 +1814,12 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				canAdd = isAdmin;
 				canAdmin = isAdmin;
 			}
+			InfoSecurityCallback secCallback = new InfoCourseSecurityCallback(getIdentity(), canAdd, canAdmin);
 			
 			OLATResourceable ores = OresHelper.createOLATResourceableType("ParticipantInfos");
 			WindowControl swControl = addToHistory(ureq, ores, null);
 			participatInfoCtrl = new InfoRunController(ureq, swControl, getUserCourseEnvironment(), "ParticipantInfos",
-					canAdd, canAdmin, autoSubscribe);
+					secCallback, autoSubscribe);
 
 			pushController(ureq, translate("command.participant.info"), participatInfoCtrl);
 			setActiveTool(participantInfoLink);

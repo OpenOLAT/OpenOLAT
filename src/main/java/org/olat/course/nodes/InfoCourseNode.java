@@ -41,6 +41,7 @@ import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
+import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
@@ -66,10 +67,20 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class InfoCourseNode extends AbstractAccessableCourseNode {
+	
+	@SuppressWarnings("deprecation")
+	private static final String TRANSLATOR_PACKAGE = Util.getPackageName(InfoCourseNodeEditController.class);
 
 	public static final String TYPE = "info";
 	public static final String EDIT_CONDITION_ID = "editinfos";
 	public static final String ADMIN_CONDITION_ID = "admininfos";
+	
+	// Configs
+	private static final int CURRENT_VERSION = 2;
+	public static final String CONFIG_KEY_ADMIN_BY_COACH = "admin.by.coach";
+	public static final String CONFIG_KEY_EDIT_BY_COACH = "edit.by.coach";
+	public static final String CONFIG_KEY_EDIT_BY_PARTICIPANT = "edit.by.participant";
+	
 	private Condition preConditionEdit;
 	private Condition preConditionAdmin;
 	
@@ -90,6 +101,40 @@ public class InfoCourseNode extends AbstractAccessableCourseNode {
 			config.set(InfoCourseNodeConfiguration.CONFIG_DURATION, "90");
 			config.set(InfoCourseNodeConfiguration.CONFIG_LENGTH, "10");
 		}
+		
+		int version = config.getConfigurationVersion();
+		if (version < 2) {
+			config.setBooleanEntry(CONFIG_KEY_ADMIN_BY_COACH, true);
+			config.setBooleanEntry(CONFIG_KEY_EDIT_BY_COACH, true);
+			config.setBooleanEntry(CONFIG_KEY_EDIT_BY_PARTICIPANT, false);
+			removeDefaultPreconditions();
+		}
+		config.setConfigurationVersion(CURRENT_VERSION);
+	}
+	
+	private void removeDefaultPreconditions() {
+		if (hasCustomPreConditions()) {
+			boolean defaultPreconditions =
+					!preConditionAdmin.isExpertMode()
+				&& preConditionAdmin.isEasyModeCoachesAndAdmins()
+				&& !preConditionAdmin.isEasyModeAlwaysAllowCoachesAndAdmins()
+				&& !preConditionAdmin.isAssessmentMode()
+				&& !preConditionAdmin.isAssessmentModeViewResults()
+				&& !preConditionEdit.isExpertMode()
+				&& preConditionEdit.isEasyModeCoachesAndAdmins()
+				&& !preConditionEdit.isEasyModeAlwaysAllowCoachesAndAdmins()
+				&& !preConditionEdit.isAssessmentMode()
+				&& !preConditionEdit.isAssessmentModeViewResults();
+			if (defaultPreconditions) {
+				removeCustomPreconditions();
+			}
+		}
+	}
+	
+	public void removeCustomPreconditions() {
+		preConditionAdmin = null;
+		preConditionEdit = null;
+		setPreConditionAccess(null);
 	}
 	
 	@Override
@@ -124,18 +169,23 @@ public class InfoCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		oneClickStatusCache = null;
-		String translatorStr = Util.getPackageName(InfoCourseNodeEditController.class);
-		List<StatusDescription> statusDescs =isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		List<StatusDescription> statusDescs = isConfigValidWithTranslator(cev, TRANSLATOR_PACKAGE, getConditionExpressions());
 		oneClickStatusCache = StatusDescriptionHelper.sort(statusDescs);
 		return oneClickStatusCache;
 	}
 
-
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
-		InfoCourseNodeEditController childTabCntrllr = new InfoCourseNodeEditController(ureq, wControl, getModuleConfiguration(), this, course, euce);
+		InfoCourseNodeEditController childTabCntrllr = new InfoCourseNodeEditController(ureq, wControl, this, course, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
+	}
+
+	@Override
+	public ConditionAccessEditConfig getAccessEditConfig() {
+		return hasCustomPreConditions()
+				? ConditionAccessEditConfig.custom()
+				: ConditionAccessEditConfig.regular(false);
 	}
 	
 	@Override
@@ -144,9 +194,8 @@ public class InfoCourseNode extends AbstractAccessableCourseNode {
 		if (nodeSecCallback.isAccessible()) {
 			InfoPeekViewController ctrl = new InfoPeekViewController(ureq, wControl, userCourseEnv, this);
 			return ctrl;
-		} else {
-			return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback);
 		}
+		return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback);
 	}
 
 	@Override
@@ -165,19 +214,25 @@ public class InfoCourseNode extends AbstractAccessableCourseNode {
 			conditions.addAll(parentConditions);
 		}
 
-		Condition editCondition = getPreConditionEdit();
-		if(editCondition != null && StringHelper.containsNonWhitespace(editCondition.getConditionExpression())) {
-			ConditionExpression ce = new ConditionExpression(editCondition.getConditionId());
-			ce.setExpressionString(editCondition.getConditionExpression());
-			conditions.add(ce);
-		}
-		Condition adminCondition = getPreConditionAdmin();
-		if(adminCondition != null && StringHelper.containsNonWhitespace(adminCondition.getConditionExpression())) {
-			ConditionExpression ce = new ConditionExpression(adminCondition.getConditionId());
-			ce.setExpressionString(adminCondition.getConditionExpression());
-			conditions.add(ce);
+		if (hasCustomPreConditions()) {
+			Condition editCondition = getPreConditionEdit();
+			if(editCondition != null && StringHelper.containsNonWhitespace(editCondition.getConditionExpression())) {
+				ConditionExpression ce = new ConditionExpression(editCondition.getConditionId());
+				ce.setExpressionString(editCondition.getConditionExpression());
+				conditions.add(ce);
+			}
+			Condition adminCondition = getPreConditionAdmin();
+			if(adminCondition != null && StringHelper.containsNonWhitespace(adminCondition.getConditionExpression())) {
+				ConditionExpression ce = new ConditionExpression(adminCondition.getConditionId());
+				ce.setExpressionString(adminCondition.getConditionExpression());
+				conditions.add(ce);
+			}
 		}
 		return conditions;
+	}
+	
+	public boolean hasCustomPreConditions() {
+		return preConditionAdmin != null || preConditionEdit != null;
 	}
 	
 	/**
@@ -236,21 +291,21 @@ public class InfoCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public void calcAccessAndVisibility(ConditionInterpreter ci, NodeEvaluation nodeEval) {
-		//nodeEval.setVisible(true);
 		super.calcAccessAndVisibility(ci, nodeEval);
 		
-		// evaluate the preconditions
-		boolean editor = (getPreConditionEdit().getConditionExpression() == null ? true : ci.evaluateCondition(getPreConditionEdit()));
-		nodeEval.putAccessStatus(EDIT_CONDITION_ID, editor);
-		
-		boolean admin = (getPreConditionAdmin().getConditionExpression() == null ? true : ci.evaluateCondition(getPreConditionAdmin()));
-		nodeEval.putAccessStatus(ADMIN_CONDITION_ID, admin);
+		if (hasCustomPreConditions()) {
+			boolean editor = (getPreConditionEdit().getConditionExpression() == null ? true : ci.evaluateCondition(getPreConditionEdit()));
+			nodeEval.putAccessStatus(EDIT_CONDITION_ID, editor);
+			
+			boolean admin = (getPreConditionAdmin().getConditionExpression() == null ? true : ci.evaluateCondition(getPreConditionAdmin()));
+			nodeEval.putAccessStatus(ADMIN_CONDITION_ID, admin);
+		}
 	}
 	
-		@Override
 	/**
 	 * is called when deleting this node, clean up info-messages and subscriptions!
 	 */
+	@Override
 	public void cleanupOnDelete(ICourse course) {
 		super.cleanupOnDelete(course);
 		// delete infoMessages and subscriptions (OLAT-6171)

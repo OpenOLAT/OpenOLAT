@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.olat.basesecurity.GroupRoles;
-import org.olat.commons.info.InfoMessage;
 import org.olat.commons.info.InfoSubscriptionManager;
 import org.olat.commons.info.manager.MailFormatter;
 import org.olat.commons.info.ui.InfoDisplayController;
@@ -41,7 +40,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -89,26 +87,61 @@ public class InfoRunController extends BasicController {
 			canAdd = false;
 			canAdmin = false;
 		} else {
-			boolean isAdmin = userCourseEnv.isAdmin();
-			canAdd = isAdmin || ne.isCapabilityAccessible(InfoCourseNode.EDIT_CONDITION_ID);
-			canAdmin = isAdmin || ne.isCapabilityAccessible(InfoCourseNode.ADMIN_CONDITION_ID);
+			canAdd = canEdit(courseNode, userCourseEnv, ne);
+			canAdmin = canAdmin(courseNode, userCourseEnv, ne);
 		}
+		InfoSecurityCallback secCallback = new InfoCourseSecurityCallback(getIdentity(), canAdd, canAdmin);
 
 		boolean autoSubscribe = InfoCourseNodeEditController.getAutoSubscribe(config);
 		int maxResults = getConfigValue(config, InfoCourseNodeConfiguration.CONFIG_LENGTH, 10);
 		int duration = getConfigValue(config, InfoCourseNodeConfiguration.CONFIG_DURATION, 90);
-
-		initVC(ureq, userCourseEnv, resSubPath, canAdd, canAdmin, autoSubscribe, maxResults, duration);
+		
+		initVC(ureq, userCourseEnv, resSubPath, secCallback, autoSubscribe, maxResults, duration);
+	}
+	
+	private boolean canEdit(InfoCourseNode courseNode, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
+		if (userCourseEnv.isAdmin()) {
+			return true;
+		}
+		
+		if (courseNode.hasCustomPreConditions()) {
+			return ne.isCapabilityAccessible(InfoCourseNode.EDIT_CONDITION_ID);
+		}
+		
+		ModuleConfiguration moduleConfig = courseNode.getModuleConfiguration();
+		if ((moduleConfig.getBooleanSafe(InfoCourseNode.CONFIG_KEY_EDIT_BY_COACH) && userCourseEnv.isCoach())
+				|| (moduleConfig.getBooleanSafe(InfoCourseNode.CONFIG_KEY_EDIT_BY_PARTICIPANT) && userCourseEnv.isParticipant())) {
+			return true;
+		}
+		
+		return false;
+	}
+	
+	private boolean canAdmin(InfoCourseNode courseNode, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
+		if (userCourseEnv.isAdmin()) {
+			return true;
+		}
+		
+		if (courseNode.hasCustomPreConditions()) {
+			return ne.isCapabilityAccessible(InfoCourseNode.ADMIN_CONDITION_ID);
+		}
+		
+		ModuleConfiguration moduleConfig = courseNode.getModuleConfiguration();
+		if (moduleConfig.getBooleanSafe(InfoCourseNode.CONFIG_KEY_ADMIN_BY_COACH) && userCourseEnv.isCoach()) {
+			return true;
+		}
+		
+		return false;
 	}
 	
 	public InfoRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			String resSubPath, boolean canAdd, boolean canAdmin, boolean autoSubscribe) {
+			String resSubPath, InfoSecurityCallback secCallback, boolean autoSubscribe) {
 		super(ureq, wControl);
-		initVC(ureq, userCourseEnv, resSubPath, canAdd, canAdmin, autoSubscribe, -1, -1);
+		initVC(ureq, userCourseEnv, resSubPath, secCallback, autoSubscribe, -1, -1);
 	}
 
 	private void initVC(UserRequest ureq, UserCourseEnvironment userCourseEnv,
-			String resSubPath, boolean canAdd, boolean canAdmin, boolean autoSubscribe, int maxResults, int duration) {
+			String resSubPath, InfoSecurityCallback secCallback, boolean autoSubscribe, int maxResults, int duration) {
 		Long resId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
 		OLATResourceable infoResourceable = new InfoOLATResourceable(resId);
 		businessPath = normalizeBusinessPath(getWindowControl().getBusinessControl().getAsString());
@@ -125,10 +158,7 @@ public class InfoRunController extends BasicController {
 			PublisherData pdata = subscriptionManager.getInfoPublisherData(infoResourceable, businessPath);
 			subscriptionController = new ContextualSubscriptionController(ureq, getWindowControl(), subContext, pdata, autoSubscribe);
 			listenTo(subscriptionController);
-		}
-
-		InfoSecurityCallback secCallback = new InfoCourseSecurityCallback(getIdentity(), canAdd, canAdmin);
-		
+		}	
 		
 		infoDisplayController = new InfoDisplayController(ureq, getWindowControl(), maxResults, duration, secCallback, infoResourceable, resSubPath, businessPath);
 		infoDisplayController.addSendMailOptions(new SendSubscriberMailOption(infoResourceable, resSubPath, getLocale()));
@@ -201,38 +231,6 @@ public class InfoRunController extends BasicController {
 		//
 	}
 
-	private class InfoCourseSecurityCallback implements InfoSecurityCallback {
-		private final boolean canAdd;
-		private final boolean canAdmin;
-		private final Identity identity;
-		
-		public InfoCourseSecurityCallback(Identity identity, boolean canAdd, boolean canAdmin) {
-			this.canAdd = canAdd;
-			this.canAdmin = canAdmin;
-			this.identity = identity;
-		}
-		
-		@Override
-		public boolean canRead() {
-			return true;
-		}
-
-		@Override
-		public boolean canAdd() {
-			return canAdd;
-		}
-
-		@Override
-		public boolean canEdit(InfoMessage infoMessage) {
-			return identity.equals(infoMessage.getAuthor()) || canAdmin;
-		}
-
-		@Override
-		public boolean canDelete() {
-			return canAdmin;
-		}
-	}
-	
 	private class InfoOLATResourceable implements OLATResourceable {
 		private final Long resId;
 		
