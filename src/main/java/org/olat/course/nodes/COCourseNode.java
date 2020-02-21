@@ -71,7 +71,7 @@ import org.olat.repository.RepositoryEntry;
 public class COCourseNode extends AbstractAccessableCourseNode {
     private static final String PACKAGE = Util.getPackageName(COCourseNode.class);
 
-    private static final String TYPE = "co";
+	public static final String TYPE = "co";
 
 	public COCourseNode() {
 		this(null);
