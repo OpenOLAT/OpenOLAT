@@ -63,7 +63,7 @@ public class AdobeConnectCourseNode extends AbstractAccessableCourseNode {
 	
 	private static final long serialVersionUID = 7965344505304490859L;
 	private static final Logger log = Tracing.createLoggerFor(AdobeConnectCourseNode.class);
-	private static final String TYPE = "adobeconnect";
+	public static final String TYPE = "adobeconnect";
 
 	// configuration
 	public static final String CONF_VC_CONFIGURATION = "vc_configuration";
