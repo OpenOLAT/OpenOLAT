@@ -61,7 +61,7 @@
 				padding-top: 0.25em;
 				
 				.o_completion {
-					padding: 0 1em;
+					text-align: center;
 				}
 					
 				.o_state, .o_score {
@@ -101,14 +101,13 @@
 				.o_bookings {
 					padding: 0 0 0 1em;							
 					@include text-overflow();
+					color: $text-muted;
 					.o_label {
-						margin-bottom: 1em;		
-						color: $text-muted;
+						margin-bottom: 0.8em;		
+						font-weight: bold;
 						@extend %o_small;
 					}
-					.o_methods {
-						color: $brand-info;
-					}				
+					.o_methods { }				
 				}
 				
 				

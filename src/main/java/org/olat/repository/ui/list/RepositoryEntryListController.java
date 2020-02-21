@@ -623,8 +623,19 @@ public class RepositoryEntryListController extends FormBasicController
 			completionItem.setWidthInPercent(true);
 			completionItem.setLabelAlignment(LabelAlignment.none);
 			completionItem.setRenderStyle(RenderStyle.radial);
-			completionItem.setRenderSize(RenderSize.inline);		
+			completionItem.setRenderSize(RenderSize.small);		
 			completionItem.setBarColor(BarColor.success);	
+			// Inline rendering of status
+			if (row.isPassed()) {
+				completionItem.setCssClass("o_progress_passed");
+			} else if (row.isFailed()) {
+				completionItem.setBarColor(BarColor.danger);					
+				completionItem.setCssClass("o_progress_failed");
+			}
+			// Inline rendering of score
+			if (StringHelper.containsNonWhitespace(row.getScore())) {				
+				completionItem.setInfo(row.getScore() + "pt");
+			}					
 			row.setCompletionItem(completionItem);
 		}
 	}

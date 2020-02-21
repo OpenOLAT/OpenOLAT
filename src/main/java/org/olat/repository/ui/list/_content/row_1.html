@@ -59,11 +59,11 @@
 		#end
 
 		#if($row)
-			#if($row.completionItemName)
+		#if($row.completionItemName)
 			<div class="o_completion row">
 				$r.render($row.getCompletionItemName())
 			</div>
-			#end
+		#else
 			#if($row.passed || $row.failed)
 			<div class="row">
 				#if($row.passed)
@@ -83,6 +83,7 @@
 			</div> 
 			#end			
 		#end
+		#end
 		
 		#if($row.accessTypes && !$row.isMember())
 		<div class="o_bookings row">
@@ -92,13 +93,15 @@
 			<div class="o_methods">
 				<ul class="list-inline">
 				#foreach($type in $row.accessTypes)
-					<li title="$r.escapeHtml("$type.displayName")"><i class="o_icon $type.type o_icon-lg"></i>#if($type.price && $type.price.length() > 0) ($type.price)#end</li>
+					<li class="o_nowrap" style="width:100%"><i class="o_icon $type.type o_icon-lg"></i>#if($type.price && $type.price.length() > 0)<span class="o_access_price"> ($type.price) </span>#end <span class="o_access_name small "> $r.escapeHtml("$type.displayName")</span></li>
 				#end
 				</ul>
 			</div>							
 		</div> 
 		#end
-		
+
+#*
+TODO: Discuss: disturbing on the course listing page, only on course info page?		
 		#if($row.ratingFormItemName || $row.commentsLinkName)
 		<div class="o_social o_ratings_and_comments row">
 			#if($row.ratingFormItemName)
@@ -111,6 +114,7 @@
 			#end
 		</div>
 		#end
+*#
 		
 		$r.render($row.getDetailsLinkName())
 		#if($row.getStartLinkName())

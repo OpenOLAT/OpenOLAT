@@ -87,6 +87,10 @@ public class ProgressBarItem extends FormItemImpl {
 	public void setCssClass(String cssClass) {
 		component.setCssClass(cssClass);
 	}
+	
+	public void setInfo(String info) {
+		component.setInfo(info);
+	}
 
 	@Override
 	protected void rootFormAvailable() {
