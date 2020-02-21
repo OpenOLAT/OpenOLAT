@@ -28,12 +28,14 @@ package org.olat.course.run.userview;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.id.Roles;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.certificate.CertificatesManager;
@@ -218,7 +220,7 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 		// If a course is open to all users, a user may is not a member but has access as well.
 		// Such a user has to act as a participant as well.
 		if (allUsersParticipant == null) {
-			boolean allUsersOnly = !isAdmin() && !isCoach() && !getIdentityEnvironment().getRoles().isGuestOnly();
+			boolean allUsersOnly = !isAdmin() && !isCoach() && !isGuestOnly();
 			allUsersParticipant = Boolean.valueOf(allUsersOnly);
 		}
 		if (allUsersParticipant.booleanValue()) {
@@ -237,6 +239,13 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 		return partLazy;
 	}
 	
+	private boolean isGuestOnly() {
+		Roles roles = getIdentityEnvironment().getRoles() != null
+				? getIdentityEnvironment().getRoles()
+				: CoreSpringFactory.getImpl(BaseSecurity.class).getRoles(getIdentityEnvironment().getIdentity());
+		return roles.isGuestOnly();
+	}
+
 	@Override
 	public boolean isMemberParticipant() {
 		return courseEnvironment.getCourseGroupManager().isIdentityCourseParticipant(identityEnvironment.getIdentity());
