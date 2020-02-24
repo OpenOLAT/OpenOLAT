@@ -83,7 +83,7 @@ $o-radial-progress-percentage-font-size	: $o-radial-progress-circle-size * 0.18 
 			vertical-align: middle;
 			text-align: center;
 			.number {
-				margin-right: -0.5em; // visually center
+				margin-right: -0.4em; // visually center
 				font-weight: 800;
 				color: $o-radial-progress-number-color;
 			}
@@ -312,9 +312,10 @@ $o-radial-progress-percentage-font-size-toolbar		: $o-toolbar-size-text-md !defa
 			.centeredWrapper {
 				.number {
 					color: $o-toolbar-link-color;
+					margin-right: -0.3em;
 				}
 				.addon {
-					margin-top: 0.1em; 
+					margin-top: -0.1em; 
 					margin-bottom: -0.3em; 
 					div:nth-of-type(1) {
 						font-size: 0.8em; 
