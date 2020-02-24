@@ -58,11 +58,11 @@ import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
-import org.olat.course.nodes.iq.IQTESTLearningPathNodeHandler;
 import org.olat.course.nodes.ms.MSAssessmentConfig;
 import org.olat.course.nodes.ms.MSCoachRunController;
 import org.olat.course.nodes.ms.MSCourseNodeEditController;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
+import org.olat.course.nodes.ms.MSLearningPathNodeHandler;
 import org.olat.course.nodes.ms.MSService;
 import org.olat.course.nodes.ms.MinMax;
 import org.olat.course.properties.CoursePropertyManager;
@@ -273,7 +273,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 	
 	private boolean isFullyAssessedScoreConfigError() {
 		boolean hasScore = new MSAssessmentConfig(getModuleConfiguration()).hasScore();
-		boolean isScoreTrigger = CoreSpringFactory.getImpl(IQTESTLearningPathNodeHandler.class)
+		boolean isScoreTrigger = CoreSpringFactory.getImpl(MSLearningPathNodeHandler.class)
 				.getConfigs(this)
 				.isFullyAssessedOnScore(null, null)
 				.isEnabled();
@@ -282,7 +282,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 	
 	private boolean isFullyAssessedPassedConfigError() {
 		boolean hasPassed = new MSAssessmentConfig(getModuleConfiguration()).hasPassed();
-		boolean isPassedTrigger = CoreSpringFactory.getImpl(IQTESTLearningPathNodeHandler.class)
+		boolean isPassedTrigger = CoreSpringFactory.getImpl(MSLearningPathNodeHandler.class)
 				.getConfigs(this)
 				.isFullyAssessedOnPassed(null, null)
 				.isEnabled();
