@@ -143,7 +143,7 @@ public class LTIEditController extends ActivateableTabbableDefaultController imp
 
 	private void updateHighscoreTab() {
 		Boolean sf = courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,false);
-		myTabbedPane.setEnabled(4, sf);
+		myTabbedPane.setEnabled(myTabbedPane.indexOfTab(highScoreNodeConfigController.getInitialComponent()), sf);
 	}
 
 	@Override

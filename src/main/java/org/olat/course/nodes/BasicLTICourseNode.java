@@ -25,6 +25,7 @@
 
 package org.olat.course.nodes;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -45,8 +46,11 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
+import org.olat.course.nodes.basiclti.LTIAssessmentConfig;
 import org.olat.course.nodes.basiclti.LTIConfigForm;
 import org.olat.course.nodes.basiclti.LTIEditController;
+import org.olat.course.nodes.basiclti.LTILearningPathNodeHandler;
 import org.olat.course.nodes.basiclti.LTIRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
@@ -64,7 +68,10 @@ import org.olat.resource.OLATResource;
 public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 
 	private static final long serialVersionUID = 2210572148308757127L;
-	private static final String translatorPackage = Util.getPackageName(LTIEditController.class);
+	
+	@SuppressWarnings("deprecation")
+	private static final String TRANSLATOR_PACKAGE = Util.getPackageName(LTIEditController.class);
+	
 	public static final String TYPE = "lti";
 	
 	public static final int CURRENT_VERSION = 3;
@@ -82,9 +89,7 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 	public static final String CONFIG_HEIGHT_AUTO = DeliveryOptions.CONFIG_HEIGHT_AUTO;
 	public static final String CONFIG_DISPLAY = "display";
 	
-	
 	// NLS support:
-	
 	private static final String NLS_ERROR_HOSTMISSING_SHORT = "error.hostmissing.short";
 	private static final String NLS_ERROR_HOSTMISSING_LONG = "error.hostmissing.long";
 
@@ -162,7 +167,7 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 		if (!isValid) {
 			// FIXME: refine statusdescriptions
 			String[] params = new String[] { this.getShortTitle() };
-			sd = new StatusDescription(StatusDescription.ERROR, NLS_ERROR_HOSTMISSING_SHORT, NLS_ERROR_HOSTMISSING_LONG, params, translatorPackage);
+			sd = new StatusDescription(StatusDescription.ERROR, NLS_ERROR_HOSTMISSING_SHORT, NLS_ERROR_HOSTMISSING_LONG, params, TRANSLATOR_PACKAGE);
 			sd.setDescriptionForUnit(getIdent());
 			// set which pane is affected by error
 			sd.setActivateableViewIdentifier(LTIEditController.PANE_TAB_LTCONFIG);
@@ -173,11 +178,57 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		oneClickStatusCache = null;
-		// only here we know which translator to take for translating condition
-		// error messages
-		List<StatusDescription> sds =  isConfigValidWithTranslator(cev, translatorPackage, getConditionExpressions());
+		
+		List<StatusDescription> sds = isConfigValidWithTranslator(cev, TRANSLATOR_PACKAGE, getConditionExpressions());
+		if(oneClickStatusCache != null && oneClickStatusCache.length > 0) {
+			sds.remove(oneClickStatusCache[0]);
+		}
+		sds.addAll(validateInternalConfiguration());
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
+	}
+	
+	private List<StatusDescription> validateInternalConfiguration() {
+		List<StatusDescription> sdList = new ArrayList<>(1);
+		
+		if (isFullyAssessedScoreConfigError()) {
+			addStatusErrorDescription("error.fully.assessed.score", "error.fully.assessed.score",
+					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+		}
+		if (isFullyAssessedPassedConfigError()) {
+			addStatusErrorDescription("error.fully.assessed.passed", "error.fully.assessed.passed",
+					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+		}
+		
+		return sdList;
+	}
+	
+	private boolean isFullyAssessedScoreConfigError() {
+		boolean hasScore = new LTIAssessmentConfig(getModuleConfiguration()).hasScore();
+		boolean isScoreTrigger = CoreSpringFactory.getImpl(LTILearningPathNodeHandler.class)
+				.getConfigs(this)
+				.isFullyAssessedOnScore(null, null)
+				.isEnabled();
+		return isScoreTrigger && !hasScore;
+	}
+	
+	private boolean isFullyAssessedPassedConfigError() {
+		boolean hasPassed = new LTIAssessmentConfig(getModuleConfiguration()).hasPassed();
+		boolean isPassedTrigger = CoreSpringFactory.getImpl(LTILearningPathNodeHandler.class)
+				.getConfigs(this)
+				.isFullyAssessedOnPassed(null, null)
+				.isEnabled();
+		return isPassedTrigger && !hasPassed;
+	}
+	
+	private void addStatusErrorDescription(String shortDescKey, String longDescKey, String pane,
+			List<StatusDescription> status) {
+		String[] params = new String[] { getShortTitle() };
+		StatusDescription sd = new StatusDescription(StatusDescription.ERROR, shortDescKey, longDescKey, params,
+				TRANSLATOR_PACKAGE);
+		sd.setDescriptionForUnit(getIdent());
+		sd.setActivateableViewIdentifier(pane);
+		status.add(sd);
 	}
 
 	@Override
