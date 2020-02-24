@@ -21,7 +21,9 @@ $o-radial-progress-percentage-font-size	: $o-radial-progress-circle-size * 0.18 
 	position: relative;
 
 	.circle {
+		display: block;
 		.mask, .fill, .shadow {
+			display: block;
 			width: 100%;
 			height: 100%;
 			position: absolute;
@@ -46,6 +48,7 @@ $o-radial-progress-percentage-font-size	: $o-radial-progress-circle-size * 0.18 
 		}
 	}
 	.inset {
+		display: block;
 		width: $o-radial-progress-inset-size;
 		height: $o-radial-progress-inset-size;
 		position: absolute;
@@ -83,19 +86,23 @@ $o-radial-progress-percentage-font-size	: $o-radial-progress-circle-size * 0.18 
 			vertical-align: middle;
 			text-align: center;
 			.number {
+				display: block;
 				margin-right: -0.4em; // visually center
 				font-weight: 800;
 				color: $o-radial-progress-number-color;
 			}
 			.addon {
+				display: block;
 				color: $o-radial-progress-addon-color;	
 				margin-top: 0.2em; 
 				margin-bottom: -0.4em; 
-				div:nth-of-type(1) {
+				>span {
+					display: block;
 					font-size: 0.6em; 
 					font-weight: bold;
 				}
-				div:nth-of-type(2) {
+				>span+span {					
+					display: block;
 					margin-top: 2px; 
 					font-size:0.5em;
 				}					
@@ -125,8 +132,8 @@ $o-radial-progress-percentage-font-size	: $o-radial-progress-circle-size * 0.18 
 			opacity: 1;
 		}
 	}
-	
-	&+.o_progress_label {
+
+	&+.o_progress_label_wrapper { /* when renderend outside of progressbar */
 		margin-left: 0.5em;
 	}		
 }
@@ -275,13 +282,15 @@ $o-radial-progress-percentage-font-size-inline		: $o-radial-progress-circle-size
 $o-radial-progress-circle-size-toolbar				: $o-toolbar-height-md + 8px !default;
 $o-radial-progress-inset-size-toolbar				: $o-radial-progress-circle-size-toolbar - 8px !default;
 $o-radial-progress-percentage-font-size-toolbar		: $o-toolbar-size-text-md !default;
-.o_tool .o_progress {
+.o_toolbar .o_tool .o_progress {
 	width: $o-toolbar-height-md;
 	height: $o-toolbar-height-md - 4px;
 	position: relative;
+	display: inline-block;
+	overflow: visible; /* fix overflow rule from toolbar.scss */
+	
 	
 	.radial-progress {
-	
 		width: $o-radial-progress-circle-size-toolbar;
 		height: $o-radial-progress-circle-size-toolbar;
 		font-size: $o-radial-progress-percentage-font-size-toolbar;
@@ -317,7 +326,7 @@ $o-radial-progress-percentage-font-size-toolbar		: $o-toolbar-size-text-md !defa
 				.addon {
 					margin-top: -0.1em; 
 					margin-bottom: -0.3em; 
-					div:nth-of-type(1) {
+					>span {
 						font-size: 0.8em; 
 						font-weight: normal;
 					}
@@ -328,9 +337,10 @@ $o-radial-progress-percentage-font-size-toolbar		: $o-toolbar-size-text-md !defa
 			}
 		}
 	}
+		
 }
 @media (max-width: $screen-sm-max) { 
-	.o_tool .o_progress,
+	.o_toolbar .o_tool .o_progress,
 	.o_coursetable.o_rendertype_custom .o_completion .o_progress {
 		width: $o-toolbar-height-sm;
 		height: $o-toolbar-height-sm - 4px;
@@ -375,7 +385,7 @@ $o-radial-progress-percentage-font-size-toolbar		: $o-toolbar-size-text-md !defa
 }
 
 @media (max-width: $screen-xs-max) { 
-	.o_tool .o_progress,
+	.o_toolbar .o_tool .o_progress,
 	.o_coursetable.o_rendertype_custom .o_completion .o_progress {
 		width: $o-toolbar-height-xs;
 		height: $o-toolbar-height-xs;
@@ -456,60 +466,3 @@ $o-radial-progress-percentage-font-size-toolbar		: $o-toolbar-size-text-md !defa
 	content: $fa-var-check; 
 	color: #e5efe5;
 }
-
-
-
-/* Markup example, see also ProgressBarRenderer for more stuff
-
-<div class="radial-progress radial-progress #if(${itemResult.hasPass()}) #if(${itemResult.getPass().booleanValue()}) radial-progress-success #elseif(!${itemResult.getPass().booleanValue()}) radial-progress-danger #end #end " id="$foreach.count" data-progress="0">
-	<div class="circle">
-		<div class="mask full">
-			<div class="fill"></div>
-		</div>
-		<div class="mask half">
-			<div class="fill"></div>
-			<div class="fill fix"></div>
-		</div>
-		<div class="shadow"></div>
-	</div>
-	<div class="inset">
-		#if(${itemResult.hasPass()})
-			#if(${itemResult.getPass().booleanValue()})	
-					
-			#elseif(!${itemResult.getPass().booleanValue()})
-			<i class="bgIcon o_icon o_icon-fw o_icon_progress_danger"  title="$r.translateInAttribute("passed.yourpassed") $r.translateInAttribute("passed.no")" > </i>	
-			#end
-		#end
-	</div>
-							
-	<div class="percentage">
-		<div class="centeredWrapper">
-			<div class="number">
-				<span>${itemResult.scorePercent}%</span>
-			</div>
-
-			<div class="text-muted" style="text-align:center">
-				<div class="o_score" style="margin-top: 5px; font-size: 0.6em; font-weight: bold">
-					$r.translate("table.header.score"): 
-					<span title="$r.translateInAttribute("results.score.yourscore")" class="o_sel_assessmentitem_score text-muted xsmall">$itemResult.score</span>
-				</div>
-				#if(${itemResult.hasMaxScore()})
-				<div class="o_score_max o_small" style="margin-top: 2px; font-size:0.5em;">
-					von <span title="$r.translateInAttribute("score.max")" class="o_sel_assessmentitem_maxscore text-muted xsmall">$itemResult.maxScore</span>
-				</div>
-				#end
-			</div>						
-		
-		</div>
-	</div>
-</div>
-			
-<script>
- <![CDATA[ 
-setTimeout(function() {
-	jQuery("#myid").attr("data-progress","35");
-},100);
- ]]> 
-</script>
-
-*/

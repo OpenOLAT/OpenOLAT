@@ -191,18 +191,18 @@
 	#if(${testResults.hasScore()} && ${testResults.hasMaxScore()})			
 	<div class="o_qti_metainfo_visual col-xs-12 col-sm-5 col-md-4 col-lg-3"> ## START right column
 	<div class="o_block_centered_wrapper"><div class="o_block_centered_content">
-		<div class="radial-progress radial-progress-lg #if(${testResults.hasPass()}) #if(${testResults.getCalculatedPassed().booleanValue()}) radial-progress-success #elseif(!${testResults.getCalculatedPassed().booleanValue()}) radial-progress-danger #end #end " id="o_performance_summary_visual" data-progress="0">
-			<div class="circle">
-				<div class="mask full">
-					<div class="fill"></div>
-				</div>
-				<div class="mask half">
-					<div class="fill"></div>
-					<div class="fill fix"></div>
-				</div>
-				<div class="shadow"></div>
-			</div>
-			<div class="inset">
+		<span class="radial-progress radial-progress-lg #if(${testResults.hasPass()}) #if(${testResults.getCalculatedPassed().booleanValue()}) radial-progress-success #elseif(!${testResults.getCalculatedPassed().booleanValue()}) radial-progress-danger #end #end " id="o_performance_summary_visual" data-progress="0">
+			<span class="circle">
+				<span class="mask full">
+					<span class="fill"></span>
+				</span>
+				<span class="mask half">
+					<span class="fill"></span>
+					<span class="fill fix"></span>
+				</span>
+				<span class="shadow"></span>
+			</span>
+			<span class="inset">
 				#if(${testResults.hasPass()})
 					#if(${testResults.getCalculatedPassed().booleanValue()})	
 					<i class="bgIcon o_icon o_icon-fw o_icon_progress_success"  title="$r.translateInAttribute("passed.yourpassed") $r.translateInAttribute("passed.yes")" > </i>	
@@ -210,29 +210,29 @@
 					<i class="bgIcon o_icon o_icon-fw o_icon_progress_danger"  title="$r.translateInAttribute("passed.yourpassed") $r.translateInAttribute("passed.no")" > </i>	
 					#end
 				#end
-			</div>
+			</span>
 									
-			<div class="percentage">
-				<div class="centeredWrapper">
-					<div class="number">
+			<span class="percentage">
+				<span class="centeredWrapper">
+					<span class="number">
 						<span>${testResults.scorePercent}%</span>
-					</div>
+					</span>
 
-					<div class="addon">
-						<div class="o_score">
+					<span class="addon">
+						<span class="o_score">
 							$r.translate("table.header.score"): 
 							<span title="$r.translateInAttribute("results.score.yourscore")" class="o_sel_assessmentitem_score text-muted xsmall">$testResults.score</span>
-						</div>
+						</span>
 						#if(${itemResult.hasMaxScore()})
-						<div class="o_score_max o_small">
+						<span class="o_score_max o_small">
 							$r.translate("results.of") <span title="$r.translateInAttribute("score.max")" class="o_sel_assessmentitem_maxscore text-muted xsmall">$testResults.maxScore</span>
-						</div>
+						</span>
 						#end
-					</div>						
+					</span>						
 				
-				</div>
-			</div>
-		</div>
+				</span>
+			</span>
+		</span>
 	</div></div> ## END o_block_centered_wrapper
 	</div> ## END right column / o_qti_metainfo_visual
 			
@@ -256,18 +256,18 @@
 
 		#if(${itemResult.hasScore()})			
 		<div class="o_qti_section_visual">	
-			<div class="radial-progress radial-progress #if(${itemResult.hasPass()}) #if(${itemResult.getPass().booleanValue()}) radial-progress-success #elseif(!${itemResult.getPass().booleanValue()}) radial-progress-danger #end #end " id="$foreach.count" data-progress="0">
-				<div class="circle">
-					<div class="mask full">
-						<div class="fill"></div>
-					</div>
-					<div class="mask half">
-						<div class="fill"></div>
-						<div class="fill fix"></div>
-					</div>
-					<div class="shadow"></div>
-				</div>
-				<div class="inset">
+			<span class="radial-progress radial-progress #if(${itemResult.hasPass()}) #if(${itemResult.getPass().booleanValue()}) radial-progress-success #elseif(!${itemResult.getPass().booleanValue()}) radial-progress-danger #end #end " id="$foreach.count" data-progress="0">
+				<span class="circle">
+					<span class="mask full">
+						<span class="fill"></span>
+					</span>
+					<span class="mask half">
+						<span class="fill"></span>
+						<span class="fill fix"></span>
+					</span>
+					<span class="shadow"></span>
+				</span>
+				<span class="inset">
 					## BG image for passed / failed image
 					#if(${itemResult.hasPass()})
 						#if(${itemResult.getPass().booleanValue()})	
@@ -276,27 +276,27 @@
 						<i class="bgIcon o_icon o_icon-fw o_icon_progress_danger"  title="$r.translateInAttribute("passed.yourpassed") $r.translateInAttribute("passed.no")" > </i>	
 						#end
 					#end										
-				</div>
-				<div class="percentage">
-					<div class="centeredWrapper">
-						<div class="number">
+				</span>
+				<span class="percentage">
+					<span class="centeredWrapper">
+						<span class="number">
 							<span>${itemResult.scorePercent}%</span>
-						</div>
-						<div class="addon">
-							<div class="o_score">
+						</span>
+						<span class="addon">
+							<span class="o_score">
 								$r.translate("table.header.score"): 
 								<span title="$r.translateInAttribute("results.score.yourscore")" class="o_sel_assessmentitem_score text-muted xsmall">$itemResult.score</span>
-							</div>
+							</span>
 							#if(${itemResult.hasMaxScore()})
-							<div class="o_score_max">
+							<span class="o_score_max">
 								$r.translate("results.of") <span title="$r.translateInAttribute("score.max")" class="o_sel_assessmentitem_maxscore text-muted xsmall">$itemResult.maxScore</span>
-							</div>
+							</span>
 							#end
-						</div>						
+						</span>						
 					
-					</div>
-				</div>
-			</div> ## END of radial-progress
+					</span>
+				</span>
+			</span> ## END of radial-progress
 			
 			## Animate radial score progress via JS
 			<script>

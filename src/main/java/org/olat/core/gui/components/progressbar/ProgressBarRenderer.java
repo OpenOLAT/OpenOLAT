@@ -63,7 +63,7 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 		}
 		
 		String compId = "o_c" + ubar.getDispatchID();	
-		target.append("<div class='o_progress ")
+		target.append("<span class='o_progress ")
 			.append("o_progress_inline ", ProgressBar.RenderSize.inline.equals(ubar.getRenderSize()))
 			.append(ubar.getCssClass(), StringHelper.containsNonWhitespace(ubar.getCssClass()))
 			.append("' id='").append(compId).append("' ")
@@ -76,16 +76,17 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 		}
 		
 		if (right.equals(ubar.getLabelAlignment()) ) {
+			target.append("<span class='o_progress_label_wrapper'>");
 			renderLabel(target, ubar);
+			target.append("</span>");
 		}
 
-		target.append("</div>");
+		target.append("</span>");
 
 	}
 
 	private void renderHorizontal(StringOutput target, ProgressBar ubar, boolean renderLabels, float percent) {
-		//TODO: render size		
-		target.append("<div class='progress");
+		target.append("<span class='progress");
 		target.append(ubar.getCssClass(), StringHelper.containsNonWhitespace(ubar.getCssClass()));
 		
 		// medium is default style
@@ -100,7 +101,7 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 		target.append("' style=\"width:")
 			.append(ubar.getWidth())
 			.append("%", "px", ubar.isWidthInPercent())
-			.append(";\"><div class='progress-bar");
+			.append(";\"><span class='progress-bar");
 		
 		// primary is default color
 		if (ProgressBar.BarColor.info.equals(ubar.getBarColor())) {
@@ -121,10 +122,11 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 			.append(Math.round(percent * ubar.getWidth() / 100))
 			.append("%", "px", ubar.isWidthInPercent()).append("\" title=\"")
 			.append(Math.round(percent))
-			.append("%\">");
+			.append("%\"></span>");
 		
+				
 		if (renderLabels && !ProgressBar.RenderSize.small.equals(ubar.getRenderSize())) {
-			target.append("<span>");
+			target.append("<span class='o_progress_label_wrapper'>");
 			if (ubar.isPercentagesEnabled()) {
 				target.append(Math.round(percent));
 				target.append("%");				
@@ -137,9 +139,10 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 			target.append("</span>");
 		}
 		
-		target.append("</div></div>");		
+		target.append("</span>"); // End progress bar
+		
 		if (renderLabels && ProgressBar.RenderSize.small.equals(ubar.getRenderSize())) {
-			target.append("<span>");
+			target.append("<span class='o_progress_label_wrapper'>");
 			if (ubar.isPercentagesEnabled()) {
 				target.append(Math.round(percent));
 				target.append("%");				
@@ -155,7 +158,7 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 	
 	
 	private void renderLabel(StringOutput target, ProgressBar ubar) {
-		target.append("<div class='o_progress_label'>");
+		target.append("<span class='o_progress_label'>");
 		target.append(Math.round(ubar.getActual()));
 		target.append("/");
 		if (ubar.getIsNoMax()) {
@@ -167,17 +170,17 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 			target.append(" ");
 			target.append(ubar.getUnitLabel());
 		}
-		target.append("</div>");
+		target.append("</span>");
 		
 		String info = ubar.getInfo();
 		if(StringHelper.containsNonWhitespace(info)) {
-			target.append("<div class='o_progress_info'>").append(info).append("</div>");
+			target.append("<span class='o_progress_info'>").append(info).append("</span>");
 		}
 	}
 
 	private void renderRadial(StringOutput target, ProgressBar ubar, boolean renderLabels, float percent) {
 		// 1) Wrapper
-		target.append("<div class='radial-progress ");
+		target.append("<span class='radial-progress ");
 		// Pie style
 		if (ProgressBar.RenderStyle.pie.equals(ubar.getRenderStyle())) {
 			target.append("radial-progress-pie ");
@@ -218,33 +221,33 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 		target.append(")'>");
 		
 		// 2) Circle (the outer colored circle)
-		target.append("<div class='circle'><div class='mask full'><div class='fill'></div></div>")
-			.append("<div class='mask half'><div class='fill'></div><div class='fill fix'></div></div>")
-			.append("<div class='shadow'></div></div>");
+		target.append("<span class='circle'><span class='mask full'><span class='fill'></span></span>")
+			.append("<span class='mask half'><span class='fill'></span><span class='fill fix'></span></span>")
+			.append("<span class='shadow'></span></span>");
 		
 		// 3a) Inset (the inner circle)
-		target.append("<div class='inset'></div>", ProgressBar.RenderStyle.radial.equals(ubar.getRenderStyle()));
+		target.append("<span class='inset'></span>", ProgressBar.RenderStyle.radial.equals(ubar.getRenderStyle()));
 
 		if (renderLabels && !ProgressBar.RenderSize.inline.equals(ubar.getRenderSize())) {
-			target.append("<div class='percentage'><div class='centeredWrapper'>");
+			target.append("<span class='percentage'><span class='centeredWrapper'>");
 			if (ubar.isPercentagesEnabled()) {
-				target.append("<div class='number'><span>");
+				target.append("<span class='number'><span>");
 				target.append(Math.round(percent));
-				target.append("%</span></div>");
+				target.append("%</span></span>");
 			}
 			if (left.equals(ubar.getLabelAlignment())) {
 				// Includes label and progress info
-				target.append("<div class='addon text-muted'>");
+				target.append("<span class='addon text-muted'>");
 				renderLabel(target, ubar);				
-				target.append("</div>");
+				target.append("</span>");
 			} else {
 				// Show progress info in circle anyway if available
 				String info = ubar.getInfo();
 				if(StringHelper.containsNonWhitespace(info)) {
-					target.append("<div class='addon text-muted'><div class='o_progress_info'>").append(info).append("</div></div>");
+					target.append("<span class='addon text-muted'><span class='o_progress_info'>").append(info).append("</span></span>");
 				}				
 			}
-			target.append("</div></div>");
+			target.append("</span></span>");
 		}
 		 
 		// 3b) else: without inset it does pie style rendering
@@ -260,7 +263,7 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 		}
 		
 		// 4) End wrapper
-		target.append("</div>");
+		target.append("</span>");
 
 	}
 	
