@@ -42,7 +42,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class CLLearningPathNodeHandler implements LearningPathNodeHandler {
 	
-	private static final LearningPathEditConfigs EDIT_CONFIGS =LearningPathEditConfigs.builder()
+	private static final LearningPathEditConfigs EDIT_CONFIGS = LearningPathEditConfigs.builder()
 			.enableNodeVisited()
 			.enableConfirmed()
 			.enableScore()
@@ -65,7 +65,7 @@ public class CLLearningPathNodeHandler implements LearningPathNodeHandler {
 
 	@Override
 	public LearningPathConfigs getConfigs(CourseNode courseNode) {
-		return new ModuleLearningPathConfigs(courseNode.getModuleConfiguration(), false);
+		return new ModuleLearningPathConfigs(courseNode.getModuleConfiguration(), true);
 	}
 
 	@Override
