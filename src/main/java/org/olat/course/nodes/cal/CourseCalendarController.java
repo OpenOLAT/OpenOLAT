@@ -34,7 +34,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.clone.CloneableController;
 import org.olat.course.run.calendar.CourseCalendarSubscription;
-import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
@@ -51,16 +50,16 @@ public class CourseCalendarController extends DefaultController implements Clone
 	private KalendarRenderWrapper courseKalendarWrapper;
 	private CourseCalendarSubscription calendarSubscription;
 
-	private NodeEvaluation nodeEvaluation;
+	private CalSecurityCallback secCallback;
 	
 	private UserCourseEnvironment courseEnv;
 	private List<KalendarRenderWrapper> calendars;
 
 	public CourseCalendarController(UserRequest ureq, WindowControl wControl, CourseCalendars myCal,
-			UserCourseEnvironment courseEnv, NodeEvaluation ne) {
+			UserCourseEnvironment courseEnv, CalSecurityCallback secCallback) {
 		super(wControl);
 		this.courseEnv = courseEnv;
-		this.nodeEvaluation = ne;
+		this.secCallback = secCallback;
 		calendars = myCal.getCalendars();
 		courseKalendarWrapper = myCal.getCourseKalendarWrapper();
 		calendarController = new WeeklyCalendarController(ureq, wControl, calendars, WeeklyCalendarController.CALLER_COURSE,
@@ -93,7 +92,7 @@ public class CourseCalendarController extends DefaultController implements Clone
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (event instanceof CalendarGUIModifiedEvent) {
-			CourseCalendars myCal = CourseCalendars.createCourseCalendarsWrapper(ureq, getWindowControl(), courseEnv, nodeEvaluation);
+			CourseCalendars myCal = CourseCalendars.createCourseCalendarsWrapper(ureq, getWindowControl(), courseEnv, secCallback);
 			calendars = myCal.getCalendars();
 			courseKalendarWrapper = myCal.getCourseKalendarWrapper();
 			calendarController.setCalendars(calendars);
@@ -110,7 +109,7 @@ public class CourseCalendarController extends DefaultController implements Clone
 		CourseCalendars myCal = new CourseCalendars(courseKalendarWrapper, calendars);
 
 		Date focus = calendarController.getFocus();
-		CourseCalendarController ctrl = new CourseCalendarController(ureq, wControl, myCal, courseEnv, nodeEvaluation);
+		CourseCalendarController ctrl = new CourseCalendarController(ureq, wControl, myCal, courseEnv, secCallback);
 		ctrl.calendarController.setFocus(focus);
 		return ctrl;
 	}

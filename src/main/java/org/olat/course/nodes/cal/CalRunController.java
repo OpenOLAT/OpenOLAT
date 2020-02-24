@@ -41,7 +41,6 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.nodes.CalCourseNode;
-import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 
@@ -59,20 +58,14 @@ public class CalRunController extends BasicController implements Activateable2 {
 	private final CloneController cloneCtr;
 	private final ModuleConfiguration config;
 	
-	/**
-	 * 
-	 * @param wControl
-	 * @param ureq
-	 * @param calCourseNode
-	 * @param courseEnv
-	 */
-	public CalRunController(WindowControl wControl, UserRequest ureq, CalCourseNode calCourseNode, UserCourseEnvironment courseEnv, NodeEvaluation ne) {
+	public CalRunController(WindowControl wControl, UserRequest ureq, CalCourseNode calCourseNode,
+			UserCourseEnvironment courseEnv, CalSecurityCallback secCallback) {
 		super(ureq, wControl);
 		config = calCourseNode.getModuleConfiguration();
 		VelocityContainer mainVC = createVelocityContainer("run");
 
-		CourseCalendars myCal = CourseCalendars.createCourseCalendarsWrapper(ureq, wControl, courseEnv, ne);
-		calCtr = new CourseCalendarController(ureq, wControl, myCal, courseEnv, ne);
+		CourseCalendars myCal = CourseCalendars.createCourseCalendarsWrapper(ureq, wControl, courseEnv, secCallback);
+		calCtr = new CourseCalendarController(ureq, wControl, myCal, courseEnv, secCallback);
 		listenTo(calCtr);
 		
 		Date startDate = null;

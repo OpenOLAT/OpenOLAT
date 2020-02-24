@@ -34,12 +34,15 @@ import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
+import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.cal.CalEditController;
 import org.olat.course.nodes.cal.CalRunController;
+import org.olat.course.nodes.cal.CalSecurityCallback;
+import org.olat.course.nodes.cal.CalSecurityCallbackFactory;
 import org.olat.course.nodes.cal.CourseCalendarPeekViewController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
@@ -61,6 +64,13 @@ public class CalCourseNode extends AbstractAccessableCourseNode {
 	private static final long serialVersionUID = -3174525063215323155L;
 	
 	public static final String TYPE = "cal";
+	
+	private static final int CURRENT_VERSION = 3;
+	public static final String CONFIG_START_DATE = "startDate";
+	public static final String CONFIG_AUTO_DATE = "autoDate";
+	public static final String CONFIG_KEY_EDIT_BY_COACH = "edit.by.coach";
+	public static final String CONFIG_KEY_EDIT_BY_PARTICIPANT = "edit.by.participant";
+	
 	public static final String EDIT_CONDITION_ID = "editarticle";
 	private Condition preConditionEdit;
 
@@ -80,16 +90,40 @@ public class CalCourseNode extends AbstractAccessableCourseNode {
 			config.setBooleanEntry(NodeEditController.CONFIG_STARTPAGE, false);
 			config.setConfigurationVersion(1);
 		} else {
-			
 			if(config.getConfigurationVersion() < 2) {
 				Condition cond = getPreConditionEdit();
 				if(!cond.isExpertMode() && cond.isEasyModeCoachesAndAdmins() && cond.getConditionExpression() == null) {
 					//ensure that the default config has a condition expression
 					cond.setConditionExpression(cond.getConditionFromEasyModeConfiguration());
 				}
-				config.setConfigurationVersion(2);
 			}
 		}
+		
+		if (config.getConfigurationVersion() < 3) {
+			config.setBooleanEntry(CONFIG_KEY_EDIT_BY_COACH, Boolean.TRUE);
+			config.setBooleanEntry(CONFIG_KEY_EDIT_BY_PARTICIPANT, Boolean.FALSE);
+			removeDefaultPreconditions();
+		}
+		
+		config.setConfigurationVersion(CURRENT_VERSION);
+	}
+	
+	private void removeDefaultPreconditions() {
+		if (hasCustomPreConditions()) {
+			boolean defaultPreconditions =
+					!preConditionEdit.isExpertMode()
+				&& preConditionEdit.isEasyModeCoachesAndAdmins()
+				&& !preConditionEdit.isEasyModeAlwaysAllowCoachesAndAdmins()
+				&& !preConditionEdit.isAssessmentMode()
+				&& !preConditionEdit.isAssessmentModeViewResults();
+			if (defaultPreconditions) {
+				removeCustomPreconditions();
+			}
+		}
+	}
+	
+	public void removeCustomPreconditions() {
+		preConditionEdit = null;
 	}
 	
 	@Override
@@ -106,16 +140,24 @@ public class CalCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
-		CalEditController childTabCntrllr = new CalEditController(getModuleConfiguration(), ureq, wControl, this, course, euce);
+		CalEditController childTabCntrllr = new CalEditController(ureq, wControl, this, course, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
+	}
 
+	@Override
+	public ConditionAccessEditConfig getAccessEditConfig() {
+		return hasCustomPreConditions()
+				? ConditionAccessEditConfig.custom()
+				: ConditionAccessEditConfig.regular(false);
 	}
 
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
-		CalRunController calCtlr = new CalRunController(wControl, ureq, this, userCourseEnv, nodeSecCallback.getNodeEvaluation());
+		CalSecurityCallback secCallback = CalSecurityCallbackFactory.createCourseNodeCallback(this, userCourseEnv,
+				nodeSecCallback.getNodeEvaluation());
+		CalRunController calCtlr = new CalRunController(wControl, ureq, this, userCourseEnv, secCallback);
 		Controller wrapperCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, calCtlr, this, "o_cal_icon");
 		return new NodeRunConstructionResult(wrapperCtrl);
 	}
@@ -123,14 +165,13 @@ public class CalCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			CourseNodeSecurityCallback nodeSecCallback) {
+		CalSecurityCallback secCallback = CalSecurityCallbackFactory.createCourseNodeCallback(this, userCourseEnv,
+				nodeSecCallback.getNodeEvaluation());
 		CourseCalendarPeekViewController peekViewCtrl = new CourseCalendarPeekViewController(ureq, wControl,
-				userCourseEnv, this, nodeSecCallback.getNodeEvaluation());
+				userCourseEnv, this, secCallback);
 		return peekViewCtrl;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#isConfigValid()
-	 */
 	@Override
 	public StatusDescription isConfigValid() {
 		// first check the one click cache
@@ -140,9 +181,6 @@ public class CalCourseNode extends AbstractAccessableCourseNode {
 		return StatusDescription.NOERROR;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#isConfigValid(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		oneClickStatusCache = null;
@@ -154,9 +192,6 @@ public class CalCourseNode extends AbstractAccessableCourseNode {
 		return oneClickStatusCache;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#getReferencedRepositoryEntry()
-	 */
 	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
 		return null;
@@ -169,25 +204,28 @@ public class CalCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public List<ConditionExpression> getConditionExpressions() {
-		List<ConditionExpression> parentConditions = super.getConditionExpressions();
-		List<ConditionExpression> conditions = new ArrayList<>();
-		if(parentConditions != null && parentConditions.size() > 0) {
-			conditions.addAll(parentConditions);
+		if (hasCustomPreConditions()) {
+			List<ConditionExpression> parentConditions = super.getConditionExpressions();
+			List<ConditionExpression> conditions = new ArrayList<>();
+			if(parentConditions != null && parentConditions.size() > 0) {
+				conditions.addAll(parentConditions);
+			}
+			
+			Condition editCondition = getPreConditionEdit();
+			if(editCondition != null && StringHelper.containsNonWhitespace(editCondition.getConditionExpression())) {
+				ConditionExpression ce = new ConditionExpression(editCondition.getConditionId());
+				ce.setExpressionString(editCondition.getConditionExpression());
+				conditions.add(ce);
+			}
+			return conditions;
 		}
-		
-		Condition editCondition = getPreConditionEdit();
-		if(editCondition != null && StringHelper.containsNonWhitespace(editCondition.getConditionExpression())) {
-			ConditionExpression ce = new ConditionExpression(editCondition.getConditionId());
-			ce.setExpressionString(editCondition.getConditionExpression());
-			conditions.add(ce);
-		}
-		return conditions;
+		return super.getConditionExpressions();
+	}
+	
+	public boolean hasCustomPreConditions() {
+		return preConditionEdit != null;
 	}
 
-	/**
-	 * Default set the write privileges to coaches and admin only
-	 * @return
-	 */
 	public Condition getPreConditionEdit() {
 		if (preConditionEdit == null) {
 			preConditionEdit = new Condition();
@@ -199,10 +237,6 @@ public class CalCourseNode extends AbstractAccessableCourseNode {
 		return preConditionEdit;
 	}
 
-	/**
-	 * 
-	 * @param preConditionEdit
-	 */
 	public void setPreConditionEdit(Condition preConditionEdit) {
 		if (preConditionEdit == null) {
 			preConditionEdit = getPreConditionEdit();
@@ -211,16 +245,13 @@ public class CalCourseNode extends AbstractAccessableCourseNode {
 		this.preConditionEdit = preConditionEdit;
 	}
 
-	/**
-	 * 
-	 * @see org.olat.course.nodes.GenericCourseNode#calcAccessAndVisibility(org.olat.course.condition.interpreter.ConditionInterpreter,
-	 *      org.olat.course.run.userview.NodeEvaluation)
-	 */
 	@Override
 	public void calcAccessAndVisibility(ConditionInterpreter ci, NodeEvaluation nodeEval) {
 		super.calcAccessAndVisibility(ci, nodeEval);
-		// evaluate the preconditions
-		boolean editor = (getPreConditionEdit().getConditionExpression() == null ? true : ci.evaluateCondition(getPreConditionEdit()));
-		nodeEval.putAccessStatus(EDIT_CONDITION_ID, editor);
+		
+		if (hasCustomPreConditions()) {
+			boolean editor = (getPreConditionEdit().getConditionExpression() == null ? true : ci.evaluateCondition(getPreConditionEdit()));
+			nodeEval.putAccessStatus(EDIT_CONDITION_ID, editor);
+		}
 	}
 }

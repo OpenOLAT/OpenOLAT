@@ -64,6 +64,8 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CalCourseNode;
+import org.olat.course.nodes.cal.CalSecurityCallback;
+import org.olat.course.nodes.cal.CalSecurityCallbackFactory;
 import org.olat.course.nodes.cal.CourseCalendars;
 import org.olat.course.run.userview.CourseTreeVisitor;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -242,7 +244,8 @@ public class UserCalendarWebService {
 			ienv.setRoles(ureq.getUserSession().getRoles());
 			ICourse course = CourseFactory.loadCourse(courseId);
 			UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
-			wrapper = CourseCalendars.getCourseCalendarWrapper(ureq, userCourseEnv, null);
+			CalSecurityCallback secCallback = CalSecurityCallbackFactory.createCourseCalendarCallback(userCourseEnv);
+			wrapper = CourseCalendars.getCourseCalendarWrapper(ureq, userCourseEnv, secCallback);
 		} else if("user".equals(type) && calendarModule.isEnablePersonalCalendar()) {
 			if(id.equals(ureq.getIdentity().getName())) {
 				wrapper = getPersonalCalendar(ureq.getIdentity());
@@ -298,14 +301,15 @@ public class UserCalendarWebService {
 							CourseConfig config = course.getCourseEnvironment().getCourseConfig();
 							UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
 							
+							CalSecurityCallback secCallback = CalSecurityCallbackFactory.createCourseCalendarCallback(userCourseEnv);
 							if(config.isCalendarEnabled()) {
-								KalendarRenderWrapper wrapper = CourseCalendars.getCourseCalendarWrapper(ureq, userCourseEnv, null);
+								KalendarRenderWrapper wrapper = CourseCalendars.getCourseCalendarWrapper(ureq, userCourseEnv, secCallback);
 								calVisitor.visit(wrapper);
 							} else {
 								CalCourseNodeVisitor visitor = new CalCourseNodeVisitor();
 								new CourseTreeVisitor(course, ienv).visit(visitor);
 								if(visitor.isFound()) {
-									KalendarRenderWrapper wrapper = CourseCalendars.getCourseCalendarWrapper(ureq, userCourseEnv, null);
+									KalendarRenderWrapper wrapper = CourseCalendars.getCourseCalendarWrapper(ureq, userCourseEnv, secCallback);
 									calVisitor.visit(wrapper);
 								}
 							}

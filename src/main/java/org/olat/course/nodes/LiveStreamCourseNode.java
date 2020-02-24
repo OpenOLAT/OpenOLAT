@@ -37,6 +37,8 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.nodes.cal.CalSecurityCallback;
+import org.olat.course.nodes.cal.CalSecurityCallbackFactory;
 import org.olat.course.nodes.cal.CourseCalendars;
 import org.olat.course.nodes.livestream.LiveStreamModule;
 import org.olat.course.nodes.livestream.LiveStreamSecurityCallback;
@@ -99,8 +101,9 @@ public class LiveStreamCourseNode extends AbstractAccessableCourseNode {
 			String message = trans.translate("freezenoaccess.message");
 			runCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		} else {
+			CalSecurityCallback calSecCallback = CalSecurityCallbackFactory.createCourseCalendarCallback(userCourseEnv);
 			CourseCalendars calendars = CourseCalendars.createCourseCalendarsWrapper(ureq, wControl, userCourseEnv,
-					nodeSecCallback.getNodeEvaluation());
+					calSecCallback);
 			LiveStreamSecurityCallback secCallback = LiveStreamSecurityCallbackFactory
 					.createSecurityCallback(userCourseEnv, this.getModuleConfiguration());
 			runCtrl = new LiveStreamRunController(ureq, wControl, this, userCourseEnv, secCallback, calendars);
@@ -112,8 +115,9 @@ public class LiveStreamCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
+		CalSecurityCallback secCallback = CalSecurityCallbackFactory.createCourseCalendarCallback(userCourseEnv);
 		CourseCalendars calendars = CourseCalendars.createCourseCalendarsWrapper(ureq, wControl, userCourseEnv,
-				nodeSecCallback.getNodeEvaluation());
+				secCallback);
 		return new LiveStreamPeekviewController(ureq, wControl, getIdent(), this.getModuleConfiguration(), calendars);
 	}
 

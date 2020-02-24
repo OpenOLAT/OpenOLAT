@@ -40,7 +40,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.course.nodes.CalCourseNode;
-import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 
@@ -59,10 +58,10 @@ public class CourseCalendarPeekViewController extends BasicController {
 	private TableController tableController;
 
 	public CourseCalendarPeekViewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			CalCourseNode courseNode, NodeEvaluation ne) {
+			CalCourseNode courseNode, CalSecurityCallback secCallback) {
 		super(ureq, wControl);
 
-		init(ureq, courseNode, userCourseEnv, ne);
+		init(ureq, courseNode, userCourseEnv, secCallback);
 
 		putInitialPanel(tableController.getInitialComponent());
 	}
@@ -77,8 +76,8 @@ public class CourseCalendarPeekViewController extends BasicController {
 	//
 	}
 
-	private void init(UserRequest ureq, CalCourseNode courseNode, UserCourseEnvironment courseEnv, NodeEvaluation ne) {
-		CourseCalendars myCal = CourseCalendars.createCourseCalendarsWrapper(ureq, getWindowControl(), courseEnv, ne);
+	private void init(UserRequest ureq, CalCourseNode courseNode, UserCourseEnvironment courseEnv, CalSecurityCallback secCallback) {
+		CourseCalendars myCal = CourseCalendars.createCourseCalendarsWrapper(ureq, getWindowControl(), courseEnv, secCallback);
 
 		Date refDate;
 		ModuleConfiguration config = courseNode.getModuleConfiguration();
@@ -124,6 +123,7 @@ public class CourseCalendarPeekViewController extends BasicController {
 	}
 
 	public class KalendarEventComparator implements Comparator<KalendarEvent> {
+		@Override
 		public int compare(KalendarEvent o1, KalendarEvent o2) {
 			Date b1 = o1.getBegin();
 			Date b2 = o2.getBegin();

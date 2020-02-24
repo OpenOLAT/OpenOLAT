@@ -48,7 +48,6 @@ import org.olat.course.nodes.CalCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.calendar.CourseCalendarSubscription;
 import org.olat.course.run.calendar.CourseLinkProviderController;
-import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 
@@ -95,22 +94,16 @@ public class CourseCalendars {
 	 * @param ne
 	 * @return
 	 */
-	public static KalendarRenderWrapper getCourseCalendarWrapper(UserRequest ureq, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
+	public static KalendarRenderWrapper getCourseCalendarWrapper(UserRequest ureq, UserCourseEnvironment userCourseEnv, CalSecurityCallback secCallback) {
 		CalendarManager calendarManager = CoreSpringFactory.getImpl(CalendarManager.class);
 		// add course calendar
 		ICourse course = CourseFactory.loadCourse(userCourseEnv.getCourseEnvironment().getCourseResourceableId());
 		KalendarRenderWrapper courseKalendarWrapper = calendarManager.getCourseCalendar(course);
-		boolean isPrivileged = !userCourseEnv.isCourseReadOnly() &&
-				(userCourseEnv.isAdmin()
-				  || (ne != null && ne.isCapabilityAccessible(CalCourseNode.EDIT_CONDITION_ID)));
 		
-		if (isPrivileged) {
-			courseKalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
-			courseKalendarWrapper.setPrivateEventsVisible(true);
-		} else {
-			courseKalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
-			courseKalendarWrapper.setPrivateEventsVisible(userCourseEnv.isAdmin() || userCourseEnv.isCoach() || userCourseEnv.isMemberParticipant());
-		}
+		int access = secCallback.canWrite()? KalendarRenderWrapper.ACCESS_READ_WRITE: KalendarRenderWrapper.ACCESS_READ_ONLY;
+		courseKalendarWrapper.setAccess(access);
+		courseKalendarWrapper.setPrivateEventsVisible(secCallback.canReadPrivateEvents());
+
 		CalendarUserConfiguration config = calendarManager.findCalendarConfigForIdentity(courseKalendarWrapper.getKalendar(), ureq.getIdentity());
 		if (config != null) {
 			courseKalendarWrapper.setConfiguration(config);
@@ -118,10 +111,10 @@ public class CourseCalendars {
 		return courseKalendarWrapper;
 	}
 
-	public static CourseCalendars createCourseCalendarsWrapper(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
+	public static CourseCalendars createCourseCalendarsWrapper(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CalSecurityCallback secCallback) {
 		List<KalendarRenderWrapper> calendars = new ArrayList<>();
 		ICourse course = CourseFactory.loadCourse(userCourseEnv.getCourseEnvironment().getCourseResourceableId());
-		KalendarRenderWrapper courseKalendarWrapper = getCourseCalendarWrapper(ureq, userCourseEnv, ne);
+		KalendarRenderWrapper courseKalendarWrapper = getCourseCalendarWrapper(ureq, userCourseEnv, secCallback);
 		// add link provider
 		
 		CourseLinkProviderController clpc = new CourseLinkProviderController(course, Collections.singletonList(course), ureq, wControl);
