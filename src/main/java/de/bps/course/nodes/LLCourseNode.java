@@ -61,7 +61,7 @@ import de.bps.course.nodes.ll.LLRunController;
  */
 public class LLCourseNode extends AbstractAccessableCourseNode {
 
-	private static final String TYPE = "ll";
+	public static final String TYPE = "ll";
 	public static final String CONF_COURSE_ID = "ll_course_id";
 	public static final String CONF_COURSE_NODE_ID = "ll_course_node_id";
 	public static final String CONF_LINKLIST = "ll_link_list";
