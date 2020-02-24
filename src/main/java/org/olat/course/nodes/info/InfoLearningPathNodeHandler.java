@@ -74,7 +74,9 @@ public class InfoLearningPathNodeHandler implements LearningPathNodeHandler {
 
 	@Override
 	public void onMigrated(CourseNode courseNode) {
-		//
+		if (courseNode instanceof InfoCourseNode) {
+			((InfoCourseNode)courseNode).removeCustomPreconditions();
+		}
 	}
 
 }
