@@ -768,6 +768,7 @@ public class CourseConfig implements Serializable, Cloneable {
 		clone.setWikiEnabled(isWikiEnabled());
 		clone.setWikiSoftKey(getWikiSoftKey());
 		clone.setDocumentsEnabled(isDocumentsEnabled());
+		clone.setCompletionType(getCompletionType());
 		clone.setNodeAccessType(getNodeAccessType().getType());
 		return clone;
 	}
