@@ -181,12 +181,16 @@ public class InfoConfigController extends FormBasicController {
 		String autoSubscribeStr = autoSubscribeSelection.isSelected(0) ? "on" : "off";
 		config.set(InfoCourseNodeConfiguration.CONFIG_AUTOSUBSCRIBE, autoSubscribeStr);
 		
-		Collection<String> selectedAdminKeys = adminRolesEl.getSelectedKeys();
-		config.setBooleanEntry(InfoCourseNode.CONFIG_KEY_ADMIN_BY_COACH, selectedAdminKeys.contains(ROLE_COACH));
+		if (adminRolesEl != null) {
+			Collection<String> selectedAdminKeys = adminRolesEl.getSelectedKeys();
+			config.setBooleanEntry(InfoCourseNode.CONFIG_KEY_ADMIN_BY_COACH, selectedAdminKeys.contains(ROLE_COACH));
+		}
 		
-		Collection<String> selectedEditKeys = editRolesEl.getSelectedKeys();
-		config.setBooleanEntry(InfoCourseNode.CONFIG_KEY_EDIT_BY_COACH, selectedEditKeys.contains(ROLE_COACH));
-		config.setBooleanEntry(InfoCourseNode.CONFIG_KEY_EDIT_BY_PARTICIPANT, selectedEditKeys.contains(ROLE_PARTICIPANT));
+		if (editRolesEl != null) {
+			Collection<String> selectedEditKeys = editRolesEl.getSelectedKeys();
+			config.setBooleanEntry(InfoCourseNode.CONFIG_KEY_EDIT_BY_COACH, selectedEditKeys.contains(ROLE_COACH));
+			config.setBooleanEntry(InfoCourseNode.CONFIG_KEY_EDIT_BY_PARTICIPANT, selectedEditKeys.contains(ROLE_PARTICIPANT));
+		}
 		
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 	}
