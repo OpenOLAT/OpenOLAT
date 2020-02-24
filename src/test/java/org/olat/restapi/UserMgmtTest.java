@@ -514,9 +514,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		String bodyJson = EntityUtils.toString(response.getEntity());
-		System.out.println("User");
-		System.out.println(bodyJson);
-		System.out.println("User");
+		log.info("User JSON: {}", bodyJson);
 		conn.shutdown();
 	}
 		
@@ -534,9 +532,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		String bodyXml = EntityUtils.toString(response.getEntity());
-		System.out.println("User");
-		System.out.println(bodyXml);
-		System.out.println("User");
+		log.info("User XML: {}", bodyXml);
 		conn.shutdown();
 	}
 	
@@ -1051,6 +1047,38 @@ public class UserMgmtTest extends OlatRestTestCase {
 		String xmlOutput = EntityUtils.toString(response.getEntity());
 		Assert.assertTrue(xmlOutput.contains("<rolesVO>"));
 		Assert.assertTrue(xmlOutput.contains("<olatAdmin>"));
+		conn.shutdown();
+	}
+	
+	@Test
+	public void getRoles_itself() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(id1.getName(), JunitTestHelper.PWD));
+
+		URI rolesUri = UriBuilder.fromUri(getContextURI())
+			.path("users").path(id1.getKey().toString()).path("roles").build();
+		
+		HttpGet method = conn.createGet(rolesUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		RolesVO vo = conn.parse(response, RolesVO.class);
+		Assert.assertNotNull(vo);
+		Assert.assertFalse(vo.isInvitee());
+		Assert.assertFalse(vo.isGuestOnly());
+		conn.shutdown();
+	}
+	
+	@Test
+	public void getRoles_notItself() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(id1.getName(), JunitTestHelper.PWD));
+
+		URI rolesUri = UriBuilder.fromUri(getContextURI())
+			.path("users").path(id2.getKey().toString()).path("roles").build();
+		
+		HttpGet method = conn.createGet(rolesUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(403, response.getStatusLine().getStatusCode());
 		conn.shutdown();
 	}
 	
@@ -1797,7 +1825,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 		assertEquals(200, headSmallResponse.getStatusLine().getStatusCode());
 		EntityUtils.consume(headSmallResponse.getEntity());
 	}
-	
+
 	protected List<UserVO> parseUserArray(HttpEntity entity) {
 		try(InputStream in=entity.getContent()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 

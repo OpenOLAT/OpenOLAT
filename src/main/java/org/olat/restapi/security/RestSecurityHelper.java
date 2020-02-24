@@ -55,6 +55,11 @@ public class RestSecurityHelper {
 		return (UserRequest)request.getAttribute(SEC_USER_REQUEST);
 	}
 	
+	public static boolean itself(Long identityKey, HttpServletRequest request) {
+		Identity identity = getIdentity(request);
+		return identityKey != null && identity != null && identityKey.equals(identity.getKey());
+	}
+	
 	public static Identity getIdentity(HttpServletRequest request) {
 		UserRequest ureq = (UserRequest)request.getAttribute(SEC_USER_REQUEST);
 		if(ureq == null) return null;

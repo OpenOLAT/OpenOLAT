@@ -24,6 +24,7 @@ import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getLocale;
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
+import static org.olat.restapi.security.RestSecurityHelper.itself;
 import static org.olat.user.restapi.UserVOFactory.formatDbUserProperty;
 import static org.olat.user.restapi.UserVOFactory.get;
 import static org.olat.user.restapi.UserVOFactory.getManaged;
@@ -405,15 +406,14 @@ public class UserWebService {
 	@GET
 	@Path("{identityKey}/roles")
 	@Operation(summary = "Retrieve the roles", description = "Retrieves the roles of a user given its unique key identifier")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The user", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = RolesVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = RolesVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The identity not found")})	
+	@ApiResponse(responseCode = "200", description = "The user", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = RolesVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = RolesVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The identity not found")
 	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	public Response getIdentityRoles(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
-		if(!isUserManagerOf(identityKey, request)) {
+		if(!isUserManagerOf(identityKey, request) && !itself(identityKey, request)) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		Identity identity = securityManager.loadIdentityByKey(identityKey, false);
