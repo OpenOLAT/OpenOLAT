@@ -57,7 +57,6 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
@@ -71,7 +70,6 @@ import org.olat.course.nodes.projectbroker.service.ProjectBrokerModuleConfigurat
 import org.olat.course.nodes.projectbroker.service.ProjectGroupManager;
 import org.olat.course.nodes.ta.DropboxForm;
 import org.olat.course.properties.CoursePropertyManager;
-import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
 import org.olat.group.BusinessGroupService;
@@ -89,12 +87,10 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 
 	public static final String PANE_TAB_CONF_DROPBOX        = "pane.tab.conf.dropbox";
 	public static final String PANE_TAB_CONF_MODULES        = "pane.tab.conf.modules";
-	public static final String PANE_TAB_ACCESSIBILITY       = "pane.tab.accessibility";
 	private static final String PANE_TAB_OPTIONS            = "pane.tab.options";
 	private static final String PANE_TAB_ACCOUNT_MANAGEMENT = "pane.tab.accountmanagement";
 	
-	private static final String[] paneKeys = { PANE_TAB_CONF_DROPBOX, PANE_TAB_CONF_MODULES,
-			PANE_TAB_ACCESSIBILITY };
+	private static final String[] paneKeys = { PANE_TAB_CONF_DROPBOX, PANE_TAB_CONF_MODULES };
 
 
 	private Long courseId;
@@ -103,7 +99,7 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 	private ProjectBrokerModuleConfiguration projectBrokerModuleConfiguration;
 	private BusinessGroup accountManagerGroup;
 
-	private VelocityContainer accessabilityVC, optionsFormVC, accountManagementFormVC;
+	private VelocityContainer optionsFormVC, accountManagementFormVC;
 	private VelocityContainer editModules, editDropbox, editScoring;
 	private TabbedPane myTabbedPane;
 	private int dropboxTabPosition;
@@ -135,15 +131,7 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 	@Autowired
 	private ProjectGroupManager projectGroupManager;
 	
-	/**
-	 * @param ureq
-	 * @param wControl
-	 * @param course
-	 * @param node
-	 * @param groupMgr
-	 */
-	protected ProjectBrokerCourseEditorController(UserRequest ureq, WindowControl wControl, ICourse course, ProjectBrokerCourseNode node,
-			UserCourseEnvironment euce) {
+	protected ProjectBrokerCourseEditorController(UserRequest ureq, WindowControl wControl, ICourse course, ProjectBrokerCourseNode node) {
 		super(ureq, wControl);
 
 		this.node = node;
@@ -164,15 +152,6 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 			projectBrokerId = projectBroker.getKey();
 			projectBrokerManager.saveProjectBrokerId(projectBrokerId, cpm, node);
 		} 
-	
-		// Access
-		accessabilityVC = this.createVelocityContainer("edit_condition");
-		// ProjectBroker precondition
-		projectBrokerConditionController = new ConditionEditController(ureq, getWindowControl(), euce, node.getConditionProjectBroker(),
-				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), node));		
-		this.listenTo(projectBrokerConditionController);
-		accessabilityVC.put("projectBrokerCondition", projectBrokerConditionController.getInitialComponent());
-
 		
 		// Options with dates and custom-fields		
     optionsFormVC = this.createVelocityContainer("optionsForm");
@@ -354,7 +333,6 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 	@Override
 	public void addTabs(TabbedPane theTabbedPane) {
 		this.myTabbedPane = theTabbedPane;
-		myTabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessabilityVC);
 		myTabbedPane.addTab(translate(PANE_TAB_OPTIONS), optionsFormVC);
 		myTabbedPane.addTab(translate(PANE_TAB_ACCOUNT_MANAGEMENT), accountManagementFormVC);
 		myTabbedPane.addTab(translate(PANE_TAB_CONF_MODULES), editModules);
@@ -364,9 +342,6 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 		myTabbedPane.setEnabled(dropboxTabPosition, (bool != null) ? bool.booleanValue() : true);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
     	//

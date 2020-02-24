@@ -30,7 +30,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -59,7 +58,6 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.DirectoryFilter;
 import org.olat.core.util.ExportUtil;
@@ -79,8 +77,7 @@ import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
-import org.olat.course.condition.interpreter.ConditionExpression;
-import org.olat.course.condition.interpreter.ConditionInterpreter;
+import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
@@ -100,7 +97,6 @@ import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.properties.PersistingCoursePropertyManager;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
-import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -113,11 +109,11 @@ import org.olat.resource.OLATResource;
 import com.thoughtworks.xstream.XStream;
 
 /**
- *  
- *   @author Christian Guretzki
+ * 
+ * @author Christian Guretzki
  */
 
-public class ProjectBrokerCourseNode extends GenericCourseNode {
+public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 
 	private static final long serialVersionUID = -8177448874150049173L;
 	private static final Logger log = Tracing.createLoggerFor(ProjectBrokerCourseNode.class);
@@ -126,16 +122,16 @@ public class ProjectBrokerCourseNode extends GenericCourseNode {
 	private transient static final String PACKAGE = Util.getPackageName(ProjectBrokerCourseNode.class);
 
 	public transient static final String TYPE = "projectbroker";
-	
+
 	// NLS support:
-	
+
 	private transient static final String NLS_GUESTNOACCESS_TITLE = "guestnoaccess.title";
 	private transient static final String NLS_GUESTNOACCESS_MESSAGE = "guestnoaccess.message";
 	private transient static final String NLS_ERROR_MISSINGSCORECONFIG_SHORT = "error.missingscoreconfig.short";
 	private transient static final String NLS_WARN_NODEDELETE = "warn.nodedelete";
 
 	// MUST BE NON TRANSIENT
-	private static final int CURRENT_CONFIG_VERSION = 2;
+	private static final int CURRENT_CONFIG_VERSION = 3;
 
 	/** CONF_DROPBOX_ENABLED configuration parameter key. */
 	public transient static final String CONF_DROPBOX_ENABLED = "dropbox_enabled";
@@ -164,26 +160,35 @@ public class ProjectBrokerCourseNode extends GenericCourseNode {
 	public transient static final String CONF_PROJECTBROKER_KEY = "conf_projectbroker_id";
 
 	public transient static final String CONF_NODE_SHORT_TITLE_KEY = "conf_node_short_title";
-	
+
 	// MUST BE NON TRANSIENT
-	private Condition  conditionDrop, conditionScoring, conditionReturnbox;
-	private Condition  conditionProjectBroker;
+	private Condition conditionDrop, conditionScoring, conditionReturnbox;
+	private Condition conditionProjectBroker;
 
 	public ProjectBrokerCourseNode() {
 		this(null);
 	}
-	
+
 	public ProjectBrokerCourseNode(INode parent) {
 		super(TYPE, parent);
 	}
 
 	@Override
-	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
-		ProjectBrokerCourseEditorController childTabCntrllr = ProjectBrokerControllerFactory.createCourseEditController(ureq, wControl, course, euce, this );
-		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		NodeEditController editController = new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
+	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+			ICourse course, UserCourseEnvironment euce) {
+		ProjectBrokerCourseEditorController childTabCntrllr = ProjectBrokerControllerFactory
+				.createCourseEditController(ureq, wControl, course, euce, this);
+		CourseNode chosenNode = course.getEditorTreeModel()
+				.getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
+		NodeEditController editController = new NodeEditController(ureq, wControl, course, chosenNode, euce,
+				childTabCntrllr);
 		editController.addControllerListener(childTabCntrllr);
 		return editController;
+	}
+
+	@Override
+	public ConditionAccessEditConfig getAccessEditConfig() {
+		return ConditionAccessEditConfig.regular(false);
 	}
 
 	@Override
@@ -202,37 +207,40 @@ public class ProjectBrokerCourseNode extends GenericCourseNode {
 			if (nodecmd != null) {
 				try {
 					Long projectId = Long.valueOf(nodecmd);
-					BusinessControlFactory bcf =  BusinessControlFactory.getInstance();
-					BusinessControl businessControl = bcf.createFromString("[Project:"+projectId+"]");
+					BusinessControlFactory bcf = BusinessControlFactory.getInstance();
+					BusinessControl businessControl = bcf.createFromString("[Project:" + projectId + "]");
 					wControl = bcf.createBusinessWindowControl(businessControl, wControl);
 				} catch (NumberFormatException e) {
 					// ups, nodecmd is not a message, what the heck is it then?
 					log.warn("Could not create message ID from given nodemcd::" + nodecmd, e);
 				}
 			}
-			controller = ProjectBrokerControllerFactory.createRunController(ureq, wControl,userCourseEnv, this);
+			controller = ProjectBrokerControllerFactory.createRunController(ureq, wControl, userCourseEnv, this);
 		}
-		Controller wrapperCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_projectbroker_icon");
+		Controller wrapperCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this,
+				"o_projectbroker_icon");
 		return new NodeRunConstructionResult(wrapperCtrl);
 	}
 
 	@Override
-	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
-		return ProjectBrokerControllerFactory.createPreviewController(ureq, wControl,userCourseEnv, this);
+	public Controller createPreviewController(UserRequest ureq, WindowControl wControl,
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
+		return ProjectBrokerControllerFactory.createPreviewController(ureq, wControl, userCourseEnv, this);
 	}
 
 	@Override
-	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			CourseNodeSecurityCallback nodeSecCallback) {
+	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl,
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
 		if (nodeSecCallback.isAccessible()) {
-			Controller peekViewController = ProjectBrokerControllerFactory.createPeekViewRunController(ureq, wControl, userCourseEnv, this);
-			return peekViewController;			
+			Controller peekViewController = ProjectBrokerControllerFactory.createPeekViewRunController(ureq, wControl,
+					userCourseEnv, this);
+			return peekViewController;
 		} else {
 			// use standard peekview
 			return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback);
 		}
-	}	
-	
+	}
+
 	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
 		return null;
@@ -245,12 +253,15 @@ public class ProjectBrokerCourseNode extends GenericCourseNode {
 
 	@Override
 	public StatusDescription isConfigValid() {
-		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
+		if (oneClickStatusCache != null) {
+			return oneClickStatusCache[0];
+		}
 
 		boolean isValid = true;
 		Boolean hasScoring = (Boolean) getModuleConfiguration().get(CONF_SCORING_ENABLED);
 		if (hasScoring.booleanValue()) {
-			if (!MSEditFormController.isConfigValid(getModuleConfiguration())) isValid = false;
+			if (!MSEditFormController.isConfigValid(getModuleConfiguration()))
+				isValid = false;
 		}
 		StatusDescription sd = StatusDescription.NOERROR;
 		if (!isValid) {
@@ -268,26 +279,13 @@ public class ProjectBrokerCourseNode extends GenericCourseNode {
 	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		oneClickStatusCache = null;
-		// only here we know which translator to take for translating condition error messages
+		// only here we know which translator to take for translating condition error
+		// messages
 		// check if group-manager is already initialized
-		List<StatusDescription> sds = isConfigValidWithTranslator(cev, PACKAGE_PROJECTBROKER, getConditionExpressions());
+		List<StatusDescription> sds = isConfigValidWithTranslator(cev, PACKAGE_PROJECTBROKER,
+				getConditionExpressions());
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
-	}
-
-	@Override
-	public void calcAccessAndVisibility(ConditionInterpreter ci, NodeEvaluation nodeEval) {
-		if (ci == null) throw new OLATRuntimeException("no condition interpreter <" + getIdent() + " " + getShortName() + ">",
-				new IllegalArgumentException());
-		if (nodeEval == null) throw new OLATRuntimeException("node Evaluationt is null!! for <" + getIdent() + " " + getShortName() + ">",
-				new IllegalArgumentException());
-		// evaluate the preconditions
-		boolean projectBrokerAccess = (getConditionProjectBroker().getConditionExpression() == null ? true : ci.evaluateCondition(conditionProjectBroker));
-		nodeEval.putAccessStatus(ACCESS_PROJECTBROKER, projectBrokerAccess);
-		// add a dummy access-status to open course node in general otherwise the hole project-broker could be closed
-		boolean visible = (getPreConditionVisibility().getConditionExpression() == null ? true : ci
-				.evaluateCondition(getPreConditionVisibility()));
-		nodeEval.setVisible(visible);
 	}
 
 	@Override
@@ -295,11 +293,16 @@ public class ProjectBrokerCourseNode extends GenericCourseNode {
 		Translator trans = new PackageTranslator(PACKAGE_PROJECTBROKER, locale);
 		CoursePropertyManager cpm = PersistingCoursePropertyManager.getInstance(course);
 		List<Property> list = cpm.listCourseNodeProperties(this, null, null, null);
-		if (list.size() != 0) return trans.translate(NLS_WARN_NODEDELETE); // properties exist
-		File fDropboxFolder = new File(FolderConfig.getCanonicalRoot() + DropboxController.getDropboxPathRelToFolderRoot(course.getCourseEnvironment(), this));
-		if (fDropboxFolder.exists() && fDropboxFolder.list().length > 0) return trans.translate(NLS_WARN_NODEDELETE); // Dropbox folder contains files
-		File fReturnboxFolder = new File(FolderConfig.getCanonicalRoot() + ReturnboxController.getReturnboxPathRelToFolderRoot(course.getCourseEnvironment(), this));
-		if (fReturnboxFolder.exists() && fReturnboxFolder.list().length > 0) return trans.translate(NLS_WARN_NODEDELETE); // Returnbox folder contains files
+		if (list.size() != 0)
+			return trans.translate(NLS_WARN_NODEDELETE); // properties exist
+		File fDropboxFolder = new File(FolderConfig.getCanonicalRoot()
+				+ DropboxController.getDropboxPathRelToFolderRoot(course.getCourseEnvironment(), this));
+		if (fDropboxFolder.exists() && fDropboxFolder.list().length > 0)
+			return trans.translate(NLS_WARN_NODEDELETE); // Dropbox folder contains files
+		File fReturnboxFolder = new File(FolderConfig.getCanonicalRoot()
+				+ ReturnboxController.getReturnboxPathRelToFolderRoot(course.getCourseEnvironment(), this));
+		if (fReturnboxFolder.exists() && fReturnboxFolder.list().length > 0)
+			return trans.translate(NLS_WARN_NODEDELETE); // Returnbox folder contains files
 
 		return null; // no data yet.
 	}
@@ -309,15 +312,18 @@ public class ProjectBrokerCourseNode extends GenericCourseNode {
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 		ProjectBrokerManager projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
 		Long projectBrokerId = projectBrokerManager.getProjectBrokerId(cpm, this);
-		File fDropBox = new File(FolderConfig.getCanonicalRoot() + DropboxController.getDropboxPathRelToFolderRoot(course.getCourseEnvironment(), this));
+		File fDropBox = new File(FolderConfig.getCanonicalRoot()
+				+ DropboxController.getDropboxPathRelToFolderRoot(course.getCourseEnvironment(), this));
 		if (fDropBox.exists()) {
 			FileUtils.deleteDirsAndFiles(fDropBox, true, true);
 		}
-		File fReturnBox = new File(FolderConfig.getCanonicalRoot() + ReturnboxController.getReturnboxPathRelToFolderRoot(course.getCourseEnvironment(), this));
+		File fReturnBox = new File(FolderConfig.getCanonicalRoot()
+				+ ReturnboxController.getReturnboxPathRelToFolderRoot(course.getCourseEnvironment(), this));
 		if (fReturnBox.exists()) {
 			FileUtils.deleteDirsAndFiles(fReturnBox, true, true);
 		}
-		File attachmentDir = new File(FolderConfig.getCanonicalRoot() + projectBrokerManager.getAttachmentBasePathRelToFolderRoot(course.getCourseEnvironment(), this));
+		File attachmentDir = new File(FolderConfig.getCanonicalRoot()
+				+ projectBrokerManager.getAttachmentBasePathRelToFolderRoot(course.getCourseEnvironment(), this));
 		if (attachmentDir.exists()) {
 			FileUtils.deleteDirsAndFiles(attachmentDir, true, true);
 		}
@@ -327,7 +333,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode {
 		}
 		// Delete all properties...
 		cpm.deleteNodeProperties(this, null);
-		
+
 		OLATResource resource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
 		CoreSpringFactory.getImpl(TaskExecutorManager.class).delete(resource, getIdent());
 	}
@@ -417,9 +423,10 @@ public class ProjectBrokerCourseNode extends GenericCourseNode {
 	}
 
 	@Override
-	public void postImport(File importDirectory, ICourse course, CourseEnvironmentMapper envMapper, Processing processType) {
+	public void postImport(File importDirectory, ICourse course, CourseEnvironmentMapper envMapper,
+			Processing processType) {
 		// initialize managers
-		if(processType == Processing.editor && importDirectory != null) {
+		if (processType == Processing.editor && importDirectory != null) {
 			ProjectBrokerManager projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
 			CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 			// create a new projectBroker
@@ -428,20 +435,21 @@ public class ProjectBrokerCourseNode extends GenericCourseNode {
 			// get the node folder inside of the importDirectory
 			File folderNodeData = new File(importDirectory, getIdent());
 
-			//for the broker prefs
+			// for the broker prefs
 			File projectBrokerFile = new File(folderNodeData, "projectbroker.xml");
-			if(projectBrokerFile.exists()) {
+			if (projectBrokerFile.exists()) {
 				XStream xstream = XStreamHelper.createXStreamInstance();
 				ProjectGroupManager projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
-				ProjectBrokerConfig brokerConfig = (ProjectBrokerConfig)XStreamHelper.readObject(xstream, projectBrokerFile);
-				if(brokerConfig != null && brokerConfig.getAccountGroupKey() != null) {
+				ProjectBrokerConfig brokerConfig = (ProjectBrokerConfig) XStreamHelper.readObject(xstream,
+						projectBrokerFile);
+				if (brokerConfig != null && brokerConfig.getAccountGroupKey() != null) {
 					Long accountGroupKey = envMapper.toGroupKeyFromOriginalKey(brokerConfig.getAccountGroupKey());
-					if(accountGroupKey != null) {
+					if (accountGroupKey != null) {
 						projectGroupManager.saveAccountManagerGroupKey(accountGroupKey, cpm, this);
 					}
 				}
 			}
-			
+
 			// loop through the project directories
 			if (folderNodeData.exists()) {
 				for (File projectDir : folderNodeData.listFiles(DirectoryFilter.DIRECTORY_FILTER)) {
@@ -453,45 +461,50 @@ public class ProjectBrokerCourseNode extends GenericCourseNode {
 		}
 		super.postImport(importDirectory, course, envMapper, processType);
 	}
-	
-	private void importProject(File projectDir, File projectFile, ProjectBroker projectBroker, ICourse course, CourseEnvironmentMapper envMapper) {
+
+	private void importProject(File projectDir, File projectFile, ProjectBroker projectBroker, ICourse course,
+			CourseEnvironmentMapper envMapper) {
 		XStream xstream = XStreamHelper.createXStreamInstance();
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 		ProjectGroupManager projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
 		ProjectBrokerManager projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
-		
+
 		// read the projectConfiguration from the importDirectory
 		try {
 			@SuppressWarnings("unchecked")
-			Map<String, Object> projectConfig = (HashMap<String, Object>) XStreamHelper.readObject(xstream, projectFile);
-			String projectTitle = (String)projectConfig.get("title");
-			
+			Map<String, Object> projectConfig = (HashMap<String, Object>) XStreamHelper.readObject(xstream,
+					projectFile);
+			String projectTitle = (String) projectConfig.get("title");
+
 			Long originalGroupKey = null;
-			if(projectConfig.containsKey("businessGroupKey")) {
-				originalGroupKey = (Long)projectConfig.get("businessGroupKey");
+			if (projectConfig.containsKey("businessGroupKey")) {
+				originalGroupKey = (Long) projectConfig.get("businessGroupKey");
 			} else {
-				for(BusinessGroupReference ref:envMapper.getGroups()) {
-					if(ref.getName().endsWith(projectTitle)) {
+				for (BusinessGroupReference ref : envMapper.getGroups()) {
+					if (ref.getName().endsWith(projectTitle)) {
 						originalGroupKey = ref.getOriginalKey();
 					}
 				}
 			}
 
 			BusinessGroup projectGroup = null;
-			if(originalGroupKey != null) {
+			if (originalGroupKey != null) {
 				Long groupKey = envMapper.toGroupKeyFromOriginalKey(originalGroupKey);
 				projectGroup = bgs.loadBusinessGroup(groupKey);
 			}
-			if(projectGroup == null) {
-				projectGroup = projectGroupManager.createProjectGroupFor(projectBroker.getKey(), envMapper.getAuthor(), projectTitle, (String)projectConfig.get("description"), course.getResourceableId());
+			if (projectGroup == null) {
+				projectGroup = projectGroupManager.createProjectGroupFor(projectBroker.getKey(), envMapper.getAuthor(),
+						projectTitle, (String) projectConfig.get("description"), course.getResourceableId());
 			}
-			if(envMapper.getAuthor() != null) {
+			if (envMapper.getAuthor() != null) {
 				Identity author = envMapper.getAuthor();
 				bgs.addOwners(author, null, Collections.singletonList(author), projectGroup, null);
 			}
 
-			Project project = projectBrokerManager.createAndSaveProjectFor(projectTitle, (String)projectConfig.get("description"), projectBrokerManager.getProjectBrokerId(cpm, this), projectGroup);
+			Project project = projectBrokerManager.createAndSaveProjectFor(projectTitle,
+					(String) projectConfig.get("description"), projectBrokerManager.getProjectBrokerId(cpm, this),
+					projectGroup);
 			projectGroupManager.setDeselectionAllowed(project, (boolean) projectConfig.get("allowDeselection"));
 			project.setMailNotificationEnabled((boolean) projectConfig.get("mailNotificationEnabled"));
 			project.setMaxMembers((int) projectConfig.get("maxMembers"));
@@ -507,7 +520,8 @@ public class ProjectBrokerCourseNode extends GenericCourseNode {
 				File[] attachment = attachmentDir.listFiles();
 				if (attachment.length > 0) {
 					VFSLeaf attachmentLeaf = new LocalFileImpl(attachment[0]);
-					projectBrokerManager.saveAttachedFile(project, projectConfig.get("attachmentFileName").toString(), attachmentLeaf, course.getCourseEnvironment(), this);
+					projectBrokerManager.saveAttachedFile(project, projectConfig.get("attachmentFileName").toString(),
+							attachmentLeaf, course.getCourseEnvironment(), this);
 				}
 			}
 		} catch (Exception e) {
@@ -518,7 +532,8 @@ public class ProjectBrokerCourseNode extends GenericCourseNode {
 	}
 
 	@Override
-	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation,
+			Locale locale, boolean withReferences) {
 		super.importNode(importDirectory, course, owner, organisation, locale, withReferences);
 	}
 
@@ -530,11 +545,11 @@ public class ProjectBrokerCourseNode extends GenericCourseNode {
 		ProjectBroker pb = projectBrokerManager.getProjectBroker(projectBrokerManager.getProjectBrokerId(cpm, this));
 		ProjectGroupManager projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
 		XStream xstream = XStreamHelper.createXStreamInstance();
-		
+
 		// folder for the pb node
 		File pbNodeFolder = new File(exportDirectory, getIdent());
 		pbNodeFolder.mkdirs();
-		//for the broker prefs
+		// for the broker prefs
 		ProjectBrokerConfig brokerConfig = new ProjectBrokerConfig();
 		brokerConfig.setAccountGroupKey(projectGroupManager.getAccountManagerGroupKey(cpm, this));
 		File projectBrokerFile = new File(pbNodeFolder, "projectbroker.xml");
@@ -542,7 +557,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode {
 
 		// get all the projects available in the pb
 		List<Project> projects = projectBrokerManager.getProjectListBy(pb.getKey());
-		for (Project project:projects) {
+		for (Project project : projects) {
 			File projectFolder = new File(pbNodeFolder, project.getKey().toString());
 			projectFolder.mkdirs();
 			// create a hashmap with the project configuration and insert the
@@ -565,12 +580,15 @@ public class ProjectBrokerCourseNode extends GenericCourseNode {
 			// writeout the project data
 			XStreamHelper.writeObject(xstream, projectFile, projectData);
 			// add attachment file
-			LocalFolderImpl rootFolder = VFSManager.olatRootContainer(projectBrokerManager.getAttamchmentRelativeRootPath(project, course.getCourseEnvironment(), this), null);
+			LocalFolderImpl rootFolder = VFSManager.olatRootContainer(
+					projectBrokerManager.getAttamchmentRelativeRootPath(project, course.getCourseEnvironment(), this),
+					null);
 			VFSItem item = rootFolder.resolve(project.getAttachmentFileName());
 			if (item instanceof VFSLeaf) {
 				VFSLeaf itemLeaf = (VFSLeaf) item;
 				File attachmentFolder = new File(projectFolder, "attachment");
-				File attachment = new File(attachmentFolder, Base64.encodeBase64String(project.getAttachmentFileName().getBytes()));
+				File attachment = new File(attachmentFolder,
+						Base64.encodeBase64String(project.getAttachmentFileName().getBytes()));
 				try {
 					attachmentFolder.mkdirs();
 					attachment.createNewFile();
@@ -585,27 +603,28 @@ public class ProjectBrokerCourseNode extends GenericCourseNode {
 			}
 		}
 	}
-	
-	
+
 	@Override
-	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options,
-			ZipOutputStream exportStream, String archivePath, String charset) {
+	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options, ZipOutputStream exportStream,
+			String archivePath, String charset) {
 		boolean dataFound = false;
-		String dropboxPath = DropboxController.getDropboxPathRelToFolderRoot(course.getCourseEnvironment(),this);
+		String dropboxPath = DropboxController.getDropboxPathRelToFolderRoot(course.getCourseEnvironment(), this);
 		VFSContainer dropboxDir = VFSManager.olatRootContainer(dropboxPath, null);
-		String returnboxPath = ReturnboxController.getReturnboxPathRelToFolderRoot(course.getCourseEnvironment(),this);
+		String returnboxPath = ReturnboxController.getReturnboxPathRelToFolderRoot(course.getCourseEnvironment(), this);
 		VFSContainer returnboxDir = VFSManager.olatRootContainer(returnboxPath, null);
 		if (!dropboxDir.exists() && !returnboxDir.exists()) {
 			return false;
 		}
-		
-		String exportDirName = "projectbroker_" + Formatter.makeStringFilesystemSave(getShortName())
-				  + "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));
+
+		String exportDirName = "projectbroker_" + Formatter.makeStringFilesystemSave(getShortName()) + "_"
+				+ Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));
 		exportDirName = ZipUtil.concat(archivePath, exportDirName);
 
 		try {
-			String projectBrokerTableExport = ProjectBrokerExportGenerator.createCourseResultsOverviewTable(this, course, locale);
-			String tableExportFileName = ExportUtil.createFileNameWithTimeStamp(getShortTitle() + "-projectbroker_overview", "xls");
+			String projectBrokerTableExport = ProjectBrokerExportGenerator.createCourseResultsOverviewTable(this,
+					course, locale);
+			String tableExportFileName = ExportUtil
+					.createFileNameWithTimeStamp(getShortTitle() + "-projectbroker_overview", "xls");
 			exportStream.putNextEntry(new ZipEntry(exportDirName + "/" + tableExportFileName));
 			IOUtils.write(projectBrokerTableExport, exportStream, "UTF-8");
 			exportStream.closeEntry();
@@ -615,25 +634,30 @@ public class ProjectBrokerCourseNode extends GenericCourseNode {
 
 		// copy dropboxes to tmp dir
 		if (dropboxDir.exists()) {
-			//OLAT-6426 archive only dropboxes of users that handed in at least one file -> prevent empty folders in archive 
-			for(VFSItem themaItem: dropboxDir.getItems(new VFSSystemItemFilter())) {
-				if (!(themaItem instanceof VFSContainer)) continue;
-				List<VFSItem> userFolderArray = ((VFSContainer)themaItem).getItems(new VFSSystemItemFilter());
-				for (VFSItem userFolder : userFolderArray){
-					if (!VFSManager.isDirectoryAndNotEmpty(userFolder)) continue;
-					String path  = exportDirName + "/dropboxes/" + themaItem.getName();
+			// OLAT-6426 archive only dropboxes of users that handed in at least one file ->
+			// prevent empty folders in archive
+			for (VFSItem themaItem : dropboxDir.getItems(new VFSSystemItemFilter())) {
+				if (!(themaItem instanceof VFSContainer))
+					continue;
+				List<VFSItem> userFolderArray = ((VFSContainer) themaItem).getItems(new VFSSystemItemFilter());
+				for (VFSItem userFolder : userFolderArray) {
+					if (!VFSManager.isDirectoryAndNotEmpty(userFolder))
+						continue;
+					String path = exportDirName + "/dropboxes/" + themaItem.getName();
 					ZipUtil.addToZip(userFolder, path, exportStream);
 				}
 			}
 		}
-			
+
 		// copy returnboxes to tmp dir
 		if (returnboxDir.exists()) {
-			for (VFSItem themaItem:returnboxDir.getItems(new VFSSystemItemFilter())) {
-				if (!(themaItem instanceof VFSContainer)) continue;
-				List<VFSItem> userFolderArray = ((VFSContainer)themaItem).getItems(new VFSSystemItemFilter());
-				for (VFSItem userFolder : userFolderArray){
-					if (!VFSManager.isDirectoryAndNotEmpty(userFolder)) continue;
+			for (VFSItem themaItem : returnboxDir.getItems(new VFSSystemItemFilter())) {
+				if (!(themaItem instanceof VFSContainer))
+					continue;
+				List<VFSItem> userFolderArray = ((VFSContainer) themaItem).getItems(new VFSSystemItemFilter());
+				for (VFSItem userFolder : userFolderArray) {
+					if (!VFSManager.isDirectoryAndNotEmpty(userFolder))
+						continue;
 					String path = exportDirName + "/returnboxes/" + themaItem.getName();
 					ZipUtil.addToZip(userFolder, path, exportStream);
 				}
@@ -641,26 +665,6 @@ public class ProjectBrokerCourseNode extends GenericCourseNode {
 		}
 
 		return dataFound;
-	}
-
-	@Override
-	public List<ConditionExpression> getConditionExpressions() {
-		List<ConditionExpression> retVal;
-		List<ConditionExpression> parentsConditions = super.getConditionExpressions();
-		if (parentsConditions.size() > 0) {
-			retVal = new ArrayList<>(parentsConditions);
-		} else {
-			retVal = new ArrayList<>();
-		}
-
-		String condition = getConditionProjectBroker().getConditionExpression();
-		if (condition != null && !condition.equals("")) {
-			// an active condition is defined
-			ConditionExpression ce = new ConditionExpression(getConditionProjectBroker().getConditionId());
-			ce.setExpressionString(getConditionProjectBroker().getConditionExpression());
-			retVal.add(ce);
-		}
-		return retVal;
 	}
 
 	@Override
@@ -690,11 +694,16 @@ public class ProjectBrokerCourseNode extends GenericCourseNode {
 					this.setConditionReturnbox(null);
 					version = 2;
 				}
+				if (version < 3) {
+					setPreConditionAccess(conditionProjectBroker);
+					conditionProjectBroker = null;
+					conditionScoring = null;
+				}
 				config.setConfigurationVersion(CURRENT_CONFIG_VERSION);
 			}
 		}
 	}
-	
+
 	@Override
 	protected void postImportCopyConditions(CourseEnvironmentMapper envMapper) {
 		super.postImportCopyConditions(envMapper);
@@ -714,47 +723,51 @@ public class ProjectBrokerCourseNode extends GenericCourseNode {
 	}
 
 	/**
-	 * Do re-arrange the projects in a new project broker after the copy happened 
+	 * Do re-arrange the projects in a new project broker after the copy happened
 	 */
-    @Override
-    public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCourse) {
-    	super.postCopy(envMapper, processType, course, null);
-	    if(processType.equals(Processing.runstructure)) {
-	    	//initialize the managers and services
+	@Override
+	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course,
+			ICourse sourceCourse) {
+		super.postCopy(envMapper, processType, course, null);
+		if (processType.equals(Processing.runstructure)) {
+			// initialize the managers and services
 			ProjectBrokerManager projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
 			ProjectGroupManager projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
 			CoursePropertyManager oldCpm = sourceCourse.getCourseEnvironment().getCoursePropertyManager();
 			BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-			//create new Project broker and get the old one
+			// create new Project broker and get the old one
 			Long projectBrokerId = projectBrokerManager.createAndSaveProjectBroker().getKey();
-			projectBrokerManager.saveProjectBrokerId(projectBrokerId, course.getCourseEnvironment().getCoursePropertyManager(), this);
-			
-			//find the group for account manager and remap the account group
+			projectBrokerManager.saveProjectBrokerId(projectBrokerId,
+					course.getCourseEnvironment().getCoursePropertyManager(), this);
+
+			// find the group for account manager and remap the account group
 			CourseNode sourceCourseNode = sourceCourse.getRunStructure().getNode(getIdent());
 			Long sourceAccountGroupKey = projectGroupManager.getAccountManagerGroupKey(oldCpm, sourceCourseNode);
-			if(sourceAccountGroupKey != null) {
+			if (sourceAccountGroupKey != null) {
 				Long copiedGroupKey = envMapper.toGroupKeyFromOriginalKey(sourceAccountGroupKey);
 				CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 				projectGroupManager.saveAccountManagerGroupKey(copiedGroupKey, cpm, this);
-			} 
+			}
 
 			Long oldBrokerId = projectBrokerManager.getProjectBrokerId(oldCpm, this);
 			List<Project> projectsFromGroup = projectBrokerManager.getProjectListBy(oldBrokerId);
-			//loop create and configure the new Projects
-			for(Project project : projectsFromGroup){
+			// loop create and configure the new Projects
+			for (Project project : projectsFromGroup) {
 				Long originalGroupKey = project.getProjectGroup().getKey();
 				Long copiedGroupKey = envMapper.toGroupKeyFromOriginalKey(originalGroupKey);
-				
+
 				Identity author = envMapper.getAuthor();
 				BusinessGroup projectGroup = bgs.loadBusinessGroup(copiedGroupKey);
 				if (projectGroup == null) {
-					projectGroup = projectGroupManager.createProjectGroupFor(projectBrokerId, author, project.getTitle(), project.getDescription(), course.getResourceableId());
+					projectGroup = projectGroupManager.createProjectGroupFor(projectBrokerId, author,
+							project.getTitle(), project.getDescription(), course.getResourceableId());
 				}
-				if(author != null) {
+				if (author != null) {
 					bgs.addOwners(author, null, Collections.singletonList(author), projectGroup, null);
 				}
-				
-				Project newProject = projectBrokerManager.createAndSaveProjectFor(project.getTitle(), project.getDescription(), projectBrokerId, projectGroup);
+
+				Project newProject = projectBrokerManager.createAndSaveProjectFor(project.getTitle(),
+						project.getDescription(), projectBrokerId, projectGroup);
 				// copy all project configurations
 				newProject.setMailNotificationEnabled(project.isMailNotificationEnabled());
 				newProject.setMaxMembers(project.getMaxMembers());
@@ -764,17 +777,19 @@ public class ProjectBrokerCourseNode extends GenericCourseNode {
 				projectGroupManager.setDeselectionAllowed(newProject, project.getProjectGroup().isAllowToLeave());
 				projectBrokerManager.updateProject(newProject);
 				// attachment file
-				VFSContainer rootFolder = VFSManager.olatRootContainer(projectBrokerManager.getAttamchmentRelativeRootPath(project, sourceCourse.getCourseEnvironment(), this), null);
+				VFSContainer rootFolder = VFSManager.olatRootContainer(projectBrokerManager
+						.getAttamchmentRelativeRootPath(project, sourceCourse.getCourseEnvironment(), this), null);
 				VFSItem item = rootFolder.resolve(project.getAttachmentFileName());
 				if (item instanceof VFSLeaf) {
-					projectBrokerManager.saveAttachedFile(newProject, project.getAttachmentFileName(), (VFSLeaf) item, course.getCourseEnvironment(), this);
+					projectBrokerManager.saveAttachedFile(newProject, project.getAttachmentFileName(), (VFSLeaf) item,
+							course.getCourseEnvironment(), this);
 					newProject.setAttachedFileName(project.getAttachmentFileName());
 					projectBrokerManager.updateProject(newProject);
 				}
 			}
-	    }
+		}
 	}
-	
+
 	@Override
 	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course, Identity author) {
 		// create the instance for the copy
@@ -784,35 +799,39 @@ public class ProjectBrokerCourseNode extends GenericCourseNode {
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 		ProjectGroupManager projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
 		ProjectBrokerManager projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
-		
+
 		// get the pbID from the source pb
 		Long oldProjectBrokerId = projectBrokerManager.getProjectBrokerId(cpm, this);
 		// create a new projectBroker for the copyInstance
 		ProjectBroker newBroker = projectBrokerManager.createAndSaveProjectBroker();
 		Long projectBrokerId = newBroker.getKey();
 		projectBrokerManager.saveProjectBrokerId(projectBrokerId, cpm, copyInstance);
-		
-		
+
 		// configure the new Project like the old one
 		// copy the old accountManagergroup to preserve the
 		// "persons in charge"
 		Long originalAccountGroupKey = projectGroupManager.getAccountManagerGroupKey(cpm, this);
-		if(originalAccountGroupKey != null) {
-			BusinessGroup originalAccountGroup = projectGroupManager.getAccountManagerGroupFor(cpm, this, course, getShortTitle(), getShortTitle(), null);
+		if (originalAccountGroupKey != null) {
+			BusinessGroup originalAccountGroup = projectGroupManager.getAccountManagerGroupFor(cpm, this, course,
+					getShortTitle(), getShortTitle(), null);
 			BusinessGroup newAccountManagerGroup = bgs.copyBusinessGroup(author, originalAccountGroup,
 					originalAccountGroup.getName(), originalAccountGroup.getDescription(),
-					originalAccountGroup.getMinParticipants(), originalAccountGroup.getMaxParticipants(), false, false, true, false, false, true, false, false);
+					originalAccountGroup.getMinParticipants(), originalAccountGroup.getMaxParticipants(), false, false,
+					true, false, false, true, false, false);
 			projectGroupManager.saveAccountManagerGroupKey(newAccountManagerGroup.getKey(), cpm, copyInstance);
-			bgs.addResourceTo(newAccountManagerGroup, course.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
+			bgs.addResourceTo(newAccountManagerGroup,
+					course.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
 		}
-		
+
 		if (oldProjectBrokerId != null) {
 			List<Project> projects = projectBrokerManager.getProjectListBy(oldProjectBrokerId);
-			for (Project project: projects) {
+			for (Project project : projects) {
 				// create projectGroup
-				BusinessGroup projectGroup = projectGroupManager.createProjectGroupFor(projectBrokerId, author, project.getTitle(), project.getDescription(), course.getResourceableId());
-				Project newProject = projectBrokerManager.createAndSaveProjectFor(project.getTitle(), project.getDescription(), projectBrokerId, projectGroup);
-				
+				BusinessGroup projectGroup = projectGroupManager.createProjectGroupFor(projectBrokerId, author,
+						project.getTitle(), project.getDescription(), course.getResourceableId());
+				Project newProject = projectBrokerManager.createAndSaveProjectFor(project.getTitle(),
+						project.getDescription(), projectBrokerId, projectGroup);
+
 				// copy all project configurations
 				newProject.setMailNotificationEnabled(project.isMailNotificationEnabled());
 				newProject.setMaxMembers(project.getMaxMembers());
@@ -823,10 +842,12 @@ public class ProjectBrokerCourseNode extends GenericCourseNode {
 				projectBrokerManager.updateProject(newProject);
 
 				// attachment file
-				VFSContainer rootFolder = VFSManager.olatRootContainer(projectBrokerManager.getAttamchmentRelativeRootPath(project, course.getCourseEnvironment(), this), null);
+				VFSContainer rootFolder = VFSManager.olatRootContainer(projectBrokerManager
+						.getAttamchmentRelativeRootPath(project, course.getCourseEnvironment(), this), null);
 				VFSItem item = rootFolder.resolve(project.getAttachmentFileName());
 				if (item instanceof VFSLeaf) {
-					projectBrokerManager.saveAttachedFile(newProject, project.getAttachmentFileName(), (VFSLeaf) item, course.getCourseEnvironment(), copyInstance);
+					projectBrokerManager.saveAttachedFile(newProject, project.getAttachmentFileName(), (VFSLeaf) item,
+							course.getCourseEnvironment(), copyInstance);
 					newProject.setAttachedFileName(project.getAttachmentFileName());
 					projectBrokerManager.updateProject(newProject);
 				}
@@ -834,7 +855,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode {
 		}
 		return copyInstance;
 	}
-	
+
 	public static class ProjectBrokerConfig implements Serializable {
 
 		private static final long serialVersionUID = -1002067261836601966L;
