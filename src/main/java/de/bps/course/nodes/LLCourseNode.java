@@ -72,23 +72,20 @@ public class LLCourseNode extends AbstractAccessableCourseNode {
 
 	public LLCourseNode(INode parent) {
 		super(TYPE, parent);
-		initDefaultConfig();
-	}
-
-	private void initDefaultConfig() {
-		ModuleConfiguration config = getModuleConfiguration();
-		// add an empty link entry as default if none existent
-		if (config.get(CONF_LINKLIST) == null) {
-			List<LLModel> initialList = new ArrayList<>(1);
-			initialList.add(new LLModel());
-			config.set(CONF_LINKLIST, initialList);
-		}
 	}
 	
 	@Override
 	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
 		ModuleConfiguration config = getModuleConfiguration();
+		
+		if (isNewNode) {
+			List<LLModel> initialList = new ArrayList<>(1);
+			initialList.add(new LLModel());
+			config.set(CONF_LINKLIST, initialList);
+		}
+		
 		if(config.getConfigurationVersion() < 2) {
+			@SuppressWarnings("unchecked")
 			List<LLModel> links = (List<LLModel>)config.get(CONF_LINKLIST);
 			for(LLModel link:links) {
 				String linkValue = link.getTarget();
