@@ -53,9 +53,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class InfoMessageControllerSingleVM extends BasicController {
 	
-	private final Link infomsgEditButton,infomsgClearButton, maintenancemsgEditButton, maintenancemsgClearButton;
-	private final VelocityContainer infoMsgView, infoMsgEdit;
-	private final InfoMsgForm infoMsgForm, maintenanceMsgForm;
+	private final Link infomsgEditButton;
+	private final Link infomsgClearButton;
+	private final Link maintenancemsgEditButton;
+	private final Link maintenancemsgClearButton;
+	private final VelocityContainer infoMsgView;
+	private final VelocityContainer infoMsgEdit;
+	private final InfoMsgForm infoMsgForm;
+	private final InfoMsgForm maintenanceMsgForm;
 	private final FolderRunController staticFolderCtrl;
 	private final StackedPanel container;
 	
@@ -77,7 +82,7 @@ public class InfoMessageControllerSingleVM extends BasicController {
 		String adminToken = (p == null ? "" : p.getStringValue());
 		infoMsgView.contextPut("admintoken", adminToken);
 		String protocol = Settings.getURIScheme().substring(0, Settings.getURIScheme().length()-1);
-		String changeUrl = Settings.getServerContextPathURI() + "admin.html?token=TOKEN&cmd=setinfomessage&msg=Lorem Ipsum";
+		String changeUrl = Settings.getServerContextPathURI() + "/admin.html?token=TOKEN&cmd=setinfomessage&msg=Lorem Ipsum";
 		infoMsgView.contextPut("admintokenusage", translate("infomsg.token.usage", new String[] { protocol, changeUrl }));
 		
 		infomsgEditButton = LinkFactory.createButton("infomsgEdit", infoMsgView, this);
