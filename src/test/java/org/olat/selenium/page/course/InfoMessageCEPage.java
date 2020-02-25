@@ -238,10 +238,10 @@ public class InfoMessageCEPage {
 		By lengthBy = By.id("o_fiopane_tab_infos_config_max_shown_SELBOX");
 		WebElement lengthSelect = browser.findElement(lengthBy);
 		new Select(lengthSelect).selectByValue(Integer.toString(length));
-		
-		By saveBy = By.cssSelector(".o_sel_course_info_form button.btn.btn-primary");
-		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
+		
+		By selectedLengthBy = By.xpath("//select[@id='o_fiopane_tab_infos_config_max_shown_SELBOX']/option[@value='" + length + "'][@selected]");
+		OOGraphene.waitElement(selectedLengthBy, browser);
 		return this;
 	}
 	
