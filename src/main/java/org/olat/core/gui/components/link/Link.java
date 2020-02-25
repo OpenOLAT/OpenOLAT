@@ -26,8 +26,14 @@
 
 package org.olat.core.gui.components.link;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.badge.Badge;
@@ -36,7 +42,6 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.logging.AssertException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -47,7 +52,7 @@ import org.olat.core.logging.Tracing;
  * 
  * @author Alexander Schneider, Patrick Brunner
  */
-public class Link extends AbstractComponent {
+public class Link extends AbstractComponent implements ComponentCollection {
 	private static final Logger log = Tracing.createLoggerFor(Link.class);
 	//single renderer for all users, lazy creation upon first object creation of this class.
 	private static final ComponentRenderer RENDERER = new LinkRenderer();
@@ -111,6 +116,7 @@ public class Link extends AbstractComponent {
 	private boolean forceFlexiDirtyFormWarning = false;
 
 	private Badge badge;
+	private Component innerComponent;
 	private boolean newWindow;
 	private LinkPopupSettings popup;
 
@@ -316,6 +322,37 @@ public class Link extends AbstractComponent {
 		return flexiLink;
 	}
 	
+	public Component getInnerComponent() {
+		return innerComponent;
+	}
+	
+	public void setInnerComponent(Component component) {
+		this.innerComponent = component;
+	}
+	
+	@Override
+	public Component getComponent(String name) {
+		if(badge != null && badge.getComponentName().equals(name)) {
+			return badge;
+		}
+		if(innerComponent != null && innerComponent.getComponentName().equals(name)) {
+			return innerComponent;
+		}
+		return null;
+	}
+
+	@Override
+	public Iterable<Component> getComponents() {
+		List<Component> components = new ArrayList<>(2);
+		if(badge != null) {
+			components.add(badge);
+		}
+		if(innerComponent != null) {
+			components.add(innerComponent);
+		}
+		return components;
+	}
+
 	MouseEvent getMouseEvent() {
 		return mouseEvent;
 	}

@@ -259,7 +259,10 @@ public class LinkRenderer extends DefaultComponentRenderer {
 				sb.append(" class='").append(link.getLabelCSS()).append("'");
 			}
 			sb.append(">");
-			if (customDisplayText != null) {
+			
+			if(link.getInnerComponent() != null) {
+				renderer.render(link.getInnerComponent(), sb, args);
+			} else if (customDisplayText != null) {
 				//link is not translated but has custom text
 				sb.append(customDisplayText);
 			}	else if (nontranslated) {
