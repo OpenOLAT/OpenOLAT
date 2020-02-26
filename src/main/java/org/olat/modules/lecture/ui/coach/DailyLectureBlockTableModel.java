@@ -46,10 +46,12 @@ public class DailyLectureBlockTableModel extends DefaultFlexiTreeTableDataModel<
 implements SortableFlexiTableDataModel<DailyLectureBlockRow> {
 	
 	private final Locale locale;
+	private final boolean dailyRecordingEnabled;
 
-	public DailyLectureBlockTableModel(FlexiTableColumnModel columnModel, Locale locale) {
+	public DailyLectureBlockTableModel(FlexiTableColumnModel columnModel, Locale locale, boolean dailyRecordingEnabled) {
 		super(columnModel);
 		this.locale = locale;
+		this.dailyRecordingEnabled = dailyRecordingEnabled;
 	}
 	
 	@Override
@@ -114,7 +116,7 @@ implements SortableFlexiTableDataModel<DailyLectureBlockRow> {
 			switch(BlockCols.values()[col]) {
 				case times: return row.getLectureBlock();
 				case tools: return row.getTools();
-				case details: return Boolean.TRUE;
+				case details: return Boolean.valueOf(dailyRecordingEnabled);
 				default: return null;
 			}
 		}
@@ -130,20 +132,22 @@ implements SortableFlexiTableDataModel<DailyLectureBlockRow> {
 			case numOfAbsences: return row.getNumOfAbsences();
 			case warnings:
 			case alerts: return row.getLectureBlockBlockStatistics();
-			case details: {
-				Date end = row.getLectureBlock().getEndDate();
-				Date start = row.getLectureBlock().getStartDate();
-				Date now = new Date();
-				return end.before(new Date()) || (row.isIamTeacher() && start.compareTo(now) <= 0);
-			}
+			case details: return allowDetails(row);
 			case tools: return row.getTools();
 			default: return "ERROR";
 		}
 	}
+	
+	private boolean allowDetails(DailyLectureBlockRow row) {
+		Date end = row.getLectureBlock().getEndDate();
+		Date start = row.getLectureBlock().getStartDate();
+		Date now = new Date();
+		return end.before(new Date()) || (row.isIamTeacher() && start.compareTo(now) <= 0);
+	}
 
 	@Override
 	public DefaultFlexiTableDataModel<DailyLectureBlockRow> createCopyWithEmptyList() {
-		return new DailyLectureBlockTableModel(getTableColumnModel(), locale);
+		return new DailyLectureBlockTableModel(getTableColumnModel(), locale, dailyRecordingEnabled);
 	}
 	
 	public enum BlockCols implements FlexiSortableColumnDef {

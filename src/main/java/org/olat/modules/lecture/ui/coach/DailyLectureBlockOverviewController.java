@@ -105,6 +105,7 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 	private final Formatter formatter;
 	private final boolean isAdministrativeUser;
 	private final boolean authorizedAbsenceEnabled;
+	private final boolean dailyRecordingEnabled;
 	private final Identity profiledIdentity;
 	private final LecturesSecurityCallback secCallback;
 	private final RollCallSecurityCallback rollCallSecCallback;
@@ -134,6 +135,7 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
+		dailyRecordingEnabled = lectureModule.getDailyRollCall() == DailyRollCall.daily;
 		
 		initForm(ureq);
 		loadModel();
@@ -187,7 +189,7 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 		toolsCol.setSortable(false);
 		columnsModel.addFlexiColumnModel(toolsCol);
 		
-		tableModel = new DailyLectureBlockTableModel(columnsModel, getLocale());
+		tableModel = new DailyLectureBlockTableModel(columnsModel, getLocale(), dailyRecordingEnabled);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
 		sortOptions.setDefaultOrderBy(new SortKey(BlockCols.times.name(), true));
