@@ -26,6 +26,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.zip.ZipOutputStream;
 
@@ -46,6 +47,7 @@ public class ContentProviderFactory {
 	private static final Logger log = Tracing.createLoggerFor(ContentProviderFactory.class);
 	
 	private static final ContentProvider EMPTY = new EmptyContentProvider();
+	private static final ContentProvider XML = new XmlContentProvider();
 	private static final ContentProvider DOCX = new DocxContentProvider();
 	private static final ContentProvider XLSX = new XlsxContentProvider();
 	private static final ContentProvider PPTX = new PptxContentProvider();
@@ -53,6 +55,11 @@ public class ContentProviderFactory {
 	public static ContentProvider empty() {
 		return EMPTY;
 	}
+	
+	public static ContentProvider emptyXml() {
+		return XML;
+	}
+	
 	
 	public static ContentProvider emptyDocx() {
 		return DOCX;
@@ -73,6 +80,16 @@ public class ContentProviderFactory {
 		@Override
 		public InputStream getContent(Locale locale) {
 			return new ByteArrayInputStream(EMPTY_CONTENT);
+		}
+	}
+	
+	private static final class XmlContentProvider implements ContentProvider {
+
+		private static final String XML_CONTENT = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>";
+		
+		@Override
+		public InputStream getContent(Locale locale) {
+			return new ByteArrayInputStream(XML_CONTENT.getBytes(StandardCharsets.UTF_8));
 		}
 	}
 	

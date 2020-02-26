@@ -50,7 +50,7 @@ import org.springframework.stereotype.Service;
 public class FileEditor implements DocEditor {
 	
 	private static final List<String> HTML_EDITOR_SUFFIX = Arrays.asList("html", "htm");
-	private static final List<String> TEXT_EDITOR_SUFFIX = Arrays.asList("txt", "css", "csv");
+	private static final List<String> TEXT_EDITOR_SUFFIX = Arrays.asList("txt", "css", "csv", "xml");
 	
 	@Autowired
 	private VFSLockManager lockManager;

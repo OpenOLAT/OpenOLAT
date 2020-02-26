@@ -23,6 +23,7 @@ import static org.olat.core.commons.services.doceditor.ContentProviderFactory.em
 import static org.olat.core.commons.services.doceditor.ContentProviderFactory.emptyDocx;
 import static org.olat.core.commons.services.doceditor.ContentProviderFactory.emptyPptx;
 import static org.olat.core.commons.services.doceditor.ContentProviderFactory.emptyXlsx;
+import static org.olat.core.commons.services.doceditor.ContentProviderFactory.emptyXml;
 import static org.olat.core.commons.services.doceditor.DocEditor.Mode.EDIT;
 
 import java.util.ArrayList;
@@ -72,6 +73,9 @@ public class DocTemplates {
 		if (docEditorService.hasEditor(identity, roles, "css", EDIT, hasMeta)) {
 			builder.addCss();
 		}
+		if (docEditorService.hasEditor(identity, roles, "xml", EDIT, hasMeta)) {
+			builder.addXml();
+		}
 		if (docEditorService.hasEditor(identity, roles, "docx", EDIT, hasMeta)) {
 			builder.addDocx();
 		}
@@ -97,13 +101,8 @@ public class DocTemplates {
 			this.translator = Util.createPackageTranslator(CreateDocumentController.class, locale);
 		}
 		
-		public Builder addCss() {
-			docTemplates.add(DocTemplate.of("css", translate("doc.type.css"), empty()));
-			return this;
-		}
-		
-		public Builder addDocx() {
-			docTemplates.add(DocTemplate.of("docx", translate("doc.type.docx"), emptyDocx()));
+		public Builder addTxt() {
+			docTemplates.add(DocTemplate.of("txt", translate("doc.type.txt"), empty()));
 			return this;
 		}
 		
@@ -112,8 +111,18 @@ public class DocTemplates {
 			return this;
 		}
 		
-		public Builder addTxt() {
-			docTemplates.add(DocTemplate.of("txt", translate("doc.type.txt"), empty()));
+		public Builder addCss() {
+			docTemplates.add(DocTemplate.of("css", translate("doc.type.css"), empty()));
+			return this;
+		}
+		
+		public Builder addXml() {
+			docTemplates.add(DocTemplate.of("xml", translate("doc.type.xml"), emptyXml()));
+			return this;
+		}
+		
+		public Builder addDocx() {
+			docTemplates.add(DocTemplate.of("docx", translate("doc.type.docx"), emptyDocx()));
 			return this;
 		}
 		
