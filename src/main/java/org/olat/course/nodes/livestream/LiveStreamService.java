@@ -65,4 +65,20 @@ public interface LiveStreamService {
 	 */
 	Long getLaunchers(RepositoryEntryRef courseEntry, String subIdent, Date from, Date to);
 
+	/**
+	 * Split the url to separate urls
+	 *
+	 * @param url
+	 * @return
+	 */
+	String[] splitUrl(String url);
+
+	/**
+	 * Checks whether at the urls are currently streaming and returns the streaming urls
+	 *
+	 * @param urls
+	 * @return
+	 */
+	String[] getStreamingUrls(String[] urls);
+
 }

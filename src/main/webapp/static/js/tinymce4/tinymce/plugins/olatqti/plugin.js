@@ -14,7 +14,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : '1.2.8'
+				version : '1.2.9'
 			};
 		},
 
@@ -275,6 +275,7 @@
 			function createTextEntryPlaceholder(responseIdentifier, content, interaction, gapType) {
 				var placeholder = new tinymce.html.Node('span', 1);
 				placeholder.attr({
+					"id": responseIdentifier,
 					"data-qti": interaction,
 					"data-qti-response-identifier": responseIdentifier,
 					"data-qti-solution" : content,
@@ -482,7 +483,8 @@
 						"data-qti-solution-empty": (solution == "" || solution == "&nbsp;" ? "true" : "false")
 					});
 					
-					var alone = node.previousSibling == null && (node.nextSibling == null || jQuery(node.nextSibling).attr("type") == "_moz");
+					var alone = node.previousSibling == null && (node.nextSibling == null || jQuery(node.nextSibling).attr("type") == "_moz"
+						|| jQuery(node.nextSibling).attr("data-mce-bogus") == "1");
 					ed.dom.replace(textNode, node, false);
 					if(alone) {
 						jQuery(textNode).after(String.fromCharCode(160));

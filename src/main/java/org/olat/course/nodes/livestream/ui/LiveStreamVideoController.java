@@ -26,6 +26,8 @@ import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -34,6 +36,7 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.course.nodes.livestream.LiveStreamEvent;
+import org.olat.course.nodes.livestream.LiveStreamService;
 import org.olat.course.nodes.livestream.paella.PaellaFactory;
 import org.olat.course.nodes.livestream.paella.PaellaMapper;
 import org.olat.course.nodes.livestream.paella.PlayerProfile;
@@ -49,11 +52,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class LiveStreamVideoController extends BasicController {
 
 	private final VelocityContainer mainVC;
+	private Link retryLink;
 	
 	private final PlayerProfile playerProfile;
 	private final List<MapperKey> mappers = new ArrayList<>();
+	private boolean error = false;
 	private String url;
+	private String[] urls;
 	
+	@Autowired
+	private LiveStreamService liveStreamService;
 	@Autowired
 	private MapperService mapperService;
 
@@ -61,35 +69,48 @@ public class LiveStreamVideoController extends BasicController {
 		super(ureq, wControl);
 		this.playerProfile = playerProfile;
 		mainVC = createVelocityContainer("video");
-		updateUI(ureq.getUserSession());
 		putInitialPanel(mainVC);
 	}
 	
 	public void setEvent(UserSession usess, LiveStreamEvent event) {
 		String newUrl = event != null? event.getLiveStreamUrl(): null;
 		if (newUrl == null || !newUrl.equalsIgnoreCase(url)) {
+			error = false;
 			url = newUrl;
+			urls = liveStreamService.splitUrl(newUrl);
 			updateUI(usess);
 		}
 	}
 
 	private void updateUI(UserSession usess) {
-		if (StringHelper.containsNonWhitespace(url)) {
-			mainVC.contextPut("id", CodeHelper.getRAMUniqueID());
-			Streams streams = PaellaFactory.createStreams(url);
-			PaellaMapper paellaMapper = new PaellaMapper(streams, playerProfile);
-			MapperKey mapperKey = mapperService.register(usess, paellaMapper);
-			mappers.add(mapperKey);
-			String baseURI = mapperKey.getUrl();
-			mainVC.contextPut("baseURI", baseURI);
-		}	else {
+		if (!StringHelper.containsNonWhitespace(url)) {
 			mainVC.contextRemove("id");
+			mainVC.contextRemove("error");
+		} else  {
+			String[] streamingUrls = liveStreamService.getStreamingUrls(urls);
+			if (streamingUrls.length > 0) {
+				mainVC.contextRemove("error");
+				mainVC.contextPut("id", CodeHelper.getRAMUniqueID());
+				Streams streams = PaellaFactory.createStreams(streamingUrls);
+				PaellaMapper paellaMapper = new PaellaMapper(streams, playerProfile);
+				MapperKey mapperKey = mapperService.register(usess, paellaMapper);
+				mappers.add(mapperKey);
+				String baseURI = mapperKey.getUrl();
+				mainVC.contextPut("baseURI", baseURI);
+			} else {
+				mainVC.contextRemove("id");
+				mainVC.contextPut("error", Boolean.valueOf(error));
+				retryLink = LinkFactory.createButton("viewer.retry", mainVC, this);
+			}
 		}
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if (source == retryLink) {
+			error = false;
+			updateUI(ureq.getUserSession());
+		}
 	}
 
 	@Override

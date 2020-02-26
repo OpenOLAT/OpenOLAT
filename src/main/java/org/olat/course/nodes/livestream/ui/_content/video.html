@@ -1,8 +1,14 @@
-#if($r.isNotNull($id))
-<div class="o_paella_wrapper">
-	<div class="o_instruction o_paella_error">
-		$r.translate("viewer.error.browser")
+#if($r.isNotNull($error))
+	<div class="o_instruction">
+		$r.translate("viewer.error.stream")
+		<div class="o_button_group">
+			$r.render("viewer.retry")
+		</div>
+#elseif($r.isNotNull($id))
+	<div class="o_paella_wrapper">
+		<div class="o_instruction o_paella_error">
+			$r.translate("viewer.error.browser")
+		</div>
+		<iframe id="${id}" allowfullscreen="true" src="${baseURI}" frameborder="0"></iframe>
 	</div>
-	<iframe id="${id}" allowfullscreen="true" src="${baseURI}" frameborder="0"></iframe>
-</div>
 #end
