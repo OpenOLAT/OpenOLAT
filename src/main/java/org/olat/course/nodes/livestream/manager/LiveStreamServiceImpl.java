@@ -30,13 +30,23 @@ import java.util.concurrent.ThreadFactory;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.apache.http.Header;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.logging.log4j.Logger;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.cal.CourseCalendars;
 import org.olat.course.nodes.livestream.LiveStreamEvent;
+import org.olat.course.nodes.livestream.LiveStreamModule;
 import org.olat.course.nodes.livestream.LiveStreamService;
 import org.olat.course.nodes.livestream.model.LiveStreamEventImpl;
 import org.olat.repository.RepositoryEntry;
@@ -54,8 +64,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class LiveStreamServiceImpl implements LiveStreamService {
 	
+	private static final Logger log = Tracing.createLoggerFor(LiveStreamServiceImpl.class);
+	
 	private ScheduledExecutorService scheduler;
 	
+	@Autowired
+	private LiveStreamModule liveStreamModule;
 	@Autowired
 	private CalendarManager calendarManager;
 	@Autowired
@@ -176,5 +190,48 @@ public class LiveStreamServiceImpl implements LiveStreamService {
 	@Override
 	public Long getLaunchers(RepositoryEntryRef courseEntry, String subIdent, Date from, Date to) {
 		return launchDao.getLaunchers(courseEntry, subIdent, from, to);
+	}
+
+	@Override
+	public String[] splitUrl(String url) {
+		if (!StringHelper.containsNonWhitespace(url)) return new String[0];
+		
+		String urlSeparator = liveStreamModule.getUrlSeparator();
+		return url.split(urlSeparator);
+	}
+
+	@Override
+	public String[] getStreamingUrls(String[] urls) {
+		if (urls == null || urls.length < 1) return urls;
+		
+		List<String> streamingUrls = new ArrayList<>(urls.length);
+		for (String url : urls) {
+			if (isStreaming(url)) {
+				streamingUrls.add(url);
+			}
+		}
+		
+		String[] streaming = new String[streamingUrls.size()];
+		streamingUrls.toArray(streaming);
+		return streaming;
+	}
+
+	private boolean isStreaming(String url) {
+		HttpGet request = new HttpGet(url);
+		try(CloseableHttpClient httpclient = HttpClients.createDefault();
+			CloseableHttpResponse response = httpclient.execute(request);) {
+			int statusCode = response.getStatusLine().getStatusCode();
+			if (statusCode == HttpStatus.SC_OK) {
+				// Wrong WOWZA urls returns a html message instead of a video.
+				Header contentType = response.getFirstHeader("Content-Type");
+				if (contentType != null && !contentType.getValue().contains("html")) {
+					return true;
+				}
+			}
+		} catch(Exception e) {
+			log.error("", e);
+		}
+		
+		return false;
 	}
 }

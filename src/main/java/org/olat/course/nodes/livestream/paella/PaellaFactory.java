@@ -22,10 +22,6 @@ package org.olat.course.nodes.livestream.paella;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.util.StringHelper;
-import org.olat.course.nodes.livestream.LiveStreamModule;
-
 /**
  * 
  * Initial date: 13 Dec 2019<br>
@@ -34,18 +30,12 @@ import org.olat.course.nodes.livestream.LiveStreamModule;
  */
 public class PaellaFactory {
 	
-	public static Streams createStreams(String url) {
+	public static Streams createStreams(String[] urls) {
 		Streams streams = new Streams();
-		if (StringHelper.containsNonWhitespace(url)) {
-			String[] urls = splitUrls(url);
+		if (urls.length > 0) {
 			addStreams(streams, urls);
 		}
 		return streams;
-	}
-
-	private static String[] splitUrls(String url) {
-		String urlSeparator = CoreSpringFactory.getImpl(LiveStreamModule.class).getUrlSeparator();
-		return url.split(urlSeparator);
 	}
 	
 	private static void addStreams(Streams streams, String[] urls) {
