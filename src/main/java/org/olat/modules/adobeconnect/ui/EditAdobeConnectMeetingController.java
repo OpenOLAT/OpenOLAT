@@ -178,6 +178,9 @@ public class EditAdobeConnectMeetingController extends FormBasicController {
 		if(!StringHelper.containsNonWhitespace(nameEl.getValue())) {
 			nameEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
+		} else if (nameEl.getValue().contains("&")) {
+			nameEl.setErrorKey("form.invalidchar.noamp", null);
+			allOk &= false;
 		}
 		
 		startDateEl.clearError();
