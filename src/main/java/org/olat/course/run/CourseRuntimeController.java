@@ -194,7 +194,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private COToolController emailCtrl;
 	private BlogToolController blogCtrl;
 	private FOToolController forumCtrl;
-	private Controller documentsCtrl;
+	private CourseDocumentsController documentsCtrl;
 	private CourseAreasController areasCtrl;
 	private ConfirmLeaveController leaveDialogBox;
 	private ArchiverMainController archiverCtrl;
@@ -1213,7 +1213,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				}
 			} else if("Documents".equalsIgnoreCase(type)) {
 				if (documentsLink != null && documentsLink.isVisible()) {
-					doDocuments(ureq);
+					Activateable2 documents = doDocuments(ureq);
+					if (documents != null) {
+						List<ContextEntry> subEntries = entries.subList(1, entries.size());
+						documents.activate(ureq, subEntries, entries.get(0).getTransientState());
+					}
 				}
 			} else if("Certification".equalsIgnoreCase(type)) {
 				if (efficiencyStatementsLink != null && efficiencyStatementsLink.isVisible()) {
@@ -1878,7 +1882,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		};
 	}
 	
-	private void doDocuments(UserRequest ureq) {
+	private CourseDocumentsController doDocuments(UserRequest ureq) {
 		if(delayedClose == Delayed.documents || requestForClose(ureq)) {
 			removeCustomCSS();
 			
@@ -1889,9 +1893,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			pushController(ureq, translate("command.documents"), documentsCtrl);
 			setActiveTool(documentsLink);
 			currentToolCtr = documentsCtrl;
-		} else {
-			delayedClose = Delayed.documents;
-		};
+			return documentsCtrl;
+		}
+		delayedClose = Delayed.documents;
+		return null;
 	}
 	
 	private void launchCalendar(UserRequest ureq) {

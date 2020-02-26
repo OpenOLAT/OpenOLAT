@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.bc;
 
+import java.util.List;
+
 import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
@@ -26,6 +28,9 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -37,7 +42,7 @@ import org.olat.repository.RepositoryEntry;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class CourseDocumentsController extends BasicController {
+public class CourseDocumentsController extends BasicController implements Activateable2 {
 
 	private static final String SUBSCRIPTION_SUBIDENTIFIER = "documents";
 	
@@ -59,6 +64,13 @@ public class CourseDocumentsController extends BasicController {
 	}
 
 	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if (folderCtrl != null) {
+			folderCtrl.activate(ureq, entries, state);
+		}
+	}
+	
+	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
@@ -67,5 +79,5 @@ public class CourseDocumentsController extends BasicController {
 	protected void doDispose() {
 		//
 	}
-	
+
 }
