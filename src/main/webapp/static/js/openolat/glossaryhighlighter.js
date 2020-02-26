@@ -190,7 +190,7 @@ function o_tm_addExtToolTip(glossaryMainTerm, highlightString, occurrence){
 					//bootstrap tooltip
 					html: true,
 					container:'body',
-					placement: 'bottom',
+					placement: 'auto bottom',
 					title: function() {
 				        var elem = jQuery(this);
 				        jQuery.ajax(glossUrl).always(function(data, textStatus, jqXHR) {

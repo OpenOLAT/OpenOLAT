@@ -97,7 +97,13 @@
 		        		## // try a second time to prevent destroying after a reload
 		        		setTimeout(function() {
 		        			if(jQuery('#$r.getId("o_vid")').length == 0) {
-		        				player.remove();
+		        				try {
+		        					player.setMuted(true);
+		        					player.pause();
+		        					player.remove();
+		        				} catch(e) {
+		        					if(window.console) console.log(e);
+		        				}
 		        			}
 		        		}, 500);
 		        	}
