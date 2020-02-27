@@ -31,10 +31,12 @@ public class ReferenceEntryTimeRecordStatistics implements RepositoryEntryRef {
 
 	private final Long entryKey;
 	private final long time;
+	private final long metadataTime;
 	
-	public ReferenceEntryTimeRecordStatistics(Long entryKey, long time) {
+	public ReferenceEntryTimeRecordStatistics(Long entryKey, long time, long metadataTime) {
 		this.entryKey = entryKey;
 		this.time = time;
+		this.metadataTime = metadataTime;
 	}
 	
 	@Override
@@ -44,5 +46,26 @@ public class ReferenceEntryTimeRecordStatistics implements RepositoryEntryRef {
 	
 	public long getTime() {
 		return time;
+	}
+	
+	public long getMetadataTime() {
+		return metadataTime;
+	}
+
+	@Override
+	public int hashCode() {
+		return entryKey == null ? 87237615 : entryKey.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof ReferenceEntryTimeRecordStatistics) {
+			ReferenceEntryTimeRecordStatistics stats = (ReferenceEntryTimeRecordStatistics)obj;
+			return entryKey != null && entryKey.equals(stats.entryKey);
+		}
+		return false;
 	}
 }

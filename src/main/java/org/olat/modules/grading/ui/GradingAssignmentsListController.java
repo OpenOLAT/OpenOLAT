@@ -115,7 +115,7 @@ import org.olat.modules.grading.ui.confirmation.ConfirmUnassignGraderController;
 import org.olat.modules.grading.ui.confirmation.ExtendDeadlineController;
 import org.olat.modules.grading.ui.event.OpenAssignmentsEvent;
 import org.olat.modules.grading.ui.event.OpenEntryAssignmentsEvent;
-import org.olat.modules.grading.ui.wizard.AssignGrader;
+import org.olat.modules.grading.ui.wizard.AssignGraderContext;
 import org.olat.modules.grading.ui.wizard.AssignGrader1ChooseMemberStep;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.repository.RepositoryEntry;
@@ -296,6 +296,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GAssignmentsCol.courseElement, "open_course"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, GAssignmentsCol.assessmentDate));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, GAssignmentsCol.correctionMetadataMinutes));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, GAssignmentsCol.correctionMinutes));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, GAssignmentsCol.assignmentDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, GAssignmentsCol.doneDate));
@@ -474,7 +475,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 			if(event instanceof CompleteAssessmentTestSessionEvent) {
 				stackPanel.popController(correctionCtrl);
 				CompleteAssessmentTestSessionEvent catse = (CompleteAssessmentTestSessionEvent)event;
-				doUpdateCourseNode(catse.getTestSessions(), catse.getAssessmentTest(), catse.getStatus(),
+				doUpdateCourseNode(catse.getTestSessions().get(0), catse.getAssessmentTest(), catse.getStatus(),
 						correctionCtrl.getGradingAssignment());
 				loadModel();
 				cleanUp();
@@ -600,9 +601,9 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		stackPanel.pushController(translate("correction"), correctionCtrl);
 	}
 	
-	private void doUpdateCourseNode(List<AssessmentTestSession> testSessionsToComplete, AssessmentTest assessmentTest,
+	private void doUpdateCourseNode(AssessmentTestSession testSessionsToComplete, AssessmentTest assessmentTest,
 			AssessmentEntryStatus status, GradingAssignment assignment) {
-		if(testSessionsToComplete == null || testSessionsToComplete.isEmpty()) return;
+		if(testSessionsToComplete == null) return;
 		
 		assignment = gradingService.getGradingAssignment(assignment);
 		AssessmentEntry assessment = assignment.getAssessmentEntry();
@@ -616,29 +617,30 @@ public class GradingAssignmentsListController extends FormBasicController implem
 			CourseEnvironment courseEnv = course.getCourseEnvironment();
 			Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
 			
-			for(AssessmentTestSession testSession:testSessionsToComplete) {
-				UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
-						.createAndInitUserCourseEnvironment(testSession.getIdentity(), courseEnv);
-				AssessmentEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
-				
-				BigDecimal finalScore = testSession.getFinalScore();
-				Float score = finalScore == null ? null : finalScore.floatValue();
-				Boolean passed = scoreEval.getPassed();
-				if(testSession.getManualScore() != null && finalScore != null && cutValue != null) {
-					boolean calculated = finalScore.compareTo(BigDecimal.valueOf(cutValue.doubleValue())) >= 0;
-					passed = Boolean.valueOf(calculated);
-				}
-				AssessmentEntryStatus finalStatus = status == null ? scoreEval.getAssessmentStatus() : status;
-				ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, passed,
-						finalStatus, scoreEval.getUserVisible(), scoreEval.getCurrentRunCompletion(),
-						scoreEval.getCurrentRunStatus(), testSession.getKey());
-				courseAssessmentService.updateScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,
-						getIdentity(), false, Role.coach);
+
+			UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
+					.createAndInitUserCourseEnvironment(testSessionsToComplete.getIdentity(), courseEnv);
+			AssessmentEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
+			
+			BigDecimal finalScore = testSessionsToComplete.getFinalScore();
+			Float score = finalScore == null ? null : finalScore.floatValue();
+			Boolean passed = scoreEval.getPassed();
+			if(testSessionsToComplete.getManualScore() != null && finalScore != null && cutValue != null) {
+				boolean calculated = finalScore.compareTo(BigDecimal.valueOf(cutValue.doubleValue())) >= 0;
+				passed = Boolean.valueOf(calculated);
 			}
+			AssessmentEntryStatus finalStatus = status == null ? scoreEval.getAssessmentStatus() : status;
+			ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, passed,
+					finalStatus, scoreEval.getUserVisible(), scoreEval.getCurrentRunCompletion(),
+					scoreEval.getCurrentRunStatus(), testSessionsToComplete.getKey());
+			courseAssessmentService.updateScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,
+					getIdentity(), false, Role.coach);
+
 		}
 		
 		if(status == AssessmentEntryStatus.done) {
-			gradingService.assignmentDone(assignment);
+			Long metadataTime = qtiService.getMetadataCorrectionTimeInSeconds(assignment.getReferenceEntry(), testSessionsToComplete);
+			gradingService.assignmentDone(assignment, metadataTime);
 		}
 		
 		dbInstance.commit();// commit all
@@ -698,13 +700,14 @@ public class GradingAssignmentsListController extends FormBasicController implem
 	}
 	
 	private void doAssignGrader(UserRequest ureq, final List<GradingAssignment> assignments) {
-		final AssignGrader assignGrader = new AssignGrader(testEntry);
+		final AssignGraderContext assignGrader = new AssignGraderContext(testEntry);
 		GraderMailTemplate mailTemplate = new GraderMailTemplate(null, null, testEntry);
 		Step start = new AssignGrader1ChooseMemberStep(ureq, assignGrader, mailTemplate);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			MailerResult result = new MailerResult();
+			GraderMailTemplate sendTemplate = assignGrader.isSendEmail() ? mailTemplate : null;
 			for(GradingAssignment assignment:assignments) {
-				gradingService.assignGrader(assignment, assignGrader.getGrader(), mailTemplate, result);
+				gradingService.assignGrader(assignment, assignGrader.getGrader(), sendTemplate, result);
 			}
 			return StepsMainRunController.DONE_MODIFIED;
 		};
@@ -734,14 +737,15 @@ public class GradingAssignmentsListController extends FormBasicController implem
 				.map(GradingAssignment::getGrader)
 				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
-		final AssignGrader assignGrader = new AssignGrader(testEntry, currentGrader);
+		final AssignGraderContext assignGrader = new AssignGraderContext(testEntry, currentGrader);
 		GraderMailTemplate mailTemplate = new GraderMailTemplate(null, null, testEntry);
 		Step start = new AssignGrader1ChooseMemberStep(ureq, assignGrader, mailTemplate);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			MailerResult result = new MailerResult();
+			GraderMailTemplate sendTemplate = assignGrader.isSendEmail() ? mailTemplate : null;
 			for(GradingAssignment assignment:assignments) {
 				GradingAssignment unassignedAssignment = gradingService.unassignGrader(assignment);
-				gradingService.assignGrader(unassignedAssignment, assignGrader.getGrader(), mailTemplate, result);
+				gradingService.assignGrader(unassignedAssignment, assignGrader.getGrader(), sendTemplate, result);
 			}
 			return StepsMainRunController.DONE_MODIFIED;
 		};
@@ -815,6 +819,8 @@ public class GradingAssignmentsListController extends FormBasicController implem
 	private List<MailTemplate> getTemplates(RepositoryEntry entry, RepositoryEntry referenceEntry) {
 		List<MailTemplate> templates = new ArrayList<>();
 		templates.add(new GraderMailTemplate(translate("template.empty"), entry, null, referenceEntry));
+		templates.add(new GraderMailTemplate(translate("template.grader.to"), 
+				translate("mail.grader.to.entry.subject"), translate("mail.grader.to.entry.body"), entry, null, referenceEntry));	
 		templates.add(new GraderMailTemplate(translate("template.notification"), 
 				translate("mail.notification.subject"), translate("mail.notification.subject"), entry, null, referenceEntry));
 		templates.add(new GraderMailTemplate(translate("template.reminder1"),

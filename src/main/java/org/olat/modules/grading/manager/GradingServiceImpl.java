@@ -288,6 +288,7 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 		for(IdentityTimeRecordStatistics record:records) {
 			GraderWithStatistics statistics = identityToStatistics.get(record.getKey());
 			statistics.addRecordedTimeInSeconds(record.getTime());
+			statistics.addRecordedMetadataTimeInSeconds(record.getMetadataTime());
 		}
 		
 		for(AbsenceLeave absenceLeave:absenceLeaves) {
@@ -340,6 +341,7 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 			for(ReferenceEntryTimeRecordStatistics record:records) {
 				ReferenceEntryWithStatistics stats = keyStatistics.get(record.getKey());
 				stats.addRecordedTimeInSeconds(record.getTime());
+				stats.addRecordedMetadataTimeInSeconds(record.getMetadataTime());
 			}
 		}
 		return statistics;
@@ -820,11 +822,17 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 	}
 
 	@Override
-	public GradingAssignment assignmentDone(GradingAssignment assignment) {
+	public GradingAssignment assignmentDone(GradingAssignment assignment, Long metadataTime) {
 		assignment = gradingAssignmentDao.loadByKey(assignment.getKey());
 		assignment.setAssignmentStatus(GradingAssignmentStatus.done);
 		assignment.setClosingDate(new Date());
-		return gradingAssignmentDao.updateAssignment(assignment);
+		assignment = gradingAssignmentDao.updateAssignment(assignment);
+		if(metadataTime != null) {
+			GradingTimeRecord timeRecord = (GradingTimeRecord)getCurrentTimeRecord(assignment, new Date());
+			timeRecord.setMetadataTime(metadataTime.longValue());
+			gradingTimeRecordDao.updateTimeRecord(timeRecord);
+		}
+		return assignment;
 	}
 	
 	@Override

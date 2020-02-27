@@ -68,7 +68,7 @@ import org.olat.modules.grading.ui.component.GraderStatusCellRenderer;
 import org.olat.modules.grading.ui.confirmation.ConfirmDeactivationGraderController;
 import org.olat.modules.grading.ui.event.OpenAssignmentsEvent;
 import org.olat.modules.grading.ui.wizard.ImportGrader1ChooseMemberStep;
-import org.olat.modules.grading.ui.wizard.ImportGraders;
+import org.olat.modules.grading.ui.wizard.ImportGradersContext;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -164,6 +164,7 @@ public class GradersListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradersCol.open, "open"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradersCol.overdue, "overdue"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradersCol.oldestOpenAssignment));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradersCol.recordedMetadataTime));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradersCol.recordedTime));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradersCol.absence, new GraderAbsenceLeaveCellRenderer(getTranslator())));
 		
@@ -194,7 +195,8 @@ public class GradersListController extends FormBasicController {
 	
 	private GraderRow forgeRow(GraderWithStatistics rawGrader) {
 		GraderRow row = new GraderRow(rawGrader.getGrader(), rawGrader.getStatistics(),
-				rawGrader.getRecordedTimeInSeconds(), rawGrader.getAbsenceLeaves(), rawGrader.getGraderStatus());
+				rawGrader.getRecordedTimeInSeconds(), rawGrader.getRecordedMetadataTimeInSeconds(),
+				rawGrader.getAbsenceLeaves(), rawGrader.getGraderStatus());
 		// tools
 		String linkName = "tools-" + counter++;
 		FormLink toolsLink = uifactory.addFormLink(linkName, "tools", "", null, flc, Link.LINK | Link.NONTRANSLATED);
@@ -331,14 +333,16 @@ public class GradersListController extends FormBasicController {
 	private void doAddGrader(UserRequest ureq) {
 		removeAsListenerAndDispose(importGradersWizard);
 
-		final ImportGraders graders = new ImportGraders(referenceEntry);
-		GraderMailTemplate mailTemplate = new GraderMailTemplate(null, null, referenceEntry);
+		final ImportGradersContext graders = new ImportGradersContext(referenceEntry);
+		GraderMailTemplate mailTemplate = new GraderMailTemplate(translate("template.grader.to"), 
+				translate("mail.grader.to.entry.subject"), translate("mail.grader.to.entry.body"), null, null, referenceEntry);	
 		Step start = new ImportGrader1ChooseMemberStep(ureq, graders, mailTemplate, referenceEntry == null);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			List<Identity> futureGraders = graders.getGraders();
 			if(!futureGraders.isEmpty()) {
 				MailerResult result = new MailerResult();
-				gradingService.addGraders(graders.getEntry(), futureGraders, mailTemplate, result);
+				GraderMailTemplate sendTemplate = graders.isSendEmail() ? mailTemplate : null;
+				gradingService.addGraders(graders.getEntry(), futureGraders, sendTemplate, result);
 			}
 			return StepsMainRunController.DONE_MODIFIED;
 		};
@@ -389,9 +393,8 @@ public class GradersListController extends FormBasicController {
 		contact.add(row.getGrader());
 		msg.addEmailTo(contact);
 		
-
-		MailTemplate template = new GraderMailTemplate(null, null, null);
-		contactGraderCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, msg, template);
+		List<MailTemplate> templates = getTemplates(referenceEntry);
+		contactGraderCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, msg, templates);
 		contactGraderCtrl.getAndRemoveTitle();
 		listenTo(contactGraderCtrl);
 		
@@ -400,6 +403,20 @@ public class GradersListController extends FormBasicController {
 		cmc = new CloseableModalController(getWindowControl(), "close", contactGraderCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();	
+	}
+	
+	private List<MailTemplate> getTemplates(RepositoryEntry refEntry) {
+		List<MailTemplate> templates = new ArrayList<>();
+		templates.add(new GraderMailTemplate(translate("template.empty"), null, null, refEntry));
+		templates.add(new GraderMailTemplate(translate("template.grader.to"), 
+				translate("mail.grader.to.entry.subject"), translate("mail.grader.to.entry.body"), null, null, refEntry));	
+		templates.add(new GraderMailTemplate(translate("template.notification"), 
+				translate("mail.notification.subject"), translate("mail.notification.subject"), null, null, refEntry));
+		templates.add(new GraderMailTemplate(translate("template.reminder1"),
+				translate("mail.reminder1.subject"), translate("mail.reminder1.body"), null, null, refEntry));
+		templates.add(new GraderMailTemplate(translate("template.reminder2"), 
+				translate("mail.reminder2.subject"), translate("mail.reminder2.body"), null, null, refEntry));
+		return templates;
 	}
 	
 	private void doAddAbsenceLeave(UserRequest ureq, GraderRow row) {

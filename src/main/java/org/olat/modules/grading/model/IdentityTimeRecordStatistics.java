@@ -31,10 +31,12 @@ public class IdentityTimeRecordStatistics implements IdentityRef {
 
 	private final Long identityKey;
 	private final long time;
+	private final long metadataTime;
 	
-	public IdentityTimeRecordStatistics(Long identityKey, long time) {
+	public IdentityTimeRecordStatistics(Long identityKey, long time, long metadataTime) {
 		this.identityKey = identityKey;
 		this.time = time;
+		this.metadataTime = metadataTime;
 	}
 	
 	@Override
@@ -44,5 +46,26 @@ public class IdentityTimeRecordStatistics implements IdentityRef {
 	
 	public long getTime() {
 		return time;
+	}
+	
+	public long getMetadataTime() {
+		return metadataTime;
+	}
+	
+	@Override
+	public int hashCode() {
+		return identityKey == null ? -737615 : identityKey.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof IdentityTimeRecordStatistics) {
+			IdentityTimeRecordStatistics stats = (IdentityTimeRecordStatistics)obj;
+			return identityKey != null && identityKey.equals(stats.identityKey);
+		}
+		return false;
 	}
 }

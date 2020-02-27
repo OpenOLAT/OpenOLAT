@@ -90,6 +90,10 @@ public class GradingAssignmentWithInfos {
 		return timeRecord == null ? null : timeRecord.getTime();
 	}
 	
+	public Long getMetadataTimeRecordedInSeconds() {
+		return timeRecord == null ? null : timeRecord.getMetadataTime();
+	}
+	
 	public Identity getAssessedIdentity() {
 		return assessedIdentity;
 	}

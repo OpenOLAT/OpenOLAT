@@ -36,9 +36,9 @@ import org.olat.core.util.mail.MailTemplate;
 public class AssignGrader3MailStep extends BasicStep {
 
 	private final MailTemplate mailTemplate;
-	private final AssignGrader assignGrader;
+	private final AssignGraderContext assignGrader;
 	
-	public AssignGrader3MailStep(UserRequest ureq, AssignGrader assignGrader, MailTemplate mailTemplate) {
+	public AssignGrader3MailStep(UserRequest ureq, AssignGraderContext assignGrader, MailTemplate mailTemplate) {
 		super(ureq);
 		this.mailTemplate = mailTemplate;
 		this.assignGrader = assignGrader;
@@ -55,6 +55,6 @@ public class AssignGrader3MailStep extends BasicStep {
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
 		ContactList contacts = new ContactList(getTranslator().translate("assign.grader.contact"));
 		contacts.add(assignGrader.getGrader());
-		return new ImportGraderMailController(ureq, wControl, mailTemplate, contacts, form, runContext);
+		return new ImportGraderMailController(ureq, wControl, mailTemplate, contacts, assignGrader, form, runContext);
 	}
 }

@@ -106,6 +106,7 @@ public class AssignedReferenceEntryListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GEntryCol.oldestOpenAssignment));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GEntryCol.absence,
 				new GraderAbsenceLeaveCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GEntryCol.recordedMetadataTime));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GEntryCol.recordedTime));
 		
 		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(GEntryCol.tools);
@@ -240,8 +241,8 @@ public class AssignedReferenceEntryListController extends FormBasicController {
 		msg.addEmailTo(contact);
 		
 		RepositoryEntry referenceEntry = row.getReferenceEntry();
-		MailTemplate template = new GraderMailTemplate(null, null, null, referenceEntry);
-		contactGraderCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, msg, template);
+		List<MailTemplate> templates = getTemplates(referenceEntry);
+		contactGraderCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, msg, templates);
 		listenTo(contactGraderCtrl);
 		
 		String graderName = userManager.getUserDisplayName(grader);
@@ -249,6 +250,20 @@ public class AssignedReferenceEntryListController extends FormBasicController {
 		cmc = new CloseableModalController(getWindowControl(), "close", contactGraderCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();	
+	}
+	
+	private List<MailTemplate> getTemplates(RepositoryEntry refEntry) {
+		List<MailTemplate> templates = new ArrayList<>();
+		templates.add(new GraderMailTemplate(translate("template.empty"), null, null, refEntry));
+		templates.add(new GraderMailTemplate(translate("template.grader.to"), 
+				translate("mail.grader.to.entry.subject"), translate("mail.grader.to.entry.body"), null, null, refEntry));	
+		templates.add(new GraderMailTemplate(translate("template.notification"), 
+				translate("mail.notification.subject"), translate("mail.notification.subject"), null, null, refEntry));
+		templates.add(new GraderMailTemplate(translate("template.reminder1"),
+				translate("mail.reminder1.subject"), translate("mail.reminder1.body"), null, null, refEntry));
+		templates.add(new GraderMailTemplate(translate("template.reminder2"), 
+				translate("mail.reminder2.subject"), translate("mail.reminder2.body"), null, null, refEntry));
+		return templates;
 	}
 	
 	private void doAddAbsenceLeave(UserRequest ureq, AssignedReferenceEntryRow row) {

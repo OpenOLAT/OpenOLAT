@@ -56,7 +56,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class SearchResourceListController extends StepFormBasicController {
 	
-	private ImportGraders graders;
+	private ImportGradersContext graders;
 	
 	private FlexiTableElement tableEl;
 	private RepositoryFlexiTableModel tableModel;
@@ -64,7 +64,7 @@ public class SearchResourceListController extends StepFormBasicController {
 	@Autowired
 	private GradingService gradingService;
 	
-	public SearchResourceListController(UserRequest ureq, WindowControl wControl, ImportGraders graders, Form rootForm, StepsRunContext runContext) {
+	public SearchResourceListController(UserRequest ureq, WindowControl wControl, ImportGradersContext graders, Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "resource_list");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.graders = graders;

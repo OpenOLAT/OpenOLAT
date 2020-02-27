@@ -19,24 +19,29 @@
  */
 package org.olat.modules.grading.ui.wizard;
 
-import java.util.List;
-
-import org.olat.core.id.Identity;
 import org.olat.repository.RepositoryEntry;
 
 /**
  * 
- * Initial date: 17 janv. 2020<br>
+ * Initial date: 27 févr. 2020<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ImportGraders {
+public class AbstractGraderContext {
 	
-	private List<Identity> graders;
+	private boolean sendEmail;
 	private RepositoryEntry entry;
 	
-	public ImportGraders(RepositoryEntry entry) {
+	public AbstractGraderContext(RepositoryEntry entry) {
 		this.entry = entry;
+	}
+	
+	public boolean isSendEmail() {
+		return sendEmail;
+	}
+
+	public void setSendEmail(boolean sendEmail) {
+		this.sendEmail = sendEmail;
 	}
 
 	public RepositoryEntry getEntry() {
@@ -45,13 +50,5 @@ public class ImportGraders {
 
 	public void setEntry(RepositoryEntry entry) {
 		this.entry = entry;
-	}
-
-	public List<Identity> getGraders() {
-		return graders;
-	}
-
-	public void setGraders(List<Identity> graders) {
-		this.graders = graders;
 	}
 }

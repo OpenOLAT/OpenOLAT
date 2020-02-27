@@ -94,6 +94,10 @@ public class GradingAssignmentRow implements GradingAssignmentRef {
 		return timeRecord == null ? null : timeRecord.getTime();
 	}
 	
+	public Long getRecordedMetadataSeconds() {
+		return timeRecord == null ? null : timeRecord.getMetadataTime();
+	}
+	
 	public GradingAssignmentStatus getAssignmentStatus() {
 		return assignment.getAssignmentStatus();
 	}

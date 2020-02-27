@@ -42,11 +42,11 @@ import org.olat.core.id.Identity;
  */
 public class AssignGraderBySearchController extends StepFormBasicController {
 
-	private final AssignGrader assignGrader;
+	private final AssignGraderContext assignGrader;
 	
 	private final UserSearchFlexiController searchController; 
 
-	public AssignGraderBySearchController(UserRequest ureq, WindowControl wControl, AssignGrader assignGrader,
+	public AssignGraderBySearchController(UserRequest ureq, WindowControl wControl, AssignGraderContext assignGrader,
 			Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "import_search");
 		this.assignGrader = assignGrader;

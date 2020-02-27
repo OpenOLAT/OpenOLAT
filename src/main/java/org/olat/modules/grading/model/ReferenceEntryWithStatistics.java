@@ -37,6 +37,7 @@ public class ReferenceEntryWithStatistics implements RepositoryEntryRef {
 	private final RepositoryEntry entry;
 	private final ReferenceEntryStatistics statistics;
 	private long recordedTimeInSeconds = 0l;
+	private long recordedMetadataTimeInSeconds = 0l;
 	private final List<AbsenceLeave> absenceLeaves = new ArrayList<>(4);
 
 	public ReferenceEntryWithStatistics(RepositoryEntry entry) {
@@ -76,5 +77,13 @@ public class ReferenceEntryWithStatistics implements RepositoryEntryRef {
 
 	public void addRecordedTimeInSeconds(long seconds) {
 		recordedTimeInSeconds += seconds;
+	}
+	
+	public long getRecordedMetadataTimeInSeconds() {
+		return recordedMetadataTimeInSeconds;
+	}
+
+	public void addRecordedMetadataTimeInSeconds(long seconds) {
+		recordedMetadataTimeInSeconds += seconds;
 	}
 }

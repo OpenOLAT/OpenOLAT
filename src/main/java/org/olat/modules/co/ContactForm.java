@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -107,10 +108,14 @@ public class ContactForm extends FormBasicController {
 	private boolean readOnly=false;
 	private boolean hasMsgCancel=false;
 	private boolean hasMsgSave=true;
+	private boolean optional=false;
 	private static final String NLS_CONTACT_SEND_CP_FROM = "contact.cp.from";
 	private SelectionElement tcpfrom;
 	private static final String NLS_CONTACT_TEMPLATES = "contact.templates";
 	private SingleSelection templateEl;
+	private static final String[] optionalKeys = new String[] { "send" };
+	private static final String NLS_CONTACT_SEND = "contact.send";
+	private MultipleSelectionElement sendEl;
 	private Identity emailFrom;
 	private File attachementTempDir;
 	private long attachmentSize = 0l;
@@ -142,7 +147,12 @@ public class ContactForm extends FormBasicController {
 		this.contactAttachmentMaxSizeInMb = CoreSpringFactory.getImpl(MailModule.class).getMaxSizeForAttachement();
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		initForm(ureq);
-	}	
+	}
+	
+	public void setOptional(boolean optional) {
+		this.optional = optional;
+		sendEl.setVisible(optional);
+	}
 
 	public void setSubject(final String defaultSubject) {
 		tsubject.setValue(defaultSubject);
@@ -218,10 +228,10 @@ public class ContactForm extends FormBasicController {
 	
 	@Override
 	public boolean validateFormLogic(UserRequest ureq) {
-		
-		if(readOnly){
+		if(readOnly || (optional && !sendEl.isSelected(0))) {
 			return true;
 		}
+		
 		boolean fromMailAddOk = true;
 		if(tfrom.isEnabled()) {
 			String mailInputValue = tfrom.getValue().trim();
@@ -285,6 +295,10 @@ public class ContactForm extends FormBasicController {
 			}
 		}
 		return retVal;
+	}
+	
+	public boolean isSend() {
+		return !optional || sendEl.isAtLeastSelected(1);
 	}
 
 	public String getSubject() {
@@ -410,6 +424,8 @@ public class ContactForm extends FormBasicController {
 			if(templateEl.isOneSelected() && StringHelper.isLong(templateEl.getSelectedKey())) {
 				selectTemplate(Integer.parseInt(templateEl.getSelectedKey()));
 			}
+		} else if(sendEl == source) {
+			updateUI();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -421,12 +437,32 @@ public class ContactForm extends FormBasicController {
 			setBody(template.getBodyTemplate());
 		}
 	}
+	
+	private void updateUI() {
+		boolean sendMail = sendEl.isAtLeastSelected(1);
+		
+		tto.setVisible(sendMail && !recipientsAreEditable);
+		ttoBig.setVisible(sendMail && recipientsAreEditable);
+		tfrom.setVisible(sendMail);
+		tsubject.setVisible(sendMail);
+		tbody.setVisible(sendMail);
+		uploadCont.setVisible(sendMail);
+		attachmentEl.setVisible(sendMail);
+		tcpfrom.setVisible(sendMail);
+		templateEl.setVisible(sendMail && mailTemplates != null && mailTemplates.size() > 1);
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_contact_form");
 		
 		setFormTitle("header.newcntctmsg");
+		
+		String[] sendValues = new String[] { translate(NLS_CONTACT_SEND) };
+		sendEl = uifactory.addCheckboxesHorizontal("toptional", null, formLayout, optionalKeys, sendValues);
+		sendEl.setVisible(optional);
+		sendEl.select(optionalKeys[0], true);
+		sendEl.addActionListener(FormEvent.ONCHANGE);
 		
 		templateEl = uifactory.addDropdownSingleselect("ttemplates", NLS_CONTACT_TEMPLATES, formLayout, new String[0], new String[0]);
 		templateEl.setVisible(false);

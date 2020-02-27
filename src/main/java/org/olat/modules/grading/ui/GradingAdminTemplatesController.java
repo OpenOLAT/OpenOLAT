@@ -54,6 +54,11 @@ public class GradingAdminTemplatesController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		// new grader
+		initForm("mail.to.grader.subject", "mail.grader.to.entry.subject", formLayout);
+		initForm("mail.to.grader.body", "mail.grader.to.entry.body", formLayout);
+		uifactory.addSpacerElement("spacer-new-grader", formLayout, false);
+		
 		// notifications
 		initForm("notification.subject", "mail.notification.subject", formLayout);
 		initForm("notification.body", "mail.notification.body", formLayout);
@@ -67,7 +72,6 @@ public class GradingAdminTemplatesController extends FormBasicController {
 		// reminder 2
 		initForm("reminder.2.subject", "mail.reminder2.subject", formLayout);
 		initForm("reminder.2.body", "mail.reminder2.body", formLayout);
-		uifactory.addSpacerElement("spacer-2-reminder", formLayout, false);
 	}
 
 	private void initForm(String labelI18nKey, String textI18nKey, FormItemContainer formLayout) {

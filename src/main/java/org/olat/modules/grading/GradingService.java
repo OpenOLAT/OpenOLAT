@@ -157,7 +157,14 @@ public interface GradingService {
 	
 	public GradingAssignment unassignGrader(GradingAssignment assignment);
 	
-	public GradingAssignment assignmentDone(GradingAssignment assignment);
+	/**
+	 * Set the assignment status to done.
+	 * 
+	 * @param assignment The assignment to complete
+	 * @param metadatatime The time use based on metadata (of QTI 2.1 questions)
+	 * @return The merged assignment
+	 */
+	public GradingAssignment assignmentDone(GradingAssignment assignment, Long metadatatime);
 	
 	public GradingAssignment reopenAssignment(GradingAssignment assignment);
 	

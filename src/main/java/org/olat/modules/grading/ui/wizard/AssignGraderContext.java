@@ -17,36 +17,44 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.grading;
+package org.olat.modules.grading.ui.wizard;
 
-import java.util.Date;
+import java.util.List;
 
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.ModifiedInfo;
+import org.olat.core.id.Identity;
+import org.olat.modules.grading.GraderToIdentity;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
- * Initial date: 4 févr. 2020<br>
+ * Initial date: 28 janv. 2020<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface GradingTimeRecord extends GradingTimeRecordRef, CreateInfo, ModifiedInfo {
+public class AssignGraderContext extends AbstractGraderContext {
 	
-	/**
-	 * The duration in seconds.
-	 * 
-	 * @return time in seconds
-	 */
-	public long getTime();
+	private Identity grader;
+	private final List<GraderToIdentity> currentGrader;
 	
-	public long getMetadataTime();
+	public AssignGraderContext(RepositoryEntry entry) {
+		super(entry);
+		currentGrader = null;
+	}
 	
-	public void setMetadataTime(long time);
-	
-	public Date getDateOfRecord();
-	
-	public GraderToIdentity getGrader();
-	
-	public GradingAssignment getAssignment();
+	public AssignGraderContext(RepositoryEntry entry, List<GraderToIdentity> currentGrader) {
+		super(entry);
+		this.currentGrader = currentGrader;
+	}
 
+	public Identity getGrader() {
+		return grader;
+	}
+
+	public void setGrader(Identity grader) {
+		this.grader = grader;
+	}
+
+	public List<GraderToIdentity> getCurrentGrader() {
+		return currentGrader;
+	}
 }

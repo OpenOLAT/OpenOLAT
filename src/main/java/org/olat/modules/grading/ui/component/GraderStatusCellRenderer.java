@@ -50,21 +50,29 @@ public class GraderStatusCellRenderer implements FlexiCellRenderer {
 			@SuppressWarnings("unchecked")
 			GraderStatus status = getFinalStatus((List<GraderStatus>)cellValue);
 			if(status != null) {
-				String iconCssClass;
-				if(status == GraderStatus.activated) {
-					iconCssClass = "o_icon o_grader_active";
-				} else if(status == GraderStatus.deactivated) {
-					iconCssClass = "o_icon o_grader_inactive";
-				} else {
-					iconCssClass = "o_icon o_grader_absence";
-				}
-				
-				String label = translator.translate("grader.status.".concat(status.name()));
-				target.append("<span><i class='")
-				      .append(iconCssClass).append("'> </i> ")
-				      .append(label).append("</span>");
+				renderStatus(target, status);
 			}
+		} else if(cellValue instanceof GraderStatus) {
+			renderStatus(target, (GraderStatus)cellValue);
 		}
+	}
+	
+	private void renderStatus(StringOutput target, GraderStatus status) {
+		if(status == null) return;
+		
+		String iconCssClass;
+		if(status == GraderStatus.activated) {
+			iconCssClass = "o_icon o_grader_active";
+		} else if(status == GraderStatus.deactivated) {
+			iconCssClass = "o_icon o_grader_inactive";
+		} else {
+			iconCssClass = "o_icon o_grader_absence";
+		}
+		
+		String label = translator.translate("grader.status.".concat(status.name()));
+		target.append("<span><i class='")
+		      .append(iconCssClass).append("'> </i> ")
+		      .append(label).append("</span>");
 	}
 	
 	public static GraderStatus getFinalStatus(List<GraderStatus> status) {

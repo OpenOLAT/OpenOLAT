@@ -43,15 +43,18 @@ public class GraderRow {
 	private final List<AbsenceLeave> absenceLeaves;
 	
 	private final long recordedTimeInSeconds;
+	private final long recordedMetadataTimeInSeconds;
 	
 	private FormLink toolsLink;
 	
 	public GraderRow(Identity grader, GraderStatistics statistics,
-			long recordedTimeInSeconds, List<AbsenceLeave> absenceLeaves, List<GraderStatus> status) {
+			long recordedTimeInSeconds, long recordedMetadataTimeInSeconds,
+			List<AbsenceLeave> absenceLeaves, List<GraderStatus> status) {
 		this.grader = grader;
 		this.graderStatus = status;
 		this.statistics = statistics;
 		this.recordedTimeInSeconds = recordedTimeInSeconds;
+		this.recordedMetadataTimeInSeconds = recordedMetadataTimeInSeconds;
 		if(absenceLeaves != null && !absenceLeaves.isEmpty()) {
 			this.absenceLeaves = absenceLeaves;
 		} else {
@@ -101,6 +104,10 @@ public class GraderRow {
 	
 	public Long getRecordedTimeInSeconds() {
 		return recordedTimeInSeconds;
+	}
+	
+	public Long getRecordedMetadataTimeInSeconds() {
+		return recordedMetadataTimeInSeconds;
 	}
 
 	public FormLink getToolsLink() {

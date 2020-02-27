@@ -22,48 +22,27 @@ package org.olat.modules.grading.ui.wizard;
 import java.util.List;
 
 import org.olat.core.id.Identity;
-import org.olat.modules.grading.GraderToIdentity;
 import org.olat.repository.RepositoryEntry;
 
 /**
  * 
- * Initial date: 28 janv. 2020<br>
+ * Initial date: 17 janv. 2020<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssignGrader {
+public class ImportGradersContext extends AbstractGraderContext {
 	
-	private Identity grader;
-	private RepositoryEntry entry;
-	private final List<GraderToIdentity> currentGrader;
+	private List<Identity> graders;
 	
-	public AssignGrader(RepositoryEntry entry) {
-		this.entry = entry;
-		currentGrader = null;
-	}
-	
-	public AssignGrader(RepositoryEntry entry, List<GraderToIdentity> currentGrader) {
-		this.entry = entry;
-		this.currentGrader = currentGrader;
+	public ImportGradersContext(RepositoryEntry entry) {
+		super(entry);
 	}
 
-	public Identity getGrader() {
-		return grader;
+	public List<Identity> getGraders() {
+		return graders;
 	}
 
-	public void setGrader(Identity grader) {
-		this.grader = grader;
-	}
-
-	public RepositoryEntry getEntry() {
-		return entry;
-	}
-
-	public void setEntry(RepositoryEntry entry) {
-		this.entry = entry;
-	}
-	
-	public List<GraderToIdentity> getCurrentGrader() {
-		return currentGrader;
+	public void setGraders(List<Identity> graders) {
+		this.graders = graders;
 	}
 }

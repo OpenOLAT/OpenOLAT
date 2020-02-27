@@ -40,15 +40,18 @@ import org.olat.modules.co.ContactForm;
 public class ImportGraderMailController extends StepFormBasicController {
 	
 	private MailTemplate mailTemplate;
+	private final AbstractGraderContext assignGrader;
 	
 	private final ContactForm mailCtrl;
 
 	public ImportGraderMailController(UserRequest ureq, WindowControl wControl, MailTemplate mailTemplate,
-			ContactList contactList, Form rootForm, StepsRunContext runContext) {
+			ContactList contactList, AbstractGraderContext assignGrader, Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "mail_template");
 		this.mailTemplate = mailTemplate;
+		this.assignGrader = assignGrader;
 		mailCtrl = new ContactForm(ureq, getWindowControl(), rootForm, getIdentity(), false, false, false, false);
 		mailCtrl.getAndRemoveFormTitle();
+		mailCtrl.setOptional(true);
 		mailCtrl.setSubject(mailTemplate.getSubjectTemplate());
 		mailCtrl.setBody(mailTemplate.getBodyTemplate());
 		mailCtrl.setRecipientsLists(Collections.singletonList(contactList));
@@ -75,9 +78,12 @@ public class ImportGraderMailController extends StepFormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		mailTemplate.setSubjectTemplate(mailCtrl.getSubject());
-		mailTemplate.setBodyTemplate(mailCtrl.getBody());
-		mailTemplate.setAttachments(mailCtrl.getAttachments());
+		assignGrader.setSendEmail(mailCtrl.isSend());
+		if(mailCtrl.isSend()) {
+			mailTemplate.setSubjectTemplate(mailCtrl.getSubject());
+			mailTemplate.setBodyTemplate(mailCtrl.getBody());
+			mailTemplate.setAttachments(mailCtrl.getAttachments());
+		}
 		fireEvent (ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 }

@@ -490,5 +490,16 @@ public interface QTI21Service {
 	public File importFileSubmission(AssessmentTestSession candidateSession, MultipartFileInfos multipartFile);
 	
 	public File importFileSubmission(AssessmentTestSession candidateSession, String filename, byte[] data);
+	
+	/**
+	 * Returns the sum of the correction time set in metadata of the test. Only
+	 * the items proposed to the assessed user are counted (with or without response
+	 * of him).
+	 * 
+	 * @param testEntry The reference / test entry
+	 * @param candidateSession The test session
+	 * @return A number of seconds, 0 if nothing found
+	 */
+	public Long getMetadataCorrectionTimeInSeconds(RepositoryEntry testEntry, AssessmentTestSession candidateSession);
 
 }

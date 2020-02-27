@@ -73,6 +73,7 @@ public class GradersListTableModel extends DefaultFlexiTableDataModel<GraderRow>
 				case overdue: return row.getNumOfOverdueAssignments();
 				case oldestOpenAssignment: return row.getOldestOpenAssignment();
 				case recordedTime: return CalendarUtils.convertSecondsToMinutes(row.getRecordedTimeInSeconds());
+				case recordedMetadataTime: return CalendarUtils.convertSecondsToMinutes(row.getRecordedMetadataTimeInSeconds());
 				case absence: return row;
 				case tools: return row.getToolsLink();
 				default: return "ERROR";
@@ -105,6 +106,7 @@ public class GradersListTableModel extends DefaultFlexiTableDataModel<GraderRow>
 		oldestOpenAssignment("table.header.assignments.oldest.open"),
 		absence("table.header.absence.leave"),
 		recordedTime("table.header.recorded.time"),
+		recordedMetadataTime("table.header.recorded.meta.time"),
 		tools("table.header.tools");
 		
 		private final String i18nKey;

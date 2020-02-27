@@ -38,9 +38,9 @@ import org.olat.core.util.mail.MailTemplate;
  */
 public class AssignGrader2ConfirmMemberChoiceStep extends BasicStep {
 	
-	private final AssignGrader assignGrader;
+	private final AssignGraderContext assignGrader;
 	
-	public AssignGrader2ConfirmMemberChoiceStep(UserRequest ureq, AssignGrader assignGrader, MailTemplate mailTemplate) {
+	public AssignGrader2ConfirmMemberChoiceStep(UserRequest ureq, AssignGraderContext assignGrader, MailTemplate mailTemplate) {
 		super(ureq);
 		this.assignGrader = assignGrader;
 		setNextStep(new AssignGrader3MailStep(ureq, assignGrader, mailTemplate));
