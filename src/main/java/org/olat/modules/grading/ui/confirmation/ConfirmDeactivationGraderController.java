@@ -38,6 +38,7 @@ import org.olat.core.util.mail.MailerResult;
 import org.olat.modules.grading.GraderStatus;
 import org.olat.modules.grading.GraderToIdentity;
 import org.olat.modules.grading.GradingService;
+import org.olat.modules.grading.RepositoryEntryGradingConfiguration;
 import org.olat.modules.grading.ui.GradingRepositoryOverviewController;
 import org.olat.modules.grading.ui.component.GraderMailTemplate;
 import org.olat.repository.RepositoryEntry;
@@ -160,7 +161,11 @@ public class ConfirmDeactivationGraderController extends FormBasicController {
 		MailerResult result = new MailerResult();
 		GraderMailTemplate reassignmentTemplate = null;
 		if(replacement != null) {
-			reassignmentTemplate = new GraderMailTemplate(null, null, referenceEntry);
+			RepositoryEntryGradingConfiguration configuration = null;
+			if(referenceEntry != null)  {
+				configuration = gradingService.getOrCreateConfiguration(referenceEntry);
+			}
+			reassignmentTemplate = GraderMailTemplate.notification(getTranslator(), null, null, referenceEntry, configuration);
 		}
 		
 		if(remove) {
