@@ -213,6 +213,53 @@ public class GraderToIdentityDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void findGradersWithAssignmentInAbsenceLeave() {
+		Identity grader1 = JunitTestHelper.createAndPersistIdentityAsRndUser("grader-50");
+		Identity grader2 = JunitTestHelper.createAndPersistIdentityAsRndUser("grader-51");
+		Identity grader3 = JunitTestHelper.createAndPersistIdentityAsRndUser("grader-52");
+		Identity student1 = JunitTestHelper.createAndPersistIdentityAsRndUser("student-53");
+		Identity student2 = JunitTestHelper.createAndPersistIdentityAsRndUser("student-54");
+		Identity student3 = JunitTestHelper.createAndPersistIdentityAsRndUser("student-55");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(grader1);
+		dbInstance.commitAndCloseSession();
+		
+		GraderToIdentity relation1 = gradedToIdentityDao.createRelation(entry, grader1);
+		GraderToIdentity relation2 = gradedToIdentityDao.createRelation(entry, grader2);
+		GraderToIdentity relation3 = gradedToIdentityDao.createRelation(entry, grader3);
+		dbInstance.commit();
+		
+		AssessmentEntry assessment1 = assessmentEntryDao
+				.createAssessmentEntry(student1, null, entry, null, Boolean.TRUE, entry);
+		AssessmentEntry assessment2 = assessmentEntryDao
+				.createAssessmentEntry(student2, null, entry, null, Boolean.TRUE, entry);
+		AssessmentEntry assessment3 = assessmentEntryDao
+				.createAssessmentEntry(student3, null, entry, null, Boolean.TRUE, entry);
+		
+		gradingAssignmentDao.createGradingAssignment(relation1, entry, assessment1, null, null);
+		gradingAssignmentDao.createGradingAssignment(relation2, entry, assessment2, null, null);
+		gradingAssignmentDao.createGradingAssignment(relation3, entry, assessment3, null, null);
+		dbInstance.commit();
+
+		absenceLeaveDao.createAbsenceLeave(grader1, addDaysToNow(-25), addDaysToNow(-10), null, null);
+		absenceLeaveDao.createAbsenceLeave(grader1, addDaysToNow(23), addDaysToNow(35), entry.getOlatResource(), "76325457");
+		absenceLeaveDao.createAbsenceLeave(grader2, null, null, null, null);
+		dbInstance.commit();
+	
+		List<GraderToIdentity> onLeavesNow = gradedToIdentityDao.findGradersWithAssignmentInAbsenceLeave(new Date());
+		Assert.assertFalse(onLeavesNow.isEmpty());
+		Assert.assertFalse(onLeavesNow.contains(relation1));
+		Assert.assertTrue(onLeavesNow.contains(relation2));
+		Assert.assertFalse(onLeavesNow.contains(relation3));
+		
+		//
+		List<GraderToIdentity> onLeavesInThePast = gradedToIdentityDao.findGradersWithAssignmentInAbsenceLeave(addDaysToNow(-15));
+		Assert.assertFalse(onLeavesInThePast.isEmpty());
+		Assert.assertTrue(onLeavesInThePast.contains(relation1));
+		Assert.assertTrue(onLeavesInThePast.contains(relation2));
+		Assert.assertFalse(onLeavesInThePast.contains(relation3));
+	}
+	
+	@Test
 	public void getGrader() {
 		Identity grader = JunitTestHelper.createAndPersistIdentityAsRndUser("grader-5");
 		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(grader);

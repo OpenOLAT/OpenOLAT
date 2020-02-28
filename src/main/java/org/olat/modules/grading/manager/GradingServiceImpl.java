@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -38,12 +39,15 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
@@ -79,6 +83,7 @@ import org.olat.modules.grading.model.OlatResourceMapKey;
 import org.olat.modules.grading.model.ReferenceEntryStatistics;
 import org.olat.modules.grading.model.ReferenceEntryTimeRecordStatistics;
 import org.olat.modules.grading.model.ReferenceEntryWithStatistics;
+import org.olat.modules.grading.ui.GradingAssignmentsListController;
 import org.olat.modules.grading.ui.component.GraderMailTemplate;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyModule;
@@ -365,6 +370,8 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 		if(graderRelation != null && graderRelation.getGraderStatus() != GraderStatus.activated) {
 			graderRelation.setGraderStatus(GraderStatus.activated);
 			graderRelation = gradedToIdentityDao.updateGrader(graderRelation);
+			log.info(Tracing.M_AUDIT, "Activate grader {} in resource {} ({})",
+					graderRelation.getIdentity(), graderRelation.getEntry().getKey(), graderRelation.getEntry().getDisplayname());
 		}
 		return graderRelation;
 	}
@@ -396,6 +403,10 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 		graderRelation.setGraderStatus(GraderStatus.deactivated);
 		graderRelation = gradedToIdentityDao.updateGrader(graderRelation);
 		dbInstance.commit();
+
+		log.info(Tracing.M_AUDIT, "Deactivate grader {} {}",
+				graderRelation.getKey(), graderRelation.getIdentity());
+		
 		moveAssignments(graderRelation, replacementGrader, reassignmentTemplate, result);
 	}
 
@@ -789,7 +800,10 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 			grader.setGraderStatus(GraderStatus.activated);
 			grader = gradedToIdentityDao.updateGrader(grader);
 		}
-		
+		return assignGrader(assignment, grader, mailTemplate, result);
+	}
+	
+	private GradingAssignment assignGrader(GradingAssignment assignment, GraderToIdentity grader, GraderMailTemplate mailTemplate, MailerResult result) {
 		assignment = gradingAssignmentDao.loadByKey(assignment.getKey());
 		assignment.setAssignmentStatus(GradingAssignmentStatus.assigned);
 		assignment.setExtendedDeadline(null);
@@ -799,6 +813,9 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 		((GradingAssignmentImpl)assignment).setGrader(grader);
 		assignment = gradingAssignmentDao.updateAssignment(assignment);
 		dbInstance.commit();
+		
+		log.info(Tracing.M_AUDIT, "Assign assignment {} to grader {} ({})",
+				assignment.getKey(), grader.getKey(), grader.getIdentity());
 		
 		if(mailTemplate != null) {
 			MailContext context = new MailContextImpl("[CoachSite:0][Grading:0]");
@@ -818,7 +835,9 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 		assignment.setReminder1Date(null);
 		assignment.setReminder2Date(null);
 		((GradingAssignmentImpl)assignment).setGrader(null);
-		return gradingAssignmentDao.updateAssignment(assignment);
+		assignment = gradingAssignmentDao.updateAssignment(assignment);
+		log.info(Tracing.M_AUDIT, "Unassign assignment {}", assignment.getKey());
+		return assignment;
 	}
 
 	@Override
@@ -832,6 +851,7 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 			timeRecord.setMetadataTime(metadataTime.longValue());
 			gradingTimeRecordDao.updateTimeRecord(timeRecord);
 		}
+		log.info(Tracing.M_AUDIT, "Assignment done {}", assignment.getKey());
 		return assignment;
 	}
 	
@@ -840,7 +860,9 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 		assignment = gradingAssignmentDao.loadByKey(assignment.getKey());
 		assignment.setAssignmentStatus(GradingAssignmentStatus.assigned);
 		assignment.setClosingDate(null);
-		return gradingAssignmentDao.updateAssignment(assignment);
+		assignment = gradingAssignmentDao.updateAssignment(assignment);
+		log.info(Tracing.M_AUDIT, "Assignment reopened {}", assignment.getKey());
+		return assignment;
 	}
 
 	@Override
@@ -967,5 +989,80 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 			});
 		}
 		return elementTitle;
+	}
+	
+	@Override
+	public void graderAbsenceLeavesCheckWorkingDays() {
+		Date now = new Date();
+		if(CalendarUtils.isWorkingDay(now)) {
+			graderAbsenceLeavesCheck();
+		}
+	}
+
+	public void graderAbsenceLeavesCheck() {
+		List<GraderToIdentity> graders = gradedToIdentityDao.findGradersWithAssignmentInAbsenceLeave(new Date());
+		for(GraderToIdentity grader:graders) {
+			reassignGraderAssignments(grader);
+		}
+	}
+	
+	/**
+	 * The method make a rigorous check of the absence leaves
+	 * per resource.
+	 * 
+	 * @param grader The grader to reassign
+	 */
+	private void reassignGraderAssignments(GraderToIdentity grader) {
+		String language = grader.getIdentity().getUser().getPreferences().getLanguage();
+		Locale locale = I18nManager.getInstance().getLocaleOrDefault(language);
+		List<GradingAssignment> assignments = gradingAssignmentDao.getGradingAssignments(grader,
+				GradingAssignmentStatus.assigned, GradingAssignmentStatus.inProcess);
+		Translator translator = Util.createPackageTranslator(GradingAssignmentsListController.class, locale);
+		
+		List<AbsenceLeave> absenceLeaves = absenceLeaveDao.getAbsenceLeaves(grader.getIdentity());
+		
+		for(GradingAssignment assignment:assignments) {
+			RepositoryEntry referenceEntry = assignment.getReferenceEntry();
+			boolean matchAbsence = false;
+			for(AbsenceLeave absenceLeave:absenceLeaves) {
+				if(AbsenceLeaveHelper.isOnLeave(new Date(), absenceLeave, referenceEntry.getOlatResource(), null)) {
+					matchAbsence = true;
+				}
+			}
+			
+			if(matchAbsence) {
+				log.info(Tracing.M_AUDIT, "Reassign assigment ({}) of grader on absence leaves {} in resource {} ({})",
+						assignment.getKey(), grader.getIdentity().getKey(), referenceEntry.getKey(), referenceEntry.getDisplayname());
+			
+				RepositoryEntryGradingConfiguration config = gradingConfigurationDao.getConfiguration(referenceEntry);
+				unassignGrader(assignment);
+				dbInstance.commit();
+				
+				MailerResult result = new MailerResult();
+				GraderToIdentity replacementGrader = selectGrader(referenceEntry);
+				if(replacementGrader != null) {
+					String subject;
+					if(config != null && StringHelper.containsNonWhitespace(config.getNotificationSubject())) {
+						subject = config.getNotificationSubject();
+					} else {
+						subject = translator.translate("mail.notification.subject");
+					}
+					
+					String body;
+					if(config != null && StringHelper.containsNonWhitespace(config.getNotificationBody())) {
+						body = config.getNotificationBody();
+					} else {
+						body = translator.translate("mail.notification.body");
+					}
+					
+					GraderMailTemplate reassignmentTemplate = new GraderMailTemplate("Notification", subject, body, null, null, referenceEntry);
+					assignGrader(assignment, replacementGrader, reassignmentTemplate, result);
+					
+					log.info(Tracing.M_AUDIT, "Reassignment of {} from grader {} (due to absence leaves) to {} in resource {} ({})",
+							assignment.getKey(), grader.getIdentity(), replacementGrader.getIdentity(), referenceEntry.getKey(), referenceEntry.getDisplayname());
+				}
+			}
+			dbInstance.commit();
+		}
 	}
 }

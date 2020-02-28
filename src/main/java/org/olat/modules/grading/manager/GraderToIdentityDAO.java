@@ -313,6 +313,29 @@ public class GraderToIdentityDAO {
 		return records;
 	}
 	
+	public List<GraderToIdentity> findGradersWithAssignmentInAbsenceLeave(Date date) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select rel from grader2identity as rel")
+		  .append(" inner join fetch rel.identity as ident")
+		  .append(" inner join userabsenceleave as leave on (ident.key=leave.identity.key)")
+		  .append(" inner join gradingassignment as assignment on (assignment.grader.key=rel.key)")
+		  .append(" where assignment.status ").in(GradingAssignmentStatus.assigned, GradingAssignmentStatus.inProcess)
+		  .append(" and (")
+		  .append("  (leave.absentFrom is null and leave.absentTo>=:date)")
+		  .append("  or")
+		  .append("  (leave.absentFrom<=:date and leave.absentTo is null)")
+		  .append("  or")
+		  .append("  (leave.absentFrom<=:date and leave.absentTo>=:date)")
+		  .append("  or")
+		  .append("  (leave.absentFrom is null and leave.absentTo is null)")
+		  .append(" )");
+
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), GraderToIdentity.class)
+			.setParameter("date", date)
+			.getResultList();
+	}
+	
 	public List<AbsenceLeave> findGradersAbsenceLeaves(GradersSearchParameters searchParams, Date from, Date to) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select distinct leave from userabsenceleave as leave")

@@ -104,6 +104,16 @@ public class GradingAssignmentDAO {
 				.getResultList();
 	}
 	
+	public List<GradingAssignment> getGradingAssignments(GraderToIdentity grader, GradingAssignmentStatus... assignmentStatus) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select assignment from gradingassignment as assignment")
+		  .append(" where assignment.grader.key=:graderKey and assignment.status ").in(assignmentStatus);
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), GradingAssignment.class)
+				.setParameter("graderKey", grader.getKey())
+				.getResultList();
+	}
+	
 	public List<GradingAssignment> getGradingAssignments(IdentityRef grader) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select assignment from gradingassignment as assignment")

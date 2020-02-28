@@ -245,5 +245,9 @@ public interface GradingService {
 	 */
 	public void sendGradersAsssignmentsNotification();
 
-
+	/**
+	 * Check and eventually reassign graders which are on
+	 * absence leave.
+	 */
+	public void graderAbsenceLeavesCheckWorkingDays();
 }

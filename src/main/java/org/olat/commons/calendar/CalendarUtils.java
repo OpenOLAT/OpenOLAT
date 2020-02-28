@@ -400,6 +400,14 @@ public class CalendarUtils {
 		return cal.getTime();
 	}
 	
+	public static boolean isWorkingDay(Date date) {
+		if(date == null) return false;
+		
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
+		return dayOfWeek != Calendar.SATURDAY && dayOfWeek != Calendar.SUNDAY;
+	}
 	
 	public static Long convertSecondsToMinutes(Long timeInSeconds) {
 		if(timeInSeconds != null && timeInSeconds.longValue() > 0) {

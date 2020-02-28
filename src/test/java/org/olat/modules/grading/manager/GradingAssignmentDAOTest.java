@@ -33,6 +33,7 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.grading.GraderToIdentity;
 import org.olat.modules.grading.GradingAssignment;
+import org.olat.modules.grading.GradingAssignmentStatus;
 import org.olat.modules.grading.RepositoryEntryGradingConfiguration;
 import org.olat.modules.grading.model.GradingAssignmentSearchParameters;
 import org.olat.modules.grading.model.GradingAssignmentWithInfos;
@@ -255,6 +256,52 @@ public class GradingAssignmentDAOTest extends OlatTestCase {
 		Assert.assertNotNull(assignments);
 		Assert.assertEquals(1, assignments.size());
 		Assert.assertTrue(assignments.contains(assignment));
+	}
+	
+	@Test
+	public void getGradingAssignments_graderToIdentity() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("assignment-author-60");
+		Identity grader = JunitTestHelper.createAndPersistIdentityAsRndUser("assignment-grader-61");
+		Identity student = JunitTestHelper.createAndPersistIdentityAsRndUser("assignment-student-62");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+		AssessmentEntry assessment = assessmentEntryDao
+				.createAssessmentEntry(student, null, entry, null, false, entry);
+
+		GraderToIdentity relation = gradedToIdentityDao.createRelation(entry, grader);
+		GradingAssignment assignment = gradingAssignmentDao.createGradingAssignment(relation, entry, assessment, null, new Date());
+		dbInstance.commitAndCloseSession();
+		
+		List<GradingAssignment> assignments = gradingAssignmentDao.getGradingAssignments(relation);
+		Assert.assertNotNull(assignments);
+		Assert.assertEquals(1, assignments.size());
+		Assert.assertTrue(assignments.contains(assignment));
+	}
+	
+	@Test
+	public void getGradingAssignments_graderToIdentityAndStatus() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("assignment-author-60");
+		Identity grader = JunitTestHelper.createAndPersistIdentityAsRndUser("assignment-grader-61");
+		Identity student = JunitTestHelper.createAndPersistIdentityAsRndUser("assignment-student-62");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+		AssessmentEntry assessment = assessmentEntryDao
+				.createAssessmentEntry(student, null, entry, null, false, entry);
+
+		GraderToIdentity relation = gradedToIdentityDao.createRelation(entry, grader);
+		GradingAssignment assignment = gradingAssignmentDao.createGradingAssignment(relation, entry, assessment, null, new Date());
+		dbInstance.commitAndCloseSession();
+		
+		// assigned and in progress
+		List<GradingAssignment> assignments = gradingAssignmentDao.getGradingAssignments(relation,
+				GradingAssignmentStatus.assigned, GradingAssignmentStatus.inProcess);
+		Assert.assertNotNull(assignments);
+		Assert.assertEquals(1, assignments.size());
+		Assert.assertTrue(assignments.contains(assignment));
+		
+		// unassigned -> empty
+		List<GradingAssignment> unAssignments = gradingAssignmentDao.getGradingAssignments(relation,
+				GradingAssignmentStatus.unassigned);
+		Assert.assertNotNull(unAssignments);
+		Assert.assertTrue(unAssignments.isEmpty());
 	}
 	
 	@Test

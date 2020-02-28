@@ -36,7 +36,9 @@ public class GraderReminderJob extends JobWithDB {
 
 	@Override
 	public void executeWithDB(JobExecutionContext arg0) {
-		CoreSpringFactory.getImpl(GradingService.class).sendReminders();
-		CoreSpringFactory.getImpl(GradingService.class).sendGradersAsssignmentsNotification();
+		GradingService gradingService = CoreSpringFactory.getImpl(GradingService.class);
+		gradingService.sendReminders();
+		gradingService.sendGradersAsssignmentsNotification();
+		gradingService.graderAbsenceLeavesCheckWorkingDays();
 	}
 }

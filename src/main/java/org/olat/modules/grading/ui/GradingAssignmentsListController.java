@@ -822,7 +822,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		templates.add(new GraderMailTemplate(translate("template.grader.to"), 
 				translate("mail.grader.to.entry.subject"), translate("mail.grader.to.entry.body"), entry, null, referenceEntry));	
 		templates.add(new GraderMailTemplate(translate("template.notification"), 
-				translate("mail.notification.subject"), translate("mail.notification.subject"), entry, null, referenceEntry));
+				translate("mail.notification.subject"), translate("mail.notification.body"), entry, null, referenceEntry));
 		templates.add(new GraderMailTemplate(translate("template.reminder1"),
 				translate("mail.reminder1.subject"), translate("mail.reminder1.body"), entry, null, referenceEntry));
 		templates.add(new GraderMailTemplate(translate("template.reminder2"), 
