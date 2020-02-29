@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import org.apache.velocity.VelocityContext;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Preferences;
@@ -32,6 +33,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.course.nodes.CourseNode;
+import org.olat.modules.grading.RepositoryEntryGradingConfiguration;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -54,27 +56,96 @@ public class GraderMailTemplate extends MailTemplate {
 		super(subject, body, null);
 	}
 	
-	public GraderMailTemplate(RepositoryEntry entry, CourseNode courseNode, RepositoryEntry referenceEntry) {
+	private GraderMailTemplate(RepositoryEntry entry, CourseNode courseNode, RepositoryEntry referenceEntry) {
 		super(null, null, null);
 		this.entry = entry;
 		this.courseNode = courseNode;
 		this.referenceEntry = referenceEntry;
 	}
 	
-	public GraderMailTemplate(String name, RepositoryEntry entry, CourseNode courseNode, RepositoryEntry referenceEntry) {
+	private GraderMailTemplate(String templateName, RepositoryEntry entry, CourseNode courseNode, RepositoryEntry referenceEntry) {
 		super(null, null, null);
-		setTemplateName(name);
-		this.entry = entry;
-		this.courseNode = courseNode;
-		this.referenceEntry = referenceEntry;
-	}
-	
-	public GraderMailTemplate(String templateName, String subject, String body, RepositoryEntry entry, CourseNode courseNode, RepositoryEntry referenceEntry) {
-		super(subject, body, null);
 		setTemplateName(templateName);
 		this.entry = entry;
 		this.courseNode = courseNode;
 		this.referenceEntry = referenceEntry;
+	}
+	
+	public static final GraderMailTemplate empty(Translator translator, RepositoryEntry entry, CourseNode courseNode,
+			RepositoryEntry referenceEntry) {
+		return new GraderMailTemplate(translator.translate("template.empty"), entry, courseNode, referenceEntry);
+	}
+	
+	public static final GraderMailTemplate graderTo(Translator translator, RepositoryEntry entry, CourseNode courseNode,
+			RepositoryEntry referenceEntry, RepositoryEntryGradingConfiguration configuration) {
+		
+		String templateName = translator.translate("template.grader.to");
+		GraderMailTemplate template = new GraderMailTemplate(templateName, entry, courseNode, referenceEntry);
+		if(configuration != null && StringHelper.containsNonWhitespace(configuration.getNotificationSubject())) {
+			template.setSubjectTemplate(configuration.getNotificationSubject());
+		} else {
+			template.setSubjectTemplate(translator.translate("mail.grader.to.entry.subject"));
+		}
+		if(configuration != null && StringHelper.containsNonWhitespace(configuration.getNotificationBody())) {
+			template.setBodyTemplate(configuration.getNotificationBody());
+		} else {
+			template.setBodyTemplate(translator.translate("mail.grader.to.entry.body"));
+		}
+		return template;
+	}
+	
+	public static final GraderMailTemplate notification(Translator translator, RepositoryEntry entry, CourseNode courseNode,
+			RepositoryEntry referenceEntry, RepositoryEntryGradingConfiguration configuration) {
+		
+		String templateName = translator.translate("template.notification");
+		GraderMailTemplate template = new GraderMailTemplate(templateName, entry, courseNode, referenceEntry);
+		if(configuration != null && StringHelper.containsNonWhitespace(configuration.getNotificationSubject())) {
+			template.setSubjectTemplate(configuration.getNotificationSubject());
+		} else {
+			template.setSubjectTemplate(translator.translate("mail.notification.subject"));
+		}
+		if(configuration != null && StringHelper.containsNonWhitespace(configuration.getNotificationBody())) {
+			template.setBodyTemplate(configuration.getNotificationBody());
+		} else {
+			template.setBodyTemplate(translator.translate("mail.notification.body"));
+		}
+		return template;
+	}
+	
+	public static final GraderMailTemplate firstReminder(Translator translator, RepositoryEntry entry, CourseNode courseNode,
+			RepositoryEntry referenceEntry, RepositoryEntryGradingConfiguration configuration) {
+		
+		String templateName = translator.translate("template.reminder1");
+		GraderMailTemplate template = new GraderMailTemplate(templateName, entry, courseNode, referenceEntry);
+		if(configuration != null && StringHelper.containsNonWhitespace(configuration.getFirstReminderSubject())) {
+			template.setSubjectTemplate(configuration.getFirstReminderSubject());
+		} else {
+			template.setSubjectTemplate(translator.translate("mail.reminder1.subject"));
+		}
+		if(configuration != null && StringHelper.containsNonWhitespace(configuration.getFirstReminderBody())) {
+			template.setBodyTemplate(configuration.getFirstReminderBody());
+		} else {
+			template.setBodyTemplate(translator.translate("mail.reminder1.body"));
+		}
+		return template;
+	}
+	
+	public static final GraderMailTemplate secondReminder(Translator translator, RepositoryEntry entry, CourseNode courseNode,
+			RepositoryEntry referenceEntry, RepositoryEntryGradingConfiguration configuration) {
+		
+		String templateName = translator.translate("template.reminder2");
+		GraderMailTemplate template = new GraderMailTemplate(templateName, entry, courseNode, referenceEntry);
+		if(configuration != null && StringHelper.containsNonWhitespace(configuration.getSecondReminderSubject())) {
+			template.setSubjectTemplate(configuration.getSecondReminderSubject());
+		} else {
+			template.setSubjectTemplate(translator.translate("mail.reminder2.subject"));
+		}
+		if(configuration != null && StringHelper.containsNonWhitespace(configuration.getSecondReminderBody())) {
+			template.setBodyTemplate(configuration.getSecondReminderBody());
+		} else {
+			template.setBodyTemplate(translator.translate("mail.reminder2.body"));
+		}
+		return template;
 	}
 
 	public Date getAssessmentDate() {

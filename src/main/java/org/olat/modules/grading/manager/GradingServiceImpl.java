@@ -1041,23 +1041,8 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 				MailerResult result = new MailerResult();
 				GraderToIdentity replacementGrader = selectGrader(referenceEntry);
 				if(replacementGrader != null) {
-					String subject;
-					if(config != null && StringHelper.containsNonWhitespace(config.getNotificationSubject())) {
-						subject = config.getNotificationSubject();
-					} else {
-						subject = translator.translate("mail.notification.subject");
-					}
-					
-					String body;
-					if(config != null && StringHelper.containsNonWhitespace(config.getNotificationBody())) {
-						body = config.getNotificationBody();
-					} else {
-						body = translator.translate("mail.notification.body");
-					}
-					
-					GraderMailTemplate reassignmentTemplate = new GraderMailTemplate("Notification", subject, body, null, null, referenceEntry);
+					GraderMailTemplate reassignmentTemplate = GraderMailTemplate.notification(translator, null, null, referenceEntry, config);
 					assignGrader(assignment, replacementGrader, reassignmentTemplate, result);
-					
 					log.info(Tracing.M_AUDIT, "Reassignment of {} from grader {} (due to absence leaves) to {} in resource {} ({})",
 							assignment.getKey(), grader.getIdentity(), replacementGrader.getIdentity(), referenceEntry.getKey(), referenceEntry.getDisplayname());
 				}

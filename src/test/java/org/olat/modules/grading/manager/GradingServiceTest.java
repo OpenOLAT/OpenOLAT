@@ -89,6 +89,33 @@ public class GradingServiceTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void isGradingEnable() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("grading-config-1");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+		dbInstance.commitAndCloseSession();
+		
+		// no configuration -> not enabled
+		boolean noGradingConfiguration = gradingService.isGradingEnabled(entry, null);
+		Assert.assertFalse(noGradingConfiguration);
+		
+		// configuration not enabled
+		RepositoryEntryGradingConfiguration config = gradingService.getOrCreateConfiguration(entry);
+		config.setGradingEnabled(false);
+		gradingService.updateConfiguration(config);
+		dbInstance.commit();
+		boolean notEnabled = gradingService.isGradingEnabled(entry, null);
+		Assert.assertFalse(notEnabled);
+		
+		// configuration is enabled
+		RepositoryEntryGradingConfiguration enableConfig = gradingService.getOrCreateConfiguration(entry);
+		enableConfig.setGradingEnabled(true);
+		gradingService.updateConfiguration(enableConfig);
+		dbInstance.commit();
+		boolean enabled = gradingService.isGradingEnabled(entry, null);
+		Assert.assertTrue(enabled);
+	}
+	
+	@Test
 	public void deleteIdentity_like() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("time-1");
 		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(id);

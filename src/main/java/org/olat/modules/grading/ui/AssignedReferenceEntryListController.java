@@ -50,6 +50,7 @@ import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.grading.GradingService;
+import org.olat.modules.grading.RepositoryEntryGradingConfiguration;
 import org.olat.modules.grading.model.GradingAssignmentSearchParameters.SearchStatus;
 import org.olat.modules.grading.model.ReferenceEntryWithStatistics;
 import org.olat.modules.grading.ui.AssignedReferenceEntryListTableModel.GEntryCol;
@@ -253,16 +254,17 @@ public class AssignedReferenceEntryListController extends FormBasicController {
 	}
 	
 	private List<MailTemplate> getTemplates(RepositoryEntry refEntry) {
+		RepositoryEntryGradingConfiguration configuration = null;
+		if(refEntry != null)  {
+			configuration = gradingService.getOrCreateConfiguration(refEntry);
+		}
+		
 		List<MailTemplate> templates = new ArrayList<>();
-		templates.add(new GraderMailTemplate(translate("template.empty"), null, null, refEntry));
-		templates.add(new GraderMailTemplate(translate("template.grader.to"), 
-				translate("mail.grader.to.entry.subject"), translate("mail.grader.to.entry.body"), null, null, refEntry));	
-		templates.add(new GraderMailTemplate(translate("template.notification"), 
-				translate("mail.notification.subject"), translate("mail.notification.subject"), null, null, refEntry));
-		templates.add(new GraderMailTemplate(translate("template.reminder1"),
-				translate("mail.reminder1.subject"), translate("mail.reminder1.body"), null, null, refEntry));
-		templates.add(new GraderMailTemplate(translate("template.reminder2"), 
-				translate("mail.reminder2.subject"), translate("mail.reminder2.body"), null, null, refEntry));
+		templates.add(GraderMailTemplate.empty(getTranslator(), null, null, refEntry));
+		templates.add(GraderMailTemplate.graderTo(getTranslator(), null, null, refEntry, configuration));
+		templates.add(GraderMailTemplate.notification(getTranslator(), null, null, refEntry, configuration));
+		templates.add(GraderMailTemplate.firstReminder(getTranslator(), null, null, refEntry, configuration));
+		templates.add(GraderMailTemplate.secondReminder(getTranslator(), null, null, refEntry, configuration));
 		return templates;
 	}
 	

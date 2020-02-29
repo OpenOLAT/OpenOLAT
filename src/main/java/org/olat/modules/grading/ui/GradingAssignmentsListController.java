@@ -105,6 +105,7 @@ import org.olat.modules.grading.GradingAssignmentStatus;
 import org.olat.modules.grading.GradingSecurityCallback;
 import org.olat.modules.grading.GradingService;
 import org.olat.modules.grading.GradingTimeRecordRef;
+import org.olat.modules.grading.RepositoryEntryGradingConfiguration;
 import org.olat.modules.grading.model.GradingAssignmentSearchParameters;
 import org.olat.modules.grading.model.GradingAssignmentWithInfos;
 import org.olat.modules.grading.ui.GradingAssignmentsTableModel.GAssignmentsCol;
@@ -115,8 +116,8 @@ import org.olat.modules.grading.ui.confirmation.ConfirmUnassignGraderController;
 import org.olat.modules.grading.ui.confirmation.ExtendDeadlineController;
 import org.olat.modules.grading.ui.event.OpenAssignmentsEvent;
 import org.olat.modules.grading.ui.event.OpenEntryAssignmentsEvent;
-import org.olat.modules.grading.ui.wizard.AssignGraderContext;
 import org.olat.modules.grading.ui.wizard.AssignGrader1ChooseMemberStep;
+import org.olat.modules.grading.ui.wizard.AssignGraderContext;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
@@ -700,8 +701,13 @@ public class GradingAssignmentsListController extends FormBasicController implem
 	}
 	
 	private void doAssignGrader(UserRequest ureq, final List<GradingAssignment> assignments) {
+		RepositoryEntryGradingConfiguration configuration = null;
+		if(testEntry != null) {
+			configuration = gradingService.getOrCreateConfiguration(testEntry);
+		}
+		
 		final AssignGraderContext assignGrader = new AssignGraderContext(testEntry);
-		GraderMailTemplate mailTemplate = new GraderMailTemplate(null, null, testEntry);
+		GraderMailTemplate mailTemplate = GraderMailTemplate.notification(getTranslator(), null, null, testEntry, configuration);
 		Step start = new AssignGrader1ChooseMemberStep(ureq, assignGrader, mailTemplate);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			MailerResult result = new MailerResult();
@@ -737,8 +743,14 @@ public class GradingAssignmentsListController extends FormBasicController implem
 				.map(GradingAssignment::getGrader)
 				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
+		
+		RepositoryEntryGradingConfiguration configuration = null;
+		if(testEntry != null) {
+			configuration = gradingService.getOrCreateConfiguration(testEntry);
+		}
+		
 		final AssignGraderContext assignGrader = new AssignGraderContext(testEntry, currentGrader);
-		GraderMailTemplate mailTemplate = new GraderMailTemplate(null, null, testEntry);
+		GraderMailTemplate mailTemplate = GraderMailTemplate.notification(getTranslator(), null, null, testEntry, configuration);
 		Step start = new AssignGrader1ChooseMemberStep(ureq, assignGrader, mailTemplate);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			MailerResult result = new MailerResult();
@@ -817,16 +829,17 @@ public class GradingAssignmentsListController extends FormBasicController implem
 	}
 	
 	private List<MailTemplate> getTemplates(RepositoryEntry entry, RepositoryEntry referenceEntry) {
+		RepositoryEntryGradingConfiguration configuration = null;
+		if(referenceEntry != null) {
+			configuration = gradingService.getOrCreateConfiguration(referenceEntry);
+		}
+		
 		List<MailTemplate> templates = new ArrayList<>();
-		templates.add(new GraderMailTemplate(translate("template.empty"), entry, null, referenceEntry));
-		templates.add(new GraderMailTemplate(translate("template.grader.to"), 
-				translate("mail.grader.to.entry.subject"), translate("mail.grader.to.entry.body"), entry, null, referenceEntry));	
-		templates.add(new GraderMailTemplate(translate("template.notification"), 
-				translate("mail.notification.subject"), translate("mail.notification.body"), entry, null, referenceEntry));
-		templates.add(new GraderMailTemplate(translate("template.reminder1"),
-				translate("mail.reminder1.subject"), translate("mail.reminder1.body"), entry, null, referenceEntry));
-		templates.add(new GraderMailTemplate(translate("template.reminder2"), 
-				translate("mail.reminder2.subject"), translate("mail.reminder2.body"), entry, null, referenceEntry));
+		templates.add(GraderMailTemplate.empty(getTranslator(), entry, null, referenceEntry));
+		templates.add(GraderMailTemplate.graderTo(getTranslator(), entry, null, referenceEntry, configuration));
+		templates.add(GraderMailTemplate.notification(getTranslator(), entry, null, referenceEntry, configuration));
+		templates.add(GraderMailTemplate.firstReminder(getTranslator(), entry, null, referenceEntry, configuration));
+		templates.add(GraderMailTemplate.secondReminder(getTranslator(), entry, null, referenceEntry, configuration));
 		return templates;
 	}
 	

@@ -78,7 +78,7 @@ public interface GradingService {
 
 	/**
 	 * Activate the specified identity as grader for all reference / test entry where it was
-	 * deactivated.
+	 * deactivated. It only works on deactivated / removed graders.
 	 * 
 	 * @param identity The grader's identity
 	 */
@@ -86,6 +86,7 @@ public interface GradingService {
 	
 	/**
 	 * Activate the specified identity as grader for the specified reference / test entry.
+	 * It only works on deactivated / removed graders.
 	 * 
 	 * @param entry The reference / test entry
 	 * @param identity The grader's identity
