@@ -51,6 +51,8 @@ import org.springframework.stereotype.Service;
 public class VideoModule extends AbstractSpringModule {
 
 	private static final Logger log = Tracing.createLoggerFor(VideoModule.class);
+
+	public static final Integer DEFAULT_RESOLUTION = Integer.valueOf(720);
 	
 	private static final String VIDEO_ENABLED = "video.enabled";
 	private static final String VIDEOCOURSENODE_ENABLED = "video.coursenode.enabled";
@@ -81,8 +83,8 @@ public class VideoModule extends AbstractSpringModule {
 	@Value("${video.transcoding.profile}")
 	private String transcodingProfile;
 	
-	private int[] transcodingResolutionsArr; //= new int[] { 1080,720,480,360 };
-	private Integer preferredDefaultResolution;// = new Integer(720);
+	private int[] transcodingResolutionsArr; //  1080, 720, 480, 360
+	private Integer preferredDefaultResolution;// 720
 
 	@Autowired
 	private VideoHandler videoHandler;
@@ -149,14 +151,14 @@ public class VideoModule extends AbstractSpringModule {
 		setVideoTranscodingProfile(this.transcodingProfile);
 		
 
-		log.info("video.enabled=" + isEnabled());
-		log.info("video.coursenode.enabled=" + isCoursenodeEnabled());
-		log.info("video.transcoding.enabled=" + isTranscodingEnabled());
-		log.info("video.transcoding.resolutions=" + Arrays.toString(getTranscodingResolutions()));
-		log.info("video.transcoding.resolution.preferred=" + getPreferredDefaultResolution());
-		log.info("video.transcoding.taskset.cpuconfig=" + getTranscodingTasksetConfig());
-		log.info("video.transcoding.local=" + isTranscodingLocal());
-		log.info("video.transcoding.profile=" + getVideoTranscodingProfile());
+		log.info("video.enabled={}", isEnabled());
+		log.info("video.coursenode.enabled={}", isCoursenodeEnabled());
+		log.info("video.transcoding.enabled={}", isTranscodingEnabled());
+		log.info("video.transcoding.resolutions={}", Arrays.toString(getTranscodingResolutions()));
+		log.info("video.transcoding.resolution.preferred={}", getPreferredDefaultResolution());
+		log.info("video.transcoding.taskset.cpuconfig={}", getTranscodingTasksetConfig());
+		log.info("video.transcoding.local={}", isTranscodingLocal());
+		log.info("video.transcoding.profile={}", getVideoTranscodingProfile());
 
 		// Register video site for activation in top navigation
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(VideoSite.class.getSimpleName(),
@@ -233,7 +235,7 @@ public class VideoModule extends AbstractSpringModule {
 			}
 		} 
 		if (transcodingEnabled) {
-			log.error("Error, no valid transcoding dir. Disabling transcoding. video.transcoding.dir=" + transcodingDir);
+			log.error("Error, no valid transcoding dir. Disabling transcoding. video.transcoding.dir={}", transcodingDir);
 			// only disable variable, don't store it in persisted properties
 			transcodingEnabled = false;
 		}
@@ -306,7 +308,7 @@ public class VideoModule extends AbstractSpringModule {
 				return;
 			}
 		}
-		this.transcodingProfile = "Fast"; // default;
+		this.transcodingProfile = "Fast"; // default
 	}
 	
 	public String getVideoTranscodingProfile() {

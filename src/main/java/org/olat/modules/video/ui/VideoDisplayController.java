@@ -177,10 +177,7 @@ public class VideoDisplayController extends BasicController {
 			// Load users preferred version from GUI prefs
 			UserSession usess = ureq.getUserSession();
 			Preferences guiPrefs = usess.getGuiPreferences();
-			userPreferredResolution = (Integer) guiPrefs.get(VideoDisplayController.class, GUIPREF_KEY_PREFERRED_RESOLUTION);
-			if (userPreferredResolution == null) {
-				userPreferredResolution = videoModule.getPreferredDefaultResolution();
-			}
+			setUserPreferredResolution((Integer)guiPrefs.get(VideoDisplayController.class, GUIPREF_KEY_PREFERRED_RESOLUTION));
 
 			mainVC.contextPut("autoplay", displayOptions.isAutoplay());
 	
@@ -245,6 +242,20 @@ public class VideoDisplayController extends BasicController {
 	public void setTimeUpdateListener(boolean enable) {
 		mainVC.contextPut("listenTimeUpdate", enable);
 	}
+	
+	public Integer getUserPreferredResolution() {
+		if (userPreferredResolution == null) {
+			userPreferredResolution = videoModule.getPreferredDefaultResolution();
+		}
+		if (userPreferredResolution == null)  {
+			userPreferredResolution = VideoModule.DEFAULT_RESOLUTION;
+		}
+		return userPreferredResolution;
+	}
+	
+	public void setUserPreferredResolution(Integer resolution) {
+		userPreferredResolution = resolution;
+	}	
 	
 	private void initMediaElementJs() {
 		// load mediaelementjs player, speed and sourcechooser plugins
@@ -355,7 +366,7 @@ public class VideoDisplayController extends BasicController {
 					// Check if at least one has equal height, else use master as resource
 					addMaster &= videoTranscoding.getHeight() < masterResolution.getHeight();
 					// Use the users preferred resolution or the next higher resolution
-					if (videoTranscoding.getResolution() >= userPreferredResolution.intValue()) {
+					if (videoTranscoding.getResolution() >= getUserPreferredResolution().intValue()) {
 						preferredAvailableResolution = readyToPlayVideos.size() - 1;
 					}
 					// Calculate title. Standard title for standard resolution, original title if not standard resolution
@@ -699,6 +710,7 @@ public class VideoDisplayController extends BasicController {
 			}
 		}
 	}
+
 	
 	public static class VideoMarkerWrapper {
 		
