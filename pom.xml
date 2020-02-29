@@ -62,18 +62,18 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>1.8</targetJdk>
-		<org.springframework.version>5.2.3.RELEASE</org.springframework.version>
-		<org.hibernate.version>5.4.11.Final</org.hibernate.version>
+		<org.springframework.version>5.2.4.RELEASE</org.springframework.version>
+		<org.hibernate.version>5.4.12.Final</org.hibernate.version>
 		<apache.cxf>3.3.5</apache.cxf>
-		<apache.pdfbox>2.0.18</apache.pdfbox>
-		<apache.poi>4.1.1</apache.poi>
-		<apache.log4j>2.13.0</apache.log4j>
+		<apache.pdfbox>2.0.19</apache.pdfbox>
+		<apache.poi>4.1.2</apache.poi>
+		<apache.log4j>2.13.1</apache.log4j>
 		<io.jsonwebtoken>0.10.7</io.jsonwebtoken>
 		<io.undertow>2.0.29.Final</io.undertow>
 		<jackson.version>2.10.2</jackson.version>
 		<org.mysql.version>5.1.46</org.mysql.version>
 		<org.postgresql.version>42.2.10</org.postgresql.version>
-		<org.infinispan.version>10.1.2.Final</org.infinispan.version>
+		<org.infinispan.version>10.1.3.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>3.141.59</version.selenium>
 		<version.drone>2.5.1</version.drone>
