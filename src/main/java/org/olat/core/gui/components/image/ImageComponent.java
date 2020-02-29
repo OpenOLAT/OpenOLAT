@@ -303,6 +303,8 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 	}
 	
 	protected String getSuffix(String contentType) {
+		if(!StringHelper.containsNonWhitespace(contentType)) return null;
+		
 		contentType = contentType.toLowerCase();
 		if(contentType.indexOf("jpg") >= 0 || contentType.indexOf("jpeg") >= 0) {
 			return "jpg";
