@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
@@ -72,10 +73,10 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 
 	private SingleSelection bundlesSelection;
 	private SingleSelection keysSelection;
-	private TextElement referenceArea;
+	private TextAreaElement referenceArea;
 	private TextElement annotationArea;
 	private TextElement targetArea;
-	private TextElement compareArea;
+	private TextAreaElement compareArea;
 	private MultipleSelectionElement compareSwitch;
 	private SingleSelection compareLangSelection;
 	private FormLink previousLink, saveLink, saveNextLink, nextLink, annotationAddLink;
@@ -187,7 +188,7 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 		keysSelection.addActionListener(FormEvent.ONCHANGE);
 		keysSelection.select(currentItem.getKey(), true);
 		// Add reference box
-		referenceArea = uifactory.addTextAreaElement("referenceArea", "edit.referenceArea", -1, 1, -1, true, false, null, this.flc);
+		referenceArea = uifactory.addTextAreaElement("referenceArea", "edit.referenceArea", -1, 1, -1, true, false, null, flc);
 		referenceArea.setEnabled(false); // read only
 		// Add compare box
 		Boolean compareEnabledPrefs = (Boolean) guiPrefs.get(I18nModule.class, I18nModule.GUI_PREFS_COMPARE_LANG_ENABLED, Boolean.FALSE);
