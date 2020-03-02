@@ -24,6 +24,8 @@ import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 import static org.olat.course.nodes.livestream.ui.LiveStreamUIFactory.validateInteger;
 import static org.olat.course.nodes.livestream.ui.LiveStreamUIFactory.validateMandatory;
 
+import java.util.Arrays;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -39,8 +41,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.course.nodes.livestream.LiveStreamModule;
 import org.olat.course.nodes.livestream.paella.PlayerProfile;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import edu.emory.mathcs.backport.java.util.Arrays;
 
 /**
  * 

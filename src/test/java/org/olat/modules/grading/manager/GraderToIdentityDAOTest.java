@@ -19,6 +19,7 @@
  */
 package org.olat.modules.grading.manager;
 
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -49,8 +50,6 @@ import org.olat.test.OlatTestCase;
 import org.olat.user.AbsenceLeave;
 import org.olat.user.manager.AbsenceLeaveDAO;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import edu.emory.mathcs.backport.java.util.Arrays;
 
 /**
  * 

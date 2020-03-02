@@ -404,7 +404,14 @@ public class GradingAssignmentDAO {
 		return assignments.isEmpty() ? null : assignments.get(0);
 	}
 	
-	public List<GradingAssignment> getGradingAssignmentsToRemind() {
+	/**
+	 * This is not an exact method! check the configuration before send remidners.
+	 * 
+	 * @return A list of grading assignments where the status is assigned or
+	 *   in process, the assignment was done and the configuration defined some
+	 *   reminders date.
+	 */
+	public List<GradingAssignment> getGradingAssignmentsOpenWithPotentialToRemind() {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select assignment from gradingassignment as assignment")
 		  .append(" inner join assignment.referenceEntry referenceEntry")
@@ -413,9 +420,9 @@ public class GradingAssignmentDAO {
 		  .append(" and assignment.status ").in(GradingAssignmentStatus.assigned, GradingAssignmentStatus.inProcess)
 		  .append(" and assignment.assignmentDate is not null")
 		  .append(" and (")
-		  .append("   (assignment.reminder1Date is null and assignment.assignmentDate <= cast((current_date - cast(config.firstReminder as integer)) as date))")
+		  .append("   (assignment.reminder1Date is null and assignment.assignmentDate <= current_date)")
 		  .append("   or")
-		  .append("   (assignment.reminder2Date is null and assignment.assignmentDate <= cast((current_date - cast(config.secondReminder as integer)) as date))")
+		  .append("   (assignment.reminder2Date is null and assignment.assignmentDate <= current_date)")
 		  .append(" )");
 		
 		return dbInstance.getCurrentEntityManager()

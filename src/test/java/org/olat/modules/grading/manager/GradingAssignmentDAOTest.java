@@ -422,11 +422,11 @@ public class GradingAssignmentDAOTest extends OlatTestCase {
 		config.setSecondReminderBody("Content");
 		gradingConfigurationDao.updateConfiguration(config);
 
-		assignment.setAssignmentDate(removeDays(4));
+		assignment.setAssignmentDate(removeDays(5));
 		assignment = gradingAssignmentDao.updateAssignment(assignment);
 		dbInstance.commitAndCloseSession();
 		
-		List<GradingAssignment> assignmentsToRemind = gradingAssignmentDao.getGradingAssignmentsToRemind();
+		List<GradingAssignment> assignmentsToRemind = gradingAssignmentDao.getGradingAssignmentsOpenWithPotentialToRemind();
 		Assert.assertNotNull(assignmentsToRemind);
 		Assert.assertTrue(assignmentsToRemind.contains(assignment));
 	}

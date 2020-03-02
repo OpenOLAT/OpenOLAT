@@ -22,6 +22,7 @@ package org.olat.modules.grading.manager;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -100,8 +101,6 @@ import org.olat.user.manager.AbsenceLeaveHelper;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * 
@@ -557,7 +556,7 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 	@Override
 	public void sendReminders() {
 		// the query returns only an approximation because of the working days part of the configuration
-		List<GradingAssignment> inexactList = gradingAssignmentDao.getGradingAssignmentsToRemind();
+		List<GradingAssignment> inexactList = gradingAssignmentDao.getGradingAssignmentsOpenWithPotentialToRemind();
 		for(GradingAssignment assignment:inexactList) {
 			try {
 				RepositoryEntryGradingConfiguration config = gradingConfigurationDao.getConfiguration(assignment.getReferenceEntry());

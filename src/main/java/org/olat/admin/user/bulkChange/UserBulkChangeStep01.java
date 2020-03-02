@@ -20,6 +20,7 @@
 package org.olat.admin.user.bulkChange;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -51,8 +52,6 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * Description:<br>
