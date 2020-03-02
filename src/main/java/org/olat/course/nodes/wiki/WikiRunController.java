@@ -56,7 +56,10 @@ import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.wiki.DryRunAssessmentProvider;
+import org.olat.modules.wiki.PersistingAssessmentProvider;
 import org.olat.modules.wiki.Wiki;
+import org.olat.modules.wiki.WikiAssessmentProvider;
 import org.olat.modules.wiki.WikiMainController;
 import org.olat.modules.wiki.WikiManager;
 import org.olat.modules.wiki.WikiReadOnlySecurityCallback;
@@ -91,13 +94,13 @@ public class WikiRunController extends BasicController implements Activateable2 
 		addLoggingResourceable(LoggingResourceable.wrap(wikiCourseNode));
 		
 		//get repository entry in "strict" mode
-		RepositoryEntry re = WikiEditController.getWikiRepoReference(config, true);
+		RepositoryEntry wikiEntry = WikiEditController.getWikiRepoReference(config, true);
 		
 		//check role
 		UserSession usess = ureq.getUserSession();
 		boolean isAdmininstrator = userCourseEnv.isAdmin();
 		boolean isGuestOnly = usess.getRoles().isGuestOnly();
-		boolean isResourceOwner = isAdmininstrator || repositoryService.hasRole(getIdentity(), re, GroupRoles.owner.name());
+		boolean isResourceOwner = isAdmininstrator || repositoryService.hasRole(getIdentity(), wikiEntry, GroupRoles.owner.name());
 
 		// Check for jumping to certain wiki page
 		BusinessControl bc = wControl.getBusinessControl();
@@ -105,11 +108,17 @@ public class WikiRunController extends BasicController implements Activateable2 
 		
 		SubscriptionContext subsContext = WikiManager.createTechnicalSubscriptionContextForCourse(courseEnv, wikiCourseNode);
 		WikiSecurityCallback callback;
+		WikiAssessmentProvider assessmentProvider;
 		if(userCourseEnv.isCourseReadOnly()) {
 			callback = new WikiReadOnlySecurityCallback(isGuestOnly, (isAdmininstrator || isResourceOwner));
+			assessmentProvider = DryRunAssessmentProvider.create();
 		} else {
 			callback = new WikiSecurityCallbackImpl(ne, isAdmininstrator, isGuestOnly, false, isResourceOwner, subsContext);
+			assessmentProvider = userCourseEnv.isParticipant()
+					? PersistingAssessmentProvider.create(wikiEntry, getIdentity())
+					: DryRunAssessmentProvider.create();
 		}
+		
 		
 		if ( ce != null ) { //jump to a certain context
 			OLATResourceable ores = ce.getOLATResourceable();
@@ -118,9 +127,9 @@ public class WikiRunController extends BasicController implements Activateable2 
 			if(page.endsWith(":0")) {
 				page = page.substring(0, page.length() - 2);
 			}
-			wikiCtr = WikiManager.getInstance().createWikiMainController(ureq, wControl, re.getOlatResource(), callback, page);
+			wikiCtr = WikiManager.getInstance().createWikiMainController(ureq, wControl, wikiEntry.getOlatResource(), callback, assessmentProvider, page);
 		} else {
-			wikiCtr = WikiManager.getInstance().createWikiMainController(ureq, wControl, re.getOlatResource(), callback, null);
+			wikiCtr = WikiManager.getInstance().createWikiMainController(ureq, wControl, wikiEntry.getOlatResource(), callback, assessmentProvider, null);
 		}
 		listenTo(wikiCtr);
 

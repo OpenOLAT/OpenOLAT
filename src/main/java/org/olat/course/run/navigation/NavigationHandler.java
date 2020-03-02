@@ -68,6 +68,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.cp.CPRunController;
+import org.olat.course.nodes.wiki.WikiRunController;
 import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.VisibilityFilter;
@@ -227,6 +228,9 @@ public class NavigationHandler implements Disposable {
 				if(subtreemodelListener != currentNodeController) {
 					if(subtreemodelListener instanceof CPRunController) {
 						nrcr =  ((CPRunController)subtreemodelListener).createNodeRunConstructionResult(ureq, selTN.getIdent());
+					} else 
+						if(subtreemodelListener instanceof WikiRunController) {
+							nrcr =  ((WikiRunController)subtreemodelListener).createNodeRunConstructionResult();
 					} else {
 						nrcr = new NodeRunConstructionResult((Controller)subtreemodelListener);
 					}

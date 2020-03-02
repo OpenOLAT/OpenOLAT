@@ -38,12 +38,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+import java.util.function.Predicate;
 
+import org.apache.logging.log4j.Logger;
 import org.jamwiki.utils.Utilities;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
@@ -378,74 +379,49 @@ public class Wiki implements WikiContainer, Serializable {
 		return page;
 	}
 
-	/**
-	 * @see org.olat.core.commons.modules.wiki.WikiContainer#generatePageId(java.lang.String)
-	 */
 	@Override
 	public String generatePageId(String pageName) {
 		if(log.isDebugEnabled()) log.debug("Generating page id from page name: "+pageName +" to id: "+WikiManager.generatePageId(pageName));
 		return WikiManager.generatePageId(pageName);
 	}
 
-	/**
-	 * @return a List of all pages in a wiki ordered by date
-	 */
-	protected List<WikiPage> getPagesByDate() {
-		ArrayList<WikiPage> pages = new ArrayList<>(wikiPages.values());
-		Collections.sort(pages, WikiPageSort.MODTIME_ORDER);
-		return pages;
+	public List<WikiPage> getAllPages() {
+		return new ArrayList<>(wikiPages.values());
 	}
-
-	/**
-	 * @return a List containing all pages names of the wiki sorted alphabetically
-	 */
-	protected List<String> getListOfAllPageNames() {
-		ArrayList<WikiPage> pages = new ArrayList<>(wikiPages.values());
-		ArrayList<String> pageNames = new ArrayList<>(pages.size());
-		Collections.sort(pages, WikiPageSort.PAGENAME_ORDER);
-		for (Iterator<WikiPage> iter = pages.iterator(); iter.hasNext();) {
-			WikiPage page = iter.next();
-			if (!page.getPageName().startsWith("O_")) {
-				pageNames.add(page.getPageName());
-			}
-		}
-		return pageNames;
+	
+	public final static Predicate<WikiPage> REGULAR_PAGE_FILTER = 
+			page -> !page.getPageName().startsWith("O_");
+	
+	public List<WikiPage> getAllPagesWithContent() {
+		return getAllPagesWithContent(false);
 	}
-
-	/**
-	 * 
-	 * @return a List of all pages in a wiki
-	 */
-		public List<WikiPage> getAllPagesWithContent() {
-			return getAllPagesWithContent(false);
-		}
-		
-		public List<WikiPage> getAllPagesWithContent(boolean includeSpecialPages) {
-			ArrayList<WikiPage> pages = new ArrayList<>();
-			for (Iterator<String> keyes = wikiPages.keySet().iterator(); keyes.hasNext();) {
-				String pageId = keyes.next();
-				WikiPage wikiPage = getPage(pageId);
-				// check if the page is a content page
-				if (includeSpecialPages) {
-					if (wikiPage.getContent().equals("") ) {
-						// wikiPage has empty content => try to load content
-						if (!wikiPage.getPageName().startsWith("O_")) {
-							wikiPage = getPage(pageId, true);
-						}
-					}
-					pages.add(wikiPage);
-				} else {
+	
+	public List<WikiPage> getAllPagesWithContent(boolean includeSpecialPages) {
+		ArrayList<WikiPage> pages = new ArrayList<>();
+		for (Iterator<String> keyes = wikiPages.keySet().iterator(); keyes.hasNext();) {
+			String pageId = keyes.next();
+			WikiPage wikiPage = getPage(pageId);
+			// check if the page is a content page
+			if (includeSpecialPages) {
+				if (wikiPage.getContent().equals("") ) {
+					// wikiPage has empty content => try to load content
 					if (!wikiPage.getPageName().startsWith("O_")) {
-						if (wikiPage.getContent().equals("") ) {
-							// wikiPage has empty content => try to load content
-							wikiPage = getPage(pageId, true);
-						}
-					pages.add(wikiPage);
+						wikiPage = getPage(pageId, true);
 					}
 				}
+				pages.add(wikiPage);
+			} else {
+				if (!wikiPage.getPageName().startsWith("O_")) {
+					if (wikiPage.getContent().equals("") ) {
+						// wikiPage has empty content => try to load content
+						wikiPage = getPage(pageId, true);
+					}
+				pages.add(wikiPage);
+				}
 			}
-			return pages;
 		}
+		return pages;
+	}
 
 	/**
 	 * FIXME:gs increase performance

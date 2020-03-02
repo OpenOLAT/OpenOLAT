@@ -56,6 +56,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.fileresource.types.WikiResource;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.wiki.DryRunAssessmentProvider;
 import org.olat.modules.wiki.WikiMainController;
 import org.olat.modules.wiki.WikiManager;
 import org.olat.modules.wiki.WikiSecurityCallback;
@@ -252,7 +253,8 @@ public class WikiEditController extends ActivateableTabbableDefaultController im
 			CourseEnvironment cenv = course.getCourseEnvironment();
 			SubscriptionContext subsContext = WikiManager.createTechnicalSubscriptionContextForCourse(cenv, wikiCourseNode);
 			WikiSecurityCallback callback = new WikiSecurityCallbackImpl(null, isAdministrator, false, false, isResourceOwner, subsContext);
-			wikiCtr = WikiManager.getInstance().createWikiMainController(ureq, getWindowControl(), re.getOlatResource(), callback, null);
+			wikiCtr = WikiManager.getInstance().createWikiMainController(ureq, getWindowControl(), re.getOlatResource(),
+					callback, DryRunAssessmentProvider.create(), null);
 			cmcWikiCtr = new CloseableModalController(getWindowControl(), translate("command.close"), wikiCtr.getInitialComponent());				
 			listenTo(cmcWikiCtr);
 			cmcWikiCtr.activate();
