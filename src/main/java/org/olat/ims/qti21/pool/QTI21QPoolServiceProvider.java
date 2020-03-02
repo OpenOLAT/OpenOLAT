@@ -482,10 +482,10 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 	 * @param items The list of questions to export
 	 * @param locale The language
 	 */
-	public void exportToEditorPackage(String testTitle, File exportDir, List<QuestionItemShort> items, Locale locale) {
+	public void exportToEditorPackage(String testTitle, File exportDir, List<QuestionItemShort> items, boolean groupByTaxonomyLevel, Locale locale) {
 		List<QuestionItemFull> fullItems = loadQuestionFullItems(items);
 		QTI21ExportProcessor processor = new QTI21ExportProcessor(qtiService, qpoolFileStorage, locale);
-		processor.assembleTest(testTitle, fullItems, exportDir);
+		processor.assembleTest(testTitle, fullItems, groupByTaxonomyLevel, exportDir);
 	}
 	
 	private List<QuestionItemFull> loadQuestionFullItems(List<QuestionItemShort> items) {

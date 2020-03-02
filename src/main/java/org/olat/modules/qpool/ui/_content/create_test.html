@@ -3,6 +3,9 @@
 	$r.translate("warning.different.licenses")</div>
 #end
 $r.render("shares")
+#if($r.visible("group.by"))
+	$r.render("group.by")
+#end
 <div class="o_button_group">
 	$r.render("cancel")
 	$r.render("create.test")

@@ -36,13 +36,14 @@ import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.CSSIconFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.control.Controller;
@@ -52,8 +53,10 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.QPoolSPI;
+import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolModule;
+import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.manager.QuestionPoolLicenseHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -64,12 +67,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class CreateTestOverviewController extends FormBasicController {
+	
+	private static final String[] groupByKeys = new String[] { "on" };
 
 	private final boolean withLicenses;
+	private final boolean withTaxonomy;
 	private final ExportFormatOptions format;
+	
 	private QItemDataModel itemsModel;
-	
-	
+	private MultipleSelectionElement groupByEl;
 	
 	@Autowired
 	private LicenseModule licenseModule;
@@ -78,11 +84,11 @@ public class CreateTestOverviewController extends FormBasicController {
 	@Autowired
 	private QuestionPoolLicenseHandler licenseHandler;
 	
-
 	public CreateTestOverviewController(UserRequest ureq, WindowControl wControl, List<QuestionItemShort> items,
-			ExportFormatOptions format) {
+			ExportFormatOptions format, QPoolSecurityCallback secCallback) {
 		super(ureq, wControl, "create_test");
 		this.format = format;
+		withTaxonomy = secCallback.canUseTaxonomy();
 		withLicenses = licenseModule.isEnabled(licenseHandler);
 		initForm(ureq);
 		loadModel(items);
@@ -98,15 +104,26 @@ public class CreateTestOverviewController extends FormBasicController {
 						new CSSIconFlexiCellRenderer("o_icon_failed"))
 		));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.title));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.topic));
+		if(withTaxonomy) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.taxonomyLevel));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.taxonomyPath));
+		}
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.type));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.format));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status, new QuestionStatusCellRenderer()));
 		if(withLicenses) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.license));
 		}
 		itemsModel = new QItemDataModel(columnsModel, format, getLocale());
 		uifactory.addTableElement(getWindowControl(), "shares", itemsModel, getTranslator(), formLayout);
 		
-		uifactory.addFormSubmitButton("create.test", formLayout);
+		String[] groupByValues = new String[] { translate("group.by.taxonomy.level") };
+		groupByEl = uifactory.addCheckboxesHorizontal("group.by", null, formLayout, groupByKeys, groupByValues);
+		groupByEl.setVisible(withTaxonomy);
+		
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
+		uifactory.addFormSubmitButton("create.test", formLayout);
 	}
 	
 	private void loadModel(List<QuestionItemShort> items) {
@@ -155,6 +172,10 @@ public class CreateTestOverviewController extends FormBasicController {
 			}
 		}
 		return exportableItems;
+	}
+	
+	public boolean isGroupByTaxonomyLevel() {
+		return groupByEl.isVisible() && groupByEl.isAtLeastSelected(1);
 	}
 
 	@Override
@@ -218,12 +239,36 @@ public class CreateTestOverviewController extends FormBasicController {
 			return question.getTitle();
 		}
 		
+		public String getTopic() {
+			return question.getTopic();
+		}
+		
+		public String getTaxonomyLevelName() {
+			return question.getTaxonomyLevelName();
+		}
+		
+		public String getTaxonomyPath() {
+			return question.getTaxonomicPath();
+		}
+		
 		public String getFormat() {
 			return question.getFormat();
 		}
 		
 		public ResourceLicense getLicense() {
 			return license;
+		}
+		
+		public QuestionStatus getQuestionStatus() {
+			return question.getQuestionStatus();
+		}
+		
+		public String getItemType() {
+			String type = question.getItemType();
+			if(type == null) {
+				return "";
+			}
+			return type;
 		}
 	
 		public QuestionItemShort getQuestion() {
@@ -261,7 +306,12 @@ public class CreateTestOverviewController extends FormBasicController {
 					return Boolean.FALSE;	
 				} 
 				case title: return share.getTitle();
+				case topic: return share.getTopic();
+				case taxonomyLevel: return share.getTaxonomyLevelName();
+				case taxonomyPath: return share.getTaxonomyPath();
 				case format: return share.getFormat();
+				case type: return share.getItemType();
+				case status: return share.getQuestionStatus();
 				case license: return shortenedLicense(share);
 				default : return share;
 			}
@@ -286,10 +336,15 @@ public class CreateTestOverviewController extends FormBasicController {
 		}
 	}
 	
-	private enum Cols implements FlexiColumnDef {
+	private enum Cols implements FlexiSortableColumnDef {
 		accept("export.overview.accept"),
 		title("general.title"),
+		topic("general.topic"),
+		taxonomyLevel("classification.taxonomy.level"),
+		taxonomyPath("classification.taxonomic.path"),
 		format("technical.format"),
+		status("lifecycle.status"),
+		type("question.type"),
 		license("rights.license");
 		
 		private final String i18nKey;
@@ -301,6 +356,16 @@ public class CreateTestOverviewController extends FormBasicController {
 		@Override
 		public String i18nHeaderKey() {
 			return i18nKey;
+		}
+
+		@Override
+		public boolean sortable() {
+			return false;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
 		}
 	}
 }
