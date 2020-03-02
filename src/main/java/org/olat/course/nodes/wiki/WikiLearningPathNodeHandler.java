@@ -74,7 +74,9 @@ public class WikiLearningPathNodeHandler implements LearningPathNodeHandler {
 
 	@Override
 	public void onMigrated(CourseNode courseNode) {
-		//
+		if (courseNode instanceof WikiCourseNode) {
+			((WikiCourseNode)courseNode).removeCustomPreconditions();
+		}
 	}
 
 }

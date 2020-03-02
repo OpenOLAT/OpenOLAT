@@ -113,7 +113,9 @@ public class WikiRunController extends BasicController implements Activateable2 
 			callback = new WikiReadOnlySecurityCallback(isGuestOnly, (isAdmininstrator || isResourceOwner));
 			assessmentProvider = DryRunAssessmentProvider.create();
 		} else {
-			callback = new WikiSecurityCallbackImpl(ne, isAdmininstrator, isGuestOnly, false, isResourceOwner, subsContext);
+			Boolean courseEditRight = Boolean.valueOf(hasEditRights(wikiCourseNode, userCourseEnv, ne));
+			callback = new WikiSecurityCallbackImpl(courseEditRight, isAdmininstrator, isGuestOnly, false,
+					isResourceOwner, subsContext);
 			assessmentProvider = userCourseEnv.isParticipant()
 					? PersistingAssessmentProvider.create(wikiEntry, getIdentity())
 					: DryRunAssessmentProvider.create();
@@ -153,6 +155,20 @@ public class WikiRunController extends BasicController implements Activateable2 
 		} else {
 			putInitialPanel(new Panel("uups.no.clone.controller"));			
 		}
+	}
+	
+	private boolean hasEditRights(WikiCourseNode courseNode, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
+		if (courseNode.hasCustomPreConditions()) {
+			return ne.isCapabilityAccessible(WikiCourseNode.EDIT_CONDITION);
+		}
+		
+		ModuleConfiguration moduleConfig = courseNode.getModuleConfiguration();
+		if ((moduleConfig.getBooleanSafe(WikiCourseNode.CONFIG_KEY_EDIT_BY_COACH) && userCourseEnv.isCoach())
+				|| (moduleConfig.getBooleanSafe(WikiCourseNode.CONFIG_KEY_EDIT_BY_PARTICIPANT) && userCourseEnv.isParticipant())) {
+			return true;
+		}
+		
+		return false;
 	}
 
 	@Override
