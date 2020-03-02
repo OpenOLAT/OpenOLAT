@@ -66,8 +66,10 @@ import org.olat.ims.cp.ui.CPContentController;
 import org.olat.ims.cp.ui.CPEditMainController;
 import org.olat.ims.cp.ui.CPPackageConfig;
 import org.olat.ims.cp.ui.CPRuntimeController;
+import org.olat.modules.cp.CPAssessmentProvider;
 import org.olat.modules.cp.CPDisplayController;
 import org.olat.modules.cp.CPOfflineReadableManager;
+import org.olat.modules.cp.PersistingAssessmentProvider;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -221,8 +223,10 @@ public class ImsCPHandler extends FileHandler {
 		OLATResource res = re.getOlatResource();
 		File cpRoot = FileResourceManager.getInstance().unzipFileResource(res);
 		final LocalFolderImpl vfsWrapper = new LocalFolderImpl(cpRoot);
-		CPPackageConfig packageConfig = CoreSpringFactory.getImpl(CPManager.class).getCPPackageConfig(res);
+		CPManager cpManager = CoreSpringFactory.getImpl(CPManager.class);
+		CPPackageConfig packageConfig = cpManager.getCPPackageConfig(res);
 		final DeliveryOptions deliveryOptions = (packageConfig == null ? null : packageConfig.getDeliveryOptions());
+
 		return new CPRuntimeController(ureq, wControl, re, reSecurity,
 				(uureq, wwControl, toolbarPanel, entry, security, assessmentMode) -> {
 			boolean activateFirstPage = true;
@@ -231,8 +235,9 @@ public class ImsCPHandler extends FileHandler {
 			CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
 				.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
 			
+			CPAssessmentProvider cpAssessmentProvider = PersistingAssessmentProvider.create(re, uureq.getIdentity());
 			CPDisplayController cpCtr = new CPDisplayController(uureq, wwControl, vfsWrapper, true, true, activateFirstPage, true, deliveryOptions,
-					initialUri, entry.getOlatResource(), "", false);
+					initialUri, entry.getOlatResource(), "", false, cpAssessmentProvider);
 			LayoutMain3ColsController ctr = new LayoutMain3ColsController(uureq, wwControl, cpCtr.getMenuComponent(), cpCtr.getInitialComponent(), vfsWrapper.getName());
 			ctr.addDisposableChildController(cpCtr);
 			ctr.addActivateableDelegate(cpCtr);
@@ -254,7 +259,7 @@ public class ImsCPHandler extends FileHandler {
 		VFSSecurityCallback secCallback = new FullAccessWithQuotaCallback(quota);
 		cpRoot.setLocalSecurityCallback(secCallback);
 
-		return new CPEditMainController(ureq, wControl, toolbar, cpRoot, re.getOlatResource());
+		return new CPEditMainController(ureq, wControl, toolbar, cpRoot, re);
 	}
 	
 	@Override
@@ -262,31 +267,23 @@ public class ImsCPHandler extends FileHandler {
 		return null;
 	}
 	
+	@Override
 	protected String getDeletedFilePrefix() {
 		return "del_imscp_"; 
 	}
 	
-	/**
-	 * 
-	 * @see org.olat.repository.handlers.RepositoryHandler#acquireLock(org.olat.core.id.OLATResourceable, org.olat.core.id.Identity)
-	 */
+	@Override
 	public LockResult acquireLock(OLATResourceable ores, Identity identity) {
     //nothing to do
 		return null;
 	}
 	
-	/**
-	 * 
-	 * @see org.olat.repository.handlers.RepositoryHandler#releaseLock(org.olat.core.util.coordinate.LockResult)
-	 */
+	@Override
 	public void releaseLock(LockResult lockResult) {
 		//nothing to do since nothing locked
 	}
 	
-	/**
-	 * 
-	 * @see org.olat.repository.handlers.RepositoryHandler#isLocked(org.olat.core.id.OLATResourceable)
-	 */
+	@Override
 	public boolean isLocked(OLATResourceable ores) {
 		return false;
 	}

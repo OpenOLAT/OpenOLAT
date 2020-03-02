@@ -187,8 +187,6 @@ public class NavigationHandler implements Disposable {
 			}
 		} else {
 			// Use the subtreemodelhandler
-			Object userObject = selTN.getUserObject();
-			
 			NodeRunConstructionResult nrcr = null;
 			CourseNode internCourseNode = null;
 			GenericTreeModel subTreeModel;
@@ -239,45 +237,35 @@ public class NavigationHandler implements Disposable {
 				log.debug("delegating to handler: treeNodeId = " + treeNodeId);
 			}
 
-			// Update the node and event to match the new tree model - unless we
-			// are already on the correct node to prevent jumping to other
-			// chapters in CP's when the href (userObject) is not unique and
-			// used in multiple nodes. 
-			if (!userObject.equals(selTN.getUserObject())) {
-				selTN = subTreeModel.findNodeByUserObject(userObject);
-			}
 			treeEvent = new TreeEvent(treeEvent.getCommand(), treeEvent.getSubCommand(), selTN.getIdent());
 
 			boolean dispatch = true;
 			String selectedNodeId = null;
-			if(userObject instanceof String) {
-				String sObject = (String)userObject;
-				if(MenuTree.COMMAND_TREENODE_CLICKED.equals(treeEvent.getCommand()) && treeEvent.getSubCommand() == null) {
-					openCourseNodeIds.add(sObject);
-					selectedNodeId = selTN.getIdent();
-				} else if(TreeEvent.COMMAND_TREENODE_OPEN.equals(treeEvent.getSubCommand())) {
-					openCourseNodeIds.add(sObject);
-					selectedNodeId = selTN.getIdent();
-					dispatch = false;
-				} else if(TreeEvent.COMMAND_TREENODE_CLOSE.equals(treeEvent.getSubCommand())) {
-					removeChildrenFromOpenNodes(selTN);
-					openCourseNodeIds.remove(sObject);
-					openCourseNodeIds.remove(selTN.getIdent());
-					dispatch = false;
-				}
+			if(MenuTree.COMMAND_TREENODE_CLICKED.equals(treeEvent.getCommand()) && treeEvent.getSubCommand() == null) {
+				openCourseNodeIds.add(selTN.getIdent());
+				selectedNodeId = selTN.getIdent();
+			} else if(TreeEvent.COMMAND_TREENODE_OPEN.equals(treeEvent.getSubCommand())) {
+				openCourseNodeIds.add(selTN.getIdent());
+				selectedNodeId = selTN.getIdent();
+				dispatch = false;
+			} else if(TreeEvent.COMMAND_TREENODE_CLOSE.equals(treeEvent.getSubCommand())) {
+				removeChildrenFromOpenNodes(selTN);
+				openCourseNodeIds.remove(selTN.getIdent());
+				dispatch = false;
 			}
 			
 			if(dispatch) {
 			// null as controller source since we are not a controller
 				subtreemodelListener.dispatchEvent(ureq, null, treeEvent);
 				// no node construction result indicates handled
+				reattachExternalTreeModels(treeModel);
 			}
 			ncr = new NodeClickedRef(treeModel, true, selectedNodeId, openCourseNodeIds, internCourseNode, nrcr, true);
 		}
 		return ncr;
 	}
 	
-	public NodeClickedRef reloadTreeAfterChanges(CourseNode courseNode) {
+	public NodeClickedRef reloadTreeAfterChanges(CourseNode courseNode, String selectedNodeId) {
 		GenericTreeModel treeModel = createTreeModel();
 		TreeNode treeNode = treeModel.getNodeById(courseNode.getIdent());
 		NodeClickedRef nclr = null;
@@ -290,12 +278,10 @@ public class NavigationHandler implements Disposable {
 				reattachExternalTreeModels(treeModel);
 			}
 			
-			selectedCourseNodeId = courseTreeNode.getCourseNode().getIdent();
-			
 			if(subtreemodelListener == null) {
-				nclr = new NodeClickedRef(treeModel, true, selectedCourseNodeId, openCourseNodeIds, courseTreeNode.getCourseNode(), null, false);
+				nclr = new NodeClickedRef(treeModel, true, selectedNodeId, openCourseNodeIds, courseTreeNode.getCourseNode(), null, false);
 			} else {
-				nclr = new NodeClickedRef(treeModel, true, selectedCourseNodeId, openCourseNodeIds, courseTreeNode.getCourseNode(), null, true);
+				nclr = new NodeClickedRef(treeModel, true, selectedNodeId, openCourseNodeIds, courseTreeNode.getCourseNode(), null, true);
 			}
 		}
 		return nclr;
@@ -416,8 +402,8 @@ public class NavigationHandler implements Disposable {
 						if(!newSelectedNodeId.equals(ncr.getSelectedTreeNodeId())) {
 							if(ncr.getSelectedTreeNodeId() != null) {
 								TreeNode selectedNode = subTreeModel.getNodeById(ncr.getSelectedTreeNodeId());
-								if(selectedNode != null && selectedNode.getUserObject() instanceof String) {
-									openCourseNodeIds.add((String)selectedNode.getUserObject());
+								if(selectedNode != null) {
+									openCourseNodeIds.add(selectedNode.getIdent());
 								}
 							}
 						}
@@ -458,7 +444,7 @@ public class NavigationHandler implements Disposable {
 					}
 				}
 				if (evaluateTree) {
-					treeModel = createTreeModel();;
+					treeModel = createTreeModel();
 				}
 				
 				if((TreeEvent.COMMAND_TREENODE_OPEN.equals(nodeSubCmd) || TreeEvent.COMMAND_TREENODE_CLOSE.equals(nodeSubCmd)) &&
@@ -490,7 +476,7 @@ public class NavigationHandler implements Disposable {
 		return nodeAccessService.getCourseTreeModelBuilder(userCourseEnv).withFilter(filter).build();
 	}
 	
-	private void reattachExternalTreeModels(GenericTreeModel courseTreeModel) {
+	private void reattachExternalTreeModels(TreeModel courseTreeModel) {
 		if(externalTreeModels == null || externalTreeModels.isEmpty()) return;
 		
 		for(Map.Entry<String, SubTree> entry:externalTreeModels.entrySet()) {
@@ -517,7 +503,6 @@ public class NavigationHandler implements Disposable {
 
 	private void removeChildrenFromOpenNodes(TreeNode treeNode) {
 		openCourseNodeIds.remove(treeNode.getIdent());
-		openCourseNodeIds.remove(treeNode.getUserObject());
 		for(int i=treeNode.getChildCount(); i-->0; ) {
 			removeChildrenFromOpenNodes((TreeNode)treeNode.getChildAt(i));
 		}
@@ -568,12 +553,10 @@ public class NavigationHandler implements Disposable {
 	private void addSubTreeModel(TreeNode parent, TreeModel modelToAppend) {
 		// ignore root and directly add children.
 		// need to clone children so that are not detached from their original
-		// parent (which is the cp treemodel)
-		// parent.addChild(modelToAppend.getRootNode());
+		parent.removeAllChildren();
 		TreeNode root = modelToAppend.getRootNode();
 		int chdCnt = root.getChildCount();
 		
-		// full cloning of ETH webclass energie takes about 4/100 of a second
 		for (int i = chdCnt; i > 0; i--) {
 			INode chd = root.getChildAt(i-1);
 			INode chdc = (INode) XStreamHelper.xstreamClone(chd);
@@ -582,20 +565,6 @@ public class NavigationHandler implements Disposable {
 			}
 			// always insert before already existing course building block children
 			parent.insert(chdc, 0);
-		}
-		
-		copyIdent(parent, root);
-	}
-	
-	private void copyIdent(TreeNode guiNode, TreeNode originalNode) {
-		if(guiNode instanceof GenericTreeNode) {
-			((GenericTreeNode)guiNode).setIdent(originalNode.getIdent());
-		}
-		
-		for (int i=originalNode.getChildCount(); i-->0; ) {
-			INode originalChild = originalNode.getChildAt(i);
-			INode guiChild = guiNode.getChildAt(i);
-			copyIdent((TreeNode)guiChild, (TreeNode)originalChild);
 		}
 	}
 	

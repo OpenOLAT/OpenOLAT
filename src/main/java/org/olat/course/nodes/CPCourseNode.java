@@ -75,7 +75,7 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 	private static final Logger log = Tracing.createLoggerFor(CPCourseNode.class);
 
 	private static final long serialVersionUID = -4317662219173515498L;
-	private static final String TYPE = "cp";
+	public static final String TYPE = "cp";
 
 	public CPCourseNode() {
 		this(null);
@@ -101,14 +101,14 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ICourse.class, userCourseEnv.getCourseEnvironment().getCourseResourceableId());
-		CPRunController cprunC = new CPRunController(getModuleConfiguration(), ureq, wControl, this, nodecmd, ores, false);
+		CPRunController cprunC = new CPRunController(getModuleConfiguration(), ureq, wControl, this, nodecmd, ores, false, userCourseEnv);
 		return cprunC.createNodeRunConstructionResult(ureq, null);
 	}
 
 	@Override
 	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ICourse.class, userCourseEnv.getCourseEnvironment().getCourseResourceableId());
-		return new CPRunController(getModuleConfiguration(), ureq, wControl, this, null, ores, true);
+		return new CPRunController(getModuleConfiguration(), ureq, wControl, this, null, ores, true, userCourseEnv);
 	}
 	
 	@Override
