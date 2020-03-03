@@ -25,7 +25,6 @@
 package org.olat.modules.wiki;
 
 import org.olat.core.commons.services.notifications.SubscriptionContext;
-import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.modules.fo.ForumCallback;
 
 /**
@@ -34,24 +33,17 @@ import org.olat.modules.fo.ForumCallback;
  */
 public class WikiSecurityCallbackImpl implements WikiSecurityCallback {
 	
-	private NodeEvaluation ne;
+	private Boolean courseEditRight;
 	private boolean isAdministator;
 	private boolean isGuestOnly;
 	private boolean isGroupWiki;
 	private boolean isResourceOwner;
 	private SubscriptionContext subscriptionContext;
 
-	/**
-	 * 
-	 * @param ne
-	 * @param isOlatAdmin
-	 * @param isGuestOnly
-	 * @param isGroupWiki
-	 */
-	public WikiSecurityCallbackImpl(NodeEvaluation ne, boolean isAdministator, 
+	public WikiSecurityCallbackImpl(Boolean courseEditRight, boolean isAdministator, 
 			boolean isGuestOnly, boolean isGroupWiki, 
 			boolean isResourceOwner, SubscriptionContext subscriptionContext){
-		this.ne = ne;
+		this.courseEditRight = courseEditRight;
 		this.isAdministator = isAdministator;
 		this.isGuestOnly = isGuestOnly;
 		this.isGroupWiki  = isGroupWiki;
@@ -59,36 +51,25 @@ public class WikiSecurityCallbackImpl implements WikiSecurityCallback {
 		this.subscriptionContext = subscriptionContext;
 	}
 	
-	/**
-	 * 
-	 * @return true if administrator or allowed by preconditions
-	 */
 	@Override
 	public boolean mayEditAndCreateArticle() {
 		if(isGuestOnly) return false;
 		if(isGroupWiki || isAdministator) {
 			return true;
 		}
-		if(ne != null && ne.isCapabilityAccessible("access") && ne.isCapabilityAccessible("editarticle")) {
+		if(courseEditRight != null && courseEditRight.booleanValue()) {
 			return true;
 		}
 		//wiki is started from repo, and it's visible to this user, so creating pages is allowed
-		return ne == null; 
+		return courseEditRight == null; 
 	}
 	
-	/**
-	 * 
-	 * @return true if admin or resource owner or used in group context
-	 */
 	@Override
 	public boolean mayEditWikiMenu(){
 		if(isGuestOnly) return false;
 		return isGroupWiki || isAdministator || isResourceOwner;
 	}
 	
-	/**
-	 * @return the subscriptionContext. if null, then no subscription must be offered
-	 */
 	@Override
 	public SubscriptionContext getSubscriptionContext() {
 		return (isGuestOnly ? null : subscriptionContext);

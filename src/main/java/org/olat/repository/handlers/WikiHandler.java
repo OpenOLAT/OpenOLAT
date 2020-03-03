@@ -60,6 +60,8 @@ import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.fileresource.types.WikiResource;
+import org.olat.modules.wiki.PersistingAssessmentProvider;
+import org.olat.modules.wiki.WikiAssessmentProvider;
 import org.olat.modules.wiki.WikiMainController;
 import org.olat.modules.wiki.WikiManager;
 import org.olat.modules.wiki.WikiModule;
@@ -221,6 +223,7 @@ public class WikiHandler implements RepositoryHandler {
 		final ContextEntry ce = bc.popLauncherContextEntry();
 		SubscriptionContext subsContext = new SubscriptionContext(res, WikiManager.WIKI_RESOURCE_FOLDER_NAME);
 		final WikiSecurityCallback callback = new WikiSecurityCallbackImpl(null, isOLatAdmin, isGuestOnly, false, isResourceOwner, subsContext);
+		WikiAssessmentProvider assessmentProvider = PersistingAssessmentProvider.create(re, ureq.getIdentity());
 
 		return new RepositoryEntryRuntimeController(ureq, wControl, re, reSecurity,
 			new RuntimeControllerCreator() {
@@ -234,9 +237,9 @@ public class WikiHandler implements RepositoryHandler {
 						OLATResourceable ores = ce.getOLATResourceable();
 						String typeName = ores.getResourceableTypeName();
 						String page = typeName.substring("page=".length());
-						controller = new WikiMainController(uureq, wwControl, entry.getOlatResource(), callback, page); 
+						controller = new WikiMainController(uureq, wwControl, entry.getOlatResource(), callback, assessmentProvider, page); 
 					} else {
-						controller = new WikiMainController(uureq, wwControl, entry.getOlatResource(), callback, null);
+						controller = new WikiMainController(uureq, wwControl, entry.getOlatResource(), callback, assessmentProvider, null);
 					}
 					return new OLATResourceableListeningWrapperController(uureq, wwControl, entry.getOlatResource(), controller, null, uureq.getIdentity());
 				}

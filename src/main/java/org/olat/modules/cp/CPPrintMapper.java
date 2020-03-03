@@ -48,6 +48,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.modules.cp.CPManifestTreeModel.UserObject;
 import org.xml.sax.InputSource;
 
 import nu.validator.htmlparser.common.XmlViolationPolicy;
@@ -180,7 +181,7 @@ public class CPPrintMapper implements Mapper {
 		for(String nodeId:nodeIds) {
 			HtmlPageHandler parsedPage = null;
 			TreeNode treeNode = ctm.getNodeById(nodeId);
-			String identifierRes = (String)treeNode.getUserObject();	
+			String identifierRes = ((UserObject)treeNode.getUserObject()).getHref();
 			if(StringHelper.containsNonWhitespace(identifierRes)) {
 				VFSItem currentItem = rootDir.resolve(identifierRes);
 				if(currentItem instanceof VFSLeaf) {

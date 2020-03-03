@@ -50,6 +50,7 @@ import org.olat.core.util.Encoder;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XMLParser;
 import org.olat.ims.resources.IMSEntityResolver;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
 *  Description:<br>
@@ -65,19 +66,23 @@ public class CPManifestTreeModel extends GenericTreeModel {
 	private final List<TreeNode> treeNodes = new ArrayList<>();
 	private final String identPrefix;
 	private final Logger log = Tracing.createLoggerFor(this.getClass());
+	private final CPAssessmentProvider cpAssessmentProvider;
 
 	/**
 	 * Constructor of the content packaging tree model
 	 * @param manifest the imsmanifest.xml file
+	 * @param cpAssessmentProvider 
 	 */
-	CPManifestTreeModel(VFSLeaf manifest, String identPrefix) throws IOException {
+	CPManifestTreeModel(VFSLeaf manifest, String identPrefix, CPAssessmentProvider cpAssessmentProvider) throws IOException {
 		this.identPrefix = identPrefix;
+		this.cpAssessmentProvider = cpAssessmentProvider;
 		Document doc = loadDocument(manifest);
 		initDocument(doc);
 	}
 	
 	CPManifestTreeModel(String manifest,  String identPrefix) throws IOException {
 		this.identPrefix = identPrefix;
+		this.cpAssessmentProvider = DryRunAssessmentProvider.create();
 		Document doc = loadDocument(manifest);
 		initDocument(doc);
 	}
@@ -195,7 +200,7 @@ public class CPManifestTreeModel extends GenericTreeModel {
 						XPath meta = rootElement.createXPath("//ns:resource[@identifier='" + identifierref + "']");
 						meta.setNamespaceURIs(nsuris);
 						gtn.setAccessible(true);
-						gtn.setUserObject(href);
+						gtn.setUserObject(new UserObject(identifier, href));
 						if (hrefToTreeNode.containsKey(href)){
 							log.debug("Duplicate href::" + href + " for identifierref::" + identifierref + " and identifier::" + identifier + ", use first one");
 						} else {					
@@ -207,6 +212,7 @@ public class CPManifestTreeModel extends GenericTreeModel {
 			}
 		} else if (item.getName().equals("item")) {
 			gtn.setIconCssClass("o_cp_item");
+			gtn.setCssClass(getItemCssClass(identifier));
 			//set resolved file path directly
 			String identifierref = item.attributeValue("identifierref");
 			if(identifierref != null) {
@@ -216,7 +222,7 @@ public class CPManifestTreeModel extends GenericTreeModel {
 			meta.setNamespaceURIs(nsuris);
 			String href = resources.get(identifierref);
 			if (href != null) {
-				gtn.setUserObject(href);
+				gtn.setUserObject(new UserObject(identifier, href));
 				// allow lookup of a treenode given a href so we can quickly adjust the menu if the user clicks on hyperlinks within the text
 				if (hrefToTreeNode.containsKey(href)){
 					log.debug("Duplicate href::" + href + " for identifierref::" + identifierref + " and identifier::" + identifier + ", use first one");
@@ -257,6 +263,18 @@ public class CPManifestTreeModel extends GenericTreeModel {
 		return gtn;
 	}
 	
+	private String getItemCssClass(String identifier) {
+		AssessmentEntryStatus status = cpAssessmentProvider.getStatus(identifier);
+		return getItemCssClass(status);
+	}
+
+	public static String getItemCssClass(AssessmentEntryStatus status) {
+		if (AssessmentEntryStatus.done.equals(status)) {
+			return "o_lp_done o_lp_not_in_sequence o_lp_contains_no_sequence";
+		}
+		return "o_lp_ready o_lp_not_in_sequence o_lp_contains_no_sequence";
+	}
+
 	private Document loadDocument(VFSLeaf documentF) throws IOException {
 		InputStream in = null;
 		Document doc = null;
@@ -293,5 +311,25 @@ public class CPManifestTreeModel extends GenericTreeModel {
 			IOUtils.closeQuietly(in);
 		}
 		return doc;
+	}
+	
+	public static final class UserObject {
+		
+		private final String identifier;
+		private final String href;
+
+		public UserObject(String identifier, String href) {
+			this.identifier = identifier;
+			this.href = href;
+		}
+
+		public String getIdentifier() {
+			return identifier;
+		}
+
+		public String getHref() {
+			return href;
+		}
+		
 	}
 }

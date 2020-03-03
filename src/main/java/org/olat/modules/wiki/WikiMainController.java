@@ -28,14 +28,15 @@ package org.olat.modules.wiki;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.services.notifications.NotificationsManager;
@@ -78,7 +79,6 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.OLATRuntimeException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
@@ -92,6 +92,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumCallback;
 import org.olat.modules.fo.manager.ForumManager;
@@ -167,6 +168,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 
 	private Dropdown wikiMenuDropdown, navigationDropdown, breadcrumpDropdown;
 	private GenericTreeNode navMainPageNode, navAZNode, navChangesNode, wikiMenuNode;
+	private WikiAssessmentProvider assessmentProvider;
 
 	public static final String ACTION_COMPARE = "compare";
 	public static final String ACTION_SHOW = "view.version";
@@ -196,13 +198,14 @@ public class WikiMainController extends BasicController implements CloneableCont
 	private NotificationsManager notificationsManager;
 
 	public WikiMainController(UserRequest ureq, WindowControl wControl, OLATResourceable ores,
-			WikiSecurityCallback securityCallback, String initialPageName) {
+			WikiSecurityCallback securityCallback, WikiAssessmentProvider assessmentProvider, String initialPageName) {
 		super(ureq, wControl);
 
 		this.wikiContainer = WikiManager.getInstance().getWikiRootContainer(ores);
 		this.ores = ores;
 		this.securityCallback = securityCallback;
 		this.subsContext = securityCallback.getSubscriptionContext();
+		this.assessmentProvider = assessmentProvider;
 
 		WikiPage page = null;
 		Wiki wiki = getWiki();
@@ -376,24 +379,35 @@ public class WikiMainController extends BasicController implements CloneableCont
 		List<VFSItem> mediaFiles = wiki.getMediaFileList();
 		Collections.sort(mediaFiles, new WikiFileComparator(getLocale()));
 		editContent.contextPut("fileList", mediaFiles);
-		List<String> allPages = wiki.getListOfAllPageNames();
-		Collections.sort(allPages, new WikiPageNameComparator(getLocale()));
-		editContent.contextPut("linkList", allPages);
+		List<String> linkList = wiki.getAllPages().stream()
+				.filter(Wiki.REGULAR_PAGE_FILTER)
+				.map(WikiPage::getPageName)
+				.sorted(new WikiPageNameComparator(getLocale()))
+				.collect(Collectors.toList());
+		editContent.contextPut("linkList", linkList);
 	}
 
 	private void updateWikiMenu(Wiki wiki) {
-		Collection<String> links = wiki.getListOfAllPageNames();
+		List<WikiPage> pages = wiki.getAllPages().stream()
+				.filter(Wiki.REGULAR_PAGE_FILTER)
+				.sorted(WikiPageSort.PAGENAME_ORDER)
+				.collect(Collectors.toList());
+		
 		if (wikiMenuNode != null) {
 			wikiMenuNode.removeAllChildren();
-			for (String link : links) {
+			for (WikiPage page : pages) {
+				String link = page.getPageName();
 				String ident = "w" + Encoder.md5hash(link);
 				GenericTreeNode menuItemNode = new GenericTreeNode(ident, link, link);
+				String cssClass = getNodeCssClass(page.getPageId());
+				menuItemNode.setCssClass(cssClass);
 				wikiMenuNode.addChild(menuItemNode);
 			}
 		}
-
+		
 		wikiMenuDropdown.removeAllComponents();
-		for (String link : links) {
+		for (WikiPage page : pages) {
+			String link = page.getPageName();
 			Link menuLink = LinkFactory.createToolLink(link, "select-page", link, this);
 			wikiMenuDropdown.addComponent(menuLink);
 		}
@@ -415,20 +429,24 @@ public class WikiMainController extends BasicController implements CloneableCont
 		// Index
 		String navMainItem = "nav-main-item-" + resId;
 		navMainPageNode = new GenericTreeNode(navMainItem, translate("navigation.mainpage"), navMainItem);
+		navMainPageNode.setCssClass(getNodeDoneCssClass());
 		rootNode.addChild(navMainPageNode);
 
 		// Wiki-Menu
 		String wikiMenuTitle = translate("navigation.menu");
 		String wikiMenuItem = "menu-item-" + resId;
 		wikiMenuNode = new GenericTreeNode(wikiMenuItem, wikiMenuTitle, wikiMenuItem);
+		wikiMenuNode.setCssClass(getNodeDoneCssClass());
 		rootNode.addChild(wikiMenuNode);
 
 		String navAZItem = "nav-az-item-" + resId;
 		navAZNode = new GenericTreeNode(navAZItem, translate("navigation.a-z"), navAZItem);
+		navAZNode.setCssClass(getNodeDoneCssClass());
 		rootNode.addChild(navAZNode);
 
 		String navChangesItem = "nav-changes-item-" + resId;
 		navChangesNode = new GenericTreeNode(navChangesItem, translate("navigation.changes"), navChangesItem);
+		navChangesNode.setCssClass(getNodeDoneCssClass());
 		rootNode.addChild(navChangesNode);
 
 		updateWikiMenu(wiki);
@@ -438,6 +456,22 @@ public class WikiMainController extends BasicController implements CloneableCont
 
 		navigationContent.contextPut("navigationEnabled", Boolean.FALSE);
 		return wikiMenuModel;
+	}
+	
+	private String getNodeCssClass(String pageId) {
+		AssessmentEntryStatus status = assessmentProvider.getStatus(pageId);
+		return getNodeCssClass(status);
+	}
+
+	private String getNodeCssClass(AssessmentEntryStatus status) {
+		if (AssessmentEntryStatus.done.equals(status)) {
+			return getNodeDoneCssClass();
+		}
+		return "o_lp_ready o_lp_not_in_sequence o_lp_contains_no_sequence";
+	}
+	
+	private String getNodeDoneCssClass() {
+		return "o_lp_done o_lp_not_in_sequence o_lp_contains_no_sequence";
 	}
 
 	@Override
@@ -1169,7 +1203,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 
 	@Override
 	public Controller cloneController(UserRequest ureq, WindowControl wControl) {
-		return WikiManager.getInstance().createWikiMainController(ureq, wControl, ores, securityCallback, null);
+		return WikiManager.getInstance().createWikiMainController(ureq, wControl, ores, securityCallback, null, null);
 	}
 
 	private void doReleaseEditLock() {
@@ -1243,8 +1277,11 @@ public class WikiMainController extends BasicController implements CloneableCont
 		OLATResourceable pageRes = OresHelper.createOLATResourceableInstanceWithoutCheck("path=" + page.getPageName(),
 				0l);
 		addToHistory(ureq, pageRes, null);
+		
+		assessmentProvider.setStatusDone(page.getPageId());
+		updateWikiMenu(getWiki());
 	}
-
+	
 	private void clearPortfolioLink() {
 		navigationContent.put("portfolio-link", new Panel("empty"));
 	}

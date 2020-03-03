@@ -17,34 +17,36 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool.model;
+package org.olat.modules.wiki;
 
-import java.util.List;
-
-import org.olat.modules.qpool.QuestionItemShort;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
  * 
- * Initial date: 18.04.2013<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 2 Mar 2020<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class QItemList {
-
-	private final boolean groupByTaxonomyLevel;
-	private final List<QuestionItemShort> items;
+public class DryRunAssessmentProvider implements WikiAssessmentProvider {
 	
-	public QItemList(List<QuestionItemShort> items, boolean groupByTaxonomyLevel) {
-		this.items = items;
-		this.groupByTaxonomyLevel = groupByTaxonomyLevel;
+	private static final WikiAssessmentProvider INSTANCE = new DryRunAssessmentProvider();
+	
+	public static final WikiAssessmentProvider create() {
+		return INSTANCE;
+	}
+	
+	private DryRunAssessmentProvider() {
+		//
 	}
 
-	public boolean isGroupByTaxonomyLevel() {
-		return groupByTaxonomyLevel;
+	@Override
+	public void setStatusDone(String pageId) {
+		//
 	}
 
-	public List<QuestionItemShort> getItems() {
-		return items;
+	@Override
+	public AssessmentEntryStatus getStatus(String pageId) {
+		return null;
 	}
 
 }

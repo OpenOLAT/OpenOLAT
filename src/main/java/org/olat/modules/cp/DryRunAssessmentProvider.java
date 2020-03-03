@@ -17,34 +17,36 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool.model;
+package org.olat.modules.cp;
 
-import java.util.List;
-
-import org.olat.modules.qpool.QuestionItemShort;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
  * 
- * Initial date: 18.04.2013<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 26 Feb 2020<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class QItemList {
-
-	private final boolean groupByTaxonomyLevel;
-	private final List<QuestionItemShort> items;
+public class DryRunAssessmentProvider implements CPAssessmentProvider {
 	
-	public QItemList(List<QuestionItemShort> items, boolean groupByTaxonomyLevel) {
-		this.items = items;
-		this.groupByTaxonomyLevel = groupByTaxonomyLevel;
+	private static final CPAssessmentProvider INSTANCE = new DryRunAssessmentProvider();
+	
+	public static final CPAssessmentProvider create() {
+		return INSTANCE;
+	}
+	
+	private DryRunAssessmentProvider() {
+		//
+	}
+	
+	@Override
+	public AssessmentEntryStatus onPageVisited(String itemIdentifier) {
+		return null;
 	}
 
-	public boolean isGroupByTaxonomyLevel() {
-		return groupByTaxonomyLevel;
-	}
-
-	public List<QuestionItemShort> getItems() {
-		return items;
+	@Override
+	public AssessmentEntryStatus getStatus(String itemIdentifier) {
+		return null;
 	}
 
 }

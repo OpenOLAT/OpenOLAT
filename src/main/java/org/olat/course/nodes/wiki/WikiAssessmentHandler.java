@@ -17,34 +17,24 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool.model;
+package org.olat.course.nodes.wiki;
 
-import java.util.List;
-
-import org.olat.modules.qpool.QuestionItemShort;
+import org.olat.course.learningpath.LearningPathOnlyAssessmentHandler;
+import org.olat.course.nodes.WikiCourseNode;
+import org.springframework.stereotype.Service;
 
 /**
  * 
- * Initial date: 18.04.2013<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 28.02.2020<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class QItemList {
+@Service
+public class WikiAssessmentHandler extends LearningPathOnlyAssessmentHandler {
 
-	private final boolean groupByTaxonomyLevel;
-	private final List<QuestionItemShort> items;
-	
-	public QItemList(List<QuestionItemShort> items, boolean groupByTaxonomyLevel) {
-		this.items = items;
-		this.groupByTaxonomyLevel = groupByTaxonomyLevel;
-	}
-
-	public boolean isGroupByTaxonomyLevel() {
-		return groupByTaxonomyLevel;
-	}
-
-	public List<QuestionItemShort> getItems() {
-		return items;
+	@Override
+	public String acceptCourseNodeType() {
+		return WikiCourseNode.TYPE;
 	}
 
 }

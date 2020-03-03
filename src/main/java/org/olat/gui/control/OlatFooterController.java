@@ -116,13 +116,11 @@ public class OlatFooterController extends BasicController implements LockableCon
 		// Push information about user
 		if (!isGuest && usess.isAuthenticated()) {
 			olatFootervc.contextPut("loggedIn", Boolean.TRUE);
-			if(isInvitee) {
-				String fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(ureq.getIdentity());
-				olatFootervc.contextPut("username", StringHelper.escapeHtml(fullName) + " " + translate("logged.in.invitee"));
-			} else {
-				String fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(ureq.getIdentity());
-				olatFootervc.contextPut("username", StringHelper.escapeHtml(fullName));
+			String fullName = StringHelper.escapeHtml(CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(ureq.getIdentity()));
+			if (isInvitee) {
+				fullName = fullName + " " + translate("logged.in.invitee");
 			}
+			olatFootervc.contextPut("username", fullName);
 		} else {
 			olatFootervc.contextPut("loggedIn", Boolean.FALSE);
 		}
