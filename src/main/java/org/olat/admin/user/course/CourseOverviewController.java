@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.admin.user.course.CourseOverviewMembershipDataModel.MSCols;
@@ -430,7 +431,27 @@ public class CourseOverviewController extends FormBasicController  {
 	 * @param ureq
 	 * @param views
 	 */
-	private void doLeave(UserRequest ureq, Collection<CourseMemberView> views) {
+	private void doLeave(UserRequest ureq, Collection<CourseMemberView> selectedViews) {
+		List<CourseMemberView> views = selectedViews.stream()
+				.filter(view -> !view.isFullyManaged())
+				.collect(Collectors.toList());
+
+		if(views.isEmpty()) {
+			boolean groupWarning = false;
+			for(CourseMemberView selectedView:selectedViews) {
+				if(selectedView.getMembership().isBusinessGroupMember()) {
+					groupWarning = true;
+				}
+			}
+			
+			if(groupWarning) {
+				showWarning("warning.cannot.leave.group");
+			} else {
+				showWarning("warning.cannot.leave.entry");
+			}
+			return;
+		}
+		
 		List<Long> groupKeys = new ArrayList<>();
 		List<RepositoryEntry> repoEntryToLeave = new ArrayList<>();
 		for(CourseMemberView view:views) {
@@ -465,6 +486,7 @@ public class CourseOverviewController extends FormBasicController  {
 				groupsToDelete.add(group);
 			}
 		}
+		
 		removeFromCourseDlg = new CourseLeaveDialogBoxController(ureq, getWindowControl(), editedIdentity,
 				repoEntryToLeave, groupsToLeave, groupsToDelete);
 		listenTo(removeFromCourseDlg);
