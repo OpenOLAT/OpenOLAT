@@ -26,10 +26,8 @@ import java.util.Locale;
 import org.apache.velocity.VelocityContext;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.id.UserConstants;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.mail.MailTemplate;
-import org.olat.user.UserManager;
 
 /**
  * 
@@ -54,12 +52,7 @@ public class GTAMailTemplate extends MailTemplate {
 	public void putVariablesInMailContext(VelocityContext context, Identity recipient) {
 		Locale locale = translator.getLocale();
 		//compatibility with the old TA
-		context.put("login", identity.getName());
-		context.put("first", identity.getUser().getProperty(UserConstants.FIRSTNAME, locale));
-		context.put("firstName", identity.getUser().getProperty(UserConstants.FIRSTNAME, locale));
-		context.put("last", identity.getUser().getProperty(UserConstants.LASTNAME, locale));
-		context.put("lastName", identity.getUser().getProperty(UserConstants.LASTNAME, locale));
-		context.put("email", UserManager.getInstance().getUserDisplayEmail(identity, locale));
+		fillContextWithStandardIdentityValues(context, identity, translator.getLocale());
 		context.put("numberOfFiles", files == null ? "0" : Integer.toString(files.length));
 
 		if(files != null && files.length > 0) {
