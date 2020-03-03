@@ -193,6 +193,8 @@ public class BusinessGroupMailing {
 
 		@Override
 		public void putVariablesInMailContext(VelocityContext vContext, Identity recipient) {
+			fillContextWithStandardIdentityValues(vContext, recipient, null);
+			
 			delegate.putVariablesInMailContext(vContext, recipient);
 			
 			if(StringHelper.containsNonWhitespace(infos.getCourseList())) {

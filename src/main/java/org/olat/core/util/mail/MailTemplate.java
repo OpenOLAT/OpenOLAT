@@ -26,9 +26,14 @@
 package org.olat.core.util.mail;
 
 import java.io.File;
+import java.util.Locale;
 
 import org.apache.velocity.VelocityContext;
 import org.olat.core.id.Identity;
+import org.olat.core.id.User;
+import org.olat.core.id.UserConstants;
+import org.olat.core.util.i18n.I18nManager;
+import org.olat.user.UserManager;
 
 /**
  * Description:<br>
@@ -137,5 +142,25 @@ public abstract class MailTemplate {
 	
 	public VelocityContext getContext() {
 		return context;
+	}
+	
+	protected static void fillContextWithStandardIdentityValues(VelocityContext vContext, Identity identity, Locale locale) {
+		if(identity == null) return;
+		
+		User user = identity.getUser();
+		if(locale == null) {
+			locale = I18nManager.getInstance().getLocaleOrDefault(user.getPreferences().getLanguage());
+		}
+		
+		vContext.put("login", identity.getName());
+		vContext.put("username", identity.getName());
+		vContext.put("userName", identity.getName());
+		vContext.put("first", user.getProperty(UserConstants.FIRSTNAME, locale));
+		vContext.put("firstname", user.getProperty(UserConstants.FIRSTNAME, locale));
+		vContext.put("firstName", user.getProperty(UserConstants.FIRSTNAME, locale));
+		vContext.put("last", user.getProperty(UserConstants.LASTNAME, locale));
+		vContext.put("lastname", user.getProperty(UserConstants.LASTNAME, locale));
+		vContext.put("lastName", user.getProperty(UserConstants.LASTNAME, locale));
+		vContext.put("email", UserManager.getInstance().getUserDisplayEmail(identity, locale));
 	}
 }

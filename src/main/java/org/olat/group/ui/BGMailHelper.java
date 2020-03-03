@@ -231,13 +231,13 @@ public class BGMailHelper {
 		}
 		
 		// create a mail template which all these data
-		MailTemplate mailTempl = new MailTemplate(subject, body, null) {
+		return new MailTemplate(subject, body, null) {
 			@Override
 			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
+				fillContextWithStandardIdentityValues(context, identity, locale);
+
 				// Put user variables into velocity context
 				User user = identity.getUser();
-				context.put("firstname", user.getProperty(UserConstants.FIRSTNAME, null));
-				context.put("lastname", user.getProperty(UserConstants.LASTNAME, null));
 				//the email of the user, needs to stay named 'login'
 				context.put("login", user.getProperty(UserConstants.EMAIL, null));
 				// Put variables from greater context
@@ -251,7 +251,6 @@ public class BGMailHelper {
 				context.put("courselistempty", trans.translate("notification.mail.no.ressource", null));
 			}
 		};
-		return mailTempl;
 	}
 	
 	public static BGMailTemplateInfos getTemplateInfos(BusinessGroupShort group, List<RepositoryEntryShort> repoEntries) {

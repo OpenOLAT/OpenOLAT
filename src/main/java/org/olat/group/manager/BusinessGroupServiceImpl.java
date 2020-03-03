@@ -729,7 +729,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			Map<String,DeletableGroupData> deleteListeners = CoreSpringFactory.getBeansOfType(DeletableGroupData.class);
 			for (DeletableGroupData deleteListener : deleteListeners.values()) {
 				if(log.isDebugEnabled()) {
-					log.debug("deleteBusinessGroup: call deleteListener=" + deleteListener);
+					log.debug("deleteBusinessGroup: call deleteListener={}", deleteListener);
 				}
 				deleteListener.deleteGroupDataFor(group);
 			} 
@@ -866,7 +866,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 					if(reservation != null) {
 						BusinessGroupMailing.sendEmail(ureqIdentity, identityToAdd, group, MailType.addCoach, mailing);
 						// logging
-						log.info(Tracing.M_AUDIT, "Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identityToAdd.getKey() + "' to group with key " + group.getKey());
+						log.info(Tracing.M_AUDIT, "Identity(.key):{} added identity '{}' to group with key {}",
+							ureqIdentity.getKey(), identityToAdd.getKey(), group.getKey());
 					}
 				}
 			} else {
@@ -889,7 +890,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		}
 		// do logging
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_ADDED, getClass(), LoggingResourceable.wrap(group), LoggingResourceable.wrap(identityToAdd));
-		log.info(Tracing.M_AUDIT, "Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identityToAdd.getKey() + "' to group with key " + group.getKey());
+		log.info(Tracing.M_AUDIT, "Identity(.key):{} added identity '{}' to group with key {}",
+			ureqIdentity.getKey(), identityToAdd.getKey(), group.getKey());
 	}
 	
 	private boolean addParticipant(Identity ureqIdentity, Roles ureqRoles, Identity identityToAdd, BusinessGroup group,
@@ -946,7 +948,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		}
 		// do logging
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_PARTICIPANT_ADDED, getClass(), LoggingResourceable.wrap(group), LoggingResourceable.wrap(identityToAdd));
-		log.info(Tracing.M_AUDIT, "Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identityToAdd.getKey() + "' to group with key " + group.getKey());
+		log.info(Tracing.M_AUDIT, "Identity(.key):{} added identity '{}' to group with key {}",
+			ureqIdentity.getKey(), identityToAdd.getKey(), group.getKey());
 		// send notification mail in your controller!
 	}
 
@@ -1019,7 +1022,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			}
 			// do logging
 			ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_PARTICIPANT_REMOVED, getClass(), LoggingResourceable.wrap(identity), LoggingResourceable.wrap(group));
-			log.info(Tracing.M_AUDIT, "Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getKey() + "' from group with key " + group.getKey());
+			log.info(Tracing.M_AUDIT, "Identity(.key):{} removed identity '{}' from group with key {}",
+				ureqIdentity.getKey(), identity.getKey(), group.getKey());
 			// Check if a waiting-list with auto-close-ranks is configurated
 			if ( group.getWaitingListEnabled().booleanValue() && group.getAutoCloseRanksEnabled().booleanValue() ) {
 				// even when doOnlyPostRemovingStuff is set to true we really transfer the first Identity here
@@ -1255,7 +1259,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		}
 		// do logging
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_TO_WAITING_LIST_ADDED, getClass(), LoggingResourceable.wrap(identity));
-		log.info(Tracing.M_AUDIT, "Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getKey() + "' to group with key " + group.getKey());
+		log.info(Tracing.M_AUDIT, "Identity(.key):{} added identity '{}' to group with key {}",
+			ureqIdentity.getKey(), identity.getKey(), group.getKey());
 		// send mail
 		BusinessGroupMailing.sendEmail(ureqIdentity, identity, group, MailType.addToWaitingList, mailing);
 	}
@@ -1299,7 +1304,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		}
 		// do logging
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_FROM_WAITING_LIST_REMOVED, getClass(), LoggingResourceable.wrap(identity));
-		log.info(Tracing.M_AUDIT, "Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getKey() + "' from group with key " + group.getKey());
+		log.info(Tracing.M_AUDIT, "Identity(.key):{} removed identity '{}' from group with key {}",
+			ureqIdentity.getKey(), identity.getKey(), group.getKey());
 		// send mail
 		BusinessGroupMailing.sendEmail(ureqIdentity, identity, group, MailType.removeToWaitingList, mailing);
 	}
@@ -1364,7 +1370,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			MailPackage mailing) {
 		final BusinessGroup reloadedGroup = businessGroupDAO.loadForUpdate(group);
 		
-		log.info("doEnroll start: group=" + OresHelper.createStringRepresenting(group), identity.getKey().toString());
+		log.info("doEnroll start: group={} for {}", OresHelper.createStringRepresenting(group), identity.getKey());
 		EnrollState enrollStatus = new EnrollState();
 		List<BusinessGroupModifiedEvent.Deferred> events = new ArrayList<>();
 
@@ -1374,15 +1380,14 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		if(reservation != null) {
 			addParticipant(ureqIdentity, ureqRoles, identity, reloadedGroup, mailing, events);
 			enrollStatus.setEnrolled(GroupRoles.participant);
-			log.info("doEnroll (reservation) - setIsEnrolled ", identity.getKey().toString());
-			if(reservation != null) {
-				reservationDao.deleteReservation(reservation);
-			}
+			log.info("doEnroll (reservation) - setIsEnrolled {}", identity.getKey());
+			reservationDao.deleteReservation(reservation);
 		} else if (reloadedGroup.getMaxParticipants() != null) {
 			int participantsCounter = businessGroupRelationDAO.countEnrollment(reloadedGroup);
 			int reservations = reservationDao.countReservations(reloadedGroup.getResource());
 			
-			log.info("doEnroll - participantsCounter: " + participantsCounter + ", reservations: " + reservations + " maxParticipants: " + reloadedGroup.getMaxParticipants().intValue(), identity.getKey().toString());
+			log.info("doEnroll - participantsCounter: {}, reservations: {} maxParticipants: {} for {}",
+					participantsCounter, reservations, reloadedGroup.getMaxParticipants(), identity.getKey());
 			if ((participantsCounter + reservations) >= reloadedGroup.getMaxParticipants().intValue()) {
 				// already full, show error and updated choose page again
 				if (reloadedGroup.getWaitingListEnabled().booleanValue()) {
@@ -1397,7 +1402,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 				//enough place
 				addParticipant(ureqIdentity, ureqRoles, identity, reloadedGroup, mailing, events);
 				enrollStatus.setEnrolled(GroupRoles.participant);
-				log.info("doEnroll - setIsEnrolled ", identity.getKey().toString());
+				log.info("doEnroll - setIsEnrolled {}", identity.getKey());
 			}
 		} else {
 			log.debug("doEnroll as participant beginTransaction");
@@ -1408,7 +1413,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 
 		dbInstance.commit();
 		BusinessGroupModifiedEvent.fireDeferredEvents(events);
-		log.info("doEnroll end", identity.getKey().toString());
+		log.info("doEnroll end {}", identity.getKey());
 		return enrollStatus;
 	}
 
@@ -1490,7 +1495,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		}
 		
 		// do logging
-		log.info(Tracing.M_AUDIT, "Identity(.key):" + ureqIdentity.getKey() + " removed identiy '" + identityToRemove.getKey() + "' from group with key " + group.getKey());
+		log.info(Tracing.M_AUDIT, "Identity(.key):{} removed identiy '{}' from group with key {}",
+			ureqIdentity.getKey(), identityToRemove.getKey(), group.getKey());
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_REMOVED, getClass(), LoggingResourceable.wrap(group), LoggingResourceable.wrap(identityToRemove));
 	}
 	
@@ -1708,13 +1714,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		}
 		return ids;
 	}
-	
-	@Override
-	public List<Identity> getMembersOf(RepositoryEntryRef entry, List<BusinessGroupRef> businesGroups, String role) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 
 	@Override
 	public int countMembers(BusinessGroup businessGroup, String... roles) {
@@ -1728,7 +1727,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		if(roles == null || roles.isEmpty() || (roles.size() == 1 &&  GroupRoles.waiting.name().equals(roles.get(0)))) {
 			return false;
 		}
-		return roles.size() > 0;
+		return !roles.isEmpty();
 	}
 
 	@Override

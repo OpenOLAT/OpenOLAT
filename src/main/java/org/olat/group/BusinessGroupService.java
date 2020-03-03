@@ -373,9 +373,6 @@ public interface BusinessGroupService {
 	
 	public List<Identity> getMembers(List<BusinessGroup> businessGroups, String... roles);
 	
-	public List<Identity> getMembersOf(RepositoryEntryRef entry, List<BusinessGroupRef> businesGroups, String role);
-	
-	
 	
 	public int countMembers(BusinessGroup businessGroup, String... roles);
 	
