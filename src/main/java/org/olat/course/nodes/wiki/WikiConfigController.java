@@ -124,7 +124,7 @@ public class WikiConfigController extends FormBasicController {
 		buttonsCont.setRootForm(mainForm);
 		generalCont.add(buttonsCont);
 		chooseLink = uifactory.addFormLink("command.create", buttonsCont, "btn btn-default o_xsmall");
-		chooseLink.setElementCssClass("o_sel_survey_choose_repofile");
+		chooseLink.setElementCssClass("o_sel_wiki_choose_repofile");
 		replaceLink = uifactory.addFormLink("command.change", buttonsCont, "btn btn-default o_xsmall");
 		editLink = uifactory.addFormLink("edit", buttonsCont, "btn btn-default o_xsmall");
 		
