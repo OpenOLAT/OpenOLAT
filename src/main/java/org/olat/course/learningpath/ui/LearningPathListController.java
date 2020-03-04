@@ -56,6 +56,8 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.IndentedNodeRenderer;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
+import org.olat.course.learningpath.LearningPathConfigs;
+import org.olat.course.learningpath.LearningPathService;
 import org.olat.course.learningpath.manager.LearningPathCourseTreeModelBuilder;
 import org.olat.course.learningpath.ui.LearningPathDataModel.LearningPathCols;
 import org.olat.course.nodes.CourseNode;
@@ -97,6 +99,8 @@ public class LearningPathListController extends FormBasicController implements T
 	private AssessmentService assessmentService;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
+	@Autowired
+	private LearningPathService learningPathService;
 
 	public LearningPathListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			UserCourseEnvironment userCourseEnv, boolean canEdit) {
@@ -216,9 +220,16 @@ public class LearningPathListController extends FormBasicController implements T
 	private LearningPathRow forgeRow(LearningPathTreeNode treeNode, LearningPathRow parent) {
 		LearningPathRow row = new LearningPathRow(treeNode);
 		row.setParent(parent);
+		forgeStartDate(row);
 		forgeEndDate(row);
 		forgeObligation(row);
 		return row;
+	}
+
+	private void forgeStartDate(LearningPathRow row) {
+		LearningPathConfigs learningPathConfigs = learningPathService.getConfigs(row.getCourseNode());
+		Date startDate = learningPathConfigs.getStartDate();
+		row.setStartDate(startDate);
 	}
 
 	private void forgeEndDate(LearningPathRow row) {
