@@ -111,7 +111,7 @@ public class NodeAccessSettingsController extends FormBasicController {
 		if (!LearningPathNodeAccessProvider.TYPE.equals(courseConfig.getNodeAccessType().getType())) {
 			FormLayoutContainer migrationCont = FormLayoutContainer.createButtonLayout("migrationButtons", getTranslator());
 			formLayout.add(migrationCont);
-			migrateLink = uifactory.addFormLink("settings.migrate", migrationCont, Link.BUTTON);
+			migrateLink = uifactory.addFormLink("settings.convert", migrationCont, Link.BUTTON);
 		}
 		
 		if (LearningPathNodeAccessProvider.TYPE.equals(courseConfig.getNodeAccessType().getType())) {
