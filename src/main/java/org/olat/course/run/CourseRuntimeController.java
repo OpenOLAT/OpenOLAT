@@ -100,10 +100,12 @@ import org.olat.course.db.CustomDBMainController;
 import org.olat.course.editor.EditorMainController;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
+import org.olat.course.learningpath.LearningPathService;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.learningpath.ui.LearningPathIdentityListController;
 import org.olat.course.learningpath.ui.MyLearningPathController;
 import org.olat.course.member.MembersManagementMainController;
+import org.olat.course.nodeaccess.ui.UnsupportedCourseNodesController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ENCourseNode;
 import org.olat.course.nodes.bc.CourseDocumentsController;
@@ -177,7 +179,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private Link folderLink,
 		assessmentLink, archiverLink,
 		courseStatisticLink, surveyStatisticLink, testStatisticLink,
-		areaLink, dbLink,
+		areaLink, dbLink, convertLearningPathLink,
 		//settings
 		lecturesAdminLink, reminderLink,
 		assessmentModeLink, lifeCycleChangeLink,
@@ -213,6 +215,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private StatisticCourseNodesController statsToolCtr;
 	private AssessmentModeListController assessmentModeCtrl;
 	private LectureRepositoryAdminController lecturesAdminCtrl;
+	private UnsupportedCourseNodesController unsupportedCourseNodesCtrl;
 	private CloseableCalloutWindowController courseSearchCalloutCtr;
 	protected RepositoryEntryLifeCycleChangeController lifeCycleChangeCtr;
 
@@ -240,6 +243,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private CourseDBManager courseDBManager;
 	@Autowired
 	private SearchModule searchModule;
+	@Autowired
+	private LearningPathService learningPathService;
 	
 	public CourseRuntimeController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry re, RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator,
@@ -644,6 +649,22 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			tools.addComponent(ordersLink);
 		}
 	}
+	
+	@Override
+	protected void initToolsMenuEdition(Dropdown toolsDropdown) {
+		super.initToolsMenuEdition(toolsDropdown);
+		if (copyLink != null) {
+			ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
+			if (course != null) {
+				if (!LearningPathNodeAccessProvider.TYPE.equals(course.getCourseConfig().getNodeAccessType().getType())) {
+					Integer index = toolsDropdown.getComponentIndex(copyLink);
+					convertLearningPathLink = LinkFactory.createToolLink("convert.course.learning.path",
+							translate("tools.convert.course.learning.path"), this, "o_icon o_icon-fw  o_icon_learning_path");
+					toolsDropdown.addComponent(index + 1, convertLearningPathLink);
+				}
+			}
+		}
+	}
 
 	@Override
 	protected void initToolsMenuDelete(Dropdown settingsDropdown) {
@@ -992,6 +1013,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			doAssessmentSurveyStatistics(ureq);
 		} else if(assessmentLink == source) {
 			doAssessmentTool(ureq);
+		} else if (convertLearningPathLink == source) {
+			doConvertToLearningPath(ureq);
 		} else if(participantListLink == source) {
 			doParticipantList(ureq);
 		} else if(participantInfoLink == source) {
@@ -1086,6 +1109,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			if (QuickSearchEvent.QUICKSEARCH.equals(event.getCommand())) {
 				doDeactivateQuickSearch();
 			}
+		} else if (source == unsupportedCourseNodesCtrl) {
+			cmc.deactivate();
+			cleanUp();
 		}
 		
 		if(editorCtrl == source && source instanceof VetoableCloseController) {
@@ -1133,6 +1159,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	
 	@Override
 	protected void cleanUp() {
+		removeAsListenerAndDispose(unsupportedCourseNodesCtrl);
 		removeAsListenerAndDispose(lifeCycleChangeCtr);
 		removeAsListenerAndDispose(assessmentToolCtr);
 		removeAsListenerAndDispose(courseFolderCtrl);
@@ -1143,6 +1170,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		removeAsListenerAndDispose(membersCtrl);
 		removeAsListenerAndDispose(areasCtrl);
 		removeAsListenerAndDispose(leaveDialogBox);
+		unsupportedCourseNodesCtrl = null;
 		lifeCycleChangeCtr = null;
 		assessmentToolCtr = null;
 		courseFolderCtrl = null;
@@ -1739,6 +1767,29 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			setTextMarkingEnabled(true);
 			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(new MultiUserEvent("glossaryOn"), ores);
 		}
+	}
+	
+	private void doConvertToLearningPath(UserRequest ureq) {
+		ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
+		List<CourseNode> unsupportedCourseNodes = learningPathService.getUnsupportedCourseNodes(course);
+		if (!unsupportedCourseNodes.isEmpty()) {
+			showUnsupportedMessage(ureq, unsupportedCourseNodes);
+			return;
+		}
+		
+		RepositoryEntry lpEntry = learningPathService.migrate(getRepositoryEntry(), getIdentity());
+		String bPath = "[RepositoryEntry:" + lpEntry.getKey() + "]";
+		NewControllerFactory.getInstance().launch(bPath, ureq, getWindowControl());
+	}
+
+	private void showUnsupportedMessage(UserRequest ureq, List<CourseNode> unsupportedCourseNodes) {
+		unsupportedCourseNodesCtrl = new UnsupportedCourseNodesController(ureq, getWindowControl(), unsupportedCourseNodes);
+		listenTo(unsupportedCourseNodesCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				unsupportedCourseNodesCtrl.getInitialComponent(), true, translate("unsupported.course.nodes.title"));
+		cmc.activate();
+		listenTo(cmc);
 	}
 	
 	@Override
