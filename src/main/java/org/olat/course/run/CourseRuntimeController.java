@@ -113,6 +113,7 @@ import org.olat.course.nodes.fo.FOToolController;
 import org.olat.course.nodes.info.InfoCourseSecurityCallback;
 import org.olat.course.nodes.info.InfoRunController;
 import org.olat.course.nodes.members.MembersToolRunController;
+import org.olat.course.nodes.wiki._content.WikiToolController;
 import org.olat.course.reminder.ui.CourseRemindersController;
 import org.olat.course.run.calendar.CourseCalendarController;
 import org.olat.course.run.glossary.CourseGlossaryFactory;
@@ -184,7 +185,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		efficiencyStatementsLink, noteLink, leaveLink,
 		// course tools
 		learningPathLink, learningPathsLink, calendarLink, chatLink, participantListLink, participantInfoLink,
-		blogLink, forumLink, documentsLink, emailLink, searchLink,
+		blogLink, wikiLink, forumLink, documentsLink, emailLink, searchLink,
 		//glossary
 		openGlossaryLink, enableGlossaryLink, lecturesLink;
 	private Link currentUserCountLink;
@@ -193,6 +194,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private CloseableModalController cmc;
 	private COToolController emailCtrl;
 	private BlogToolController blogCtrl;
+	private WikiToolController wikiCtrl;
 	private FOToolController forumCtrl;
 	private CourseDocumentsController documentsCtrl;
 	private CourseAreasController areasCtrl;
@@ -857,6 +859,12 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 		
 		if(!assessmentLock) {
+			wikiLink = LinkFactory.createToolLink("wiki", translate("command.wiki"), this, "o_wiki_icon");
+			wikiLink.setVisible(cc.isWikiEnabled());
+			toolbarPanel.addTool(wikiLink);
+		}
+		
+		if(!assessmentLock) {
 			forumLink = LinkFactory.createToolLink("forum", translate("command.forum"), this, "o_fo_icon");
 			forumLink.setVisible(cc.isForumEnabled());
 			toolbarPanel.addTool(forumLink);
@@ -992,6 +1000,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			doEmail(ureq);
 		} else if(blogLink == source) {
 			doBlog(ureq);
+		} else if(wikiLink == source) {
+			doWiki(ureq);
 		} else if(forumLink == source) {
 			doForum(ureq);
 		} else if(documentsLink == source) {
@@ -1107,6 +1117,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 						case participantInfo: doParticipantInfo(ureq); break;
 						case email: doEmail(ureq); break;
 						case blog: doBlog(ureq); break;
+						case wiki: doWiki(ureq); break;
 						case forum: doForum(ureq); break;
 						case documents: doDocuments(ureq); break;
 					}
@@ -1205,6 +1216,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					if (blog != null) {
 						List<ContextEntry> subEntries = entries.subList(1, entries.size());
 						blog.activate(ureq, subEntries, entries.get(0).getTransientState());
+					}
+				}
+			} else if("Wiki".equalsIgnoreCase(type)) {
+				if (wikiLink != null && wikiLink.isVisible()) {
+					Activateable2 wiki = doWiki(ureq);
+					if (wiki != null) {
+						List<ContextEntry> subEntries = entries.subList(1, entries.size());
+						wiki.activate(ureq, subEntries, entries.get(0).getTransientState());
 					}
 				}
 			} else if("Forum".equalsIgnoreCase(type)) {
@@ -1866,6 +1885,23 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		return null;
 	}
 	
+	private WikiToolController doWiki(UserRequest ureq) {
+		if(delayedClose == Delayed.wiki || requestForClose(ureq)) {
+			removeCustomCSS();
+			
+			OLATResourceable ores = OresHelper.createOLATResourceableType("wiki");
+			WindowControl swControl = addToHistory(ureq, ores, null);
+			wikiCtrl = new WikiToolController(ureq, swControl, getUserCourseEnvironment());
+			
+			pushController(ureq, translate("command.wiki"), wikiCtrl);
+			setActiveTool(wikiLink);
+			currentToolCtr = wikiCtrl;
+			return wikiCtrl;
+		}
+		delayedClose = Delayed.wiki;
+		return null;
+	}
+	
 	private void doForum(UserRequest ureq) {
 		if(delayedClose == Delayed.forum || requestForClose(ureq)) {
 			removeCustomCSS();
@@ -2060,6 +2096,15 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				}
 				break;
 			}
+			case wiki: {
+				if(wikiLink != null) {
+					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
+					CourseConfig cc = course.getCourseEnvironment().getCourseConfig();
+					wikiLink.setVisible(cc.isWikiEnabled());
+					toolbarPanel.setDirty(true);
+				}
+				break;
+			}
 			case forum: {
 				if(forumLink != null) {
 					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
@@ -2218,6 +2263,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		participantInfo,
 		email,
 		blog,
+		wiki,
 		forum,
 		documents
 	}
