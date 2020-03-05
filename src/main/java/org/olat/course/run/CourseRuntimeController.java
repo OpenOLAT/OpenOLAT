@@ -655,12 +655,12 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		super.initToolsMenuEdition(toolsDropdown);
 		if (copyLink != null) {
 			ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
-			if (course != null) {
-				if (!LearningPathNodeAccessProvider.TYPE.equals(course.getCourseConfig().getNodeAccessType().getType())) {
-					Integer index = toolsDropdown.getComponentIndex(copyLink);
+			if (course != null && !LearningPathNodeAccessProvider.TYPE.equals(course.getCourseConfig().getNodeAccessType().getType())) {
+				Integer index = toolsDropdown.getComponentIndex(copyLink);
+				if(index != null) {
 					convertLearningPathLink = LinkFactory.createToolLink("convert.course.learning.path",
 							translate("tools.convert.course.learning.path"), this, "o_icon o_icon-fw  o_icon_learning_path");
-					toolsDropdown.addComponent(index + 1, convertLearningPathLink);
+					toolsDropdown.addComponent(index.intValue() + 1, convertLearningPathLink);
 				}
 			}
 		}
