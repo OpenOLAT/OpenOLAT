@@ -116,7 +116,7 @@
 	/* Nodes that are not in a sequence have different path rendering */
 	li.o_lp_not_in_sequence:not(:last-child):not(.o_last_node):before,
 	li.o_lp_contains_no_sequence.children_visible:not(.o_last_node):before,
-	li.o_lp_contains_no_sequence.children_visible:not(.o_last_node) li.o_lp_not_in_sequence:before{
+	li.o_lp_contains_no_sequence.children_visible:not(.o_last_node) li.o_lp_not_in_sequence:not(.o_last_node):before {
 	 	border-left: $o-lp-path-width solid $o-lp-default; 
 	}
 	
