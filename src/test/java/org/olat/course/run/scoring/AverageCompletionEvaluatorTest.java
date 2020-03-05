@@ -92,10 +92,16 @@ public class AverageCompletionEvaluatorTest {
 		AssessmentEvaluation childCalculatedEvaluation = createAssessmentEvaluation(mandatory, null, Double.valueOf(0.1), null, null);
 		scoreAccounting.put(childCalculated, childCalculatedEvaluation);
 		when(courseAssessmentService.getAssessmentConfig(childCalculated)).thenReturn(configEvaluated);
+		// Child: Calculated, fully assessed
+		CourseNode childCalculated2 = new STCourseNode();
+		parent.addChild(childCalculated2);
+		AssessmentEvaluation childCalculatedEvaluation2 = createAssessmentEvaluation(mandatory, null, Double.valueOf(0.1), null, Boolean.TRUE);
+		scoreAccounting.put(childCalculated2, childCalculatedEvaluation2);
+		when(courseAssessmentService.getAssessmentConfig(childCalculated2)).thenReturn(configEvaluated);
 		
 		// Child level 2: calculated
 		CourseNode child2Uncalculated = new SPCourseNode();
-		childCalculated.addChild(child2Uncalculated);
+		childCalculated2.addChild(child2Uncalculated);
 		AssessmentEvaluation child2UncalculatedEvaluation = createAssessmentEvaluation(mandatory, null, Double.valueOf(1.0), null, null);
 		scoreAccounting.put(child2Uncalculated, child2UncalculatedEvaluation);
 		when(courseAssessmentService.getAssessmentConfig(child2Uncalculated)).thenReturn(configSetByNode);
