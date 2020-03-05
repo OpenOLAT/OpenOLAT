@@ -180,7 +180,6 @@ public class WikiConfigController extends FormBasicController {
 			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
 				wikiEntry = repositorySearchCtrl.getSelectedEntry();
 				if (wikiEntry != null) {
-					//TODO uh set copnfig
 					AbstractFeedCourseNode.setReference(courseNode.getModuleConfiguration(), wikiEntry);
 					WikiEditController.setWikiRepoReference(wikiEntry, config);
 					fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
