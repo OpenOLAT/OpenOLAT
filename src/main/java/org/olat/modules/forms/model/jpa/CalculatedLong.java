@@ -67,12 +67,22 @@ public class CalculatedLong {
 	}
 	
 	private static String trimZerosFromEnd(String value) {
-		int len = value.length();
-		int st = 0;
-		while ((st < len) && (value.charAt(len - 1) == '0' || value.charAt(len - 1) == '.')) {
-			len--;
+		if (value.contains(".")) {
+			int len = value.length();
+			int st = 0;
+			while (st < len) {
+				if (value.charAt(len - 1) == '0') {
+					len--;
+				} else if (value.charAt(len - 1) == '.') {
+					len--;
+					break; // stop at decimal point
+				}
+			}
+			System.out.println("trimmed: "+value.substring(0, len));
+			return value.substring(0, len);
 		}
-		return value.substring(0, len);
+		System.out.println("untrimmed: " + value);
+		return value;
 	}
 
 }
