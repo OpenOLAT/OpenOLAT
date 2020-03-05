@@ -36,12 +36,12 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class LearningPathIdentityCtrl extends BasicController {
+public class LearningPathIdentityController extends BasicController {
 
 	private CoachedIdentityLargeInfosController coachedIdentityLargeInfosCtrl;
 	private LearningPathListController learningPathListCtrl;
 
-	public LearningPathIdentityCtrl(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+	public LearningPathIdentityController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			UserCourseEnvironment coachedCourseEnv) {
 		super(ureq, wControl);
 		

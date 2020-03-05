@@ -78,7 +78,7 @@ public class CurriculumLearningPathRepositoryListController extends FormBasicCon
 	private FlexiTableElement tableEl;
 	private CurriculumLearningPathRepositoryDataModel dataModel;
 
-	private LearningPathIdentityCtrl currentIdentityCtrl;
+	private LearningPathIdentityController currentIdentityCtrl;
 	
 	private final TooledStackedPanel stackPanel;
 	private final CurriculumElement curriculumElement;
@@ -195,7 +195,7 @@ public class CurriculumLearningPathRepositoryListController extends FormBasicCon
 		IdentityEnvironment identityEnv = new IdentityEnvironment();
 		identityEnv.setIdentity(participant);
 		UserCourseEnvironment coachedCourseEnv = new UserCourseEnvironmentImpl(identityEnv, courseEnvironment);
-		currentIdentityCtrl = new LearningPathIdentityCtrl(ureq, bwControl, stackPanel, coachedCourseEnv);
+		currentIdentityCtrl = new LearningPathIdentityController(ureq, bwControl, stackPanel, coachedCourseEnv);
 		listenTo(currentIdentityCtrl);
 		String title = row.getRepositoryEntry().getDisplayname().length() > 30
 				? row.getRepositoryEntry().getDisplayname().substring(0, 30) + "..."
