@@ -78,10 +78,8 @@ public class CalculatedLong {
 					break; // stop at decimal point
 				}
 			}
-			System.out.println("trimmed: "+value.substring(0, len));
 			return value.substring(0, len);
 		}
-		System.out.println("untrimmed: " + value);
 		return value;
 	}
 

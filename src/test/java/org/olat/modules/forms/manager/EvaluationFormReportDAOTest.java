@@ -237,9 +237,7 @@ public class EvaluationFormReportDAOTest extends OlatTestCase {
 	}
 	
 	private Long getValue(List<CalculatedLong> calculatedLongs, String identifier, String subidentifier) {
-		System.out.println("Wanted: " + identifier + "/" + subidentifier);
 		for (CalculatedLong calculatedLong: calculatedLongs) {
-			System.out.println("has: " + calculatedLong.getIdentifier() + "/" + calculatedLong.getSubIdentifier() + " = " + calculatedLong.getValue());
 			if (calculatedLong.getIdentifier().equals(identifier) && calculatedLong.getSubIdentifier().equals(subidentifier)) {
 				return calculatedLong.getValue();
 			}
