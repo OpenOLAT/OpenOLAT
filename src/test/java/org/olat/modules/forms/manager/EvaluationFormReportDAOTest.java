@@ -203,9 +203,11 @@ public class EvaluationFormReportDAOTest extends OlatTestCase {
 		EvaluationFormSession session1 = evaTestHelper.createSession();
 		EvaluationFormSession session2 = evaTestHelper.createSession();
 		EvaluationFormSession session3 = evaTestHelper.createSession();
+		EvaluationFormSession session4 = evaTestHelper.createSession();
 		EvaluationFormSession otherSession = evaTestHelper.createSession();
 		BigDecimal numberThreeTimes = BigDecimal.valueOf(1);
 		BigDecimal numberOnce = BigDecimal.valueOf(2);
+		BigDecimal ten = BigDecimal.valueOf(10);
 		
 		evaluationFormManager.createNumericalResponse(responseIdentifier1, otherSession, numberThreeTimes);
 		evaluationFormManager.createNoResponse(responseIdentifier1, session1);
@@ -216,18 +218,21 @@ public class EvaluationFormReportDAOTest extends OlatTestCase {
 		evaluationFormManager.finishSession(session1);
 		evaluationFormManager.createNumericalResponse(responseIdentifier1, session2, numberThreeTimes);
 		evaluationFormManager.finishSession(session2);
-		// unfinished session counts as well
+		evaluationFormManager.createNumericalResponse(responseIdentifier1, session4, ten);
+		evaluationFormManager.finishSession(session4);
+		// unfinished session counts as well (use filter if not wanted)
 		evaluationFormManager.createNumericalResponse(responseIdentifier1, session3, numberThreeTimes);
 		dbInstance.commit();
 		
 		List<String> responseIdentifiers = Arrays.asList(responseIdentifier1, responseIdentifier2);
-		List<EvaluationFormSession> sessions = Arrays.asList(session1, session2, session3);
+		List<EvaluationFormSession> sessions = Arrays.asList(session1, session2, session3, session4);
 		SessionFilter filter = SessionFilterFactory.create(sessions);
 		List<CalculatedLong> counts = sut.getCountByIdentifiersAndNumerical(responseIdentifiers, filter);
 		
-		assertThat(counts).hasSize(3);
+		assertThat(counts).hasSize(4);
 		assertThat(getValue(counts, responseIdentifier1, numberThreeTimes.toPlainString())).isEqualTo(3);
 		assertThat(getValue(counts, responseIdentifier1, numberOnce.toPlainString())).isEqualTo(1);
+		assertThat(getValue(counts, responseIdentifier1, ten.toPlainString())).isEqualTo(1);
 		assertThat(getValue(counts, responseIdentifier2, numberOnce.toPlainString())).isEqualTo(1);
 	}
 	
