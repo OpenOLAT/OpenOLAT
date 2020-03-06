@@ -212,7 +212,7 @@ $o-toolbar-height-md			: 37px !default;
 $o-toolbar-height-sm			: 35px !default;
 $o-toolbar-height-xs			: 22px !default;
 $o-toolbar-margin-top			: -10px !default;
-$o-toolbar-margin-bottom		: $navbar-margin-bottom !default;
+$o-toolbar-margin-bottom		: ($navbar-margin-bottom + 5px) !default; // 5 extra for course pagination
 $o-toolbar-tools-margin-top-md		: 8px !default;
 $o-toolbar-tools-margin-bottom-md	: 5px !default;
 $o-toolbar-tools-margin-top-sm		: 6px !default;

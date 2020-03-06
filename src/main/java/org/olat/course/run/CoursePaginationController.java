@@ -60,11 +60,15 @@ public class CoursePaginationController extends FormBasicController {
 		
 		previousButton = uifactory.addFormLink("previous", "previous", "", null, formLayout, Link.BUTTON_XSMALL | Link.NONTRANSLATED);
 		previousButton.setDomReplacementWrapperRequired(false);
-		previousButton.setIconLeftCSS("o_icon o_icon_previous_page");
+		previousButton.setIconLeftCSS("o_icon o_icon-fw o_icon_course_previous");
+		previousButton.setLinkTitle(translate("command.previous"));
+		previousButton.setAriaLabel(translate("command.previous"));
 		
 		nextButton = uifactory.addFormLink("next", "next", "", null, formLayout, Link.BUTTON_XSMALL | Link.NONTRANSLATED);
 		nextButton.setDomReplacementWrapperRequired(false);
-		nextButton.setIconLeftCSS("o_icon o_icon_next_page");
+		nextButton.setIconLeftCSS("o_icon o_icon-fw o_icon_course_next");
+		nextButton.setLinkTitle(translate("command.next"));
+		nextButton.setAriaLabel(translate("command.next"));
 	}
 
 	public void updateNextPreviousUI(boolean previousEnabled, boolean nextEnabled) {
@@ -75,8 +79,11 @@ public class CoursePaginationController extends FormBasicController {
 	public void updateAssessmentConfirmUI(boolean confirmVisible, boolean doConfirm) {
 		// If doConfirm (click to confirm), show the current state "undone" and vice versa.
 		confirmButton.setI18nKey(doConfirm? "command.assessment.undone": "command.assessment.done");
+		confirmButton.setLinkTitle(doConfirm? "command.assessment.undone.alt": "command.assessment.done.alt");
 		confirmButton.setIconLeftCSS(doConfirm? "o_icon o_icon_status_undone": "o_icon o_icon_status_done");
 		confirmButton.setUserObject(doConfirm? Boolean.TRUE: Boolean.FALSE);
+		confirmButton.setElementCssClass(doConfirm ? "o_course_pagination_status_undone" : "o_course_pagination_status_done");
+		confirmButton.setPrimary(doConfirm);
 		confirmButton.setVisible(confirmVisible);
 		flc.setDirty(true);
 	}

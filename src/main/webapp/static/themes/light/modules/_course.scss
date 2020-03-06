@@ -354,7 +354,16 @@
 
 /* pagination */
 .o_course_pagination {
-	margin-bottom: 10px;
+	position: absolute;
+	/* make it look like beeing part of the toolbar */
+	top: -($o-toolbar-margin-bottom + 1px);
+	right: 15px;
+ 	background-color: $o-toolbar-bg-color;
+	border: 1px solid $o-toolbar-border-color;
+	border-top: 0;
+   	@include border-bottom-radius($o-toolbar-border-radius);
+   	padding: 2px;
+   	
 	display: flex;
 	justify-content: flex-end;
 	
@@ -365,9 +374,21 @@
 	.o_previous,
 	.o_next {
 		a {
-			width: 60px;
+			width: 50px;
 		}
 	}
+	.o_confirm {
+		a {
+			&.o_course_pagination_status_done {
+				color: $o-lp-done;
+			}
+		}	
+	}
+	
+	.btn-xs {
+		padding: 0px 4px;
+	}
+	
 }
 
 /* statistics */

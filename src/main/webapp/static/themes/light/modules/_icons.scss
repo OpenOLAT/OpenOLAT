@@ -91,6 +91,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_columns:before { content: $fa-var-columns;}
 .o_icon_container:before { content: $fa-var-columns;}
 .o_icon_copy:before { content: $fa-var-copy;}
+.o_icon_course_previous:before { content: $fa-var-chevron-left; }
+.o_icon_course_next:before { content: $fa-var-chevron-right; }
 .o_icon_courseareas:before { content: $fa-var-circle-thin;}
 .o_icon_coursedb:before { content: $fa-var-database;}
 .o_icon_courseeditor:before { content: $fa-var-edit;}
