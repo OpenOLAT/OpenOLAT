@@ -58,6 +58,7 @@ import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.fileresource.types.VideoFileResource;
 import org.olat.modules.video.ui.VideoEntryDataModel.Cols;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
@@ -81,7 +82,6 @@ public class VideoListingController extends FormBasicController implements Activ
 
 	private final String imgUrl;
 	private FlexiTableElement tableEl;
-	private VideoEntryDataModel model;
 	private VideoEntryDataSource dataSource;
 	private SearchMyRepositoryEntryViewParams searchParams;
 
@@ -94,11 +94,12 @@ public class VideoListingController extends FormBasicController implements Activ
 
 	public VideoListingController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel) {		
 		super(ureq, wControl, "video_listing");
-		this.setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		
 		this.toolbarPanel = toolbarPanel;
 		
 		searchParams = new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles(), VideoFileResource.TYPE_NAME);
+		searchParams.setEntryStatus(new RepositoryEntryStatusEnum[] { RepositoryEntryStatusEnum.published });
 		dataSource = new VideoEntryDataSource(searchParams);
 		imgUrl = registerMapper(ureq, new VideoMapper());
 
@@ -111,7 +112,7 @@ public class VideoListingController extends FormBasicController implements Activ
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key.i18nKey(), Cols.key.ordinal(), true, OrderBy.key.name()));
 
-		model = new VideoEntryDataModel(dataSource, columnsModel);
+		VideoEntryDataModel model = new VideoEntryDataModel(dataSource, columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom);
 		tableEl.setRendererType(FlexiTableRendererType.custom);

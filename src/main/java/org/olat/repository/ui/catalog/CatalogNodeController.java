@@ -47,6 +47,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.CatalogEntry.Style;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.manager.CatalogManager;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
@@ -145,7 +146,7 @@ public class CatalogNodeController extends BasicController implements Activateab
 		SearchMyRepositoryEntryViewParams searchParams
 			= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
 		searchParams.setParentEntry(catalogEntry);
-		searchParams.setClosed(Boolean.FALSE);
+		searchParams.setEntryStatus(RepositoryEntryStatusEnum.preparationToPublished());
 		
 		entryListController = new RepositoryEntryListController(ureq, wControl, searchParams, true, false, "catalog", stackPanel);
 		if(!entryListController.isEmpty() || searchParams.getFilters() != null) {
@@ -157,7 +158,7 @@ public class CatalogNodeController extends BasicController implements Activateab
 		SearchMyRepositoryEntryViewParams searchClosedParams
 				= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
 		searchClosedParams.setParentEntry(catalogEntry);
-		searchClosedParams.setClosed(Boolean.TRUE);
+		searchClosedParams.setEntryStatus(new RepositoryEntryStatusEnum[] {RepositoryEntryStatusEnum.closed });
 		closedEntryListController = new RepositoryEntryListController(ureq, wControl, searchClosedParams, true, false, "catalog-closed", stackPanel);
 		if(!closedEntryListController.isEmpty() || searchClosedParams.getFilters() != null) {
 			mainVC.put("closedEntries", closedEntryListController.getInitialComponent());

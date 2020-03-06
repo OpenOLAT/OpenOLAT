@@ -86,7 +86,7 @@ public class VideoEntryDataSource implements FlexiTableDataSourceDelegate<Reposi
 	public ResultInfos<RepositoryEntryRow> getRows(String query, List<FlexiTableFilter> filters,
 			List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
 		
-		if(condQueries != null && condQueries.size() > 0) {
+		if(condQueries != null && !condQueries.isEmpty()) {
 			String filter = condQueries.get(0);
 			if(StringHelper.containsNonWhitespace(filter)) {
 				searchParams.setFilters(Collections.singletonList(Filter.valueOf(filter)));
@@ -111,7 +111,7 @@ public class VideoEntryDataSource implements FlexiTableDataSourceDelegate<Reposi
 		List<RepositoryEntryRow> rows = processViewModel(views);
 		ResultInfos<RepositoryEntryRow> results = new DefaultResultInfos<>(firstResult + rows.size(), -1, rows);
 		if(firstResult == 0 && views.size() < maxResults) {
-			count = new Integer(views.size());
+			count = Integer.valueOf(views.size());
 		}
 		return results;
 	}
