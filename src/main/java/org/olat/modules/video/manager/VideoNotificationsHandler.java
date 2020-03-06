@@ -127,7 +127,8 @@ public class VideoNotificationsHandler implements NotificationsHandler {
 							.getURLFromBusinessPathString(businessPath);
 				
 				List<SubscriptionListItem> items = new ArrayList<>();
-				List<UserComment> comments = commentAndRatingService.getComments(re.getOlatResource(), p.getSubidentifier());
+				String subIdentifier = StringHelper.containsNonWhitespace(p.getSubidentifier()) ? p.getSubidentifier() : null;
+				List<UserComment> comments = commentAndRatingService.getComments(re.getOlatResource(), subIdentifier);
 				for (UserComment comment : comments) {
 					if (compareDate.before(comment.getCreationDate())) {
 						String desc;
