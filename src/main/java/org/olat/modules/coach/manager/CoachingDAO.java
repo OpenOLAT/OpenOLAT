@@ -878,7 +878,7 @@ public class CoachingDAO {
 			  .append(" inner join o_as_entry sg_ae")
 			  .append("    on (sg_ae.fk_identity = sg_participant.fk_identity_id and sg_ae.fk_entry = sg_re.repositoryentry_id)")
 			  .append(" where sg_re.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed())
-			  .append("    and sg_ae.a_entry_root=").appendTrue();
+			  .append("    and sg_ae.a_entry_root=").appendTrue().append(" and sg_ae.a_completion is not null");
 		}
 		if(hasOwned) {
 			if(hasCoached) {
@@ -895,10 +895,9 @@ public class CoachingDAO {
 			  .append(" inner join o_as_entry sg_ae ")
 			  .append("    on (sg_ae.fk_identity = sg_participant.fk_identity_id and sg_ae.fk_entry = sg_re.repositoryentry_id)")
 			  .append(" where sg_re.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed())
-			  .append("    and sg_ae.a_entry_root=").appendTrue();
+			  .append("    and sg_ae.a_entry_root=").appendTrue().append(" and sg_ae.a_completion is not null");
 		}
 		sb.append(")")
-		  .append(" and ae.a_completion is not null")
 		  .append(" group by ae.fk_identity");
 		
 		List<?> rawList = dbInstance.getCurrentEntityManager()
