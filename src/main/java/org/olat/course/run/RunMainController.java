@@ -397,7 +397,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	}
 	
 	protected void updateNextPrevious() {
-		if(nextLink == null || previousLink == null || luTree == null) {
+		if (luTree == null) {
 			return;
 		}
 		
@@ -413,8 +413,13 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			hasPrevious = index > 0;
 			hasNext = index  >= 0 && index+1 < flatTree.size();
 		}
-		previousLink.setEnabled(hasPrevious);
-		nextLink.setEnabled(hasNext);
+		
+		if (previousLink != null) {
+			previousLink.setEnabled(hasPrevious);
+		}
+		if (nextLink != null) {
+			nextLink.setEnabled(hasNext);
+		}
 		if (paginationCtrl != null) {
 			paginationCtrl.updateNextPreviousUI(hasPrevious, hasNext);
 		}
