@@ -26,6 +26,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.repository.CatalogEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 
 /**
  * 
@@ -38,8 +39,8 @@ public class SearchMyRepositoryEntryViewParams {
 	private Roles roles;
 	
 	private Boolean marked;
-	private Boolean closed;
 	private boolean membershipMandatory = false;
+	private RepositoryEntryStatusEnum[] entryStatus;
 	
 	private OrderBy orderBy;
 	private boolean asc;
@@ -182,12 +183,12 @@ public class SearchMyRepositoryEntryViewParams {
 		return roles;
 	}
 	
-	public Boolean getClosed() {
-		return closed;
+	public RepositoryEntryStatusEnum[] getEntryStatus() {
+		return entryStatus;
 	}
 
-	public void setClosed(Boolean closed) {
-		this.closed = closed;
+	public void setEntryStatus(RepositoryEntryStatusEnum[] entryStatus) {
+		this.entryStatus = entryStatus;
 	}
 
 	public Boolean getMarked() {
