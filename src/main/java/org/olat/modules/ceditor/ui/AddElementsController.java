@@ -36,6 +36,7 @@ import org.olat.modules.ceditor.PageEditorProvider;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementHandler;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
+import org.olat.modules.ceditor.ui.component.ContentEditorFragment;
 import org.olat.modules.ceditor.ui.event.AddElementEvent;
 import org.olat.modules.ceditor.ui.model.EditorFragment;
 
@@ -50,12 +51,24 @@ public class AddElementsController extends BasicController {
 	private final int containerColumn;
 	private final PageElementTarget target;
 	private final EditorFragment referenceFragment;
+	private final ContentEditorFragment referenceComponent;
+	
+	public AddElementsController(UserRequest ureq, WindowControl wControl, PageEditorProvider provider,
+			PageElementTarget target, Translator fallbackTranslator) {
+		super(ureq, wControl, fallbackTranslator);
+		this.target = target;
+		containerColumn = -1;
+		referenceFragment = null;
+		referenceComponent = null;
+		initContainer(provider);
+	}
 	
 	public AddElementsController(UserRequest ureq, WindowControl wControl, PageEditorProvider provider,
 			EditorFragment referenceFragment, PageElementTarget target, Translator fallbackTranslator) {
 		super(ureq, wControl, fallbackTranslator);
 		this.target = target;
 		containerColumn = -1;
+		referenceComponent = null;
 		this.referenceFragment = referenceFragment;
 		initContainer(provider);
 	}
@@ -64,8 +77,29 @@ public class AddElementsController extends BasicController {
 			EditorFragment referenceFragment, PageElementTarget target, int containerColumn, Translator fallbackTranslator) {
 		super(ureq, wControl, fallbackTranslator);
 		this.target = target;
+		referenceComponent = null;
 		this.containerColumn = containerColumn;
 		this.referenceFragment = referenceFragment;
+		initContainer(provider);
+	}
+	
+	public AddElementsController(UserRequest ureq, WindowControl wControl, PageEditorProvider provider,
+			ContentEditorFragment referenceComponent, PageElementTarget target, Translator fallbackTranslator) {
+		super(ureq, wControl, fallbackTranslator);
+		this.target = target;
+		containerColumn = -1;
+		referenceFragment = null;
+		this.referenceComponent = referenceComponent;
+		initContainer(provider);
+	}
+	
+	public AddElementsController(UserRequest ureq, WindowControl wControl, PageEditorProvider provider,
+			ContentEditorFragment referenceComponent, PageElementTarget target, int containerColumn, Translator fallbackTranslator) {
+		super(ureq, wControl, fallbackTranslator);
+		this.target = target;
+		referenceFragment = null;
+		this.containerColumn = containerColumn;
+		this.referenceComponent = referenceComponent;
 		initContainer(provider);
 	}
 	
@@ -109,7 +143,7 @@ public class AddElementsController extends BasicController {
 			Link link = (Link)source;
 			if("add.elements".equals(link.getCommand())) {
 				PageElementHandler handler = (PageElementHandler)link.getUserObject();
-				fireEvent(ureq, new AddElementEvent(referenceFragment, handler, target, containerColumn));
+				fireEvent(ureq, new AddElementEvent(referenceFragment, referenceComponent, handler, target, containerColumn));
 			}
 		}
 	}

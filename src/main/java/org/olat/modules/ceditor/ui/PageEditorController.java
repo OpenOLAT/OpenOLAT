@@ -285,7 +285,7 @@ public class PageEditorController extends BasicController {
 	}
 	
 	private void openMainAddElementsCallout(UserRequest ureq) {
-		addElementsCtrl = new AddElementsController(ureq, getWindowControl(), provider, null,
+		addElementsCtrl = new AddElementsController(ureq, getWindowControl(), provider,
 				PageElementTarget.atTheEnd, getTranslator());
 		addElementsCtrl.addControllerListener(this);
 		

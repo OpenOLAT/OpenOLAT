@@ -20,54 +20,59 @@
 package org.olat.modules.ceditor.ui.event;
 
 import org.olat.core.gui.control.Event;
-import org.olat.modules.ceditor.PageElementHandler;
 import org.olat.modules.ceditor.ui.PageElementTarget;
+import org.olat.modules.ceditor.ui.component.ContentEditorContainerComponent;
 import org.olat.modules.ceditor.ui.component.ContentEditorFragment;
-import org.olat.modules.ceditor.ui.model.EditorFragment;
 
 /**
  * 
- * Initial date: 04.07.2016<br>
+ * Initial date: 24 déc. 2019<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AddElementEvent extends Event {
+public class OpenAddElementEvent extends Event {
 
-	private static final long serialVersionUID = 7073690795238863754L;
+	private static final long serialVersionUID = 6459899526791954631L;
 
-	private final int containerColumn;
-	private final PageElementTarget target;
-	private final PageElementHandler handler;
-	private final EditorFragment referenceFragment;
-	private final ContentEditorFragment referenceComponent;
+	public static final String OPEN_ADD_ELEMENT = "ce-open-add-element";
 	
-	public AddElementEvent(EditorFragment referenceFragment, ContentEditorFragment referenceComponent,
-			PageElementHandler handler, PageElementTarget target, int containerColumn) {
-		super("pf-add-above-element");
+	private final int column;
+	private final String dispatchId;
+	private final PageElementTarget target;
+	private final ContentEditorFragment component;
+	
+	public OpenAddElementEvent(String dispatchId, ContentEditorFragment component, PageElementTarget target) {
+		super(OPEN_ADD_ELEMENT);
+		this.dispatchId = dispatchId;
+		this.component = component;
 		this.target = target;
-		this.handler = handler;
-		this.containerColumn = containerColumn;
-		this.referenceFragment = referenceFragment;
-		this.referenceComponent = referenceComponent;
+		this.column = -1;
+	}
+	
+	public OpenAddElementEvent(String dispatchId, ContentEditorContainerComponent component, PageElementTarget target, int column) {
+		super(OPEN_ADD_ELEMENT);
+		this.dispatchId = dispatchId;
+		this.component = component;
+		this.target = target;
+		this.column = column;
 	}
 
+	public String getDispatchId() {
+		return dispatchId;
+	}
+
+	public ContentEditorFragment getComponent() {
+		return component;
+	}
+	
 	public PageElementTarget getTarget() {
 		return target;
 	}
-
-	public PageElementHandler getHandler() {
-		return handler;
-	}
-
-	public EditorFragment getReferenceFragment() {
-		return referenceFragment;
+	
+	public int getColumn() {
+		return column;
 	}
 	
-	public ContentEditorFragment getReferenceComponent() {
-		return referenceComponent;
-	}
 	
-	public int getContainerColumn() {
-		return containerColumn;
-	}
+
 }
