@@ -157,7 +157,7 @@ public class BCCourseNodeEditForm extends FormBasicController implements Control
 			createFolderForm = new BCCourseNodeEditCreateFolderForm(ureq, getWindowControl(), course, node);
 			listenTo(createFolderForm);
 
-			String title = translate("chooseFolder");
+			String title = translate("createFolder");
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), createFolderForm.getInitialComponent(), true, title);
 			listenTo(cmc);
 			cmc.activate();
@@ -167,7 +167,7 @@ public class BCCourseNodeEditForm extends FormBasicController implements Control
 			chooseForm = new BCCourseNodeEditChooseFolderForm(ureq, getWindowControl(), namedContainer);
 			listenTo(chooseForm);
 
-			String title = translate("createFolder");
+			String title = translate("chooseFolder");
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), chooseForm.getInitialComponent(), true, title);
 			listenTo(cmc);
 			cmc.activate();
