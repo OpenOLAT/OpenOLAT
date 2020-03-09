@@ -54,6 +54,7 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.modules.cp.CPManifestTreeModel.UserObject;
 
 /**
  * Description: <br>
@@ -189,7 +190,7 @@ public class CPOfflineReadableManager {
 		/* first, we do the menu-tree */
 		File mani = new File(unzippedDir, FILENAME_IMSMANIFEST);
 		LocalFileImpl vfsMani = new LocalFileImpl(mani);
-		CPManifestTreeModel ctm = new CPManifestTreeModel(vfsMani, "");
+		CPManifestTreeModel ctm = new CPManifestTreeModel(vfsMani, "", DryRunAssessmentProvider.create());
 		TreeNode root = ctm.getRootNode();
 		// let's take the rootnode title as  page title
 		this.rootTitle = root.getTitle(); 
@@ -260,7 +261,7 @@ public class CPOfflineReadableManager {
 		// available
 		// render current node
 
-		String nodeUri = (String) node.getUserObject();
+		String nodeUri = node.getUserObject() != null? ((UserObject)node.getUserObject()).getHref(): null;
 		String title = node.getTitle();
 		String altText = node.getAltText();
 

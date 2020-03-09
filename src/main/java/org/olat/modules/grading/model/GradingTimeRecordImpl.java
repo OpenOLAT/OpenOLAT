@@ -65,6 +65,8 @@ public class GradingTimeRecordImpl implements GradingTimeRecord, Persistable {
 	
 	@Column(name="g_time", nullable=false, insertable=true, updatable=false)
 	private long time;
+	@Column(name="g_metadata_time", nullable=false, insertable=true, updatable=true)
+	private long metadataTime;
 	
 	@Temporal(TemporalType.DATE)
 	@Column(name="g_date_record", nullable=false, insertable=true, updatable=false)
@@ -113,7 +115,17 @@ public class GradingTimeRecordImpl implements GradingTimeRecord, Persistable {
 	public void setTime(long time) {
 		this.time = time;
 	}
-	
+
+	@Override
+	public long getMetadataTime() {
+		return metadataTime;
+	}
+
+	@Override
+	public void setMetadataTime(long metadataTime) {
+		this.metadataTime = metadataTime;
+	}
+
 	@Override
 	public Date getDateOfRecord() {
 		return dateOfRecord;

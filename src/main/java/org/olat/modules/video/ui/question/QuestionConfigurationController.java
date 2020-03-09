@@ -95,7 +95,7 @@ public class QuestionConfigurationController extends FormBasicController {
 		beginEl.setExampleKey("time.format", null);
 		beginEl.setMandatory(true);
 		
-		String timeLimit = question.getTimeLimit() >= 0 ? Long.toString(question.getTimeLimit()) : "";
+		String timeLimit = question.getTimeLimit() > 0 ? Long.toString(question.getTimeLimit()) : "";
 		timeLimitEl = uifactory.addTextElement("timeLimit", "video.question.timeLimit", 10, timeLimit, formLayout);
 		
 		String[] onValues = new String[] { translate("video.question.allow.skipping"), translate("video.question.allow.retry") };
@@ -195,7 +195,12 @@ public class QuestionConfigurationController extends FormBasicController {
 		try {
 			String beginTime = beginEl.getValue();
 			question.setBegin(displayDateFormat.parse(beginTime));
-			question.setTimeLimit(Long.parseLong(timeLimitEl.getValue()));
+			if(StringHelper.containsNonWhitespace(timeLimitEl.getValue())
+					&& StringHelper.isLong(timeLimitEl.getValue())) {
+				question.setTimeLimit(Long.parseLong(timeLimitEl.getValue()));
+			} else {
+				question.setTimeLimit(-1l);
+			}
 			question.setStyle(styleEl.getSelectedKey());
 			question.setAllowSkipping(skippingEl.isSelected(0));
 			question.setAllowNewAttempt(skippingEl.isSelected(1));

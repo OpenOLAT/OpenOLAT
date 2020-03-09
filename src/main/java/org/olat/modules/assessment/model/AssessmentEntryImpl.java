@@ -33,7 +33,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -58,12 +57,10 @@ import org.olat.repository.RepositoryEntry;
  */
 @Entity(name="assessmententry")
 @Table(name="o_as_entry")
-@NamedQueries({
-	@NamedQuery(name="loadAssessmentEntryById",
-		query="select data from assessmententry data where data.key=:key"),
-	@NamedQuery(name="loadAssessmentEntryByRepositoryEntryAndSubIdent",
-		query="select data from assessmententry data where data.repositoryEntry.key=:repositoryEntryKey and data.subIdent=:subIdent")
-})
+@NamedQuery(name="loadAssessmentEntryById",
+	query="select data from assessmententry data where data.key=:key")
+@NamedQuery(name="loadAssessmentEntryByRepositoryEntryAndSubIdent",
+	query="select data from assessmententry data where data.repositoryEntry.key=:repositoryEntryKey and data.subIdent=:subIdent")
 public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInfo, AssessmentEntry {
 	
 	private static final long serialVersionUID = 2934783777645549412L;

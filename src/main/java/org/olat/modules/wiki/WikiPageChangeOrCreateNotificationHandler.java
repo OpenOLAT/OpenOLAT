@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -137,7 +138,9 @@ public class WikiPageChangeOrCreateNotificationHandler implements NotificationsH
 				}
 				
 				Wiki wiki = WikiManager.getInstance().getOrLoadWiki(ores);
-				final List<WikiPage> pages = wiki.getPagesByDate();
+				List<WikiPage> pages = wiki.getAllPages().stream()
+						.sorted(WikiPageSort.MODTIME_ORDER)
+						.collect(Collectors.toList());
 				Translator translator = Util.createPackageTranslator(WikiPageChangeOrCreateNotificationHandler.class, locale);
 				Translator forumTranslator = Util.createPackageTranslator(ForumNotificationsHandler.class, locale);
 				

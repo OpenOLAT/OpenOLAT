@@ -54,13 +54,17 @@ import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.CPCourseNode;
 import org.olat.course.nodes.TitledWrapperHelper;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.cp.CPManager;
 import org.olat.ims.cp.ui.CPPackageConfig;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.cp.CPAssessmentProvider;
 import org.olat.modules.cp.CPDisplayController;
 import org.olat.modules.cp.CPManifestTreeModel;
 import org.olat.modules.cp.CPUIFactory;
+import org.olat.modules.cp.DryRunAssessmentProvider;
+import org.olat.modules.cp.PersistingAssessmentProvider;
 import org.olat.modules.cp.TreeNodeEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -91,10 +95,12 @@ public class CPRunController extends BasicController implements ControllerEventL
 	private String selNodeId;
 	private boolean preview;
 	private OLATResourceable courseResource;
-
+	private final UserCourseEnvironment userCourseEnv;
+	private CPAssessmentProvider cpAssessmentProvider;
+	
 	@Autowired
 	private CPManager cpManager;
-	
+
 	/**
 	 * Use this constructor to launch a CP via Repository reference key set in the
 	 * ModuleConfiguration. On the into page a title and the learning objectives
@@ -105,9 +111,10 @@ public class CPRunController extends BasicController implements ControllerEventL
 	 * @param userCourseEnv
 	 * @param wControl
 	 * @param cpNode
+	 * @param userCourseEnv 
 	 */
 	public CPRunController(ModuleConfiguration config, UserRequest ureq, WindowControl wControl, CPCourseNode cpNode, String nodecmd,
-			OLATResourceable course, boolean preview) {
+			OLATResourceable course, boolean preview, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
 		this.nodecmd = nodecmd;
 		this.courseResource = OresHelper.clone(course);
@@ -116,6 +123,7 @@ public class CPRunController extends BasicController implements ControllerEventL
 		this.config = config;
 		this.cpNode = cpNode;
 		this.preview = preview;
+		this.userCourseEnv = userCourseEnv;
 		addLoggingResourceable(LoggingResourceable.wrap(cpNode));
 
 		// jump to either the forum or the folder if the business-launch-path says so.
@@ -140,10 +148,6 @@ public class CPRunController extends BasicController implements ControllerEventL
 		putInitialPanel(main);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == showCPButton) { // those must be links
@@ -152,10 +156,6 @@ public class CPRunController extends BasicController implements ControllerEventL
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == null) { // external source (from the course at this time being)
@@ -202,6 +202,10 @@ public class CPRunController extends BasicController implements ControllerEventL
 					deliveryOptions = packageConfig.getDeliveryOptions();
 				}
 			}
+			
+			cpAssessmentProvider = userCourseEnv.getIdentityEnvironment().getRoles().isGuestOnly()
+					? DryRunAssessmentProvider.create()
+					: PersistingAssessmentProvider.create(re, getIdentity());
 		}
 		// else cpRoot is already set (save some db access if the user opens /
 		// closes / reopens the cp from the same CPRuncontroller instance)
@@ -210,8 +214,10 @@ public class CPRunController extends BasicController implements ControllerEventL
  		  activateFirstPage = false; 
 		}
 		boolean showNavigation = !config.getBooleanSafe(NodeEditController.CONFIG_COMPONENT_MENU);
-		cpDispC = CPUIFactory.getInstance().createContentOnlyCPDisplayController(ureq, getWindowControl(), new LocalFolderImpl(cpRoot),
-				activateFirstPage, showNavigation, deliveryOptions, nodecmd, courseResource, cpNode.getIdent(), preview);
+		
+		cpDispC = CPUIFactory.getInstance().createContentOnlyCPDisplayController(ureq, getWindowControl(),
+				new LocalFolderImpl(cpRoot), activateFirstPage, showNavigation, deliveryOptions, nodecmd,
+				courseResource, cpNode.getIdent(), preview, cpAssessmentProvider);
 		cpDispC.setContentEncoding(deliveryOptions.getContentEncoding());
 		cpDispC.setJSEncoding(deliveryOptions.getJavascriptEncoding());
 		cpDispC.addControllerListener(this);
@@ -240,9 +246,6 @@ public class CPRunController extends BasicController implements ControllerEventL
 		return (config.getBooleanEntry(NodeEditController.CONFIG_COMPONENT_MENU).booleanValue());
 	}
 	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		if (cpDispC != null) {

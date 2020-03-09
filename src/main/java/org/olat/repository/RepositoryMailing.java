@@ -244,9 +244,8 @@ public class RepositoryMailing {
 			@Override
 			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
 				// Put user variables into velocity context
+				fillContextWithStandardIdentityValues(context, identity, locale);
 				User user = identity.getUser();
-				context.put("firstname", user.getProperty(UserConstants.FIRSTNAME, null));
-				context.put("lastname", user.getProperty(UserConstants.LASTNAME, null));
 				context.put("login", UserManager.getInstance().getUserDisplayEmail(user, locale));
 				// Put variables from greater context
 				context.put("coursename", reName);

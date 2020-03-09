@@ -35,6 +35,7 @@ import org.olat.core.gui.components.htmlsite.HtmlStaticPageComponent;
 import org.olat.core.gui.components.htmlsite.NewInlineUriEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.TreeEvent;
 import org.olat.core.gui.components.tree.TreeNode;
@@ -68,6 +69,8 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.ICourse;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.cp.CPManifestTreeModel.UserObject;
 import org.olat.search.SearchModule;
 import org.olat.search.SearchServiceUIFactory;
 import org.olat.search.SearchServiceUIFactory.DisplayOption;
@@ -101,24 +104,28 @@ public class CPDisplayController extends BasicController implements Activateable
 	
 	private CPSelectPrintPagesController printController;
 	private CloseableModalController printPopup;
+
+	private final CPAssessmentProvider cpAssessmentProvider;
 	
 	@Autowired
 	private SearchModule searchModule;
 	
 	/**
 	 * @param ureq
-	 * @param cpRoot
 	 * @param showMenu
 	 * @param showNavigation Show the next/previous link
 	 * @param activateFirstPage
 	 * @param identPrefix In a course, set a unique prefix per node, if someone set 2x the same CPs in the course, the node identifiers
 	 * of the CP elements must be different but predictable
+	 * @param cpAssessmentProvider 
+	 * @param cpRoot
 	 */
 	public CPDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, boolean showMenu, boolean showNavigation,
 			boolean activateFirstPage, boolean showPrint, DeliveryOptions deliveryOptions, String initialUri, OLATResourceable ores,
-			String identPrefix, boolean randomizeMapper) {
+			String identPrefix, boolean randomizeMapper, CPAssessmentProvider cpAssessmentProvider) {
 		super(ureq, wControl);
 		this.rootContainer = rootContainer;
+		this.cpAssessmentProvider = cpAssessmentProvider;
 
 		// wrapper velocity container for page content
 		myContent = createVelocityContainer("cpcontent");
@@ -146,7 +153,7 @@ public class CPDisplayController extends BasicController implements Activateable
 		}
 		// initialize tree model in any case
 		try {
-			ctm = new CPManifestTreeModel((VFSLeaf) mani, identPrefix);
+			ctm = new CPManifestTreeModel((VFSLeaf) mani, identPrefix, cpAssessmentProvider);
 		} catch (IOException e) {
 			showError("error.manifest.corrupted");
 			return;
@@ -203,7 +210,8 @@ public class CPDisplayController extends BasicController implements Activateable
 				} else node = null;
 			}
 			if (node != null) { // node.isAccessible
-				String nodeUri = (String) node.getUserObject();
+				UserObject userObject = (UserObject)node.getUserObject();
+				String nodeUri = userObject.getHref();
 				if (cpContentCtr != null) cpContentCtr.setCurrentURI(nodeUri);
 				if (cpComponent != null) cpComponent.setCurrentURI(nodeUri);
 				if (showMenu) cpTree.setSelectedNodeId(node.getIdent());
@@ -211,13 +219,11 @@ public class CPDisplayController extends BasicController implements Activateable
 				// empty anyway and saves one user click)
 				selNodeId = node.getIdent();
 
+				onPageVisited(node);
 				nodeInfo = LoggingResourceable.wrapCpNode(nodeUri);
 				updateNextPreviousLink(node);
-				if(node.getUserObject() != null) {
-					String identifierRes = (String)node.getUserObject();
-					OLATResourceable pOres = OresHelper.createOLATResourceableInstanceWithoutCheck("path=" + identifierRes, 0l);
-					addToHistory(ureq, pOres, null);
-				}
+				OLATResourceable pOres = OresHelper.createOLATResourceableInstanceWithoutCheck("path=" + nodeUri, 0l);
+				addToHistory(ureq, pOres, null);
 			}
 		} else if (initialUri != null) {
 			// set page
@@ -234,7 +240,7 @@ public class CPDisplayController extends BasicController implements Activateable
 				}
 				updateNextPreviousLink(newNode);
 				if(newNode.getUserObject() != null) {
-					String identifierRes = (String)newNode.getUserObject();
+					String identifierRes = ((UserObject)newNode.getUserObject()).getHref();
 					Long id = Long.parseLong(newNode.getIdent());
 					OLATResourceable pOres = OresHelper.createOLATResourceableInstanceWithoutCheck("path=" + identifierRes, id);
 					addToHistory(ureq, pOres, null);
@@ -281,11 +287,6 @@ public class CPDisplayController extends BasicController implements Activateable
 		return cpTree;
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == cpTree) {
@@ -450,7 +451,8 @@ public class CPDisplayController extends BasicController implements Activateable
 	}
 	
 	public void switchToPage(UserRequest ureq, TreeNode tn) {
-		String identifierRes = (String) tn.getUserObject();
+		UserObject userObject = (UserObject)tn.getUserObject();
+		String identifierRes = userObject.getHref();
 		OLATResourceable ores = OresHelper.createOLATResourceableInstanceWithoutCheck("path=" + identifierRes, 0l);
 		addToHistory(ureq, ores, null);
 		
@@ -487,13 +489,19 @@ public class CPDisplayController extends BasicController implements Activateable
 		}
 		
 		updateNextPreviousLink(tn);
+		onPageVisited(tn);
+		
 		ThreadLocalUserActivityLogger.log(CourseLoggingAction.CP_GET_FILE, getClass(), LoggingResourceable.wrapCpNode(identifierRes));
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	private void onPageVisited(TreeNode treeNode) {
+		UserObject userObject = (UserObject)treeNode.getUserObject();
+		String identifier = userObject.getIdentifier();
+		AssessmentEntryStatus status = cpAssessmentProvider.onPageVisited(identifier);
+		String cssClass = CPManifestTreeModel.getItemCssClass(status);
+		((GenericTreeNode)treeNode).setCssClass(cssClass);
+	}
+
 	@Override
 	protected void doDispose() {
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CLOSE, getClass());

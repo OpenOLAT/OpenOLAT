@@ -45,7 +45,10 @@ import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.cp.CPManager;
 import org.olat.ims.cp.ContentPackage;
+import org.olat.modules.cp.CPAssessmentProvider;
 import org.olat.modules.cp.CPUIFactory;
+import org.olat.modules.cp.PersistingAssessmentProvider;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.RepositoryEntryRuntimeController.ToolbarAware;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -65,9 +68,10 @@ public class CPEditMainController extends BasicController implements ToolbarAwar
 	private CPManager cpManager;
 
 	public CPEditMainController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar,
-			VFSContainer cpContainer, OLATResourceable ores) {
+			VFSContainer cpContainer, RepositoryEntry cpEntry) {
 		super(ureq, wControl);
 		this.stackPanel = toolbar;
+		OLATResourceable ores = cpEntry.getOlatResource();
 
 		// acquire lock for resource
 		lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(ores, ureq.getIdentity(), null);
@@ -103,8 +107,10 @@ public class CPEditMainController extends BasicController implements ToolbarAwar
 				}
 			} else {
 				showInfo("contentcontroller.no.lock");
+				
+				CPAssessmentProvider cpAssessmentProvider = PersistingAssessmentProvider.create(cpEntry, getIdentity());
 				Controller cpCtr = CPUIFactory.getInstance()
-						.createMainLayoutController(ureq, wControl, cpContainer, true, deliveryOptions);
+						.createMainLayoutController(ureq, wControl, cpContainer, true, deliveryOptions, cpAssessmentProvider);
 				putInitialPanel(cpCtr.getInitialComponent());
 			}
 		} else {

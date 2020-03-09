@@ -3,6 +3,7 @@
 	.o_toolbar  	{
 		border:none;
 	}
+	padding-bottom: 2em;
 }
 .o_page_content_editor .o_page_part,
 .gu-mirror {
@@ -70,7 +71,7 @@
 		}		
 	}
 	
-	.o_page_tools_dd {
+	.o_page_tools {
 		position: absolute;
 		z-index: 4;
 		top: 0;
@@ -78,7 +79,9 @@
 		width: $o-portfolio-editor-border-width;
 		height: 100%;
 		background: $o-portfolio-editor-border-color;
-		
+	}
+	
+	.o_page_tools_dd {
 		/* d&d handle: dotted surface */
 		&:before {
 			content: ' ';
@@ -137,6 +140,7 @@
 		padding-right: $o-portfolio-editor-border-width - $o-panel-placeholder-border-width; /* space for d&d handel */
 		border: $o-panel-placeholder-border-width solid $o-portfolio-editor-border-color;
 		box-shadow: 5px 5px 10px 0px rgba(0, 0, 0, 0.2);
+		background-color: white;
 		&:hover {
 			border: $o-panel-placeholder-border-width solid $o-portfolio-editor-border-color;
 		}
@@ -261,9 +265,55 @@ div.o_page_content_editor .gu-mirror, .o_page_content_editor .gu-transit {
 }
 
 /* d&d styles */
+
+
+.o_page_part.o_page_part_view, .o_page_fragment_edit {
+	touch-action: none;
+	user-select: none;
+	-webkit-touch-callout: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+}
+
 .o_page_drop {
 	@extend %o_dragable;
 }
+
+.o_page_part.oo-accepted,
+.o_page_part.oo-accepted-top,
+.o_page_content_editor.o_page_drop.oo-accepted,
+.o_page_content_editor.o_page_drop.oo-accepted-top  {
+	border: $o-panel-placeholder-border-width dotted $o-editor-drag-accepted-color;
+}
+
+.o_page_part.o_page_drop.oo-accepted:after,
+.o_page_container_slot.o_page_drop.oo-accepted .o_page_container_slot-inner:after {
+	display: block;
+	height: 25px;
+	margin: 10px;
+	border: 2px dotted $o-editor-drop-border-color;
+	border-radius: 5px;
+	content: '';
+}
+
+.o_page_part.o_page_drop.oo-accepted-top:before,
+.o_page_container_slot.o_page_drop.oo-accepted-top .o_page_container_slot-inner:before {
+	display: block;
+	height: 25px;
+	margin: 10px 10px 10px 10px;
+	border: 2px dotted $o-editor-drop-border-color;
+	border-radius: 5px;
+	content: '';
+}
+
+.o_page_part.oo-dragging {
+	opacity: 0.4;
+	background-color: white;
+	border: $o-panel-placeholder-border-width dotted $o-editor-drag-accepted-color;
+	box-shadow: 0px 0px 20px #aaa;
+}
+
+
 .gu-transit {
 	border: $o-panel-placeholder-border-width dotted $o-editor-drag-accepted-color;    	
  	opacity: 0.4;
@@ -541,7 +591,7 @@ table.o_ce_table {
 }
 
 .o_ce_add_main_btns {
-	margin-top: 2em;
+	margin-top: 0;
 }
 
 .o_ce_add {

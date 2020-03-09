@@ -50,6 +50,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
@@ -59,7 +60,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Persistable;
 import org.olat.core.id.User;
 import org.olat.core.logging.OLATRuntimeException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
@@ -104,6 +104,8 @@ import org.olat.ims.qti21.model.audit.CandidateEvent;
 import org.olat.ims.qti21.model.audit.CandidateItemEventType;
 import org.olat.ims.qti21.model.audit.CandidateTestEventType;
 import org.olat.ims.qti21.model.jpa.AssessmentTestSessionStatistics;
+import org.olat.ims.qti21.model.xml.ManifestBuilder;
+import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
 import org.olat.ims.qti21.ui.event.RetrieveAssessmentTestSessionEvent;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
@@ -131,6 +133,9 @@ import uk.ac.ed.ph.jqtiplus.node.result.AssessmentResult;
 import uk.ac.ed.ph.jqtiplus.node.result.ItemResult;
 import uk.ac.ed.ph.jqtiplus.node.result.ItemVariable;
 import uk.ac.ed.ph.jqtiplus.node.result.OutcomeVariable;
+import uk.ac.ed.ph.jqtiplus.node.test.AbstractPart;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.notification.NotificationRecorder;
 import uk.ac.ed.ph.jqtiplus.reading.AssessmentObjectXmlLoader;
 import uk.ac.ed.ph.jqtiplus.reading.QtiObjectReadResult;
@@ -1233,7 +1238,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	
 	private void recordOutcomeVariable(AssessmentTestSession candidateSession, OutcomeVariable outcomeVariable, Map<Identifier,String> outcomes) {
 		if(outcomeVariable.getCardinality() == null) {
-			log.error("Error outcome variable without cardinlaity: " + outcomeVariable);
+			log.error("Error outcome variable without cardinlaity: {}", outcomeVariable);
 			return;
 		}
 		
@@ -1256,8 +1261,8 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 			
 			outcomes.put(identifier, stringifyQtiValue(computedValue));
 		} catch (Exception e) {
-			log.error("Error recording outcome variable: " + identifier, e);
-			log.error("Error recording outcome variable: " + outcomeVariable);
+			log.error("Error recording outcome variable: {}", identifier, e);
+			log.error("Error recording outcome variable: {}", outcomeVariable);
 		}
 	}
     
@@ -1506,5 +1511,40 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 			log.error("", e);
 			return null;
 		}
+	}
+
+	@Override
+	public Long getMetadataCorrectionTimeInSeconds(RepositoryEntry testEntry, AssessmentTestSession candidateSession) {
+		long timeInMinutes = 0l;
+		
+		File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
+		ManifestBuilder manifestBuilder = ManifestBuilder.read(new File(unzippedDirRoot, "imsmanifest.xml"));
+		TestSessionState testSessionStates = loadTestSessionState(candidateSession);
+		ResolvedAssessmentTest resolvedObject = loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
+		
+		if(testSessionStates != null && resolvedObject.getTestLookup() != null) {
+			AssessmentTest assessmentTest = resolvedObject.getTestLookup().extractAssumingSuccessful();	
+			List<TestPlanNode> testPlanNodes = testSessionStates.getTestPlan().getTestPlanNodeList();
+			for(TestPlanNode testPlanNode:testPlanNodes) {
+				TestNodeType testNodeType = testPlanNode.getTestNodeType();
+				TestPlanNodeKey testPlanNodeKey = testPlanNode.getKey();
+				if(testNodeType == TestNodeType.ASSESSMENT_ITEM_REF) {
+					Identifier identifier = testPlanNodeKey.getIdentifier();
+					AbstractPart partRef = assessmentTest.lookupFirstDescendant(identifier);
+					if(partRef instanceof AssessmentItemRef && ((AssessmentItemRef)partRef).getHref() != null) {
+						AssessmentItemRef itemRef = (AssessmentItemRef)partRef;
+						ManifestMetadataBuilder itemMetadata = manifestBuilder.getResourceBuilderByHref(itemRef.getHref().toString());
+						if(itemMetadata != null) {
+							Integer correctionTime = itemMetadata.getOpenOLATMetadataCorrectionTime();
+							if(correctionTime != null && correctionTime.intValue() > 0) {
+								timeInMinutes += correctionTime.longValue();
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		return Long.valueOf(timeInMinutes * 60l);
 	}
 }

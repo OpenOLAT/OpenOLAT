@@ -73,20 +73,22 @@ implements SortableFlexiTableDataModel<AssignedReferenceEntryRow> {
 			case open: return row.getNumOfOpenAssignments();
 			case overdue: return row.getNumOfOverdueAssignments();
 			case oldestOpenAssignment: return row.getOldestOpenAssignment();
-			case recordedTime: return getCorrectionTimeInMinutes(row);
+			case recordedTime: return getCorrectionTimeInMinutes(row.getRecordedTimeInSeconds());
+			case recordedMetadataTime: return getCorrectionTimeInMinutes(row.getRecordedMetadataTimeInSeconds());
 			case absence: return row;
 			case tools: return row.getToolsLink();
 			default: return "ERROR";
 		}
 	}
 	
-	private Long getCorrectionTimeInMinutes(AssignedReferenceEntryRow row) {
-		long timeInSeconds = row.getRecordedTimeInSeconds();
+	private Long getCorrectionTimeInMinutes(long  timeInSeconds) {
 		if(timeInSeconds > 0) {
 			return CalendarUtils.convertSecondsToMinutes(timeInSeconds);
 		}
 		return null;
 	}
+	
+	
 
 	@Override
 	public AssignedReferenceEntryListTableModel createCopyWithEmptyList() {
@@ -103,6 +105,7 @@ implements SortableFlexiTableDataModel<AssignedReferenceEntryRow> {
 		overdue("table.header.assignments.overdue"),
 		oldestOpenAssignment("table.header.assignments.oldest.open"),
 		recordedTime("table.header.recorded.time"),
+		recordedMetadataTime("table.header.recorded.meta.time"),
 		absence("table.header.absence.leave"),
 		tools("table.header.tools");
 		

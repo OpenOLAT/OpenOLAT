@@ -212,7 +212,7 @@ $o-toolbar-height-md			: 37px !default;
 $o-toolbar-height-sm			: 35px !default;
 $o-toolbar-height-xs			: 22px !default;
 $o-toolbar-margin-top			: -10px !default;
-$o-toolbar-margin-bottom		: $navbar-margin-bottom !default;
+$o-toolbar-margin-bottom		: ($navbar-margin-bottom + 5px) !default; // 5 extra for course pagination
 $o-toolbar-tools-margin-top-md		: 8px !default;
 $o-toolbar-tools-margin-bottom-md	: 5px !default;
 $o-toolbar-tools-margin-top-sm		: 6px !default;
@@ -517,6 +517,7 @@ $o-editor-settings-bg								: #f9f9f9 !default;
 $o-editor-title-dark								: #000 !default;
 $o-editor-title-bright								: #f9f9f9 !default;
 $o-editor-hover-border-color						: #ef00ef !default;
+$o-editor-drop-border-color							: #a0a0b0 !default;
 $o-editor-drag-accepted-color						: #e80c96 !default;
 $o-editor-container-border-color					: #eeeeee !default;
 $o-editor-container-level-1-bg-color				: transparent !default;

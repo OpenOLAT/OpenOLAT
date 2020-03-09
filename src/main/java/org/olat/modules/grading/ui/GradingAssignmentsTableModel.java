@@ -84,6 +84,7 @@ implements SortableFlexiTableDataModel<GradingAssignmentRow> {
 				case taxonomy: return row.getTaxonomyLevels();
 				case courseElement: return row.getCourseElementTitle();
 				case correctionMinutes: return CalendarUtils.convertSecondsToMinutes(row.getRecordedSeconds());
+				case correctionMetadataMinutes: return CalendarUtils.convertSecondsToMinutes(row.getRecordedMetadataSeconds());
 				case assessmentDate: return row.getAssessmentDate();
 				case assignmentDate: return row.getAssignmentDate();
 				case doneDate: return row.getDoneDate();
@@ -145,6 +146,7 @@ implements SortableFlexiTableDataModel<GradingAssignmentRow> {
 		courseElement("table.header.course.element"),
 		assessmentDate("table.header.assessment.date"),
 		correctionMinutes("table.header.correction.minutes"),
+		correctionMetadataMinutes("table.header.correction.meta.minutes"),
 		assignmentDate("table.header.assignment.date"),
 		doneDate("table.header.done.date"),
 		score("table.header.score"),

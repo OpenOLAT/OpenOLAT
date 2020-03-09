@@ -229,12 +229,8 @@ public class RepositoryEntryMyCourseQueries {
 		sb.append(" where ");
 		needIdentityKey |= appendMyViewAccessSubSelect(sb, roles, params.getFilters(), params.isMembershipMandatory());
 
-		if(params.getClosed() != null) {
-			if(params.getClosed().booleanValue()) {
-				sb.append(" and v.status ").in(RepositoryEntryStatusEnum.closed);
-			} else {
-				sb.append(" and v.status ").in(RepositoryEntryStatusEnum.preparationToPublished());
-			}
+		if(params.getEntryStatus() != null) {
+			sb.append(" and v.status ").in(params.getEntryStatus());
 		}
 		
 		if(params.getFilters() != null) {

@@ -282,7 +282,6 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	        		.createOLATResourceableInstance(AssessmentTestSession.class, candidateSession.getKey());
 	        CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), sessionOres);
 		}
-        
         mainPanel = putInitialPanel(mainVC);
 	}
 	

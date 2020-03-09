@@ -42,13 +42,13 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -131,21 +131,10 @@ public class WikiManager {
 		return instance;
 	}
 	
-	
-	// ---- begin controller factory -----
-	/** @param ureq
-	 * @param wControl
-	 * @param ores either an OlatResourcable of an repository entry or of an BusinessGroup
-	 * @param securityCallback a callback to evaluate the permissions
-	 * @param initialPageName opens the wiki with an certain page, default is the index page if null is passed
-	 * @param courseContext - a course context or null if used outside a course
-	 * @param courseNodeContext - a courseNode context or null if used outside a course
-	 */
-	public WikiMainController createWikiMainController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, WikiSecurityCallback securityCallback, String initialPageName) {
-		return new WikiMainController(ureq, wControl, ores, securityCallback, initialPageName);
+	public WikiMainController createWikiMainController(UserRequest ureq, WindowControl wControl, OLATResourceable ores,
+			WikiSecurityCallback securityCallback, WikiAssessmentProvider assessmentProvider, String initialPageName) {
+		return new WikiMainController(ureq, wControl, ores, securityCallback, assessmentProvider, initialPageName);
 	}
-
-	// ---- end controller factory -----
 
 	/**
 	 * @return the new created resource

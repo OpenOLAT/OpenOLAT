@@ -30,6 +30,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
@@ -85,6 +86,33 @@ public class GradingServiceTest extends OlatTestCase {
 		Assert.assertEquals(config, config2);
 		
 		dbInstance.commit();
+	}
+	
+	@Test
+	public void isGradingEnable() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("grading-config-1");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+		dbInstance.commitAndCloseSession();
+		
+		// no configuration -> not enabled
+		boolean noGradingConfiguration = gradingService.isGradingEnabled(entry, null);
+		Assert.assertFalse(noGradingConfiguration);
+		
+		// configuration not enabled
+		RepositoryEntryGradingConfiguration config = gradingService.getOrCreateConfiguration(entry);
+		config.setGradingEnabled(false);
+		gradingService.updateConfiguration(config);
+		dbInstance.commit();
+		boolean notEnabled = gradingService.isGradingEnabled(entry, null);
+		Assert.assertFalse(notEnabled);
+		
+		// configuration is enabled
+		RepositoryEntryGradingConfiguration enableConfig = gradingService.getOrCreateConfiguration(entry);
+		enableConfig.setGradingEnabled(true);
+		gradingService.updateConfiguration(enableConfig);
+		dbInstance.commit();
+		boolean enabled = gradingService.isGradingEnabled(entry, null);
+		Assert.assertTrue(enabled);
 	}
 	
 	@Test
@@ -691,6 +719,110 @@ public class GradingServiceTest extends OlatTestCase {
 		Assert.assertEquals(3, stats.getStatistics().getTotalAssignments());
 		Assert.assertEquals(3, stats.getStatistics().getNumOfDoneAssignments());
 		Assert.assertEquals(16060l, stats.getRecordedTimeInSeconds());
+	}
+	
+	@Test
+	public void graderAbsencesLeavesReassignment() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-40");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+		
+		int numOfAssessmentEntries = 6;
+		List<AssessmentEntry> assessmentEntries = new ArrayList<>();
+		for(int i=0; i<numOfAssessmentEntries; i++) {
+			Identity student = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-3-" + i);
+			AssessmentEntry assessment = assessmentEntryDao.createAssessmentEntry(student, null, entry, null, false, entry);
+			assessmentEntries.add(assessment);
+		}
+
+		Identity grader1 = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-41");
+		Identity grader2 = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-42");
+		GraderToIdentity graderRelation1 = gradedToIdentityDao.createRelation(entry, grader1);
+		GraderToIdentity graderRelation2 = gradedToIdentityDao.createRelation(entry, grader2);
+		dbInstance.commit();
+		Assert.assertNotNull(graderRelation1);
+		Assert.assertNotNull(graderRelation2);
+		
+		for(AssessmentEntry assessmentEntry:assessmentEntries) {
+			gradingService.assignGrader(entry, assessmentEntry, true);
+		}
+		dbInstance.commit();
+
+		absenceLeaveDao.createAbsenceLeave(grader1, addDaysToNow(-5), addDaysToNow(5), null, null);
+		dbInstance.commitAndCloseSession();
+		
+		((GradingServiceImpl)gradingService).graderAbsenceLeavesCheck();
+		dbInstance.commitAndCloseSession();
+		
+		List<GradingAssignment> assignments1 = gradingAssignmentDao.getGradingAssignments(grader1);
+		Assert.assertTrue(assignments1.isEmpty());
+		
+		List<GradingAssignment> assignments2 = gradingAssignmentDao.getGradingAssignments(grader2);
+		Assert.assertEquals(6, assignments2.size());
+	}
+	
+	@Test
+	public void deactivateGrader() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-40");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+		
+		int numOfAssessmentEntries = 4;
+		List<AssessmentEntry> assessmentEntries = new ArrayList<>();
+		for(int i=0; i<numOfAssessmentEntries; i++) {
+			Identity student = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-3-" + i);
+			AssessmentEntry assessment = assessmentEntryDao.createAssessmentEntry(student, null, entry, null, false, entry);
+			assessmentEntries.add(assessment);
+		}
+
+		Identity grader1 = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-41");
+		Identity grader2 = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-42");
+		GraderToIdentity graderRelation1 = gradedToIdentityDao.createRelation(entry, grader1);
+		dbInstance.commit();
+		Assert.assertNotNull(graderRelation1);
+		
+		for(AssessmentEntry assessmentEntry:assessmentEntries) {
+			gradingService.assignGrader(entry, assessmentEntry, true);
+		}
+		dbInstance.commit();
+
+		// deactivate the first grader
+		MailerResult result = new MailerResult();
+		gradingService.deactivateGrader(grader1, grader2, null, result);
+		dbInstance.commitAndCloseSession();
+		
+		// checked that the assignments was transfered
+		List<GradingAssignment> assignments1 = gradingAssignmentDao.getGradingAssignments(grader1);
+		Assert.assertTrue(assignments1.isEmpty());
+		List<GradingAssignment> assignments2 = gradingAssignmentDao.getGradingAssignments(grader2);
+		Assert.assertEquals(4, assignments2.size());
+	}
+	
+	@Test
+	public void unassignGrader() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-50");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+
+		Identity student = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-51");
+		AssessmentEntry assessment = assessmentEntryDao.createAssessmentEntry(student, null, entry, null, false, entry);
+		Identity grader = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-41");
+		GraderToIdentity graderRelation = gradedToIdentityDao.createRelation(entry, grader);
+		dbInstance.commit();
+		
+		gradingService.assignGrader(entry, assessment, true);
+		dbInstance.commit();
+		
+		// check assignments
+		List<GradingAssignment> assignments = gradingAssignmentDao.getGradingAssignments(graderRelation);
+		Assert.assertEquals(1, assignments.size());
+		GradingAssignment assignment = assignments.get(0);
+		Assert.assertEquals(assessment, assignment.getAssessmentEntry());
+		
+		// unassign
+		gradingService.unassignGrader(assignment);
+		dbInstance.commitAndCloseSession();
+		
+		// check
+		List<GradingAssignment> unassignments = gradingAssignmentDao.getGradingAssignments(graderRelation);
+		Assert.assertTrue(unassignments.isEmpty());
 	}
 	
 	private Date addDaysToNow(int days) {

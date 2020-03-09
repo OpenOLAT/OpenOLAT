@@ -1,0 +1,198 @@
+/*
+ * ========================================================
+ *  <a href="http://www.openolat.org">
+ *  OpenOLAT - Online Learning and Training</a><br>
+ *  <p>
+ *  Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ *  you may not use this file except in compliance with the License.<br>
+ *  You may obtain a copy of the License at the
+ *  <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ *  <p>
+ *  Unless required by applicable law or agreed to in writing,<br>
+ *  software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ *  See the License for the specific language governing permissions and <br>
+ *  limitations under the License.
+ *  <p>
+ *  Initial code contributed and copyrighted by<br>
+ *  28.04.2014 by frentix GmbH, http://www.frentix.com
+ *  <p>
+ *  @author srosse, www.frentix.com
+ *  @date Sept. 2018
+ * ========================================================
+ */
+(function($) {
+	"use strict";
+    $.fn.ceditor = function(options) {
+    	var editor = this.data("data-oo-ceditor");
+    	if(typeof editor === "undefined") {
+    		editor = new ContentEditor(this.get(0), options);
+    		this.data("data-oo-ceditor", editor);
+    	} else {// if the same DOM element exists
+    		editor.initWindowListener();
+    	}
+    	initInteractJs();
+    	return editor;
+	};
+	
+	var ContentEditor = function(container, params) {
+		this.settings = $.extend({
+			componentUrl: ''
+		}, params);
+		
+		initWindowListener();
+		this.container = container;
+		initInteractJs();
+	};
+	
+	function isTop(target, y) {
+		var jElement = jQuery(target);
+		var relativeY = y - jElement.offset().top;
+		
+		var middle;
+		if(jElement.hasClass('oo-accepted-top')) {
+			var placeHolderHeight = acceptedTopHeight(target);
+			middle = ((jElement.height() - placeHolderHeight) / 2) + placeHolderHeight;
+		} else {
+			middle = jElement.height() / 2;
+		}
+		return relativeY > middle;
+	}
+	
+	function acceptedTopHeight(target) {
+		var style = window.getComputedStyle(target, ':before');
+		return parseInt(style.height) + parseInt(style.marginTop) + parseInt(style.marginBottom);
+	}
+	
+	function initInteractJs() {
+		var position = { x: 0, y: 0 }
+		
+		function setPositionClass(target, top) {
+			if(top) {
+				jQuery(target).addClass('oo-accepted');
+				jQuery(target).removeClass('oo-accepted-top');
+				jQuery(target).data('position', 'bottom');
+			} else {
+				jQuery(target).removeClass('oo-accepted');
+				jQuery(target).addClass('oo-accepted-top');
+				jQuery(target).data('position', 'top');
+			}
+		}
+		
+		interact('.o_page_part.o_page_part_view, .o_page_fragment_edit').draggable({
+			autoScroll: true,
+			allowFrom: '.o_page_tools_dd, .o_page_part.o_page_part_view',
+			modifiers: [
+				interact.modifiers.restrict({
+					restriction: '.o_page_content_editor'
+				})
+			],
+			listeners: {
+				start(event) {
+					jQuery(event.target).addClass('oo-dragging');
+				},
+				move(event) {
+					position.x += event.dx;
+					position.y += event.dy;
+					event.target.style.transform = `translate(${position.x}px, ${position.y}px)`;
+				},
+				end(event) {
+					position.x = 0;
+					position.y = 0;
+					event.target.style.transform = 'none';
+					jQuery(event.target).removeClass('oo-dragging');
+					jQuery('.o_page_drop').removeClass('oo-accepted').removeClass('oo-accepted-top');
+				}
+			}
+		});
+
+		interact('.o_page_drop').dropzone({
+			listeners: {
+				move(event) {
+					var top = isTop(event.target, event.dragEvent.page.y);
+					setPositionClass(event.target, top);
+				},
+				drop: function(event) {
+				    drop(event, event.target, event.relatedTarget);
+				}
+			},
+			checker: function (dragEvent, event, dropped, dropzone, dropElement, draggable, draggableElement) {
+				return dropped && jQuery(dropElement).attr("id") != jQuery(draggableElement).attr("id");
+			},
+			ondragenter: function(event) {
+				var top = isTop(event.target, event.dragEvent.page.y);
+				setPositionClass(event.target, top);	
+			},
+			ondragleave: function(event) {
+				jQuery(event.target)
+					.removeClass('oo-accepted').removeClass('oo-accepted-top')
+					.data('position', null);
+			}
+		});
+		return null;
+	}
+	
+	function initWindowListener() {
+		if(o_info.contentEditorWindowListener === undefined || o_info.contentEditorWindowListener == null) {
+			o_info.contentEditorWindowListener = function(e) {
+				var componentUrl = jQuery(".o_page_content_editor").data("oo-content-editor-url");
+				if(componentUrl === undefined || componentUrl == null) {
+					jQuery(window).off('click', o_info.contentEditorWindowListener);
+					o_info.contentEditorWindowListener = null;
+				} else {
+					var excludedEls = jQuery(e.target).closest(".o_popover").length > 0
+						|| jQuery(e.target).closest(".o_page_add_in_container").length > 0
+						|| jQuery(e.target).closest(".mce-menu").length > 0
+						|| jQuery(e.target).closest(".mce-window").length > 0
+						|| jQuery(e.target).closest(".mce-container").length > 0
+						|| jQuery(e.target).closest(".mce-widget").length > 0
+						|| jQuery(e.target).closest(".o_layered_panel .popover").length > 0
+						|| jQuery(e.target).closest(".o_layered_panel .modal-dialog").length > 0
+						|| e.target.nodeName == 'BODY';
+					
+					if(!excludedEls) {	
+						var edited = jQuery(e.target).closest(".o_page_fragment_edit").length > 0
+							|| jQuery(e.target).closest(".o_page_side_options").length > 0;
+						var parts = jQuery(e.target).closest(".o_page_part");
+						
+						if(parts.length == 1) {
+							var element = jQuery(parts.get(0));
+							var elementUrl = element.data("oo-content-editor-url");
+							o_XHREvent(elementUrl, false, false, 'cid', 'edit_fragment', 'fragment', element.data('oo-page-fragment'));
+						} else if(!edited) {
+							o_XHREvent(componentUrl, false, false, 'cid', 'close_edit_fragment');
+						}
+					}
+				}
+			};
+			jQuery(window).on('click', o_info.contentEditorWindowListener);
+		}
+	}
+	
+	function drop(event, target, source) {
+		var draggedId = jQuery(source).data('oo-page-fragment');
+		
+		var slotId = null;
+		var containerId = null;
+		var jElement = jQuery(target);
+		var targetId = jElement.data('oo-page-fragment');
+		if(jElement.hasClass('o_page_container_slot')) {
+			slotId = jElement.data('oo-slot');
+			containerId = jElement.closest(".o_page_part").data('oo-page-fragment');
+		}
+
+		var position = jElement.data('position');
+		if(position == null) {
+			var top = isTop(event.target, event.dragEvent.page.y);
+			position = top ? "top": "bottom";	
+		}
+
+		var componentUrl = jElement.closest(".o_page_drop").data("oo-content-editor-url");
+		if(componentUrl == null) {
+			componentUrl = jQuery(target).closest(".o_page_content_editor")
+		}
+
+		o_XHREvent(componentUrl, false, false, "cid", "drop_fragment", "fragment", targetId, "dragged", draggedId, "source", draggedId, "target", targetId, "container", containerId, "slot", slotId, "position", position);
+	}
+	
+}(jQuery));

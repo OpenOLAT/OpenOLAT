@@ -44,11 +44,11 @@ import org.olat.core.id.Identity;
  */
 public class ImportGraderBySearchController extends StepFormBasicController {
 
-	private final ImportGraders graders;
+	private final ImportGradersContext graders;
 	
 	private final UserSearchFlexiController searchController; 
 
-	public ImportGraderBySearchController(UserRequest ureq, WindowControl wControl, ImportGraders graders,
+	public ImportGraderBySearchController(UserRequest ureq, WindowControl wControl, ImportGradersContext graders,
 			Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "import_search");
 		this.graders = graders;

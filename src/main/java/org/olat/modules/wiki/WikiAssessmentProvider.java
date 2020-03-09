@@ -17,41 +17,20 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.grading.ui.wizard;
+package org.olat.modules.wiki;
 
-import java.util.List;
-
-import org.olat.core.id.Identity;
-import org.olat.repository.RepositoryEntry;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
  * 
- * Initial date: 17 janv. 2020<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 28 Feb 2020<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ImportGraders {
+public interface WikiAssessmentProvider {
+
+	void setStatusDone(String pageId);
 	
-	private List<Identity> graders;
-	private RepositoryEntry entry;
-	
-	public ImportGraders(RepositoryEntry entry) {
-		this.entry = entry;
-	}
+	public AssessmentEntryStatus getStatus(String pageId);
 
-	public RepositoryEntry getEntry() {
-		return entry;
-	}
-
-	public void setEntry(RepositoryEntry entry) {
-		this.entry = entry;
-	}
-
-	public List<Identity> getGraders() {
-		return graders;
-	}
-
-	public void setGraders(List<Identity> graders) {
-		this.graders = graders;
-	}
 }

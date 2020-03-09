@@ -39,6 +39,10 @@ public interface GradingTimeRecord extends GradingTimeRecordRef, CreateInfo, Mod
 	 */
 	public long getTime();
 	
+	public long getMetadataTime();
+	
+	public void setMetadataTime(long time);
+	
 	public Date getDateOfRecord();
 	
 	public GraderToIdentity getGrader();

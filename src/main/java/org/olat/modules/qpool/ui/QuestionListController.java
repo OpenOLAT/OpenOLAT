@@ -520,10 +520,11 @@ public class QuestionListController extends AbstractItemListController implement
 			List<QuestionItemShort> items = createTestOverviewCtrl.getExportableQuestionItems();
 			String typeFormat = createTestOverviewCtrl.getResourceTypeFormat();
 			LicenseType licenseType = createTestOverviewCtrl.getLicenseType();
+			boolean groupBy = createTestOverviewCtrl.isGroupByTaxonomyLevel();
 			cmc.deactivate();
 			cleanUp();
 			if (event == Event.DONE_EVENT) {
-				doOpenCreateRepositoryTest(ureq, items, typeFormat, licenseType);
+				doOpenCreateRepositoryTest(ureq, items, typeFormat, licenseType, groupBy);
 			}
 		} else if(source == exportWizard) {
 			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
@@ -1042,7 +1043,7 @@ public class QuestionListController extends AbstractItemListController implement
 
 	private void doShowCreateTestOverview(UserRequest ureq, List<QuestionItemShort> items, ExportFormatOptions format) {
 		removeAsListenerAndDispose(createTestOverviewCtrl);
-		createTestOverviewCtrl = new CreateTestOverviewController(ureq, getWindowControl(), items, format);
+		createTestOverviewCtrl = new CreateTestOverviewController(ureq, getWindowControl(), items, format, getSecurityCallback());
 		listenTo(createTestOverviewCtrl);
 		
 		removeAsListenerAndDispose(cmc);
@@ -1052,13 +1053,13 @@ public class QuestionListController extends AbstractItemListController implement
 		listenTo(cmc);
 	}
 	
-	private void doOpenCreateRepositoryTest(UserRequest ureq, List<QuestionItemShort> items, String type, LicenseType licenseType) {
+	private void doOpenCreateRepositoryTest(UserRequest ureq, List<QuestionItemShort> items, String type, LicenseType licenseType, boolean groupBy) {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(addController);
 
 		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(type);
 		addController = handler.createCreateRepositoryEntryController(ureq, getWindowControl());
-		addController.setCreateObject(new QItemList(items));
+		addController.setCreateObject(new QItemList(items, groupBy));
 		addController.setLicenseType(licenseType);
 		listenTo(addController);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), addController.getInitialComponent());

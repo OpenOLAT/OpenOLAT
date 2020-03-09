@@ -36,9 +36,9 @@ import org.olat.core.util.mail.MailTemplate;
  */
 public class ImportGrader3SearchResourceStep extends BasicStep {
 	
-	private final ImportGraders graders;
+	private final ImportGradersContext graders;
 	
-	public ImportGrader3SearchResourceStep(UserRequest ureq, ImportGraders graders, MailTemplate mailTemplate) {
+	public ImportGrader3SearchResourceStep(UserRequest ureq, ImportGradersContext graders, MailTemplate mailTemplate) {
 		super(ureq);
 		this.graders = graders;
 		setNextStep(new ImportGrader5MailStep(ureq, graders, mailTemplate));

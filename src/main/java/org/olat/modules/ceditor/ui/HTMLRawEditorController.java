@@ -131,7 +131,7 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 		htmlItem.getEditorConfiguration().setAutoResizeEnabled(true, -1, 40, 0);
 
 		String formattedContent = Formatter.formatLatexFormulas(content);
-		staticItem = uifactory.addStaticTextElement(cmpId + "_static", formattedContent, formLayout);
+		staticItem = uifactory.addStaticTextElement(cmpId + "_static", null, formattedContent, formLayout);
 		staticItem.setDomWrapperElement(DomWrapperElement.div); // content contains multiple P elements
 		
 		((FormLayoutContainer)formLayout).contextPut("htmlCmpId", cmpId);

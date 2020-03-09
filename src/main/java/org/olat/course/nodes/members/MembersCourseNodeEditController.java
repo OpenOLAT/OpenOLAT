@@ -42,6 +42,7 @@ import org.olat.modules.ModuleConfiguration;
  * @autohr dfurrer, dirk.furrer@frentix.com, http://www.frentix.com
  */
 public class MembersCourseNodeEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
+	
 	public static final String PANE_TAB_MEMBERSCONFIG = "pane.tab.membersconfig";
 
 	private static final String[] paneKeys = {PANE_TAB_MEMBERSCONFIG};

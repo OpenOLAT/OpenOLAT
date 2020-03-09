@@ -110,6 +110,7 @@ import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.manager.BinderUserInformationsDAO;
 import org.olat.modules.portfolio.ui.BinderController;
+import org.olat.modules.wiki.DryRunAssessmentProvider;
 import org.olat.modules.wiki.WikiManager;
 import org.olat.modules.wiki.WikiSecurityCallback;
 import org.olat.modules.wiki.WikiSecurityCallbackImpl;
@@ -521,7 +522,7 @@ public class CollaborationTools implements Serializable {
 				initialPage = initialPage.substring(0, initialPage.length() - 2);
 			}
 		}
-		return WikiManager.getInstance().createWikiMainController(ureq, wControl, ores, callback, initialPage);
+		return WikiManager.getInstance().createWikiMainController(ureq, wControl, ores, callback, DryRunAssessmentProvider.create(), initialPage);
 	}
 	
 	/**

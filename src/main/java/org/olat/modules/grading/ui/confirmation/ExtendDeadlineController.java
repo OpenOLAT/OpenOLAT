@@ -82,9 +82,24 @@ public class ExtendDeadlineController extends FormBasicController {
 	private Date getLastExtendedDeadline() {
 		Date lastDate = null;
 		for(GradingAssignment assignment:assignments) {
+			if(assignment.getDeadline() != null
+					&& (lastDate == null || assignment.getDeadline().after(lastDate))) {
+				lastDate = assignment.getDeadline();
+			}
 			if(assignment.getExtendedDeadline() != null
 					&& (lastDate == null || assignment.getExtendedDeadline().after(lastDate))) {
 				lastDate = assignment.getExtendedDeadline();
+			}
+		}
+		return lastDate;
+	}
+	
+	private Date getLastDeadline() {
+		Date lastDate = null;
+		for(GradingAssignment assignment:assignments) {
+			if(assignment.getDeadline() != null
+					&& (lastDate == null || assignment.getDeadline().after(lastDate))) {
+				lastDate = assignment.getDeadline();
 			}
 		}
 		return lastDate;
@@ -127,8 +142,13 @@ public class ExtendDeadlineController extends FormBasicController {
 		} else if(deadlineEl.getDate().compareTo(new Date()) <= 0) {
 			deadlineEl.setErrorKey("error.date.future", null);
 			allOk &= false;
+		} else {
+			Date lastDeadline = getLastDeadline();
+			if(lastDeadline != null && lastDeadline.after(deadlineEl.getDate())) {
+				deadlineEl.setErrorKey("error.before.deadline", null);
+				allOk &= false;
+			}
 		}
-		
 		return allOk;
 	}
 

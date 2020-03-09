@@ -34,10 +34,10 @@ import org.olat.core.util.mail.MailTemplate;
  */
 public class ImportGrader2ConfirmMemberChoiceStep extends BasicStep {
 	
-	private final ImportGraders graders;
+	private final ImportGradersContext graders;
 	
 	public ImportGrader2ConfirmMemberChoiceStep(UserRequest ureq,
-			ImportGraders graders, MailTemplate mailTemplate, boolean searchResource) {
+			ImportGradersContext graders, MailTemplate mailTemplate, boolean searchResource) {
 		super(ureq);
 		this.graders = graders;
 		if(searchResource) {

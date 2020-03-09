@@ -137,6 +137,7 @@ public class ReportResource extends OpenXMLWorkbookResource {
 		headerRow.addCell(pos++, translator.translate("table.header.assignments.open"), headerStyle);
 		headerRow.addCell(pos++, translator.translate("table.header.assignments.overdue"), headerStyle);
 		headerRow.addCell(pos++, translator.translate("table.header.assignments.oldest.open"), headerStyle);
+		headerRow.addCell(pos++, translator.translate("table.header.recorded.meta.time"), headerStyle);
 		headerRow.addCell(pos, translator.translate("table.header.recorded.time"), headerStyle);
 	}
 	
@@ -164,6 +165,7 @@ public class ReportResource extends OpenXMLWorkbookResource {
 		row.addCell(pos++, graderStatistics.getStatistics().getNumOfOpenAssignments(), null);
 		row.addCell(pos++, graderStatistics.getStatistics().getNumOfOverdueAssignments(), null);
 		row.addCell(pos++, graderStatistics.getStatistics().getOldestOpenAssignment(), workbook.getStyles().getDateStyle());
+		row.addCell(pos++, CalendarUtils.convertSecondsToMinutes(graderStatistics.getRecordedMetadataTimeInSeconds()), null);
 		row.addCell(pos, CalendarUtils.convertSecondsToMinutes(graderStatistics.getRecordedTimeInSeconds()), null);
 	}
 	
@@ -216,6 +218,7 @@ public class ReportResource extends OpenXMLWorkbookResource {
 		
 		// assessment infos
 		headerRow.addCell(pos++, translator.translate("table.header.assessment.date"), headerStyle);
+		headerRow.addCell(pos++, translator.translate("table.header.correction.meta.minutes"), headerStyle);
 		headerRow.addCell(pos++, translator.translate("table.header.correction.minutes"), headerStyle);
 		headerRow.addCell(pos++, translator.translate("table.header.assignment.date"), headerStyle);
 		headerRow.addCell(pos++, translator.translate("table.header.done.date"), headerStyle);
@@ -275,6 +278,7 @@ public class ReportResource extends OpenXMLWorkbookResource {
 
 		row.addCell(pos++, assignmentWithInfos.getCourseElementTitle());
 		row.addCell(pos++, assignmentWithInfos.getAssessmentDate(), workbook.getStyles().getDateStyle());
+		row.addCell(pos++, CalendarUtils.convertSecondsToMinutes(assignmentWithInfos.getMetadataTimeRecordedInSeconds()), null);
 		row.addCell(pos++, CalendarUtils.convertSecondsToMinutes(assignmentWithInfos.getTimeRecordedInSeconds()), null);
 		row.addCell(pos++, assignment.getAssignmentDate(), workbook.getStyles().getDateStyle());
 		row.addCell(pos++, assignment.getClosingDate(), workbook.getStyles().getDateStyle());

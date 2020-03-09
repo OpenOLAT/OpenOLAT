@@ -355,10 +355,8 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
-			// use defaults for new course building blocks
 			config.setBooleanEntry(STCourseNodeEditController.CONFIG_KEY_ALLOW_RELATIVE_LINKS, Boolean.FALSE.booleanValue());
-			// set the default display to peekview in two columns
-			config.setStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE, STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW);
+			config.setStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE, STCourseNodeEditController.CONFIG_VALUE_DISPLAY_DELEGATE);
 			config.setIntValue(STCourseNodeEditController.CONFIG_KEY_COLUMNS, 2);
 
 			DeliveryOptions defaultOptions = DeliveryOptions.defaultWithGlossary();

@@ -50,6 +50,7 @@ import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.grading.GradingService;
+import org.olat.modules.grading.RepositoryEntryGradingConfiguration;
 import org.olat.modules.grading.model.GradingAssignmentSearchParameters.SearchStatus;
 import org.olat.modules.grading.model.ReferenceEntryWithStatistics;
 import org.olat.modules.grading.ui.AssignedReferenceEntryListTableModel.GEntryCol;
@@ -106,6 +107,7 @@ public class AssignedReferenceEntryListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GEntryCol.oldestOpenAssignment));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GEntryCol.absence,
 				new GraderAbsenceLeaveCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GEntryCol.recordedMetadataTime));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GEntryCol.recordedTime));
 		
 		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(GEntryCol.tools);
@@ -240,8 +242,8 @@ public class AssignedReferenceEntryListController extends FormBasicController {
 		msg.addEmailTo(contact);
 		
 		RepositoryEntry referenceEntry = row.getReferenceEntry();
-		MailTemplate template = new GraderMailTemplate(null, null, null, referenceEntry);
-		contactGraderCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, msg, template);
+		List<MailTemplate> templates = getTemplates(referenceEntry);
+		contactGraderCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, msg, templates);
 		listenTo(contactGraderCtrl);
 		
 		String graderName = userManager.getUserDisplayName(grader);
@@ -249,6 +251,21 @@ public class AssignedReferenceEntryListController extends FormBasicController {
 		cmc = new CloseableModalController(getWindowControl(), "close", contactGraderCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();	
+	}
+	
+	private List<MailTemplate> getTemplates(RepositoryEntry refEntry) {
+		RepositoryEntryGradingConfiguration configuration = null;
+		if(refEntry != null)  {
+			configuration = gradingService.getOrCreateConfiguration(refEntry);
+		}
+		
+		List<MailTemplate> templates = new ArrayList<>();
+		templates.add(GraderMailTemplate.empty(getTranslator(), null, null, refEntry));
+		templates.add(GraderMailTemplate.graderTo(getTranslator(), null, null, refEntry, configuration));
+		templates.add(GraderMailTemplate.notification(getTranslator(), null, null, refEntry, configuration));
+		templates.add(GraderMailTemplate.firstReminder(getTranslator(), null, null, refEntry, configuration));
+		templates.add(GraderMailTemplate.secondReminder(getTranslator(), null, null, refEntry, configuration));
+		return templates;
 	}
 	
 	private void doAddAbsenceLeave(UserRequest ureq, AssignedReferenceEntryRow row) {

@@ -371,11 +371,17 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		needsRebuildAfterRunDone = true;
 	}
 	
-	private CourseNode updateAfterChanges(CourseNode courseNode) {
+	/**
+	 * 
+	 * @param courseNode
+	 * @param selectedNodeId my be the nodeId of a node of the subtree
+	 * @return
+	 */
+	private CourseNode updateAfterChanges(CourseNode courseNode, String selectedNodeId) {
 		if(currentCourseNode == null) return null;
 		
 		CourseNode newCurrentCourseNode;
-		NodeClickedRef nclr = navHandler.reloadTreeAfterChanges(courseNode);
+		NodeClickedRef nclr = navHandler.reloadTreeAfterChanges(courseNode, selectedNodeId);
 		if(nclr == null) {
 			doDisposeAfterEvent();
 			newCurrentCourseNode = null;
@@ -391,7 +397,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	}
 	
 	protected void updateNextPrevious() {
-		if(nextLink == null || previousLink == null || luTree == null) {
+		if (luTree == null) {
 			return;
 		}
 		
@@ -407,8 +413,13 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			hasPrevious = index > 0;
 			hasNext = index  >= 0 && index+1 < flatTree.size();
 		}
-		previousLink.setEnabled(hasPrevious);
-		nextLink.setEnabled(hasNext);
+		
+		if (previousLink != null) {
+			previousLink.setEnabled(hasPrevious);
+		}
+		if (nextLink != null) {
+			nextLink.setEnabled(hasNext);
+		}
 		if (paginationCtrl != null) {
 			paginationCtrl.updateNextPreviousUI(hasPrevious, hasNext);
 		}
@@ -528,10 +539,12 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			boolean showDone = false;
 			if (calledCourseNode != null) {
 				TreeNode treeNode = treeModel.getNodeById(calledCourseNode.getIdent());
-				boolean confirmationEnabled = nodeAccessService.isAssessmentConfirmationEnabled(calledCourseNode, getUce());
-				AssessmentEvaluation assessmentEvaluation = getUce().getScoreAccounting().evalCourseNode(calledCourseNode);
-				confirmVisible = confirmationEnabled && treeNode.isAccessible();
-				showDone = !Boolean.TRUE.equals(assessmentEvaluation.getFullyAssessed());
+				if (treeNode != null) {
+					boolean confirmationEnabled = nodeAccessService.isAssessmentConfirmationEnabled(calledCourseNode, getUce());
+					AssessmentEvaluation assessmentEvaluation = getUce().getScoreAccounting().evalCourseNode(calledCourseNode);
+					confirmVisible = confirmationEnabled && treeNode.isAccessible();
+					showDone = !Boolean.TRUE.equals(assessmentEvaluation.getFullyAssessed());
+				}
 			}
 			paginationCtrl.updateAssessmentConfirmUI(confirmVisible, showDone);
 			updateProgressUI();
@@ -582,7 +595,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(needsRebuildAfter) {
-			currentCourseNode = updateAfterChanges(currentCourseNode);
+			currentCourseNode = updateAfterChanges(currentCourseNode, currentCourseNode.getIdent());
 			needsRebuildAfter = false;
 		}
 		
@@ -643,7 +656,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(needsRebuildAfter) {
-			currentCourseNode = updateAfterChanges(currentCourseNode);
+			currentCourseNode = updateAfterChanges(currentCourseNode, currentCourseNode.getIdent());
 			needsRebuildAfter = false;
 		}
 		
@@ -734,7 +747,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	
 	private void doAssessmentConfirmation(boolean confirmed) {
 		nodeAccessService.onAssessmentConfirmed(getCurrentCourseNode(), getUce(), confirmed);
-		updateAfterChanges(getCurrentCourseNode());
+		updateAfterChanges(getCurrentCourseNode(), luTree.getSelectedNodeId());
 		updateAssessmentConfirmUI(getCurrentCourseNode());
 	}
 

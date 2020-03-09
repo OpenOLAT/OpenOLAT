@@ -31,22 +31,20 @@ import org.olat.modules.qpool.QuestionItemShort;
  */
 public class QItemList {
 
-	private List<QuestionItemShort> items;
+	private final boolean groupByTaxonomyLevel;
+	private final List<QuestionItemShort> items;
 	
-	public QItemList() {
-		//
-	}
-	
-	public QItemList(List<QuestionItemShort> items) {
+	public QItemList(List<QuestionItemShort> items, boolean groupByTaxonomyLevel) {
 		this.items = items;
+		this.groupByTaxonomyLevel = groupByTaxonomyLevel;
+	}
+
+	public boolean isGroupByTaxonomyLevel() {
+		return groupByTaxonomyLevel;
 	}
 
 	public List<QuestionItemShort> getItems() {
 		return items;
-	}
-
-	public void setItems(List<QuestionItemShort> items) {
-		this.items = items;
 	}
 
 }

@@ -54,6 +54,7 @@ import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigEvent;
 import org.olat.course.config.CourseConfigEvent.CourseConfigType;
 import org.olat.fileresource.types.BlogFileResource;
+import org.olat.fileresource.types.WikiResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
@@ -87,6 +88,10 @@ public class CourseToolbarController extends FormBasicController {
 	private FormLayoutContainer blogCont;
 	private FormLink blogOpenLink;
 	private FormLink blogSelectLink;
+	private SelectionElement wikiEl;
+	private FormLayoutContainer wikiCont;
+	private FormLink wikiOpenLink;
+	private FormLink wikiSelectLink;
 	private SelectionElement forumEl;
 	private SelectionElement documentsEl;
 	private SelectionElement chatEl;
@@ -94,12 +99,14 @@ public class CourseToolbarController extends FormBasicController {
 
 	private CloseableModalController cmc;
 	private ReferencableEntriesSearchController blogSearchCtrl;
+	private ReferencableEntriesSearchController wikiSearchCtrl;
 	
 	private LockResult lockEntry;
 	private final boolean editable;
 	private RepositoryEntry entry;
 	private CourseConfig courseConfig;
 	private RepositoryEntry blogEntry;
+	private RepositoryEntry wikiEntry;
 
 	@Autowired
 	private UserManager userManager;
@@ -118,6 +125,9 @@ public class CourseToolbarController extends FormBasicController {
 		this.courseConfig = courseConfig;
 		if (StringHelper.containsNonWhitespace(courseConfig.getBlogSoftKey())) {
 			blogEntry = repositoryManager.lookupRepositoryEntryBySoftkey(courseConfig.getBlogSoftKey(), false);
+		}
+		if (StringHelper.containsNonWhitespace(courseConfig.getWikiSoftKey())) {
+			wikiEntry = repositoryManager.lookupRepositoryEntryBySoftkey(courseConfig.getWikiSoftKey(), false);
 		}
 		
 		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker()
@@ -206,7 +216,6 @@ public class CourseToolbarController extends FormBasicController {
 		if(managedEmail && emailEnabled) {
 			canHideToolbar &= false;
 		}
-		
 		boolean blogEnabled = courseConfig.isBlogEnabled();
 		boolean managedBlog = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.blog);
 		blogEl = uifactory.addCheckboxesHorizontal("blogIsOn", "chkbx.blog.onoff", formLayout, onKeys, onValues);
@@ -222,6 +231,22 @@ public class CourseToolbarController extends FormBasicController {
 		formLayout.add(blogCont);
 		blogOpenLink = uifactory.addFormLink("blog.not.selected", blogCont, Link.LINK);
 		blogSelectLink = uifactory.addFormLink("blog.select", blogCont, Link.BUTTON_XSMALL);
+		
+		boolean wikiEnabled = courseConfig.isWikiEnabled();
+		boolean managedwWiki = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.wiki);
+		wikiEl = uifactory.addCheckboxesHorizontal("wikiIsOn", "chkbx.wiki.onoff", formLayout, onKeys, onValues);
+		wikiEl.addActionListener(FormEvent.ONCHANGE);
+		wikiEl.select(onKeys[0], wikiEnabled);
+		wikiEl.setEnabled(editable && !managedwWiki);
+		if(managedwWiki && wikiEnabled) {
+			canHideToolbar &= false;
+		}
+		
+		wikiCont = FormLayoutContainer.createButtonLayout("wikiButtons", getTranslator());
+		wikiCont.setRootForm(mainForm);
+		formLayout.add(wikiCont);
+		wikiOpenLink = uifactory.addFormLink("wiki.not.selected", wikiCont, Link.LINK);
+		wikiSelectLink = uifactory.addFormLink("wiki.select", wikiCont, Link.BUTTON_XSMALL);
 		
 		boolean forumEnabled = courseConfig.isForumEnabled();
 		boolean managedForum = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.forum);
@@ -291,6 +316,24 @@ public class CourseToolbarController extends FormBasicController {
 			blogSelectLink.setVisible(blogEntryEditable);
 			blogSelectLink.setI18nKey("blog.select.button", new String[] { translate(blogSelected? "blog.replace": "blog.select")});
 		}
+
+		boolean wikiEnabled = wikiEl.isSelected(0);
+		wikiOpenLink.setVisible(wikiEnabled);
+		wikiCont.setVisible(wikiEnabled);
+		wikiSelectLink.setVisible(wikiEnabled);
+		if (wikiEnabled) {
+			boolean wikiSelected = wikiEntry != null;
+			wikiOpenLink.setEnabled(wikiSelected);
+			String wikiTitle = wikiSelected
+					? StringHelper.escapeHtml(wikiEntry.getDisplayname())
+					: translate("wiki.not.selected");
+			wikiOpenLink.setI18nKey("wiki.open", new String[] { wikiTitle });
+			wikiOpenLink.setIconLeftCSS(wikiSelected? "o_icon o_icon-fw o_icon_preview": null);
+
+			boolean wikiEntryEditable = wikiEl.isEnabled() && wikiEnabled;
+			wikiSelectLink.setVisible(wikiEntryEditable);
+			wikiSelectLink.setI18nKey("wiki.select.button", new String[] { translate(wikiSelected? "wiki.replace": "wiki.select")});
+		}
 	}
 
 	@Override
@@ -299,6 +342,10 @@ public class CourseToolbarController extends FormBasicController {
 			updateUI();
 		} else if (source == blogSelectLink) {
 			doSelectBlog(ureq);
+		} else if (source == wikiEl) {
+			updateUI();
+		} else if (source == wikiSelectLink) {
+			doSelectWiki(ureq);
 		} else if(toolbarEl == source) {
 			if(!toolbarEl.isSelected(0) && isAnyToolSelected()) {
 				showWarning("chkbx.toolbar.off.warning");
@@ -315,6 +362,7 @@ public class CourseToolbarController extends FormBasicController {
 				|| participantInfoEl.isSelected(0)
 				|| emailEl.isSelected(0)
 				|| blogEl.isSelected(0)
+				|| wikiEl.isSelected(0)
 				|| forumEl.isSelected(0)
 				|| documentsEl.isSelected(0)
 				|| chatEl.isSelected(0)
@@ -332,6 +380,7 @@ public class CourseToolbarController extends FormBasicController {
 		participantInfoEl.setVisible(enabled);
 		emailEl.setVisible(enabled);
 		blogEl.setVisible(enabled);
+		wikiEl.setVisible(enabled);
 		forumEl.setVisible(enabled);
 		documentsEl.setVisible(enabled);
 		chatEl.setVisible(enabled);
@@ -350,14 +399,26 @@ public class CourseToolbarController extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if (source == wikiSearchCtrl) {
+			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
+				RepositoryEntry wikiEntry = wikiSearchCtrl.getSelectedEntry();
+				if (wikiEntry != null) {
+					this.wikiEntry = wikiEntry;
+					updateUI();
+				}
+			}
+			cmc.deactivate();
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(blogSearchCtrl);
+		removeAsListenerAndDispose(wikiSearchCtrl);
 		removeAsListenerAndDispose(cmc);
 		blogSearchCtrl = null;
+		wikiSearchCtrl = null;
 		cmc = null;
 	}
 
@@ -370,6 +431,15 @@ public class CourseToolbarController extends FormBasicController {
 		if (blogEnabled) {
 			if (blogEntry == null) {
 				blogCont.setErrorKey("error.no.blog.selected", null);
+				allOk = false;
+			}
+		}
+
+		wikiCont.clearError();
+		boolean wikiEnabled = wikiEl.isSelected(0);
+		if (wikiEnabled) {
+			if (wikiEntry == null) {
+				wikiCont.setErrorKey("error.no.wiki.selected", null);
 				allOk = false;
 			}
 		}
@@ -413,6 +483,14 @@ public class CourseToolbarController extends FormBasicController {
 		String blogSoftKey = blogSelected? blogEntry.getSoftkey(): null;
 		courseConfig.setBlogSoftKey(blogSoftKey);
 		doUpdateBlogReference(course, blogSelected);
+		
+		boolean enableWiki = wikiEl.isSelected(0);
+		boolean updateWiki = courseConfig.isWikiEnabled() != enableWiki;
+		courseConfig.setWikiEnabled(enableWiki && toolbarEnabled);
+		boolean wikiSelected = enableWiki && wikiEntry != null;
+		String wikiSoftKey = wikiSelected? wikiEntry.getSoftkey(): null;
+		courseConfig.setWikiSoftKey(wikiSoftKey);
+		doUpdateWikiReference(course, wikiSelected);
 		
 		boolean enableForum = forumEl.isSelected(0);
 		boolean updateForum = courseConfig.isForumEnabled() != enableForum;
@@ -495,6 +573,16 @@ public class CourseToolbarController extends FormBasicController {
 				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.blog, course.getResourceableId()), course);
 		}
 		
+		if(updateWiki) {
+			ILoggingAction loggingAction = enableWiki ?
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_WIKI_ENABLED:
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_WIKI_DISABLED;
+			ThreadLocalUserActivityLogger.log(loggingAction, getClass());
+			
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.wiki, course.getResourceableId()), course);
+		}
+		
 		if(updateForum) {
 			ILoggingAction loggingAction = enableForum ?
 					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_FORUM_ENABLED:
@@ -567,6 +655,34 @@ public class CourseToolbarController extends FormBasicController {
 				referenceManager.addReference(course, blogEntry.getOlatResource(), "blog");
 			}
 		} else if(!blogSelected && reference.isPresent()) {
+			referenceManager.delete(reference.get());
+		}
+	}
+
+	private void doSelectWiki(UserRequest ureq) {
+		wikiSearchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, WikiResource.TYPE_NAME,
+				translate("wiki.select.titile"));
+		listenTo(wikiSearchCtrl);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				wikiSearchCtrl.getInitialComponent(), true, translate("wiki.select.title"));
+		cmc.activate();
+	}
+
+	private void doUpdateWikiReference(ICourse course, boolean wikiSelected) {
+		Optional<Reference> reference = referenceManager.getReferences(course).stream()
+			.filter(ref -> ref.getUserdata().equals("wiki"))
+			.findAny();
+		if (wikiSelected) {
+			if (reference.isPresent()) {
+				if (!reference.get().getTarget().equals(wikiEntry.getOlatResource())) {
+					// User selected other wiki (replaced)
+					referenceManager.delete(reference.get());
+					referenceManager.addReference(course, wikiEntry.getOlatResource(), "wiki");
+				}
+			} else {
+				referenceManager.addReference(course, wikiEntry.getOlatResource(), "wiki");
+			}
+		} else if(!wikiSelected && reference.isPresent()) {
 			referenceManager.delete(reference.get());
 		}
 	}

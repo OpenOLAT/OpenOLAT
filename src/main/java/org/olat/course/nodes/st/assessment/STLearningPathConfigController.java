@@ -58,7 +58,7 @@ public class STLearningPathConfigController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("config.title");
-		
+		setFormContextHelp("Learning Path");
 		KeyValues sequenceKV = new KeyValues();
 		sequenceKV.add(KeyValues.entry(STCourseNode.CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL, translate("config.sequence.sequential")));
 		sequenceKV.add(KeyValues.entry(STCourseNode.CONFIG_LP_SEQUENCE_VALUE_WITHOUT, translate("config.sequence.without")));

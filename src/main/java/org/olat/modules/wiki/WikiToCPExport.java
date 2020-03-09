@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import org.jamwiki.parser.ParserDocument;
 import org.jamwiki.parser.ParserInput;
@@ -97,7 +98,9 @@ public class WikiToCPExport {
 
 	protected String createJsMappingContent(Wiki wiki) {
 		StringBuilder sb = new StringBuilder();
-		List<WikiPage> pages = wiki.getPagesByDate();
+		List<WikiPage> pages = wiki.getAllPages().stream()
+				.sorted(WikiPageSort.MODTIME_ORDER)
+				.collect(Collectors.toList());
 
 		// create javascript assoz. array
 		sb.append("var mappings = new Array();\n");
@@ -273,8 +276,10 @@ public class WikiToCPExport {
 		// href="einleitung.html">
 		// <file href="einleitung.html" />
 		// </resource>
-		List<WikiPage> pageNames = wiki.getPagesByDate();
-		for (WikiPage page :pageNames) {
+		List<WikiPage> pages = wiki.getAllPages().stream()
+				.sorted(WikiPageSort.MODTIME_ORDER)
+				.collect(Collectors.toList());
+		for (WikiPage page : pages) {
 			sb.append("<resource identifier=\"res_").append(page.getPageId()).append("\" type=\"text/html\" ").append("href=\"");
 			sb.append(page.getPageId()).append(".html\">");
 			sb.append("<file href=\"").append(page.getPageId()).append(".html\" />");

@@ -80,19 +80,23 @@ public class ContainerEditorController extends FormBasicController implements Pa
 		//
 	}
 	
-	protected ContainerElement setNumOfColumns(int numOfColumns) {
+	public ContainerElement getContainer() {
+		return container;
+	}
+	
+	public ContainerElement setNumOfColumns(int numOfColumns) {
 		ContainerSettings settings = container.getContainerSettings();
 		settings.setNumOfColumns(numOfColumns);
 		return save(settings);
 	}
 	
-	protected ContainerElement setElementAt(String fragmentId, int slot, String sibling) {
+	public ContainerElement setElementAt(String fragmentId, int slot, String sibling) {
 		ContainerSettings settings = container.getContainerSettings();
 		settings.setElementAt(fragmentId, slot, sibling);
 		return save(settings);
 	}
 	
-	protected ContainerElement setElementIn(String elementId, String collocatorId) {
+	public ContainerElement setElementIn(String elementId, String collocatorId) {
 		ContainerSettings settings = container.getContainerSettings();
 		ContainerColumn column = settings.getColumn(collocatorId);
 		if(column != null) {
@@ -101,26 +105,26 @@ public class ContainerEditorController extends FormBasicController implements Pa
 		return save(settings);
 	}
 	
-	protected ContainerElement removeElement(String fragmentId) {
+	public ContainerElement removeElement(String fragmentId) {
 		ContainerSettings settings = container.getContainerSettings();
 		settings.removeElement(fragmentId);
 		return save(settings);
 	}
 	
-	protected ContainerElement moveUp(String elementId) {
+	public ContainerElement moveUp(String elementId) {
 		ContainerSettings settings = container.getContainerSettings();
 		settings.moveUp(elementId);
 		return save(settings);
 	}
 	
-	protected ContainerElement moveDown(String elementId) {
+	public ContainerElement moveDown(String elementId) {
 		ContainerSettings settings = container.getContainerSettings();
 		settings.moveDown(elementId);
 		return save(settings);
 	}
 	
 	
-	protected ContainerElement addElement(String elementId, String collocatorId, PageElementTarget target) {
+	public ContainerElement addElement(String elementId, String collocatorId, PageElementTarget target) {
 		ContainerSettings settings = container.getContainerSettings();
 		ContainerColumn column = settings.getColumn(collocatorId);
 		if(column != null) {

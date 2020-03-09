@@ -74,6 +74,10 @@ public class AssignedReferenceEntryRow implements RepositoryEntryRef {
 		return statistics.getRecordedTimeInSeconds();
 	}
 	
+	public long getRecordedMetadataTimeInSeconds() {
+		return statistics.getRecordedMetadataTimeInSeconds();
+	}
+	
 	public long getTotalAssignments() {
 		return statistics.getStatistics().getTotalAssignments();
 	}

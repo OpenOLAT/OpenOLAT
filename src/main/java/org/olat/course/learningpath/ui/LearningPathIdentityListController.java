@@ -80,7 +80,7 @@ public class LearningPathIdentityListController extends FormBasicController impl
 	private FlexiTableElement tableEl;
 	private LearningPathIdentityDataModel dataModel;
 
-	private LearningPathIdentityCtrl currentIdentityCtrl;
+	private LearningPathIdentityController currentIdentityCtrl;
 	
 	private final TooledStackedPanel stackPanel;
 	private final UserCourseEnvironment coachCourseEnv;
@@ -219,7 +219,7 @@ public class LearningPathIdentityListController extends FormBasicController impl
 		IdentityEnvironment identityEnv = new IdentityEnvironment();
 		identityEnv.setIdentity(coachedIdentity);
 		UserCourseEnvironment coachedCourseEnv = new UserCourseEnvironmentImpl(identityEnv, coachCourseEnv.getCourseEnvironment());
-		currentIdentityCtrl = new LearningPathIdentityCtrl(ureq, bwControl, stackPanel, coachedCourseEnv);
+		currentIdentityCtrl = new LearningPathIdentityController(ureq, bwControl, stackPanel, coachedCourseEnv);
 		listenTo(currentIdentityCtrl);
 		stackPanel.pushController(fullName, currentIdentityCtrl);
 	}

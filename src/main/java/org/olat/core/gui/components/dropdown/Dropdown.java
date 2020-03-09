@@ -183,6 +183,18 @@ public class Dropdown extends AbstractComponent implements ComponentCollection {
 		}
 		return null;
 	}
+	
+	public Integer getComponentIndex(Component component) {
+		if (component == null) return null;
+		
+		for (int i = 0; i < components.size(); i++) {
+			Component componentInList = components.get(i);
+			if (component.getComponentName().equals(componentInList.getComponentName())) {
+				return Integer.valueOf(i);
+			}
+		}
+		return null;
+	}
 
 	@Override
 	public Iterable<Component> getComponents() {

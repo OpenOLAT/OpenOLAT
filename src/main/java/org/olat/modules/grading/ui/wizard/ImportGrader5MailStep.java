@@ -35,10 +35,10 @@ import org.olat.core.util.mail.MailTemplate;
  */
 public class ImportGrader5MailStep extends BasicStep {
 
-	private final ImportGraders graders;
+	private final ImportGradersContext graders;
 	private final MailTemplate mailTemplate;
 	
-	public ImportGrader5MailStep(UserRequest ureq, ImportGraders graders, MailTemplate mailTemplate) {
+	public ImportGrader5MailStep(UserRequest ureq, ImportGradersContext graders, MailTemplate mailTemplate) {
 		super(ureq);
 		this.graders = graders;
 		this.mailTemplate = mailTemplate;
@@ -55,6 +55,6 @@ public class ImportGrader5MailStep extends BasicStep {
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
 		ContactList contacts = new ContactList(getTranslator().translate("assign.grader.contact"));
 		contacts.addAllIdentites(graders.getGraders());
-		return new ImportGraderMailController(ureq, wControl, mailTemplate, contacts, form, runContext);
+		return new ImportGraderMailController(ureq, wControl, mailTemplate, contacts, graders, form, runContext);
 	}
 }

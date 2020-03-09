@@ -103,7 +103,7 @@ public class NodeAccessSettingsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("settings.title");
-		
+		setFormContextHelp("Access course elements");
 		String nodeAccessTypeName = nodeAccessService.getNodeAccessTypeName(courseConfig.getNodeAccessType(),
 				getLocale());
 		uifactory.addStaticTextElement("settings.type", nodeAccessTypeName, formLayout);;
@@ -111,7 +111,7 @@ public class NodeAccessSettingsController extends FormBasicController {
 		if (!LearningPathNodeAccessProvider.TYPE.equals(courseConfig.getNodeAccessType().getType())) {
 			FormLayoutContainer migrationCont = FormLayoutContainer.createButtonLayout("migrationButtons", getTranslator());
 			formLayout.add(migrationCont);
-			migrateLink = uifactory.addFormLink("settings.migrate", migrationCont, Link.BUTTON);
+			migrateLink = uifactory.addFormLink("settings.convert", migrationCont, Link.BUTTON);
 		}
 		
 		if (LearningPathNodeAccessProvider.TYPE.equals(courseConfig.getNodeAccessType().getType())) {
@@ -202,19 +202,6 @@ public class NodeAccessSettingsController extends FormBasicController {
 		boolean changedToDurationType = CompletionType.duration.equals(completionType)
 				&& !CompletionType.duration.equals(courseConfig.getCompletionType());
 		
-		if (changedToDurationType) {
-			doConfirmCompletionTypeDuration(ureq);
-		} else {
-			if(CourseFactory.isCourseEditSessionOpen(courseEntry.getOlatResource().getResourceableId())) {
-				showWarning("error.course.locked");
-				initCompletionTypeFromConfig();
-				return;
-			}
-			saveCompletionTypeAndCloseEditSession(completionType);
-		}
-	}
-
-	private void doConfirmCompletionTypeDuration(UserRequest ureq) {
 		OLATResourceable courseOres = courseEntry.getOlatResource();
 		if(CourseFactory.isCourseEditSessionOpen(courseOres.getResourceableId())) {
 			showWarning("error.course.locked");
@@ -223,6 +210,14 @@ public class NodeAccessSettingsController extends FormBasicController {
 		}
 		
 		CourseFactory.openCourseEditSession(courseOres.getResourceableId());
+		if (changedToDurationType) {
+			doConfirmCompletionTypeDuration(ureq);
+		} else {
+			saveCompletionTypeAndCloseEditSession(completionType);
+		}
+	}
+
+	private void doConfirmCompletionTypeDuration(UserRequest ureq) {
 		durationConfirmationCtrl = new DurationConfirmationController(ureq, getWindowControl());
 		listenTo(durationConfirmationCtrl);
 		
@@ -231,7 +226,6 @@ public class NodeAccessSettingsController extends FormBasicController {
 		cmc.activate();
 		listenTo(cmc);
 	}
-	
 	
 	private void doSetCompletionTypeDuration(Integer duration) {
 		ICourse course = CourseFactory.loadCourse(courseEntry);
@@ -267,6 +261,7 @@ public class NodeAccessSettingsController extends FormBasicController {
 			courseConfig.setCompletionType(completionType);
 			logActivity(completionType);
 		}
+		CourseFactory.setCourseConfig(courseEntry.getOlatResource().getResourceableId(), courseConfig);
 		CourseFactory.closeCourseEditSession(courseEntry.getOlatResource().getResourceableId(), false);
 	}
 

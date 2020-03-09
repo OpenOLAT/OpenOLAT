@@ -80,6 +80,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CorruptedCourseException;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
@@ -519,7 +520,15 @@ public class RepositoryEntryListController extends FormBasicController
 		searchParams.setAuthor(se.getAuthor());
 		searchParams.setText(se.getDisplayname());
 		searchParams.setMembershipMandatory(se.isMembershipMandatory());
-		searchParams.setClosed(se.getClosed());
+		if(se.getClosed() != null) {
+			if(se.getClosed().booleanValue()) {
+				searchParams.setEntryStatus(new RepositoryEntryStatusEnum[] { RepositoryEntryStatusEnum.closed });
+			} else {
+				searchParams.setEntryStatus(RepositoryEntryStatusEnum.preparationToPublished());
+			}
+		} else {
+			searchParams.setEntryStatus(null);
+		}
 		tableEl.reset(true, true, true);
 		
 		RepositoryEntryListState state = new RepositoryEntryListState();

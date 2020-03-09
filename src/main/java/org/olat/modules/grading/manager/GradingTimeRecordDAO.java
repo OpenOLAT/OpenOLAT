@@ -57,6 +57,7 @@ public class GradingTimeRecordDAO {
 		timesheet.setCreationDate(new Date());
 		timesheet.setLastModified(timesheet.getCreationDate());
 		timesheet.setTime(0l);
+		timesheet.setMetadataTime(0l);
 		timesheet.setDateOfRecord(CalendarUtils.startOfDay(date));
 		timesheet.setGrader(grader);
 		timesheet.setAssignment(assignment);
@@ -123,6 +124,11 @@ public class GradingTimeRecordDAO {
 		if(updated == 0) {
 			log.error(Tracing.M_AUDIT, "Cannot add time to record {}", record.getKey());
 		}
+	}
+	
+	public GradingTimeRecord updateTimeRecord(GradingTimeRecord timeRecord) {
+		timeRecord.setLastModified(new Date());
+		return dbInstance.getCurrentEntityManager().merge(timeRecord);
 	}
 	
 	public void deleteTimeRecords(GraderToIdentity grader) {

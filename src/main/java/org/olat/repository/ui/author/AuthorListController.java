@@ -91,7 +91,13 @@ import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CorruptedCourseException;
+import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
+import org.olat.course.ICourse;
+import org.olat.course.learningpath.LearningPathService;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.ui.UnsupportedCourseNodesController;
+import org.olat.course.nodes.CourseNode;
 import org.olat.login.LoginModule;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.handler.BinderTemplateResource;
@@ -156,6 +162,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	private ImportRepositoryEntryController importCtrl;
 	private ImportURLRepositoryEntryController importUrlCtrl;
 	private CreateEntryController createCtrl;
+	private UnsupportedCourseNodesController unsupportedCourseNodesCtrl;
 	protected CloseableCalloutWindowController toolsCalloutCtrl;
 	
 	protected boolean hasAuthorRight;
@@ -193,6 +200,8 @@ public class AuthorListController extends FormBasicController implements Activat
 	private LicenseModule licenseModule;
 	@Autowired
 	private RepositoryEntryLicenseHandler licenseHandler;
+	@Autowired
+	private LearningPathService learningPathService;
 	
 	public AuthorListController(UserRequest ureq, WindowControl wControl, String i18nName,
 			SearchAuthorRepositoryEntryViewParams searchParams, boolean withSearch, boolean withClosedfilter) {
@@ -1029,6 +1038,30 @@ public class AuthorListController extends FormBasicController implements Activat
 		cmc.activate();
 	}
 	
+	private void doConvertToLearningPath(UserRequest ureq, AuthoringEntryRow row) {
+		RepositoryEntry entry = repositoryService.loadByKey(row.getKey());
+		ICourse course = CourseFactory.loadCourse(entry);
+		List<CourseNode> unsupportedCourseNodes = learningPathService.getUnsupportedCourseNodes(course);
+		if (!unsupportedCourseNodes.isEmpty()) {
+			showUnsupportedMessage(ureq, unsupportedCourseNodes);
+			return;
+		}
+		
+		RepositoryEntry lpEntry = learningPathService.migrate(entry, getIdentity());
+		String bPath = "[RepositoryEntry:" + lpEntry.getKey() + "]";
+		NewControllerFactory.getInstance().launch(bPath, ureq, getWindowControl());
+	}
+
+	private void showUnsupportedMessage(UserRequest ureq, List<CourseNode> unsupportedCourseNodes) {
+		unsupportedCourseNodesCtrl = new UnsupportedCourseNodesController(ureq, getWindowControl(), unsupportedCourseNodes);
+		listenTo(unsupportedCourseNodesCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				unsupportedCourseNodesCtrl.getInitialComponent(), true, translate("unsupported.course.nodes.title"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
 	private void doDelete(UserRequest ureq, List<AuthoringEntryRow> rows) {
 		List<Long> deleteableRowKeys = new ArrayList<>(rows.size());
 		for(AuthoringEntryRow row:rows) {
@@ -1305,6 +1338,16 @@ public class AuthorListController extends FormBasicController implements Activat
 			boolean copyManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.copy);
 			boolean canCopy = (isAuthor || isOwner) && (entry.getCanCopy() || isOwner) && !copyManaged;
 			
+			boolean canConvertLearningPath = false;
+			if (canCopy && "CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
+				ICourse course = CourseFactory.loadCourse(entry);
+				if (course != null) {
+					if (!LearningPathNodeAccessProvider.TYPE.equals(course.getCourseConfig().getNodeAccessType().getType())) {
+						canConvertLearningPath = true;
+					}
+				}
+			}
+			
 			boolean canDownload = entry.getCanDownload() && handler.supportsDownload();
 			// disable download for courses if not author or owner
 			if (entry.getOlatResource().getResourceableTypeName().equals(CourseModule.getCourseTypeName()) && !(isOwner || isAuthor)) {
@@ -1315,10 +1358,14 @@ public class AuthorListController extends FormBasicController implements Activat
 				canDownload = true;
 			}
 			
+			
 			if(canCopy || canDownload) {
 				links.add("-");
 				if (canCopy) {
 					addLink("details.copy", "copy", "o_icon o_icon-fw o_icon_copy", links);
+				}
+				if (canConvertLearningPath) {
+					addLink("details.convert.learning.path", "convertLearningPath", "o_icon o_icon-fw o_icon_learning_path", links);
 				}
 				if(canDownload) {
 					addLink("details.download", "download", "o_icon o_icon-fw o_icon_download", links);
@@ -1373,6 +1420,8 @@ public class AuthorListController extends FormBasicController implements Activat
 					launchMembers(ureq, row);
 				} else if("copy".equals(cmd)) {
 					doCopy(ureq, row);
+				} else if("convertLearningPath".equals(cmd)) {
+					doConvertToLearningPath(ureq, row);
 				} else if("download".equals(cmd)) {
 					doDownload(ureq, row);
 				} else if("close".equals(cmd)) {

@@ -78,7 +78,7 @@ public interface GradingService {
 
 	/**
 	 * Activate the specified identity as grader for all reference / test entry where it was
-	 * deactivated.
+	 * deactivated. It only works on deactivated / removed graders.
 	 * 
 	 * @param identity The grader's identity
 	 */
@@ -86,6 +86,7 @@ public interface GradingService {
 	
 	/**
 	 * Activate the specified identity as grader for the specified reference / test entry.
+	 * It only works on deactivated / removed graders.
 	 * 
 	 * @param entry The reference / test entry
 	 * @param identity The grader's identity
@@ -157,7 +158,14 @@ public interface GradingService {
 	
 	public GradingAssignment unassignGrader(GradingAssignment assignment);
 	
-	public GradingAssignment assignmentDone(GradingAssignment assignment);
+	/**
+	 * Set the assignment status to done.
+	 * 
+	 * @param assignment The assignment to complete
+	 * @param metadatatime The time use based on metadata (of QTI 2.1 questions)
+	 * @return The merged assignment
+	 */
+	public GradingAssignment assignmentDone(GradingAssignment assignment, Long metadatatime);
 	
 	public GradingAssignment reopenAssignment(GradingAssignment assignment);
 	
@@ -238,5 +246,9 @@ public interface GradingService {
 	 */
 	public void sendGradersAsssignmentsNotification();
 
-
+	/**
+	 * Check and eventually reassign graders which are on
+	 * absence leave.
+	 */
+	public void graderAbsenceLeavesCheckWorkingDays();
 }

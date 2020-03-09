@@ -99,6 +99,7 @@ public enum ActionObject {
 	tools,
 	toolsempty,
 	waitingperson,
+	wiki,
 	bulkassessment,
 	lectures,
 	lecturesRollcall,

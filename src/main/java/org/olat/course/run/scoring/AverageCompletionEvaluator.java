@@ -76,7 +76,9 @@ public class AverageCompletionEvaluator implements CompletionEvaluator {
 				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(child);
 				int nodeCount = 0;
 				double nodeCompletion = 0.0;
-				if (isFullyAssessed(assessmentEvaluation)) {
+				if (Mode.evaluated.equals(assessmentConfig.getCompletionMode())) {
+					continue; // do not count twice
+				} else if (isFullyAssessed(assessmentEvaluation)) {
 					nodeCount = 1;
 					nodeCompletion = 1.0;
 				} else if (Mode.setByNode.equals(assessmentConfig.getCompletionMode())) {

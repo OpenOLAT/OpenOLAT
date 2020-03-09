@@ -248,7 +248,7 @@ public class GraderToIdentityDAO {
 	
 	public List<ReferenceEntryTimeRecordStatistics> findGradersRecordedTimeGroupByEntry(GradersSearchParameters searchParams) {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select refEntry.key, sum(record.time)")
+		sb.append("select refEntry.key, sum(record.time), sum(record.metadataTime)")
 		  .append(" from gradingtimerecord as record ")
 		  .append(" inner join record.grader as rel")
 		  .append(" inner join rel.identity as ident")
@@ -272,14 +272,15 @@ public class GraderToIdentityDAO {
 		for(Object[] objects:rawObjects) {
 			Long identityKey = (Long)objects[0];
 			long time = PersistenceHelper.extractPrimitiveLong(objects, 1);
-			records.add(new ReferenceEntryTimeRecordStatistics(identityKey, time));
+			long metadataTime = PersistenceHelper.extractPrimitiveLong(objects, 2);
+			records.add(new ReferenceEntryTimeRecordStatistics(identityKey, time, metadataTime));
 		}
 		return records;
 	}
 	
 	public List<IdentityTimeRecordStatistics> findGradersRecordedTimeGroupByIdentity(GradersSearchParameters searchParams) {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select ident.key, sum(record.time)")
+		sb.append("select ident.key, sum(record.time), sum(record.metadataTime)")
 		  .append(" from gradingtimerecord as record ")
 		  .append(" inner join record.grader as rel")
 		  .append(" inner join rel.identity as ident");
@@ -306,9 +307,33 @@ public class GraderToIdentityDAO {
 		for(Object[] objects:rawObjects) {
 			Long identityKey = (Long)objects[0];
 			long time = PersistenceHelper.extractPrimitiveLong(objects, 1);
-			records.add(new IdentityTimeRecordStatistics(identityKey, time));
+			long metadataTime = PersistenceHelper.extractPrimitiveLong(objects, 2);
+			records.add(new IdentityTimeRecordStatistics(identityKey, time, metadataTime));
 		}
 		return records;
+	}
+	
+	public List<GraderToIdentity> findGradersWithAssignmentInAbsenceLeave(Date date) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select rel from grader2identity as rel")
+		  .append(" inner join fetch rel.identity as ident")
+		  .append(" inner join userabsenceleave as leave on (ident.key=leave.identity.key)")
+		  .append(" inner join gradingassignment as assignment on (assignment.grader.key=rel.key)")
+		  .append(" where assignment.status ").in(GradingAssignmentStatus.assigned, GradingAssignmentStatus.inProcess)
+		  .append(" and (")
+		  .append("  (leave.absentFrom is null and leave.absentTo>=:date)")
+		  .append("  or")
+		  .append("  (leave.absentFrom<=:date and leave.absentTo is null)")
+		  .append("  or")
+		  .append("  (leave.absentFrom<=:date and leave.absentTo>=:date)")
+		  .append("  or")
+		  .append("  (leave.absentFrom is null and leave.absentTo is null)")
+		  .append(" )");
+
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), GraderToIdentity.class)
+			.setParameter("date", date)
+			.getResultList();
 	}
 	
 	public List<AbsenceLeave> findGradersAbsenceLeaves(GradersSearchParameters searchParams, Date from, Date to) {

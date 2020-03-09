@@ -39,6 +39,7 @@ public class GraderWithStatistics {
 	private final List<GraderStatus> graderStatus = new ArrayList<>(4);
 	private final List<AbsenceLeave> absenceLeaves = new ArrayList<>(4);
 	private long recordedTimeInSeconds = 0l;
+	private long recordedMetadataTimeInSeconds = 0l;
 	
 	public GraderWithStatistics(Identity grader, GraderStatistics statistics) {
 		this.grader = grader;
@@ -73,6 +74,14 @@ public class GraderWithStatistics {
 
 	public void addRecordedTimeInSeconds(long seconds) {
 		recordedTimeInSeconds += seconds;
+	}
+	
+	public long getRecordedMetadataTimeInSeconds() {
+		return recordedMetadataTimeInSeconds;
+	}
+	
+	public void addRecordedMetadataTimeInSeconds(long seconds) {
+		recordedMetadataTimeInSeconds += seconds;
 	}
 
 	public GraderStatistics getStatistics() {

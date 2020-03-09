@@ -226,7 +226,7 @@
 				</bean>
 				<bean id="database_upgrade_15_pre_5" class="org.olat.upgrade.DatabaseUpgrade">
 					<constructor-arg index="0" value="OLAT_15.pre.5" />
-					<property name="alterDbStatements" value="alter_15_pre_0_to_15_pre_5.sql" />
+					<property name="alterDbStatements" value="alter_15_pre_4_to_15_pre_5.sql" />
 				</bean>
 			</list>
 		</property>

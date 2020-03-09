@@ -22,6 +22,7 @@ package org.olat.modules.ceditor.ui.event;
 import org.olat.core.gui.control.Event;
 import org.olat.modules.ceditor.PageElementHandler;
 import org.olat.modules.ceditor.ui.PageElementTarget;
+import org.olat.modules.ceditor.ui.component.ContentEditorFragment;
 import org.olat.modules.ceditor.ui.model.EditorFragment;
 
 /**
@@ -38,14 +39,16 @@ public class AddElementEvent extends Event {
 	private final PageElementTarget target;
 	private final PageElementHandler handler;
 	private final EditorFragment referenceFragment;
+	private final ContentEditorFragment referenceComponent;
 	
-	public AddElementEvent(EditorFragment referenceFragment, PageElementHandler handler,
-			PageElementTarget target, int containerColumn) {
+	public AddElementEvent(EditorFragment referenceFragment, ContentEditorFragment referenceComponent,
+			PageElementHandler handler, PageElementTarget target, int containerColumn) {
 		super("pf-add-above-element");
 		this.target = target;
 		this.handler = handler;
 		this.containerColumn = containerColumn;
 		this.referenceFragment = referenceFragment;
+		this.referenceComponent = referenceComponent;
 	}
 
 	public PageElementTarget getTarget() {
@@ -58,6 +61,10 @@ public class AddElementEvent extends Event {
 
 	public EditorFragment getReferenceFragment() {
 		return referenceFragment;
+	}
+	
+	public ContentEditorFragment getReferenceComponent() {
+		return referenceComponent;
 	}
 	
 	public int getContainerColumn() {

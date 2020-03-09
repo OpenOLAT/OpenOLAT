@@ -193,6 +193,11 @@ a.o_orderby, a.o_orderby:hover {
 	}
 }
 
+ table tr.o_no_border td,
+ table tr.o_no_border th {
+ 	border-top: 0;
+ }
+
 /* bootstrap extensions */
 .o_info, o_note, o_important, o_warning, o_error {
 	.table-bordered td {

@@ -100,10 +100,12 @@ import org.olat.course.db.CustomDBMainController;
 import org.olat.course.editor.EditorMainController;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
+import org.olat.course.learningpath.LearningPathService;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.learningpath.ui.LearningPathIdentityListController;
 import org.olat.course.learningpath.ui.MyLearningPathController;
 import org.olat.course.member.MembersManagementMainController;
+import org.olat.course.nodeaccess.ui.UnsupportedCourseNodesController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ENCourseNode;
 import org.olat.course.nodes.bc.CourseDocumentsController;
@@ -113,6 +115,7 @@ import org.olat.course.nodes.fo.FOToolController;
 import org.olat.course.nodes.info.InfoCourseSecurityCallback;
 import org.olat.course.nodes.info.InfoRunController;
 import org.olat.course.nodes.members.MembersToolRunController;
+import org.olat.course.nodes.wiki._content.WikiToolController;
 import org.olat.course.reminder.ui.CourseRemindersController;
 import org.olat.course.run.calendar.CourseCalendarController;
 import org.olat.course.run.glossary.CourseGlossaryFactory;
@@ -176,7 +179,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private Link folderLink,
 		assessmentLink, archiverLink,
 		courseStatisticLink, surveyStatisticLink, testStatisticLink,
-		areaLink, dbLink,
+		areaLink, dbLink, convertLearningPathLink,
 		//settings
 		lecturesAdminLink, reminderLink,
 		assessmentModeLink, lifeCycleChangeLink,
@@ -184,7 +187,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		efficiencyStatementsLink, noteLink, leaveLink,
 		// course tools
 		learningPathLink, learningPathsLink, calendarLink, chatLink, participantListLink, participantInfoLink,
-		blogLink, forumLink, documentsLink, emailLink, searchLink,
+		blogLink, wikiLink, forumLink, documentsLink, emailLink, searchLink,
 		//glossary
 		openGlossaryLink, enableGlossaryLink, lecturesLink;
 	private Link currentUserCountLink;
@@ -193,6 +196,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private CloseableModalController cmc;
 	private COToolController emailCtrl;
 	private BlogToolController blogCtrl;
+	private WikiToolController wikiCtrl;
 	private FOToolController forumCtrl;
 	private CourseDocumentsController documentsCtrl;
 	private CourseAreasController areasCtrl;
@@ -211,6 +215,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private StatisticCourseNodesController statsToolCtr;
 	private AssessmentModeListController assessmentModeCtrl;
 	private LectureRepositoryAdminController lecturesAdminCtrl;
+	private UnsupportedCourseNodesController unsupportedCourseNodesCtrl;
 	private CloseableCalloutWindowController courseSearchCalloutCtr;
 	protected RepositoryEntryLifeCycleChangeController lifeCycleChangeCtr;
 
@@ -238,6 +243,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private CourseDBManager courseDBManager;
 	@Autowired
 	private SearchModule searchModule;
+	@Autowired
+	private LearningPathService learningPathService;
 	
 	public CourseRuntimeController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry re, RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator,
@@ -642,6 +649,22 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			tools.addComponent(ordersLink);
 		}
 	}
+	
+	@Override
+	protected void initToolsMenuEdition(Dropdown toolsDropdown) {
+		super.initToolsMenuEdition(toolsDropdown);
+		if (copyLink != null) {
+			ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
+			if (course != null && !LearningPathNodeAccessProvider.TYPE.equals(course.getCourseConfig().getNodeAccessType().getType())) {
+				Integer index = toolsDropdown.getComponentIndex(copyLink);
+				if(index != null) {
+					convertLearningPathLink = LinkFactory.createToolLink("convert.course.learning.path",
+							translate("tools.convert.course.learning.path"), this, "o_icon o_icon-fw  o_icon_learning_path");
+					toolsDropdown.addComponent(index.intValue() + 1, convertLearningPathLink);
+				}
+			}
+		}
+	}
 
 	@Override
 	protected void initToolsMenuDelete(Dropdown settingsDropdown) {
@@ -857,6 +880,12 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 		
 		if(!assessmentLock) {
+			wikiLink = LinkFactory.createToolLink("wiki", translate("command.wiki"), this, "o_wiki_icon");
+			wikiLink.setVisible(cc.isWikiEnabled());
+			toolbarPanel.addTool(wikiLink);
+		}
+		
+		if(!assessmentLock) {
 			forumLink = LinkFactory.createToolLink("forum", translate("command.forum"), this, "o_fo_icon");
 			forumLink.setVisible(cc.isForumEnabled());
 			toolbarPanel.addTool(forumLink);
@@ -984,6 +1013,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			doAssessmentSurveyStatistics(ureq);
 		} else if(assessmentLink == source) {
 			doAssessmentTool(ureq);
+		} else if (convertLearningPathLink == source) {
+			doConvertToLearningPath(ureq);
 		} else if(participantListLink == source) {
 			doParticipantList(ureq);
 		} else if(participantInfoLink == source) {
@@ -992,6 +1023,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			doEmail(ureq);
 		} else if(blogLink == source) {
 			doBlog(ureq);
+		} else if(wikiLink == source) {
+			doWiki(ureq);
 		} else if(forumLink == source) {
 			doForum(ureq);
 		} else if(documentsLink == source) {
@@ -1076,6 +1109,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			if (QuickSearchEvent.QUICKSEARCH.equals(event.getCommand())) {
 				doDeactivateQuickSearch();
 			}
+		} else if (source == unsupportedCourseNodesCtrl) {
+			cmc.deactivate();
+			cleanUp();
 		}
 		
 		if(editorCtrl == source && source instanceof VetoableCloseController) {
@@ -1107,6 +1143,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 						case participantInfo: doParticipantInfo(ureq); break;
 						case email: doEmail(ureq); break;
 						case blog: doBlog(ureq); break;
+						case wiki: doWiki(ureq); break;
 						case forum: doForum(ureq); break;
 						case documents: doDocuments(ureq); break;
 					}
@@ -1122,6 +1159,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	
 	@Override
 	protected void cleanUp() {
+		removeAsListenerAndDispose(unsupportedCourseNodesCtrl);
 		removeAsListenerAndDispose(lifeCycleChangeCtr);
 		removeAsListenerAndDispose(assessmentToolCtr);
 		removeAsListenerAndDispose(courseFolderCtrl);
@@ -1132,6 +1170,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		removeAsListenerAndDispose(membersCtrl);
 		removeAsListenerAndDispose(areasCtrl);
 		removeAsListenerAndDispose(leaveDialogBox);
+		unsupportedCourseNodesCtrl = null;
 		lifeCycleChangeCtr = null;
 		assessmentToolCtr = null;
 		courseFolderCtrl = null;
@@ -1205,6 +1244,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					if (blog != null) {
 						List<ContextEntry> subEntries = entries.subList(1, entries.size());
 						blog.activate(ureq, subEntries, entries.get(0).getTransientState());
+					}
+				}
+			} else if("Wiki".equalsIgnoreCase(type)) {
+				if (wikiLink != null && wikiLink.isVisible()) {
+					Activateable2 wiki = doWiki(ureq);
+					if (wiki != null) {
+						List<ContextEntry> subEntries = entries.subList(1, entries.size());
+						wiki.activate(ureq, subEntries, entries.get(0).getTransientState());
 					}
 				}
 			} else if("Forum".equalsIgnoreCase(type)) {
@@ -1722,6 +1769,29 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 	}
 	
+	private void doConvertToLearningPath(UserRequest ureq) {
+		ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
+		List<CourseNode> unsupportedCourseNodes = learningPathService.getUnsupportedCourseNodes(course);
+		if (!unsupportedCourseNodes.isEmpty()) {
+			showUnsupportedMessage(ureq, unsupportedCourseNodes);
+			return;
+		}
+		
+		RepositoryEntry lpEntry = learningPathService.migrate(getRepositoryEntry(), getIdentity());
+		String bPath = "[RepositoryEntry:" + lpEntry.getKey() + "]";
+		NewControllerFactory.getInstance().launch(bPath, ureq, getWindowControl());
+	}
+
+	private void showUnsupportedMessage(UserRequest ureq, List<CourseNode> unsupportedCourseNodes) {
+		unsupportedCourseNodesCtrl = new UnsupportedCourseNodesController(ureq, getWindowControl(), unsupportedCourseNodes);
+		listenTo(unsupportedCourseNodesCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				unsupportedCourseNodesCtrl.getInitialComponent(), true, translate("unsupported.course.nodes.title"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
 	@Override
 	protected void launchContent(UserRequest ureq) {
 		super.launchContent(ureq);
@@ -1863,6 +1933,23 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			return blogCtrl;
 		}
 		delayedClose = Delayed.blog;
+		return null;
+	}
+	
+	private WikiToolController doWiki(UserRequest ureq) {
+		if(delayedClose == Delayed.wiki || requestForClose(ureq)) {
+			removeCustomCSS();
+			
+			OLATResourceable ores = OresHelper.createOLATResourceableType("wiki");
+			WindowControl swControl = addToHistory(ureq, ores, null);
+			wikiCtrl = new WikiToolController(ureq, swControl, getUserCourseEnvironment());
+			
+			pushController(ureq, translate("command.wiki"), wikiCtrl);
+			setActiveTool(wikiLink);
+			currentToolCtr = wikiCtrl;
+			return wikiCtrl;
+		}
+		delayedClose = Delayed.wiki;
 		return null;
 	}
 	
@@ -2060,6 +2147,15 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				}
 				break;
 			}
+			case wiki: {
+				if(wikiLink != null) {
+					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
+					CourseConfig cc = course.getCourseEnvironment().getCourseConfig();
+					wikiLink.setVisible(cc.isWikiEnabled());
+					toolbarPanel.setDirty(true);
+				}
+				break;
+			}
 			case forum: {
 				if(forumLink != null) {
 					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
@@ -2218,6 +2314,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		participantInfo,
 		email,
 		blog,
+		wiki,
 		forum,
 		documents
 	}

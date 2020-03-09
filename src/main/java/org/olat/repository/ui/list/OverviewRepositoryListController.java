@@ -49,6 +49,7 @@ import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumListController;
 import org.olat.repository.CatalogEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
@@ -314,7 +315,7 @@ public class OverviewRepositoryListController extends BasicController implements
 		SearchMyRepositoryEntryViewParams searchParams
 			= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
 		searchParams.setMembershipMandatory(true);
-		searchParams.setClosed(Boolean.FALSE);
+		searchParams.setEntryStatus(RepositoryEntryStatusEnum.preparationToPublished());
 
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("My", 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
@@ -407,7 +408,7 @@ public class OverviewRepositoryListController extends BasicController implements
 		SearchMyRepositoryEntryViewParams searchParams
 			= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
 		searchParams.setMembershipMandatory(true);
-		searchParams.setClosed(Boolean.TRUE);
+		searchParams.setEntryStatus(new RepositoryEntryStatusEnum[] {RepositoryEntryStatusEnum.closed });
 
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Closed", 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));

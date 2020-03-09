@@ -20,6 +20,7 @@
 package org.olat.course.nodes.gta;
 
 import org.olat.course.learningpath.model.ModuleLearningPathConfigs;
+import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.model.AssessmentObligation;
@@ -45,8 +46,25 @@ public class GTALearningPathConfigs extends ModuleLearningPathConfigs {
 
 	@Override
 	public void setObligation(AssessmentObligation obligation) {
-		boolean valuea = obligation != null && AssessmentObligation.optional.equals(obligation);
-		moduleConfiguration.setBooleanEntry(MSCourseNode.CONFIG_KEY_OPTIONAL, valuea );
+		boolean oldOptional = moduleConfiguration.getBooleanSafe(MSCourseNode.CONFIG_KEY_OPTIONAL);
+		boolean optional = obligation != null && AssessmentObligation.optional.equals(obligation);
+		
+		if (optional != oldOptional) {
+			moduleConfiguration.setBooleanEntry(MSCourseNode.CONFIG_KEY_OPTIONAL, optional);
+			
+			boolean sample = moduleConfiguration.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION);
+			if (sample) {
+				boolean realtiveDates = moduleConfiguration.getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES);
+				if (realtiveDates) {
+					if (optional) {
+						moduleConfiguration.remove(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER);
+						moduleConfiguration.setBooleanEntry(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false);
+					} else {
+						moduleConfiguration.remove(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL);
+					}
+				}
+			}
+		}
 	}
 
 }

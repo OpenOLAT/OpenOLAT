@@ -20,6 +20,7 @@
 package org.olat.modules.ceditor.ui;
 
 import org.olat.modules.ceditor.PageElementHandler;
+import org.olat.modules.ceditor.ui.component.ContentEditorFragment;
 import org.olat.modules.ceditor.ui.model.EditorFragment;
 
 /**
@@ -34,12 +35,22 @@ public class AddElementInfos {
 	private final PageElementTarget target;
 	private final PageElementHandler handler;
 	private final EditorFragment referenceFragment;
+	private final ContentEditorFragment referenceEditorFragment;
 	
 	public AddElementInfos(EditorFragment referenceFragment, PageElementHandler handler, PageElementTarget target, int column) {
 		this.target = target;
 		this.handler = handler;
 		this.column = column;
 		this.referenceFragment = referenceFragment;
+		referenceEditorFragment = null;
+	}
+	
+	public AddElementInfos(ContentEditorFragment component, PageElementHandler handler, PageElementTarget target, int column) {
+		this.target = target;
+		this.handler = handler;
+		this.column = column;
+		this.referenceFragment = null;
+		referenceEditorFragment = component;
 	}
 	
 	public int getColumn() {
@@ -56,5 +67,9 @@ public class AddElementInfos {
 
 	public EditorFragment getReferenceFragment() {
 		return referenceFragment;
+	}
+	
+	public ContentEditorFragment getReferenceComponent() {
+		return referenceEditorFragment;
 	}
 }

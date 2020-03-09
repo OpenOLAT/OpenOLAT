@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -83,6 +84,10 @@ public class GradingRepositoryEntryConfigurationController extends FormBasicCont
 	private TextElement secondReminderPeriodEl;
 	private TextElement secondReminderSubjectEl;
 	private TextElement secondReminderBodyEl;
+	
+	private DropdownItem templatesDropdownEl;
+	private SpacerElement spacerReminderEl;
+	private SpacerElement spacerNotificationsEl;
 	
 	private final RepositoryEntry entry;
 	private RepositoryEntryGradingConfiguration configuration;
@@ -140,7 +145,7 @@ public class GradingRepositoryEntryConfigurationController extends FormBasicCont
 		notificationSubjectEl = uifactory.addTextElement("configuration.notification.subject", 255, configuration.getNotificationSubject(), formLayout);
 		notificationBodyEl = uifactory.addTextAreaElement("configuration.notification.body", 4, 60, configuration.getNotificationBody(), formLayout);
 
-		uifactory.addSpacerElement("spacer-notification", formLayout, false);
+		spacerNotificationsEl = uifactory.addSpacerElement("spacer-notification", formLayout, false);
 		
 		String firstReminder = configuration.getFirstReminder() == null ? null : configuration.getFirstReminder().toString();
 		firstReminderPeriodEl = uifactory.addTextElement("configuration.first.reminder.period", 6, firstReminder, formLayout);
@@ -148,7 +153,7 @@ public class GradingRepositoryEntryConfigurationController extends FormBasicCont
 		firstReminderSubjectEl = uifactory.addTextElement("configuration.first.reminder.subject", 255, configuration.getFirstReminderSubject(), formLayout);
 		firstReminderBodyEl = uifactory.addTextAreaElement("configuration.first.reminder.body", 4, 60, configuration.getFirstReminderBody(), formLayout);
 
-		uifactory.addSpacerElement("spacer-reminder", formLayout, false);
+		spacerReminderEl = uifactory.addSpacerElement("spacer-reminder", formLayout, false);
 		
 		String secondReminder = configuration.getSecondReminder() == null ? null : configuration.getSecondReminder().toString();
 		secondReminderPeriodEl = uifactory.addTextElement("configuration.second.reminder.period", 6, secondReminder, formLayout);
@@ -161,9 +166,9 @@ public class GradingRepositoryEntryConfigurationController extends FormBasicCont
 		buttonsCont.setRootForm(mainForm);
 		uifactory.addFormSubmitButton("save", buttonsCont);
 		
-		DropdownItem dropdownEl = uifactory.addDropdownMenu("choose.template.language", null, buttonsCont, getTranslator());
-		dropdownEl.setOrientation(DropdownOrientation.right);
-		dropdownEl.setEmbbeded(true);
+		templatesDropdownEl = uifactory.addDropdownMenu("choose.template.language", null, buttonsCont, getTranslator());
+		templatesDropdownEl.setOrientation(DropdownOrientation.right);
+		templatesDropdownEl.setEmbbeded(true);
 		
 		String dummyPage = velocity_root + "empty.html";
 		FormLayoutContainer dummyCont = FormLayoutContainer.createCustomFormLayout("dummy", getTranslator(), dummyPage);
@@ -176,7 +181,7 @@ public class GradingRepositoryEntryConfigurationController extends FormBasicCont
 				String label = locale.getDisplayLanguage(getLocale());
 				FormLink languageLink = uifactory.addFormLink("use.".concat(key), "choose.template", label, null, dummyCont, Link.LINK | Link.NONTRANSLATED);
 				languageLink.setUserObject(locale);
-				dropdownEl.addElement(languageLink);
+				templatesDropdownEl.addElement(languageLink);
 			}
 		}
 	}
@@ -280,6 +285,9 @@ public class GradingRepositoryEntryConfigurationController extends FormBasicCont
 		secondReminderPeriodEl.setVisible(enabled);
 		secondReminderSubjectEl.setVisible(enabled);
 		secondReminderBodyEl.setVisible(enabled);
+		spacerReminderEl.setVisible(enabled);
+		spacerNotificationsEl.setVisible(enabled);
+		templatesDropdownEl.setVisible(enabled);
 	}
 	
 	private void doChooseTemplateLanguage(Locale locale) {

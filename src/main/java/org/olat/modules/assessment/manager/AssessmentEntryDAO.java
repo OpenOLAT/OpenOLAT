@@ -215,7 +215,7 @@ public class AssessmentEntryDAO {
 			impl.setObligation(obligation.getCurrent());
 			impl.setObligationOriginal(obligation.getOriginal());
 			impl.setObligationModIdentity(obligation.getModBy());
-			impl.setObligationModDate(obligation.getModDate());;
+			impl.setObligationModDate(obligation.getModDate());
 			
 		}
 		return dbInstance.getCurrentEntityManager().merge(nodeAssessment);

@@ -56,6 +56,7 @@ import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
+import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
@@ -83,11 +84,19 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
  * @author Felix Jost
  */
 public class WikiCourseNode extends AbstractAccessableCourseNode {
+
 	private static final long serialVersionUID = -5800975339569440113L;
 
 	private static final Logger log = Tracing.createLoggerFor(WikiCourseNode.class);
 
 	public static final String TYPE = "wiki";
+
+	private static final int CURRENT_VERSION = 2;
+	public static final String CONFIG_KEY_REPOSITORY_SOFTKEY = "reporef";
+	public static final String CONFIG_KEY_EDIT_BY_COACH = "edit.by.coach";
+	public static final String CONFIG_KEY_EDIT_BY_PARTICIPANT = "edit.by.participant";
+	
+	public static final String EDIT_CONDITION = "editarticle";
 	private Condition preConditionEdit;
 
 	public WikiCourseNode() {
@@ -105,6 +114,31 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 			config.setBooleanEntry(NodeEditController.CONFIG_STARTPAGE, false);
 			config.setConfigurationVersion(1);
 		}
+		if (config.getConfigurationVersion() < 2) {
+			config.setBooleanEntry(CONFIG_KEY_EDIT_BY_COACH, Boolean.TRUE);
+			config.setBooleanEntry(CONFIG_KEY_EDIT_BY_PARTICIPANT, Boolean.TRUE);
+			removeDefaultPreconditions();
+		}
+		
+		config.setConfigurationVersion(CURRENT_VERSION);
+	}
+	
+	private void removeDefaultPreconditions() {
+		if (hasCustomPreConditions()) {
+			boolean defaultPreconditions =
+					!preConditionEdit.isExpertMode()
+				&& !preConditionEdit.isEasyModeCoachesAndAdmins()
+				&& !preConditionEdit.isEasyModeAlwaysAllowCoachesAndAdmins()
+				&& !preConditionEdit.isAssessmentMode()
+				&& !preConditionEdit.isAssessmentModeViewResults();
+			if (defaultPreconditions) {
+				removeCustomPreconditions();
+			}
+		}
+	}
+	
+	public void removeCustomPreconditions() {
+		preConditionEdit = null;
 	}
 	
 	@Override
@@ -121,9 +155,16 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course,UserCourseEnvironment euce) {
-		WikiEditController childTabCntrllr = new WikiEditController(getModuleConfiguration(), ureq, wControl, this, course,euce);
+		WikiEditController childTabCntrllr = new WikiEditController(ureq, wControl, stackPanel, this, course,euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
+	}
+	
+	@Override
+	public ConditionAccessEditConfig getAccessEditConfig() {
+		return hasCustomPreConditions()
+				? ConditionAccessEditConfig.custom()
+				: ConditionAccessEditConfig.regular(false);
 	}
 
 	@Override
@@ -139,9 +180,6 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public StatusDescription isConfigValid() {
-		/*
-		 * first check the one click cache
-		 */
 		if(oneClickStatusCache!=null) {
 			return oneClickStatusCache[0];
 		}
@@ -242,37 +280,40 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 	
 	@Override
 	public List<ConditionExpression> getConditionExpressions() {
-		List<ConditionExpression> parentConditions = super.getConditionExpressions();
-		List<ConditionExpression> conditions = new ArrayList<>();
-		if(parentConditions != null && parentConditions.size() > 0) {
-			conditions.addAll(parentConditions);
+		if (hasCustomPreConditions()) {
+			List<ConditionExpression> parentConditions = super.getConditionExpressions();
+			List<ConditionExpression> conditions = new ArrayList<>();
+			if(parentConditions != null && parentConditions.size() > 0) {
+				conditions.addAll(parentConditions);
+			}
+			Condition editCondition = getPreConditionEdit();
+			if(editCondition != null && StringHelper.containsNonWhitespace(editCondition.getConditionExpression())) {
+				ConditionExpression ce = new ConditionExpression(editCondition.getConditionId());
+				ce.setExpressionString(editCondition.getConditionExpression());
+				conditions.add(ce);
+			}
+			return conditions;
 		}
-		Condition editCondition = getPreConditionEdit();
-		if(editCondition != null && StringHelper.containsNonWhitespace(editCondition.getConditionExpression())) {
-			ConditionExpression ce = new ConditionExpression(editCondition.getConditionId());
-			ce.setExpressionString(editCondition.getConditionExpression());
-			conditions.add(ce);
-		}
-		return conditions;
+		return super.getConditionExpressions();
+	}
+	
+	public boolean hasCustomPreConditions() {
+		return preConditionEdit != null;
 	}
 
 	public Condition getPreConditionEdit() {
 		if (preConditionEdit == null) {
 			preConditionEdit = new Condition();
 		}
-		preConditionEdit.setConditionId("editarticle");
+		preConditionEdit.setConditionId(EDIT_CONDITION);
 		return preConditionEdit;
 	}
 
-	/**
-	 * 
-	 * @param preConditionEdit
-	 */
 	public void setPreConditionEdit(Condition preConditionEdit) {
 		if (preConditionEdit == null) {
 			preConditionEdit = getPreConditionEdit();
 		}
-		preConditionEdit.setConditionId("editarticle");
+		preConditionEdit.setConditionId(EDIT_CONDITION);
 		this.preConditionEdit = preConditionEdit;
 	}
 	
@@ -285,10 +326,12 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 	 */
 	@Override
 	public void calcAccessAndVisibility(ConditionInterpreter ci, NodeEvaluation nodeEval) {
-	  super.calcAccessAndVisibility(ci, nodeEval);
-		
-	  boolean editor = (getPreConditionEdit().getConditionExpression() == null ? true : ci.evaluateCondition(getPreConditionEdit()));
-		nodeEval.putAccessStatus("editarticle", editor);		
+		super.calcAccessAndVisibility(ci, nodeEval);
+	
+		if (hasCustomPreConditions()) {
+			boolean editor = (getPreConditionEdit().getConditionExpression() == null ? true : ci.evaluateCondition(getPreConditionEdit()));
+			nodeEval.putAccessStatus(EDIT_CONDITION, editor);
+		}
 	}
 
 	@Override

@@ -470,7 +470,8 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 				AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, assessedUserCourseEnv);
 				GradingAssignment assignment = gradingService.getGradingAssignment(testEntry, assessmentEntry);
 				if(assignment != null) {
-					gradingService.assignmentDone(assignment);
+					Long metadataTime = qtiService.getMetadataCorrectionTimeInSeconds(testEntry, testSession);
+					gradingService.assignmentDone(assignment, metadataTime);
 				}
 			}
 		}
