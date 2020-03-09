@@ -1727,11 +1727,11 @@ public class AssessmentTest extends Deployments {
 	public void taskOptionalWithIndividualScore(@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
 						
-		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("kanu");
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("ryomou");
 
-		LoginPage authorLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//create a course
@@ -1746,6 +1746,7 @@ public class AssessmentTest extends Deployments {
 		String gtaNodeTitle = "Individual task 1";
 		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
 			.edit();
+		// default on root node -> select first child
 		courseEditor
 			.createNode("ita")
 			.nodeTitle(gtaNodeTitle);
@@ -1814,11 +1815,10 @@ public class AssessmentTest extends Deployments {
 			.openMyCourses()
 			.select(courseTitle);
 		
-		//go to the group task
+		//go to the group task with auto select first node
 		CoursePageFragment ryomouTestCourse = new CoursePageFragment(ryomouBrowser);
 		ryomouTestCourse
-			.clickTree()
-			.selectWithTitle(gtaNodeTitle);
+			.clickTree();
 		
 		GroupTaskPage ryomouTask = new GroupTaskPage(ryomouBrowser);
 		ryomouTask

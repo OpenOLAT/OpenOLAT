@@ -22,7 +22,6 @@ package org.olat.course.nodes.st;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
@@ -104,37 +103,29 @@ public class STCourseNodeDisplayConfigFormController extends FormBasicController
 		updateUI();
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
 	// nothing to dispose
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
 		// No explicit submit button. Form is submitted every time when a radio or
 		// checkbox is clicked (OLAT-5610)
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("config.fieldset.view");
 		setFormContextHelp("Knowledge Transfer#_struktur");
-		FormUIFactory formFact = FormUIFactory.getInstance();
+		formLayout.setElementCssClass("o_sel_st_overview_settings");
+	
 		// Display type
 		String[] displayTypeValues = new String[] { translate("form.system"), translate("form.peekview"), translate("form.self"),
 				translate("form.delegate") };
-		displayTypeRadios = formFact.addRadiosVertical("selforsystemoverview", formLayout, displayTypeKeys, displayTypeValues);
+		displayTypeRadios = uifactory.addRadiosVertical("selforsystemoverview", formLayout, displayTypeKeys, displayTypeValues);
 		displayTypeRadios.addActionListener(FormEvent.ONCLICK);
+		displayTypeRadios.setElementCssClass("o_sel_st_display_type");
 		if (displayConfig.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_FILE)) {
 			displayTypeRadios.select("file", true);
 		} else if (displayConfig.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW)) {
@@ -147,7 +138,7 @@ public class STCourseNodeDisplayConfigFormController extends FormBasicController
 		// Peekview details configuration - allow only MAX_PEEKVIEW_CHILD_NODES
 		// peekviews to be selected
 		if (selectedPeekviewChildKeys.length > 0) {
-			selectedPeekviewChildren = formFact.addCheckboxesVertical("selectedPeekviewChildren", formLayout,
+			selectedPeekviewChildren = uifactory.addCheckboxesVertical("selectedPeekviewChildren", formLayout,
 					selectedPeekviewChildKeys, selectedPeekviewChildValues, selectedPeekviewChildCssClasses, 1);
 			selectedPeekviewChildren.setLabel("selectedPeekviewChildren",
 					new String[] { STCourseNodeConfiguration.MAX_PEEKVIEW_CHILD_NODES + "" });
@@ -160,8 +151,8 @@ public class STCourseNodeDisplayConfigFormController extends FormBasicController
 		}
 	
 		// Number of rows (only available in system or peekview type)
-		spacerCols = formFact.addSpacerElement("spacerCols", formLayout, true);
-		displayTwoColumns = formFact.addCheckboxesHorizontal("displayTwoColumns", formLayout, new String[] { "on" }, new String[] { "" });
+		spacerCols = uifactory.addSpacerElement("spacerCols", formLayout, true);
+		displayTwoColumns = uifactory.addCheckboxesHorizontal("displayTwoColumns", formLayout, new String[] { "on" }, new String[] { "" });
 		displayTwoColumns.setLabel("displayTwoColumns", null);
 		displayTwoColumns.addActionListener(FormEvent.ONCLICK);
 	}
@@ -178,11 +169,6 @@ public class STCourseNodeDisplayConfigFormController extends FormBasicController
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formInnerEvent(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.form.flexible.FormItem,
-	 *      org.olat.core.gui.components.form.flexible.impl.FormEvent)
-	 */
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		super.formInnerEvent(ureq, source, event);

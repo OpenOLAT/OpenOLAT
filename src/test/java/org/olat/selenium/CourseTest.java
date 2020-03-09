@@ -57,6 +57,8 @@ import org.olat.selenium.page.course.CourseWizardPage;
 import org.olat.selenium.page.course.MembersPage;
 import org.olat.selenium.page.course.PublisherPageFragment;
 import org.olat.selenium.page.course.RemindersPage;
+import org.olat.selenium.page.course.STConfigurationPage;
+import org.olat.selenium.page.course.STConfigurationPage.DisplayType;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
@@ -258,8 +260,7 @@ public class CourseTest extends Deployments {
 		//open course editor
 		CoursePageFragment course = CoursePageFragment.getCourse(browser);
 		course
-			.assertOnCoursePage()
-			.assertOnTitle(title);
+			.assertOnCoursePage();
 		
 		//assert the 5 nodes are there and click them
 		By nodeBy = By.cssSelector("span.o_tree_link.o_tree_l1.o_tree_level_label_leaf>a");
@@ -477,6 +478,7 @@ public class CourseTest extends Deployments {
 			.assertOnTitle(changedNodeTitlev3);
 	}
 	
+	
 	/**
 	 * Test that renaming the root node is reflected after
 	 * publishing.
@@ -508,12 +510,22 @@ public class CourseTest extends Deployments {
 			.assertOnCoursePage()
 			.assertOnTitle(courseTitle)
 			.openToolsMenu()
-			.edit();
+			.edit()
+			.assertOnEditor()
+			.selectRoot();
 		
+		// configure the simplest overview
+		STConfigurationPage stConfig = new STConfigurationPage(browser);
+		stConfig
+			.selectOverview()
+			.setDisplay(DisplayType.system);
+		
+		String nodeTitle = "More informations";
 		//create a course element of type info messages
 		course = editor
-			.assertOnEditor()
+			
 			.createNode("info")
+			.nodeTitle(nodeTitle)
 			.autoPublish();
 		//check that the root node has the name of the repository entry
 		course
@@ -926,11 +938,21 @@ public class CourseTest extends Deployments {
 
 		//open course editor
 		CoursePageFragment course = new CoursePageFragment(browser);
-		RepositoryAccessPage courseAccess = course
+		CourseEditorPageFragment courseEditor = course
 			.openToolsMenu()
-			.edit()
+			.edit();
+		courseEditor
+			.selectRoot();
+		// configure the peekview
+		STConfigurationPage stConfig = new STConfigurationPage(browser);
+		stConfig
+			.selectOverview()
+			.setDisplay(DisplayType.peekview);
+		
+		course = courseEditor
 			.createNode("info")
-			.autoPublish()
+			.autoPublish();
+		RepositoryAccessPage courseAccess = course
 			.settings()
 			.accessConfiguration()
 			.setUserAccess(UserAccess.booking)
@@ -1020,12 +1042,14 @@ public class CourseTest extends Deployments {
 			.fillCreateCourseForm(title, false)
 			.assertOnInfos();
 
+		String infoMessageTitle = "Some informations";
 		//open course editor
 		CoursePageFragment course = new CoursePageFragment(browser);
 		RepositoryAccessPage courseAccess = course
 			.openToolsMenu()
 			.edit()
 			.createNode("info")
+			.nodeTitle(infoMessageTitle)
 			.autoPublish()
 			.settings()
 			.accessConfiguration()
@@ -1057,7 +1081,7 @@ public class CourseTest extends Deployments {
 		//check the course
 		CoursePageFragment bookedCourse = CoursePageFragment.getCourse(userBrowser);
 		bookedCourse
-			.assertOnTitle(title);
+			.assertOnTitle(infoMessageTitle);
 		
 		//Author go in the list of bookings of the course
 		BookingPage bookingList = course

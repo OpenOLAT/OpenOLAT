@@ -89,10 +89,6 @@ public class CoursePageFragment {
 	public CoursePageFragment assertOnTitle(String displayName) {
 		By titleBy = By.xpath("//h2[text()[contains(.,'" + displayName + "')]]");
 		OOGraphene.waitElement(titleBy, browser);
-		
-		WebElement titleEl = browser.findElement(titleBy);
-		Assert.assertNotNull(titleEl);
-		Assert.assertTrue(titleEl.isDisplayed());
 		return this;
 	}
 	

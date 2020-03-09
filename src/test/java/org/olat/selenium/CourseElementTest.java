@@ -56,8 +56,10 @@ import org.olat.selenium.page.course.MemberListConfigurationPage;
 import org.olat.selenium.page.course.MemberListPage;
 import org.olat.selenium.page.course.MembersPage;
 import org.olat.selenium.page.course.ParticipantFolderPage;
+import org.olat.selenium.page.course.STConfigurationPage;
 import org.olat.selenium.page.course.SinglePage;
 import org.olat.selenium.page.course.SinglePageConfigurationPage;
+import org.olat.selenium.page.course.STConfigurationPage.DisplayType;
 import org.olat.selenium.page.forum.ForumPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
@@ -1086,6 +1088,15 @@ public class CourseElementTest extends Deployments {
 		String nodeTitle = "Members 2";
 		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
 			.edit();
+		
+		courseEditor
+			.selectRoot();
+		
+		STConfigurationPage stConfig = new STConfigurationPage(browser);
+		stConfig
+			.selectOverview()
+			.setDisplay(DisplayType.peekview);
+		
 		courseEditor
 			.createNode("cmembers")
 			.nodeTitle(nodeTitle);
