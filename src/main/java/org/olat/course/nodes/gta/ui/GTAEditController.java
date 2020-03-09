@@ -214,6 +214,14 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		super.event(ureq, source, event);
 	}
 
+	@Override
+	public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
+		super.dispatchEvent(ureq, source, event);
+		if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
+			workflowCtrl.onNodeConfigChanged();
+		}
+	}
+
 	public MSEditFormController createManualAssessmentCtrl(UserRequest ureq) {
 		boolean singleIdentityTask = GTAType.individual.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE));
 		return new MSEditFormController(ureq, getWindowControl(), config, translate("pane.tab.grading"),

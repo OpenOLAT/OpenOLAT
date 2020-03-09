@@ -104,7 +104,6 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		if (Arrays.asList(obligationEl.getKeys()).contains(obligationKey)) {
 			obligationEl.select(obligationKey, true);
 		}
-		obligationEl.setVisible(editConfigs.isObligationVisible());
 		
 		Date startDate = learningPathConfigs.getStartDate();
 		startDateEl = uifactory.addDateChooser("config.start.date", startDate, formLayout);

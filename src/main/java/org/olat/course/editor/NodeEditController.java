@@ -129,6 +129,10 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 			if (nodeAccessCtrl != null) {
 				this.nodeAccessCtrl = nodeAccessCtrl;
 				listenTo(nodeAccessCtrl);
+				if (childTabsController instanceof ControllerEventListener) {
+					ControllerEventListener cel = (ControllerEventListener)childTabsController;
+					nodeAccessCtrl.addControllerListener(cel);
+				}
 			} else if (ConditionNodeAccessProvider.TYPE.equals(nodeAccessType.getType())) {
 				// fallback for legacy access edit controller
 				visibilityEditCtrl = new VisibilityEditController(ureq, getWindowControl(), courseNode,

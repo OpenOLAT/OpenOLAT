@@ -45,9 +45,13 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.condition.AreaSelectionController;
 import org.olat.course.condition.GroupSelectionController;
 import org.olat.course.editor.CourseEditorEnv;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.gta.GTAManager;
@@ -97,10 +101,12 @@ public class GTAWorkflowEditController extends FormBasicController {
 	
 	private final GTACourseNode gtaNode;
 	private final ModuleConfiguration config;
+	private boolean optional;
 	private final CourseEditorEnv courseEditorEnv;
 	private List<Long> areaKeys;
 	private List<Long> groupKeys;
 	private final RepositoryEntry courseRe;
+	private final boolean isLearningPath;
 	
 	@Autowired
 	private HelpModule helpModule;
@@ -122,6 +128,10 @@ public class GTAWorkflowEditController extends FormBasicController {
 		//reload to make sure we have the last changes
 		courseRe = repositoryService
 				.loadByKey(courseEditorEnv.getCourseGroupManager().getCourseEntry().getKey());
+		ICourse course = CourseFactory.loadCourse(courseRe);
+		isLearningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType());
+		
+		optional = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_OPTIONAL);
 		
 		initForm(ureq);
 	}
@@ -221,13 +231,13 @@ public class GTAWorkflowEditController extends FormBasicController {
 				translate("task.mandatory"), translate("task.optional"),
 		};
 		optionalEl = uifactory.addRadiosHorizontal("obligation", "task.obligation", stepsCont, optionalKeys, optionalValues);
-		optionalEl.addActionListener(FormEvent.ONCHANGE);
-		boolean optional = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_OPTIONAL);
+		optionalEl.addActionListener(FormEvent.ONCHANGE);	
 		if(optional) {
 			optionalEl.select(optionalKeys[1], true);
 		} else {
 			optionalEl.select(optionalKeys[0], true);
 		}
+		optionalEl.setVisible(!isLearningPath);
 
 		relativeDatesEl = uifactory.addCheckboxesHorizontal("relative.dates", "relative.dates", stepsCont, onKeys, new String[]{ "" });
 		relativeDatesEl.addActionListener(FormEvent.ONCHANGE);
@@ -391,7 +401,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		}
 		
 		boolean solutionVisibleRelToAll = config.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false);
-		String[] solutionVisibleToAllValues = getSolutionVisibleToAllValues(optional);
+		String[] solutionVisibleToAllValues = getSolutionVisibleToAllValues();
 		solutionVisibleToAllEl = uifactory.addRadiosVertical("visibleall", "sample.solution.visible.for", stepsCont, solutionVisibleToAllKeys, solutionVisibleToAllValues);
 		solutionVisibleToAllEl.setVisible(sample && ((!useRelativeDates && solutionVisibleAfter != null) || optional));
 		if(solutionVisibleRelToAll) {
@@ -418,7 +428,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		uifactory.addFormSubmitButton("save", "save", buttonCont);
 	}
 	
-	private String[] getSolutionVisibleToAllValues(boolean optional) {
+	private String[] getSolutionVisibleToAllValues() {
 		return new String[] {
 			optional ? translate("sample.solution.visible.all.optional") : translate("sample.solution.visible.all"),
 			translate("sample.solution.visible.upload")
@@ -519,8 +529,9 @@ public class GTAWorkflowEditController extends FormBasicController {
 			config.setList(GTACourseNode.GTASK_GROUPS, new ArrayList<Long>(0));
 		}
 		
-		boolean optional = optionalEl.isSelected(1);
-		config.setBooleanEntry(MSCourseNode.CONFIG_KEY_OPTIONAL, optional);
+		if (optionalEl.isVisible()) {
+			config.setBooleanEntry(MSCourseNode.CONFIG_KEY_OPTIONAL, optional);
+		}
 		
 		boolean relativeDates = relativeDatesEl.isAtLeastSelected(1);
 		config.setBooleanEntry(GTACourseNode.GTASK_RELATIVE_DATES, relativeDates);
@@ -620,6 +631,14 @@ public class GTAWorkflowEditController extends FormBasicController {
 		super.formInnerEvent(ureq, source, event);
 	}
 	
+	public void onNodeConfigChanged() {
+		boolean newOptional = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_OPTIONAL);
+		if (newOptional != optional) {
+			optional = newOptional;
+			updateSolutionDeadline();
+		}
+	}
+	
 	private void updateAssignmentDeadline() {
 		boolean useRelativeDate = relativeDatesEl.isAtLeastSelected(1);
 		boolean assignment = taskAssignmentEl.isAtLeastSelected(1);
@@ -639,13 +658,15 @@ public class GTAWorkflowEditController extends FormBasicController {
 	private void updateSolutionDeadline() {
 		boolean useRelativeDate = relativeDatesEl.isAtLeastSelected(1);
 		boolean solution = sampleEl.isAtLeastSelected(1);
-		boolean optional = optionalEl.isSelected(1);
+		if (optionalEl.isVisible()) {
+			optional = optionalEl.isSelected(1);
+		}
 		solutionVisibleAfterEl.setVisible(solution && !useRelativeDate);
 		solutionVisibleRelCont.setVisible(solution && useRelativeDate);
 		updateDeadline(solutionVisibleRelToEl, false);
 		solutionVisibleToAllEl.setVisible(solution &&
 				((!useRelativeDate && solutionVisibleAfterEl.getDate() != null) || optional));
-		solutionVisibleToAllEl.setKeysAndValues(solutionVisibleToAllKeys, getSolutionVisibleToAllValues(optional), null);
+		solutionVisibleToAllEl.setKeysAndValues(solutionVisibleToAllKeys, getSolutionVisibleToAllValues(), null);
 		if(!solutionVisibleToAllEl.isOneSelected()) {
 			solutionVisibleToAllEl.select(solutionVisibleToAllKeys[1], true);
 		}
@@ -827,4 +848,5 @@ public class GTAWorkflowEditController extends FormBasicController {
 			return values;
 		}
 	}
+
 }

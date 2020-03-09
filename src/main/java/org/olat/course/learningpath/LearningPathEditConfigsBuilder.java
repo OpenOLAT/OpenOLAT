@@ -27,7 +27,6 @@ package org.olat.course.learningpath;
  */
 public class LearningPathEditConfigsBuilder {
 	
-	private boolean obligationVisible = true;
 	private boolean triggerNodeVisited;
 	private boolean triggerConfirmed;
 	private boolean triggerScore;
@@ -38,11 +37,6 @@ public class LearningPathEditConfigsBuilder {
 	
 	LearningPathEditConfigsBuilder() {
 		this.translationsBuilder = new LearningPathTranslationsBuilder(this);
-	}
-
-	public LearningPathEditConfigsBuilder disableObligation() {
-		obligationVisible = false;
-		return this;
 	}
 	
 	public LearningPathEditConfigsBuilder enableNodeVisited() {
@@ -87,7 +81,6 @@ public class LearningPathEditConfigsBuilder {
 	
 	private final static class LearningPathEditConfigsImpl implements LearningPathEditConfigs {
 		
-		private final boolean obligationVisible;
 		private final boolean triggerNodeVisited;
 		private final boolean triggerConfirmed;
 		private final boolean triggerScore;
@@ -97,7 +90,6 @@ public class LearningPathEditConfigsBuilder {
 		private final LearningPathTranslations translations;
 
 		private LearningPathEditConfigsImpl(LearningPathEditConfigsBuilder builder) {
-			this.obligationVisible = builder.obligationVisible;
 			this.triggerNodeVisited = builder.triggerNodeVisited;
 			this.triggerConfirmed = builder.triggerConfirmed;
 			this.triggerScore = builder.triggerScore;
@@ -105,11 +97,6 @@ public class LearningPathEditConfigsBuilder {
 			this.triggerStatusInReview = builder.triggerStatusInReview;
 			this.triggerStatusDone = builder.triggerStatusDone;
 			this.translations = builder.translationsBuilder.build();
-		}
-
-		@Override
-		public boolean isObligationVisible() {
-			return obligationVisible;
 		}
 
 		@Override

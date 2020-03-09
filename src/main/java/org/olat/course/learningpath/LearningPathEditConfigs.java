@@ -28,8 +28,6 @@ package org.olat.course.learningpath;
  */
 public interface LearningPathEditConfigs {
 	
-	public boolean isObligationVisible();
-	
 	public boolean isTriggerNodeVisited();
 	
 	public boolean isTriggerConfirmed();
