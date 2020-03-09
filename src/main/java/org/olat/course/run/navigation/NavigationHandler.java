@@ -350,26 +350,6 @@ public class NavigationHandler implements Disposable {
 				NodeRunConstructionResult ncr = new NodeRunConstructionResult(controller, null, null, null);
 				nclr = new NodeClickedRef(treeModel, true, newSelectedNodeId, null, courseNode, ncr, false);
 			} else { // access ok
-				
-				if (STCourseNode.isDelegatingSTCourseNode(courseNode) && (courseNode.getChildCount() > 0)) {
-					// the clicked node is a STCourse node and is set to "delegate", so
-					// delegate to its first visible child; if no child is visible, just skip and do normal eval
-					INode child;
-					for (int i = 0; i < courseNode.getChildCount(); i++) {
-						child = courseNode.getChildAt(i);
-						if (child instanceof CourseNode) {
-							CourseNode cn = (CourseNode) child;
-							TreeNode childTreeNode = treeModel.getNodeById(cn.getIdent());
-							if (childTreeNode != null) { // not visible
-								return doEvaluateJumpTo(ureq, wControl, cn, listeningController, nodecmd, nodeSubCmd,
-										currentNodeController);
-							}
-						}
-					}
-				}
-					
-					
-				// access the node, display its result in the right pane
 				NodeRunConstructionResult ncr;
 				
 				// calculate the new businesscontext for the coursenode being called.	
@@ -440,6 +420,23 @@ public class NavigationHandler implements Disposable {
 				
 				reattachExternalTreeModels(treeModel);
 				
+				if (STCourseNode.isDelegatingSTCourseNode(courseNode) && (courseNode.getChildCount() > 0)) {
+					// the clicked node is a STCourse node and is set to "delegate", so
+					// delegate to its first visible child; if no child is visible, just skip and do normal eval
+					INode child;
+					for (int i = 0; i < courseNode.getChildCount(); i++) {
+						child = courseNode.getChildAt(i);
+						if (child instanceof CourseNode) {
+							CourseNode cn = (CourseNode) child;
+							TreeNode childTreeNode = treeModel.getNodeById(cn.getIdent());
+							if (childTreeNode != null) { // visible
+								return doEvaluateJumpTo(ureq, wControl, cn, listeningController, nodecmd, nodeSubCmd,
+										currentNodeController);
+							}
+						}
+					}
+				}
+					
 				boolean evaluateTree = false;
 				for (NodeVisitedListener nodeVisitedListener : nodeVisitedListeners) {
 					boolean needsTreeEvaluation = nodeVisitedListener.onNodeVisited(courseNode, userCourseEnv);
@@ -569,6 +566,10 @@ public class NavigationHandler implements Disposable {
 			}
 			// always insert before already existing course building block children
 			parent.insert(chdc, 0);
+		}
+		
+		if (parent instanceof GenericTreeNode) {
+			((GenericTreeNode)parent).setIdent(root.getIdent());
 		}
 	}
 	
