@@ -155,6 +155,7 @@ import org.junit.runners.Suite;
 	org.olat.user.manager.UserDataExportServiceTest.class,
 	org.olat.user.manager.AbsenceLeaveDAOTest.class,
 	org.olat.repository.manager.AutomaticLifecycleServiceTest.class,
+	org.olat.repository.ui.catalog.CatalogManagerTest.class,
 	org.olat.repository.manager.RepositoryEntryDAOTest.class,
 	org.olat.repository.manager.RepositoryEntryLifecycleDAOTest.class,
 	org.olat.repository.manager.RepositoryEntryRelationDAOTest.class,

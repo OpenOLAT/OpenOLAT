@@ -297,7 +297,7 @@ public class OverviewRepositoryListController extends BasicController implements
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		markedStackPanel = new BreadcrumbedStackedPanel("mrkstack", getTranslator(), this);
-		markedCtrl = new RepositoryEntryListController(ureq, bwControl, searchParams, true, false, "marked", markedStackPanel);
+		markedCtrl = new RepositoryEntryListController(ureq, bwControl, searchParams, true, false, true, "marked", markedStackPanel);
 		markedStackPanel.pushController(translate("search.mark"), markedCtrl);
 		listenTo(markedCtrl);
 		currentCtrl = markedCtrl;
@@ -320,7 +320,7 @@ public class OverviewRepositoryListController extends BasicController implements
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		myCoursesStackPanel = new BreadcrumbedStackedPanel("mystack", getTranslator(), this);
-		myCoursesCtrl = new RepositoryEntryListController(ureq, bwControl, searchParams, true, false, "my", myCoursesStackPanel);
+		myCoursesCtrl = new RepositoryEntryListController(ureq, bwControl, searchParams, true, false, true, "my", myCoursesStackPanel);
 		myCoursesStackPanel.pushController(translate("search.mycourses.student"), myCoursesCtrl);
 		listenTo(myCoursesCtrl);
 		currentCtrl = myCoursesCtrl;
@@ -391,7 +391,7 @@ public class OverviewRepositoryListController extends BasicController implements
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		searchCoursesStackPanel = new BreadcrumbedStackedPanel("search", getTranslator(), this);
-		searchCoursesCtrl = new RepositoryEntryListController(ureq, bwControl, searchParams, false, true, "my-search", searchCoursesStackPanel);
+		searchCoursesCtrl = new RepositoryEntryListController(ureq, bwControl, searchParams, false, true, true, "my-search", searchCoursesStackPanel);
 		searchCoursesStackPanel.pushController(translate("search.mycourses.student"), searchCoursesCtrl);
 		listenTo(searchCoursesCtrl);
 		currentCtrl = searchCoursesCtrl;
@@ -413,7 +413,7 @@ public class OverviewRepositoryListController extends BasicController implements
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		myCoursesStackPanel = new BreadcrumbedStackedPanel("mystack", getTranslator(), this);
-		closedCoursesCtrl = new RepositoryEntryListController(ureq, bwControl, searchParams, true, false, "closed", myCoursesStackPanel);
+		closedCoursesCtrl = new RepositoryEntryListController(ureq, bwControl, searchParams, true, false, true, "closed", myCoursesStackPanel);
 		myCoursesStackPanel.pushController(translate("search.mycourses.student"), closedCoursesCtrl);
 		listenTo(closedCoursesCtrl);
 		currentCtrl = closedCoursesCtrl;

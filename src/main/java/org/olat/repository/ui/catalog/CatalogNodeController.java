@@ -97,7 +97,8 @@ public class CatalogNodeController extends BasicController implements Activateab
 		} else {
 			mainVC.contextPut("listStyle", Style.tiles.name());
 		}
-		mainVC.contextPut("catalogEntryName", catalogEntry.getName());
+		mainVC.contextPut("catalogEntryTitle", catalogEntry.getName());
+		mainVC.contextPut("catalogEntryShortTitle", catalogEntry.getShortTitle());
 		int level  = 0;
 		CatalogEntry parent = catalogEntry.getParent();
 		while (parent != null) {
@@ -114,7 +115,7 @@ public class CatalogNodeController extends BasicController implements Activateab
 			mainVC.contextPut("catThumbnail", image.getName());
 		}
 		
-		List<CatalogEntry> childCe = catalogEntry.getChildren();
+		List<CatalogEntry> childCe = catalogManager.getChildrenOf(catalogEntry);
 		List<String> subCategories = new ArrayList<>();
 		int count = 0;
 		for (CatalogEntry entry : childCe) {
@@ -129,13 +130,22 @@ public class CatalogNodeController extends BasicController implements Activateab
 				mainVC.contextPut("k" + cmpId, entry.getKey());
 				
 				String title = StringHelper.escapeHtml(entry.getName());
+				String shortTitle; 
+				if (entry.getShortTitle() == null) {
+					shortTitle = StringHelper.escapeHtml(entry.getName());
+				} else {
+					shortTitle = StringHelper.escapeHtml(entry.getShortTitle());
+				}
+				
 				Link link = LinkFactory.createCustomLink(cmpId, "select_node", cmpId, Link.LINK + Link.NONTRANSLATED, mainVC, this);
 				link.setCustomDisplayText(title);
 				link.setIconLeftCSS("o_icon o_icon_catalog_sub");
 				link.setUserObject(entry.getKey());
 				subCategories.add(Integer.toString(count));
 				String titleId = "title_" + count;
+				String shortTitleId = "short_title_" + count;
 				mainVC.contextPut(titleId, title);
+				mainVC.contextPut(shortTitleId, shortTitle);
 			}
 		}
 		mainVC.contextPut("subCategories", subCategories);
@@ -146,7 +156,7 @@ public class CatalogNodeController extends BasicController implements Activateab
 		searchParams.setParentEntry(catalogEntry);
 		searchParams.setClosed(Boolean.FALSE);
 		
-		entryListController = new RepositoryEntryListController(ureq, wControl, searchParams, true, false, "catalog", stackPanel);
+		entryListController = new RepositoryEntryListController(ureq, wControl, searchParams, true, false, false, "catalog", stackPanel);
 		if(!entryListController.isEmpty() || searchParams.getFilters() != null) {
 			mainVC.put("entries", entryListController.getInitialComponent());
 		}
@@ -157,7 +167,8 @@ public class CatalogNodeController extends BasicController implements Activateab
 				= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
 		searchClosedParams.setParentEntry(catalogEntry);
 		searchClosedParams.setClosed(Boolean.TRUE);
-		closedEntryListController = new RepositoryEntryListController(ureq, wControl, searchClosedParams, true, false, "catalog-closed", stackPanel);
+		
+		closedEntryListController = new RepositoryEntryListController(ureq, wControl, searchClosedParams, true, false, false, "catalog-closed", stackPanel);
 		if(!closedEntryListController.isEmpty() || searchClosedParams.getFilters() != null) {
 			mainVC.put("closedEntries", closedEntryListController.getInitialComponent());
 		}
@@ -206,7 +217,7 @@ public class CatalogNodeController extends BasicController implements Activateab
 			
 			childNodeController = new CatalogNodeController(ureq, bwControl, rootwControl, entry, stackPanel, wrapInMainPanel);
 			listenTo(childNodeController);
-			stackPanel.pushController(entry.getName(), childNodeController);
+			stackPanel.pushController(entry.getShortTitle(), childNodeController);
 			
 			addToHistory(ureq, childNodeController);
 		}

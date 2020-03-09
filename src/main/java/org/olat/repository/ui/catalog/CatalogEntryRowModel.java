@@ -76,7 +76,7 @@ public class CatalogEntryRowModel extends DefaultFlexiTableDataModel<CatalogEntr
 			case detailsSupported: return item;
 			case move: return item;
 			case delete: return item;
-			case position: return item.getPosition();
+			case position: return item.getPositionLink();
 		}
 		return null;
 	}

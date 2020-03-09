@@ -66,6 +66,8 @@ import org.olat.repository.CatalogEntryRef;
 import org.olat.repository.RepositoryDeletionModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
@@ -113,6 +115,8 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	private ImageService imageHelper;
 	@Autowired
 	private SecurityGroupDAO securityGroupDao;
+	@Autowired
+	private RepositoryModule repositoryModule;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -306,9 +310,17 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	
 	public void deleteCatalogEntry(RepositoryEntryRef entry, CatalogEntry parent) {
 		CatalogEntry ce = getCatalogEntryBy(entry, parent);
+		parent = loadCatalogEntry(parent);
+		
 		if(ce != null) {
 			SecurityGroup owner = ce.getOwnerGroup();
+			List<CatalogEntry> catalogEntries = parent.getChildren();
+			
+			catalogEntries.remove(ce);
+			updateCatalogEntry(parent);
+			
 			dbInstance.getCurrentEntityManager().remove(ce);
+			
 			if (owner != null) {
 				log.debug("deleteCatalogEntry case_1: delete owner-group={}", owner);
 				securityGroupDao.deleteSecurityGroup(owner);
@@ -324,14 +336,22 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	 * @param ce
 	 */
 	public void deleteCatalogEntry(CatalogEntry ce) {
-		final boolean debug = log.isDebugEnabled();
-		if(debug) log.debug("deleteCatalogEntry start... ce={}", ce);
+		log.debug("deleteCatalogEntry start... ce={}", ce);
+		
+		//reload the detached catalog entry, delete it and then the owner group
+		ce = getCatalogEntryByKey(ce.getKey());
 		
 		if (ce.getType() == CatalogEntry.TYPE_LEAF) {
-			//reload the detached catalog entry, delete it and then the owner group
-			ce = getCatalogEntryByKey(ce.getKey());
 			if(ce != null) {
 				SecurityGroup owner = ce.getOwnerGroup();
+				
+				if (ce.getParent() != null) {
+					CatalogEntry parent = ce.getParent();
+					List<CatalogEntry> catalogEntries = parent.getChildren();
+					catalogEntries.remove(ce);
+					updateCatalogEntry(parent);
+				}
+				
 				dbInstance.getCurrentEntityManager().remove(ce);
 				if (owner != null) {
 					log.debug("deleteCatalogEntry case_1: delete owner-group={}", owner);
@@ -340,15 +360,23 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 			}
 		} else {
 			List<SecurityGroup> secGroupsToBeDeleted = new ArrayList<>();
+			
 			deleteCatalogSubtree(ce,secGroupsToBeDeleted);
 			// after deleting all entries, delete all secGroups corresponding
 			for (Iterator<SecurityGroup> iter = secGroupsToBeDeleted.iterator(); iter.hasNext();) {
 				SecurityGroup grp = iter.next();
-				if(debug) log.debug("deleteCatalogEntry case_2: delete groups of deleteCatalogSubtree grp={}", grp);
+				log.debug("deleteCatalogEntry case_2: delete groups of deleteCatalogSubtree grp={}", grp);
 				securityGroupDao.deleteSecurityGroup(grp);
 			}
+			
+			if (ce.getParent() != null) {
+				CatalogEntry parent = ce.getParent();
+				List<CatalogEntry> catalogEntries = parent.getChildren();
+				catalogEntries.remove(ce);
+				updateCatalogEntry(parent);
+			}
 		}
-		if(debug) log.debug("deleteCatalogEntry END");
+		log.debug("deleteCatalogEntry END");
 	}
 
 	/**
@@ -550,19 +578,91 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	 * @param newEntry
 	 */
 	public void addCatalogEntry(CatalogEntry parent, CatalogEntry newEntry) {
-		parent = getCatalogEntryByKey(parent.getKey());
+		parent = loadCatalogEntry(parent);
 		
 		boolean debug = log.isDebugEnabled();
 		if(debug) log.debug("addCatalogEntry parent={}", parent);
 		if(debug) log.debug("addCatalogEntry newEntry={}", newEntry);
 		if(debug) log.debug("addCatalogEntry newEntry.getOwnerGroup()={}", newEntry.getOwnerGroup());
 		
-		List<CatalogEntry> catEntries = parent.getChildren();
 		newEntry.setParent(parent);
 		saveCatalogEntry(newEntry);
-		catEntries.add(newEntry);
-		updateCatalogEntry(parent);
+		
+		addToChildren(parent, newEntry);
+		
 		dbInstance.commitAndCloseSession();
+	}
+	
+	private void addToChildren(CatalogEntry parentEntry, CatalogEntry newEntry) {
+		parentEntry = loadCatalogEntry(parentEntry);
+		newEntry = loadCatalogEntry(newEntry);
+		List<CatalogEntry> catEntries = parentEntry.getChildren();
+		int index = 0;
+		boolean added = false;
+		String closed = RepositoryEntryStatusEnum.closed.name();
+		RepositoryEntry repoEntry = newEntry.getRepositoryEntry();
+		
+		if(catEntries.isEmpty()) {
+			catEntries.add(newEntry);
+			return;
+		}
+
+		cleanNullEntries(catEntries);
+		
+		for (CatalogEntry catalogEntry : catEntries) {
+			// Add entries
+			if (catalogEntry.getType() == CatalogEntry.TYPE_LEAF && newEntry.getType() == CatalogEntry.TYPE_LEAF) {
+				if (repositoryModule.isCatalogAddAtLast()) {
+					// Closed entry to the end
+					if (repoEntry.getStatus().equals(closed)) {
+						catEntries.add(newEntry);
+						added = true;
+						break;
+					} 
+					// Not closed entry to the end of not closed entries
+					else if (catalogEntry.getRepositoryEntry().getStatus().equals(closed)) {
+						catEntries.add(index, newEntry);
+						added = true;
+						break;
+					}
+				} else {
+					// Closed entry to the beginning of closed
+					if (repoEntry.getStatus().equals(closed) && catalogEntry.getRepositoryEntry().getStatus().equals(closed)) {
+						catEntries.add(index, newEntry);
+						added = true;
+						break;
+					} 
+					// Not closed entry to the beginning of not closed entries
+					else if (!repoEntry.getStatus().equals(closed) && !catalogEntry.getRepositoryEntry().getStatus().equals(closed)) {
+						catEntries.add(index, newEntry);
+						added = true;
+						break;
+					}
+				}
+			} 
+			// Add categories
+			else if (newEntry.getType() == CatalogEntry.TYPE_NODE) {
+				if (repositoryModule.isCatalogAddAtLast()) {
+					if (catalogEntry.getType() == CatalogEntry.TYPE_LEAF) {
+						catEntries.add(index, newEntry);
+						added = true; 
+						break;
+					}
+				} else {
+					catEntries.add(0, newEntry);
+					added = true;
+					break;
+				}
+			}
+			index++;
+		}
+		
+		// If not added already, add it to the bottom of the list
+		if (!added) {
+			catEntries.add(newEntry);
+		}
+
+		updateCatalogEntry(parentEntry);
 	}
 
 	/**
@@ -617,38 +717,12 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	
 	public CatalogEntry addCatalogCategory(CatalogEntry ce, CatalogEntry parentCe) {
 		if(parentCe != null) {
-			parentCe = loadCatalogEntry(parentCe.getKey());
+			parentCe = loadCatalogEntry(parentCe);
 		}
 		ce.setParent(parentCe);
 		saveCatalogEntry(ce);	
-
-		if (parentCe != null) {
-			List<CatalogEntry> catEntries = parentCe.getChildren();
-			if(catEntries.isEmpty()) {
-				catEntries.add(ce);
-			} else {
-				cleanNullEntries(catEntries);
-				
-				boolean added = false;
-				List<CatalogEntry> catalogEntries = new ArrayList<>(catEntries);
-				for (CatalogEntry catalogEntry : catalogEntries) {
-					if (catalogEntry.getType() == ce.getType()) {
-						catEntries.add(catEntries.indexOf(catalogEntry), ce);
-						added = true;
-						break;
-					}
-				}
-				
-				if(!added) {
-					if(ce.getType() == CatalogEntry.TYPE_NODE) {
-						catEntries.add(0, ce);
-					} else {
-						catEntries.add(ce);
-					}
-				}
-				updateCatalogEntry(parentCe);
-			}
-		}
+		
+		addToChildren(parentCe, ce);
 		
 		dbInstance.commitAndCloseSession();
 		return ce;
@@ -671,7 +745,8 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	public boolean moveCatalogEntry(CatalogEntry toBeMovedEntry, CatalogEntry newParentEntry) {
 		// reload current item to prevent stale object modification
 		toBeMovedEntry = loadCatalogEntry(toBeMovedEntry);
-		newParentEntry = loadCatalogEntry(newParentEntry);		
+		newParentEntry = loadCatalogEntry(newParentEntry);	
+		
 		// check that the new parent is not a leaf
 		if (newParentEntry.getType() == CatalogEntry.TYPE_LEAF) return false;
 		// check that the new parent is not a child of the to be moved entry
@@ -683,9 +758,26 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 			}
 			tempEntry = tempEntry.getParent();
 		}
+		// Check that the new parent doesn't contain the entry already and remove it from its list
+		List<CatalogEntry> newParentChildren = newParentEntry.getChildren();
+		for (CatalogEntry newParentChild : newParentChildren) {
+			if (newParentChild.getType() == CatalogEntry.TYPE_LEAF && newParentChild.getRepositoryEntry().equals(toBeMovedEntry.getRepositoryEntry())) {
+				// Entry is already existing
+				return false;
+			}
+		}
+		// Get the old parent and remove it from its list
+		CatalogEntry oldParentEntry;
+		if (toBeMovedEntry.getParent() != null) {
+			oldParentEntry = toBeMovedEntry.getParent();
+			List<CatalogEntry> oldChildren = oldParentEntry.getChildren();
+			oldChildren.remove(toBeMovedEntry);
+			updateCatalogEntry(oldParentEntry);
+		}
 		// set new parent and save
 		toBeMovedEntry.setParent(newParentEntry);
 		updateCatalogEntry(toBeMovedEntry);
+		addToChildren(newParentEntry, toBeMovedEntry);
 		dbInstance.commitAndCloseSession();
 		return true;
 	}
@@ -870,5 +962,27 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 		}
 		
 		return 1;
+	}
+	
+	public int setPosition(Long childEntryKey, int position) {
+		CatalogEntry childEntry = getCatalogEntryByKey(childEntryKey);
+		CatalogEntry parentEntry = childEntry.getParent();
+		List<CatalogEntry> children = parentEntry.getChildren();
+		
+		if (position >= 0 && position < children.size()) {
+			children.remove(children.indexOf(childEntry));
+			children.add(position, childEntry);
+			
+			updateCatalogEntry(parentEntry);		
+			dbInstance.commitAndCloseSession();
+			
+			return 0;
+		} else if (position < 0) {
+			return 1;
+		} else if (position >= children.size()) {
+			return 2;
+		} else {
+			return -1;
+		}
 	}
 }

@@ -31,6 +31,7 @@ import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -85,8 +86,11 @@ public class CatalogEntryImpl implements CatalogEntry {
 	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
 	private Date creationDate;
 	
-	@Column(name = "name", unique = false, nullable = false, length = 100)
+	@Column(name = "name", unique = false, nullable = false)
 	private String name;
+	
+	@Column(name = "short_title", unique = false, nullable = true)
+	private String shortTitle;
 	
 	@Column(name = "style", unique = false, nullable = true)
 	private String styleString;
@@ -105,7 +109,7 @@ public class CatalogEntryImpl implements CatalogEntry {
 	@JoinColumn(name = "parent_id", nullable = true, insertable = true, updatable = true)
 	private CatalogEntry parent;
 	
-	@OneToMany(targetEntity = CatalogEntryImpl.class, mappedBy = "parent")
+	@OneToMany(targetEntity = CatalogEntryImpl.class, mappedBy = "parent", fetch = FetchType.LAZY)
 	@OrderColumn(name = "order_index")
 	private List<CatalogEntry> children;
 
@@ -139,12 +143,22 @@ public class CatalogEntryImpl implements CatalogEntry {
 	public String getName() {
 		return name;
 	}
-
+	
 	@Override
 	public void setName(String name) {
 		if (name.length() > 100)
 			throw new AssertException("CatalogEntry: Name is limited to 100 characters.");
 		this.name = name;
+	}
+	
+	@Override 
+	public String getShortTitle() {
+		return shortTitle;
+	}
+	
+	@Override 
+	public void setShortTitle(String shortTitle) {
+		this.shortTitle = shortTitle;
 	}
 
 	public String getStyleString() {

@@ -106,6 +106,7 @@ public class RepositoryEntryListController extends FormBasicController
 	private final List<Link> orderByLinks = new ArrayList<>();
 	
 	private boolean withSearch;
+	private boolean withSavedSettings;
 
 	private final String name;
 	private FlexiTableElement tableEl;
@@ -135,13 +136,14 @@ public class RepositoryEntryListController extends FormBasicController
 	
 	public RepositoryEntryListController(UserRequest ureq, WindowControl wControl,
 			SearchMyRepositoryEntryViewParams searchParams, boolean load, 
-			boolean withSearch, String name, BreadcrumbPanel stackPanel) {
+			boolean withSearch, boolean withSavedSettings, String name, BreadcrumbPanel stackPanel) {
 		super(ureq, wControl, "repoentry_table");
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper());
 		this.name = name;
 		this.stackPanel = stackPanel;
 		this.withSearch = withSearch;
+		this.withSavedSettings = withSavedSettings;
 		guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 
 		OLATResourceable ores = OresHelper.createOLATResourceableType("MyCoursesSite");
@@ -235,9 +237,15 @@ public class RepositoryEntryListController extends FormBasicController
 		initSorters(tableEl);
 		
 		tableEl.setAndLoadPersistedPreferences(ureq, "re-list-v2-".concat(name));
+		
+		if (!withSavedSettings) {
+			SortKey sortKey = new SortKey(OrderBy.custom.name(), true);
+			tableEl.sort(sortKey);
+		}
+		
 		loadFilterPreferences(ureq);
 	}
-	
+
 	private void initFilters(FlexiTableElement tableElement) {
 		List<FlexiTableFilter> filters = new ArrayList<>(16);
 		filters.add(new FlexiTableFilter(translate("filter.show.all"), Filter.showAll.name(), true));

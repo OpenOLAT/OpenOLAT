@@ -169,9 +169,23 @@ public interface CatalogEntry extends CatalogEntryRef, CreateInfo, Persistable, 
 	/**
 	 * get position of entry
 	 * 
-	 * @return
+	 * @return Integer
 	 */
 	public Integer getPosition();
+	
+	/**
+	 * get short title
+	 * 
+	 * @return String
+	 */
+	public String getShortTitle();
+	
+	/**
+	 * set short title
+	 * 
+	 * @param shortTitle
+	 */
+	public void setShortTitle(String shortTitle);
 	
 	
 	public enum OrderBy {

@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.NewControllerFactory;
 import org.olat.admin.securitygroup.gui.GroupController;
@@ -37,6 +38,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
@@ -51,11 +53,14 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlex
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
@@ -121,13 +126,17 @@ public class CatalogNodeManagerController extends FormBasicController implements
 	public static final OLATResourceable lockRes = OresHelper.createOLATResourceableType("CatalogNodeManagerController");
 	
 	private final TooledStackedPanel toolbarPanel;
+	private final AtomicInteger counter = new AtomicInteger();
 	
 	private GroupController groupCtrl;
 	private CloseableModalController cmc;
 	private ContactFormController contactCtrl;
 	private RepositorySearchController entrySearchCtrl;
+	private CatalogEntryPositionDialogController positionCtrl;
+	private CloseableCalloutWindowController positionCalloutCtrl;
 
 	private CatalogNodeManagerController childNodeCtrl;
+	private CatalogNodeManagerController positionMoveCtrl;
 	private CatalogEntryMoveController categoryMoveCtrl;
 	private CatalogEntryMoveController entryResourceMoveCtrl;
 	private CatalogEntryEditController addEntryCtrl, editEntryCtrl;
@@ -159,6 +168,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 	
 	private static final String CMD_UP = "leaf_up";
 	private static final String CMD_DOWN = "leaf_down";
+	private static final String CMD_SET_POSITION = "set_position";
 	
 	private LockResult catModificationLock;
 	private final MapperKey mapperThumbnailKey;
@@ -206,6 +216,42 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		isOrdering = false;
 		flc.contextPut("isOrdering", isOrdering);
 		
+		this.toolbarPanel.addListener(this);
+		
+		if(isAdministrator) {
+			isLocalTreeAdmin = false;
+		} else {
+			isLocalTreeAdmin = localTreeAdmin || catalogManager.isOwner(catalogEntry, getIdentity());
+		}
+
+		initForm(ureq);
+		
+		loadEntryInfos();
+		loadNodesChildren();
+		loadResources(ureq);
+		//catch the events from the velocity template
+		flc.getFormItemComponent().addListener(this);
+	}
+	
+	public CatalogNodeManagerController(UserRequest ureq, WindowControl wControl, WindowControl rootwControl,
+			CatalogEntry catalogEntry, TooledStackedPanel stackPanel, boolean localTreeAdmin, boolean isOrdering) {
+		super(ureq, wControl, "node");
+		setTranslator(Util.createPackageTranslator(RepositoryService.class, ureq.getLocale(), getTranslator()));
+		
+		this.toolbarPanel = stackPanel;
+		this.catalogEntry = catalogEntry;
+		this.rootwControl = rootwControl;
+		mapperThumbnailKey = mapperService.register(null, "catalogentryImage", new CatalogEntryImageMapper());
+		
+		Roles roles = ureq.getUserSession().getRoles();
+		isAuthor = roles.isAuthor();
+		isGuest = roles.isGuestOnly();
+		isAdministrator = roles.isAdministrator() || roles.isLearnResourceManager();
+		this.isOrdering = isOrdering;
+		flc.contextPut("isOrdering", isOrdering);
+		
+		this.toolbarPanel.addListener(this);
+		
 		if(isAdministrator) {
 			isLocalTreeAdmin = false;
 		} else {
@@ -244,11 +290,11 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		
 		leafColumns = new ArrayList<>();
 		
-		FlexiTableColumnModel entriesColumnsModel = getCatalogFlexiTableColumnModel("opened-", true);
+		FlexiTableColumnModel entriesColumnsModel = getCatalogFlexiTableColumnModel("opened-", !isOrdering);
 		entriesModel = new CatalogEntryRowModel(entriesColumnsModel);
 		entriesEl = uifactory.addTableElement(getWindowControl(), "entries", entriesModel, getTranslator(), formLayout);
 		
-		FlexiTableColumnModel closedEntriesColumnsModel = getCatalogFlexiTableColumnModel("closed-", true);
+		FlexiTableColumnModel closedEntriesColumnsModel = getCatalogFlexiTableColumnModel("closed-", !isOrdering);
 		closedEntriesModel = new CatalogEntryRowModel(closedEntriesColumnsModel);
 		closedEntriesEl = uifactory.addTableElement(getWindowControl(), "closedEntries", closedEntriesModel, getTranslator(), formLayout);
 		
@@ -262,25 +308,29 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		DefaultFlexiColumnModel columnModel;
 		
-		leafUpColumnModel = new DefaultFlexiColumnModel(false, Cols.up.i18nKey(), Cols.up.ordinal(), CMD_UP, false, null);
-		leafUpColumnModel.setCellRenderer(new BooleanCellRenderer(
-				new StaticFlexiCellRenderer("", CMD_UP, "o_icon o_icon-lg o_icon_move_up"),
-				null));
-		leafUpColumnModel.setIconHeader("o_icon o_icon_fw o_icon-lg o_icon_move_up");
-		leafUpColumnModel.setAlignment(FlexiColumnModel.ALIGNMENT_ICON);
-		columnsModel.addFlexiColumnModel(leafUpColumnModel);
-		
-		leafDownColumnModel = new DefaultFlexiColumnModel(false, Cols.down.i18nKey(), Cols.down.ordinal(), CMD_DOWN, false, null);
-		leafDownColumnModel.setCellRenderer(new BooleanCellRenderer(
-				new StaticFlexiCellRenderer("", CMD_DOWN, "o_icon o_icon-lg o_icon_move_down"),
-				null));
-		leafDownColumnModel.setIconHeader("o_icon o_icon_fw o_icon-lg o_icon_move_down");
-		leafDownColumnModel.setAlignment(FlexiColumnModel.ALIGNMENT_ICON);	
-		columnsModel.addFlexiColumnModel(leafDownColumnModel);
-		
-		leafPositionColumnModel = new DefaultFlexiColumnModel(false, Cols.position.i18nKey(), Cols.position.ordinal(), sortEnabled, Cols.position.name());
-		columnsModel.addFlexiColumnModel(leafPositionColumnModel);
-		leafColumns.add(leafPositionColumnModel);
+		if (!sortEnabled) {
+			leafUpColumnModel = new DefaultFlexiColumnModel(true, Cols.up.i18nKey(), Cols.up.ordinal(), CMD_UP, false, null);
+			leafUpColumnModel.setCellRenderer(new BooleanCellRenderer(
+					new StaticFlexiCellRenderer("", CMD_UP, "o_icon o_icon-lg o_icon_move_up"),
+					null));
+			leafUpColumnModel.setIconHeader("o_icon o_icon_fw o_icon-lg o_icon_move_up");
+			leafUpColumnModel.setAlignment(FlexiColumnModel.ALIGNMENT_ICON);
+			leafUpColumnModel.setAlwaysVisible(true);
+			columnsModel.addFlexiColumnModel(leafUpColumnModel);
+			
+			leafDownColumnModel = new DefaultFlexiColumnModel(true, Cols.down.i18nKey(), Cols.down.ordinal(), CMD_DOWN, false, null);
+			leafDownColumnModel.setCellRenderer(new BooleanCellRenderer(
+					new StaticFlexiCellRenderer("", CMD_DOWN, "o_icon o_icon-lg o_icon_move_down"),
+					null));
+			leafDownColumnModel.setIconHeader("o_icon o_icon_fw o_icon-lg o_icon_move_down");
+			leafDownColumnModel.setAlignment(FlexiColumnModel.ALIGNMENT_ICON);	
+			leafDownColumnModel.setAlwaysVisible(true);
+			columnsModel.addFlexiColumnModel(leafDownColumnModel);
+
+			
+			leafPositionColumnModel = new DefaultFlexiColumnModel(true, Cols.position.i18nKey(), Cols.position.ordinal(), false, null);
+			columnsModel.addFlexiColumnModel(leafPositionColumnModel);
+		}
 		
 		columnModel = new DefaultFlexiColumnModel(false, Cols.key.i18nKey(), Cols.key.ordinal(), sortEnabled, OrderBy.key.name());
 		leafColumns.add(columnModel);
@@ -349,10 +399,13 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		leafColumns.add(columnModel);
 		columnsModel.addFlexiColumnModel(columnModel);
 		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.delete.i18nKey(), translate(Cols.delete.i18nKey()), cmdPrefix + "delete"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.move.i18nKey(), translate(Cols.move.i18nKey()), cmdPrefix + "move"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.detailsSupported.i18nKey(), Cols.detailsSupported.ordinal(), cmdPrefix + "details",
-				new StaticFlexiCellRenderer("", cmdPrefix + "details", "o_icon o_icon-lg o_icon_details", translate("details"))));
+		if (!isOrdering) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.delete.i18nKey(), translate(Cols.delete.i18nKey()), cmdPrefix + "delete"));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.move.i18nKey(), translate(Cols.move.i18nKey()), cmdPrefix + "move"));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.detailsSupported.i18nKey(), Cols.detailsSupported.ordinal(), cmdPrefix + "details",
+					new StaticFlexiCellRenderer("", cmdPrefix + "details", "o_icon o_icon-lg o_icon_details", translate("details"))));
+		}
+		
 		return columnsModel;
 	}
 	
@@ -360,23 +413,24 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		
-		nodeUpColumnModel = new DefaultFlexiColumnModel(false, NodeCols.up.i18nKey(), NodeCols.up.ordinal(), CMD_UP, false, null);
+		nodeUpColumnModel = new DefaultFlexiColumnModel(true, NodeCols.up.i18nKey(), NodeCols.up.ordinal(), CMD_UP, false, null);
 		nodeUpColumnModel.setCellRenderer(new BooleanCellRenderer(
 				new StaticFlexiCellRenderer("", CMD_UP, "o_icon o_icon_fw o_icon-lg o_icon_move_up"),
 				null));
 		nodeUpColumnModel.setIconHeader("o_icon o_icon_fw o_icon-lg o_icon_move_up");
 		nodeUpColumnModel.setAlignment(FlexiColumnModel.ALIGNMENT_ICON);
+		nodeUpColumnModel.setAlwaysVisible(true);
 
 		
-		nodeDownColumnModel = new DefaultFlexiColumnModel(false, NodeCols.down.i18nKey(), NodeCols.down.ordinal(), CMD_DOWN, false, null);
+		nodeDownColumnModel = new DefaultFlexiColumnModel(true, NodeCols.down.i18nKey(), NodeCols.down.ordinal(), CMD_DOWN, false, null);
 		nodeDownColumnModel.setCellRenderer(new BooleanCellRenderer(
 				new StaticFlexiCellRenderer("", CMD_DOWN, "o_icon o_icon_fw o_icon-lg o_icon_move_down"),
 				null));
 		nodeDownColumnModel.setIconHeader("o_icon o_icon_fw o_icon-lg o_icon_move_down");
 		nodeDownColumnModel.setAlignment(FlexiColumnModel.ALIGNMENT_ICON);
+		nodeDownColumnModel.setAlwaysVisible(true);
 		
 		nodePositionColumnModel = new DefaultFlexiColumnModel(true, NodeCols.position.i18nKey(), NodeCols.position.ordinal(), false, null);
-
 		
 		columnsModel.addFlexiColumnModel(nodeUpColumnModel);
 		columnsModel.addFlexiColumnModel(nodeDownColumnModel);
@@ -388,7 +442,9 @@ public class CatalogNodeManagerController extends FormBasicController implements
 	} 
 
 	private void loadEntryInfos() {
-		flc.contextPut("catalogEntryName", catalogEntry.getName());
+		catalogEntry = catalogManager.loadCatalogEntry(catalogEntry);
+		flc.contextPut("catalogEntryTitle", catalogEntry.getName());
+		flc.contextPut("catalogEntryShortTitle", catalogEntry.getShortTitle());
 		if(StringHelper.containsNonWhitespace(catalogEntry.getDescription())) {
 			flc.contextPut("catalogEntryDesc", catalogEntry.getDescription());
 		}
@@ -404,7 +460,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 	}
 
 	private void loadResources(UserRequest ureq) {
-		catalogEntry = catalogManager.getCatalogEntryByKey(catalogEntry.getKey());
+		catalogEntry = catalogManager.loadCatalogEntry(catalogEntry);
 		List<CatalogEntry> detachedChildren = catalogManager.getChildrenOf(catalogEntry);
 		
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(getIdentity(), ureq.getUserSession().getRoles());
@@ -455,14 +511,22 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			}
 			
 			if(entry.getEntryStatus() == RepositoryEntryStatusEnum.closed) {
+				FormLink positionLink = uifactory.addFormLink("position_" + counter.incrementAndGet(), "positionClosedEntries", String.valueOf(row.getPosition() + 1), null, null, Link.NONTRANSLATED);
+				positionLink.setUserObject(row);
+				row.setPositionLink(positionLink);
+				
 				closedItems.add(row);
 			} else {
+				FormLink positionLink = uifactory.addFormLink("position_" + counter.incrementAndGet(), "positionEntries", String.valueOf(row.getPosition() + 1), null, null, Link.NONTRANSLATED);
+				positionLink.setUserObject(row);
+				row.setPositionLink(positionLink);
+				
 				items.add(row);
 			}
 		}
 		
 		Comparator<CatalogEntryRow> comparator = (row1, row2) -> {
-			return ((Integer)row1.getPosition()).compareTo(row2.getPosition());
+			return row1.getPosition().compareTo(row2.getPosition());
 		};
 
 		Collections.sort(items, comparator);
@@ -475,16 +539,25 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		closedEntriesModel.setObjects(closedItems);
 		closedEntriesEl.reset(true, true, true);
 		closedEntriesEl.setVisible(closedEntriesModel.getRowCount() > 0);
+		
+		flc.setDirty(true);
 	}
 	
 	protected void loadNodesChildren() {
+		catalogEntry = catalogManager.loadCatalogEntry(catalogEntry);
 		List<CatalogEntry> catalogChildren = catalogManager.getChildrenOf(catalogEntry);
 		List<String> subCategories = new ArrayList<>();
 		List<NodeEntryRow> nodeEntries = new ArrayList<>();
 		int count = 0;
 		for (CatalogEntry entry : catalogChildren) {
 			if(entry != null && entry.getType() == CatalogEntry.TYPE_NODE) {
-				nodeEntries.add(new NodeEntryRow(entry));
+				NodeEntryRow row = new NodeEntryRow(entry);
+				
+				FormLink positionLink = uifactory.addFormLink("position_" + counter.incrementAndGet(), "positionNodes", String.valueOf(row.getPosition() + 1), null, null, Link.NONTRANSLATED);
+				positionLink.setUserObject(row);
+				row.setPositionLink(positionLink);
+				
+				nodeEntries.add(row);
 
 				String cmpId = "cat_" + (++count);
 
@@ -496,13 +569,21 @@ public class CatalogNodeManagerController extends FormBasicController implements
 				flc.contextPut("k" + cmpId, entry.getKey());
 
 				String title = StringHelper.escapeHtml(entry.getName());
+				String shortTitle; 
+				if (entry.getShortTitle() == null) {
+					shortTitle = StringHelper.escapeHtml(entry.getName());
+				} else {
+					shortTitle = StringHelper.escapeHtml(entry.getShortTitle());
+				}
 				Link link = LinkFactory.createCustomLink(cmpId, "select_node", cmpId, Link.LINK + Link.NONTRANSLATED, flc.getFormItemComponent(), this);
 				link.setIconLeftCSS("o_icon o_icon_catalog_sub");
 				link.setCustomDisplayText(title);
 				link.setUserObject(entry.getKey());
 				subCategories.add(Integer.toString(count));
 				String titleId = "title_" + count;
+				String shortTitleId = "short_title_" + count;
 				flc.contextPut(titleId, title);
+				flc.contextPut(shortTitleId, shortTitle);
 			}
 		}
 		flc.contextPut("subCategories", subCategories);
@@ -516,6 +597,8 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		nodeEntriesModel.setObjects(nodeEntries);
 		nodeEntriesEl.reset(true, true, true);
 		nodeEntriesEl.setVisible(nodeEntriesModel.getRowCount() > 0);
+		
+		flc.setDirty(true);
 	}
 	
 	protected void initToolbar() {
@@ -525,55 +608,89 @@ public class CatalogNodeManagerController extends FormBasicController implements
 	
 		if (canAdministrateCategory || canAddLinks) {
 			if (canAdministrateCategory) {
-				orderLink = LinkFactory.createToolLink("order", translate("tools.order.catalog"), this, "o_icon_order");
-				orderLink.setElementCssClass("o_sel_catalog_order_category");
-				toolbarPanel.addTool(orderLink, Align.right);
+				if (orderLink == null) {
+					orderLink = LinkFactory.createToolLink("order", translate("tools.order.catalog"), this, "o_icon_order");
+					orderLink.setElementCssClass("o_sel_catalog_order_category");
+					toolbarPanel.addTool(orderLink, Align.right);
+				} else {
+					orderLink.setVisible(true);
+				}
 			}
 			if (canAdministrateCategory) {
-				editLink = LinkFactory.createToolLink("edit", translate("tools.edit.catalog.category"), this, "o_icon_edit");
-				editLink.setElementCssClass("o_sel_catalog_edit_category");
-				toolbarPanel.addTool(editLink, Align.left);
+				if (editLink == null) {
+					editLink = LinkFactory.createToolLink("edit", translate("tools.edit.catalog.category"), this, "o_icon_edit");
+					editLink.setElementCssClass("o_sel_catalog_edit_category");
+					toolbarPanel.addTool(editLink, Align.left);
+				} else {
+					editLink.setVisible(true);
+				}
 			}
 			if (canAdministrateCategory) {
-				nominateLink = LinkFactory.createToolLink("nominate", translate("tools.edit.catalog.category.ownergroup"), this, "o_icon_user");
-				nominateLink.setElementCssClass("o_sel_catalog_category_owner");
-				toolbarPanel.addTool(nominateLink, Align.right); 
+				if (nominateLink == null) {
+					nominateLink = LinkFactory.createToolLink("nominate", translate("tools.edit.catalog.category.ownergroup"), this, "o_icon_user");
+					nominateLink.setElementCssClass("o_sel_catalog_category_owner");
+					toolbarPanel.addTool(nominateLink, Align.right); 
+				} else {
+					nominateLink.setVisible(true);
+				}
 			}
 			if (canAddLinks) {
-				contactLink = LinkFactory.createToolLink("contact", translate("tools.new.catalog.categoryrequest"), this, "o_icon_mail");
-				contactLink.setElementCssClass("o_sel_catalog_contact_owner");
-				toolbarPanel.addTool(contactLink, Align.right);
+				if (contactLink == null) {
+					contactLink = LinkFactory.createToolLink("contact", translate("tools.new.catalog.categoryrequest"), this, "o_icon_mail");
+					contactLink.setElementCssClass("o_sel_catalog_contact_owner");
+					toolbarPanel.addTool(contactLink, Align.right);
+				} else {
+					nominateLink.setVisible(true);
+				}
 			}
 			if (canAdministrateCategory && catalogEntry.getParent() != null) {
 				// delete root? very dangerous, disabled!
-				deleteLink = LinkFactory.createToolLink("delete", translate("tools.delete.catalog.entry"), this, "o_icon_delete");
-				deleteLink.setElementCssClass("o_sel_catalog_delete_category");
-				toolbarPanel.addTool(deleteLink, Align.left);
+				if (deleteLink == null) {
+					deleteLink = LinkFactory.createToolLink("delete", translate("tools.delete.catalog.entry"), this, "o_icon_delete");
+					deleteLink.setElementCssClass("o_sel_catalog_delete_category");
+					toolbarPanel.addTool(deleteLink, Align.left);
+				} else {
+					deleteLink.setVisible(true);
+				}
 			}
 			if (canAdministrateCategory && catalogEntry.getParent() != null) {
-				moveLink = LinkFactory.createToolLink("move", translate("tools.move.catalog.entry"), this, "o_icon_move");
-				moveLink.setElementCssClass("o_sel_catalog_move_category");
-				toolbarPanel.addTool(moveLink, Align.left);
+				if (moveLink == null) {
+					moveLink = LinkFactory.createToolLink("move", translate("tools.move.catalog.entry"), this, "o_icon_move");
+					moveLink.setElementCssClass("o_sel_catalog_move_category");
+					toolbarPanel.addTool(moveLink, Align.left);
+				} else {
+					moveLink.setVisible(true);
+				}
 			}
 		}
 
 		if(isAdministrator || isLocalTreeAdmin || isAuthor) {
 			if (canAddSubCategories) {
-				addCategoryLink = LinkFactory.createToolLink("addResource", translate("tools.add.catalog.category"), this, "o_icon_catalog_sub");
-				addCategoryLink.setElementCssClass("o_sel_catalog_add_category");
-				toolbarPanel.addTool(addCategoryLink, Align.left);
+				if (addCategoryLink == null) {
+					addCategoryLink = LinkFactory.createToolLink("addResource", translate("tools.add.catalog.category"), this, "o_icon_catalog_sub");
+					addCategoryLink.setElementCssClass("o_sel_catalog_add_category");
+					toolbarPanel.addTool(addCategoryLink, Align.left);
+				} else {
+					addCategoryLink.setVisible(true);
+				}
+				
 			}
 			if (canAddLinks) {
-				addResourceLink = LinkFactory.createToolLink("addResource", translate("tools.add.catalog.link"), this, "o_icon_add");
-				addResourceLink.setElementCssClass("o_sel_catalog_add_link_to_resource");
-				toolbarPanel.addTool(addResourceLink, Align.left);
+				if (addResourceLink == null) {
+					addResourceLink = LinkFactory.createToolLink("addResource", translate("tools.add.catalog.link"), this, "o_icon_add");
+					addResourceLink.setElementCssClass("o_sel_catalog_add_link_to_resource");
+					toolbarPanel.addTool(addResourceLink, Align.left);
+				} else {
+					addResourceLink.setVisible(true);
+				}
 			}
 		}	
 	}
 	
 	@Override
 	protected void doDispose() {
-		//
+		this.toolbarPanel.removeListener(this);	
+		releaseLock();
 	}
 	
 	@Override
@@ -645,7 +762,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 					doMoveCatalogEntry(row.getCatEntryKey(), cmd, ureq);
 				} else if (cmd.equals(CMD_UP)) {
 					doMoveCatalogEntry(row.getCatEntryKey(), cmd, ureq);
-				}
+				} 
 			}
 		} else if(closedEntriesEl == source) {
 			if(event instanceof SelectionEvent) {
@@ -664,7 +781,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 					doMoveCatalogEntry(row.getCatEntryKey(), cmd, ureq);
 				} else if (cmd.equals(CMD_UP)) {
 					doMoveCatalogEntry(row.getCatEntryKey(), cmd, ureq);
-				}
+				} 
 			}
 		} else if (nodeEntriesEl == source) {		
 			if (event instanceof SelectionEvent) {
@@ -675,8 +792,31 @@ public class CatalogNodeManagerController extends FormBasicController implements
 					doMoveCatalogEntry(row.getKey(), cmd, ureq);
 				} else if (cmd.equals(CMD_UP)) {
 					doMoveCatalogEntry(row.getKey(), cmd, ureq);
-				}
+				} 
 			}
+		} else if(source instanceof FormLink) {
+			FormLink link = (FormLink) source;
+
+			if("positionNodes".equals(link.getCmd())) {
+				int size = nodeEntriesModel.getObjects().size();
+				int smallest = nodeEntriesModel.getObject(0).getPosition();
+				int biggest = nodeEntriesModel.getObject(size - 1).getPosition();
+				
+				doOpenPositionDialog(ureq, link, smallest, biggest);
+			} else if("positionEntries".equals(link.getCmd())) {
+				int size = entriesModel.getObjects().size();
+				int smallest = entriesModel.getObject(0).getPosition();
+				int biggest = entriesModel.getObject(size - 1).getPosition();
+				
+				doOpenPositionDialog(ureq, link, smallest, biggest);
+			} else if("positionClosedEntries".equals(link.getCmd())) {
+				int size = closedEntriesModel.getObjects().size();
+				int smallest = closedEntriesModel.getObject(0).getPosition();
+				int biggest = closedEntriesModel.getObject(size - 1).getPosition();
+				
+				doOpenPositionDialog(ureq, link, smallest, biggest);
+			}
+
 		}
 		
 		super.formInnerEvent(ureq, source, event);
@@ -718,6 +858,13 @@ public class CatalogNodeManagerController extends FormBasicController implements
 					logWarn("Not a valid long: " + node, e);
 				}
 			}
+		} else if (toolbarPanel == source) {
+			if (event instanceof PopEvent) {
+				loadNodesChildren();
+				loadResources(ureq);
+				loadEntryInfos();
+			}
+			
 		}
 		super.event(ureq, source, event);
 	}
@@ -738,6 +885,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			}
 			cmc.deactivate();
 			cleanUp();
+			toolbarPanel.changeDisplayname(catalogEntry.getShortTitle());
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		} else if(categoryMoveCtrl == source) {
 			cmc.deactivate();
@@ -773,6 +921,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			}
 		} else if(childNodeCtrl == source) {
 			if(event == Event.BACK_EVENT) {
+				toolbarPanel.popController(childNodeCtrl);
 				toolbarPanel.popUpToController(this);
 				removeAsListenerAndDispose(childNodeCtrl);
 				childNodeCtrl = null;
@@ -801,27 +950,37 @@ public class CatalogNodeManagerController extends FormBasicController implements
 				CatalogEntryRow row = (CatalogEntryRow)dialogDeleteLink.getUserObject();
 				catalogManager.deleteCatalogEntry(row, catalogEntry);
 				loadResources(ureq);
+//				toolbarPanel.popController(this);
+				fireEvent(ureq, Event.BACK_EVENT);
 			}
 		} else if(entryResourceMoveCtrl == source) {
+			CatalogEntry moveMe = entryResourceMoveCtrl.getMoveMe();
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-				CatalogEntry moveMe = entryResourceMoveCtrl.getMoveMe();
 				showInfo("tools.move.catalog.entry.success", moveMe.getName());
 				loadResources(ureq);
+			} else if (event == Event.FAILED_EVENT) {
+				showError("tools.move.catalog.entry.success", moveMe.getName());
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if (positionCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				loadNodesChildren();
+				loadResources(ureq);
+			}
+			positionCalloutCtrl.deactivate();
+			cleanUp();
+			fireEvent(ureq, Event.CHANGED_EVENT);
 		} else if(cmc == source) {
+			loadNodesChildren();
+			loadResources(ureq);
 			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
 	
 	private void cleanUp() {
-		//remove the lock, always
-		if (catModificationLock != null && catModificationLock.isSuccess()) {
-			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(catModificationLock);
-			catModificationLock = null;
-		}
+		releaseLock();
 		
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(groupCtrl);
@@ -829,12 +988,27 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		removeAsListenerAndDispose(addEntryCtrl);
 		removeAsListenerAndDispose(editEntryCtrl);
 		removeAsListenerAndDispose(entrySearchCtrl);
+		removeAsListenerAndDispose(positionCtrl);
+		removeAsListenerAndDispose(positionCalloutCtrl);
+		removeAsListenerAndDispose(positionMoveCtrl);
+		
 		cmc = null;
 		groupCtrl = null;
 		contactCtrl = null;
 		addEntryCtrl = null;
 		editEntryCtrl = null;
 		entrySearchCtrl = null;
+		positionCtrl = null;
+		positionCalloutCtrl = null;
+		positionMoveCtrl = null;
+	}
+	
+	private void releaseLock() {
+		//remove the lock, always
+		if (catModificationLock != null && catModificationLock.isSuccess()) {
+			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(catModificationLock);
+			catModificationLock = null;
+		}
 	}
 
 	private CatalogNodeManagerController selectCatalogEntry(UserRequest ureq, CatalogEntry entry) {
@@ -847,7 +1021,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			
 			childNodeCtrl = new CatalogNodeManagerController(ureq, bwControl, rootwControl, entry, toolbarPanel, isLocalTreeAdmin);
 			listenTo(childNodeCtrl);
-			toolbarPanel.pushController(entry.getName(), childNodeCtrl);
+			toolbarPanel.pushController(entry.getShortTitle(), childNodeCtrl);
 			childNodeCtrl.initToolbar();
 			
 			addToHistory(ureq, childNodeCtrl);
@@ -856,57 +1030,27 @@ public class CatalogNodeManagerController extends FormBasicController implements
 	}
 	
 	private void doActivateOrdering(UserRequest ureq) {
-		initForm(ureq);
-		
-		loadEntryInfos();
-		loadNodesChildren();
-		loadResources(ureq);
-		
-		if (isOrdering) {
-			entriesEl.setColumnModelVisible(leafUpColumnModel, false);
-			entriesEl.setColumnModelVisible(leafDownColumnModel, false);
-			entriesEl.setColumnModelVisible(leafPositionColumnModel, false);
+		catModificationLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, getIdentity(), LOCK_TOKEN);
+		if (catModificationLock.isSuccess() && !isOrdering) {	
+			boolean activateOrdering = false;
+			activateOrdering |= nodeEntriesModel.getObjects().size() > 1;
+			activateOrdering |= entriesModel.getObjects().size() > 1;
+			activateOrdering |= closedEntriesModel.getObjects().size() > 1;
 			
-			closedEntriesEl.setColumnModelVisible(leafUpColumnModel, false);
-			closedEntriesEl.setColumnModelVisible(leafDownColumnModel, false);
-			closedEntriesEl.setColumnModelVisible(leafPositionColumnModel, false);
-			
-			entriesEl.reset();
-			closedEntriesEl.reset();
-			
-			for (DefaultFlexiColumnModel columnModel : leafColumns) {
-				columnModel.setSortable(true);
+			if (activateOrdering) {
+				positionMoveCtrl = new CatalogNodeManagerController(ureq, getWindowControl(), rootwControl, catalogEntry, toolbarPanel, isLocalTreeAdmin, true);
+				listenTo(positionMoveCtrl);
+				
+				cmc = new CloseableModalController(getWindowControl(), "close", positionMoveCtrl.getInitialComponent(), true, translate("tools.order.catalog"));
+				listenTo(cmc);
+				cmc.activate();	
+			} else {
+				showWarning("catalog.position.deactivated");
 			}
-			
-//			for (int i =entriesModel.getColumnCount(); i) {
-//				entriesModel.getTableColumnModel().getColumnModel(i).setSortable(false);
-//			}
-			
-			nodeEntriesEl.setColumnModelVisible(nodeUpColumnModel, false);
-			nodeEntriesEl.setColumnModelVisible(nodeDownColumnModel, false);
-			nodeEntriesEl.reset();
 		} else {
-			entriesEl.setColumnModelVisible(leafUpColumnModel, true);
-			entriesEl.setColumnModelVisible(leafDownColumnModel, true); 
-			entriesEl.setColumnModelVisible(leafPositionColumnModel, true);
-			
-			closedEntriesEl.setColumnModelVisible(leafUpColumnModel, true);
-			closedEntriesEl.setColumnModelVisible(leafDownColumnModel, true);
-			closedEntriesEl.setColumnModelVisible(leafPositionColumnModel, true);
-			
-			entriesEl.reset();
-			closedEntriesEl.reset();
-			
-			for (DefaultFlexiColumnModel columnModel : leafColumns) {
-				columnModel.setSortable(false);
-			}
-			
-			nodeEntriesEl.setColumnModelVisible(nodeUpColumnModel, true);
-			nodeEntriesEl.setColumnModelVisible(nodeDownColumnModel, true);
-			nodeEntriesEl.reset();
+			String ownerName = userManager.getUserDisplayName(catModificationLock.getOwner());
+			showError("catalog.locked.by", ownerName);
 		}
-		isOrdering = !isOrdering;
-		flc.contextPut("isOrdering", isOrdering);
 	}
 	
 	private void doMoveCatalogEntry(Long key, String command, UserRequest ureq) {
@@ -918,25 +1062,63 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		loadResources(ureq);
 	}
 	
+	private void doOpenPositionDialog(UserRequest ureq, FormLink link, int smallest, int biggest) {
+		removeAsListenerAndDispose(positionCalloutCtrl);
+		removeAsListenerAndDispose(positionCtrl);
+		
+		catModificationLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, getIdentity(), LOCK_TOKEN);
+		if (catModificationLock.isSuccess()) {
+			Object rowObject = link.getUserObject();
+			
+			
+			if (rowObject instanceof NodeEntryRow) {
+				NodeEntryRow row = (NodeEntryRow) rowObject;
+				positionCtrl = new CatalogEntryPositionDialogController(ureq, getWindowControl(), row.getKey(), smallest, biggest);
+			} else if (rowObject instanceof CatalogEntryRow) {
+				CatalogEntryRow row = (CatalogEntryRow) rowObject;
+				positionCtrl = new CatalogEntryPositionDialogController(ureq, getWindowControl(), row.getCatEntryKey(), smallest, biggest);
+			} else {
+				return;
+			}
+			
+			listenTo(positionCtrl);
+			
+			CalloutSettings settings = new CalloutSettings(true);
+			positionCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),positionCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "", settings);
+			listenTo(positionCalloutCtrl);
+			positionCalloutCtrl.activate();
+			
+		} else {
+			String ownerName = userManager.getUserDisplayName(catModificationLock.getOwner());
+			showError("catalog.locked.by", ownerName);
+		}
+	}
+	
 	private void doAddResource(UserRequest ureq) {
 		removeAsListenerAndDispose(entrySearchCtrl);
 		removeAsListenerAndDispose(cmc);
-		
-		entrySearchCtrl = new RepositorySearchController(translate("choose"), ureq, getWindowControl(), true, false, new String[0], false, null);
-		listenTo(entrySearchCtrl);
-		// OLAT-Admin has search form
-		if (isAdministrator) {
-			entrySearchCtrl.displaySearchForm();
+
+		catModificationLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, getIdentity(), LOCK_TOKEN);
+		if (catModificationLock.isSuccess()) {
+			entrySearchCtrl = new RepositorySearchController(translate("choose"), ureq, getWindowControl(), true, false, new String[0], false, null);
+			listenTo(entrySearchCtrl);
+			// OLAT-Admin has search form
+			if (isAdministrator) {
+				entrySearchCtrl.displaySearchForm();
+			}
+			// an Author gets the list of his repository
+			else {
+				// admin is responsible for not inserting wrong visibility entries!!
+				entrySearchCtrl.doSearchByOwnerLimitAccess(ureq.getIdentity());
+			}
+			// open form in dialog
+			cmc = new CloseableModalController(getWindowControl(), "close", entrySearchCtrl.getInitialComponent(), true, translate("tools.add.catalog.link"));
+			listenTo(cmc);
+			cmc.activate();	
+		} else {
+			String ownerName = userManager.getUserDisplayName(catModificationLock.getOwner());
+			showError("catalog.locked.by", ownerName);
 		}
-		// an Author gets the list of his repository
-		else {
-			// admin is responsible for not inserting wrong visibility entries!!
-			entrySearchCtrl.doSearchByOwnerLimitAccess(ureq.getIdentity());
-		}
-		// open form in dialog
-		cmc = new CloseableModalController(getWindowControl(), "close", entrySearchCtrl.getInitialComponent(), true, translate("tools.add.catalog.link"));
-		listenTo(cmc);
-		cmc.activate();	
 	}
 	
 	private void doAddResource(UserRequest ureq, RepositoryEntry selectedEntry) {

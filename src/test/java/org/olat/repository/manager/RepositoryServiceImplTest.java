@@ -137,7 +137,7 @@ public class RepositoryServiceImplTest extends OlatTestCase {
 	    catEntry.setName("Soft");
 	    catEntry.setRepositoryEntry(re);
 	    catEntry.setParent(rootEntries.get(0));
-	    catalogManager.saveCatalogEntry(catEntry);
+	    catalogManager.addCatalogEntry(rootEntries.get(0), catEntry);
 	    dbInstance.commit();
 	    
 	    //check the catalog

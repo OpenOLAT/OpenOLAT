@@ -21,6 +21,7 @@ package org.olat.repository.ui.catalog;
 
 import java.util.Date;
 
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.repository.CatalogEntry;
 
 /**
@@ -35,6 +36,7 @@ public class NodeEntryRow {
 	private String name;
 	private Date creationDate;
 	private int position;
+	private FormLink positionLink;
 	
 	public NodeEntryRow(CatalogEntry view) {
 		key = view.getKey();
@@ -61,5 +63,13 @@ public class NodeEntryRow {
 	
 	public int getPosition() {
 		return position;
+	}
+	
+	public FormLink getPositionLink() {
+		return positionLink;
+	}
+	
+	public void setPositionLink(FormLink positionLink) {
+		this.positionLink = positionLink;
 	}
 }

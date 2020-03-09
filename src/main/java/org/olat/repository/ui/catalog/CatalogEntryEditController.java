@@ -118,13 +118,12 @@ public class CatalogEntryEditController extends FormBasicController {
 		nameEl.setMandatory(true);
 		nameEl.setNotEmptyCheck("form.legende.mandatory");
 		
-		/*
-		String shortTitle = catalogEntry == null ? "" : catalogEntry.get() != null ? catalogEntry.getDescription() : "";
+		String shortTitle = catalogEntry == null ? "" : catalogEntry.getShortTitle() != null ? catalogEntry.getShortTitle() : "";
 		shortTitleEl = uifactory.addTextElement("shortTitle", "entry.shorttitle", 255, shortTitle, formLayout);
 		shortTitleEl.setElementCssClass("o_sel_cat_short_title");
 		shortTitleEl.setMandatory(true);
 		shortTitleEl.setNotEmptyCheck("form.legende.mandatory");
-		*/
+		shortTitleEl.setHelpText(translate("catalog.popup.edit.shorttitle.desc"));
 		
 		String desc = catalogEntry == null ? "" : catalogEntry.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("description", "entry.description", desc, 10, -1, formLayout, getWindowControl());
@@ -179,16 +178,8 @@ public class CatalogEntryEditController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		nameEl.clearError();
-		if(StringHelper.containsNonWhitespace(nameEl.getValue())) {
-			if(nameEl.getValue().length() > 99) {
-				nameEl.setErrorKey("input.toolong", new String[]{ "100" });
-				allOk &= false;
-			}
-		} else {
-			nameEl.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
-		}
+		allOk &= validateTextInput(nameEl, 100);
+		allOk &= validateTextInput(shortTitleEl, 16);
 		
 		styleEl.clearError();
 		if(!styleEl.isOneSelected()) {
@@ -197,6 +188,21 @@ public class CatalogEntryEditController extends FormBasicController {
 		}
 
 		return allOk;
+	}
+	
+	private boolean validateTextInput(TextElement textElement, int lenght) {		
+		textElement.clearError();
+		if(StringHelper.containsNonWhitespace(nameEl.getValue())) {
+			if(textElement.getValue().length() > lenght) {
+				textElement.setErrorKey("input.toolong", new String[]{ String.valueOf(lenght) });
+				return false;
+			}
+		} else {
+			textElement.setErrorKey("form.legende.mandatory", null);
+			return false;
+		}
+		
+		return true;
 	}
 
 	@Override
@@ -235,6 +241,7 @@ public class CatalogEntryEditController extends FormBasicController {
 			catalogEntry.setStyle(null);
 		}
 		catalogEntry.setDescription(descriptionEl.getValue());
+		catalogEntry.setShortTitle(shortTitleEl.getValue());
 		
 		if(catalogEntry.getKey() == null) {
 			//a new one

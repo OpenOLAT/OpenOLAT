@@ -19,11 +19,11 @@
  */
 package org.olat.repository;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.SiteContextEntryControllerCreator;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -55,6 +55,7 @@ public class RepositoryModule extends AbstractSpringModule {
 	private static final String CATALOG_SITE_ENABLED = "site.catalog.enable";
 	private static final String CATALOG_ENABLED = "catalog.enable";
 	private static final String CATALOG_BROWSING_ENABLED = "catalog.brwosing.enable";
+	private static final String CATALOG_ADD_AT_LAST = "catalog.add.last";
 	private static final String MYCOURSES_SEARCH_ENABLED = "mycourses.search.enabled";
 	private static final String MYCOURSES_ALL_RESOURCES_ENABLED = "mycourses.all.resources.enabled";
 	
@@ -75,6 +76,8 @@ public class RepositoryModule extends AbstractSpringModule {
 	private boolean catalogEnabled;
 	@Value("${repo.catalog.browsing.enable}")
 	private boolean catalogBrowsingEnabled;
+	@Value("${catalog.add.last:true}")
+	private boolean catalogAddLast;
 	
 	@Value("${repo.managed}")
 	private boolean managedRepositoryEntries;
@@ -208,6 +211,11 @@ public class RepositoryModule extends AbstractSpringModule {
 		if(StringHelper.containsNonWhitespace(taxonomyTreeKeyObj)) {
 			taxonomyTreeKey = taxonomyTreeKeyObj;
 		}
+		
+		String catalogAddLastObj = getStringPropertyValue(CATALOG_ADD_AT_LAST, true);
+		if(StringHelper.containsNonWhitespace(taxonomyTreeKeyObj)) {
+			catalogAddLast = "true".equals(catalogAddLastObj);
+		}
 	}
 
 	/**
@@ -269,6 +277,15 @@ public class RepositoryModule extends AbstractSpringModule {
 	public void setCatalogBrowsingEnabled(boolean enabled) {
 		catalogBrowsingEnabled = enabled;
 		setStringProperty(CATALOG_BROWSING_ENABLED, Boolean.toString(enabled), true);
+	}
+	
+	public boolean isCatalogAddAtLast() {
+		return catalogAddLast;
+	}
+	
+	public void setCatalogAddAtLast(boolean addAtLast) {
+		catalogAddLast = addAtLast;
+		setStringProperty(CATALOG_ADD_AT_LAST, Boolean.toString(addAtLast), true);
 	}
 
 	public boolean isMyCoursesSearchEnabled() {

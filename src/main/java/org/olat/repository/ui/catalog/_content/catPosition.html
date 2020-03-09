@@ -1,0 +1,32 @@
+	<div class="row">
+		<div class="col-sm-12 form-group">
+			<center>
+				<h4>$r.get("catalog_entry_name")</h4>
+			</center>
+		</div>
+	</div>
+	<div class="row">
+		<center>
+			<div class="col-sm-12 form-group">
+				<div class="o_block_inline">$r.render("catalog.popup.position.smallest")</div>
+				<div class="o_block_inline">$r.render("catalog.popup.position.smaller")</div>
+				
+				<div class="o_block_inline #if($f.hasError('catalog.popup.position.set')) has-error	#end">
+					$r.render("catalog.popup.position.set")
+				</div>
+				<div class="o_block_inline">$r.render("catalog.popup.position.bigger")</div>
+				<div class="o_block_inline">$r.render("catalog.popup.position.biggest")</div>
+				#if($f.hasError("catalog.popup.position.set"))
+					<div class="">
+						$r.render("catalog.popup.position.set_ERROR")
+					</div>
+				#end
+			</div>
+		</center>
+	</div>
+	
+	<div class="row">
+		<div class="col-sm-offset-3 col-sm-6 form-group">
+			<center>$r.render("save")</center>
+		</div>
+	</div>

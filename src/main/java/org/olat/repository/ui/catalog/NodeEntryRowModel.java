@@ -58,9 +58,9 @@ public class NodeEntryRowModel extends DefaultFlexiTableDataModel<NodeEntryRow> 
 			case type: return item;
 			case displayName: return item.getDisplayname();
 			case creationDate: return item.getCreationDate();
-			case position: return item.getPosition();
+			case position: return item.getPositionLink();
+			default: return "ERROR";
 		}
-		return null;
 	}
 	
 	public enum NodeCols {

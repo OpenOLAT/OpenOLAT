@@ -22,6 +22,7 @@ package org.olat.repository.ui.catalog;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
@@ -44,7 +45,7 @@ public class CatalogEntryRow implements RepositoryEntryRef, RepositoryEntryLight
 
 	private Long key;
 	private Long catEntryKey;
-	private int position;
+	private Integer position;
 	private String name;
 	private String authors;
 	private String shortenedDescription;
@@ -65,6 +66,8 @@ public class CatalogEntryRow implements RepositoryEntryRef, RepositoryEntryLight
 	private String lifecycleSoftKey;
 	private Date lifecycleStart;
 	private Date lifecycleEnd;
+	
+	private FormLink positionLink;
 	
 	private List<PriceMethod> accessTypes;
 
@@ -103,7 +106,7 @@ public class CatalogEntryRow implements RepositoryEntryRef, RepositoryEntryLight
 	public CatalogEntryRow(RepositoryEntry view, CatalogEntry cat) {
 		this(view);
 		
-		position = cat.getPosition() == null ? 0 : cat.getPosition().intValue();
+		position = cat.getPosition() == null ? 0 : cat.getPosition();
 		catEntryKey = cat.getKey();
 	}
 		
@@ -186,7 +189,7 @@ public class CatalogEntryRow implements RepositoryEntryRef, RepositoryEntryLight
 		return lifecycleEnd;
 	}
 	
-	public int getPosition() {
+	public Integer getPosition() {
 		return position;
 	}
 	
@@ -221,5 +224,13 @@ public class CatalogEntryRow implements RepositoryEntryRef, RepositoryEntryLight
 
 	public String getAuthors() {
 		return authors;
+	}
+	
+	public FormLink getPositionLink() {
+		return positionLink;
+	}
+	
+	public void setPositionLink(FormLink positionLink) {
+		this.positionLink = positionLink;
 	}
 }

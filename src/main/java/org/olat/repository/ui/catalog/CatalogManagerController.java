@@ -63,9 +63,10 @@ public class CatalogManagerController extends BasicController implements Activat
 
 		List<CatalogEntry> rootNodes = catalogManager.getRootCatalogEntries();
 		if(rootNodes.size() == 1) {
-			catalogCtrl = new CatalogNodeManagerController(ureq, getWindowControl(), getWindowControl(), rootNodes.get(0), toolbarPanel, false);
+			CatalogEntry root = rootNodes.get(0);
+			catalogCtrl = new CatalogNodeManagerController(ureq, getWindowControl(), getWindowControl(), root, toolbarPanel, false);
 			listenTo(catalogCtrl);
-			toolbarPanel.pushController("Catalog", catalogCtrl);
+			toolbarPanel.pushController(root.getShortTitle(), catalogCtrl);
 			catalogCtrl.initToolbar();
 		}
 	}

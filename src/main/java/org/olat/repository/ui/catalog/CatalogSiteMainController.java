@@ -22,7 +22,6 @@ package org.olat.repository.ui.catalog;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
@@ -30,13 +29,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.util.Util;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.manager.CatalogManager;
-import org.olat.repository.ui.catalog.CatalogNodeController;
 
 /**
  * 
@@ -53,16 +49,19 @@ public class CatalogSiteMainController extends BasicController implements Activa
 		super(ureq, wControl);
 
 		stackPanel = new BreadcrumbedStackedPanel("catstack", getTranslator(), this);
+		stackPanel.setInvisibleCrumb(0); // show root level
+
 		putInitialPanel(stackPanel);
 
 		CatalogManager catalogManager = CoreSpringFactory.getImpl(CatalogManager.class);
 		List<CatalogEntry> rootNodes = catalogManager.getRootCatalogEntries();
-		if(rootNodes.size() == 1) {
-			nodeController = new CatalogNodeController(ureq, getWindowControl(), getWindowControl(), rootNodes.get(0), stackPanel, true);
-		}
+		CatalogEntry root = rootNodes.get(0);
 		// use same title as catalog site title
-		Translator catTrans = Util.createPackageTranslator(BaseChiefController.class, getLocale());
-		stackPanel.pushController(catTrans.translate("topnav.catalog"), nodeController);
+		
+		if(rootNodes.size() == 1) {
+			nodeController = new CatalogNodeController(ureq, getWindowControl(), getWindowControl(), root, stackPanel, true);
+		}
+		stackPanel.pushController(root.getShortTitle(), nodeController);
 	}
 	
 	@Override

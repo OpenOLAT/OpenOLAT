@@ -23,6 +23,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
@@ -40,7 +41,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CatalogAdminController extends FormBasicController {
 
-	private MultipleSelectionElement enableEl, enableBrowsingEl, siteEl;
+	private MultipleSelectionElement enableEl;
+	private MultipleSelectionElement enableBrowsingEl;
+	private MultipleSelectionElement siteEl;
+	private SingleSelection addEntryPosEl;
+	
 	
 	@Autowired
 	private RepositoryModule repositoryModule;
@@ -73,6 +78,18 @@ public class CatalogAdminController extends FormBasicController {
 		siteEl.select("xx", repositoryModule.isCatalogSiteEnabled());
 		siteEl.setEnabled(enabled);
 		siteEl.addActionListener(FormEvent.ONCLICK);
+		
+		String[] addEntryKeys = {AddEntryPosition.top.name(), AddEntryPosition.bottom.name()};
+		String[] addEntryValues = {translate("catalog.addposition." + AddEntryPosition.top.name()), translate("catalog.addposition." + AddEntryPosition.bottom.name())};
+		
+		addEntryPosEl = uifactory.addDropdownSingleselect("catalog.addposition", "catalog.addposition", formLayout, addEntryKeys, addEntryValues);
+		if (repositoryModule.isCatalogAddAtLast()) {
+			addEntryPosEl.select(AddEntryPosition.bottom.name(), true);
+		} else {
+			addEntryPosEl.select(AddEntryPosition.top.name(), true);
+		}
+		addEntryPosEl.setEnabled(enabled);
+		addEntryPosEl.addActionListener(FormEvent.ONCHANGE);
 	}
 
 	@Override
@@ -87,10 +104,17 @@ public class CatalogAdminController extends FormBasicController {
 			repositoryModule.setCatalogEnabled(enabled);
 			siteEl.setEnabled(enabled);
 			enableBrowsingEl.setEnabled(enabled);
+			addEntryPosEl.setEnabled(enabled);
 		} else if(source == siteEl) {
 			repositoryModule.setCatalogSiteEnabled(siteEl.isSelected(0));
 		} else if(source == enableBrowsingEl) {
 			repositoryModule.setCatalogBrowsingEnabled(enableBrowsingEl.isSelected(0));
+		} else if (source == addEntryPosEl) {
+			if (addEntryPosEl.getSelectedKey().equals(AddEntryPosition.bottom.name())) {
+				repositoryModule.setCatalogAddAtLast(true);
+			} else {
+				repositoryModule.setCatalogAddAtLast(false);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -98,5 +122,10 @@ public class CatalogAdminController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private enum AddEntryPosition {
+		top,
+		bottom;
 	}
 }

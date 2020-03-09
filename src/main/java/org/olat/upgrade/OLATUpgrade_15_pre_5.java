@@ -41,11 +41,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  *
  */
-public class OLATUpgrade_15_pre_4 extends OLATUpgrade {
+public class OLATUpgrade_15_pre_5 extends OLATUpgrade {
 
-	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_15_pre_4.class);
+	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_15_pre_5.class);
 
-	private static final String VERSION = "OLAT_15.pre.4";
+	private static final String VERSION = "OLAT_15.pre.5";
 	private static final String CATALOG_ORDER_INDEX = "CATALOG ORDER INDEX";
 
 	private AtomicInteger migrationCounter = new AtomicInteger(0);
@@ -53,7 +53,7 @@ public class OLATUpgrade_15_pre_4 extends OLATUpgrade {
 	@Autowired
 	private DB dbInstance;
 
-	public OLATUpgrade_15_pre_4() {
+	public OLATUpgrade_15_pre_5() {
 		super();
 	}
 
@@ -78,9 +78,9 @@ public class OLATUpgrade_15_pre_4 extends OLATUpgrade {
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if(allOk) {
-			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_15_pre_4 successfully!");
+			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_15_pre_5 successfully!");
 		} else {
-			log.info(Tracing.M_AUDIT, "OLATUpgrade_15_pre_4 not finished, try to restart OpenOlat!");
+			log.info(Tracing.M_AUDIT, "OLATUpgrade_15_pre_5 not finished, try to restart OpenOlat!");
 		}
 		return allOk;
 	}
