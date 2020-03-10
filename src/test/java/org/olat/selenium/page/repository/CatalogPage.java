@@ -43,7 +43,7 @@ public class CatalogPage {
 	}
 	
 	public CatalogPage selectCatalogEntry(String title, String shortTitle) {
-		By titleBy = By.xpath("//div[contains(@class,'o_sublevel')][div/h4[contains(@class,'o_title')][text()[contains(.,'" + shortTitle + "')]]]/div/a");
+		By titleBy = By.xpath("//div[contains(@class,'o_sublevel')]/div/h4[contains(@class,'o_title')]/a[span[text()[contains(.,'" + shortTitle + "')]]]");
 		List<WebElement> titleLinks = browser.findElements(titleBy);
 		Assert.assertFalse(titleLinks.isEmpty());
 		titleLinks.get(0).click();
