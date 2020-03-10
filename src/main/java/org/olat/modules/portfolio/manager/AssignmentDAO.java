@@ -105,7 +105,8 @@ public class AssignmentDAO {
 		return assignment;
 	}
 	
-	public Assignment createAssignment(Assignment templateReference, AssignmentStatus status, Section section, Binder binder, boolean template) {
+	public Assignment createAssignment(Assignment templateReference, AssignmentStatus status, Section section, Binder binder,
+			boolean template, Boolean onlyAutoEvaluation, Boolean reviewerSeeAutoEvaluation) {
 		AssignmentImpl assignment = new AssignmentImpl();
 		assignment.setCreationDate(new Date());
 		assignment.setLastModified(assignment.getCreationDate());
@@ -118,8 +119,13 @@ public class AssignmentDAO {
 		assignment.setType(templateReference.getAssignmentType().name());
 		assignment.setTemplateReference(templateReference);
 		assignment.setStatus(status.name());
-		assignment.setOnlyAutoEvaluation(templateReference.isOnlyAutoEvaluation());
-		assignment.setReviewerSeeAutoEvaluation(templateReference.isReviewerSeeAutoEvaluation());
+		if(onlyAutoEvaluation != null) {
+			assignment.setOnlyAutoEvaluation(onlyAutoEvaluation.booleanValue());
+			assignment.setReviewerSeeAutoEvaluation(reviewerSeeAutoEvaluation != null && reviewerSeeAutoEvaluation.booleanValue());
+		} else {
+			assignment.setOnlyAutoEvaluation(templateReference.isOnlyAutoEvaluation());
+			assignment.setReviewerSeeAutoEvaluation(templateReference.isReviewerSeeAutoEvaluation());
+		}
 		assignment.setAnonymousExternalEvaluation(templateReference.isAnonymousExternalEvaluation());
 		assignment.setStorage(templateReference.getStorage());
 		assignment.setFormEntry(templateReference.getFormEntry());

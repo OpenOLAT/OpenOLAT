@@ -91,8 +91,8 @@ public class AssignmentEditController extends FormBasicController {
 			AssignmentType.document, AssignmentType.form
 	};
 
-	public static final String[] onKeys = new String[] { "on" };
-	public static final String[] evaKeys = new String[] { "only-autoevaluation", "alien-evaluation"};
+	private static final String[] onKeys = new String[] { "on" };
+	private static final String[] evaKeys = new String[] { "only-autoevaluation", "alien-evaluation"};
 	
 	private TextElement titleEl;
 	private RichTextElement summaryEl;

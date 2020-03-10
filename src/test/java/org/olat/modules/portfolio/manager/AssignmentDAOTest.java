@@ -417,7 +417,7 @@ public class AssignmentDAOTest extends OlatTestCase {
 		// new page based on an assignment template
 		List<Section> sections = portfolioService.getSections(binder);
 		Page page = portfolioService.startAssignmentFromTemplate(template.getKey(), id,
-				"From template", "Froma template", null, null, sections.get(0));
+				"From template", "Froma template", null, null, sections.get(0), null, null);
 		dbInstance.commit();
 
 		// check the method

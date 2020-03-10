@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
@@ -87,16 +88,21 @@ public class PageMetadataEditController extends FormBasicController {
 	}
 	
 	private static final String[] alignKeys = new String[]{ PageImageAlign.background.name(), PageImageAlign.right.name(), PageImageAlign.right_large.name(), PageImageAlign.left.name(), PageImageAlign.left_large.name() };
+
+	private static final String[] onKeys = new String[] { "on" };
+	private static final String[] evaKeys = new String[] { "only-autoevaluation", "alien-evaluation"};
 	
 	private TextElement titleEl;
 	private RichTextElement summaryEl;
 	private SingleSelection bindersEl;
 	private SingleSelection sectionsEl;
+	private SingleSelection evaluationFormEl;
 	private SingleSelection assignmentsTemplatesEl;
 	private TextBoxListElement categoriesEl;
 	private DownloadLink downloadAssignmentDocEl;
 	private FileElement assignmentDocUploadEl;
 	private FormLayoutContainer assignmentDocsContainer;
+	private MultipleSelectionElement reviewerSeeAutoEvaEl;
 	
 	private FileElement imageUpload;
 	private SingleSelection imageAlignEl;
@@ -212,6 +218,9 @@ public class PageMetadataEditController extends FormBasicController {
 		titleEl.setElementCssClass("o_sel_pf_edit_entry_title");
 		titleEl.setEnabled(editTitleAndSummary);
 		titleEl.setMandatory(true);
+		if(!StringHelper.containsNonWhitespace(title)) {
+			titleEl.setFocus(true);
+		}
 		
 		String summary = page == null ? null : page.getSummary();
 		summaryEl = uifactory.addRichTextElementForStringDataMinimalistic("summary", "page.summary", summary, 8, 60, formLayout, getWindowControl());
@@ -260,6 +269,18 @@ public class PageMetadataEditController extends FormBasicController {
 		assignmentsTemplatesEl.setElementCssClass("o_sel_pf_edit_entry_assignment_template");
 		assignmentsTemplatesEl.addActionListener(FormEvent.ONCHANGE);
 		assignmentsTemplatesEl.setVisible(false);
+		
+		String[] evaValues = new String[]{
+				translate("assignment.evaluation.form.auto"),
+				translate("assignment.evaluation.form.auto.extern")
+			}; 
+		evaluationFormEl = uifactory.addRadiosVertical("assignment.evaluation.form", formLayout, evaKeys, evaValues);
+		evaluationFormEl.addActionListener(FormEvent.ONCHANGE);
+		evaluationFormEl.setVisible(false);
+		
+		String[] reviewerValues = new String[] { translate("assignment.evaluation.form.reviewer.see.auto") };
+		reviewerSeeAutoEvaEl = uifactory.addCheckboxesHorizontal("assignment.evaluation.form.reviewer.see.auto", null, formLayout, onKeys, reviewerValues);
+		reviewerSeeAutoEvaEl.setVisible(false);
 		
 		downloadAssignmentDocEl = uifactory.addDownloadLink("assignments.doc", "", "assignment.template.doc", null, formLayout);
 		downloadAssignmentDocEl.setVisible(false);
@@ -405,6 +426,26 @@ public class PageMetadataEditController extends FormBasicController {
 	}
 	
 	private void updateForAssignmentTemplate(Assignment assignment) {
+		if(assignment != null && assignment.getAssignmentType() == AssignmentType.form) {
+			evaluationFormEl.setVisible(true);
+			if(assignment.isOnlyAutoEvaluation()) {
+				evaluationFormEl.select(evaKeys[0], true);
+			} else {
+				evaluationFormEl.select(evaKeys[1], true);
+			}
+			
+			boolean otherOptions = evaluationFormEl.isOneSelected() && evaluationFormEl.isSelected(1);
+			reviewerSeeAutoEvaEl.setVisible(otherOptions);
+			if(assignment.isReviewerSeeAutoEvaluation()) {
+				reviewerSeeAutoEvaEl.select(evaKeys[0], true);
+			} else {
+				reviewerSeeAutoEvaEl.uncheckAll();
+			}
+		} else {
+			evaluationFormEl.setVisible(false);
+			reviewerSeeAutoEvaEl.setVisible(false);
+		}
+		
 		if(assignment == null || assignment.getAssignmentType() != AssignmentType.document) {
 			downloadAssignmentDocEl.setVisible(false);
 			assignmentDocUploadEl.setVisible(false);
@@ -484,10 +525,19 @@ public class PageMetadataEditController extends FormBasicController {
 				align = PageImageAlign.valueOf(imageAlignEl.getSelectedKey());
 			}
 			
+			Boolean onlyAutoEvaluation = null;
+			Boolean reviewerCanSeeAutoEvaluation = null;
+			if(evaluationFormEl != null && evaluationFormEl.isVisible()) {
+				onlyAutoEvaluation = evaluationFormEl.isOneSelected() && evaluationFormEl.isSelected(0);
+				if(reviewerSeeAutoEvaEl.isVisible()) {
+					reviewerCanSeeAutoEvaluation = reviewerSeeAutoEvaEl.isAtLeastSelected(1);
+				}
+			}
 			if(assignmentsTemplatesEl != null && assignmentsTemplatesEl.isVisible() && assignmentsTemplatesEl.isOneSelected()
 					&& StringHelper.containsNonWhitespace(assignmentsTemplatesEl.getSelectedKey())) {
-				Assignment assignmentTemplate = this.assignmentTemplatesMap.get(assignmentsTemplatesEl.getSelectedKey());
-				page = portfolioService.startAssignmentFromTemplate(assignmentTemplate.getKey(), getIdentity(), title, summary, imagePath, align, selectSection);
+				Assignment assignmentTemplate = assignmentTemplatesMap.get(assignmentsTemplatesEl.getSelectedKey());
+				page = portfolioService.startAssignmentFromTemplate(assignmentTemplate.getKey(), getIdentity(), title, summary, imagePath, align,
+						selectSection, onlyAutoEvaluation, reviewerCanSeeAutoEvaluation);
 				saveDocuments(page, assignmentTemplate);
 			} else {
 				page = portfolioService.appendNewPage(getIdentity(), title, summary, imagePath, align, selectSection);
@@ -606,6 +656,9 @@ public class PageMetadataEditController extends FormBasicController {
 				processUpload();
 				updateDocumentsLayout();
 			}
+		} else if(evaluationFormEl == source) {
+			boolean otherOptions = evaluationFormEl.isOneSelected() && evaluationFormEl.isSelected(1);
+			reviewerSeeAutoEvaEl.setVisible(otherOptions);
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			if("delete".equals(link.getCmd()) && link.getUserObject() instanceof File) {

@@ -198,10 +198,15 @@ public interface PortfolioService {
 	 * @param imagePath The path of the image
 	 * @param align Alignment of the image
 	 * @param section The section (mandatory)
+	 * @param onlyAutoEvaluation If the assignment is only for auto evaluation or
+	 * 		external review is allowed (only form)
+	 * @param reviewerCanSeeAutoEvaluation If the reviewers can see the auto
+	 * 		evaluation (only form)
 	 * @return The page created for the assignment
 	 */
 	public Page startAssignmentFromTemplate(Long assignmentKey, Identity author,
-			String title, String summary, String imagePath, PageImageAlign align, SectionRef section);
+			String title, String summary, String imagePath, PageImageAlign align, SectionRef section,
+			Boolean onlyAutoEvaluation, Boolean reviewerCanSeeAutoEvaluation);
 	
 	/**
 	 * Add a new section at the end of the sections list of the specified binder.

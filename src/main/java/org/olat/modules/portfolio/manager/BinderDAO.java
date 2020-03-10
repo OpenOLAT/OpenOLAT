@@ -270,7 +270,7 @@ public class BinderDAO {
 		syncAssignmentsList(templateAssignments, currentAssignments, currentSection);
 		for(Assignment templateAssignment:templateAssignments) {
 			if(templateAssignment != null) {
-				assignmentDao.createAssignment(templateAssignment, AssignmentStatus.notStarted, currentSection, null, templateAssignment.isTemplate());
+				assignmentDao.createAssignment(templateAssignment, AssignmentStatus.notStarted, currentSection, null, templateAssignment.isTemplate(), null, null);
 			}
 		}
 	}
@@ -281,7 +281,7 @@ public class BinderDAO {
 		syncAssignmentsList(templateAssignments, currentAssignments, currentBinder);
 		for(Assignment templateAssignment:templateAssignments) {
 			if(templateAssignment != null) {
-				assignmentDao.createAssignment(templateAssignment, AssignmentStatus.notStarted, null, currentBinder, templateAssignment.isTemplate());
+				assignmentDao.createAssignment(templateAssignment, AssignmentStatus.notStarted, null, currentBinder, templateAssignment.isTemplate(), null, null);
 			}
 		}
 	}

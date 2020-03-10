@@ -521,12 +521,14 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 	
 	@Override
-	public Page startAssignmentFromTemplate(Long assignmentKey, Identity author, String title, String summary, String imagePath, PageImageAlign align, SectionRef sectionRef) {
+	public Page startAssignmentFromTemplate(Long assignmentKey, Identity author, String title, String summary, String imagePath, PageImageAlign align,
+			SectionRef sectionRef, Boolean onlyAutoEvaluation, Boolean reviewerCanSeeAutoEvaluation) {
 		Page page = null;
 		Section section = binderDao.loadSectionByKey(sectionRef.getKey());
 		Assignment reloadedAssignmentTemplate = assignmentDao.loadAssignmentByKey(assignmentKey);
 		Assignment instanciatedAssignment = assignmentDao
-				.createAssignment(reloadedAssignmentTemplate, AssignmentStatus.inProgress, section, null, false);
+				.createAssignment(reloadedAssignmentTemplate, AssignmentStatus.inProgress, section, null,
+						false, onlyAutoEvaluation, reviewerCanSeeAutoEvaluation);
 		if (instanciatedAssignment.getPage() == null) {
 			if (instanciatedAssignment.getAssignmentType() == AssignmentType.essay
 					|| instanciatedAssignment.getAssignmentType() == AssignmentType.document) {
