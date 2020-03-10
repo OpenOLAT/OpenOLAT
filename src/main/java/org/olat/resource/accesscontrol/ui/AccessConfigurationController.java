@@ -211,6 +211,7 @@ public class AccessConfigurationController extends FormBasicController {
 				OfferAccess newLink = editMethodCtrl.commitChanges();
 				newLink = acService.saveOfferAccess(newLink);
 				replace(newLink);
+				checkOverlap();
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
@@ -242,6 +243,7 @@ public class AccessConfigurationController extends FormBasicController {
 			if("delete".equals(cmd)) {
 				AccessInfo infos = (AccessInfo)source.getUserObject();
 				removeMethod(infos);
+				checkOverlap();
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else if("edit".equals(cmd)) {
 				AccessInfo infos = (AccessInfo)source.getUserObject();
@@ -302,6 +304,7 @@ public class AccessConfigurationController extends FormBasicController {
 		}
 		
 		updateConfirmationEmail();
+		checkOverlap();
 	}
 	
 	private void updateConfirmationEmail() {
@@ -396,6 +399,34 @@ public class AccessConfigurationController extends FormBasicController {
 		
 		dbInstance.commit();
 		loadConfigurations();
+	}
+	
+	private void checkOverlap() {
+		boolean overlap = false;
+		
+		for (AccessInfo confControllerA : confControllers) {
+			for (AccessInfo confControllerB : confControllers) {
+				// Dont compare a confController with itself
+				if (!confControllerA.equals(confControllerB)) {
+					Date aFrom = confControllerA.getLink().getValidFrom();
+					Date aTo = confControllerA.getLink().getValidTo();
+					Date bFrom = confControllerB.getLink().getValidFrom();
+					Date bTo = confControllerB.getLink().getValidTo();
+					
+					// Options: Dates cross each other or on date range is within another
+					if ((aFrom.compareTo(bFrom) <= 0 &&
+							aTo.compareTo(bTo) <= 0 && 
+							bFrom.compareTo(aTo) <= 0) ||
+						(aFrom.compareTo(bFrom) <= 0) &&
+							bTo.compareTo(aTo) <= 0 && 
+							bTo.compareTo(aFrom) >= 0) {
+						overlap = true;
+					} 
+				}
+			}
+		}
+		confControllerContainer.contextPut("overlappingConfigs", overlap);
+		confControllerContainer.setDirty(true);
 	}
 
 	public class AccessInfo {

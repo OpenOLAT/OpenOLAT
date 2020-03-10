@@ -1,3 +1,7 @@
+#if($overlappingConfigs)
+	<div class="o_important"><i class="o_icon o_icon_important"> </i> $r.translate("accesscontrol.overlap.found")</div>
+#end
+
 #if ($confControllers && $confControllers.size() > 0)
 	#foreach($confController in $confControllers)
 		#set($css = $confController.getLink().getMethod().getMethodCssClass())
