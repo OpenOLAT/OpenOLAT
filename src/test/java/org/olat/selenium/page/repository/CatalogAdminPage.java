@@ -19,13 +19,9 @@
  */
 package org.olat.selenium.page.repository;
 
-import java.util.List;
-
-import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 
 /**
  * Drives the catalog administration
@@ -59,10 +55,8 @@ public class CatalogAdminPage {
 		By titleBy = By.cssSelector(".o_sel_catalog_add_category_popup .o_sel_cat_name input[type='text']");
 		OOGraphene.waitElement(titleBy, browser);
 		browser.findElement(titleBy).sendKeys(title);
-		/*
 		By shortTitleBy = By.cssSelector(".o_sel_catalog_add_category_popup .o_sel_cat_short_title input[type='text']");
 		browser.findElement(shortTitleBy).sendKeys(shortTitle);
-		*/
 		
 		OOGraphene.tinymce(description, browser);
 		
@@ -70,7 +64,7 @@ public class CatalogAdminPage {
 		By saveBy = By.cssSelector(".o_sel_catalog_add_category_popup .o_sel_catalog_entry_form_buttons button.btn-primary");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
-		By nodeTitleBy = By.xpath("//div[contains(@class,'o_meta')]//h4[contains(@class,'o_title')]//a/span[contains(text(),'" + title + "')]");
+		By nodeTitleBy = By.xpath("//div[contains(@class,'o_meta')]//h4[contains(@class,'o_title')][contains(text(),'" + shortTitle + "')]");
 		OOGraphene.waitElement(nodeTitleBy, browser);
 		return this;
 	}
@@ -81,11 +75,10 @@ public class CatalogAdminPage {
 	 * @param title
 	 * @return
 	 */
-	public CatalogAdminPage selectNode(String title) {
-		By titleBy = By.xpath("//div[contains(@class,'o_meta')]//h4[contains(@class,'o_title')]/a/span[text()[contains(.,'" + title + "')]]");
-		List<WebElement> nodeLinks = browser.findElements(titleBy);
-		Assert.assertEquals(1, nodeLinks.size());
-		nodeLinks.get(0).click();
+	public CatalogAdminPage selectNode(String shortTitle) {
+		By titleBy = By.xpath("//div[contains(@class,'o_sublevel')][div[contains(@class,'o_meta')]//h4[contains(@class,'o_title')][text()[contains(.,'" + shortTitle + "')]]]/div/a");
+		OOGraphene.waitElement(titleBy, browser);
+		browser.findElements(titleBy).get(0).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

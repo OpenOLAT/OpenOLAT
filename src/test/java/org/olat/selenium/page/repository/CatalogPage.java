@@ -42,15 +42,15 @@ public class CatalogPage {
 		this.browser = browser;
 	}
 	
-	public CatalogPage selectCatalogEntry(String title) {
-		By titleBy = By.xpath("//div[contains(@class,'o_sublevel')]//h4[contains(@class,'o_title')]/a/span[text()[contains(.,'" + title + "')]]");
+	public CatalogPage selectCatalogEntry(String title, String shortTitle) {
+		By titleBy = By.xpath("//div[contains(@class,'o_sublevel')][div/h4[contains(@class,'o_title')][text()[contains(.,'" + shortTitle + "')]]]/div/a");
 		List<WebElement> titleLinks = browser.findElements(titleBy);
 		Assert.assertFalse(titleLinks.isEmpty());
 		titleLinks.get(0).click();
 		OOGraphene.waitBusy(browser);
 		
 		By pageTitleBy = By.xpath("//h2[text()[contains(.,'" + title + "')]]");
-		OOGraphene.waitElement(pageTitleBy, 5, browser);
+		OOGraphene.waitElement(pageTitleBy, browser);
 		return this;
 	}
 	

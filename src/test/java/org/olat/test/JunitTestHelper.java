@@ -93,6 +93,17 @@ public class JunitTestHelper {
 		return UUID.randomUUID().toString();
 	}
 	
+	/**
+	 * This method returns the first bloc of a UUID. It's
+	 * not really random. But it's only 7 characters long.
+	 * 
+	 * @return The first bloc of a UUID
+	 */
+	public static final String miniRandom() {
+		String r = UUID.randomUUID().toString();
+		return r.substring(0, r.indexOf('-'));
+	}
+	
 	public static final OLATResource createRandomResource() {
 		String resName = UUID.randomUUID().toString().replace("-", "");
 		long resId = randomResId.nextInt(Integer.MAX_VALUE - 10) + 1;

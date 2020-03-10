@@ -125,8 +125,9 @@ public class MyCoursesPage {
 		OOGraphene.waitBusy(browser);
 	}
 	
-	public MyCoursesPage selectCatalogEntry(String title) {
-		By titleBy = By.xpath("//div[contains(@class,'o_sublevel')]//div[contains(@class,'o_meta')]//h4[contains(@class,'o_title')]/a/span[text()[contains(.,'" + title + "')]]");
+	public MyCoursesPage selectCatalogEntry(String shortTitle) {
+		By titleBy = By.xpath("//div[contains(@class,'o_sublevel')][div[contains(@class,'o_meta')]/h4[@class='o_title'][contains(.,'" + shortTitle + "')]]/div/a");
+		OOGraphene.waitElement(titleBy, browser);
 		List<WebElement> titleLinks = browser.findElements(titleBy);
 		Assert.assertEquals(1, titleLinks.size());
 		titleLinks.get(0).click();

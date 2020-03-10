@@ -544,6 +544,7 @@ public class CourseTest extends Deployments {
 			.assertOnTitle(newCourseName);
 	}
 	
+	
 	/**
 	 * 
 	 * Create a catalog, create a course, while publishing add the
@@ -560,7 +561,7 @@ public class CourseTest extends Deployments {
 			@Drone @User WebDriver userBrowser)
 	throws IOException, URISyntaxException {
 		
-		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		
 		//administrator create the categories in the catalog
@@ -573,12 +574,15 @@ public class CourseTest extends Deployments {
 		String node1 = "First level " + UUID.randomUUID();
 		String node2_1 = "Second level first element " + UUID.randomUUID();
 		String node2_2 = "Second level second element " + UUID.randomUUID();
+		String node1Short = "First " + JunitTestHelper.miniRandom();
+		String node2_1Short = "1.1l " + JunitTestHelper.miniRandom();
+		String node2_2Short = "1.2l " + JunitTestHelper.miniRandom();
 		adminNavBar
 				.openCatalogAdministration()
-				.addCatalogNode(node1, "First level of the catalog", "First level of the catalog")
-				.selectNode(node1)
-				.addCatalogNode(node2_1, "First element of the second level", "First element of the second level")
-				.addCatalogNode(node2_2, "Second element of the second level", "Second element of the second level");
+				.addCatalogNode(node1, node1Short, "First level of the catalog")
+				.selectNode(node1Short)
+				.addCatalogNode(node2_1, node2_1Short, "First element of the second level")
+				.addCatalogNode(node2_2, node2_2Short, "Second element of the second level");
 		
 		//An author create a course and publish it under a category
 		//created above
@@ -616,8 +620,8 @@ public class CourseTest extends Deployments {
 		userNavBar
 			.openMyCourses()
 			.openCatalog()
-			.selectCatalogEntry(node1)
-			.selectCatalogEntry(node2_2)
+			.selectCatalogEntry(node1Short)
+			.selectCatalogEntry(node2_2Short)
 			.select(courseTitle)//go to the details page
 			.start();
 		

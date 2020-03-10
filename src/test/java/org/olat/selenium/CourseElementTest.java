@@ -1435,10 +1435,11 @@ public class CourseElementTest extends Deployments {
 			.resume();
 		
 		String node1 = "Forums " + UUID.randomUUID();
+		String node1Short = "Forum " + JunitTestHelper.miniRandom();
 		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openCatalogAdministration()
-			.addCatalogNode(node1, "First level of the catalog", "First level of the catalog");
+			.addCatalogNode(node1, node1Short, "First level of the catalog");
 		
 		//create a course
 		String courseTitle = "Guest FO " + UUID.randomUUID();
@@ -1481,7 +1482,7 @@ public class CourseElementTest extends Deployments {
 		NavigationPage guestNavBar = NavigationPage.load(guestBrowser);
 		guestNavBar
 			.openCatalog()
-			.selectCatalogEntry(node1)
+			.selectCatalogEntry(node1, node1Short)
 			.select(courseTitle)
 			.start();
 		
