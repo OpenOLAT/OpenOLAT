@@ -63,7 +63,7 @@
 								<span class="o_visual_not_available" #if($r.get($imgId)) style="background-image:url('$mapperThumbnailUrl/${r.get($imgId)}');" #end></span>
 							</a></div>
 							<div class="o_meta">
-								<h4 class="o_title">$r.get("short_title_${id}")</h4>
+								<h4 class="o_title">$r.render("cat_${id}")</h4>
 							</div>
 						</div>
 					#end

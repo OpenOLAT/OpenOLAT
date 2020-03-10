@@ -119,6 +119,8 @@ public class CatalogNodeController extends BasicController implements Activateab
 		List<CatalogEntry> childCe = catalogManager.getChildrenOf(catalogEntry);
 		List<String> subCategories = new ArrayList<>();
 		int count = 0;
+		boolean tiles = catalogEntry.getStyle() == Style.tiles;
+		
 		for (CatalogEntry entry : childCe) {
 			if(entry != null && entry.getType() == CatalogEntry.TYPE_NODE) {
 				String cmpId = "cat_" + (++count);
@@ -130,23 +132,14 @@ public class CatalogNodeController extends BasicController implements Activateab
 				}
 				mainVC.contextPut("k" + cmpId, entry.getKey());
 				
-				String title = StringHelper.escapeHtml(entry.getName());
-				String shortTitle; 
-				if (entry.getShortTitle() == null) {
-					shortTitle = StringHelper.escapeHtml(entry.getName());
-				} else {
-					shortTitle = StringHelper.escapeHtml(entry.getShortTitle());
-				}
-				
+				String title = StringHelper.escapeHtml(tiles ? entry.getShortTitle() : entry.getName());
 				Link link = LinkFactory.createCustomLink(cmpId, "select_node", cmpId, Link.LINK + Link.NONTRANSLATED, mainVC, this);
 				link.setCustomDisplayText(title);
 				link.setIconLeftCSS("o_icon o_icon_catalog_sub");
 				link.setUserObject(entry.getKey());
 				subCategories.add(Integer.toString(count));
 				String titleId = "title_" + count;
-				String shortTitleId = "short_title_" + count;
 				mainVC.contextPut(titleId, title);
-				mainVC.contextPut(shortTitleId, shortTitle);
 			}
 		}
 		mainVC.contextPut("subCategories", subCategories);

@@ -549,6 +549,8 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		List<String> subCategories = new ArrayList<>();
 		List<NodeEntryRow> nodeEntries = new ArrayList<>();
 		int count = 0;
+		boolean tiles = catalogEntry.getStyle() == Style.tiles;
+		
 		for (CatalogEntry entry : catalogChildren) {
 			if(entry != null && entry.getType() == CatalogEntry.TYPE_NODE) {
 				NodeEntryRow row = new NodeEntryRow(entry);
@@ -568,22 +570,14 @@ public class CatalogNodeManagerController extends FormBasicController implements
 				}
 				flc.contextPut("k" + cmpId, entry.getKey());
 
-				String title = StringHelper.escapeHtml(entry.getName());
-				String shortTitle; 
-				if (entry.getShortTitle() == null) {
-					shortTitle = StringHelper.escapeHtml(entry.getName());
-				} else {
-					shortTitle = StringHelper.escapeHtml(entry.getShortTitle());
-				}
+				String title = StringHelper.escapeHtml(tiles ? entry.getShortTitle() : entry.getName());
 				Link link = LinkFactory.createCustomLink(cmpId, "select_node", cmpId, Link.LINK + Link.NONTRANSLATED, flc.getFormItemComponent(), this);
 				link.setIconLeftCSS("o_icon o_icon_catalog_sub");
 				link.setCustomDisplayText(title);
 				link.setUserObject(entry.getKey());
 				subCategories.add(Integer.toString(count));
 				String titleId = "title_" + count;
-				String shortTitleId = "short_title_" + count;
 				flc.contextPut(titleId, title);
-				flc.contextPut(shortTitleId, shortTitle);
 			}
 		}
 		flc.contextPut("subCategories", subCategories);
@@ -881,6 +875,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		} else if(editEntryCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				catalogEntry = editEntryCtrl.getEditedCatalogEntry();
+				loadNodesChildren();
 				loadEntryInfos();
 			}
 			cmc.deactivate();
