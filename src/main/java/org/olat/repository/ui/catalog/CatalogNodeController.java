@@ -167,6 +167,7 @@ public class CatalogNodeController extends BasicController implements Activateab
 		SearchMyRepositoryEntryViewParams searchClosedParams
 				= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
 		searchClosedParams.setParentEntry(catalogEntry);
+		searchClosedParams.setEntryStatus(RepositoryEntryStatusEnum.closed());
 		
 		closedEntryListController = new RepositoryEntryListController(ureq, wControl, searchClosedParams, true, false, false, "catalog-closed", stackPanel);
 

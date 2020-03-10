@@ -103,6 +103,12 @@ public enum RepositoryEntryStatusEnum {
 		};
 	}
 	
+	public static RepositoryEntryStatusEnum[] closed() {
+		return new RepositoryEntryStatusEnum[] {
+				RepositoryEntryStatusEnum.closed
+		};
+	}
+	
 	public static boolean isValid(String string) {
 		boolean allOk = false;
 		if(StringHelper.containsNonWhitespace(string)) {
