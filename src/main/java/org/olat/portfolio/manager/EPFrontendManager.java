@@ -53,9 +53,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.group.DeletableGroupData;
-import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.Role;
-import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.webFeed.portfolio.LiveBlogArtefactHandler;
 import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.model.EPFilterSettings;
@@ -72,7 +70,6 @@ import org.olat.portfolio.model.structel.PortfolioStructureRef;
 import org.olat.properties.NarrowedPropertyManager;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.manager.RepositoryEntryDAO;
 import org.olat.resource.OLATResource;
 import org.olat.search.SearchResults;
 import org.olat.search.model.AbstractOlatDocument;
@@ -123,10 +120,6 @@ public class EPFrontendManager implements UserDataDeletable, DeletableGroupData 
 	private UserManager userManager;
 	@Autowired
 	private PortfolioModule portfolioModule;
-	@Autowired
-	private RepositoryEntryDAO repositoryEntryDao;
-	@Autowired
-	private AssessmentService assessmentService;
 	
 	/**
 	 * Check if a user has any kind of EP v1 resources: artefacts, a owned map or a shared map
@@ -677,8 +670,8 @@ public class EPFrontendManager implements UserDataDeletable, DeletableGroupData 
 				}
 				structureManager.copyStructureRecursively(template, copy, true);
 				
-				RepositoryEntry referenceEntry = repositoryEntryDao.loadByResourceKey(template.getOlatResource().getKey());
-				assessmentService.updateAssessmentEntry(identity, courseEntry, targetSubPath, Boolean.FALSE, referenceEntry, AssessmentEntryStatus.inProgress);
+				//RepositoryEntry referenceEntry = repositoryEntryDao.loadByResourceKey(template.getOlatResource().getKey());
+				//assessmentService.updateAssessmentEntry(identity, courseEntry, targetSubPath, Boolean.FALSE, referenceEntry, AssessmentEntryStatus.inProgress);
 				return copy;
 			}
 		});
@@ -1177,9 +1170,9 @@ public class EPFrontendManager implements UserDataDeletable, DeletableGroupData 
 					am.incrementNodeAttemptsInBackground(courseNode, owner, uce);
 				}
 				
-				RepositoryEntry referenceEntry = courseNode.getReferencedRepositoryEntry();
-				RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-				assessmentService.updateAssessmentEntry(owner, courseEntry, courseNode.getIdent(), Boolean.FALSE, referenceEntry, AssessmentEntryStatus.inReview);
+				//RepositoryEntry referenceEntry = courseNode.getReferencedRepositoryEntry();
+				//RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+				//assessmentService.updateAssessmentEntry(owner, courseEntry, courseNode.getIdent(), Boolean.FALSE, referenceEntry, AssessmentEntryStatus.inReview);
 			}
 			assessmentNotificationsHandler.markPublisherNews(owner, course.getResourceableId());
 			log.info(Tracing.M_AUDIT, "Map " + map + " from " + owner.getKey() + " has been submitted.");

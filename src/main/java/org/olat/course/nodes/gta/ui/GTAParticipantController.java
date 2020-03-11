@@ -228,7 +228,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
 			response = gtaManager.assignTaskAutomatically(taskList, assessedGroup, courseEnv, gtaNode, getIdentity());
 		} else {
-			response = gtaManager.assignTaskAutomatically(taskList, assessedIdentity, courseEnv, gtaNode, getIdentity());
+			response = gtaManager.assignTaskAutomatically(taskList, assessedIdentity, courseEnv, gtaNode);
 		}
 		
 		if(response == null || response.getStatus() == AssignmentResponse.Status.error) {
@@ -856,6 +856,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 				cleanUpProcess();
 				resetDueDates();
 				process(ureq);
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		} else if(revisionDocumentsCtrl == source) {
 			if(event == Event.DONE_EVENT) {
@@ -906,6 +907,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 				assignTaskAutomatically(ureq, confirmOptionalAssignmentCtrl.getTask());
 				cleanUpProcess();
 				process(ureq);
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else {
 				optionalTaskRefused = true;
 				cleanUpProcess();

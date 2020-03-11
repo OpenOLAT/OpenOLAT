@@ -19,7 +19,6 @@
  */
 package org.olat.modules.assessment.manager;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -28,12 +27,10 @@ import javax.persistence.PersistenceException;
 
 import org.apache.logging.log4j.Logger;
 import org.hibernate.exception.ConstraintViolationException;
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
-import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentEntryCompletion;
 import org.olat.modules.assessment.AssessmentService;
@@ -60,8 +57,6 @@ public class AssessmentServiceImpl implements AssessmentService, UserDataDeletab
 	private DB dbInstance;
 	@Autowired
 	private AssessmentEntryDAO assessmentEntryDao;
-	@Autowired
-	private BusinessGroupRelationDAO businessGroupRelationDao;
 
 	@Override
 	public AssessmentEntry getOrCreateAssessmentEntry(Identity assessedIdentity, String anonymousIdentifier,
@@ -153,29 +148,6 @@ public class AssessmentServiceImpl implements AssessmentService, UserDataDeletab
 	@Override
 	public void setLastVisit(AssessmentEntry nodeAssessment, Date lastVisit) {
 		assessmentEntryDao.setLastVisit(nodeAssessment, lastVisit);
-	}
-
-	@Override
-	public AssessmentEntry updateAssessmentEntry(Identity assessedIdentity, RepositoryEntry entry, String subIdent,
-			Boolean entryRoot, RepositoryEntry referenceEntry, AssessmentEntryStatus status) {
-		AssessmentEntry assessmentEntry = getOrCreateAssessmentEntry(assessedIdentity, null, entry, subIdent, entryRoot, referenceEntry);
-		assessmentEntry.setAssessmentStatus(status);
-		return assessmentEntryDao.updateAssessmentEntry(assessmentEntry);
-	}
-
-	@Override
-	public List<AssessmentEntry> updateAssessmentEntries(BusinessGroup group, RepositoryEntry entry, String subIdent,
-			Boolean entryRoot, RepositoryEntry referenceEntry, AssessmentEntryStatus status) {
-		List<AssessmentEntry> assessmentEntries = new ArrayList<>();
-		List<Identity> groupParticipants = businessGroupRelationDao.getMembers(group, GroupRoles.participant.name());
-		for(Identity groupParticipant:groupParticipants) {
-			AssessmentEntry assessmentEntry = getOrCreateAssessmentEntry(groupParticipant, null, entry, subIdent, entryRoot, referenceEntry);
-			assessmentEntry.setAssessmentStatus(status);
-			assessmentEntry = assessmentEntryDao.updateAssessmentEntry(assessmentEntry);
-			assessmentEntries.add(assessmentEntry);
-		}
-		
-		return assessmentEntries;
 	}
 
 	@Override

@@ -93,26 +93,4 @@ public interface AssessmentService {
 
 	public void setLastVisit(AssessmentEntry nodeAssessment, Date lastVisit);
 
-	/**
-	 * Update the status for a user, create the assessment entries if it doesn't exist.
-	 * exist.
-	 * @param entryRoot
-	 * @param status
-	 * @param group
-	 * @return
-	 */
-	public AssessmentEntry updateAssessmentEntry(Identity assessedIdentity, RepositoryEntry entry, String subIdent,
-			Boolean entryRoot, RepositoryEntry referenceEntry, AssessmentEntryStatus status);
-	
-	/**
-	 * Update the status for a whole group of users, create the assessment entries if they don't
-	 * exist.
-	 * @param group
-	 * @param entryRoot 
-	 * @param status
-	 * @return
-	 */
-	public List<AssessmentEntry> updateAssessmentEntries(BusinessGroup group, RepositoryEntry entry, String subIdent,
-			Boolean entryRoot, RepositoryEntry referenceEntry, AssessmentEntryStatus status);
-
 }

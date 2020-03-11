@@ -253,6 +253,11 @@ public abstract class GTAAbstractController extends BasicController implements G
 		
 		nodeLog(task);
 		collapsedContents(task);
+		
+		if(userCourseEnv != null && getIdentity().equals(userCourseEnv.getIdentityEnvironment().getIdentity())) {
+			// recalculate potential changes in status
+			userCourseEnv.getScoreAccounting().evaluateAll();
+		}
 	}
 	
 	protected abstract void resetTask(UserRequest ureq, Task task);
