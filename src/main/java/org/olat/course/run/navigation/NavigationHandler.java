@@ -326,7 +326,7 @@ public class NavigationHandler implements Disposable {
 				//this is the case if only one of the additional conditions failed
 				if (newCalledTreeNode.getNodeEvaluation() != null && newCalledTreeNode.getNodeEvaluation().oldStyleConditionsOk()) {
 					controller = addMan.nextUserInputController(ureq, wControl, userCourseEnv);
-					if (listeningController != null) {
+					if (controller != null && listeningController != null) {
 						controller.addControllerListener(listeningController);
 					}
 				} else {
