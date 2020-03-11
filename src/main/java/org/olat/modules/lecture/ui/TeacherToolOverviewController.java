@@ -52,7 +52,7 @@ public class TeacherToolOverviewController extends AbstractTeacherOverviewContro
 	private LectureService lectureService;
 	
 	public TeacherToolOverviewController(UserRequest ureq, WindowControl wControl, LecturesSecurityCallback secCallback) {
-		super(ureq, wControl, false, "Lectures::UserTools", true, false);
+		super(ureq, wControl, secCallback.viewAs() == LectureRoles.lecturemanager, "Lectures::UserTools", true, false);
 		this.secCallback = secCallback;
 		initTables(ureq, false, false);
 		
