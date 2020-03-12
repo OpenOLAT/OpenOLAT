@@ -81,7 +81,7 @@ public class PostDataMapper implements Mapper {
 		String postData = BasicLTIUtil.postLaunchHTML(props, launchUrl, debug);
 		StringMediaResource mediares = new StringMediaResource();
 		mediares.setData(postData);
-		mediares.setContentType("text/html");
+		mediares.setContentType("text/html;charset=utf-8");
 		mediares.setEncoding("UTF-8");
 		return mediares;
 	}
