@@ -300,6 +300,19 @@ public class QItemQueriesDAO {
 			sb.and();
 			PersistenceHelper.appendFuzzyLike(sb, "item.topic", "topic", dbInstance.getDbVendor());
 		}
+		if(StringHelper.containsNonWhitespace(params.getOwner())) {
+			sb.and()
+			  .append(" exists (select mship.key from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as mship ")
+		      .append("  inner join mship.identity as oIdent")
+		      .append("  inner join oIdent.user as oUser")
+	          .append("  where mship.securityGroup.key=item.ownerGroup.key and (");
+			PersistenceHelper.appendFuzzyLike(sb, "oUser.firstName", "owner", dbInstance.getDbVendor());
+			sb.append(" or ");
+			PersistenceHelper.appendFuzzyLike(sb, "oUser.lastName", "owner", dbInstance.getDbVendor());
+			sb.append(" or ");
+			PersistenceHelper.appendFuzzyLike(sb, "oIdent.name", "owner", dbInstance.getDbVendor());
+			sb.append(" ))");
+		}
 		if(StringHelper.containsNonWhitespace(params.getKeywords())) {
 			sb.and();
 			PersistenceHelper.appendFuzzyLike(sb, "item.keywords", "keywords", dbInstance.getDbVendor());
@@ -426,6 +439,10 @@ public class QItemQueriesDAO {
 		if(StringHelper.containsNonWhitespace(params.getTopic())) {
 			String fuzzySearch = PersistenceHelper.makeFuzzyQueryString(params.getTopic());
 			query.setParameter("topic", fuzzySearch);
+		}
+		if(StringHelper.containsNonWhitespace(params.getOwner())) {
+			String fuzzySearch = PersistenceHelper.makeFuzzyQueryString(params.getOwner());
+			query.setParameter("owner", fuzzySearch);
 		}
 		if(StringHelper.containsNonWhitespace(params.getKeywords())) {
 			String fuzzySearch = PersistenceHelper.makeFuzzyQueryString(params.getKeywords());

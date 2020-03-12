@@ -48,6 +48,7 @@ public class SearchQuestionItemParams implements Cloneable {
 	private Identity author;
 	private String title;
 	private String topic;
+	private String owner;
 	private String keywords;
 	private String coverage;
 	private String informations;
@@ -144,6 +145,14 @@ public class SearchQuestionItemParams implements Cloneable {
 
 	public void setTopic(String topic) {
 		this.topic = topic;
+	}
+
+	public String getOwner() {
+		return owner;
+	}
+
+	public void setOwner(String owner) {
+		this.owner = owner;
 	}
 
 	public String getKeywords() {
@@ -344,6 +353,9 @@ public class SearchQuestionItemParams implements Cloneable {
 		}
 		if(StringHelper.containsNonWhitespace(searchString)) {
 			clone.searchString = searchString;
+		}
+		if(StringHelper.containsNonWhitespace(owner)) {
+			clone.owner = owner;
 		}
 		if(favoritOnly) {
 			clone.favoritOnly = favoritOnly;
