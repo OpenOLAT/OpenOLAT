@@ -29,6 +29,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
@@ -36,6 +37,7 @@ import org.olat.basesecurity.manager.SecurityGroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItem2Resource;
@@ -59,6 +61,8 @@ import org.springframework.stereotype.Service;
  */
 @Service("questionDao")
 public class QuestionItemDAO {
+	
+	private static final Logger log = Tracing.createLoggerFor(QuestionItemDAO.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -177,6 +181,8 @@ public class QuestionItemDAO {
 		for(Identity author:authors) {
 			if(!securityGroupDao.isIdentityInSecurityGroup(author, secGroup)) {
 				securityGroupDao.addIdentityToSecurityGroup(author, secGroup);
+				log.info(Tracing.M_AUDIT, "Added owner identity '{}' to item with key {} ({}, {})",
+						author.getKey(), item.getKey(), item.getTitle(), item.getTopic());
 			}
 		}
 		dbInstance.commit();
@@ -190,6 +196,8 @@ public class QuestionItemDAO {
 		for(Identity author:authors) {
 			if(securityGroupDao.isIdentityInSecurityGroup(author, secGroup)) {
 				securityGroupDao.removeIdentityFromSecurityGroup(author, secGroup);
+				log.info(Tracing.M_AUDIT, "Removed owner identity '{}' from item with key {} ({}, {})",
+						author.getKey(), item.getKey(), item.getTitle(), item.getTopic());
 			}
 		}
 		dbInstance.commit();
@@ -261,6 +269,7 @@ public class QuestionItemDAO {
 		for(QuestionItemShort item:items) {
 			QuestionItem refItem = loadLazyReferenceId(item.getKey());
 			if(refItem != null) {
+				log.info(Tracing.M_AUDIT, "Delete question item {} ({}, {})", item.getKey(), item.getTitle(), item.getTopic());
 				em.remove(refItem);
 			}
 		}

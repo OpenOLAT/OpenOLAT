@@ -19,6 +19,9 @@
  */
 package org.olat.modules.adobeconnect.manager;
 
+import static org.olat.modules.adobeconnect.manager.AdobeConnectUtils.orDefault;
+
+
 import java.util.List;
 
 import javax.ws.rs.core.UriBuilder;
@@ -39,7 +42,6 @@ import org.olat.modules.adobeconnect.model.AdobeConnectPrincipal;
 import org.olat.modules.adobeconnect.model.AdobeConnectSco;
 import org.olat.modules.adobeconnect.model.BreezeSession;
 import org.springframework.stereotype.Service;
-
 /**
  * 
  * Initial date: 17 avr. 2019<br>
@@ -92,8 +94,8 @@ public class DFNprovider extends AbstractAdobeConnectProvider {
 		builder
 			.queryParam("action", "lms-user-create")
 			.queryParam("login", identity.getUser().getEmail())
-			.queryParam("first-name", identity.getUser().getFirstName())
-			.queryParam("last-name", identity.getUser().getLastName());
+			.queryParam("first-name", orDefault(identity.getUser().getFirstName(), "John"))
+			.queryParam("last-name", orDefault(identity.getUser().getLastName(), "Doe"));
 
 		HttpGet get = createAdminMethod(builder, errors);
 		List<AdobeConnectPrincipal> users = null;
