@@ -413,8 +413,20 @@ public class AccessConfigurationController extends FormBasicController {
 					Date bFrom = confControllerB.getLink().getValidFrom();
 					Date bTo = confControllerB.getLink().getValidTo();
 					
+					if (aFrom == null || aTo == null || bFrom == null || bTo == null) {
+						// Two unlimited bookin methods
+						if (aFrom == null && aTo == null && bFrom == null && bTo == null) {
+							overlap = true;
+						// One unlimited method and one with start or end or both
+						} else if (aFrom == null && aTo == null && (bFrom != null || bTo != null)) {
+							overlap = true;
+						} else if (aFrom == null && aTo != null && bFrom != null && aTo.compareTo(bFrom) >= 0) {
+							overlap = true;
+						}
+					}
+					
 					// Options: Dates cross each other or on date range is within another
-					if ((aFrom.compareTo(bFrom) <= 0 &&
+					else if ((aFrom.compareTo(bFrom) <= 0 &&
 							aTo.compareTo(bTo) <= 0 && 
 							bFrom.compareTo(aTo) <= 0) ||
 						(aFrom.compareTo(bFrom) <= 0) &&
