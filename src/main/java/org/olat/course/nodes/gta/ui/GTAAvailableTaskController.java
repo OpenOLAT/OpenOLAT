@@ -261,7 +261,7 @@ public class GTAAvailableTaskController extends FormBasicController {
 		if(businessGroupTask) {
 			response = gtaManager.selectTask(assessedGroup, taskList, gtaNode, task, getIdentity());
 		} else {
-			response = gtaManager.selectTask(assessedIdentity, taskList, gtaNode, task, getIdentity());
+			response = gtaManager.selectTask(assessedIdentity, taskList, gtaNode, task);
 		}
 		
 		if(response == null || response.getStatus() == AssignmentResponse.Status.error) {

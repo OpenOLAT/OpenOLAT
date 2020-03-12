@@ -334,6 +334,7 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 				attributes.add(new SearchAttribute("classification.taxonomy.level", new TaxonomicFieldQueryParameter()));
 				attributes.add(new SearchAttribute("classification.taxonomic.path.incl", new TaxonomicPathQueryParameter()));
 			}
+			attributes.add(new SearchAttribute("owner", new StringQueryParameter(AbstractOlatDocument.AUTHOR_FIELD_NAME)));
 			//educational
 			if (qPoolSecurityCallback.canUseEducationalContext()) {
 				attributes.add(new SearchAttribute("educational.context", new ContextQueryParameter()));
@@ -400,6 +401,8 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 					searchParams.setTopic(val);
 				} else if(QItemDocument.KEYWORDS_FIELD.equals(docAttribute)) {
 					searchParams.setKeywords(val);
+				} else if(AbstractOlatDocument.AUTHOR_FIELD_NAME.equals(docAttribute)) {
+					searchParams.setOwner(val);
 				} else if(QItemDocument.COVERAGE_FIELD.equals(docAttribute)) {
 					searchParams.setCoverage(val);
 				} else if(QItemDocument.ADD_INFOS_FIELD.equals(docAttribute)) {
@@ -461,7 +464,7 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 		private final LicenseSelectionConfig config;
 		
 		public LicenseQueryParameter() {
-			super(QItemDocument.LICENSE_TYPE_FIELD_NAME);
+			super(AbstractOlatDocument.LICENSE_TYPE_FIELD_NAME);
 			config = LicenseUIFactory.createLicenseSelectionConfig(licenseHandler);
 		}
 		

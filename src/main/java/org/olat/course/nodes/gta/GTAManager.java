@@ -345,7 +345,7 @@ public interface GTAManager {
 	 * @param doerIdentity The user which does the operation
 	 * @return
 	 */
-	public AssignmentResponse selectTask(Identity identity, TaskList taskList, GTACourseNode cNode, File task, Identity doerIdentity);
+	public AssignmentResponse selectTask(Identity identity, TaskList taskList, GTACourseNode cNode, File task);
 	
 	public AssignmentResponse selectTask(BusinessGroup group, TaskList taskList, GTACourseNode cNode, File task, Identity doerIdentity);
 	
@@ -353,7 +353,7 @@ public interface GTAManager {
 			GTACourseNode cNode, Identity doerIdentity);
 
 	public AssignmentResponse assignTaskAutomatically(TaskList taskList, Identity assessedIdentity, CourseEnvironment courseEnv,
-			GTACourseNode cNode, Identity doerIdentity);
+			GTACourseNode cNode);
 
 	public boolean isDueDateEnabled(GTACourseNode cNode);
 	

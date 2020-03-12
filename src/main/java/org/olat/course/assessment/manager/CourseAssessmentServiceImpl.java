@@ -321,7 +321,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 
 	@Override
 	public void updateLastModifications(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
-			Identity identity, Role by) {
+			Identity identity2, Role by) {
 		if (!userCourseEnvironment.isParticipant()) return;
 		
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();

@@ -126,7 +126,7 @@ public class MyCoursesPage {
 	}
 	
 	public MyCoursesPage selectCatalogEntry(String shortTitle) {
-		By titleBy = By.xpath("//div[contains(@class,'o_sublevel')][div[contains(@class,'o_meta')]/h4[@class='o_title'][contains(.,'" + shortTitle + "')]]/div/a");
+		By titleBy = By.xpath("//div[contains(@class,'o_sublevel')]/div[contains(@class,'o_meta')]/h4/a[span[contains(.,'" + shortTitle + "')]]");
 		OOGraphene.waitElement(titleBy, browser);
 		List<WebElement> titleLinks = browser.findElements(titleBy);
 		Assert.assertEquals(1, titleLinks.size());

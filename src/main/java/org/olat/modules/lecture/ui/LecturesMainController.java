@@ -63,7 +63,8 @@ public class LecturesMainController extends MainLayoutBasicController implements
 		listenTo(columnLayoutCtr); // auto dispose later
 		putInitialPanel(columnLayoutCtr.getInitialComponent());
 		
-		content.rootController("[ROOT]", lectureCoachingCtrl);
+		String title = translate("coach.lectures");
+		content.rootController(title, lectureCoachingCtrl);
 	}
 
 	@Override

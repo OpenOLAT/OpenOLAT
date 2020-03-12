@@ -59,7 +59,10 @@ public class GTARunController extends BasicController implements Activateable2 {
 	private GTACoachSelectionController markedCtrl;
 	private GTACoachManagementController manageCtrl;
 
-	private Link runLink, coachLink, markedLink, manageLink;
+	private Link runLink;
+	private Link coachLink;
+	private Link markedLink;
+	private Link manageLink;
 	private VelocityContainer mainVC;
 	private SegmentViewComponent segmentView;
 	
@@ -159,6 +162,16 @@ public class GTARunController extends BasicController implements Activateable2 {
 			}
 			
 		}
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(runCtrl == source) {
+			if(event == Event.CHANGED_EVENT) {
+				fireEvent(ureq, event);
+			}
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override

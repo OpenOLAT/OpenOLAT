@@ -328,6 +328,41 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	}
 	
 	@Test
+	public void getItemsByOwner() {
+		//create an author with 2 items
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("QOwner-and-only-2-");
+		QuestionItem item = questionDao.createAndPersist(id, "NGC 7837", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		dbInstance.commitAndCloseSession();
+
+		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null, Locale.ENGLISH);
+		params.setOwner("Owner-and-only");
+		
+		SortKey sortAsc = new SortKey(QuestionItemView.OrderBy.title.name(), true);
+		List<QuestionItemView> views = qItemQueriesDao.getItems(params, 0, -1, sortAsc);
+		Assert.assertNotNull(views);
+		Assert.assertFalse(views.isEmpty());	
+		boolean match = views.stream().anyMatch(view -> item.getKey().equals(view.getKey()));
+		Assert.assertTrue(match);
+	}
+	
+	@Test
+	public void getItemsByOwner_negativeTest() {
+		//create an author with 2 items
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("QOwn-29-");
+		QuestionItem item = questionDao.createAndPersist(id, "NGC 7838", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(item);
+
+		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null, Locale.ENGLISH);
+		params.setOwner(UUID.randomUUID().toString());
+		
+		SortKey sortAsc = new SortKey(QuestionItemView.OrderBy.title.name(), true);
+		List<QuestionItemView> views = qItemQueriesDao.getItems(params, 0, -1, sortAsc);
+		Assert.assertNotNull(views);
+		Assert.assertTrue(views.isEmpty());
+	}
+	
+	@Test
 	public void getItemsOfPool() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("Poolman-");
 		//create a pool

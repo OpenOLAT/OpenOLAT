@@ -580,7 +580,9 @@ public class LectureBlockDAO {
 
 		if(StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
 			sb.and()
-			  .append(" (entry.externalRef=:searchString or ")
+			  .append("(")
+			  .likeFuzzy("entry.externalRef", "fuzzySearchString", dbInstance.getDbVendor())
+			  .append(" or ")
 			  .likeFuzzy("entry.displayname", "fuzzySearchString", dbInstance.getDbVendor())
 			  .append(" or ")
 			  .likeFuzzy("block.title", "fuzzySearchString", dbInstance.getDbVendor())
@@ -648,9 +650,7 @@ public class LectureBlockDAO {
 		}
 		
 		if(StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
-			String searchString = searchParams.getSearchString();
-			query.setParameter("searchString", searchString);
-			String fuzzySearchString = PersistenceHelper.makeFuzzyQueryString(searchString);
+			String fuzzySearchString = PersistenceHelper.makeFuzzyQueryString(searchParams.getSearchString());
 			query.setParameter("fuzzySearchString", fuzzySearchString);
 		}
 		if(searchParams.getStartDate() != null) {
