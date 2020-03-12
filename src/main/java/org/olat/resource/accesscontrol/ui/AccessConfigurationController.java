@@ -417,11 +417,14 @@ public class AccessConfigurationController extends FormBasicController {
 						// Two unlimited bookin methods
 						if (aFrom == null && aTo == null && bFrom == null && bTo == null) {
 							overlap = true;
+							break;
 						// One unlimited method and one with start or end or both
 						} else if (aFrom == null && aTo == null && (bFrom != null || bTo != null)) {
 							overlap = true;
+							break;
 						} else if (aFrom == null && aTo != null && bFrom != null && aTo.compareTo(bFrom) >= 0) {
 							overlap = true;
+							break;
 						}
 					}
 					
@@ -433,8 +436,13 @@ public class AccessConfigurationController extends FormBasicController {
 							bTo.compareTo(aTo) <= 0 && 
 							bTo.compareTo(aFrom) >= 0) {
 						overlap = true;
+						break;
 					} 
 				}
+			}
+			
+			if (overlap) {
+				break;
 			}
 		}
 		confControllerContainer.contextPut("overlappingConfigs", overlap);
