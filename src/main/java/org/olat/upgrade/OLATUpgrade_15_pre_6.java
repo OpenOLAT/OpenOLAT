@@ -41,11 +41,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  *
  */
-public class OLATUpgrade_15_pre_5 extends OLATUpgrade {
+public class OLATUpgrade_15_pre_6 extends OLATUpgrade {
 
-	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_15_pre_5.class);
+	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_15_pre_6.class);
 
-	private static final String VERSION = "OLAT_15.pre.5";
+	private static final String VERSION = "OLAT_15.pre.6";
 	private static final String CATALOG_ORDER_INDEX = "CATALOG ORDER INDEX";
 
 	private AtomicInteger migrationCounter = new AtomicInteger(0);
@@ -53,7 +53,7 @@ public class OLATUpgrade_15_pre_5 extends OLATUpgrade {
 	@Autowired
 	private DB dbInstance;
 
-	public OLATUpgrade_15_pre_5() {
+	public OLATUpgrade_15_pre_6() {
 		super();
 	}
 
