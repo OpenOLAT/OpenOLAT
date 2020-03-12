@@ -220,6 +220,10 @@ public class AdobeConnectUtils {
 		}
 	}
 	
+	protected static String orDefault(String val, String defaultValue) {
+		return StringHelper.containsNonWhitespace(val) ? val : defaultValue;
+	}
+	
 	protected static void print(Document document) {
 		if(log.isDebugEnabled()) {
 		    try(StringWriter writer = new StringWriter()) {

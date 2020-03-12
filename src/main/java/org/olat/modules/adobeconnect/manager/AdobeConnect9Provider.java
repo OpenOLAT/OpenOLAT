@@ -19,6 +19,8 @@
  */
 package org.olat.modules.adobeconnect.manager;
 
+import static org.olat.modules.adobeconnect.manager.AdobeConnectUtils.orDefault;
+
 import java.net.URI;
 import java.util.List;
 
@@ -88,8 +90,8 @@ public class AdobeConnect9Provider extends AbstractAdobeConnectProvider {
 		UriBuilder builder = adobeConnectModule.getAdobeConnectUriBuilder();
 		builder
 			.queryParam("action", "principal-update")
-			.queryParam("first-name", identity.getUser().getFirstName())
-			.queryParam("last-name", identity.getUser().getLastName());
+			.queryParam("first-name", orDefault(identity.getUser().getFirstName(), "John"))
+			.queryParam("last-name", orDefault(identity.getUser().getLastName(), "Doe"));
 		if(!adobeConnectModule.isLoginCompatibilityMode()) {
 			builder
 				.queryParam("email", identity.getUser().getEmail());
