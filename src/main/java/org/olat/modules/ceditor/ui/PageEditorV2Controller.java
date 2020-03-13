@@ -451,7 +451,7 @@ public class PageEditorV2Controller extends BasicController {
 		if(target == null || source == null) {
 			return;
 		}
-		if(target == editorCmp) {
+		if(target == editorCmp || source == target) {
 			editorCmp.setDirty(true);
 			return; // not supported yet
 		}
@@ -465,7 +465,7 @@ public class PageEditorV2Controller extends BasicController {
 				&& !(targetParent == editorCmp && editorCmp.indexOfRootComponent(target) >= 0)) {
 			return;
 		}
-		
+
 		// do the thing
 		boolean ok = false;
 		boolean after = dropEvent.getPosition() == PositionEnum.bottom;
