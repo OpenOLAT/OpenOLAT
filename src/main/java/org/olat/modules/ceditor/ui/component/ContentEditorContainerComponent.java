@@ -177,6 +177,8 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 	}
 	
 	public void setElementAt(ContentEditorFragment component, int column, String sibling) {
+		if(!checkAdd(component)) return;
+
 		editorPart.setElementAt(component.getElementId(), column, sibling);
 		addComponent(component);
 		setDirty(true);
@@ -199,9 +201,20 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 	}
 	
 	public void addElement(ContentEditorFragment newComponent, ContentEditorFragment collocator, PageElementTarget target) {
+		if(!checkAdd(newComponent)) return;
+		
 		editorPart.addElement(newComponent.getElementId(), collocator.getElementId(), target);
 		addComponent(newComponent);
 		setDirty(true);
+	}
+	
+	private boolean checkAdd(ContentEditorFragment componentToAdd) {
+		if(componentToAdd == this) {
+			log.warn("Add container to itself: {}", componentToAdd);
+			setDirty(true);
+			return false;
+		}
+		return true;
 	}
 	
 	private void doDropFragment(UserRequest ureq) {
@@ -253,7 +266,8 @@ public class ContentEditorContainerComponent extends FormBaseComponentImpl imple
 	}
 	
 	public void addComponent(ContentEditorFragment fragmentCmp) {
-		if(fragmentCmp == null) return;
+		if(fragmentCmp == null || components.contains(fragmentCmp)) return;
+		
 		components.add(fragmentCmp);
 		if(getTranslator() != null) {
 			fragmentCmp.setTranslator(getTranslator());

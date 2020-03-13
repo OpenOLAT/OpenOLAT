@@ -85,13 +85,15 @@ public class ContentEditorComponent extends FormBaseComponentImpl implements Com
 	public void setRootComponents(List<ContentEditorFragment> components) {
 		rootComponents = new ArrayList<>(components);
 		for(ContentEditorFragment component:components) {
-			component.setTranslator(getTranslator());
+			if(getTranslator() != null) {
+				component.setTranslator(getTranslator());
+			}
 		}
 		setDirty(true);
 	}
 	
 	public void addRootComponent(ContentEditorFragment component) {
-		if(rootComponents.contains(component)) return;
+		if(rootComponents.contains(component) || !checkAdd(component)) return;
 		
 		rootComponents.add(component);
 		setDirty(true);
@@ -101,6 +103,8 @@ public class ContentEditorComponent extends FormBaseComponentImpl implements Com
 	}
 	
 	public void addRootComponent(int index, ContentEditorFragment component) {
+		if(!checkAdd(component)) return;
+		
 		if(index >= 0 && index < rootComponents.size()) {
 			rootComponents.add(index, component);
 		} else {
@@ -110,6 +114,14 @@ public class ContentEditorComponent extends FormBaseComponentImpl implements Com
 		if(getTranslator() != null) {
 			component.setTranslator(getTranslator());
 		}
+	}
+	
+	private boolean checkAdd(ContentEditorFragment componentToAdd) {
+		if(componentToAdd == this) {
+			setDirty(true);// add to itself forbidden
+			return false;
+		}
+		return true;
 	}
 	
 	public boolean removeRootComponent(ContentEditorFragment component) {

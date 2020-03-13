@@ -154,6 +154,8 @@
 										<exclude>**/fullcalendar/*</exclude>
 										<exclude>**/paella/**/*</exclude>
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
+										<exclude>**/openolat/jquery.contenteditor.v2.js</exclude>
+										<exclude>**/interactjs/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>
@@ -190,6 +192,8 @@
 										<exclude>**/mediaelementjs/**/*</exclude>
 										<exclude>**/paella/**/*</exclude>
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
+										<exclude>**/openolat/jquery.contenteditor.v2.js</exclude>
+										<exclude>**/interactjs/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>
@@ -315,6 +319,8 @@
 										<exclude>**/mediaelementjs/**/*</exclude>
 										<exclude>**/paella/**/*</exclude>
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
+										<exclude>**/openolat/jquery.contenteditor.v2.js</exclude>
+										<exclude>**/interactjs/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>
@@ -355,6 +361,8 @@
 										<exclude>**/mediaelementjs/**/*</exclude>
 										<exclude>**/paella/**/*</exclude>
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
+										<exclude>**/openolat/jquery.contenteditor.v2.js</exclude>
+										<exclude>**/interactjs/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>
