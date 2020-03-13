@@ -162,14 +162,23 @@ public class PaypalCheckoutAccessConfigurationController extends AbstractConfigu
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		String priceStr = priceEl.getValue();
+		Double priceDbl = 0d;
+		
 		priceEl.clearError();
 		try {
-			double priceDbl = Double.parseDouble(priceStr);
+			priceDbl = Double.parseDouble(priceStr);
 			if(priceDbl <= 0.0d) {
 				priceEl.setErrorKey("price.error", null);
 				allOk = false;
-			}
+			} 			
 		} catch(Exception e) {
+			priceEl.setErrorKey("price.error", null);
+			allOk = false;
+		}
+		
+		try {
+			PriceFormat.format(BigDecimal.valueOf(priceDbl));
+		} catch (Exception e) {
 			priceEl.setErrorKey("price.error", null);
 			allOk = false;
 		}
@@ -177,6 +186,11 @@ public class PaypalCheckoutAccessConfigurationController extends AbstractConfigu
 		currencyEl.clearError();
 		if(!currencyEl.isOneSelected()) {
 			currencyEl.setErrorKey("currency.error", null);
+			allOk = false;
+		}
+
+		if (datesEl.getDate() != null && datesEl.getSecondDate() != null && datesEl.getDate().compareTo(datesEl.getSecondDate()) > 0) {
+			datesEl.setErrorKey("date.error", null);
 			allOk = false;
 		}
 

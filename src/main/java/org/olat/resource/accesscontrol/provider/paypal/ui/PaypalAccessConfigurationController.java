@@ -41,6 +41,7 @@ import org.olat.resource.accesscontrol.model.PriceImpl;
 import org.olat.resource.accesscontrol.provider.paypal.PaypalModule;
 import org.olat.resource.accesscontrol.ui.AbstractConfigurationMethodController;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
+import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -185,14 +186,23 @@ public class PaypalAccessConfigurationController extends AbstractConfigurationMe
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		String priceStr = priceEl.getValue();
+		Double priceDbl = 0d;
+		
 		priceEl.clearError();
 		try {
-			double priceDbl = Double.parseDouble(priceStr);
+			priceDbl = Double.parseDouble(priceStr);
 			if(priceDbl <= 0.0d) {
 				priceEl.setErrorKey("price.error", null);
 				allOk = false;
-			}
+			} 			
 		} catch(Exception e) {
+			priceEl.setErrorKey("price.error", null);
+			allOk = false;
+		}
+		
+		try {
+			PriceFormat.format(BigDecimal.valueOf(priceDbl));
+		} catch (Exception e) {
 			priceEl.setErrorKey("price.error", null);
 			allOk = false;
 		}
@@ -200,6 +210,12 @@ public class PaypalAccessConfigurationController extends AbstractConfigurationMe
 		currencyEl.clearError();
 		if(!currencyEl.isOneSelected()) {
 			currencyEl.setErrorKey("currency.error", null);
+			allOk = false;
+		}
+
+		if (dateFrom.getValue() != null && dateTo.getValue() != null && dateFrom.getValue().compareTo(dateTo.getValue()) > 0) {
+			dateTo.setErrorKey("date.error", null);
+			dateFrom.setErrorKey(null, null);
 			allOk = false;
 		}
 

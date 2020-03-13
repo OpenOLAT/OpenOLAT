@@ -103,4 +103,17 @@ public class FreeAccessConfigurationController extends AbstractConfigurationMeth
 		link.setValidTo(dateTo.getDate());
 		return link;
 	}
+	
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		if (dateFrom.getValue() != null && dateTo.getValue() != null && dateFrom.getValue().compareTo(dateTo.getValue()) > 0) {
+			dateTo.setErrorKey("date.error", null);
+			dateFrom.setErrorKey(null, null);
+			allOk = false;
+		}
+		
+		return allOk;
+	}
 }

@@ -113,6 +113,12 @@ public class TokenAccessConfigurationController extends AbstractConfigurationMet
 			allOk = false;
 		}
 		
+		if (dateFrom.getValue() != null && dateTo.getValue() != null && dateFrom.getValue().compareTo(dateTo.getValue()) > 0) {
+			dateTo.setErrorKey("date.error", null);
+			dateFrom.setErrorKey(null, null);
+			allOk = false;
+		}
+		
 		return allOk && super.validateFormLogic(ureq);
 	}
 }
