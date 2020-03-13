@@ -61,6 +61,8 @@ public class RubricsComparison {
 	}
 	
 	public static boolean areIdentical(Collection<Rubric> rubrics, Attribute... attributes) {
+		if (rubrics == null || rubrics.size() <= 1) return true;
+		
 		Iterator<Rubric> iterator = rubrics.iterator();
 		Rubric master = iterator.next();
 		while (iterator.hasNext()) {

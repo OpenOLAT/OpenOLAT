@@ -22,6 +22,8 @@ package org.olat.modules.forms;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Collections;
+
 import org.junit.Test;
 import org.olat.modules.forms.RubricsComparison.Attribute;
 import org.olat.modules.forms.model.xml.Rubric;
@@ -45,6 +47,27 @@ public class RubricsComparisonTest {
 		
 		Attribute[] all = RubricsComparison.Attribute.values();
 		boolean areIdentical = RubricsComparison.areIdentical(asList(rubric1, rubric2, rubric3), all);
+
+		assertThat(areIdentical).isTrue();
+	}
+	
+	@Test
+	public void shouldReturnIdentitcalIfOnlyOneRubric() {
+		Rubric rubric1 = createRubric();
+		Slider slider1 = new Slider();
+		slider1.setStartLabel("start");
+		rubric1.setSliders(asList(slider1));
+		
+		Attribute[] all = RubricsComparison.Attribute.values();
+		boolean areIdentical = RubricsComparison.areIdentical(asList(rubric1), all);
+
+		assertThat(areIdentical).isTrue();
+	}
+	
+	@Test
+	public void shouldReturnIdenticalIfNoRubric() {
+		Attribute[] all = RubricsComparison.Attribute.values();
+		boolean areIdentical = RubricsComparison.areIdentical(Collections.emptyList(), all);
 
 		assertThat(areIdentical).isTrue();
 	}
@@ -213,6 +236,7 @@ public class RubricsComparisonTest {
 		
 		findDifference(rubric1, rubric2, Attribute.slidersLabel);
 	}
+
 	
 	private void findDifference(Rubric rubric1, Rubric rubric2, Attribute... attribute) {
 		boolean areIdentical = RubricsComparison.areIdentical(asList(rubric1, rubric2), attribute);

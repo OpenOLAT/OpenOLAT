@@ -125,6 +125,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private DeleteConfirmationController deleteConfirmationCtrl;
 	private SelectBusinessGroupController selectGroupCtrl;
 	private PoolsController selectPoolCtrl;
+	private ShareItemOptionController shareItemsCtrl;
 
 	private final QPoolSecurityCallback qPoolSecurityCallback;
 	private final QuestionItemsSource itemSource;
@@ -475,17 +476,15 @@ public class QuestionItemDetailsController extends BasicController implements To
 			cmc.deactivate();
 			cleanUp();
 		} else if(source == selectGroupCtrl) {
+			cmc.deactivate();
 			if(event instanceof BusinessGroupSelectionEvent) {
 				BusinessGroupSelectionEvent bge = (BusinessGroupSelectionEvent)event;
 				List<BusinessGroup> groups = bge.getGroups();
 				if(groups.size() > 0) {
 					QuestionItem item = (QuestionItem)((SelectBusinessGroupController)source).getUserObject();
-					doShareItemsWithGroup(ureq, item, groups);
-					metadatasCtrl.updateShares();
+					doShareItemsToGroups(ureq, Collections.singletonList(item), groups);
 				}
 			}
-			cmc.deactivate();
-			cleanUp();
 		} else if (source == selectPoolCtrl) {
 			cmc.deactivate();
 			if(event instanceof QPoolSelectionEvent) {
@@ -493,10 +492,15 @@ public class QuestionItemDetailsController extends BasicController implements To
 				List<Pool> pools = qpe.getPools();
 				if(pools.size() > 0) {
 					QuestionItemShort item = (QuestionItemShort)selectPoolCtrl.getUserObject();
-					doShareItemsWithPool(ureq, item, pools);
-					metadatasCtrl.updateShares();
+					doShareItemsToPools(ureq, Collections.singletonList(item), pools);
 				}
 			}	
+		}  else if(source == shareItemsCtrl) {
+			if(event instanceof QPoolEvent) {
+				metadatasCtrl.updateShares();
+				fireEvent(ureq, event);
+			}
+			cmc.deactivate();
 			cleanUp();
 		} else if (source == reviewActionCtrl) {
 			if (QItemReviewEvent.START.equals(event.getCommand())) {
@@ -559,6 +563,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 		removeAsListenerAndDispose(reviewStartCtrl);
 		removeAsListenerAndDispose(deleteConfirmationCtrl);
 		removeAsListenerAndDispose(confirmEndOfLifeCtrl);
+		removeAsListenerAndDispose(shareItemsCtrl);
 		cmc = null;
 		copyConfirmationCtrl = null;
 		conversionConfirmationCtrl = null;
@@ -568,6 +573,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 		reviewStartCtrl = null;
 		deleteConfirmationCtrl = null;
 		confirmEndOfLifeCtrl = null;
+		shareItemsCtrl = null;
 	}
 	
 	private void doConfirmStartReview(UserRequest ureq) {
@@ -748,14 +754,40 @@ public class QuestionItemDetailsController extends BasicController implements To
 		listenTo(cmc);
 	}
 	
-	private void doShareItemsWithGroup(UserRequest ureq, QuestionItemShort item, List<BusinessGroup> groups) {
-		qpoolService.shareItemsWithGroups(Collections.singletonList(item), groups, false);
-		fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEM_SHARED));
+	private void doShareItemsToGroups(UserRequest ureq, List<QuestionItemShort> items, List<BusinessGroup> groups) {
+		removeAsListenerAndDispose(shareItemsCtrl);
+		shareItemsCtrl = new ShareItemOptionController(ureq, getWindowControl(), items, groups, null);
+		listenTo(shareItemsCtrl);
+		
+		String title;
+		if (groups != null && groups.size() == 1) {
+			title = translate("share.item.group", new String[] {groups.get(0).getName()});
+		} else {
+			title = translate("share.item.groups");
+		}
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				shareItemsCtrl.getInitialComponent(), true, title);
+		cmc.activate();
+		listenTo(cmc);
 	}
-
-	private void doShareItemsWithPool(UserRequest ureq, QuestionItemShort item, List<Pool> pools) {
-		qpoolService.addItemsInPools(Collections.singletonList(item), pools, false);
-		fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEM_SHARED));
+	
+	private void doShareItemsToPools(UserRequest ureq, List<QuestionItemShort> items, List<Pool> pools) {
+		removeAsListenerAndDispose(shareItemsCtrl);
+		shareItemsCtrl = new ShareItemOptionController(ureq, getWindowControl(), items, null, pools);
+		listenTo(shareItemsCtrl);
+		
+		String title;
+		if (pools != null && pools.size() == 1) {
+			title = translate("share.item.pool", new String[] {pools.get(0).getName()});
+		} else {
+			title = translate("share.item.pools");
+		}
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				shareItemsCtrl.getInitialComponent(), true, title);
+		cmc.activate();
+		listenTo(cmc);
 	}
 
 	private void doConfirmDelete(UserRequest ureq, QuestionItem item) {
