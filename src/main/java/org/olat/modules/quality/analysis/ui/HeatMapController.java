@@ -23,6 +23,7 @@ import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
@@ -205,8 +206,10 @@ public class HeatMapController extends GroupByController {
 					columnStatistics.add((HeatMapStatistic)rowTotal);
 				}
 			}
-			Rubric rubric = getSliders().stream().map(SliderWrapper::getRubric).findFirst().get();
-			total = analysisService.calculateSliderTotal(columnStatistics, rubric);
+			Optional<Rubric> rubric = getSliders().stream().map(SliderWrapper::getRubric).findFirst();
+			if (rubric.isPresent()) {
+				total = analysisService.calculateSliderTotal(columnStatistics, rubric.get());
+			}
 		}
 		return total;
 	}
