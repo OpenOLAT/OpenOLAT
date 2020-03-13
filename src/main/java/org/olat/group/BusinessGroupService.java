@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
@@ -204,11 +205,35 @@ public interface BusinessGroupService {
 	 * @param copyParticipants
 	 * @param copyMemberVisibility
 	 * @param copyWaitingList
-	 * @return The copied business group
 	 */
 	public BusinessGroup copyBusinessGroup(Identity identity, BusinessGroup sourceBusinessGroup, String targetName, String targetDescription,
 			Integer targetMin, Integer targetMax, boolean copyAreas, boolean copyCollabToolConfig, boolean copyRights,
 			boolean copyOwners, boolean copyParticipants, boolean copyMemberVisibility, boolean copyWaitingList, boolean copyRelations);
+	
+	/**
+	 * Create and persist new business groups based on a source group.
+	 * @param sourceBusinessGroup The group that will be used as the source group and everything
+	 * @param targetNames A list of group names
+	 * @param targetDescription The description
+	 * @param targetMin
+	 * @param targetMax
+	 * @param targetResource
+	 * @param areaLookupMap The area lookup map (the target group will references
+	 *          mapped areas) or null (target group will reference the same areas
+	 *          as the original group)
+	 * @param copyAreas
+	 * @param copyCollabToolConfig
+	 * @param copyRights
+	 * @param copyOwners
+	 * @param copyParticipants
+	 * @param copyMemberVisibility
+	 * @param copyWaitingList
+	 * @return The copied business group
+	 */
+	public void copyBusinessGroup(Identity identity, BusinessGroup sourceBusinessGroup, Set<String> targetNames, String targetDescription,
+			Integer targetMin, Integer targetMax, boolean copyAreas, boolean copyCollabToolConfig, boolean copyRights,
+			boolean copyOwners, boolean copyParticipants, boolean copyMemberVisibility, boolean copyWaitingList, boolean copyRelations);
+
 
 	/**
 	 * Merge the owners, participants and the waiting list.

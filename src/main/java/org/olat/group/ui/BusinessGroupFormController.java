@@ -26,7 +26,6 @@ import java.util.Set;
 
 import org.olat.admin.restapi.RestapiAdminController;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
@@ -48,6 +47,7 @@ import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Implements a Business group creation dialog using FlexiForms.
@@ -105,7 +105,8 @@ public class BusinessGroupFormController extends FormBasicController {
 	/** The value for the autoCloseRanks checkbox. */
 	private final String[] autoCloseValues = new String[] { translate("create.form.enableAutoCloseRanks") };
 	
-	private final BusinessGroupService businessGroupService;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	
 	/**
 	 * Creates this controller.
@@ -118,7 +119,6 @@ public class BusinessGroupFormController extends FormBasicController {
 	public BusinessGroupFormController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
 		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT);
 		this.businessGroup = businessGroup;
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		initForm(ureq);
 	}
 	
@@ -134,16 +134,14 @@ public class BusinessGroupFormController extends FormBasicController {
 		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT);
 		this.businessGroup = businessGroup;
 		this.bulkMode = bulkMode;
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		initForm(ureq); // depends on bulkMode flag
 	}
 	
 	public BusinessGroupFormController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup, Form rootForm) {
 		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT, null, rootForm);
 		this.businessGroup = businessGroup;
-		bulkMode = false;
+		bulkMode = true;
 		embbeded = true;
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		initForm(ureq); // depends on bulkMode flag
 	}
 

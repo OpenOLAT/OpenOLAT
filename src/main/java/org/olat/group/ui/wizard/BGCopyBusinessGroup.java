@@ -19,6 +19,8 @@
  */
 package org.olat.group.ui.wizard;
 
+import java.util.Set;
+
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupShort;
@@ -30,6 +32,7 @@ import org.olat.group.BusinessGroupShort;
 public class BGCopyBusinessGroup implements BusinessGroupShort {
 
 	private String name;
+	private Set<String> names;
 	private String description;
 	private Integer minParticipants;
 	private Integer maxParticipants;
@@ -69,6 +72,15 @@ public class BGCopyBusinessGroup implements BusinessGroupShort {
 		this.name = name;
 	}
 	
+	public Set<String> getNames() {
+		return names;
+	}
+
+	public void setNames(Set<String> names) {
+		this.names = names;
+	}
+
+
 	@Override
 	public BusinessGroupManagedFlag[] getManagedFlags() {
 		return BusinessGroupManagedFlag.EMPTY_ARRAY;

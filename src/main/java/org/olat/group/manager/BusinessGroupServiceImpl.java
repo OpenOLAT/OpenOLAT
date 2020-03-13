@@ -350,6 +350,20 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	public List<BusinessGroup> loadAllBusinessGroups() {
 		return businessGroupDAO.loadAll();
 	}
+	
+	
+
+	@Override
+	public void copyBusinessGroup(Identity identity, BusinessGroup sourceBusinessGroup,
+			Set<String> targetNames, String targetDescription, Integer targetMin, Integer targetMax, boolean copyAreas,
+			boolean copyCollabToolConfig, boolean copyRights, boolean copyOwners, boolean copyParticipants,
+			boolean copyMemberVisibility, boolean copyWaitingList, boolean copyRelations) {
+		for(String targetName:targetNames) {
+			copyBusinessGroup(identity, sourceBusinessGroup, targetName, targetDescription,
+					targetMin, targetMax, copyAreas, copyCollabToolConfig, copyRights,
+					copyOwners, copyParticipants, copyMemberVisibility, copyWaitingList, copyRelations);
+		}
+	}
 
 	@Override
 	public BusinessGroup copyBusinessGroup(Identity identity, BusinessGroup sourceBusinessGroup, String targetName, String targetDescription,
