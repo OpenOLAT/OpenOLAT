@@ -19,6 +19,7 @@
  */
 package org.olat.modules.lecture.ui.coach;
 
+import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
@@ -26,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.modules.lecture.model.LectureRepositoryEntryInfos;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.model.RepositoryEntryLifecycle;
@@ -47,8 +49,11 @@ implements SortableFlexiTableDataModel<LectureRepositoryEntryInfos>  {
 	}
 
 	@Override
-	public void sort(SortKey sortKey) {
-		//
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			List<LectureRepositoryEntryInfos> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+			super.setObjects(rows);
+		}
 	}
 	
 	@Override
