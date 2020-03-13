@@ -82,13 +82,13 @@ public class BGCopySingleGroupStepController extends StepFormBasicController   {
 		BGCopyBusinessGroup currentCopy = getWithOriginal(copies);
 		if(currentCopy == null) {
 			BGCopyBusinessGroup group = new BGCopyBusinessGroup(originalGroup);
-			group.setName(groupController.getGroupName());
+			group.setNames(groupController.getGroupNames());
 			group.setDescription(groupController.getGroupDescription());
 			group.setMinParticipants(groupController.getGroupMin());
 			group.setMaxParticipants(groupController.getGroupMax());
 			copies.add(group);
 		} else {
-			currentCopy.setName(groupController.getGroupName());
+			currentCopy.setNames(groupController.getGroupNames());
 			currentCopy.setDescription(groupController.getGroupDescription());
 			currentCopy.setMinParticipants(groupController.getGroupMin());
 			currentCopy.setMaxParticipants(groupController.getGroupMax());

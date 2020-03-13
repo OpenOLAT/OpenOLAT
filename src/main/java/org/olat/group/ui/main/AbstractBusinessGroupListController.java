@@ -697,7 +697,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 					boolean copyRelations = convertToBoolean(runContext, "resources");
 
 					for(BGCopyBusinessGroup copy:copies) {
-						businessGroupService.copyBusinessGroup(getIdentity(), copy.getOriginal(), copy.getName(), copy.getDescription(),
+						businessGroupService.copyBusinessGroup(getIdentity(), copy.getOriginal(), copy.getNames(), copy.getDescription(),
 								copy.getMinParticipants(), copy.getMaxParticipants(),
 								copyAreas, copyCollabToolConfig, copyRights, copyOwners, copyParticipants,
 								copyMemberVisibility, copyWaitingList, copyRelations);
