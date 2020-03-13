@@ -201,6 +201,7 @@ public class AccessConfigurationController extends FormBasicController {
 			if(event.equals(Event.DONE_EVENT)) {
 				OfferAccess newLink = newMethodCtrl.commitChanges();
 				addConfiguration(newLink);
+				checkOverlap();
 				confControllerContainer.setDirty(true);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
@@ -266,6 +267,8 @@ public class AccessConfigurationController extends FormBasicController {
 				addConfiguration(access);
 			}
 		}
+		
+		checkOverlap();
 	}
 
 	protected void replace(OfferAccess link) {
@@ -279,6 +282,7 @@ public class AccessConfigurationController extends FormBasicController {
 
 		if(!updated) {
 			addConfiguration(link);
+			checkOverlap();
 		} else {
 			confControllerContainer.setDirty(true);
 		}
@@ -304,7 +308,6 @@ public class AccessConfigurationController extends FormBasicController {
 		}
 		
 		updateConfirmationEmail();
-		checkOverlap();
 	}
 	
 	private void updateConfirmationEmail() {
@@ -352,6 +355,7 @@ public class AccessConfigurationController extends FormBasicController {
 			listenTo(cmc);
 		} else {
 			addConfiguration(link);
+			checkOverlap();
 		}
 	}
 	
@@ -404,47 +408,50 @@ public class AccessConfigurationController extends FormBasicController {
 	private void checkOverlap() {
 		boolean overlap = false;
 		
+		// Take a controller from the list
 		for (AccessInfo confControllerA : confControllers) {
+			// Compare it to every other from the list
 			for (AccessInfo confControllerB : confControllers) {
-				// Dont compare a confController with itself
+				// Don't compare a confController with itself
 				if (!confControllerA.equals(confControllerB)) {
 					Date aFrom = confControllerA.getLink().getValidFrom();
 					Date aTo = confControllerA.getLink().getValidTo();
 					Date bFrom = confControllerB.getLink().getValidFrom();
 					Date bTo = confControllerB.getLink().getValidTo();
-					
-					if (aFrom == null || aTo == null || bFrom == null || bTo == null) {
-						// Two unlimited bookin methods
-						if (aFrom == null && aTo == null && bFrom == null && bTo == null) {
-							overlap = true;
-							break;
-						// One unlimited method and one with start or end or both
-						} else if (aFrom == null && aTo == null && (bFrom != null || bTo != null)) {
-							overlap = true;
-							break;
-						} else if (aFrom == null && aTo != null && bFrom != null && aTo.compareTo(bFrom) >= 0) {
-							overlap = true;
-							break;
-						}
-					}
-					
-					// Options: Dates cross each other or on date range is within another
-					else if ((aFrom.compareTo(bFrom) <= 0 &&
-							aTo.compareTo(bTo) <= 0 && 
-							bFrom.compareTo(aTo) <= 0) ||
-						(aFrom.compareTo(bFrom) <= 0) &&
-							bTo.compareTo(aTo) <= 0 && 
-							bTo.compareTo(aFrom) >= 0) {
+
+					// One unlimited booking method and another
+					if (aFrom == null && aTo == null) {
 						overlap = true;
 						break;
 					} 
+					// Start and end overlap
+					else if (aTo != null && bFrom != null && aTo.compareTo(bFrom) >= 0){
+						// Exclude not overlapping methods
+						// Negate condition for no overlap => condition for overlap
+						if (!(aFrom != null && bTo != null && aFrom.compareTo(bTo) > 0)) {
+							overlap = true; 
+							break;
+						}
+					} 
+					// Two booking methods without start date
+					else if (aFrom == null && bFrom == null) {
+						overlap = true;
+						break;
+					} 
+					// Two booking methods without end date
+					else if (aTo == null && bTo == null) {
+						overlap = true;
+						break;
+					}
 				}
 			}
-			
+			// If there is an overlap, don't go for extra checks
 			if (overlap) {
 				break;
 			}
 		}
+		
+		// Display a warning
 		confControllerContainer.contextPut("overlappingConfigs", overlap);
 		confControllerContainer.setDirty(true);
 	}
