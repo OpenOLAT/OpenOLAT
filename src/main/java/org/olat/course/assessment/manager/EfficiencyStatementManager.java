@@ -44,7 +44,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.CourseFactory;
@@ -115,6 +114,7 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 
 	public UserEfficiencyStatement createUserEfficiencyStatement(Date creationDate, Float score, Boolean passed, Identity identity, OLATResource resource) {
 		UserEfficiencyStatementImpl efficiencyProperty = new UserEfficiencyStatementImpl();
+		efficiencyProperty.setVersion(0);
 		if(creationDate == null) {
 			efficiencyProperty.setCreationDate(new Date());
 			efficiencyProperty.setLastModified(efficiencyProperty.getCreationDate());
@@ -211,24 +211,25 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 			if (efficiencyProperty == null) {
 				// create new
 				efficiencyProperty = new UserEfficiencyStatementImpl();
+				efficiencyProperty.setVersion(0);
 				efficiencyProperty.setCreationDate(new Date());
 				efficiencyProperty.setIdentity(assessedIdentity);
 				efficiencyProperty.setCourseRepoKey(repoEntry.getKey());
-				if(repoEntry != null) {
-					efficiencyProperty.setResource(repoEntry.getOlatResource());
-					efficiencyProperty.setCourseRepoKey(repoEntry.getKey());
-				}
+				efficiencyProperty.setResource(repoEntry.getOlatResource());
+				efficiencyProperty.setCourseRepoKey(repoEntry.getKey());
 				efficiencyProperty.setShortTitle(courseEnv.getRunStructure().getRootNode().getShortTitle());
 				efficiencyProperty.setTitle(courseEnv.getRunStructure().getRootNode().getLongTitle());
 				fillEfficiencyStatement(efficiencyStatement, lastModifications, efficiencyProperty);
 				dbInstance.getCurrentEntityManager().persist(efficiencyProperty);
 				if (debug) {
-					log.debug("creating new efficiency statement property::" + efficiencyProperty.getKey() + " for id::" + assessedIdentity.getKey() + " repoEntry::" + repoEntry.getKey());
+					log.debug("creating new efficiency statement property::{} for id::{} repoEntry:: {}",
+							efficiencyProperty.getKey(), assessedIdentity.getKey() , repoEntry.getKey());
 				}				
 			} else {
 				// update existing
 				if (debug) {
-					log.debug("updating efficiency statement property::" + efficiencyProperty.getKey() + " for id::" + assessedIdentity.getKey() + " repoEntry::" + repoEntry.getKey());
+					log.debug("updating efficiency statement property::{} for id::{} repoEntry::{}",
+							efficiencyProperty.getKey() , assessedIdentity.getKey() , repoEntry.getKey());
 				}
 				efficiencyProperty.setShortTitle(courseEnv.getRunStructure().getRootNode().getShortTitle());
 				efficiencyProperty.setTitle(courseEnv.getRunStructure().getRootNode().getLongTitle());
@@ -239,7 +240,8 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 			if (efficiencyProperty != null) {
 				// remove existing since now empty efficiency statements
 				if (debug) {
-					log.debug("removing efficiency statement property::" + efficiencyProperty.getKey() + " for id::"	+ assessedIdentity.getKey() + " repoEntry::" + repoEntry.getKey() + " since empty");
+					log.debug("removing efficiency statement property::{} for id::{} repoEntry::{} since empty",
+							efficiencyProperty.getKey(), assessedIdentity.getKey(), repoEntry.getKey());
 				}
 				dbInstance.getCurrentEntityManager().remove(efficiencyProperty);
 			}
@@ -728,9 +730,9 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 	 * false: always create new one (be careful with this one!)
 	 */	
 	public void updateEfficiencyStatements(final RepositoryEntry courseEntry, List<Identity> identities) {
-		if (identities.size() > 0) {
+		if (!identities.isEmpty()) {
 			final ICourse course = CourseFactory.loadCourse(courseEntry);
-			log.info(Tracing.M_AUDIT, "Updating efficiency statements for course::" + course.getResourceableId() + ", this might produce temporary heavy load on the CPU");
+			log.info(Tracing.M_AUDIT, "Updating efficiency statements for course::{}, this might produce temporary heavy load on the CPU", course.getResourceableId());
 
 			// preload cache to speed up things
 			AssessmentManager am = course.getCourseEnvironment().getAssessmentManager();		
@@ -738,13 +740,10 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 			for (Identity identity : identities) {			
 				//o_clusterOK: by ld
 				OLATResourceable efficiencyStatementResourceable = am.createOLATResourceableForLocking(identity);
-				CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(efficiencyStatementResourceable, new SyncerExecutor() {
-					@Override
-					public void execute() {					
-						// create temporary user course env
-						UserCourseEnvironment uce = AssessmentHelper.createInitAndUpdateUserCourseEnvironment(identity, course);
-						updateUserEfficiencyStatement(uce, courseEntry);
-					}
+				CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(efficiencyStatementResourceable, () -> {					
+					// create temporary user course env
+					UserCourseEnvironment uce = AssessmentHelper.createInitAndUpdateUserCourseEnvironment(identity, course);
+					updateUserEfficiencyStatement(uce, courseEntry);
 				});
 				if (Thread.interrupted()) {
 					break;
@@ -791,7 +790,7 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 					.setParameter("identityKey", identity.getKey())
 					.executeUpdate();
 			
-			if(log.isDebugEnabled()) log.debug(numOfDeletedStatements + " efficiency statements deleted for identity=" + identity);
+			log.debug("{} efficiency statements deleted for identity={}", numOfDeletedStatements, identity);
 		} catch (Exception e) {
 			log.error("deleteUserData(EfficiencyStatements): " + identity, e);
 		}

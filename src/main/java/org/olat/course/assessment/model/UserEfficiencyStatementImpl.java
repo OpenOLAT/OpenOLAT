@@ -31,7 +31,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.Version;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.NotFound;
@@ -67,7 +66,8 @@ public class UserEfficiencyStatementImpl implements Persistable, UserEfficiencyS
 	})
 	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
 	private Long key;
-	@Version
+
+	@Column(name="version", nullable=false, unique=false, insertable=true, updatable=true)
 	private int version = 0;
 
 	@Temporal(TemporalType.TIMESTAMP)
@@ -124,6 +124,14 @@ public class UserEfficiencyStatementImpl implements Persistable, UserEfficiencyS
 	
 	public void setKey(Long key) {
 		this.key = key;
+	}
+
+	public int getVersion() {
+		return version;
+	}
+
+	public void setVersion(int version) {
+		this.version = version;
 	}
 
 	@Override
