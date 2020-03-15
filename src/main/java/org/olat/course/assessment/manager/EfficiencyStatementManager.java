@@ -34,7 +34,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.persistence.PersistenceException;
+
 import org.apache.logging.log4j.Logger;
+import org.hibernate.exception.ConstraintViolationException;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
@@ -220,7 +223,7 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 				efficiencyProperty.setShortTitle(courseEnv.getRunStructure().getRootNode().getShortTitle());
 				efficiencyProperty.setTitle(courseEnv.getRunStructure().getRootNode().getLongTitle());
 				fillEfficiencyStatement(efficiencyStatement, lastModifications, efficiencyProperty);
-				dbInstance.getCurrentEntityManager().persist(efficiencyProperty);
+				efficiencyProperty = persistOrLoad(efficiencyProperty, repoEntry, assessedIdentity);
 				if (debug) {
 					log.debug("creating new efficiency statement property::{} for id::{} repoEntry:: {}",
 							efficiencyProperty.getKey(), assessedIdentity.getKey() , repoEntry.getKey());
@@ -252,6 +255,23 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_EFFICIENCY_STATEMENT_CHANGED, assessedIdentity);
 		OLATResourceable courseOres = OresHelper.createOLATResourceableInstance(CourseModule.class, courseEnv.getCourseResourceableId());
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, courseOres);
+	}
+	
+	private UserEfficiencyStatementImpl persistOrLoad(UserEfficiencyStatementImpl efficiencyProperty, RepositoryEntry entry, Identity identity) {
+		try {
+			dbInstance.commit();
+			dbInstance.getCurrentEntityManager().persist(efficiencyProperty);
+			dbInstance.commit();
+		} catch(PersistenceException e) {
+			if(e.getCause() instanceof ConstraintViolationException) {
+				log.warn("", e);
+				dbInstance.rollback();
+				efficiencyProperty = getUserEfficiencyStatementFull(entry, identity);
+			} else {
+				log.error("", e);
+			}
+		}
+		return efficiencyProperty;
 	}
 	
 	public void fillEfficiencyStatement(EfficiencyStatement efficiencyStatement, AssessmentNodesLastModified lastModifications, UserEfficiencyStatementImpl efficiencyProperty) {
