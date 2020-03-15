@@ -53,6 +53,8 @@ import org.olat.course.run.RunMainController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NavigationHandler;
 import org.olat.course.run.navigation.NodeClickedRef;
+import org.olat.course.run.scoring.NoEvaluationAccounting;
+import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
@@ -92,8 +94,9 @@ public class PreviewRunController extends MainLayoutBasicController {
 		luTree = new MenuTree(null, "luTreeRun", this);
 		luTree.setScrollTopOnClick(true);
 
-		// build up the running structure for this user;
-		uce = new UserCourseEnvironmentImpl(identEnv, cenv);
+		// build up the running structure for this user
+		ScoreAccounting noScoreAccounting = new NoEvaluationAccounting();
+		uce = new UserCourseEnvironmentImpl(identEnv, cenv, noScoreAccounting);
 		navHandler = new NavigationHandler(uce, null, true);
 		
 		// evaluate scoring
@@ -149,11 +152,7 @@ public class PreviewRunController extends MainLayoutBasicController {
 		}
 		return sb.toString();
 	}
-	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == luTree) {
@@ -206,10 +205,7 @@ public class PreviewRunController extends MainLayoutBasicController {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == currentNodeController) {
@@ -266,9 +262,6 @@ public class PreviewRunController extends MainLayoutBasicController {
 		return true;
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		if (currentNodeController != null) {

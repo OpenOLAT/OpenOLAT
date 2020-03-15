@@ -84,6 +84,18 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 			courseReadOnly = courseEnvironment.getCourseGroupManager().getCourseEntry().getEntryStatus() == RepositoryEntryStatusEnum.closed;
 		}
 	}
+
+	/**
+	 * Constructor used for previewing the course.
+	 * 
+	 * @param identityEnvironment The identity environment
+	 * @param courseEnvironment The course environment
+	 * @param scoreAccounting Fix the score accounting implementation
+	 */
+	public UserCourseEnvironmentImpl(IdentityEnvironment identityEnvironment, CourseEnvironment courseEnvironment, ScoreAccounting scoreAccounting) {
+		this(identityEnvironment, courseEnvironment, null, null, null, null, null, null, null, null);
+		this.scoreAccounting = scoreAccounting;
+	}
 	
 	public UserCourseEnvironmentImpl(IdentityEnvironment identityEnvironment, CourseEnvironment courseEnvironment, Boolean courseReadOnly) {
 		this(identityEnvironment, courseEnvironment, null, null, null, null, null, null, null, courseReadOnly);
@@ -161,7 +173,7 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 	}
 	
 	private void initScoreAccounting() {
-		scoreAccounting = isParticipant()? new AssessmentAccounting(this): new NoEvaluationAccounting();
+		scoreAccounting = isParticipant() ? new AssessmentAccounting(this): new NoEvaluationAccounting();
 	}
 
 	@Override
