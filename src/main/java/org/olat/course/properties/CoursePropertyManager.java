@@ -114,6 +114,9 @@ public interface CoursePropertyManager extends IdentityAnonymizerCallback {
 	 */
 	public Property findCourseNodeProperty(CourseNode node, Identity identity, BusinessGroup grp, String name);
 	
+
+	public void appendText(CourseNode node, Identity identity, BusinessGroup grp, String name, String text);
+	
 	/**
 	 * Find a specific course node property (exact match. I.e. null values are taken into account)
 	 * @param node

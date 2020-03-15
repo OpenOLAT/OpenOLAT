@@ -150,6 +150,10 @@ public class NarrowedPropertyManager {
 		return pm.findProperty(identity, grp, resourceable, category, name);
 	}
 	
+	public void appendTextToProperty(Identity identity, BusinessGroup grp, String category, String name, String text) {
+		pm.appendTextProperty(identity, grp, resourceable, category, name, text);
+	}
+	
 	/**
 	 * Exact match
 	 * @param grp

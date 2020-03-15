@@ -87,7 +87,6 @@ public class AssessmentManagerTest extends OlatTestCase  {
 	private Identity student;
 	private final Float score = new Float(10);
 	private final Boolean passed = Boolean.TRUE;
-	private final Boolean fullyAssessed = Boolean.TRUE;
 	
 	@Autowired
 	private EfficiencyStatementManager efficiencyStatementManager;

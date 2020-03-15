@@ -61,7 +61,10 @@ public class UserNodeAuditManagerImpl implements UserNodeAuditManager {
 	@Override
 	public void appendToUserNodeLog(CourseNode courseNode, Identity identity, Identity assessedIdentity, String logText, Role by) {
 		String text = formatMessage(identity, logText, by) ;
+		cpm.appendText(courseNode, assessedIdentity, null, LOG_IDENTIFYER, text);
 		
+		
+		/*
 		Property logProperty = cpm.findCourseNodeProperty(courseNode, assessedIdentity, null, LOG_IDENTIFYER);
 		if (logProperty == null) {
 			logProperty = cpm.createCourseNodePropertyInstance(courseNode, assessedIdentity, null, LOG_IDENTIFYER, null, null, null, text);
@@ -72,12 +75,14 @@ public class UserNodeAuditManagerImpl implements UserNodeAuditManager {
 			logProperty.setTextValue(limitedLogContent);
 			cpm.updateProperty(logProperty);
 		}
+		*/
 	}
 		
 	@Override
 	public void appendToUserNodeLog(CourseNode courseNode, Identity identity, BusinessGroup assessedGroup, String logText, Role by) {
 		String text = formatMessage(identity, logText, by) ;
-		
+		cpm.appendText(courseNode, null, assessedGroup, LOG_IDENTIFYER, text);
+		/*
 		Property logProperty = cpm.findCourseNodeProperty(courseNode, null, assessedGroup, LOG_IDENTIFYER);
 		if (logProperty == null) {
 			logProperty = cpm.createCourseNodePropertyInstance(courseNode, null, assessedGroup, LOG_IDENTIFYER, null, null, null, text);
@@ -88,6 +93,7 @@ public class UserNodeAuditManagerImpl implements UserNodeAuditManager {
 			logProperty.setTextValue(limitedLogContent);
 			cpm.updateProperty(logProperty);
 		}
+		*/
 	}
 
 	private String formatMessage(Identity identity, String logText, Role by) {

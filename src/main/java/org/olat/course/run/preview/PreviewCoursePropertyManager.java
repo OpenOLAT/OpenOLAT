@@ -122,6 +122,11 @@ final class PreviewCoursePropertyManager implements CoursePropertyManager {
 	}
 
 	@Override
+	public void appendText(CourseNode node, Identity identity, BusinessGroup grp, String name, String text) {
+		// Not implemented
+	}
+
+	@Override
 	public Property findCourseNodeProperty(CourseNode node, BusinessGroup grp, String name) {
 		List<Property> propertyList = properties.get(buildPropertyHashKey(buildCourseNodePropertyCategory(node), null, grp, name));
 		return  (propertyList == null || propertyList.isEmpty()) ? null : propertyList.get(0);

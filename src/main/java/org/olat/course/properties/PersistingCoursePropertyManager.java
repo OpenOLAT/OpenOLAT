@@ -151,6 +151,12 @@ public class PersistingCoursePropertyManager implements CoursePropertyManager {
 	}
 
 	@Override
+	public void appendText(CourseNode node, Identity identity, BusinessGroup grp, String name, String text) {
+		String myCategory = buildCourseNodePropertyCategory(node);
+		pm.appendTextToProperty(identity, grp, myCategory, name, text);
+	}
+
+	@Override
 	public Property findCourseNodeProperty(CourseNode node, BusinessGroup grp, String name) {
 		String myCategory = buildCourseNodePropertyCategory(node);
 		return pm.findProperty(grp, myCategory, name);

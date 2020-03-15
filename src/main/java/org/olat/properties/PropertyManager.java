@@ -34,6 +34,7 @@ import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
@@ -602,6 +603,46 @@ public class PropertyManager implements UserDataDeletable {
 		            + ", name::" + name);
 		}
 		return props.get(0);
+	}
+	
+	public void appendTextProperty(Identity identity, BusinessGroup grp,
+			OLATResourceable resourceable, String category, String name, String textValue) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("update ").append(Property.class.getName()).append(" v ")
+		  .append(" set v.textValue=concat(v.textValue,:text), lastModified=:now");
+		  
+		if (identity != null) {
+			sb.and().append(" v.identity.key=:identityKey");
+		} else if(grp != null) {
+			sb.and().append(" v.grp.key=:groupKey");
+		}
+
+		sb
+		  .and().append("v.resourceTypeName=:resName")
+		  .and().append("v.resourceTypeId=:resId")
+		  .and().append("v.category=:cat")
+		  .and().append("v.name=:name");
+		
+		Query query = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("resName", resourceable.getResourceableTypeName())
+				.setParameter("resId", resourceable.getResourceableId())
+				.setParameter("cat", category)
+				.setParameter("name", name)
+				.setParameter("text", textValue)
+				.setParameter("now", new Date());
+		if (identity != null) {
+			query.setParameter("identityKey", identity.getKey());
+		} else if(grp != null) {
+			query.setParameter("groupKey", grp.getKey());
+		}
+
+		int row = query.executeUpdate();
+		if(row == 0) {
+			Property prop = createPropertyInstance(identity, grp, resourceable, category, name, null, null, null, textValue);
+			saveProperty(prop);
+		}
+		DBFactory.getInstance().commit();
 	}
 	
 	/**
