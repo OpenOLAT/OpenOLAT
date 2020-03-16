@@ -32,13 +32,13 @@ import java.util.List;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
@@ -607,6 +607,17 @@ public class PropertyManager implements UserDataDeletable {
 	
 	public void appendTextProperty(Identity identity, BusinessGroup grp,
 			OLATResourceable resourceable, String category, String name, String textValue) {
+		if(DBFactory.getInstance().isMySQL()) {
+			synchronized(this) {// without produce dead lock in MySQL
+				executeAppendTextProperty(identity, grp, resourceable,  category, name, textValue);
+			}
+		} else {
+			executeAppendTextProperty(identity, grp, resourceable,  category, name, textValue);
+		}
+	}
+	
+	private void executeAppendTextProperty(Identity identity, BusinessGroup grp,
+			OLATResourceable resourceable, String category, String name, String textValue) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("update ").append(Property.class.getName()).append(" v ")
 		  .append(" set v.textValue=concat(v.textValue,:text), lastModified=:now");
@@ -637,12 +648,14 @@ public class PropertyManager implements UserDataDeletable {
 			query.setParameter("groupKey", grp.getKey());
 		}
 
-		int row = query.executeUpdate();
+		int row = query
+				.executeUpdate();
+		DBFactory.getInstance().commit();
 		if(row == 0) {
 			Property prop = createPropertyInstance(identity, grp, resourceable, category, name, null, null, null, textValue);
 			saveProperty(prop);
+			DBFactory.getInstance().commit();
 		}
-		DBFactory.getInstance().commit();
 	}
 	
 	/**
