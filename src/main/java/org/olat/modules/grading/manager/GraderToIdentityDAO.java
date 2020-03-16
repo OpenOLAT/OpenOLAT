@@ -411,7 +411,7 @@ public class GraderToIdentityDAO {
 		  .append(" sum(case when assignment.status ").in(GradingAssignmentStatus.assigned, GradingAssignmentStatus.inProcess)
 		  .append("   and ((assignment.extendedDeadline is null and assignment.deadline < current_date) or assignment.extendedDeadline < current_date )")
 		  .append("   then 1 else 0 end) as overdueAssignments,")
-		  .append(" min(assignment.creationDate)")
+		  .append(" min(assignment.assignmentDate)")
 		  .append(" from gradingassignment as assignment")
 		  .append(" inner join assignment.referenceEntry as refEntry")
 		  .append(" inner join grader2identity rel on (assignment.grader.key=rel.key)")
@@ -445,7 +445,7 @@ public class GraderToIdentityDAO {
 		  .append(" sum(case when assignment.status ").in(GradingAssignmentStatus.assigned, GradingAssignmentStatus.inProcess)
 		  .append("   and ((assignment.extendedDeadline is null and assignment.deadline < current_date) or assignment.extendedDeadline < current_date )")
 		  .append("   then 1 else 0 end) as overdueAssignments,")
-		  .append(" min(assignment.creationDate)")
+		  .append(" min(assignment.assignmentDate)")
 		  .append(" from gradingassignment as assignment")
 		  .append(" inner join grader2identity rel on (assignment.grader.key=rel.key)");
 
