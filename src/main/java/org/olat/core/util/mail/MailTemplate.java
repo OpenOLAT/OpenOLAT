@@ -54,6 +54,7 @@ public abstract class MailTemplate {
 	private String subjectTemplate;
 	private String bodyTemplate;
 	private File[] attachments;
+	private File attachmentsTmpDir;
 	private VelocityContext context;
 	private Boolean cpfrom;
 	/**
@@ -129,6 +130,21 @@ public abstract class MailTemplate {
 	 */
 	public void setAttachments(File[] attachments) {
 		this.attachments = attachments;
+	}
+	
+	/**
+	 * @return The directory where the attachments are saved temporarily.
+	 */
+	public File getAttachmentsTmpDir() {
+		return attachmentsTmpDir;
+	}
+
+	/**
+	 * 
+	 * @param attachmentsTmpDir
+	 */
+	public void setAttachmentsTmpDir(File attachmentsTmpDir) {
+		this.attachmentsTmpDir = attachmentsTmpDir;
 	}
 
 	/**

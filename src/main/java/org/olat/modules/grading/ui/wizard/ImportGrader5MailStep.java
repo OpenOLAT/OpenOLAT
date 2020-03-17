@@ -55,6 +55,7 @@ public class ImportGrader5MailStep extends BasicStep {
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
 		ContactList contacts = new ContactList(getTranslator().translate("assign.grader.contact"));
 		contacts.addAllIdentites(graders.getGraders());
+		form.setMultipartEnabled(true);
 		return new ImportGraderMailController(ureq, wControl, mailTemplate, contacts, graders, form, runContext);
 	}
 }

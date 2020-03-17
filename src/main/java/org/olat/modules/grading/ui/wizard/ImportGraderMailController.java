@@ -83,6 +83,7 @@ public class ImportGraderMailController extends StepFormBasicController {
 			mailTemplate.setSubjectTemplate(mailCtrl.getSubject());
 			mailTemplate.setBodyTemplate(mailCtrl.getBody());
 			mailTemplate.setAttachments(mailCtrl.getAttachments());
+			mailTemplate.setAttachmentsTmpDir(mailCtrl.getAttachmentsTempDir());
 		}
 		fireEvent (ureq, StepsEvent.ACTIVATE_NEXT);
 	}

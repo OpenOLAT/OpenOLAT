@@ -51,6 +51,7 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.mail.MailTemplate;
@@ -348,6 +349,9 @@ public class GradersListController extends FormBasicController {
 				MailerResult result = new MailerResult();
 				GraderMailTemplate sendTemplate = graders.isSendEmail() ? mailTemplate : null;
 				gradingService.addGraders(graders.getEntry(), futureGraders, sendTemplate, result);
+				if(mailTemplate.getAttachmentsTmpDir() != null) {
+					FileUtils.deleteDirsAndFiles(mailTemplate.getAttachmentsTmpDir(), true, true);
+				}
 			}
 			return StepsMainRunController.DONE_MODIFIED;
 		};

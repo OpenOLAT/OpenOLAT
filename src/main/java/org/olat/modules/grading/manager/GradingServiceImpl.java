@@ -225,10 +225,16 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 		int count = 0;
 		List<GraderToIdentity> newGraders = new ArrayList<>();
 		for(Identity identity:identities) {
-			if(!gradedToIdentityDao.isGraderOf(referenceEntry, identity)) {
-				GraderToIdentity relation = gradedToIdentityDao.createRelation(referenceEntry, identity);
-				newGraders.add(relation);
+			GraderToIdentity relation;
+			if(gradedToIdentityDao.isGraderOf(referenceEntry, identity)) {
+				relation = gradedToIdentityDao.getGrader(referenceEntry, identity);
+				if(relation.getGraderStatus() != GraderStatus.activated) {
+					relation = activateGrader(relation);
+				}
+			} else {
+				relation = gradedToIdentityDao.createRelation(referenceEntry, identity);
 			}
+			newGraders.add(relation);
 			if(++count % 25 == 0) {
 				dbInstance.commitAndCloseSession();
 			}

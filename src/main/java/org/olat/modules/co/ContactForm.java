@@ -325,6 +325,13 @@ public class ContactForm extends FormBasicController {
  		return null;
  	}
  	
+ 	public File getAttachmentsTempDir() {
+ 		if(attachementTempDir != null && attachementTempDir.exists()) {
+ 	 		return attachementTempDir;
+		}
+ 		return null;
+ 	}
+ 	
  	public File[] getAttachments() {
  		List<File> attachments = new ArrayList<>();
  		for(FormLink removeLink : attachmentLinks) {

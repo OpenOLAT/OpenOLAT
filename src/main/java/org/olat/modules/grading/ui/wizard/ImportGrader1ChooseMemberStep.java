@@ -51,6 +51,7 @@ public class ImportGrader1ChooseMemberStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
+		form.setMultipartEnabled(true);
 		return new ImportGraderBySearchController(ureq, wControl, graders, form, runContext);
 	}
 }
