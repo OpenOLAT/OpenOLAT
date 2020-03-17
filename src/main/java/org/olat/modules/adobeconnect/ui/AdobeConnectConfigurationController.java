@@ -137,13 +137,13 @@ public class AdobeConnectConfigurationController extends FormBasicController {
 		urlEl.setDisplaySize(60);
 		urlEl.setExampleKey("option.baseurl.example", null);
 		String login = adobeConnectModule.getAdminLogin();
-		loginEl = uifactory.addTextElement("aconnect-login", "option.adminlogin", 32, login, formLayout);
+		loginEl = uifactory.addTextElement("aconnect-login", "option.adminlogin", 255, login, formLayout);
 		String credential = adobeConnectModule.getAdminPassword();
 		if(StringHelper.containsNonWhitespace(credential)) {
 			replacedValue = credential;
 			credential = PLACEHOLDER;
 		}
-		passwordEl = uifactory.addPasswordElement("aconnect-password", "option.adminpassword", 32, credential, formLayout);
+		passwordEl = uifactory.addPasswordElement("aconnect-password", "option.adminpassword", 255, credential, formLayout);
 		passwordEl.setAutocomplete("new-password");
 		
 		String accountId = adobeConnectModule.getAccountId();
@@ -253,6 +253,9 @@ public class AdobeConnectConfigurationController extends FormBasicController {
 		loginEl.clearError();
 		if(!StringHelper.containsNonWhitespace(login)) {
 			loginEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		} else if(login.length() >= 255) {
+			loginEl.setErrorKey("form.error.toolong", new String[] { "255" });
 			allOk &= false;
 		}
 		
