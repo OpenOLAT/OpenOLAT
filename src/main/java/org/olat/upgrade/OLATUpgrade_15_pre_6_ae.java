@@ -31,29 +31,30 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.Structure;
 import org.olat.course.assessment.CourseAssessmentService;
-import org.olat.course.nodes.CourseNode;
+import org.olat.course.condition.ConditionNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 6 dec 2019<br>
+ * Initial date: 17.03.2020<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class OLATUpgrade_15_pre_0 extends OLATUpgrade {
+public class OLATUpgrade_15_pre_6_ae extends OLATUpgrade {
 
-	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_15_pre_0.class);
+	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_15_pre_6_ae.class);
 	
-	private static final String VERSION = "OLAT_15.pre.0";
-	private static final String INIT_ASSESSMENT_ENTRY_ROOT = "INIT ASESSMENT ENTRY ROOT";
+	static final String VERSION = "OLAT_15.pre.6.ae";
+	private static final String CONDITION_COURSE_COMPLETION = "CONDITION COURSES COMPLETION";
 	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	
-	public OLATUpgrade_15_pre_0() {
+	public OLATUpgrade_15_pre_6_ae() {
 		super();
 	}
 	
@@ -73,38 +74,32 @@ public class OLATUpgrade_15_pre_0 extends OLATUpgrade {
 		}
 		
 		boolean allOk = true;
-		allOk &= migrateAssessmentEntry(upgradeManager, uhd);
+		allOk &= migrateAssessmentEntrCompletion(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
-
-		// OLATUpgrade_15_pre_6_ae has only to run if this upgrade (OLATUpgrade_15_pre_0) 
-		// is run before the fix for the completion of assessment entries of conventional courses.
-		upgradeManager.setUpgradesHistory(uhd, OLATUpgrade_15_pre_6_ae.VERSION);
-		
 		if(allOk) {
-			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_15_pre_0 successfully!");
+			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_15_pre_6_ae successfully!");
 		} else {
-			log.info(Tracing.M_AUDIT, "OLATUpgrade_15_pre_0 not finished, try to restart OpenOlat!");
+			log.info(Tracing.M_AUDIT, "OLATUpgrade_15_pre_6_ae not finished, try to restart OpenOlat!");
 		}
 		return allOk;
 	}
 	
 	
-	private boolean migrateAssessmentEntry(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+	private boolean migrateAssessmentEntrCompletion(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
 		boolean allOk = true;
-		if (!uhd.getBooleanDataValue(INIT_ASSESSMENT_ENTRY_ROOT)) {
+		if (!uhd.getBooleanDataValue(CONDITION_COURSE_COMPLETION)) {
 			try {
 				migrateCourseAssessmentEntries();
-				migrateOtherRepositoryEntryRoot();
 				dbInstance.commitAndCloseSession();
-				log.info("All assessment entries migrated.");
+				log.info("All assessment entry completions migrated.");
 			} catch (Exception e) {
 				log.error("", e);
 				allOk = false;
 			}
 			
-			uhd.setBooleanDataValue(INIT_ASSESSMENT_ENTRY_ROOT, allOk);
+			uhd.setBooleanDataValue(CONDITION_COURSE_COMPLETION, allOk);
 			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
 		return allOk;
@@ -115,7 +110,7 @@ public class OLATUpgrade_15_pre_0 extends OLATUpgrade {
 
 		AtomicInteger migrationCounter = new AtomicInteger(0);
 		for (RepositoryEntry repositoryEntry : courseEntries) {
-			migrateCourseAssessmentEntries(repositoryEntry);
+			calculateCourseAssessmentEntries(repositoryEntry);
 			migrationCounter.incrementAndGet();
 			if(migrationCounter.get() % 25 == 0) {
 				dbInstance.commitAndCloseSession();
@@ -141,74 +136,28 @@ public class OLATUpgrade_15_pre_0 extends OLATUpgrade {
 				.getResultList();
 	}
 
-	private void migrateCourseAssessmentEntries(RepositoryEntry repositoryEntry) {
+	private void calculateCourseAssessmentEntries(RepositoryEntry repositoryEntry) {
 		try {
 			ICourse course = CourseFactory.loadCourse(repositoryEntry);
 			if (course != null) {
-				Structure runStructure = course.getCourseEnvironment().getRunStructure();
-				if (runStructure != null) {
-					CourseNode rootNode = runStructure.getRootNode();
-					if (rootNode != null) {
-						String ident = rootNode.getIdent();
-						setRootEntryTrue(repositoryEntry, ident);
-						setRootEntryFalse(repositoryEntry, ident);
+				NodeAccessType nodeAccessType = NodeAccessType.of(course);
+				if (ConditionNodeAccessProvider.TYPE.equals(nodeAccessType.getType())) {
+					Structure runStructure = course.getCourseEnvironment().getRunStructure();
+					if (runStructure != null) {
 						courseAssessmentService.evaluateAll(course);
-						log.info("Assessment entries migrated: course {} ({}).",
+						log.info("Assessment entry completions calculated: course {} ({}).",
 								repositoryEntry.getKey(), repositoryEntry.getDisplayname());
 					}
 				}
 			}
 		} catch (CorruptedCourseException cce) {
-			log.warn("CorruptedCourseException in migration of assessment entries of course {} ({})",
+			log.warn("CorruptedCourseException in migration of assessment entry completion of course {} ({})",
 					repositoryEntry.getKey(), repositoryEntry.getDisplayname());
 		} catch (Exception e) {
-			log.error("Error in migration of assessment entries of course {} ({}).", repositoryEntry.getKey(),
+			log.error("Error in migration of assessment entry completion of course {} ({}).", repositoryEntry.getKey(),
 					repositoryEntry.getDisplayname());
 			log.error("", e);
 		}
 	}
 
-	private void setRootEntryTrue(RepositoryEntry repositoryEntry, String ident) {
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("update assessmententry ae");
-		sb.append("   set ae.entryRoot=true");
-		sb.and().append("entryRoot is null");
-		sb.and().append("ae.repositoryEntry.key = :repoKey");
-		sb.and().append("ae.subIdent = :subIdent");
-		
-		dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString())
-				.setParameter("repoKey", repositoryEntry.getKey())
-				.setParameter("subIdent", ident)
-				.executeUpdate();
-	}
-	
-	private void setRootEntryFalse(RepositoryEntry repositoryEntry, String ident) {
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("update assessmententry ae");
-		sb.append("   set ae.entryRoot=false");
-		sb.and().append("entryRoot is null");
-		sb.and().append("ae.repositoryEntry.key = :repoKey");
-		sb.and().append("ae.subIdent <> :subIdent");
-		
-		dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString())
-				.setParameter("repoKey", repositoryEntry.getKey())
-				.setParameter("subIdent", ident)
-				.executeUpdate();
-	}
-
-	private void migrateOtherRepositoryEntryRoot() {
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("update assessmententry ae");
-		sb.append("   set ae.entryRoot=true");
-		sb.and().append("entryRoot is null");
-		
-		dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString())
-				.executeUpdate();
-		
-		log.info("Updated entry root for assessment entries of other than courses.");
-	}
-	
 }

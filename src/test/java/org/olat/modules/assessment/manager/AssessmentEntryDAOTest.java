@@ -776,6 +776,10 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 				random(), Boolean.TRUE, null);
 		nodeAssessment2_2Root.setCompletion(0.2);
 		assessmentEntryDao.updateAssessmentEntry(nodeAssessment2_2Root);
+		AssessmentEntry nodeAssessment2_3Root = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry3,
+				random(), Boolean.TRUE, null);
+		nodeAssessment2_3Root.setCompletion(null);
+		assessmentEntryDao.updateAssessmentEntry(nodeAssessment2_3Root);
 		
 		// other identity
 		AssessmentEntry nodeAssessment1OtherIdent = assessmentEntryDao.createAssessmentEntry(assessedIdentityOther, null,

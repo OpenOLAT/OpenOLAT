@@ -29,7 +29,6 @@ import org.mockito.MockitoAnnotations;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.MappedScoreAccounting;
 import org.olat.course.assessment.handler.AssessmentConfig;
-import org.olat.course.nodes.Card2BrainCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
@@ -63,53 +62,89 @@ public class ConventionalSTCompletionEvaluatorTest {
 	}
 	
 	@Test
-	public void shouldReturn1IfCondittionIsPassed() {
+	public void shouldReturnNullIfItIsNotRoot() {
 		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		
-		CourseNode parent = new STCourseNode();
-		AssessmentEvaluation parrentEvaluation = createAssessmentEvaluation(Boolean.TRUE, null);
-		scoreAccounting.put(parent, parrentEvaluation);
+		CourseNode root = new STCourseNode();
+		CourseNode child = new STCourseNode();
+		root.addChild(child);
+		AssessmentEvaluation parrentEvaluation = createAssessmentEvaluation(Boolean.TRUE, Boolean.TRUE);
+		scoreAccounting.put(child, parrentEvaluation);
+		when(courseAssessmentService.getAssessmentConfig(child)).thenReturn(configWithPassed);
 		
-		Double completion = sut.getCompletion(parrentEvaluation, parent, scoreAccounting);
+		Double completion = sut.getCompletion(parrentEvaluation, child, scoreAccounting);
 		
-		assertThat(completion).isEqualByComparingTo(1.0);
+		assertThat(completion).isNull();
 	}
 	
 	@Test
-	public void shouldReturnNumberOfPassedNodes() {
+	public void shouldReturnNullIfHasNoPassConfig() {
 		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		
-		CourseNode parent = new STCourseNode();
-		AssessmentEvaluation parrentEvaluation = createAssessmentEvaluation(Boolean.FALSE, null);
-		scoreAccounting.put(parent, parrentEvaluation);
-		// Child with passed configured: passed
-		CourseNode child1 = new Card2BrainCourseNode();
-		parent.addChild(child1);
-		AssessmentEvaluation assessedEvaluation1 = createAssessmentEvaluation(Boolean.TRUE, Boolean.TRUE);
-		scoreAccounting.put(child1, assessedEvaluation1);
-		when(courseAssessmentService.getAssessmentConfig(child1)).thenReturn(configWithPassed);
-		// Child with passed configured: passed but not user visible
-		CourseNode child2= new Card2BrainCourseNode();
-		parent.addChild(child2);
-		AssessmentEvaluation assessedEvaluation2 = createAssessmentEvaluation(Boolean.TRUE, Boolean.FALSE);
-		scoreAccounting.put(child2, assessedEvaluation2);
-		when(courseAssessmentService.getAssessmentConfig(child2)).thenReturn(configWithPassed);
-		// Child with passed configured: not passed
-		CourseNode child3 = new Card2BrainCourseNode();
-		parent.addChild(child3);
-		AssessmentEvaluation assessedEvaluation3 = createAssessmentEvaluation(Boolean.FALSE, Boolean.TRUE);
-		scoreAccounting.put(child3, assessedEvaluation3);
-		when(courseAssessmentService.getAssessmentConfig(child3)).thenReturn(configWithPassed);
-		// Child without passed configured:
-		CourseNode child4 = new Card2BrainCourseNode();
-		parent.addChild(child4);
-		AssessmentEvaluation assessedEvaluation4 = createAssessmentEvaluation(Boolean.TRUE, Boolean.TRUE);
-		scoreAccounting.put(child4, assessedEvaluation4);
-		when(courseAssessmentService.getAssessmentConfig(child4)).thenReturn(configWithPassed);
+		CourseNode root = new STCourseNode();
+		AssessmentEvaluation parrentEvaluation = createAssessmentEvaluation(Boolean.TRUE, Boolean.TRUE);
+		scoreAccounting.put(root, parrentEvaluation);
+		when(courseAssessmentService.getAssessmentConfig(root)).thenReturn(configWithoutPassed);
 		
-		Double completion = sut.getCompletion(parrentEvaluation, parent, scoreAccounting);
+		Double completion = sut.getCompletion(parrentEvaluation, root, scoreAccounting);
 		
-		assertThat(completion).isEqualByComparingTo(0.5);
+		assertThat(completion).isNull();
+	}
+	
+	@Test
+	public void shouldReturn0IfIsFailed() {
+		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
+		
+		CourseNode root = new STCourseNode();
+		AssessmentEvaluation parrentEvaluation = createAssessmentEvaluation(Boolean.FALSE, Boolean.TRUE);
+		scoreAccounting.put(root, parrentEvaluation);
+		when(courseAssessmentService.getAssessmentConfig(root)).thenReturn(configWithPassed);
+		
+		Double completion = sut.getCompletion(parrentEvaluation, root, scoreAccounting);
+		
+		assertThat(completion).isEqualTo(0.0);
+	}
+	
+	@Test
+	public void shouldReturn0IfNOtPassedYet() {
+		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
+		
+		CourseNode root = new STCourseNode();
+		AssessmentEvaluation parrentEvaluation = createAssessmentEvaluation(null, Boolean.TRUE);
+		scoreAccounting.put(root, parrentEvaluation);
+		when(courseAssessmentService.getAssessmentConfig(root)).thenReturn(configWithPassed);
+		
+		Double completion = sut.getCompletion(parrentEvaluation, root, scoreAccounting);
+		
+		assertThat(completion).isEqualTo(0.0);
+	}
+	
+	@Test
+	public void shouldReturn0IfIsPassedButNotUserVisible() {
+		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
+		
+		CourseNode root = new STCourseNode();
+		AssessmentEvaluation parrentEvaluation = createAssessmentEvaluation(Boolean.TRUE, null);
+		scoreAccounting.put(root, parrentEvaluation);
+		when(courseAssessmentService.getAssessmentConfig(root)).thenReturn(configWithPassed);
+		
+		Double completion = sut.getCompletion(parrentEvaluation, root, scoreAccounting);
+		
+		assertThat(completion).isEqualTo(0.0);
+	}
+	
+	@Test
+	public void shouldReturn1IfIsPassedAndUserVisible() {
+		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
+		
+		CourseNode root = new STCourseNode();
+		AssessmentEvaluation parrentEvaluation = createAssessmentEvaluation(Boolean.TRUE, Boolean.TRUE);
+		scoreAccounting.put(root, parrentEvaluation);
+		when(courseAssessmentService.getAssessmentConfig(root)).thenReturn(configWithPassed);
+		
+		Double completion = sut.getCompletion(parrentEvaluation, root, scoreAccounting);
+		
+		assertThat(completion).isEqualTo(1.0);
 	}
 	
 	private AssessmentEvaluation createAssessmentEvaluation(Boolean passed, Boolean userVisibility) {
