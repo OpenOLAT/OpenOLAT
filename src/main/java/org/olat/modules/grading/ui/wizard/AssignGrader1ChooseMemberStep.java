@@ -52,6 +52,7 @@ public class AssignGrader1ChooseMemberStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
+		form.setMultipartEnabled(true);
 		return new AssignGraderBySearchController(ureq, wControl, assignGrader, form, runContext);
 	}
 

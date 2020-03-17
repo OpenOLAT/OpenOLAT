@@ -55,6 +55,7 @@ public class AssignGrader3MailStep extends BasicStep {
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
 		ContactList contacts = new ContactList(getTranslator().translate("assign.grader.contact"));
 		contacts.add(assignGrader.getGrader());
+		form.setMultipartEnabled(true);
 		return new ImportGraderMailController(ureq, wControl, mailTemplate, contacts, assignGrader, form, runContext);
 	}
 }

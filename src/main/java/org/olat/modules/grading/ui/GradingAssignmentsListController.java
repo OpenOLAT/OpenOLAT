@@ -69,6 +69,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
@@ -716,6 +717,9 @@ public class GradingAssignmentsListController extends FormBasicController implem
 			for(GradingAssignment assignment:assignments) {
 				gradingService.assignGrader(assignment, assignGrader.getGrader(), sendTemplate, result);
 			}
+			if(mailTemplate.getAttachmentsTmpDir() != null) {
+				FileUtils.deleteDirsAndFiles(mailTemplate.getAttachmentsTmpDir(), true, true);
+			}
 			return StepsMainRunController.DONE_MODIFIED;
 		};
 		
@@ -759,6 +763,9 @@ public class GradingAssignmentsListController extends FormBasicController implem
 			for(GradingAssignment assignment:assignments) {
 				GradingAssignment unassignedAssignment = gradingService.unassignGrader(assignment);
 				gradingService.assignGrader(unassignedAssignment, assignGrader.getGrader(), sendTemplate, result);
+			}
+			if(mailTemplate.getAttachmentsTmpDir() != null) {
+				FileUtils.deleteDirsAndFiles(mailTemplate.getAttachmentsTmpDir(), true, true);
 			}
 			return StepsMainRunController.DONE_MODIFIED;
 		};
