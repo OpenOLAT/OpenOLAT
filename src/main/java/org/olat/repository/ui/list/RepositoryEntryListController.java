@@ -79,6 +79,9 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CorruptedCourseException;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -635,6 +638,9 @@ public class RepositoryEntryListController extends FormBasicController
 	@Override
 	public void forgeCompletion(RepositoryEntryRow row) {
 		if(!guestOnly && row.getCompletion() != null) {
+			if (isConventionalUnpassedCourse(row)) {
+				return;
+			}
 			ProgressBarItem completionItem = new ProgressBarItem("completion_" + row.getKey(), 100,
 					row.getCompletion().floatValue(), Float.valueOf(1), null);
 			completionItem.setWidthInPercent(true);
@@ -655,6 +661,15 @@ public class RepositoryEntryListController extends FormBasicController
 			}					
 			row.setCompletionItem(completionItem);
 		}
+	}
+
+	private boolean isConventionalUnpassedCourse(RepositoryEntryRow row) {
+		if ("CourseModule".equals(row.getOLATResourceable().getResourceableTypeName())) {
+			ICourse course = CourseFactory.loadCourse(row.getOLATResourceable());
+			return ConditionNodeAccessProvider.TYPE.equals(course.getCourseConfig().getNodeAccessType().getType())
+					&& row.getCompletion().doubleValue() < 1.0;
+		}
+		return false;
 	}
 	
 	@Override

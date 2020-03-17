@@ -20,10 +20,8 @@
 package org.olat.course.nodes.st.assessment;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.util.tree.TreeVisitor;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
-import org.olat.course.nodes.CollectingVisitor;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.CompletionEvaluator;
@@ -52,35 +50,15 @@ public class ConventionalSTCompletionEvaluator implements CompletionEvaluator {
 			ScoreAccounting scoreAccounting) {
 		
 		Double completion = null;
-		if (isPassed(currentEvaluation)) {
-			completion = Double.valueOf(1.0);
-		} else {
-			// get all children
-			CollectingVisitor visitor = CollectingVisitor.testing(cn -> !cn.getIdent().equals(courseNode.getIdent()));
-			TreeVisitor tv = new TreeVisitor(visitor, courseNode, true);
-			tv.visitAll();
-			
-			int countIsPassedConfig = 0;
-			int countIsPassed = 0;
-			for (CourseNode child: visitor.getCourseNodes()) {
-				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(child);
-				if (isPassedConfigurated(assessmentConfig)) {
-					countIsPassedConfig++;
-					AssessmentEvaluation assessmentEvaluation = scoreAccounting.evalCourseNode(child);
-					if (isNodePassed(assessmentEvaluation)) {
-						countIsPassed++;
-					}
-				}
-			}
-			if (countIsPassedConfig > 0) {
-				completion = Double.valueOf((double)countIsPassed / countIsPassedConfig);
+		
+		if (courseNode.getParent() == null) {
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+			if (isPassedConfigurated(assessmentConfig)) {
+				completion = isNodePassed(currentEvaluation)? Double.valueOf(1.0): Double.valueOf(0.0);
 			}
 		}
+		
 		return completion;
-	}
-
-	private boolean isPassed(AssessmentEvaluation currentEvaluation) {
-		return Boolean.TRUE.equals(currentEvaluation.getPassed());
 	}
 
 	private boolean isNodePassed(AssessmentEvaluation assessmentEvaluation) {
