@@ -1,8 +1,9 @@
 <div class="clearfix">
 	$r.render("back")
 </div>
-
-<h4><i class="o_icon o_icon-fw o_icon_user"> </i> $r.escapeHtml($title)</h4>
+#if($r.isNotEmpty($title))
+	<h4><i class="o_icon o_icon-fw o_icon_user"> </i> $r.escapeHtml($title)</h4>
+#end
 $r.render("table")
 #if($r.visible("save.tests") || $r.visible("back.overview"))
 <div class="o_button_group">

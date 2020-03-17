@@ -141,7 +141,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 	
 	public CorrectionIdentityAssessmentItemListController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			CorrectionOverviewModel model, Identity assessedIdentity, GradingAssignment assignment, GradingTimeRecordRef gradingTimeRecord,
-			boolean readOnly) {
+			boolean readOnly, boolean anonymous) {
 		super(ureq, wControl, "correction_identity_assessment_item_list");
 		
 		this.stackPanel = stackPanel;
@@ -151,8 +151,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 		this.saveEnabled = !readOnly;
 		this.assignment = assignment;
 		this.gradingTimeRecord = gradingTimeRecord;
-		title = userManager.getUserDisplayName(assessedIdentity);
-		
+		title = anonymous ? translate("anonymous.user") : userManager.getUserDisplayName(assessedIdentity);
 		initForm(ureq);
 		loadModel(true);
 	}

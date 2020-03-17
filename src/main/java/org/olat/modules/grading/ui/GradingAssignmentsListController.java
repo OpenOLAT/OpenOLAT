@@ -551,6 +551,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 	
 	private void doGrade(UserRequest ureq, GradingAssignmentRow row, boolean viewOnly) {
 		GradingAssignment assignment = row.getAssignment();
+		boolean anonymous = !row.isAssessedIdentityVisible();
 		AssessmentEntry assessment = assignment.getAssessmentEntry();
 		assessment = gradingService.loadFullAssessmentEntry(assessment);
 		
@@ -559,7 +560,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 			ICourse course = CourseFactory.loadCourse(entry);
 			CourseNode node = course.getRunStructure().getNode(assessment.getSubIdent());
 			if(node instanceof IQTESTCourseNode) {
-				doQTICorrection(ureq, assessment, assignment, (IQTESTCourseNode)node, viewOnly);
+				doQTICorrection(ureq, assessment, assignment, (IQTESTCourseNode)node, viewOnly, anonymous);
 			}
 		}
 	}
@@ -572,8 +573,8 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
-	private void doQTICorrection(UserRequest ureq, AssessmentEntry assessment,
-			GradingAssignment assignment, IQTESTCourseNode courseNode, boolean readOnly) {
+	private void doQTICorrection(UserRequest ureq, AssessmentEntry assessment, GradingAssignment assignment,
+			IQTESTCourseNode courseNode, boolean readOnly, boolean anonymous) {
 		removeAsListenerAndDispose(correctionCtrl);
 		
 		Identity assessedIdentity = assessment.getIdentity();
@@ -597,7 +598,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		GradingTimeRecordRef record = gradingService.getCurrentTimeRecord(assignment, ureq.getRequestTimestamp());
 		
 		correctionCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel,
-				model, assessedIdentity, assignment, record, readOnly);
+				model, assessedIdentity, assignment, record, readOnly, anonymous);
 		listenTo(correctionCtrl);
 		stackPanel.pushController(translate("correction"), correctionCtrl);
 	}
