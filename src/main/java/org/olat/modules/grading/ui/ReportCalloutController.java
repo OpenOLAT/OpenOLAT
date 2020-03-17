@@ -161,6 +161,7 @@ public class ReportCalloutController extends FormBasicController {
 		if(end != null) {
 			sb.append("_").append(Formatter.formatDateFilesystemSave(end));
 		}
+		sb.append(".xlsx");
 		return sb.toString();
 	}
 }

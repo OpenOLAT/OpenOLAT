@@ -274,7 +274,6 @@ public class GradersListController extends FormBasicController {
 			}
 		} else if(addAbsenceLeaveCtrl == source) {
 			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
-				doReassignAfterAbsenceLeave();
 				loadModel(true);
 			}
 			cmc.deactivate();
@@ -440,10 +439,6 @@ public class GradersListController extends FormBasicController {
 		cmc = new CloseableModalController(getWindowControl(), "close", addAbsenceLeaveCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();	
-	}
-	
-	private void doReassignAfterAbsenceLeave() {
-		//TODO correction
 	}
 	
 	private void doShowAssignments(UserRequest ureq, GraderRow row, SearchStatus searchStatus) {
