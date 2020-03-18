@@ -86,8 +86,16 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	private Integer attempts;
 	@Column(name="a_score", nullable=true, insertable=true, updatable=true)
 	private BigDecimal score;
+	private transient Overridable<Boolean> passedOverridable;
 	@Column(name="a_passed", nullable=true, insertable=true, updatable=true)
 	private Boolean passed;
+	@Column(name="a_passed_original", nullable=true, insertable=true, updatable=true)
+	private Boolean passedOriginal;
+	@Column(name="a_passed_mod_date", nullable=true, insertable=true, updatable=true)
+	private Date passedModificationDate;
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_identity_passed_mod", nullable=true, insertable=true, updatable=true)
+	private Identity passedModificationIdentity;
 	@Column(name="a_status", nullable=true, insertable=true, updatable=true)
 	private String status;
 	@Column(name="a_date_done", nullable=true, insertable=true, updatable=true)
@@ -239,17 +247,58 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	public void setScore(BigDecimal score) {
 		this.score = score;
 	}
+	
+	@Override
+	public Overridable<Boolean> getPassedOverridable() {
+		if (passedOverridable == null) {
+			passedOverridable = new OverridableImpl<>(passed, passedOriginal, passedModificationIdentity, passedModificationDate);
+		}
+		return passedOverridable;
+	}
+	
+	@Override
+	public void setPassedOverridable(Overridable<Boolean> passedOverridable) {
+		this.passedOverridable = passedOverridable;
+	}
 
 	@Override
 	public Boolean getPassed() {
-		return passed;
+		return getPassedOverridable().getCurrent();
 	}
 
 	@Override
 	public void setPassed(Boolean passed) {
+		getPassedOverridable().setCurrent(passed);
+	}
+	
+	public void setRawPassed(Boolean passed) {
 		this.passed = passed;
 	}
 	
+	public Boolean getPassedOriginal() {
+		return passedOriginal;
+	}
+
+	public void setPassedOriginal(Boolean passedOriginal) {
+		this.passedOriginal = passedOriginal;
+	}
+
+	public Date getPassedModificationDate() {
+		return passedModificationDate;
+	}
+
+	public void setPassedModificationDate(Date passedModificationDate) {
+		this.passedModificationDate = passedModificationDate;
+	}
+
+	public Identity getPassedModificationIdentity() {
+		return passedModificationIdentity;
+	}
+
+	public void setPassedModificationIdentity(Identity passedModificationIdentity) {
+		this.passedModificationIdentity = passedModificationIdentity;
+	}
+
 	public String getDetails() {
 		return details;
 	}

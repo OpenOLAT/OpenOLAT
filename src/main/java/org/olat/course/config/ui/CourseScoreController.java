@@ -62,6 +62,7 @@ public class CourseScoreController extends FormBasicController {
 	private MultipleSelectionElement passedProgressEl;
 	private MultipleSelectionElement passedAllEl;
 	private MultipleSelectionElement passedPointsEl;
+	private MultipleSelectionElement passedManuallyEl;
 	private TextElement passedPointsCutEl;
 	
 	private final RepositoryEntry courseEntry;
@@ -159,6 +160,12 @@ public class CourseScoreController extends FormBasicController {
 		passedPointsCutEl.setCheckVisibleLength(true);
 		passedPointsCutEl.setDisplaySize(10);
 		passedPointsEl.setEnabled(editable);
+		
+		passedManuallyEl = uifactory.addCheckboxesHorizontal("options.passed.manually", formLayout, ONE_OPTION, UNTRANSLATED);
+		passedManuallyEl.addActionListener(FormEvent.ONCHANGE);
+		boolean passedManually = moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_MANUALLY);
+		passedManuallyEl.select(passedManuallyEl.getKey(0), passedManually);
+		passedManuallyEl.setEnabled(editable);
 		
 		if (editable) {
 			FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -273,6 +280,15 @@ public class CourseScoreController extends FormBasicController {
 			runConfig.remove(STCourseNode.CONFIG_PASSED_POINTS_CUT);
 			editorConfig.remove(STCourseNode.CONFIG_PASSED_POINTS);
 			editorConfig.remove(STCourseNode.CONFIG_PASSED_POINTS_CUT);
+		}
+		
+		boolean passedManually = passedManuallyEl.isAtLeastSelected(1);
+		if (passedManually) {
+			runConfig.setBooleanEntry(STCourseNode.CONFIG_PASSED_MANUALLY, true);
+			editorConfig.setBooleanEntry(STCourseNode.CONFIG_PASSED_MANUALLY, true);
+		} else {
+			runConfig.remove(STCourseNode.CONFIG_PASSED_MANUALLY);
+			editorConfig.remove(STCourseNode.CONFIG_PASSED_MANUALLY);
 		}
 		
 		CourseFactory.saveCourse(courseEntry.getOlatResource().getResourceableId());

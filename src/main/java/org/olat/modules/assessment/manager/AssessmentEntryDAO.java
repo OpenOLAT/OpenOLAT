@@ -178,11 +178,17 @@ public class AssessmentEntryDAO {
 	
 	public AssessmentEntry resetAssessmentEntry(AssessmentEntry nodeAssessment) {
 		nodeAssessment.setScore(null);
-		nodeAssessment.setPassed(null);
 		nodeAssessment.setAttempts(0);
 		nodeAssessment.setCompletion(null);
 		nodeAssessment.setAssessmentStatus(AssessmentEntryStatus.notStarted);
-		((AssessmentEntryImpl)nodeAssessment).setLastModified(new Date());
+		if (nodeAssessment instanceof AssessmentEntryImpl) {
+			AssessmentEntryImpl impl = (AssessmentEntryImpl)nodeAssessment;
+			impl.setLastModified(new Date());
+			impl.setRawPassed(null);
+			impl.setPassedOriginal(null);
+			impl.setPassedModificationIdentity(null);
+			impl.setPassedModificationDate(null);
+		}
 		return dbInstance.getCurrentEntityManager().merge(nodeAssessment);
 	}
 	
@@ -206,6 +212,11 @@ public class AssessmentEntryDAO {
 		if (nodeAssessment instanceof AssessmentEntryImpl) {
 			AssessmentEntryImpl impl = (AssessmentEntryImpl)nodeAssessment;
 			impl.setLastModified(new Date());
+			Overridable<Boolean> passed = nodeAssessment.getPassedOverridable();
+			impl.setRawPassed(passed.getCurrent());
+			impl.setPassedOriginal(passed.getOriginal());
+			impl.setPassedModificationIdentity(passed.getModBy());
+			impl.setPassedModificationDate(passed.getModDate());
 			Overridable<Date> end = nodeAssessment.getEndDate();
 			impl.setEndDate(end.getCurrent());
 			impl.setEndDateOriginal(end.getOriginal());
@@ -216,7 +227,6 @@ public class AssessmentEntryDAO {
 			impl.setObligationOriginal(obligation.getOriginal());
 			impl.setObligationModIdentity(obligation.getModBy());
 			impl.setObligationModDate(obligation.getModDate());
-			
 		}
 		return dbInstance.getCurrentEntityManager().merge(nodeAssessment);
 	}

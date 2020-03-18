@@ -102,6 +102,20 @@ public class OverridableImplTest {
 		assertThat(sut.getModBy()).isNull();
 		assertThat(sut.getModDate()).isNull();
 	}
-
+	
+	@Test
+	public void shouldBeOverriden() {
+		String custom = "custom";
+		Identity identity = mock(Identity.class);
+		Date modDate = new GregorianCalendar(2020, 2, 19).getTime();
+		OverridableImpl<String> sut = new OverridableImpl<>();
+		assertThat(sut.isOverridden()).isFalse();
+		
+		sut.override(custom, identity, modDate);
+		assertThat(sut.isOverridden()).isTrue();
+		
+		sut.reset();
+		assertThat(sut.isOverridden()).isFalse();
+	}
 
 }

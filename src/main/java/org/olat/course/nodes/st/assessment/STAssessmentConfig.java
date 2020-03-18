@@ -89,6 +89,8 @@ public class STAssessmentConfig implements AssessmentConfig {
 			return Mode.evaluated;
 		} else if (isEvaluatedRoot()) {
 			return Mode.evaluated;
+		} else if (isRoot && rootConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_MANUALLY)) {
+			return Mode.setByNode;
 		}
 		return Mode.none;
 	}

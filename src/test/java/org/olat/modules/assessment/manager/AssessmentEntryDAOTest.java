@@ -46,6 +46,7 @@ import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentEntryCompletion;
+import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentEntryImpl;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
@@ -222,6 +223,7 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 				refEntry);
 		ae.setScore(BigDecimal.valueOf(2.0));
 		ae.setPassed(Boolean.TRUE);
+		ae.getPassedOverridable().override(Boolean.FALSE, assessedIdentity, new Date());
 		assessmentEntryDao.updateAssessmentEntry(ae);
 		dbInstance.commitAndCloseSession();
 		
@@ -233,6 +235,10 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		Assert.assertEquals(assessedIdentity, resetedAssessmentRef.getIdentity());
 		Assert.assertNull(resetedAssessmentRef.getScore());
 		Assert.assertNull(resetedAssessmentRef.getPassed());
+		Assert.assertNull(resetedAssessmentRef.getPassedOverridable().getCurrent());
+		Assert.assertNull(resetedAssessmentRef.getPassedOverridable().getOriginal());
+		Assert.assertNull(resetedAssessmentRef.getPassedOverridable().getModBy());
+		Assert.assertNull(resetedAssessmentRef.getPassedOverridable().getModDate());
 		Assert.assertEquals(new Integer(0), resetedAssessmentRef.getAttempts());
 		Assert.assertNull(resetedAssessmentRef.getCompletion());
 		
@@ -244,6 +250,10 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		Assert.assertEquals(ae, reloadedAssessmentRef);
 		Assert.assertNull(reloadedAssessmentRef.getScore());
 		Assert.assertNull(reloadedAssessmentRef.getPassed());
+		Assert.assertNull(reloadedAssessmentRef.getPassedOverridable().getCurrent());
+		Assert.assertNull(reloadedAssessmentRef.getPassedOverridable().getOriginal());
+		Assert.assertNull(reloadedAssessmentRef.getPassedOverridable().getModBy());
+		Assert.assertNull(reloadedAssessmentRef.getPassedOverridable().getModDate());
 		Assert.assertEquals(new Integer(0), reloadedAssessmentRef.getAttempts());
 		Assert.assertNull(reloadedAssessmentRef.getCompletion());
 	}
@@ -274,6 +284,44 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		Assert.assertEquals(nodeAssessment.getFirstVisit(), firstDate);
 		Assert.assertEquals(nodeAssessment.getLastVisit(), secondDate);
 		Assert.assertEquals(nodeAssessment.getNumberOfVisits().intValue(), 2);
+	}
+	
+	@Test
+	public void setPassedOveridable() {
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-30a");
+		Identity modIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-30a-end");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String subIdent = UUID.randomUUID().toString();
+		AssessmentEntryImpl nodeAssessment = (AssessmentEntryImpl) assessmentEntryDao
+				.createAssessmentEntry(assessedIdentity, null, entry, subIdent, null, refEntry);
+		dbInstance.commitAndCloseSession();
+		
+		nodeAssessment.setPassed(Boolean.FALSE);
+		assessmentEntryDao.updateAssessmentEntry(nodeAssessment);
+		dbInstance.commitAndCloseSession();
+		
+		Overridable<Boolean> passedOverridable = nodeAssessment.getPassedOverridable();
+		Assert.assertEquals(Boolean.FALSE, nodeAssessment.getPassed());
+		Assert.assertEquals(Boolean.FALSE, passedOverridable.getCurrent());
+		Assert.assertNull(passedOverridable.getOriginal());
+		Assert.assertNull(passedOverridable.getModBy());
+		Assert.assertNull(passedOverridable.getModDate());
+		
+		Date at = new GregorianCalendar(2014,1,1,1,1,2).getTime();
+		passedOverridable.override(Boolean.TRUE, modIdentity, at);
+		nodeAssessment.setPassedOverridable(passedOverridable);
+		assessmentEntryDao.updateAssessmentEntry(nodeAssessment);
+		dbInstance.commitAndCloseSession();
+		
+		AssessmentEntry reloadedEntry = assessmentEntryDao.loadAssessmentEntryById(nodeAssessment.getKey());
+		
+		passedOverridable = reloadedEntry.getPassedOverridable();
+		Assert.assertEquals(Boolean.TRUE, nodeAssessment.getPassed());
+		Assert.assertEquals(Boolean.TRUE, passedOverridable.getCurrent());
+		Assert.assertEquals(Boolean.FALSE, passedOverridable.getOriginal());
+		Assert.assertEquals(modIdentity.getKey(), passedOverridable.getModBy().getKey());
+		Assert.assertNotNull(passedOverridable.getModDate());
 	}
 	
 	@Test

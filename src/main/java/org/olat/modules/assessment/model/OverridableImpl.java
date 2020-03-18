@@ -59,7 +59,7 @@ public class OverridableImpl<T> implements Overridable<T> {
 
 	@Override
 	public void setCurrent(T current) {
-		if (this.original != null) {
+		if (isOverridden()) {
 			this.original = current;
 		} else {
 			this.current = current;
@@ -68,7 +68,7 @@ public class OverridableImpl<T> implements Overridable<T> {
 
 	@Override
 	public void override(T custom, Identity modBy, Date modDate) {
-		if (this.original == null) {
+		if (!isOverridden()) {
 			this.original = this.current;
 		}
 		this.current = custom;
@@ -78,12 +78,12 @@ public class OverridableImpl<T> implements Overridable<T> {
 
 	@Override
 	public boolean isOverridden() {
-		return original != null;
+		return modDate != null;
 	}
 	
 	@Override
 	public void reset() {
-		if (original != null) {
+		if (isOverridden()) {
 			current = original;
 		}
 		original = null;

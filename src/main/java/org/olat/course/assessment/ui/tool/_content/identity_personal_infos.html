@@ -4,6 +4,9 @@
 #if($r.available("certificateInfos"))
 	$r.render("certificateInfos")
 #end
+#if($r.available("passed"))
+	$r.render("passed")
+#end
 #if($r.available("courseOverview"))
 	$r.render("courseOverview")
 #end

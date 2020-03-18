@@ -26,6 +26,7 @@ import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledController;
@@ -78,6 +79,7 @@ public class AssessmentIdentityCourseController extends BasicController
 	private Link courseNodeSelectionLink;
 	
 	private IdentityCertificatesController certificateCtrl;
+	private IdentityPassedController passedCtrl;
 	private AssessedIdentityLargeInfosController infosController;
 	private IdentityAssessmentOverviewController treeOverviewCtrl;
 	private AssessmentIdentityCourseNodeController currentNodeCtrl;
@@ -124,6 +126,13 @@ public class AssessmentIdentityCourseController extends BasicController
 			certificateCtrl = new IdentityCertificatesController(ureq, wControl, coachCourseEnv, courseEntry, assessedIdentity);
 			identityAssessmentVC.put("certificateInfos", certificateCtrl.getInitialComponent());
 			listenTo(certificateCtrl);
+		}
+			
+		Boolean passedManually = course.getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_PASSED_MANUALLY);
+		if (passedManually) {
+			passedCtrl = new IdentityPassedController(ureq, wControl, coachCourseEnv, courseEntry, assessedIdentity);
+			identityAssessmentVC.put("passed", passedCtrl.getInitialComponent());
+			listenTo(passedCtrl);
 		}
 
 		treeOverviewCtrl = new IdentityAssessmentOverviewController(ureq, getWindowControl(), assessedUserCourseEnv, nodeSelectable, false, true);
@@ -189,6 +198,11 @@ public class AssessmentIdentityCourseController extends BasicController
 			} else if(event == Event.CANCELLED_EVENT) {
 				stackPanel.popController(currentNodeCtrl);
 			} else if(event == Event.CHANGED_EVENT) {
+				treeOverviewCtrl.loadModel();
+				fireEvent(ureq, event);
+			}
+		} else if (source == passedCtrl) {
+			if (event == FormEvent.CHANGED_EVENT) {
 				treeOverviewCtrl.loadModel();
 				fireEvent(ureq, event);
 			}

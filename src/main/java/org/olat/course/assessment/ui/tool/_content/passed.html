@@ -1,0 +1,19 @@
+<div class="panel panel-default">
+	<ul class="list-group">
+		<li class="list-group-item"><span>$r.translate("passed.manually.title")</span></li>
+		<li class="list-group-item">
+			$message
+			<div class="o_button_group">
+				#if($r.visible("passed.manually.pass"))
+					$r.render("passed.manually.pass")
+				#end
+				#if($r.visible("passed.manually.fail"))
+					$r.render("passed.manually.fail")
+				#end
+				#if($r.visible("passed.manually.reset"))
+					$r.render("passed.manually.reset")
+				#end
+			</div>
+		</li>
+	</ul>
+</div>

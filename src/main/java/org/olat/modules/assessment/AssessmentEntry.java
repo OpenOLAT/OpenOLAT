@@ -62,6 +62,10 @@ public interface AssessmentEntry extends AssessmentEntryLight {
 
 	public void setPassed(Boolean passed);
 	
+	public Overridable<Boolean> getPassedOverridable();
+	
+	public void setPassedOverridable(Overridable<Boolean> passedOverridable);
+	
 	public Boolean getUserVisibility();
 	
 	public void setUserVisibility(Boolean visibility);

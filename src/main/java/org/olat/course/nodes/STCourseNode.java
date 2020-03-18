@@ -118,6 +118,7 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONFIG_PASSED_ALL = "passed.all";
 	public static final String CONFIG_PASSED_POINTS = "passed.points";
 	public static final String CONFIG_PASSED_POINTS_CUT = "passed.points.cut";
+	public static final String CONFIG_PASSED_MANUALLY = "passed.manually";
 
 	// Score calculation with conditions.
 	public static final String CONFIG_SCORE_CALCULATOR_SUPPORTED = "score.calculator.supported";
