@@ -37,6 +37,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.reminder.rule.PassedRuleSPI;
 import org.olat.modules.reminder.ReminderRule;
@@ -142,7 +143,7 @@ public class PassedRuleEditor extends RuleEditorFragment {
 	private void searchPassedNodes(CourseNode courseNode, List<CourseNode> nodes) {
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
-		if (assessmentConfig.hasPassed()) {
+		if (Mode.none != assessmentConfig.getPassedMode()) {
 			nodes.add(courseNode);
 		}
 		

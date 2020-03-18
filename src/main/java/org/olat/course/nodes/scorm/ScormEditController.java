@@ -56,6 +56,9 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.highscore.ui.HighScoreEditController;
+import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.NodeAccessType;
+import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.ScormCourseNode;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ScormCPFileResource;
@@ -92,6 +95,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 	public static final String CONFIG_ASSESSABLE_TYPE_SCORE = "score";
 	public static final String CONFIG_ASSESSABLE_TYPE_PASSED = "passed";
 	public static final String CONFIG_CUTVALUE = "cutvalue";
+	public static final String CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT = MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT;
 	
 	public static final String CONFIG_DELIVERY_OPTIONS = "deliveryOptions";
 	public static final String CONFIG_FULLWINDOW = "fullwindow";
@@ -133,13 +137,16 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 	
 	@Autowired
 	private ScormMainManager scormMainManager;
+	@Autowired
+	private NodeAccessService nodeAccessService;
 
 	public ScormEditController(ScormCourseNode scormNode, UserRequest ureq, WindowControl wControl, ICourse course) {
 		super(ureq, wControl);
 		this.course = course;
 		this.scormNode = scormNode;
 		this.config = scormNode.getModuleConfiguration();
-		main = new Panel("cpmain");				
+				
+		main = new Panel("cpmain");
 		cpConfigurationVc = this.createVelocityContainer("edit");
 		
 		chooseCPButton = LinkFactory.createButtonSmall("command.importcp", cpConfigurationVc, this);
@@ -191,12 +198,15 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 		int maxAttempts = config.getIntegerSafe(CONFIG_MAXATTEMPTS, 0);
 		boolean advanceScore = config.getBooleanSafe(CONFIG_ADVANCESCORE, true);
 		int cutvalue = config.getIntegerSafe(CONFIG_CUTVALUE, 0);
+		boolean ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(NodeAccessType.of(course));
+		boolean ignoreInCourseAssessment = config.getBooleanSafe(CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT);
+		
 		boolean fullWindow = config.getBooleanSafe(CONFIG_FULLWINDOW, true);
 		boolean closeOnFinish = config.getBooleanSafe(CONFIG_CLOSE_ON_FINISH, false);
 		
-		scorevarform = new VarForm(ureq, wControl, showMenu, skipLaunchPage, showNavButtons,
-				assessableType, cutvalue, fullWindow,
-				closeOnFinish, maxAttempts, advanceScore, attemptsDependOnScore);
+		scorevarform = new VarForm(ureq, wControl, showMenu, skipLaunchPage, showNavButtons, assessableType, cutvalue,
+				ignoreInCourseAssessmentAvailable, ignoreInCourseAssessment, fullWindow, closeOnFinish, maxAttempts,
+				advanceScore, attemptsDependOnScore);
 		listenTo(scorevarform);
 		cpConfigurationVc.put("scorevarform", scorevarform.getInitialComponent());
 
@@ -282,6 +292,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 				config.setBooleanEntry(CONFIG_ISASSESSABLE, scorevarform.isAssessable());
 				config.setStringValue(CONFIG_ASSESSABLE_TYPE, scorevarform.getAssessableType());
 				config.setIntValue(CONFIG_CUTVALUE, scorevarform.getCutValue());
+				config.setBooleanEntry(CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, scorevarform.isIgnoreInCourseAssessment());
 				config.setBooleanEntry(CONFIG_FULLWINDOW, scorevarform.isFullWindow());
 				config.setBooleanEntry(CONFIG_CLOSE_ON_FINISH, scorevarform.isCloseOnFinish());
 				// <OLATCE-289>
@@ -385,6 +396,7 @@ class VarForm extends FormBasicController {
 	private SingleSelection isAssessableEl;
 	private SelectionElement skipLaunchPageEl;
 	private TextElement cutValueEl;
+	private MultipleSelectionElement ignoreInCourseAssessmentEl;
 	private SingleSelection attemptsEl;
 	private MultipleSelectionElement advanceScoreEl;
 	private MultipleSelectionElement scoreAttemptsEl;
@@ -392,6 +404,8 @@ class VarForm extends FormBasicController {
 	private boolean showMenu, showNavButtons, skipLaunchPage;
 	private String assessableType;
 	private int cutValue;
+	private final boolean ignoreInCourseAssessmentAvailable;
+	private boolean ignoreInCourseAssessment;
 	private boolean fullWindow;
 	private boolean closeOnFinish;
 	private String[] assessableKeys, assessableValues;
@@ -400,19 +414,18 @@ class VarForm extends FormBasicController {
 	private boolean scoreAttempts;
 	private int maxattempts;
 	
-	/**
-	 * 
-	 * @param name  Name of the form
-	 */
-	public VarForm(UserRequest ureq, WindowControl wControl, boolean showMenu, boolean skipLaunchPage, boolean showNavButtons, 
-			String assessableType, int cutValue, boolean fullWindow, boolean closeOnFinish,
-			int maxattempts, boolean advanceScore, boolean attemptsDependOnScore) {
+	public VarForm(UserRequest ureq, WindowControl wControl, boolean showMenu, boolean skipLaunchPage,
+			boolean showNavButtons, String assessableType, int cutValue, boolean ignoreInCourseAssessmentAvailable,
+			boolean ignoreInCourseAssessment, boolean fullWindow, boolean closeOnFinish, int maxattempts,
+			boolean advanceScore, boolean attemptsDependOnScore) {
 		super(ureq, wControl);
 		this.showMenu = showMenu;
 		this.skipLaunchPage = skipLaunchPage;
 		this.showNavButtons = showNavButtons;
 		this.assessableType = assessableType;
 		this.cutValue = cutValue;
+		this.ignoreInCourseAssessmentAvailable = ignoreInCourseAssessmentAvailable;
+		this.ignoreInCourseAssessment = ignoreInCourseAssessment;
 		this.fullWindow = fullWindow;
 		this.closeOnFinish = closeOnFinish;
 
@@ -436,6 +449,10 @@ class VarForm extends FormBasicController {
 			return Integer.parseInt(val);
 		}
 		return 0;
+	}
+	
+	public boolean isIgnoreInCourseAssessment() {
+		return ignoreInCourseAssessmentEl.isVisible() && ignoreInCourseAssessmentEl.isAtLeastSelected(1);
 	}
 	
 	public boolean isFullWindow() {
@@ -539,6 +556,10 @@ class VarForm extends FormBasicController {
 		String val = cutValue < 0 ? "" : Integer.toString(cutValue);
 		cutValueEl = uifactory.addTextElement("cutvalue", "cutvalue.label", 5, val, formLayout);
 		cutValueEl.setDisplaySize(3);
+		
+		ignoreInCourseAssessmentEl = uifactory.addCheckboxesHorizontal("ignore.in.course.assessment", formLayout,
+				new String[] { "xx" }, new String[] { null });
+		ignoreInCourseAssessmentEl.select(ignoreInCourseAssessmentEl.getKey(0), ignoreInCourseAssessment);
 
 		advanceScoreEl = uifactory.addCheckboxesHorizontal("advanceScore", "advance.score.label", formLayout, new String[]{ "ison" }, new String[]{ "" });
 		advanceScoreEl.select("ison", advanceScore);
@@ -575,6 +596,7 @@ class VarForm extends FormBasicController {
 		advanceScoreEl.getComponent().setDirty(true);
 		//assessable type score or none -> show "Score needed to pass"
 		cutValueEl.setVisible(assessableKeys[0].equals(isAssessable) || assessableKeys[1].equals(isAssessable));
+		ignoreInCourseAssessmentEl.setVisible(ignoreInCourseAssessmentAvailable);
 	}
 	
 	public int getAttemptsValue() {

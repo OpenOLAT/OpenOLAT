@@ -40,6 +40,7 @@ import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultCon
 import org.olat.course.ICourse;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.highscore.ui.HighScoreEditController;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.BasicLTICourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -98,7 +99,7 @@ public class LTIEditController extends ActivateableTabbableDefaultController imp
 		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, config);
 		listenTo(highScoreNodeConfigController);
 		
-		ltConfigForm = new LTIConfigForm(ureq, wControl, config);
+		ltConfigForm = new LTIConfigForm(ureq, wControl, config, NodeAccessType.of(course));
 		listenTo(ltConfigForm);
 		
 		myContent.put("ltConfigForm", ltConfigForm.getInitialComponent());

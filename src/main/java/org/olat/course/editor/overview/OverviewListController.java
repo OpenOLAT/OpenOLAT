@@ -64,6 +64,7 @@ import org.olat.course.learningpath.LearningPathService;
 import org.olat.course.learningpath.LearningPathTranslations;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
+import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.tree.CourseEditorTreeNode;
@@ -89,11 +90,14 @@ public class OverviewListController extends FormBasicController implements Flexi
 	
 	private final ICourse course;
 	private final boolean learningPath;
+	private final boolean ignoreInCourseAssessmentAvailable;
 	
 	@Autowired
 	private LearningPathService learningPathService;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
+	@Autowired
+	private NodeAccessService nodeAccessService;
 
 	public OverviewListController(UserRequest ureq, WindowControl wControl, ICourse course) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
@@ -101,6 +105,7 @@ public class OverviewListController extends FormBasicController implements Flexi
 		setTranslator(Util.createPackageTranslator(LearningPathNodeConfigController.class, getLocale(), getTranslator()));
 		this.course = course;
 		this.learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType());
+		this.ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(NodeAccessType.of(course));
 		
 		initForm(ureq);
 	}
@@ -172,6 +177,12 @@ public class OverviewListController extends FormBasicController implements Flexi
 		DefaultFlexiColumnModel passedCutModel = new DefaultFlexiColumnModel(OverviewCols.passesCut);
 		passedCutModel.setDefaultVisible(false);
 		columnsModel.addFlexiColumnModel(passedCutModel);
+		if (ignoreInCourseAssessmentAvailable ) {
+			DefaultFlexiColumnModel ignoreInCourseAssessmentModel = new DefaultFlexiColumnModel(OverviewCols.ignoreInCourseAssessment);
+			ignoreInCourseAssessmentModel.setCellRenderer(new OnOffCellRenderer(getTranslator()));
+			ignoreInCourseAssessmentModel.setDefaultVisible(false);
+			columnsModel.addFlexiColumnModel(ignoreInCourseAssessmentModel);
+		}
 		DefaultFlexiColumnModel commentModel = new DefaultFlexiColumnModel(OverviewCols.comment);
 		commentModel.setCellRenderer(new OnOffCellRenderer(getTranslator()));
 		commentModel.setDefaultVisible(false);

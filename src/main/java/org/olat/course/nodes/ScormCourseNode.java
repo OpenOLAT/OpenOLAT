@@ -53,6 +53,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
@@ -180,7 +181,7 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	private boolean isFullyAssessedScoreConfigError() {
-		boolean hasScore = new ScormAssessmentConfig(getModuleConfiguration()).hasScore();
+		boolean hasScore = Mode.none != new ScormAssessmentConfig(getModuleConfiguration()).getScoreMode();
 		boolean isScoreTrigger = CoreSpringFactory.getImpl(ScormLearningPathNodeHandler.class)
 				.getConfigs(this)
 				.isFullyAssessedOnScore(null, null)
@@ -189,7 +190,7 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	private boolean isFullyAssessedPassedConfigError() {
-		boolean hasPassed = new ScormAssessmentConfig(getModuleConfiguration()).hasPassed();
+		boolean hasPassed = new ScormAssessmentConfig(getModuleConfiguration()).getPassedMode() != Mode.none;
 		boolean isPassedTrigger = CoreSpringFactory.getImpl(ScormLearningPathNodeHandler.class)
 				.getConfigs(this)
 				.isFullyAssessedOnPassed(null, null)

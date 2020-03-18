@@ -42,8 +42,13 @@ public class ScormAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean isEvaluationPersisted() {
-		return true;
+	public boolean ignoreInCourseAssessment() {
+		return config.getBooleanSafe(ScormEditController.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT);
+	}
+
+	@Override
+	public void setIgnoreInCourseAssessment(boolean ignoreInCourseAssessment) {
+		config.setBooleanEntry(ScormEditController.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, ignoreInCourseAssessment);
 	}
 
 	@Override
@@ -52,14 +57,14 @@ public class ScormAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean hasScore() {
+	public Mode getScoreMode() {
 		boolean assessable = config.getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true);
 		if (assessable) {
 			String type = config.getStringValue(ScormEditController.CONFIG_ASSESSABLE_TYPE,
 					ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE);
-			return ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE.equals(type);
+			return ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE.equals(type)? Mode.setByNode: Mode.none;
 		}
-		return false;
+		return Mode.none;
 	}
 
 	@Override
@@ -75,8 +80,8 @@ public class ScormAssessmentConfig implements AssessmentConfig {
 	}
 	
 	@Override
-	public boolean hasPassed() {
-		return config.getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true);
+	public Mode getPassedMode() {
+		return config.getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true)? Mode.setByNode: Mode.none;
 	}
 	
 	@Override

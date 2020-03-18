@@ -57,6 +57,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.CheckListCourseNode;
@@ -344,7 +345,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 		
 		exposeUserDataToVC(ureq, flc);
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
-		return assessmentConfig.hasScore() || assessmentConfig.hasPassed();
+		return Mode.none != assessmentConfig.getScoreMode() || Mode.none != assessmentConfig.getPassedMode();
 	}
 	
 	private void logUpdateCheck(String checkboxId, String boxTitle) {

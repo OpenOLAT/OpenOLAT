@@ -56,6 +56,7 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.PortfolioCourseNode;
@@ -333,8 +334,10 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 			boolean resultsVisible = scoreEval.getUserVisible() == null || scoreEval.getUserVisible().booleanValue();
 			assessmentInfosContainer.contextPut("resultsVisible", resultsVisible);
 			//score
-			assessmentInfosContainer.contextPut("hasScoreField", new Boolean(assessmentConfig.hasScore()));
-			if(assessmentConfig.hasScore()) {
+			Boolean hasScore = Boolean.valueOf(Mode.none != assessmentConfig.getScoreMode());
+			Boolean hasPassed = Boolean.valueOf(Mode.none != assessmentConfig.getPassedMode());
+			assessmentInfosContainer.contextPut("hasScoreField", hasScore);
+			if(hasScore.booleanValue()) {
 				Float score = scoreEval.getScore();
 				Float minScore = assessmentConfig.getMinScore();
 				Float maxScore = assessmentConfig.getMaxScore();
@@ -344,8 +347,8 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 			}
 
 			//passed
-			assessmentInfosContainer.contextPut("hasPassedField", new Boolean(assessmentConfig.hasPassed()));
-			if(assessmentConfig.hasPassed()) {
+			assessmentInfosContainer.contextPut("hasPassedField", hasPassed);
+			if(hasPassed.booleanValue()) {
 				Boolean passed = scoreEval.getPassed();
 				assessmentInfosContainer.contextPut("passed", passed);
 				assessmentInfosContainer.contextPut("hasPassedValue", new Boolean(passed != null));

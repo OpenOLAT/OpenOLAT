@@ -63,6 +63,7 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.ArchiveOptions;
@@ -177,8 +178,8 @@ public class ScoreAccountingHelper {
 			header1ColCnt += acNode.getType().equals("ita") ? 1 : 0;
 			
 			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(acNode);
-			boolean scoreOk = assessmentConfig.hasScore();
-			boolean passedOk = assessmentConfig.hasPassed();
+			boolean scoreOk = Mode.none != assessmentConfig.getScoreMode();
+			boolean passedOk = Mode.none != assessmentConfig.getPassedMode();
 			boolean attemptsOk = assessmentConfig.hasAttempts();
 			boolean commentOk = assessmentConfig.hasComment();
 			if (scoreOk || passedOk || commentOk || attemptsOk) {
@@ -200,8 +201,8 @@ public class ScoreAccountingHelper {
 			}
 			
 			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(acNode);
-			boolean scoreOk = assessmentConfig.hasScore();
-			boolean passedOk = assessmentConfig.hasPassed();
+			boolean scoreOk = Mode.none != assessmentConfig.getScoreMode();
+			boolean passedOk = Mode.none != assessmentConfig.getPassedMode();
 			boolean attemptsOk = assessmentConfig.hasAttempts();
 			boolean commentOk = assessmentConfig.hasComment();
 			if (scoreOk || passedOk || commentOk || attemptsOk) {
@@ -263,8 +264,8 @@ public class ScoreAccountingHelper {
 
 			for (CourseNode acnode:myNodes) {
 				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(acnode);
-				boolean scoreOk = assessmentConfig.hasScore();
-				boolean passedOk = assessmentConfig.hasPassed();
+				boolean scoreOk = Mode.none != assessmentConfig.getScoreMode();
+				boolean passedOk = Mode.none != assessmentConfig.getPassedMode();
 				boolean attemptsOk = assessmentConfig.hasAttempts();
 				boolean commentOk = assessmentConfig.hasComment();
 
@@ -353,7 +354,7 @@ public class ScoreAccountingHelper {
 		boolean first = true;
 		for (CourseNode acnode:myNodes) {
 			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(acnode);
-			if (!assessmentConfig.hasScore()) {
+			if (Mode.none == assessmentConfig.getScoreMode()) {
 				// only show min/max/cut legend when score configured
 				continue;
 			}
@@ -369,14 +370,14 @@ public class ScoreAccountingHelper {
 			String minVal;
 			String maxVal;
 			String cutVal;
-			if(assessmentConfig.isEvaluationCalculated() || !assessmentConfig.hasScore()) {
+			if(assessmentConfig.isEvaluationCalculated() || Mode.none == assessmentConfig.getScoreMode()) {
 				minVal = maxVal = cutVal = "-";
 			} else {
 				Float minScoreConfig = assessmentConfig.getMinScore();
 				Float maxScoreConfig = assessmentConfig.getMaxScore();
 				minVal = minScoreConfig == null ? "-" : AssessmentHelper.getRoundedScore(minScoreConfig);
 				maxVal = maxScoreConfig == null ? "-" : AssessmentHelper.getRoundedScore(maxScoreConfig);
-				if (assessmentConfig.hasPassed()) {
+				if (Mode.none != assessmentConfig.getPassedMode()) {
 					Float cutValueConfig = assessmentConfig.getCutValue();
 					cutVal = cutValueConfig == null ? "-" : AssessmentHelper.getRoundedScore(cutValueConfig);
 				} else {

@@ -34,10 +34,10 @@ import org.olat.course.ICourse;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.highscore.ui.HighScoreEditController;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.course.nodes.ms.MSEditFormController;
-import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.repository.RepositoryEntry;
@@ -66,15 +66,16 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 	private ModuleConfiguration config;
 	private PortfolioCourseNode courseNode;
 	
-	public PortfolioCourseNodeEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, PortfolioCourseNode node,
-			ModuleConfiguration config, UserCourseEnvironment euce) {
+	public PortfolioCourseNodeEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+			ICourse course, PortfolioCourseNode node, ModuleConfiguration config) {
 		super(ureq, wControl);
 		this.config = config;
 		this.courseNode = node;
 		
 		configForm = new PortfolioConfigForm(ureq, wControl, stackPanel, course, node);
 		listenTo(configForm);
-		scoringController = new MSEditFormController(ureq, wControl, config, translate("pane.tab.portfolio_scoring"), "Creating Portfolio Tasks");
+		scoringController = new MSEditFormController(ureq, wControl, config, NodeAccessType.of(course),
+				translate("pane.tab.portfolio_scoring"), "Creating Portfolio Tasks");
 		scoringContent = scoringController.getInitialComponent();
 		listenTo(scoringController);
 		textForm = new PortfolioTextForm(ureq, wControl, course, node);

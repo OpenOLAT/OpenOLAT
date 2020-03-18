@@ -42,6 +42,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
@@ -82,6 +83,7 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 	public static final String CONFIG_KEY_HAS_SCORE_FIELD = MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD;
 	public static final String CONFIG_KEY_HAS_PASSED_FIELD = MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD;
 	public static final String CONFIG_KEY_PASSED_CUT_VALUE = MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE;
+	public static final String CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT = MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT;
 	public static final String CONFIG_SKIP_LAUNCH_PAGE = "skiplaunchpage";
 	public static final String CONFIG_SKIP_ACCEPT_LAUNCH_PAGE = "skipacceptlaunchpage";
 	public static final String CONFIG_HEIGHT = "displayHeight";
@@ -204,7 +206,7 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	private boolean isFullyAssessedScoreConfigError() {
-		boolean hasScore = new LTIAssessmentConfig(getModuleConfiguration()).hasScore();
+		boolean hasScore = Mode.none != new LTIAssessmentConfig(getModuleConfiguration()).getScoreMode();
 		boolean isScoreTrigger = CoreSpringFactory.getImpl(LTILearningPathNodeHandler.class)
 				.getConfigs(this)
 				.isFullyAssessedOnScore(null, null)
@@ -213,7 +215,7 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	private boolean isFullyAssessedPassedConfigError() {
-		boolean hasPassed = new LTIAssessmentConfig(getModuleConfiguration()).hasPassed();
+		boolean hasPassed = new LTIAssessmentConfig(getModuleConfiguration()).getPassedMode() != Mode.none;
 		boolean isPassedTrigger = CoreSpringFactory.getImpl(LTILearningPathNodeHandler.class)
 				.getConfigs(this)
 				.isFullyAssessedOnPassed(null, null)

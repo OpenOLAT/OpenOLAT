@@ -25,6 +25,7 @@ import java.io.Serializable;
 import org.olat.core.CoreSpringFactory;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.ProjectBrokerCourseNode;
@@ -53,8 +54,8 @@ public class BulkAssessmentSettings implements Serializable {
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		hasUserComment = assessmentConfig.hasComment();
-		hasScore = assessmentConfig.hasScore();
-		hasPassed = assessmentConfig.hasPassed();
+		hasScore = Mode.none != assessmentConfig.getScoreMode();
+		hasPassed = Mode.none != assessmentConfig.getPassedMode();
 		
 		ModuleConfiguration config = courseNode.getModuleConfiguration();
 		if (courseNode instanceof TACourseNode) {

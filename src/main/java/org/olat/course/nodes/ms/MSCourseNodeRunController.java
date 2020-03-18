@@ -48,6 +48,7 @@ import org.olat.course.CourseModule;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.CourseNode;
@@ -117,7 +118,7 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 		myContent = createVelocityContainer("run");
 
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
-		if (assessmentConfig.hasScore()) {
+		if (Mode.none != assessmentConfig.getScoreMode()) {
 			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, wControl, userCourseEnv, courseNode);
 			if (highScoreCtr.isViewHighscore()) {
 				Component highScoreComponent = highScoreCtr.getInitialComponent();
@@ -196,13 +197,13 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 	private void exposeConfigToVC(UserRequest ureq) {
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		ModuleConfiguration config = courseNode.getModuleConfiguration();
-		myContent.contextPut("hasScoreField", assessmentConfig.hasScore());
-		if (assessmentConfig.hasScore()) {
+		myContent.contextPut("hasScoreField", assessmentConfig.getScoreMode());
+		if (Mode.none != assessmentConfig.getScoreMode()) {
 			myContent.contextPut("scoreMin", AssessmentHelper.getRoundedScore(assessmentConfig.getMinScore()));
 			myContent.contextPut("scoreMax", AssessmentHelper.getRoundedScore(assessmentConfig.getMaxScore()));
 		}
-		myContent.contextPut("hasPassedField", assessmentConfig.hasPassed());
-		if (assessmentConfig.hasPassed()) {
+		myContent.contextPut("hasPassedField", assessmentConfig.getPassedMode());
+		if (Mode.none != assessmentConfig.getPassedMode()) {
 			myContent.contextPut("passedCutValue", AssessmentHelper.getRoundedScore(assessmentConfig.getCutValue()));
 		}
 		myContent.contextPut("hasCommentField", assessmentConfig.hasComment());

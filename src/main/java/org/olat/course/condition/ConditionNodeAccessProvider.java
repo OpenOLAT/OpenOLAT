@@ -72,6 +72,11 @@ public class ConditionNodeAccessProvider implements NodeAccessProvider {
 	}
 
 	@Override
+	public boolean isScoreCalculatorSupported() {
+		return true;
+	}
+
+	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
 			UserCourseEnvironment userCourseEnv, CourseEditorTreeModel editorModel) {
 		if (courseNode instanceof AbstractAccessableCourseNode) {

@@ -61,6 +61,7 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -129,8 +130,8 @@ public class AssessmentForm extends FormBasicController {
 		
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		hasAttempts = assessmentConfig.hasAttempts();
-		hasScore = assessmentConfig.hasScore();
-		hasPassed = assessmentConfig.hasPassed();
+		hasScore = Mode.none != assessmentConfig.getScoreMode();
+		hasPassed = Mode.none != assessmentConfig.getPassedMode();
 		hasComment = assessmentConfig.hasComment();
 		hasIndividualAssessmentDocs = assessmentConfig.hasIndividualAsssessmentDocuments();
 		

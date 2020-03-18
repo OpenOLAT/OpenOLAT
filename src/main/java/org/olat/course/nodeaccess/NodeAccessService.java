@@ -55,6 +55,8 @@ public interface NodeAccessService {
 	 * @return if this type supports guest access
 	 */
 	public boolean isGuestSupported(NodeAccessType type);
+	
+	public boolean isScoreCalculatorSupported(NodeAccessType type);
 
 	/**
 	 * Creates the controller to edit the access configurations of the node.

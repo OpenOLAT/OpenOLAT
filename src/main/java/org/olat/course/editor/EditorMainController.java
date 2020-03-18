@@ -95,6 +95,7 @@ import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.editor.overview.OverviewController;
 import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
@@ -192,6 +193,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 
 	private final OLATResourceable ores;
 	private RepositoryEntry repoEntry;
+	private final NodeAccessType nodeAccessType;
 	
 	private static final Logger log = Tracing.createLoggerFor(EditorMainController.class);
 	private final static String RELEASE_LOCK_AT_CATCH_EXCEPTION = "Must release course lock since an exception occured in " + EditorMainController.class;
@@ -201,7 +203,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	
 	public EditorMainController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar, ICourse course, CourseNode selectedNode) {
 		super(ureq,wControl);
-		this.ores = OresHelper.clone(course);	
+		this.ores = OresHelper.clone(course);
+		this.nodeAccessType = NodeAccessType.of(course);
 		this.stackPanel = toolbar;
 
 		// OLAT-4955: setting the stickyActionType here passes it on to any controller defined in the scope of the editor,
@@ -1185,8 +1188,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private void launchChecklistsWizard(UserRequest ureq) {
 		removeAsListenerAndDispose(checklistWizard);
 
-		Step start = new CheckList_1_CheckboxStep(ureq, ores);
-		StepRunnerCallback finish = new CheckListStepRunnerCallback(ores);
+		Step start = new CheckList_1_CheckboxStep(ureq, ores, nodeAccessType);
+		StepRunnerCallback finish = new CheckListStepRunnerCallback(ores, nodeAccessType);
 		checklistWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
 				translate("checklist.wizard"), "o_sel_checklist_wizard", "Assessment#_checklist_multiple");
 		listenTo(checklistWizard);

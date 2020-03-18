@@ -62,6 +62,7 @@ import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
@@ -358,7 +359,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	private boolean isFullyAssessedScoreConfigError(LearningPathNodeHandler lpNodeHandler) {
-		boolean hasScore = new GTAAssessmentConfig(getModuleConfiguration()).hasPassed();
+		boolean hasScore = new GTAAssessmentConfig(getModuleConfiguration()).getScoreMode() != Mode.none;
 		boolean isScoreTrigger = lpNodeHandler
 				.getConfigs(this)
 				.isFullyAssessedOnScore(null, null)
@@ -367,7 +368,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	private boolean isFullyAssessedPassedConfigError(LearningPathNodeHandler lpNodeHandler) {
-		boolean hasPassed = new GTAAssessmentConfig(getModuleConfiguration()).hasPassed();
+		boolean hasPassed = new GTAAssessmentConfig(getModuleConfiguration()).getPassedMode() != Mode.none;
 		boolean isPassedTrigger = lpNodeHandler
 				.getConfigs(this)
 				.isFullyAssessedOnPassed(null, null)

@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -37,12 +38,15 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CheckListCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.cl.model.CheckboxList;
 import org.olat.course.nodes.cl.ui.wizard.GeneratorData;
 import org.olat.modules.ModuleConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -60,29 +64,38 @@ public class CheckListConfigurationController extends FormBasicController {
 	private TextElement minPointsEl, maxPointsEl, cutValueEl, titlePrefixEl;
 	private RichTextElement tipUserEl, tipCoachEl;
 	private DateChooser dueDateChooserEl;
+	private MultipleSelectionElement ignoreInCourseAssessmentEl;
+	private SpacerElement ignoreInCourseAssessmentSpacer;
 	
 	private final ModuleConfiguration config;
 	private final boolean inUse;
 	private final boolean wizard;
+	private final boolean ignoreInCourseAssessmentAvailable;
 	private GeneratorData data;
 	
 	private static final String[] numOfKeys = new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" };
 	
-	public CheckListConfigurationController(UserRequest ureq, WindowControl wControl, CourseNode courseNode, boolean inUse) {
+	@Autowired
+	private NodeAccessService nodeAccessService;
+	
+	public CheckListConfigurationController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
+			NodeAccessType nodeAccessType, boolean inUse) {
 		super(ureq, wControl);
 		wizard = false;
 		this.inUse = inUse;
 		config = courseNode.getModuleConfiguration();
+		this.ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(nodeAccessType);
 		initForm(ureq);
 	}
 	
 	public CheckListConfigurationController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config,
-			GeneratorData data, Form rootForm) {
+			NodeAccessType nodeAccessType, GeneratorData data, Form rootForm) {
 		super(ureq, wControl, LAYOUT_DEFAULT, null, rootForm);
 		wizard = true;
 		inUse = false;
 		this.data = data;
 		this.config = config;
+		this.ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(nodeAccessType);
 		initForm(ureq);
 	}
 	
@@ -144,7 +157,6 @@ public class CheckListConfigurationController extends FormBasicController {
 		maxPointsEl = uifactory.addTextElement("pointsmax", "config.points.max", 4, maxValStr, formLayout);
 		maxPointsEl.setMandatory(true);
 		maxPointsEl.setDisplaySize(5);
-		updateScoreVisibility();
 		
 		uifactory.addSpacerElement("spacer-points", formLayout, false);
 		
@@ -189,9 +201,16 @@ public class CheckListConfigurationController extends FormBasicController {
 		if((cutVal != null && cutVal.floatValue() > -0.1) || !outputEl.isOneSelected()) {
 			outputEl.select(outputKeys[0], true);
 		}
-		updatePassedAndOutputVisibilty();
 		
 		uifactory.addSpacerElement("spacer-passed", formLayout, false);
+		
+		// course assesment
+		ignoreInCourseAssessmentEl = uifactory.addCheckboxesHorizontal("ignore.in.course.assessment", formLayout,
+				new String[] { "xx" }, new String[] { null });
+		boolean ignoreInCourseAssessment = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT);
+		ignoreInCourseAssessmentEl.select(ignoreInCourseAssessmentEl.getKey(0), ignoreInCourseAssessment);
+		
+		ignoreInCourseAssessmentSpacer = uifactory.addSpacerElement("spacer3", formLayout, false);
 
 		//comment
 		commentEl = uifactory.addCheckboxesHorizontal("comment", "config.comment", formLayout, onKeys, theValues);
@@ -221,6 +240,9 @@ public class CheckListConfigurationController extends FormBasicController {
 			formLayout.add(buttonsLayout);
 			uifactory.addFormSubmitButton("submit", "submit", buttonsLayout);
 		}
+		
+		updateScoreVisibility();
+		updatePassedAndOutputVisibilty();
 	}
 	
 	@Override
@@ -276,6 +298,10 @@ public class CheckListConfigurationController extends FormBasicController {
 				config.set(CheckListCourseNode.CONFIG_KEY_PASSED_MANUAL_CORRECTION, Boolean.TRUE);
 			}
 		}
+		
+		// course assessment
+		boolean ignoreInCourseAssessment = ignoreInCourseAssessmentEl.isVisible() && ignoreInCourseAssessmentEl.isAtLeastSelected(1);
+		config.setBooleanEntry(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, ignoreInCourseAssessment);
 
 		// mandatory comment flag
 		config.set(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, Boolean.valueOf(commentEl.isSelected(0)));
@@ -432,6 +458,7 @@ public class CheckListConfigurationController extends FormBasicController {
 		minPointsEl.setMandatory(granted);
 		maxPointsEl.setVisible(granted);
 		maxPointsEl.setMandatory(granted);
+		updateIgnoreInCourseAssessmentVisibility();
 	}
 	
 	private void updatePassedAndOutputVisibilty() {
@@ -453,5 +480,14 @@ public class CheckListConfigurationController extends FormBasicController {
 			cutValueEl.setVisible(false);
 			sumCheckboxEl.setVisible(false);
 		}
+		updateIgnoreInCourseAssessmentVisibility();
 	}
+	
+	private void updateIgnoreInCourseAssessmentVisibility() {
+		boolean ignoreInScoreVisible = ignoreInCourseAssessmentAvailable
+				&& (scoreGrantedEl.isSelected(0) || passedEl.isSelected(0));
+		ignoreInCourseAssessmentEl.setVisible(ignoreInScoreVisible);
+		ignoreInCourseAssessmentSpacer.setVisible(ignoreInScoreVisible);
+	}
+	
 }

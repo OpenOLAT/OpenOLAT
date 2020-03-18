@@ -37,14 +37,14 @@ public class MSAssessmentConfig extends ModuleAssessmentConfig {
 	}
 
 	@Override
-	public boolean hasScore() {
+	public Mode getScoreMode() {
 		String scoreKey = config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE);
-		return !MSCourseNode.CONFIG_VALUE_SCORE_NONE.equals(scoreKey);
+		return !MSCourseNode.CONFIG_VALUE_SCORE_NONE.equals(scoreKey)? Mode.setByNode: Mode.none;
 	}
 	
 	@Override
 	public Float getMaxScore() {
-		if (!hasScore()) {
+		if (Mode.none == getScoreMode()) {
 			throw new OLATRuntimeException(MSAssessmentConfig.class, "getMaxScore not defined when hasScoreConfigured set to false", null);
 		}
 		return MSCourseNode.getMinMax(config).getMax();
@@ -52,7 +52,7 @@ public class MSAssessmentConfig extends ModuleAssessmentConfig {
 	
 	@Override
 	public Float getMinScore() {
-		if (!hasScore()) {
+		if (Mode.none == getScoreMode()) {
 			throw new OLATRuntimeException(MSAssessmentConfig.class, "getMinScore not defined when hasScoreConfigured set to false", null);
 		}
 		return MSCourseNode.getMinMax(config).getMin();

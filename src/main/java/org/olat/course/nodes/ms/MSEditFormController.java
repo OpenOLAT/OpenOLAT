@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -36,8 +37,11 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.modules.ModuleConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Provides a FlexiForm for the assesment settings dialog, including custom
@@ -50,6 +54,7 @@ public class MSEditFormController extends FormBasicController {
 
 	/** Configuration this controller will modify. */
 	private final ModuleConfiguration modConfig;
+	private final boolean ignoreInCourseAssessmentAvailable;
 
 	/** whether score will be awarded or not. */
 	private MultipleSelectionElement scoreGranted;
@@ -76,6 +81,9 @@ public class MSEditFormController extends FormBasicController {
 
 	/** Text input element for the passing score. */
 	private TextElement cutVal;
+	
+	private MultipleSelectionElement ignoreInCourseAssessmentEl;
+	private SpacerElement ignoreInCourseAssessmentSpacer;
 
 	/** Rich text input element for a notice to all users. */
 	private RichTextElement infotextUser;
@@ -95,19 +103,23 @@ public class MSEditFormController extends FormBasicController {
 	private final String helpUrl;
 	private final boolean withIndividualAssessmentDocs;
 	
-	public MSEditFormController(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig) {
-		this(ureq, wControl, modConfig, null, null, true);
+	@Autowired
+	private NodeAccessService nodeAccessService;
+	
+	public MSEditFormController(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig, NodeAccessType nodeAccessType) {
+		this(ureq, wControl, modConfig, nodeAccessType, null, null, true);
 	}
 	
-	public MSEditFormController(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig, String title,
-			String helpUrl) {
-		this(ureq, wControl, modConfig, title, helpUrl, true);
+	public MSEditFormController(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig, NodeAccessType nodeAccessType,
+			String title, String helpUrl) {
+		this(ureq, wControl, modConfig, nodeAccessType, title, helpUrl, true);
 	}
 	
-	public MSEditFormController(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig, String title,
-			String helpUrl, boolean withIndividualAssessmentDocs) {
+	public MSEditFormController(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig, NodeAccessType nodeAccessType,
+			String title, String helpUrl, boolean withIndividualAssessmentDocs) {
 		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT);
 		this.modConfig = modConfig;
+		this.ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(nodeAccessType);
 		this.title = title;
 		this.helpUrl = helpUrl;
 		this.withIndividualAssessmentDocs = withIndividualAssessmentDocs;
@@ -116,21 +128,11 @@ public class MSEditFormController extends FormBasicController {
 		initForm(ureq);
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose
-	 *      ()
-	 */
 	@Override
 	protected void doDispose() {
 	// Don't dispose anything
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK
-	 *      (org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
 		fireEvent(ureq, Event.DONE_EVENT);
@@ -212,7 +214,14 @@ public class MSEditFormController extends FormBasicController {
 		cutVal.setElementCssClass("o_sel_course_ms_cut_val");
 
 		uifactory.addSpacerElement("spacer2", formLayout, false);
-
+		
+		ignoreInCourseAssessmentEl = uifactory.addCheckboxesHorizontal("ignore.in.course.assessment", formLayout,
+				new String[] { "xx" }, new String[] { null });
+		boolean ignoreInCourseAssessment = modConfig.getBooleanSafe(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT);
+		ignoreInCourseAssessmentEl.select(ignoreInCourseAssessmentEl.getKey(0), ignoreInCourseAssessment);
+		
+		ignoreInCourseAssessmentSpacer = uifactory.addSpacerElement("spacer3", formLayout, false);
+		
 		// Create the "individual comment" dropdown.
 		commentFlag = uifactory.addCheckboxesHorizontal("form.comment", formLayout, new String[]{"xx"}, new String[]{null});
 		Boolean cf = (Boolean) modConfig.get(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD);
@@ -226,7 +235,7 @@ public class MSEditFormController extends FormBasicController {
 		}
 		individualAssessmentDocsFlag.setVisible(withIndividualAssessmentDocs);
 
-		uifactory.addSpacerElement("spacer3", formLayout, false);
+		uifactory.addSpacerElement("spacer4", formLayout, false);
 
 		// Create the rich text fields.
 		String infoUser = (String) modConfig.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
@@ -264,6 +273,12 @@ public class MSEditFormController extends FormBasicController {
 		displayType.setVisible(displayPassed.isSelected(0));
 		cutVal.setVisible(displayType.isVisible() && displayType.isSelected(0));
 		cutVal.setMandatory(cutVal.isVisible());
+		
+		boolean ignoreInScoreVisible = ignoreInCourseAssessmentAvailable
+				&& (scoreGranted.isSelected(0) || displayPassed.isSelected(0));
+		ignoreInCourseAssessmentEl.setVisible(ignoreInScoreVisible);
+		ignoreInCourseAssessmentSpacer.setVisible(ignoreInScoreVisible);
+		
 		validateFormLogic(ureq);
 	}
 	
@@ -335,9 +350,6 @@ public class MSEditFormController extends FormBasicController {
 		}
 	}
 
-	/**
-	 * @param moduleConfiguration
-	 */
 	public void updateModuleConfiguration(ModuleConfiguration moduleConfiguration) {
 		// mandatory score flag
 		Boolean sf = Boolean.valueOf(scoreGranted.isSelected(0));
@@ -368,6 +380,9 @@ public class MSEditFormController extends FormBasicController {
 			// remove old config
 			moduleConfiguration.remove(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 		}
+		
+		boolean ignoreInCourseAssessment = ignoreInCourseAssessmentEl.isVisible() && ignoreInCourseAssessmentEl.isAtLeastSelected(1);
+		moduleConfiguration.setBooleanEntry(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, ignoreInCourseAssessment);
 
 		// mandatory comment flag
 		moduleConfiguration.set(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, Boolean.valueOf(commentFlag.isSelected(0)));

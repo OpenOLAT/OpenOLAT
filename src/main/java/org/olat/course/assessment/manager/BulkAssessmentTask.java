@@ -75,6 +75,7 @@ import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.bulk.BulkAssessmentOverviewController;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.model.BulkAssessmentDatas;
 import org.olat.course.assessment.model.BulkAssessmentFeedback;
 import org.olat.course.assessment.model.BulkAssessmentRow;
@@ -310,8 +311,8 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 		final AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		
 		final boolean hasUserComment = assessmentConfig.hasComment();
-		final boolean hasScore = assessmentConfig.hasScore();
-		final boolean hasPassed = assessmentConfig.hasPassed();
+		final boolean hasScore = Mode.none != assessmentConfig.getScoreMode();
+		final boolean hasPassed = Mode.none != assessmentConfig.getPassedMode();
 		final boolean hasReturnFiles = (StringHelper.containsNonWhitespace(datas.getReturnFiles())
 				&& (courseNode instanceof TACourseNode || courseNode instanceof GTACourseNode));
 		

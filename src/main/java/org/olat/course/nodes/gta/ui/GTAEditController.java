@@ -29,6 +29,7 @@ import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultCon
 import org.olat.course.ICourse;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.highscore.ui.HighScoreEditController;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.gta.GTAType;
@@ -70,6 +71,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 	private final ModuleConfiguration config;
 	private final UserCourseEnvironment euce;
 	private final CourseEnvironment courseEnv;
+	private final NodeAccessType nodeAccessType;
 	
 	public GTAEditController(UserRequest ureq, WindowControl wControl, GTACourseNode gtaNode,
 			ICourse course, UserCourseEnvironment euce) {
@@ -78,6 +80,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		this.euce = euce;
 		this.gtaNode = gtaNode;
 		courseEnv = course.getCourseEnvironment();
+		nodeAccessType = NodeAccessType.of(course);
 		config = gtaNode.getModuleConfiguration();
 
 		//workflow
@@ -224,7 +227,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 
 	public MSEditFormController createManualAssessmentCtrl(UserRequest ureq) {
 		boolean singleIdentityTask = GTAType.individual.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE));
-		return new MSEditFormController(ureq, getWindowControl(), config, translate("pane.tab.grading"),
-				"Three Steps to Your Task#_task_configuration", singleIdentityTask);
+		return new MSEditFormController(ureq, getWindowControl(), config, nodeAccessType,
+				translate("pane.tab.grading"), "Three Steps to Your Task#_task_configuration", singleIdentityTask);
 	}
 }

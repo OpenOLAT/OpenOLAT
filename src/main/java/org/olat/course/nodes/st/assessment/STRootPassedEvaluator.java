@@ -1,0 +1,132 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.course.nodes.st.assessment;
+
+import java.util.Date;
+
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.STCourseNode;
+import org.olat.course.nodes.st.assessment.PassCounter.Counts;
+import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.RootPassedEvaluator;
+import org.olat.course.run.scoring.ScoreAccounting;
+import org.olat.modules.ModuleConfiguration;
+import org.olat.repository.RepositoryEntry;
+
+/**
+ * 
+ * Initial date: 13 Mar 2020<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ *
+ */
+public class STRootPassedEvaluator implements RootPassedEvaluator {
+	
+	private final PassCounter passCounter;
+	
+	public STRootPassedEvaluator() {
+		this(new PassCounter());
+	}
+	
+	STRootPassedEvaluator(PassCounter passCounter) {
+		this.passCounter = passCounter;
+	}
+
+	@Override
+	public Boolean getPassed(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
+			ScoreAccounting scoreAccounting, RepositoryEntry courseEntry) {
+		//TODO uh wenn es überschieben ist => nicht ändern
+		
+		Boolean currentPassed = currentEvaluation.getPassed();
+		if (currentPassed != null && currentPassed.booleanValue()) {
+			// Never reset a passed course to null or failed
+			return currentPassed;
+		}
+		
+		ModuleConfiguration config = courseNode.getModuleConfiguration();
+		
+		// Progress
+		if (config.getBooleanSafe(STCourseNode.CONFIG_PASSED_PROGRESS)) {
+			Boolean fullyAssessed = currentEvaluation.getFullyAssessed();
+			if (fullyAssessed != null && fullyAssessed.booleanValue()) {
+				return Boolean.TRUE;
+			}
+		}
+		
+		// Points
+		if (config.getBooleanSafe(STCourseNode.CONFIG_PASSED_POINTS)) {
+			Float score = currentEvaluation.getScore();
+			if (score != null) {
+				int cutvalue = config.getIntegerSafe(STCourseNode.CONFIG_PASSED_POINTS_CUT, Integer.MAX_VALUE);
+				if (score.floatValue() >= cutvalue) {
+					return Boolean.TRUE;
+				}
+			}
+		}
+		
+		// All passed
+		if (config.getBooleanSafe(STCourseNode.CONFIG_PASSED_ALL)) {
+			Counts counts = passCounter.getCounts(courseNode, scoreAccounting);
+			if (counts.isAllAssessed() && counts.getPassable() > 0) {
+				if (counts.getPassable() == counts.getPassed()) {
+					return Boolean.TRUE;
+				} else if (getActivePassedConfigs(config) == 1) {
+					return Boolean.FALSE;
+				}
+			}
+		}
+	
+		if (currentPassed == null && getActivePassedConfigs(config) > 0) {
+			Counts counts = passCounter.getCounts(courseNode, scoreAccounting);
+			if (counts.getPassable() > 0) {
+				
+				// Failed if course is fully assessed
+				Boolean fullyAssessed = currentEvaluation.getFullyAssessed();
+				if (fullyAssessed != null && fullyAssessed.booleanValue()) {
+					return Boolean.FALSE;
+				}
+			
+				// Failed if course end date is over
+				if (courseEntry != null && courseEntry.getLifecycle() != null && courseEntry.getLifecycle().getValidTo() != null) {
+					Date validTo = courseEntry.getLifecycle().getValidTo();
+					if (validTo.before(new Date())) {
+						return Boolean.FALSE;
+					}
+				}
+			}
+		}
+		
+		return currentPassed;
+	}
+
+	private int getActivePassedConfigs(ModuleConfiguration config) {
+		int active = 0;
+		if (config.has(STCourseNode.CONFIG_PASSED_PROGRESS)) {
+			active++;
+		}
+		if (config.has(STCourseNode.CONFIG_PASSED_ALL)) {
+			active++;
+		}
+		if (config.has(STCourseNode.CONFIG_PASSED_POINTS)) {
+			active++;
+		}
+		return active;
+	}
+
+}

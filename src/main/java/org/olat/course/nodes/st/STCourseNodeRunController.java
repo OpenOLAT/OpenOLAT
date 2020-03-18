@@ -49,6 +49,7 @@ import org.olat.core.util.nodes.INode;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodeaccess.NodeAccessService;
@@ -100,7 +101,9 @@ public class STCourseNodeRunController extends BasicController {
 		myContent.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
 		
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(stCourseNode);
-		if (se != null && (assessmentConfig.hasScore() || assessmentConfig.hasPassed())) {
+		boolean hasScore = Mode.none != assessmentConfig.getScoreMode();
+		boolean hasPassed = Mode.none != assessmentConfig.getPassedMode();
+		if (se != null && (hasScore || hasPassed)) {
 			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, wControl, userCourseEnv, stCourseNode);
 			if (highScoreCtr.isViewHighscore()) {
 				Component highScoreComponent = highScoreCtr.getInitialComponent();
@@ -185,10 +188,10 @@ public class STCourseNodeRunController extends BasicController {
 			myContent.contextPut("hasScore", Boolean.FALSE);
 			myContent.contextPut("hasPassed", Boolean.FALSE);
 		} else {
-			myContent.contextPut("hasScore", new Boolean(assessmentConfig.hasScore()));
-			myContent.contextPut("hasPassed", new Boolean(assessmentConfig.hasPassed()));
+			myContent.contextPut("hasScore", Boolean.valueOf(hasScore));
+			myContent.contextPut("hasPassed", Boolean.valueOf(hasPassed));
 
-			if(assessmentConfig.hasScore() || assessmentConfig.hasPassed()) {
+			if(hasScore|| hasPassed) {
 				CourseConfig cc = userCourseEnv.getCourseEnvironment().getCourseConfig();
 				if((cc.isEfficencyStatementEnabled() || cc.isCertificateEnabled())
 						&& userCourseEnv.hasEfficiencyStatementOrCertificate(false)) {

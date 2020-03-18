@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -48,6 +49,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
+import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.ModuleConfiguration;
@@ -86,6 +89,8 @@ public class MSConfigController extends FormBasicController {
 	private String[] trueFalseKeys;
 	private String[] passedTypeValues;
 	private TextElement cutEl;
+	private MultipleSelectionElement ignoreInCourseAssessmentEl;
+	private SpacerElement ignoreInCourseAssessmentSpacer;
 	private MultipleSelectionElement commentFlagEl;
 	private MultipleSelectionElement individualAssessmentDocsFlagEl;
 	private RichTextElement infotextUserEl;
@@ -98,6 +103,7 @@ public class MSConfigController extends FormBasicController {
 	private final ModuleConfiguration config;
 	private final RepositoryEntry ores;
 	private final String nodeIdent;
+	private final boolean ignoreInCourseAssessmentAvailable;
 	private RepositoryEntry formEntry;
 	private MinMax formMinMax;
 	
@@ -105,6 +111,8 @@ public class MSConfigController extends FormBasicController {
 	private MSService msService;
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
+	@Autowired
+	private NodeAccessService nodeAccessService;
 
 	public MSConfigController(UserRequest ureq, WindowControl wControl, ICourse course,
 			MSCourseNode courseNode) {
@@ -112,6 +120,7 @@ public class MSConfigController extends FormBasicController {
 		this.config = courseNode.getModuleConfiguration();
 		this.ores = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
 		this.nodeIdent = courseNode.getIdent();
+		this.ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(NodeAccessType.of(course));
 		this.formEntry = MSCourseNode.getEvaluationForm(config);
 		doCalculateMinMax();
 		
@@ -205,6 +214,14 @@ public class MSConfigController extends FormBasicController {
 		cutEl.setElementCssClass("o_sel_course_ms_cut");
 
 		uifactory.addSpacerElement("spacer2", formLayout, false);
+		
+		// Ignore in course assessment
+		ignoreInCourseAssessmentEl = uifactory.addCheckboxesHorizontal("ignore.in.course.assessment", formLayout,
+				new String[] { "xx" }, new String[] { null });
+		boolean ignoreInCourseAssessment = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT);
+		ignoreInCourseAssessmentEl.select(ignoreInCourseAssessmentEl.getKey(0), ignoreInCourseAssessment);
+		
+		ignoreInCourseAssessmentSpacer = uifactory.addSpacerElement("spacer3", formLayout, false);
 
 		// Comments
 		commentFlagEl = uifactory.addCheckboxesHorizontal("form.comment", formLayout, ENABLED_KEYS,
@@ -217,7 +234,7 @@ public class MSConfigController extends FormBasicController {
 		Boolean docsCf = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false);
 		individualAssessmentDocsFlagEl.select(ENABLED_KEYS[0], docsCf);
 
-		uifactory.addSpacerElement("spacer3", formLayout, false);
+		uifactory.addSpacerElement("spacer4", formLayout, false);
 
 		// Create the rich text fields.
 		String infoUser = (String) config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
@@ -293,6 +310,13 @@ public class MSConfigController extends FormBasicController {
 		// cut value
 		boolean cutVisible = passedTypeVisible && passedTypeEl.isOneSelected() && passedTypeEl.getSelected() == 0;
 		cutEl.setVisible(cutVisible);
+		
+		// ignore in course assessment
+		boolean hasScore = scoreEl.isOneSelected() && !scoreEl.getSelectedKey().equals(MSCourseNode.CONFIG_VALUE_SCORE_NONE);
+		boolean ignoreInScoreVisible = ignoreInCourseAssessmentAvailable
+				&& (hasScore || passedEl.isAtLeastSelected(1));
+		ignoreInCourseAssessmentEl.setVisible(ignoreInScoreVisible);
+		ignoreInCourseAssessmentSpacer.setVisible(ignoreInScoreVisible);
 	}
 
 	@Override
@@ -486,6 +510,9 @@ public class MSConfigController extends FormBasicController {
 		} else {
 			config.remove(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 		}
+		
+		boolean ignoreInCourseAssessment = ignoreInCourseAssessmentEl.isVisible() && ignoreInCourseAssessmentEl.isAtLeastSelected(1);
+		config.setBooleanEntry(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, ignoreInCourseAssessment);
 		
 		Boolean commentFieldEnabled = Boolean.valueOf(commentFlagEl.isSelected(0));
 		config.set(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, commentFieldEnabled);

@@ -21,7 +21,9 @@ package org.olat.course.nodes.st.assessment;
 
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.scoring.ScoreCalculator;
+import org.olat.modules.ModuleConfiguration;
 
 /**
  * 
@@ -31,9 +33,13 @@ import org.olat.course.run.scoring.ScoreCalculator;
  */
 public class STAssessmentConfig implements AssessmentConfig {
 	
+	private final boolean isRoot;
+	private final ModuleConfiguration rootConfig;
 	private final ScoreCalculator scoreCalculator;
 
-	public STAssessmentConfig(ScoreCalculator scoreCalculator) {
+	public STAssessmentConfig(boolean isRoot, ModuleConfiguration rootConfig, ScoreCalculator scoreCalculator) {
+		this.isRoot = isRoot;
+		this.rootConfig = rootConfig;
 		this.scoreCalculator = scoreCalculator;
 	}
 
@@ -43,8 +49,13 @@ public class STAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean isEvaluationPersisted() {
-		return true;
+	public boolean ignoreInCourseAssessment() {
+		return false;
+	}
+
+	@Override
+	public void setIgnoreInCourseAssessment(boolean ignoreInCourseAssessment) {
+		//
 	}
 
 	@Override
@@ -53,11 +64,13 @@ public class STAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean hasScore() {
+	public Mode getScoreMode() {
 		if (scoreCalculator != null && StringHelper.containsNonWhitespace(scoreCalculator.getScoreExpression())) {
-			return true;
+			return Mode.evaluated;
+		} else if (rootConfig.has(STCourseNode.CONFIG_SCORE_KEY)) {
+			return Mode.evaluated;
 		}
-		return false;
+		return Mode.none;
 	}
 
 	@Override
@@ -71,11 +84,21 @@ public class STAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean hasPassed() {
+	public Mode getPassedMode() {
 		if (scoreCalculator != null && StringHelper.containsNonWhitespace(scoreCalculator.getPassedExpression())) {
-			return true;
+			return Mode.evaluated;
+		} else if (isEvaluatedRoot()) {
+			return Mode.evaluated;
 		}
-		return false;
+		return Mode.none;
+	}
+
+	private boolean isEvaluatedRoot() {
+		return isRoot && (
+				   rootConfig.has(STCourseNode.CONFIG_PASSED_PROGRESS)
+				|| rootConfig.has(STCourseNode.CONFIG_PASSED_ALL)
+				|| rootConfig.has(STCourseNode.CONFIG_PASSED_POINTS)
+				);
 	}
 	
 	@Override

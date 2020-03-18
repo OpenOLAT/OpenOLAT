@@ -28,6 +28,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.Util;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.cl.ui.CheckListConfigurationController;
 import org.olat.course.nodes.cl.ui.CheckListEditController;
 import org.olat.modules.ModuleConfiguration;
@@ -43,13 +44,15 @@ public class CheckListConfigurationStepController extends StepFormBasicControlle
 	private final GeneratorData data;
 	private final CheckListConfigurationController configController;
 	
-	public CheckListConfigurationStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
+	public CheckListConfigurationStepController(UserRequest ureq, WindowControl wControl, Form rootForm,
+			StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "checklist_config");
 		setTranslator(Util.createPackageTranslator(CheckListEditController.class, getLocale(), getTranslator()));
 
 		data = (GeneratorData)getFromRunContext("data");
+		NodeAccessType nodeAccessType = (NodeAccessType)getFromRunContext("nodeAccessType");
 		ModuleConfiguration config = data.getModuleConfiguration();
-		configController = new CheckListConfigurationController(ureq, wControl, config, data, rootForm);
+		configController = new CheckListConfigurationController(ureq, wControl, config, nodeAccessType, data, rootForm);
 		listenTo(configController);
 		
 		initForm(ureq);

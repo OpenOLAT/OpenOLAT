@@ -41,13 +41,13 @@ public class ProjectBrokerAssessmentConfig extends ModuleAssessmentConfig {
 	}
 	
 	@Override
-	public boolean hasScore() {
-		return false;
+	public Mode getScoreMode() {
+		return Mode.none;
 	}
 
 	@Override
-	public boolean hasPassed() {
-		return false;
+	public Mode getPassedMode() {
+		return Mode.none;
 	}
 
 	@Override

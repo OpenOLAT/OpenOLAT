@@ -37,10 +37,15 @@ public class NonAssessmentConfig implements AssessmentConfig {
 	public boolean isAssessable() {
 		return false;
 	}
+	
+	@Override
+	public boolean ignoreInCourseAssessment() {
+		return true;
+	}
 
 	@Override
-	public boolean isEvaluationPersisted() {
-		return false;
+	public void setIgnoreInCourseAssessment(boolean ignoreInCourseAssessment) {
+		//
 	}
 
 	@Override
@@ -53,8 +58,8 @@ public class NonAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean hasScore() {
-		return false;
+	public Mode getScoreMode() {
+		return Mode.none;
 	}
 
 	@Override
@@ -68,8 +73,8 @@ public class NonAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean hasPassed() {
-		return false;
+	public Mode getPassedMode() {
+		return Mode.none;
 	}
 
 	@Override
@@ -131,5 +136,6 @@ public class NonAssessmentConfig implements AssessmentConfig {
 	public boolean isObligationOverridable() {
 		return false;
 	}
+
 
 }

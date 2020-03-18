@@ -50,10 +50,13 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.condition.Condition;
 import org.olat.course.editor.CourseEditorHelper;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.highscore.ui.HighScoreEditController;
+import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.sp.SecuritySettingsForm;
@@ -138,6 +141,8 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
+	@Autowired
+	private NodeAccessService nodeAccessService;
 
 	public STCourseNodeEditController(UserRequest ureq, WindowControl wControl, STCourseNode stNode, ICourse course, UserCourseEnvironment euce) {
 		super(ureq, wControl);
@@ -150,11 +155,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 		Translator fallback = Util.createPackageTranslator(Condition.class, getLocale());
 		Translator newTranslator = Util.createPackageTranslator(STCourseNodeEditController.class, getLocale(), fallback);
 		setTranslator(newTranslator);
-				
-		score = createVelocityContainer("scoreedit");
-		activateEasyModeButton = LinkFactory.createButtonSmall("cmd.activate.easyMode", score, this);
-		activateExpertModeButton = LinkFactory.createButtonSmall("cmd.activate.expertMode", score, this);
-				
+			
 		configvc = createVelocityContainer("config");
 		// type of display configuration: manual, auto, peekview etc
 		nodeDisplayConfigFormController = new STCourseNodeDisplayConfigFormController(ureq, wControl, stNode.getModuleConfiguration(), editorModel.getCourseEditorNodeById(stNode.getIdent()));
@@ -183,30 +184,37 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 		// HighScore Controller
 		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, stNode.getModuleConfiguration());
 		listenTo(highScoreNodeConfigController);
-
-		ScoreCalculator scoreCalc = stNode.getScoreCalculator();
-		if (scoreCalc != null) {
-			if (scoreCalc.isExpertMode() && scoreCalc.getPassedExpression() == null && scoreCalc.getScoreExpression() == null) {
-				scoreCalc = null;
-			} else if (!scoreCalc.isExpertMode() && scoreCalc.getPassedExpressionFromEasyModeConfiguration() == null
-					&& scoreCalc.getScoreExpressionFromEasyModeConfiguration() == null) {
-				scoreCalc = null;
+		
+		
+		if (nodeAccessService.isScoreCalculatorSupported(NodeAccessType.of(course))) {
+			score = createVelocityContainer("scoreedit");
+			activateEasyModeButton = LinkFactory.createButtonSmall("cmd.activate.easyMode", score, this);
+			activateExpertModeButton = LinkFactory.createButtonSmall("cmd.activate.expertMode", score, this);
+			
+			ScoreCalculator scoreCalc = stNode.getScoreCalculator();
+			if (scoreCalc != null) {
+				if (scoreCalc.isExpertMode() && scoreCalc.getPassedExpression() == null && scoreCalc.getScoreExpression() == null) {
+					scoreCalc = null;
+				} else if (!scoreCalc.isExpertMode() && scoreCalc.getPassedExpressionFromEasyModeConfiguration() == null
+						&& scoreCalc.getScoreExpressionFromEasyModeConfiguration() == null) {
+					scoreCalc = null;
+				}
 			}
-		}
 
-		if (assessableChildren.isEmpty() && scoreCalc == null) {
-			// show only the no assessable children message, if no previous score
-			// config exists.
-			score.contextPut("noAssessableChildren", Boolean.TRUE);
-		} else {
-			score.contextPut("noAssessableChildren", Boolean.FALSE);
-		}
+			if (assessableChildren.isEmpty() && scoreCalc == null) {
+				// show only the no assessable children message, if no previous score
+				// config exists.
+				score.contextPut("noAssessableChildren", Boolean.TRUE);
+			} else {
+				score.contextPut("noAssessableChildren", Boolean.FALSE);
+			}
 
-		// Init score calculator form
-		if (scoreCalc != null && scoreCalc.isExpertMode()) {
-			initScoreExpertForm(ureq);
-		} else {
-			initScoreEasyForm(ureq);
+			// Init score calculator form
+			if (scoreCalc != null && scoreCalc.isExpertMode()) {
+				initScoreExpertForm(ureq);
+			} else {
+				initScoreEasyForm(ureq);
+			}
 		}
 	}
 
@@ -421,14 +429,16 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 	
 	private void updateHighscoreTab() {
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(stNode);
-		myTabbedPane.setEnabled(highScoreTabPos, assessmentConfig.hasScore());
+		myTabbedPane.setEnabled(highScoreTabPos, Mode.none != assessmentConfig.getScoreMode());
 	}
 	
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
 		tabbedPane.addTab(translate(PANE_TAB_ST_CONFIG), configvc);
-		tabbedPane.addTab(translate(PANE_TAB_ST_SCORECALCULATION), score);
+		if (score != null) {
+			tabbedPane.addTab(translate(PANE_TAB_ST_SCORECALCULATION), score);
+		}
 		highScoreTabPos = tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE) , highScoreNodeConfigController.getInitialComponent());
 		updateHighscoreTab();
 

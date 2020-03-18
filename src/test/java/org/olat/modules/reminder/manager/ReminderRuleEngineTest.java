@@ -43,6 +43,7 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.assessment.model.UserCourseInfosImpl;
 import org.olat.course.nodes.CourseNode;
@@ -1088,7 +1089,7 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 		}
 		Assert.assertNotNull(testNode);
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(testNode);
-		Assert.assertTrue(assessmentConfig.hasScore());
+		Assert.assertTrue(Mode.none != assessmentConfig.getScoreMode());
 		
 		IdentityEnvironment ienv = new IdentityEnvironment(); 
 		ienv.setIdentity(student);

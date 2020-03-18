@@ -36,6 +36,10 @@ import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodeaccess.NodeAccessProviderIdentifier;
 import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.NodeAccessType;
+import org.olat.course.nodes.STCourseNode;
+import org.olat.course.tree.CourseEditorTreeNode;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -86,26 +90,35 @@ public class CreateCourseRepositoryEntryController extends CreateRepositoryEntry
 
 	@Override
 	protected void afterEntryCreated() {
-		if (isNotDefaultNodeAccessType()) {
-			OLATResourceable courseOres = getAddedEntry().getOlatResource();
-			if (CourseFactory.isCourseEditSessionOpen(courseOres.getResourceableId())) {
-				log.warn("Not able to set the course node access type: Edit session is already open!");
-				return;
-			}
-			
-			ICourse course = CourseFactory.openCourseEditSession(courseOres.getResourceableId());
-			CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
-			String nodeAccessType = nodeAccessEl.getSelectedKey();
-			courseConfig.setNodeAccessType(nodeAccessType);
-			
-			CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
-			CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
+		OLATResourceable courseOres = getAddedEntry().getOlatResource();
+		if (CourseFactory.isCourseEditSessionOpen(courseOres.getResourceableId())) {
+			log.warn("Not able to set the course node access type: Edit session is already open!");
+			return;
 		}
-	}
-
-	private boolean isNotDefaultNodeAccessType() {
-		return nodeAccessEl.isOneSelected()
-				&& !CourseConfig.NODE_ACCESS_TYPE_DEFAULT.equals(nodeAccessEl.getSelectedValue());
+		
+		ICourse course = CourseFactory.openCourseEditSession(courseOres.getResourceableId());
+		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
+		String nodeAccessType = nodeAccessEl.getSelectedKey();
+		courseConfig.setNodeAccessType(nodeAccessType);
+		
+		ModuleConfiguration runConfig = course.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration();
+		CourseEditorTreeNode courseEditorTreeNode = (CourseEditorTreeNode)course.getEditorTreeModel().getRootNode();
+		ModuleConfiguration editorConfig = courseEditorTreeNode.getCourseNode().getModuleConfiguration();
+		
+		boolean scoreCalculatorSupported = nodeAccessService.isScoreCalculatorSupported(NodeAccessType.of(nodeAccessType));
+		runConfig.setBooleanEntry(STCourseNode.CONFIG_SCORE_CALCULATOR_SUPPORTED, scoreCalculatorSupported);
+		editorConfig.setBooleanEntry(STCourseNode.CONFIG_SCORE_CALCULATOR_SUPPORTED, scoreCalculatorSupported);
+		
+		if (!scoreCalculatorSupported) {
+			runConfig.setStringValue(STCourseNode.CONFIG_SCORE_KEY, STCourseNode.CONFIG_SCORE_VALUE_SUM);
+			runConfig.setBooleanEntry(STCourseNode.CONFIG_PASSED_PROGRESS, true);
+			editorConfig.setStringValue(STCourseNode.CONFIG_SCORE_KEY, STCourseNode.CONFIG_SCORE_VALUE_SUM);
+			editorConfig.setBooleanEntry(STCourseNode.CONFIG_PASSED_PROGRESS, true);
+		}
+		
+		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
+		CourseFactory.saveCourse(getAddedEntry().getOlatResource().getResourceableId());
+		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
 	}
 	
 }

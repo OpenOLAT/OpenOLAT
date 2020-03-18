@@ -45,8 +45,13 @@ public class LTIAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean isEvaluationPersisted() {
-		return true;
+	public boolean ignoreInCourseAssessment() {
+		return config.getBooleanSafe(BasicLTICourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT);
+	}
+
+	@Override
+	public void setIgnoreInCourseAssessment(boolean ignoreInCourseAssessment) {
+		config.setBooleanEntry(BasicLTICourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, ignoreInCourseAssessment);
 	}
 
 	@Override
@@ -55,13 +60,13 @@ public class LTIAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean hasScore() {
-		return config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
+	public Mode getScoreMode() {
+		return config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD)? Mode.setByNode: Mode.none;
 	}
 
 	@Override
 	public Float getMaxScore() {
-		if (!hasScore()) {
+		if (Mode.none == getScoreMode()) {
 			throw new OLATRuntimeException(LTIAssessmentConfig.class, "getMaxScore not defined when hasScoreConfigured set to false", null);
 		}
 		
@@ -74,20 +79,20 @@ public class LTIAssessmentConfig implements AssessmentConfig {
 
 	@Override
 	public Float getMinScore() {
-		if (!hasScore()) { 
+		if (Mode.none == getScoreMode()) { 
 			throw new OLATRuntimeException(LTIAssessmentConfig.class, "getMaxScore not defined when hasScoreConfigured set to false", null);
 		}
 		return 0.0f;
 	}
 	
 	@Override
-	public boolean hasPassed() {
-		return config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD);
+	public Mode getPassedMode() {
+		return config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD)? Mode.setByNode: Mode.none;
 	}
 	
 	@Override
 	public Float getCutValue() {
-		if (!hasPassed()) { 
+		if (Mode.none != getPassedMode()) { 
 			throw new OLATRuntimeException(LTIAssessmentConfig.class, "getCutValue not defined when hasPassedConfigured set to false", null);
 		}
 		return config.getFloatEntry(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);

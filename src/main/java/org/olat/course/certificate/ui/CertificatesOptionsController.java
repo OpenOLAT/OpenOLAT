@@ -24,7 +24,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Collection;
-import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -49,42 +48,27 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.modal.DialogBoxController;
-import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.StreamedMediaResource;
 import org.olat.core.gui.media.ZippedDirectoryMediaResource;
-import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
-import org.olat.core.logging.activity.ILoggingAction;
-import org.olat.core.logging.activity.LearningResourceLoggingAction;
-import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
-import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.coordinate.LockResult;
-import org.olat.core.util.event.EventBus;
 import org.olat.core.util.vfs.JavaIOItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.PDFCertificatesOptions;
 import org.olat.course.certificate.RecertificationTimeUnit;
 import org.olat.course.certificate.model.PreviewCertificate;
 import org.olat.course.config.CourseConfig;
-import org.olat.course.config.CourseConfigEvent;
-import org.olat.course.config.CourseConfigEvent.CourseConfigType;
-import org.olat.course.config.ui.CourseOptionsController;
 import org.olat.course.run.RunMainController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
-import org.olat.repository.RepositoryManager;
-import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -94,9 +78,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class CertificatesOptionsController extends FormBasicController {
-
+	
 	private MultipleSelectionElement pdfCertificatesEl;
-	private MultipleSelectionElement efficencyEl;
 	private TextElement certificationCustom1El;
 	private TextElement certificationCustom2El;
 	private TextElement certificationCustom3El;
@@ -114,8 +97,7 @@ public class CertificatesOptionsController extends FormBasicController {
 	
 	private CloseableModalController cmc;
 	private CertificateChooserController certificateChooserCtrl;
-	private DialogBoxController enableEfficiencyDC, disableEfficiencyDC;
-
+	
 	private static final String[] pdfCertificatesOptionsKeys = new String[] {
 		PDFCertificatesOptions.auto.name(),
 		PDFCertificatesOptions.manual.name()
@@ -129,67 +111,34 @@ public class CertificatesOptionsController extends FormBasicController {
 	};
 	
 	private final String mapperUrl;
-	private LockResult lockEntry;
+
 
 	@Autowired
-	private UserManager userManager;
-	@Autowired
 	private CertificatesManager certificatesManager;
-	@Autowired
-	private EfficiencyStatementManager efficiencyStatementManager;
 	
-	/**
-	 * @param name
-	 * @param chatEnabled
-	 */
 	public CertificatesOptionsController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry entry, CourseConfig courseConfig, boolean editable) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(CourseOptionsController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RunMainController.class, getLocale(), getTranslator()));
 		this.courseConfig = courseConfig;
 		this.entry = entry;
+		this.editable = editable;
 		
 		mapperUrl = registerMapper(ureq, new TemplateMapper());
-		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker()
-				.acquireLock(entry.getOlatResource(), getIdentity(), CourseFactory.COURSE_EDITOR_LOCK);
-		this.editable = (lockEntry != null && lockEntry.isSuccess()) && editable;
-
-		initForm (ureq);
 		
-		if(lockEntry != null && !lockEntry.isSuccess()) {
-			String lockerName = "???";
-			if(lockEntry.getOwner() != null) {
-				lockerName = userManager.getUserDisplayName(lockEntry.getOwner());
-			}
-			showWarning("error.editoralreadylocked", new String[] { lockerName });
-		}
+		initForm(ureq);
 	}
 	
 	@Override
 	protected void doDispose() {
-		if (lockEntry != null && lockEntry.isSuccess()) {
-			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockEntry);
-			lockEntry = null;
-		}
+		//
 	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("options.certificates.title");
-		setFormTitleIconCss("o_icon o_icon_certificate");
-		setFormDescription("options.certificates.descr");
-		setFormContextHelp("Course Settings#_leistungsnachweis");
-		formLayout.setElementCssClass("o_sel_course_certificates");
+		setFormTitle("options.certificate.title");
 		
-		boolean effEnabled = courseConfig.isEfficencyStatementEnabled();
 		boolean managedEff = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.efficencystatement);
-		efficencyEl = uifactory.addCheckboxesHorizontal("effIsOn", "chkbx.efficency.onoff", formLayout, new String[] {"xx"}, new String[] {""});
-		efficencyEl.addActionListener(FormEvent.ONCHANGE);
-		efficencyEl.select("xx", effEnabled);
-		efficencyEl.setEnabled(editable && !managedEff);
-		
-		
 		String[] pdfCertificatesOptionsValues = new String[] {
 				translate("pdf.certificates.auto"),
 				translate("pdf.certificates.manual")
@@ -303,15 +252,7 @@ public class CertificatesOptionsController extends FormBasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == disableEfficiencyDC) {
-			if (DialogBoxUIFactory.isOkEvent(event)) {
-				doChangeConfig(ureq);
-			}
-		} else if (source == enableEfficiencyDC) {
-			if (DialogBoxUIFactory.isOkEvent(event)) {				
-				doChangeConfig(ureq);
-			}
-		} else if(source == certificateChooserCtrl) {
+		if(source == certificateChooserCtrl) {
 			if(event == Event.DONE_EVENT) {
 				doSetTemplate(certificateChooserCtrl.getSelectedTemplate());
 			}
@@ -340,7 +281,7 @@ public class CertificatesOptionsController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		doSave(ureq);
+		doChangeConfig(ureq);
 	}
 	
 	private void doPreviewTemplate(UserRequest ureq) {
@@ -377,21 +318,6 @@ public class CertificatesOptionsController extends FormBasicController {
 		cmc.activate();	
 	}
 	
-	private void doSave(UserRequest ureq) {
-		boolean confirmUpdateStatement = courseConfig.isEfficencyStatementEnabled() != efficencyEl.isSelected(0);
-		if(confirmUpdateStatement) {
-			if (courseConfig.isEfficencyStatementEnabled()) {
-				// a change from enabled Efficiency to disabled
-				disableEfficiencyDC = activateYesNoDialog(ureq, null, translate("warning.change.todisabled"), disableEfficiencyDC);
-			} else {
-				// a change from disabled Efficiency
-				enableEfficiencyDC = activateYesNoDialog(ureq, null, translate("warning.change.toenable"), enableEfficiencyDC);
-			}
-		} else {
-			doChangeConfig(ureq);
-		}
-	}
-	
 	private void doChangeConfig(UserRequest ureq) {
 		OLATResourceable courseOres = entry.getOlatResource();
 		if(CourseFactory.isCourseEditSessionOpen(courseOres.getResourceableId())) {
@@ -401,10 +327,6 @@ public class CertificatesOptionsController extends FormBasicController {
 		
 		ICourse course = CourseFactory.openCourseEditSession(courseOres.getResourceableId());
 		courseConfig = course.getCourseEnvironment().getCourseConfig();
-		
-		boolean enableEfficiencyStatment = efficencyEl.isSelected(0);
-		boolean updateStatement = courseConfig.isEfficencyStatementEnabled() != enableEfficiencyStatment;
-		courseConfig.setEfficencyStatementIsEnabled(enableEfficiencyStatment);
 		
 		Collection<String> certificationOptions = pdfCertificatesEl.getSelectedKeys();
 		courseConfig.setAutomaticCertificationEnabled(certificationOptions.contains(PDFCertificatesOptions.auto.name()));
@@ -441,29 +363,6 @@ public class CertificatesOptionsController extends FormBasicController {
 
 		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
-		
-		if(updateStatement) {
-			if(enableEfficiencyStatment) {
-	            // first create the efficiencies, send event to agency (all courses add link)
-				RepositoryEntry courseRe = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-				List<Identity> identitiesWithData = course.getCourseEnvironment().getCoursePropertyManager().getAllIdentitiesWithCourseAssessmentData(null);
-				efficiencyStatementManager.updateEfficiencyStatements(courseRe, identitiesWithData);							
-			} else {
-	            // delete really the efficiencies of the users.
-				RepositoryEntry courseRepoEntry = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
-				efficiencyStatementManager.deleteEfficiencyStatementsFromCourse(courseRepoEntry.getKey());						
-			}
-			
-			//inform everybody else		
-			EventBus eventBus = CoordinatorManager.getInstance().getCoordinator().getEventBus();
-			CourseConfigEvent courseConfigEvent = new CourseConfigEvent(CourseConfigType.efficiencyStatement, course.getResourceableId());
-			eventBus.fireEventToListenersOf(courseConfigEvent, course);
-			
-			ILoggingAction loggingAction = enableEfficiencyStatment ?
-					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_EFFICIENCY_STATEMENT_ENABLED :
-					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_EFFICIENCY_STATEMENT_DISABLED;
-			ThreadLocalUserActivityLogger.log(loggingAction, getClass());
-		}
 		
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}

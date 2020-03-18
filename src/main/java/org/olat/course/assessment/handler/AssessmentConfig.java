@@ -41,19 +41,23 @@ public interface AssessmentConfig {
 	public boolean isAssessable();
 	
 	/**
-	 * @return true if the assessment evaluation is persisted
+	 * @return if this course node should be ignored in the cumulative assessment of
+	 *         the course root node.
 	 */
-	public boolean isEvaluationPersisted();
+	public boolean ignoreInCourseAssessment();
+	
+	public void setIgnoreInCourseAssessment(boolean ignoreInCourseAssessment);
 	
 	/**
 	 * @return true if the score evaluation is calculated e.g as sum of other assessments.
 	 */
+	//TODO uh delete after implementiation of passedMode
 	public boolean isEvaluationCalculated();
 	
 	/**
-	 * @return True if this course node produces a score variable for the learner
+	 * @return if this course node produces a score variable for the learner
 	 */
-	public boolean hasScore();
+	public Mode getScoreMode();
 	
 	/**
 	 * @return Returns the maximal score that can be achieved on this node. Throws 
@@ -68,9 +72,9 @@ public interface AssessmentConfig {
 	public Float getMinScore();
 	
 	/**
-	 * @return True if this course node produces a passed variable for the learner
+	 * @return if this course node produces a passed variable for the learner
 	 */
-	public boolean hasPassed();
+	public Mode getPassedMode();
 
 	/**
 	 * @return Returns the passed cut value or null if no such value is defined. A null

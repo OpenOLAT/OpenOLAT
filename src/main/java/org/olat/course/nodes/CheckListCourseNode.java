@@ -58,6 +58,7 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
@@ -221,7 +222,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	private boolean isFullyAssessedScoreConfigError() {
-		boolean hasScore = new MSAssessmentConfig(getModuleConfiguration()).hasScore();
+		boolean hasScore = Mode.none != new MSAssessmentConfig(getModuleConfiguration()).getScoreMode();
 		boolean isScoreTrigger = CoreSpringFactory.getImpl(IQTESTLearningPathNodeHandler.class)
 				.getConfigs(this)
 				.isFullyAssessedOnScore(null, null)
@@ -230,7 +231,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	private boolean isFullyAssessedPassedConfigError() {
-		boolean hasPassed = new MSAssessmentConfig(getModuleConfiguration()).hasPassed();
+		boolean hasPassed = new MSAssessmentConfig(getModuleConfiguration()).getPassedMode() != Mode.none;
 		boolean isPassedTrigger = CoreSpringFactory.getImpl(IQTESTLearningPathNodeHandler.class)
 				.getConfigs(this)
 				.isFullyAssessedOnPassed(null, null)
@@ -472,7 +473,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 		}
 
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-		ScoreEvaluation currentEval = courseAssessmentService.getPersistedAssessmentEvaluation(this, assessedUserCourseEnv);
+		ScoreEvaluation currentEval = courseAssessmentService.getAssessmentEvaluation(this, assessedUserCourseEnv);
 		ScoreEvaluation sceval = new ScoreEvaluation(new Float(score), currentEval.getPassed());
 		courseAssessmentService.saveScoreEvaluation(this, identity, sceval, assessedUserCourseEnv, false, by);
 	}

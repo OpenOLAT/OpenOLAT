@@ -36,6 +36,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.nodes.BasicLTICourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -165,7 +166,7 @@ public class CourseNodeOutcomeMapper extends OutcomeMapper {
 	private float getScalingFactor(CourseNode node) {
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(node);
-		if(assessmentConfig.hasScore()) {
+		if(Mode.none != assessmentConfig.getScoreMode()) {
 			Float scale = node.getModuleConfiguration().getFloatEntry(BasicLTICourseNode.CONFIG_KEY_SCALEVALUE);
 			if(scale == null) {
 				return 1.0f;
@@ -176,7 +177,7 @@ public class CourseNodeOutcomeMapper extends OutcomeMapper {
 	}
 	
 	private Float getCutValue(AssessmentConfig assessmentConfig) {
-		if(assessmentConfig.hasPassed()) {
+		if(Mode.setByNode == assessmentConfig.getPassedMode()) {
 			Float cutValue = assessmentConfig.getCutValue();
 			if(cutValue == null) {
 				return null;

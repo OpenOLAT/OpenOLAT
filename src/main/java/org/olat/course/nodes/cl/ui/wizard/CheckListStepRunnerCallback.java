@@ -45,6 +45,8 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CheckListCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
@@ -69,9 +71,12 @@ public class CheckListStepRunnerCallback implements StepRunnerCallback {
 	private static final Logger log = Tracing.createLoggerFor(CheckListStepRunnerCallback.class);
 	
 	private final OLATResourceable courseOres;
+	private final boolean scoreCalculatorSupported;
 	
-	public CheckListStepRunnerCallback(OLATResourceable courseOres) {
+	public CheckListStepRunnerCallback(OLATResourceable courseOres, NodeAccessType nodeAccessType) {
 		this.courseOres = OresHelper.clone(courseOres);
+		NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
+		scoreCalculatorSupported = nodeAccessService.isScoreCalculatorSupported(nodeAccessType);
 	}
 
 	@Override
@@ -139,7 +144,9 @@ public class CheckListStepRunnerCallback implements StepRunnerCallback {
 			}
 		}
 
-		setScoreCalculation(data, (STCourseNode)structureNode, nodesIdent);
+		if (scoreCalculatorSupported) {
+			setScoreCalculation(data, (STCourseNode)structureNode, nodesIdent);
+		}
 		
 		return StepsMainRunController.DONE_MODIFIED;
 	}

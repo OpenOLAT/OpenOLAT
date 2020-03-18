@@ -28,12 +28,12 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentHandler;
 import org.olat.course.assessment.handler.NonAssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
-import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.config.CompletionType;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
@@ -42,7 +42,6 @@ import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.st.STIdentityListCourseNodeController;
 import org.olat.course.run.scoring.AccountingEvaluators;
 import org.olat.course.run.scoring.AccountingEvaluatorsBuilder;
-import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.AverageCompletionEvaluator;
 import org.olat.course.run.scoring.BlockerEvaluator;
 import org.olat.course.run.scoring.CompletionEvaluator;
@@ -50,11 +49,13 @@ import org.olat.course.run.scoring.FullyAssessedEvaluator;
 import org.olat.course.run.scoring.LastModificationsEvaluator;
 import org.olat.course.run.scoring.ObligationEvaluator;
 import org.olat.course.run.scoring.PassedEvaluator;
+import org.olat.course.run.scoring.RootPassedEvaluator;
 import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.scoring.ScoreEvaluator;
 import org.olat.course.run.scoring.StatusEvaluator;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
@@ -75,7 +76,10 @@ public class STAssessmentHandler implements AssessmentHandler {
 	private static final ObligationEvaluator MANDATORY_OBLIGATION_EVALUATOR = new MandatoryObligationEvaluator();
 	private static final CumulatingDurationEvaluator CUMULATION_DURATION_EVALUATOR = new CumulatingDurationEvaluator();
 	private static final ScoreEvaluator CONDITION_SCORE_EVALUATOR = new ConditionScoreEvaluator();
+	private static final ScoreEvaluator SUM_SCORE_EVALUATOR = new CumulatingScoreEvaluator(false);
+	private static final ScoreEvaluator AVG_SCORE_EVALUATOR = new CumulatingScoreEvaluator(true);
 	private static final PassedEvaluator CONDITION_PASSED_EVALUATOR = new ConditionPassedEvaluator();
+	private static final RootPassedEvaluator ROOT_PASSED_EVALUATOR = new STRootPassedEvaluator();
 	private static final StatusEvaluator SCORE_STATUS_EVALUATOR = new ScoreStatusEvaluator();
 	private static final StatusEvaluator LEARNING_PATH_STATUS_EVALUATOR = new STStatusEvaluator();
 	private static final FullyAssessedEvaluator FULLY_ASSESSED_EVALUATOR = new STFullyAssessedEvaluator();
@@ -90,9 +94,31 @@ public class STAssessmentHandler implements AssessmentHandler {
 	public AssessmentConfig getAssessmentConfig(CourseNode courseNode) {
 		if (courseNode instanceof STCourseNode) {
 			STCourseNode stCourseNode = (STCourseNode) courseNode;
-			return new STAssessmentConfig(stCourseNode.getScoreCalculator());
+			STCourseNode root = getRoot(courseNode);
+			boolean isRoot = courseNode.getIdent().equals(root.getIdent());
+			ScoreCalculator scoreCalclualtor = root.getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_SCORE_CALCULATOR_SUPPORTED)
+					? stCourseNode.getScoreCalculator()
+					: null;
+			return new STAssessmentConfig(isRoot, root.getModuleConfiguration(), scoreCalclualtor);
 		}
 		return NonAssessmentConfig.create();
+	}
+	
+	private STCourseNode getRoot(INode node) {
+		STCourseNode root = null;
+		if (node instanceof STCourseNode) {
+			root = (STCourseNode)node;
+		}
+		
+		INode parent = node.getParent();
+		if (parent != null) {
+			STCourseNode parentRoot = getRoot(parent);
+			if (parentRoot != null) {
+				root = parentRoot;
+			}
+		}
+		
+		return root;
 	}
 
 	@Override
@@ -108,20 +134,34 @@ public class STAssessmentHandler implements AssessmentHandler {
 			AccountingEvaluatorsBuilder builder = AccountingEvaluatorsBuilder.builder()
 					.withObligationEvaluator(MANDATORY_OBLIGATION_EVALUATOR)
 					.withDurationEvaluator(CUMULATION_DURATION_EVALUATOR)
-					.withScoreEvaluator(CONDITION_SCORE_EVALUATOR)
 					.withPassedEvaluator(CONDITION_PASSED_EVALUATOR)
 					.withStatusEvaluator(LEARNING_PATH_STATUS_EVALUATOR)
 					.withFullyAssessedEvaluator(FULLY_ASSESSED_EVALUATOR)
-					.withLastModificationsEvaluator(LAST_MODIFICATION_EVALUATOR);
+					.withLastModificationsEvaluator(LAST_MODIFICATION_EVALUATOR)
+					.withRootPassedEvaluator(ROOT_PASSED_EVALUATOR);
 			CompletionEvaluator completionEvaluator = CompletionType.duration.equals(courseConfig.getCompletionType())
 					? new AverageCompletionEvaluator(DURATION_WEIGHTED)
 					: new AverageCompletionEvaluator(UNWEIGHTED);
 			builder.withCompletionEvaluator(completionEvaluator);
-			String sequenceKey = courseNode.getModuleConfiguration().getStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY, STCourseNode.CONFIG_LP_SEQUENCE_DEFAULT);
+			
+			ModuleConfiguration moduleConfig = courseNode.getModuleConfiguration();
+			String sequenceKey = moduleConfig.getStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY, STCourseNode.CONFIG_LP_SEQUENCE_DEFAULT);
 			if (STCourseNode.CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL.equals(sequenceKey)) {
 				builder.withBlockerEvaluator(SEQUENTIAL_BLOCKER_EVALUATOR);
 			} else {
 				builder.withBlockerEvaluator(WITHOUT_SEQUENCE_BLOCKER_EVALUATOR);
+			}
+			
+			ModuleConfiguration rootConfig = getRoot(courseNode).getModuleConfiguration();
+			if (rootConfig.has(STCourseNode.CONFIG_SCORE_KEY)) {
+				String scoreKey = rootConfig.getStringValue(STCourseNode.CONFIG_SCORE_KEY);
+				if (STCourseNode.CONFIG_SCORE_VALUE_SUM.equals(scoreKey)) {
+					builder.withScoreEvaluator(SUM_SCORE_EVALUATOR);
+				} else if (STCourseNode.CONFIG_SCORE_VALUE_AVG.equals(scoreKey)) {
+					builder.withScoreEvaluator(AVG_SCORE_EVALUATOR);
+				}
+			} else {
+				builder.withNullScoreEvaluator();
 			}
 			return builder.build();
 		}
@@ -132,39 +172,6 @@ public class STAssessmentHandler implements AssessmentHandler {
 				.withStatusEvaluator(SCORE_STATUS_EVALUATOR)
 				.withLastModificationsEvaluator(LAST_MODIFICATION_EVALUATOR)
 				.build();
-	}
-
-	@Override
-	public AssessmentEvaluation getCalculatedScoreEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
-		ScoreCalculator scoreCalculator = getScoreCalculator(courseNode);
-		if (scoreCalculator == null) { 
-			// this is a not-computable course node at the moment (no scoring/passing rules defined)
-			return null; 
-		}
-		
-		Float score = null;
-		Boolean passed = null;
-
-		String scoreExpressionStr = scoreCalculator.getScoreExpression();
-		String passedExpressionStr = scoreCalculator.getPassedExpression();
-
-		ConditionInterpreter ci = userCourseEnvironment.getConditionInterpreter();
-		if (scoreExpressionStr != null) {
-			score = new Float(ci.evaluateCalculation(scoreExpressionStr));
-		}
-		if (passedExpressionStr != null) {
-			passed = new Boolean(ci.evaluateCondition(passedExpressionStr));
-		}
-		return new AssessmentEvaluation(score, passed);
-	}
-
-	@Override
-	public ScoreCalculator getScoreCalculator(CourseNode courseNode) {
-		if (courseNode instanceof STCourseNode) {
-			STCourseNode stCourseNode = (STCourseNode) courseNode;
-			return stCourseNode.getScoreCalculator();
-		}
-		return null;
 	}
 
 	@Override

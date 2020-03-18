@@ -52,6 +52,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
@@ -111,6 +112,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONFIG_KEY_HAS_PASSED_FIELD = "hasPassedField";
 	/** configuration: passed set to when score higher than cut value */
 	public static final String CONFIG_KEY_PASSED_CUT_VALUE = "passedCutValue";
+	public static final String CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT = "ignoreInCourseAssessment";
 	/** configuration: comment can be set */
 	public static final String CONFIG_KEY_HAS_COMMENT_FIELD = "hasCommentField";
 	/** configuration: individual assessment document can be set (use getBooleanSafe default false) */
@@ -272,7 +274,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	private boolean isFullyAssessedScoreConfigError() {
-		boolean hasScore = new MSAssessmentConfig(getModuleConfiguration()).hasScore();
+		boolean hasScore = Mode.none != new MSAssessmentConfig(getModuleConfiguration()).getScoreMode();
 		boolean isScoreTrigger = CoreSpringFactory.getImpl(MSLearningPathNodeHandler.class)
 				.getConfigs(this)
 				.isFullyAssessedOnScore(null, null)
@@ -281,7 +283,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	private boolean isFullyAssessedPassedConfigError() {
-		boolean hasPassed = new MSAssessmentConfig(getModuleConfiguration()).hasPassed();
+		boolean hasPassed = new MSAssessmentConfig(getModuleConfiguration()).getPassedMode() != Mode.none;
 		boolean isPassedTrigger = CoreSpringFactory.getImpl(MSLearningPathNodeHandler.class)
 				.getConfigs(this)
 				.isFullyAssessedOnPassed(null, null)
@@ -424,7 +426,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 		IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, null);
 		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
 		
-		ScoreEvaluation currentEval = courseAssessmentService.getPersistedAssessmentEvaluation(this, userCourseEnv);
+		ScoreEvaluation currentEval = courseAssessmentService.getAssessmentEvaluation(this, userCourseEnv);
 		Float currentScore = currentEval.getScore();
 		Boolean currentPassed = currentEval.getPassed();
 		
@@ -465,7 +467,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 		}
 		if (score == null) {
 			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-			ScoreEvaluation currentEval = courseAssessmentService.getPersistedAssessmentEvaluation(this, assessedUserCourseEnv);
+			ScoreEvaluation currentEval = courseAssessmentService.getAssessmentEvaluation(this, assessedUserCourseEnv);
 			score = currentEval.getScore();
 		}
 		
@@ -491,7 +493,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 			passed = Boolean.valueOf(aboveCutValue);
 		} else {
 			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-			ScoreEvaluation currentEval = courseAssessmentService.getPersistedAssessmentEvaluation(this, assessedUserCourseEnv);
+			ScoreEvaluation currentEval = courseAssessmentService.getAssessmentEvaluation(this, assessedUserCourseEnv);
 			passed = currentEval.getPassed();
 		}
 		return passed;

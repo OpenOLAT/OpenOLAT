@@ -93,6 +93,11 @@ public class NodeAccessServiceImpl implements NodeAccessService, NodeVisitedList
 	}
 
 	@Override
+	public boolean isScoreCalculatorSupported(NodeAccessType type) {
+		return getNodeAccessProvider(type).isScoreCalculatorSupported();
+	}
+
+	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, NodeAccessType type,
 			CourseNode courseNode, UserCourseEnvironment userCourseEnv, CourseEditorTreeModel editorModel) {
 		return getNodeAccessProvider(type).createEditController(ureq, wControl, courseNode, userCourseEnv, editorModel);

@@ -79,6 +79,7 @@ import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
 import org.olat.course.assessment.ui.tool.event.ShowDetailsEvent;
@@ -375,7 +376,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.userVisibility,
 						new UserVisibilityCellRenderer(getTranslator())));
 			}
-			if(assessmentConfig.hasScore()) {
+			if(Mode.none != assessmentConfig.getScoreMode()) {
 				if(!assessmentConfig.isEvaluationCalculated()) {
 					if(assessmentConfig.getMinScore() != null) {
 						columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.min, new ScoreCellRenderer()));
@@ -383,13 +384,13 @@ public class IdentityListCourseNodeController extends FormBasicController
 					if(assessmentConfig.getMaxScore() != null) {
 						columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.max, new ScoreCellRenderer()));
 					}
-					if(assessmentConfig.hasPassed() && assessmentConfig.getCutValue() != null) {
+					if(Mode.none != assessmentConfig.getPassedMode() && assessmentConfig.getCutValue() != null) {
 						columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCourseElementCols.cut, new ScoreCellRenderer()));
 					}
 				}
 				initScoreColumns(columnsModel);
 			}
-			if(assessmentConfig.hasPassed()) {
+			if(Mode.none != assessmentConfig.getPassedMode()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.passed, new PassedCellRenderer()));
 			}
 			if(assessmentConfig.hasIndividualAsssessmentDocuments()) {

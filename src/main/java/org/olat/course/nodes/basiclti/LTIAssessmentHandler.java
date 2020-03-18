@@ -36,8 +36,6 @@ import org.olat.course.nodes.BasicLTICourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AccountingEvaluators;
 import org.olat.course.run.scoring.AccountingEvaluatorsBuilder;
-import org.olat.course.run.scoring.AssessmentEvaluation;
-import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.ims.lti.ui.LTIResultDetailsController;
@@ -80,17 +78,6 @@ public class LTIAssessmentHandler implements AssessmentHandler {
 			return LearningPathEvaluatorBuilder.buildDefault();
 		}
 		return AccountingEvaluatorsBuilder.defaultConventional();
-	}
-
-	@Override
-	public AssessmentEvaluation getCalculatedScoreEvaluation(CourseNode courseNode,
-			UserCourseEnvironment userCourseEnvironment) {
-		return null;
-	}
-
-	@Override
-	public ScoreCalculator getScoreCalculator(CourseNode courseNode) {
-		return null;
 	}
 	
 	@Override

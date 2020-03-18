@@ -49,6 +49,7 @@ import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.assessment.model.AssessmentNodesLastModified;
 import org.olat.course.nodes.CourseNode;
@@ -160,11 +161,11 @@ public class AssessmentHelper {
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(node);
 		if (node instanceof STCourseNode) {
-			if (assessmentConfig.hasPassed() || assessmentConfig.hasScore()) {
+			if (Mode.none != assessmentConfig.getPassedMode() || Mode.none != assessmentConfig.getScoreMode()) {
 				return true;
 			}
 		} else if (node instanceof ScormCourseNode) {
-			if (assessmentConfig.hasPassed() || assessmentConfig.hasScore()) {
+			if (Mode.none != assessmentConfig.getPassedMode() || Mode.none != assessmentConfig.getScoreMode()) {
 				return true;
 			}
 		} else if (assessmentConfig.isAssessable()) {
@@ -330,8 +331,8 @@ public class AssessmentHelper {
 		return assessmentConfig.isAssessable() &&
 				(  assessmentConfig.hasEditableDetails()
 				|| assessmentConfig.hasAttempts()
-				|| assessmentConfig.hasScore()
-				|| assessmentConfig.hasPassed()
+				|| Mode.none != assessmentConfig.getScoreMode()
+				|| Mode.none != assessmentConfig.getPassedMode()
 				|| assessmentConfig.hasComment());
 	}
 	
@@ -442,7 +443,7 @@ public class AssessmentHelper {
 						}
 					}
 					// score
-					if (assessmentConfig.hasScore()) {
+					if (Mode.none != assessmentConfig.getScoreMode()) {
 						hasDisplayableValuesConfigured = true;
 						Float score = scoreEvaluation.getScore();
 						if (score != null) {
@@ -456,7 +457,7 @@ public class AssessmentHelper {
 						}
 					}
 					// passed
-					if (assessmentConfig.hasPassed()) {
+					if (Mode.none != assessmentConfig.getPassedMode()) {
 						hasDisplayableValuesConfigured = true;
 						Boolean passed = scoreEvaluation.getPassed();
 						if (passed != null) {

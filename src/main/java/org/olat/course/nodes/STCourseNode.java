@@ -109,7 +109,18 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL = "learning.path.sequence.sequential";
 	public static final String CONFIG_LP_SEQUENCE_VALUE_WITHOUT = "learning.path.sequence.without";
 	public static final String CONFIG_LP_SEQUENCE_DEFAULT = CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL;
+	
+	// Score calculation without conditions.
+	public static final String CONFIG_SCORE_KEY = "score.key";
+	public static final String CONFIG_SCORE_VALUE_SUM = "score.sum";
+	public static final String CONFIG_SCORE_VALUE_AVG = "score.avg";
+	public static final String CONFIG_PASSED_PROGRESS = "passed.progress";
+	public static final String CONFIG_PASSED_ALL = "passed.all";
+	public static final String CONFIG_PASSED_POINTS = "passed.points";
+	public static final String CONFIG_PASSED_POINTS_CUT = "passed.points.cut";
 
+	// Score calculation with conditions.
+	public static final String CONFIG_SCORE_CALCULATOR_SUPPORTED = "score.calculator.supported";
 	private ScoreCalculator scoreCalculator;
 	transient private Condition scoreExpression;
 	transient private Condition passedExpression;
@@ -364,8 +375,16 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 			
 			config.setConfigurationVersion(3);
 			
-			scoreCalculator = new ScoreCalculator();
-			scoreCalculator.setFailedType(FailedEvaluationType.failedAsNotPassedAfterEndDate);
+			STCourseNode stParent = getFirstSTParent(parent);
+			if (stParent != null) {
+				boolean scoreCalculatorSupported = stParent.getModuleConfiguration().getBooleanSafe(CONFIG_SCORE_CALCULATOR_SUPPORTED);
+				config.setBooleanEntry(CONFIG_SCORE_CALCULATOR_SUPPORTED, scoreCalculatorSupported);
+				if (scoreCalculatorSupported) {
+					scoreCalculator = new ScoreCalculator();
+					scoreCalculator.setFailedType(FailedEvaluationType.failedAsNotPassedAfterEndDate);
+				}
+			} // else: is course root and initialized in CreateCourseRepositoryEntryController / REST
+			
 		} else {
 			// update to version 2
 			if (config.getConfigurationVersion() < 2) {

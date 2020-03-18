@@ -35,6 +35,7 @@ public class AccountingEvaluatorsBuilder {
 			.withDurationEvaluator(AccountingEvaluatorsFactory.createNullDurationEvaluator())
 			.withScoreEvaluator(AccountingEvaluatorsFactory.createUnchangingScoreEvaluator())
 			.withPassedEvaluator(AccountingEvaluatorsFactory.createUnchangingPassedEvaluator())
+			.withRootPassedEvaluator(AccountingEvaluatorsFactory.createUnchangingRootPassedEvaluator())
 			.withCompletionEvaluator(AccountingEvaluatorsFactory.createUnchangingCompletionEvaluator())
 			.withStatusEvaluator(AccountingEvaluatorsFactory.createUnchangingStatusEvaluator())
 			.withFullyAssessedEvaluator(AccountingEvaluatorsFactory.createUnchangingFullyAssessedEvaluator())
@@ -48,6 +49,7 @@ public class AccountingEvaluatorsBuilder {
 	private DurationEvaluator durationEvaluator;
 	private ScoreEvaluator scoreEvaluator;
 	private PassedEvaluator passedEvaluator;
+	private RootPassedEvaluator rootPassedEvaluator;
 	private CompletionEvaluator completionEvaluator;
 	private StatusEvaluator statusEvaluator;
 	private FullyAssessedEvaluator fullyAssessedEvaluator;
@@ -86,9 +88,19 @@ public class AccountingEvaluatorsBuilder {
 		this.scoreEvaluator = scoreEvaluator;
 		return this;
 	}
+
+	public AccountingEvaluatorsBuilder withNullScoreEvaluator() {
+		this.scoreEvaluator = AccountingEvaluatorsFactory.createNullScoreEvaluator();
+		return this;
+	}
 	
 	public AccountingEvaluatorsBuilder withPassedEvaluator(PassedEvaluator passedEvaluator) {
 		this.passedEvaluator = passedEvaluator;
+		return this;
+	}
+	
+	public AccountingEvaluatorsBuilder withRootPassedEvaluator(RootPassedEvaluator rootPassedEvaluator) {
+		this.rootPassedEvaluator = rootPassedEvaluator;
 		return this;
 	}
 	
@@ -135,6 +147,9 @@ public class AccountingEvaluatorsBuilder {
 		impl.passedEvaluator = this.passedEvaluator != null
 				? this.passedEvaluator
 				: AccountingEvaluatorsFactory.createUnchangingPassedEvaluator();
+		impl.rootPassedEvaluator = this.rootPassedEvaluator != null
+				? this.rootPassedEvaluator
+				: AccountingEvaluatorsFactory.createUnchangingRootPassedEvaluator();
 		impl.completionEvaluator = this.completionEvaluator != null
 				? this.completionEvaluator
 				: AccountingEvaluatorsFactory.createUnchangingCompletionEvaluator();
@@ -167,6 +182,7 @@ public class AccountingEvaluatorsBuilder {
 		private DurationEvaluator durationEvaluator;
 		private ScoreEvaluator scoreEvaluator;
 		private PassedEvaluator passedEvaluator;
+		private RootPassedEvaluator rootPassedEvaluator;
 		private CompletionEvaluator completionEvaluator;
 		private StatusEvaluator statusEvaluator;
 		private FullyAssessedEvaluator fullyAssessedEvaluator;
@@ -205,6 +221,11 @@ public class AccountingEvaluatorsBuilder {
 		@Override
 		public PassedEvaluator getPassedEvaluator() {
 			return passedEvaluator;
+		}
+
+		@Override
+		public RootPassedEvaluator getRootPassedEvaluator() {
+			return rootPassedEvaluator;
 		}
 		
 		@Override

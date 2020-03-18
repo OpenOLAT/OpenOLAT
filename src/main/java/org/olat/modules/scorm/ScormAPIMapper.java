@@ -51,6 +51,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
 import org.olat.course.nodes.ScormCourseNode;
 import org.olat.course.nodes.scorm.ScormEditController;
@@ -117,10 +118,10 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 			checkForLms();
 			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(scormNode);
-			if(assessmentConfig.hasScore()) {
+			if(Mode.none != assessmentConfig.getScoreMode()) {
 				currentScore = courseAssessmentService.getAssessmentEvaluation(scormNode, userCourseEnv).getScore();
 			}
-			if(assessmentConfig.hasPassed()) {
+			if(Mode.none != assessmentConfig.getPassedMode()) {
 				currentPassed = courseAssessmentService.getAssessmentEvaluation(scormNode, userCourseEnv).getPassed();
 			}
 		}

@@ -41,6 +41,8 @@ public interface AccountingEvaluators {
 
 	public PassedEvaluator getPassedEvaluator();
 
+	public RootPassedEvaluator getRootPassedEvaluator();
+
 	public LastModificationsEvaluator getLastModificationsEvaluator();
 
 	public CompletionEvaluator getCompletionEvaluator();

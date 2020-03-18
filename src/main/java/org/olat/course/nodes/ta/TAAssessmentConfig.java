@@ -39,17 +39,17 @@ public class TAAssessmentConfig extends ModuleAssessmentConfig {
 	}
 
 	@Override
-	public boolean hasScore() {
-		if (hasNoScoring) return false;
+	public Mode getScoreMode() {
+		if (hasNoScoring) return Mode.none;
 		
-		return super.hasScore();
+		return super.getScoreMode();
 	}
 	
 	@Override
-	public boolean hasPassed() {
-		if (hasNoScoring) return false;
+	public Mode getPassedMode() {
+		if (hasNoScoring) return Mode.none;
 		
-		return super.hasPassed();
+		return super.getPassedMode();
 	}
 
 	@Override

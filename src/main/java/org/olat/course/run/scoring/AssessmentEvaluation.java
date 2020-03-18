@@ -196,12 +196,12 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 		}
 		
 		Float score = null;
-		if(assessmentConfig.hasScore()) {
+		if(Mode.none != assessmentConfig.getScoreMode()) {
 			score = entry.getScore() == null ? null : entry.getScore().floatValue();
 		}
 		
 		Boolean passed = null;
-		if(assessmentConfig.hasPassed()) {
+		if(Mode.none != assessmentConfig.getPassedMode()) {
 			passed = entry.getPassed();
 		}
 		

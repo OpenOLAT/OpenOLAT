@@ -37,6 +37,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.nodes.CourseNode;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -70,10 +71,10 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 		if (courseNode != null) {
 			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
-			if(!assessmentConfig.isEvaluationCalculated() && assessmentConfig.hasScore()) {
+			if(Mode.setByNode == assessmentConfig.getScoreMode()) {
 				maxScore = assessmentConfig.getMaxScore();
 				minScore = assessmentConfig.getMinScore();
-				if (assessmentConfig.hasPassed()) {
+				if (Mode.setByNode == assessmentConfig.getPassedMode()) {
 					cutValue = assessmentConfig.getCutValue();
 				}
 			}

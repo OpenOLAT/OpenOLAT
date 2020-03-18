@@ -29,8 +29,6 @@ import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeProvider;
 import org.olat.course.run.scoring.AccountingEvaluators;
-import org.olat.course.run.scoring.AssessmentEvaluation;
-import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -68,24 +66,6 @@ public interface AssessmentHandler extends CourseNodeProvider {
 	 * @return
 	 */
 	public AccountingEvaluators getEvaluators(CourseNode courseNode, CourseConfig courseConfig);
-
-	/**
-	 * This method has to be implemented if the AssessmentConfig.isEvaluationCalculated() return true.
-	 *
-	 * @param courseNode
-	 * @param userCourseEnvironment
-	 * @return
-	 */
-	public AssessmentEvaluation getCalculatedScoreEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);
-	
-	/**
-	 * This method has to be implemented if the AssessmentConfig.isEvaluationCalculated() return true.
-	 *
-	 * @param courseNode
-	 * @param userCourseEnvironment
-	 * @return
-	 */
-	public ScoreCalculator getScoreCalculator(CourseNode courseNode);
 	
 	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			CourseNode courseNode, UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnvironment);

@@ -40,6 +40,7 @@ import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.highscore.ui.HighScoreEditController;
@@ -126,7 +127,7 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 	private void updateHighscoreTab() {
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(msNode);
 		myTabbedPane.setEnabled(myTabbedPane.indexOfTab(highScoreNodeConfigController.getInitialComponent()),
-				assessmentConfig.hasScore());
+				Mode.none != assessmentConfig.getScoreMode());
 	}
 
 	@Override

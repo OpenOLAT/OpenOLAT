@@ -52,7 +52,10 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.BasicLTICourseNode;
+import org.olat.course.nodes.MSCourseNode;
 import org.olat.ims.lti.LTIDisplayOptions;
 import org.olat.ims.lti.LTIManager;
 import org.olat.ims.lti.LTIModule;
@@ -99,6 +102,7 @@ public class LTIConfigForm extends FormBasicController {
 
 	private TextElement scaleFactorEl;
 	private TextElement cutValueEl;
+	private MultipleSelectionElement ignoreInCourseAssessmentEl;
 	private MultipleSelectionElement isAssessableEl;
 	private MultipleSelectionElement authorRoleEl;
 	private MultipleSelectionElement coachRoleEl;
@@ -112,6 +116,7 @@ public class LTIConfigForm extends FormBasicController {
 	private Boolean sendNameConfig;
 	private Boolean sendEmailConfig;
 	private Boolean doDebugConfig;
+	private final boolean ignoreInCourseAssessmentAvailable;
 	private boolean isAssessable;
 	private String key;
 	private String pass;
@@ -156,17 +161,21 @@ public class LTIConfigForm extends FormBasicController {
 	private LTIModule ltiModule;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private NodeAccessService nodeAccessService;
 	
 	/**
 	 * Constructor for the tunneling configuration form
 	 * @param name
 	 * @param config
+	 * @param nodeAccessType 
 	 * @param withCancel
 	 */
-	public LTIConfigForm(UserRequest ureq, WindowControl wControl, ModuleConfiguration config) {
+	public LTIConfigForm(UserRequest ureq, WindowControl wControl, ModuleConfiguration config, NodeAccessType nodeAccessType) {
 		super(ureq, wControl);
 		this.config = config;
 		int configVersion = config.getConfigurationVersion();
+		this.ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(nodeAccessType);
 		
 		Translator userPropsTranslator = userManager.getPropertyHandlerTranslator(getTranslator());
 		
@@ -347,6 +356,12 @@ public class LTIConfigForm extends FormBasicController {
 		cutValueEl.setElementCssClass("o_sel_lti_config_cutval");
 		cutValueEl.setDisplaySize(3);
 		cutValueEl.setVisible(isAssessable);
+		
+		ignoreInCourseAssessmentEl = uifactory.addCheckboxesHorizontal("ignore.in.course.assessment", formLayout,
+				new String[] { "xx" }, new String[] { null });
+		boolean ignoreInCourseAssessment = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT);
+		ignoreInCourseAssessmentEl.select(ignoreInCourseAssessmentEl.getKey(0), ignoreInCourseAssessment);
+		ignoreInCourseAssessmentEl.setVisible(ignoreInCourseAssessmentAvailable && isAssessable);
 		
 		uifactory.addSpacerElement("display", formLayout, false);
 		
@@ -547,6 +562,7 @@ public class LTIConfigForm extends FormBasicController {
 			boolean assessEnabled = isAssessableEl.isAtLeastSelected(1);
 			scaleFactorEl.setVisible(assessEnabled);
 			cutValueEl.setVisible(assessEnabled);
+			ignoreInCourseAssessmentEl.setVisible(ignoreInCourseAssessmentAvailable && assessEnabled);
 			flc.setDirty(true);
 		} else if (sendName == source || sendEmail == source) {
 			boolean sendEnabled = sendName.isSelected(0) || sendEmail.isSelected(0);
@@ -658,6 +674,9 @@ public class LTIConfigForm extends FormBasicController {
 				config.setBooleanEntry(BasicLTICourseNode.CONFIG_KEY_HAS_PASSED_FIELD, Boolean.FALSE);
 				config.remove(BasicLTICourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 			}
+			
+			boolean ignoreInCourseAssessment = ignoreInCourseAssessmentEl.isVisible() && ignoreInCourseAssessmentEl.isAtLeastSelected(1);
+			config.setBooleanEntry(BasicLTICourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, ignoreInCourseAssessment);
 		} else {
 			config.setBooleanEntry(BasicLTICourseNode.CONFIG_KEY_HAS_SCORE_FIELD, Boolean.FALSE);
 			config.setBooleanEntry(BasicLTICourseNode.CONFIG_KEY_HAS_PASSED_FIELD, Boolean.FALSE);

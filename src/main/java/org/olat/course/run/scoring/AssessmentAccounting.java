@@ -101,7 +101,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 		if (update) {
 			Blocker blocker = courseAssessmentService.getEvaluators(root, courseConfig).getBlockerEvaluator()
 					.getChildrenBlocker(null);
-			updateEntryRecursiv(root, true, blocker);
+			updateEntryRecursiv(root, blocker);
 		}
 		
 		return false;
@@ -147,7 +147,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 		return entry;
 	}
 	
-	private AccountingResult updateEntryRecursiv(CourseNode courseNode, boolean firstChild, Blocker blocker) {
+	private AccountingResult updateEntryRecursiv(CourseNode courseNode, Blocker blocker) {
 		log.debug("Evaluate course node: type '{}', ident: '{}'", courseNode.getType(), courseNode.getIdent());
 		
 		AssessmentEvaluation currentEvaluation = courseNodeToEval.get(courseNode);
@@ -173,10 +173,6 @@ public class AssessmentAccounting implements ScoreAccounting {
 			result.setDuration(duration);
 		}
 		
-		ScoreEvaluator scoreEvaluator = evaluators.getScoreEvaluator();
-		Float score = scoreEvaluator.getScore(result, courseNode, userCourseEnvironment.getConditionInterpreter());
-		result.setScore(score);
-		
 		PassedEvaluator passedEvaluator = evaluators.getPassedEvaluator();
 		Boolean passed = passedEvaluator.getPassed(result, courseNode,
 				userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
@@ -193,15 +189,18 @@ public class AssessmentAccounting implements ScoreAccounting {
 		List<AssessmentEvaluation> children = new ArrayList<>(childCount);
 		for (int i = 0; i < childCount; i++) {
 			INode child = courseNode.getChildAt(i);
-			firstChild = i== 0;
 			if (child instanceof CourseNode) {
 				CourseNode childCourseNode = (CourseNode) child;
-				AccountingResult childResult = updateEntryRecursiv(childCourseNode, firstChild, childrenBlocker);
+				AccountingResult childResult = updateEntryRecursiv(childCourseNode, childrenBlocker);
 				children.add(childResult);
 			}
 		}
 		
 		blockerEvaluator.mergeChildrenBlocker(blocker, childrenBlocker);
+		
+		ScoreEvaluator scoreEvaluator = evaluators.getScoreEvaluator();
+		Float score = scoreEvaluator.getScore(result, courseNode, this, userCourseEnvironment.getConditionInterpreter());
+		result.setScore(score);
 		
 		if (durationEvaluator.isDependingOnChildNodes()) {
 			Integer duration = durationEvaluator.getDuration(children);
@@ -226,6 +225,13 @@ public class AssessmentAccounting implements ScoreAccounting {
 		
 		status = statusEvaluator.getStatus(result, children);
 		result.setStatus(status);
+		
+		if (courseNode.getParent() == null) {
+			RootPassedEvaluator rootPassedEvaluator = evaluators.getRootPassedEvaluator();
+			Boolean rootPassed = rootPassedEvaluator.getPassed(currentEvaluation, courseNode, this,
+					userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
+			result.setPassed(rootPassed);
+		}
 		
 		if (result.hasChanges()) {
 			update(courseNode, result);

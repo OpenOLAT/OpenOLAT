@@ -29,6 +29,7 @@ import org.mockito.MockitoAnnotations;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.MappedScoreAccounting;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
@@ -55,8 +56,8 @@ public class ConventionalSTCompletionEvaluatorTest {
 	public void setUp() {
 		MockitoAnnotations.initMocks(this);
 		
-		when(configWithPassed.hasPassed()).thenReturn(Boolean.TRUE);
-		when(configWithoutPassed.hasPassed()).thenReturn(Boolean.FALSE);
+		when(configWithPassed.getPassedMode()).thenReturn(Mode.setByNode);
+		when(configWithoutPassed.getPassedMode()).thenReturn(Mode.none);
 		
 		sut= new ConventionalSTCompletionEvaluator(courseAssessmentService);
 	}

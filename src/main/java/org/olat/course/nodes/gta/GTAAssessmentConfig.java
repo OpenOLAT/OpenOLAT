@@ -40,17 +40,17 @@ public class GTAAssessmentConfig extends ModuleAssessmentConfig {
 	}
 
 	@Override
-	public boolean hasScore() {
-		if (hasNoGrading) return false;
+	public Mode getScoreMode() {
+		if (hasNoGrading) return Mode.none;
 		
-		return super.hasScore();
+		return super.getScoreMode();
 	}
 	
 	@Override
-	public boolean hasPassed() {
-		if (hasNoGrading) return false;
+	public Mode getPassedMode() {
+		if (hasNoGrading) return Mode.none;
 		
-		return super.hasPassed();
+		return super.getPassedMode();
 	}
 
 	@Override

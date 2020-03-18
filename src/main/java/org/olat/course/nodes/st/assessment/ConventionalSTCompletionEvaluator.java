@@ -22,6 +22,7 @@ package org.olat.course.nodes.st.assessment;
 import org.olat.core.CoreSpringFactory;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.CompletionEvaluator;
@@ -67,7 +68,7 @@ public class ConventionalSTCompletionEvaluator implements CompletionEvaluator {
 	}
 
 	private boolean isPassedConfigurated(AssessmentConfig assessmentConfig) {
-		return Boolean.TRUE.equals(assessmentConfig.hasPassed());
+		return Mode.setByNode == assessmentConfig.getPassedMode();
 	}
 
 }

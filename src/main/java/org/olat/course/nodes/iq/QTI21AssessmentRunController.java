@@ -62,6 +62,7 @@ import org.olat.course.DisposedCourseRestartController;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.highscore.ui.HighScoreRunController;
@@ -250,7 +251,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		if (assessmentConfig.isAssessable()) {
-			if (assessmentConfig.hasScore() || userCourseEnv.isCoach()){
+			if (Mode.none != assessmentConfig.getScoreMode() || userCourseEnv.isCoach()){
 				HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, getWindowControl(), userCourseEnv, courseNode);
 				if (highScoreCtr.isViewHighscore()) {
 					Component highScoreComponent = highScoreCtr.getInitialComponent();

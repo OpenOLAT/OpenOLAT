@@ -33,9 +33,9 @@ public class LearningPathOnlyAssessmentConfig implements AssessmentConfig {
 	public boolean isAssessable() {
 		return false;
 	}
-
+	
 	@Override
-	public boolean isEvaluationPersisted() {
+	public boolean ignoreInCourseAssessment() {
 		return true;
 	}
 
@@ -45,8 +45,13 @@ public class LearningPathOnlyAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean hasScore() {
-		return false;
+	public void setIgnoreInCourseAssessment(boolean ignoreInCourseAssessment) {
+		//
+	}
+
+	@Override
+	public Mode getScoreMode() {
+		return Mode.none;
 	}
 
 	@Override
@@ -60,8 +65,8 @@ public class LearningPathOnlyAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean hasPassed() {
-		return false;
+	public Mode getPassedMode() {
+		return Mode.none;
 	}
 
 	@Override

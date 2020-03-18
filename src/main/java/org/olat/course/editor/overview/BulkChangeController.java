@@ -42,11 +42,14 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.editor.EditorMainController;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathService;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
+import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.modules.assessment.model.AssessmentObligation;
@@ -70,15 +73,21 @@ public class BulkChangeController extends FormBasicController {
 			CourseNode.DISPLAY_OPTS_CONTENT};
 	
 	private SingleSelection displayEl;
+	private MultipleSelectionElement ignoreInCourseAssessmentEl;
 	private TextElement durationEl;
 	private SingleSelection obligationEl;
 	
 	private Map<MultipleSelectionElement, FormLayoutContainer> checkboxContainer = new HashMap<>();
 	private final List<MultipleSelectionElement> checkboxSwitch = new ArrayList<>();
-	
+
+	private final boolean ignoreInCourseAssessmentAvailable;
 	private final boolean learningPath;
 	private final List<CourseNode> courseNodes;
-	
+
+	@Autowired
+	private NodeAccessService nodeAccessService;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private LearningPathService learningPathService;
 
@@ -86,6 +95,7 @@ public class BulkChangeController extends FormBasicController {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(EditorMainController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(LearningPathNodeConfigController.class, getLocale(), getTranslator()));
+		this.ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(NodeAccessType.of(course));
 		this.learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType());
 		this.courseNodes = courseNodes;
 		initForm(ureq);
@@ -94,6 +104,10 @@ public class BulkChangeController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		initGeneralForm(formLayout);
+		
+		if (ignoreInCourseAssessmentAvailable) {
+			initAssessmentForm(formLayout);
+		}
 		
 		if (learningPath) {
 			initLearningPathForm(formLayout);
@@ -125,6 +139,17 @@ public class BulkChangeController extends FormBasicController {
 				values, null);
 		displayEl.select(displayOptionsKeys[0], true);
 		decorate(displayEl, generalCont);
+	}
+	
+	private void initAssessmentForm(FormItemContainer formLayout) {
+		FormLayoutContainer assessmentCont = FormLayoutContainer.createDefaultFormLayout("assessment", getTranslator());
+		assessmentCont.setFormTitle(translate("bulk.assessment"));
+		assessmentCont.setRootForm(mainForm);
+		formLayout.add(assessmentCont);
+		
+		ignoreInCourseAssessmentEl = uifactory.addCheckboxesHorizontal("ignore.in.course.assessment", assessmentCont,
+				new String[] { "xx" }, new String[] { translate("ignore") });
+		decorate(ignoreInCourseAssessmentEl, assessmentCont);
 	}
 	
 	private void initLearningPathForm(FormItemContainer formLayout) {
@@ -214,6 +239,9 @@ public class BulkChangeController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		for (CourseNode courseNode : courseNodes) {
 			formOKGeneral(courseNode);
+			if (ignoreInCourseAssessmentAvailable) {
+				formOKAssessment(courseNode);
+			}
 			if (learningPath) {
 				formOKLearningPath(courseNode);
 			}
@@ -225,6 +253,14 @@ public class BulkChangeController extends FormBasicController {
 		if (isEnabled(displayEl)) {
 			String displayOption = displayEl.getSelectedKey();
 			courseNode.setDisplayOption(displayOption);
+		}
+	}
+
+	private void formOKAssessment(CourseNode courseNode) {
+		if (isEnabled(ignoreInCourseAssessmentEl)) {
+			boolean ignoreInCourseAssessment = ignoreInCourseAssessmentEl.isAtLeastSelected(1);
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+			assessmentConfig.setIgnoreInCourseAssessment(ignoreInCourseAssessment);
 		}
 	}
 	

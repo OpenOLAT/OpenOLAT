@@ -27,6 +27,7 @@ import org.olat.course.learningpath.LearningPathEditConfigs;
 import org.olat.course.learningpath.LearningPathNodeHandler;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.stereotype.Service;
 
@@ -67,7 +68,16 @@ public class STLearningPathNodeHandler implements LearningPathNodeHandler {
 
 	@Override
 	public void onMigrated(CourseNode courseNode) {
-		//
+		if (courseNode instanceof STCourseNode) {
+			STCourseNode stCourseNode = (STCourseNode)courseNode;
+			ModuleConfiguration config = stCourseNode.getModuleConfiguration();
+			config.setBooleanEntry(STCourseNode.CONFIG_SCORE_CALCULATOR_SUPPORTED, false);
+			stCourseNode.setScoreCalculator(null);
+			if (stCourseNode.getParent() == null) {
+				config.setStringValue(STCourseNode.CONFIG_SCORE_KEY, STCourseNode.CONFIG_SCORE_VALUE_SUM);
+				config.setBooleanEntry(STCourseNode.CONFIG_PASSED_PROGRESS, true);
+			}
+		}
 	}
 
 }

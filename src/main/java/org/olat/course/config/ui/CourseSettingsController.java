@@ -34,7 +34,6 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.certificate.ui.CertificatesOptionsController;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.ui.courselayout.CourseLayoutGeneratorController;
 import org.olat.repository.RepositoryEntry;
@@ -52,13 +51,13 @@ public class CourseSettingsController extends RepositoryEntrySettingsController 
 	private Link layoutLink;
 	private Link toolbarLink;
 	private Link optionsLink;
-	private Link certificatesLink;
+	private Link resultsLink;
 	private Link executionSettingsLink;
 	
 	private CourseOptionsController optionsCtrl;
 	private CourseToolbarController toolbarCtrl;
 	private CourseLayoutGeneratorController layoutCtrl;
-	private CertificatesOptionsController certificatesCtrl;
+	private CourseResultController resultsCtrl;
 	private CourseExecutionSettingsController executionSettingsCtrl;
 	
 	public CourseSettingsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, RepositoryEntry entry) {
@@ -84,9 +83,9 @@ public class CourseSettingsController extends RepositoryEntrySettingsController 
 		toolbarLink.setElementCssClass("o_sel_toolbar");
 		buttonsGroup.addButton(toolbarLink, false);
 		
-		certificatesLink = LinkFactory.createLink("details.certificates", getTranslator(), this);
-		certificatesLink.setElementCssClass("o_sel_certificates");
-		buttonsGroup.addButton(certificatesLink, false);
+		resultsLink = LinkFactory.createLink("details.results", getTranslator(), this);
+		resultsLink.setElementCssClass("o_sel_results");
+		buttonsGroup.addButton(resultsLink, false);
 		
 		optionsLink = LinkFactory.createLink("details.options", getTranslator(), this);
 		optionsLink.setElementCssClass("o_sel_options");
@@ -107,8 +106,8 @@ public class CourseSettingsController extends RepositoryEntrySettingsController 
 				doOpenLayout(ureq);
 			} else if("Toolbar".equalsIgnoreCase(type)) {
 				doOpenToolbarSettings(ureq);
-			} else if("Certificates".equalsIgnoreCase(type)) {
-				doOpenCertificatesSettings(ureq);
+			} else if("Results".equalsIgnoreCase(type)) {
+				doOpenResultSettings(ureq);
 			} else if("Options".equalsIgnoreCase(type)) {
 				doOpenOptions(ureq);
 			}
@@ -129,9 +128,9 @@ public class CourseSettingsController extends RepositoryEntrySettingsController 
 			if(event == Event.CANCELLED_EVENT) {
 				doOpenLayout(ureq);
 			}
-		} else if(certificatesCtrl == source) {
+		} else if(resultsCtrl == source) {
 			if(event == Event.CANCELLED_EVENT) {
-				doOpenCertificatesSettings(ureq);
+				doOpenResultSettings(ureq);
 			}
 		} else if(executionSettingsCtrl == source) {
 			if(event == Event.CANCELLED_EVENT) {
@@ -149,8 +148,8 @@ public class CourseSettingsController extends RepositoryEntrySettingsController 
 			doOpenLayout(ureq);
 		} else if(toolbarLink == source) {
 			doOpenToolbarSettings(ureq);
-		} else if(certificatesLink == source) {
-			doOpenCertificatesSettings(ureq);
+		} else if(resultsLink == source) {
+			doOpenResultSettings(ureq);
 		} else if(optionsLink == source) {
 			doOpenOptions(ureq);
 		}
@@ -162,12 +161,12 @@ public class CourseSettingsController extends RepositoryEntrySettingsController 
 		super.cleanUp();
 		
 		removeAsListenerAndDispose(executionSettingsCtrl);
-		removeAsListenerAndDispose(certificatesCtrl);
+		removeAsListenerAndDispose(resultsCtrl);
 		removeAsListenerAndDispose(optionsCtrl);
 		removeAsListenerAndDispose(toolbarCtrl);
 		removeAsListenerAndDispose(layoutCtrl);
 		executionSettingsCtrl = null;
-		certificatesCtrl = null;
+		resultsCtrl = null;
 		optionsCtrl = null;
 		toolbarCtrl = null;
 		layoutCtrl = null;
@@ -205,14 +204,14 @@ public class CourseSettingsController extends RepositoryEntrySettingsController 
 		buttonsGroup.setSelectedButton(toolbarLink);
 	}
 	
-	private void doOpenCertificatesSettings(UserRequest ureq) {
+	private void doOpenResultSettings(UserRequest ureq) {
 		ICourse course = CourseFactory.loadCourse(entry);
 		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig().clone();
-		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Certificates"), null);
-		certificatesCtrl = new CertificatesOptionsController(ureq, swControl, entry, courseConfig, true);
-		listenTo(certificatesCtrl);
-		mainPanel.setContent(certificatesCtrl.getInitialComponent());
-		buttonsGroup.setSelectedButton(certificatesLink);
+		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Results"), null);
+		resultsCtrl = new CourseResultController(ureq, swControl, entry, courseConfig, true);
+		listenTo(resultsCtrl);
+		mainPanel.setContent(resultsCtrl.getInitialComponent());
+		buttonsGroup.setSelectedButton(resultsLink);
 	}
 	
 	private void doOpenOptions(UserRequest ureq) {

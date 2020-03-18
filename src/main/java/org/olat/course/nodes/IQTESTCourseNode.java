@@ -57,6 +57,7 @@ import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
@@ -389,7 +390,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 	}
 	
 	private boolean isFullyAssessedScoreConfigError() {
-		boolean hasScore = new IQTESTAssessmentConfig(this).hasScore();
+		boolean hasScore = Mode.none != new IQTESTAssessmentConfig(this).getScoreMode();
 		boolean isScoreTrigger = CoreSpringFactory.getImpl(IQTESTLearningPathNodeHandler.class)
 				.getConfigs(this)
 				.isFullyAssessedOnScore(null, null)
@@ -398,7 +399,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 	}
 	
 	private boolean isFullyAssessedPassedConfigError() {
-		boolean hasPassed = new IQTESTAssessmentConfig(this).hasPassed();
+		boolean hasPassed = new IQTESTAssessmentConfig(this).getPassedMode() != Mode.none;
 		boolean isPassedTrigger = CoreSpringFactory.getImpl(IQTESTLearningPathNodeHandler.class)
 				.getConfigs(this)
 				.isFullyAssessedOnPassed(null, null)

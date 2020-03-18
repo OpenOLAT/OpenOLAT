@@ -53,6 +53,7 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
@@ -593,10 +594,10 @@ class GTANotifications {
 				String status = null;
 				CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(gtaNode);
-				if(assessmentConfig.hasScore() && assessment.getScore() != null) {
+				if(Mode.none != assessmentConfig.getScoreMode() && assessment.getScore() != null) {
 					score = AssessmentHelper.getRoundedScore(assessment.getScore());
 				}
-				if(assessmentConfig.hasPassed() && assessment.getPassed() != null) {
+				if(Mode.none != assessmentConfig.getPassedMode() && assessment.getPassed() != null) {
 					status = assessment.getPassed().booleanValue()
 							? translator.translate("notifications.assessment.passed.true") : translator.translate("notifications.assessment.passed.false");
 				}

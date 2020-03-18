@@ -48,8 +48,15 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean isEvaluationPersisted() {
-		return true;
+	public boolean ignoreInCourseAssessment() {
+		ModuleConfiguration config = courseNode.getModuleConfiguration();
+		return config.getBooleanSafe(IQEditController.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT);
+	}
+
+	@Override
+	public void setIgnoreInCourseAssessment(boolean ignoreInCourseAssessment) {
+		ModuleConfiguration config = courseNode.getModuleConfiguration();
+		config.setBooleanEntry(IQEditController.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, ignoreInCourseAssessment);
 	}
 
 	@Override
@@ -58,8 +65,8 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean hasScore() {
-		return true;
+	public Mode getScoreMode() {
+		return Mode.setByNode;
 	}
 	
 	@Override
@@ -120,8 +127,8 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 	}
 	
 	@Override
-	public boolean hasPassed() {
-		return true;
+	public Mode getPassedMode() {
+		return Mode.setByNode;
 	}
 
 	@Override

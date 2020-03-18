@@ -60,6 +60,7 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.ui.GroupAssessmentModel.Cols;
@@ -128,8 +129,8 @@ public class GroupAssessmentController extends FormBasicController {
 		this.assessedGroup = assessedGroup;
 
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);;
-		withScore = assessmentConfig.hasScore();
-		withPassed = assessmentConfig.hasPassed();
+		withScore = Mode.none != assessmentConfig.getScoreMode();
+		withPassed = Mode.none != assessmentConfig.getPassedMode();
 		if(withPassed) {
 			cutValue = assessmentConfig.getCutValue();
 		}

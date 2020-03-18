@@ -79,6 +79,7 @@ import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.TACourseNode;
 import org.olat.course.nodes.ms.MSCourseNodeEditController;
 import org.olat.course.nodes.ms.MSEditFormController;
@@ -244,7 +245,7 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 		editScoring = this.createVelocityContainer("editScoring");
 		editScoringConfigButton = LinkFactory.createButtonSmall("scoring.config.enable.button", editScoring, this);
 
-		scoringController = new MSEditFormController(ureq, wControl, config);
+		scoringController = new MSEditFormController(ureq, wControl, config, NodeAccessType.of(course));
 		listenTo(scoringController);
 		editScoring.put("scoringController", scoringController.getInitialComponent());
 		
@@ -571,6 +572,7 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 	/**
 	 * @see org.olat.core.gui.control.generic.tabbable.TabbableController#addTabs(org.olat.core.gui.components.TabbedPane)
 	 */
+	@Override
 	public void addTabs(TabbedPane theTabbedPane) {
 		this.myTabbedPane = theTabbedPane;
 		myTabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessabilityVC);

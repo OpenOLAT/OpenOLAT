@@ -49,6 +49,7 @@ import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.course.ICourse;
 import org.olat.course.editor.NodeEditController;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.IQSELFCourseNode;
@@ -124,16 +125,6 @@ public class IQConfigurationController extends BasicController {
 	@Autowired
 	private RepositoryService repositoryService;
 
-	/**
-	 * 
-	 * @param ureq
-	 * @param wControl
-	 * @param stackPanel
-	 * @param course
-	 * @param courseNode
-	 * @param euce
-	 * @param type
-	 */
 	public IQConfigurationController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course,
 			AbstractAccessableCourseNode courseNode, String type) {
 		super(ureq, wControl);
@@ -222,7 +213,8 @@ public class IQConfigurationController extends BasicController {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 			QTI21DeliveryOptions deliveryOptions =  qti21service.getDeliveryOptions(re);
-			mod21ConfigForm = new QTI21EditForm(ureq, getWindowControl(), moduleConfiguration, deliveryOptions, needManualCorrection);
+			mod21ConfigForm = new QTI21EditForm(ureq, getWindowControl(), moduleConfiguration,
+					NodeAccessType.of(course), deliveryOptions, needManualCorrection);
 			mod21ConfigForm.update(re);
 			listenTo(mod21ConfigForm);
 			myContent.put("iqeditform", mod21ConfigForm.getInitialComponent());

@@ -27,6 +27,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.repository.RepositoryEntry;
@@ -147,12 +148,12 @@ public class BinderConfiguration {
 				if(courseNode instanceof PortfolioCourseNode) {
 					CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 					AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
-					withScore = assessmentConfig.hasScore();
+					withScore = Mode.none != assessmentConfig.getScoreMode();
 					if(withScore) {
 						maxScore = assessmentConfig.getMaxScore();
 						minScore = assessmentConfig.getMinScore();
 					}
-					withPassed = assessmentConfig.hasPassed();
+					withPassed = Mode.none != assessmentConfig.getPassedMode();
 					assessable = withPassed || withScore;
 				} else {
 					withPassed = true;

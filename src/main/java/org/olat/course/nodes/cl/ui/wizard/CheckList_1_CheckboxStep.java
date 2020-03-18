@@ -28,6 +28,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.nodeaccess.NodeAccessType;
 
 /**
  * 
@@ -38,9 +39,11 @@ import org.olat.core.util.resource.OresHelper;
 public class CheckList_1_CheckboxStep extends BasicStep {
 	
 	private final OLATResourceable courseOres;
+	private final NodeAccessType nodeAccessType;
 	
-	public CheckList_1_CheckboxStep(UserRequest ureq, OLATResourceable courseOres) {
+	public CheckList_1_CheckboxStep(UserRequest ureq, OLATResourceable courseOres, NodeAccessType nodeAccessType) {
 		super(ureq);
+		this.nodeAccessType = nodeAccessType;
 		this.courseOres = OresHelper.clone(courseOres);
 		setNextStep(new CheckList_2_ConfigurationStep(ureq));
 		setI18nTitleAndDescr("checkbox.template", "checkbox.template");
@@ -55,6 +58,9 @@ public class CheckList_1_CheckboxStep extends BasicStep {
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
 		if(!runContext.containsKey("data")) {
 			runContext.put("data", new GeneratorData());
+		}
+		if(!runContext.containsKey("nodeAccessType")) {
+			runContext.put("nodeAccessType", nodeAccessType);
 		}
 		return new CheckboxListStepController(ureq, wControl, form, runContext, courseOres);
 	}

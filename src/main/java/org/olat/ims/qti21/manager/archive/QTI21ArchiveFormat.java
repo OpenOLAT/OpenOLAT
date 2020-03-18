@@ -60,6 +60,7 @@ import org.olat.course.ICourse;
 import org.olat.course.archiver.ExportFormat;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti.export.QTIArchiver;
@@ -327,11 +328,13 @@ public class QTI21ArchiveFormat {
 
 		// course node points and passed
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
-		if(assessmentConfig.hasScore()) {
+		boolean hasScore = Mode.none != assessmentConfig.getScoreMode();
+		boolean hasPassed = Mode.none != assessmentConfig.getPassedMode();
+		if(hasScore) {
 			header1Row.addCell(col++, translator.translate("archive.table.header.node"), headerStyle);
 		}
-		if(assessmentConfig.hasPassed()) {
-			if(assessmentConfig.hasScore()) {
+		if(hasPassed) {
+			if(hasScore) {
 				col++;
 			} else {
 				header1Row.addCell(col++, translator.translate("archive.table.header.node"), headerStyle);
@@ -403,10 +406,10 @@ public class QTI21ArchiveFormat {
 
 		// course node points and passed
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
-		if(assessmentConfig.hasScore()) {
+		if(Mode.none != assessmentConfig.getScoreMode()) {
 			header2Row.addCell(col++, translator.translate("archive.table.header.node.points"), headerStyle);
 		}
-		if(assessmentConfig.hasPassed()) {
+		if(Mode.none != assessmentConfig.getPassedMode()) {
 			header2Row.addCell(col++, translator.translate("archive.table.header.node.passed"), headerStyle);
 		}
 		
@@ -528,14 +531,14 @@ public class QTI21ArchiveFormat {
 		
 		// course node points and passed
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
-		if(assessmentConfig.hasScore()) {
+		if(Mode.none != assessmentConfig.getScoreMode()) {
 			if(entry.getScore() != null) {
 				dataRow.addCell(col++, entry.getScore(), null);
 			} else {
 				col++;
 			}
 		}
-		if(assessmentConfig.hasPassed()) {
+		if(Mode.none != assessmentConfig.getPassedMode()) {
 			if(entry.getPassed() != null) {
 				dataRow.addCell(col++, entry.getPassed().toString(), null);
 			} else {

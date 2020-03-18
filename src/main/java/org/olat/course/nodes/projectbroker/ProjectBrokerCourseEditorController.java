@@ -60,6 +60,7 @@ import org.olat.course.ICourse;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.TACourseNode;
 import org.olat.course.nodes.ms.MSCourseNodeEditController;
@@ -200,7 +201,7 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 		editScoring = this.createVelocityContainer("editScoring");
 		editScoringConfigButton = LinkFactory.createButtonSmall("scoring.config.enable.button", editScoring, this);
 
-		scoringController = new MSEditFormController(ureq, wControl, config);
+		scoringController = new MSEditFormController(ureq, wControl, config, NodeAccessType.of(course));
 		listenTo(scoringController);
 		editScoring.put("scoringController", scoringController.getInitialComponent());
 		

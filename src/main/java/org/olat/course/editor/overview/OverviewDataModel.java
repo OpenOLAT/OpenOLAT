@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 
 /**
  * 
@@ -73,19 +74,22 @@ public class OverviewDataModel extends DefaultFlexiTreeTableDataModel<OverviewRo
 			case end: return row.getEnd();
 			case trigger: return row.getTranslatedTrigger();
 			case score: return row.getAssessmentConfig().isAssessable()
-					? Boolean.valueOf(row.getAssessmentConfig().hasScore())
+					? Boolean.valueOf(Mode.none != row.getAssessmentConfig().getScoreMode())
 					: null;
-			case scoreMin: return row.getAssessmentConfig().isAssessable() && row.getAssessmentConfig().hasScore()
+			case scoreMin: return row.getAssessmentConfig().isAssessable() && Mode.none != row.getAssessmentConfig().getScoreMode()
 					? row.getAssessmentConfig().getMinScore()
 					: null;
-			case scoreMax: return row.getAssessmentConfig().isAssessable() && row.getAssessmentConfig().hasScore()
+			case scoreMax: return row.getAssessmentConfig().isAssessable() && Mode.none != row.getAssessmentConfig().getScoreMode()
 					? row.getAssessmentConfig().getMaxScore()
 					: null;
 			case passed: return row.getAssessmentConfig().isAssessable()
-					? Boolean.valueOf(row.getAssessmentConfig().hasPassed())
+					? Boolean.valueOf(Mode.none != row.getAssessmentConfig().getPassedMode())
 					: null;
-			case passesCut: return row.getAssessmentConfig().isAssessable() && row.getAssessmentConfig().hasPassed()
+			case passesCut: return row.getAssessmentConfig().isAssessable() && row.getAssessmentConfig().getPassedMode() != Mode.none
 					? row.getAssessmentConfig().getCutValue()
+					: null;
+			case ignoreInCourseAssessment: return row.getAssessmentConfig().isAssessable()
+					? Boolean.valueOf(row.getAssessmentConfig().ignoreInCourseAssessment())
 					: null;
 			case comment: return row.getAssessmentConfig().isAssessable()
 					? Boolean.valueOf(row.getAssessmentConfig().hasComment())
@@ -122,6 +126,7 @@ public class OverviewDataModel extends DefaultFlexiTreeTableDataModel<OverviewRo
 		scoreMax("table.header.score.max"),
 		passed("table.header.passed"),
 		passesCut("table.header.passed.cut"),
+		ignoreInCourseAssessment("table.header.ignore.in.course.assessment"),
 		comment("table.header.comment"),
 		individualAsssessmentDocuments("table.header.individual.documents");
 		

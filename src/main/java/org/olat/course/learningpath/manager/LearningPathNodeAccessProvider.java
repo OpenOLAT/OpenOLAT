@@ -85,6 +85,11 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider {
 	public boolean isGuestSupported() {
 		return false;
 	}
+
+	@Override
+	public boolean isScoreCalculatorSupported() {
+		return false;
+	}
 	
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,

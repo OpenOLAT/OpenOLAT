@@ -36,7 +36,6 @@ import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AccountingEvaluators;
 import org.olat.course.run.scoring.AssessmentEvaluation;
-import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
@@ -71,18 +70,6 @@ public interface CourseAssessmentService {
 	 * @return
 	 */
 	public AssessmentEntry getAssessmentEntry(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);
-	
-	/**
-	 * Returns the current, persisted AssessmentEvaluation of the user for a course
-	 * node. The loaded values are modified according to the AssessmentConfig of the
-	 * course node, e.g. if a user has a saved score but the the score is disabled
-	 * in the config, the AssessmentEvaluation has a score of null.
-	 *
-	 * @param courseNode
-	 * @param userCourseEnvironment
-	 * @return
-	 */
-	public AssessmentEvaluation getPersistedAssessmentEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);
 	
 	/**
 	 * Converts the assessmentEntry to an AssessmentEvaluation in respect of the
@@ -125,15 +112,6 @@ public interface CourseAssessmentService {
 	
 	public void updateScoreEvaluation(CourseNode courseNode, ScoreEvaluation scoreEvaluation,
 			UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, boolean incrementAttempts, Role by);
-	
-	/**
-	 * Returns the ScoreCalculator if the course nod can calculate its score. Check
-	 * AssessmentConfig.isEvaluationCalculated() before invoking this method.
-	 *
-	 * @param courseNode
-	 * @return
-	 */
-	public ScoreCalculator getScoreCalculator(CourseNode courseNode);
 	
 	/**
 	 * 

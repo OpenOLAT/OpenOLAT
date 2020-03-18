@@ -44,7 +44,9 @@ class AccountingEvaluatorsFactory {
 	private static final ObligationEvaluator NONE_OBLIGATION_EVALUATOR = new NoneObligationEvaluator();
 	private static final DurationEvaluator NULL_DURATION_EVALUATOR = new NullDurationEvaluator();
 	private static final ScoreEvaluator UNCHANGING_SCORE_EVALUATOR = new UnchangingScoreEvaluator();
+	private static final ScoreEvaluator NULL_SCORE_EVALUATOR = new NullScoreEvaluator();
 	private static final PassedEvaluator UNCHANGING_PASSED_EVALUATOR = new UnchangingPassedEvaluator();
+	private static final RootPassedEvaluator UNCHANGING_ROOT_PASSED_EVALUATOR = new UnchangingRootPassedEvaluator();
 	private static final CompletionEvaluator UNCHANGING_COMPLETION_EVALUATOR = new UnchangingCompletionEvaluator();
 	private static final StatusEvaluator UNCHANGING_STATUS_EVALUATOR = new UnchangingStatusEvaluator();
 	private static final FullyAssessedEvaluator UNCHANGING_FULLY_ASSESSED_EVALUATOR = new UnchangingFullyAssessedEvaluator();
@@ -65,6 +67,7 @@ class AccountingEvaluatorsFactory {
 	static ObligationEvaluator createNoneObligationEvaluator() {
 		return NONE_OBLIGATION_EVALUATOR;
 	}
+	
 	static DurationEvaluator createNullDurationEvaluator() {
 		return NULL_DURATION_EVALUATOR;
 	}
@@ -73,8 +76,16 @@ class AccountingEvaluatorsFactory {
 		return UNCHANGING_SCORE_EVALUATOR;
 	}
 	
+	static ScoreEvaluator createNullScoreEvaluator() {
+		return NULL_SCORE_EVALUATOR;
+	}
+	
 	static PassedEvaluator createUnchangingPassedEvaluator() {
 		return UNCHANGING_PASSED_EVALUATOR;
+	}
+	
+	static RootPassedEvaluator createUnchangingRootPassedEvaluator() {
+		return UNCHANGING_ROOT_PASSED_EVALUATOR;
 	}
 	
 	public static CompletionEvaluator createUnchangingCompletionEvaluator() {
@@ -172,8 +183,17 @@ class AccountingEvaluatorsFactory {
 	private static class UnchangingScoreEvaluator implements ScoreEvaluator {
 		
 		@Override
-		public Float getScore(AssessmentEvaluation currentEvaluation, CourseNode courseNode, ConditionInterpreter conditionInterpreter) {
+		public Float getScore(AssessmentEvaluation currentEvaluation, CourseNode courseNode, ScoreAccounting scoreAccounting, ConditionInterpreter conditionInterpreter) {
 			return currentEvaluation.getScore();
+		}
+		
+	}
+	
+	private static class NullScoreEvaluator implements ScoreEvaluator {
+		
+		@Override
+		public Float getScore(AssessmentEvaluation currentEvaluation, CourseNode courseNode, ScoreAccounting scoreAccounting, ConditionInterpreter conditionInterpreter) {
+			return null;
 		}
 		
 	}
@@ -183,6 +203,15 @@ class AccountingEvaluatorsFactory {
 		@Override
 		public Boolean getPassed(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
 				RepositoryEntry courseEntry, ConditionInterpreter conditionInterpreter) {
+			return currentEvaluation.getPassed();
+		}
+	}
+	
+	private static class UnchangingRootPassedEvaluator implements RootPassedEvaluator {
+		
+		@Override
+		public Boolean getPassed(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
+				ScoreAccounting scoreAccounting, RepositoryEntry courseEntry) {
 			return currentEvaluation.getPassed();
 		}
 	}

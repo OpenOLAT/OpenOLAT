@@ -30,6 +30,7 @@ import org.olat.course.nodes.CourseNode;
  */
 public interface ScoreEvaluator {
 
-	public Float getScore(AssessmentEvaluation currentEvaluation, CourseNode courseNode, ConditionInterpreter conditionInterpreter);
+	public Float getScore(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
+			ScoreAccounting scoreAccounting, ConditionInterpreter conditionInterpreter);
 
 }

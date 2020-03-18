@@ -56,7 +56,6 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeVisitedListener;
 import org.olat.course.run.scoring.AccountingEvaluators;
 import org.olat.course.run.scoring.AssessmentEvaluation;
-import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
@@ -135,12 +134,6 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	public AssessmentEntry getAssessmentEntry(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
 		return getAssessmentHandler(courseNode).getAssessmentEntry(courseNode, userCourseEnvironment);
 	}
-
-	@Override
-	public AssessmentEvaluation getPersistedAssessmentEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
-		AssessmentEntry assessmentEntry = getAssessmentHandler(courseNode).getAssessmentEntry(courseNode, userCourseEnvironment);
-		return toAssessmentEvaluation(assessmentEntry, courseNode);
-	}
 	
 	@Override
 	public AssessmentEvaluation toAssessmentEvaluation(AssessmentEntry assessmentEntry, AssessmentConfig assessmentConfig) {
@@ -155,17 +148,8 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 
 	@Override
 	public AssessmentEvaluation getAssessmentEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
-		AssessmentConfig assessmentConfig = getAssessmentConfig(courseNode);
-		AssessmentHandler assessmentHandler = getAssessmentHandler(courseNode);
-		
-		AssessmentEvaluation assessmentEvaluation = AssessmentEvaluation.EMPTY_EVAL;
-		if (assessmentConfig.isEvaluationCalculated()) {
-			assessmentEvaluation = assessmentHandler.getCalculatedScoreEvaluation(courseNode, userCourseEnvironment);
-		} else if (assessmentConfig.isEvaluationPersisted()) {
-			assessmentEvaluation = getPersistedAssessmentEvaluation(courseNode, userCourseEnvironment);
-		}
-		// Other handlers should be able to have other implementations
-		return assessmentEvaluation;
+		AssessmentEntry assessmentEntry = getAssessmentHandler(courseNode).getAssessmentEntry(courseNode, userCourseEnvironment);
+		return toAssessmentEvaluation(assessmentEntry, courseNode);
 	}
 	
 	@Override
@@ -177,12 +161,6 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		am.saveScoreEvaluation(courseNode, coachingIdentity, assessedIdentity, new ScoreEvaluation(scoreEvaluation),
 				userCourseEnvironment, incrementAttempts, by);
-	}
-
-	@Override
-	public ScoreCalculator getScoreCalculator(CourseNode courseNode) {
-		ScoreCalculator scoreCalculator = getAssessmentHandler(courseNode).getScoreCalculator(courseNode);
-		return scoreCalculator != null? scoreCalculator: new ScoreCalculator();
 	}
 
 	@Override
