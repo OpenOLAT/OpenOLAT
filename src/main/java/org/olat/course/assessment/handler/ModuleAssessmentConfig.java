@@ -53,11 +53,6 @@ public abstract class ModuleAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean isEvaluationCalculated() {
-		return false;
-	}
-
-	@Override
 	public Mode getScoreMode() {
 		return config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD)? Mode.setByNode: Mode.none;
 	}

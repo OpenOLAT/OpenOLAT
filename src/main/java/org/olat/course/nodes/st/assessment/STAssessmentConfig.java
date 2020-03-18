@@ -59,11 +59,6 @@ public class STAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean isEvaluationCalculated() {
-		return true;
-	}
-
-	@Override
 	public Mode getScoreMode() {
 		if (scoreCalculator != null && StringHelper.containsNonWhitespace(scoreCalculator.getScoreExpression())) {
 			return Mode.evaluated;

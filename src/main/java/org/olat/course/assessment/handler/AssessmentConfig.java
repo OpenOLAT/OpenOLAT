@@ -49,12 +49,6 @@ public interface AssessmentConfig {
 	public void setIgnoreInCourseAssessment(boolean ignoreInCourseAssessment);
 	
 	/**
-	 * @return true if the score evaluation is calculated e.g as sum of other assessments.
-	 */
-	//TODO uh delete after implementiation of passedMode
-	public boolean isEvaluationCalculated();
-	
-	/**
 	 * @return if this course node produces a score variable for the learner
 	 */
 	public Mode getScoreMode();

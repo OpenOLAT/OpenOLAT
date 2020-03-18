@@ -52,11 +52,6 @@ public class ScormAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean isEvaluationCalculated() {
-		return false;
-	}
-
-	@Override
 	public Mode getScoreMode() {
 		boolean assessable = config.getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true);
 		if (assessable) {

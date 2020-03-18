@@ -48,11 +48,6 @@ public class NonAssessmentConfig implements AssessmentConfig {
 		//
 	}
 
-	@Override
-	public boolean isEvaluationCalculated() {
-		return false;
-	}
-	
 	private NonAssessmentConfig() {
 		//
 	}

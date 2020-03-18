@@ -451,7 +451,7 @@ public class AssessmentHelper {
 							assessmentNodeData.setScore(score);
 							hasDisplayableUserValues = true;
 						}
-						if(!assessmentConfig.isEvaluationCalculated()) {
+						if(Mode.setByNode == assessmentConfig.getScoreMode() || Mode.setByNode == assessmentConfig.getPassedMode()) {
 							assessmentNodeData.setMaxScore(assessmentConfig.getMaxScore());
 							assessmentNodeData.setMinScore(assessmentConfig.getMinScore());
 						}

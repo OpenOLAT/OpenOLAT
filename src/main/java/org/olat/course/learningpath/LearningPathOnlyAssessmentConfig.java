@@ -40,11 +40,6 @@ public class LearningPathOnlyAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean isEvaluationCalculated() {
-		return false;
-	}
-
-	@Override
 	public void setIgnoreInCourseAssessment(boolean ignoreInCourseAssessment) {
 		//
 	}

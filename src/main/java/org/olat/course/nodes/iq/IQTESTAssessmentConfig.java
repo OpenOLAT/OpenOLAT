@@ -60,11 +60,6 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean isEvaluationCalculated() {
-		return false;
-	}
-
-	@Override
 	public Mode getScoreMode() {
 		return Mode.setByNode;
 	}

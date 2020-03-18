@@ -370,7 +370,7 @@ public class ScoreAccountingHelper {
 			String minVal;
 			String maxVal;
 			String cutVal;
-			if(assessmentConfig.isEvaluationCalculated() || Mode.none == assessmentConfig.getScoreMode()) {
+			if(Mode.setByNode != assessmentConfig.getScoreMode()) {
 				minVal = maxVal = cutVal = "-";
 			} else {
 				Float minScoreConfig = assessmentConfig.getMinScore();
