@@ -47,6 +47,13 @@ public class FileUtilsTest {
 	}
 	
 	@Test
+	public void normalizeFilename_atLeastOneChar() {
+		String cyrillic = "и́мя фа́йла";
+		String normalized = FileUtils.normalizeFilename(cyrillic);
+		Assert.assertEquals(normalized, "_");
+	}
+	
+	@Test
 	public void cleanedFilename() {
 		assertCleanedFilename("test.xml", "test.xml");
 		assertCleanedFilename("abc/abc", "abc_abc");
