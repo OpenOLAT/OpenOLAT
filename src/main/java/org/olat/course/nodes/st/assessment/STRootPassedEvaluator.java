@@ -71,10 +71,19 @@ public class STRootPassedEvaluator implements RootPassedEvaluator {
 		if (config.getBooleanSafe(STCourseNode.CONFIG_PASSED_POINTS)) {
 			Float score = currentEvaluation.getScore();
 			if (score != null) {
-				int cutvalue = config.getIntegerSafe(STCourseNode.CONFIG_PASSED_POINTS_CUT, Integer.MAX_VALUE);
-				if (score.floatValue() >= cutvalue) {
+				int cutValue = config.getIntegerSafe(STCourseNode.CONFIG_PASSED_POINTS_CUT, Integer.MAX_VALUE);
+				if (score.floatValue() >= cutValue) {
 					return Boolean.TRUE;
 				}
+			}
+		}
+		
+		// Number passed
+		if (config.getBooleanSafe(STCourseNode.CONFIG_PASSED_NUMBER)) {
+			int cutValue = config.getIntegerSafe(STCourseNode.CONFIG_PASSED_NUMBER_CUT, Integer.MAX_VALUE);
+			Counts counts = passCounter.getCounts(courseNode, scoreAccounting);
+			if (counts.getPassed() >= cutValue) {
+				return Boolean.TRUE;
 			}
 		}
 		
@@ -119,6 +128,9 @@ public class STRootPassedEvaluator implements RootPassedEvaluator {
 			active++;
 		}
 		if (config.has(STCourseNode.CONFIG_PASSED_ALL)) {
+			active++;
+		}
+		if (config.has(STCourseNode.CONFIG_PASSED_NUMBER)) {
 			active++;
 		}
 		if (config.has(STCourseNode.CONFIG_PASSED_POINTS)) {

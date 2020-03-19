@@ -59,10 +59,12 @@ public class CourseScoreController extends FormBasicController {
 	private static final String[] UNTRANSLATED = { "" };
 
 	private SingleSelection scoreEl;
+	private MultipleSelectionElement passedManuallyEl;
 	private MultipleSelectionElement passedProgressEl;
 	private MultipleSelectionElement passedAllEl;
+	private MultipleSelectionElement passedNumberEl;
+	private TextElement passedNumberCutEl;
 	private MultipleSelectionElement passedPointsEl;
-	private MultipleSelectionElement passedManuallyEl;
 	private TextElement passedPointsCutEl;
 	
 	private final RepositoryEntry courseEntry;
@@ -133,7 +135,14 @@ public class CourseScoreController extends FormBasicController {
 		String scoreKey = moduleConfig.has(STCourseNode.CONFIG_SCORE_KEY)? moduleConfig.getStringValue(STCourseNode.CONFIG_SCORE_KEY): SCORE_VALUE_NONE;
 		scoreEl.select(scoreKey, true);
 		
-		// Passed
+		// Passed manually
+		passedManuallyEl = uifactory.addCheckboxesHorizontal("options.passed.manually", formLayout, ONE_OPTION, UNTRANSLATED);
+		passedManuallyEl.addActionListener(FormEvent.ONCHANGE);
+		boolean passedManually = moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_MANUALLY);
+		passedManuallyEl.select(passedManuallyEl.getKey(0), passedManually);
+		passedManuallyEl.setEnabled(editable);
+		
+		// Passed evaluation
 		StaticTextElement passedIfEl = uifactory.addStaticTextElement("options.passed.if", null, formLayout);
 		passedIfEl.setHelpTextKey("options.passed.if.help", null);
 		
@@ -146,6 +155,20 @@ public class CourseScoreController extends FormBasicController {
 		boolean passedAll = moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_ALL);
 		passedAllEl.select(passedAllEl.getKey(0), passedAll);
 		passedAllEl.setEnabled(editable);
+		
+		passedNumberEl = uifactory.addCheckboxesHorizontal("options.passed.number", formLayout, ONE_OPTION, UNTRANSLATED);
+		passedNumberEl.addActionListener(FormEvent.ONCHANGE);
+		boolean passedNumber = moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_NUMBER);
+		passedNumberEl.select(passedNumberEl.getKey(0), passedNumber);
+		passedNumberEl.setEnabled(editable);
+		
+		String passedNumberCut = moduleConfig.has(STCourseNode.CONFIG_PASSED_NUMBER_CUT)
+				? String.valueOf(moduleConfig.getIntegerSafe(STCourseNode.CONFIG_PASSED_NUMBER_CUT, 1))
+				: null;
+		passedNumberCutEl = uifactory.addTextElement("options.passed.number.cut", 10, passedNumberCut, formLayout);
+		passedNumberCutEl.setCheckVisibleLength(true);
+		passedNumberCutEl.setDisplaySize(10);
+		passedNumberEl.setEnabled(editable);
 		
 		passedPointsEl = uifactory.addCheckboxesHorizontal("options.passed.points", formLayout, ONE_OPTION, UNTRANSLATED);
 		passedPointsEl.addActionListener(FormEvent.ONCHANGE);
@@ -161,12 +184,6 @@ public class CourseScoreController extends FormBasicController {
 		passedPointsCutEl.setDisplaySize(10);
 		passedPointsEl.setEnabled(editable);
 		
-		passedManuallyEl = uifactory.addCheckboxesHorizontal("options.passed.manually", formLayout, ONE_OPTION, UNTRANSLATED);
-		passedManuallyEl.addActionListener(FormEvent.ONCHANGE);
-		boolean passedManually = moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_MANUALLY);
-		passedManuallyEl.select(passedManuallyEl.getKey(0), passedManually);
-		passedManuallyEl.setEnabled(editable);
-		
 		if (editable) {
 			FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 			buttonCont.setRootForm(mainForm);
@@ -178,13 +195,18 @@ public class CourseScoreController extends FormBasicController {
 	}
 
 	private void updateUI() {
+		boolean passedNumber = passedNumberEl.isAtLeastSelected(1);
+		passedNumberCutEl.setVisible(passedNumber);
+		
 		boolean passedPoints = passedPointsEl.isAtLeastSelected(1);
 		passedPointsCutEl.setVisible(passedPoints);
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == passedPointsEl) {
+		if (source == passedNumberEl) {
+			updateUI();
+		} else if (source == passedPointsEl) {
 			updateUI();
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -194,6 +216,7 @@ public class CourseScoreController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 		
+		allOk &= validateInteger(passedNumberCutEl, 1, Integer.MAX_VALUE, true, "error.positiv.int");
 		allOk &= validateInteger(passedPointsCutEl, 1, Integer.MAX_VALUE, true, "error.positiv.int");
 		
 		return allOk & super.validateFormLogic(ureq);
@@ -250,6 +273,15 @@ public class CourseScoreController extends FormBasicController {
 			editorConfig.setStringValue(STCourseNode.CONFIG_SCORE_KEY, selectedScoreKey);
 		}
 		
+		boolean passedManually = passedManuallyEl.isAtLeastSelected(1);
+		if (passedManually) {
+			runConfig.setBooleanEntry(STCourseNode.CONFIG_PASSED_MANUALLY, true);
+			editorConfig.setBooleanEntry(STCourseNode.CONFIG_PASSED_MANUALLY, true);
+		} else {
+			runConfig.remove(STCourseNode.CONFIG_PASSED_MANUALLY);
+			editorConfig.remove(STCourseNode.CONFIG_PASSED_MANUALLY);
+		}
+		
 		boolean passedProgress = passedProgressEl.isAtLeastSelected(1);
 		if (passedProgress) {
 			runConfig.setBooleanEntry(STCourseNode.CONFIG_PASSED_PROGRESS, true);
@@ -268,6 +300,20 @@ public class CourseScoreController extends FormBasicController {
 			editorConfig.remove(STCourseNode.CONFIG_PASSED_ALL);
 		}
 		
+		boolean passedNumber = passedNumberEl.isAtLeastSelected(1);
+		if (passedNumber) {
+			int numberCut = Integer.parseInt(passedNumberCutEl.getValue());
+			runConfig.setBooleanEntry(STCourseNode.CONFIG_PASSED_NUMBER, true);
+			runConfig.setIntValue(STCourseNode.CONFIG_PASSED_NUMBER_CUT, numberCut);
+			editorConfig.setBooleanEntry(STCourseNode.CONFIG_PASSED_NUMBER, true);
+			editorConfig.setIntValue(STCourseNode.CONFIG_PASSED_NUMBER_CUT, numberCut);
+		} else {
+			runConfig.remove(STCourseNode.CONFIG_PASSED_NUMBER);
+			runConfig.remove(STCourseNode.CONFIG_PASSED_NUMBER_CUT);
+			editorConfig.remove(STCourseNode.CONFIG_PASSED_NUMBER);
+			editorConfig.remove(STCourseNode.CONFIG_PASSED_NUMBER_CUT);
+		}
+		
 		boolean passedPoints = passedPointsEl.isAtLeastSelected(1);
 		if (passedPoints) {
 			int pointsCut = Integer.parseInt(passedPointsCutEl.getValue());
@@ -280,15 +326,6 @@ public class CourseScoreController extends FormBasicController {
 			runConfig.remove(STCourseNode.CONFIG_PASSED_POINTS_CUT);
 			editorConfig.remove(STCourseNode.CONFIG_PASSED_POINTS);
 			editorConfig.remove(STCourseNode.CONFIG_PASSED_POINTS_CUT);
-		}
-		
-		boolean passedManually = passedManuallyEl.isAtLeastSelected(1);
-		if (passedManually) {
-			runConfig.setBooleanEntry(STCourseNode.CONFIG_PASSED_MANUALLY, true);
-			editorConfig.setBooleanEntry(STCourseNode.CONFIG_PASSED_MANUALLY, true);
-		} else {
-			runConfig.remove(STCourseNode.CONFIG_PASSED_MANUALLY);
-			editorConfig.remove(STCourseNode.CONFIG_PASSED_MANUALLY);
 		}
 		
 		CourseFactory.saveCourse(courseEntry.getOlatResource().getResourceableId());
