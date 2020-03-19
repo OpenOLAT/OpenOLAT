@@ -130,7 +130,7 @@ public class AssessmentIdentityCourseController extends BasicController
 			
 		Boolean passedManually = course.getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_PASSED_MANUALLY);
 		if (passedManually) {
-			passedCtrl = new IdentityPassedController(ureq, wControl, coachCourseEnv, courseEntry, assessedIdentity);
+			passedCtrl = new IdentityPassedController(ureq, wControl, coachCourseEnv, assessedUserCourseEnv);
 			identityAssessmentVC.put("passed", passedCtrl.getInitialComponent());
 			listenTo(passedCtrl);
 		}
@@ -191,6 +191,8 @@ public class AssessmentIdentityCourseController extends BasicController
 			if(event instanceof AssessmentFormEvent) {
 				AssessmentFormEvent aee = (AssessmentFormEvent)event;
 				treeOverviewCtrl.loadModel();
+				if (passedCtrl != null) passedCtrl.refresh();
+				if (certificateCtrl != null) certificateCtrl.loadList();
 				if(aee.isClose()) {
 					stackPanel.popController(currentNodeCtrl);
 				}
@@ -204,6 +206,7 @@ public class AssessmentIdentityCourseController extends BasicController
 		} else if (source == passedCtrl) {
 			if (event == FormEvent.CHANGED_EVENT) {
 				treeOverviewCtrl.loadModel();
+				if (certificateCtrl != null) certificateCtrl.loadList();
 				fireEvent(ureq, event);
 			}
 		}

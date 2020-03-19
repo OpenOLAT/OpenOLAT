@@ -62,6 +62,7 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
@@ -323,6 +324,30 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		am.saveScoreEvaluation(courseNode, identity, assessedIdentity, scoreEvaluation, userCourseEnvironment,
 				incrementUserAttempts, by);
+	}
+	
+	@Override
+	public Overridable<Boolean> getRootPassed(UserCourseEnvironment userCourseEnvironment) {
+		if (!userCourseEnvironment.isParticipant()) return Overridable.empty();
+		
+		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+		return am.getRootPassed(userCourseEnvironment);
+	}
+
+	@Override
+	public Overridable<Boolean> overrideRootPassed(Identity coach, UserCourseEnvironment userCourseEnvironment, Boolean passed) {
+		if (!userCourseEnvironment.isParticipant()) return Overridable.empty();
+		
+		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+		return am.overrideRootPassed(coach, userCourseEnvironment, passed);
+	}
+
+	@Override
+	public Overridable<Boolean> resetRootPassed(Identity coach, UserCourseEnvironment userCourseEnvironment) {
+		if (!userCourseEnvironment.isParticipant()) return Overridable.empty();
+		
+		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+		return am.resetRootPassed(coach, userCourseEnvironment);
 	}
 
 	@Override

@@ -133,7 +133,7 @@ public class IdentityCertificatesController extends BasicController implements G
 		}
 	}
 
-	private void loadList() {
+	void loadList() {
 		List<Certificate> certificates = certificatesManager.getCertificates(assessedIdentity, courseEntry.getOlatResource());
 		List<Links> certificatesLink = new ArrayList<>(certificates.size());
 		int count = 0;

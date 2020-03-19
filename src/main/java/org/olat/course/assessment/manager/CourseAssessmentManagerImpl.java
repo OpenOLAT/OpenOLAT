@@ -70,6 +70,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
@@ -536,14 +537,9 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		DBFactory.getInstance().commit();
 		
 		// node log
-		UserNodeAuditManager am = courseEnv.getAuditManager();
-		am.appendToUserNodeLog(courseNode, identity, assessedIdentity,  "score set to: " + String.valueOf(scoreEvaluation.getScore()), by);
-		if(scoreEvaluation.getPassed()!=null) {
-			am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "passed set to: " + scoreEvaluation.getPassed().toString(), by);
-		} else {
-			am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "passed set to \"undefined\"", by);
-		}
+		logAuditPassed(courseNode, identity, by, userCourseEnv, scoreEvaluation.getPassed());
 		if(scoreEvaluation.getAssessmentID()!=null) {
+			UserNodeAuditManager am = courseEnv.getAuditManager();
 			am.appendToUserNodeLog(courseNode, assessedIdentity, assessedIdentity, "assessmentId set to: " + scoreEvaluation.getAssessmentID().toString(), by);
 		}
 		
@@ -552,25 +548,13 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, course);
 		
 		// user activity logging
+		logActivityPassed(assessedIdentity, scoreEvaluation.getPassed());
 		if (scoreEvaluation.getScore()!=null) {
 			ThreadLocalUserActivityLogger.log(AssessmentLoggingAction.ASSESSMENT_SCORE_UPDATED, 
 					getClass(), 
 					LoggingResourceable.wrap(assessedIdentity), 
 					LoggingResourceable.wrapNonOlatResource(StringResourceableType.qtiScore, "", String.valueOf(scoreEvaluation.getScore())));
 		}
-
-		if (scoreEvaluation.getPassed()!=null) {
-			ThreadLocalUserActivityLogger.log(AssessmentLoggingAction.ASSESSMENT_PASSED_UPDATED, 
-					getClass(), 
-					LoggingResourceable.wrap(assessedIdentity), 
-					LoggingResourceable.wrapNonOlatResource(StringResourceableType.qtiPassed, "", String.valueOf(scoreEvaluation.getPassed())));
-		} else {
-			ThreadLocalUserActivityLogger.log(AssessmentLoggingAction.ASSESSMENT_PASSED_UPDATED, 
-					getClass(), 
-					LoggingResourceable.wrap(assessedIdentity), 
-					LoggingResourceable.wrapNonOlatResource(StringResourceableType.qtiPassed, "", "undefined"));
-		}
-
 		if (incrementUserAttempts && attempts!=null) {
 			if(identity != null) {
 				ThreadLocalUserActivityLogger.log(AssessmentLoggingAction.ASSESSMENT_ATTEMPTS_UPDATED, 
@@ -584,23 +568,149 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			}
 		}
 		
+		updateUserEfficiencyStatement(userCourseEnv, courseNode);
+		generateCertificate(userCourseEnv, course);
+	}
+	
+	@Override
+	public Overridable<Boolean> getRootPassed(UserCourseEnvironment userCourseEnvironment) {
+		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		CourseEnvironment courseEnv = userCourseEnvironment.getCourseEnvironment();
+		CourseNode rootNode = courseEnv.getRunStructure().getRootNode();
+		String subIdent = rootNode.getIdent();
+		RepositoryEntry referenceEntry = rootNode.getReferencedRepositoryEntry();
+		AssessmentEntry assessmentEntry = getOrCreate(assessedIdentity, subIdent, Boolean.TRUE, referenceEntry);
+		return assessmentEntry.getPassedOverridable();
+	}
+
+	@Override
+	public Overridable<Boolean> overrideRootPassed(Identity coach, UserCourseEnvironment userCourseEnvironment, Boolean passed) {
+		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		
+		ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
+		CourseEnvironment courseEnv = userCourseEnvironment.getCourseEnvironment();
+		
+		CourseNode rootNode = courseEnv.getRunStructure().getRootNode();
+		String subIdent = rootNode.getIdent();
+		RepositoryEntry referenceEntry = rootNode.getReferencedRepositoryEntry();
+		AssessmentEntry assessmentEntry = getOrCreate(assessedIdentity, subIdent, Boolean.TRUE, referenceEntry);
+		
+		Date now = new Date();
+		assessmentEntry.setLastCoachModified(now);
+		assessmentEntry.getPassedOverridable().override(passed, coach, now);
+		assessmentEntry = assessmentService.updateAssessmentEntry(assessmentEntry);
+		DBFactory.getInstance().commit();
+		
+		nodeAccessService.onPassedUpdated(rootNode, userCourseEnvironment, passed, Boolean.TRUE, Role.coach);
+		DBFactory.getInstance().commit();
+		
+		ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
+		scoreAccounting.evaluateAll(true);
+		DBFactory.getInstance().commit();
+		
+		logAuditPassed(rootNode, coach, Role.coach, userCourseEnvironment, passed);
+		logActivityPassed(assessedIdentity, passed);
+		
+		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_SCORE_EVAL_CHANGED, assessedIdentity);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, course);
+		
+		updateUserEfficiencyStatement(userCourseEnvironment, rootNode);
+		generateCertificate(userCourseEnvironment, course);
+		
+		return assessmentEntry.getPassedOverridable();
+	}
+
+	@Override
+	public Overridable<Boolean> resetRootPassed(Identity coach, UserCourseEnvironment userCourseEnvironment) {
+		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		
+		ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
+		CourseEnvironment courseEnv = userCourseEnvironment.getCourseEnvironment();
+		
+		CourseNode rootNode = courseEnv.getRunStructure().getRootNode();
+		String subIdent = rootNode.getIdent();
+		RepositoryEntry referenceEntry = rootNode.getReferencedRepositoryEntry();
+		AssessmentEntry assessmentEntry = getOrCreate(assessedIdentity, subIdent, Boolean.TRUE, referenceEntry);
+		
+		Date now = new Date();
+		assessmentEntry.setLastCoachModified(now);
+		assessmentEntry.getPassedOverridable().reset();
+		assessmentEntry = assessmentService.updateAssessmentEntry(assessmentEntry);
+		DBFactory.getInstance().commit();
+		
+		Boolean passed = assessmentEntry.getPassed();
+		nodeAccessService.onPassedUpdated(rootNode, userCourseEnvironment, passed, Boolean.TRUE, Role.coach);
+		DBFactory.getInstance().commit();
+		
+		ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
+		scoreAccounting.evaluateAll(true);
+		DBFactory.getInstance().commit();
+		
+		logAuditPassed(rootNode, coach, Role.coach, userCourseEnvironment, passed);
+		logActivityPassed(assessedIdentity, passed);
+		
+		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_SCORE_EVAL_CHANGED, assessedIdentity);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, course);
+		
+		updateUserEfficiencyStatement(userCourseEnvironment, rootNode);
+		generateCertificate(userCourseEnvironment, course);
+		
+		return assessmentEntry.getPassedOverridable();
+	}
+
+	private void logAuditPassed(CourseNode courseNode, Identity identity, Role by,
+			UserCourseEnvironment userCourseEnvironment, Boolean passed) {
+		UserNodeAuditManager am = userCourseEnvironment.getCourseEnvironment().getAuditManager();
+		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		if(passed != null) {
+			am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "passed set to: " + passed.toString(), by);
+		} else {
+			am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "passed set to \"undefined\"", by);
+		}
+	}
+
+	private void logActivityPassed(Identity assessedIdentity, Boolean passed) {
+		if (passed != null) {
+			ThreadLocalUserActivityLogger.log(AssessmentLoggingAction.ASSESSMENT_PASSED_UPDATED, 
+					getClass(), 
+					LoggingResourceable.wrap(assessedIdentity), 
+					LoggingResourceable.wrapNonOlatResource(StringResourceableType.qtiPassed, "", String.valueOf(passed)));
+		} else {
+			ThreadLocalUserActivityLogger.log(AssessmentLoggingAction.ASSESSMENT_PASSED_UPDATED, 
+					getClass(), 
+					LoggingResourceable.wrap(assessedIdentity), 
+					LoggingResourceable.wrapNonOlatResource(StringResourceableType.qtiPassed, "", "undefined"));
+		}
+	}
+
+	private void updateUserEfficiencyStatement(UserCourseEnvironment userCourseEnvironment, CourseNode courseNode) {
+		CourseEnvironment courseEnv = userCourseEnvironment.getCourseEnvironment();
 		// write only when enabled for this course
 		if (courseEnv.getCourseConfig().isEfficencyStatementEnabled()) {
+			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+			ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
+			CourseNode rootNode = userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode();
+			
 			List<AssessmentNodeData> data = new ArrayList<>(50);
 			AssessmentNodesLastModified lastModifications = new AssessmentNodesLastModified();
-			AssessmentHelper.getAssessmentNodeDataList(0, courseEnv.getRunStructure().getRootNode(),
-					scoreAccounting, userCourseEnv, true, true, true, data, lastModifications);
+			
+			AssessmentHelper.getAssessmentNodeDataList(0, rootNode, scoreAccounting, userCourseEnvironment, true, true,
+					true, data, lastModifications);
 			efficiencyStatementManager.updateUserEfficiencyStatement(assessedIdentity, courseEnv, data, lastModifications, cgm.getCourseEntry());
 		}
+	}
 
-		if(course.getCourseConfig().isAutomaticCertificationEnabled()) {
-			CourseNode rootNode = courseEnv.getRunStructure().getRootNode();
+	private void generateCertificate(UserCourseEnvironment userCourseEnvironment, ICourse course) {
+		if (course.getCourseConfig().isAutomaticCertificationEnabled()) {
+			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+			ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
+			CourseNode rootNode = userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode();
 			ScoreEvaluation rootEval = scoreAccounting.evalCourseNode(rootNode);
-			if(rootEval != null && rootEval.getPassed() != null && rootEval.getPassed().booleanValue()
+			if (rootEval != null && rootEval.getPassed() != null && rootEval.getPassed().booleanValue()
 					&& certificatesManager.isCertificationAllowed(assessedIdentity, cgm.getCourseEntry())) {
 				CertificateTemplate template = null;
 				Long templateId = course.getCourseConfig().getCertificateTemplate();
-				if(templateId != null) {
+				if (templateId != null) {
 					template = certificatesManager.getTemplateById(templateId);
 				}
 				CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, rootEval.getScore(), rootEval.getPassed());
@@ -735,4 +845,5 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	private Boolean isEntryRoot(ICourse course, CourseNode courseNode) {
 		return course.getCourseEnvironment().getRunStructure().getRootNode().getIdent().equals(courseNode.getIdent());
 	}
+	
 }

@@ -19,8 +19,6 @@
  */
 package org.olat.course.assessment.ui.tool;
 
-import java.util.Date;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -30,13 +28,10 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.modules.assessment.AssessmentEntry;
-import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.Overridable;
-import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -53,22 +48,18 @@ public class IdentityPassedController extends BasicController {
 	private Link failLink;
 	private Link resetLink;
 
-	private final RepositoryEntry courseEntry;
-	private final String rootIdent;
-	private final Identity assessedIdentity;
+	private final UserCourseEnvironment assessedUserCourseEnv;
 	private final boolean readOnly;
 	
 	@Autowired
-	private AssessmentService assessmentService;
+	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private UserManager userManager;
 
 	protected IdentityPassedController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment coachCourseEnv,
-			RepositoryEntry courseEntry, Identity assessedIdentity) {
+			UserCourseEnvironment assessedUserCourseEnv) {
 		super(ureq, wControl);
-		this.courseEntry = courseEntry;
-		this.assessedIdentity = assessedIdentity;
-		this.rootIdent = coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getIdent();
+		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		this.readOnly = coachCourseEnv.isCourseReadOnly();
 		
 		mainVC = createVelocityContainer("passed");
@@ -77,11 +68,14 @@ public class IdentityPassedController extends BasicController {
 		failLink = LinkFactory.createLink("passed.manually.fail", "assed.manually.fail", getTranslator(), mainVC, this, Link.BUTTON);
 		resetLink = LinkFactory.createLink("passed.manually.reset", "assed.manually.reset", getTranslator(), mainVC, this, Link.BUTTON);
 		
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null,
-				courseEntry, rootIdent, Boolean.TRUE, null);
-		Overridable<Boolean> passedOverridable = assessmentEntry.getPassedOverridable();
+		Overridable<Boolean> passedOverridable = courseAssessmentService.getRootPassed(assessedUserCourseEnv);
 		updateUI(passedOverridable);
 		putInitialPanel(mainVC);
+	}
+	
+	void refresh() {
+		Overridable<Boolean> passedOverridable = courseAssessmentService.getRootPassed(assessedUserCourseEnv);
+		updateUI(passedOverridable);
 	}
 
 	private void updateUI(Overridable<Boolean> passedOverridable) {
@@ -148,21 +142,15 @@ public class IdentityPassedController extends BasicController {
 	}
 
 	private void doOverride(UserRequest ureq, Boolean passed) {
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null,
-				courseEntry, rootIdent, Boolean.TRUE, null);
-		Overridable<Boolean> passedOverridable = assessmentEntry.getPassedOverridable();
-		passedOverridable.override(passed, getIdentity(), new Date());
-		assessmentService.updateAssessmentEntry(assessmentEntry);
+		Overridable<Boolean> passedOverridable = courseAssessmentService.overrideRootPassed(getIdentity(),
+				assessedUserCourseEnv, passed);
 		updateUI(passedOverridable);
 		fireEvent(ureq, FormEvent.CHANGED_EVENT);
 	}
 
 	private void doReset(UserRequest ureq) {
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null,
-				courseEntry, rootIdent, Boolean.TRUE, null);
-		Overridable<Boolean> passedOverridable = assessmentEntry.getPassedOverridable();
-		passedOverridable.reset();
-		assessmentService.updateAssessmentEntry(assessmentEntry);
+		Overridable<Boolean> passedOverridable = courseAssessmentService.resetRootPassed(getIdentity(),
+				assessedUserCourseEnv);
 		updateUI(passedOverridable);
 		fireEvent(ureq, FormEvent.CHANGED_EVENT);
 	}
