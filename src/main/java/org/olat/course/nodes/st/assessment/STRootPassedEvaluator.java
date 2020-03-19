@@ -90,10 +90,11 @@ public class STRootPassedEvaluator implements RootPassedEvaluator {
 		// All passed
 		if (config.getBooleanSafe(STCourseNode.CONFIG_PASSED_ALL)) {
 			Counts counts = passCounter.getCounts(courseNode, scoreAccounting);
-			if (counts.isAllAssessed() && counts.getPassable() > 0) {
-				if (counts.getPassable() == counts.getPassed()) {
+			if (counts.getPassable() > 0) {
+				if (counts.isAllAssessed() && counts.getPassable() == counts.getPassed()) {
 					return Boolean.TRUE;
-				} else if (getActivePassedConfigs(config) == 1) {
+				}
+				if (counts.getFailed() > 0 && getActivePassedConfigs(config) == 1) {
 					return Boolean.FALSE;
 				}
 			}

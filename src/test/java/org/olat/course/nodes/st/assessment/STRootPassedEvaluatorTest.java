@@ -213,7 +213,7 @@ public class STRootPassedEvaluatorTest {
 		courseNode.getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_PASSED_ALL, true);
 		ScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		
-		Counts counts = new CountsImpl(3, 2, 1);
+		Counts counts = new CountsImpl(3, 1, 1);
 		PassCounter passCounter = mock(PassCounter.class);
 		when(passCounter.getCounts(any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
