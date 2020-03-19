@@ -43,6 +43,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.user.DisplayPortraitController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,21 +67,30 @@ public class OlatTopNavController extends BasicController implements LockableCon
 		super(ureq, wControl);
 		topNavVC = createVelocityContainer("topnav");
 		topNavVC.setDomReplacementWrapperRequired(false); // we provide our own DOM replacmenet ID
-		
-		Roles roles = ureq.getUserSession().getRoles();
-		boolean isGuest = roles.isGuestOnly();
-		boolean isInvitee = roles.isInvitee();
-		topNavVC.contextPut("isGuest", new Boolean(isGuest));
-		topNavVC.contextPut("isInvitee", new Boolean(isInvitee));
+
+		boolean isGuest;
+		boolean isInvitee;
+		UserSession usess = ureq.getUserSession();
+		if (getIdentity() != null) {
+			Roles roles = usess.getRoles();
+			isGuest = (roles == null ? true : roles.isGuestOnly());
+			isInvitee = (roles == null ? false : roles.isInvitee());
+
+		} else {
+			isGuest = true;
+			isInvitee = false;
+		}
+		topNavVC.contextPut("isGuest", isGuest);
+		topNavVC.contextPut("isInvitee", isInvitee);
 		
 		// login link
-		if (ureq.getIdentity() == null) {
+		if (getIdentity() == null) {
 			loginLink = LinkFactory.createLink("topnav.login", topNavVC, this);
 			loginLink.setIconLeftCSS("o_icon o_icon_login o_icon-lg");
 			loginLink.setTooltip("topnav.login.alt");
 		}
 		
-		if(ureq.getIdentity() != null && !isGuest && !isInvitee) {
+		if(getIdentity() != null && !isGuest && !isInvitee) {
 			loadPersonalTools(ureq);
 			
 			// the user profile

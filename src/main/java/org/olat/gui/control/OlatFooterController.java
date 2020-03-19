@@ -48,6 +48,7 @@ import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
@@ -90,11 +91,19 @@ public class OlatFooterController extends BasicController implements LockableCon
 
 		olatFootervc = createVelocityContainer("olatFooter");
 
-		Identity identity = ureq.getIdentity();
+		boolean isGuest;
+		boolean isInvitee;
 		UserSession usess = ureq.getUserSession();
-		boolean isGuest = (identity == null ? true : usess.getRoles().isGuestOnly());
-		boolean isInvitee = (identity == null ? false : usess.getRoles().isInvitee());
-		
+		if (getIdentity() != null) {
+			Roles roles = usess.getRoles();
+			isGuest = (roles == null ? true : roles.isGuestOnly());
+			isInvitee = (roles == null ? false : roles.isInvitee());
+
+		} else {
+			isGuest = true;
+			isInvitee = false;
+		}
+
 		// Show user count
 		UserLoggedInCounter userCounter = new UserLoggedInCounter();
 		olatFootervc.put("userCounter", userCounter);
@@ -117,10 +126,10 @@ public class OlatFooterController extends BasicController implements LockableCon
 		if (!isGuest && usess.isAuthenticated()) {
 			olatFootervc.contextPut("loggedIn", Boolean.TRUE);
 			if(isInvitee) {
-				String fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(ureq.getIdentity());
+				String fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(getIdentity());
 				olatFootervc.contextPut("username", StringHelper.escapeHtml(fullName) + " " + translate("logged.in.invitee"));
 			} else {
-				String fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(ureq.getIdentity());
+				String fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(getIdentity());
 				olatFootervc.contextPut("username", StringHelper.escapeHtml(fullName));
 			}
 		} else {
