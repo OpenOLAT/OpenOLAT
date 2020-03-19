@@ -154,7 +154,7 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 	
 	private void updateHighscoreTab() {
 		Boolean sf = courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,false);
-		myTabbedPane.setEnabled(5, sf);
+		myTabbedPane.setEnabled(myTabbedPane.indexOfTab(highScoreNodeConfigController.getInitialComponent()), sf);
 	}
 
 	@Override

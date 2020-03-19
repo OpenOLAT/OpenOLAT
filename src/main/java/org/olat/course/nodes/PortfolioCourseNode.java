@@ -21,6 +21,7 @@
 package org.olat.course.nodes;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -44,6 +45,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.editor.ConditionAccessEditConfig;
@@ -51,10 +53,13 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
+import org.olat.course.nodes.portfolio.PortfolioAssessmentConfig;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeConfiguration;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeConfiguration.DeadlineType;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeEditController;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeRunController;
+import org.olat.course.nodes.portfolio.PortfolioLearningPathNodeHandler;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.NodeEvaluation;
@@ -88,6 +93,7 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 	
 	public static final String EDIT_CONDITION_ID = "editportfolio";
 	
+	@SuppressWarnings("deprecation")
 	private static final String PACKAGE_EP = Util.getPackageName(PortfolioCourseNodeRunController.class);
 	public static final String TYPE = "ep";
 	
@@ -264,13 +270,56 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 		}
 		return sd;
 	}
-	
 	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		oneClickStatusCache = null;
 		List<StatusDescription> statusDescs = isConfigValidWithTranslator(cev, PACKAGE_EP, getConditionExpressions());
+		statusDescs.addAll(validateInternalConfiguration());
 		oneClickStatusCache = StatusDescriptionHelper.sort(statusDescs);
 		return oneClickStatusCache;
+	}
+	
+	private boolean isFullyAssessedScoreConfigError() {
+		boolean hasScore = Mode.none != new PortfolioAssessmentConfig(getModuleConfiguration()).getScoreMode();
+		boolean isScoreTrigger = CoreSpringFactory.getImpl(PortfolioLearningPathNodeHandler.class)
+				.getConfigs(this)
+				.isFullyAssessedOnScore(null, null)
+				.isEnabled();
+		return isScoreTrigger && !hasScore;
+	}
+	
+	private List<StatusDescription> validateInternalConfiguration() {
+		List<StatusDescription> sdList = new ArrayList<>(1);
+		
+		if (isFullyAssessedScoreConfigError()) {
+			addStatusErrorDescription("error.fully.assessed.score", "error.fully.assessed.score",
+					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+		}
+		if (isFullyAssessedPassedConfigError()) {
+			addStatusErrorDescription("error.fully.assessed.passed", "error.fully.assessed.passed",
+					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+		}
+		
+		return sdList;
+	}
+	
+	private boolean isFullyAssessedPassedConfigError() {
+		boolean hasPassed = Mode.none != new PortfolioAssessmentConfig(getModuleConfiguration()).getPassedMode();
+		boolean isPassedTrigger = CoreSpringFactory.getImpl(PortfolioLearningPathNodeHandler.class)
+				.getConfigs(this)
+				.isFullyAssessedOnPassed(null, null)
+				.isEnabled();
+		return isPassedTrigger && !hasPassed;
+	}
+	
+	private void addStatusErrorDescription(String shortDescKey, String longDescKey, String pane,
+			List<StatusDescription> status) {
+		String[] params = new String[] { getShortTitle() };
+		StatusDescription sd = new StatusDescription(StatusDescription.ERROR, shortDescKey, longDescKey, params,
+				PACKAGE_EP);
+		sd.setDescriptionForUnit(getIdent());
+		sd.setActivateableViewIdentifier(pane);
+		status.add(sd);
 	}
 
 	@Override
