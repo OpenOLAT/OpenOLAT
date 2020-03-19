@@ -824,7 +824,9 @@ public class FileUtils {
 				.replace("\u00E6", "ae");
 		String nameNormalized = Normalizer.normalize(nameFirstPass, Normalizer.Form.NFKD)
 				.replaceAll("\\p{InCombiningDiacriticalMarks}+","");
-		return nameNormalized.replaceAll("\\W+", "");
+		nameNormalized = nameNormalized.replaceAll("\\W+", "");
+		nameNormalized = nameNormalized.length() > 0? nameNormalized: "_";
+		return nameNormalized;
 	}
 	
 	/**
