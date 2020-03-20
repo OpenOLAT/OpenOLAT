@@ -85,6 +85,7 @@ import org.olat.instantMessaging.CloseInstantMessagingEvent;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.modules.adobeconnect.AdobeConnectModule;
+import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.olat.modules.portfolio.PortfolioV2Module;
@@ -131,6 +132,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	public static final OLATResourceable ORES_TOOLBOOKING = OresHelper.createOLATResourceableType("toolbooking");
 	public static final OLATResourceable ORES_TOOLOPENMEETINGS = OresHelper.createOLATResourceableType("toolopenmeetings");
 	public static final OLATResourceable ORES_TOOLADOBECONNECT = OresHelper.createOLATResourceableType("tooladobeconnect");
+	public static final OLATResourceable ORES_TOOLBIGBLUEBUTTON = OresHelper.createOLATResourceableType("toolbigbluebutton");
 	public static final OLATResourceable ORES_TOOLWIKI = OresHelper.createOLATResourceableType(WikiManager.WIKI_RESOURCE_FOLDER_NAME);
 
 	// activity identifiers are used as menu user objects and for the user
@@ -161,8 +163,10 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	public static final String ACTIVITY_MENUSELECT_PORTFOLIO = "MENU_SHOW_PORTFOLIO";
 	/* activity identifier: user selected show OPENMEETINGS in menu */
 	public static final String ACTIVITY_MENUSELECT_OPENMEETINGS = "MENU_SHOW_OPENMEETINGS";
-	/* activity identifier: user selected show OPENMEETINGS in menu */
+	/* activity identifier: user selected show Adobe Connect in menu */
 	public static final String ACTIVITY_MENUSELECT_ADOBECONNECT = "MENU_SHOW_ADOBECONNECT";
+	/* activity identifier: user selected show BigBlueButton in menu */
+	public static final String ACTIVITY_MENUSELECT_BIGBLUEBUTTON = "MENU_SHOW_BIGBLUEBUTTON";
 	/* activity identifier: user selected show access control in menu */
 	/* access control of resources */
 	public static final String ACTIVITY_MENUSELECT_AC = "MENU_SHOW_AC";
@@ -208,6 +212,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private GenericTreeNode nodePortfolio;
 	private GenericTreeNode nodeOpenMeetings;
 	private GenericTreeNode nodeAdobeConnect;
+	private GenericTreeNode nodeBigBlueButton;
 	private GenericTreeNode nodeContact, nodeGroupOwners, nodeResources, nodeInformation, nodeAdmin;
 	private boolean groupRunDisabled;
 	private OLATResourceable assessmentEventOres;
@@ -231,6 +236,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private OpenMeetingsModule openMeetingsModule;
 	@Autowired
 	private AdobeConnectModule adobeConnectModule;
+	@Autowired
+	private BigBlueButtonModule bigBlueButtonModule;
 	@Autowired
 	private BusinessGroupService businessGroupService;	
 
@@ -656,6 +663,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			doOpenMeetings(ureq);
 		} else if (ACTIVITY_MENUSELECT_ADOBECONNECT.equals(cmd)) {
 			doAdobeConnect(ureq);
+		} else if(ACTIVITY_MENUSELECT_BIGBLUEBUTTON.equals(cmd)) {
+			doBigBlueButton(ureq);
 		} else if (ACTIVITY_MENUSELECT_AC.equals(cmd)) {
 			doAccessControlHistory(ureq);
 		} 
@@ -807,6 +816,20 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
 		collabToolCtr = collabTools.createAdobeConnectController(ureq, bwControl, businessGroup, isAdmin);
+		listenTo(collabToolCtr);
+		mainPanel.setContent(collabToolCtr.getInitialComponent());
+	}
+	
+	private void doBigBlueButton(UserRequest ureq) {
+		addLoggingResourceable(LoggingResourceable.wrap(ORES_TOOLBIGBLUEBUTTON, OlatResourceableType.bigbluebutton));
+		
+		ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(ORES_TOOLBIGBLUEBUTTON);
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, getWindowControl());
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapPortfolioOres(ce.getOLATResourceable()));
+		addToHistory(ureq, bwControl);
+		
+		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
+		collabToolCtr = collabTools.createBigBlueButtonController(ureq, bwControl, businessGroup, isAdmin);
 		listenTo(collabToolCtr);
 		mainPanel.setContent(collabToolCtr.getInitialComponent());
 	}
@@ -966,6 +989,16 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			if (nodeAdobeConnect != null) {
 				doAdobeConnect(ureq);
 				bgTree.setSelectedNode(nodeAdobeConnect);
+			} else if(mainPanel != null) { // not enabled
+				String text = translate("warn.portfolionotavailable");
+				Controller mc = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, text);
+				listenTo(mc); // cleanup on dispose
+				mainPanel.setContent(mc.getInitialComponent());
+			}
+		} else if (OresHelper.equals(ores, ORES_TOOLBIGBLUEBUTTON)) {
+			if (nodeBigBlueButton != null) {
+				doBigBlueButton(ureq);
+				bgTree.setSelectedNode(nodeBigBlueButton);
 			} else if(mainPanel != null) { // not enabled
 				String text = translate("warn.portfolionotavailable");
 				Controller mc = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, text);
@@ -1230,7 +1263,18 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			root.addChild(gtnChild);
 			nodeAdobeConnect = gtnChild;
 		}
-
+		
+		if(bigBlueButtonModule.isEnabled() && bigBlueButtonModule.isGroupsEnabled()
+				&& collabTools.isToolEnabled(CollaborationTools.TOOL_BIGBLUEBUTTON)) {
+			gtnChild = new GenericTreeNode(nodeIdPrefix.concat("bigbluebutton"));
+			gtnChild.setTitle(translate("menutree.bigbluebutton"));
+			gtnChild.setUserObject(ACTIVITY_MENUSELECT_BIGBLUEBUTTON);
+			gtnChild.setAltText(translate("menutree.bigbluebutton.alt"));
+			gtnChild.setIconCssClass("o_vc_icon");
+			root.addChild(gtnChild);
+			nodeBigBlueButton = gtnChild;
+		}
+	
 		if (isAdmin) {
 			gtnChild = new GenericTreeNode(nodeIdPrefix.concat("admin"));
 			gtnChild.setTitle(translate("menutree.administration"));

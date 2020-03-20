@@ -87,6 +87,8 @@ import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.ui.ChatToolController;
 import org.olat.modules.adobeconnect.ui.AdobeConnectMeetingDefaultConfiguration;
 import org.olat.modules.adobeconnect.ui.AdobeConnectRunController;
+import org.olat.modules.bigbluebutton.ui.BigBlueButtonMeetingDefaultConfiguration;
+import org.olat.modules.bigbluebutton.ui.BigBlueButtonRunController;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumCallback;
@@ -159,6 +161,7 @@ public class CollaborationTools implements Serializable {
 	public static final String KEY_PORTFOLIO = "portfolioMapKey";
 	public static final String KEY_OPENMEETINGS = "openMeetingsKey";
 	public static final String KEY_ACONNECTMEETINGS = "adobeConnectKey";
+	public static final String KEY_BIGBLUEBUTTON = "bigBlueButtonKey";
 
 	/**
 	 * <code>PROP_CAT_BG_COLLABTOOLS</code> identifies properties concerning
@@ -204,9 +207,13 @@ public class CollaborationTools implements Serializable {
 	 */
 	public static final String TOOL_OPENMEETINGS = "hasOpenMeetings";
 	/**
-	 * constant used to identify the open meetings for a group
+	 * constant used to identify the Adobe Connect for a group
 	 */
 	public static final String TOOL_ADOBECONNECT = "hasAdobeConnect";
+	/**
+	 * constant used to identify the BigBlueButton for a group
+	 */
+	public static final String TOOL_BIGBLUEBUTTON = "hasBigBlueButton";
 	
 	/**
 	 * Only owners have write access to the calendar.
@@ -622,6 +629,11 @@ public class CollaborationTools implements Serializable {
 	public Controller createAdobeConnectController(final UserRequest ureq, WindowControl wControl, final BusinessGroup group, boolean admin) {
 		AdobeConnectMeetingDefaultConfiguration configuration = new AdobeConnectMeetingDefaultConfiguration(true, true, true);
 		return new AdobeConnectRunController(ureq, wControl, null, null, group, configuration, admin, admin, false);
+	}
+	
+	public Controller createBigBlueButtonController(final UserRequest ureq, WindowControl wControl, final BusinessGroup group, boolean admin) {
+		BigBlueButtonMeetingDefaultConfiguration configuration = new BigBlueButtonMeetingDefaultConfiguration(false);
+		return new BigBlueButtonRunController(ureq, wControl, null, null, group, configuration, admin, admin, false);
 	}
 
 	/**

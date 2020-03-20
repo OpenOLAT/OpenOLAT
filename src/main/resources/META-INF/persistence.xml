@@ -173,6 +173,8 @@
 		<class>org.olat.modules.adobeconnect.model.AdobeConnectUserImpl</class>
 		<class>org.olat.modules.adobeconnect.model.AdobeConnectMeetingImpl</class>
 		<class>org.olat.modules.assessment.model.AssessmentEntryImpl</class>
+		<class>org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingImpl</class>
+		<class>org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingTemplateImpl</class>
 		<class>org.olat.modules.curriculum.model.CurriculumImpl</class>
 		<class>org.olat.modules.curriculum.model.CurriculumElementImpl</class>
 		<class>org.olat.modules.curriculum.model.CurriculumElementTypeImpl</class>

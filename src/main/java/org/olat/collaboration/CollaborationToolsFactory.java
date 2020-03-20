@@ -39,6 +39,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.group.BusinessGroup;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.modules.adobeconnect.AdobeConnectModule;
+import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.wiki.WikiModule;
@@ -111,6 +112,11 @@ public class CollaborationToolsFactory {
 		if(adobeConnectModule.isEnabled() && adobeConnectModule.isGroupsEnabled()) {
 			toolArr.add(CollaborationTools.TOOL_ADOBECONNECT);
 		}
+
+		BigBlueButtonModule bigBlueButtonModule = CoreSpringFactory.getImpl(BigBlueButtonModule.class);
+		if(bigBlueButtonModule.isEnabled() && bigBlueButtonModule.isGroupsEnabled()) {
+			toolArr.add(CollaborationTools.TOOL_BIGBLUEBUTTON);
+		}
 		TOOLS = ArrayHelper.toArray(toolArr);				
 	}
 	
@@ -144,21 +150,20 @@ public class CollaborationToolsFactory {
 		if (ores == null) throw new AssertException("Null is not allowed here, you have to provide an existing ores here!");
 		
 		final String cacheKey = Long.toString(ores.getResourceableId().longValue());
-		boolean debug = log.isDebugEnabled();
 		//sync operation cluster wide
 
 		CollaborationTools collabTools = cache.get(cacheKey);
 		if (collabTools != null) {		
-			if (debug) log .debug("loading collabTool from cache. Ores: " + ores.getResourceableId());		
+			log.debug("loading collabTool from cache. Ores: {}", ores.getResourceableId());		
 			if (collabTools.isDirty()) {
-				if (debug) log .debug("CollabTools were in cache but dirty. Creating new ones. Ores: " + ores.getResourceableId());
+				log.debug("CollabTools were in cache but dirty. Creating new ones. Ores: {}", ores.getResourceableId());
 				CollaborationTools tools = new CollaborationTools(coordinatorManager, ores);
 				//update forces clusterwide invalidation of this object
 				cache.update(cacheKey, tools);
 				collabTools = tools;
 			}	
 		} else {
-			if (debug) log .debug("collabTool not in cache. Creating new ones. Ores: " + ores.getResourceableId());
+			log.debug("collabTool not in cache. Creating new ones. Ores: {}", ores.getResourceableId());
 	
 			CollaborationTools tools = new CollaborationTools(coordinatorManager, ores);
 			CollaborationTools cachedTools = cache.putIfAbsent(cacheKey, tools);
