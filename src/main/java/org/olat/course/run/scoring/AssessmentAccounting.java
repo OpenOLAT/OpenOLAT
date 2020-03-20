@@ -228,7 +228,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 		
 		if (courseNode.getParent() == null) {
 			RootPassedEvaluator rootPassedEvaluator = evaluators.getRootPassedEvaluator();
-			Boolean rootPassed = rootPassedEvaluator.getPassed(currentEvaluation, courseNode, this,
+			Boolean rootPassed = rootPassedEvaluator.getPassed(result, courseNode, this,
 					userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
 			result.setPassed(rootPassed);
 		}
