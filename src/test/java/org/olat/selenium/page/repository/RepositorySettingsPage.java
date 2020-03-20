@@ -75,6 +75,16 @@ public class RepositorySettingsPage {
 		return new RepositoryAccessPage(browser);
 	}
 	
+	public RepositoryCertificateSettingsPage certificates() {
+		By accessSegmentBy = By.cssSelector("ul.o_tools_segments a.o_sel_results");
+		OOGraphene.waitElement(accessSegmentBy, browser);
+		browser.findElement(accessSegmentBy).click();
+		
+		By certificatesConfigurationBy = By.cssSelector("fieldset.o_sel_certificate_settings");
+		OOGraphene.waitElement(certificatesConfigurationBy, browser);
+		return new RepositoryCertificateSettingsPage(browser);
+	}
+	
 	public void back() {
 		OOGraphene.clickBreadcrumbBack(browser);
 	}

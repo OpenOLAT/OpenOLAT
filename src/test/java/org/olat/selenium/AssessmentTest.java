@@ -46,6 +46,7 @@ import org.olat.selenium.page.course.AssessmentToolPage;
 import org.olat.selenium.page.course.BulkAssessmentPage.BulkAssessmentData;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
+import org.olat.selenium.page.course.CourseSettingsPage;
 import org.olat.selenium.page.course.GroupTaskConfigurationPage;
 import org.olat.selenium.page.course.GroupTaskPage;
 import org.olat.selenium.page.course.GroupTaskToCoachPage;
@@ -659,14 +660,17 @@ public class AssessmentTest extends Deployments {
 			.finish();
 		
 		// return to course
-		courseRuntime = members
+		CourseSettingsPage courseSettings = members
 			.clickToolbarBack()
-			.settings()
-			.efficiencyStatementConfiguration()
+			.settings();
+		courseSettings
+			.certificates()
 			.enableCertificates(false)
 			.enableRecertification()
-			.save()
+			.save();
+		courseSettings
 			.clickToolbarBack();
+		
 		//publish the course
 		courseRuntime
 			.publish();
@@ -761,13 +765,15 @@ public class AssessmentTest extends Deployments {
 			.finish();
 		
 		// return to course
-		courseRuntime = members
+		CourseSettingsPage courseSetting = members
 			.clickToolbarBack()
-			.settings()
-			.efficiencyStatementConfiguration()
+			.settings();
+		courseSetting
+			.certificates()
 			.enableCertificates(true)
 			.enableRecertification()
-			.save()
+			.save();
+		courseSetting
 			.clickToolbarBack();
 		
 		//Participant log in
@@ -847,14 +853,20 @@ public class AssessmentTest extends Deployments {
 			.selectConfigurationWithRubric()
 			.setRubricScore(0.1f, 10.0f, 5.0f);
 		//set the score / passed calculation in root node and publish
-		courseEditor
+		CourseSettingsPage courseSettings = courseEditor
 			.selectRoot()
 			.selectTabScore()
 			.enableRootScoreByNodes()
 			.autoPublish()
-			.settings()
+			.settings();
+		courseSettings
 			.accessConfiguration()
 			.setUserAccess(UserAccess.registred)
+			.save();
+		courseSettings
+			.certificates()
+			.enableCertificates(true)
+			.enableRecertification()
 			.save();
 		
 		//go to members management
@@ -895,6 +907,7 @@ public class AssessmentTest extends Deployments {
 			.assertOnEfficiencyStatmentPage()
 			.assertOnStatement(courseTitle, true)
 			.selectStatement(courseTitle)
+			.selectStatementSegment()
 			.assertOnCourseDetails(assessmentNodeTitle, true);
 	}
 

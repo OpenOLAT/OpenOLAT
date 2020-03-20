@@ -53,7 +53,7 @@ public class CourseSettingsPage extends RepositorySettingsPage {
 		OOGraphene.waitElement(certificateSegmentBy, browser);
 		browser.findElement(certificateSegmentBy).click();
 		
-		By toolbarSettingsBy = By.cssSelector("fieldset.o_sel_course_certificates");
+		By toolbarSettingsBy = By.cssSelector("fieldset.o_sel_course_efficiency_statements");
 		OOGraphene.waitElement(toolbarSettingsBy, browser);
 
 		return new EfficiencyStatementConfigurationPage(browser);

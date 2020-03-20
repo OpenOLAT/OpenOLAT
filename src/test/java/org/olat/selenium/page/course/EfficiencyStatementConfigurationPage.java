@@ -36,44 +36,11 @@ public class EfficiencyStatementConfigurationPage {
 	public EfficiencyStatementConfigurationPage(WebDriver browser) {
 		this.browser = browser;
 	}
-	
-	public EfficiencyStatementConfigurationPage enableCertificates(boolean auto) {
-		By by;
-		if(auto) {
-			by = By.cssSelector("fieldset.o_sel_course_certificates div.checkbox input[type='checkbox'][value='auto']");
-		} else {
-			by = By.cssSelector("fieldset.o_sel_course_certificates div.checkbox input[type='checkbox'][value='manual']");
-		}
-		browser.findElement(by).click();
-		OOGraphene.waitBusy(browser);
-		return this;
-	}
-	
-	public EfficiencyStatementConfigurationPage enableRecertification() {
-		By recertificationBy = By.cssSelector("fieldset.o_sel_course_certificates input[type='checkbox'][name='recertification']");
-		browser.findElement(recertificationBy).click();
-		OOGraphene.waitBusy(browser);
-		return this;
-	}
-	
+
 	public EfficiencyStatementConfigurationPage save() {
-		By saveSwitch = By.cssSelector("fieldset.o_sel_course_certificates button.btn.btn-primary");
+		By saveSwitch = By.cssSelector("fieldset.o_sel_course_efficiency_statements button.btn.btn-primary");
 		browser.findElement(saveSwitch).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
-	
-	/**
-	 * Click back to the course
-	 * 
-	 * @return
-	 */
-	public CoursePageFragment clickToolbarBack() {
-		OOGraphene.closeBlueMessageWindow(browser);
-		By toolbarBackBy = By.cssSelector("li.o_breadcrumb_back>a");
-		browser.findElement(toolbarBackBy).click();
-		OOGraphene.waitBusy(browser);
-		return new CoursePageFragment(browser);
-	}
-
 }
