@@ -93,6 +93,7 @@ public enum OlatResourceableType implements ILoggingResourceableType {
 	/** represents virtual class room **/
 	openmeetings,
 	adobeconnect,
+	bigbluebutton,
 
 	/** business path component **/
 	businessPath,

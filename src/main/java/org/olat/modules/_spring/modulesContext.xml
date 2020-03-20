@@ -11,6 +11,7 @@
 	<context:component-scan base-package="org.olat.modules"/>
 
 	<import resource="classpath:/org/olat/modules/adobeconnect/_spring/adobeConnectContext.xml"/>
+	<import resource="classpath:/org/olat/modules/bigbluebutton/_spring/bigBlueButtonContext.xml"/>
 	<import resource="classpath:/org/olat/modules/coach/_spring/coachContext.xml"/>
 	<import resource="classpath:/org/olat/modules/iq/_spring/iqContext.xml"/>
 	<import resource="classpath:/org/olat/modules/lecture/_spring/lectureContext.xml"/>
