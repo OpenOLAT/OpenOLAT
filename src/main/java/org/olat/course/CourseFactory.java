@@ -105,6 +105,8 @@ import org.olat.course.editor.PublishSetInformations;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.PersistingCourseGroupManager;
+import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
@@ -121,6 +123,7 @@ import org.olat.course.tree.PublishTreeModel;
 import org.olat.group.BusinessGroup;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.manager.ChatLogHelper;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -236,6 +239,39 @@ public class CourseFactory {
 		return newCourse;
 	}
 
+	public static ICourse initNodeAccessType(RepositoryEntry addedEntry, NodeAccessType type) {
+		OLATResourceable courseOres = addedEntry.getOlatResource();
+		if (CourseFactory.isCourseEditSessionOpen(courseOres.getResourceableId())) {
+			log.warn("Not able to set the course node access type: Edit session is already open!");
+			return loadCourse(addedEntry);
+		}
+		
+		ICourse course = CourseFactory.openCourseEditSession(courseOres.getResourceableId());
+		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
+		String nodeAccessType = type.getType();
+		courseConfig.setNodeAccessType(nodeAccessType);
+		
+		ModuleConfiguration runConfig = course.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration();
+		CourseEditorTreeNode courseEditorTreeNode = (CourseEditorTreeNode)course.getEditorTreeModel().getRootNode();
+		ModuleConfiguration editorConfig = courseEditorTreeNode.getCourseNode().getModuleConfiguration();
+		
+		NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
+		boolean scoreCalculatorSupported = nodeAccessService.isScoreCalculatorSupported(type);
+		runConfig.setBooleanEntry(STCourseNode.CONFIG_SCORE_CALCULATOR_SUPPORTED, scoreCalculatorSupported);
+		editorConfig.setBooleanEntry(STCourseNode.CONFIG_SCORE_CALCULATOR_SUPPORTED, scoreCalculatorSupported);
+		
+		if (!scoreCalculatorSupported) {
+			runConfig.setStringValue(STCourseNode.CONFIG_SCORE_KEY, STCourseNode.CONFIG_SCORE_VALUE_SUM);
+			runConfig.setBooleanEntry(STCourseNode.CONFIG_PASSED_PROGRESS, true);
+			editorConfig.setStringValue(STCourseNode.CONFIG_SCORE_KEY, STCourseNode.CONFIG_SCORE_VALUE_SUM);
+			editorConfig.setBooleanEntry(STCourseNode.CONFIG_PASSED_PROGRESS, true);
+		}
+		
+		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
+		CourseFactory.saveCourse(addedEntry.getOlatResource().getResourceableId());
+		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
+		return course;
+	}
 
 
 	/**

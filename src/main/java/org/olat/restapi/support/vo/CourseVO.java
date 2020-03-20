@@ -88,6 +88,7 @@ public class CourseVO {
 	
 	private String title;
 	private String editorRootNodeId;
+	private String nodeAccessType;
 	
 	private RepositoryEntryLifecycleVO lifecycle;
 	
@@ -221,6 +222,14 @@ public class CourseVO {
 
 	public void setEditorRootNodeId(String editorRootNodeId) {
 		this.editorRootNodeId = editorRootNodeId;
+	}
+
+	public String getNodeAccessType() {
+		return nodeAccessType;
+	}
+
+	public void setNodeAccessType(String nodeAccessType) {
+		this.nodeAccessType = nodeAccessType;
 	}
 
 	public RepositoryEntryLifecycleVO getLifecycle() {

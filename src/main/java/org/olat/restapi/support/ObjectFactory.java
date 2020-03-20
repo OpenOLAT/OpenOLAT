@@ -164,6 +164,7 @@ public class ObjectFactory {
 		vo.setDescription(re.getDescription());
 		vo.setTitle(course.getCourseTitle());
 		vo.setEditorRootNodeId(course.getEditorTreeModel().getRootNode().getIdent());
+		vo.setNodeAccessType(course.getCourseConfig().getNodeAccessType().getType());
 		vo.setSoftKey(re.getSoftkey());
 		vo.setRepoEntryKey(re.getKey());
 		OLATResource resource = re.getOlatResource();

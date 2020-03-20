@@ -20,7 +20,6 @@
 package org.olat.restapi.repository.course;
 
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
-
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 
@@ -70,6 +69,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.repository.RepositoryEntry;
@@ -286,7 +286,8 @@ public class CoursesWebService {
 			@QueryParam("managedFlags") String managedFlags, @QueryParam("sharedFolderSoftKey") String sharedFolderSoftKey,
 			@QueryParam("copyFrom") Long copyFrom, @QueryParam("initialAuthor") Long initialAuthor,
 			@QueryParam("setAuthor")  @DefaultValue("true") Boolean setAuthor,
-			@QueryParam("organisationKey") Long organisationKey, @Context HttpServletRequest request) {
+			@QueryParam("organisationKey") Long organisationKey, @QueryParam("nodeAccessType") String nodeAccessType, 
+			@Context HttpServletRequest request) {
 		if(!isAuthor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
@@ -332,7 +333,8 @@ public class CoursesWebService {
 			course = createEmptyCourse(id, shortTitle, title, displayName, description,
 					objectives, requirements, credits, expenditureOfWork,
 					softKey, accessStatus, accessAllUsers, accessGuests, organisationKey,
-					authors, location, externalId, externalRef, managedFlags, configVO);
+					authors, location, externalId, externalRef, managedFlags, nodeAccessType, 
+					configVO);
 		}
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -371,9 +373,8 @@ public class CoursesWebService {
 		ICourse course = createEmptyCourse(ureq.getIdentity(),
 				courseVo.getTitle(), courseVo.getTitle(), courseVo.getTitle(), courseVo.getDescription(), null, null, null, null,
 				courseVo.getSoftKey(), RepositoryEntryStatusEnum.preparation, false, false, courseVo.getOrganisationKey(),
-				courseVo.getAuthors(), courseVo.getLocation(),
-				courseVo.getExternalId(), courseVo.getExternalRef(), courseVo.getManagedFlags(),
-				configVO);
+				courseVo.getAuthors(), courseVo.getLocation(), courseVo.getExternalId(), courseVo.getExternalRef(), 
+				courseVo.getManagedFlags(), courseVo.getNodeAccessType(), configVO);
 		CourseVO vo = ObjectFactory.get(course);
 		return Response.ok(vo).build();
 	}
@@ -638,6 +639,7 @@ public class CoursesWebService {
 	 * @param externalId
 	 * @param externalRef
 	 * @param managedFlags
+	 * @param nodeAccessType 
 	 * @param courseConfigVO
 	 * @return
 	 */
@@ -645,7 +647,7 @@ public class CoursesWebService {
 			String description, String objectives, String requirements, String credits, String expenditureOfWork, String softKey,
 			RepositoryEntryStatusEnum status, boolean allUsers, boolean guests,
 			Long organisationKey, String authors, String location, String externalId, String externalRef,
-			String managedFlags, CourseConfigVO courseConfigVO) {
+			String managedFlags, String nodeAccessType, CourseConfigVO courseConfigVO) {
 
 		if(!StringHelper.containsNonWhitespace(reDisplayName)) {
 			reDisplayName = shortTitle;
@@ -686,7 +688,11 @@ public class CoursesWebService {
 			addedEntry = repositoryService.update(addedEntry);
 
 			// create an empty course
-			CourseFactory.createCourse(addedEntry, shortTitle, longTitle, "");
+			ICourse course = CourseFactory.createCourse(addedEntry, shortTitle, longTitle, "");
+			NodeAccessType type = StringHelper.containsNonWhitespace(nodeAccessType)
+					? NodeAccessType.of(nodeAccessType)
+					: course.getCourseConfig().getNodeAccessType(); // default type
+			CourseFactory.initNodeAccessType(addedEntry, type);
 			return prepareCourse(addedEntry, shortTitle, longTitle, courseConfigVO);
 		} catch (Exception e) {
 			throw new WebApplicationException(e);

@@ -66,6 +66,8 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.condition.ConditionNodeAccessProvider;
+import org.olat.course.config.CourseConfig;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -433,6 +435,28 @@ public class CoursesTest extends OlatRestTestCase {
 		Assert.assertEquals("Zurich", re.getLocation());
 		Assert.assertEquals("825761", re.getExternalId());
 		Assert.assertEquals("AC-825761", re.getExternalRef());
+	}
+
+	@Test
+	public void testCreateEmpty_nodeAccessType() throws IOException, URISyntaxException {
+		assertTrue(conn.login("administrator", "openolat"));
+
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+			.queryParam("shortTitle", "courseCC")
+			.queryParam("title", "course cc long name")
+			.queryParam("nodeAccessType", ConditionNodeAccessProvider.TYPE)
+			.build();
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		CourseVO courseVO = conn.parse(response, CourseVO.class);
+		assertNotNull(courseVO);
+		//check course config
+		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(courseVO.getRepoEntryKey());
+		ICourse course = CourseFactory.loadCourse(re);
+		CourseConfig courseConfig = course.getCourseConfig();
+		assertEquals(ConditionNodeAccessProvider.TYPE, courseConfig.getNodeAccessType().getType());
 	}
 
 	@Test
