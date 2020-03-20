@@ -39,6 +39,6 @@ public class BigBlueButtonCleanupJob extends JobWithDB {
 	
 	@Override
 	public void executeWithDB(JobExecutionContext arg0) throws JobExecutionException {
-		log.info("", "Clean Big Blue Button meetings");
+		log.info("", "Clean BigBlueButton meetings");
 	}
 }

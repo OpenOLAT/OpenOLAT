@@ -33,7 +33,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 
 /**
  * Description:<br>
- * Configuration for the Big Blue Button course element.
+ * Configuration for the BigBlueButton course element.
  * 
  * Initial date: 18 mars 2020<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
