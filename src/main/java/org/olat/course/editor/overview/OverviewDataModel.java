@@ -76,10 +76,10 @@ public class OverviewDataModel extends DefaultFlexiTreeTableDataModel<OverviewRo
 			case score: return row.getAssessmentConfig().isAssessable()
 					? Boolean.valueOf(Mode.none != row.getAssessmentConfig().getScoreMode())
 					: null;
-			case scoreMin: return row.getAssessmentConfig().isAssessable() && Mode.none != row.getAssessmentConfig().getScoreMode()
+			case scoreMin: return row.getAssessmentConfig().isAssessable() && Mode.setByNode == row.getAssessmentConfig().getScoreMode()
 					? row.getAssessmentConfig().getMinScore()
 					: null;
-			case scoreMax: return row.getAssessmentConfig().isAssessable() && Mode.none != row.getAssessmentConfig().getScoreMode()
+			case scoreMax: return row.getAssessmentConfig().isAssessable() && Mode.setByNode == row.getAssessmentConfig().getScoreMode()
 					? row.getAssessmentConfig().getMaxScore()
 					: null;
 			case passed: return row.getAssessmentConfig().isAssessable()

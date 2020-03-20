@@ -50,7 +50,6 @@ import org.olat.course.run.scoring.LastModificationsEvaluator;
 import org.olat.course.run.scoring.ObligationEvaluator;
 import org.olat.course.run.scoring.PassedEvaluator;
 import org.olat.course.run.scoring.RootPassedEvaluator;
-import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.scoring.ScoreEvaluator;
 import org.olat.course.run.scoring.StatusEvaluator;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -96,10 +95,7 @@ public class STAssessmentHandler implements AssessmentHandler {
 			STCourseNode stCourseNode = (STCourseNode) courseNode;
 			STCourseNode root = getRoot(courseNode);
 			boolean isRoot = courseNode.getIdent().equals(root.getIdent());
-			ScoreCalculator scoreCalclualtor = root.getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_SCORE_CALCULATOR_SUPPORTED)
-					? stCourseNode.getScoreCalculator()
-					: null;
-			return new STAssessmentConfig(isRoot, root.getModuleConfiguration(), scoreCalclualtor);
+			return new STAssessmentConfig(stCourseNode, isRoot, root.getModuleConfiguration());
 		}
 		return NonAssessmentConfig.create();
 	}

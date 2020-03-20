@@ -380,7 +380,7 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 			
 			STCourseNode stParent = getFirstSTParent(parent);
 			if (stParent != null) {
-				boolean scoreCalculatorSupported = stParent.getModuleConfiguration().getBooleanSafe(CONFIG_SCORE_CALCULATOR_SUPPORTED);
+				boolean scoreCalculatorSupported = stParent.getModuleConfiguration().getBooleanSafe(CONFIG_SCORE_CALCULATOR_SUPPORTED, true);
 				config.setBooleanEntry(CONFIG_SCORE_CALCULATOR_SUPPORTED, scoreCalculatorSupported);
 				if (scoreCalculatorSupported) {
 					scoreCalculator = new ScoreCalculator();

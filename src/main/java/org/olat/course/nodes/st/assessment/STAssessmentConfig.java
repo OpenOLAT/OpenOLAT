@@ -21,7 +21,9 @@ package org.olat.course.nodes.st.assessment;
 
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
+import org.olat.course.nodes.st.assessment.MaxScoreCumulator.MaxScore;
 import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.modules.ModuleConfiguration;
 
@@ -33,14 +35,20 @@ import org.olat.modules.ModuleConfiguration;
  */
 public class STAssessmentConfig implements AssessmentConfig {
 	
+	private static final MaxScoreCumulator MAX_SCORE_CUMULATOR = new MaxScoreCumulator();
+	
+	private final CourseNode courseNode;
 	private final boolean isRoot;
 	private final ModuleConfiguration rootConfig;
 	private final ScoreCalculator scoreCalculator;
 
-	public STAssessmentConfig(boolean isRoot, ModuleConfiguration rootConfig, ScoreCalculator scoreCalculator) {
+	public STAssessmentConfig(STCourseNode courseNode, boolean isRoot, ModuleConfiguration rootConfig) {
+		this.courseNode = courseNode;
 		this.isRoot = isRoot;
 		this.rootConfig = rootConfig;
-		this.scoreCalculator = scoreCalculator;
+		this.scoreCalculator = rootConfig.getBooleanSafe(STCourseNode.CONFIG_SCORE_CALCULATOR_SUPPORTED, true)
+				? courseNode.getScoreCalculator()
+				: null;
 	}
 
 	@Override
@@ -70,6 +78,16 @@ public class STAssessmentConfig implements AssessmentConfig {
 
 	@Override
 	public Float getMaxScore() {
+		if (scoreCalculator == null && rootConfig.has(STCourseNode.CONFIG_SCORE_KEY)) {
+			MaxScore maxScore = MAX_SCORE_CUMULATOR.getMaxScore(courseNode);
+			String scoreKey = rootConfig.getStringValue(STCourseNode.CONFIG_SCORE_KEY);
+			if (STCourseNode.CONFIG_SCORE_VALUE_SUM.equals(scoreKey)) {
+				return maxScore.getSum();
+			} else if (STCourseNode.CONFIG_SCORE_VALUE_AVG.equals(scoreKey)) {
+				// max (not average) because the user was maybe only in one node assessed
+				return maxScore.getMax();
+			}
+		}
 		return null;
 	}
 
