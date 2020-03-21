@@ -264,8 +264,9 @@ public class ConditionInterpreter {
 			msg = "error.divide.by.zero";
 			params = new String[]{};
 		} catch (Exception ex) {
-			// this must not happen!
-			throw new OLATRuntimeException(ex.getMessage(), ex);
+			log.error("Unexpected syntax error", ex);
+			msg = "error.unkown";
+			params = new String[]{};
 		}
 		return new ConditionErrorMessage(msg, solutionMsg, params);
 	}
