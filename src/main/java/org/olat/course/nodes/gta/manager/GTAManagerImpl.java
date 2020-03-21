@@ -1741,7 +1741,7 @@ public class GTAManagerImpl implements GTAManager {
 	}
 
 	@Override
-	public AssessmentEntryStatus convertToAssessmentEntrystatus(Task task, GTACourseNode cNode) {
+	public AssessmentEntryStatus convertToAssessmentEntryStatus(Task task, GTACourseNode cNode) {
 		TaskProcess status = task.getTaskStatus();
 		TaskProcess firstStep = firstStep(cNode);
 		
@@ -1752,6 +1752,12 @@ public class GTAManagerImpl implements GTAManager {
 			assessmentStatus = AssessmentEntryStatus.inReview;
 		} else if(status == TaskProcess.graded) {
 			assessmentStatus = AssessmentEntryStatus.done;
+		} else if(status == TaskProcess.solution) {
+			if(cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_GRADING)) {
+				assessmentStatus = AssessmentEntryStatus.inProgress;
+			} else {
+				assessmentStatus = AssessmentEntryStatus.done;
+			}
 		} else {
 			assessmentStatus = AssessmentEntryStatus.inProgress;
 		}
@@ -1764,7 +1770,7 @@ public class GTAManagerImpl implements GTAManager {
 		TaskList taskList = getTaskList(taskImpl);
 		RepositoryEntry courseRepoEntry = taskList.getEntry();
 		ICourse course = CourseFactory.loadCourse(courseRepoEntry);
-		AssessmentEntryStatus assessmentStatus = convertToAssessmentEntrystatus(taskImpl, cNode);
+		AssessmentEntryStatus assessmentStatus = convertToAssessmentEntryStatus(taskImpl, cNode);
 		if(GTAType.group.name().equals(cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
 			List<Identity> assessedIdentities = businessGroupRelationDao.getMembers(taskImpl.getBusinessGroup(), GroupRoles.participant.name());
 			for(Identity assessedIdentity:assessedIdentities) {

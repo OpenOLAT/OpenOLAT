@@ -219,7 +219,7 @@ public interface GTAManager {
 	 * @param cNode
 	 * @return
 	 */
-	public AssessmentEntryStatus convertToAssessmentEntrystatus(Task task, GTACourseNode cNode);
+	public AssessmentEntryStatus convertToAssessmentEntryStatus(Task task, GTACourseNode cNode);
 	
 	/**
 	 * Are users already processing this task?

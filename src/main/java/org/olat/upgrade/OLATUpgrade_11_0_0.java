@@ -1024,9 +1024,9 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 	
 	private void processAssessmentPropertyForGTA(Identity assessedIdentity, AssessmentEntryImpl entry, GTACourseNode cNode, RepositoryEntry courseEntry) {
 		List<Task> tasks = gtaManager.getTasks(assessedIdentity, courseEntry, cNode);
-		if(tasks != null && tasks.size() > 0) {
+		if(tasks != null && !tasks.isEmpty()) {
 			Task task = tasks.get(0);
-			AssessmentEntryStatus status = gtaManager.convertToAssessmentEntrystatus(task, cNode);
+			AssessmentEntryStatus status = gtaManager.convertToAssessmentEntryStatus(task, cNode);
 			entry.setStatus(status.name());
 			
 			String details = gtaManager.getDetails(assessedIdentity, courseEntry, cNode);
