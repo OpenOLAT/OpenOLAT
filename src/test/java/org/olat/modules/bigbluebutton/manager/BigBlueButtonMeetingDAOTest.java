@@ -48,7 +48,7 @@ public class BigBlueButtonMeetingDAOTest extends OlatTestCase {
 	@Test
 	public void createMeetingForRepositoryEntry() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		String name = "Big blue button - 1";
+		String name = "BigBlueButton - 1";
 		String subIdent = UUID.randomUUID().toString();
 		
 		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting(name, entry, subIdent, null);
@@ -68,7 +68,7 @@ public class BigBlueButtonMeetingDAOTest extends OlatTestCase {
 	@Test
 	public void createUpdateMeetingForRepositoryEntry() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		String name = "Big blue button - 2";
+		String name = "BigBlueButton - 2";
 		String subIdent = UUID.randomUUID().toString();
 		
 		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting(name, entry, subIdent, null);
@@ -112,7 +112,7 @@ public class BigBlueButtonMeetingDAOTest extends OlatTestCase {
 	@Test
 	public void getMeetingsByRepositoryEntry() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		String name = "Big blue button - 2";
+		String name = "BigBlueButton - 2";
 		String subIdent = UUID.randomUUID().toString();
 		
 		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting(name, entry, subIdent, null);
