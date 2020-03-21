@@ -39,6 +39,8 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateEvent;
 import org.olat.course.certificate.CertificateTemplate;
@@ -47,7 +49,7 @@ import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
@@ -74,6 +76,8 @@ public class AssessedIdentityCertificatesController extends BasicController impl
 	
 	@Autowired
 	private CertificatesManager certificatesManager;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	public AssessedIdentityCertificatesController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment assessedUserCourseEnv) {
@@ -199,7 +203,7 @@ public class AssessedIdentityCertificatesController extends BasicController impl
 		ICourse course = CourseFactory.loadCourse(resource);
 		CourseNode rootNode = course.getRunStructure().getRootNode();
 		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
-		ScoreEvaluation scoreEval = assessedUserCourseEnv.getScoreAccounting().getScoreEvaluation(rootNode);
+		AssessmentEvaluation scoreEval = assessedUserCourseEnv.getScoreAccounting().getScoreEvaluation(rootNode);
 		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 
 		CertificateTemplate template = null;
@@ -210,7 +214,10 @@ public class AssessedIdentityCertificatesController extends BasicController impl
 
 		Float score = scoreEval == null ? null : scoreEval.getScore();
 		Boolean passed = scoreEval == null ? null : scoreEval.getPassed();
-		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, score, passed);
+		Double completion = scoreEval == null ? null : scoreEval.getCompletion();
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(rootNode);
+		Float maxScore = assessmentConfig.getMaxScore();
+		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, score, maxScore, passed, completion);
 		CertificateConfig config = CertificateConfig.builder()
 				.withCustom1(course.getCourseConfig().getCertificateCustom1())
 				.withCustom2(course.getCourseConfig().getCertificateCustom2())

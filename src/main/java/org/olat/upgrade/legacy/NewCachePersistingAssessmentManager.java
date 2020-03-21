@@ -853,10 +853,6 @@ public class NewCachePersistingAssessmentManager {
 		return null;
 	}
 
-	/**
-	 * 
-	 * @see org.olat.course.assessment.AssessmentManager#saveScoreEvaluation(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity, org.olat.core.id.Identity, org.olat.course.run.scoring.ScoreEvaluation)
-	 */
 	public void saveScoreEvaluation(final CourseNode courseNode, final Identity identity, final Identity assessedIdentity, final ScoreEvaluation scoreEvaluation, 
 			final UserCourseEnvironment userCourseEnv, final boolean incrementUserAttempts) {
 		final ICourse course = CourseFactory.loadCourse(ores);
@@ -897,7 +893,7 @@ public class NewCachePersistingAssessmentManager {
 						if(templateId != null) {
 							template = certificatesManager.getTemplateById(templateId);
 						}
-						CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, score, passed);
+						CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, score, null, passed, null);
 						CertificateConfig config = CertificateConfig.builder()
 								.withCustom1(course.getCourseConfig().getCertificateCustom1())
 								.withCustom2(course.getCourseConfig().getCertificateCustom2())

@@ -81,7 +81,8 @@ public class CertificationTest extends OlatRestTestCase {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		dbInstance.commitAndCloseSession();
 
-		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, 2.0f, true);
+		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, 2.0f, Float.valueOf(10), true,
+				Double.valueOf(0.2));
 		CertificateConfig config = CertificateConfig.builder().withSendEmailBcc(false).build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
 		dbInstance.commitAndCloseSession();
@@ -121,7 +122,8 @@ public class CertificationTest extends OlatRestTestCase {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		dbInstance.commitAndCloseSession();
 
-		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, 2.0f, true);
+		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, 2.0f, Float.valueOf(10), true,
+				Double.valueOf(0.2));
 		CertificateConfig config = CertificateConfig.builder().build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
 		dbInstance.commitAndCloseSession();
@@ -274,10 +276,11 @@ public class CertificationTest extends OlatRestTestCase {
 
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-15");
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("cert-5");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author)
+				;
 		dbInstance.commitAndCloseSession();
-
-		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, 2.0f, true);
+		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, 2.0f, Float.valueOf(10), true,
+				Double.valueOf(0.2));
 		CertificateConfig config = CertificateConfig.builder().build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
 		dbInstance.commitAndCloseSession();

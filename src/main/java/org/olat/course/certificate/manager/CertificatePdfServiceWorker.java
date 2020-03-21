@@ -67,7 +67,9 @@ public class CertificatePdfServiceWorker {
 			.createLoggerFor(CertificatePDFFormWorker.class);
 	
 	private final Float score;
+	private final Float maxScore;
 	private final Boolean passed;
+	private final Double completion;
 	private final Identity identity;
 	private final RepositoryEntry entry;
 	private final String certificateURL;
@@ -84,17 +86,19 @@ public class CertificatePdfServiceWorker {
 	private final UserManager userManager;
 	private final CertificatesManagerImpl certificatesManager;
 
-	public CertificatePdfServiceWorker(Identity identity, RepositoryEntry entry, Float score, Boolean passed,
-			Date dateCertification, Date dateFirstCertification, Date nextRecertificationDate, String custom1,
+	public CertificatePdfServiceWorker(Identity identity, RepositoryEntry entry, Float score, Float maxScore, Boolean passed,
+			Double completion, Date dateCertification, Date dateFirstCertification, Date nextRecertificationDate, String custom1,
 			String custom2, String custom3, String certificateURL, Locale locale, UserManager userManager,
 			CertificatesManagerImpl certificatesManager, PdfService pdfService) {
 		this.entry = entry;
 		this.score = score;
+		this.maxScore = maxScore;
+		this.passed = passed;
+		this.completion = completion;
 		this.custom1 = custom1;
 		this.custom2 = custom2;
 		this.custom3 = custom3;
 		this.locale = locale;
-		this.passed = passed;
 		this.identity = identity;
 		this.dateCertification = dateCertification;
 		this.dateFirstCertification = dateFirstCertification;
@@ -316,9 +320,15 @@ public class CertificatePdfServiceWorker {
 	private void fillAssessmentInfos(VelocityContext context) {
 		String roundedScore = AssessmentHelper.getRoundedScore(score);
 		context.put("score", roundedScore);
+		
+		String roundedMaxScore = AssessmentHelper.getRoundedScore(maxScore);
+		context.put("maxScore", roundedMaxScore);
 
 		String status = (passed != null && passed.booleanValue()) ? "Passed" : "Failed";
 		context.put("status", status);
+		
+		String roundedCompletion = completion != null? Formatter.roundToString(completion * 100, 0): null;
+		context.put("progress", roundedCompletion);
 	}
 	
 	private void fillMetaInfos(VelocityContext context) {

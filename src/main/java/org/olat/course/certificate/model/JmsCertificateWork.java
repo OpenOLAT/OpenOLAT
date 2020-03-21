@@ -32,7 +32,9 @@ public class JmsCertificateWork implements Serializable {
 	private static final long serialVersionUID = 4462884019283948487L;
 	
 	private Float score;
+	private Float maxScore;
 	private Boolean passed;
+	private Double completion;
 	private Long templateKey;
 	private Long certificateKey;
 	private CertificateConfig config;
@@ -41,9 +43,12 @@ public class JmsCertificateWork implements Serializable {
 		//
 	}
 	
-	public JmsCertificateWork(Long certificateKey, Long templateKey, Float score, Boolean passed, CertificateConfig config) {
+	public JmsCertificateWork(Long certificateKey, Long templateKey, Float score, Float maxScore, Boolean passed,
+			Double completion, CertificateConfig config) {
 		this.score = score;
+		this.maxScore = maxScore;
 		this.passed = passed;
+		this.completion = completion;
 		this.config = config;
 		this.templateKey = templateKey;
 		this.certificateKey = certificateKey;
@@ -57,12 +62,28 @@ public class JmsCertificateWork implements Serializable {
 		this.score = score;
 	}
 
+	public Float getMaxScore() {
+		return maxScore;
+	}
+
+	public void setMaxScore(Float maxScore) {
+		this.maxScore = maxScore;
+	}
+
 	public Boolean getPassed() {
 		return passed;
 	}
 
 	public void setPassed(Boolean passed) {
 		this.passed = passed;
+	}
+
+	public Double getCompletion() {
+		return completion;
+	}
+
+	public void setCompletion(Double completion) {
+		this.completion = completion;
 	}
 
 	public CertificateConfig getConfig() {

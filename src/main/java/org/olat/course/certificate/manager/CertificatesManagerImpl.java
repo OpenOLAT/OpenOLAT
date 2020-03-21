@@ -747,21 +747,21 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		String certUrl = sb.toString();
 		
 		if(template == null) {
-			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, 2.0f, true,
+			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, 2.0f, 10.0f, true, 0.4,
 					new Date(), new Date(), new Date(), custom1, custom2, custom3, certUrl, locale, userManager, this);
 			certificateFile = worker.fill(null, dirFile, "Certificate.pdf");
 		} else if(template.getPath().toLowerCase().endsWith("pdf")) {
-			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, 2.0f, true,
+			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, 2.0f, 10.0f, true, 0.4,
 					new Date(), new Date(), new Date(), custom1, custom2, custom3, certUrl, locale, userManager, this);
 			certificateFile = worker.fill(template, dirFile, "Certificate.pdf");
 		} else if (pdfModule.isEnabled()) {
-			CertificatePdfServiceWorker worker = new CertificatePdfServiceWorker(identity, entry, 2.0f, true,
-					new Date(), new Date(),new Date(), custom1, custom2, custom3, certUrl, locale,
-					userManager, this, pdfService);
+			CertificatePdfServiceWorker worker = new CertificatePdfServiceWorker(identity, entry, 2.0f, 10.0f, true,
+					0.4, new Date(), new Date(), new Date(), custom1, custom2, custom3, certUrl, locale, userManager,
+					this, pdfService);
 			certificateFile = worker.fill(template, dirFile, "Certificate.pdf");
 		} else {
-			CertificatePhantomWorker worker = new CertificatePhantomWorker(identity, entry, 2.0f, true, new Date(),
-					new Date(), new Date(), custom1, custom2, custom3, certUrl, locale, userManager, this);
+			CertificatePhantomWorker worker = new CertificatePhantomWorker(identity, entry, 2.0f, 10.0f, true, 0.4,
+					new Date(), new Date(), new Date(), custom1, custom2, custom3, certUrl, locale, userManager, this);
 			certificateFile = worker.fill(template, dirFile, "Certificate.pdf");
 		}
 		return new PreviewCertificate(certificateFile, dirFile);
@@ -816,7 +816,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		dbInstance.commit();
 		
 		//send message
-		sendJmsCertificateFile(certificate, template, certificateInfos.getScore(), certificateInfos.getPassed(), config);
+		sendJmsCertificateFile(certificate, template, certificateInfos.getScore(), certificateInfos.getMaxScore(),
+				certificateInfos.getPassed(), certificateInfos.getProgress(), config);
 
 		return certificate;
 	}
@@ -825,7 +826,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		return velocityEngine;
 	}
 	
-	private void sendJmsCertificateFile(Certificate certificate, CertificateTemplate template, Float score, Boolean passed, CertificateConfig config) {
+	private void sendJmsCertificateFile(Certificate certificate, CertificateTemplate template, Float score,
+			Float maxScore, Boolean passed, Double completion, CertificateConfig config) {
 		QueueSender sender;
 		QueueSession session = null;
 		try  {
@@ -834,8 +836,10 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			if(template != null) {
 				workUnit.setTemplateKey(template.getKey());
 			}
-			workUnit.setPassed(passed);
 			workUnit.setScore(score);
+			workUnit.setMaxScore(maxScore);
+			workUnit.setPassed(passed);
+			workUnit.setCompletion(completion);
 			workUnit.setConfig(config);
 			
 			session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -888,9 +892,11 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		dirFile.mkdirs();
 		
 		Float score = workUnit.getScore();
+		Float maxScore = workUnit.getMaxScore();
 		String lang = identity.getUser().getPreferences().getLanguage();
 		Locale locale = i18nManager.getLocaleOrDefault(lang);
 		Boolean passed = workUnit.getPassed();
+		Double completion = workUnit.getCompletion();
 		Date dateCertification = certificate.getCreationDate();
 		Date dateFirstCertification = getDateFirstCertification(identity, resource.getKey());
 		Date dateNextRecertification = certificate.getNextRecertificationDate();
@@ -913,9 +919,9 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		String certUrl = sb.toString();
 		
 		if(template == null || template.getPath().toLowerCase().endsWith("pdf")) {
-			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, score, passed,
-					dateCertification, dateFirstCertification, dateNextRecertification, custom1, custom2, custom3,
-					certUrl, locale, userManager, this);
+			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, score, maxScore, passed,
+					completion, dateCertification, dateFirstCertification, dateNextRecertification, custom1, custom2,
+					custom3, certUrl, locale, userManager, this);
 			certificateFile = worker.fill(template, dirFile, filename);
 			if(certificateFile == null) {
 				certificate.setStatus(CertificateStatus.error);
@@ -924,14 +930,14 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			}
 		} else {
 			if(pdfModule.isEnabled()) {
-				CertificatePdfServiceWorker worker = new CertificatePdfServiceWorker(identity, entry, score, passed,
-						dateCertification, dateFirstCertification, dateNextRecertification, custom1, custom2, custom3,
-						certUrl, locale, userManager, this, pdfService);
+				CertificatePdfServiceWorker worker = new CertificatePdfServiceWorker(identity, entry, score, maxScore,
+						passed, completion, dateCertification, dateFirstCertification, dateNextRecertification, custom1,
+						custom2, custom3, certUrl, locale, userManager, this, pdfService);
 				certificateFile = worker.fill(template, dirFile, filename);
 			} else {
-				CertificatePhantomWorker worker = new CertificatePhantomWorker(identity, entry, score, passed,
-						dateCertification, dateFirstCertification, dateNextRecertification, custom1, custom2, custom3,
-						certUrl, locale, userManager, this);
+				CertificatePhantomWorker worker = new CertificatePhantomWorker(identity, entry, score, maxScore, passed,
+						completion, dateCertification, dateFirstCertification, dateNextRecertification, custom1,
+						custom2, custom3, certUrl, locale, userManager, this);
 				certificateFile = worker.fill(template, dirFile, filename);
 			}
 			if(certificateFile == null) {

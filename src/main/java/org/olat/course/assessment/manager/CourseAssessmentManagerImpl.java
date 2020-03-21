@@ -64,6 +64,7 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -705,7 +706,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 			ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
 			CourseNode rootNode = userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode();
-			ScoreEvaluation rootEval = scoreAccounting.evalCourseNode(rootNode);
+			AssessmentEvaluation rootEval = scoreAccounting.evalCourseNode(rootNode);
 			if (rootEval != null && rootEval.getPassed() != null && rootEval.getPassed().booleanValue()
 					&& certificatesManager.isCertificationAllowed(assessedIdentity, cgm.getCourseEntry())) {
 				CertificateTemplate template = null;
@@ -713,7 +714,9 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 				if (templateId != null) {
 					template = certificatesManager.getTemplateById(templateId);
 				}
-				CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, rootEval.getScore(), rootEval.getPassed());
+				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(rootNode);
+				CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, rootEval.getScore(),
+						assessmentConfig.getMaxScore(), rootEval.getPassed(), rootEval.getCompletion());
 				CertificateConfig config = CertificateConfig.builder()
 						.withCustom1(course.getCourseConfig().getCertificateCustom1())
 						.withCustom2(course.getCourseConfig().getCertificateCustom2())

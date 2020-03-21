@@ -228,7 +228,10 @@ public class CertificationWebService {
 			@ApiResponse(responseCode = "404", description = "The identity or the resource cannot be found"),
 			@ApiResponse(responseCode = "500", description = "An unexpected error happened during the creation of the certificate")})	
 	public Response putCertificate(@PathParam("identityKey") Long identityKey, @PathParam("resourceKey") Long resourceKey,
-			@QueryParam("score")@Parameter(description = "The score which appears in the certificate") Float score, @QueryParam("passed") @Parameter(description = "The passed/failed which appears in the certificate (true/false)")  Boolean passed,
+			@QueryParam("score")@Parameter(description = "The score which appears in the certificate") Float score,
+			@QueryParam("maxScore")@Parameter(description = "The max score which appears in the certificate") Float maxScore,
+			@QueryParam("passed") @Parameter(description = "The passed/failed which appears in the certificate (true/false)") Boolean passed,
+			@QueryParam("completion") @Parameter(description = "The completion (progress) which appears in the certificate") Double completion,
 			@QueryParam("creationDate") @Parameter(description = "The date of the certification") String creationDate,
 			@Context HttpServletRequest request) {
 		Identity assessedIdentity = securityManager.loadIdentityByKey(identityKey);
@@ -257,7 +260,7 @@ public class CertificationWebService {
 			template = certificatesManager.getTemplateById(templateId);
 		}
 		
-		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, score, passed);
+		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, score, maxScore, passed, completion);
 		if(StringHelper.containsNonWhitespace(creationDate)) {
 			Date date = ObjectFactory.parseDate(creationDate);
 			certificateInfos.setCreationDate(date);

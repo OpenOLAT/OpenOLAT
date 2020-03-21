@@ -32,14 +32,18 @@ import org.olat.core.id.Identity;
 public class CertificateInfos {
 	
 	private final Float score;
+	private final Float maxScore;
 	private final Boolean passed;
+	private final Double progress;
 	private final Identity assessedIdentity;
 	
 	private Date creationDate;
 	
-	public CertificateInfos(Identity assessedIdentity, Float score, Boolean passed) {
+	public CertificateInfos(Identity assessedIdentity, Float score, Float maxScore, Boolean passed, Double progress) {
 		this.score = score;
+		this.maxScore = maxScore;
 		this.passed = passed;
+		this.progress = progress;
 		this.assessedIdentity = assessedIdentity;
 	}
 	
@@ -47,10 +51,18 @@ public class CertificateInfos {
 		return score;
 	}
 
+	public Float getMaxScore() {
+		return maxScore;
+	}
+
 	public Boolean getPassed() {
 		return passed;
 	}
 	
+	public Double getProgress() {
+		return progress;
+	}
+
 	public Identity getAssessedIdentity() {
 		return assessedIdentity;
 	}
