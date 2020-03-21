@@ -77,7 +77,7 @@ import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.ceditor.ui.AddElementInfos;
 import org.olat.modules.ceditor.ui.FullEditorSecurityCallback;
 import org.olat.modules.ceditor.ui.PageController;
-import org.olat.modules.ceditor.ui.PageEditorController;
+import org.olat.modules.ceditor.ui.PageEditorV2Controller;
 import org.olat.modules.ceditor.ui.ValidationMessage;
 import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.Binder;
@@ -134,7 +134,7 @@ public class PageRunController extends BasicController implements TooledControll
 	private CloseableModalController cmc;
 	private PageMetadataController pageMetaCtrl;
 	private PageController pageCtrl;
-	private PageEditorController pageEditCtrl;
+	private PageEditorV2Controller pageEditCtrl;
 	private RestorePageController restorePageCtrl;
 	private ConfirmClosePageController confirmDonePageCtrl;
 	private DialogBoxController confirmPublishCtrl, confirmRevisionCtrl, confirmCloseCtrl,
@@ -166,6 +166,7 @@ public class PageRunController extends BasicController implements TooledControll
 		super(ureq, wControl);
 		this.page = page;
 		this.stackPanel = stackPanel;
+		
 		this.secCallback = secCallback;
 		lockOres = OresHelper.createOLATResourceableInstance("Page", page.getKey());
 		userSession = ureq.getUserSession();
@@ -200,7 +201,7 @@ public class PageRunController extends BasicController implements TooledControll
 		putInitialPanel(mainVC);
 		
 		if(openInEditMode) {
-			pageEditCtrl = new PageEditorController(ureq, getWindowControl(),
+			pageEditCtrl = new PageEditorV2Controller(ureq, getWindowControl(),
 					new PortfolioPageEditorProvider(ureq.getUserSession().getRoles()), new FullEditorSecurityCallback(),
 					getTranslator());
 			listenTo(pageEditCtrl);
@@ -651,7 +652,7 @@ public class PageRunController extends BasicController implements TooledControll
 		} else {
 			lockEntry = coordinator.getCoordinator().getLocker().acquireLock(lockOres, getIdentity(), "");
 			if(lockEntry.isSuccess()) {
-				pageEditCtrl = new PageEditorController(ureq, getWindowControl(),
+				pageEditCtrl = new PageEditorV2Controller(ureq, getWindowControl(),
 						new PortfolioPageEditorProvider(ureq.getUserSession().getRoles()),
 						new FullEditorSecurityCallback(), getTranslator());
 				listenTo(pageEditCtrl);

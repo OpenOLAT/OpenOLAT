@@ -566,6 +566,8 @@ public class PageDAO {
 		}
 		if(after) {
 			index++;
+		} else if(sibling == null) {
+			index = 0;
 		}
 		
 		List<PagePart> parts = body.getParts();

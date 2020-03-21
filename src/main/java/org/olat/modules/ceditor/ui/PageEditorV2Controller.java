@@ -438,7 +438,11 @@ public class PageEditorV2Controller extends BasicController {
 		
 		boolean after = dropEvent.getPosition() == PositionEnum.bottom;
 		provider.movePageElement(source.getElement(), null, after);
-		editorCmp.addRootComponent(source);
+		if(after) {
+			editorCmp.addRootComponent(source);
+		} else {
+			editorCmp.addRootComponent(0, source);
+		}
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	

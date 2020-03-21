@@ -287,7 +287,8 @@ div.o_page_content_editor .gu-mirror, .o_page_content_editor .gu-transit {
 }
 
 .o_page_part.o_page_drop.oo-accepted:after,
-.o_page_container_slot.o_page_drop.oo-accepted .o_page_container_slot-inner:after {
+.o_page_container_slot.o_page_drop.oo-accepted .o_page_container_slot-inner:after,
+.o_page_content_editor.o_page_drop.oo-accepted:after {
 	display: block;
 	height: 25px;
 	margin: 10px;
@@ -297,7 +298,8 @@ div.o_page_content_editor .gu-mirror, .o_page_content_editor .gu-transit {
 }
 
 .o_page_part.o_page_drop.oo-accepted-top:before,
-.o_page_container_slot.o_page_drop.oo-accepted-top .o_page_container_slot-inner:before {
+.o_page_container_slot.o_page_drop.oo-accepted-top .o_page_container_slot-inner:before,
+.o_page_content_editor.o_page_drop.oo-accepted-top:before {
 	display: block;
 	height: 25px;
 	margin: 10px 10px 10px 10px;
