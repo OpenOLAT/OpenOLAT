@@ -274,8 +274,11 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 			AdobeConnectErrors errors) {
 		List<AdobeConnectMeeting> currentMeetings = getMeetings(entry, subIdent, businessGroup);	
 		if(currentMeetings != null && !currentMeetings.isEmpty()) {
-			AdobeConnectMeeting meeting = currentMeetings.get(0);
-			return getAdapter().getScoMeeting(meeting, errors);
+			for (AdobeConnectMeeting meeting:currentMeetings) {
+				if (StringHelper.containsNonWhitespace(meeting.getScoId())) {
+					return getAdapter().getScoMeeting(meeting, errors);
+				}
+			}
 		}
 		return null;
 	}
@@ -285,7 +288,7 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 		List<AdobeConnectMeeting> currentMeetings = getMeetings(entry, subIdent, businessGroup);
 		if(currentMeetings != null && !currentMeetings.isEmpty()) {
 			for(AdobeConnectMeeting meeting:currentMeetings) {
-				if(meeting.isPermanent()) {
+				if(meeting.isPermanent() && StringHelper.containsNonWhitespace(meeting.getScoId())) {
 					return getAdapter().getScoMeeting(meeting, errors);
 				}
 			}
