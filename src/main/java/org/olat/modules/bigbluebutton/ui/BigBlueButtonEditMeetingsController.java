@@ -44,6 +44,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonMeetingTableModel.BMeetingsCols;
 import org.olat.modules.gotomeeting.ui.GoToMeetingTableModel.MeetingsCols;
@@ -70,7 +71,9 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 	private final String subIdent;
 	private final RepositoryEntry entry;
 	private final BusinessGroup businessGroup;
-	
+
+	@Autowired
+	private BigBlueButtonModule bigBlueButtonModule;
 	@Autowired
 	private BigBlueButtonManager bigBlueButtonManager;
 	
@@ -94,9 +97,12 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.name));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.permanent));
+		if(bigBlueButtonModule.isPermanentMeetingEnabled()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.permanent));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.start));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.end));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.template));
 		if(!readOnly) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));

@@ -44,6 +44,10 @@ public interface BigBlueButtonMeetingTemplate extends ModifiedInfo, CreateInfo {
 
 	public void setDescription(String description);
 	
+	public Integer getMaxConcurrentMeetings();
+
+	public void setMaxConcurrentMeetings(Integer maxConcurrentMeetings);
+	
 	public Integer getMaxParticipants();
 
 	public void setMaxParticipants(Integer maxParticipants);

@@ -51,6 +51,9 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 	private static final String PROP_PORT = "vc.bigbluebutton.port";
 	private static final String PROP_BASEURL = "vc.bigbluebutton.baseurl";
 	private static final String PROP_CONTEXTPATH = "vc.bigbluebutton.contextpath";
+	private static final String PROP_PERMANENT_MEETING = "vc.bigbluebutton.permanent.meeting";
+	private static final String PROP_ADHOC_MEETING = "vc.bigbluebutton.adhoc.meeting";
+	private static final String PROP_USER_BANDWIDTH_REQUIREMENT = "vc.bigbluebutton.user.bandwidth.requirement";
 	
 	@Value("${vc.bigbluebutton.enabled}")
 	private boolean enabled;
@@ -77,6 +80,13 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 	@Value("${vc.bigbluebutton.shared.secret}")
 	private String sharedSecret;
 	
+	@Value("${vc.bigbluebutton.permanent.meeting:false}")
+	private String permanentMeetingEnabled;
+	@Value("${vc.bigbluebutton.adhoc.meeting:true}")
+	private String adhocMeetingEnabled;
+	@Value("${vc.bigbluebutton.user.bandwidth.requirement:0.4}")
+	private Double userBandwidhtRequirement;
+	
 	
 	@Autowired
 	public BigBlueButtonModule(CoordinatorManager coordinatorManager) {
@@ -101,6 +111,11 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 		daysToKeep = getStringPropertyValue(PROP_DAYS_TO_KEEP, daysToKeep);
 		secret = getStringPropertyValue(PROP_SECRET, secret);
 		sharedSecret = getStringPropertyValue(PROP_SHARED_SECRET, sharedSecret);
+		
+		String bandwidthReqObj = getStringPropertyValue(PROP_USER_BANDWIDTH_REQUIREMENT, true);
+		if(StringHelper.containsNonWhitespace(bandwidthReqObj)) {
+			userBandwidhtRequirement = Double.parseDouble(bandwidthReqObj);
+		}
 	}
 	
 	@Override
@@ -267,4 +282,30 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 		
 	}
 
+	public Double getUserBandwidhtRequirement() {
+		return userBandwidhtRequirement;
+	}
+
+	public void setUserBandwidhtRequirement(Double userBandwidhtRequirement) {
+		this.userBandwidhtRequirement = userBandwidhtRequirement;
+		setStringProperty(PROP_USER_BANDWIDTH_REQUIREMENT, userBandwidhtRequirement.toString(), true);
+	}
+
+	public boolean isPermanentMeetingEnabled() {
+		return "true".equals(permanentMeetingEnabled);
+	}
+
+	public void setPermanentMeetingEnabled(boolean permanentMeetingEnabled) {
+		this.permanentMeetingEnabled = Boolean.toString(permanentMeetingEnabled);
+		setStringProperty(PROP_PERMANENT_MEETING, this.permanentMeetingEnabled, true);
+	}
+
+	public boolean isAdhocMeetingEnabled() {
+		return "true".equals(adhocMeetingEnabled);
+	}
+
+	public void setAdhocMeetingEnabled(boolean adhocMeetingEnabled) {
+		this.adhocMeetingEnabled = Boolean.toString(adhocMeetingEnabled);
+		setStringProperty(PROP_ADHOC_MEETING, this.adhocMeetingEnabled, true);
+	}	
 }

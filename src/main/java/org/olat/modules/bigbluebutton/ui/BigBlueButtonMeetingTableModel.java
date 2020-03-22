@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 
 /**
  * 
@@ -69,9 +70,15 @@ implements SortableFlexiTableDataModel<BigBlueButtonMeeting> {
 			case permanent: return Boolean.valueOf(row.isPermanent());
 			case start: return row.getStartDate();
 			case end: return row.getEndDate();
+			case template: return getTemplate(row);
 			case resource: return getResourceName(row);
 			default: return "ERROR";
 		}
+	}
+	
+	private String getTemplate(BigBlueButtonMeeting row) {
+		BigBlueButtonMeetingTemplate template = row.getTemplate();
+		return template == null ? null: template.getName();
 	}
 	
 	private String getResourceName(BigBlueButtonMeeting row) {
@@ -95,6 +102,7 @@ implements SortableFlexiTableDataModel<BigBlueButtonMeeting> {
 		permanent("table.header.permanent"),
 		start("meeting.start"),
 		end("meeting.end"),
+		template("table.header.template"),
 		resource("meeting.resource");
 		
 		private final String i18nHeaderKey;

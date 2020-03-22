@@ -41,6 +41,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonMeetingTableModel.BMeetingsCols;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,7 +63,9 @@ public class BigBlueButtonMeetingsController extends FormBasicController {
 	private final String subIdent;
 	private final BusinessGroup businessGroup;
 	private final boolean showPermanentCol;
-	
+
+	@Autowired
+	private BigBlueButtonModule bigBlueButtonModule;
 	@Autowired
 	private BigBlueButtonManager bigBlueButtonManager;
 	
@@ -72,7 +75,7 @@ public class BigBlueButtonMeetingsController extends FormBasicController {
 		this.entry = entry;
 		this.subIdent = subIdent;
 		this.businessGroup = businessGroup;
-		showPermanentCol = (administrator || moderator);
+		showPermanentCol = (administrator || moderator) && bigBlueButtonModule.isPermanentMeetingEnabled();
 		
 		initForm(ureq);
 		updateModel();
@@ -95,7 +98,7 @@ public class BigBlueButtonMeetingsController extends FormBasicController {
 		upcomingTableEl.setEmtpyTableMessageKey("no.upcoming.meetings");
 		
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
-		sortOptions.setDefaultOrderBy(new SortKey(BMeetingsCols.start.name(), false));
+		sortOptions.setDefaultOrderBy(new SortKey(BMeetingsCols.start.name(), true));
 		upcomingTableEl.setSortSettings(sortOptions);
 		upcomingTableEl.setAndLoadPersistedPreferences(ureq, "big-blue-button-upcoming-meetings-list");
 
@@ -113,7 +116,7 @@ public class BigBlueButtonMeetingsController extends FormBasicController {
 		pastTableEl = uifactory.addTableElement(getWindowControl(), "pastMeetings", pastTableModel, getTranslator(), formLayout);
 		
 		FlexiTableSortOptions pastSortOptions = new FlexiTableSortOptions();
-		pastSortOptions.setDefaultOrderBy(new SortKey(BMeetingsCols.start.name(), false));
+		pastSortOptions.setDefaultOrderBy(new SortKey(BMeetingsCols.start.name(), true));
 		pastTableEl.setSortSettings(pastSortOptions);
 		pastTableEl.setAndLoadPersistedPreferences(ureq, "big-blue-button-past-meetings-list");
 	}

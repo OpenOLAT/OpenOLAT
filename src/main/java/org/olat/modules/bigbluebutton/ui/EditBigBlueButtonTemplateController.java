@@ -44,13 +44,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class EditBigBlueButtonTemplateController extends FormBasicController {
 
 	private static final String[] maxParticipantsKeys = new String[] { "2", "5", "10", "25", "50", "100" };
-	private static final String[] onKeys = new String[] { "yes", "no", "default" };
+	private static final String[] onKeys = new String[] { "yes", "no" };
 	private static final String[] guestPolicyKeys = new String[] {
 			GuestPolicyEnum.ALWAYS_DENY.name(), GuestPolicyEnum.ASK_MODERATOR.name(), GuestPolicyEnum.ALWAYS_ACCEPT.name()
 		};
 	
 	private TextElement nameEl;
 	private TextElement descriptionEl;
+	private TextElement maxConcurrentMeetingsEl;
 	private SingleSelection muteOnStartEl;
 	private SingleSelection maxParticipantsEl;
 	private SingleSelection autoStartRecordingEl;
@@ -66,6 +67,7 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 
 	private SingleSelection guestPolicyEl;
 	
+	private final boolean readOnly;
 	private BigBlueButtonMeetingTemplate template;
 	
 	@Autowired
@@ -73,13 +75,15 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 	
 	public EditBigBlueButtonTemplateController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		readOnly = false;
 		initForm(ureq);
 	}
 	
-	public EditBigBlueButtonTemplateController(UserRequest ureq, WindowControl wControl, BigBlueButtonMeetingTemplate template) {
+	public EditBigBlueButtonTemplateController(UserRequest ureq, WindowControl wControl,
+			BigBlueButtonMeetingTemplate template, boolean readOnly) {
 		super(ureq, wControl);
+		this.readOnly = readOnly;
 		this.template = template;
-
 		initForm(ureq);
 	}
 
@@ -95,9 +99,11 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 		String description = template == null ? "" : template.getDescription();
 		descriptionEl = uifactory.addTextAreaElement("template.description", "template.description", 2000, 4, 72, false, false, description, formLayout);
 		
-		String maxParticipants = template == null || template.getMaxParticipants() == null ? "-" : template.getMaxParticipants().toString();
+		String maxConcurrentMeetings = template == null || template.getMaxConcurrentMeetings() == null ? "" : template.getMaxConcurrentMeetings().toString();
+		maxConcurrentMeetingsEl = uifactory.addTextElement("template.max.concurrent.meetings", "template.max.concurrent.meetings", 8, maxConcurrentMeetings, formLayout);
+		
+		String maxParticipants = template == null || template.getMaxParticipants() == null ? "5" : template.getMaxParticipants().toString();
 		KeyValues maxParticipantsKeyValues = new KeyValues();
-		maxParticipantsKeyValues.add(KeyValues.entry("-", translate("template.maxParticipants.default")));
 		for(String maxParticipantsKey:maxParticipantsKeys) {
 			maxParticipantsKeyValues.add(KeyValues.entry(maxParticipantsKey, maxParticipantsKey));
 		}
@@ -108,51 +114,51 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 				maxParticipantsKeyValues.keys(), maxParticipantsKeyValues.values());
 		maxParticipantsEl.select(maxParticipants, true);
 		
-		String[] onValues = new String[] { "Yes", "No", "Default" };
+		String[] onValues = new String[] { translate("yes"), translate("no")  };
 		
 		Boolean muteOnStart = template == null ? null : template.getMuteOnStart();
 		muteOnStartEl = uifactory.addRadiosHorizontal("template.muteOnStart", formLayout, onKeys, onValues);
-		select(muteOnStart, muteOnStartEl);
+		select(muteOnStart, muteOnStartEl, false);
 		
 		Boolean autoStartRecording = template == null ? null : template.getAutoStartRecording();
 		autoStartRecordingEl = uifactory.addRadiosHorizontal("template.autoStartRecording", formLayout, onKeys, onValues);
-		select(autoStartRecording, autoStartRecordingEl);
+		select(autoStartRecording, autoStartRecordingEl, false);
 		
 		Boolean allowStartStopRecording = template == null ? null : template.getAllowStartStopRecording();
 		allowStartStopRecordingEl = uifactory.addRadiosHorizontal("template.allowStartStopRecording", formLayout, onKeys, onValues);
-		select(allowStartStopRecording, allowStartStopRecordingEl);
+		select(allowStartStopRecording, allowStartStopRecordingEl, true);
 		
 		Boolean webcamsOnlyForModerator = template == null ? null : template.getWebcamsOnlyForModerator();
 		webcamsOnlyForModeratorEl = uifactory.addRadiosHorizontal("template.webcamsOnlyForModerator", formLayout, onKeys, onValues);
-		select(webcamsOnlyForModerator, webcamsOnlyForModeratorEl);
+		select(webcamsOnlyForModerator, webcamsOnlyForModeratorEl, true);
 		
 		Boolean allowModsToUnmuteUsers = template == null ? null : template.getAllowModsToUnmuteUsers();
 		allowModsToUnmuteUsersEl = uifactory.addRadiosHorizontal("template.allowModsToUnmuteUsers", formLayout, onKeys, onValues);
-		select(allowModsToUnmuteUsers, allowModsToUnmuteUsersEl);
+		select(allowModsToUnmuteUsers, allowModsToUnmuteUsersEl, false);
 		
 		Boolean lockSettingsDisableCam = template == null ? null : template.getLockSettingsDisableCam();
 		lockSettingsDisableCamEl = uifactory.addRadiosHorizontal("template.lockSettingsDisableCam", formLayout, onKeys, onValues);
-		select(lockSettingsDisableCam, lockSettingsDisableCamEl);
+		select(lockSettingsDisableCam, lockSettingsDisableCamEl, false);
 		
 		Boolean lockSettingsDisableMic = template == null ? null : template.getLockSettingsDisableMic();
 		lockSettingsDisableMicEl = uifactory.addRadiosHorizontal("template.lockSettingsDisableMic", formLayout, onKeys, onValues);
-		select(lockSettingsDisableMic, lockSettingsDisableMicEl);
+		select(lockSettingsDisableMic, lockSettingsDisableMicEl, false);
 		
 		Boolean lockSettingsDisablePrivateChat = template == null ? null : template.getLockSettingsDisablePrivateChat();
 		lockSettingsDisablePrivateChatEl =  uifactory.addRadiosHorizontal("template.lockSettingsDisablePrivateChat", formLayout, onKeys, onValues);
-		select(lockSettingsDisablePrivateChat, lockSettingsDisablePrivateChatEl);
+		select(lockSettingsDisablePrivateChat, lockSettingsDisablePrivateChatEl, false);
 		
 		Boolean lockSettingsDisablePublicChat = template == null ? null : template.getLockSettingsDisablePublicChat();
 		lockSettingsDisablePublicChatEl =  uifactory.addRadiosHorizontal("template.lockSettingsDisablePublicChat", formLayout, onKeys, onValues);
-		select(lockSettingsDisablePublicChat, lockSettingsDisablePublicChatEl);
+		select(lockSettingsDisablePublicChat, lockSettingsDisablePublicChatEl, false);
 		
 		Boolean lockSettingsDisableNote = template == null ? null : template.getLockSettingsDisableNote();
 		lockSettingsDisableNoteEl =  uifactory.addRadiosHorizontal("template.lockSettingsDisableNote", formLayout, onKeys, onValues);
-		select(lockSettingsDisableNote, lockSettingsDisableNoteEl);
+		select(lockSettingsDisableNote, lockSettingsDisableNoteEl, false);
 		
 		Boolean lockSettingsLockedLayout = template == null ? null : template.getLockSettingsLockedLayout();
 		lockSettingsLockedLayoutEl = uifactory.addRadiosHorizontal("template.lockSettingsLockedLayout", formLayout, onKeys, onValues);
-		select(lockSettingsLockedLayout, lockSettingsLockedLayoutEl);
+		select(lockSettingsLockedLayout, lockSettingsLockedLayoutEl, false);
 
 		GuestPolicyEnum guestPolicy = template == null ? GuestPolicyEnum.ALWAYS_DENY : template.getGuestPolicyEnum();
 		String[] guestPolicyValues = new String[] {
@@ -166,10 +172,10 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 		formLayout.add("buttons", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 		
-		if(template == null ||  !template.isSystem()) {
-			uifactory.addFormSubmitButton("save", buttonLayout);
-		} else {
+		if(readOnly) {
 			disableSystemTemplate();
+		} else {
+			uifactory.addFormSubmitButton("save", buttonLayout);
 		}
 	}
 	
@@ -177,6 +183,7 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 		nameEl.setEnabled(false);
 		descriptionEl.setEnabled(false);
 		muteOnStartEl.setEnabled(false);
+		maxConcurrentMeetingsEl.setEnabled(false);
 		maxParticipantsEl.setEnabled(false);
 		autoStartRecordingEl.setEnabled(false);
 		allowStartStopRecordingEl.setEnabled(false);
@@ -191,10 +198,11 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 		guestPolicyEl.setEnabled(false);
 	}
 	
-	private void select(Boolean val, SingleSelection selectEl) {
+	private void select(Boolean val, SingleSelection selectEl, boolean defaultValue) {
 		if(val == null) {
-			selectEl.select(onKeys[2], true);
-		} else if(val.booleanValue()) {
+			val = Boolean.valueOf(defaultValue);
+		}
+		if(val.booleanValue()) {
 			selectEl.select(onKeys[0], true);
 		} else {
 			selectEl.select(onKeys[1], true);
@@ -221,7 +229,15 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 		
 		descriptionEl.clearError();
 		if(!StringHelper.containsNonWhitespace(descriptionEl.getValue()) && descriptionEl.getValue().length() > 2000) {
-			nameEl.setErrorKey("form.error.toolong", new String[] { "2000" });
+			descriptionEl.setErrorKey("form.error.toolong", new String[] { "2000" });
+			allOk &= false;
+		}
+		
+		maxConcurrentMeetingsEl.clearError();
+		if(StringHelper.containsNonWhitespace(maxConcurrentMeetingsEl.getValue())
+				&& (!StringHelper.isLong(maxConcurrentMeetingsEl.getValue())
+						|| Long.valueOf(maxConcurrentMeetingsEl.getValue()).longValue() <= 0)) {
+			maxConcurrentMeetingsEl.setErrorKey("form.error.nointeger", null);
 			allOk &= false;
 		}
 		
@@ -237,6 +253,13 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 		}
 		template.setDescription(descriptionEl.getValue());
 		
+		if(StringHelper.containsNonWhitespace(maxConcurrentMeetingsEl.getValue())
+				&& StringHelper.isLong(maxConcurrentMeetingsEl.getValue())) {
+			template.setMaxConcurrentMeetings(Long.valueOf(maxConcurrentMeetingsEl.getValue()).intValue());
+		} else {
+			template.setMaxConcurrentMeetings(null);
+		}
+
 		if(maxParticipantsEl.isOneSelected() && !"-".equals(maxParticipantsEl.getSelectedKey())) {
 			template.setMaxParticipants(Integer.parseInt(maxParticipantsEl.getSelectedKey()));
 		} else {
@@ -263,14 +286,10 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 	}
 	
 	private Boolean getSelected(SingleSelection selectEl) {
-		Boolean val = null;
+		Boolean val = Boolean.FALSE;
 		if(selectEl.isOneSelected()) {
 			String selected = selectEl.getSelectedKey();
-			if("yes".equals(selected)) {
-				val = Boolean.TRUE;
-			} else if("no".equals(selected)) {
-				val = Boolean.FALSE;
-			}
+			val = Boolean.valueOf("yes".equals(selected));
 		}
 		return val;
 	}

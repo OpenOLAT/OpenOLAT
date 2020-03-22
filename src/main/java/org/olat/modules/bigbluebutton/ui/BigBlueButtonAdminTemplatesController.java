@@ -62,11 +62,14 @@ public class BigBlueButtonAdminTemplatesController extends FormBasicController {
 	private DialogBoxController confirmDelete;
 	private EditBigBlueButtonTemplateController editTemplateCtlr;
 	
+	private final boolean readOnly;
+	
 	@Autowired
 	private BigBlueButtonManager bigBlueButtonManager;
 	
-	public BigBlueButtonAdminTemplatesController(UserRequest ureq, WindowControl wControl) {
+	public BigBlueButtonAdminTemplatesController(UserRequest ureq, WindowControl wControl, boolean readOnly) {
 		super(ureq, wControl, "templates_admin");
+		this.readOnly = readOnly;
 		initForm(ureq);
 		updateModel();
 	}
@@ -74,14 +77,22 @@ public class BigBlueButtonAdminTemplatesController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		addTemplateButton = uifactory.addFormLink("add.template", formLayout, Link.BUTTON);
+		addTemplateButton.setVisible(!readOnly);
 		
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BTemplatesCols.name));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BTemplatesCols.system));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", BTemplatesCols.system.ordinal(), "delete",
-				new BooleanCellRenderer(null, new StaticFlexiCellRenderer(translate("delete"), "delete"))));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BTemplatesCols.maxConcurrentMeetings));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BTemplatesCols.maxParticipants));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BTemplatesCols.webcamsOnlyForModerator));
+		if(readOnly) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("view", translate("view"), "view"));
+		} else {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", BTemplatesCols.system.ordinal(), "delete",
+					new BooleanCellRenderer(null, new StaticFlexiCellRenderer(translate("delete"), "delete"))));
+		}
 		
 		tableModel = new BigBlueButtonTemplateTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "templates", tableModel, getTranslator(), formLayout);
@@ -141,7 +152,7 @@ public class BigBlueButtonAdminTemplatesController extends FormBasicController {
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
-				if("edit".equals(se.getCommand())) {
+				if("edit".equals(se.getCommand()) || "view".equals(se.getCommand())) {
 					doEditTemplate(ureq, tableModel.getObject(se.getIndex()));
 				} else if("delete".equals(se.getCommand())) {
 					doConfirmDelete(ureq, tableModel.getObject(se.getIndex()));
@@ -167,11 +178,16 @@ public class BigBlueButtonAdminTemplatesController extends FormBasicController {
 	private void doEditTemplate(UserRequest ureq, BigBlueButtonMeetingTemplate template) {
 		if(guardModalController(editTemplateCtlr)) return;
 		
-		editTemplateCtlr = new EditBigBlueButtonTemplateController(ureq, getWindowControl(), template);
+		editTemplateCtlr = new EditBigBlueButtonTemplateController(ureq, getWindowControl(), template, readOnly);
 		listenTo(editTemplateCtlr);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", editTemplateCtlr.getInitialComponent(),
-				true, translate("edit.template", new String[] { template.getName() }));
+		String title;
+		if(readOnly) {
+			title = translate("view.template", new String[] { template.getName() });
+		} else {
+			title = translate("edit.template", new String[] { template.getName() });
+		}
+		cmc = new CloseableModalController(getWindowControl(), "close", editTemplateCtlr.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
 	}

@@ -1307,6 +1307,7 @@ create table o_bbb_template (
    b_description varchar(2000) default null,
    b_system number default 0 not null,
    b_external_id varchar(255) default null,
+   b_max_concurrent_meetings int default null,
    b_max_participants int default null,
    b_mute_on_start number default null,
    b_auto_start_recording number default null,

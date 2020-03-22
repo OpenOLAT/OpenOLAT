@@ -31,8 +31,10 @@ import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingImpl;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -93,19 +95,14 @@ public class BigBlueButtonMeetingDAO {
 	}
 	
 	private void updateDates(BigBlueButtonMeetingImpl meet, Date start, long leadTime, Date end, long followupTime) {
-		Calendar cal = Calendar.getInstance();
 		if(start == null) {
 			meet.setStartDate(null);
 			meet.setLeadTime(0);
 			meet.setStartWithLeadTime(null);
 		} else {
-			start = cleanDate(start);
-			if(leadTime > 0) {
-				cal.add(Calendar.MINUTE, -(int)leadTime);
-			}
 			meet.setStartDate(start);
 			meet.setLeadTime(leadTime);
-			meet.setStartWithLeadTime(cal.getTime());
+			meet.setStartWithLeadTime(calculateStartWithLeadTime(start, leadTime));
 		}
 		
 		if(end == null) {
@@ -113,15 +110,30 @@ public class BigBlueButtonMeetingDAO {
 			meet.setFollowupTime(0);
 			meet.setEndWithFollowupTime(null);
 		} else {
-			end = cleanDate(end);
-			cal.setTime(end);
-			if(followupTime > 0) {
-				cal.add(Calendar.MINUTE, (int)followupTime);
-			}
 			meet.setEndDate(end);
 			meet.setFollowupTime(followupTime);
-			meet.setEndWithFollowupTime(cal.getTime());
+			meet.setEndWithFollowupTime(calculateEndWithFollowupTime(end, followupTime));
 		}
+	}
+	
+	protected Date calculateStartWithLeadTime(Date start, long leadTime) {
+		start = cleanDate(start);
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(start);
+		if(leadTime > 0) {
+			cal.add(Calendar.MINUTE, -(int)leadTime);
+		}
+		return cal.getTime();
+	}
+	
+	protected Date calculateEndWithFollowupTime(Date end, long followupTime) {
+		end = cleanDate(end);
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(end);
+		if(followupTime > 0) {
+			cal.add(Calendar.MINUTE, (int)followupTime);
+		}
+		return cal.getTime();
 	}
 	
 	/**
@@ -149,7 +161,30 @@ public class BigBlueButtonMeetingDAO {
 				.getResultList();
 	}
 	
-	public List<BigBlueButtonMeeting> getMeetings(RepositoryEntry entry, String subIdent, BusinessGroup businessGroup) {
+	public int getConcurrentMeetings(BigBlueButtonMeetingTemplate template, Date start, Date end) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select count(distinct meeting.key) from bigbluebuttonmeeting as meeting")
+		  .append(" inner join meeting.template as template")
+		  .append(" where template.key=:templateKey")
+		  .append(" and (")
+		  .append("  (meeting.startWithLeadTime>=:startDate and meeting.startWithLeadTime<=:endDate)")
+		  .append("  or")
+		  .append("  (meeting.endWithFollowupTime>=:startDate and meeting.endWithFollowupTime<=:endDate)")
+		  .append("  or")
+		  .append("  (meeting.startWithLeadTime>=:startDate and meeting.endWithFollowupTime<=:endDate)")
+		  .append("  or")
+		  .append("  (meeting.startWithLeadTime<=:startDate and meeting.endWithFollowupTime>=:endDate)")
+		  .append(")");
+		List<Long> count = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("templateKey", template.getKey())
+				.setParameter("startDate", start)
+				.setParameter("endDate", end)
+				.getResultList();
+		return count == null || count.isEmpty() || count.get(0) == null ? 0 : count.get(0).intValue();
+	}
+	
+	public List<BigBlueButtonMeeting> getMeetings(RepositoryEntryRef entry, String subIdent, BusinessGroup businessGroup) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select meeting from bigbluebuttonmeeting as meeting")
 		  .append(" left join fetch meeting.template as template");
@@ -168,13 +203,36 @@ public class BigBlueButtonMeetingDAO {
 		
 		if(entry != null) {
 			query.setParameter("entryKey", entry.getKey());
-			sb.and().append("meeting.entry.key=:entryKey");
 			if(StringHelper.containsNonWhitespace(subIdent)) {
 				query.setParameter("subIdent", subIdent);
 			}
 		}
 		if(businessGroup != null) {
 			query.setParameter("businessGroupKey", businessGroup.getKey());
+		}
+		return query.getResultList();
+	}
+	
+	public List<BigBlueButtonMeeting> getUpcomingMeetings(RepositoryEntryRef entry, String subIdent, int maxResults) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select meeting from bigbluebuttonmeeting as meeting")
+		  .append(" left join fetch meeting.template as template")
+		  .append(" where meeting.entry.key=:entryKey and meeting.permanent=false")
+		  .append(" and meeting.startDate is not null and meeting.endDate is not null");
+		if(StringHelper.containsNonWhitespace(subIdent)) {
+			sb.append(" and meeting.subIdent=:subIdent");
+		}
+		sb.append(" and meeting.endDate>=:now")
+		  .append(" order by meeting.startDate asc");
+
+		TypedQuery<BigBlueButtonMeeting> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), BigBlueButtonMeeting.class)
+			.setFirstResult(0)
+			.setMaxResults(maxResults)
+			.setParameter("entryKey", entry.getKey())
+			.setParameter("now", new Date());
+		if(StringHelper.containsNonWhitespace(subIdent)) {
+			query.setParameter("subIdent", subIdent);
 		}
 		return query.getResultList();
 	}
