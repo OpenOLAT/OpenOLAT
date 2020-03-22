@@ -122,10 +122,10 @@ public class BigBlueButtonCourseNode extends AbstractAccessableCourseNode {
 	
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			NodeEvaluation ne) {
+			CourseNodeSecurityCallback nodeSecCallback) {
 		return new BigBlueButtonPeekViewController(ureq, wControl, userCourseEnv.getCourseEnvironment(), this);
 	}
-	
+
 	@Override
 	public StatusDescription isConfigValid() {
 		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
