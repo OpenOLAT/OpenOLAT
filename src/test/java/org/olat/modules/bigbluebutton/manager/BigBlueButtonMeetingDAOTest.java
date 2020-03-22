@@ -19,14 +19,19 @@
  */
 package org.olat.modules.bigbluebutton.manager;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
+import org.olat.group.BusinessGroup;
+import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -43,7 +48,11 @@ public class BigBlueButtonMeetingDAOTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private BusinessGroupDAO businessGroupDao;
+	@Autowired
 	private BigBlueButtonMeetingDAO bigBlueButtonMeetingDao;
+	@Autowired
+	private BigBlueButtonMeetingTemplateDAO bigBlueButtonMeetingTemplateDao;
 	
 	@Test
 	public void createMeetingForRepositoryEntry() {
@@ -123,5 +132,64 @@ public class BigBlueButtonMeetingDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, meetings.size());
 		Assert.assertTrue(meetings.contains(meeting));
 	}
+	
+	@Test
+	public void getAllMeetings() {
+		String name = "BigBlueButton - 3";
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB group", "bbb-desc", -1, -1, false, false, false, false, false);
+		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting(name, null, null, group);
+		dbInstance.commit();
+		
+		List<BigBlueButtonMeeting> meetings = bigBlueButtonMeetingDao.getAllMeetings();
+		Assert.assertNotNull(meetings);
+		Assert.assertEquals(1, meetings.size());
+		Assert.assertTrue(meetings.contains(meeting));
+	}
+	
+	@Test
+	public void getConcurrentMeetings() {
+		String externalId = UUID.randomUUID().toString();
+		BigBlueButtonMeetingTemplate template = bigBlueButtonMeetingTemplateDao.createTemplate("A new template", externalId, false);
+		template.setMaxConcurrentMeetings(2);
+		template = bigBlueButtonMeetingTemplateDao.updateTemplate(template);
+		dbInstance.commit();
+		
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB group", "bbb-desc", -1, -1, false, false, false, false, false);
+		createMeeting("BigBlueButton - 4", date(1, 12), 15, date(1, 14), 15, template, group);
+		createMeeting("BigBlueButton - 5", date(1, 10), 120, date(1, 18), 120, template, group);
+		createMeeting("BigBlueButton - 6", date(1, 14), 0, date(1, 19), 0, template, group);
+		createMeeting("BigBlueButton - 7", date(2, 12), 15, date(2, 15), 15, template, group);
+		dbInstance.commit();
 
+		int concurrent = bigBlueButtonMeetingDao.getConcurrentMeetings(template, date(1, 15), date(1, 19));
+		Assert.assertEquals(2, concurrent);
+		
+		int concurrentFollowup = bigBlueButtonMeetingDao.getConcurrentMeetings(template, date(1, 20), date(1, 21));
+		Assert.assertEquals(1, concurrentFollowup);
+		
+		int concurrentWidePeriod = bigBlueButtonMeetingDao.getConcurrentMeetings(template, date(0, 10), date(3, 21));
+		Assert.assertEquals(4, concurrentWidePeriod);
+		
+		int concurrentWithin = bigBlueButtonMeetingDao.getConcurrentMeetings(template, date(2, 13), date(2, 14));
+		Assert.assertEquals(1, concurrentWithin);
+	}
+	
+	private BigBlueButtonMeeting createMeeting(String name, Date start, int leadTime, Date end, int followupTime,
+			BigBlueButtonMeetingTemplate template, BusinessGroup group) {
+		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting(name, null, null, group);
+		meeting.setStartDate(start);
+		meeting.setLeadTime(leadTime);
+		meeting.setEndDate(end);
+		meeting.setFollowupTime(followupTime);
+		meeting.setTemplate(template);
+		return bigBlueButtonMeetingDao.updateMeeting(meeting);
+	}
+	
+	private Date date(int addDays, int hour) {
+		Calendar cal = Calendar.getInstance();
+		cal = CalendarUtils.getStartOfDay(cal);
+		cal.add(Calendar.DATE, addDays);
+		cal.set(Calendar.HOUR, hour);
+		return cal.getTime();
+	}
 }

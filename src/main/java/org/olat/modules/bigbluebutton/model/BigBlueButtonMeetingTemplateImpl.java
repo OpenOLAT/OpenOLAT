@@ -68,6 +68,9 @@ public class BigBlueButtonMeetingTemplateImpl implements Persistable, BigBlueBut
 	@Column(name="b_external_id", nullable=true, insertable=true, updatable=true)
 	private String externalId;
 	
+	@Column(name="b_max_concurrent_meetings", nullable=true, insertable=true, updatable=true)
+	private Integer maxConcurrentMeetings;
+	
 	@Column(name="b_max_participants", nullable=true, insertable=true, updatable=true)
 	private Integer maxParticipants;
 
@@ -163,6 +166,16 @@ public class BigBlueButtonMeetingTemplateImpl implements Persistable, BigBlueBut
 
 	public void setExternalId(String externalId) {
 		this.externalId = externalId;
+	}
+
+	@Override
+	public Integer getMaxConcurrentMeetings() {
+		return maxConcurrentMeetings;
+	}
+
+	@Override
+	public void setMaxConcurrentMeetings(Integer maxConcurrentMeetings) {
+		this.maxConcurrentMeetings = maxConcurrentMeetings;
 	}
 
 	@Override

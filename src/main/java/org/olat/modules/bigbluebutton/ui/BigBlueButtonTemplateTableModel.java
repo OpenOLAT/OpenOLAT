@@ -67,6 +67,9 @@ implements SortableFlexiTableDataModel<BigBlueButtonMeetingTemplate> {
 		switch(COLS[col]) {
 			case name: return row.getName();
 			case system: return Boolean.valueOf(row.isSystem());
+			case maxConcurrentMeetings: return row.getMaxConcurrentMeetings();
+			case maxParticipants: return row.getMaxParticipants();
+			case webcamsOnlyForModerator: return row.getWebcamsOnlyForModerator();
 			default: return "ERROR";
 		}
 	}
@@ -79,7 +82,10 @@ implements SortableFlexiTableDataModel<BigBlueButtonMeetingTemplate> {
 	public enum BTemplatesCols implements FlexiSortableColumnDef {
 		
 		name("meeting.name"),
-		system("table.header.system");
+		system("table.header.system"),
+		maxConcurrentMeetings("table.header.max.concurrent.meetings"),
+		maxParticipants("table.header.max.participants"),
+		webcamsOnlyForModerator("table.header.webcams.only.moderator");
 		
 		private final String i18nHeaderKey;
 		

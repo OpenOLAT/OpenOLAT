@@ -64,6 +64,8 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 	private SingleSelection cleanMeetingsEl;
 	private MultipleSelectionElement moduleEnabled;
 	private MultipleSelectionElement enabledForEl;
+	private MultipleSelectionElement permanentForEl;
+	private MultipleSelectionElement adhocForEl;
 
 	private static final String[] enabledKeys = new String[]{"on"};
 	private final String[] enabledValues;
@@ -98,7 +100,13 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		enabledForEl = uifactory.addCheckboxesVertical("bigbluebutton.module.enabled.for", formLayout, FOR_KEYS, forValues, 1);
 		enabledForEl.select(FOR_KEYS[0], bigBlueButtonModule.isCoursesEnabled());
 		enabledForEl.select(FOR_KEYS[1], bigBlueButtonModule.isGroupsEnabled());
-			
+		
+		permanentForEl = uifactory.addCheckboxesHorizontal("enable.permanent.meeting", formLayout, enabledKeys, enabledValues);
+		permanentForEl.select(enabledKeys[0], bigBlueButtonModule.isPermanentMeetingEnabled());
+		
+		adhocForEl = uifactory.addCheckboxesHorizontal("enable.adhoc.meeting", formLayout, enabledKeys, enabledValues);
+		adhocForEl.select(enabledKeys[0], bigBlueButtonModule.isAdhocMeetingEnabled());
+
 		//spacer
 		spacerEl = uifactory.addSpacerElement("spacer", formLayout, false);
 
@@ -237,6 +245,9 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 				bigBlueButtonModule.setBigBlueButtonURI(new URI(url));
 				bigBlueButtonModule.setCoursesEnabled(enabledForEl.isSelected(0));
 				bigBlueButtonModule.setGroupsEnabled(enabledForEl.isSelected(1));
+				bigBlueButtonModule.setPermanentMeetingEnabled(permanentForEl.isAtLeastSelected(1));
+				bigBlueButtonModule.setAdhocMeetingEnabled(adhocForEl.isAtLeastSelected(1));
+
 				if(cleanMeetingsEl.isSelected(0)) {
 					bigBlueButtonModule.setCleanupMeetings(false);
 					bigBlueButtonModule.setDaysToKeep(null);

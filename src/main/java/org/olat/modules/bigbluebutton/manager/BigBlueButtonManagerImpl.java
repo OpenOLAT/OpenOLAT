@@ -20,6 +20,7 @@
 package org.olat.modules.bigbluebutton.manager;
 
 import java.net.URI;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -51,6 +52,7 @@ import org.olat.modules.bigbluebutton.model.BigBlueButtonError;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrorCodes;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.manager.RepositoryEntryDAO;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,32 +86,32 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 		List<BigBlueButtonMeetingTemplate> templates = bigBlueButtonMeetingTemplateDao.getTemplates();
 		
 		// Web conferen
-		defaultTemplate("web-conference", "Web conference", 100,
+		defaultTemplate("sys-meetings", "Meetings", 5, 5,
 				Boolean.FALSE, Boolean.FALSE, Boolean.TRUE, // recording
-				Boolean.TRUE, Boolean.TRUE, // webcams, unmute
-				Boolean.TRUE, Boolean.TRUE, // cam, mic
+				Boolean.FALSE, Boolean.TRUE, // webcams moderator only, unmute
+				Boolean.FALSE, Boolean.FALSE, // cam, mic
 				Boolean.FALSE, Boolean.TRUE, // chat
 				Boolean.FALSE, Boolean.FALSE, // node, layout
-				GuestPolicyEnum.ALWAYS_ACCEPT, templates);
+				GuestPolicyEnum.ALWAYS_DENY, templates);
 		
-		defaultTemplate("web-classe", "Classes / Klasse", 25,
+		defaultTemplate("sys-classes", "Classes", 20, 30,
 				Boolean.FALSE, Boolean.FALSE, Boolean.TRUE, // recording
-				Boolean.FALSE, Boolean.TRUE, // webcams, unmute
-				Boolean.FALSE, Boolean.FALSE, // cam, mic
+				Boolean.TRUE, Boolean.TRUE, // webcamsmoderator only, unmute
+				Boolean.TRUE, Boolean.TRUE, // cam, mic
 				Boolean.FALSE, Boolean.FALSE, // chat
 				Boolean.FALSE, Boolean.FALSE, // node, layout
 				GuestPolicyEnum.ALWAYS_DENY, templates);
 		
-		defaultTemplate("web-one-to-one", "One to one", 2,
+		defaultTemplate("sys-cafe", "Cafe", 10, 10,
 				Boolean.FALSE, Boolean.FALSE, Boolean.TRUE, // recording
-				Boolean.FALSE, Boolean.TRUE, // webcams, unmute
+				Boolean.FALSE, Boolean.TRUE, // webcams moderator only, unmute
 				Boolean.FALSE, Boolean.FALSE, // cam, mic
 				Boolean.TRUE, Boolean.FALSE, // chat
 				Boolean.FALSE, Boolean.FALSE, // node, layout
 				GuestPolicyEnum.ALWAYS_DENY, templates);
 	}
 	
-	private void defaultTemplate(String externalId, String name, Integer maxParticipants,
+	private void defaultTemplate(String externalId, String name, Integer maxConcurrentMeetings, Integer maxParticipants,
 			Boolean muteOnStart, Boolean autoStartRecording, Boolean allowStartStopRecording,
 			Boolean webcamsOnlyForModerator, Boolean allowModsToUnmuteUsers,
 			Boolean lockSettingsDisableCam, Boolean lockSettingsDisableMic,
@@ -120,9 +122,12 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 		BigBlueButtonMeetingTemplate template = templates.stream()
 				.filter(tpl -> externalId.equals(tpl.getExternalId()))
 				.findFirst().orElse(null);
-		if(template == null) {
-			template = bigBlueButtonMeetingTemplateDao.createTemplate(name, externalId, true);
+		if(template != null) {
+			return;
 		}
+		
+		template = bigBlueButtonMeetingTemplateDao.createTemplate(name, externalId, true);
+		template.setMaxConcurrentMeetings(maxConcurrentMeetings);
 		template.setMaxParticipants(maxParticipants);
 		template.setMuteOnStart(muteOnStart);
 		template.setAutoStartRecording(autoStartRecording);
@@ -144,6 +149,18 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 		return bigBlueButtonMeetingDao.createAndPersistMeeting(name, entry, subIdent, businessGroup);
 	}
 	
+	@Override
+	public boolean isSlotAvailable(BigBlueButtonMeetingTemplate template, Date startDate, long leadTime, Date endDate, long followupTime) {
+		if(template == null) return false; // template are mandatory
+		if(template.getMaxConcurrentMeetings() == null) {
+			return true;
+		}
+		Date start = bigBlueButtonMeetingDao.calculateStartWithLeadTime(startDate, leadTime);
+		Date end = bigBlueButtonMeetingDao.calculateEndWithFollowupTime(endDate, followupTime);
+		int numOfCurrentMeetings = bigBlueButtonMeetingDao.getConcurrentMeetings(template, start, end);
+		return numOfCurrentMeetings < template.getMaxConcurrentMeetings().intValue();
+	}
+
 	@Override
 	public BigBlueButtonMeeting getMeeting(BigBlueButtonMeeting meeting) {
 		return bigBlueButtonMeetingDao.loadByKey(meeting.getKey());
@@ -186,8 +203,13 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 	}
 
 	@Override
-	public List<BigBlueButtonMeeting> getMeetings(RepositoryEntry entry, String subIdent, BusinessGroup businessGroup) {
+	public List<BigBlueButtonMeeting> getMeetings(RepositoryEntryRef entry, String subIdent, BusinessGroup businessGroup) {
 		return bigBlueButtonMeetingDao.getMeetings(entry, subIdent, businessGroup);
+	}
+	
+	@Override
+	public List<BigBlueButtonMeeting> getUpcomingsMeetings(RepositoryEntryRef entry, String subIdent, int maxResults) {
+		return bigBlueButtonMeetingDao.getUpcomingMeetings(entry, subIdent, maxResults);
 	}
 	
 	@Override
@@ -346,10 +368,11 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 			.optionalParameter("moderatorPW", meeting.getModeratorPassword())
 			.optionalParameter("logoutURL", getBusinessPath(meeting));
 		if(meeting.getStartWithLeadTime() != null && meeting.getEndWithFollowupTime() != null) {
-			long start = meeting.getStartWithLeadTime().getTime();
+			long now = new Date().getTime();
+			long start = Math.max(now, meeting.getStartWithLeadTime().getTime());
 			long end = meeting.getEndWithFollowupTime().getTime();
-			long duration = (end - start) / (60l * 1000l);
-			uriBuilder.optionalParameter("duration", Long.toString(duration + 1));// + 1 for rounding error
+			long duration = 1 + (Math.abs(end - start) / (60l * 1000l));// + 1 to compensate rounding error
+			uriBuilder.optionalParameter("duration", Long.toString(duration));
 		}
 
 		if(template != null) {
@@ -375,6 +398,16 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 		
 		Document doc = sendRequest(uriBuilder, errors);
 		return BigBlueButtonUtils.checkSuccess(doc, errors);
+	}
+	
+	public void getBigBlueButtonDefaultConfigXml() {
+		BigBlueButtonUriBuilder uriBuilder = getUriBuilder();
+		uriBuilder
+			.operation("getDefaultConfigXML");
+		BigBlueButtonErrors errors = new BigBlueButtonErrors();
+		Document doc = sendRequest(uriBuilder, errors);
+		BigBlueButtonUtils.print(doc);
+		BigBlueButtonUtils.checkSuccess(doc, errors);	
 	}
 	
 	@Override

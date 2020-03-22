@@ -41,6 +41,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
+import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -70,6 +71,8 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	private BigBlueButtonMeeting meeting;
 	private List<BigBlueButtonMeetingTemplate> templates;
 	
+	@Autowired
+	private BigBlueButtonModule bigBlueButtonModule;
 	@Autowired
 	private BigBlueButtonManager bigBlueButtonManager;
 	
@@ -113,13 +116,13 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		welcomeEl = uifactory.addRichTextElementForStringDataMinimalistic("meeting.welcome", "meeting.welcome", welcome, 8, 60, formLayout, getWindowControl());
 		
 		KeyValues templatesKeyValues = new KeyValues();
-		templatesKeyValues.add(KeyValues.entry("-", translate("meeting.no.template")));
 		for(BigBlueButtonMeetingTemplate template:templates) {
 			templatesKeyValues.add(KeyValues.entry(template.getKey().toString(), template.getName()));
 		}
 		String[] templatesKeys = templatesKeyValues.keys();
 		templateEl = uifactory.addDropdownSingleselect("meeting.template", "meeting.template", formLayout,
 				templatesKeys, templatesKeyValues.values());
+		templateEl.addActionListener(FormEvent.ONCHANGE);
 		templateEl.setMandatory(true);
 		boolean templateSelected = false;
 		if(meeting != null && meeting.getTemplate() != null) {
@@ -134,13 +137,15 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		if(!templateSelected) {
 			templateEl.select(templatesKeys[0], true);
 		}
+		updateTemplateInformations();
 		
 		String[] permValues = new String[] { translate("meeting.permanent.on") };
 		permanentEl = uifactory.addCheckboxesHorizontal("meeting.permanent", formLayout, permKeys, permValues);
 		permanentEl.addActionListener(FormEvent.ONCHANGE);
-		boolean permanent = meeting == null ? false : meeting.isPermanent();
+		boolean permanent = meeting != null && bigBlueButtonModule.isPermanentMeetingEnabled() && meeting.isPermanent();
 		permanentEl.select(permKeys[0], permanent);
 		permanentEl.setHelpTextKey("meeting.permanent.explain", null);
+		permanentEl.setVisible(bigBlueButtonModule.isPermanentMeetingEnabled());
 
 		Date startDate = meeting == null ? null : meeting.getStartDate();
 		startDateEl = uifactory.addDateChooser("meeting.start", "meeting.start", startDate, formLayout);
@@ -173,6 +178,21 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		followupTimeEl.setVisible(!permanent);
 	}
 	
+	private void updateTemplateInformations() {
+		templateEl.setExampleKey(null, null);
+		if(templateEl.isOneSelected()) {
+			BigBlueButtonMeetingTemplate template = getSelectedTemplate();
+			if(template != null && template.getMaxParticipants() != null) {
+				String[] args = new String[] { template.getMaxParticipants().toString() };
+				if(template.getWebcamsOnlyForModerator() != null && template.getWebcamsOnlyForModerator().booleanValue()) {
+					templateEl.setExampleKey("template.explain.max.participants.with.webcams.mod", args);
+				} else {
+					templateEl.setExampleKey("template.explain.max.participants", args);
+				}
+			}
+		}
+	}
+	
 	@Override
 	protected void doDispose() {
 		//
@@ -181,19 +201,10 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
-		
-		nameEl.clearError();
-		if(!StringHelper.containsNonWhitespace(nameEl.getValue())) {
-			nameEl.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
-		} else if (nameEl.getValue().contains("&")) {
-			nameEl.setErrorKey("form.invalidchar.noamp", null);
-			allOk &= false;
-		}
-		
+
 		startDateEl.clearError();
 		endDateEl.clearError();
-		if(!permanentEl.isAtLeastSelected(1)) {
+		if(!permanentEl.isVisible() || !permanentEl.isAtLeastSelected(1)) {
 			if(startDateEl.getDate() == null) {
 				startDateEl.setErrorKey("form.legende.mandatory", null);
 				allOk &= false;
@@ -210,11 +221,41 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 					endDateEl.setErrorKey("error.start.after.end", null);
 					allOk &= false;
 				}
+				
+				Date now = new Date();
+				if(end.before(now)) {
+					endDateEl.setErrorKey("error.end.past", null);
+					allOk &= false;
+				}
 			}
 		}
 		
 		allOk &= validateTime(leadTimeEl);
 		allOk &= validateTime(followupTimeEl);
+		
+		templateEl.clearError();
+		if(!templateEl.isOneSelected()) {
+			endDateEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
+		// dates ok
+		if(allOk && (!permanentEl.isVisible() || !permanentEl.isAtLeastSelected(1))) {
+			boolean canMeeting = validateSlot();
+			if(!canMeeting) {
+				startDateEl.setErrorKey("server.overloaded", null);
+				allOk &= false;
+			}
+		}
+		
+		nameEl.clearError();
+		if(!StringHelper.containsNonWhitespace(nameEl.getValue())) {
+			nameEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		} else if (nameEl.getValue().contains("&")) {
+			nameEl.setErrorKey("form.invalidchar.noamp", null);
+			allOk &= false;
+		}
 		return allOk;
 	}
 	
@@ -227,11 +268,43 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		}
 		return allOk;
 	}
+	
+	private boolean validateSlot() {
+		BigBlueButtonMeetingTemplate template = getSelectedTemplate();
+		return bigBlueButtonManager.isSlotAvailable(template,
+				startDateEl.getDate(), getLeadTime(), endDateEl.getDate(), getFollowupTime());
+	}
+	
+	private BigBlueButtonMeetingTemplate getSelectedTemplate() {
+		String selectedTemplateId = templateEl.getSelectedKey();
+		return templates.stream()
+					.filter(tpl -> selectedTemplateId.equals(tpl.getKey().toString()))
+					.findFirst()
+					.orElse(null);
+	}
+	
+	public long getLeadTime() {
+		long leadTime = 0;
+		if(leadTimeEl.isVisible() && StringHelper.isLong(leadTimeEl.getValue())) {
+			leadTime = Long.valueOf(leadTimeEl.getValue());
+		}
+		return leadTime;
+	}
+	
+	private long getFollowupTime() {
+		long followupTime = 0;
+		if(followupTimeEl.isVisible() && StringHelper.isLong(followupTimeEl.getValue())) {
+			followupTime = Long.valueOf(followupTimeEl.getValue());
+		}
+		return followupTime;
+	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(permanentEl == source) {
 			updateUI();
+		} else if(templateEl == source) {
+			updateTemplateInformations();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -247,22 +320,10 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		
 		meeting.setDescription(descriptionEl.getValue());
 		meeting.setWelcome(welcomeEl.getValue());
-		BigBlueButtonMeetingTemplate template = null;
-		if(templateEl.isOneSelected() && !"-".equals(templateEl.getSelectedKey())) {
-			String selectedTemplateId = templateEl.getSelectedKey();
-			template = templates.stream()
-					.filter(tpl -> selectedTemplateId.equals(tpl.getKey().toString()))
-					.findFirst()
-					.orElse(null);
-		}
+		BigBlueButtonMeetingTemplate template = getSelectedTemplate();
 		meeting.setTemplate(template);
 		
-		boolean permanent;	
-		if(permanentEl.isVisible()) {
-			permanent = permanentEl.isAtLeastSelected(1);
-		} else {
-			permanent = false;
-		}
+		boolean permanent = permanentEl.isVisible() && permanentEl.isAtLeastSelected(1);
 		meeting.setPermanent(permanent);
 		if(permanent) {
 			meeting.setStartDate(null);
@@ -271,20 +332,12 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			meeting.setFollowupTime(0l);
 		} else {
 			Date startDate = startDateEl.getDate();
-			Date endDate = endDateEl.getDate();
 			meeting.setStartDate(startDate);
+			Date endDate = endDateEl.getDate();
 			meeting.setEndDate(endDate);
-			
-			long leadTime = 0;
-			if(leadTimeEl.isVisible() && StringHelper.isLong(leadTimeEl.getValue())) {
-				leadTime = Long.valueOf(leadTimeEl.getValue());
-			}
+			long leadTime = getLeadTime();
 			meeting.setLeadTime(leadTime);
-			
-			long followupTime = 0;
-			if(followupTimeEl.isVisible() && StringHelper.isLong(followupTimeEl.getValue())) {
-				followupTime = Long.valueOf(followupTimeEl.getValue());
-			}
+			long followupTime = getFollowupTime();
 			meeting.setFollowupTime(followupTime);
 		}
 		

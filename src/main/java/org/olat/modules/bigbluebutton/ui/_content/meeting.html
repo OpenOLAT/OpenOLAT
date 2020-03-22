@@ -12,7 +12,7 @@
 	<div class="o_block_large o_warning">$r.translate("meeting.ended")</div>
 #end
 
-#if($r.isFalse($meetingsExists) || $r.isTrue($notStarted))
+#if($r.isTrue($notStarted))
 <div class="o_block_large o_info">$r.translate("meeting.create.intro")</div>
 #end
 

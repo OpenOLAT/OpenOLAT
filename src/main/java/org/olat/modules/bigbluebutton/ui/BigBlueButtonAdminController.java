@@ -33,6 +33,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
@@ -45,11 +46,13 @@ import org.olat.core.util.resource.OresHelper;
  */
 public class BigBlueButtonAdminController extends BasicController implements Activateable2 {
 	
+	private Link configurationLink;
 	private final Link meetingsLink;
 	private final Link templatesLink;
-	private final Link configurationLink;
 	private final SegmentViewComponent segmentView;
 	private final VelocityContainer mainVC;
+	
+	private final boolean configurationReadOnly;
 	
 	private BigBlueButtonConfigurationController configCtrl;
 	private BigBlueButtonAdminMeetingsController meetingsCtrl;
@@ -58,17 +61,27 @@ public class BigBlueButtonAdminController extends BasicController implements Act
 	public BigBlueButtonAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
+		Roles roles = ureq.getUserSession().getRoles();
+		configurationReadOnly = !roles.isAdministrator() && !roles.isSystemAdmin();
+		
 		mainVC = createVelocityContainer("bbb_admin");
 		
-		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
-		configurationLink = LinkFactory.createLink("account.configuration", mainVC, this);
-		segmentView.addSegment(configurationLink, true);
+			segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
+		if(!configurationReadOnly) {
+			configurationLink = LinkFactory.createLink("account.configuration", mainVC, this);
+			segmentView.addSegment(configurationLink, true);
+		}
 		templatesLink = LinkFactory.createLink("templates.title", mainVC, this);
 		segmentView.addSegment(templatesLink, false);
 		meetingsLink = LinkFactory.createLink("meetings.title", mainVC, this);
 		segmentView.addSegment(meetingsLink, false);
 		
-		doOpenConfiguration(ureq);
+		if(configurationReadOnly) {
+			doOpenMeetings(ureq);
+			segmentView.select(meetingsLink);
+		} else {
+			doOpenConfiguration(ureq);
+		}
 		
 		putInitialPanel(mainVC);
 	}
@@ -83,7 +96,7 @@ public class BigBlueButtonAdminController extends BasicController implements Act
 		if(entries == null || entries.isEmpty()) return;
 
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if("Configuration".equalsIgnoreCase(type)) {
+		if("Configuration".equalsIgnoreCase(type) && !configurationReadOnly) {
 			doOpenConfiguration(ureq);
 			segmentView.select(configurationLink);
 		} else if("Templates".equalsIgnoreCase(type)) {
@@ -127,7 +140,7 @@ public class BigBlueButtonAdminController extends BasicController implements Act
 	private void doOpenTemplates(UserRequest ureq) {
 		if(templatesCtrl == null) {
 			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Templates", 0l), null);
-			templatesCtrl = new BigBlueButtonAdminTemplatesController(ureq, bwControl);
+			templatesCtrl = new BigBlueButtonAdminTemplatesController(ureq, bwControl, configurationReadOnly);
 			listenTo(templatesCtrl);
 		} else {
 			addToHistory(ureq, templatesCtrl);

@@ -45,6 +45,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonMeetingTableModel.BMeetingsCols;
 import org.olat.modules.gotomeeting.ui.GoToMeetingTableModel.MeetingsCols;
@@ -62,7 +63,9 @@ public class BigBlueButtonAdminMeetingsController extends FormBasicController {
 	private BigBlueButtonMeetingTableModel tableModel;
 
 	private DialogBoxController confirmDelete;
-	
+
+	@Autowired
+	private BigBlueButtonModule bigBlueButtonModule;
 	@Autowired
 	private BigBlueButtonManager bigBlueButtonManager;
 
@@ -77,9 +80,10 @@ public class BigBlueButtonAdminMeetingsController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.name));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.permanent));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(bigBlueButtonModule.isPermanentMeetingEnabled(), BMeetingsCols.permanent));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.start));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.end));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.template));
 		FlexiCellRenderer renderer = new StaticFlexiCellRenderer("resource", new TextFlexiCellRenderer());
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.resource.i18nHeaderKey(), BMeetingsCols.resource.ordinal(), "resource",
 				true, BMeetingsCols.resource.name(), renderer));

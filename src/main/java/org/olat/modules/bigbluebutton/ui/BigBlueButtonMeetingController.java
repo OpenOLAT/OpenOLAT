@@ -41,6 +41,7 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -57,12 +58,13 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 	private final boolean administrator;
 	private BigBlueButtonMeeting meeting;
 	
-	private final boolean userMeetingsDates;
 	private final boolean moderatorStartMeeting;
 	private final OLATResourceable meetingOres;
 
 	private Link joinButton;
 
+	@Autowired
+	private BigBlueButtonModule bigBlueButtonModule;
 	@Autowired
 	private BigBlueButtonManager bigBlueButtonManager;
 	
@@ -76,12 +78,9 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		this.administrator = administrator;
 		meetingOres = OresHelper.createOLATResourceableInstance(BigBlueButtonMeeting.class.getSimpleName(), meeting.getKey());
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), meetingOres);
-
-		userMeetingsDates = !meeting.isPermanent();
 		moderatorStartMeeting = configuration.isModeratorStartMeeting();
 		
 		initForm(ureq);
-
 		updateButtonsAndStatus();
 	}
 	
@@ -106,21 +105,21 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		
 		joinButton = LinkFactory.createButtonLarge("meeting.join.button", flc.getFormItemComponent(), this);
 		joinButton.setTarget("_blank");
-		joinButton.setVisible(!ended || moderator || administrator);
+		joinButton.setVisible(!ended);
 	}
 	
 	private boolean isEnded() {
 		return meeting != null && meeting.getEndDate() != null && new Date().after(meeting.getEndDate());
 	}
 	
-	private boolean isValidDates() {
-		if(!userMeetingsDates) {
-			return true;
+	private boolean isAccessible() {
+		if(meeting.isPermanent()) {
+			return bigBlueButtonModule.isPermanentMeetingEnabled();
 		}
+
 		Date now = new Date();
 		Date start = meeting.getStartWithLeadTime();
 		Date end = meeting.getEndWithFollowupTime();
-		
 		return !((start != null && start.compareTo(now) >= 0) || (end != null && end.compareTo(now) <= 0));
 	}
 	
@@ -130,42 +129,31 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 	}
 	
 	private void updateButtonsAndStatus() {
-		boolean meetingsExists = StringHelper.containsNonWhitespace(meeting.getMeetingId());
 		boolean isEnded = isEnded();
-
-		flc.contextPut("meetingsExists", Boolean.valueOf(meetingsExists));
+		boolean accessible = isAccessible();
 		flc.contextPut("ended", Boolean.valueOf(isEnded));
-		
-		boolean accessible = !isEnded() || administrator || moderator;
-		boolean running = bigBlueButtonManager.isMeetingRunning(meeting);
-		if(moderator || administrator) {
-			joinButton.setVisible(accessible);
-			joinButton.setEnabled(!readOnly);
+		flc.contextPut("notStarted", Boolean.TRUE);
+		joinButton.setVisible(accessible);
+		joinButton.setEnabled(!readOnly);
 			
-			if(!running && moderatorStartMeeting) {
-				joinButton.setCustomDisplayText(translate("meeting.start.button"));
-			} else if(isValidDates()) {
-				joinButton.setCustomDisplayText(translate("meeting.join.button"));
-			} else {
-				joinButton.setCustomDisplayText(translate("meeting.go.button"));
-			}
-		} else {
-			boolean validDates = isValidDates();
-
-			joinButton.setVisible(accessible);
-			if(!running && moderatorStartMeeting) {
+		if(accessible) {
+			boolean running = bigBlueButtonManager.isMeetingRunning(meeting);
+			if(moderator || administrator) {
+				flc.contextPut("notStarted", Boolean.FALSE);
+				if(!running && moderatorStartMeeting) {
+					joinButton.setCustomDisplayText(translate("meeting.start.button"));
+				} else {
+					joinButton.setCustomDisplayText(translate("meeting.join.button"));
+				}
+			} else if(!running && moderatorStartMeeting) {
+				flc.contextPut("notStarted", Boolean.TRUE);
 				joinButton.setEnabled(false);
 			} else {
-				joinButton.setEnabled(!readOnly && validDates);
-			}
-
-			if(validDates && !running && moderatorStartMeeting) {
-				flc.contextPut("notStarted", Boolean.TRUE);	
-			} else if(validDates || isEnded) {
 				flc.contextPut("notStarted", Boolean.FALSE);
-			} else {
-				flc.contextPut("notStarted", Boolean.TRUE);
+				joinButton.setEnabled(!readOnly);
 			}
+		} else if(isEnded) {
+			flc.contextPut("notStarted", Boolean.FALSE);
 		}
 	}
 

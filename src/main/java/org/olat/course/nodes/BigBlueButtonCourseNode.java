@@ -39,6 +39,7 @@ import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.bigbluebutton.BigBlueButtonEditController;
+import org.olat.course.nodes.bigbluebutton.BigBlueButtonPeekViewController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -113,6 +114,12 @@ public class BigBlueButtonCourseNode extends AbstractAccessableCourseNode {
 		}
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_vc_icon");
 		return new NodeRunConstructionResult(ctrl);
+	}
+	
+	@Override
+	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
+			NodeEvaluation ne) {
+		return new BigBlueButtonPeekViewController(ureq, wControl, userCourseEnv.getCourseEnvironment(), this);
 	}
 	
 	@Override

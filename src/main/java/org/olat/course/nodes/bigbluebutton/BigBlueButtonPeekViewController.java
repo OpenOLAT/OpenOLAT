@@ -19,11 +19,29 @@
  */
 package org.olat.course.nodes.bigbluebutton;
 
+import java.util.List;
+
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.Util;
+import org.olat.course.nodes.BigBlueButtonCourseNode;
+import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.modules.bigbluebutton.BigBlueButtonManager;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.ui.BigBlueButtonMeetingTableModel;
+import org.olat.modules.bigbluebutton.ui.BigBlueButtonMeetingTableModel.BMeetingsCols;
+import org.olat.modules.bigbluebutton.ui.BigBlueButtonRunController;
+import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -32,16 +50,48 @@ import org.olat.core.gui.control.WindowControl;
  *
  */
 public class BigBlueButtonPeekViewController extends FormBasicController {
+	
+	private FlexiTableElement upcomingTableEl;
+	private BigBlueButtonMeetingTableModel upcomingTableModel;
 
-	public BigBlueButtonPeekViewController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
+	private final String subIdent;
+	private final RepositoryEntry courseEntry;
+	
+	@Autowired
+	private BigBlueButtonManager bigBlueButtonManager;
+
+	public BigBlueButtonPeekViewController(UserRequest ureq, WindowControl wControl,
+			CourseEnvironment courseEnv, BigBlueButtonCourseNode courseNode) {
+		super(ureq, wControl, "peekview", Util.createPackageTranslator(BigBlueButtonRunController.class, ureq.getLocale()));
+		courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+		subIdent = courseNode.getIdent();
 		
 		initForm(ureq);
+		loadModel();
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		//
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.name));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.start));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.end));
+
+		upcomingTableModel = new BigBlueButtonMeetingTableModel(columnsModel, getLocale());
+		upcomingTableEl = uifactory.addTableElement(getWindowControl(), "upcomingMeetings", upcomingTableModel,
+				5, false, getTranslator(), formLayout);
+		upcomingTableEl.setEmtpyTableMessageKey("no.upcoming.meetings");
+		upcomingTableEl.setCustomizeColumns(false);
+		upcomingTableEl.setNumOfRowsEnabled(false);
+		
+		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
+		sortOptions.setDefaultOrderBy(new SortKey(BMeetingsCols.start.name(), true));
+		upcomingTableEl.setSortSettings(sortOptions);
+	}
+	
+	private void loadModel() {
+		List<BigBlueButtonMeeting> meetings = bigBlueButtonManager.getUpcomingsMeetings(courseEntry, subIdent, 5);
+		upcomingTableModel.setObjects(meetings);
 	}
 
 	@Override
