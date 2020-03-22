@@ -154,6 +154,8 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 	
 	private void updateUI() {
 		boolean enabled = moduleEnabled.isAtLeastSelected(1);
+		adhocForEl.setVisible(enabled);
+		permanentForEl.setVisible(enabled);
 		enabledForEl.setVisible(enabled);
 		checkLink.setVisible(enabled);
 		urlEl.setVisible(enabled);
