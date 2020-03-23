@@ -32,7 +32,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
-import org.olat.modules.bigbluebutton.GuestPolicyEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -45,9 +44,6 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 
 	private static final String[] maxParticipantsKeys = new String[] { "2", "5", "10", "25", "50", "100" };
 	private static final String[] onKeys = new String[] { "yes", "no" };
-	private static final String[] guestPolicyKeys = new String[] {
-			GuestPolicyEnum.ALWAYS_DENY.name(), GuestPolicyEnum.ASK_MODERATOR.name(), GuestPolicyEnum.ALWAYS_ACCEPT.name()
-		};
 	
 	private TextElement nameEl;
 	private TextElement descriptionEl;
@@ -64,8 +60,6 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 	private SingleSelection lockSettingsDisablePublicChatEl;
 	private SingleSelection lockSettingsDisableNoteEl;
 	private SingleSelection lockSettingsLockedLayoutEl;
-
-	private SingleSelection guestPolicyEl;
 	
 	private final boolean readOnly;
 	private BigBlueButtonMeetingTemplate template;
@@ -159,14 +153,6 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 		Boolean lockSettingsLockedLayout = template == null ? null : template.getLockSettingsLockedLayout();
 		lockSettingsLockedLayoutEl = uifactory.addRadiosHorizontal("template.lockSettingsLockedLayout", formLayout, onKeys, onValues);
 		select(lockSettingsLockedLayout, lockSettingsLockedLayoutEl, false);
-
-		GuestPolicyEnum guestPolicy = template == null ? GuestPolicyEnum.ALWAYS_DENY : template.getGuestPolicyEnum();
-		String[] guestPolicyValues = new String[] {
-				translate("guest.policy.always.deny"), translate("guest.policy.ask.moderator"),
-				translate("guest.policy.always.accept")
-			};
-		guestPolicyEl = uifactory.addRadiosHorizontal("template.guestPolicy", formLayout, guestPolicyKeys, guestPolicyValues);
-		guestPolicyEl.select(guestPolicy.name(), true);
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
@@ -195,7 +181,6 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 		lockSettingsDisablePublicChatEl.setEnabled(false);
 		lockSettingsDisableNoteEl.setEnabled(false);
 		lockSettingsLockedLayoutEl.setEnabled(false);
-		guestPolicyEl.setEnabled(false);
 	}
 	
 	private void select(Boolean val, SingleSelection selectEl, boolean defaultValue) {
@@ -277,10 +262,6 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 		template.setLockSettingsDisablePublicChat(getSelected(lockSettingsDisablePublicChatEl));
 		template.setLockSettingsDisableNote(getSelected(lockSettingsDisableNoteEl));
 		template.setLockSettingsLockedLayout(getSelected(lockSettingsLockedLayoutEl));
-		
-		if(guestPolicyEl.isOneSelected()) {
-			template.setGuestPolicyEnum(GuestPolicyEnum.valueOf(guestPolicyEl.getSelectedKey()));
-		}
 		template = bigBlueButtonManager.updateTemplate(template);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

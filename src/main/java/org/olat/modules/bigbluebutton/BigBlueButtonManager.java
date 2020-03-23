@@ -89,7 +89,8 @@ public interface BigBlueButtonManager {
 	
 	public List<BigBlueButtonMeeting> getAllMeetings();
 	
-	public String join(BigBlueButtonMeeting meeting, Identity identity, boolean moderator, boolean guest, BigBlueButtonErrors errors);
+	public String join(BigBlueButtonMeeting meeting, Identity identity, boolean moderator, boolean guest,
+			Boolean isRunning, BigBlueButtonErrors errors);
 	
 	public boolean isMeetingRunning(BigBlueButtonMeeting meeting);
 	

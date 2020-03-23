@@ -234,12 +234,15 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		String meetingUrl = null;
 		BigBlueButtonErrors errors = new BigBlueButtonErrors();
 		if(moderator || administrator) {
-			meetingUrl = bigBlueButtonManager.join(meeting, getIdentity(), (administrator || moderator), false, errors);
+			meetingUrl = bigBlueButtonManager.join(meeting, getIdentity(), (administrator || moderator), false, null, errors);
 			BigBlueButtonEvent openEvent = new BigBlueButtonEvent(meeting.getKey(), getIdentity().getKey());
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(openEvent, meetingOres);
-		} else if(!moderatorStartMeeting || bigBlueButtonManager.isMeetingRunning(meeting)) {
+		} else if(!moderatorStartMeeting) {
 			boolean guest = ureq.getUserSession().getRoles().isGuestOnly();
-			meetingUrl = bigBlueButtonManager.join(meeting, getIdentity(), false, guest, errors);
+			meetingUrl = bigBlueButtonManager.join(meeting, getIdentity(), false, guest, null, errors);
+		} else if(bigBlueButtonManager.isMeetingRunning(meeting)) {
+			boolean guest = ureq.getUserSession().getRoles().isGuestOnly();
+			meetingUrl = bigBlueButtonManager.join(meeting, getIdentity(), false, guest, Boolean.TRUE, errors);
 		}
 		redirectTo(ureq, meetingUrl, errors);
 	}

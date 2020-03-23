@@ -94,7 +94,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 				Boolean.FALSE, Boolean.FALSE, // cam, mic
 				Boolean.FALSE, Boolean.TRUE, // chat
 				Boolean.FALSE, Boolean.FALSE, // node, layout
-				GuestPolicyEnum.ALWAYS_DENY, templates);
+				GuestPolicyEnum.ALWAYS_ACCEPT, templates);
 		
 		defaultTemplate("sys-classes", "Classes", 20, 30,
 				Boolean.FALSE, Boolean.FALSE, Boolean.TRUE, // recording
@@ -102,7 +102,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 				Boolean.TRUE, Boolean.TRUE, // cam, mic
 				Boolean.FALSE, Boolean.FALSE, // chat
 				Boolean.FALSE, Boolean.FALSE, // node, layout
-				GuestPolicyEnum.ALWAYS_DENY, templates);
+				GuestPolicyEnum.ALWAYS_ACCEPT, templates);
 		
 		defaultTemplate("sys-cafe", "Cafe", 10, 10,
 				Boolean.FALSE, Boolean.FALSE, Boolean.TRUE, // recording
@@ -110,7 +110,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 				Boolean.FALSE, Boolean.FALSE, // cam, mic
 				Boolean.TRUE, Boolean.FALSE, // chat
 				Boolean.FALSE, Boolean.FALSE, // node, layout
-				GuestPolicyEnum.ALWAYS_DENY, templates);
+				GuestPolicyEnum.ALWAYS_ACCEPT, templates);
 	}
 	
 	private void defaultTemplate(String externalId, String name, Integer maxConcurrentMeetings, Integer maxParticipants,
@@ -297,15 +297,14 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 		if(doc == null || errors.hasErrors() || !BigBlueButtonUtils.checkSuccess(doc, errors)) {
 			return false;
 		}
-		
 		String running = BigBlueButtonUtils.getFirstElementValue(doc.getDocumentElement(), "running");
 		return "true".equals(running);
 	}
 
 	@Override
-	public String join(BigBlueButtonMeeting meeting, Identity identity, boolean moderator, boolean guest, BigBlueButtonErrors errors) {
+	public String join(BigBlueButtonMeeting meeting, Identity identity, boolean moderator, boolean guest, Boolean isRunning, BigBlueButtonErrors errors) {
 		String joinUrl = null;
-		if(createBigBlueButtonMeeting(meeting, errors)) {
+		if((isRunning != null && isRunning.booleanValue()) || createBigBlueButtonMeeting(meeting, errors)) {
 			joinUrl = buildJoinUrl(meeting, identity, moderator, guest);
 		}
 		return joinUrl;
@@ -348,10 +347,9 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 		if(meeting.getEntry() != null) {
 			businessPath = "[RepositoryEntry:" + meeting.getEntry().getKey() + "]";
 			if(StringHelper.containsNonWhitespace(meeting.getSubIdent())) {
-				businessPath = "[CourseNode:" + meeting.getSubIdent() + "]";
+				businessPath += "[CourseNode:" + meeting.getSubIdent() + "]";
 			}
 		} else if(meeting.getBusinessGroup() != null) {
-
 			businessPath = "[BusinessGroup:" + meeting.getBusinessGroup().getKey() + "]";
 		} else {
 			businessPath = "[RepositoryEntry:0]";
@@ -381,7 +379,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 
 		if(template != null) {
 			uriBuilder
-				.optionalParameter("maxParticipants", template.getMaxParticipants())
+				.optionalParameter("maxParticipants", template.getMaxParticipants().intValue() + 1)
 				.optionalParameter("record", "true")
 				// video options
 				.optionalParameter("muteOnStart", template.getMuteOnStart())
@@ -397,7 +395,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 				.optionalParameter("lockSettingsDisableNote", template.getLockSettingsDisableNote())
 				.optionalParameter("lockSettingsLockedLayout", template.getLockSettingsLockedLayout())
 				// guest policy
-				.optionalParameter("guestPolicy", template.getGuestPolicyEnum().name());
+				.optionalParameter("guestPolicy", GuestPolicyEnum.ALWAYS_ACCEPT.name());
 		}
 		
 		Document doc = sendRequest(uriBuilder, errors);
