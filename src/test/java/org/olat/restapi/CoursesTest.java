@@ -322,6 +322,36 @@ public class CoursesTest extends OlatRestTestCase {
 		assertNotNull(re);
 		assertNotNull(re.getOlatResource());
 	}
+	
+	@Test
+	public void testCreateEmptyCourse_CourseVO() throws IOException, URISyntaxException {
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		CourseVO courseVo = new CourseVO();
+		courseVo.setTitle("Course 14 long name");
+		courseVo.setAuthors("Prof.Dr. 14");
+		courseVo.setLocation("Z\u00FCrich");
+
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses").build();
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, courseVo);
+
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		CourseVO course = conn.parse(response, CourseVO.class);
+		Assert.assertNotNull(course);
+		Assert.assertEquals("Course 14 long name", course.getTitle());
+		Assert.assertEquals("Z\u00FCrich", course.getLocation());
+		Assert.assertEquals("Prof.Dr. 14", course.getAuthors());
+		
+		//check repository entry
+		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(course.getRepoEntryKey());
+		Assert.assertNotNull(re);
+		Assert.assertNotNull(re.getOlatResource());
+		Assert.assertEquals("Course 14 long name", re.getDisplayname());
+		Assert.assertEquals("Z\u00FCrich", re.getLocation());
+		Assert.assertEquals("Prof.Dr. 14", re.getAuthors());
+	}
 
 	@Test
 	public void testCreateEmpty_withoutAuthorCourse() throws IOException, URISyntaxException {
