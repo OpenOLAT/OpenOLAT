@@ -25,4 +25,14 @@
 #end
 </div>
 
+#if($r.isTrue($ended) || $r.isTrue($hasRecordings))
+<div class="o_block_large">
+	<fieldset>
+		<legend>$r.translate("recordings")</legend>
+		<div class="o_info">$r.translate("recording.browser.infos")</div>
+		$r.render("recordings")
+	</fieldset>
+</div>
+#end
+
 

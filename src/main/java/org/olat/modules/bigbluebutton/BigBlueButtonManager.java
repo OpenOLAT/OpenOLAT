@@ -93,6 +93,8 @@ public interface BigBlueButtonManager {
 	
 	public boolean isMeetingRunning(BigBlueButtonMeeting meeting);
 	
+	public List<BigBlueButtonRecording> getRecordings(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors);
+	
 	public boolean checkConnection(String url, String sharedSecret, BigBlueButtonErrors errors);
 	
 	
