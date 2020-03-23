@@ -23,6 +23,9 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -36,8 +39,11 @@ import javax.xml.transform.stream.StreamResult;
 import org.apache.http.HttpEntity;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecording;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonError;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
+import org.olat.modules.bigbluebutton.model.BigBlueButtonRecordingImpl;
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -93,6 +99,40 @@ public class BigBlueButtonUtils {
     		errors.append(new BigBlueButtonError(message, messageKey));
     	}
     	return false;
+    }
+    
+    protected static List<BigBlueButtonRecording> getRecordings(Document document) {
+    	List<BigBlueButtonRecording> recordings = new ArrayList<>();
+    	NodeList recordingList = document.getElementsByTagName("recording");
+    	for(int i=recordingList.getLength(); i-->0; ) {
+    		Element recordingEl = (Element)recordingList.item(i);
+    		String meetingId = getFirstElementValue(recordingEl, "meetingID");
+    		String name = getFirstElementValue(recordingEl, "name");
+    		Date startTime = toDate(getFirstElementValue(recordingEl, "startTime"));
+    		Date endTime = toDate(getFirstElementValue(recordingEl, "endTime"));
+    		
+    		NodeList playbackList = recordingEl.getElementsByTagName("playback");
+    		for(int j=playbackList.getLength(); j-->0; ) {
+    			Element playbackEl = (Element)playbackList.item(j);
+    			NodeList formatList = playbackEl.getElementsByTagName("format");
+    			for(int k=formatList.getLength(); k-->0; ) {
+    				Element formatEl = (Element)formatList.item(k);
+    				String url = getFirstElementValue(formatEl, "url");
+    				String type = getFirstElementValue(formatEl, "type");
+    				recordings.add(BigBlueButtonRecordingImpl.valueOf(name, meetingId, startTime, endTime, url, type));
+    			}
+    		}
+    	}
+    	return recordings;
+    }
+    
+    private static Date toDate(String val) {
+    	if(StringHelper.isLong(val)) {
+    		Long time = Long.parseLong(val);
+    		return new Date(time.longValue());
+    	}
+    	
+    	return null;
     }
     
     protected static String getFirstElementValue(Element parent, String tagName) {

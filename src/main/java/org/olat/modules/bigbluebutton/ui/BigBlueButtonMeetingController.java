@@ -20,12 +20,17 @@
 package org.olat.modules.bigbluebutton.ui;
 
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.control.Controller;
@@ -42,7 +47,9 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecording;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
+import org.olat.modules.bigbluebutton.ui.BigBlueButtonRecordingTableModel.BRecordingsCols;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -62,6 +69,8 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 	private final OLATResourceable meetingOres;
 
 	private Link joinButton;
+	private FlexiTableElement tableEl;
+	private BigBlueButtonRecordingTableModel recordingTableModel;
 
 	@Autowired
 	private BigBlueButtonModule bigBlueButtonModule;
@@ -82,10 +91,16 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		
 		initForm(ureq);
 		updateButtonsAndStatus();
+		loadRecordingsModel();
 	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		initJoinForm(formLayout);
+		initRecordings(formLayout);
+	}
+	
+	private void initJoinForm(FormItemContainer formLayout) {
 		boolean ended = isEnded();
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
@@ -106,6 +121,29 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		joinButton = LinkFactory.createButtonLarge("meeting.join.button", flc.getFormItemComponent(), this);
 		joinButton.setTarget("_blank");
 		joinButton.setVisible(!ended);
+	}
+	
+	private void initRecordings(FormItemContainer formLayout) {
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BRecordingsCols.name));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BRecordingsCols.type, new RecordingTypeCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BRecordingsCols.start));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BRecordingsCols.end));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BRecordingsCols.open, new RecordingUrlCellRenderer(getTranslator())));
+		
+		recordingTableModel = new BigBlueButtonRecordingTableModel(columnsModel, getLocale());
+		tableEl = uifactory.addTableElement(getWindowControl(), "recordings", recordingTableModel, 24, false, getTranslator(), formLayout);
+		tableEl.setEmtpyTableMessageKey("no.recordings");
+		tableEl.setNumOfRowsEnabled(false);
+		tableEl.setCustomizeColumns(false);
+	}
+	
+	private void loadRecordingsModel() {
+		BigBlueButtonErrors errors = new BigBlueButtonErrors();
+		List<BigBlueButtonRecording> recordings = bigBlueButtonManager.getRecordings(meeting, errors);
+		recordingTableModel.setObjects(recordings);
+		tableEl.reset(true, true, true);
+		flc.contextPut("hasRecordings", Boolean.valueOf(!recordings.isEmpty()));
 	}
 	
 	private boolean isEnded() {

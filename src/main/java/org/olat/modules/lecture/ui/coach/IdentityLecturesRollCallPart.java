@@ -22,6 +22,7 @@ package org.olat.modules.lecture.ui.coach;
 import org.olat.modules.lecture.AbsenceNotice;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRollCall;
+import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.ui.component.LectureBlockRollCallStatusItem;
 import org.olat.modules.lecture.ui.component.RollCallItem;
 
@@ -54,8 +55,7 @@ public class IdentityLecturesRollCallPart implements RollCallItem {
 
 	@Override
 	public AbsenceNotice getAbsenceNotice() {
-		// TODO absences notice Auto-generated method stub
-		return null;
+		return null;// not implemented
 	}
 
 	@Override
@@ -65,7 +65,11 @@ public class IdentityLecturesRollCallPart implements RollCallItem {
 
 	@Override
 	public int getPlannedLecturesNumber() {
-		return lectureBlock.getPlannedLecturesNumber();
+		int numOfLectures = lectureBlock.getEffectiveLecturesNumber();
+		if(numOfLectures <= 0 && lectureBlock.getStatus() != LectureBlockStatus.cancelled) {
+			numOfLectures = lectureBlock.getPlannedLecturesNumber();
+		}
+		return numOfLectures;
 	}
 
 	@Override

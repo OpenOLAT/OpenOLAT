@@ -20,6 +20,7 @@
 package org.olat.modules.bigbluebutton.manager;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -47,6 +48,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecording;
 import org.olat.modules.bigbluebutton.GuestPolicyEnum;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonError;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrorCodes;
@@ -227,7 +229,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 		String externalId = generateEventExternalId(meeting);
 		List<KalendarEvent> events = calendar.getEvents();
 		for(KalendarEvent event:events) {
-			if(meeting.getMeetingId().equals(externalId)) {
+			if(externalId.equals(event.getExternalId())) {
 				calendarManager.removeEventFrom(calendar, event);
 			}
 		}
@@ -237,15 +239,20 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 		Kalendar calendar = getCalendar(meeting);
 		if(calendar == null) return;
 		
+		CalendarManagedFlag[] managedFlags = { CalendarManagedFlag.all };
+		
 		String externalId = generateEventExternalId(meeting);
 		List<KalendarEvent> events = calendar.getEvents();
 		for(KalendarEvent event:events) {
-			if(event.getExternalId().equals(externalId)) {
+			if(externalId.equals(event.getExternalId())) {
 				if(meeting.isPermanent()) {
 					calendarManager.removeEventFrom(calendar, event);
 				} else {
+					event.setSubject(meeting.getName());
+					event.setDescription(meeting.getDescription());
 					event.setBegin(meeting.getStartDate());
 					event.setEnd(meeting.getEndDate());
+					event.setManagedFlags(managedFlags);
 					calendarManager.updateEventFrom(calendar, event);
 				}
 				return;
@@ -256,9 +263,6 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 			String eventId = CodeHelper.getGlobalForeverUniqueID();
 			KalendarEvent newEvent = new KalendarEvent(eventId, null, meeting.getName(), meeting.getStartDate(), meeting.getEndDate());
 			newEvent.setDescription(meeting.getDescription());
-			CalendarManagedFlag[] managedFlags = {
-					CalendarManagedFlag.all
-			};
 			newEvent.setManagedFlags(managedFlags);
 			newEvent.setExternalId(externalId);
 			calendarManager.addEventTo(calendar, newEvent);
@@ -378,7 +382,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 		if(template != null) {
 			uriBuilder
 				.optionalParameter("maxParticipants", template.getMaxParticipants())
-				.optionalParameter("record", (String)null)
+				.optionalParameter("record", "true")
 				// video options
 				.optionalParameter("muteOnStart", template.getMuteOnStart())
 				.optionalParameter("autoStartRecording", template.getAutoStartRecording())
@@ -398,6 +402,21 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 		
 		Document doc = sendRequest(uriBuilder, errors);
 		return BigBlueButtonUtils.checkSuccess(doc, errors);
+	}
+
+	@Override
+	public List<BigBlueButtonRecording> getRecordings(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors) {
+		BigBlueButtonUriBuilder uriBuilder = getUriBuilder();
+		uriBuilder
+			.operation("getRecordings")
+			.parameter("meetingID", meeting.getMeetingId());
+		
+		Document doc = sendRequest(uriBuilder, errors);
+		BigBlueButtonUtils.print(doc);
+		if(BigBlueButtonUtils.checkSuccess(doc, errors)) {
+			return BigBlueButtonUtils.getRecordings(doc);
+		}
+		return Collections.emptyList();
 	}
 	
 	public void getBigBlueButtonDefaultConfigXml() {
