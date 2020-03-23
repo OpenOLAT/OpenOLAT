@@ -158,7 +158,7 @@ public class BigBlueButtonUtils {
     
 	protected static void print(Document document) {
 		if(log.isDebugEnabled()) {
-		    try(StringWriter writer = new StringWriter()) {
+			try(StringWriter writer = new StringWriter()) {
 		    	TransformerFactory factory = TransformerFactory.newInstance();
 				factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 				Transformer transformer = factory.newTransformer();
