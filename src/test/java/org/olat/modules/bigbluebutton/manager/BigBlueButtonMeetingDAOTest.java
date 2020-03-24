@@ -142,7 +142,7 @@ public class BigBlueButtonMeetingDAOTest extends OlatTestCase {
 		
 		List<BigBlueButtonMeeting> meetings = bigBlueButtonMeetingDao.getAllMeetings();
 		Assert.assertNotNull(meetings);
-		Assert.assertEquals(1, meetings.size());
+		Assert.assertTrue(!meetings.isEmpty());
 		Assert.assertTrue(meetings.contains(meeting));
 	}
 	
@@ -161,17 +161,17 @@ public class BigBlueButtonMeetingDAOTest extends OlatTestCase {
 		createMeeting("BigBlueButton - 7", date(2, 12), 15, date(2, 15), 15, template, group);
 		dbInstance.commit();
 
-		int concurrent = bigBlueButtonMeetingDao.getConcurrentMeetings(template, date(1, 15), date(1, 19));
-		Assert.assertEquals(2, concurrent);
+		List<Long> concurrent = bigBlueButtonMeetingDao.getConcurrentMeetings(template, date(1, 15), date(1, 19));
+		Assert.assertEquals(2, concurrent.size());
 		
-		int concurrentFollowup = bigBlueButtonMeetingDao.getConcurrentMeetings(template, date(1, 20), date(1, 21));
-		Assert.assertEquals(1, concurrentFollowup);
+		List<Long>  concurrentFollowup = bigBlueButtonMeetingDao.getConcurrentMeetings(template, date(1, 20), date(1, 21));
+		Assert.assertEquals(1, concurrentFollowup.size());
 		
-		int concurrentWidePeriod = bigBlueButtonMeetingDao.getConcurrentMeetings(template, date(0, 10), date(3, 21));
-		Assert.assertEquals(4, concurrentWidePeriod);
+		List<Long>  concurrentWidePeriod = bigBlueButtonMeetingDao.getConcurrentMeetings(template, date(0, 10), date(3, 21));
+		Assert.assertEquals(4, concurrentWidePeriod.size());
 		
-		int concurrentWithin = bigBlueButtonMeetingDao.getConcurrentMeetings(template, date(2, 13), date(2, 14));
-		Assert.assertEquals(1, concurrentWithin);
+		List<Long>  concurrentWithin = bigBlueButtonMeetingDao.getConcurrentMeetings(template, date(2, 13), date(2, 14));
+		Assert.assertEquals(1, concurrentWithin.size());
 	}
 	
 	private BigBlueButtonMeeting createMeeting(String name, Date start, int leadTime, Date end, int followupTime,

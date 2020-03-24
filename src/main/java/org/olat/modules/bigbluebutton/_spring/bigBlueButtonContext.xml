@@ -27,14 +27,4 @@
 		</property>
 	</bean>
 	
-	<bean id="bigbluebuttonCleanupTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
-    	<property name="jobDetail" ref="bigbluebuttonConnectCleanupJob" />
-    	<property name="cronExpression" value="0 47 2 * * ?"/>
-    	<property name="startDelay" value="45000" />
-	</bean>
-	
-	<bean id="bigbluebuttonConnectCleanupJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
-		<property name="jobClass" value="org.olat.modules.bigbluebutton.manager.BigBlueButtonCleanupJob" />
-	</bean>
-	
 </beans>

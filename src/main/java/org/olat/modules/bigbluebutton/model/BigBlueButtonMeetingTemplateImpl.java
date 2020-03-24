@@ -20,6 +20,7 @@
 package org.olat.modules.bigbluebutton.model;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -33,6 +34,7 @@ import javax.persistence.TemporalType;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
+import org.olat.modules.bigbluebutton.BigBlueButtonRoles;
 import org.olat.modules.bigbluebutton.GuestPolicyEnum;
 
 /**
@@ -65,6 +67,8 @@ public class BigBlueButtonMeetingTemplateImpl implements Persistable, BigBlueBut
 	private String description;
 	@Column(name="b_system", nullable=false, insertable=true, updatable=false)
 	private boolean system;
+	@Column(name="b_enabled", nullable=false, insertable=true, updatable=true)
+	private boolean enabled;
 	@Column(name="b_external_id", nullable=true, insertable=true, updatable=true)
 	private String externalId;
 	
@@ -73,9 +77,14 @@ public class BigBlueButtonMeetingTemplateImpl implements Persistable, BigBlueBut
 	
 	@Column(name="b_max_participants", nullable=true, insertable=true, updatable=true)
 	private Integer maxParticipants;
-
+	@Column(name="b_max_duration", nullable=true, insertable=true, updatable=true)
+	private Integer maxDuration;
+	
 	@Column(name="b_mute_on_start", nullable=true, insertable=true, updatable=true)
 	private Boolean muteOnStart;
+	
+	@Column(name="b_record", nullable=true, insertable=true, updatable=true)
+	private Boolean record;
 	@Column(name="b_auto_start_recording", nullable=true, insertable=true, updatable=true)
 	private Boolean autoStartRecording;
 	@Column(name="b_allow_start_stop_recording", nullable=true, insertable=true, updatable=true)
@@ -98,6 +107,16 @@ public class BigBlueButtonMeetingTemplateImpl implements Persistable, BigBlueBut
 	@Column(name="b_lock_set_locked_layout", nullable=true, insertable=true, updatable=true)
 	private Boolean lockSettingsLockedLayout;
 	
+	@Column(name="b_lock_set_hide_user_list", nullable=true, insertable=true, updatable=true)
+	private Boolean lockSettingsHideUserList;
+	@Column(name="b_lock_set_lock_on_join", nullable=true, insertable=true, updatable=true)
+	private Boolean lockSettingsLockOnJoin;
+	@Column(name="b_lock_set_lock_on_join_conf", nullable=true, insertable=true, updatable=true)
+	private Boolean lockSettingsLockOnJoinConfigurable;
+	
+	@Column(name="b_permitted_roles", nullable=true, insertable=true, updatable=true)
+	private String permittedRoles;
+
 	@Column(name="b_guest_policy", nullable=true, insertable=true, updatable=true)
 	private String guestPolicy;
 	
@@ -160,6 +179,16 @@ public class BigBlueButtonMeetingTemplateImpl implements Persistable, BigBlueBut
 	}
 
 	@Override
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	@Override
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+
+	@Override
 	public String getExternalId() {
 		return externalId;
 	}
@@ -186,6 +215,26 @@ public class BigBlueButtonMeetingTemplateImpl implements Persistable, BigBlueBut
 	@Override
 	public void setMaxParticipants(Integer maxParticipants) {
 		this.maxParticipants = maxParticipants;
+	}
+
+	@Override
+	public Integer getMaxDuration() {
+		return maxDuration;
+	}
+
+	@Override
+	public void setMaxDuration(Integer maxDuration) {
+		this.maxDuration = maxDuration;
+	}
+
+	@Override
+	public Boolean getRecord() {
+		return record;
+	}
+
+	@Override
+	public void setRecord(Boolean record) {
+		this.record = record;
 	}
 
 	@Override
@@ -297,6 +346,58 @@ public class BigBlueButtonMeetingTemplateImpl implements Persistable, BigBlueBut
 	public void setLockSettingsLockedLayout(Boolean lockSettingsLockedLayout) {
 		this.lockSettingsLockedLayout = lockSettingsLockedLayout;
 	}
+	
+	@Override
+	public Boolean getLockSettingsHideUserList() {
+		return lockSettingsHideUserList;
+	}
+
+	@Override
+	public void setLockSettingsHideUserList(Boolean lockSettingsHideUserList) {
+		this.lockSettingsHideUserList = lockSettingsHideUserList;
+	}
+
+	@Override
+	public Boolean getLockSettingsLockOnJoin() {
+		return lockSettingsLockOnJoin;
+	}
+
+	@Override
+	public void setLockSettingsLockOnJoin(Boolean lockSettingsLockOnJoin) {
+		this.lockSettingsLockOnJoin = lockSettingsLockOnJoin;
+	}
+
+	@Override
+	public Boolean getLockSettingsLockOnJoinConfigurable() {
+		return lockSettingsLockOnJoinConfigurable;
+	}
+
+	@Override
+	public void setLockSettingsLockOnJoinConfigurable(Boolean lockSettingsLockOnJoinConfigurable) {
+		this.lockSettingsLockOnJoinConfigurable = lockSettingsLockOnJoinConfigurable;
+	}
+
+	public String getPermittedRoles() {
+		return permittedRoles;
+	}
+
+	public void setPermittedRoles(String permittedRoles) {
+		this.permittedRoles = permittedRoles;
+	}
+
+	@Override
+	public List<BigBlueButtonRoles> getPermittedRolesEnum() {
+		return null;
+	}
+
+	@Override
+	public void setPermittedRolesEnum(List<BigBlueButtonRoles> roles) {
+		if(roles == null || roles.isEmpty()) {
+			setPermittedRoles(null);
+		} else {
+			
+		}
+	}
 
 	public String getGuestPolicy() {
 		return guestPolicy;
@@ -305,7 +406,8 @@ public class BigBlueButtonMeetingTemplateImpl implements Persistable, BigBlueBut
 	public void setGuestPolicy(String guestPolicy) {
 		this.guestPolicy = guestPolicy;
 	}
-	
+
+	@Override
 	public GuestPolicyEnum getGuestPolicyEnum() {
 		if(StringHelper.containsNonWhitespace(guestPolicy)) {
 			return GuestPolicyEnum.valueOf(guestPolicy);
@@ -313,6 +415,7 @@ public class BigBlueButtonMeetingTemplateImpl implements Persistable, BigBlueBut
 		return GuestPolicyEnum.ALWAYS_DENY;
 	}
 
+	@Override
 	public void setGuestPolicyEnum(GuestPolicyEnum guestPolicy) {
 		if(guestPolicy == null) {
 			this.guestPolicy = GuestPolicyEnum.ALWAYS_DENY.name();

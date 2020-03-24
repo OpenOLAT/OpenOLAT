@@ -1298,7 +1298,7 @@ create table o_aconnect_user (
    primary key (id)
 );
 
--- Bigbluebutton
+-- BigBlueButton
 create table o_bbb_template (
    id number(20) generated always as identity,
    creationdate timestamp not null,
@@ -1306,9 +1306,12 @@ create table o_bbb_template (
    b_name varchar(128) not null,
    b_description varchar(2000) default null,
    b_system number default 0 not null,
+   b_enabled number default 1 not null,
    b_external_id varchar(255) default null,
    b_max_concurrent_meetings int default null,
    b_max_participants int default null,
+   b_max_duration number default null,
+   b_record number default null,
    b_mute_on_start number default null,
    b_auto_start_recording number default null,
    b_allow_start_stop_recording number default null,
@@ -1320,6 +1323,10 @@ create table o_bbb_template (
    b_lock_set_disable_public_chat number default null,
    b_lock_set_disable_note number default null,
    b_lock_set_locked_layout number default null,
+   b_lock_set_hide_user_list number default null,
+   b_lock_set_lock_on_join number default null,
+   b_lock_set_lock_on_join_conf number default null,
+   b_permitted_roles varchar(255) default null,
    b_guest_policy varchar(32) default null,
    primary key (id)
 );

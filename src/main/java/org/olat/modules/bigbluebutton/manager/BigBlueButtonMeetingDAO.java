@@ -161,9 +161,9 @@ public class BigBlueButtonMeetingDAO {
 				.getResultList();
 	}
 	
-	public int getConcurrentMeetings(BigBlueButtonMeetingTemplate template, Date start, Date end) {
+	public List<Long> getConcurrentMeetings(BigBlueButtonMeetingTemplate template, Date start, Date end) {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select count(distinct meeting.key) from bigbluebuttonmeeting as meeting")
+		sb.append("select distinct meeting.key from bigbluebuttonmeeting as meeting")
 		  .append(" inner join meeting.template as template")
 		  .append(" where template.key=:templateKey")
 		  .append(" and (")
@@ -175,13 +175,12 @@ public class BigBlueButtonMeetingDAO {
 		  .append("  or")
 		  .append("  (meeting.startWithLeadTime<=:startDate and meeting.endWithFollowupTime>=:endDate)")
 		  .append(")");
-		List<Long> count = dbInstance.getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
 				.setParameter("templateKey", template.getKey())
 				.setParameter("startDate", start)
 				.setParameter("endDate", end)
 				.getResultList();
-		return count == null || count.isEmpty() || count.get(0) == null ? 0 : count.get(0).intValue();
 	}
 	
 	public List<BigBlueButtonMeeting> getMeetings(RepositoryEntryRef entry, String subIdent, BusinessGroup businessGroup) {

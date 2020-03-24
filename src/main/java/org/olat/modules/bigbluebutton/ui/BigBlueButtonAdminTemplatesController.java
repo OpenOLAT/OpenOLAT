@@ -83,8 +83,11 @@ public class BigBlueButtonAdminTemplatesController extends FormBasicController {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BTemplatesCols.name));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BTemplatesCols.system));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BTemplatesCols.enabled));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BTemplatesCols.maxConcurrentMeetings));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BTemplatesCols.maxParticipants));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BTemplatesCols.maxDuration,
+				new TemplateMinuteCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BTemplatesCols.webcamsOnlyForModerator));
 		if(readOnly) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("view", translate("view"), "view"));
