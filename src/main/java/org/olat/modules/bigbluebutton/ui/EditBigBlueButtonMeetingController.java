@@ -26,6 +26,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -36,6 +37,7 @@ import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
@@ -70,6 +72,10 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	private final BusinessGroup businessGroup;
 	private BigBlueButtonMeeting meeting;
 	private List<BigBlueButtonMeetingTemplate> templates;
+	
+	private FormLink openCalLink;
+	private BigBlueButtonMeetingsCalendarController calCtr;
+	private CloseableModalController cmc;
 	
 	@Autowired
 	private BigBlueButtonModule bigBlueButtonModule;
@@ -128,6 +134,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 				templatesKeys, templatesKeyValues.values());
 		templateEl.addActionListener(FormEvent.ONCHANGE);
 		templateEl.setMandatory(true);
+		templateEl.setElementCssClass("o_omit_margin");
 		boolean templateSelected = false;
 		if(selectedTemplateKey != null) {
 			String currentTemplateId = selectedTemplateKey.toString();
@@ -141,6 +148,9 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		if(!templateSelected) {
 			templateEl.select(templatesKeys[0], true);
 		}
+		openCalLink = uifactory.addFormLink("calendar.open", formLayout);
+		openCalLink.addActionListener(FormEvent.ONCLICK);
+		openCalLink.setIconLeftCSS("o_icon o_icon-fw o_icon_calendar");
 		updateTemplateInformations();
 		
 		String[] permValues = new String[] { translate("meeting.permanent.on") };
@@ -187,7 +197,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		if(templateEl.isOneSelected()) {
 			BigBlueButtonMeetingTemplate template = getSelectedTemplate();
 			if(template != null && template.getMaxParticipants() != null) {
-				String[] args = new String[] { template.getMaxParticipants().toString() };
+				String[] args = new String[] { template.getMaxParticipants().toString() };				
 				if(template.getWebcamsOnlyForModerator() != null && template.getWebcamsOnlyForModerator().booleanValue()) {
 					templateEl.setExampleKey("template.explain.max.participants.with.webcams.mod", args);
 				} else {
@@ -195,6 +205,25 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 				}
 			}
 		}
+	}
+	
+	
+	private void doOpenCalendar(UserRequest ureq) {
+		// cleanup first
+		if (calCtr != null) {
+			removeAsListenerAndDispose(calCtr);
+		}
+		if (cmc != null) {
+			removeAsListenerAndDispose(cmc);
+		}
+		// open calendar controller in modal. Not very nice to have stacked modal, but
+		// still better than having no overview at all
+		calCtr = new BigBlueButtonMeetingsCalendarController(ureq, getWindowControl());
+		listenTo(calCtr);
+		cmc = new CloseableModalController(getWindowControl(), "close", calCtr.getInitialComponent(), true,
+				translate("calendar.open"));
+		cmc.activate();
+		listenTo(cmc);
 	}
 	
 	@Override
@@ -334,6 +363,8 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			updateUI();
 		} else if(templateEl == source) {
 			updateTemplateInformations();
+		} else if (openCalLink == source) {
+			doOpenCalendar(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -379,4 +410,16 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(cmc == source) {
+			removeAsListenerAndDispose(calCtr);
+			calCtr = null;
+			removeAsListenerAndDispose(cmc);
+			cmc = null;
+		}
+		super.event(ureq, source, event);
+	}
+
 }
