@@ -524,4 +524,11 @@ public class GraderToIdentityDAO {
 	public void deleteGraderRelation(GraderToIdentity grader) {
 		dbInstance.getCurrentEntityManager().remove(grader);
 	}
+	
+	public void deleteGradersRelations(RepositoryEntryRef entry) {
+		List<GraderToIdentity> relations = getGraders(entry);
+		for(GraderToIdentity relation:relations) {
+			deleteGraderRelation(relation);
+		}
+	}
 }

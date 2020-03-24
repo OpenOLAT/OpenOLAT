@@ -132,5 +132,8 @@ public class GradingConfigurationDAO {
 		((RepositoryEntryGradingConfigurationImpl)config).setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(config);
 	}
-
+	
+	public void deleteConfiguration(RepositoryEntryGradingConfiguration config) {
+		dbInstance.getCurrentEntityManager().remove(config);
+	}
 }

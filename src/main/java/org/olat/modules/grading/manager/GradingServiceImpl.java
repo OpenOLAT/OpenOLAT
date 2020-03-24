@@ -148,7 +148,14 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 	
 	@Override
 	public boolean deleteRepositoryEntryData(RepositoryEntry re) {
-		boolean hasAssignment = gradingAssignmentDao.hasGradingAssignment(re);
+		boolean hasAssignment = gradingAssignmentDao.hasGradingAssignment(re); // or grader to identity
+		if(!hasAssignment) {
+			RepositoryEntryGradingConfiguration config = gradingConfigurationDao.getConfiguration(re);
+			if(config != null) {
+				gradedToIdentityDao.deleteGradersRelations(re);
+				gradingConfigurationDao.deleteConfiguration(config);
+			}
+		}
 		return !hasAssignment;
 	}
 
