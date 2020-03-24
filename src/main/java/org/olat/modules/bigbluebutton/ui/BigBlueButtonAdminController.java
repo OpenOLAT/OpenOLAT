@@ -49,6 +49,7 @@ public class BigBlueButtonAdminController extends BasicController implements Act
 	private Link configurationLink;
 	private final Link meetingsLink;
 	private final Link templatesLink;
+	private final Link calendarLink;
 	private final SegmentViewComponent segmentView;
 	private final VelocityContainer mainVC;
 	
@@ -57,6 +58,7 @@ public class BigBlueButtonAdminController extends BasicController implements Act
 	private BigBlueButtonConfigurationController configCtrl;
 	private BigBlueButtonAdminMeetingsController meetingsCtrl;
 	private BigBlueButtonAdminTemplatesController templatesCtrl;
+	private BigBlueButtonMeetingsCalendarController calendarsCtrl;
 	
 	public BigBlueButtonAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -75,6 +77,8 @@ public class BigBlueButtonAdminController extends BasicController implements Act
 		segmentView.addSegment(templatesLink, false);
 		meetingsLink = LinkFactory.createLink("meetings.title", mainVC, this);
 		segmentView.addSegment(meetingsLink, false);
+		calendarLink = LinkFactory.createLink("calendar.title", mainVC, this);
+		segmentView.addSegment(calendarLink, false);
 		
 		if(configurationReadOnly) {
 			doOpenMeetings(ureq);
@@ -105,6 +109,9 @@ public class BigBlueButtonAdminController extends BasicController implements Act
 		} else if("Meetings".equalsIgnoreCase(type)) {
 			doOpenMeetings(ureq);
 			segmentView.select(meetingsLink);
+		} else if("Calendar".equalsIgnoreCase(type)) {
+			doOpenCalendar(ureq);
+			segmentView.select(calendarLink);
 		}
 	}
 
@@ -121,6 +128,8 @@ public class BigBlueButtonAdminController extends BasicController implements Act
 					doOpenTemplates(ureq);
 				} else if (clickedLink == meetingsLink){
 					doOpenMeetings(ureq);
+				} else if (clickedLink == calendarLink){
+					doOpenCalendar(ureq);
 				}
 			}
 		}
@@ -158,4 +167,16 @@ public class BigBlueButtonAdminController extends BasicController implements Act
 		}
 		mainVC.put("segmentCmp", meetingsCtrl.getInitialComponent());
 	}
+	
+	private void doOpenCalendar(UserRequest ureq) {
+		if(calendarsCtrl == null) {
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Calendar", 0l), null);
+			calendarsCtrl = new BigBlueButtonMeetingsCalendarController(ureq, bwControl);
+			listenTo(calendarsCtrl);
+		} else {
+			addToHistory(ureq, calendarsCtrl);
+		}
+		mainVC.put("segmentCmp", calendarsCtrl.getInitialComponent());
+	}
+	
 }
