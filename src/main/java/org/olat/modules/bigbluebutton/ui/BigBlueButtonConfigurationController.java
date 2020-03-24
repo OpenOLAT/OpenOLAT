@@ -21,7 +21,6 @@ package org.olat.modules.bigbluebutton.ui;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
 
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.gui.UserRequest;
@@ -29,7 +28,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -53,7 +51,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BigBlueButtonConfigurationController extends FormBasicController {
 
-	private static final String[] CLEAN_KEYS = { "-", "1", "2", "3", "4", "5", "7", "14", "21", "30" };
 	private static final String[] FOR_KEYS = { "courses", "groups" };
 	private static final String PLACEHOLDER = "xxx-placeholder-xxx";
 	
@@ -61,7 +58,6 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 	private TextElement urlEl;
 	private SpacerElement spacerEl;
 	private TextElement sharedSecretEl;
-	private SingleSelection cleanMeetingsEl;
 	private MultipleSelectionElement moduleEnabled;
 	private MultipleSelectionElement enabledForEl;
 	private MultipleSelectionElement permanentForEl;
@@ -106,7 +102,8 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		
 		adhocForEl = uifactory.addCheckboxesHorizontal("enable.adhoc.meeting", formLayout, enabledKeys, enabledValues);
 		adhocForEl.select(enabledKeys[0], bigBlueButtonModule.isAdhocMeetingEnabled());
-
+		adhocForEl.setVisible(false);//TODO bbb
+		
 		//spacer
 		spacerEl = uifactory.addSpacerElement("spacer", formLayout, false);
 
@@ -123,22 +120,7 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		}
 		sharedSecretEl = uifactory.addPasswordElement("shared.secret", "option.bigbluebutton.shared.secret", 255, sharedSecret, formLayout);
 		sharedSecretEl.setAutocomplete("new-password");
-		
-		// delete meeting
-		String[] cleanValues = Arrays.copyOf(CLEAN_KEYS, CLEAN_KEYS.length);
-		cleanValues[0] = translate("option.dont.clean.meetings");
-		cleanMeetingsEl = uifactory.addDropdownSingleselect("option.clean.meetings", formLayout, CLEAN_KEYS, cleanValues);
-		if(bigBlueButtonModule.isCleanupMeetings()) {
-			long days = bigBlueButtonModule.getDaysToKeep();
-			String dayStr = Long.toString(days);
-			for(String key:CLEAN_KEYS) {
-				if(dayStr.equals(key)) {
-					cleanMeetingsEl.select(key, true);
-				}
-			}
-		} else {
-			cleanMeetingsEl.select(CLEAN_KEYS[0], true);
-		}
+
 		
 		//buttons save - check
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("save", getTranslator());
@@ -161,7 +143,6 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		urlEl.setVisible(enabled);
 		sharedSecretEl.setVisible(enabled);
 		spacerEl.setVisible(enabled);
-		cleanMeetingsEl.setVisible(enabled);
 	}
 	
 	@Override
@@ -249,14 +230,6 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 				bigBlueButtonModule.setGroupsEnabled(enabledForEl.isSelected(1));
 				bigBlueButtonModule.setPermanentMeetingEnabled(permanentForEl.isAtLeastSelected(1));
 				bigBlueButtonModule.setAdhocMeetingEnabled(adhocForEl.isAtLeastSelected(1));
-
-				if(cleanMeetingsEl.isSelected(0)) {
-					bigBlueButtonModule.setCleanupMeetings(false);
-					bigBlueButtonModule.setDaysToKeep(null);
-				} else {
-					bigBlueButtonModule.setCleanupMeetings(true);
-					bigBlueButtonModule.setDaysToKeep(cleanMeetingsEl.getSelectedKey());
-				}
 				
 				String sharedSecret = sharedSecretEl.getValue();
 				if(!PLACEHOLDER.equals(sharedSecret)) {

@@ -17,28 +17,19 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.bigbluebutton.manager;
-
-import org.apache.logging.log4j.Logger;
-import org.olat.core.commons.services.scheduler.JobWithDB;
-import org.olat.core.logging.Tracing;
-import org.quartz.DisallowConcurrentExecution;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
+package org.olat.modules.bigbluebutton;
 
 /**
  * 
- * Initial date: 18 mars 2020<br>
+ * Initial date: 24 mars 2020<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@DisallowConcurrentExecution
-public class BigBlueButtonCleanupJob extends JobWithDB {
-
-	private static final Logger log = Tracing.createLoggerFor(BigBlueButtonCleanupJob.class);
+public enum BigBlueButtonRoles {
 	
-	@Override
-	public void executeWithDB(JobExecutionContext arg0) throws JobExecutionException {
-		log.info("", "Clean BigBlueButton meetings");
-	}
+	coach,
+	owner,
+	author,
+	administrator
+
 }

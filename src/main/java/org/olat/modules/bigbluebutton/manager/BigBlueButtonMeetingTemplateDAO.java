@@ -47,6 +47,7 @@ public class BigBlueButtonMeetingTemplateDAO {
 		template.setLastModified(template.getCreationDate());
 		template.setName(name);
 		template.setSystem(system);
+		template.setEnabled(true);
 		template.setExternalId(externalId);
 		dbInstance.getCurrentEntityManager().persist(template);
 		return template;

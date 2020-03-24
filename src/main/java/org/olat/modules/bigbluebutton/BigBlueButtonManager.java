@@ -58,7 +58,7 @@ public interface BigBlueButtonManager {
 	 * @param followupTime Follow-up time
 	 * @return true if the meeting can be reserved
 	 */
-	public boolean isSlotAvailable(BigBlueButtonMeetingTemplate template, Date start, long leadTime, Date end, long followupTime);
+	public boolean isSlotAvailable(BigBlueButtonMeeting meeting, BigBlueButtonMeetingTemplate template, Date start, long leadTime, Date end, long followupTime);
 
 	public BigBlueButtonMeeting getMeeting(BigBlueButtonMeeting meeting);
 	

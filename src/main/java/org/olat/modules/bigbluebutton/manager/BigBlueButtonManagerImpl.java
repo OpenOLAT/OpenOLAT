@@ -88,37 +88,42 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 		List<BigBlueButtonMeetingTemplate> templates = bigBlueButtonMeetingTemplateDao.getTemplates();
 		
 		// Web conferen
-		defaultTemplate("sys-meetings", "Meetings", 5, 5,
+		defaultTemplate("sys-meetings", "Meetings", 5, 5, 240,
 				Boolean.FALSE, Boolean.FALSE, Boolean.TRUE, // recording
 				Boolean.FALSE, Boolean.TRUE, // webcams moderator only, unmute
 				Boolean.FALSE, Boolean.FALSE, // cam, mic
 				Boolean.FALSE, Boolean.TRUE, // chat
 				Boolean.FALSE, Boolean.FALSE, // node, layout
+				Boolean.FALSE, Boolean.TRUE, Boolean.FALSE,
 				GuestPolicyEnum.ALWAYS_ACCEPT, templates);
 		
-		defaultTemplate("sys-classes", "Classes", 20, 30,
+		defaultTemplate("sys-classes", "Classes", 20, 30, 240,
 				Boolean.FALSE, Boolean.FALSE, Boolean.TRUE, // recording
 				Boolean.TRUE, Boolean.TRUE, // webcamsmoderator only, unmute
 				Boolean.TRUE, Boolean.TRUE, // cam, mic
 				Boolean.FALSE, Boolean.FALSE, // chat
 				Boolean.FALSE, Boolean.FALSE, // node, layout
+				Boolean.FALSE, Boolean.TRUE, Boolean.FALSE,
 				GuestPolicyEnum.ALWAYS_ACCEPT, templates);
 		
-		defaultTemplate("sys-cafe", "Cafe", 10, 10,
+		defaultTemplate("sys-cafe", "Cafe", 10, 10, 240,
 				Boolean.FALSE, Boolean.FALSE, Boolean.TRUE, // recording
 				Boolean.FALSE, Boolean.TRUE, // webcams moderator only, unmute
 				Boolean.FALSE, Boolean.FALSE, // cam, mic
 				Boolean.TRUE, Boolean.FALSE, // chat
 				Boolean.FALSE, Boolean.FALSE, // node, layout
+				Boolean.FALSE, Boolean.TRUE, Boolean.FALSE,
 				GuestPolicyEnum.ALWAYS_ACCEPT, templates);
 	}
 	
-	private void defaultTemplate(String externalId, String name, Integer maxConcurrentMeetings, Integer maxParticipants,
+	private void defaultTemplate(String externalId, String name,
+			Integer maxConcurrentMeetings, Integer maxParticipants, Integer maxDuration,
 			Boolean muteOnStart, Boolean autoStartRecording, Boolean allowStartStopRecording,
 			Boolean webcamsOnlyForModerator, Boolean allowModsToUnmuteUsers,
 			Boolean lockSettingsDisableCam, Boolean lockSettingsDisableMic,
 			Boolean lockSettingsDisablePrivateChat, Boolean lockSettingsDisablePublicChat,
 			Boolean lockSettingsDisableNote, Boolean lockSettingsLockedLayout,
+			Boolean lockSettingsHideUserList, Boolean lockSettingsLockOnJoin, Boolean lockSettingsLockOnJoinConfigurable,
 			GuestPolicyEnum guestPolicy, List<BigBlueButtonMeetingTemplate> templates) {
 		
 		BigBlueButtonMeetingTemplate template = templates.stream()
@@ -131,17 +136,24 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 		template = bigBlueButtonMeetingTemplateDao.createTemplate(name, externalId, true);
 		template.setMaxConcurrentMeetings(maxConcurrentMeetings);
 		template.setMaxParticipants(maxParticipants);
+		template.setMaxDuration(maxDuration);
 		template.setMuteOnStart(muteOnStart);
 		template.setAutoStartRecording(autoStartRecording);
 		template.setAllowStartStopRecording(allowStartStopRecording);
 		template.setWebcamsOnlyForModerator(webcamsOnlyForModerator);
 		template.setAllowModsToUnmuteUsers(allowModsToUnmuteUsers);
+		
 		template.setLockSettingsDisableCam(lockSettingsDisableCam);
 		template.setLockSettingsDisableMic(lockSettingsDisableMic);
 		template.setLockSettingsDisablePrivateChat(lockSettingsDisablePrivateChat);
 		template.setLockSettingsDisablePublicChat(lockSettingsDisablePublicChat);
 		template.setLockSettingsDisableNote(lockSettingsDisableNote);
 		template.setLockSettingsLockedLayout(lockSettingsLockedLayout);
+		
+		template.setLockSettingsHideUserList(lockSettingsHideUserList);
+		template.setLockSettingsLockOnJoin(lockSettingsLockOnJoin);
+		template.setLockSettingsLockOnJoinConfigurable(lockSettingsLockOnJoinConfigurable);
+
 		template.setGuestPolicyEnum(guestPolicy);
 		bigBlueButtonMeetingTemplateDao.updateTemplate(template);
 	}
@@ -152,15 +164,18 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 	}
 	
 	@Override
-	public boolean isSlotAvailable(BigBlueButtonMeetingTemplate template, Date startDate, long leadTime, Date endDate, long followupTime) {
+	public boolean isSlotAvailable(BigBlueButtonMeeting meeting, BigBlueButtonMeetingTemplate template, Date startDate, long leadTime, Date endDate, long followupTime) {
 		if(template == null) return false; // template are mandatory
 		if(template.getMaxConcurrentMeetings() == null) {
 			return true;
 		}
 		Date start = bigBlueButtonMeetingDao.calculateStartWithLeadTime(startDate, leadTime);
 		Date end = bigBlueButtonMeetingDao.calculateEndWithFollowupTime(endDate, followupTime);
-		int numOfCurrentMeetings = bigBlueButtonMeetingDao.getConcurrentMeetings(template, start, end);
-		return numOfCurrentMeetings < template.getMaxConcurrentMeetings().intValue();
+		List<Long> currentMeetings = bigBlueButtonMeetingDao.getConcurrentMeetings(template, start, end);
+		if(meeting != null && currentMeetings.contains(meeting.getKey())) {
+			return true; // it's my slot
+		}
+		return currentMeetings.size() < template.getMaxConcurrentMeetings().intValue();
 	}
 
 	@Override
@@ -380,7 +395,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 		if(template != null) {
 			uriBuilder
 				.optionalParameter("maxParticipants", template.getMaxParticipants().intValue() + 1)
-				.optionalParameter("record", "true")
+				.optionalParameter("record", template.getRecord())
 				// video options
 				.optionalParameter("muteOnStart", template.getMuteOnStart())
 				.optionalParameter("autoStartRecording", template.getAutoStartRecording())
@@ -394,6 +409,10 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 				.optionalParameter("lockSettingsDisablePublicChat", template.getLockSettingsDisablePublicChat())
 				.optionalParameter("lockSettingsDisableNote", template.getLockSettingsDisableNote())
 				.optionalParameter("lockSettingsLockedLayout", template.getLockSettingsLockedLayout())
+				// lock settings undocumented
+				.optionalParameter("lockSettingsHideUserList", template.getLockSettingsHideUserList())
+				.optionalParameter("lockSettingsLockOnJoin", template.getLockSettingsLockOnJoin())
+				.optionalParameter("lockSettingsLockOnJoinConfigurable", template.getLockSettingsLockOnJoinConfigurable())
 				// guest policy
 				.optionalParameter("guestPolicy", GuestPolicyEnum.ALWAYS_ACCEPT.name());
 		}

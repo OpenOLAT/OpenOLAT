@@ -43,8 +43,6 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 	private static final String PROP_ENABLED = "vc.bigbluebutton.enabled";
 	private static final String PROP_GROUP_ENABLED = "vc.bigbluebutton.groups";
 	private static final String PROP_COURSE_ENABLED = "vc.bigbluebutton.courses";
-	private static final String PROP_CLEAN_MEETINGS = "vc.bigbluebutton.cleanupMeetings";
-	private static final String PROP_DAYS_TO_KEEP = "vc.bigbluebutton.daysToKeep";
 	private static final String PROP_SECRET = "vc.bigbluebutton.secret";
 	private static final String PROP_SHARED_SECRET = "vc.bigbluebutton.shared.secret";
 	private static final String PROP_PROTOCOL = "vc.bigbluebutton.protocol";
@@ -71,10 +69,6 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 	private String groupsEnabled;
 	@Value("${vc.bigbluebutton.courses:true}")
 	private String coursesEnabled;	
-	@Value("${vc.bigbluebutton.cleanupMeetings:false}")
-	private String cleanupMeetings;
-	@Value("${vc.bigbluebutton.daysToKeep:}")
-	private String daysToKeep;
 	@Value("${vc.bigbluebutton.secret}")
 	private String secret;
 	@Value("${vc.bigbluebutton.shared.secret}")
@@ -107,8 +101,6 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 		}
 		baseUrl = getStringPropertyValue(PROP_BASEURL, baseUrl);
 		contextPath = getStringPropertyValue(PROP_CONTEXTPATH, contextPath);
-		cleanupMeetings = getStringPropertyValue(PROP_CLEAN_MEETINGS, cleanupMeetings);
-		daysToKeep = getStringPropertyValue(PROP_DAYS_TO_KEEP, daysToKeep);
 		secret = getStringPropertyValue(PROP_SECRET, secret);
 		sharedSecret = getStringPropertyValue(PROP_SHARED_SECRET, sharedSecret);
 		
@@ -258,28 +250,6 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 	public void setSharedSecret(String sharedSecret) {
 		this.sharedSecret = sharedSecret;
 		setStringProperty(PROP_SHARED_SECRET, sharedSecret, true);
-	}
-
-	public boolean isCleanupMeetings() {
-		return "true".equals(cleanupMeetings);
-	}
-
-	public void setCleanupMeetings(boolean enable) {
-		cleanupMeetings = enable ? "true" : "false";
-		setStringProperty(PROP_CLEAN_MEETINGS, cleanupMeetings, true);
-	}
-	
-	public long getDaysToKeep() {
-		if(StringHelper.isLong(daysToKeep)) {
-			return Long.parseLong(daysToKeep);
-		}
-		return -1l;
-	}
-	
-	public void setDaysToKeep(String days) {
-		this.daysToKeep = days;
-		setStringProperty(PROP_DAYS_TO_KEEP, days, true);
-		
 	}
 
 	public Double getUserBandwidhtRequirement() {

@@ -19,6 +19,8 @@
  */
 package org.olat.modules.bigbluebutton;
 
+import java.util.List;
+
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 
@@ -33,6 +35,10 @@ public interface BigBlueButtonMeetingTemplate extends ModifiedInfo, CreateInfo {
 	public Long getKey();
 	
 	public boolean isSystem();
+	
+	public boolean isEnabled();
+
+	public void setEnabled(boolean enabled);
 	
 	public String getExternalId();
 	
@@ -51,6 +57,20 @@ public interface BigBlueButtonMeetingTemplate extends ModifiedInfo, CreateInfo {
 	public Integer getMaxParticipants();
 
 	public void setMaxParticipants(Integer maxParticipants);
+	
+	/**
+	 * @return The maximum duration of a meeting in minutes
+	 */
+	public Integer getMaxDuration();
+
+	/**
+	 * @param maxDuration Set the maximum duration of a meeting in minutes
+	 */
+	public void setMaxDuration(Integer maxDuration);
+	
+	public Boolean getRecord();
+
+	public void setRecord(Boolean record);
 	
 	public Boolean getMuteOnStart();
 
@@ -95,6 +115,22 @@ public interface BigBlueButtonMeetingTemplate extends ModifiedInfo, CreateInfo {
 	public Boolean getLockSettingsLockedLayout();
 
 	public void setLockSettingsLockedLayout(Boolean lockSettingsLockedLayout);
+	
+	public Boolean getLockSettingsHideUserList();
+
+	public void setLockSettingsHideUserList(Boolean lockSettingsHideUserList);
+
+	public Boolean getLockSettingsLockOnJoin();
+
+	public void setLockSettingsLockOnJoin(Boolean lockSettingsLockOnJoin);
+
+	public Boolean getLockSettingsLockOnJoinConfigurable();
+
+	public void setLockSettingsLockOnJoinConfigurable(Boolean lockSettingsLockOnJoinConfigurable);
+	
+	public List<BigBlueButtonRoles> getPermittedRolesEnum();
+	
+	public void setPermittedRolesEnum(List<BigBlueButtonRoles> roles);
 	
 	public GuestPolicyEnum getGuestPolicyEnum();
 

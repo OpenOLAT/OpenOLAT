@@ -115,9 +115,13 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		String welcome = meeting == null ? "" : meeting.getWelcome();
 		welcomeEl = uifactory.addRichTextElementForStringDataMinimalistic("meeting.welcome", "meeting.welcome", welcome, 8, 60, formLayout, getWindowControl());
 		
+		Long selectedTemplateKey = meeting == null || meeting.getTemplate() == null
+				? null : meeting.getTemplate().getKey();
 		KeyValues templatesKeyValues = new KeyValues();
 		for(BigBlueButtonMeetingTemplate template:templates) {
-			templatesKeyValues.add(KeyValues.entry(template.getKey().toString(), template.getName()));
+			if(template.isEnabled() || template.getKey().equals(selectedTemplateKey)) {
+				templatesKeyValues.add(KeyValues.entry(template.getKey().toString(), template.getName()));
+			}
 		}
 		String[] templatesKeys = templatesKeyValues.keys();
 		templateEl = uifactory.addDropdownSingleselect("meeting.template", "meeting.template", formLayout,
@@ -125,8 +129,8 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		templateEl.addActionListener(FormEvent.ONCHANGE);
 		templateEl.setMandatory(true);
 		boolean templateSelected = false;
-		if(meeting != null && meeting.getTemplate() != null) {
-			String currentTemplateId = meeting.getTemplate().getKey().toString();
+		if(selectedTemplateKey != null) {
+			String currentTemplateId = selectedTemplateKey.toString();
 			for(String key:templatesKeys) {
 				if(currentTemplateId.equals(key)) {
 					templateEl.select(currentTemplateId, true);
@@ -241,11 +245,8 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		
 		// dates ok
 		if(allOk && (!permanentEl.isVisible() || !permanentEl.isAtLeastSelected(1))) {
-			boolean canMeeting = validateSlot();
-			if(!canMeeting) {
-				startDateEl.setErrorKey("server.overloaded", null);
-				allOk &= false;
-			}
+			allOk &= validateDuration();
+			allOk &= validateSlot();
 		}
 		
 		nameEl.clearError();
@@ -269,10 +270,38 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		return allOk;
 	}
 	
-	private boolean validateSlot() {
+	private boolean validateDuration() {
+		boolean allOk = true;
+		
 		BigBlueButtonMeetingTemplate template = getSelectedTemplate();
-		return bigBlueButtonManager.isSlotAvailable(template,
+		Date start = startDateEl.getDate();
+		Date end = endDateEl.getDate();
+		if(template != null && template.getMaxDuration() != null && start != null && end != null) {
+			// all calculation in milli-seconds
+			long realStart = start.getTime() - (60 * 1000 * getLeadTime());
+			long realEnd = end.getTime() + (60 * 1000 * getFollowupTime());
+			long duration = realEnd - realStart;
+			long maxDuration  = (60 * 1000 * template.getMaxDuration());
+			if(duration > maxDuration) {
+				endDateEl.setErrorKey("error.duration", new String[] { template.getMaxDuration().toString() });
+				allOk &= false;
+			}
+		}
+		return allOk;
+	}
+	
+	private boolean validateSlot() {
+		boolean allOk = true;
+		
+		BigBlueButtonMeetingTemplate template = getSelectedTemplate();
+		boolean slotFree = bigBlueButtonManager.isSlotAvailable(meeting, template,
 				startDateEl.getDate(), getLeadTime(), endDateEl.getDate(), getFollowupTime());
+		if(!slotFree) {
+			startDateEl.setErrorKey("server.overloaded", null);
+			allOk &= false;
+		}
+		
+		return allOk;
 	}
 	
 	private BigBlueButtonMeetingTemplate getSelectedTemplate() {
