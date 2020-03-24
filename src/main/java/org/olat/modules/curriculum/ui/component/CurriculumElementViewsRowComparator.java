@@ -62,7 +62,12 @@ public class CurriculumElementViewsRowComparator extends FlexiTreeNodeComparator
 			// This case is usually not possible
 			CurriculumElementWithViewsRow p1 = c1.getParent();
 			CurriculumElementWithViewsRow p2 = c2.getParent();
-			c = compareCurriculumElements(p1, p2);
+			if(p1 == null || p2 == null) {
+				// reversed because no parent at the top, higher in the hierarchy
+				c = -compareNullObjects(p1, p2); 
+			} else {
+				c = compareCurriculumElements(p1, p2);
+			}
 		} else {
 			// This case is usually not possible
 			c = compareDisplayName(c1, c2);
