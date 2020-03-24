@@ -206,6 +206,27 @@ public class QualityContextDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldLoadParticipationsByDataCollectionAndRole() {
+		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
+		QualityDataCollection dataCollectionOther = qualityTestHelper.createDataCollection();
+		EvaluationFormParticipation coach1 = qualityTestHelper.createParticipation();
+		sut.createContext(dataCollection, qualityTestHelper.createParticipation(), QualityContextRole.coach, null, null, null);
+		EvaluationFormParticipation coach2 = qualityTestHelper.createParticipation();
+		sut.createContext(dataCollection, coach2, QualityContextRole.coach, null, null, null);
+		EvaluationFormParticipation participant = qualityTestHelper.createParticipation();
+		sut.createContext(dataCollection, participant, QualityContextRole.participant, null, null, null);
+		EvaluationFormParticipation coachOther = qualityTestHelper.createParticipation();
+		sut.createContext(dataCollectionOther, coachOther, QualityContextRole.coach, null, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		List<EvaluationFormParticipation> participations = sut.loadParticipationByRole(dataCollection, QualityContextRole.coach);
+		
+		assertThat(participations)
+				.containsExactlyInAnyOrder(coach1, coach2)
+				.doesNotContain(participant, coachOther);
+	}
+	
+	@Test
 	public void shouldCheckWhetherParticipationHasContexts() {
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
 		EvaluationFormParticipation evaluationFormParticipation = qualityTestHelper.createParticipation();

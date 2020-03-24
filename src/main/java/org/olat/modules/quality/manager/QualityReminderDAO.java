@@ -83,6 +83,20 @@ public class QualityReminderDAO {
 		return reminder;
 	}
 
+	List<QualityReminder> load(QualityDataCollectionRef dataCollectionRef) {
+		if (dataCollectionRef == null || dataCollectionRef.getKey() == null) return Collections.emptyList();
+		
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select reminder");
+		sb.append("  from qualityreminder as reminder");
+		sb.append(" where reminder.dataCollection.key = :dataCollectionKey");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QualityReminder.class)
+				.setParameter("dataCollectionKey", dataCollectionRef.getKey())
+				.getResultList();
+	}
+
 	QualityReminder load(QualityDataCollectionRef dataCollectionRef, QualityReminderType type) {
 		if (dataCollectionRef == null || dataCollectionRef.getKey() == null || type == null) return null;
 		
@@ -108,13 +122,27 @@ public class QualityReminderDAO {
 		sb.append("  from qualityreminder as reminder");
 		sb.append("  join fetch reminder.dataCollection as collection");
 		sb.append(" where reminder.sendDone is null");
-		sb.append("   and collection.status = '").append(QualityDataCollectionStatus.RUNNING).append("'");
 		sb.append("   and reminder.sendPlaned <= :until");
+		sb.append("   and (");
+		append(sb, QualityReminderType.ANNOUNCEMENT_COACH_CONTEXT, QualityDataCollectionStatus.READY);
+		sb.append("   or");
+		append(sb, QualityReminderType.ANNOUNCEMENT_COACH_TOPIC, QualityDataCollectionStatus.READY);
+		sb.append("   or");
+		append(sb, QualityReminderType.INVITATION, QualityDataCollectionStatus.RUNNING);
+		sb.append("   or");
+		append(sb, QualityReminderType.REMINDER1, QualityDataCollectionStatus.RUNNING);
+		sb.append("   or");
+		append(sb, QualityReminderType.REMINDER2, QualityDataCollectionStatus.RUNNING);
+		sb.append("      )");
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), QualityReminder.class)
 				.setParameter("until", until)
 				.getResultList();
+	}
+
+	private void append(StringBuilder sb, QualityReminderType type, QualityDataCollectionStatus status) {
+		sb.append("( reminder.type = '").append(type).append("' and collection.status = '").append(status).append("')");
 	}
 
 	void delete(QualityReminder reminder) {

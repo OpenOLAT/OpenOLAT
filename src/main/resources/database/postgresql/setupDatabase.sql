@@ -2150,7 +2150,7 @@ create table o_qual_reminder (
    id bigserial,
    creationdate timestamp not null,
    lastmodified timestamp not null,
-   q_type varchar(20),
+   q_type varchar(65),
    q_send_planed timestamp,
    q_send_done timestamp,
    fk_data_collection bigint not null,

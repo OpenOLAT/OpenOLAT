@@ -65,6 +65,7 @@ public class CourseLectureFollowUpProviderConfigController extends ProviderConfi
 	private TextElement lecturesTotalMinEl;
 	private TextElement durationEl;
 	private TextElement minutesBeforeEndEl;
+	private TextElement announcementCoachDaysEl;
 	private TextElement invitationDaysEl;
 	private TextElement reminder1DaysEl;
 	private TextElement reminder2DaysEl;
@@ -140,6 +141,9 @@ public class CourseLectureFollowUpProviderConfigController extends ProviderConfi
 		durationEl = uifactory.addTextElement("config.duration", 4, duration, formLayout);
 
 		// reminders
+		String announcementCoachDays = configs.getValue(CourseLecturesFollowUpProvider.CONFIG_KEY_ANNOUNCEMENT_COACH_DAYS);
+		announcementCoachDaysEl = uifactory.addTextElement("config.announcement.coach.days", 4, announcementCoachDays, formLayout);
+
 		String invitationDays = configs.getValue(CourseLecturesFollowUpProvider.CONFIG_KEY_INVITATION_AFTER_DC_START_DAYS);
 		invitationDaysEl = uifactory.addTextElement("config.invitation.days", 4, invitationDays, formLayout);
 
@@ -157,6 +161,7 @@ public class CourseLectureFollowUpProviderConfigController extends ProviderConfi
 		previousGeneratorEl.setEnabled(enabled);
 		lecturesTotalMinEl.setEnabled(enabled);
 		minutesBeforeEndEl.setEnabled(enabled);
+		announcementCoachDaysEl.setEnabled(enabled);
 		invitationDaysEl.setEnabled(enabled);
 		reminder1DaysEl.setEnabled(enabled);
 		reminder2DaysEl.setEnabled(enabled);
@@ -175,6 +180,7 @@ public class CourseLectureFollowUpProviderConfigController extends ProviderConfi
 		allOk &= validateInteger(lecturesTotalMinEl, 1, 10000);
 		allOk &= validateIsMandatory(minutesBeforeEndEl) && validateInteger(minutesBeforeEndEl, 0, 1000);
 		allOk &= validateIsMandatory(durationEl) && validateInteger(durationEl, 1, 10000);
+		allOk &= validateInteger(announcementCoachDaysEl, 0, 10000);
 		allOk &= validateInteger(invitationDaysEl, 0, 10000);
 		allOk &= validateInteger(reminder1DaysEl, 1, 10000);
 		allOk &= validateInteger(reminder2DaysEl, 1, 10000);
@@ -190,6 +196,7 @@ public class CourseLectureFollowUpProviderConfigController extends ProviderConfi
 		lecturesTotalMinEl.clearError();
 		minutesBeforeEndEl.clearError();
 		durationEl.clearError();
+		announcementCoachDaysEl.clearError();
 		invitationDaysEl.clearError();
 		reminder1DaysEl.clearError();
 		reminder2DaysEl.clearError();
@@ -225,6 +232,9 @@ public class CourseLectureFollowUpProviderConfigController extends ProviderConfi
 		
 		String duration = durationEl.getValue();
 		configs.setValue(CourseLecturesFollowUpProvider.CONFIG_KEY_DURATION_DAYS, duration);
+		
+		String announcementCoachDays = announcementCoachDaysEl.getValue();
+		configs.setValue(CourseLecturesFollowUpProvider.CONFIG_KEY_ANNOUNCEMENT_COACH_DAYS, announcementCoachDays);
 		
 		String invitationDays = invitationDaysEl.getValue();
 		configs.setValue(CourseLecturesFollowUpProvider.CONFIG_KEY_INVITATION_AFTER_DC_START_DAYS, invitationDays);

@@ -23,9 +23,9 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
@@ -251,6 +251,23 @@ class QualityContextDAO {
 				.createQuery(sb.toString(), QualityContext.class)
 				.setParameter("participationKey", participationRef.getKey())
 				.setParameter("curriculumElementKey", curriculumElementRef.getKey())
+				.setParameter("roleName", role)
+				.getResultList();
+	}
+
+	List<EvaluationFormParticipation> loadParticipationByRole(QualityDataCollectionRef dataCollectionRef,
+			QualityContextRole role) {
+		if (dataCollectionRef == null || dataCollectionRef.getKey() == null) return Collections.emptyList();
+		
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select context.evaluationFormParticipation");
+		sb.append("  from qualitycontext as context");
+		sb.append(" where context.dataCollection.key = :dataCollectionKey");
+		sb.append("   and context.role = :roleName");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), EvaluationFormParticipation.class)
+				.setParameter("dataCollectionKey", dataCollectionRef.getKey())
 				.setParameter("roleName", role)
 				.getResultList();
 	}

@@ -68,6 +68,7 @@ import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormPrintSelection;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.modules.forms.Figures;
 import org.olat.modules.forms.RubricRating;
 import org.olat.modules.forms.RubricStatistic;
@@ -90,6 +91,7 @@ import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityExecutorParticipationSearchParams;
 import org.olat.modules.quality.QualityModule;
 import org.olat.modules.quality.QualityReminder;
+import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.model.QualityMailTemplateBuilder;
 import org.olat.modules.quality.ui.FiguresFactory;
 import org.olat.modules.quality.ui.QualityMainController;
@@ -120,6 +122,8 @@ class QualityMailing {
 	@Autowired
 	private QualityModule qualityModule;
 	@Autowired
+	private QualityService qualityService;
+	@Autowired
 	private QualityParticipationDAO participationDao;
 	@Autowired
 	private QualityDataCollectionDAO dataCollectionDao;
@@ -131,11 +135,62 @@ class QualityMailing {
 	private PdfService pdfService;
 	@Autowired
 	private I18nModule i18nModule;
+	
+	public void sendAnnouncementMail(QualityReminder reminder, Identity topicIdentity) {
+		MailTemplate template = createAnnouncementMailTemplate(reminder, topicIdentity);
+		
+		MailerResult result = new MailerResult();
+		MailManager mailManager = CoreSpringFactory.getImpl(MailManager.class);
+		MailBundle bundle = mailManager.makeMailBundle(null, topicIdentity, template, null, null, result);
+		if(bundle != null) {
+			appendMimeFrom(bundle);
+			result = mailManager.sendMessage(bundle);
+			logMailerResult(result, reminder, topicIdentity);
+		}
+	}
+
+	private MailTemplate createAnnouncementMailTemplate(QualityReminder reminder, Identity topicIdentity) {
+		User user = topicIdentity.getUser();
+		Locale locale = I18nManager.getInstance().getLocaleOrDefault(user.getPreferences().getLanguage());
+		Translator translator = Util.createPackageTranslator(QualityMainController.class, locale);
+		
+		String subject = translator.translate(reminder.getType().getSubjectI18nKey());
+		String body = translator.translate(reminder.getType().getBodyI18nKey());
+		QualityMailTemplateBuilder mailBuilder = QualityMailTemplateBuilder.builder(subject, body, locale);
+		
+		QualityDataCollection dataCollection = reminder.getDataCollection();
+		mailBuilder.withStart(dataCollection.getStart())
+				.withDeadline(dataCollection.getDeadline())
+				.withTopicType(translator.translate(QualityDataCollectionTopicType.IDENTIY.getI18nKey()))
+				.withTopic(user.getFirstName() + " " + user.getLastName())
+				.withTitle(dataCollection.getTitle());
+		
+		EvaluationFormSurvey survey = qualityService.loadSurvey(dataCollection);
+		EvaluationFormSurvey previous = survey.getSeriesPrevious();
+		if (previous != null) {
+			EvaluationFormSurveyIdentifier identifier = previous.getIdentifier();
+			Long key = identifier.getOLATResourceable().getResourceableId();
+			QualityDataCollection previousDC = qualityService.loadDataCollectionByKey(() -> key);
+			if (previousDC != null) {
+				mailBuilder.withPreviousTitle(previousDC.getTitle());
+			}
+		}
+		
+		String seriePorition = previous != null
+				? translator.translate("reminder.serie.followup")
+				: translator.translate("reminder.serie.primary");
+		mailBuilder.withSeriePosition(seriePorition);
+		
+		String surveyContext = createDatCollectionContext(dataCollection, locale);
+		mailBuilder.withContext(surveyContext);
+		
+		return mailBuilder.build();
+	}
 
 	void sendReminderMail(QualityReminder reminder, QualityReminder invitation, EvaluationFormParticipation participation) {
 		if (participation.getExecutor() != null) {
 			Identity executor = participation.getExecutor();
-			MailTemplate template = createReminderMailTemplate(reminder, invitation, executor);
+			MailTemplate template = createAnnouncementMailTemplate(reminder, invitation, executor);
 			
 			MailerResult result = new MailerResult();
 			MailManager mailManager = CoreSpringFactory.getImpl(MailManager.class);
@@ -143,18 +198,22 @@ class QualityMailing {
 			if(bundle != null) {
 				appendMimeFrom(bundle);
 				result = mailManager.sendMessage(bundle);
-				if (result.isSuccessful()) {
-					log.info(MessageFormat.format("{0} for quality data collection [key={1}] sent to {2}",
-							reminder.getType().name(), reminder.getDataCollection().getKey(), executor));
-				} else {
-					log.warn(MessageFormat.format("Sending {0} for quality data collection [key={1}] to {2} failed: {3}",
-							reminder.getType().name(), reminder.getDataCollection().getKey(), executor, result.getErrorMessage()));
-				}
+				logMailerResult(result, reminder, executor);
 			}
 		}
 	}
 
-	private MailTemplate createReminderMailTemplate(QualityReminder reminder, QualityReminder invitationReminder, Identity executor) {
+	private void logMailerResult(MailerResult result, QualityReminder reminder, Identity executor) {
+		if (result.isSuccessful()) {
+			log.info(MessageFormat.format("{0} for quality data collection [key={1}] sent to {2}",
+					reminder.getType().name(), reminder.getDataCollection().getKey(), executor));
+		} else {
+			log.warn(MessageFormat.format("Sending {0} for quality data collection [key={1}] to {2} failed: {3}",
+					reminder.getType().name(), reminder.getDataCollection().getKey(), executor, result.getErrorMessage()));
+		}
+	}
+
+	private MailTemplate createAnnouncementMailTemplate(QualityReminder reminder, QualityReminder invitationReminder, Identity executor) {
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(executor.getUser().getPreferences().getLanguage());
 		Translator translator = Util.createPackageTranslator(QualityMainController.class, locale);
 		
@@ -198,8 +257,10 @@ class QualityMailing {
 			String surveyContext = createParticipationContext(participation, locale);
 			mailBuilder.withContext(surveyContext);
 		}
-		
-		mailBuilder.withInvitation(invitationReminder.getSendDone());
+	
+		if (invitationReminder != null) {
+			mailBuilder.withInvitation(invitationReminder.getSendDone());
+		}
 		
 		return mailBuilder.build();
 	}
@@ -475,6 +536,5 @@ class QualityMailing {
 		}
 		
 	}
-
 
 }

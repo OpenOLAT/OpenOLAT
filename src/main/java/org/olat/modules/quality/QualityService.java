@@ -190,6 +190,8 @@ public interface QualityService {
 
 	public QualityReminder updateReminderDatePlaned(QualityReminder invitation, Date datePlaned);
 
+	public List<QualityReminder> loadReminders(QualityDataCollectionRef dataCollectionRef);
+
 	public QualityReminder loadReminder(QualityDataCollectionRef dataCollectionRef, QualityReminderType type);
 
 	public void deleteReminder(QualityReminder reminder);

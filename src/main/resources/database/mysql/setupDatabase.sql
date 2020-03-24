@@ -2259,7 +2259,7 @@ create table o_qual_reminder (
    id bigint not null auto_increment,
    creationdate datetime not null,
    lastmodified datetime not null,
-   q_type varchar(20) not null,
+   q_type varchar(65) not null,
    q_send_planed datetime,
    q_send_done datetime,
    fk_data_collection bigint not null,

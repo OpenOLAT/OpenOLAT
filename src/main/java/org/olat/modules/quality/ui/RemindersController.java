@@ -20,6 +20,9 @@
 package org.olat.modules.quality.ui;
 
 import java.util.Date;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -43,6 +46,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RemindersController extends FormBasicController {
 
+	private DateChooser announcementCoachTopicEl;
+	private DateChooser announcementCoachContextEl;
 	private DateChooser invitationEl;
 	private DateChooser reminder1El;
 	private DateChooser reminder2El;
@@ -51,6 +56,8 @@ public class RemindersController extends FormBasicController {
 	private DataCollectionSecurityCallback secCallback;
 	private QualityDataCollection dataCollection;
 	
+	private QualityReminder announcementCoachTopic;
+	private QualityReminder announcementCoachContext;
 	private QualityReminder invitation;
 	private QualityReminder reminder1;
 	private QualityReminder reminder2;
@@ -63,20 +70,46 @@ public class RemindersController extends FormBasicController {
 		super(ureq, wControl);
 		this.secCallback = secCallback;
 		this.dataCollection = dataCollection;
-		this.invitation = qualityService.loadReminder(dataCollection, QualityReminderType.INVITATION);
-		this.reminder1 = qualityService.loadReminder(dataCollection, QualityReminderType.REMINDER1);
-		this.reminder2 = qualityService.loadReminder(dataCollection, QualityReminderType.REMINDER2);
+		Map<QualityReminderType, QualityReminder> typeToReminder = qualityService.loadReminders(dataCollection).stream()
+				.collect(Collectors.toMap(QualityReminder::getType, Function.identity()));
+		this.announcementCoachTopic = typeToReminder.get(QualityReminderType.ANNOUNCEMENT_COACH_TOPIC);
+		this.announcementCoachContext = typeToReminder.get(QualityReminderType.ANNOUNCEMENT_COACH_CONTEXT);
+		this.invitation = typeToReminder.get(QualityReminderType.INVITATION);
+		this.reminder1 = typeToReminder.get(QualityReminderType.REMINDER1);
+		this.reminder2 = typeToReminder.get(QualityReminderType.REMINDER2);
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if (announcementCoachContext != null) {
+			Date announcementCoachContextDate = announcementCoachContext.isSent()
+					? announcementCoachContext.getSendDone()
+					: announcementCoachContext.getSendPlaned();
+			announcementCoachContextEl = uifactory.addDateChooser("reminder.announcement.coach.context.date",
+					announcementCoachContextDate, formLayout);
+			announcementCoachContextEl.setDateChooserTimeEnabled(true);
+			announcementCoachContextEl.setEnabled(false);
+		}
+		
+		if (announcementCoachTopic != null) {
+			Date announcementCoachTopicDate = announcementCoachTopic.isSent()
+					? announcementCoachTopic.getSendDone()
+					: announcementCoachTopic.getSendPlaned();
+			announcementCoachTopicEl = uifactory.addDateChooser("reminder.announcement.coach.topic.date",
+					announcementCoachTopicDate, formLayout);
+			announcementCoachTopicEl.setDateChooserTimeEnabled(true);
+			announcementCoachTopicEl.setEnabled(false);
+		}
+		
 		Date invitationDate = invitation != null? invitation.getSendPlaned(): null;
 		invitationEl = uifactory.addDateChooser("reminder.invitation.date", invitationDate, formLayout);
 		invitationEl.setDateChooserTimeEnabled(true);
+		
 		Date reminder1Date = reminder1 != null? reminder1.getSendPlaned(): null;
 		reminder1El = uifactory.addDateChooser("reminder.reminder1.date", reminder1Date, formLayout);
 		reminder1El.setDateChooserTimeEnabled(true);
+		
 		Date reminder2Date = reminder2 != null? reminder2.getSendPlaned(): null;
 		reminder2El = uifactory.addDateChooser("reminder.reminder2.date", reminder2Date, formLayout);
 		reminder2El.setDateChooserTimeEnabled(true);

@@ -21,6 +21,7 @@ package org.olat.modules.quality.generator.provider.courselectures;
 
 import static org.olat.modules.quality.generator.ProviderHelper.addDays;
 import static org.olat.modules.quality.generator.ProviderHelper.addMinutes;
+import static org.olat.modules.quality.generator.ProviderHelper.subtractDays;
 import static org.olat.modules.quality.generator.ProviderHelper.toDouble;
 
 import java.util.ArrayList;
@@ -59,7 +60,6 @@ import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityReminderType;
 import org.olat.modules.quality.QualityService;
-import org.olat.modules.quality.generator.ProviderHelper;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
 import org.olat.modules.quality.generator.QualityGeneratorProvider;
@@ -93,6 +93,7 @@ public class CourseLecturesFollowUpProvider implements QualityGeneratorProvider 
 	public static final String CONFIG_KEY_GRADE_TOTAL_CHECK_KEY = "grade.total.check.key";
 	public static final String CONFIG_KEY_GRADE_SINGLE_LIMIT = "grade.single.limit";
 	public static final String CONFIG_KEY_GRADE_SINGLE_CHECK_KEY = "grade.single.check.key";
+	public static final String CONFIG_KEY_ANNOUNCEMENT_COACH_DAYS = "accouncement.coach.days";
 	public static final String CONFIG_KEY_INVITATION_AFTER_DC_START_DAYS = "invitation.after.dc.start.days";
 	public static final String CONFIG_KEY_MINUTES_BEFORE_END = "minutes before end";
 	public static final String CONFIG_KEY_PREVIOUS_GENERATOR_KEY = "previous.generator.key";
@@ -220,12 +221,15 @@ public class CourseLecturesFollowUpProvider implements QualityGeneratorProvider 
 		String title = titleCreator.merge(titleTemplate, Arrays.asList(course, teacher.getUser()));
 		dataCollection.setTitle(title);
 
+		QualityReminderType coachReminderType = null;
 		if (CourseLecturesProvider.CONFIG_KEY_TOPIC_COACH.equals(topicKey)) {
 			dataCollection.setTopicType(QualityDataCollectionTopicType.IDENTIY);
 			dataCollection.setTopicIdentity(teacher);
+			coachReminderType = QualityReminderType.ANNOUNCEMENT_COACH_TOPIC;
 		} else if (CourseLecturesProvider.CONFIG_KEY_TOPIC_COURSE.equals(topicKey)) {
 			dataCollection.setTopicType(QualityDataCollectionTopicType.REPOSITORY);
 			dataCollection.setTopicRepositoryEntry(course);
+			coachReminderType = QualityReminderType.ANNOUNCEMENT_COACH_CONTEXT;
 		}
 		
 		dataCollection = qualityService.updateDataCollectionStatus(dataCollection, QualityDataCollectionStatus.READY);
@@ -258,7 +262,15 @@ public class CourseLecturesFollowUpProvider implements QualityGeneratorProvider 
 			}
 		}
 		
-		// make reminders
+		// make reminder
+		String announcementDay = configs.getValue(CONFIG_KEY_ANNOUNCEMENT_COACH_DAYS);
+		if (StringHelper.containsNonWhitespace(announcementDay) && coachReminderType != null) {
+			Date announcementDate = subtractDays(dcStart, announcementDay);
+			if (dataCollection.getStart().after(new Date())) { // no announcement if already started
+				qualityService.createReminder(dataCollection, announcementDate, coachReminderType);
+			}
+		}
+		
 		String invitationDay = configs.getValue(CONFIG_KEY_INVITATION_AFTER_DC_START_DAYS);
 		if (StringHelper.containsNonWhitespace(invitationDay)) {
 			Date invitationDate = addDays(dcStart, invitationDay);
@@ -302,9 +314,15 @@ public class CourseLecturesFollowUpProvider implements QualityGeneratorProvider 
 		
 		String minutesBeforeEnd = configs.getValue(CONFIG_KEY_MINUTES_BEFORE_END);
 		minutesBeforeEnd = StringHelper.containsNonWhitespace(minutesBeforeEnd)? minutesBeforeEnd: "0";
-		Date from = ProviderHelper.addMinutes(fromDate, minutesBeforeEnd);
+		Date from = addMinutes(fromDate, minutesBeforeEnd);
+		Date to = addMinutes(toDate, minutesBeforeEnd);
+		
+		String announcementDays = configs.getValue(CONFIG_KEY_ANNOUNCEMENT_COACH_DAYS);
+		if (StringHelper.containsNonWhitespace(announcementDays)) {
+			to = addDays(to, announcementDays);
+		}
+		
 		searchParams.setFrom(from);
-		Date to = ProviderHelper.addMinutes(toDate, minutesBeforeEnd);
 		searchParams.setTo(to);
 		
 		searchParams.setLastLectureBlock(true);

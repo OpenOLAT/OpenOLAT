@@ -2187,7 +2187,7 @@ create table o_qual_reminder (
    id number(20) GENERATED ALWAYS AS IDENTITY,
    creationdate date not null,
    lastmodified date not null,
-   q_type varchar2(20),
+   q_type varchar2(65),
    q_send_planed date,
    q_send_done date,
    fk_data_collection number(20) not null,

@@ -73,6 +73,7 @@ import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.quality.QualityContext;
 import org.olat.modules.quality.QualityContextBuilder;
 import org.olat.modules.quality.QualityContextRef;
+import org.olat.modules.quality.QualityContextRole;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionRef;
@@ -553,6 +554,11 @@ public class QualityServiceImpl
 	}
 
 	@Override
+	public List<QualityReminder> loadReminders(QualityDataCollectionRef dataCollectionRef){
+		return reminderDao.load(dataCollectionRef);
+	}
+
+	@Override
 	public QualityReminder loadReminder(QualityDataCollectionRef dataCollectionRef, QualityReminderType type) {
 		return reminderDao.load(dataCollectionRef, type);
 	}
@@ -563,17 +569,28 @@ public class QualityServiceImpl
 	}
 
 	@Override
-	public void sendReminders(Date until) {		
+	public void sendReminders(Date until) {
 		Collection<QualityReminder> reminders = reminderDao.loadPending(until);
 		log.debug("Send emails for quality remiders. Number of pending reminders: " + reminders.size());
 		for (QualityReminder reminder: reminders) {
 			try {
-				sendReminder(reminder);
+				if (QualityReminderType.ANNOUNCEMENT_COACH_TOPIC == reminder.getType()) {
+					sendAnnouncementTopicIdentity(reminder);
+				} else {
+					sendReminder(reminder);
+				}
 				reminderDao.updateDateDone(reminder, until);
 			} catch (Exception e) {
 				log.error("Send reminder of quality data collection failed!" + reminder.toString(), e);
 			}
 		}	
+	}
+
+	private void sendAnnouncementTopicIdentity(QualityReminder reminder) {
+		Identity topicIdentity = reminder.getDataCollection().getTopicIdentity();
+		if (topicIdentity != null) {
+			qualityMailing.sendAnnouncementMail(reminder, topicIdentity);
+		}
 	}
 
 	private void sendReminder(QualityReminder reminder) {
@@ -592,6 +609,17 @@ public class QualityServiceImpl
 	}
 
 	private List<EvaluationFormParticipation> getParticipants(QualityReminder reminder) {
+		if (QualityReminderType.ANNOUNCEMENT_COACH_CONTEXT == reminder.getType()) {
+			return getContextCaches(reminder);
+		}
+		return getSurveyParticipants(reminder);
+	}
+
+	private List<EvaluationFormParticipation> getContextCaches(QualityReminder reminder) {
+		return contextDao.loadParticipationByRole(reminder.getDataCollection(), QualityContextRole.coach);
+	}
+
+	private List<EvaluationFormParticipation> getSurveyParticipants(QualityReminder reminder) {
 		QualityReminderType type = reminder.getType();
 		EvaluationFormParticipationStatus status = type.getParticipationStatus();
 		QualityDataCollection dataCollection = reminder.getDataCollection();

@@ -28,11 +28,13 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
+import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.util.DateUtils;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
@@ -40,6 +42,8 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.quality.QualityDataCollection;
+import org.olat.modules.quality.QualityReminder;
+import org.olat.modules.quality.QualityReminderType;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
@@ -107,6 +111,62 @@ public class CourseLecturesProviderTest extends OlatTestCase {
 		assertThat(organisations)
 				.containsExactlyInAnyOrder(courseOrganisation1, courseOrganisation2)
 				.doesNotContain(defaultOrganisation);
+	}
+	
+	@Test
+	public void shouldGenerateWithAnnouncementForwards() {
+		Date now = new Date();
+		Date startDate = DateUtils.addDays(now, 3);
+		Date startEnd = DateUtils.addDays(now, 4);
+		RepositoryEntry courseEntry = createCourseWithThreeLectures(startDate, startEnd);
+		CurriculumElement element = createCurriculumElement();
+		curriculumService.addRepositoryEntry(element, courseEntry, false);
+		
+		QualityGenerator generator = createGeneratorInDefaultOrganisation();
+		String durationDays = "10";
+		QualityGeneratorConfigs configs = createAfterSecondLectureConfigs(generator, durationDays, element);
+		configs.setValue(CourseLecturesProvider.CONFIG_KEY_ANNOUNCEMENT_COACH_DAYS, "5");
+		
+		Date lastRun = DateUtils.addDays(now, -9);
+		Date to = DateUtils.addDays(now, 0);
+		
+		List<QualityDataCollection> generated = sut.generate(generator, configs, lastRun, to);
+		assertThat(generated).hasSize(1);
+		QualityDataCollection dataCollection = generated.get(0);
+		dbInstance.commitAndCloseSession();
+		
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(dataCollection.getStart()).isCloseTo(startEnd, 1000);
+		
+		QualityReminder reminder = qualityService.loadReminder(dataCollection, QualityReminderType.ANNOUNCEMENT_COACH_TOPIC);
+		softly.assertThat(reminder).isNotNull();
+		softly.assertThat(reminder.getSendPlaned()).isCloseTo(DateUtils.addDays(now, -1), 1000);
+		softly.assertAll();
+	}
+	
+	@Test
+	public void shouldnotGenerateAnnouncementIfStarted() {
+		Date now = new Date();
+		Date startDate = DateUtils.addDays(now,-2);
+		Date startEnd = DateUtils.addDays(now, -1);
+		RepositoryEntry courseEntry = createCourseWithThreeLectures(startDate, startEnd);
+		CurriculumElement element = createCurriculumElement();
+		curriculumService.addRepositoryEntry(element, courseEntry, false);
+		
+		QualityGenerator generator = createGeneratorInDefaultOrganisation();
+		String durationDays = "10";
+		QualityGeneratorConfigs configs = createAfterSecondLectureConfigs(generator, durationDays, element);
+		configs.setValue(CourseLecturesProvider.CONFIG_KEY_ANNOUNCEMENT_COACH_DAYS, "2");
+		
+		Date lastRun = DateUtils.addDays(now, -9);
+		Date to = DateUtils.addDays(now, 0);
+		
+		List<QualityDataCollection> generated = sut.generate(generator, configs, lastRun, to);
+		QualityDataCollection dataCollection = generated.get(0);
+		dbInstance.commitAndCloseSession();
+		
+		QualityReminder reminder = qualityService.loadReminder(dataCollection, QualityReminderType.ANNOUNCEMENT_COACH_TOPIC);
+		assertThat(reminder).isNull();
 	}
 
 	private RepositoryEntry createCourseWithThreeLectures(Date startDate, Date endDate) {

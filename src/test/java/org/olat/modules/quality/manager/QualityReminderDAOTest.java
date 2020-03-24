@@ -20,6 +20,15 @@
 package org.olat.modules.quality.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.olat.modules.quality.QualityDataCollectionStatus.FINISHED;
+import static org.olat.modules.quality.QualityDataCollectionStatus.PREPARATION;
+import static org.olat.modules.quality.QualityDataCollectionStatus.READY;
+import static org.olat.modules.quality.QualityDataCollectionStatus.RUNNING;
+import static org.olat.modules.quality.QualityReminderType.ANNOUNCEMENT_COACH_CONTEXT;
+import static org.olat.modules.quality.QualityReminderType.ANNOUNCEMENT_COACH_TOPIC;
+import static org.olat.modules.quality.QualityReminderType.INVITATION;
+import static org.olat.modules.quality.QualityReminderType.REMINDER1;
+import static org.olat.modules.quality.QualityReminderType.REMINDER2;
 
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -98,6 +107,22 @@ public class QualityReminderDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldLoadReminderByDataCollection() {
+		Date sendDate = new Date();
+		QualityDataCollectionRef dataCollectionRef = qualityTestHelper.createDataCollection();
+		QualityReminder reminder1 = sut.create(dataCollectionRef, sendDate, QualityReminderType.ANNOUNCEMENT_COACH_TOPIC);
+		QualityReminder reminder2 = sut.create(dataCollectionRef, sendDate, QualityReminderType.INVITATION);
+		QualityReminder reminderOther = sut.create(qualityTestHelper.createDataCollection(), sendDate, QualityReminderType.INVITATION);
+		dbInstance.commitAndCloseSession();
+		
+		List<QualityReminder> reminders = sut.load(dataCollectionRef);
+		
+		assertThat(reminders)
+				.containsExactlyInAnyOrder(reminder1, reminder2)
+				.doesNotContain(reminderOther);
+	}
+	
+	@Test
 	public void shouldLoadReminderByDataCollectionAndType() {
 		Date sendDate = new Date();
 		QualityDataCollectionRef dataCollectionRef = qualityTestHelper.createDataCollection();
@@ -138,29 +163,64 @@ public class QualityReminderDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldLoadPendingOnlyIfDataCollectionIsRunning() {
+	public void shouldLoadPendingDependingOnStatus() {
 		Date until = (new GregorianCalendar(2013,1,28,1,1,1)).getTime();
 		Date beforeUntil = (new GregorianCalendar(2013,1,26,2,1,1)).getTime();
-		QualityReminderType type = QualityReminderType.REMINDER1;
-		QualityDataCollection dataCollectionPreaparation = qualityTestHelper.createDataCollection();
-		qualityTestHelper.updateStatus(dataCollectionPreaparation, QualityDataCollectionStatus.PREPARATION);
-		QualityReminder reminderPreparation = sut.create(dataCollectionPreaparation, beforeUntil, type);
-		QualityDataCollection dataCollectionReady = qualityTestHelper.createDataCollection();
-		qualityTestHelper.updateStatus(dataCollectionReady, QualityDataCollectionStatus.READY);
-		QualityReminder reminderReady = sut.create(dataCollectionReady, beforeUntil, type);
-		QualityDataCollection dataCollectionRunning = qualityTestHelper.createDataCollection();
-		qualityTestHelper.updateStatus(dataCollectionRunning, QualityDataCollectionStatus.RUNNING);
-		QualityReminder reminderRunning = sut.create(dataCollectionRunning, beforeUntil, type);
-		QualityDataCollection dataCollectionFinished = qualityTestHelper.createDataCollection();
-		qualityTestHelper.updateStatus(dataCollectionFinished, QualityDataCollectionStatus.FINISHED);
-		QualityReminder reminderFinished = sut.create(dataCollectionFinished, beforeUntil, type);
+		QualityReminder announcementCoachTopicPreparation = createDcReminder(beforeUntil, ANNOUNCEMENT_COACH_TOPIC, PREPARATION);
+		QualityReminder announcementCoachTopicReady = createDcReminder(beforeUntil, ANNOUNCEMENT_COACH_TOPIC, READY);
+		QualityReminder announcementCoachTopicRunning = createDcReminder(beforeUntil, ANNOUNCEMENT_COACH_TOPIC, RUNNING);
+		QualityReminder announcementCoachTopicFinished = createDcReminder(beforeUntil, ANNOUNCEMENT_COACH_TOPIC, FINISHED);
+		QualityReminder announcementCoachContextPreparation = createDcReminder(beforeUntil, ANNOUNCEMENT_COACH_CONTEXT, PREPARATION);
+		QualityReminder announcementCoachContextReady = createDcReminder(beforeUntil, ANNOUNCEMENT_COACH_CONTEXT, READY);
+		QualityReminder announcementCoachContextRunning = createDcReminder(beforeUntil, ANNOUNCEMENT_COACH_CONTEXT, RUNNING);
+		QualityReminder announcementCoachContextFinished = createDcReminder(beforeUntil, ANNOUNCEMENT_COACH_CONTEXT, FINISHED);
+		QualityReminder invitationPreparation = createDcReminder(beforeUntil, INVITATION, PREPARATION);
+		QualityReminder invitationReady = createDcReminder(beforeUntil, INVITATION, READY);
+		QualityReminder invitationRunning = createDcReminder(beforeUntil, INVITATION, RUNNING);
+		QualityReminder invitationFinished = createDcReminder(beforeUntil, INVITATION, FINISHED);
+		QualityReminder reminder1Preparation = createDcReminder(beforeUntil, REMINDER1, PREPARATION);
+		QualityReminder reminder1Ready = createDcReminder(beforeUntil, REMINDER1, READY);
+		QualityReminder reminder1Running = createDcReminder(beforeUntil, REMINDER1, RUNNING);
+		QualityReminder reminder1Finished = createDcReminder(beforeUntil, REMINDER1, FINISHED);
+		QualityReminder reminder2Preparation = createDcReminder(beforeUntil, REMINDER2, PREPARATION);
+		QualityReminder reminder2Ready = createDcReminder(beforeUntil, REMINDER2, READY);
+		QualityReminder reminder2Running = createDcReminder(beforeUntil, REMINDER2, RUNNING);
+		QualityReminder reminder2Finished = createDcReminder(beforeUntil, REMINDER2, FINISHED);
 		dbInstance.commitAndCloseSession();
 		
 		List<QualityReminder> pending = sut.loadPending(until);
 		
 		assertThat(pending)
-				.containsExactlyInAnyOrder(reminderRunning)
-				.doesNotContain(reminderPreparation, reminderReady, reminderFinished);
+				.containsExactlyInAnyOrder(
+						announcementCoachTopicReady,
+						announcementCoachContextReady,
+						invitationRunning,
+						reminder1Running,
+						reminder2Running)
+				.doesNotContain(
+						announcementCoachTopicPreparation,
+						announcementCoachTopicRunning,
+						announcementCoachTopicFinished,
+						announcementCoachContextPreparation, 
+						announcementCoachContextRunning,
+						announcementCoachContextFinished,
+						invitationPreparation,
+						invitationReady,
+						invitationFinished,
+						reminder1Preparation,
+						reminder1Ready,
+						reminder1Finished,
+						reminder2Preparation,
+						reminder2Preparation,
+						reminder2Ready,
+						reminder2Finished
+				);
+	}
+	
+	private QualityReminder createDcReminder(Date sendDate, QualityReminderType type, QualityDataCollectionStatus status) {
+		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
+		qualityTestHelper.updateStatus(dataCollection, status);
+		return sut.create(dataCollection, sendDate, type);
 	}
 
 	@Test

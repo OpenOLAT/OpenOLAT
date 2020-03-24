@@ -21,6 +21,7 @@ package org.olat.modules.quality.generator.provider.courselectures;
 
 import static org.olat.modules.quality.generator.ProviderHelper.addDays;
 import static org.olat.modules.quality.generator.ProviderHelper.addMinutes;
+import static org.olat.modules.quality.generator.ProviderHelper.subtractDays;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -83,6 +84,7 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 
 	public static final String TYPE = "course-lecture";
 	public static final String CONFIG_KEY_DURATION_DAYS = "duration.days";
+	public static final String CONFIG_KEY_ANNOUNCEMENT_COACH_DAYS = "announcement.coach.days";
 	public static final String CONFIG_KEY_INVITATION_AFTER_DC_START_DAYS = "invitation.after.dc.start.days";
 	public static final String CONFIG_KEY_MINUTES_BEFORE_END = "minutes before end";
 	public static final String CONFIG_KEY_REMINDER1_AFTER_DC_DAYS = "reminder1.after.dc.start.days";
@@ -214,12 +216,15 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 		String title = titleCreator.merge(titleTemplate, Arrays.asList(course, teacher.getUser()));
 		dataCollection.setTitle(title);
 
+		QualityReminderType coachReminderType = null;
 		if (CONFIG_KEY_TOPIC_COACH.equals(topicKey)) {
 			dataCollection.setTopicType(QualityDataCollectionTopicType.IDENTIY);
 			dataCollection.setTopicIdentity(teacher);
+			coachReminderType = QualityReminderType.ANNOUNCEMENT_COACH_TOPIC;
 		} else if (CONFIG_KEY_TOPIC_COURSE.equals(topicKey)) {
 			dataCollection.setTopicType(QualityDataCollectionTopicType.REPOSITORY);
 			dataCollection.setTopicRepositoryEntry(course);
+			coachReminderType = QualityReminderType.ANNOUNCEMENT_COACH_CONTEXT;
 		}
 		
 		dataCollection = qualityService.updateDataCollectionStatus(dataCollection, QualityDataCollectionStatus.READY);
@@ -253,6 +258,14 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 		}
 		
 		// make reminders
+		String announcementDay = configs.getValue(CONFIG_KEY_ANNOUNCEMENT_COACH_DAYS);
+		if (StringHelper.containsNonWhitespace(announcementDay) && coachReminderType != null) {
+			Date announcementDate = subtractDays(dcStart, announcementDay);
+			if (dataCollection.getStart().after(new Date())) { // no announcement if already started
+				qualityService.createReminder(dataCollection, announcementDate, coachReminderType);
+			}
+		}
+		
 		String invitationDay = configs.getValue(CONFIG_KEY_INVITATION_AFTER_DC_START_DAYS);
 		if (StringHelper.containsNonWhitespace(invitationDay)) {
 			Date invitationDate = addDays(dcStart, invitationDay);
@@ -287,8 +300,14 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 		String minutesBeforeEnd = configs.getValue(CONFIG_KEY_MINUTES_BEFORE_END);
 		minutesBeforeEnd = StringHelper.containsNonWhitespace(minutesBeforeEnd)? minutesBeforeEnd: "0";
 		Date from = addMinutes(fromDate, minutesBeforeEnd);
-		searchParams.setFrom(from);
 		Date to = addMinutes(toDate, minutesBeforeEnd);
+		
+		String announcementDays = configs.getValue(CONFIG_KEY_ANNOUNCEMENT_COACH_DAYS);
+		if (StringHelper.containsNonWhitespace(announcementDays)) {
+			to = addDays(to, announcementDays);
+		}
+		
+		searchParams.setFrom(from);
 		searchParams.setTo(to);
 		
 		Collection<CurriculumElementRef> curriculumElementRefs = CurriculumElementWhiteListController.getCurriculumElementRefs(configs);
