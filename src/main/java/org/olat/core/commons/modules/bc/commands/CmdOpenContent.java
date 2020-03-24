@@ -19,6 +19,8 @@
  */
 package org.olat.core.commons.modules.bc.commands;
 
+import java.util.List;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.editor.htmleditor.HTMLEditorConfig;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
@@ -87,8 +89,16 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 		
 		status = FolderCommandHelper.sanityCheck(wControl, folderComponent);
 		if(status == FolderCommandStatus.STATUS_SUCCESS) {
-			currentItem = folderComponent.getCurrentContainerChildren().get(Integer.parseInt(pos));
-			status = FolderCommandHelper.sanityCheck2(wControl, folderComponent, currentItem);
+			int index = Integer.parseInt(pos);
+			List<VFSItem> children = folderComponent.getCurrentContainerChildren();
+			if(index >= 0 && index < children.size()) {
+				currentItem = folderComponent.getCurrentContainerChildren().get(index);
+				status = FolderCommandHelper.sanityCheck2(wControl, folderComponent, currentItem);
+			} else {
+				status = FolderCommandStatus.STATUS_FAILED;
+				getWindowControl().setError(translator.translate("failed"));
+				return null;
+			}	
 		}
 		if(status == FolderCommandStatus.STATUS_FAILED) {
 			return null;

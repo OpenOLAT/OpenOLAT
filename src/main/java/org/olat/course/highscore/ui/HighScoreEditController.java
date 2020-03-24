@@ -267,8 +267,13 @@ public class HighScoreEditController extends FormBasicController {
 		config.set(CONFIG_KEY_DATESTART, dateStart.getDate());
 		config.set(CONFIG_KEY_ANONYMIZE, displayAnonymous.isSelected(0));
 		if (showListing.isSelected(0)) {
-			config.set(CONFIG_KEY_BESTONLY, bestOnlyEl.getSelected());
-			config.set(CONFIG_KEY_NUMUSER, numTableRows.getIntValue());
+			int bestOnly = bestOnlyEl.getSelected();
+			config.set(CONFIG_KEY_BESTONLY, bestOnly);
+			if(bestOnly == 1) {
+				config.set(CONFIG_KEY_NUMUSER, numTableRows.getIntValue());
+			} else {
+				config.remove(CONFIG_KEY_NUMUSER);
+			}
 		}
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

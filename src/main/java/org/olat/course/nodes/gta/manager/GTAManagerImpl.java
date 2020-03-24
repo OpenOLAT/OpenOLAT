@@ -801,6 +801,14 @@ public class GTAManagerImpl implements GTAManager {
 				.setParameter("taskListKey", taskList.getKey())
 				.executeUpdate();
 			
+			StringBuilder taskSb = new StringBuilder(128);
+			taskSb.append("delete from gtataskrevision as taskrev where taskrev.task.key in (")
+			      .append("  select task.key from gtatask as task where task.taskList.key=:taskListKey)");
+			numOfDeletedObjects += dbInstance.getCurrentEntityManager()
+				.createQuery(taskSb.toString())
+				.setParameter("taskListKey", taskList.getKey())
+				.executeUpdate();
+			
 			String deleteTasks = "delete from gtatask as task where task.taskList.key=:taskListKey";
 			numOfDeletedObjects += dbInstance.getCurrentEntityManager().createQuery(deleteTasks)
 				.setParameter("taskListKey", taskList.getKey())
