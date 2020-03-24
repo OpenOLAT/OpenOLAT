@@ -210,7 +210,7 @@ public class QualityContextDAOTest extends OlatTestCase {
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
 		QualityDataCollection dataCollectionOther = qualityTestHelper.createDataCollection();
 		EvaluationFormParticipation coach1 = qualityTestHelper.createParticipation();
-		sut.createContext(dataCollection, qualityTestHelper.createParticipation(), QualityContextRole.coach, null, null, null);
+		sut.createContext(dataCollection, coach1, QualityContextRole.coach, null, null, null);
 		EvaluationFormParticipation coach2 = qualityTestHelper.createParticipation();
 		sut.createContext(dataCollection, coach2, QualityContextRole.coach, null, null, null);
 		EvaluationFormParticipation participant = qualityTestHelper.createParticipation();
