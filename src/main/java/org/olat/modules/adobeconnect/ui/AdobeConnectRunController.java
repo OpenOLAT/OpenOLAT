@@ -181,9 +181,11 @@ public class AdobeConnectRunController extends BasicController implements Activa
 	}
 	
 	private void back() {
-		mainVC.remove(meetingCtrl.getInitialComponent());
-		removeAsListenerAndDispose(meetingCtrl);
-		meetingCtrl = null;
+		if(meetingCtrl != null) {
+			mainVC.remove(meetingCtrl.getInitialComponent());
+			removeAsListenerAndDispose(meetingCtrl);
+			meetingCtrl = null;
+		}
 	}
 	
 	private void doOpenMeetings(UserRequest ureq) {
