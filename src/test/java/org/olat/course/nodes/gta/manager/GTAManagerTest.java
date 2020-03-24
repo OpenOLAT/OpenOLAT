@@ -519,6 +519,48 @@ public class GTAManagerTest extends OlatTestCase {
 		Assert.assertEquals(0, deletedAssignedTasks.size());
 	}
 	
+
+	@Test
+	public void deleteTaskList_withRevisions() {
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-29");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-30");
+		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "gdao", "gdao-rev-delete-desc", -1, -1, false, false, false, false, false);
+		businessGroupRelationDao.addRole(participant, businessGroup, GroupRole.participant.name());
+		dbInstance.commit();
+		RepositoryEntry re = deployGTACourse();
+		GTACourseNode node = getGTACourseNode(re);
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.group.name());
+		TaskList tasks = gtaManager.createIfNotExists(re, node);
+		File taskFile = new File("bg.txt");
+		Assert.assertNotNull(tasks);
+		dbInstance.commit();
+		
+		//select
+		AssignmentResponse response = gtaManager.selectTask(businessGroup, tasks, node, taskFile, participant);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(response);
+		
+		//check that there is tasks
+		List<Task> assignedTasks = gtaManager.getTasks(participant, re, node);
+		Assert.assertNotNull(assignedTasks);
+		Assert.assertEquals(1, assignedTasks.size());
+		
+		// create a revision date
+		gtaManager.updateTaskRevisionComment(assignedTasks.get(0), TaskProcess.revision, 1, "Hello", coach);
+		dbInstance.commitAndCloseSession();
+		
+		//delete
+		int numOfDeletedObjects = gtaManager.deleteTaskList(re, node);
+		Assert.assertEquals(3, numOfDeletedObjects);
+		dbInstance.commitAndCloseSession();
+		
+		//check that there isn't any tasks
+		List<Task> deletedAssignedTasks = gtaManager.getTasks(participant, re, node);
+		Assert.assertNotNull(deletedAssignedTasks);
+		Assert.assertTrue(deletedAssignedTasks.isEmpty());
+	}
+	
+	
 	/**
 	 * Create 2 pseudo nodes in a course, and delete the task of the first node
 	 * and check that the task of second are always there.
