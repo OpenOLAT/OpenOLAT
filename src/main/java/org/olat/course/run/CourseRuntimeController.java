@@ -1885,7 +1885,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				canAdmin = false;
 			} else {
 				boolean isAdmin = getUserCourseEnvironment().isAdmin();
-				canAdd = isAdmin;
+				canAdd = isAdmin || getUserCourseEnvironment().isCoach();
 				canAdmin = isAdmin;
 			}
 			InfoSecurityCallback secCallback = new InfoCourseSecurityCallback(getIdentity(), canAdd, canAdmin);
