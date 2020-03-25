@@ -361,7 +361,7 @@ public class LTIRunController extends BasicController {
 			startPage.contextPut("score", eval.getScore());
 			startPage.contextPut("hasScore", Boolean.TRUE);
 			boolean resultsVisible = eval.getUserVisible() == null || eval.getUserVisible().booleanValue();
-			startPage.contextPut("resultsVisible", resultsVisible);
+			startPage.contextPut("resultsVisible", Boolean.valueOf(resultsVisible));
 			mainPanel.setContent(startPage);
 		}
 		

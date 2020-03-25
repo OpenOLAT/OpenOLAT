@@ -332,7 +332,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 			
 			boolean resultsVisible = scoreEval.getUserVisible() == null || scoreEval.getUserVisible().booleanValue();
-			assessmentInfosContainer.contextPut("resultsVisible", resultsVisible);
+			assessmentInfosContainer.contextPut("resultsVisible", Boolean.valueOf(resultsVisible));
 			//score
 			Boolean hasScore = Boolean.valueOf(Mode.none != assessmentConfig.getScoreMode());
 			Boolean hasPassed = Boolean.valueOf(Mode.none != assessmentConfig.getPassedMode());

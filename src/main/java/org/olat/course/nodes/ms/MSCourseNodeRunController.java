@@ -197,13 +197,15 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 	private void exposeConfigToVC(UserRequest ureq) {
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		ModuleConfiguration config = courseNode.getModuleConfiguration();
-		myContent.contextPut("hasScoreField", assessmentConfig.getScoreMode());
-		if (Mode.none != assessmentConfig.getScoreMode()) {
+		boolean hasScore = Mode.none != assessmentConfig.getScoreMode();
+		myContent.contextPut("hasScoreField", Boolean.valueOf(hasScore));
+		if (hasScore) {
 			myContent.contextPut("scoreMin", AssessmentHelper.getRoundedScore(assessmentConfig.getMinScore()));
 			myContent.contextPut("scoreMax", AssessmentHelper.getRoundedScore(assessmentConfig.getMaxScore()));
 		}
-		myContent.contextPut("hasPassedField", assessmentConfig.getPassedMode());
-		if (Mode.none != assessmentConfig.getPassedMode()) {
+		boolean hasPassed = Mode.none != assessmentConfig.getPassedMode();
+		myContent.contextPut("hasPassedField", Boolean.valueOf(hasPassed));
+		if (hasPassed) {
 			myContent.contextPut("passedCutValue", AssessmentHelper.getRoundedScore(assessmentConfig.getCutValue()));
 		}
 		myContent.contextPut("hasCommentField", assessmentConfig.hasComment());
