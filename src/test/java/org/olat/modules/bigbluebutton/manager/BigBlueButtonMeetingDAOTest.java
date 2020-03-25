@@ -164,14 +164,20 @@ public class BigBlueButtonMeetingDAOTest extends OlatTestCase {
 		List<Long> concurrent = bigBlueButtonMeetingDao.getConcurrentMeetings(template, date(1, 15), date(1, 19));
 		Assert.assertEquals(2, concurrent.size());
 		
-		List<Long>  concurrentFollowup = bigBlueButtonMeetingDao.getConcurrentMeetings(template, date(1, 20), date(1, 21));
-		Assert.assertEquals(1, concurrentFollowup.size());
+		List<Long> concurrentFollowup = bigBlueButtonMeetingDao.getConcurrentMeetings(template, date(1, 17), date(1, 21));
+		Assert.assertEquals(2, concurrentFollowup.size());
 		
-		List<Long>  concurrentWidePeriod = bigBlueButtonMeetingDao.getConcurrentMeetings(template, date(0, 10), date(3, 21));
+		List<Long> concurrentWidePeriod = bigBlueButtonMeetingDao.getConcurrentMeetings(template, date(0, 10), date(3, 21));
 		Assert.assertEquals(4, concurrentWidePeriod.size());
 		
-		List<Long>  concurrentWithin = bigBlueButtonMeetingDao.getConcurrentMeetings(template, date(2, 13), date(2, 14));
+		List<Long> concurrentWithin = bigBlueButtonMeetingDao.getConcurrentMeetings(template, date(2, 13), date(2, 14));
 		Assert.assertEquals(1, concurrentWithin.size());
+		
+		List<Long> concurrentOverlapAfter = bigBlueButtonMeetingDao.getConcurrentMeetings(template, date(1, 19), date(1, 21));
+		Assert.assertTrue(concurrentOverlapAfter.isEmpty());
+		
+		List<Long> concurrentOverlapBefore = bigBlueButtonMeetingDao.getConcurrentMeetings(template, date(1, 7), date(1, 10));
+		Assert.assertTrue(concurrentOverlapBefore.isEmpty());
 	}
 	
 	private BigBlueButtonMeeting createMeeting(String name, Date start, int leadTime, Date end, int followupTime,

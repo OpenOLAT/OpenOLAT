@@ -169,6 +169,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		String leadtime = meeting == null ? null : Long.toString(meeting.getLeadTime());
 		leadTimeEl = uifactory.addTextElement("meeting.leadTime", 8, leadtime, formLayout);
 		
+		
 		Date endDate = meeting == null ? null : meeting.getEndDate();
 		endDateEl = uifactory.addDateChooser("meeting.end", "meeting.end", endDate, formLayout);
 		endDateEl.setMandatory(!permanent);
@@ -263,8 +264,8 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			}
 		}
 		
-		allOk &= validateTime(leadTimeEl);
-		allOk &= validateTime(followupTimeEl);
+		allOk &= validateTime(leadTimeEl, 15l);
+		allOk &= validateTime(followupTimeEl, 15l);
 		
 		templateEl.clearError();
 		if(!templateEl.isOneSelected()) {
@@ -289,12 +290,17 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		return allOk;
 	}
 	
-	private boolean validateTime(TextElement el) {
+	private boolean validateTime(TextElement el, long maxValue) {
 		boolean allOk = true;
 		el.clearError();
-		if(StringHelper.containsNonWhitespace(el.getValue()) && !StringHelper.isLong(el.getValue())) {
-			el.setErrorKey("form.error.nointeger", null);
-			allOk &= false;
+		if(StringHelper.containsNonWhitespace(el.getValue())) {
+			if(!StringHelper.isLong(el.getValue())) {
+				el.setErrorKey("form.error.nointeger", null);
+				allOk &= false;
+			} else if(Long.parseLong(el.getValue()) > maxValue) {
+				el.setErrorKey("error.too.long.time", new String[] { Long.toString(maxValue) });
+				allOk &= false;
+			}
 		}
 		return allOk;
 	}

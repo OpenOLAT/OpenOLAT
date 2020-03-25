@@ -19,6 +19,7 @@
  */
 package org.olat.modules.bigbluebutton.ui;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -77,6 +78,8 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 	private final boolean readOnly;
 	private BigBlueButtonMeetingTemplate template;
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private BigBlueButtonManager bigBlueButtonManager;
 	
@@ -348,6 +351,7 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 		template.setLockSettingsLockOnJoinConfigurable(getSelected(lockSettingsLockOnJoinConfigurableEl));
 		
 		template = bigBlueButtonManager.updateTemplate(template);
+		dbInstance.commit();
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	
