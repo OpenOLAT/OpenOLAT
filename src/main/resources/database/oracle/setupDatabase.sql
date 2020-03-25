@@ -1312,6 +1312,7 @@ create table o_bbb_template (
    b_max_participants int default null,
    b_max_duration number default null,
    b_record number default null,
+   b_breakout number default null,
    b_mute_on_start number default null,
    b_auto_start_recording number default null,
    b_allow_start_stop_recording number default null,

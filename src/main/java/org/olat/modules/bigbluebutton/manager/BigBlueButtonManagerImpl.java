@@ -398,6 +398,8 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 			uriBuilder
 				.optionalParameter("maxParticipants", template.getMaxParticipants().intValue() + 1)
 				.optionalParameter("record", template.getRecord())
+				.optionalParameter("breakoutRoomsEnabled", template.getBreakoutRoomsEnabled())
+				
 				// video options
 				.optionalParameter("muteOnStart", template.getMuteOnStart())
 				.optionalParameter("autoStartRecording", template.getAutoStartRecording())

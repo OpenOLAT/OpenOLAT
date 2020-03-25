@@ -72,6 +72,10 @@ public interface BigBlueButtonMeetingTemplate extends ModifiedInfo, CreateInfo {
 
 	public void setRecord(Boolean record);
 	
+	public Boolean getBreakoutRoomsEnabled();
+
+	public void setBreakoutRoomsEnabled(Boolean breakoutRoomsEnabled);
+	
 	public Boolean getMuteOnStart();
 
 	public void setMuteOnStart(Boolean muteOnStart);

@@ -64,6 +64,7 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 	private TextElement maxDurationEl;
 	
 	private SingleSelection recordEl;
+	private SingleSelection breakoutEl;
 	private SingleSelection muteOnStartEl;
 	private SingleSelection autoStartRecordingEl;
 	private SingleSelection allowStartStopRecordingEl;
@@ -158,6 +159,11 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 		recordEl = uifactory.addRadiosHorizontal("template.record", formLayout, yesNoKeys, onValues);
 		recordEl.addActionListener(FormEvent.ONCHANGE);
 		select(record, recordEl, false);
+		
+		Boolean breakout = template == null ? null : template.getBreakoutRoomsEnabled();
+		breakoutEl = uifactory.addRadiosHorizontal("template.breakout", formLayout, yesNoKeys, onValues);
+		breakoutEl.addActionListener(FormEvent.ONCHANGE);
+		select(breakout, breakoutEl, true);
 		
 		Boolean autoStartRecording = template == null ? null : template.getAutoStartRecording();
 		autoStartRecordingEl = uifactory.addRadiosHorizontal("template.autoStartRecording", formLayout, yesNoKeys, onValues);
@@ -364,6 +370,7 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 
 		boolean record = getSelected(recordEl);
 		template.setRecord(record);
+		template.setBreakoutRoomsEnabled(getSelected(breakoutEl));
 		template.setMuteOnStart(getSelected(muteOnStartEl));
 		template.setAutoStartRecording(record && getSelected(autoStartRecordingEl));
 		template.setAllowStartStopRecording(record && getSelected(allowStartStopRecordingEl));

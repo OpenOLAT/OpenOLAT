@@ -11,6 +11,7 @@ create table o_bbb_template (
    b_max_participants int default null,
    b_max_duration bigint default null,
    b_record bool default null,
+   b_breakout bool default null,
    b_mute_on_start bool default null,
    b_auto_start_recording bool default null,
    b_allow_start_stop_recording bool default null,

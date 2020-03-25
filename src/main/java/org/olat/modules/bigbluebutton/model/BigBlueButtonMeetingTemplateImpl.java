@@ -85,6 +85,8 @@ public class BigBlueButtonMeetingTemplateImpl implements Persistable, BigBlueBut
 	
 	@Column(name="b_record", nullable=true, insertable=true, updatable=true)
 	private Boolean record;
+	@Column(name="b_breakout", nullable=true, insertable=true, updatable=true)
+	private Boolean breakoutRoomsEnabled;
 	@Column(name="b_auto_start_recording", nullable=true, insertable=true, updatable=true)
 	private Boolean autoStartRecording;
 	@Column(name="b_allow_start_stop_recording", nullable=true, insertable=true, updatable=true)
@@ -235,6 +237,16 @@ public class BigBlueButtonMeetingTemplateImpl implements Persistable, BigBlueBut
 	@Override
 	public void setRecord(Boolean record) {
 		this.record = record;
+	}
+
+	@Override
+	public Boolean getBreakoutRoomsEnabled() {
+		return breakoutRoomsEnabled;
+	}
+
+	@Override
+	public void setBreakoutRoomsEnabled(Boolean breakoutRoomsEnabled) {
+		this.breakoutRoomsEnabled = breakoutRoomsEnabled;
 	}
 
 	@Override
