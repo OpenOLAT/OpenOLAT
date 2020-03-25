@@ -44,7 +44,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class CourseResultController extends BasicController {
+public class CourseAssessmentSettingsController extends BasicController {
 	
 	private Controller scoreCtrl;
 	private Controller efficiencyStatementCtrl;
@@ -57,7 +57,7 @@ public class CourseResultController extends BasicController {
 	@Autowired
 	private NodeAccessService nodeAccessService;
 
-	protected CourseResultController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, CourseConfig courseConfig, boolean editable) {
+	protected CourseAssessmentSettingsController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, CourseConfig courseConfig, boolean editable) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RunMainController.class, getLocale(), getTranslator()));
 		
@@ -73,7 +73,7 @@ public class CourseResultController extends BasicController {
 			showWarning("error.editoralreadylocked", new String[] { lockerName });
 		}
 		
-		VelocityContainer mainVC = createVelocityContainer("course_result");
+		VelocityContainer mainVC = createVelocityContainer("assessment_settings");
 		
 		if (!nodeAccessService.isScoreCalculatorSupported(courseConfig.getNodeAccessType())) {
 			scoreCtrl = new CourseScoreController(ureq, wControl, entry, editableAndLocked);

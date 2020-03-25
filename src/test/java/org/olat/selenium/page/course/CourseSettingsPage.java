@@ -49,7 +49,7 @@ public class CourseSettingsPage extends RepositorySettingsPage {
 	}
 	
 	public EfficiencyStatementConfigurationPage efficiencyStatementConfiguration() {
-		By certificateSegmentBy = By.cssSelector("ul.o_tools_segments a.o_sel_results");
+		By certificateSegmentBy = By.cssSelector("ul.o_tools_segments a.o_sel_assessment");
 		OOGraphene.waitElement(certificateSegmentBy, browser);
 		browser.findElement(certificateSegmentBy).click();
 		

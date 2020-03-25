@@ -51,13 +51,13 @@ public class CourseSettingsController extends RepositoryEntrySettingsController 
 	private Link layoutLink;
 	private Link toolbarLink;
 	private Link optionsLink;
-	private Link resultsLink;
+	private Link assessmentLink;
 	private Link executionSettingsLink;
 	
 	private CourseOptionsController optionsCtrl;
 	private CourseToolbarController toolbarCtrl;
 	private CourseLayoutGeneratorController layoutCtrl;
-	private CourseResultController resultsCtrl;
+	private CourseAssessmentSettingsController assessmentSettingsCtrl;
 	private CourseExecutionSettingsController executionSettingsCtrl;
 	
 	public CourseSettingsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, RepositoryEntry entry) {
@@ -83,9 +83,9 @@ public class CourseSettingsController extends RepositoryEntrySettingsController 
 		toolbarLink.setElementCssClass("o_sel_toolbar");
 		buttonsGroup.addButton(toolbarLink, false);
 		
-		resultsLink = LinkFactory.createLink("details.results", getTranslator(), this);
-		resultsLink.setElementCssClass("o_sel_results");
-		buttonsGroup.addButton(resultsLink, false);
+		assessmentLink = LinkFactory.createLink("details.assessment", getTranslator(), this);
+		assessmentLink.setElementCssClass("o_sel_assessment");
+		buttonsGroup.addButton(assessmentLink, false);
 		
 		optionsLink = LinkFactory.createLink("details.options", getTranslator(), this);
 		optionsLink.setElementCssClass("o_sel_options");
@@ -107,7 +107,7 @@ public class CourseSettingsController extends RepositoryEntrySettingsController 
 			} else if("Toolbar".equalsIgnoreCase(type)) {
 				doOpenToolbarSettings(ureq);
 			} else if("Results".equalsIgnoreCase(type)) {
-				doOpenResultSettings(ureq);
+				doOpenAssessmentSettings(ureq);
 			} else if("Options".equalsIgnoreCase(type)) {
 				doOpenOptions(ureq);
 			}
@@ -128,9 +128,9 @@ public class CourseSettingsController extends RepositoryEntrySettingsController 
 			if(event == Event.CANCELLED_EVENT) {
 				doOpenLayout(ureq);
 			}
-		} else if(resultsCtrl == source) {
+		} else if(assessmentSettingsCtrl == source) {
 			if(event == Event.CANCELLED_EVENT) {
-				doOpenResultSettings(ureq);
+				doOpenAssessmentSettings(ureq);
 			}
 		} else if(executionSettingsCtrl == source) {
 			if(event == Event.CANCELLED_EVENT) {
@@ -148,8 +148,8 @@ public class CourseSettingsController extends RepositoryEntrySettingsController 
 			doOpenLayout(ureq);
 		} else if(toolbarLink == source) {
 			doOpenToolbarSettings(ureq);
-		} else if(resultsLink == source) {
-			doOpenResultSettings(ureq);
+		} else if(assessmentLink == source) {
+			doOpenAssessmentSettings(ureq);
 		} else if(optionsLink == source) {
 			doOpenOptions(ureq);
 		}
@@ -161,12 +161,12 @@ public class CourseSettingsController extends RepositoryEntrySettingsController 
 		super.cleanUp();
 		
 		removeAsListenerAndDispose(executionSettingsCtrl);
-		removeAsListenerAndDispose(resultsCtrl);
+		removeAsListenerAndDispose(assessmentSettingsCtrl);
 		removeAsListenerAndDispose(optionsCtrl);
 		removeAsListenerAndDispose(toolbarCtrl);
 		removeAsListenerAndDispose(layoutCtrl);
 		executionSettingsCtrl = null;
-		resultsCtrl = null;
+		assessmentSettingsCtrl = null;
 		optionsCtrl = null;
 		toolbarCtrl = null;
 		layoutCtrl = null;
@@ -204,14 +204,14 @@ public class CourseSettingsController extends RepositoryEntrySettingsController 
 		buttonsGroup.setSelectedButton(toolbarLink);
 	}
 	
-	private void doOpenResultSettings(UserRequest ureq) {
+	private void doOpenAssessmentSettings(UserRequest ureq) {
 		ICourse course = CourseFactory.loadCourse(entry);
 		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig().clone();
-		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Results"), null);
-		resultsCtrl = new CourseResultController(ureq, swControl, entry, courseConfig, true);
-		listenTo(resultsCtrl);
-		mainPanel.setContent(resultsCtrl.getInitialComponent());
-		buttonsGroup.setSelectedButton(resultsLink);
+		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Assessment"), null);
+		assessmentSettingsCtrl = new CourseAssessmentSettingsController(ureq, swControl, entry, courseConfig, true);
+		listenTo(assessmentSettingsCtrl);
+		mainPanel.setContent(assessmentSettingsCtrl.getInitialComponent());
+		buttonsGroup.setSelectedButton(assessmentLink);
 	}
 	
 	private void doOpenOptions(UserRequest ureq) {

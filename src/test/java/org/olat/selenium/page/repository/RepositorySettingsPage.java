@@ -76,7 +76,7 @@ public class RepositorySettingsPage {
 	}
 	
 	public RepositoryCertificateSettingsPage certificates() {
-		By accessSegmentBy = By.cssSelector("ul.o_tools_segments a.o_sel_results");
+		By accessSegmentBy = By.cssSelector("ul.o_tools_segments a.o_sel_assessment");
 		OOGraphene.waitElement(accessSegmentBy, browser);
 		browser.findElement(accessSegmentBy).click();
 		
