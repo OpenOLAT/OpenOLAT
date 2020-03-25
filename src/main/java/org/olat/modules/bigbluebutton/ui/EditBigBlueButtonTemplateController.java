@@ -19,6 +19,9 @@
  */
 package org.olat.modules.bigbluebutton.ui;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -29,12 +32,14 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
+import org.olat.modules.bigbluebutton.BigBlueButtonRoles;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -52,6 +57,7 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 	private TextElement descriptionEl;
 	
 	private MultipleSelectionElement enableEl;
+	private MultipleSelectionElement rolesEl;
 	
 	private TextElement maxConcurrentMeetingsEl;
 	private TextElement maxParticipantsEl;
@@ -115,6 +121,22 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 		enableEl = uifactory.addCheckboxesHorizontal("template.enabled", "template.enabled", formLayout, onKeys, new String[] { "" });
 		enableEl.select(onKeys[0], enable);
 		
+		KeyValues rolesKeyValues = new KeyValues();
+		for(BigBlueButtonRoles role:BigBlueButtonRoles.values()) {
+			rolesKeyValues.add(KeyValues.entry(role.name(), translate("role.".concat(role.name()))));
+		}
+		rolesEl = uifactory.addCheckboxesVertical("template.roles", "template.roles", formLayout,
+				rolesKeyValues.keys(), rolesKeyValues.values(), 1);
+		List<BigBlueButtonRoles> roles;
+		if(template != null) {
+			roles = template.getPermittedRolesEnum();
+		} else {
+			roles = BigBlueButtonRoles.valuesAsList();
+		}
+		for(BigBlueButtonRoles role:roles) {
+			rolesEl.select(role.name(), true);
+		}
+		
 		String maxConcurrentMeetings = template == null || template.getMaxConcurrentMeetings() == null ? "" : template.getMaxConcurrentMeetings().toString();
 		maxConcurrentMeetingsEl = uifactory.addTextElement("template.max.concurrent.meetings", "template.max.concurrent.meetings", 8, maxConcurrentMeetings, formLayout);
 		
@@ -122,7 +144,12 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 		maxParticipantsEl = uifactory.addTextElement("template.maxParticipants", "template.maxParticipants", 8, maxParticipants, formLayout);
 		maxParticipantsEl.setMandatory(true);
 		
-		String maxDuration = template == null || template.getMaxDuration() == null ? null : template.getMaxDuration().toString();
+		String maxDuration = null;
+		if(template == null) {
+			maxDuration = "240";
+		} else if(template.getMaxDuration() != null) {
+			maxDuration = template.getMaxDuration().toString();
+		}
 		maxDurationEl = uifactory.addTextElement("template.maxDuration", "template.maxDuration", 8, maxDuration, formLayout);
 
 		String[] onValues = new String[] { translate("yes"), translate("no")  };
@@ -309,6 +336,10 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 		}
 		template.setDescription(descriptionEl.getValue());
 		template.setEnabled(enableEl.isAtLeastSelected(1));
+		
+		List<BigBlueButtonRoles> roles = rolesEl.getSelectedKeys().stream()
+				.map(BigBlueButtonRoles::valueOf).collect(Collectors.toList());
+		template.setPermittedRolesEnum(roles);
 		
 		if(StringHelper.containsNonWhitespace(maxConcurrentMeetingsEl.getValue())
 				&& StringHelper.isLong(maxConcurrentMeetingsEl.getValue())) {

@@ -49,6 +49,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecording;
+import org.olat.modules.bigbluebutton.BigBlueButtonRoles;
 import org.olat.modules.bigbluebutton.GuestPolicyEnum;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonError;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrorCodes;
@@ -137,6 +138,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 		template.setMaxConcurrentMeetings(maxConcurrentMeetings);
 		template.setMaxParticipants(maxParticipants);
 		template.setMaxDuration(maxDuration);
+		template.setPermittedRolesEnum(BigBlueButtonRoles.valuesAsList());
 		template.setMuteOnStart(muteOnStart);
 		template.setAutoStartRecording(autoStartRecording);
 		template.setAllowStartStopRecording(allowStartStopRecording);
