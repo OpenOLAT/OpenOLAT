@@ -88,33 +88,61 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 	public void afterPropertiesSet() throws Exception {
 		List<BigBlueButtonMeetingTemplate> templates = bigBlueButtonMeetingTemplateDao.getTemplates();
 		
-		// Web conferen
-		defaultTemplate("sys-meetings", "Meetings", 5, 5, 240,
+		// Online meeting, all features enable
+		defaultTemplate("sys-meetings", "Meeting", 2, 8, 240,
 				Boolean.FALSE, Boolean.FALSE, Boolean.TRUE, // recording
-				Boolean.FALSE, Boolean.TRUE, // webcams moderator only, unmute
-				Boolean.FALSE, Boolean.FALSE, // cam, mic
-				Boolean.FALSE, Boolean.TRUE, // chat
-				Boolean.FALSE, Boolean.FALSE, // node, layout
-				Boolean.FALSE, Boolean.TRUE, Boolean.FALSE,
-				GuestPolicyEnum.ALWAYS_ACCEPT, templates);
+				Boolean.FALSE, Boolean.TRUE, 	// webcams moderator only, unmute
+				Boolean.FALSE, Boolean.FALSE, 	// cam, mic
+				Boolean.FALSE, Boolean.FALSE, 	// chat
+				Boolean.FALSE, Boolean.FALSE, 	// notes, layout
+				Boolean.TRUE, 					// breakout
+				Boolean.FALSE, Boolean.FALSE, Boolean.TRUE, // user list, join-lock, lock configurable
+				GuestPolicyEnum.ALWAYS_ACCEPT, true, templates);
 		
-		defaultTemplate("sys-classes", "Classes", 20, 30, 240,
+		// Traditional classroom setting with many participants. Only presenter has video
+		defaultTemplate("sys-classes", "Classroom", 10, 30, 240,
 				Boolean.FALSE, Boolean.FALSE, Boolean.TRUE, // recording
-				Boolean.TRUE, Boolean.TRUE, // webcamsmoderator only, unmute
-				Boolean.TRUE, Boolean.TRUE, // cam, mic
-				Boolean.FALSE, Boolean.FALSE, // chat
-				Boolean.FALSE, Boolean.FALSE, // node, layout
-				Boolean.FALSE, Boolean.TRUE, Boolean.FALSE,
-				GuestPolicyEnum.ALWAYS_ACCEPT, templates);
+				Boolean.TRUE,  Boolean.TRUE, 	// webcams moderator only, unmute
+				Boolean.TRUE,  Boolean.FALSE, 	// cam, mic
+				Boolean.FALSE, Boolean.FALSE, 	// chat
+				Boolean.FALSE, Boolean.FALSE, 	// notes, layout
+				Boolean.TRUE, 					// breakout
+				Boolean.FALSE, Boolean.TRUE, Boolean.FALSE, // user list, join-lock, lock configurable
+				GuestPolicyEnum.ALWAYS_ACCEPT, true, templates);
 		
-		defaultTemplate("sys-cafe", "Cafe", 10, 10, 240,
+		// Mixed setup, some with webcams, some without. 
+		defaultTemplate("sys-cafe", "Cafe", 5, 15, 240,
 				Boolean.FALSE, Boolean.FALSE, Boolean.TRUE, // recording
-				Boolean.FALSE, Boolean.TRUE, // webcams moderator only, unmute
-				Boolean.FALSE, Boolean.FALSE, // cam, mic
-				Boolean.TRUE, Boolean.FALSE, // chat
-				Boolean.FALSE, Boolean.FALSE, // node, layout
-				Boolean.FALSE, Boolean.TRUE, Boolean.FALSE,
-				GuestPolicyEnum.ALWAYS_ACCEPT, templates);
+				Boolean.FALSE, Boolean.TRUE, 	// webcams moderator only, unmute
+				Boolean.TRUE,  Boolean.FALSE, 	// cam, mic
+				Boolean.FALSE, Boolean.FALSE, 	// chat
+				Boolean.FALSE, Boolean.FALSE, 	// notes, layout
+				Boolean.TRUE, 					// breakout
+				Boolean.FALSE, Boolean.TRUE, Boolean.FALSE, // user list, join-lock, lock configurable 
+				GuestPolicyEnum.ALWAYS_ACCEPT, false, templates);
+		
+		// Interview situation, face-to-face meeting
+		defaultTemplate("sys-interview", "Interview", 5, 2, 240,
+				Boolean.FALSE, Boolean.FALSE, Boolean.TRUE, // recording
+				Boolean.FALSE, Boolean.TRUE, 	// webcams moderator only, unmute
+				Boolean.FALSE, Boolean.FALSE, 	// cam, mic
+				Boolean.FALSE, Boolean.FALSE, 	// chat
+				Boolean.FALSE, Boolean.FALSE, 	// notes, layout
+				Boolean.FALSE, 					// breakout
+				Boolean.FALSE, Boolean.FALSE, Boolean.TRUE, // user list, join-lock, lock configurable
+				GuestPolicyEnum.ALWAYS_ACCEPT, false, templates);
+		
+		// Exam monitoring. Participants have video but only presenter can see the video
+		defaultTemplate("sys-assessment", "Assessment", 1, 30, 240,
+				Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, // recording
+				Boolean.TRUE,  Boolean.TRUE, 	// webcams moderator only, unmute
+				Boolean.FALSE, Boolean.TRUE, 	// cam, mic
+				Boolean.TRUE,  Boolean.FALSE, 	// chat
+				Boolean.TRUE,  Boolean.TRUE, 	// notes, layout
+				Boolean.FALSE, 					// breakout
+				Boolean.TRUE,  Boolean.TRUE, Boolean.FALSE, // user list, join-lock, lock configurable
+				GuestPolicyEnum.ALWAYS_ACCEPT, false, templates);
+
 	}
 	
 	private void defaultTemplate(String externalId, String name,
@@ -124,8 +152,9 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 			Boolean lockSettingsDisableCam, Boolean lockSettingsDisableMic,
 			Boolean lockSettingsDisablePrivateChat, Boolean lockSettingsDisablePublicChat,
 			Boolean lockSettingsDisableNote, Boolean lockSettingsLockedLayout,
+			Boolean breakoutRoomsEnabled,
 			Boolean lockSettingsHideUserList, Boolean lockSettingsLockOnJoin, Boolean lockSettingsLockOnJoinConfigurable,
-			GuestPolicyEnum guestPolicy, List<BigBlueButtonMeetingTemplate> templates) {
+			GuestPolicyEnum guestPolicy, boolean enabled, List<BigBlueButtonMeetingTemplate> templates) {
 		
 		BigBlueButtonMeetingTemplate template = templates.stream()
 				.filter(tpl -> externalId.equals(tpl.getExternalId()))
@@ -146,6 +175,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 		template.setAllowStartStopRecording(allowStartStopRecording);
 		template.setWebcamsOnlyForModerator(webcamsOnlyForModerator);
 		template.setAllowModsToUnmuteUsers(allowModsToUnmuteUsers);
+		template.setBreakoutRoomsEnabled(breakoutRoomsEnabled);
 		
 		template.setLockSettingsDisableCam(lockSettingsDisableCam);
 		template.setLockSettingsDisableMic(lockSettingsDisableMic);
@@ -159,6 +189,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 		template.setLockSettingsLockOnJoinConfigurable(lockSettingsLockOnJoinConfigurable);
 
 		template.setGuestPolicyEnum(guestPolicy);
+		template.setEnabled(enabled);
 		bigBlueButtonMeetingTemplateDao.updateTemplate(template);
 	}
 

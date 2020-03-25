@@ -34,6 +34,7 @@ import edu.emory.mathcs.backport.java.util.Collections;
  */
 public enum BigBlueButtonRoles {
 	
+	group,
 	coach,
 	owner,
 	author,

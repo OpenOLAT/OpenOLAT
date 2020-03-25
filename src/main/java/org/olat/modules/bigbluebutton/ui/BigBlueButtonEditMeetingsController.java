@@ -224,18 +224,23 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 		
 		List<BigBlueButtonRoles> editionRoles = new ArrayList<>();
 		if(businessGroup != null) {
-			if(roles.isAdministrator()) {
+			if(roles.isAdministrator() || roles.isSystemAdmin()) {
 				editionRoles.add(BigBlueButtonRoles.administrator);
 			}
-			if(businessGroupService.isIdentityInBusinessGroup(getIdentity(), businessGroup.getKey(), true, false, null)) {
-				editionRoles.add(BigBlueButtonRoles.coach);
+			if(roles.isAuthor() || roles.isLearnResourceManager()) {
+				// global authors / LR-managers can use author templates also in groups
+				editionRoles.add(BigBlueButtonRoles.author);
+			}
+			if(businessGroupService.isIdentityInBusinessGroup(getIdentity(), businessGroup)) {
+				// all group user can choose the group templates (if they are allowed to create group online-meetings)
+				editionRoles.add(BigBlueButtonRoles.group);
 			}
 		} else if(entry != null) {
 			RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(getIdentity(), roles, entry);
-			if(roles.isAdministrator()) {
+			if(roles.isAdministrator() || roles.isSystemAdmin()) {
 				editionRoles.add(BigBlueButtonRoles.administrator);
 			}
-			if(reSecurity.isAuthor()) {
+			if(reSecurity.isAuthor() || roles.isLearnResourceManager()) {
 				editionRoles.add(BigBlueButtonRoles.author);
 			}
 			if(reSecurity.isEntryAdmin()) {
