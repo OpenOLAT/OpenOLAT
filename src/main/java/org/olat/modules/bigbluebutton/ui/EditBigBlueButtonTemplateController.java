@@ -118,9 +118,27 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 		String description = template == null ? "" : template.getDescription();
 		descriptionEl = uifactory.addTextAreaElement("template.description", "template.description", 2000, 4, 72, false, false, description, formLayout);
 		
+		String maxParticipants = template == null || template.getMaxParticipants() == null ? null : template.getMaxParticipants().toString();
+		maxParticipantsEl = uifactory.addTextElement("template.maxParticipants", "template.maxParticipants", 8, maxParticipants, formLayout);
+		maxParticipantsEl.setMandatory(true);
+		
+		String maxDuration = null;
+		if(template == null) {
+			maxDuration = "240";
+		} else if(template.getMaxDuration() != null) {
+			maxDuration = template.getMaxDuration().toString();
+		}
+		maxDurationEl = uifactory.addTextElement("template.maxDuration", "template.maxDuration", 8, maxDuration, formLayout);
+
 		boolean enable = template == null || template.isEnabled();
 		enableEl = uifactory.addCheckboxesHorizontal("template.enabled", "template.enabled", formLayout, onKeys, new String[] { "" });
 		enableEl.select(onKeys[0], enable);
+		
+		/* ----------- */
+		uifactory.addSpacerElement("sp1", formLayout, false);
+
+		String maxConcurrentMeetings = template == null || template.getMaxConcurrentMeetings() == null ? "" : template.getMaxConcurrentMeetings().toString();
+		maxConcurrentMeetingsEl = uifactory.addTextElement("template.max.concurrent.meetings", "template.max.concurrent.meetings", 8, maxConcurrentMeetings, formLayout);
 		
 		KeyValues rolesKeyValues = new KeyValues();
 		for(BigBlueButtonRoles role:BigBlueButtonRoles.values()) {
@@ -137,33 +155,28 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 		for(BigBlueButtonRoles role:roles) {
 			rolesEl.select(role.name(), true);
 		}
-		
-		String maxConcurrentMeetings = template == null || template.getMaxConcurrentMeetings() == null ? "" : template.getMaxConcurrentMeetings().toString();
-		maxConcurrentMeetingsEl = uifactory.addTextElement("template.max.concurrent.meetings", "template.max.concurrent.meetings", 8, maxConcurrentMeetings, formLayout);
-		
-		String maxParticipants = template == null || template.getMaxParticipants() == null ? null : template.getMaxParticipants().toString();
-		maxParticipantsEl = uifactory.addTextElement("template.maxParticipants", "template.maxParticipants", 8, maxParticipants, formLayout);
-		maxParticipantsEl.setMandatory(true);
-		
-		String maxDuration = null;
-		if(template == null) {
-			maxDuration = "240";
-		} else if(template.getMaxDuration() != null) {
-			maxDuration = template.getMaxDuration().toString();
-		}
-		maxDurationEl = uifactory.addTextElement("template.maxDuration", "template.maxDuration", 8, maxDuration, formLayout);
+
+		/* ----------- */
+		uifactory.addSpacerElement("sp2", formLayout, false);
 
 		String[] onValues = new String[] { translate("yes"), translate("no")  };
+		
+		Boolean webcamsOnlyForModerator = template == null ? null : template.getWebcamsOnlyForModerator();
+		webcamsOnlyForModeratorEl = uifactory.addRadiosHorizontal("template.webcamsOnlyForModerator", formLayout, yesNoKeys, onValues);
+		select(webcamsOnlyForModerator, webcamsOnlyForModeratorEl, true);
+		
+		Boolean muteOnStart = template == null ? null : template.getMuteOnStart();
+		muteOnStartEl = uifactory.addRadiosHorizontal("template.muteOnStart", formLayout, yesNoKeys, onValues);
+		select(muteOnStart, muteOnStartEl, false);
+		
+		Boolean allowModsToUnmuteUsers = template == null ? null : template.getAllowModsToUnmuteUsers();
+		allowModsToUnmuteUsersEl = uifactory.addRadiosHorizontal("template.allowModsToUnmuteUsers", formLayout, yesNoKeys, onValues);
+		select(allowModsToUnmuteUsers, allowModsToUnmuteUsersEl, false);
 		
 		Boolean record = template == null ? null : template.getRecord();
 		recordEl = uifactory.addRadiosHorizontal("template.record", formLayout, yesNoKeys, onValues);
 		recordEl.addActionListener(FormEvent.ONCHANGE);
 		select(record, recordEl, false);
-		
-		Boolean breakout = template == null ? null : template.getBreakoutRoomsEnabled();
-		breakoutEl = uifactory.addRadiosHorizontal("template.breakout", formLayout, yesNoKeys, onValues);
-		breakoutEl.addActionListener(FormEvent.ONCHANGE);
-		select(breakout, breakoutEl, true);
 		
 		Boolean autoStartRecording = template == null ? null : template.getAutoStartRecording();
 		autoStartRecordingEl = uifactory.addRadiosHorizontal("template.autoStartRecording", formLayout, yesNoKeys, onValues);
@@ -173,45 +186,10 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 		allowStartStopRecordingEl = uifactory.addRadiosHorizontal("template.allowStartStopRecording", formLayout, yesNoKeys, onValues);
 		select(allowStartStopRecording, allowStartStopRecordingEl, true);
 		
-		Boolean muteOnStart = template == null ? null : template.getMuteOnStart();
-		muteOnStartEl = uifactory.addRadiosHorizontal("template.muteOnStart", formLayout, yesNoKeys, onValues);
-		select(muteOnStart, muteOnStartEl, false);
-		
-		Boolean webcamsOnlyForModerator = template == null ? null : template.getWebcamsOnlyForModerator();
-		webcamsOnlyForModeratorEl = uifactory.addRadiosHorizontal("template.webcamsOnlyForModerator", formLayout, yesNoKeys, onValues);
-		select(webcamsOnlyForModerator, webcamsOnlyForModeratorEl, true);
-		
-		Boolean allowModsToUnmuteUsers = template == null ? null : template.getAllowModsToUnmuteUsers();
-		allowModsToUnmuteUsersEl = uifactory.addRadiosHorizontal("template.allowModsToUnmuteUsers", formLayout, yesNoKeys, onValues);
-		select(allowModsToUnmuteUsers, allowModsToUnmuteUsersEl, false);
-		
-		Boolean lockSettingsDisableCam = template == null ? null : template.getLockSettingsDisableCam();
-		lockSettingsDisableCamEl = uifactory.addRadiosHorizontal("template.lockSettingsDisableCam", formLayout, yesNoKeys, onValues);
-		select(lockSettingsDisableCam, lockSettingsDisableCamEl, false);
-		
-		Boolean lockSettingsDisableMic = template == null ? null : template.getLockSettingsDisableMic();
-		lockSettingsDisableMicEl = uifactory.addRadiosHorizontal("template.lockSettingsDisableMic", formLayout, yesNoKeys, onValues);
-		select(lockSettingsDisableMic, lockSettingsDisableMicEl, false);
-		
-		Boolean lockSettingsDisablePrivateChat = template == null ? null : template.getLockSettingsDisablePrivateChat();
-		lockSettingsDisablePrivateChatEl =  uifactory.addRadiosHorizontal("template.lockSettingsDisablePrivateChat", formLayout, yesNoKeys, onValues);
-		select(lockSettingsDisablePrivateChat, lockSettingsDisablePrivateChatEl, false);
-		
-		Boolean lockSettingsDisablePublicChat = template == null ? null : template.getLockSettingsDisablePublicChat();
-		lockSettingsDisablePublicChatEl =  uifactory.addRadiosHorizontal("template.lockSettingsDisablePublicChat", formLayout, yesNoKeys, onValues);
-		select(lockSettingsDisablePublicChat, lockSettingsDisablePublicChatEl, false);
-		
-		Boolean lockSettingsDisableNote = template == null ? null : template.getLockSettingsDisableNote();
-		lockSettingsDisableNoteEl =  uifactory.addRadiosHorizontal("template.lockSettingsDisableNote", formLayout, yesNoKeys, onValues);
-		select(lockSettingsDisableNote, lockSettingsDisableNoteEl, false);
-		
-		Boolean lockSettingsLockedLayout = template == null ? null : template.getLockSettingsLockedLayout();
-		lockSettingsLockedLayoutEl = uifactory.addRadiosHorizontal("template.lockSettingsLockedLayout", formLayout, yesNoKeys, onValues);
-		select(lockSettingsLockedLayout, lockSettingsLockedLayoutEl, false);
-		
-		Boolean lockSettingsHideUserList = template == null ? null : template.getLockSettingsHideUserList();
-		lockSettingsHideUserListEl = uifactory.addRadiosHorizontal("template.lockSettingsHideUserList", formLayout, yesNoKeys, onValues);
-		select(lockSettingsHideUserList, lockSettingsHideUserListEl, false);
+		Boolean breakout = template == null ? null : template.getBreakoutRoomsEnabled();
+		breakoutEl = uifactory.addRadiosHorizontal("template.breakout", formLayout, yesNoKeys, onValues);
+		breakoutEl.addActionListener(FormEvent.ONCHANGE);
+		select(breakout, breakoutEl, true);
 		
 		Boolean lockSettingsLockOnJoin = template == null ? null : template.getLockSettingsLockOnJoin();
 		lockSettingsLockOnJoinEl = uifactory.addRadiosHorizontal("template.lockSettingsLockOnJoin", formLayout, yesNoKeys, onValues);
@@ -221,7 +199,39 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 		Boolean lockSettingsLockOnJoinConfigurable = template == null ? null : template.getLockSettingsLockOnJoinConfigurable();
 		lockSettingsLockOnJoinConfigurableEl = uifactory.addRadiosHorizontal("template.lockSettingsLockOnJoinConfigurable", formLayout, yesNoKeys, onValues);
 		select(lockSettingsLockOnJoinConfigurable, lockSettingsLockOnJoinConfigurableEl, false);
-	
+			
+		/* ----------- */
+		uifactory.addSpacerElement("sp2", formLayout, false);
+		uifactory.addStaticTextElement("template.lock", "template.lock", null, formLayout);		
+		
+		Boolean lockSettingsDisableCam = template == null ? null : template.getLockSettingsDisableCam();
+		lockSettingsDisableCamEl = uifactory.addRadiosHorizontal("template.lockSettingsDisableCam", formLayout, yesNoKeys, onValues);
+		select(lockSettingsDisableCam, lockSettingsDisableCamEl, false);
+		
+		Boolean lockSettingsDisableMic = template == null ? null : template.getLockSettingsDisableMic();
+		lockSettingsDisableMicEl = uifactory.addRadiosHorizontal("template.lockSettingsDisableMic", formLayout, yesNoKeys, onValues);
+		select(lockSettingsDisableMic, lockSettingsDisableMicEl, false);
+		
+		Boolean lockSettingsDisablePublicChat = template == null ? null : template.getLockSettingsDisablePublicChat();
+		lockSettingsDisablePublicChatEl =  uifactory.addRadiosHorizontal("template.lockSettingsDisablePublicChat", formLayout, yesNoKeys, onValues);
+		select(lockSettingsDisablePublicChat, lockSettingsDisablePublicChatEl, false);
+		
+		Boolean lockSettingsDisablePrivateChat = template == null ? null : template.getLockSettingsDisablePrivateChat();
+		lockSettingsDisablePrivateChatEl =  uifactory.addRadiosHorizontal("template.lockSettingsDisablePrivateChat", formLayout, yesNoKeys, onValues);
+		select(lockSettingsDisablePrivateChat, lockSettingsDisablePrivateChatEl, false);
+		
+		Boolean lockSettingsDisableNote = template == null ? null : template.getLockSettingsDisableNote();
+		lockSettingsDisableNoteEl =  uifactory.addRadiosHorizontal("template.lockSettingsDisableNote", formLayout, yesNoKeys, onValues);
+		select(lockSettingsDisableNote, lockSettingsDisableNoteEl, false);
+		
+		Boolean lockSettingsHideUserList = template == null ? null : template.getLockSettingsHideUserList();
+		lockSettingsHideUserListEl = uifactory.addRadiosHorizontal("template.lockSettingsHideUserList", formLayout, yesNoKeys, onValues);
+		select(lockSettingsHideUserList, lockSettingsHideUserListEl, false);
+		
+		Boolean lockSettingsLockedLayout = template == null ? null : template.getLockSettingsLockedLayout();
+		lockSettingsLockedLayoutEl = uifactory.addRadiosHorizontal("template.lockSettingsLockedLayout", formLayout, yesNoKeys, onValues);
+		select(lockSettingsLockedLayout, lockSettingsLockedLayoutEl, false);
+		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());

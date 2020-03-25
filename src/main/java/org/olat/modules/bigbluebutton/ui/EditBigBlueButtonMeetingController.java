@@ -19,6 +19,7 @@
  */
 package org.olat.modules.bigbluebutton.ui;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -165,7 +166,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		permanentEl.select(permKeys[0], permanent);
 		permanentEl.setVisible(bigBlueButtonModule.isPermanentMeetingEnabled());
 
-		Date startDate = meeting == null ? null : meeting.getStartDate();
+		Date startDate = meeting == null ? new Date() : meeting.getStartDate();
 		startDateEl = uifactory.addDateChooser("meeting.start", "meeting.start", startDate, formLayout);
 		startDateEl.setMandatory(!permanent);
 		startDateEl.setDateChooserTimeEnabled(true);
@@ -174,6 +175,13 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		leadTimeEl = uifactory.addTextElement("meeting.leadTime", 8, leadtime, formLayout);
 		
 		Date endDate = meeting == null ? null : meeting.getEndDate();
+		if (endDate == null) {
+			// set meeting time default to 1 hour
+			Calendar calendar = Calendar.getInstance();
+		    calendar.setTime(startDate);
+		    calendar.add(Calendar.HOUR_OF_DAY, 1);
+		    endDate = calendar.getTime();
+		}
 		endDateEl = uifactory.addDateChooser("meeting.end", "meeting.end", endDate, formLayout);
 		endDateEl.setMandatory(!permanent);
 		endDateEl.setDefaultValue(startDateEl);
@@ -215,7 +223,9 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		if(templateEl.isOneSelected()) {
 			BigBlueButtonMeetingTemplate template = getSelectedTemplate();
 			if(template != null && template.getMaxParticipants() != null) {
-				String[] args = new String[] { template.getMaxParticipants().toString() };				
+				Integer maxConcurrentInt = template.getMaxConcurrentMeetings();
+				String maxConcurrent = (maxConcurrentInt == null ? " ∞" : maxConcurrentInt.toString());
+				String[] args = new String[] { template.getMaxParticipants().toString(), maxConcurrent};				
 				if(template.getWebcamsOnlyForModerator() != null && template.getWebcamsOnlyForModerator().booleanValue()) {
 					templateEl.setExampleKey("template.explain.max.participants.with.webcams.mod", args);
 				} else {
