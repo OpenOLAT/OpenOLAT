@@ -75,7 +75,7 @@ public class BigBlueButtonConfigForm extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		Collection<String> selectedKeys = accessEl.getSelectedKeys();
-		config.setBooleanEntry(BigBlueButtonEditController.MODERATOR_START_MEETING, !selectedKeys.contains(accessKeys[0]));
+		config.setBooleanEntry(BigBlueButtonEditController.MODERATOR_START_MEETING, selectedKeys.contains(accessKeys[0]));
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 	}
 }

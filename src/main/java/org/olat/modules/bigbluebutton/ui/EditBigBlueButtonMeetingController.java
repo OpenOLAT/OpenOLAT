@@ -163,7 +163,6 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		permanentEl.addActionListener(FormEvent.ONCHANGE);
 		boolean permanent = meeting != null && bigBlueButtonModule.isPermanentMeetingEnabled() && meeting.isPermanent();
 		permanentEl.select(permKeys[0], permanent);
-		permanentEl.setHelpTextKey("meeting.permanent.explain", null);
 		permanentEl.setVisible(bigBlueButtonModule.isPermanentMeetingEnabled());
 
 		Date startDate = meeting == null ? null : meeting.getStartDate();
