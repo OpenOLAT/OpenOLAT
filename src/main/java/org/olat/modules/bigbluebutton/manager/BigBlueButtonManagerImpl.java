@@ -138,6 +138,8 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 		template.setMaxConcurrentMeetings(maxConcurrentMeetings);
 		template.setMaxParticipants(maxParticipants);
 		template.setMaxDuration(maxDuration);
+		template.setRecord(Boolean.TRUE);
+		template.setBreakoutRoomsEnabled(Boolean.TRUE);
 		template.setPermittedRolesEnum(BigBlueButtonRoles.valuesAsList());
 		template.setMuteOnStart(muteOnStart);
 		template.setAutoStartRecording(autoStartRecording);
