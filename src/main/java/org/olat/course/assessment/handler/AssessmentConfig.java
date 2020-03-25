@@ -79,6 +79,11 @@ public interface AssessmentConfig {
 	public Float getCutValue();
 	
 	/**
+	 * @return if the produced passed can be overriden by the coach
+	 */
+	public boolean isPassedOverridable();
+	
+	/**
 	 * @return if this course node can produces a completion variable for the learner
 	 */
 	public Mode getCompletionMode();

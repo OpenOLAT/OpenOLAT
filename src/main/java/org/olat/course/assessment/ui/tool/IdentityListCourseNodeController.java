@@ -78,6 +78,7 @@ import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.bulk.PassedCellRenderer;
+import org.olat.course.assessment.bulk.PassedOverridenCellRenderer;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
@@ -389,6 +390,9 @@ public class IdentityListCourseNodeController extends FormBasicController
 					}
 				}
 				initScoreColumns(columnsModel);
+			}
+			if(assessmentConfig.isPassedOverridable()) {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCourseElementCols.passedOverriden, new PassedOverridenCellRenderer()));
 			}
 			if(Mode.none != assessmentConfig.getPassedMode()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.passed, new PassedCellRenderer()));

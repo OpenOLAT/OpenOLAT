@@ -78,8 +78,8 @@ public class STLastModificationsEvaluatorTest {
 	}
 
 	private AssessmentEvaluation createAssessmentEvaluation(Date lastUserModified, Date lastCoachModified) {
-		return new AssessmentEvaluation(null, null, null, null, null, null, null, null, null, null, null, null, null, 0,
-				null, lastUserModified, lastCoachModified, null, null, null, null, null, null, null);
+		return new AssessmentEvaluation(null, null, null, null, null, null, null, null, null, null, null, null, null,
+				null, 0, null, lastUserModified, lastCoachModified, null, null, null, null, null, null, null);
 	}
 
 }

@@ -156,8 +156,9 @@ public class ConfigEndDateEvaluatorTest {
 	}
 	
 	private AssessmentEvaluation createEvaluation(AssessmentObligation obligation) {
-		return new AssessmentEvaluation(null, null, null, null, null, null, null, null, null, null, null, null, null, 0,
-				null, null, null, null, null, Overridable.empty(), Overridable.of(obligation), null, null, null);
+		return new AssessmentEvaluation(null, null, null, null, null, null, null, null, null, null, null, null, null,
+				null, 0, null, null, null, null, null, Overridable.empty(), Overridable.of(obligation), null, null,
+				null);
 	}
 
 

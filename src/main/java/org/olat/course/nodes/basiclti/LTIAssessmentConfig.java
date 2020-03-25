@@ -92,6 +92,11 @@ public class LTIAssessmentConfig implements AssessmentConfig {
 		}
 		return config.getFloatEntry(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 	}
+
+	@Override
+	public boolean isPassedOverridable() {
+		return false;
+	}
 	
 	@Override
 	public Mode getCompletionMode() {

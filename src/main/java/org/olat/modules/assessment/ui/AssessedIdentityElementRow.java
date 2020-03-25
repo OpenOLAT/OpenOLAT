@@ -44,6 +44,7 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 	private Boolean userVisibility;
 	private BigDecimal score;
 	private Boolean passed;
+	private Boolean passedOverriden;
 	private Date lastModified;
 	private Date lastUserModified;
 	private Date lastCoachModified;
@@ -70,6 +71,7 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 			attempts = entry.getAttempts();
 			score = entry.getScore();
 			passed = entry.getPassed();
+			passedOverriden = Boolean.valueOf(entry.getPassedOverridable().isOverridden());
 			userVisibility = entry.getUserVisibility();
 			lastModified = entry.getLastModified();
 			lastUserModified = entry.getLastUserModified();
@@ -99,6 +101,10 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 
 	public Boolean getPassed() {
 		return passed;
+	}
+
+	public Boolean getPassedOverriden() {
+		return passedOverriden;
 	}
 
 	public Date getInitialCourseLaunchDate() {

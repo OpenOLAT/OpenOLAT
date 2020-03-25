@@ -153,6 +153,11 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 		}
 		return cutValue;
 	}
+
+	@Override
+	public boolean isPassedOverridable() {
+		return false;
+	}
 	
 	@Override
 	public Mode getCompletionMode() {

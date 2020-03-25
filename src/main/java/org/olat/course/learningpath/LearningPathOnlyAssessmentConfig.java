@@ -70,6 +70,11 @@ public class LearningPathOnlyAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
+	public boolean isPassedOverridable() {
+		return false;
+	}
+
+	@Override
 	public Mode getCompletionMode() {
 		return Mode.none;
 	}

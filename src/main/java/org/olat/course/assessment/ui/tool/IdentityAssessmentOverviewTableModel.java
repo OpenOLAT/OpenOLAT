@@ -98,6 +98,7 @@ public class IdentityAssessmentOverviewTableModel extends DefaultFlexiTableDataM
 			case attempts: return nodeData.getAttempts();
 			case userVisibility: return nodeData.getUserVisibility();
 			case score: return nodeData.getScore();
+			case passedOverriden: return nodeData.getPassedOverriden();
 			case passed: return nodeData.getPassed();
 			case min: return nodeData.getMinScore();
 			case max: return nodeData.getMaxScore();
@@ -137,6 +138,7 @@ public class IdentityAssessmentOverviewTableModel extends DefaultFlexiTableDataM
 		min("table.header.min", true),
 		max("table.header.max", true),
 		status("table.header.status", true),
+		passedOverriden("table.header.passed.overriden", true),
 		passed("table.header.passed", true),
 		select("table.action.select", false),
 		numOfAssessmentDocs("table.header.num.assessmentDocs", true),

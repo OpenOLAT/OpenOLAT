@@ -108,6 +108,11 @@ public class STAssessmentConfig implements AssessmentConfig {
 		return Mode.none;
 	}
 
+	@Override
+	public boolean isPassedOverridable() {
+		return scoreCalculator == null && isEvaluatedRoot();
+	}
+
 	private boolean isEvaluatedRoot() {
 		return isRoot && (
 				   rootConfig.has(STCourseNode.CONFIG_PASSED_PROGRESS)

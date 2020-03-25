@@ -70,6 +70,7 @@ public class AssessmentNodeData implements IndentedCourseNode {
 	private Float minScore;
 	
 	private Boolean passed;
+	private Boolean passedOverriden;
 	
 	private Boolean userVisibility;
 	private AssessmentEntryStatus assessmentStatus;
@@ -201,6 +202,14 @@ public class AssessmentNodeData implements IndentedCourseNode {
 
 	public void setPassed(Boolean passed) {
 		this.passed = passed;
+	}
+
+	public Boolean getPassedOverriden() {
+		return passedOverriden;
+	}
+
+	public void setPassedOverriden(Boolean passedOverriden) {
+		this.passedOverriden = passedOverriden;
 	}
 
 	public AssessmentEntryStatus getAssessmentStatus() {

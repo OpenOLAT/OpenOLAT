@@ -84,6 +84,11 @@ public class ScormAssessmentConfig implements AssessmentConfig {
 		int cutValue = config.getIntegerSafe(ScormEditController.CONFIG_CUTVALUE, 0); 
 		return Float.valueOf(cutValue);
 	}
+
+	@Override
+	public boolean isPassedOverridable() {
+		return false;
+	}
 	
 	@Override
 	public Mode getCompletionMode() {

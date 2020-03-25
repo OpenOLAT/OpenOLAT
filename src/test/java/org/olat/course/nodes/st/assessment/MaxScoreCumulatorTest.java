@@ -169,6 +169,11 @@ public class MaxScoreCumulatorTest {
 		}
 
 		@Override
+		public boolean isPassedOverridable() {
+			return false;
+		}
+
+		@Override
 		public Mode getCompletionMode() {
 			return null;
 		}

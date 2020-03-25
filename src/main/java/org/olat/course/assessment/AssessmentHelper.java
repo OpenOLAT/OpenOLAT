@@ -462,6 +462,7 @@ public class AssessmentHelper {
 						Boolean passed = scoreEvaluation.getPassed();
 						if (passed != null) {
 							assessmentNodeData.setPassed(passed);
+							assessmentNodeData.setPassedOverriden(scoreEvaluation.getPassedOverriden());
 							hasDisplayableUserValues = true;
 						}
 					}

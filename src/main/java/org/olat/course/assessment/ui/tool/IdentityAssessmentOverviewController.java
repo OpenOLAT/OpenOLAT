@@ -49,17 +49,22 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.Structure;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentModule;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.IndentedNodeRenderer;
 import org.olat.course.assessment.bulk.PassedCellRenderer;
+import org.olat.course.assessment.bulk.PassedOverridenCellRenderer;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.assessment.ui.tool.IdentityAssessmentOverviewTableModel.NodeCols;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<BR>
@@ -92,6 +97,10 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 	private CourseNode selectedCourseNode;
 	private List<AssessmentNodeData> preloadedNodesList;
 	private UserCourseEnvironment userCourseEnvironment;
+	private boolean hasPassedOverridable;
+	
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 
 	/**
 	 * Constructor for the identity assessment overview controller to be used in the assessment tool or in the users
@@ -115,9 +124,26 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		this.userCourseEnvironment = userCourseEnvironment;		
 		loadNodesFromCourse = true;
 		followUserResultsVisibility = false;
+		this.hasPassedOverridable = hasPassedOverridable(userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode());
 
 		initForm(ureq);
 		loadModel();
+	}
+
+	private boolean hasPassedOverridable(CourseNode courseNode) {
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		if (assessmentConfig.isPassedOverridable()) {
+			return true;
+		} 
+		int childCount = courseNode.getChildCount();
+		for (int i = 0; i < childCount; i++) {
+			INode child = courseNode.getChildAt(i);
+			if (child instanceof CourseNode) {
+				CourseNode childCourseNode = (CourseNode) child;
+				return hasPassedOverridable(childCourseNode);
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -238,6 +264,9 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.score, new ScoreCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.min, new ScoreCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.max, new ScoreCellRenderer()));
+		if (hasPassedOverridable) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NodeCols.passedOverriden, new PassedOverridenCellRenderer()));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.passed, new PassedCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.numOfAssessmentDocs));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.status, new AssessmentStatusCellRenderer(getLocale())));
