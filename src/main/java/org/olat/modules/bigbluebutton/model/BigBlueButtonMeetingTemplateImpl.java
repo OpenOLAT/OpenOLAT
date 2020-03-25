@@ -387,7 +387,7 @@ public class BigBlueButtonMeetingTemplateImpl implements Persistable, BigBlueBut
 
 	@Override
 	public List<BigBlueButtonRoles> getPermittedRolesEnum() {
-		return null;
+		return BigBlueButtonRoles.toList(permittedRoles);
 	}
 
 	@Override
@@ -395,7 +395,7 @@ public class BigBlueButtonMeetingTemplateImpl implements Persistable, BigBlueBut
 		if(roles == null || roles.isEmpty()) {
 			setPermittedRoles(null);
 		} else {
-			
+			setPermittedRoles(BigBlueButtonRoles.toString(roles));
 		}
 	}
 

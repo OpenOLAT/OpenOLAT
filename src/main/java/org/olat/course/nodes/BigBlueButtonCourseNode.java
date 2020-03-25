@@ -21,7 +21,6 @@ package org.olat.course.nodes;
 
 import java.util.List;
 
-import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
@@ -30,7 +29,6 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
@@ -57,7 +55,6 @@ import org.olat.repository.RepositoryEntry;
 public class BigBlueButtonCourseNode extends AbstractAccessableCourseNode {
 	
 	private static final long serialVersionUID = 7965344505304490859L;
-	private static final Logger log = Tracing.createLoggerFor(BigBlueButtonCourseNode.class);
 	public static final String TYPE = "bigbluebutton";
 
 	// configuration

@@ -44,6 +44,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
+import org.olat.modules.bigbluebutton.BigBlueButtonRoles;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -71,6 +72,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	private final RepositoryEntry entry;
 	private final BusinessGroup businessGroup;
 	private BigBlueButtonMeeting meeting;
+	private final List<BigBlueButtonRoles> editionRoles;
 	private List<BigBlueButtonMeetingTemplate> templates;
 	
 	private FormLink openCalLink;
@@ -83,23 +85,26 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	private BigBlueButtonManager bigBlueButtonManager;
 	
 	public EditBigBlueButtonMeetingController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry entry, String subIdent, BusinessGroup businessGroup) {
+			RepositoryEntry entry, String subIdent, BusinessGroup businessGroup, List<BigBlueButtonRoles> editionRoles) {
 		super(ureq, wControl);
 		this.entry = entry;
 		this.subIdent = subIdent;
 		this.businessGroup = businessGroup;
+		this.editionRoles = editionRoles;
 		templates = bigBlueButtonManager.getTemplates();
 		
 		initForm(ureq);
 		updateUI();
 	}
 	
-	public EditBigBlueButtonMeetingController(UserRequest ureq, WindowControl wControl, BigBlueButtonMeeting meeting) {
+	public EditBigBlueButtonMeetingController(UserRequest ureq, WindowControl wControl,
+			BigBlueButtonMeeting meeting, List<BigBlueButtonRoles> editionRoles) {
 		super(ureq, wControl);
 		entry = meeting.getEntry();
 		subIdent = meeting.getSubIdent();
 		businessGroup = meeting.getBusinessGroup();
 		this.meeting = meeting;
+		this.editionRoles = editionRoles;
 		templates = bigBlueButtonManager.getTemplates();
 		
 		initForm(ureq);
@@ -125,7 +130,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 				? null : meeting.getTemplate().getKey();
 		KeyValues templatesKeyValues = new KeyValues();
 		for(BigBlueButtonMeetingTemplate template:templates) {
-			if(template.isEnabled() || template.getKey().equals(selectedTemplateKey)) {
+			if(accept(template) || template.getKey().equals(selectedTemplateKey)) {
 				templatesKeyValues.add(KeyValues.entry(template.getKey().toString(), template.getName()));
 			}
 		}
@@ -145,7 +150,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 				}
 			}
 		}
-		if(!templateSelected) {
+		if(!templateSelected && templatesKeys.length > 0) {
 			templateEl.select(templatesKeys[0], true);
 		}
 		openCalLink = uifactory.addFormLink("calendar.open", formLayout);
@@ -182,6 +187,20 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		formLayout.add("buttons", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("save", buttonLayout);
+	}
+	
+	private boolean accept(BigBlueButtonMeetingTemplate template) {
+		if(!template.isEnabled()) return false;
+		
+		List<BigBlueButtonRoles> roles = template.getPermittedRolesEnum();
+		for(BigBlueButtonRoles role:roles) {
+			for(BigBlueButtonRoles editionRole:editionRoles) {
+				if(role.accept(editionRole)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	private void updateUI() {
@@ -263,8 +282,8 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			}
 		}
 		
-		allOk &= validateTime(leadTimeEl);
-		allOk &= validateTime(followupTimeEl);
+		allOk &= validateTime(leadTimeEl, 15l);
+		allOk &= validateTime(followupTimeEl, 15l);
 		
 		templateEl.clearError();
 		if(!templateEl.isOneSelected()) {
@@ -289,12 +308,17 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		return allOk;
 	}
 	
-	private boolean validateTime(TextElement el) {
+	private boolean validateTime(TextElement el, long maxValue) {
 		boolean allOk = true;
 		el.clearError();
-		if(StringHelper.containsNonWhitespace(el.getValue()) && !StringHelper.isLong(el.getValue())) {
-			el.setErrorKey("form.error.nointeger", null);
-			allOk &= false;
+		if(StringHelper.containsNonWhitespace(el.getValue())) {
+			if(!StringHelper.isLong(el.getValue())) {
+				el.setErrorKey("form.error.nointeger", null);
+				allOk &= false;
+			} else if(Long.parseLong(el.getValue()) > maxValue) {
+				el.setErrorKey("error.too.long.time", new String[] { Long.toString(maxValue) });
+				allOk &= false;
+			}
 		}
 		return allOk;
 	}

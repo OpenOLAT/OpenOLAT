@@ -19,6 +19,7 @@
  */
 package org.olat.modules.bigbluebutton.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.commons.persistence.SortKey;
@@ -41,14 +42,19 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.id.Roles;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
+import org.olat.modules.bigbluebutton.BigBlueButtonRoles;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonMeetingTableModel.BMeetingsCols;
 import org.olat.modules.gotomeeting.ui.GoToMeetingTableModel.MeetingsCols;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntrySecurity;
+import org.olat.repository.RepositoryManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -73,9 +79,13 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 	private final BusinessGroup businessGroup;
 
 	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
 	private BigBlueButtonModule bigBlueButtonModule;
 	@Autowired
 	private BigBlueButtonManager bigBlueButtonManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	
 	public BigBlueButtonEditMeetingsController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry entry, String subIdentifier, BusinessGroup group, boolean readOnly) {
@@ -183,8 +193,10 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 
 	private void doAddMeeting(UserRequest ureq) {
 		if(guardModalController(editMeetingCtlr)) return;
-		
-		editMeetingCtlr = new EditBigBlueButtonMeetingController(ureq, getWindowControl(), entry, subIdent, businessGroup);
+
+		List<BigBlueButtonRoles> editionRoles= getPermittedRoles(ureq);
+		editMeetingCtlr = new EditBigBlueButtonMeetingController(ureq, getWindowControl(),
+				entry, subIdent, businessGroup, editionRoles);
 		listenTo(editMeetingCtlr);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", editMeetingCtlr.getInitialComponent(),
@@ -196,13 +208,44 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 	private void doEditMeeting(UserRequest ureq, BigBlueButtonMeeting meeting) {
 		if(guardModalController(editMeetingCtlr)) return;
 		
-		editMeetingCtlr = new EditBigBlueButtonMeetingController(ureq, getWindowControl(), meeting);
+		List<BigBlueButtonRoles> editionRoles= getPermittedRoles(ureq);
+		editMeetingCtlr = new EditBigBlueButtonMeetingController(ureq, getWindowControl(),
+				meeting, editionRoles);
 		listenTo(editMeetingCtlr);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", editMeetingCtlr.getInitialComponent(),
 				true, translate("add.meeting"));
 		cmc.activate();
 		listenTo(cmc);
+	}
+	
+	private List<BigBlueButtonRoles> getPermittedRoles(UserRequest ureq) {
+		Roles roles = ureq.getUserSession().getRoles();
+		
+		List<BigBlueButtonRoles> editionRoles = new ArrayList<>();
+		if(businessGroup != null) {
+			if(roles.isAdministrator()) {
+				editionRoles.add(BigBlueButtonRoles.administrator);
+			}
+			if(businessGroupService.isIdentityInBusinessGroup(getIdentity(), businessGroup.getKey(), true, false, null)) {
+				editionRoles.add(BigBlueButtonRoles.coach);
+			}
+		} else if(entry != null) {
+			RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(getIdentity(), roles, entry);
+			if(roles.isAdministrator()) {
+				editionRoles.add(BigBlueButtonRoles.administrator);
+			}
+			if(reSecurity.isAuthor()) {
+				editionRoles.add(BigBlueButtonRoles.author);
+			}
+			if(reSecurity.isEntryAdmin()) {
+				editionRoles.add(BigBlueButtonRoles.owner);
+			}
+			if(reSecurity.isCourseCoach()) {
+				editionRoles.add(BigBlueButtonRoles.coach);
+			}
+		}
+		return editionRoles;
 	}
 	
 	private void doConfirmDelete(UserRequest ureq, BigBlueButtonMeeting meeting) {

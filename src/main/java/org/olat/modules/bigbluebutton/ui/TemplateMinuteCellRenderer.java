@@ -44,7 +44,7 @@ public class TemplateMinuteCellRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator transl) {
 		if(cellValue instanceof Number) {
-			translator.translate("minutes", new String[] { Integer.toString(((Number)cellValue).intValue()) });
+			target.append(translator.translate("minutes", new String[] { Integer.toString(((Number)cellValue).intValue()) }));
 		}
 	}
 }
