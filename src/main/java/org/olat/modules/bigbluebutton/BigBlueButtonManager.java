@@ -71,9 +71,18 @@ public interface BigBlueButtonManager {
 
 	public List<BigBlueButtonMeetingTemplate> getTemplates();
 	
-	public List<BigBlueButtonMeetingTemplate> getTemplates(List<BigBlueButtonRoles> editionRoles);
+	public List<BigBlueButtonMeetingTemplate> getTemplates(List<BigBlueButtonTemplatePermissions> permissions);
 
-	public List<BigBlueButtonRoles> calculatePermittedRoles(RepositoryEntry entry, BusinessGroup businessGroup, Identity identity, Roles userRoles);
+	/**
+	 * Calculate the permissions of the specified identity for the repository entry or business group.
+	 * 
+	 * @param entry The repository entry (optional)
+	 * @param businessGroup The business group (optional)
+	 * @param identity The identity
+	 * @param userRoles The roles of the identity
+	 * @return
+	 */
+	public List<BigBlueButtonTemplatePermissions> calculatePermissions(RepositoryEntry entry, BusinessGroup businessGroup, Identity identity, Roles userRoles);
 	
 	public BigBlueButtonMeetingTemplate updateTemplate(BigBlueButtonMeetingTemplate template);
 	

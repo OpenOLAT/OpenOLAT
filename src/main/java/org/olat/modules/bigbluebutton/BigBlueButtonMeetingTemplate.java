@@ -132,18 +132,18 @@ public interface BigBlueButtonMeetingTemplate extends ModifiedInfo, CreateInfo {
 
 	public void setLockSettingsLockOnJoinConfigurable(Boolean lockSettingsLockOnJoinConfigurable);
 	
-	public List<BigBlueButtonRoles> getPermittedRolesEnum();
+	public List<BigBlueButtonTemplatePermissions> getPermissions();
 	
-	public void setPermittedRolesEnum(List<BigBlueButtonRoles> roles);
+	public void setPermissions(List<BigBlueButtonTemplatePermissions> roles);
 	
 	public GuestPolicyEnum getGuestPolicyEnum();
 
 	public void setGuestPolicyEnum(GuestPolicyEnum guestPolicy);
 	
-	public default boolean availableTo(List<BigBlueButtonRoles> editionRoles) {
-		List<BigBlueButtonRoles> roles = getPermittedRolesEnum();
-		for(BigBlueButtonRoles role:roles) {
-			for(BigBlueButtonRoles editionRole:editionRoles) {
+	public default boolean availableTo(List<BigBlueButtonTemplatePermissions> permissions) {
+		List<BigBlueButtonTemplatePermissions> roles = getPermissions();
+		for(BigBlueButtonTemplatePermissions role:roles) {
+			for(BigBlueButtonTemplatePermissions editionRole:permissions) {
 				if(role.accept(editionRole)) {
 					return true;
 				}

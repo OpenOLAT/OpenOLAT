@@ -39,7 +39,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
-import org.olat.modules.bigbluebutton.BigBlueButtonRoles;
+import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -141,18 +141,18 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 		maxConcurrentMeetingsEl = uifactory.addTextElement("template.max.concurrent.meetings", "template.max.concurrent.meetings", 8, maxConcurrentMeetings, formLayout);
 		
 		KeyValues rolesKeyValues = new KeyValues();
-		for(BigBlueButtonRoles role:BigBlueButtonRoles.values()) {
+		for(BigBlueButtonTemplatePermissions role:BigBlueButtonTemplatePermissions.values()) {
 			rolesKeyValues.add(KeyValues.entry(role.name(), translate("role.".concat(role.name()))));
 		}
 		rolesEl = uifactory.addCheckboxesVertical("template.roles", "template.roles", formLayout,
 				rolesKeyValues.keys(), rolesKeyValues.values(), 1);
-		List<BigBlueButtonRoles> roles;
+		List<BigBlueButtonTemplatePermissions> roles;
 		if(template != null) {
-			roles = template.getPermittedRolesEnum();
+			roles = template.getPermissions();
 		} else {
-			roles = BigBlueButtonRoles.valuesAsList();
+			roles = BigBlueButtonTemplatePermissions.valuesAsList();
 		}
-		for(BigBlueButtonRoles role:roles) {
+		for(BigBlueButtonTemplatePermissions role:roles) {
 			rolesEl.select(role.name(), true);
 		}
 
@@ -353,9 +353,9 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 		template.setDescription(descriptionEl.getValue());
 		template.setEnabled(enableEl.isAtLeastSelected(1));
 		
-		List<BigBlueButtonRoles> roles = rolesEl.getSelectedKeys().stream()
-				.map(BigBlueButtonRoles::valueOf).collect(Collectors.toList());
-		template.setPermittedRolesEnum(roles);
+		List<BigBlueButtonTemplatePermissions> roles = rolesEl.getSelectedKeys().stream()
+				.map(BigBlueButtonTemplatePermissions::valueOf).collect(Collectors.toList());
+		template.setPermissions(roles);
 		
 		if(StringHelper.containsNonWhitespace(maxConcurrentMeetingsEl.getValue())
 				&& StringHelper.isLong(maxConcurrentMeetingsEl.getValue())) {

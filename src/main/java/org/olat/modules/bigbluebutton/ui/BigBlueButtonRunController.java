@@ -41,7 +41,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
-import org.olat.modules.bigbluebutton.BigBlueButtonRoles;
+import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -119,11 +119,11 @@ public class BigBlueButtonRunController extends BasicController implements Activ
 	private boolean hasAtLeastOneTemplate(UserRequest ureq) {
 		// TODO bbb should also apply to group config form: don't let regular students enable bbb in groups when they have no 
 		// template to choose from.
-		List<BigBlueButtonRoles> editionRoles = bigBlueButtonManager
-				.calculatePermittedRoles(entry, group, getIdentity(), ureq.getUserSession().getRoles());
-		bigBlueButtonManager.getTemplates(editionRoles);
+		List<BigBlueButtonTemplatePermissions> permissions = bigBlueButtonManager
+				.calculatePermissions(entry, group, getIdentity(), ureq.getUserSession().getRoles());
+		bigBlueButtonManager.getTemplates(permissions);
 	
-		List<BigBlueButtonMeetingTemplate> templates = bigBlueButtonManager.getTemplates(editionRoles);
+		List<BigBlueButtonMeetingTemplate> templates = bigBlueButtonManager.getTemplates(permissions);
 		return !templates.isEmpty();
 	}
 	
