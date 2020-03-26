@@ -472,6 +472,7 @@ import org.junit.runners.Suite;
 	 */
 	org.olat.core.commons.services.doceditor.office365.manager.UrlParserTest.class,
 	org.olat.core.commons.services.doceditor.onlyoffice.manager.OnlyOfficeSecurityServiceImplTest.class,
+	org.olat.core.commons.services.doceditor.onlyoffice.manager.OnlyOfficeServiceImplTest.class,
 	org.olat.core.commons.services.doceditor.wopi.manager.WopiServiceImplTest.class,
 	org.olat.core.commons.services.doceditor.wopi.manager.WopiXStreamTest.class,
 	org.olat.core.commons.services.commentAndRating.manager.CommentAndRatingServiceTest.class,

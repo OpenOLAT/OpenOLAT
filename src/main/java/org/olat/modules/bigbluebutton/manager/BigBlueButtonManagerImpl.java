@@ -290,8 +290,39 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 	public boolean deleteMeeting(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors) {
 		BigBlueButtonMeeting reloadedMeeting = bigBlueButtonMeetingDao.loadByKey(meeting.getKey());
 		removeCalendarEvent(reloadedMeeting);
+		deleteRecordings(meeting, errors);
 		bigBlueButtonMeetingDao.deleteMeeting(reloadedMeeting);
 		return false;
+	}
+	
+	private void deleteRecordings(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors) {
+		StringBuilder sb = new StringBuilder();
+		
+		List<BigBlueButtonRecording> recordings = getRecordings(meeting, errors);
+		if(recordings != null && !recordings.isEmpty()) {
+			for(BigBlueButtonRecording recording:recordings) {
+				String recordId = recording.getRecordId();
+				if(StringHelper.containsNonWhitespace(recordId)) {
+					if(sb.length() > 0) sb.append(",");
+					sb.append(recordId);
+				}
+			}
+		}
+		
+		if(sb.length() > 0) {
+			deleteRecording(sb.toString(), errors);
+		}
+	}
+	
+	private void deleteRecording(String recordId, BigBlueButtonErrors errors) {
+		BigBlueButtonUriBuilder uriBuilder = getUriBuilder();
+		uriBuilder
+			.operation("deleteRecordings")
+			.parameter("recordID", recordId);
+		
+		Document doc = sendRequest(uriBuilder, errors);
+		BigBlueButtonUtils.print(doc);
+		BigBlueButtonUtils.checkSuccess(doc, errors);
 	}
 	
 	private void removeCalendarEvent(BigBlueButtonMeeting meeting) {

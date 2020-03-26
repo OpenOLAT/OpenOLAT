@@ -31,6 +31,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonRecording;
  */
 public class BigBlueButtonRecordingImpl implements BigBlueButtonRecording {
 	
+	private final String recordId;
 	private final String url;
 	private final String type;
 	private final String name;
@@ -39,7 +40,8 @@ public class BigBlueButtonRecordingImpl implements BigBlueButtonRecording {
 	private final Date start;
 	private final Date end;
 	
-	private BigBlueButtonRecordingImpl(String name, String meetingId, Date start, Date end, String url, String type) {
+	private BigBlueButtonRecordingImpl(String recordId, String name, String meetingId, Date start, Date end, String url, String type) {
+		this.recordId = recordId;
 		this.url = url;
 		this.type = type;
 		this.start = start;
@@ -48,10 +50,15 @@ public class BigBlueButtonRecordingImpl implements BigBlueButtonRecording {
 		this.meetingId = meetingId;
 	}
 	
-	public static BigBlueButtonRecording valueOf(String name, String meetingId, Date start, Date end, String url, String type) {
-		return new BigBlueButtonRecordingImpl(name, meetingId, start, end, url, type);
+	public static BigBlueButtonRecording valueOf(String recordId, String name, String meetingId, Date start, Date end, String url, String type) {
+		return new BigBlueButtonRecordingImpl(recordId, name, meetingId, start, end, url, type);
 	}
 	
+	@Override
+	public String getRecordId() {
+		return recordId;
+	}
+
 	@Override
 	public String getUrl() {
 		return url;

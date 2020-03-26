@@ -106,7 +106,8 @@ public class BigBlueButtonUtils {
     	NodeList recordingList = document.getElementsByTagName("recording");
     	for(int i=recordingList.getLength(); i-->0; ) {
     		Element recordingEl = (Element)recordingList.item(i);
-    		String meetingId = getFirstElementValue(recordingEl, "meetingID");
+    		String recordId = getFirstElementValue(recordingEl, "recordID");
+    		String meetingId = getFirstElementValue(recordingEl, "meetingID"); 
     		String name = getFirstElementValue(recordingEl, "name");
     		Date startTime = toDate(getFirstElementValue(recordingEl, "startTime"));
     		Date endTime = toDate(getFirstElementValue(recordingEl, "endTime"));
@@ -119,7 +120,7 @@ public class BigBlueButtonUtils {
     				Element formatEl = (Element)formatList.item(k);
     				String url = getFirstElementValue(formatEl, "url");
     				String type = getFirstElementValue(formatEl, "type");
-    				recordings.add(BigBlueButtonRecordingImpl.valueOf(name, meetingId, startTime, endTime, url, type));
+    				recordings.add(BigBlueButtonRecordingImpl.valueOf(recordId, name, meetingId, startTime, endTime, url, type));
     			}
     		}
     	}

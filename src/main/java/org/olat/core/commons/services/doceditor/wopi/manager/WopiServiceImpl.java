@@ -170,6 +170,11 @@ public class WopiServiceImpl implements WopiService {
 		}
 		return null;
 	}
+
+	@Override
+	public Long getAccessCount(String app, Mode mode) {
+		return accessDao.getAccessCount(app, mode);
+	}
 	
 	@Override
 	public void deleteAccess(String accessToken) {

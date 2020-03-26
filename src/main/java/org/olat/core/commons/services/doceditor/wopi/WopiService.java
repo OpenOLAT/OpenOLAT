@@ -22,6 +22,7 @@ package org.olat.core.commons.services.doceditor.wopi;
 import java.util.Collection;
 import java.util.Date;
 
+import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
@@ -69,8 +70,10 @@ public interface WopiService {
 			String app, Date expiresAt);
 
 	Access getAccess(String accessToken);
-
+	
 	VFSLeaf getVfsLeaf(Access access);
+	
+	Long getAccessCount(String app, Mode mode);
 	
 	void deleteAccess(String accessToken);
 

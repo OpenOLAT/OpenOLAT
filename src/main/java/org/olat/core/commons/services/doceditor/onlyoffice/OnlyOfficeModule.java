@@ -47,6 +47,7 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 	private static final String ONLYOFFICE_ENABLED = "onlyoffice.enabled";
 	private static final String ONLYOFFICE_BASE_URL = "onlyoffice.baseUrl";
 	private static final String ONLYOFFICE_JWT_SECRET = "onlyoffice.jwt.secret";
+	private static final String ONLYOFFICE_LICENSE_EDIT = "onlyoffice.license.edit";
 	private static final String ONLYOFFICE_DATA_TRANSER_CONFIRMATION_ENABLED = "onlyoffice.data.transfer.confirmation.enabled";
 	private static final String ONLYOFFICE_USAGE_AUTHORS = "onlyoffice.usage.authors";
 	private static final String ONLYOFFICE_USAGE_COACHES = "onlyoffice.usage.coaches";
@@ -61,6 +62,8 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 	private String apiUrl;
 	private String jwtSecret;
 	private Key jwtSignKey;
+	@Value("${onlyoffice.license.edit}")
+	private Integer licenseEdit;
 	@Value("${onlyoffice.data.transfer.confirmation.enabled:false}")
 	private boolean dataTransferConfirmationEnabled;
 	@Value("${onlyoffice.usage.restricted.authors:false}")
@@ -107,6 +110,11 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 			dataTransferConfirmationEnabled = "true".equals(dataTransferConfirmationEnabledObj);
 		}
 		
+		String licenseEditObj = getStringPropertyValue(ONLYOFFICE_LICENSE_EDIT, true);
+		if(StringHelper.containsNonWhitespace(licenseEditObj)) {
+			licenseEdit = getIntOrNull(licenseEditObj);
+		}
+		
 		String usageRestrictedToAuthorsObj = getStringPropertyValue(ONLYOFFICE_USAGE_AUTHORS, true);
 		if(StringHelper.containsNonWhitespace(usageRestrictedToAuthorsObj)) {
 			usageRestrictedToAuthors = "true".equals(usageRestrictedToAuthorsObj);
@@ -121,6 +129,15 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 		if(StringHelper.containsNonWhitespace(usageRestrictedToManagersObj)) {
 			usageRestrictedToManagers = "true".equals(usageRestrictedToManagersObj);
 		}
+	}
+	
+	private Integer getIntOrNull(String val) {
+		try {
+			return Integer.valueOf(val);
+		} catch (Exception e) {
+			//
+		}
+		return null;
 	}
 
 	@Override
@@ -170,6 +187,15 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 			}
 		}
 		return jwtSignKey;
+	}
+
+	public Integer getLicenseEdit() {
+		return licenseEdit;
+	}
+
+	public void setLicenseEdit(Integer licenseEdit) {
+		this.licenseEdit = licenseEdit;
+		setStringProperty(ONLYOFFICE_LICENSE_EDIT, licenseEdit == null? null: licenseEdit.toString(), true);
 	}
 
 	public boolean isDataTransferConfirmationEnabled() {

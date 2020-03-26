@@ -30,6 +30,7 @@ import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.wopi.Access;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.manager.VFSMetadataDAO;
@@ -135,6 +136,24 @@ public class AccessDAOTest extends OlatTestCase {
 		Access reloadedAccess = sut.loadAccess(vfsMetadata, identity, app, canEdit);
 		
 		assertThat(reloadedAccess).isEqualTo(access);
+	}
+	
+	@Test
+	public void shouldGetAccessCount() {
+		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("wopi");
+		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("wopi2");
+		Identity identity3 = JunitTestHelper.createAndPersistIdentityAsRndUser("wopi3");
+		VFSMetadata vfsMetadata = vfsMetadataDAO.createMetadata(random(), "relPath", "file.name", new Date(), 1000l, false, "file://" + random(), "file", null);
+		boolean canEdit = true;
+		sut.createAccess(vfsMetadata, identity1, "app1", random(), canEdit, true, true, null);
+		sut.createAccess(vfsMetadata, identity2, "app1", random(), canEdit, true, true, null);
+		sut.createAccess(vfsMetadata, identity1, "app2", random(), canEdit, true, true, null);
+		sut.createAccess(vfsMetadata, identity3, "app1", random(), false, true, true, null);
+		dbInstance.commitAndCloseSession();
+		
+		Long accessCount = sut.getAccessCount("app1", Mode.EDIT);
+		
+		assertThat(accessCount).isEqualTo(2);
 	}
 
 	@Test
