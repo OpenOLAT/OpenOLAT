@@ -401,6 +401,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 
 	@Override
 	public boolean deleteCurriculumElement(CurriculumElementRef element) {
+		if(element == null) return true; // nothing to do
+		
 		List<CurriculumElement> children = curriculumElementDao.getChildren(element);
 		for(CurriculumElement child:children) {
 			deleteCurriculumElement(child);
