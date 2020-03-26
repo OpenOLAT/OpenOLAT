@@ -35,6 +35,7 @@ import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorIdentityService;
 import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
 import org.olat.core.commons.services.doceditor.onlyoffice.ApiConfig;
+import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeModule;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeSecurityService;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeService;
 import org.olat.core.commons.services.doceditor.onlyoffice.model.ApiConfigImpl;
@@ -43,6 +44,8 @@ import org.olat.core.commons.services.doceditor.onlyoffice.model.EditorConfigImp
 import org.olat.core.commons.services.doceditor.onlyoffice.model.InfoImpl;
 import org.olat.core.commons.services.doceditor.onlyoffice.model.PermissionsImpl;
 import org.olat.core.commons.services.doceditor.onlyoffice.model.UserImpl;
+import org.olat.core.commons.services.doceditor.wopi.Access;
+import org.olat.core.commons.services.doceditor.wopi.WopiService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.helpers.Settings;
@@ -81,6 +84,8 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 	private static ObjectMapper mapper = new ObjectMapper();
 
 	@Autowired
+	private OnlyOfficeModule onlyOfficeModule;
+	@Autowired
 	private OnlyOfficeSecurityService onlyOfficeSecurityService;
 	@Autowired
 	private DocEditorIdentityService identityService;
@@ -88,6 +93,8 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
 	private VFSLockManager lockManager;
+	@Autowired
+	private WopiService wopiService;
 
 	@Override
 	public boolean fileExists(String fileId) {
@@ -115,6 +122,18 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 			return (VFSLeaf) item;
 		}
 		return null;
+	}
+
+	@Override
+	public Access createAccess(VFSMetadata vfsMetadata, Identity identity, DocEditorSecurityCallback secCallback) {
+		return wopiService.getOrCreateAccess(vfsMetadata, identity, secCallback, LOCK_APP_NAME, null);
+	}
+
+	@Override
+	public void deleteAccess(Access access) {
+		if (access == null) return;
+		
+		wopiService.deleteAccess(access.getToken());
 	}
 
 	@Override
@@ -267,6 +286,21 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 			long inADay = System.currentTimeMillis() + (24 * 60 * 60 * 1000);
 			lock.setExpiresAt(inADay);
 		}
+	}
+
+	@Override
+	public boolean isEditLicenseAvailable() {
+		Integer licenseEdit = onlyOfficeModule.getLicenseEdit();
+		if (licenseEdit == null) return true;
+		if (licenseEdit.intValue() == 0) return false;
+		
+		Long accessCount = wopiService.getAccessCount(LOCK_APP_NAME, Mode.EDIT);
+		return accessCount < licenseEdit.byteValue();
+	}
+
+	@Override
+	public Long getEditLicensesInUse() {
+		return wopiService.getAccessCount(LOCK_APP_NAME, Mode.EDIT);
 	}
 	
 	@Override

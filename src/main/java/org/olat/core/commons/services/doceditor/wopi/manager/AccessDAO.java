@@ -26,6 +26,7 @@ import javax.annotation.PostConstruct;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.wopi.Access;
 import org.olat.core.commons.services.doceditor.wopi.model.AccessImpl;
 import org.olat.core.commons.services.vfs.VFSMetadata;
@@ -117,6 +118,23 @@ class AccessDAO {
 				.setParameter("canEdit", canEdit)
 				.getResultList();
 		return accesses.isEmpty() ? null : accesses.get(0);
+	}
+
+	Long getAccessCount(String app, Mode mode) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select count(*)");
+		sb.append("  from wopiaccess access");
+		sb.and().append("access.canEdit = :canEdit");
+		if (app != null) {
+			sb.and().append("access.app = :app");
+		}
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("canEdit", Mode.EDIT == mode)
+				.setParameter("app", app)
+				.getResultList()
+				.get(0);
 	}
 
 	void deleteAccess(String token) {

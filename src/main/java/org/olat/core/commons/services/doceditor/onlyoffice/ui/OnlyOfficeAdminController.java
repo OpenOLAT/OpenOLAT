@@ -20,6 +20,7 @@
 package org.olat.core.commons.services.doceditor.onlyoffice.ui;
 
 import static org.olat.core.commons.services.doceditor.onlyoffice.ui.OnlyOfficeUIFactory.validateIsMandatory;
+import static org.olat.core.commons.services.doceditor.onlyoffice.ui.OnlyOfficeUIFactory.validatePositiveInteger;
 import static org.olat.core.gui.components.util.KeyValues.entry;
 import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 
@@ -27,6 +28,7 @@ import java.util.Collection;
 
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeModule;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeSecurityService;
+import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeService;
 import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -37,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -57,10 +60,13 @@ public class OnlyOfficeAdminController extends FormBasicController {
 	private TextElement baseUrlEl;
 	private TextElement jwtSecretEl;
 	private MultipleSelectionElement dataTransferConfirmationEnabledEl;
+	private TextElement licenseEditEl;
 	private MultipleSelectionElement usageRolesEl;
 
 	@Autowired
 	private OnlyOfficeModule onlyOfficeModule;
+	@Autowired
+	private OnlyOfficeService onlyOfficeService;
 	@Autowired
 	private OnlyOfficeSecurityService onlyOfficeSecurityService;
 
@@ -91,6 +97,15 @@ public class OnlyOfficeAdminController extends FormBasicController {
 				translateAll(getTranslator(), ENABLED_KEYS));
 		dataTransferConfirmationEnabledEl.select(ENABLED_KEYS[0], onlyOfficeModule.isDataTransferConfirmationEnabled());
 		
+		String licenseEdit = onlyOfficeModule.getLicenseEdit() != null
+				? onlyOfficeModule.getLicenseEdit().toString()
+				: null;
+		licenseEditEl = uifactory.addTextElement("admin.license.edit", 10, licenseEdit, formLayout);
+		
+		Long editLicensesInUse = onlyOfficeService.getEditLicensesInUse();
+		editLicensesInUse = editLicensesInUse != null? editLicensesInUse: 0;
+		uifactory.addStaticTextElement("admin.license.edit.in.use", editLicensesInUse.toString(), formLayout);
+		
 		KeyValues usageRolesKV = new KeyValues();
 		usageRolesKV.add(entry(USAGE_AUTHOR, translate("admin.usage.roles.author")));
 		usageRolesKV.add(entry(USAGE_COACH, translate("admin.usage.roles.coach")));
@@ -119,6 +134,8 @@ public class OnlyOfficeAdminController extends FormBasicController {
 				jwtSecretOk = false;
 			}
 			allOk &= jwtSecretOk;
+			
+			allOk &= validatePositiveInteger(licenseEditEl);
 		}
 		
 		return allOk & super.validateFormLogic(ureq);
@@ -138,6 +155,12 @@ public class OnlyOfficeAdminController extends FormBasicController {
 		
 		boolean dataTransferConfirmationEnabled = dataTransferConfirmationEnabledEl.isAtLeastSelected(1);
 		onlyOfficeModule.setDataTransferConfirmationEnabled(dataTransferConfirmationEnabled);
+		
+		String licenseEditValue = licenseEditEl.getValue();
+		Integer licenseEdit = StringHelper.containsNonWhitespace(licenseEditValue)
+				? Integer.valueOf(licenseEditValue)
+				: null;
+		onlyOfficeModule.setLicenseEdit(licenseEdit);
 		
 		Collection<String> restrictionKeys = usageRolesEl.getSelectedKeys();
 		onlyOfficeModule.setUsageRestrictedToAuthors(restrictionKeys.contains(USAGE_AUTHOR));

@@ -19,12 +19,14 @@
  */
 package org.olat.core.commons.services.doceditor.onlyoffice.ui;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
 import org.olat.core.commons.services.doceditor.DocEditorSecurityCallbackBuilder;
 import org.olat.core.commons.services.doceditor.onlyoffice.ApiConfig;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeModule;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeService;
+import org.olat.core.commons.services.doceditor.wopi.Access;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -32,7 +34,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -48,6 +49,8 @@ public class OnlyOfficeEditorController extends BasicController {
 
 	private static final Logger log = Tracing.createLoggerFor(OnlyOfficeEditorController.class);
 	
+	private Access access;
+	
 	@Autowired
 	private OnlyOfficeModule onlyOfficeModule;
 	@Autowired
@@ -58,6 +61,13 @@ public class OnlyOfficeEditorController extends BasicController {
 		super(ureq, wControl);
 
 		DocEditorSecurityCallback secCallback = securityCallback;
+		
+		if (Mode.EDIT == secCallback.getMode() && !onlyOfficeService.isEditLicenseAvailable()) {
+			secCallback = DocEditorSecurityCallbackBuilder.clone(secCallback)
+					.withMode(Mode.VIEW)
+					.build();
+			showWarning("editor.warning.no.edit.license");
+		}
 		
 		if (onlyOfficeService.isLockNeeded(secCallback.getMode())) {
 			if (onlyOfficeService.isLockedForMe(vfsLeaf, getIdentity())) {
@@ -82,6 +92,7 @@ public class OnlyOfficeEditorController extends BasicController {
 			if (apiConfig == null) {
 				mainVC.contextPut("warning", translate("editor.warning.no.api.configs"));
 			} else {
+				this.access = onlyOfficeService.createAccess(vfsMetadata, getIdentity(), secCallback);
 				mainVC.contextPut("id", "o_" + CodeHelper.getRAMUniqueID());
 				mainVC.contextPut("apiUrl", onlyOfficeModule.getApiUrl());
 				mainVC.contextPut("apiConfig", apiConfigJson);
@@ -98,7 +109,7 @@ public class OnlyOfficeEditorController extends BasicController {
 
 	@Override
 	protected void doDispose() {
-		//
+		onlyOfficeService.deleteAccess(access);
 	}
 
 }

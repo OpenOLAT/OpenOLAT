@@ -23,6 +23,7 @@ import java.io.File;
 
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
+import org.olat.core.commons.services.doceditor.wopi.Access;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -41,6 +42,10 @@ public interface OnlyOfficeService {
 	File getFile(String fileId);
 
 	VFSLeaf getVfsLeaf(String fileId);
+	
+	Access createAccess(VFSMetadata vfsMetadata, Identity identity, DocEditorSecurityCallback secCallback);
+
+	void deleteAccess(Access access);
 
 	ApiConfig getApiConfig(VFSMetadata vfsMetadata, Identity identity, DocEditorSecurityCallback secCallback);
 
@@ -49,6 +54,10 @@ public interface OnlyOfficeService {
 	boolean canUpdateContent(VFSLeaf vfsLeaf, Identity identity, String documentKey);
 
 	boolean updateContent(VFSLeaf vfsLeaf, Identity identity, String url, boolean versionControlled);
+
+	boolean isEditLicenseAvailable();
+	
+	Long getEditLicensesInUse();
 	
 	boolean isLockNeeded(Mode mode);
 

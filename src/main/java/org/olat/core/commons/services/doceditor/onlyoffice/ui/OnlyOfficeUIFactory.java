@@ -42,5 +42,25 @@ class OnlyOfficeUIFactory {
 		}
 		return allOk;
 	}
+	
+	public static boolean validatePositiveInteger(TextElement el) {
+		boolean allOk = true;
+		el.clearError();
+		if(el.isEnabled() && el.isVisible()) {
+			String val = el.getValue();
+			if(StringHelper.containsNonWhitespace(val)) {
+				try {
+					int intVal = Integer.parseInt(val);
+					if (intVal < 0) {
+						el.setErrorKey("error.positive.integer", null);
+					}
+				} catch (NumberFormatException e) {
+					el.setErrorKey("error.positive.integer", null);
+					allOk = false;
+				}
+			}
+		}
+		return allOk;
+	}
 
 }
