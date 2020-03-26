@@ -131,7 +131,8 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 				? null : meeting.getTemplate().getKey();
 		KeyValues templatesKeyValues = new KeyValues();
 		for(BigBlueButtonMeetingTemplate template:templates) {
-			if(accept(template) || template.getKey().equals(selectedTemplateKey)) {
+			if((template.isEnabled() && template.availableTo(editionRoles))
+					|| template.getKey().equals(selectedTemplateKey)) {
 				templatesKeyValues.add(KeyValues.entry(template.getKey().toString(), template.getName()));
 			}
 		}
@@ -194,20 +195,6 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		formLayout.add("buttons", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("save", buttonLayout);
-	}
-	
-	private boolean accept(BigBlueButtonMeetingTemplate template) {
-		if(!template.isEnabled()) return false;
-		
-		List<BigBlueButtonRoles> roles = template.getPermittedRolesEnum();
-		for(BigBlueButtonRoles role:roles) {
-			for(BigBlueButtonRoles editionRole:editionRoles) {
-				if(role.accept(editionRole)) {
-					return true;
-				}
-			}
-		}
-		return false;
 	}
 	
 	private void updateUI() {

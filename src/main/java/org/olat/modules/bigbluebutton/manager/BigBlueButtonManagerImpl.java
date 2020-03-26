@@ -20,6 +20,7 @@
 package org.olat.modules.bigbluebutton.manager;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -35,6 +36,7 @@ import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.Tracing;
@@ -44,6 +46,7 @@ import org.olat.core.util.WebappHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
@@ -56,7 +59,9 @@ import org.olat.modules.bigbluebutton.model.BigBlueButtonErrorCodes;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.manager.RepositoryEntryDAO;
+import org.olat.repository.model.RepositoryEntrySecurity;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -76,9 +81,13 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 	@Autowired
 	private CalendarManager calendarManager;
 	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
 	private RepositoryEntryDAO repositoryEntryDao;
 	@Autowired
 	private BigBlueButtonModule bigBlueButtonModule;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	@Autowired
 	private BigBlueButtonMeetingDAO bigBlueButtonMeetingDao;
 	@Autowired
@@ -250,6 +259,19 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 	}
 
 	@Override
+	public List<BigBlueButtonMeetingTemplate> getTemplates(List<BigBlueButtonRoles> editionRoles) {
+		List<BigBlueButtonMeetingTemplate> templates = getTemplates();
+		
+		List<BigBlueButtonMeetingTemplate> authorisedTemplates = new ArrayList<>();
+		for(BigBlueButtonMeetingTemplate template:templates) {
+			if(template.isEnabled() && template.availableTo(editionRoles))  {
+				authorisedTemplates.add(template);
+			}
+		}
+		return authorisedTemplates;
+	}
+
+	@Override
 	public List<BigBlueButtonMeeting> getAllMeetings() {
 		return bigBlueButtonMeetingDao.getAllMeetings();
 	}
@@ -333,6 +355,38 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 			wrapper = calendarManager.getCourseCalendar(course);
 		}
 		return wrapper == null ? null: wrapper.getKalendar();
+	}
+	
+	@Override
+	public List<BigBlueButtonRoles> calculatePermittedRoles(RepositoryEntry entry, BusinessGroup businessGroup, Identity identity, Roles userRoles) {
+		List<BigBlueButtonRoles> editionRoles = new ArrayList<>();
+		if(userRoles.isAdministrator() || userRoles.isSystemAdmin()) {
+			editionRoles.add(BigBlueButtonRoles.administrator);
+		}
+		if(userRoles.isAuthor() || userRoles.isLearnResourceManager()) {
+			// global authors / LR-managers can use author templates also in groups
+			editionRoles.add(BigBlueButtonRoles.author);
+		}
+		
+		if(businessGroup != null) {
+			if(businessGroupService.isIdentityInBusinessGroup(identity, businessGroup)) {
+				// all group user can choose the group templates (if they are allowed to create group online-meetings)
+				editionRoles.add(BigBlueButtonRoles.group);	
+				if(businessGroupService.isIdentityInBusinessGroup(identity, businessGroup.getKey(), true, false, null)) {
+					editionRoles.add(BigBlueButtonRoles.coach);
+				}
+			}
+		} else if(entry != null) {
+			RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(identity, userRoles, entry);
+			if(reSecurity.isEntryAdmin()) {
+				editionRoles.add(BigBlueButtonRoles.owner);
+			}
+			if(reSecurity.isCourseCoach()) {
+				editionRoles.add(BigBlueButtonRoles.coach);
+			}
+		}
+		
+		return editionRoles;
 	}
 
 	@Override

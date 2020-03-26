@@ -19,7 +19,6 @@
  */
 package org.olat.modules.bigbluebutton.ui;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -35,12 +34,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupService;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
@@ -79,8 +76,6 @@ public class BigBlueButtonRunController extends BasicController implements Activ
 
 	@Autowired
 	private BigBlueButtonManager bigBlueButtonManager;
-	@Autowired
-	private BusinessGroupService businessGroupService;
 	
 	public BigBlueButtonRunController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, String subIdentifier,
 			BusinessGroup group, BigBlueButtonMeetingDefaultConfiguration configuration, boolean admin, boolean moderator, boolean readOnly) {
@@ -122,40 +117,15 @@ public class BigBlueButtonRunController extends BasicController implements Activ
 
 	
 	private boolean hasAtLeastOneTemplate(UserRequest ureq) {
-		// TODO: refactor: copy paste from BigBlueButtonEditMeetingsController.getPermittedRoles()
-		// should also apply to group config form: don't let regular students enable bbb in groups when they have no 
+		// TODO bbb should also apply to group config form: don't let regular students enable bbb in groups when they have no 
 		// template to choose from.
-		Roles userRoles = ureq.getUserSession().getRoles();
-		
-		List<BigBlueButtonRoles> editionRoles = new ArrayList<>();
-		if(userRoles.isAdministrator() || userRoles.isSystemAdmin()) {
-			editionRoles.add(BigBlueButtonRoles.administrator);
-		}
-		if(userRoles.isAuthor() || userRoles.isLearnResourceManager()) {
-			// global authors / LR-managers can use author templates also in groups
-			editionRoles.add(BigBlueButtonRoles.author);
-		}
-		if(businessGroupService.isIdentityInBusinessGroup(getIdentity(), group)) {
-			// all group user can choose the group templates (if they are allowed to create group online-meetings)
-			editionRoles.add(BigBlueButtonRoles.group);
-		}
-		
-		List<BigBlueButtonMeetingTemplate> templates = bigBlueButtonManager.getTemplates();
-		for(BigBlueButtonMeetingTemplate template:templates) {
-			if(!template.isEnabled()) continue;			
-			List<BigBlueButtonRoles> roles = template.getPermittedRolesEnum();
-			for(BigBlueButtonRoles role:roles) {
-				for(BigBlueButtonRoles editionRole:editionRoles) {
-					if(role.accept(editionRole)) {
-						return true;
-					}
-				}
-			}
-		}
-		return false;
-	}
-
+		List<BigBlueButtonRoles> editionRoles = bigBlueButtonManager
+				.calculatePermittedRoles(entry, group, getIdentity(), ureq.getUserSession().getRoles());
+		bigBlueButtonManager.getTemplates(editionRoles);
 	
+		List<BigBlueButtonMeetingTemplate> templates = bigBlueButtonManager.getTemplates(editionRoles);
+		return !templates.isEmpty();
+	}
 	
 	@Override
 	protected void doDispose() {
