@@ -175,7 +175,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		leadTimeEl = uifactory.addTextElement("meeting.leadTime", 8, leadtime, formLayout);
 		
 		Date endDate = meeting == null ? null : meeting.getEndDate();
-		if (endDate == null) {
+		if (endDate == null && startDate != null) {
 			// set meeting time default to 1 hour
 			Calendar calendar = Calendar.getInstance();
 		    calendar.setTime(startDate);
