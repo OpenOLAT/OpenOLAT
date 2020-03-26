@@ -30,11 +30,12 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
-import org.olat.modules.bigbluebutton.BigBlueButtonRoles;
+import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
 import org.olat.modules.bigbluebutton.GuestPolicyEnum;
 
 /**
@@ -397,17 +398,18 @@ public class BigBlueButtonMeetingTemplateImpl implements Persistable, BigBlueBut
 		this.permittedRoles = permittedRoles;
 	}
 
+	@Transient
 	@Override
-	public List<BigBlueButtonRoles> getPermittedRolesEnum() {
-		return BigBlueButtonRoles.toList(permittedRoles);
+	public List<BigBlueButtonTemplatePermissions> getPermissions() {
+		return BigBlueButtonTemplatePermissions.toList(permittedRoles);
 	}
 
 	@Override
-	public void setPermittedRolesEnum(List<BigBlueButtonRoles> roles) {
+	public void setPermissions(List<BigBlueButtonTemplatePermissions> roles) {
 		if(roles == null || roles.isEmpty()) {
 			setPermittedRoles(null);
 		} else {
-			setPermittedRoles(BigBlueButtonRoles.toString(roles));
+			setPermittedRoles(BigBlueButtonTemplatePermissions.toString(roles));
 		}
 	}
 

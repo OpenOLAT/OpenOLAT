@@ -32,7 +32,7 @@ import edu.emory.mathcs.backport.java.util.Collections;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum BigBlueButtonRoles {
+public enum BigBlueButtonTemplatePermissions {
 	
 	group,
 	coach,
@@ -40,7 +40,7 @@ public enum BigBlueButtonRoles {
 	author,
 	administrator;
 	
-	public boolean accept(BigBlueButtonRoles role) {
+	public boolean accept(BigBlueButtonTemplatePermissions role) {
 		if(role == null) return false;
 		if(this == role) {
 			return true;
@@ -54,19 +54,19 @@ public enum BigBlueButtonRoles {
 		return false;
 	}
 	
-	public static List<BigBlueButtonRoles> valuesAsList() {
-		List<BigBlueButtonRoles> roles = new ArrayList<>();
-		Collections.addAll(roles, BigBlueButtonRoles.values());
+	public static List<BigBlueButtonTemplatePermissions> valuesAsList() {
+		List<BigBlueButtonTemplatePermissions> roles = new ArrayList<>();
+		Collections.addAll(roles, BigBlueButtonTemplatePermissions.values());
 		return roles;
 	}
 	
-	public static List<BigBlueButtonRoles> toList(String val) {
-		List<BigBlueButtonRoles> roles = new ArrayList<>();
+	public static List<BigBlueButtonTemplatePermissions> toList(String val) {
+		List<BigBlueButtonTemplatePermissions> roles = new ArrayList<>();
 		if(StringHelper.containsNonWhitespace(val)) {
 			String[] valArray = val.split("[,]");
 			if(valArray != null && valArray.length > 0) {
 				for(String v:valArray) {
-					BigBlueButtonRoles role = BigBlueButtonRoles.valueOfSecure(v);
+					BigBlueButtonTemplatePermissions role = BigBlueButtonTemplatePermissions.valueOfSecure(v);
 					if(role != null) {
 						roles.add(role);
 					}
@@ -76,8 +76,8 @@ public enum BigBlueButtonRoles {
 		return roles;
 	}
 	
-	public static BigBlueButtonRoles valueOfSecure(String val) {
-		for(BigBlueButtonRoles role:BigBlueButtonRoles.values()) {
+	public static BigBlueButtonTemplatePermissions valueOfSecure(String val) {
+		for(BigBlueButtonTemplatePermissions role:BigBlueButtonTemplatePermissions.values()) {
 			if(role.name().equals(val)) {
 				return role;
 			}
@@ -85,9 +85,9 @@ public enum BigBlueButtonRoles {
 		return null;
 	}
 	
-	public static String toString(List<BigBlueButtonRoles> roles) {
+	public static String toString(List<BigBlueButtonTemplatePermissions> roles) {
 		StringBuilder sb = new StringBuilder();
-		for(BigBlueButtonRoles role:roles) {
+		for(BigBlueButtonTemplatePermissions role:roles) {
 			if(sb.length() > 0) sb.append(",");
 			sb.append(role.name());
 		}

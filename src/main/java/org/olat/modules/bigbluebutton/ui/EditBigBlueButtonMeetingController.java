@@ -45,7 +45,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
-import org.olat.modules.bigbluebutton.BigBlueButtonRoles;
+import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -73,7 +73,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	private final RepositoryEntry entry;
 	private final BusinessGroup businessGroup;
 	private BigBlueButtonMeeting meeting;
-	private final List<BigBlueButtonRoles> editionRoles;
+	private final List<BigBlueButtonTemplatePermissions> permissions;
 	private List<BigBlueButtonMeetingTemplate> templates;
 	
 	private FormLink openCalLink;
@@ -86,12 +86,12 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	private BigBlueButtonManager bigBlueButtonManager;
 	
 	public EditBigBlueButtonMeetingController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry entry, String subIdent, BusinessGroup businessGroup, List<BigBlueButtonRoles> editionRoles) {
+			RepositoryEntry entry, String subIdent, BusinessGroup businessGroup, List<BigBlueButtonTemplatePermissions> permissions) {
 		super(ureq, wControl);
 		this.entry = entry;
 		this.subIdent = subIdent;
 		this.businessGroup = businessGroup;
-		this.editionRoles = editionRoles;
+		this.permissions = permissions;
 		templates = bigBlueButtonManager.getTemplates();
 		
 		initForm(ureq);
@@ -99,13 +99,13 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	}
 	
 	public EditBigBlueButtonMeetingController(UserRequest ureq, WindowControl wControl,
-			BigBlueButtonMeeting meeting, List<BigBlueButtonRoles> editionRoles) {
+			BigBlueButtonMeeting meeting, List<BigBlueButtonTemplatePermissions> permissions) {
 		super(ureq, wControl);
 		entry = meeting.getEntry();
 		subIdent = meeting.getSubIdent();
 		businessGroup = meeting.getBusinessGroup();
 		this.meeting = meeting;
-		this.editionRoles = editionRoles;
+		this.permissions = permissions;
 		templates = bigBlueButtonManager.getTemplates();
 		
 		initForm(ureq);
@@ -131,7 +131,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 				? null : meeting.getTemplate().getKey();
 		KeyValues templatesKeyValues = new KeyValues();
 		for(BigBlueButtonMeetingTemplate template:templates) {
-			if((template.isEnabled() && template.availableTo(editionRoles))
+			if((template.isEnabled() && template.availableTo(permissions))
 					|| template.getKey().equals(selectedTemplateKey)) {
 				templatesKeyValues.add(KeyValues.entry(template.getKey().toString(), template.getName()));
 			}

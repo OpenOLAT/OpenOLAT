@@ -45,7 +45,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
-import org.olat.modules.bigbluebutton.BigBlueButtonRoles;
+import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonMeetingTableModel.BMeetingsCols;
 import org.olat.modules.gotomeeting.ui.GoToMeetingTableModel.MeetingsCols;
@@ -185,10 +185,10 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 	private void doAddMeeting(UserRequest ureq) {
 		if(guardModalController(editMeetingCtlr)) return;
 
-		List<BigBlueButtonRoles> editionRoles= bigBlueButtonManager
-				.calculatePermittedRoles(entry, businessGroup, getIdentity(), ureq.getUserSession().getRoles());
+		List<BigBlueButtonTemplatePermissions> permissions = bigBlueButtonManager
+				.calculatePermissions(entry, businessGroup, getIdentity(), ureq.getUserSession().getRoles());
 		editMeetingCtlr = new EditBigBlueButtonMeetingController(ureq, getWindowControl(),
-				entry, subIdent, businessGroup, editionRoles);
+				entry, subIdent, businessGroup, permissions);
 		listenTo(editMeetingCtlr);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", editMeetingCtlr.getInitialComponent(),
@@ -200,10 +200,10 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 	private void doEditMeeting(UserRequest ureq, BigBlueButtonMeeting meeting) {
 		if(guardModalController(editMeetingCtlr)) return;
 		
-		List<BigBlueButtonRoles> editionRoles= bigBlueButtonManager
-				.calculatePermittedRoles(entry, businessGroup, getIdentity(), ureq.getUserSession().getRoles());
+		List<BigBlueButtonTemplatePermissions> permissions = bigBlueButtonManager
+				.calculatePermissions(entry, businessGroup, getIdentity(), ureq.getUserSession().getRoles());
 		editMeetingCtlr = new EditBigBlueButtonMeetingController(ureq, getWindowControl(),
-				meeting, editionRoles);
+				meeting, permissions);
 		listenTo(editMeetingCtlr);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", editMeetingCtlr.getInitialComponent(),

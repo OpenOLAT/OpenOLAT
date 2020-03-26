@@ -52,7 +52,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecording;
-import org.olat.modules.bigbluebutton.BigBlueButtonRoles;
+import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
 import org.olat.modules.bigbluebutton.GuestPolicyEnum;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonError;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrorCodes;
@@ -178,7 +178,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 		template.setMaxDuration(maxDuration);
 		template.setRecord(Boolean.TRUE);
 		template.setBreakoutRoomsEnabled(Boolean.TRUE);
-		template.setPermittedRolesEnum(BigBlueButtonRoles.valuesAsList());
+		template.setPermissions(BigBlueButtonTemplatePermissions.valuesAsList());
 		template.setMuteOnStart(muteOnStart);
 		template.setAutoStartRecording(autoStartRecording);
 		template.setAllowStartStopRecording(allowStartStopRecording);
@@ -259,12 +259,12 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 	}
 
 	@Override
-	public List<BigBlueButtonMeetingTemplate> getTemplates(List<BigBlueButtonRoles> editionRoles) {
+	public List<BigBlueButtonMeetingTemplate> getTemplates(List<BigBlueButtonTemplatePermissions> permissions) {
 		List<BigBlueButtonMeetingTemplate> templates = getTemplates();
 		
 		List<BigBlueButtonMeetingTemplate> authorisedTemplates = new ArrayList<>();
 		for(BigBlueButtonMeetingTemplate template:templates) {
-			if(template.isEnabled() && template.availableTo(editionRoles))  {
+			if(template.isEnabled() && template.availableTo(permissions))  {
 				authorisedTemplates.add(template);
 			}
 		}
@@ -358,35 +358,35 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 	}
 	
 	@Override
-	public List<BigBlueButtonRoles> calculatePermittedRoles(RepositoryEntry entry, BusinessGroup businessGroup, Identity identity, Roles userRoles) {
-		List<BigBlueButtonRoles> editionRoles = new ArrayList<>();
+	public List<BigBlueButtonTemplatePermissions> calculatePermissions(RepositoryEntry entry, BusinessGroup businessGroup, Identity identity, Roles userRoles) {
+		List<BigBlueButtonTemplatePermissions> permissions = new ArrayList<>();
 		if(userRoles.isAdministrator() || userRoles.isSystemAdmin()) {
-			editionRoles.add(BigBlueButtonRoles.administrator);
+			permissions.add(BigBlueButtonTemplatePermissions.administrator);
 		}
 		if(userRoles.isAuthor() || userRoles.isLearnResourceManager()) {
 			// global authors / LR-managers can use author templates also in groups
-			editionRoles.add(BigBlueButtonRoles.author);
+			permissions.add(BigBlueButtonTemplatePermissions.author);
 		}
 		
 		if(businessGroup != null) {
 			if(businessGroupService.isIdentityInBusinessGroup(identity, businessGroup)) {
 				// all group user can choose the group templates (if they are allowed to create group online-meetings)
-				editionRoles.add(BigBlueButtonRoles.group);	
+				permissions.add(BigBlueButtonTemplatePermissions.group);	
 				if(businessGroupService.isIdentityInBusinessGroup(identity, businessGroup.getKey(), true, false, null)) {
-					editionRoles.add(BigBlueButtonRoles.coach);
+					permissions.add(BigBlueButtonTemplatePermissions.coach);
 				}
 			}
 		} else if(entry != null) {
 			RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(identity, userRoles, entry);
 			if(reSecurity.isEntryAdmin()) {
-				editionRoles.add(BigBlueButtonRoles.owner);
+				permissions.add(BigBlueButtonTemplatePermissions.owner);
 			}
 			if(reSecurity.isCourseCoach()) {
-				editionRoles.add(BigBlueButtonRoles.coach);
+				permissions.add(BigBlueButtonTemplatePermissions.coach);
 			}
 		}
 		
-		return editionRoles;
+		return permissions;
 	}
 
 	@Override

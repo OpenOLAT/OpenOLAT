@@ -26,6 +26,8 @@
 package org.olat.collaboration;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.commons.calendar.CalendarModule;
@@ -39,7 +41,10 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.group.BusinessGroup;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.modules.adobeconnect.AdobeConnectModule;
+import org.olat.modules.bigbluebutton.BigBlueButtonManager;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
+import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.wiki.WikiModule;
@@ -114,10 +119,18 @@ public class CollaborationToolsFactory {
 		}
 
 		BigBlueButtonModule bigBlueButtonModule = CoreSpringFactory.getImpl(BigBlueButtonModule.class);
-		if(bigBlueButtonModule.isEnabled() && bigBlueButtonModule.isGroupsEnabled()) {
+		if(bigBlueButtonModule.isEnabled() && bigBlueButtonModule.isGroupsEnabled() && hasBigBlueButtonTemplates()) {
 			toolArr.add(CollaborationTools.TOOL_BIGBLUEBUTTON);
 		}
 		TOOLS = ArrayHelper.toArray(toolArr);				
+	}
+	
+	private boolean hasBigBlueButtonTemplates() {
+		BigBlueButtonManager bigBlueButtonManager = CoreSpringFactory.getImpl(BigBlueButtonManager.class);
+		List<BigBlueButtonTemplatePermissions> permissions = Arrays
+				.asList(BigBlueButtonTemplatePermissions.group, BigBlueButtonTemplatePermissions.coach);
+		List<BigBlueButtonMeetingTemplate> templates = bigBlueButtonManager.getTemplates(permissions);
+		return !templates.isEmpty();
 	}
 	
 	/**
