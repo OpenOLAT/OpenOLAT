@@ -29,6 +29,8 @@ import java.util.Date;
  */
 public interface BigBlueButtonRecording {
 	
+	public String getRecordId();
+	
 	public String getUrl();
 	
 	public String getType();
