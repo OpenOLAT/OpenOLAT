@@ -139,6 +139,16 @@ public interface BigBlueButtonMeetingTemplate extends ModifiedInfo, CreateInfo {
 	public GuestPolicyEnum getGuestPolicyEnum();
 
 	public void setGuestPolicyEnum(GuestPolicyEnum guestPolicy);
-
-
+	
+	public default boolean availableTo(List<BigBlueButtonRoles> editionRoles) {
+		List<BigBlueButtonRoles> roles = getPermittedRolesEnum();
+		for(BigBlueButtonRoles role:roles) {
+			for(BigBlueButtonRoles editionRole:editionRoles) {
+				if(role.accept(editionRole)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 }

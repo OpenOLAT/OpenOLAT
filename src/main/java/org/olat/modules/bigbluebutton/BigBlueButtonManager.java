@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
 import org.olat.repository.RepositoryEntry;
@@ -69,6 +70,10 @@ public interface BigBlueButtonManager {
 	public BigBlueButtonMeetingTemplate createAndPersistTemplate(String name);
 
 	public List<BigBlueButtonMeetingTemplate> getTemplates();
+	
+	public List<BigBlueButtonMeetingTemplate> getTemplates(List<BigBlueButtonRoles> editionRoles);
+
+	public List<BigBlueButtonRoles> calculatePermittedRoles(RepositoryEntry entry, BusinessGroup businessGroup, Identity identity, Roles userRoles);
 	
 	public BigBlueButtonMeetingTemplate updateTemplate(BigBlueButtonMeetingTemplate template);
 	

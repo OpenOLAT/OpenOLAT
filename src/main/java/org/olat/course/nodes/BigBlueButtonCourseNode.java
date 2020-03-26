@@ -101,9 +101,9 @@ public class BigBlueButtonCourseNode extends AbstractAccessableCourseNode {
 			String message = trans.translate("guestnoaccess.message");
 			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		} else {
-			// check if user is moderator of the virtual classroom
-			boolean admin = userCourseEnv.isAdmin();
-			boolean moderator = admin || userCourseEnv.isCoach();
+			// check if user is admin. / moderator of the virtual classroom
+			boolean admin = userCourseEnv.isAdmin() || userCourseEnv.isCoach();
+			boolean moderator = userCourseEnv.isAdmin() || userCourseEnv.isCoach();
 			// create run controller
 			RepositoryEntry entry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 
