@@ -25,6 +25,7 @@ import static org.olat.test.JunitTestHelper.random;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
+import java.util.List;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
@@ -136,6 +137,26 @@ public class AccessDAOTest extends OlatTestCase {
 		Access reloadedAccess = sut.loadAccess(vfsMetadata, identity, app, canEdit);
 		
 		assertThat(reloadedAccess).isEqualTo(access);
+	}
+	
+	@Test
+	public void shouldGetAccessesBayMode() {
+		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("wopi");
+		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("wopi2");
+		Identity identity3 = JunitTestHelper.createAndPersistIdentityAsRndUser("wopi3");
+		VFSMetadata vfsMetadata = vfsMetadataDAO.createMetadata(random(), "relPath", "file.name", new Date(), 1000l, false, "file://" + random(), "file", null);
+		boolean canEdit = true;
+		Access accessEdit1 = sut.createAccess(vfsMetadata, identity1, "app1", random(), canEdit, true, true, null);
+		Access accessEdit2 = sut.createAccess(vfsMetadata, identity2, "app1", random(), canEdit, true, true, null);
+		Access accessEdit3 = sut.createAccess(vfsMetadata, identity1, "app2", random(), canEdit, true, true, null);
+		Access accessView = sut.createAccess(vfsMetadata, identity3, "app1", random(), false, true, true, null);
+		dbInstance.commitAndCloseSession();
+		
+		List<Access> accesses = sut.getAccesses(Mode.EDIT);
+		
+		assertThat(accesses)
+				.containsExactlyInAnyOrder(accessEdit1, accessEdit2, accessEdit3)
+				.doesNotContain(accessView);
 	}
 	
 	@Test

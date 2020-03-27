@@ -172,6 +172,11 @@ public class WopiServiceImpl implements WopiService {
 	}
 
 	@Override
+	public List<Access> getAccesses(Mode mode) {
+		return accessDao.getAccesses(mode);
+	}
+
+	@Override
 	public Long getAccessCount(String app, Mode mode) {
 		return accessDao.getAccessCount(app, mode);
 	}

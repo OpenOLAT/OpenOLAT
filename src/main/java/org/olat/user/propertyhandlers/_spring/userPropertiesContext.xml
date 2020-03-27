@@ -514,6 +514,28 @@
 						</property>
 					</bean>
 				</entry>
+				
+				<entry key="org.olat.core.commons.services.doceditor.ui.DocumentsInUseListController">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyEmail" />
+							</list>
+						</property>
+						<property name="adminViewOnlyProperties">
+							<set></set>
+						</property>
+						<property name="mandatoryProperties">
+							<set>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyEmail" />
+							</set>
+						</property>
+					</bean>
+				</entry>
 
 				<entry key="org.olat.commons.memberlist.ui.MembersPrintController">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">

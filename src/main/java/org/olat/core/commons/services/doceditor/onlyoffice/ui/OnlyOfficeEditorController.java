@@ -50,6 +50,8 @@ public class OnlyOfficeEditorController extends BasicController {
 	private static final Logger log = Tracing.createLoggerFor(OnlyOfficeEditorController.class);
 	
 	private Access access;
+	private Mode openMode;
+	private Long openVfsMetadataKey;
 	
 	@Autowired
 	private OnlyOfficeModule onlyOfficeModule;
@@ -96,6 +98,11 @@ public class OnlyOfficeEditorController extends BasicController {
 				mainVC.contextPut("id", "o_" + CodeHelper.getRAMUniqueID());
 				mainVC.contextPut("apiUrl", onlyOfficeModule.getApiUrl());
 				mainVC.contextPut("apiConfig", apiConfigJson);
+				
+				openVfsMetadataKey = vfsMetadata.getKey();
+				openMode = secCallback.getMode();
+				log.info("Document (key={}) opened with ONLYOFFICE ({}) by {}", openVfsMetadataKey, openMode,
+						getIdentity());
 			}
 		}
 		
@@ -109,7 +116,11 @@ public class OnlyOfficeEditorController extends BasicController {
 
 	@Override
 	protected void doDispose() {
-		onlyOfficeService.deleteAccess(access);
+		if (access != null) {
+			log.info("Document (key={}) opened with ONLYOFFICE ({}) by {}", openVfsMetadataKey, openMode,
+					getIdentity());
+			onlyOfficeService.deleteAccess(access);
+		}
 	}
 
 }

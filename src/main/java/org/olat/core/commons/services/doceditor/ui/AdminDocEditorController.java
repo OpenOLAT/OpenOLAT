@@ -32,6 +32,7 @@ import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
 import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -51,16 +52,19 @@ public class AdminDocEditorController extends BasicController implements Activat
 	private static final String COLLABORA_RES_TYPE = "Collabora";
 	private static final String ONLY_OFFICE_RES_TYPE = "OnlyOffice";
 	private static final String OFFICE365_RES_TYPE = "Office365";
+	private static final String DOCUMENTS_IN_USE_RES_TYPE = "OpenDocuments";
 
 	private VelocityContainer mainVC;
 	private final Link collaboraLink;
 	private final Link onlyOfficeLink;
 	private final Link office365Link;
+	private final Link documentsInUseLink;
 	private final SegmentViewComponent segmentView;
 	
-	private CollaboraAdminController collaboraCtrl;
-	private OnlyOfficeAdminController onlyOfficeCtrl;
-	private Office365AdminController office365Ctrl;
+	private Controller collaboraCtrl;
+	private Controller onlyOfficeCtrl;
+	private Controller office365Ctrl;
+	private DocumentsInUseListController documentsInUseCtrl;
 
 	public AdminDocEditorController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -74,6 +78,8 @@ public class AdminDocEditorController extends BasicController implements Activat
 		segmentView.addSegment(onlyOfficeLink, false);
 		office365Link = LinkFactory.createLink("admin.office365", mainVC, this);
 		segmentView.addSegment(office365Link, false);
+		documentsInUseLink = LinkFactory.createLink("admin.documents.in.use", mainVC, this);
+		segmentView.addSegment(documentsInUseLink, false);
 
 		doOpenCollabora(ureq);
 		putInitialPanel(mainVC);
@@ -93,6 +99,9 @@ public class AdminDocEditorController extends BasicController implements Activat
 		} else if(OFFICE365_RES_TYPE.equalsIgnoreCase(type)) {
 			doOpenOffice365(ureq);
 			segmentView.select(office365Link);
+		} else if(DOCUMENTS_IN_USE_RES_TYPE.equalsIgnoreCase(type)) {
+			doOpenDocumentsInUse(ureq);
+			segmentView.select(documentsInUseLink);
 		}
 	}
 
@@ -109,6 +118,8 @@ public class AdminDocEditorController extends BasicController implements Activat
 					doOpenOnlyOffice(ureq);
 				} else if (clickedLink == office365Link) {
 					doOpenOffice365(ureq);
+				} else if (clickedLink == documentsInUseLink) {
+					doOpenDocumentsInUse(ureq);
 				}
 			}
 		}
@@ -147,6 +158,17 @@ public class AdminDocEditorController extends BasicController implements Activat
 		mainVC.put("segmentCmp", office365Ctrl.getInitialComponent());
 	}
 	
+	private void doOpenDocumentsInUse(UserRequest ureq) {
+		if(documentsInUseCtrl == null) {
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(DOCUMENTS_IN_USE_RES_TYPE), null);
+			documentsInUseCtrl = new DocumentsInUseListController(ureq, swControl);
+			listenTo(documentsInUseCtrl);
+		} else {
+			documentsInUseCtrl.loadModel();
+			addToHistory(ureq, documentsInUseCtrl);
+		}
+		mainVC.put("segmentCmp", documentsInUseCtrl.getInitialComponent());
+	}
 	
 	@Override
 	protected void doDispose() {
