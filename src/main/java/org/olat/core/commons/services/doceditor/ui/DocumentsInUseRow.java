@@ -17,37 +17,44 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.doceditor.wopi;
+package org.olat.core.commons.services.doceditor.ui;
 
-import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
-import org.olat.core.commons.services.vfs.VFSMetadata;
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.Identity;
-import org.olat.core.id.ModifiedInfo;
+import org.olat.core.commons.services.doceditor.wopi.Access;
+import org.olat.user.UserPropertiesRow;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * 
- * Initial date: 6 Mar 2019<br>
+ * Initial date: 26 Mar 2020<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface Access extends ModifiedInfo, CreateInfo {
-
-	String getToken();
-
-	String getApp();
+public class DocumentsInUseRow extends UserPropertiesRow {
 	
-	Date getExpiresAt();
-	
-	boolean isCanEdit();
+	private final Access access;
 
-	boolean isCanClose();
-	
-	boolean isVersionControlled();
+	public DocumentsInUseRow(Access access, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		super(access.getIdentity(), userPropertyHandlers, locale);
+		this.access = access;
+	}
 
-	VFSMetadata getMetadata();
-	
-	Identity getIdentity();
+	public String getFilename() {
+		return access.getMetadata() != null? access.getMetadata().getFilename(): null;
+	}
+
+	public String getApp() {
+		return access.getApp();
+	}
+
+	public Boolean isCanEdit() {
+		return Boolean.valueOf(access.isCanEdit());
+	}
+
+	public Object getOpened() {
+		return access.getCreationDate();
+	}
 
 }

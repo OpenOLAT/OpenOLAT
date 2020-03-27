@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
+import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
@@ -118,6 +119,25 @@ class AccessDAO {
 				.setParameter("canEdit", canEdit)
 				.getResultList();
 		return accesses.isEmpty() ? null : accesses.get(0);
+	}
+
+	public List<Access> getAccesses(Mode mode) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select access");
+		sb.append("  from wopiaccess access");
+		sb.append("       join fetch access.metadata metadata");
+		sb.append("       join fetch access.identity identity");
+		sb.append("       join fetch identity.user user");
+		if (mode != null) {
+			sb.and().append("access.canEdit = :canEdit");
+		}
+		
+		TypedQuery<Access> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Access.class);
+		if (mode != null) {
+			query.setParameter("canEdit", Mode.EDIT == mode);
+		}
+		return query.getResultList();
 	}
 
 	Long getAccessCount(String app, Mode mode) {

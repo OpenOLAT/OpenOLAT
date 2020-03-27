@@ -327,7 +327,7 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 			allOk &= false;
 		} else if(StringHelper.containsNonWhitespace(el.getValue())
 				&& (!StringHelper.isLong(el.getValue())
-						|| Long.parseLong(el.getValue()) <= 1)) {
+						|| Long.parseLong(el.getValue()) < 1)) {
 			el.setErrorKey("form.error.nointeger", null);
 			allOk &= false;
 		}
