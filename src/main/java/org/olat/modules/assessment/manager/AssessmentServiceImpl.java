@@ -96,6 +96,18 @@ public class AssessmentServiceImpl implements AssessmentService, UserDataDeletab
 	public AssessmentEntry updateAssessmentEntry(AssessmentEntry entry) {
 		return assessmentEntryDao.updateAssessmentEntry(entry);
 	}
+	
+	@Override
+	public void resetAllRootPassed(RepositoryEntry entry) {
+		assessmentEntryDao.resetAllRootPassed(entry);
+		dbInstance.commit();
+	}
+	
+	@Override
+	public void resetAllOverridenRootPassed(RepositoryEntry entry) {
+		assessmentEntryDao.resetAllOverridenRootPassed(entry);
+		dbInstance.commit();
+	}
 
 	@Override
 	public List<AssessmentEntry> loadAssessmentEntriesBySubIdent(RepositoryEntry entry, String subIdent) {

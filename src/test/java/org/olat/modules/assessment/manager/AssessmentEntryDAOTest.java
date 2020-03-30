@@ -34,6 +34,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.assertj.core.api.SoftAssertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
@@ -447,7 +448,88 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNull(nodeAssessment.getFullyAssessedDate());
 	}
-
+	
+	@Test
+	public void shouldResetAllRootPassed() {
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("coach");
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-6a");
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-6b");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		// Assessment entry
+		AssessmentEntry ae = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry,
+				null, Boolean.TRUE, null);
+		ae.setPassed(Boolean.FALSE);
+		ae = assessmentEntryDao.updateAssessmentEntry(ae);
+		// Overriden
+		AssessmentEntry aeOverriden = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry,
+				null, Boolean.TRUE, null);
+		aeOverriden.setPassed(Boolean.FALSE);
+		aeOverriden = assessmentEntryDao.updateAssessmentEntry(aeOverriden);
+		aeOverriden.getPassedOverridable().override(Boolean.TRUE, coach, new Date());
+		aeOverriden = assessmentEntryDao.updateAssessmentEntry(aeOverriden);
+		// Do not change assessment entries of other repository entries
+		RepositoryEntry entryOther = JunitTestHelper.createAndPersistRepositoryEntry();
+		AssessmentEntry aeOther = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entryOther,
+				null, Boolean.TRUE, null);
+		aeOther.setPassed(Boolean.FALSE);
+		aeOther = assessmentEntryDao.updateAssessmentEntry(aeOther);
+		dbInstance.commitAndCloseSession();
+		
+		assessmentEntryDao.resetAllRootPassed(entry);
+		dbInstance.commitAndCloseSession();
+		
+		SoftAssertions softly = new SoftAssertions();
+		ae = assessmentEntryDao.loadAssessmentEntryById(ae.getKey());
+		softly.assertThat(ae.getPassed()).isNull();
+		softly.assertThat(ae.getPassedOverridable().getCurrent()).isNull();
+		aeOverriden = assessmentEntryDao.loadAssessmentEntryById(aeOverriden.getKey());
+		softly.assertThat(aeOverriden.getPassedOverridable().getCurrent()).isEqualTo(Boolean.TRUE);
+		softly.assertThat(aeOverriden.getPassedOverridable().getOriginal()).isNull();
+		softly.assertThat(aeOverriden.getPassedOverridable().getModBy()).isNotNull();
+		softly.assertThat(aeOverriden.getPassedOverridable().getModDate()).isNotNull();
+		aeOther = assessmentEntryDao.loadAssessmentEntryById(aeOther.getKey());
+		softly.assertThat(aeOther.getPassed()).isNotNull();
+		softly.assertThat(aeOther.getPassedOverridable().getCurrent()).isNotNull();
+		softly.assertAll();
+	}
+	
+	@Test
+	public void shouldResetOverridenAllRootPassed() {
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("coach");
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-6a");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		AssessmentEntry ae1 = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry,
+				null, Boolean.TRUE, null);
+		ae1.setPassed(Boolean.FALSE);
+		ae1 = assessmentEntryDao.updateAssessmentEntry(ae1);
+		ae1.getPassedOverridable().override(Boolean.TRUE, coach, new Date());
+		ae1 = assessmentEntryDao.updateAssessmentEntry(ae1);
+		// Do not change assessment entries of other repository entries
+		RepositoryEntry entryOther = JunitTestHelper.createAndPersistRepositoryEntry();
+		AssessmentEntry aeOther = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entryOther,
+				null, Boolean.TRUE, null);
+		aeOther.setPassed(Boolean.FALSE);
+		aeOther = assessmentEntryDao.updateAssessmentEntry(aeOther);
+		aeOther.getPassedOverridable().override(Boolean.TRUE, coach, new Date());
+		aeOther = assessmentEntryDao.updateAssessmentEntry(aeOther);
+		dbInstance.commitAndCloseSession();
+		
+		assessmentEntryDao.resetAllOverridenRootPassed(entry);
+		dbInstance.commitAndCloseSession();
+		
+		SoftAssertions softly = new SoftAssertions();
+		ae1 = assessmentEntryDao.loadAssessmentEntryById(ae1.getKey());
+		softly.assertThat(ae1.getPassedOverridable().getCurrent()).isEqualTo(Boolean.FALSE);
+		softly.assertThat(ae1.getPassedOverridable().getOriginal()).isNull();
+		softly.assertThat(ae1.getPassedOverridable().getModBy()).isNull();
+		softly.assertThat(ae1.getPassedOverridable().getModDate()).isNull();
+		aeOther = assessmentEntryDao.loadAssessmentEntryById(aeOther.getKey());
+		softly.assertThat(aeOther.getPassedOverridable().getCurrent()).isEqualTo(Boolean.TRUE);
+		softly.assertThat(aeOther.getPassedOverridable().getOriginal()).isNotNull();
+		softly.assertThat(aeOther.getPassedOverridable().getModBy()).isNotNull();
+		softly.assertThat(aeOther.getPassedOverridable().getModDate()).isNotNull();
+		softly.assertAll();
+	}
 	
 	@Test
 	public void loadAssessmentEntries_subIdent() {

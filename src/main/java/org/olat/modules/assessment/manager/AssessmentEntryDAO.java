@@ -231,6 +231,64 @@ public class AssessmentEntryDAO {
 		return dbInstance.getCurrentEntityManager().merge(nodeAssessment);
 	}
 	
+	public void resetAllRootPassed(RepositoryEntry entry) {
+		if (entry == null) return;
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("update assessmententry data");
+		sb.append("   set data.passedOriginal = :passedOriginal");
+		sb.append("     , data.lastModified = :lastModified");
+		sb.append(" where data.entryRoot = true");
+		sb.append("   and data.passedModificationDate is not null");
+		sb.append("   and data.repositoryEntry.key = :repositoryEntryKey");
+		
+		dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("passedOriginal", null)
+				.setParameter("lastModified", new Date())
+				.setParameter("repositoryEntryKey", entry.getKey())
+				.executeUpdate();
+		
+		sb = new StringBuilder();
+		sb.append("update assessmententry data");
+		sb.append("   set data.passed = :passed");
+		sb.append("     , data.lastModified = :lastModified");
+		sb.append(" where data.entryRoot = true");
+		sb.append("   and data.passedModificationDate is null");
+		sb.append("   and data.repositoryEntry.key = :repositoryEntryKey");
+		
+		dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("passed", null)
+				.setParameter("lastModified", new Date())
+				.setParameter("repositoryEntryKey", entry.getKey())
+				.executeUpdate();
+	}
+	
+	public void resetAllOverridenRootPassed(RepositoryEntry entry) {
+		if (entry == null) return;
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("update assessmententry data");
+		sb.append("   set data.passed = data.passedOriginal");
+		sb.append("     , data.passedOriginal = :passedOriginal");
+		sb.append("     , data.passedModificationDate = :passedModificationDate");
+		sb.append("     , data.passedModificationIdentity = :passedModificationIdentity");
+		sb.append("     , data.lastModified = :lastModified");
+		sb.append(" where data.entryRoot = true");
+		sb.append("   and data.passedModificationDate is not null");
+		sb.append("   and data.repositoryEntry.key = :repositoryEntryKey");
+		
+		dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("passedOriginal", null)
+				.setParameter("passedModificationDate", null)
+				.setParameter("passedModificationIdentity", null)
+				.setParameter("lastModified", new Date())
+				.setParameter("repositoryEntryKey", entry.getKey())
+				.executeUpdate();
+	}
+	
 	/**
 	 * Load all assessment entries for the specific assessed repository entry with
 	 * the specific sub identifier (it is mandatory). The anonym users are excluded

@@ -72,6 +72,9 @@ public interface AssessmentService {
 	
 	public AssessmentEntry updateAssessmentEntry(AssessmentEntry entry);
 	
+	public void resetAllRootPassed(RepositoryEntry entry);
+	
+	public void resetAllOverridenRootPassed(RepositoryEntry entry);
 	
 	public List<AssessmentEntry> loadAssessmentEntriesBySubIdent(RepositoryEntry entry, String subIdent);
 	

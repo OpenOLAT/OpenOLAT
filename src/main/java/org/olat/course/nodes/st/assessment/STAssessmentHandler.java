@@ -130,7 +130,6 @@ public class STAssessmentHandler implements AssessmentHandler {
 			AccountingEvaluatorsBuilder builder = AccountingEvaluatorsBuilder.builder()
 					.withObligationEvaluator(MANDATORY_OBLIGATION_EVALUATOR)
 					.withDurationEvaluator(CUMULATION_DURATION_EVALUATOR)
-					.withPassedEvaluator(CONDITION_PASSED_EVALUATOR)
 					.withStatusEvaluator(LEARNING_PATH_STATUS_EVALUATOR)
 					.withFullyAssessedEvaluator(FULLY_ASSESSED_EVALUATOR)
 					.withLastModificationsEvaluator(LAST_MODIFICATION_EVALUATOR)

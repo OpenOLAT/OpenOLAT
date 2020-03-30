@@ -106,7 +106,7 @@ public class CourseSettingsController extends RepositoryEntrySettingsController 
 				doOpenLayout(ureq);
 			} else if("Toolbar".equalsIgnoreCase(type)) {
 				doOpenToolbarSettings(ureq);
-			} else if("Results".equalsIgnoreCase(type)) {
+			} else if("Assessment".equalsIgnoreCase(type)) {
 				doOpenAssessmentSettings(ureq);
 			} else if("Options".equalsIgnoreCase(type)) {
 				doOpenOptions(ureq);
