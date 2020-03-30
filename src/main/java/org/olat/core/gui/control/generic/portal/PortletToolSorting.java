@@ -26,9 +26,6 @@
 
 package org.olat.core.gui.control.generic.portal;
 
-import org.olat.core.gui.control.generic.portal.SortingCriteria;
-
-
 /**
  * Initial Date:  21.11.2007 <br>
  * @author Lavinia Dumitrescu

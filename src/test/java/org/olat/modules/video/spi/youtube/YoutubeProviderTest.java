@@ -25,7 +25,6 @@ import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.modules.video.spi.youtube.YoutubeProvider;
 import org.olat.modules.video.spi.youtube.model.YoutubeMetadata;
 
 /**

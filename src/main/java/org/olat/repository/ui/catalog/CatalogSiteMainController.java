@@ -36,7 +36,6 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.manager.CatalogManager;
-import org.olat.repository.ui.catalog.CatalogNodeController;
 
 /**
  * 
