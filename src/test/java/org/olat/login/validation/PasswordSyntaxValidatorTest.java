@@ -28,10 +28,6 @@ import java.util.List;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
 import org.olat.core.id.Identity;
-import org.olat.login.validation.SyntaxValidator;
-import org.olat.login.validation.ValidationDescription;
-import org.olat.login.validation.ValidationResult;
-import org.olat.login.validation.ValidationRule;
 
 /**
  * 

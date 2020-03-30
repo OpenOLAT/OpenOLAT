@@ -28,8 +28,6 @@ import org.mockito.Mock;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
-import org.olat.login.validation.PasswordValidationRuleFactory;
-import org.olat.login.validation.ValidationRule;
 
 /**
  * 

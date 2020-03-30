@@ -30,7 +30,6 @@ import static org.junit.Assert.assertNotNull;
 import java.io.InputStream;
 
 import org.junit.Test;
-import org.olat.group.manager.GroupXStream;
 
 /**
  * 

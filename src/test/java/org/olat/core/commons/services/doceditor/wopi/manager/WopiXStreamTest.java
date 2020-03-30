@@ -31,7 +31,6 @@ import org.olat.core.commons.services.doceditor.wopi.App;
 import org.olat.core.commons.services.doceditor.wopi.Discovery;
 import org.olat.core.commons.services.doceditor.wopi.NetZone;
 import org.olat.core.commons.services.doceditor.wopi.ProofKey;
-import org.olat.core.commons.services.doceditor.wopi.manager.WopiXStream;
 
 /**
  * 

@@ -24,8 +24,6 @@ import java.util.List;
 
 import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.modules.coach.model.GroupStatEntry;
-import org.olat.modules.coach.ui.ProgressValue;
-
 import org.olat.modules.coach.ui.LightedValue.Light;
 
 /**

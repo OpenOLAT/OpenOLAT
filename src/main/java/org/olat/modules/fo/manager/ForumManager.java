@@ -50,7 +50,6 @@ import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.commons.services.text.TextService;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.Encoder.Algorithm;
@@ -745,11 +744,12 @@ public class ForumManager {
 	 */
 	public void deleteForum(Long forumKey) {
 		Forum foToDel = loadForum(forumKey);
-		if (foToDel == null) throw new AssertException("forum to delete was not found: key=" + forumKey);
-		// delete properties, messages and the forum itself
-		doDeleteForum(foToDel);
-		// delete directory for messages with attachments
-		deleteForumContainer(forumKey);
+		if (foToDel != null) {
+			// delete properties, messages and the forum itself
+			doDeleteForum(foToDel);
+			// delete directory for messages with attachments
+			deleteForumContainer(forumKey);
+		}
 	}
 
 	/**
@@ -1005,7 +1005,7 @@ public class ForumManager {
 		} else if(forumContainer instanceof VFSContainer) {
 			return (VFSContainer)forumContainer;
 		}
-		log.error("The following forum container is not a directory: " + forumContainer);
+		log.error("The following forum container is not a directory: {}", forumContainer);
 		return null;
 	}
 	
