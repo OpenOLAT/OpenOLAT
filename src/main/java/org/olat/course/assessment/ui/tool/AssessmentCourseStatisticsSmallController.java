@@ -105,12 +105,12 @@ public class AssessmentCourseStatisticsSmallController extends BasicController {
 		
 		int total = memberStatistics.getTotal();
 		int percentPassed = total == 0 ? 0 :
-				Math.round(100.0f * (stats.getCountPassed() / total));
+				Math.round(100.0f * ((float)stats.getCountPassed() / total));
 		mainVC.contextPut("percentPassed", percentPassed);
 		numOfFailed = stats.getCountFailed();
 		mainVC.contextPut("numOfFailed", numOfFailed);
 		int percentFailed = total == 0 ? 0 :
-				Math.round(100.0f * (stats.getCountFailed() / total));
+				Math.round(100.0f * ((float)stats.getCountFailed() / total));
 		mainVC.contextPut("percentFailed", percentFailed);
 		
 		int numOfParticipantLaunches = memberStatistics.getNumOfParticipantsLoggedIn();
