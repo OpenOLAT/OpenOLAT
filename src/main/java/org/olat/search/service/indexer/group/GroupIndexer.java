@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
@@ -37,7 +38,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
@@ -109,7 +109,7 @@ public class GroupIndexer extends AbstractHierarchicalIndexer {
 			DBFactory.getInstance().commitAndCloseSession();
 	  }
 		long indexTime = System.currentTimeMillis() - startTime;
-		if (log.isDebugEnabled()) log.debug("GroupIndexer finished in " + indexTime + " ms");
+		if (log.isDebugEnabled()) log.debug("GroupIndexer finished in {} ms", indexTime);
 	}
 
 	@Override
@@ -128,13 +128,19 @@ public class GroupIndexer extends AbstractHierarchicalIndexer {
 			return super.checkAccess(contextEntry, businessControl, identity, roles)
 					&& super.checkAccess(businessControl, identity, roles);
 		} else {
-			AccessControlModule acModule = (AccessControlModule)CoreSpringFactory.getBean("acModule");
-			if(acModule.isEnabled()) {
-				ACService acService = CoreSpringFactory.getImpl(ACService.class);
-				OLATResource resource = group.getResource();
-				if(acService.isResourceAccessControled(resource, new Date())) {
-					return super.checkAccess(contextEntry, businessControl, identity, roles)
-							&& super.checkAccess(businessControl, identity, roles);
+			// get the list of next context entries
+			List<ContextEntry> entries = businessControl.getEntriesDownTheControls();
+			entries.remove(contextEntry);
+			// only show the name and description of the group, not it's content, forum or folders
+			if(entries.isEmpty()) {
+				AccessControlModule acModule = (AccessControlModule)CoreSpringFactory.getBean("acModule");
+				if(acModule.isEnabled()) {
+					ACService acService = CoreSpringFactory.getImpl(ACService.class);
+					OLATResource resource = group.getResource();
+					if(acService.isResourceAccessControled(resource, new Date())) {
+						return super.checkAccess(contextEntry, businessControl, identity, roles)
+								&& super.checkAccess(businessControl, identity, roles);
+					}
 				}
 			}
 			return false;
