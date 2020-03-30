@@ -31,6 +31,7 @@ import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.model.LectureBlockReminderImpl;
 import org.olat.modules.lecture.model.LectureBlockToTeacher;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -69,6 +70,7 @@ public class LectureBlockReminderDAO {
 		  .append("   select reminder.key from lecturereminder reminder")
 		  .append("   where block.key=reminder.lectureBlock.key and teacher.key=reminder.identity.key")
 		  .append(" ) and block.statusString<>'").append(LectureBlockStatus.cancelled.name()).append("'")
+		  .append(" and re.status ").in(RepositoryEntryStatusEnum.preparationToClosed())
 		  .append(" and block.rollCallStatusString not in ('").append(LectureRollCallStatus.closed.name()).append("','")
 		  .append(LectureRollCallStatus.autoclosed.name()).append("','").append(LectureRollCallStatus.reopen.name()).append("')");
 		
