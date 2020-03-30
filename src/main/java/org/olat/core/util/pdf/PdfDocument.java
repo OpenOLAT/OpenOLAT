@@ -217,7 +217,11 @@ public class PdfDocument {
     }
     
     public static String cleanString(String string) {
-    	return string.replace('\n', ' ').replace('\r', ' ').replace('\t', ' ').replace('\u00A0', ' ');
+    	return string.replace('\n', ' ')
+    			.replace('\r', ' ')
+    			.replace('\t', ' ')
+    			.replace('\u00A0', ' ')
+    			.replace('\u2212', '-');
     }
     
     public void drawLine(float xStart, float yStart, float xEnd, float yEnd, float lineWidth) 

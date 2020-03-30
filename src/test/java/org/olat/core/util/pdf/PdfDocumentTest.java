@@ -48,7 +48,8 @@ public class PdfDocumentTest {
                 { "Hello\tworld", "Hello world" },
                 { "Hello\n\tworld", "Hello  world" },
                 { "Hello\n\tworld\u00A0", "Hello  world " },
-                { "Hello \u3044", "Hello \u3044" }
+                { "Hello \u3044", "Hello \u3044" },
+                { "Hello \u2212", "Hello -" }
         });
     }
     
