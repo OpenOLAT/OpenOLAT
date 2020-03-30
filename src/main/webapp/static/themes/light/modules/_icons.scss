@@ -266,6 +266,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_read:before { content: $fa-var-circle-o; }
 .o_icon_readonly:before { content: $fa-var-edit; color:red;}
 .o_icon_readwrite:before { content: $fa-var-edit; }
+.o_icon_recalculate:before { content: $fa-var-refresh; }
 .o_icon_recycle:before { content: $fa-var-recycle; }
 .o_icon_rectangle:before { content: $fa-var-square-o; }
 .o_icon_redo:before { content: $fa-var-repeat; }

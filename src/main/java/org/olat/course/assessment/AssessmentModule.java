@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
-import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.gui.control.Event;
 import org.olat.core.logging.Tracing;
@@ -42,7 +41,6 @@ import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.Structure;
-import org.olat.course.assessment.manager.UpdateEfficiencyStatementsWorker;
 import org.olat.course.editor.PublishEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -70,8 +68,6 @@ public class AssessmentModule extends AbstractSpringModule implements GenericEve
 	
 	@Autowired
 	private CourseModule courseModule;
-	@Autowired
-	private TaskExecutorManager taskExecutorManager;
 	
 	@Autowired
 	public AssessmentModule(CoordinatorManager coordinatorManager) {
@@ -135,13 +131,6 @@ public class AssessmentModule extends AbstractSpringModule implements GenericEve
 				// a publish event, check if it matches a previous checked
 				prepareUpdate(pe.getPublishedCourseResId());
 			}
-		} else if (event instanceof EfficiencyStatementEvent) {
-			if(EfficiencyStatementEvent.CMD_RECALCULATE.equals(event.getCommand())) {
-				EfficiencyStatementEvent esEvent = (EfficiencyStatementEvent)event;
-				//force recalculate
-				upcomingWork.add(esEvent.getCourseResourceId());
-				prepareUpdate(esEvent.getCourseResourceId());
-			}
 		}
 	}
 	
@@ -154,11 +143,6 @@ public class AssessmentModule extends AbstractSpringModule implements GenericEve
 					//remove all with the same res id
 				}
 			}
-		}
-		if (recalc) {
-			ICourse pubCourse = CourseFactory.loadCourse(resId);
-			UpdateEfficiencyStatementsWorker worker = new UpdateEfficiencyStatementsWorker(pubCourse);
-			taskExecutorManager.execute(worker);
 		}
 	}
 

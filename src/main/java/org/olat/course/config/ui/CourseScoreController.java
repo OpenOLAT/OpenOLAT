@@ -40,7 +40,7 @@ import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
-import org.olat.course.config.ui.ScoreSettingsConfirmationController.ScoreSettingsConfirmationEvent;
+import org.olat.course.config.ui.AssessmentResetController.AssessmentResetEvent;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.RunMainController;
 import org.olat.course.tree.CourseEditorTreeNode;
@@ -71,7 +71,7 @@ public class CourseScoreController extends FormBasicController {
 	private TextElement passedPointsCutEl;
 	
 	private CloseableModalController cmc;
-	private ScoreSettingsConfirmationController settingsConfirmationCtrl;
+	private AssessmentResetController assessmentResetCtrl;
 	
 	private final RepositoryEntry courseEntry;
 	private final boolean editable;
@@ -223,11 +223,11 @@ public class CourseScoreController extends FormBasicController {
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source == settingsConfirmationCtrl) {
-			if (event instanceof ScoreSettingsConfirmationEvent) {
-				ScoreSettingsConfirmationEvent ssce = (ScoreSettingsConfirmationEvent)event;
-				doSettingsConfirmed(ureq, ssce);
-			} else if (event == ScoreSettingsConfirmationController.RESET_SETTING_EVENT) {
+		if(source == assessmentResetCtrl) {
+			if (event instanceof AssessmentResetEvent) {
+				AssessmentResetEvent are = (AssessmentResetEvent)event;
+				doSettingsConfirmed(ureq, are);
+			} else if (event == AssessmentResetController.RESET_SETTING_EVENT) {
 				initForm(ureq);
 			}
 			cmc.deactivate();
@@ -239,9 +239,9 @@ public class CourseScoreController extends FormBasicController {
 	}
 
 	private void cleanUp() {
-		removeAsListenerAndDispose(settingsConfirmationCtrl);
+		removeAsListenerAndDispose(assessmentResetCtrl);
 		removeAsListenerAndDispose(cmc);
-		settingsConfirmationCtrl = null;
+		assessmentResetCtrl = null;
 		cmc = null;
 	}
 
@@ -282,10 +282,10 @@ public class CourseScoreController extends FormBasicController {
 	}
 
 	private void doConfirmSetting(UserRequest ureq) {
-		settingsConfirmationCtrl = new ScoreSettingsConfirmationController(ureq, getWindowControl());
-		listenTo(settingsConfirmationCtrl);
+		assessmentResetCtrl = new AssessmentResetController(ureq, getWindowControl(), true);
+		listenTo(assessmentResetCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				settingsConfirmationCtrl.getInitialComponent(), true, translate("confirm.score.settings.title"), true);
+				assessmentResetCtrl.getInitialComponent(), true, translate("assessment.reset.title"), true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -295,17 +295,17 @@ public class CourseScoreController extends FormBasicController {
 		doConfirmSetting(ureq);
 	}
 	
-	private void doSettingsConfirmed(UserRequest ureq, ScoreSettingsConfirmationEvent ssce) {
+	private void doSettingsConfirmed(UserRequest ureq, AssessmentResetEvent are) {
 		boolean saved = doSave();
 		
 		if (saved) {
-			if (ssce.isResetOverriden()) {
+			if (are.isResetOverriden()) {
 				assessmentService.resetAllOverridenRootPassed(courseEntry);
 			}
-			if (ssce.isResetPassed()) {
+			if (are.isResetPassed()) {
 				assessmentService.resetAllRootPassed(courseEntry);
 			}
-			if (ssce.isRecalculateAll()) {
+			if (are.isRecalculateAll()) {
 				ICourse course = CourseFactory.loadCourse(courseEntry);
 				courseAssessmentService.evaluateAll(course);
 			}

@@ -38,7 +38,7 @@ import org.olat.core.gui.control.WindowControl;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ScoreSettingsConfirmationController extends FormBasicController {
+public class AssessmentResetController extends FormBasicController {
 	
 	public static final Event RESET_SETTING_EVENT = new Event("reset.changes");
 	
@@ -48,35 +48,40 @@ public class ScoreSettingsConfirmationController extends FormBasicController {
 	private MultipleSelectionElement recalculateAllEl;
 	private MultipleSelectionElement resetPassedEl;
 	private MultipleSelectionElement resetOverridenEl;
-	private FormLink resetButton;
+	private FormLink discardButton;
 
-	public ScoreSettingsConfirmationController(UserRequest ureq, WindowControl wControl) {
+	private final boolean showDiscard;
+
+	public AssessmentResetController(UserRequest ureq, WindowControl wControl, boolean showDiscard) {
 		super(ureq, wControl);
+		this.showDiscard = showDiscard;
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormDescription("confirm.score.settings.desc", null);
+		setFormDescription("assessment.reset.desc", null);
 		
 		recalculateAllEl = uifactory.addCheckboxesVertical("recalculate.all",
-				"confirm.score.settings.recalculate.all.label", formLayout, ENABLE_KEYS,
-				new String[] { translate("confirm.score.settings.recalculate.all") }, 1);
+				"assessment.reset.recalculate.all.label", formLayout, ENABLE_KEYS,
+				new String[] { translate("assessment.reset.recalculate.all") }, 1);
 		recalculateAllEl.select(recalculateAllEl.getKey(0), true);
 		recalculateAllEl.addActionListener(FormEvent.ONCHANGE);
 
-		resetPassedEl = uifactory.addCheckboxesVertical("reset.passed", "confirm.score.settings.reset.passed.label",
-				formLayout, ENABLE_KEYS, new String[] { translate("confirm.score.settings.reset.passed") }, 1);
+		resetPassedEl = uifactory.addCheckboxesVertical("reset.passed", "assessment.reset.passed.label",
+				formLayout, ENABLE_KEYS, new String[] { translate("assessment.reset.passed") }, 1);
 
 		resetOverridenEl = uifactory.addCheckboxesVertical("reset.overriden",
-				"confirm.score.settings.reset.overriden.label", formLayout, ENABLE_KEYS,
-				new String[] { translate("confirm.score.settings.reset.overriden") }, 1);
+				"assessment.reset.overriden.label", formLayout, ENABLE_KEYS,
+				new String[] { translate("assessment.reset.overriden") }, 1);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
-		resetButton = uifactory.addFormLink("confirm.score.settings.reset.changes", buttonsCont, Link.BUTTON);
+		if (showDiscard) {
+			discardButton = uifactory.addFormLink("assessment.reset.discard", buttonsCont, Link.BUTTON);
+		}
 		
 		updateUI();
 	}
@@ -91,7 +96,7 @@ public class ScoreSettingsConfirmationController extends FormBasicController {
 		if (source == recalculateAllEl) {
 			updateUI();
 		} else 
-		if (source == resetButton) {
+		if (source == discardButton) {
 			fireEvent(ureq, RESET_SETTING_EVENT);
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -107,7 +112,7 @@ public class ScoreSettingsConfirmationController extends FormBasicController {
 		boolean recalculateAll = recalculateAllEl.isAtLeastSelected(0);
 		boolean resetPassed = resetPassedEl.isVisible() && resetPassedEl.isAtLeastSelected(1);
 		boolean resetOverriden = resetOverridenEl.isAtLeastSelected(1);
-		Event confirmedEvent = new ScoreSettingsConfirmationEvent(recalculateAll, resetPassed, resetOverriden);
+		Event confirmedEvent = new AssessmentResetEvent(recalculateAll, resetPassed, resetOverriden);
 		fireEvent(ureq, confirmedEvent );
 	}
 
@@ -116,7 +121,7 @@ public class ScoreSettingsConfirmationController extends FormBasicController {
 		//
 	}
 	
-	public static class ScoreSettingsConfirmationEvent extends Event {
+	public static class AssessmentResetEvent extends Event {
 		
 		private static final long serialVersionUID = 915883316389709373L;
 
@@ -124,8 +129,8 @@ public class ScoreSettingsConfirmationController extends FormBasicController {
 		private final boolean resetPassed;
 		private final boolean resetOverriden;
 		
-		public ScoreSettingsConfirmationEvent(boolean recalculateAll, boolean resetPassed, boolean resetOverriden) {
-			super("score.settings.confirmed");
+		public AssessmentResetEvent(boolean recalculateAll, boolean resetPassed, boolean resetOverriden) {
+			super("assessment.reset");
 			this.resetPassed = resetPassed;
 			this.resetOverriden = resetOverriden;
 			this.recalculateAll = recalculateAll;
