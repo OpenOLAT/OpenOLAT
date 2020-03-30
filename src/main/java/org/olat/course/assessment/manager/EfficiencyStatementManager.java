@@ -210,7 +210,7 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 		
 		boolean debug = log.isDebugEnabled();
 		UserEfficiencyStatementImpl efficiencyProperty = getUserEfficiencyStatementFull(repoEntry, assessedIdentity);
-		if (assessmentNodes != null) {				
+		if (assessmentNodes != null && !assessmentNodes.isEmpty()) {
 			if (efficiencyProperty == null) {
 				// create new
 				efficiencyProperty = new UserEfficiencyStatementImpl();
