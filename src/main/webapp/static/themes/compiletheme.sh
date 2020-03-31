@@ -60,7 +60,7 @@ control_c () {
 while getopts ":fhw" opt; do
   case $opt in
     f)
-      UPDATECMD="--update --force"
+      UPDATECMD=""
       ;;
     w)
       UPDATECMD="--watch"
