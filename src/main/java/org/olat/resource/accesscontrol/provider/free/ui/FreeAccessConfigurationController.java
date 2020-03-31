@@ -108,10 +108,10 @@ public class FreeAccessConfigurationController extends AbstractConfigurationMeth
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		if (dateFrom.getValue() != null && dateTo.getValue() != null && dateFrom.getValue().compareTo(dateTo.getValue()) > 0) {
+		if (dateFrom.getDate() != null && dateTo.getDate() != null && dateFrom.getDate().compareTo(dateTo.getDate()) > 0) {
 			dateTo.setErrorKey("date.error", null);
 			dateFrom.setErrorKey(null, null);
-			allOk = false;
+			allOk &= false;
 		}
 		
 		return allOk;
