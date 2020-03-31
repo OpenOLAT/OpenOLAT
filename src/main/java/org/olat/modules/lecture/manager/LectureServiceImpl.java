@@ -1331,7 +1331,9 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	private void sendAutoCloseNotifications(LectureBlock lectureBlock) {
 		RepositoryEntry entry = lectureBlock.getEntry();
 		RepositoryEntryLectureConfiguration config = getRepositoryEntryLectureConfiguration(entry);
-		if(config.isLectureEnabled()) {
+		if(config.isLectureEnabled()
+				&& entry.getEntryStatus() != RepositoryEntryStatusEnum.trash
+				&& entry.getEntryStatus() != RepositoryEntryStatusEnum.deleted) {
 			List<Identity> owners = repositoryEntryRelationDao
 					.getMembers(entry, RepositoryEntryRelationType.all, GroupRoles.owner.name());
 			List<Identity> teachers = getTeachers(lectureBlock);
@@ -1340,9 +1342,9 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 				MailerResult result = sendMail("lecture.autoclose.notification.subject", "lecture.autoclose.notification.body",
 						owner, teachers, lectureBlock);
 				if(result.getReturnCode() == MailerResult.OK) {
-					log.info(Tracing.M_AUDIT, "Notification of lecture auto-close: " + lectureBlock.getKey() + " in course: " + entry.getKey());
+					log.info(Tracing.M_AUDIT, "Notification of lecture auto-close: {} in course: {}", lectureBlock.getKey(), entry.getKey());
 				} else {
-					log.error("Notification of lecture auto-close cannot be send: " + lectureBlock.getKey() + " in course: " + entry.getKey());
+					log.error("Notification of lecture auto-close cannot be send: {} in course: {}", lectureBlock.getKey(), entry.getKey());
 				}
 			}
 		}

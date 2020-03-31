@@ -35,6 +35,8 @@ import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.model.LectureBlockReminderImpl;
 import org.olat.modules.lecture.model.LectureBlockToTeacher;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.RepositoryManager;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +55,8 @@ public class LectureBlockReminderDAOTest extends OlatTestCase {
 	private LectureService lectureService;
 	@Autowired
 	private LectureBlockDAO lectureBlockDao;
+	@Autowired
+	private RepositoryManager repositoryManager;
 	@Autowired
 	private LectureBlockReminderDAO lectureBlockReminderDao;
 
@@ -160,6 +164,41 @@ public class LectureBlockReminderDAOTest extends OlatTestCase {
 		Assert.assertTrue(hasBlock);
 		Assert.assertTrue(hasBlockOpen);
 		Assert.assertFalse(hasOtherBlock);
+	}
+	
+	@Test
+	public void loadLectureBlockToRemind_entryStatus() {
+		Identity teacher1 = JunitTestHelper.createAndPersistIdentityAsRndUser("reminder-10");
+		Identity teacher2 = JunitTestHelper.createAndPersistIdentityAsRndUser("reminder-11");
+		LectureBlock lectureBlock1 = createMinimalLectureBlock(5);
+		LectureBlock lectureBlock2 = createMinimalLectureBlock(5);
+		
+		RepositoryEntry entryBlock1 = lectureBlock1.getEntry();
+		RepositoryEntry entryBlock2 = lectureBlock2.getEntry();
+		repositoryManager.setAccess(entryBlock1, RepositoryEntryStatusEnum.trash, false, false);
+		repositoryManager.setAccess(entryBlock2, RepositoryEntryStatusEnum.published, false, false);
+		dbInstance.commitAndCloseSession();
+		
+		lectureService.addTeacher(lectureBlock1, teacher1);
+		lectureService.addTeacher(lectureBlock2, teacher2);
+		dbInstance.commitAndCloseSession();
+		
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.DATE, -3);
+		List<LectureBlockToTeacher> toRemind = lectureBlockReminderDao.getLectureBlockTeachersToReminder(cal.getTime());
+		
+		boolean hasBlock1 = false;
+		boolean hasBlock2 = false;
+		for(LectureBlockToTeacher remind:toRemind) {
+			if(remind.getLectureBlock().equals(lectureBlock1)) {
+				hasBlock1 = true;
+			} else if(remind.getLectureBlock().equals(lectureBlock2)) {
+				hasBlock2 = true;
+			}
+		}
+		
+		Assert.assertFalse(hasBlock1);
+		Assert.assertTrue(hasBlock2);
 	}
 	
 	@Test

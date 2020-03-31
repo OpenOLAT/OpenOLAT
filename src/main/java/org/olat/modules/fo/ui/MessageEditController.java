@@ -179,6 +179,8 @@ public class MessageEditController extends FormBasicController {
 		bodyEl.setMaxLength(MAX_BODY_LENGTH);
 		bodyEl.setNotLongerThanCheck(MAX_BODY_LENGTH, "input.toolong");
 		bodyEl.getEditorConfiguration().enableCharCount();
+		bodyEl.getEditorConfiguration().setRelativeUrls(false);
+		bodyEl.getEditorConfiguration().setRemoveScriptHost(false);
 		
 		setEditPermissions(message);
 		// list existing attachments. init attachment layout now, to place it in
