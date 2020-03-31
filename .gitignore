@@ -36,3 +36,5 @@ src/test/java/org/olat/selenium/SeleniumTest.java
 */.project
 .idea
 
+**/*/.sass-cache
+

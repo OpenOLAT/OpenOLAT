@@ -64,10 +64,13 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
 - Rename mytheme/_openolat_config.scss to mytheme/_mytheme_config.scss
 - Rename mytheme/_openolat_theme.scss to mytheme/_mytheme_theme.scss
 - Rename mytheme/_openolat_content.scss to mytheme/_mytheme_content.scss
+- Rename mytheme/_openolat_email.scss to mytheme/_mytheme_email.scss
 - Open mytheme/theme.sass and replace the references to the files you just renamed 
   (openolat_config -> mytheme_config, openolat_theme -> mytheme_theme)
 - Open mytheme/content.sass and replace the references to the files you just renamed
   (openolat_config -> mytheme_config, openolat_content -> mytheme_content)
+- Open mytheme/email.sass and replace the references to the files you just renamed
+  (openolat_config -> mytheme_config, openolat_email -> mytheme_email)
 - Open mytheme/_mytheme_config.scss and add all bootstrap and OpenOLAT SASS variables you want to 
   override. As references yo can look at the following files:
   - for all bootstrap variables: ../../bootstrap/stylesheets/bootstrap/_variables.scss
