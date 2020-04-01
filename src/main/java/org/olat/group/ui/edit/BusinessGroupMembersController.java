@@ -41,6 +41,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
+import org.olat.course.member.wizard.ImportMembersContext;
 import org.olat.course.member.wizard.ImportMember_1a_LoginListStep;
 import org.olat.course.member.wizard.ImportMember_1b_ChooseMemberStep;
 import org.olat.group.BusinessGroup;
@@ -58,12 +59,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BusinessGroupMembersController extends BasicController {
 	
+	private final Link addMemberLink;
+	private final Link importMemberLink;
 	private final VelocityContainer mainVC;
 
 	private final DisplayMemberSwitchForm dmsForm;
 	private final MembershipConfigurationForm configForm;
 	private MemberListController membersController;
-	private final Link importMemberLink, addMemberLink;
 	private StepsMainRunController importMembersWizard;
 	
 	private BusinessGroup businessGroup;
@@ -142,7 +144,7 @@ public class BusinessGroupMembersController extends BasicController {
 		boolean hasWaitingList = businessGroup.getWaitingListEnabled().booleanValue();	
 		Boolean waitingFlag = (Boolean)mainVC.getContext().get("hasWaitingGrp");
 		if(waitingFlag == null || waitingFlag.booleanValue() != hasWaitingList) {
-			mainVC.contextPut("hasWaitingGrp", new Boolean(hasWaitingList));
+			mainVC.contextPut("hasWaitingGrp", Boolean.valueOf(hasWaitingList));
 			dmsForm.setWaitingListVisible(hasWaitingList);
 		}
 		
@@ -200,7 +202,8 @@ public class BusinessGroupMembersController extends BasicController {
 	private void doChooseMembers(UserRequest ureq) {
 		removeAsListenerAndDispose(importMembersWizard);
 
-		Step start = new ImportMember_1b_ChooseMemberStep(ureq, null, businessGroup, null, false);
+		ImportMembersContext membersContext = ImportMembersContext.valueOf(businessGroup);
+		Step start = new ImportMember_1b_ChooseMemberStep(ureq, membersContext);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			addMembers(runContext);
 			return StepsMainRunController.DONE_MODIFIED;
@@ -215,16 +218,14 @@ public class BusinessGroupMembersController extends BasicController {
 	private void doImportMembers(UserRequest ureq) {
 		removeAsListenerAndDispose(importMembersWizard);
 
-		Step start = new ImportMember_1a_LoginListStep(ureq, null, businessGroup, null, false);
-		StepRunnerCallback finish = new StepRunnerCallback() {
-			@Override
-			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
-				addMembers(runContext);
-				if(runContext.containsKey("notFounds")) {
-					showWarning("user.notfound", runContext.get("notFounds").toString());
-				}
-				return StepsMainRunController.DONE_MODIFIED;
+		ImportMembersContext membersContext = ImportMembersContext.valueOf(businessGroup);
+		Step start = new ImportMember_1a_LoginListStep(ureq, membersContext);
+		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
+			addMembers(runContext);
+			if(runContext.containsKey("notFounds")) {
+				showWarning("user.notfound", runContext.get("notFounds").toString());
 			}
+			return StepsMainRunController.DONE_MODIFIED;
 		};
 		
 		importMembersWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,

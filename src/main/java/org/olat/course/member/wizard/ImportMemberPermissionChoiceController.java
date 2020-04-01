@@ -27,11 +27,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.group.BusinessGroup;
 import org.olat.group.ui.main.EditMembershipController;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
-import org.olat.modules.curriculum.Curriculum;
-import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -41,11 +38,10 @@ public class ImportMemberPermissionChoiceController extends StepFormBasicControl
 	private EditMembershipController permissionCtrl;
 
 	public ImportMemberPermissionChoiceController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry repoEntry, BusinessGroup group, Curriculum curriculum, boolean overrideManaged,
-			Form rootForm, StepsRunContext runContext) {
+			ImportMembersContext membersContext, Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_BAREBONE, null);
 		
-		permissionCtrl = new EditMembershipController(ureq, getWindowControl(), null, repoEntry, group, curriculum, overrideManaged, rootForm);
+		permissionCtrl = new EditMembershipController(ureq, getWindowControl(), null, membersContext, rootForm);
 		listenTo(permissionCtrl);
 
 		initForm (ureq);
@@ -65,10 +61,9 @@ public class ImportMemberPermissionChoiceController extends StepFormBasicControl
 		fireEvent (ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 
-
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		MemberPermissionChangeEvent e = new MemberPermissionChangeEvent(null);
 		permissionCtrl.collectRepoChanges(e);
@@ -82,7 +77,7 @@ public class ImportMemberPermissionChoiceController extends StepFormBasicControl
 			allOk &= false;
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

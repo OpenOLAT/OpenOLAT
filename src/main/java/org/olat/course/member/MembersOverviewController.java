@@ -55,6 +55,7 @@ import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.member.wizard.ImportMembersContext;
 import org.olat.course.member.wizard.ImportMember_1a_LoginListStep;
 import org.olat.course.member.wizard.ImportMember_1b_ChooseMemberStep;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -90,8 +91,17 @@ public class MembersOverviewController extends BasicController implements Activa
 	private static final String SEG_WAITING_MEMBERS = "Waiting";
 	private static final String SEG_SEARCH_MEMBERS = "Search";
 	
-	private Link overrideLink, unOverrideLink;
-	private final Link allMembersLink, ownersLink, tutorsLink, participantsLink, waitingListLink, searchLink;
+	private Link overrideLink;
+	private Link unOverrideLink;
+	private final Link dedupLink;
+	private final Link addMemberLink;
+	private final Link importMemberLink;
+	private final Link ownersLink;
+	private final Link tutorsLink;
+	private final Link searchLink;
+	private final Link allMembersLink;
+	private final Link waitingListLink;
+	private final Link participantsLink;
 	private final SegmentViewComponent segmentView;
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel toolbarPanel;
@@ -103,7 +113,6 @@ public class MembersOverviewController extends BasicController implements Activa
 	private AbstractMemberListController waitingCtrl;
 	private AbstractMemberListController selectedCtrl;
 	private AbstractMemberListController searchCtrl;
-	private final Link importMemberLink, addMemberLink, dedupLink;
 
 	private CloseableModalController cmc;
 	private StepsMainRunController importMembersWizard;
@@ -354,7 +363,8 @@ public class MembersOverviewController extends BasicController implements Activa
 	private void doChooseMembers(UserRequest ureq) {
 		removeAsListenerAndDispose(importMembersWizard);
 
-		Step start = new ImportMember_1b_ChooseMemberStep(ureq, repoEntry, null, null, overrideManaged);
+		ImportMembersContext membersContext = ImportMembersContext.valueOf(repoEntry, overrideManaged);
+		Step start = new ImportMember_1b_ChooseMemberStep(ureq, membersContext);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			addMembers(uureq, runContext);
 			return StepsMainRunController.DONE_MODIFIED;
@@ -369,7 +379,8 @@ public class MembersOverviewController extends BasicController implements Activa
 	private void doImportMembers(UserRequest ureq) {
 		removeAsListenerAndDispose(importMembersWizard);
 
-		Step start = new ImportMember_1a_LoginListStep(ureq, repoEntry, null, null, overrideManaged);
+		ImportMembersContext membersContext = ImportMembersContext.valueOf(repoEntry, overrideManaged);
+		Step start = new ImportMember_1a_LoginListStep(ureq, membersContext);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			addMembers(uureq, runContext);
 			if(runContext.containsKey("notFounds")) {
