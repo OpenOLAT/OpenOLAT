@@ -844,7 +844,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		
 		List<MailTemplate> templates = new ArrayList<>();
 		templates.add(GraderMailTemplate.empty(getTranslator(), entry, null, referenceEntry));
-		templates.add(GraderMailTemplate.graderTo(getTranslator(), entry, null, referenceEntry, configuration));
+		templates.add(GraderMailTemplate.graderTo(getTranslator(), entry, null, referenceEntry));
 		templates.add(GraderMailTemplate.notification(getTranslator(), entry, null, referenceEntry, configuration));
 		templates.add(GraderMailTemplate.firstReminder(getTranslator(), entry, null, referenceEntry, configuration));
 		templates.add(GraderMailTemplate.secondReminder(getTranslator(), entry, null, referenceEntry, configuration));

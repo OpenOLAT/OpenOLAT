@@ -261,7 +261,7 @@ public class AssignedReferenceEntryListController extends FormBasicController {
 		
 		List<MailTemplate> templates = new ArrayList<>();
 		templates.add(GraderMailTemplate.empty(getTranslator(), null, null, refEntry));
-		templates.add(GraderMailTemplate.graderTo(getTranslator(), null, null, refEntry, configuration));
+		templates.add(GraderMailTemplate.graderTo(getTranslator(), null, null, refEntry));
 		templates.add(GraderMailTemplate.notification(getTranslator(), null, null, refEntry, configuration));
 		templates.add(GraderMailTemplate.firstReminder(getTranslator(), null, null, refEntry, configuration));
 		templates.add(GraderMailTemplate.secondReminder(getTranslator(), null, null, refEntry, configuration));

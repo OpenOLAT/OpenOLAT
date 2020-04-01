@@ -77,20 +77,12 @@ public class GraderMailTemplate extends MailTemplate {
 	}
 	
 	public static final GraderMailTemplate graderTo(Translator translator, RepositoryEntry entry, CourseNode courseNode,
-			RepositoryEntry referenceEntry, RepositoryEntryGradingConfiguration configuration) {
+			RepositoryEntry referenceEntry) {
 		
 		String templateName = translator.translate("template.grader.to");
 		GraderMailTemplate template = new GraderMailTemplate(templateName, entry, courseNode, referenceEntry);
-		if(configuration != null && StringHelper.containsNonWhitespace(configuration.getNotificationSubject())) {
-			template.setSubjectTemplate(configuration.getNotificationSubject());
-		} else {
-			template.setSubjectTemplate(translator.translate("mail.grader.to.entry.subject"));
-		}
-		if(configuration != null && StringHelper.containsNonWhitespace(configuration.getNotificationBody())) {
-			template.setBodyTemplate(configuration.getNotificationBody());
-		} else {
-			template.setBodyTemplate(translator.translate("mail.grader.to.entry.body"));
-		}
+		template.setSubjectTemplate(translator.translate("mail.grader.to.entry.subject"));
+		template.setBodyTemplate(translator.translate("mail.grader.to.entry.body"));
 		return template;
 	}
 	
@@ -241,6 +233,7 @@ public class GraderMailTemplate extends MailTemplate {
 		String correctionUrl = BusinessControlFactory.getInstance()
 				.getURLFromBusinessPathString("[CoachSite:0][Grading:0][Assignments:0]");
 		putVariablesInMailContext(vContext, "correctionUrl", correctionUrl);
+		putVariablesInMailContext(vContext, "correctionURL", correctionUrl);
 	}
 	
 	private void putVariablesInMailContext(VelocityContext vContext, String key, String value) {

@@ -333,14 +333,9 @@ public class GradersListController extends FormBasicController {
 	
 	private void doAddGrader(UserRequest ureq) {
 		removeAsListenerAndDispose(importGradersWizard);
-		
-		RepositoryEntryGradingConfiguration configuration = null;
-		if(referenceEntry != null) {
-			configuration = gradingService.getOrCreateConfiguration(referenceEntry);
-		}
 
 		final ImportGradersContext graders = new ImportGradersContext(referenceEntry);
-		GraderMailTemplate mailTemplate = GraderMailTemplate.graderTo(getTranslator(), null, null, referenceEntry, configuration);
+		GraderMailTemplate mailTemplate = GraderMailTemplate.graderTo(getTranslator(), null, null, referenceEntry);
 		
 		Step start = new ImportGrader1ChooseMemberStep(ureq, graders, mailTemplate, referenceEntry == null);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
@@ -422,7 +417,7 @@ public class GradersListController extends FormBasicController {
 		
 		List<MailTemplate> templates = new ArrayList<>();
 		templates.add(GraderMailTemplate.empty(getTranslator(), null, null, referenceEntry));
-		templates.add(GraderMailTemplate.graderTo(getTranslator(), null, null, refEntry, configuration));
+		templates.add(GraderMailTemplate.graderTo(getTranslator(), null, null, refEntry));
 		templates.add(GraderMailTemplate.notification(getTranslator(), null, null, refEntry, configuration));
 		templates.add(GraderMailTemplate.firstReminder(getTranslator(), null, null, refEntry, configuration));
 		templates.add(GraderMailTemplate.secondReminder(getTranslator(), null, null, refEntry, configuration));
