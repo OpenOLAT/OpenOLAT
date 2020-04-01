@@ -26,6 +26,7 @@
 package org.olat.core.gui.components.form.flexible.elements;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 
@@ -42,6 +43,8 @@ public interface MultipleSelectionElement extends SelectionElement {
 	 * @return a Set of Strings
 	 */
 	public Collection<String> getSelectedKeys();
+	
+	public List<String> getSelectedValues();
 	
 	public void setKeysAndValues(String[] keys, String[] values);
 
