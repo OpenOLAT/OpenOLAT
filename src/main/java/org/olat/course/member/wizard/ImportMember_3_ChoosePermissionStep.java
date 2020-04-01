@@ -26,9 +26,6 @@ import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.group.BusinessGroup;
-import org.olat.modules.curriculum.Curriculum;
-import org.olat.repository.RepositoryEntry;
 
 
 /**
@@ -37,19 +34,12 @@ import org.olat.repository.RepositoryEntry;
  */
 public class ImportMember_3_ChoosePermissionStep extends BasicStep {
 
-	private final BusinessGroup group;
-	private final RepositoryEntry repoEntry;
-	private final Curriculum curriculum;
-	private final boolean overrideManaged;
+	private final ImportMembersContext membersContext;
 	
-	public ImportMember_3_ChoosePermissionStep(UserRequest ureq, RepositoryEntry repoEntry, BusinessGroup group,
-			Curriculum curriculum, boolean overrideManaged) {
+	public ImportMember_3_ChoosePermissionStep(UserRequest ureq, ImportMembersContext membersContext) {
 		super(ureq);
-		this.group = group;
-		this.repoEntry = repoEntry;
-		this.curriculum = curriculum;
-		this.overrideManaged = overrideManaged;
-		setNextStep(new ImportMember_4_MailStep(ureq, repoEntry));
+		this.membersContext = membersContext;
+		setNextStep(new ImportMember_4_MailStep(ureq, membersContext.getRepoEntry()));
 		setI18nTitleAndDescr("import.permission.title", "import.permission.title");
 	}
 
@@ -60,6 +50,6 @@ public class ImportMember_3_ChoosePermissionStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new ImportMemberPermissionChoiceController(ureq, wControl, repoEntry, group, curriculum, overrideManaged, form, runContext);
+		return new ImportMemberPermissionChoiceController(ureq, wControl, membersContext, form, runContext);
 	}
 }

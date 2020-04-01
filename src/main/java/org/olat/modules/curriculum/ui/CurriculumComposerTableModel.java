@@ -152,6 +152,10 @@ public class CurriculumComposerTableModel extends DefaultFlexiTreeTableDataModel
 		return accept;
 	}
 	
+	public CurriculumElementRow getFocusedCurriculumElementRow() {
+		return focusedNode;
+	}
+	
 	public CurriculumElementRow getCurriculumElementRowByKey(Long elementKey) {
 		List<CurriculumElementRow> rows = new ArrayList<>(backupRows);
 		for(CurriculumElementRow row:rows) {

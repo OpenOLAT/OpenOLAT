@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
@@ -66,6 +67,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.member.PermissionHelper;
 import org.olat.course.member.PermissionHelper.BGPermission;
 import org.olat.course.member.PermissionHelper.RepoPermission;
+import org.olat.course.member.wizard.ImportMembersContext;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupMembership;
@@ -105,7 +107,7 @@ public class EditMembershipController extends FormBasicController {
 	private EditGroupMembershipTableDataModel groupTableDataModel;
 	private EditCurriculumMembershipTableDataModel curriculumTableDataModel;
 	
-	private static final String[] repoRightsKeys = {"owner", "tutor", "participant"};
+	private static final String[] repoRightsKeys = { "owner", "tutor", "participant" };
 	
 	private final Identity member;
 	private final List<Identity> members;
@@ -118,6 +120,7 @@ public class EditMembershipController extends FormBasicController {
 	private final BusinessGroup businessGroup;
 	private final RepositoryEntry repoEntry;
 	private final Curriculum curriculum;
+	private final CurriculumElement rootCurriculumElement;
 	
 	@Autowired
 	private RepositoryManager repositoryManager;
@@ -136,7 +139,8 @@ public class EditMembershipController extends FormBasicController {
 		this.members = null;
 		this.repoEntry = repoEntry;
 		this.businessGroup = businessGroup;
-		this.curriculum = null;
+		curriculum = null;
+		rootCurriculumElement = null;
 		this.withButtons = true;
 		this.overrideManaged = overrideManaged;
 		
@@ -172,7 +176,8 @@ public class EditMembershipController extends FormBasicController {
 		this.members = (members == null ? null : new ArrayList<>(members));
 		this.repoEntry = repoEntry;
 		this.businessGroup = businessGroup;
-		this.curriculum = null;
+		curriculum = null;
+		rootCurriculumElement = null;
 		this.withButtons = true;
 		this.overrideManaged = overrideManaged;
 		
@@ -183,16 +188,17 @@ public class EditMembershipController extends FormBasicController {
 	}
 	
 	public EditMembershipController(UserRequest ureq, WindowControl wControl, List<Identity> members,
-			RepositoryEntry repoEntry, BusinessGroup businessGroup, Curriculum curriculum, boolean overrideManaged, Form rootForm) {
+			ImportMembersContext membersContext, Form rootForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "edit_member", rootForm);
 		
-		this.member = null;
+		member = null;
 		this.members = (members == null ? null : new ArrayList<>(members));
-		this.repoEntry = repoEntry;
-		this.businessGroup = businessGroup;
-		this.curriculum = curriculum;
+		repoEntry = membersContext.getRepoEntry();
+		businessGroup = membersContext.getGroup();
+		curriculum = membersContext.getCurriculum();
+		rootCurriculumElement = membersContext.getRootCurriculumElement();
 		this.withButtons = false;
-		this.overrideManaged = overrideManaged;
+		overrideManaged = membersContext.isOverrideManaged();
 		
 		memberships = Collections.emptyList();
 
@@ -257,16 +263,7 @@ public class EditMembershipController extends FormBasicController {
 		groupTableDataModel.setObjects(options);
 		groupTableEl.setVisible(!options.isEmpty());
 		
-		List<CurriculumElement> curriculumElements;
-		if(curriculum != null) {
-			curriculumElements = curriculumService.getCurriculumElements(curriculum, CurriculumElementStatus.notDeleted());
-			curriculumElements = orderCurriculumElements(curriculumElements);
-		} else if (repoEntry != null) {
-			curriculumElements = curriculumService.getCurriculumElements(repoEntry);
-		} else {
-			curriculumElements = Collections.emptyList();
-		}
-	
+		List<CurriculumElement> curriculumElements = loadCurriculumElements();
 		List<CurriculumElement> editableElements = curriculumService.filterElementsWithoutManagerRole(curriculumElements, roles);
 		curriculumElementMemberships = memberToLoad == null ? Collections.emptyList() :
 				 curriculumService.getCurriculumElementMemberships(curriculumElements, memberToLoad);
@@ -289,6 +286,21 @@ public class EditMembershipController extends FormBasicController {
 		curriculumTableEl.setVisible(!curriculumOptions.isEmpty());
 	}
 	
+	private List<CurriculumElement> loadCurriculumElements() {
+		List<CurriculumElement> curriculumElements;
+		if(curriculum != null) {
+			curriculumElements = curriculumService.getCurriculumElements(curriculum, CurriculumElementStatus.notDeleted());
+			curriculumElements = orderCurriculumElements(curriculumElements);
+		} else if (repoEntry != null) {
+			curriculumElements = curriculumService.getCurriculumElements(repoEntry);
+		} else {
+			curriculumElements = Collections.emptyList();
+		}
+		return curriculumElements;
+	}
+
+
+	
 	private List<CurriculumElement> orderCurriculumElements(List<CurriculumElement> curriculumElements) {
 		try {
 			List<CurriculumElementRow> rows = new ArrayList<>(curriculumElements.size());
@@ -305,6 +317,9 @@ public class EditMembershipController extends FormBasicController {
 				}
 			}
 			
+			if(rootCurriculumElement != null) {
+				rows = filterCurriculumElements(rows);
+			}
 			Collections.sort(rows, new CurriculumElementTreeRowComparator(getLocale()));
 			
 			List<CurriculumElement> orderedElements = new ArrayList<>(rows.size());
@@ -316,6 +331,36 @@ public class EditMembershipController extends FormBasicController {
 			logError("", e);
 			return curriculumElements;
 		}
+	}
+	
+	private List<CurriculumElementRow> filterCurriculumElements(List<CurriculumElementRow> rows) {
+		for(CurriculumElementRow row:rows) {
+			if(row != null) {
+				boolean hasRoot = hasRootCurriculumElementInParentLine(row);
+				row.setAcceptedByFilter(hasRoot);
+			}
+		}
+		
+		for(CurriculumElementRow row:rows) {
+			if(row.isAcceptedByFilter()) {
+				for(CurriculumElementRow parent=row.getParent(); parent != null; parent=parent.getParent()) {
+					parent.setAcceptedByFilter(true);
+				}
+			}
+		}
+		
+		return rows.stream()
+				.filter(CurriculumElementRow::isAcceptedByFilter)
+				.collect(Collectors.toList());
+	}
+	
+	private boolean hasRootCurriculumElementInParentLine(CurriculumElementRow curriculumElement) {
+		for(CurriculumElementRow parentElement=curriculumElement; parentElement != null; parentElement = parentElement.getParent()) {
+			if(parentElement.getCurriculumElement().equals(rootCurriculumElement)) {
+				return true;
+			}	
+		}
+		return false;
 	}
 	
 	private MultipleSelectionElement createSelection(boolean selected, boolean enabled, String role) {

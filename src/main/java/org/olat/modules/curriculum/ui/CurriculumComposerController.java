@@ -72,6 +72,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.member.wizard.ImportMembersContext;
 import org.olat.course.member.wizard.ImportMember_1a_LoginListStep;
 import org.olat.course.member.wizard.ImportMember_1b_ChooseMemberStep;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
@@ -565,7 +566,10 @@ public class CurriculumComposerController extends FormBasicController implements
 	private void doChooseMembers(UserRequest ureq) {
 		removeAsListenerAndDispose(importMembersWizard);
 
-		Step start = new ImportMember_1b_ChooseMemberStep(ureq, null, null, curriculum, overrideManaged);
+		CurriculumElementRow focusedRow = tableModel.getFocusedCurriculumElementRow();
+		CurriculumElement focusedElement = focusedRow == null ? null : focusedRow.getCurriculumElement();
+		ImportMembersContext membersContext= ImportMembersContext.valueOf(curriculum, focusedElement, overrideManaged);
+		Step start = new ImportMember_1b_ChooseMemberStep(ureq, membersContext);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			addMembers(uureq, runContext);
 			return StepsMainRunController.DONE_MODIFIED;
@@ -580,7 +584,10 @@ public class CurriculumComposerController extends FormBasicController implements
 	private void doImportMembers(UserRequest ureq) {
 		removeAsListenerAndDispose(importMembersWizard);
 
-		Step start = new ImportMember_1a_LoginListStep(ureq, null, null, curriculum, overrideManaged);
+		CurriculumElementRow focusedRow = tableModel.getFocusedCurriculumElementRow();
+		CurriculumElement focusedElement = focusedRow == null ? null : focusedRow.getCurriculumElement();
+		ImportMembersContext membersContext= ImportMembersContext.valueOf(curriculum, focusedElement, overrideManaged);
+		Step start = new ImportMember_1a_LoginListStep(ureq, membersContext);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			addMembers(uureq, runContext);
 			if(runContext.containsKey("notFounds")) {
