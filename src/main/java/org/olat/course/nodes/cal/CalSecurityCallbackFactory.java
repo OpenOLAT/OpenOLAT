@@ -50,7 +50,7 @@ public class CalSecurityCallbackFactory {
 			return true;
 		}
 		
-		if (courseNode.hasCustomPreConditions()) {
+		if (courseNode.hasCustomPreConditions() && ne != null) {
 			return ne.isCapabilityAccessible(CalCourseNode.EDIT_CONDITION_ID);
 		}
 		
