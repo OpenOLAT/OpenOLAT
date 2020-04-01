@@ -855,13 +855,13 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			toolbarPanel.addTool(lecturesLink);
 		}
 		
-		if(!assessmentLock && !isGuestOnly) {
+		if(!assessmentLock && !isGuestOnly && userCourseEnv != null) {
 			participantListLink = LinkFactory.createToolLink("participantlist", translate("command.participant.list"), this, "o_cmembers_icon");
 			participantListLink.setVisible(cc.isParticipantListEnabled());
 			toolbarPanel.addTool(participantListLink);
 		}
 		
-		if(!assessmentLock) {
+		if(!assessmentLock && userCourseEnv != null) {
 			participantInfoLink = LinkFactory.createToolLink("participantinfo", translate("command.participant.info"), this, "o_infomsg_icon");
 			participantInfoLink.setVisible(cc.isParticipantInfoEnabled());
 			toolbarPanel.addTool(participantInfoLink);
@@ -873,25 +873,25 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			toolbarPanel.addTool(emailLink);
 		}
 		
-		if(!assessmentLock) {
+		if(!assessmentLock && userCourseEnv != null) {
 			blogLink = LinkFactory.createToolLink("blog", translate("command.blog"), this, "o_blog_icon");
 			blogLink.setVisible(cc.isBlogEnabled());
 			toolbarPanel.addTool(blogLink);
 		}
 		
-		if(!assessmentLock) {
+		if(!assessmentLock && userCourseEnv != null) {
 			wikiLink = LinkFactory.createToolLink("wiki", translate("command.wiki"), this, "o_wiki_icon");
 			wikiLink.setVisible(cc.isWikiEnabled());
 			toolbarPanel.addTool(wikiLink);
 		}
 		
-		if(!assessmentLock) {
+		if(!assessmentLock && userCourseEnv != null) {
 			forumLink = LinkFactory.createToolLink("forum", translate("command.forum"), this, "o_fo_icon");
 			forumLink.setVisible(cc.isForumEnabled());
 			toolbarPanel.addTool(forumLink);
 		}
 		
-		if(!assessmentLock) {
+		if(!assessmentLock && userCourseEnv != null) {
 			documentsLink = LinkFactory.createToolLink("documents", translate("command.documents"), this, "o_bc_icon");
 			documentsLink.setVisible(cc.isDocumentsEnabled());
 			toolbarPanel.addTool(documentsLink);
