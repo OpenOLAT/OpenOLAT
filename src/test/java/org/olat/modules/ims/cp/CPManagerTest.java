@@ -31,14 +31,12 @@ import static org.junit.Assert.assertTrue;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSItem;
-import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.ims.cp.CPManager;
 import org.olat.ims.cp.ContentPackage;
 import org.olat.ims.cp.objects.CPItem;
@@ -125,12 +123,5 @@ public class CPManagerTest extends OlatTestCase {
 	@Test
 	public void testWriteToFile() {
 		cpManager.writeToFile(cp); // Throws exception on failure
-	}
-	
-	@Test
-	public void testWriteToZip() {
-		VFSLeaf zip = cpManager.writeToZip(cp);
-		Assert.assertNotNull("The zip file wasn't created properly", zip);
-		Assert.assertTrue("The zip file cannot be empty", zip.getSize() > 0);
 	}
 }

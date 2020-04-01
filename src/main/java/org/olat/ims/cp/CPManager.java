@@ -30,7 +30,6 @@ import org.dom4j.tree.DefaultDocument;
 import org.dom4j.tree.DefaultElement;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.ims.cp.objects.CPOrganization;
 import org.olat.ims.cp.objects.CPResource;
 import org.olat.ims.cp.ui.CPPackageConfig;
@@ -223,14 +222,6 @@ public interface CPManager {
 	 * @param cp
 	 */
 	public void writeToFile(ContentPackage cp);
-
-	/**
-	 * Writes the cp to a zip file.
-	 * 
-	 * @param cp
-	 * @return The VFS zip archive
-	 */
-	public VFSLeaf writeToZip(ContentPackage cp);
 
 	/**
 	 * this is case-sensitive!

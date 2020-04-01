@@ -43,7 +43,6 @@ import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -150,7 +149,7 @@ public class CPManagerImpl implements CPManager {
 		} else {
 			cp = new ContentPackage(null, directory, ores);
 			cp.setLastError("Exception reading XML for IMS CP: IMS-Manifest not found in " + directory.getName());
-			log.error("IMS manifiest xml couldn't be found in dir " + directory.getName() + ". Ores: " + ores.getResourceableId());
+			log.error("IMS manifiest xml couldn't be found in dir {}. Ores: {}",  directory.getName(), ores.getResourceableId());
 			throw new OLATRuntimeException(CPManagerImpl.class, "The imsmanifest.xml file was not found.", new IOException());
 		}
 		return cp;
@@ -162,8 +161,8 @@ public class CPManagerImpl implements CPManager {
 		if (copyTemplCP(ores)) {
 			File cpRoot = FileResourceManager.getInstance().unzipFileResource(ores);
 			if(log.isDebugEnabled()) {
-				log.debug("createNewCP: cpRoot=" + cpRoot);
-				log.debug("createNewCP: cpRoot.getAbsolutePath()=" + cpRoot.getAbsolutePath());
+				log.debug("createNewCP: cpRoot={}", cpRoot);
+				log.debug("createNewCP: cpRoot.getAbsolutePath()={}", cpRoot.getAbsolutePath());
 			}
 			
 			LocalFolderImpl vfsWrapper = new LocalFolderImpl(cpRoot);
@@ -186,7 +185,7 @@ public class CPManagerImpl implements CPManager {
 			return cp;
 
 		} else {
-			log.error("CP couldn't be created. Error when copying template. Ores: " + ores.getResourceableId());
+			log.error("CP couldn't be created. Error when copying template. Ores: {}", ores.getResourceableId());
 			throw new OLATRuntimeException("ERROR while creating new empty cp. an error occured while trying to copy template CP", null);
 		}
 	}
@@ -308,28 +307,6 @@ public class CPManagerImpl implements CPManager {
 	}
 
 	@Override
-	public VFSLeaf writeToZip(ContentPackage cp) {
-		OLATResourceable ores = cp.getResourcable();
-		VFSContainer cpRoot = cp.getRootDir();
-		VFSContainer oresRoot = FileResourceManager.getInstance().getFileResourceRootImpl(ores);
-		RepositoryEntry repoEntry = RepositoryManager.getInstance().lookupRepositoryEntry(ores, false);
-		String zipFileName = "imscp.zip";
-		if (repoEntry != null) {
-			String zipName = repoEntry.getResourcename();
-			if (zipName != null && zipName.endsWith(".zip")) {
-				zipFileName = zipName;
-			}
-		}
-		// delete old archive and create new one
-		VFSItem oldArchive = oresRoot.resolve(zipFileName);
-		if (oldArchive != null) {
-			oldArchive.deleteSilently();//don't versioned the zip
-		}
-		ZipUtil.zip(cpRoot.getItems(), oresRoot.createChildLeaf(zipFileName), true);
-		return (VFSLeaf) oresRoot.resolve(zipFileName);
-	}
-
-	@Override
 	public String getPageByItemId(ContentPackage cp, String itemIdentifier) {
 		return cp.getPageByItemId(itemIdentifier);
 	}
@@ -354,10 +331,10 @@ public class CPManagerImpl implements CPManager {
 			if (f.exists() && root.exists()) {
 				FileUtils.copyFileToDir(f, root, "copy imscp template");
 			} else {
-				log.error("cp template was not copied. Source:  " + url + " Target: " + root.getAbsolutePath());
+				log.error("cp template was not copied. Source:  {} Target: {}", url, root.getAbsolutePath());
 			}
 		} catch (URISyntaxException e) {
-			log.error("Bad url syntax when copying cp template. url: " + url + " Ores:" + ores.getResourceableId());
+			log.error("Bad url syntax when copying cp template. url: {} Ores: {}", url, ores.getResourceableId());
 			return false;
 		}
 
