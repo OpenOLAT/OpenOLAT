@@ -128,11 +128,6 @@ public class CPEditMainController extends BasicController implements ToolbarAwar
 	@Override
 	protected void doDispose() {
 		Long oresId = cp.getResourcable().getResourceableId();
-		logAudit("cp editor closing. oresId: " + oresId);
-		if (lock.isSuccess() && contentCtr != null) {
-			// Save CP to zip
-			cpManager.writeToZip(cp);
-		}
 		// In any case, release the lock
 		CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lock);
 		logAudit("finished editing cp. ores-id: " + oresId);

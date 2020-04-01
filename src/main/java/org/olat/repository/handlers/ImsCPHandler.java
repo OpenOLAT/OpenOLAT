@@ -67,7 +67,6 @@ import org.olat.ims.cp.ui.CPEditMainController;
 import org.olat.ims.cp.ui.CPPackageConfig;
 import org.olat.ims.cp.ui.CPRuntimeController;
 import org.olat.modules.cp.CPDisplayController;
-import org.olat.modules.cp.CPOfflineReadableManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -148,8 +147,6 @@ public class ImsCPHandler extends FileHandler {
 		File fResourceFileroot = FileResourceManager.getInstance().getFileResourceRoot(resource);
 		File zipRoot = new File(fResourceFileroot, FileResourceManager.ZIPDIR);
 		FileResource.copyResource(file, filename, zipRoot);
-		CPOfflineReadableManager.getInstance().makeCPOfflineReadable(cpResource, displayname);
-
 		DBFactory.getInstance().commit();
 		return re;
 	}
@@ -178,8 +175,6 @@ public class ImsCPHandler extends FileHandler {
 		if(cpConfig != null) {
 			cpManager.setCPPackageConfig(targetResource, cpConfig);
 		}
-
-		CPOfflineReadableManager.getInstance().makeCPOfflineReadable(targetResource, target.getDisplayname() + ".zip");
 		return target;
 	}
 
