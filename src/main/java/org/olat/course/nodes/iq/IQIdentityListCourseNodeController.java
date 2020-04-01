@@ -206,8 +206,9 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 					resetButton = uifactory.addFormLink("tool.delete.data", formLayout, Link.BUTTON); 
 					resetButton.setIconLeftCSS("o_icon o_icon_delete_item");
 				}
-				if(qtiService.needManualCorrection(testEntry)
-						|| IQEditController.CORRECTION_MANUAL.equals(courseNode.getModuleConfiguration().getStringValue(IQEditController.CONFIG_CORRECTION_MODE))) {
+				String correctionMode = courseNode.getModuleConfiguration().getStringValue(IQEditController.CONFIG_CORRECTION_MODE);
+				if(!IQEditController.CORRECTION_GRADING.equals(correctionMode) &&
+						(IQEditController.CORRECTION_MANUAL.equals(correctionMode) || qtiService.needManualCorrection(testEntry))) {
 					correctionButton = uifactory.addFormLink("correction.test.title", formLayout, Link.BUTTON);
 					correctionButton.setElementCssClass("o_sel_correction");
 					correctionButton.setIconLeftCSS("o_icon o_icon-fw o_icon_correction");
