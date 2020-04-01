@@ -267,19 +267,23 @@ public class PwChangeController extends BasicController {
 		String today = DateFormat.getDateInstance(DateFormat.LONG, ureq.getLocale()).format(new Date());
 		// mailer configuration
 		String serverpath = Settings.getServerContextPathURI();
+		String userName = identity.getName();
+		if(StringHelper.isLong(userName) && loginModule.isAllowLoginUsingEmail()) {
+			userName = emailAdress;
+		}
 		
 		TemporaryKey tk = rm.createAndDeleteOldTemporaryKey(identity.getKey(), emailAdress, ip,
 				RegistrationManager.PW_CHANGE, loginModule.getValidUntilHoursGui());
 
 		myContent.contextPut("pwKey", tk.getRegistrationKey());
-		StringBuilder body = new StringBuilder();
+		StringBuilder body = new StringBuilder(2048);
 		body.append("<style>")
 			.append(".o_footer {background: #FAFAFA; border: 1px solid #eee; border-radius: 5px; padding: 1em; margin: 1em;}")
 			.append(".o_body {background: #FAFAFA; padding: 1em; margin: 1em;}")
 			.append("</style>")
 			.append("<div class='o_body'>")
 			.append(userTrans.translate("pwchange.headline"))
-			.append(userTrans.translate("pwchange.intro", new String[] { identity.getName() }))
+			.append(userTrans.translate("pwchange.intro", new String[] { userName, identity.getName(), emailAdress }))
 		    .append(userTrans.translate("pwchange.body", new String[] { serverpath, tk.getRegistrationKey(), i18nModule.getLocaleKey(ureq.getLocale()) }))
 		    .append(userTrans.translate("pwchange.body.alt", new String[] { serverpath, tk.getRegistrationKey(), i18nModule.getLocaleKey(ureq.getLocale()) }))
 		    .append("</div>")
