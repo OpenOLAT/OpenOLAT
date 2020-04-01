@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -58,9 +59,11 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.util.StringHelper;
@@ -143,7 +146,6 @@ public abstract class GroupByController extends FormBasicController implements F
 	private Boolean showFilter;
 	private Analysis2ColController sliderTrendColsCtrl;
 	private SliderTrendController sliderTrendCtrl;
-	private Analysis2ColController dataCollectionColsCtrl;
 	private Controller dataCollectionCtrl;
 	
 	// This list is the master for the sort order of the questions (sliders).
@@ -172,6 +174,7 @@ public abstract class GroupByController extends FormBasicController implements F
 			TrendDifference trendDifference, String rubricId) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.stackPanel = stackPanel;
+		this.stackPanel.addListener(this);
 		this.filterCtrl = filterCtrl;
 		this.availableAttributes = availableAttributes;
 		this.multiGroupBy = multiGroupBy;
@@ -289,10 +292,17 @@ public abstract class GroupByController extends FormBasicController implements F
 	
 	void setToolComponents(ToolComponents toolComponents) {
 		this.toolComponents = toolComponents;
-		toolComponents.setPrintVisibility(false);
-		toolComponents.setPrintPopupVisibility(true);
-		toolComponents.setPdfVisibility(true);
-		toolComponents.setExportVisibility(true);
+		initToolComponents();
+	}
+
+	private void initToolComponents() {
+		if (toolComponents != null) {
+			toolComponents.setPrintVisibility(false);
+			toolComponents.setPrintPopupVisibility(true);
+			toolComponents.setPdfVisibility(true);
+			toolComponents.setExportVisibility(true);
+			toolComponents.setFilterVisibility(true);
+		}
 	}
 
 	void setShowFilter(Boolean show) {
@@ -517,6 +527,22 @@ public abstract class GroupByController extends FormBasicController implements F
 		this.searchParams = searchParams;
 		groupByNames.init(searchParams.getFormEntryRef(), searchParams.getDataCollectionOrganisationRefs());
 		refreshDiagram();
+	}
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if (source == stackPanel) {
+			if (event instanceof PopEvent) {
+				PopEvent popEvent = (PopEvent)event;
+				if (popEvent.getController() == dataCollectionCtrl) {
+					initToolComponents();
+				} else if (popEvent.getController() == sliderTrendColsCtrl) {
+					initToolComponents();
+					filterCtrl.setReadOnly(false);
+				}
+			}
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override
@@ -752,6 +778,7 @@ public abstract class GroupByController extends FormBasicController implements F
 		toolComponents.setPrintPopupVisibility(true);
 		toolComponents.setPdfVisibility(true);
 		toolComponents.setExportVisibility(false);
+		toolComponents.setFilterVisibility(true);
 	}
 
 	private AnalysisSearchParameter getTrendSearchParams(MultiKey multiKey) {
@@ -877,17 +904,14 @@ public abstract class GroupByController extends FormBasicController implements F
 			dataCollectionCtrl = new DataCollectionReportController(ureq, getWindowControl(), dataCollection);
 			listenTo(dataCollectionCtrl);
 			
-			filterCtrl.setReadOnly(true);
-			dataCollectionColsCtrl = new Analysis2ColController(ureq, getWindowControl(), dataCollectionCtrl, filterCtrl);
+			String title = translate("analysis.data.collection.breadcrumb", new String[] { dataCollection.getTitle() });
+			stackPanel.pushController(title, dataCollectionCtrl);
 
-			String detailTrend = translate("analysis.trend.breadcrumb", new String[] { dataCollection.getTitle() });
-			stackPanel.pushController(detailTrend, dataCollectionColsCtrl);
-
-			dataCollectionColsCtrl.setShowFilter(showFilter);
 			toolComponents.setPrintVisibility(false);
 			toolComponents.setPrintPopupVisibility(false);
 			toolComponents.setPdfVisibility(false);
 			toolComponents.setExportVisibility(false);
+			toolComponents.setFilterVisibility(false);
 		}
 	}
 	
@@ -910,7 +934,9 @@ public abstract class GroupByController extends FormBasicController implements F
 
 	@Override
 	protected void doDispose() {
-		//
+		if (stackPanel != null) {
+			stackPanel.removeListener(this);
+		}
 	}
 	
 	public final static class SliderWrapper {

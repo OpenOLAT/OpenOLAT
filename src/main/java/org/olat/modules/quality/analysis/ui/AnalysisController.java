@@ -180,7 +180,6 @@ public class AnalysisController extends BasicController implements TooledControl
 	public void initTools() {
 		initPresentationTools();
 		initOutputTools();
-		initFilterTools();
 		stackPanel.addTool(segmentButtonsCmp, true);
 	}
 
@@ -214,18 +213,19 @@ public class AnalysisController extends BasicController implements TooledControl
 		printPopupLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_ana_print");
 		printPopupLink.setPopup(new LinkPopupSettings(950, 750, "report-hm"));
 		stackPanel.addTool(printPopupLink, Align.right, true);
-		
-		toolComponents = new ToolComponents(stackPanel, printLink, printPopupLink, pdfLink, exportLink);
-	}
-	
-	private void initFilterTools() {
+
 		showFilterLink = LinkFactory.createToolLink("filter.show", translate("filter.show"), this);
 		showFilterLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_ana_show_filter");
 		stackPanel.addTool(showFilterLink, Align.right, true);
+		
 		hideFilterLink = LinkFactory.createToolLink("filter.hide", translate("filter.hide"), this);
 		hideFilterLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_ana_hide_filter");
 		stackPanel.addTool(hideFilterLink, Align.right, true);
+		
 		doHideFilter();
+		
+		toolComponents = new ToolComponents(stackPanel, printLink, printPopupLink, pdfLink, exportLink, showFilterLink,
+				hideFilterLink);
 	}
 
 	@Override
@@ -402,6 +402,7 @@ public class AnalysisController extends BasicController implements TooledControl
 		toolComponents.setPrintPopupVisibility(false);
 		toolComponents.setPdfVisibility(true);
 		toolComponents.setExportVisibility(true);
+		toolComponents.setFilterVisibility(true);
 	}
 	
 	private void doOpenOverviewReport(UserRequest ureq) {
@@ -453,13 +454,12 @@ public class AnalysisController extends BasicController implements TooledControl
 		removeAsListenerAndDispose(sessionSelectionCtrl);
 
 		sessionSelectionCtrl = new AnalysisSessionSelectionController(ureq, getWindowControl(), form,
-				storage, getReportSessionFilter(), getReportHelper(), stackPanel, filterCtrl, toolComponents);
+				storage, getReportSessionFilter(), getReportHelper(), stackPanel, toolComponents);
 		
 		colsCtrl = new Analysis2ColController(ureq, getWindowControl(), sessionSelectionCtrl, filterCtrl);
 		stackPanel.popUpToController(this);
 		stackPanel.pushController(translate("segments.session.selection"), colsCtrl);
 		segmentButtonsCmp.setSelectedButton(sessionSelectionLink);
-		setEvaluationFormToolComponents();
 	}
 	
 	private void doOpenHeatMap(UserRequest ureq) {
@@ -684,9 +684,6 @@ public class AnalysisController extends BasicController implements TooledControl
 
 	private void setShowFilter(Boolean show) {
 		colsCtrl.setShowFilter(show);
-		if (sessionSelectionCtrl != null) {
-			sessionSelectionCtrl.setShowFilter(show);
-		}
 		if (heatMapCtrl != null) {
 			heatMapCtrl.setShowFilter(show);
 		}
@@ -735,13 +732,20 @@ public class AnalysisController extends BasicController implements TooledControl
 		private final Link printPopupLink;
 		private final Link pdfLink;
 		private final Link exportLink;
+		private final Link showFilterLink;
+		private final Link hideFilterLink;
 		
-		private ToolComponents(TooledStackedPanel stackPanel, Link printLink, Link printPopupLink, Link pdfLink, Link exportLink) {
+		private Link lastVisibleFilter;
+		
+		private ToolComponents(TooledStackedPanel stackPanel, Link printLink, Link printPopupLink, Link pdfLink,
+				Link exportLink, Link showFilterLink, Link hideFilterLink) {
 			this.stackPanel = stackPanel;
 			this.printLink = printLink;
 			this.printPopupLink = printPopupLink;
 			this.pdfLink = pdfLink;
 			this.exportLink = exportLink;
+			this.showFilterLink = showFilterLink;
+			this.hideFilterLink = hideFilterLink;
 		}
 		
 		void setPrintVisibility(boolean visible) {
@@ -770,6 +774,28 @@ public class AnalysisController extends BasicController implements TooledControl
 				exportLink.setVisible(visible);
 				stackPanel.setDirty(true);
 			}
+		}
+		
+		void setFilterVisibility(boolean visible) {
+			if (visible) {
+				if (!isFilterVisible()) {
+					if (lastVisibleFilter == null || lastVisibleFilter == showFilterLink) {
+						showFilterLink.setVisible(true);
+						hideFilterLink.setVisible(false);
+					} else {
+						showFilterLink.setVisible(false);
+						hideFilterLink.setVisible(true);
+					}
+				}
+			} else {
+				lastVisibleFilter = showFilterLink.isVisible()? showFilterLink: hideFilterLink;
+				showFilterLink.setVisible(false);
+				hideFilterLink.setVisible(false);
+			}
+		}
+
+		private boolean isFilterVisible() {
+			return showFilterLink.isVisible() || hideFilterLink.isVisible();
 		}
 		
 	}

@@ -25,17 +25,18 @@
 */ 
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ConsumableBoolean;
 import org.olat.core.util.ValidationStatus;
@@ -135,6 +136,21 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	@Override
 	public Collection<String> getSelectedKeys() {
 		return selected;
+	}
+	
+	@Override
+	public List<String> getSelectedValues() {
+		if (selected == null || selected.isEmpty()) return new ArrayList<>(0);
+		
+		List<String> selectedValues = new ArrayList<>();
+		for (int i = 0; i < keys.length; i++) {
+			String key = keys[i];
+			if (selected.contains(key)) {
+				String value = values[i];
+				selectedValues.add(value);
+			}
+		}
+		return selectedValues;
 	}
 
 	@Override

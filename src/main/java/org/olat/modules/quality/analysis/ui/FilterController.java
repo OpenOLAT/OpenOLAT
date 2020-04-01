@@ -42,6 +42,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -50,6 +51,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
+import org.olat.core.util.Formatter;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
@@ -85,6 +87,7 @@ public class FilterController extends FormBasicController {
 
 	private static final String[] WITH_USER_INFOS_KEYS = new String[] { "filter.with.user.informations" };
 
+	private FormLayoutContainer dateRangeCont;
 	private DateChooser dateRangeFromEl;
 	private DateChooser dateRangeToEl;
 	private MultipleSelectionElement topicIdentityEl;
@@ -102,6 +105,25 @@ public class FilterController extends FormBasicController {
 	private MultipleSelectionElement seriesIndexEl;
 	private MultipleSelectionElement contextRoleEl;
 	private MultipleSelectionElement withUserInformationsEl;
+	
+	private StaticTextElement dateRangeFromRoEl;
+	private StaticTextElement dateRangeToRoEl;
+	private StaticTextElement topicIdentityRoEl;
+	private StaticTextElement topicOrganisationRoEl;
+	private StaticTextElement topicCurriculumRoEl;
+	private StaticTextElement topicCurriculumElementRoEl;
+	private StaticTextElement topicRepositoryRoEl;
+	private StaticTextElement contextExecutorOrganisationRoEl;
+	private StaticTextElement contextCurriculumRoEl;
+	private StaticTextElement contextCurriculumElementRoEl;
+	private StaticTextElement contextCurriculumElementTypeRoEl;
+	private StaticTextElement contextCurriculumOrganisationRoEl;
+	private StaticTextElement contextTaxonomyLevelRoEl;
+	private StaticTextElement contextLocationRoEl;
+	private StaticTextElement seriesIndexRoEl;
+	private StaticTextElement contextRoleRoEl;
+	private StaticTextElement withUserInformationsRoEl;
+	private StaticTextElement noFilterSelectedRoEl;
 
 	private final AnalysisSearchParameter searchParams;
 	private final AvailableAttributes availableAttributes;
@@ -121,6 +143,8 @@ public class FilterController extends FormBasicController {
 		this.availableAttributes = availableAttributes;
 		this.sessionInformationsAvailable = getSessionInformationAvailable(form);
 		initForm(ureq);
+		setReadOnly(false);
+		setSelectionValues();
 		initSelection();
 	}
 
@@ -137,14 +161,14 @@ public class FilterController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_qual_ana_filter");
 
-		FormLayoutContainer dateRange = FormLayoutContainer.createHorizontalFormLayout("dateRange", getTranslator());
-		flc.add("dateRange", dateRange);
-		dateRange.setElementCssClass("o_date_range");
-		dateRangeFromEl = uifactory.addDateChooser("filter.date.range.from", null, dateRange);
+		dateRangeCont = FormLayoutContainer.createHorizontalFormLayout("dateRange", getTranslator());
+		flc.add("dateRange", dateRangeCont);
+		dateRangeCont.setElementCssClass("o_date_range");
+		dateRangeFromEl = uifactory.addDateChooser("filter.date.range.from", null, dateRangeCont);
 		dateRangeFromEl.setElementCssClass("o_date_range_from");
 		dateRangeFromEl.addActionListener(FormEvent.ONCHANGE);
 
-		dateRangeToEl = uifactory.addDateChooser("filter.date.range.to", null, dateRange);
+		dateRangeToEl = uifactory.addDateChooser("filter.date.range.to", null, dateRangeCont);
 		dateRangeToEl.setElementCssClass("o_date_range_to");
 		dateRangeToEl.addActionListener(FormEvent.ONCHANGE);
 
@@ -193,30 +217,120 @@ public class FilterController extends FormBasicController {
 		withUserInformationsEl = uifactory.addCheckboxesVertical("filter.with.user.informations.label", formLayout,
 				WITH_USER_INFOS_KEYS, translateAll(getTranslator(), WITH_USER_INFOS_KEYS), 1);
 		withUserInformationsEl.addActionListener(FormEvent.ONCLICK);
-		withUserInformationsEl.setVisible(sessionInformationsAvailable);
-
-		setSelectionValues();
+		
+		// Read only
+		dateRangeFromRoEl = uifactory.addStaticTextElement("filter.date.range.from.ro", "filter.date.range.from", null, formLayout);
+		dateRangeToRoEl = uifactory.addStaticTextElement("filter.date.range.to.ro", "filter.date.range.to", null, formLayout);
+		topicIdentityRoEl = uifactory.addStaticTextElement("filter.topic.identities.ro", "filter.topic.identities", null, formLayout);
+		topicOrganisationRoEl = uifactory.addStaticTextElement("filter.topic.organisations.ro", "filter.topic.organisations", null, formLayout);
+		topicCurriculumRoEl = uifactory.addStaticTextElement("filter.topic.curriculums.ro", "filter.topic.curriculums", null, formLayout);
+		topicCurriculumElementRoEl = uifactory.addStaticTextElement("filter.topic.curriculum.elements.ro", "filter.topic.curriculum.elements", null, formLayout);
+		topicRepositoryRoEl = uifactory.addStaticTextElement("filter.topic.repositories.ro", "filter.topic.repositories", null, formLayout);
+		contextExecutorOrganisationRoEl = uifactory.addStaticTextElement("filter.context.organisations.ro", "filter.context.organisations", null, formLayout);
+		contextCurriculumRoEl = uifactory.addStaticTextElement("filter.context.curriculums.ro", "filter.context.curriculums", null, formLayout);
+		contextCurriculumElementRoEl = uifactory.addStaticTextElement("filter.context.curriculum.elements.ro", "filter.context.curriculum.elements", null, formLayout);
+		contextCurriculumElementTypeRoEl = uifactory.addStaticTextElement("filter.context.curriculum.element.types.ro", "filter.context.curriculum.element.types", null, formLayout);
+		contextCurriculumOrganisationRoEl = uifactory.addStaticTextElement("filter.context.curriculum.organisations.ro", "filter.context.curriculum.organisations", null, formLayout);
+		contextTaxonomyLevelRoEl = uifactory.addStaticTextElement("filter.context.taxonomy.level.ro", "filter.context.taxonomy.level", null, formLayout);
+		contextLocationRoEl = uifactory.addStaticTextElement("filter.context.location.ro", "filter.context.location", null, formLayout);
+		seriesIndexRoEl = uifactory.addStaticTextElement("filter.series.index.ro", "filter.series.index", null, formLayout);
+		contextRoleRoEl = uifactory.addStaticTextElement("filter.context.role.ro", "filter.context.role", null, formLayout);
+		withUserInformationsRoEl = uifactory.addStaticTextElement("filter.with.user.informations.label.ro", "filter.with.user.informations.label", null, formLayout);
+		noFilterSelectedRoEl = uifactory.addStaticTextElement("filter.no.selected.ro", "filter.no.selected.label", translate("filter.no.selected.ro"), formLayout);
 	}
 	
 	void setReadOnly(boolean readOnly) {
-		boolean enabled = !readOnly;
-		dateRangeFromEl.setEnabled(enabled);
-		dateRangeToEl.setEnabled(enabled);
-		topicIdentityEl.setEnabled(enabled);
-		topicOrganisationEl.setEnabled(enabled);
-		topicCurriculumEl.setEnabled(enabled);
-		topicCurriculumElementEl.setEnabled(enabled);
-		topicRepositoryEl.setEnabled(enabled);
-		contextExecutorOrganisationEl.setEnabled(enabled);
-		contextCurriculumEl.setEnabled(enabled);
-		contextCurriculumElementEl.setEnabled(enabled);
-		contextCurriculumElementTypeEl.setEnabled(enabled);
-		contextCurriculumOrganisationEl.setEnabled(enabled);
-		contextTaxonomyLevelEl.setEnabled(enabled);
-		contextLocationEl.setEnabled(enabled);
-		seriesIndexEl.setEnabled(enabled);
-		contextRoleEl.setEnabled(enabled);
-		withUserInformationsEl.setEnabled(enabled);
+		// selection
+		boolean selection = !readOnly;
+		dateRangeCont.setVisible(selection);
+		dateRangeFromEl.setVisible(selection);
+		dateRangeToEl.setVisible(selection);
+		topicIdentityEl.setVisible(selection && availableAttributes.isTopicIdentity());
+		topicOrganisationEl.setVisible(selection && availableAttributes.isTopicOrganisation() && organisationModule.isEnabled());
+		topicCurriculumEl.setVisible(selection && availableAttributes.isTopicCurriculum() && curriculumModule.isEnabled());
+		topicCurriculumElementEl.setVisible(selection && availableAttributes.isTopicCurriculumElement() && curriculumModule.isEnabled());
+		topicRepositoryEl.setVisible(selection && availableAttributes.isTopicRepository());
+		contextExecutorOrganisationEl.setVisible(selection && availableAttributes.isContextExecutorOrganisation() && organisationModule.isEnabled());
+		contextCurriculumEl.setVisible(selection && availableAttributes.isContextCurriculum() && curriculumModule.isEnabled());
+		contextCurriculumElementEl.setVisible(selection && availableAttributes.isContextCurriculumElement() && curriculumModule.isEnabled());
+		contextCurriculumElementTypeEl.setVisible(selection && availableAttributes.isContextCurriculumElementType() && curriculumModule.isEnabled());
+		contextCurriculumOrganisationEl.setVisible(selection && availableAttributes.isContextCurriculumOrganisation()
+				&& organisationModule.isEnabled() && curriculumModule.isEnabled());
+		contextTaxonomyLevelEl.setVisible(selection && availableAttributes.isContextTaxonomyLevel());
+		contextLocationEl.setVisible(selection && availableAttributes.isContextLocation());
+		seriesIndexEl.setVisible(selection && availableAttributes.isSeriesIndex());
+		contextRoleEl.setVisible(selection);
+		withUserInformationsEl.setVisible(selection && sessionInformationsAvailable);
+		
+		// read only
+		showReadOnly(readOnly, dateRangeFromRoEl, dateRangeFromEl);
+		showReadOnly(readOnly, dateRangeToRoEl, dateRangeToEl);
+		showReadOnly(readOnly, topicIdentityRoEl, topicIdentityEl);
+		showReadOnly(readOnly, topicOrganisationRoEl, topicOrganisationEl);
+		showReadOnly(readOnly, topicCurriculumRoEl, topicCurriculumEl);
+		showReadOnly(readOnly, topicCurriculumElementRoEl, topicCurriculumElementEl);
+		showReadOnly(readOnly, topicRepositoryRoEl, topicRepositoryEl);
+		showReadOnly(readOnly, contextExecutorOrganisationRoEl, contextExecutorOrganisationEl);
+		showReadOnly(readOnly, contextCurriculumRoEl, contextCurriculumEl);
+		showReadOnly(readOnly, contextCurriculumElementRoEl, contextCurriculumElementEl);
+		showReadOnly(readOnly, contextCurriculumElementTypeRoEl, contextCurriculumElementTypeEl);
+		showReadOnly(readOnly, contextCurriculumOrganisationRoEl, contextCurriculumOrganisationEl);
+		showReadOnly(readOnly, contextTaxonomyLevelRoEl, contextTaxonomyLevelEl);
+		showReadOnly(readOnly, contextLocationRoEl, contextLocationEl);
+		showReadOnly(readOnly, seriesIndexRoEl, seriesIndexEl);
+		showReadOnly(readOnly, contextRoleRoEl, contextRoleEl);
+		
+		if (readOnly && withUserInformationsEl.isAtLeastSelected(1)) {
+			String value = withUserInformationsEl.getSelectedValues().get(0);
+			withUserInformationsRoEl.setValue(value);
+			withUserInformationsRoEl.setVisible(true);
+		} else {
+			withUserInformationsRoEl.setVisible(false);
+		}
+		
+		noFilterSelectedRoEl.setVisible(readOnly && !isAtLeastOneRoVisible());
+	}
+
+	private void showReadOnly(boolean readOnly, StaticTextElement roEl, DateChooser dateEl) {
+		if (readOnly && dateEl.getDate() != null) {
+			String value = Formatter.getInstance(getLocale()).formatDate(dateEl.getDate());
+			roEl.setValue(value);
+			roEl.setVisible(true);
+		} else {
+			roEl.setVisible(false);
+		}
+	}
+	
+	private void showReadOnly(boolean readOnly, StaticTextElement roEl, MultipleSelectionElement selectEl) {
+		if (readOnly && selectEl.isAtLeastSelected(1)) {
+			List<String> selectedValues = selectEl.getSelectedValues();
+			String value = QualityUIFactory.toHtmlList(selectedValues);
+			roEl.setValue(value);
+			roEl.setVisible(true);
+		} else {
+			roEl.setVisible(false);
+		}
+	}
+	
+	private boolean isAtLeastOneRoVisible() {
+		return dateRangeFromRoEl.isVisible()
+			|| dateRangeToRoEl.isVisible()
+			|| topicIdentityRoEl.isVisible()
+			|| topicOrganisationRoEl.isVisible()
+			|| topicCurriculumRoEl.isVisible()
+			|| topicCurriculumElementRoEl.isVisible()
+			|| topicRepositoryRoEl.isVisible()
+			|| contextExecutorOrganisationRoEl.isVisible()
+			|| contextCurriculumRoEl.isVisible()
+			|| contextCurriculumElementRoEl.isVisible()
+			|| contextCurriculumElementTypeRoEl.isVisible()
+			|| contextCurriculumOrganisationRoEl.isVisible()
+			|| contextTaxonomyLevelRoEl.isVisible()
+			|| contextLocationRoEl.isVisible()
+			|| seriesIndexRoEl.isVisible()
+			|| contextRoleRoEl.isVisible()
+			|| withUserInformationsRoEl.isVisible()
+			|| noFilterSelectedRoEl.isVisible();
 	}
 
 	private void setSelectionValues() {
@@ -265,9 +379,7 @@ public class FilterController extends FormBasicController {
 	}
 
 	private void setTopicIdentityValues() {
-		if (!availableAttributes.isTopicIdentity()) {
-			topicIdentityEl.setVisible(false);
-		}
+		if (!topicIdentityEl.isVisible()) return;
 
 		Collection<String> selectedKeys = topicIdentityEl.getSelectedKeys();
 
@@ -298,10 +410,7 @@ public class FilterController extends FormBasicController {
 	}
 
 	private void setTopicOrganisationValues() {
-		if (!availableAttributes.isTopicOrganisation() || !organisationModule.isEnabled()) {
-			topicOrganisationEl.setVisible(false);
-			return;
-		}
+		if (!topicOrganisationEl.isVisible()) return;
 
 		Collection<String> selectedKeys = topicOrganisationEl.getSelectedKeys();
 
@@ -332,10 +441,7 @@ public class FilterController extends FormBasicController {
 	}
 
 	private void setTopicCurriculumValues() {
-		if (!availableAttributes.isTopicCurriculum() || !curriculumModule.isEnabled()) {
-			topicCurriculumEl.setVisible(false);
-			return;
-		}
+		if (!topicCurriculumEl.isVisible()) return;
 
 		Collection<String> selectedKeys = topicCurriculumEl.getSelectedKeys();
 
@@ -365,10 +471,7 @@ public class FilterController extends FormBasicController {
 	}
 
 	private void setTopicCurriculumElementValues() {
-		if (!availableAttributes.isTopicCurriculumElement() || !curriculumModule.isEnabled()) {
-			topicCurriculumElementEl.setVisible(false);
-			return;
-		}
+		if (!topicCurriculumElementEl.isVisible()) return;
 
 		Collection<String> selectedKeys = topicCurriculumEl.getSelectedKeys();
 
@@ -400,9 +503,7 @@ public class FilterController extends FormBasicController {
 	}
 
 	private void setTopicRepositoryValues() {
-		if (!availableAttributes.isTopicRepository()) {
-			topicRepositoryEl.setVisible(false);
-		}
+		if (!topicRepositoryEl.isVisible()) return;
 
 		Collection<String> selectedKeys = topicRepositoryEl.getSelectedKeys();
 
@@ -433,10 +534,7 @@ public class FilterController extends FormBasicController {
 	}
 
 	private void setContextExecutorOrganisationValues() {
-		if (!availableAttributes.isContextExecutorOrganisation() || !organisationModule.isEnabled()) {
-			contextExecutorOrganisationEl.setVisible(false);
-			return;
-		}
+		if (!contextExecutorOrganisationEl.isVisible()) return;
 
 		Collection<String> selectedKeys = contextExecutorOrganisationEl.getSelectedKeys();
 
@@ -469,10 +567,7 @@ public class FilterController extends FormBasicController {
 	}
 
 	private void setContextCurriculumValues() {
-		if (!availableAttributes.isContextCurriculum() || !curriculumModule.isEnabled()) {
-			contextCurriculumEl.setVisible(false);
-			return;
-		}
+		if (!contextCurriculumEl.isVisible()) return;
 
 		Collection<String> selectedKeys = contextCurriculumEl.getSelectedKeys();
 
@@ -502,10 +597,7 @@ public class FilterController extends FormBasicController {
 	}
 	
 	private void setContextCurriculumElementValues() {
-		if (!availableAttributes.isContextCurriculumElement() || !curriculumModule.isEnabled()) {
-			contextCurriculumElementEl.setVisible(false);
-			return;
-		}
+		if (!contextCurriculumElementEl.isVisible()) return;
 
 		Collection<String> selectedKeys = contextCurriculumElementEl.getSelectedKeys();
 
@@ -545,10 +637,7 @@ public class FilterController extends FormBasicController {
 	}
 
 	private void setContextCurriculumElementTypeValues() {
-		if (!availableAttributes.isContextCurriculumElementType() || !curriculumModule.isEnabled()) {
-			contextCurriculumElementTypeEl.setVisible(false);
-			return;
-		}
+		if (!contextCurriculumElementTypeEl.isVisible()) return;
 
 		Collection<String> selectedKeys = contextCurriculumElementTypeEl.getSelectedKeys();
 
@@ -586,11 +675,7 @@ public class FilterController extends FormBasicController {
 	}
 
 	private void setContextCurriculumOrganisationValues() {
-		if (!availableAttributes.isContextCurriculumOrganisation() || !organisationModule.isEnabled()
-				|| !curriculumModule.isEnabled()) {
-			contextCurriculumOrganisationEl.setVisible(false);
-			return;
-		}
+		if (!contextCurriculumOrganisationEl.isVisible()) return;
 
 		Collection<String> selectedKeys = contextCurriculumOrganisationEl.getSelectedKeys();
 
@@ -626,10 +711,7 @@ public class FilterController extends FormBasicController {
 	}
 	
 	private void setContextTaxonomyLevelValues() {
-		if (!availableAttributes.isContextTaxonomyLevel()) {
-			contextTaxonomyLevelEl.setVisible(false);
-			return;
-		}
+		if (!contextTaxonomyLevelEl.isVisible()) return;
 
 		Collection<String> selectedKeys = contextTaxonomyLevelEl.getSelectedKeys();
 
@@ -679,10 +761,7 @@ public class FilterController extends FormBasicController {
 	}
 
 	private void setContextLocationValues() {
-		if (!availableAttributes.isContextLocation()) {
-			contextLocationEl.setVisible(false);
-			return;
-		}
+		if (!contextLocationEl.isVisible()) return;
 
 		Collection<String> selectedKeys = contextLocationEl.getSelectedKeys();
 
@@ -712,10 +791,7 @@ public class FilterController extends FormBasicController {
 	}
 
 	private void setSeriesIndexValues() {
-		if (!availableAttributes.isSeriesIndex()) {
-			seriesIndexEl.setVisible(false);
-			return;
-		}
+		if (!seriesIndexEl.isVisible()) return;
 
 		Collection<String> selectedKeys = seriesIndexEl.getSelectedKeys();
 

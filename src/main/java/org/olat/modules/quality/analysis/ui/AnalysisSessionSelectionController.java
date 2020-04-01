@@ -20,7 +20,10 @@
 package org.olat.modules.quality.analysis.ui;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.modules.ceditor.DataStorage;
@@ -40,44 +43,66 @@ import org.olat.modules.quality.analysis.ui.AnalysisController.ToolComponents;
 public class AnalysisSessionSelectionController extends AbstractSessionSelectionController {
 
 	private final TooledStackedPanel stackPanel;
-	private final FilterController filterCtrl;
 	private final ToolComponents toolComponents;
 	
-	private Analysis2ColController colsCtrl;
-	
-	private Boolean showFilter;
+	private EvaluationFormExecutionController theExecutionCtrl;
 
 	public AnalysisSessionSelectionController(UserRequest ureq, WindowControl wControl, Form form, DataStorage storage,
-			SessionFilter filter, ReportHelper reportHelper, TooledStackedPanel stackPanel, FilterController filterCtrl,
-			ToolComponents toolComponents) {
+			SessionFilter filter, ReportHelper reportHelper, TooledStackedPanel stackPanel, ToolComponents toolComponents) {
 		super(ureq, wControl, form, storage, filter, reportHelper, null);
 		setTranslator(Util.createPackageTranslator(AbstractSessionSelectionController.class, getLocale(), getTranslator()));
 		this.stackPanel = stackPanel;
-		this.filterCtrl = filterCtrl;
+		this.stackPanel.addListener(this);
 		this.toolComponents = toolComponents;
+		initToolComponents();
 		initForm(ureq);
 	}
 
 	@Override
 	public void pushController(UserRequest ureq, String breadcrumbName, EvaluationFormExecutionController theExecutionCtrl) {
-		filterCtrl.setReadOnly(true);
-		colsCtrl = new Analysis2ColController(ureq, getWindowControl(), theExecutionCtrl, filterCtrl);
-		listenTo(colsCtrl);
-
-		stackPanel.pushController(breadcrumbName, colsCtrl);
+		this.theExecutionCtrl = theExecutionCtrl;
+		listenTo(theExecutionCtrl);
 		
-		colsCtrl.setShowFilter(showFilter);
+		stackPanel.pushController(breadcrumbName, theExecutionCtrl);
+		
+		initSingleSessionToolComponents();
+	}
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if (source == stackPanel) {
+			if (event instanceof PopEvent) {
+				PopEvent popEvent = (PopEvent)event;
+				if (popEvent.getController() == theExecutionCtrl) {
+					initToolComponents();
+				}
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void initToolComponents() {
+		toolComponents.setPrintVisibility(true);
+		toolComponents.setPrintPopupVisibility(false);
+		toolComponents.setPdfVisibility(true);
+		toolComponents.setExportVisibility(true);
+		toolComponents.setFilterVisibility(true);
+	}
+
+	private void initSingleSessionToolComponents() {
 		toolComponents.setPrintVisibility(false);
 		toolComponents.setPrintPopupVisibility(false);
 		toolComponents.setPdfVisibility(false);
 		toolComponents.setExportVisibility(false);
+		toolComponents.setFilterVisibility(false);
 	}
 
-	public void setShowFilter(Boolean show) {
-		this.showFilter = show;
-		if (colsCtrl != null) {
-			colsCtrl.setShowFilter(show);
-		}	
+	@Override
+	protected void doDispose() {
+		if (stackPanel != null) {
+			stackPanel.removeListener(this);
+		}
+		super.doDispose();
 	}
 
 }

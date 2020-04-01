@@ -546,6 +546,17 @@ public class QualityUIFactory {
 		return null;
 	}
 	
+	public static String toHtmlList(List<String> values) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<ul>");
+		for (String value : values) {
+			sb.append("<li>").append(value.trim()).append("</li>");
+		}
+		sb.append("</ul>");
+		String value = sb.toString();
+		return value;
+	}
+	
 	public static boolean validateInteger(TextElement el, int min, int max) {
 		boolean allOk = true;
 		el.clearError();
