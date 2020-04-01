@@ -573,11 +573,11 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 		for(GradingAssignment assignment:inexactList) {
 			try {
 				RepositoryEntryGradingConfiguration config = gradingConfigurationDao.getConfiguration(assignment.getReferenceEntry());
-				if(exactReminderCalculation(assignment, config.getFirstReminder())) {
+				if(exactReminderCalculation(assignment, assignment.getReminder1Date(), config.getFirstReminder())) {
 					reminder(assignment, config.getFirstReminderSubject(), config.getFirstReminderBody());
 					assignment.setReminder1Date(new Date());
 					gradingAssignmentDao.updateAssignment(assignment);
-				} else if(exactReminderCalculation(assignment, config.getSecondReminder())) {
+				} else if(exactReminderCalculation(assignment, assignment.getReminder2Date(), config.getSecondReminder())) {
 					reminder(assignment, config.getSecondReminderSubject(), config.getSecondReminderBody());
 					assignment.setReminder2Date(new Date());
 					gradingAssignmentDao.updateAssignment(assignment);
@@ -590,8 +590,8 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 		}
 	}
 	
-	private boolean exactReminderCalculation(GradingAssignment assignment, Integer reminderPeriod) {
-		if(reminderPeriod == null) return false;
+	private boolean exactReminderCalculation(GradingAssignment assignment, Date sendReminderDate, Integer reminderPeriod) {
+		if(reminderPeriod == null || sendReminderDate != null) return false;
 		
 		Date assignmentDate = assignment.getAssignmentDate();
 		Date assignmentDatePlusPeriod = CalendarUtils.addWorkingDays(assignmentDate, reminderPeriod.intValue());
