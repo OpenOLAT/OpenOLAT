@@ -20,29 +20,22 @@
 package org.olat.modules.glossary;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
 import org.olat.core.commons.modules.glossary.GlossaryItemManager;
-import org.olat.core.gui.media.CleanupAfterDeliveryFileMediaResource;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.ZippedContainerMediaResource;
 import org.olat.core.id.OLATResourceable;
-import org.apache.logging.log4j.Logger;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.WebappHelper;
-import org.olat.core.util.ZipUtil;
 import org.olat.core.util.filter.Filter;
 import org.olat.core.util.filter.FilterFactory;
-import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
@@ -72,8 +65,6 @@ import org.springframework.stereotype.Service;
  */
 @Service("glossaryManager")
 public class GlossaryManagerImpl implements GlossaryManager {
-	
-	private static final Logger log = Tracing.createLoggerFor(GlossaryManagerImpl.class);
 	
 	private static final String EXPORT_FOLDER_NAME = "glossary";
 	
@@ -179,19 +170,9 @@ public class GlossaryManagerImpl implements GlossaryManager {
 	public MediaResource getAsMediaResource(OLATResourceable res) {
 		RepositoryEntry repoEntry = RepositoryManager.getInstance().lookupRepositoryEntry(res, false);
 		String exportFileName = repoEntry.getDisplayname();
-		// OO-135 check for special / illegal chars in filename
 		exportFileName = StringHelper.transformDisplayNameToFileSystemName(exportFileName);
-
-		try {
-			File tmpDir = new File(WebappHelper.getTmpDir());
-			File fExportZIP = File.createTempFile(exportFileName, ".zip", tmpDir);
-			VFSContainer glossaryRoot = getGlossaryRootFolder(res);
-			ZipUtil.zip(glossaryRoot.getItems(new VFSSystemItemFilter()), new LocalFileImpl(fExportZIP), false);
-			return new CleanupAfterDeliveryFileMediaResource(fExportZIP);
-		} catch (IOException e) {
-			log.error("Cannot export glossar: " + res, e);
-			return null;
-		}
+		VFSContainer glossaryRoot = getGlossaryRootFolder(res);
+		return new ZippedContainerMediaResource(exportFileName, glossaryRoot);
 	}
 	
 	
