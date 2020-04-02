@@ -247,8 +247,12 @@ public class ChatController extends BasicController implements GenericEventListe
 		} else if (source == sendMessageForm) {
 			if(StringHelper.containsNonWhitespace(sendMessageForm.getMessage())) {
 				InstantMessage message = doSendMessage(sendMessageForm.getMessage());
-				appendToMessageHistory(message, true);
-				sendMessageForm.resetTextField();
+				if(message == null) {
+					sendMessageForm.setErrorTextField();
+				} else {
+					appendToMessageHistory(message, true);
+					sendMessageForm.resetTextField();
+				}
 			} else {
 				//ignore empty manObjectessage entry and refocus on entry field
 				chatMsgFieldContent.contextPut("chatMessages", messageHistory);

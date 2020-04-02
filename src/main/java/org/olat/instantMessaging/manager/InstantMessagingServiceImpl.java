@@ -34,13 +34,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.apache.logging.log4j.Logger;
+import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -206,35 +207,49 @@ public class InstantMessagingServiceImpl implements InstantMessagingService, Del
 
 	@Override
 	public InstantMessage sendMessage(Identity from, String fromNickName, boolean anonym, String body, OLATResourceable chatResource) {
-		InstantMessage message = imDao.createMessage(from, fromNickName, anonym, body, chatResource);
-		dbInstance.commit();//commit before sending event
-		
-		InstantMessagingEvent event = new InstantMessagingEvent("message", chatResource);
-		event.setFromId(from.getKey());
-		event.setName(fromNickName);
-		event.setAnonym(anonym);
-		event.setMessageId(message.getKey());
-		coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event, chatResource);
+		InstantMessage message = null;
+		try {
+			message = imDao.createMessage(from, fromNickName, anonym, body, chatResource);
+			dbInstance.commit();//commit before sending event
+			
+			InstantMessagingEvent event = new InstantMessagingEvent("message", chatResource);
+			event.setFromId(from.getKey());
+			event.setName(fromNickName);
+			event.setAnonym(anonym);
+			event.setMessageId(message.getKey());
+			coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event, chatResource);
+		} catch (DBRuntimeException e) {
+			dbInstance.rollbackAndCloseSession();
+			log.error("", e);
+			message = null;
+		}
 		return message;
 	}
 	
 	@Override
 	public InstantMessage sendPrivateMessage(Identity from, Long toIdentityKey, String body, OLATResourceable chatResource) {
-		String name = userManager.getUserDisplayName(from);
-		InstantMessage message = imDao.createMessage(from, name, false, body, chatResource);
-		imDao.createNotification(from.getKey(), toIdentityKey, chatResource);
-		dbInstance.commit();//commit before sending event
-		
-		InstantMessagingEvent event = new InstantMessagingEvent("message", chatResource);
-		event.setFromId(from.getKey());
-		event.setName(name);
-		event.setAnonym(false);
-		event.setMessageId(message.getKey());
-		//general event
-		coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event, chatResource);
-		//buddy event
-		OLATResourceable buddy = OresHelper.createOLATResourceableInstance("Buddy", toIdentityKey);
-		coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event, buddy);
+		InstantMessage message = null;
+		try {
+			String name = userManager.getUserDisplayName(from);
+			message = imDao.createMessage(from, name, false, body, chatResource);
+			imDao.createNotification(from.getKey(), toIdentityKey, chatResource);
+			dbInstance.commit();//commit before sending event
+			
+			InstantMessagingEvent event = new InstantMessagingEvent("message", chatResource);
+			event.setFromId(from.getKey());
+			event.setName(name);
+			event.setAnonym(false);
+			event.setMessageId(message.getKey());
+			//general event
+			coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event, chatResource);
+			//buddy event
+			OLATResourceable buddy = OresHelper.createOLATResourceableInstance("Buddy", toIdentityKey);
+			coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event, buddy);
+		} catch (DBRuntimeException e) {
+			dbInstance.rollbackAndCloseSession();
+			log.error("", e);
+			message = null;
+		}
 		return message;
 	}
 

@@ -25,6 +25,7 @@
 */
 package org.olat.instantMessaging.ui;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -36,6 +37,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -48,6 +50,9 @@ public class SendMessageForm extends FormBasicController {
 	private TextElement msg;
 	private FormLink submit;
 	private final String panelId;
+	
+	@Autowired
+	private DB dbInstance;
 
 	public SendMessageForm(UserRequest ureq, WindowControl wControl, String panelId) {
 		super(ureq, wControl, "sendMessageForm");
@@ -55,25 +60,16 @@ public class SendMessageForm extends FormBasicController {
 		initForm(ureq);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer, org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		msg = uifactory.addTextElement("input_" + panelId, "msg", null, 1024, null, formLayout);
@@ -93,7 +89,16 @@ public class SendMessageForm extends FormBasicController {
 		return msg.getValue();
 	}
 	
+	public void setErrorTextField() {
+		if(dbInstance.isMySQL()) {
+			msg.setErrorKey("error.message.mysql", null);
+		} else {
+			msg.setErrorKey("error.message", null);
+		}
+	}
+	
 	public void resetTextField() {
+		msg.clearError();
 		msg.setValue("");
 	}
 }
