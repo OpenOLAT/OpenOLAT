@@ -342,7 +342,7 @@ public class CourseHandler implements RepositoryHandler {
 		
 		SharedFolderFileResource resource = sfm.createSharedFolder();
 		if (resource == null) {
-			log.error("Error adding file resource during repository reference import: " + importExport.getDisplayName());
+			log.error("Error adding file resource during repository reference import: {}", importExport.getDisplayName());
 		}
 
 		// unzip contents

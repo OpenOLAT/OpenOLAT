@@ -40,6 +40,7 @@ import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
+import org.olat.core.gui.media.CleanupAfterDeliveryFileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
@@ -53,8 +54,8 @@ import org.olat.core.util.ZipUtil;
 import org.olat.core.util.coordinate.Coordinator;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
-import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
@@ -786,8 +787,11 @@ public class FeedManagerImpl extends FeedManager {
 	}
 
 	@Override
-	public VFSMediaResource getFeedArchiveMediaResource(OLATResourceable resource) {
+	public MediaResource getFeedArchiveMediaResource(OLATResourceable resource) {
 		VFSLeaf zip = getFeedArchive(resource);
+		if(zip instanceof LocalFileImpl) {
+			return new CleanupAfterDeliveryFileMediaResource(((LocalFileImpl) zip).getBasefile());
+		}
 		return new VFSMediaResource(zip);
 	}
 
@@ -821,18 +825,15 @@ public class FeedManagerImpl extends FeedManager {
 
 		// synchronize all zip processes for this feed
 		// o_clusterOK by:fg
-		VFSLeaf zip = coordinator.getSyncer().doInSync(resource, new SyncerCallback<VFSLeaf>() {
-			@Override
-			public VFSLeaf execute() {
-				// Delete the old archive and recreate it from scratch
-				String zipFileName = getZipFileName(resource);
-				VFSItem oldArchive = rootContainer.resolve(zipFileName);
-				if (oldArchive != null) {
-					oldArchive.delete();
-				}
-				ZipUtil.zip(feedContainer.getItems(), rootContainer.createChildLeaf(zipFileName), false);
-				return (VFSLeaf) rootContainer.resolve(zipFileName);
+		VFSLeaf zip = coordinator.getSyncer().doInSync(resource, () -> {
+			// Delete the old archive and recreate it from scratch
+			String zipFileName = getFeedKind(resource) + ".zip";
+			VFSItem oldArchive = rootContainer.resolve(zipFileName);
+			if (oldArchive != null) {
+				oldArchive.delete();
 			}
+			ZipUtil.zip(feedContainer.getItems(), rootContainer.createChildLeaf(zipFileName), false);
+			return (VFSLeaf) rootContainer.resolve(zipFileName);
 		});
 
 		// delete the XML files again. They are only needed for the export.
@@ -842,17 +843,6 @@ public class FeedManagerImpl extends FeedManager {
 		feedFileStorage.deleteFeedXML(feed);
 
 		return zip;
-	}
-
-	/**
-	 * Returns the file name of the archive that is to be exported. Depends on
-	 * the kind of the resource.
-	 *
-	 * @param resource
-	 * @return The zip archive file name
-	 */
-	private String getZipFileName(OLATResourceable resource) {
-		return getFeedKind(resource) + ".zip";
 	}
 
 	@Override
