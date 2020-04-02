@@ -56,6 +56,7 @@ import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.fileresource.types.ImsQTI21Resource;
+import org.olat.ims.qti.QTIModule;
 import org.olat.ims.qti.QTIResult;
 import org.olat.ims.qti.QTIResultManager;
 import org.olat.ims.qti.editor.beecom.objects.Assessment;
@@ -91,6 +92,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class IQConfigurationController extends BasicController {
 
 	private static final String VC_CHOSENTEST = "chosentest";
+	
+	private static final String[] QTI_21_AND_12_RESOURCE = new String[] { TestFileResource.TYPE_NAME,
+			ImsQTI21Resource.TYPE_NAME };
+	private static final String[] QTI_21_RESOURCE = new String[] { ImsQTI21Resource.TYPE_NAME };
 
 	private VelocityContainer myContent;
 	private final BreadcrumbPanel stackPanel;
@@ -118,6 +123,8 @@ public class IQConfigurationController extends BasicController {
 
 	@Autowired
 	private IQManager iqManager;
+	@Autowired
+	private QTIModule qtiModule;
 	@Autowired
 	private QTI21Service qti21service;
 	@Autowired
@@ -400,10 +407,14 @@ public class IQConfigurationController extends BasicController {
 				listenTo(previewQTI21Ctrl);
 				stackPanel.pushController(translate("preview"), previewQTI21Ctrl);
 			} else {
-				long courseResId = course.getResourceableId().longValue();
-				Controller previewController = iqManager.createIQDisplayController(moduleConfiguration, new IQPreviewSecurityCallback(), ureq, getWindowControl(), courseResId, courseNode.getIdent(), null);
-				previewLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), previewController);
-				stackPanel.pushController(translate("preview"), previewLayoutCtr);
+				if (qtiModule.isRunEnabled()) {
+					long courseResId = course.getResourceableId().longValue();
+					Controller previewController = iqManager.createIQDisplayController(moduleConfiguration, new IQPreviewSecurityCallback(), ureq, getWindowControl(), courseResId, courseNode.getIdent(), null);
+					previewLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), previewController);
+					stackPanel.pushController(translate("preview"), previewLayoutCtr);
+				} else {
+					showError("error.qti12");
+				}
 			}
 		}
 	}
@@ -428,8 +439,9 @@ public class IQConfigurationController extends BasicController {
 			searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, 
 					SurveyFileResource.TYPE_NAME, translate("command.chooseSurvey"));
 		} else { // test and selftest use same repository resource type
-			searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, 
-					new String[] { TestFileResource.TYPE_NAME, ImsQTI21Resource.TYPE_NAME }, translate("command.chooseTest"));
+			String[] types = qtiModule.isRunEnabled() ? QTI_21_AND_12_RESOURCE : QTI_21_RESOURCE;
+			searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, types,
+					translate("command.chooseTest"));
 		}			
 		listenTo(searchController);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), searchController.getInitialComponent(), true, translate("command.chooseRepFile"));
@@ -440,7 +452,7 @@ public class IQConfigurationController extends BasicController {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(searchController);
 		
-		String[] types = new String[]{ TestFileResource.TYPE_NAME, ImsQTI21Resource.TYPE_NAME };
+		String[] types = qtiModule.isRunEnabled() ? QTI_21_AND_12_RESOURCE : QTI_21_RESOURCE;
 		searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, types, translate("command.chooseTest"));
 		listenTo(searchController);
 		
@@ -455,7 +467,7 @@ public class IQConfigurationController extends BasicController {
 		
 		String[] types;
 		if(type.equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS)) {//test
-			types = new String[]{ TestFileResource.TYPE_NAME, ImsQTI21Resource.TYPE_NAME };
+			types = qtiModule.isRunEnabled() ? QTI_21_AND_12_RESOURCE : QTI_21_RESOURCE;
 		} else {//survey
 			types = new String[]{ SurveyFileResource.TYPE_NAME };
 		}

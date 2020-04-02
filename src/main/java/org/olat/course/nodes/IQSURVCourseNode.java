@@ -68,6 +68,7 @@ import org.olat.course.statistic.StatisticResourceOption;
 import org.olat.course.statistic.StatisticResourceResult;
 import org.olat.course.statistic.StatisticType;
 import org.olat.fileresource.types.ImsQTI21Resource;
+import org.olat.ims.qti.QTIModule;
 import org.olat.ims.qti.QTIResultManager;
 import org.olat.ims.qti.export.QTIExportFormatter;
 import org.olat.ims.qti.export.QTIExportFormatterCSVType3;
@@ -144,18 +145,24 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 				Translator trans = Util.createPackageTranslator(IQEditController.class, ureq.getLocale());
 				controller = MessageUIFactory.createInfoMessage(ureq, wControl, "", trans.translate("error.onyx"));
 			} else {
-				Long resId = ores.getResourceableId();
-				SurveyFileResource fr = new SurveyFileResource();
-				fr.overrideResourceableId(resId);
-				if(!CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(fr, null)) {
-					AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-					IQSecurityCallback sec = new CourseIQSecurityCallback(this, am, ureq.getIdentity());
-					controller = new IQRunController(userCourseEnv, getModuleConfiguration(), sec, ureq, wControl, this);
+				QTIModule qtiModule = CoreSpringFactory.getImpl(QTIModule.class);
+				if (qtiModule.isRunSurveyEnabled()) {
+					Long resId = ores.getResourceableId();
+					SurveyFileResource fr = new SurveyFileResource();
+					fr.overrideResourceableId(resId);
+					if(!CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(fr, null)) {
+						AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+						IQSecurityCallback sec = new CourseIQSecurityCallback(this, am, ureq.getIdentity());
+						controller = new IQRunController(userCourseEnv, getModuleConfiguration(), sec, ureq, wControl, this);
+					} else {
+						Translator trans = Util.createPackageTranslator(IQSURVCourseNode.class, ureq.getLocale());
+						String title = trans.translate("editor.lock.title");
+						String message = trans.translate("editor.lock.message");
+						controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+					}
 				} else {
-					Translator trans = Util.createPackageTranslator(IQSURVCourseNode.class, ureq.getLocale());
-					String title = trans.translate("editor.lock.title");
-					String message = trans.translate("editor.lock.message");
-					controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+					Translator transe = Util.createPackageTranslator(IQEditController.class, ureq.getLocale());
+					controller = MessageUIFactory.createInfoMessage(ureq, wControl, "", transe.translate("error.qti12.survey"));
 				}
 			}
 		}

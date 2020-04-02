@@ -99,12 +99,15 @@ public class QTITestHandler extends QTIHandler {
 	
 	@Override
 	public boolean supportImport() {
-		return true;
+		return CoreSpringFactory.getImpl(QTIModule.class).isImportResourcesEnabled();
 	}
 
 	@Override
 	public ResourceEvaluation acceptImport(File file, String filename) {
-		return TestFileResource.evaluate(file, filename);
+		if (supportImport()) {
+			return TestFileResource.evaluate(file, filename);
+		}
+		return ResourceEvaluation.notValid();
 	}
 
 	@Override
@@ -170,6 +173,12 @@ public class QTITestHandler extends QTIHandler {
 				@Override
 				public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
 						RepositoryEntry entry, RepositoryEntrySecurity security, AssessmentMode assessmentMode) {
+					QTIModule qtiModule = CoreSpringFactory.getImpl(QTIModule.class);
+					if (!qtiModule.isRunEnabled()) {
+						Translator trans = Util.createPackageTranslator(IQEditController.class, ureq.getLocale());
+						return MessageUIFactory.createInfoMessage(ureq, wControl, "", trans.translate("error.qti12"));
+					}
+					
 					Controller runController;
 					OLATResource res = entry.getOlatResource();
 					CoreSpringFactory.getImpl(UserCourseInformationsManager.class)

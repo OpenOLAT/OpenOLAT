@@ -82,6 +82,7 @@ import org.olat.course.statistic.StatisticResourceResult;
 import org.olat.course.statistic.StatisticType;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
+import org.olat.ims.qti.QTIModule;
 import org.olat.ims.qti.QTIResultManager;
 import org.olat.ims.qti.export.QTIExportEssayItemFormatConfig;
 import org.olat.ims.qti.export.QTIExportFIBItemFormatConfig;
@@ -185,16 +186,22 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 				controller = MessageUIFactory.createInfoMessage(ureq, wControl, "", transe.translate("error.onyx"));
 			} else {
 				//QTI 1.2
-				TestFileResource fr = new TestFileResource();
-				fr.overrideResourceableId(ores.getResourceableId());
-				if(!CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(fr, null)) {
-					AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-					IQSecurityCallback sec = new CourseIQSecurityCallback(this, am, ureq.getIdentity());
-					controller = new IQRunController(userCourseEnv, getModuleConfiguration(), sec, ureq, wControl, this, testEntry);
+				QTIModule qtiModule = CoreSpringFactory.getImpl(QTIModule.class);
+				if (qtiModule.isRunEnabled()) {
+					TestFileResource fr = new TestFileResource();
+					fr.overrideResourceableId(ores.getResourceableId());
+					if(!CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(fr, null)) {
+						AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+						IQSecurityCallback sec = new CourseIQSecurityCallback(this, am, ureq.getIdentity());
+						controller = new IQRunController(userCourseEnv, getModuleConfiguration(), sec, ureq, wControl, this, testEntry);
+					} else {
+						String title = trans.translate("editor.lock.title");
+						String message = trans.translate("editor.lock.message");
+						controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+					}
 				} else {
-					String title = trans.translate("editor.lock.title");
-					String message = trans.translate("editor.lock.message");
-					controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+					Translator transe = Util.createPackageTranslator(IQEditController.class, ureq.getLocale());
+					controller = MessageUIFactory.createInfoMessage(ureq, wControl, "", transe.translate("error.qti12"));
 				}
 			}
 		}

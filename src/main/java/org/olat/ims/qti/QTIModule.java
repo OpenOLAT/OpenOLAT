@@ -44,10 +44,18 @@ public class QTIModule extends AbstractSpringModule {
 
 	@Value("${qti12.create.resources.enabled:false}")
 	private boolean createResourcesEnabled;
+	@Value("${qti12.import.resources.enabled:false}")
+	private boolean importResourcesEnabled;
+	@Value("${qti12.run.enabled:false}")
+	private boolean runEnabled;
 	@Value("${qti12.survey.create.resources.enabled:false}")
 	private boolean createSurveyResourcesEnabled;
 	@Value("${qti12.survey.create.course.nodes.enabled:false}")
 	private boolean createSurveyCourseNodesEnabled;
+	@Value("${qti12.survey.import.resources.enabled:false}")
+	private boolean importSurveyResourcesEnabled;
+	@Value("${qti12.survey.run.enabled:false}")
+	private boolean runSurveyEnabled;
 	@Value("${qti12.edit.resources.enabled:false}")
 	private boolean createEditResourcesEnabled;
 
@@ -71,6 +79,18 @@ public class QTIModule extends AbstractSpringModule {
 	public boolean isCreateResourcesEnabled() {
 		return createResourcesEnabled;
 	}
+
+	public boolean isImportResourcesEnabled() {
+		return importResourcesEnabled;
+	}
+
+	public boolean isRunEnabled() {
+		return runEnabled;
+	}
+
+	public boolean isImportSurveyResourcesEnabled() {
+		return importSurveyResourcesEnabled;
+	}
 	
 	public boolean isCreateSurveyResourcesEnabled() {
 		return createSurveyResourcesEnabled;
@@ -78,6 +98,10 @@ public class QTIModule extends AbstractSpringModule {
 	
 	public boolean isCreateSurveyCourseNodesEnabled() {
 		return createSurveyCourseNodesEnabled;
+	}
+	
+	public boolean isRunSurveyEnabled() {
+		return runSurveyEnabled;
 	}
 
 	public boolean isEditResourcesEnabled() {
