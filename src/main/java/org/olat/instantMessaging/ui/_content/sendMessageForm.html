@@ -1,6 +1,9 @@
- <div class="input-group">
+ <div class="input-group #if($f.hasError("msg")) has-feedback has-error #end">
 	$r.render("msg")
 	<span class="input-group-btn">
 		$r.render("subm")
 	</span>	
 </div>
+#if($f.hasError("msg"))
+	$r.render("msg_ERROR")
+#end

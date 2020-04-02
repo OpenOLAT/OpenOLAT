@@ -98,7 +98,13 @@
 			font-size: $o-im-chat-date-font-size;
 		}
 	}
-}	
+}
+
+.o_im_chat_form .o_error {
+	margin: 2px 0;
+	padding: 2px 5px;
+	font-size: 75%;
+}
 
 .o_groupchat_roster {
 	font-size: $o-im-groupchat-font-size;
