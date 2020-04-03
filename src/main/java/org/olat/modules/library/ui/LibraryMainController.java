@@ -354,8 +354,6 @@ public class LibraryMainController extends MainLayoutBasicController implements 
 			listenTo(searchItemCtr);
 			columnLayoutCtr.setCol3(searchItemCtr.getInitialComponent());
 			searchItemCtr.doSearch(ureq);
-			searchItemCtr.doSortByPublicationDate();//asc
-			searchItemCtr.doSortByPublicationDate();//desc
 		} catch (Exception e) {
 			logError("Unexpected error while searching in library", e);
 		}
