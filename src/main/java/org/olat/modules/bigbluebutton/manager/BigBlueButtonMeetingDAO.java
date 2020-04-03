@@ -174,6 +174,8 @@ public class BigBlueButtonMeetingDAO {
 		  .append("  (meeting.startDate>=:startDate and meeting.endDate<=:endDate)")
 		  .append("  or")
 		  .append("  (meeting.startDate<=:startDate and meeting.endDate>=:endDate)")
+		  .append("  or")
+		  .append("  meeting.permanent=true")
 		  .append(")");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)

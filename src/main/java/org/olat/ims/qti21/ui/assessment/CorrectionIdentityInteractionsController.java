@@ -58,12 +58,12 @@ import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
-import org.olat.ims.qti21.model.xml.AssessmentHtmlBuilder;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.assessment.model.AssessmentItemCorrection;
 import org.olat.ims.qti21.ui.assessment.model.SectionRubrics;
 import org.olat.ims.qti21.ui.components.FeedbackResultFormItem;
+import org.olat.ims.qti21.ui.components.FlowFormItem;
 import org.olat.ims.qti21.ui.components.InteractionResultFormItem;
 import org.olat.ims.qti21.ui.components.ItemBodyResultFormItem;
 import org.olat.repository.RepositoryEntry;
@@ -123,7 +123,8 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 	private final String mapperUri;
 	private final URI assessmentObjectUri;
 	private final ResourceLocator inputResourceLocator;
-	
+
+	private final File assessmentTestFile;
 	private final AssessmentItem assessmentItem;
 	private final List<Interaction> interactions;
 	private final AssessmentItemCorrection correction;
@@ -134,7 +135,6 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 	private BigDecimal overrideAutoScore;
 	private boolean manualScore = false;
 	private final boolean readOnly;
-	private final AssessmentHtmlBuilder htmlBuilder;
 	
 	private int count = 0;
 	private final long id = CodeHelper.getRAMUniqueID();
@@ -155,11 +155,12 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		this.mapperUri = mapperUri;
 		this.correction = correction;
 		this.resolvedAssessmentTest = resolvedAssessmentTest;
+		URI testUri = resolvedAssessmentTest.getTestLookup().getSystemId();
+		assessmentTestFile = new File(testUri);
 		resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(correction.getItemRef());
 		assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
 		interactions = assessmentItem.getItemBody().findInteractions();
 		this.submissionDirectoryMaps = submissionDirectoryMaps;
-		htmlBuilder = new AssessmentHtmlBuilder();
 		
 		FileResourceManager frm = FileResourceManager.getInstance();
 		File fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
@@ -294,12 +295,12 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 			layoutCont.contextPut("interactionWrapper", wrapper);
 			layoutCont.contextPut("autoSaved", Boolean.valueOf(isAutoSaved(testPlanNodeKey, testSessionState)));
 			
-			List<SectionRubrics> sectionRubrics = initSectionsRubrics();
+			List<SectionRubrics> sectionRubrics = initSectionsRubrics(layoutCont);
 			layoutCont.contextPut("sectionRubrics", sectionRubrics);
 		}
 	}
 	
-	private List<SectionRubrics> initSectionsRubrics() {
+	private List<SectionRubrics> initSectionsRubrics(FormItemContainer layoutCont) {
 		List<SectionRubrics> sectionParentLine = new ArrayList<>();
 		
 		try {
@@ -317,7 +318,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 						}
 						
 						if(writeRubrics) {
-							String rubrics = getSectionRubrics(section);
+							List<FlowFormItem> rubrics = getSectionRubrics(section, layoutCont);
 							String openLabel;
 							if(StringHelper.containsNonWhitespace(section.getTitle())) {
 								openLabel = translate("show.rubric.with.title", new String[]{ section.getTitle() });
@@ -340,15 +341,21 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		return sectionParentLine;
 	}
 	
-	private String getSectionRubrics(AssessmentSection section) {
-		StringBuilder sb = new StringBuilder(1024);
+	private List<FlowFormItem> getSectionRubrics(AssessmentSection section, FormItemContainer layoutCont) {
+		List<FlowFormItem> rubricsEls = new ArrayList<>();
 		for(RubricBlock rubricBlock:section.getRubricBlocks()) {
-			String content = htmlBuilder.blocksString(rubricBlock.getBlocks());
-			if(StringHelper.containsNonWhitespace(content)) {
-				sb.append("<div class='rubric'>").append(content).append("</div>");
-			}
+
+			String rubricElId = "section_rubric_" + (count++);
+			FlowFormItem formItem = new FlowFormItem(rubricElId, assessmentTestFile);
+			formItem.setBlocks(rubricBlock.getBlocks());
+			formItem.setResourceLocator(inputResourceLocator);
+			formItem.setAssessmentObjectUri(assessmentObjectUri);
+			formItem.setMapperUri(mapperUri);
+
+			rubricsEls.add(formItem);
+			layoutCont.add(rubricElId, formItem);
 		}
-		return sb.toString();
+		return rubricsEls;
 	}
 	
 	private ItemBodyResultFormItem initFormInteraction(TestPlanNodeKey testPlanNodeKey,

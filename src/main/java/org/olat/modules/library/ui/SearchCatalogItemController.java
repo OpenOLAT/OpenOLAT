@@ -93,11 +93,11 @@ public class SearchCatalogItemController extends BasicController {
 		backLink = LinkFactory.createCustomLink("backLinkLT", "back", "back", Link.LINK_BACK, mainVC, this);
 		mainVC.put("backLink", backLink);
 		orderByRelevanceLink = LinkFactory.createButton("order.relevance", mainVC, this);
+		orderByRelevanceLink.setIconRightCSS("o_icon o_icon-fw o_icon_sort_amount_desc");
 		mainVC.put("orderByRelevanceLink", orderByRelevanceLink);
 		orderByTitleLink = LinkFactory.createButton("order.title", mainVC, this);
 		mainVC.put("orderByTitleLink", orderByTitleLink);
 		orderByPublicationDateLink = LinkFactory.createButton("order.publication", mainVC, this);
-		orderByPublicationDateLink.setIconRightCSS("o_icon o_icon-fw o_icon_sort_amount_desc");
 		mainVC.put("orderByPublicationDateLink", orderByPublicationDateLink);
 
 		String title = getTranslator().translate("search.results.title", new String[]{queryString});

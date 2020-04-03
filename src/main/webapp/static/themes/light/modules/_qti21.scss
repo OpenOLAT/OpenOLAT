@@ -389,6 +389,10 @@ span.o_qti_gaptext_score_alternative {
 	}
 }
 
+.o_assessment_test_results .o_info.o_assessmentsection_rubrics {
+	margin: $o-box-margin 0;
+}
+
 .o_assessmentitem{
 	h1 {
 		margin-bottom: 0;

@@ -64,10 +64,10 @@ import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.QTI21QuestionType;
-import org.olat.ims.qti21.model.xml.AssessmentHtmlBuilder;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.assessment.TerminatedStaticCandidateSessionContext;
 import org.olat.ims.qti21.ui.components.FeedbackResultFormItem;
+import org.olat.ims.qti21.ui.components.FlowFormItem;
 import org.olat.ims.qti21.ui.components.ItemBodyResultFormItem;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
@@ -128,11 +128,11 @@ public class AssessmentResultController extends FormBasicController {
 
 	private final File fUnzippedDirRoot;
 	private final URI assessmentObjectUri;
+	private final File assessmentTestFile;
 	private final ResourceLocator inputResourceLocator;
 	private final ResolvedAssessmentTest resolvedAssessmentTest;
 	private UserShortDescription assessedIdentityInfosCtrl;
 	private final Map<String,AssessmentItemSession> identifierToItemSession = new HashMap<>();
-	private final AssessmentHtmlBuilder htmlBuilder;
 	
 	private int count = 0;
 
@@ -167,7 +167,6 @@ public class AssessmentResultController extends FormBasicController {
 		this.candidateSession = candidateSession;
 		this.fUnzippedDirRoot = fUnzippedDirRoot;
 		this.submissionMapperUri = submissionMapperUri;
-		htmlBuilder = new AssessmentHtmlBuilder();
 
 		ResourceLocator fileResourceLocator = new PathResourceLocator(fUnzippedDirRoot.toPath());
 		inputResourceLocator = 
@@ -181,6 +180,8 @@ public class AssessmentResultController extends FormBasicController {
 		}
 		
 		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
+		URI testUri = resolvedAssessmentTest.getTestLookup().getSystemId();
+		assessmentTestFile = new File(testUri);
 		
 		File signature = qtiService.getAssessmentResultSignature(candidateSession);
 		if (signature != null) {
@@ -313,7 +314,7 @@ public class AssessmentResultController extends FormBasicController {
 			TestPlanNodeKey testPlanNodeKey = node.getKey();
 			TestNodeType testNodeType = node.getTestNodeType();
 			if(testNodeType == TestNodeType.ASSESSMENT_SECTION) {
-				String rubrics = getSectionRubric(node);
+				List<FlowFormItem> rubrics = getSectionRubric(layoutCont, node);
 				Results r = new Results(true, node.getSectionPartTitle(), rubrics, "o_mi_qtisection", options.isSectionSummary());
 				AssessmentSectionSessionState sectionState = testSessionState.getAssessmentSectionSessionStates().get(testPlanNodeKey);
 				if(sectionState != null) {
@@ -345,22 +346,31 @@ public class AssessmentResultController extends FormBasicController {
 		}
 	}
 	
-	private String getSectionRubric(TestPlanNode node) {
+	private List<FlowFormItem> getSectionRubric(FormLayoutContainer layoutCont, TestPlanNode node) {
 		AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
 		
-		StringBuilder sb = new StringBuilder(128);
+		List<FlowFormItem> rubricsEls = new ArrayList<>();
 		AbstractPart part = assessmentTest.lookupFirstDescendant(node.getIdentifier());
 		if(part instanceof AssessmentSection) {
 			AssessmentSection section = (AssessmentSection)part;
 			for(RubricBlock rubricBlock:section.getRubricBlocks()) {
-				String content = htmlBuilder.blocksString(rubricBlock.getBlocks());
-				if(StringHelper.containsNonWhitespace(content)) {
-					sb.append("<div class='rubric'>").append(content).append("</div>");
+				String rubricElId = "section_rubric_" + (count++);
+				FlowFormItem formItem = new FlowFormItem(rubricElId, assessmentTestFile);
+				formItem.setBlocks(rubricBlock.getBlocks());
+				formItem.setCandidateSessionContext(candidateSessionContext);
+				formItem.setResourceLocator(inputResourceLocator);
+				formItem.setAssessmentObjectUri(assessmentObjectUri);
+				formItem.setMapperUri(mapperUri);
+				if(submissionMapperUri != null) {
+					formItem.setSubmissionMapperUri(submissionMapperUri);
 				}
+				
+				rubricsEls.add(formItem);
+				layoutCont.add(rubricElId, formItem);
 			}
 		}
 		
-		return sb.toString();
+		return rubricsEls;
 	}
 
 	private Results initFormItemResult(FormLayoutContainer layoutCont, TestPlanNode node,
@@ -634,7 +644,6 @@ public class AssessmentResultController extends FormBasicController {
 		
 		private String itemIdentifier;
 		private final String title;
-		private final String rubrics;
 		private final String cssClass;
 		private final boolean section;
 		private final boolean metadataVisible;
@@ -649,6 +658,7 @@ public class AssessmentResultController extends FormBasicController {
 		
 		private FormItem questionItem;
 		private FormItem correctSolutionItem;
+		private final List<FlowFormItem> rubrics;
 		private InteractionResults interactionResults;
 		private final List<Results> subResults = new ArrayList<>();
 		
@@ -669,14 +679,13 @@ public class AssessmentResultController extends FormBasicController {
 			this.rubrics = null;
 		}
 
-		public Results(boolean section, String title, String rubrics, String cssClass, boolean metadataVisible) {
+		public Results(boolean section, String title, List<FlowFormItem> rubrics, String cssClass, boolean metadataVisible) {
 			this.section = section;
 			this.title = title;
 			this.rubrics = rubrics;
 			this.cssClass = cssClass;
 			this.metadataVisible = metadataVisible;
 		}
-		
 		
 		public void setItemIdentifier(String itemIdentifier) {
 			this.itemIdentifier = itemIdentifier;
@@ -721,7 +730,7 @@ public class AssessmentResultController extends FormBasicController {
 			return title;
 		}
 		
-		public String getRubrics() {
+		public List<FlowFormItem> getRubrics() {
 			return rubrics;
 		}
 		

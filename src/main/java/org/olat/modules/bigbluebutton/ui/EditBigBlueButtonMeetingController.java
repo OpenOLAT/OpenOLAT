@@ -199,6 +199,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	
 	private void updateUI() {
 		boolean permanent = permanentEl.isAtLeastSelected(1);
+		permanentEl.clearError();
 		startDateEl.setVisible(!permanent);
 		leadTimeEl.setVisible(!permanent);
 		endDateEl.setVisible(!permanent);
@@ -288,9 +289,14 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		}
 		
 		// dates ok
-		if(allOk && (!permanentEl.isVisible() || !permanentEl.isAtLeastSelected(1))) {
-			allOk &= validateDuration();
-			allOk &= validateSlot();
+		permanentEl.clearError();
+		if(allOk) {
+			if(permanentEl.isVisible() && permanentEl.isAtLeastSelected(1)) {
+				allOk &= validatePermanentSlot();
+			} else {
+				allOk &= validateDuration();
+				allOk &= validateSlot();
+			}
 		}
 		
 		nameEl.clearError();
@@ -347,6 +353,24 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 				startDateEl.getDate(), getLeadTime(), endDateEl.getDate(), getFollowupTime());
 		if(!slotFree) {
 			startDateEl.setErrorKey("server.overloaded", null);
+			allOk &= false;
+		}
+		
+		return allOk;
+	}
+	
+	private boolean validatePermanentSlot() {
+		boolean allOk = true;
+		
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.YEAR, 12);
+		Date endDate = cal.getTime();
+		
+		BigBlueButtonMeetingTemplate template = getSelectedTemplate();
+		boolean slotFree = bigBlueButtonManager.isSlotAvailable(meeting, template,
+				new Date(), 0, endDate, 0);
+		if(!slotFree) {
+			permanentEl.setErrorKey("server.overloaded", null);
 			allOk &= false;
 		}
 		
