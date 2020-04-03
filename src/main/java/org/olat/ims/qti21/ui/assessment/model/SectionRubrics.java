@@ -19,6 +19,10 @@
  */
 package org.olat.ims.qti21.ui.assessment.model;
 
+import java.util.List;
+
+import org.olat.ims.qti21.ui.components.FlowFormItem;
+
 /**
  * 
  * Initial date: 4 Oct 2018<br>
@@ -28,11 +32,11 @@ package org.olat.ims.qti21.ui.assessment.model;
 public class SectionRubrics {
 	
 	private final String title;
-	private final String rubrics;
+	private final List<FlowFormItem> rubrics;
 	private final String identifier;
 	private final String openLabel;
 	
-	public SectionRubrics(String identifier, String title, String rubrics, String openLabel) {
+	public SectionRubrics(String identifier, String title, List<FlowFormItem> rubrics, String openLabel) {
 		this.identifier = identifier;
 		this.rubrics = rubrics;
 		this.title = title;
@@ -43,7 +47,7 @@ public class SectionRubrics {
 		return title;
 	}
 
-	public String getRubrics() {
+	public List<FlowFormItem> getRubrics() {
 		return rubrics;
 	}
 	

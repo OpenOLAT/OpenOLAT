@@ -13,7 +13,9 @@
 		  		#if($r.isNotEmpty($sectionRubric.title))
 					<h4>$sectionRubric.title</h4>
 				#end
-				<div class='rubric'>$sectionRubric.rubrics</div>
+				#foreach($rubric in $sectionRubric.rubrics)
+					<div class='rubric clearfix'>$r.render($rubric)</div>
+				#end
 				<a id='h${sectionRubric.identifier}' href='javascript:;' class='o_toogle_rubrics o_hide'><span>$r.translate("hide.rubric.short")</span></a>
 			</div>
 			<script>
