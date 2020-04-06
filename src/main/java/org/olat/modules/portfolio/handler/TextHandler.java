@@ -28,7 +28,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.portfolio.Media;
@@ -39,8 +38,6 @@ import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.manager.MediaDAO;
 import org.olat.modules.portfolio.ui.media.CollectTextMediaController;
 import org.olat.modules.portfolio.ui.media.TextMediaController;
-import org.olat.portfolio.manager.EPFrontendManager;
-import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.user.manager.ManifestBuilder;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,8 +56,6 @@ public class TextHandler extends AbstractMediaHandler {
 	
 	@Autowired
 	private MediaDAO mediaDao;
-	@Autowired
-	private EPFrontendManager oldPortfolioManager;
 
 	public TextHandler() {
 		super(TEXT_MEDIA);
@@ -94,25 +89,6 @@ public class TextHandler extends AbstractMediaHandler {
 	@Override
 	public Media createMedia(String title, String description, Object mediaObject, String businessPath, Identity author) {
 		Media media = mediaDao.createMedia(title, description, (String)mediaObject, TEXT_MEDIA, businessPath, null, 60, author);
-		ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_MEDIA_ADDED, getClass(),
-				LoggingResourceable.wrap(media));
-		return media;
-	}
-
-	@Override
-	public Media createMedia(AbstractArtefact artefact) {
-		String title = artefact.getTitle();
-		String description = artefact.getDescription();
-		String content = artefact.getFulltextContent();
-		if(!StringHelper.containsNonWhitespace(content)) {
-			content = oldPortfolioManager.getArtefactFullTextContent(artefact);
-		}
-		
-		String businessPath = artefact.getBusinessPath();
-		if(businessPath == null) {
-			businessPath = "[PortfolioV2:0][MediaCenter:0]";
-		}
-		Media media = mediaDao.createMedia(title, description, content, TEXT_MEDIA, businessPath, artefact.getKey().toString(), artefact.getSignature(), artefact.getAuthor());
 		ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_MEDIA_ADDED, getClass(),
 				LoggingResourceable.wrap(media));
 		return media;

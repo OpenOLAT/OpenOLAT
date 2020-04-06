@@ -27,7 +27,6 @@ package org.olat.course.certificate.ui;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -63,13 +62,11 @@ import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.EfficiencyStatement;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.model.AssessmentNodeData;
-import org.olat.course.assessment.portfolio.EfficiencyStatementArtefact;
 import org.olat.course.assessment.portfolio.EfficiencyStatementMediaHandler;
 import org.olat.course.assessment.ui.tool.IdentityAssessmentOverviewController;
 import org.olat.course.certificate.Certificate;
@@ -82,10 +79,6 @@ import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.ui.component.MediaCollectorComponent;
-import org.olat.portfolio.EPArtefactHandler;
-import org.olat.portfolio.PortfolioModule;
-import org.olat.portfolio.model.artefacts.AbstractArtefact;
-import org.olat.portfolio.ui.artefacts.collect.ArtefactWizzardStepsController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
@@ -107,7 +100,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	private VelocityContainer mainVC;
 	private SegmentViewComponent segmentView;
 	private Link certificateLink, courseDetailsLink;
-	private Link collectArtefactLink, homeLink, courseLink, groupLink, contactLink;
+	private Link homeLink, courseLink, groupLink, contactLink;
 	
 	private final Certificate certificate;
 	private final EfficiencyStatement efficiencyStatement;
@@ -115,8 +108,6 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	private final BusinessGroup businessGroup;
 	private final RepositoryEntry courseRepoEntry;
 	
-	
-	private Controller ePFCollCtrl;
 	private CloseableModalController cmc;
 	private ContactFormController contactCtrl;
 	private CertificateController certificateCtrl;
@@ -130,8 +121,6 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	private EfficiencyStatementMediaHandler mediaHandler;
 	@Autowired
 	private PortfolioV2Module portfolioV2Module;
-	@Autowired
-	private PortfolioModule portfolioModule;
 	@Autowired
 	private CertificatesManager certificatesManager;
 	@Autowired
@@ -215,12 +204,6 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 				MediaCollectorComponent collectorCmp = new MediaCollectorComponent("collectArtefactLink", getWindowControl(), efficiencyStatement,
 						mediaHandler, businessPath);
 				mainVC.put("collectArtefactLink", collectorCmp);
-			} else {
-				EPArtefactHandler<?> artHandler = portfolioModule.getArtefactHandler(EfficiencyStatementArtefact.ARTEFACT_TYPE);
-				if(portfolioModule.isEnabled() && artHandler != null && artHandler.isEnabled()) {
-					collectArtefactLink = LinkFactory.createCustomLink("collectArtefactLink", "collectartefact", "", Link.NONTRANSLATED, mainVC, this);
-					collectArtefactLink.setIconLeftCSS("o_icon o_icon-lg o_icon_eportfolio_add");
-				}
 			}
 		}
 
@@ -309,9 +292,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if(source.equals(collectArtefactLink)){
-			popupArtefactCollector(ureq);
-		} else if (source == homeLink) {
+		if (source == homeLink) {
 			doOpenHome(ureq);
 		} else if (source == courseLink) {
 			doOpenCourse(ureq);
@@ -411,25 +392,4 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 		NewControllerFactory.getInstance().launch(ureq, bwControl);
 	}
 
-	/**
-	 * opens the collect-artefact wizard 
-	 * 
-	 * @param ureq
-	 */
-	private void popupArtefactCollector(UserRequest ureq) {
-		EPArtefactHandler<?> artHandler = portfolioModule.getArtefactHandler(EfficiencyStatementArtefact.ARTEFACT_TYPE);
-		if(artHandler != null && artHandler.isEnabled()) {
-			AbstractArtefact artefact = artHandler.createArtefact();
-			artefact.setAuthor(getIdentity());//only author can create artefact
-			//no business path becouse we cannot launch an efficiency statement
-			artefact.setCollectionDate(new Date());
-			artefact.setTitle(translate("artefact.title", new String[]{ efficiencyStatement.getCourseTitle() }));
-			artHandler.prefillArtefactAccordingToSource(artefact, efficiencyStatement);
-			ePFCollCtrl = new ArtefactWizzardStepsController(ureq, getWindowControl(), artefact, (VFSContainer)null);
-			listenTo(ePFCollCtrl);
-			
-			//set flag for js-window-resizing (see velocity)
-			mainVC.contextPut("collectwizard", true);
-		}
-	}
 }

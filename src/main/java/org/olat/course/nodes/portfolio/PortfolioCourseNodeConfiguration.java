@@ -32,7 +32,6 @@ import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeGroup;
 import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.modules.portfolio.PortfolioV2Module;
-import org.olat.portfolio.PortfolioModule;
 
 /**
  * Initial Date:  6 oct. 2010 <br>
@@ -84,11 +83,8 @@ public class PortfolioCourseNodeConfiguration extends AbstractCourseNodeConfigur
 		return "o_ep_icon";
 	}
 
-	/**
-	 * @see org.olat.core.configuration.AbstractConfigOnOff#isEnabled()
-	 */
 	@Override
 	public boolean isEnabled() {
-		return CoreSpringFactory.getImpl(PortfolioModule.class).isEnabled() || CoreSpringFactory.getImpl(PortfolioV2Module.class).isEnabled();
+		return CoreSpringFactory.getImpl(PortfolioV2Module.class).isEnabled();
 	}
 }

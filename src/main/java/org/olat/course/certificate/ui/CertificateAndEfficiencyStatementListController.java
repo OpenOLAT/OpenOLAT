@@ -20,7 +20,6 @@
 package org.olat.course.certificate.ui;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,14 +60,12 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
-import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.EfficiencyStatement;
 import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
-import org.olat.course.assessment.portfolio.EfficiencyStatementArtefact;
 import org.olat.course.assessment.portfolio.EfficiencyStatementMediaHandler;
 import org.olat.course.certificate.CertificateEvent;
 import org.olat.course.certificate.CertificateLight;
@@ -79,10 +76,6 @@ import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.ui.wizard.CollectArtefactController;
-import org.olat.portfolio.EPArtefactHandler;
-import org.olat.portfolio.PortfolioModule;
-import org.olat.portfolio.model.artefacts.AbstractArtefact;
-import org.olat.portfolio.ui.artefacts.collect.ArtefactWizzardStepsController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -100,7 +93,6 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	private static final String CMD_SHOW = "cmd.show";
 	private static final String CMD_LAUNCH_COURSE = "cmd.launch.course";
 	private static final String CMD_DELETE = "cmd.delete";
-	private static final String CMD_ARTEFACT = "cmd.artefact";
 	private static final String CMD_MEDIA = "cmd.MEDIA";
 	
 	private FlexiTableElement tableEl;
@@ -111,7 +103,6 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	private CloseableModalController cmc;
 	private CollectArtefactController collectorCtrl;
 	private DialogBoxController confirmDeleteCtr;
-	private ArtefactWizzardStepsController ePFCollCtrl;
 	
 	private final boolean canModify;
 	private final boolean linkToCoachingTool;
@@ -119,8 +110,6 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	
 	@Autowired
 	private EfficiencyStatementManager esm;
-	@Autowired
-	private PortfolioModule portfolioModule;
 	@Autowired
 	private PortfolioV2Module portfolioV2Module;
 	@Autowired
@@ -217,13 +206,6 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				DefaultFlexiColumnModel portfolioColumn = new DefaultFlexiColumnModel( Cols.artefact, CMD_MEDIA,
 						new BooleanCellRenderer(new StaticFlexiCellRenderer(CMD_MEDIA, new AsArtefactCellRenderer()), null));
 				tableColumnModel.addFlexiColumnModel(portfolioColumn);
-			} else {
-				EPArtefactHandler<?> artHandler = portfolioModule.getArtefactHandler(EfficiencyStatementArtefact.ARTEFACT_TYPE);
-				if(portfolioModule.isEnabled() && artHandler != null && artHandler.isEnabled() && assessedIdentity.equals(getIdentity())) {
-					tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.artefact",
-							Cols.efficiencyStatement.ordinal(), CMD_ARTEFACT,
-							new StaticFlexiCellRenderer(CMD_ARTEFACT, new AsArtefactCellRenderer())));
-				}
 			}
 		}
 		
@@ -314,8 +296,6 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 					doConfirmDelete(ureq, statement);
 				} else if(CMD_SHOW.equals(cmd)) {
 					doShowStatement(ureq, statement);
-				} else if(CMD_ARTEFACT.equals(cmd)) {
-					doCollectArtefact(ureq, statement.getDisplayName(), statement.getEfficiencyStatementKey());
 				} else if(CMD_MEDIA.equals(cmd)) {
 					doCollectMedia(ureq, statement.getDisplayName(), statement.getEfficiencyStatementKey());
 				}
@@ -398,21 +378,6 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				logError("Course corrupted: " + entry.getKey() + " (" + entry.getResourceableId() + ")", e);
 				showError("cif.error.corrupted");
 			}
-		}
-	}
-	
-	private void doCollectArtefact(UserRequest ureq, String title, Long efficiencyStatementKey) {
-		EPArtefactHandler<?> artHandler = portfolioModule.getArtefactHandler(EfficiencyStatementArtefact.ARTEFACT_TYPE);
-		if(artHandler != null && artHandler.isEnabled() && assessedIdentity.equals(getIdentity())) {
-			AbstractArtefact artefact = artHandler.createArtefact();
-			artefact.setAuthor(getIdentity());//only author can create artefact
-			//no business path becouse we cannot launch an efficiency statement
-			artefact.setCollectionDate(new Date());
-			artefact.setTitle(translate("artefact.title", new String[]{ title }));
-			EfficiencyStatement fullStatement = esm.getUserEfficiencyStatementByKey(efficiencyStatementKey);
-			artHandler.prefillArtefactAccordingToSource(artefact, fullStatement);
-			ePFCollCtrl = new ArtefactWizzardStepsController(ureq, getWindowControl(), artefact, (VFSContainer)null);
-			listenTo(ePFCollCtrl);
 		}
 	}
 

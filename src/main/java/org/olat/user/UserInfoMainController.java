@@ -30,7 +30,6 @@ package org.olat.user;
 
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -54,7 +53,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeHelper;
-import org.olat.portfolio.PortfolioModule;
 import org.olat.user.ui.identity.AbstractUserInfoMainController;
 
 /**
@@ -233,17 +231,6 @@ public class UserInfoMainController extends AbstractUserInfoMainController imple
 			gtn.setCssClass("o_visiting_card_contact");
 			root.addChild(gtn);
 		}
-		if ( !isDeleted && ! isInvitee) {
-			PortfolioModule portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
-			if (portfolioModule.isEnabled()) {
-				gtn = new GenericTreeNode();
-				gtn.setTitle(translate("menu.portfolio"));
-				gtn.setUserObject(CMD_PORTFOLIO);
-				gtn.setAltText(translate("menu.portfolio.alt"));
-				gtn.setCssClass("o_visiting_card_portfolio");
-				root.addChild(gtn);
-			}
-		}			
 		return gtm;
 	}
 
@@ -257,8 +244,6 @@ public class UserInfoMainController extends AbstractUserInfoMainController imple
 			controller = doOpenFolder(ureq);
 		} else if (menuCommand.equalsIgnoreCase(CMD_CONTACT)) {
 			controller = doOpenContact(ureq);
-		} else if (menuCommand.equalsIgnoreCase(CMD_PORTFOLIO)) {
-			controller = doOpenPortfolio(ureq);
 		}
 		return controller;
 	}

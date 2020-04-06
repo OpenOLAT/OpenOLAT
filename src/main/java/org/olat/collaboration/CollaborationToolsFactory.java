@@ -48,7 +48,6 @@ import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.wiki.WikiModule;
-import org.olat.portfolio.PortfolioModule;
 
 /**
  * Description:<BR>
@@ -104,9 +103,8 @@ public class CollaborationToolsFactory {
 		if (wikiModule.isWikiEnabled()) {
 			toolArr.add(CollaborationTools.TOOL_WIKI);			
 		}
-		PortfolioModule portfolioModule = CoreSpringFactory.getImpl(PortfolioModule.class);
 		PortfolioV2Module portfolioV2Module = CoreSpringFactory.getImpl(PortfolioV2Module.class);
-		if (portfolioModule.isEnabled() || portfolioV2Module.isEnabled()) {
+		if (portfolioV2Module.isEnabled()) {
 			toolArr.add(CollaborationTools.TOOL_PORTFOLIO);
 		}	
 		OpenMeetingsModule openMeetingsModule = CoreSpringFactory.getImpl(OpenMeetingsModule.class);

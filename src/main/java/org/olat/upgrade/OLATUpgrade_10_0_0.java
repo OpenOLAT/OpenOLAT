@@ -26,16 +26,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.persistence.TypedQuery;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.admin.layout.LayoutModule;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupMembership;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.Policy;
-import org.olat.basesecurity.PolicyImpl;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.basesecurity.manager.GroupDAO;
@@ -45,15 +41,11 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
-import org.olat.portfolio.manager.EPMapPolicy;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
-import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.resource.OLATResource;
 import org.olat.upgrade.model.BGResourceRelation;
 import org.olat.upgrade.model.BusinessGroupUpgrade;
-import org.olat.upgrade.model.EPMapUpgrade;
-import org.olat.upgrade.model.EPMapUpgradeToGroupRelation;
 import org.olat.upgrade.model.InvitationUpgrade;
 import org.olat.upgrade.model.RepositoryEntryUpgrade;
 import org.olat.upgrade.model.RepositoryEntryUpgradeToGroupRelation;
@@ -69,14 +61,11 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 	
 	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_10_0_0.class);
 
-	private static final String PERMISSION_READ = "read";
-	
 	private static final int BATCH_SIZE = 50;
 	private static final String TASK_BUSINESS_GROUPS = "Upgrade business groups";
 	private static final String TASK_REPOENTRIES = "Upgrade repository entries";
 	private static final String TASK_REPOENTRY_TO_BUSINESSGROUP = "Upgrade relation business groups to repository entries";
 	private static final String TASK_INVITATION = "Upgrade invitations";
-	private static final String TASK_UPGRADE_MAP = "Upgrade e-portfolio maps";
 	private static final String TASK_LOGO = "Upgrade custom logo";
 	private static final String VERSION = "OLAT_10.0.0";
 	
@@ -91,8 +80,6 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 	private DB dbInstance;
 	@Autowired
 	private GroupDAO groupDao;
-	@Autowired
-	private RepositoryEntryRelationDAO repositoryEntryToGroupDAO;
 	@Autowired
 	private PropertyManager propertyManager;
 	@Autowired
@@ -123,7 +110,6 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 		allOk &= upgradeRepositoryEntries(upgradeManager, uhd);
 		allOk &= upgradeRelationsRepoToBusinessGroups(upgradeManager, uhd);
 		allOk &= upgradeInvitation(upgradeManager, uhd);
-		allOk &= upgradeEPMap(upgradeManager, uhd);
 		
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -374,189 +360,6 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 			invitation.setBaseGroup(invitationGroup);
 			dbInstance.getCurrentEntityManager().merge(invitation);
 		}
-	}
-	
-	private boolean upgradeEPMap(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
-		if (!uhd.getBooleanDataValue(TASK_UPGRADE_MAP)) {
-			int counter = 0;
-			List<EPMapUpgrade> businessGroups;
-			do {
-				businessGroups = findMaps(counter, BATCH_SIZE);
-				for(EPMapUpgrade businessGroup:businessGroups) {
-					processMap(businessGroup);
-				}
-				counter += businessGroups.size();
-				log.info(Tracing.M_AUDIT, "Maps processed: " + businessGroups.size() + ", total processed (" + counter + ")");
-				dbInstance.commitAndCloseSession();
-			} while(businessGroups.size() == BATCH_SIZE);
-			uhd.setBooleanDataValue(TASK_UPGRADE_MAP, true);
-			upgradeManager.setUpgradesHistory(uhd, VERSION);
-		}
-		return true;
-	}
-	
-	private void processMap(EPMapUpgrade map) {
-		if(hasGroupsRelations(map)) {
-			return;
-		}
-		
-		Set<EPMapUpgradeToGroupRelation> relations = new HashSet<>();
-		SecurityGroup ownerGroup = map.getOwnerGroup();
-		if(ownerGroup != null) {
-			//create default group
-			RepositoryEntryUpgrade re = findMapRepoEntry(ownerGroup);
-			if(re != null) {
-				Group reGroup = repositoryEntryToGroupDAO.getDefaultGroup(re);
-				if(reGroup != null) {
-					relations.add(createDefaultGroup(map, reGroup));
-				}
-			}
-			if(relations.isEmpty()) {
-				Group group = groupDao.createGroup();
-				relations.add(createDefaultGroup(map, group));
-				processSecurityGroup(group, GroupRoles.owner.name(), ownerGroup);
-			}
-			
-			//create policy -> relation
-			List<Policy> policies = getPoliciesOfResource(map.getOlatResource(), null);
-			for(Policy policy:policies) {
-				if(policy.getPermission().contains(PERMISSION_READ)) {
-					EPMapUpgradeToGroupRelation policyRelation = processMapPolicy(policy, map);
-					if(policyRelation != null) {
-						relations.add(policyRelation);
-					}
-				}
-			}
-			
-			for(EPMapUpgradeToGroupRelation relation:relations) {
-				dbInstance.getCurrentEntityManager().persist(relation);
-			}
-		}
-	}
-	
-	private List<Policy> getPoliciesOfResource(OLATResource resource, SecurityGroup secGroup) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select poi from ").append(PolicyImpl.class.getName()).append(" poi where ")
-			.append(" poi.olatResource.key=:resourceKey ");
-		if(secGroup != null) {
-			sb.append(" and poi.securityGroup.key=:secGroupKey");
-		}
-		
-		TypedQuery<Policy> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Policy.class)
-				.setParameter("resourceKey", resource.getKey());
-		if(secGroup != null) {
-			query.setParameter("secGroupKey", secGroup.getKey());
-		}
-		return query.getResultList();
-	}
-	
-	private boolean hasGroupsRelations(EPMapUpgrade map) {
-		String sb = "select count(rel.key) from structureuptogroup as rel where rel.entry.key=:mapKey";
-		
-		List<Number> counts = dbInstance.getCurrentEntityManager().createQuery(sb, Number.class)
-			.setParameter("mapKey", map.getKey())
-			.getResultList();
-		return counts != null && counts.size() > 0 && counts.get(0) != null && counts.get(0).intValue() > 0;
-	}
-	
-	private EPMapUpgradeToGroupRelation processMapPolicy(Policy policy, EPMapUpgrade element) {
-		String permission = policy.getPermission();
-		SecurityGroup secGroup = policy.getSecurityGroup();
-		Group group;
-		String role;
-		if(permission.startsWith(EPMapPolicy.Type.user.name())) {
-			group = groupDao.createGroup();
-			processSecurityGroup(group, GroupRoles.participant.name(), secGroup);
-			role = EPMapPolicy.Type.user.name();
-		} else if (permission.startsWith(EPMapPolicy.Type.group.name())) {
-			group = findGroupOfBusinessGroup(secGroup);
-			role = EPMapPolicy.Type.group.name();
-		} else if (permission.startsWith(EPMapPolicy.Type.invitation.name())) {
-			InvitationUpgrade invitation = findInvitation(policy.getSecurityGroup());
-			if(invitation == null) {
-				return null;
-			}
-			group = invitation.getBaseGroup();
-			role = EPMapPolicy.Type.invitation.name();
-		} else if (permission.startsWith(EPMapPolicy.Type.allusers.name())) {
-			group = groupDao.createGroup(EPMapPolicy.Type.allusers.name());
-			role = EPMapPolicy.Type.allusers.name();
-		} else {
-			return null;
-		}
-		
-		if(group == null) {
-			log.error("Group not resolve for policy of map: " + element.getKey() + " and policy: " + policy.getKey());
-			return null;
-		}
-		
-		EPMapUpgradeToGroupRelation relation = new EPMapUpgradeToGroupRelation();
-		relation.setDefaultGroup(false);
-		relation.setCreationDate(new Date());
-		relation.setEntry(element);
-		relation.setValidTo(policy.getTo());
-		relation.setValidFrom(policy.getFrom());
-		relation.setGroup(group);
-		relation.setRole(role);
-		return relation;
-	}
-	
-	private InvitationUpgrade findInvitation(SecurityGroup secGroup) {
-		String sb = "select invitation from invitationupgrade as invitation where invitation.securityGroup=:secGroup";
-		List<InvitationUpgrade> invitations = dbInstance.getCurrentEntityManager()
-				.createQuery(sb, InvitationUpgrade.class)
-				.setParameter("secGroup", secGroup)
-				.getResultList();
-		return invitations.isEmpty() ? null : invitations.get(0);
-	}
-	
-	private EPMapUpgradeToGroupRelation createDefaultGroup(EPMapUpgrade element, Group group) {
-		EPMapUpgradeToGroupRelation relation = new EPMapUpgradeToGroupRelation();
-		relation.setDefaultGroup(true);
-		relation.setCreationDate(new Date());
-		relation.setGroup(group);
-		relation.setEntry(element);
-		return relation;
-	}
-	
-	private Group findGroupOfBusinessGroup(SecurityGroup secGroup) {
-		StringBuilder sb = new StringBuilder(); 
-		sb.append("select bgi.baseGroup from ").append(BusinessGroupUpgrade.class.getName()).append(" as bgi ")
-		  .append(" where (bgi.partipiciantGroup=:secGroup or bgi.ownerGroup=:secGroup or bgi.waitingGroup=:secGroup)");
-
-		List<Group> res = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Group.class)
-				.setParameter("secGroup", secGroup)
-				.getResultList();
-
-		if(res.isEmpty()) return null;
-		return res.get(0);
-	}
-	
-	private RepositoryEntryUpgrade findMapRepoEntry(SecurityGroup ownerGroup) {
-		StringBuilder sb = new StringBuilder();	
-		sb.append("select v from ").append(RepositoryEntryUpgrade.class.getName()).append(" as v")
-		  .append(" where v.ownerGroup=:ownerGroup");
-		List<RepositoryEntryUpgrade> res = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), RepositoryEntryUpgrade.class)
-				.setParameter("ownerGroup", ownerGroup)
-				.getResultList();
-		if(res.size() > 0) {
-			return res.get(0);
-		}
-		return null;
-	}
-	
-	private List<EPMapUpgrade> findMaps(int firstResult, int maxResults) {
-		StringBuilder sb = new StringBuilder();	
-		sb.append("select map from ").append(EPMapUpgrade.class.getName()).append(" map")
-		  .append(" where map.ownerGroup is not null")
-		  .append(" order by map.key");
-		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), EPMapUpgrade.class)
-				.setFirstResult(firstResult)
-				.setMaxResults(maxResults)
-				.getResultList();
 	}
 
 	private void processSecurityGroup(Group group, String role, SecurityGroup secGroup) {

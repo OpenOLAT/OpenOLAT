@@ -1,9 +1,0 @@
-<div class="o_eportfolio_share_with_user clearfix">
-	<p>
-	#foreach($group in $groups)
-		<span class="o_deletableentry_wrapper"><span class="o_deletableentry">$group.name</span> $r.render($group.removeLinkName)</span>
-	#end
-	</p>
-	$r.render("choose.group")
-</div>
-

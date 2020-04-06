@@ -14,8 +14,4 @@
 	<property name="repositoryManager" ref="repositoryManager" />
 </bean>
 
-<bean id="liveBlogContextEntryControllerCreator" class="org.olat.modules.webFeed.portfolio.LiveBlogContextEntryControllerCreator">
-	<constructor-arg index="0" ref="feedManager"/>
-</bean> 
-
 </beans>

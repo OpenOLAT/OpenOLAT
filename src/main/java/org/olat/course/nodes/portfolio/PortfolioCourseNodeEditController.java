@@ -39,7 +39,6 @@ import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.course.nodes.ms.MSEditFormController;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -179,13 +178,6 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 	public static void removeReference(ModuleConfiguration moduleConfig) {
 		moduleConfig.remove(PortfolioCourseNodeConfiguration.MAP_KEY);
 		moduleConfig.remove(PortfolioCourseNodeConfiguration.REPO_SOFT_KEY);
-	}
-	
-	public static void setReference(RepositoryEntry repoEntry, PortfolioStructure map, ModuleConfiguration moduleConfig) {
-		moduleConfig.set(PortfolioCourseNodeConfiguration.MAP_KEY, map.getKey());
-		if(repoEntry != null && repoEntry.getSoftkey() != null) {
-			moduleConfig.set(PortfolioCourseNodeConfiguration.REPO_SOFT_KEY, repoEntry.getSoftkey());
-		}
 	}
 	
 	public static void setReference(RepositoryEntry repoEntry, ModuleConfiguration moduleConfig) {

@@ -40,7 +40,6 @@ import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.manager.MediaDAO;
 import org.olat.modules.portfolio.ui.media.CitationMediaController;
 import org.olat.modules.portfolio.ui.media.CollectCitationMediaController;
-import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.user.manager.ManifestBuilder;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,11 +94,6 @@ public class CitationHandler extends AbstractMediaHandler implements Interactive
 		ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_MEDIA_ADDED, getClass(),
 				LoggingResourceable.wrap(media));
 		return media;
-	}
-
-	@Override
-	public Media createMedia(AbstractArtefact artefact) {
-		return null;
 	}
 
 	@Override

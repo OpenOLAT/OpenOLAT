@@ -62,9 +62,9 @@ import org.olat.modules.portfolio.PortfolioElement;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
+import org.olat.modules.portfolio.manager.InvitationDAO;
 import org.olat.modules.portfolio.model.AccessRightChange;
 import org.olat.modules.portfolio.model.AccessRights;
-import org.olat.portfolio.manager.InvitationDAO;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 

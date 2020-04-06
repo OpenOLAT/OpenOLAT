@@ -6,7 +6,7 @@
   http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<bean id="collaborationToolsFactory" class="org.olat.collaboration.CollaborationToolsFactory" 
-		depends-on="instantMessagingModule,baseSecurityModule,portfolioModule,openmeetingsModule">
+		depends-on="instantMessagingModule,baseSecurityModule,openmeetingsModule">
 		<constructor-arg ref="coordinatorManager" />
 	</bean>
 

@@ -79,6 +79,7 @@ import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
+import org.olat.course.nodes.portfolio.PortfolioCourseNodeRunController;
 import org.olat.course.run.calendar.CourseLinkProviderController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -117,12 +118,6 @@ import org.olat.modules.wiki.WikiManager;
 import org.olat.modules.wiki.WikiSecurityCallback;
 import org.olat.modules.wiki.WikiSecurityCallbackImpl;
 import org.olat.modules.wiki.WikiToZipUtils;
-import org.olat.portfolio.EPSecurityCallback;
-import org.olat.portfolio.EPSecurityCallbackImpl;
-import org.olat.portfolio.EPUIFactory;
-import org.olat.portfolio.manager.EPFrontendManager;
-import org.olat.portfolio.model.structel.PortfolioStructureMap;
-import org.olat.portfolio.ui.structel.EPCreateMapController;
 import org.olat.properties.NarrowedPropertyManager;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
@@ -544,42 +539,30 @@ public class CollaborationTools implements Serializable {
 		Property mapProperty = npm.findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_PORTFOLIO);
 		if(mapProperty != null) {
 			return createPortfolioController(ureq, wControl, stackPanel, mapProperty);
-		} else {
-			return coordinatorManager.getCoordinator().getSyncer().doInSync(ores, () -> {
-				Controller ctrl;
-				Property mapKeyProperty = npm.findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_PORTFOLIO);
-				if (mapKeyProperty == null) {
-					PortfolioV2Module moduleV2 = CoreSpringFactory.getImpl(PortfolioV2Module.class);
-					if(moduleV2.isEnabled()) {
-						PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
-						Binder binder = portfolioService.createNewBinder(group.getName(), group.getDescription(), null, null);
-						CoreSpringFactory.getImpl(BinderUserInformationsDAO.class).updateBinderUserInformationsInSync(binder, ureq.getIdentity());
-						mapKeyProperty = npm.createPropertyInstance(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_PORTFOLIO, null, binder.getKey(), "2", null);
-						BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForBusinessGroup();
-						BinderController binderCtrl = new BinderController(ureq, wControl, stackPanel, secCallback, binder, BinderConfiguration.createBusinessGroupConfig());					
-						List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType("Toc");
-						binderCtrl.activate(ureq, entries, null);
-						ctrl = binderCtrl;
-
-						ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(binder));
-						ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_BINDER_CREATED, getClass());
-					} else {
-						EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
-						PortfolioStructureMap map = ePFMgr.createAndPersistPortfolioDefaultMap(group.getName(), group.getDescription());					
-						Translator pT = Util.createPackageTranslator(EPCreateMapController.class, ureq.getLocale());					
-						// add a page, as each map should have at least one per default!
-						ePFMgr.createAndPersistPortfolioPage(map, pT.translate("new.page.title"), pT.translate("new.page.desc"));
-						mapKeyProperty = npm.createPropertyInstance(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_PORTFOLIO, null, map.getKey(), null, null);
-						EPSecurityCallback secCallback = new EPSecurityCallbackImpl(true, true);
-						ctrl = EPUIFactory.createMapViewController(ureq, wControl, map, secCallback);
-					}
-					npm.saveProperty(mapKeyProperty);
-				} else {
-					ctrl = createPortfolioController(ureq, wControl, stackPanel, mapProperty);
-				}
-				return ctrl;
-			});
 		}
+		return coordinatorManager.getCoordinator().getSyncer().doInSync(ores, () -> {
+			Controller ctrl;
+			Property mapKeyProperty = npm.findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_PORTFOLIO);
+			PortfolioV2Module moduleV2 = CoreSpringFactory.getImpl(PortfolioV2Module.class);
+			if (mapKeyProperty == null && moduleV2.isEnabled()) {
+				PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
+				Binder binder = portfolioService.createNewBinder(group.getName(), group.getDescription(), null, null);
+				CoreSpringFactory.getImpl(BinderUserInformationsDAO.class).updateBinderUserInformationsInSync(binder, ureq.getIdentity());
+				mapKeyProperty = npm.createPropertyInstance(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_PORTFOLIO, null, binder.getKey(), "2", null);
+				BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForBusinessGroup();
+				BinderController binderCtrl = new BinderController(ureq, wControl, stackPanel, secCallback, binder, BinderConfiguration.createBusinessGroupConfig());					
+				List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType("Toc");
+				binderCtrl.activate(ureq, entries, null);
+				ctrl = binderCtrl;
+
+				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(binder));
+				ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_BINDER_CREATED, getClass());
+				npm.saveProperty(mapKeyProperty);
+			} else {
+				ctrl = createPortfolioController(ureq, wControl, stackPanel, mapProperty);
+			}
+			return ctrl;
+		});
 	}
 	
 	/**
@@ -608,16 +591,8 @@ public class CollaborationTools implements Serializable {
 				ctrl = new BinderController(ureq, wControl, stackPanel, secCallback, binder, BinderConfiguration.createBusinessGroupConfig());
 			}
 		} else {
-			PortfolioStructureMap map = (PortfolioStructureMap) CoreSpringFactory.getImpl(EPFrontendManager.class)
-					.loadPortfolioStructureByKey(key);
-			if(map == null) {
-				Translator trans = Util.createPackageTranslator(this.getClass(), ureq.getLocale());
-				String text = trans.translate("error.missing.map");
-				ctrl = MessageUIFactory.createErrorMessage(ureq, wControl, "", text);
-			} else {
-				EPSecurityCallback secCallback = new EPSecurityCallbackImpl(true, true);
-				ctrl = EPUIFactory.createMapViewController(ureq, wControl, map, secCallback);
-			}
+			Translator trans = Util.createPackageTranslator(PortfolioCourseNodeRunController.class, ureq.getLocale());
+			ctrl = MessageUIFactory.createInfoMessage(ureq, wControl, "", trans.translate("error.portfolioV1"));
 		}
 		return ctrl;
 	}

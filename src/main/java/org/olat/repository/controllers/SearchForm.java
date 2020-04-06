@@ -65,7 +65,6 @@ import org.olat.fileresource.types.WikiResource;
 import org.olat.fileresource.types.XlsFileResource;
 import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
-import org.olat.portfolio.EPTemplateMapResource;
 import org.olat.repository.RepositoryService;
 
 /**
@@ -282,7 +281,6 @@ public class SearchForm extends FormBasicController {
 		resources.add(BlogFileResource.TYPE_NAME);
 		resources.add(TestFileResource.TYPE_NAME);
 		resources.add(SurveyFileResource.TYPE_NAME);
-		resources.add(EPTemplateMapResource.TYPE_NAME);
 		resources.add(SharedFolderFileResource.TYPE_NAME);
 		resources.add(GlossaryResource.TYPE_NAME);
 		resources.add(PdfFileResource.TYPE_NAME);

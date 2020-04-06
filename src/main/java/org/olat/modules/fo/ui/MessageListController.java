@@ -107,8 +107,6 @@ import org.olat.modules.fo.ui.events.ErrorEditMessage;
 import org.olat.modules.fo.ui.events.SelectMessageEvent;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.ui.component.MediaCollectorComponent;
-import org.olat.portfolio.EPUIFactory;
-import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.repository.RepositoryEntry;
@@ -181,8 +179,6 @@ public class MessageListController extends BasicController implements GenericEve
 	private MarkingService markingService;
 	@Autowired
 	private BaseSecurityModule securityModule;
-	@Autowired
-	private EPFrontendManager epMgr;
 	@Autowired
 	private PortfolioV2Module portfolioModule;
 	@Autowired
@@ -430,12 +426,8 @@ public class MessageListController extends BasicController implements GenericEve
 	private MessageView loadView(UserRequest ureq, MessageLight message) {
 		Set<Long> rms =  null;
 		Map<String,Mark> marks = Collections.emptyMap();
-		Map<String,Long> artefactStats = Collections.emptyMap();
 		List<String> subPaths = Collections.singletonList(message.getKey().toString());
 		if(!guestOnly) {
-			String businessPath = BusinessControlFactory.getInstance().getAsString(getWindowControl().getBusinessControl()) + "[Message:" + message.getKey() + "]";
-			artefactStats = epMgr.getNumOfArtefactsByStartingBusinessPath(businessPath, getIdentity());
-
 			marks = new HashMap<>();
 			List<Mark> markList = markingService.getMarkManager().getMarks(forumOres, getIdentity(), subPaths);
 			for(Mark mark:markList) {
@@ -451,19 +443,15 @@ public class MessageListController extends BasicController implements GenericEve
 
 		MessageView view = new MessageView(message, userPropertyHandlers, getLocale());
 		view.setNumOfChildren(0);
-		addMessageToCurrentMessagesAndVC(ureq, message, view, marks, stats, artefactStats, rms);
+		addMessageToCurrentMessagesAndVC(ureq, message, view, marks, stats, rms);
 		return view;
 	}
 	
 	private List<MessageView> loadThread(UserRequest ureq, List<MessageLight> messages, boolean reorder) {
 		Set<Long> rms =  null;
 		Map<String,Mark> marks = Collections.emptyMap();
-		Map<String,Long> artefactStats = Collections.emptyMap();
 		if(!guestOnly) {
 			rms = forumManager.getReadSet(getIdentity(), forum);
-
-			String businessPath = BusinessControlFactory.getInstance().getAsString(getWindowControl().getBusinessControl()) + "[Message:";
-			artefactStats = epMgr.getNumOfArtefactsByStartingBusinessPath(businessPath, getIdentity());
 
 			marks = new HashMap<>(marks.size() * 2 + 1);
 			List<Mark> markList = markingService.getMarkManager().getMarks(forumOres, getIdentity(), null);
@@ -508,7 +496,7 @@ public class MessageListController extends BasicController implements GenericEve
 		
 		//append ui things
 		for (MessageLight msg: messages) {
-			addMessageToCurrentMessagesAndVC(ureq, msg, keyToViews.get(msg.getKey()), marks, stats, artefactStats, rms);
+			addMessageToCurrentMessagesAndVC(ureq, msg, keyToViews.get(msg.getKey()), marks, stats, rms);
 		}
 		
 		mainVC.contextPut("messages", views);
@@ -577,8 +565,7 @@ public class MessageListController extends BasicController implements GenericEve
 	}
 	
 	private void addMessageToCurrentMessagesAndVC(UserRequest ureq, MessageLight m, MessageView messageView,
-			Map<String,Mark> marks, Map<String,MarkResourceStat> stats, Map<String,Long> artefactStats,
-			Set<Long> readSet) {
+			Map<String,Mark> marks, Map<String,MarkResourceStat> stats, Set<Long> readSet) {
 		
 		// all values belonging to a message are stored in this map
 		// these values can be accessed in velocity. make sure you clean up
@@ -714,22 +701,12 @@ public class MessageListController extends BasicController implements GenericEve
 		}
 		
 		if(userIsMsgCreator && !StringHelper.containsNonWhitespace(m.getPseudonym())) {
-			OLATResourceable messageOres = OresHelper.createOLATResourceableInstance("Forum", m.getKey());
-			String businessPath = BusinessControlFactory.getInstance().getAsString(getWindowControl().getBusinessControl())
-					+ "[Message:" + m.getKey() + "]";
-			Long artefact = artefactStats.get(businessPath);
-			int numOfArtefact = artefact == null ? 0 : artefact.intValue();
 			if(portfolioModule.isEnabled()) {
+				String businessPath = BusinessControlFactory.getInstance().getAsString(getWindowControl().getBusinessControl())
+						+ "[Message:" + m.getKey() + "]";
 				String collectorId = "eportfolio_" + keyString;
 				Component collectorCmp = new MediaCollectorComponent(collectorId, getWindowControl(), m, forumMediaHandler, businessPath);
 				mainVC.put(collectorId, collectorCmp);
-			} else  {
-				Controller ePFCollCtrl = EPUIFactory
-						.createArtefactCollectWizzardController(ureq, getWindowControl(), numOfArtefact, messageOres, businessPath);
-				if (ePFCollCtrl != null) {
-					messageView.setArtefact(ePFCollCtrl);
-					mainVC.put("eportfolio_" + keyString, ePFCollCtrl.getInitialComponent());
-				}
 			}
 		}
 	}

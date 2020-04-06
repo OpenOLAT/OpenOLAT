@@ -46,7 +46,6 @@ import org.olat.course.nodes.feed.blog.BlogToolController;
 import org.olat.modules.webFeed.dispatching.Path;
 import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.modules.webFeed.model.ItemPublishDateComparator;
-import org.olat.modules.webFeed.portfolio.LiveBlogArtefactHandler;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResourceManager;
@@ -513,12 +512,6 @@ public class FeedViewHelper {
 			if (repositoryEntry != null){
 				ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(repositoryEntry);
 				jumpInLink = BusinessControlFactory.getInstance().getAsURIString(Collections.singletonList(ce), false);
-			} else {
-				// its a liveblog-helperFeed
-				final BusinessControlFactory bCF = BusinessControlFactory.getInstance();
-				String feedBP = LiveBlogArtefactHandler.LIVEBLOG + feed.getResourceableId() + "]";
-				final List<ContextEntry> ceList = bCF.createCEListFromString(feedBP);
-				jumpInLink = bCF.getAsURIString(ceList, true);
 			}
 		}
 		if(item != null && jumpInLink != null){

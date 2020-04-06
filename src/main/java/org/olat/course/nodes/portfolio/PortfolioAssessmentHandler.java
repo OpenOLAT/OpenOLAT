@@ -19,7 +19,6 @@
  */
 package org.olat.course.nodes.portfolio;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -44,7 +43,6 @@ import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.modules.portfolio.ui.PortfolioAssessmentDetailsController;
-import org.olat.portfolio.manager.EPStructureManager;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.stereotype.Service;
 
@@ -87,18 +85,7 @@ public class PortfolioAssessmentHandler implements AssessmentHandler {
 	}
 
 	private String getReferenceSoftkey(CourseNode courseNode) {
-		String referenceSoftkey = (String)courseNode.getModuleConfiguration().get(PortfolioCourseNodeConfiguration.REPO_SOFT_KEY);
-		if(referenceSoftkey == null) {
-			Long mapKey = (Long)courseNode.getModuleConfiguration().get(PortfolioCourseNodeConfiguration.MAP_KEY);
-			if(mapKey != null) {
-				RepositoryEntry re = CoreSpringFactory.getImpl(EPStructureManager.class)
-						.loadPortfolioRepositoryEntryByMapKey(mapKey);
-				if(re != null) {
-					referenceSoftkey = re.getSoftkey();
-				}
-			}
-		}
-		return referenceSoftkey;
+		return (String)courseNode.getModuleConfiguration().get(PortfolioCourseNodeConfiguration.REPO_SOFT_KEY);
 	}
 
 	@Override

@@ -64,7 +64,6 @@ import org.olat.modules.portfolio.model.MediaPart;
 import org.olat.modules.portfolio.ui.media.CollectImageMediaController;
 import org.olat.modules.portfolio.ui.media.ImageMediaController;
 import org.olat.modules.portfolio.ui.media.UploadMedia;
-import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.user.manager.ManifestBuilder;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -174,11 +173,6 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 				LoggingResourceable.wrap(media));
 		
 		return media;
-	}
-
-	@Override
-	public Media createMedia(AbstractArtefact artefact) {
-		return null;//no specific image document in old portfolio
 	}
 
 	@Override

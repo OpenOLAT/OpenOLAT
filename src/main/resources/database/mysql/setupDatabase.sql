@@ -855,95 +855,6 @@ create table if not exists o_bs_invitation (
    primary key (id)
 );
 
-create table if not exists o_ep_artefact (
-  artefact_id bigint not null,
-  artefact_type varchar(32) not null,
-  version mediumint unsigned not null,
-  creationdate datetime,
-  collection_date datetime,
-  title varchar(512),
-  description varchar(4000),
-  signature mediumint default 0,
-  businesspath varchar(2048),
-  fulltextcontent longtext,
-  reflexion longtext,
-  source varchar(2048),
-  add_prop1 varchar(2048),
-  add_prop2 varchar(2048),
-  add_prop3 varchar(2048),
-  fk_struct_el_id bigint,
-  fk_artefact_auth_id bigint not null,
-  primary key (artefact_id)
-);
-create table if not exists o_ep_collect_restriction (
-  collect_id bigint not null,
-  version mediumint unsigned not null,
-  creationdate datetime,
-  artefact_type varchar(256),
-  amount mediumint not null default -1,
-  restriction varchar(32),
-  pos mediumint unsigned not null default 0,
-  fk_struct_el_id bigint,
-  primary key (collect_id)
-);
-create table if not exists o_ep_struct_el (
-  structure_id bigint not null,
-  structure_type varchar(32) not null,
-  version mediumint unsigned not null,
-  creationdate datetime,
-  returndate datetime default null,
-  copydate datetime default null,
-  lastsyncheddate datetime default null,
-  deadline datetime default null,
-  title varchar(512),
-  description varchar(2048),
-  struct_el_source bigint,
-  target_resname varchar(50),
-  target_resid bigint,
-  target_ressubpath varchar(2048),
-  target_businesspath varchar(2048),
-  style varchar(128),
-  status varchar(32),
-  viewmode varchar(32),
-  fk_struct_root_id bigint,
-  fk_struct_root_map_id bigint,
-  fk_map_source_id bigint,
-  fk_group_id bigint,
-  fk_olatresource bigint not null,
-  primary key (structure_id)
-);
-create table if not exists o_ep_struct_struct_link (
-  link_id bigint not null,
-  version mediumint unsigned not null,
-  creationdate datetime,
-  pos mediumint unsigned not null default 0,
-  fk_struct_parent_id bigint not null,
-  fk_struct_child_id bigint not null,
-  primary key (link_id)
-);
-create table if not exists o_ep_struct_artefact_link (
-  link_id bigint not null,
-  version mediumint unsigned not null,
-  creationdate datetime,
-  pos mediumint unsigned not null default 0,
-  reflexion longtext,
-  fk_auth_id bigint,
-  fk_struct_id bigint not null,
-  fk_artefact_id bigint not null,
-  primary key (link_id)
-);
-create table o_ep_struct_to_group (
-   id bigint not null,
-   creationdate datetime not null,
-   r_defgroup boolean not null,
-   r_role varchar(64),
-   r_valid_from datetime,
-   r_valid_to datetime,
-   fk_group_id bigint,
-   fk_struct_id bigint,
-   primary key (id)
-);
-
 -- mail system
 
 create table if not exists o_mail (
@@ -3102,73 +3013,6 @@ create view o_bs_identity_short_v as (
    inner join o_user as us on (ident.id = us.fk_identity)
 );
 
--- eportfolio views
-create or replace view o_ep_notifications_struct_v as (
-   select
-      struct.structure_id as struct_id,
-      struct.structure_type as struct_type,
-      struct.title as struct_title,
-      struct.fk_struct_root_id as struct_root_id,
-      struct.fk_struct_root_map_id as struct_root_map_id,
-      (case when struct.structure_type = 'page' then struct.structure_id else parent_struct.structure_id end) as page_key,
-      struct_link.creationdate as creation_date
-   from o_ep_struct_el as struct
-   inner join o_ep_struct_struct_link as struct_link on (struct_link.fk_struct_child_id = struct.structure_id)
-   inner join o_ep_struct_el as parent_struct on (struct_link.fk_struct_parent_id = parent_struct.structure_id)
-   where struct.structure_type = 'page' or parent_struct.structure_type = 'page'
-);
-
-create or replace view o_ep_notifications_art_v as (
-   select
-      artefact.artefact_id as artefact_id,
-      artefact_link.link_id as link_id,
-      artefact.title as artefact_title,
-      (case when struct.structure_type = 'page' then struct.title else root_struct.title end ) as struct_title,
-      struct.structure_type as struct_type,
-      struct.structure_id as struct_id,
-      root_struct.structure_id as struct_root_id,
-      root_struct.structure_type as struct_root_type,
-      struct.fk_struct_root_map_id as struct_root_map_id,
-      (case when struct.structure_type = 'page' then struct.structure_id else root_struct.structure_id end ) as page_key,
-      artefact_link.fk_auth_id as author_id,
-      artefact_link.creationdate as creation_date
-   from o_ep_struct_el as struct
-   inner join o_ep_struct_artefact_link as artefact_link on (artefact_link.fk_struct_id = struct.structure_id)
-   inner join o_ep_artefact as artefact on (artefact_link.fk_artefact_id = artefact.artefact_id)
-   left join o_ep_struct_el as root_struct on (struct.fk_struct_root_id = root_struct.structure_id)
-);
-
-create or replace view o_ep_notifications_rating_v as (
-   select
-      urating.rating_id as rating_id,
-      map.structure_id as map_id,
-      map.title as map_title,
-      cast(urating.ressubpath as unsigned) as page_key,
-      page.title as page_title,
-      urating.creator_id as author_id,
-      urating.creationdate as creation_date,
-      urating.lastmodified as last_modified
-   from o_userrating as urating
-   inner join o_olatresource as rating_resource on (rating_resource.resid = urating.resid and rating_resource.resname = urating.resname)
-   inner join o_ep_struct_el as map on (map.fk_olatresource = rating_resource.resource_id)
-   left join o_ep_struct_el as page on (page.fk_struct_root_map_id = map.structure_id and page.structure_id = urating.ressubpath)
-);
-
-create or replace view o_ep_notifications_comment_v as (
-   select
-      ucomment.comment_id as comment_id,
-      map.structure_id as map_id,
-      map.title as map_title,
-      cast(ucomment.ressubpath as unsigned) as page_key,
-      page.title as page_title,
-      ucomment.creator_id as author_id,
-      ucomment.creationdate as creation_date
-   from o_usercomment as ucomment
-   inner join o_olatresource as comment_resource on (comment_resource.resid = ucomment.resid and comment_resource.resname = ucomment.resname)
-   inner join o_ep_struct_el as map on (map.fk_olatresource = comment_resource.resource_id)
-   left join o_ep_struct_el as page on (page.fk_struct_root_map_id = map.structure_id and page.structure_id = ucomment.ressubpath)
-);
-
 create view o_gp_business_to_repository_v as (
 	select
 		grp.group_id as grp_id,
@@ -3348,12 +3192,6 @@ alter table o_mark ENGINE = InnoDB;
 alter table o_info_message ENGINE = InnoDB;
 alter table o_tag ENGINE = InnoDB;
 alter table o_bs_invitation ENGINE = InnoDB;
-alter table o_ep_artefact ENGINE = InnoDB;
-alter table o_ep_collect_restriction ENGINE = InnoDB;
-alter table o_ep_struct_el ENGINE = InnoDB;
-alter table o_ep_struct_struct_link ENGINE = InnoDB;
-alter table o_ep_struct_artefact_link ENGINE = InnoDB;
-alter table o_ep_struct_to_group ENGINE = InnoDB;
 alter table o_co_db_entry ENGINE = InnoDB;
 alter table o_mail ENGINE = InnoDB;
 alter table o_mail_to_recipient ENGINE = InnoDB;
@@ -3791,27 +3629,6 @@ alter table o_aconnect_user add constraint aconn_ident_idx foreign key (fk_ident
 alter table o_bbb_meeting add constraint bbb_meet_entry_idx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);
 alter table o_bbb_meeting add constraint bbb_meet_grp_idx foreign key (fk_group_id) references o_gp_business (group_id);
 alter table o_bbb_meeting add constraint bbb_meet_template_idx foreign key (fk_template_id) references o_bbb_template (id);
-
--- eportfolio
-alter table o_ep_artefact add constraint FKF26C8375236F28X foreign key (fk_artefact_auth_id) references o_bs_identity (id);
-alter table o_ep_artefact add constraint FKA0070D12316A97B4 foreign key (fk_struct_el_id) references o_ep_struct_el (structure_id);
-
-alter table o_ep_struct_el add constraint FKF26C8375236F26X foreign key (fk_olatresource) references o_olatresource (resource_id);
-alter table o_ep_struct_el add constraint FK4ECC1C8D636191A1 foreign key (fk_map_source_id) references o_ep_struct_el (structure_id);
-alter table o_ep_struct_el add constraint FK4ECC1C8D76990817 foreign key (fk_struct_root_id) references o_ep_struct_el (structure_id);
-alter table o_ep_struct_el add constraint FK4ECC1C8D76990818 foreign key (fk_struct_root_map_id) references o_ep_struct_el (structure_id);
-
-alter table o_ep_collect_restriction add constraint FKA0070D12316A97B5 foreign key (fk_struct_el_id) references o_ep_struct_el (structure_id);
-
-alter table o_ep_struct_struct_link add constraint FKF26C8375236F22X foreign key (fk_struct_parent_id) references o_ep_struct_el (structure_id);
-alter table o_ep_struct_struct_link add constraint FKF26C8375236F23X foreign key (fk_struct_child_id) references o_ep_struct_el (structure_id);
-
-alter table o_ep_struct_artefact_link add constraint FKF26C8375236F24X foreign key (fk_struct_id) references o_ep_struct_el (structure_id);
-alter table o_ep_struct_artefact_link add constraint FKF26C8375236F25X foreign key (fk_artefact_id) references o_ep_artefact (artefact_id);
-alter table o_ep_struct_artefact_link add constraint FKF26C8375236F26Y foreign key (fk_auth_id) references o_bs_identity (id);
-
-alter table o_ep_struct_to_group add constraint struct_to_group_group_ctx foreign key (fk_group_id) references o_bs_group (id);
-alter table o_ep_struct_to_group add constraint struct_to_group_re_ctx foreign key (fk_struct_id) references o_ep_struct_el (structure_id);
 
 -- tag
 alter table o_tag add constraint FK6491FCA5A4FA5DC foreign key (fk_author_id) references o_bs_identity (id);

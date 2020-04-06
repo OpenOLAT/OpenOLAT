@@ -41,7 +41,7 @@ import org.olat.core.util.WorkThreadInformations;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.course.CourseModule;
 import org.olat.group.BusinessGroupService;
-import org.olat.portfolio.manager.InvitationDAO;
+import org.olat.modules.portfolio.manager.InvitationDAO;
 import org.olat.repository.RepositoryManager;
 import org.olat.restapi.system.vo.IndexerStatisticsVO;
 import org.olat.restapi.system.vo.OpenOLATStatisticsVO;

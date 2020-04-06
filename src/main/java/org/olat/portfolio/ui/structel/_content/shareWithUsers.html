@@ -1,9 +1,0 @@
-<div class="o_eportfolio_share_with_user clearfix">
-	<p>
-	#foreach($identity in $identities)
-		<span class="o_deletableentry_wrapper"><span class="o_deletableentry">$r.escapeHtml($identity.name)</span> $r.render($identity.removeLinkName)</span>
-	#end
-	</p>
-	$r.render("choose.identity")
-</div>
-

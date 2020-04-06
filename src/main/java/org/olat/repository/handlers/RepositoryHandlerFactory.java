@@ -77,7 +77,6 @@ public class RepositoryHandlerFactory {
 		// 40-49 Supporting resources
 		registerHandler(new SharedFolderHandler(), 40);
 		registerHandler(new GlossaryHandler(), 41);
-		registerHandler(new PortfolioHandler(), 42);
 		
 		
 		DocumentEditorDelegate wordDelegate = new DocumentEditorDelegate(new WordVFSEditorDelegateType());

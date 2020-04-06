@@ -28,15 +28,6 @@
 		<mapping-file>org/olat/course/nodes/projectbroker/datamodel/ProjectBroker.hbm.xml</mapping-file>
 		<mapping-file>org/olat/modules/openmeetings/model/OpenMeetingsReference.hbm.xml</mapping-file>
 		<mapping-file>org/olat/properties/Property.hbm.xml</mapping-file>
-		<mapping-file>org/olat/portfolio/model/artefacts/AbstractArtefact.hbm.xml</mapping-file>
-		<mapping-file>org/olat/modules/fo/portfolio/ForumArtefact.hbm.xml</mapping-file>
-		<mapping-file>org/olat/modules/wiki/portfolio/WikiArtefact.hbm.xml</mapping-file>
-		<mapping-file>org/olat/modules/webFeed/portfolio/BlogArtefact.hbm.xml</mapping-file>
-		<mapping-file>org/olat/modules/webFeed/portfolio/LiveBlogArtefact.hbm.xml</mapping-file>
-		<mapping-file>org/olat/course/assessment/portfolio/EfficiencyStatementArtefact.hbm.xml</mapping-file>
-		<mapping-file>org/olat/portfolio/model/structel/StructureElement.hbm.xml</mapping-file>
-		<mapping-file>org/olat/portfolio/model/notification/Notifications.hbm.xml</mapping-file>
-		<mapping-file>org/olat/portfolio/model/restriction/CollectRestriction.hbm.xml</mapping-file>
 		<mapping-file>org/olat/core/commons/services/mark/impl/MarkImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/core/commons/services/tagging/model/TagImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/core/util/mail/model/DBMail.hbm.xml</mapping-file>
@@ -49,8 +40,6 @@
 		<mapping-file>org/olat/upgrade/model/BGResourceRelation.hbm.xml</mapping-file>
 		<mapping-file>org/olat/upgrade/model/RepositoryEntryUpgrade.hbm.xml</mapping-file>
 		<class>org.olat.upgrade.model.RepositoryEntryUpgradeToGroupRelation</class>
-		<class>org.olat.upgrade.model.EPMapUpgrade</class>
-		<class>org.olat.upgrade.model.EPMapUpgradeToGroupRelation</class>
 		<class>org.olat.upgrade.model.InvitationUpgrade</class>
 		<class>org.olat.upgrade.model.UpgradeTaxonomyLevel</class>
 		<class>org.olat.upgrade.model.UpgradeQuestionItem</class>
@@ -235,6 +224,7 @@
 		<class>org.olat.modules.portfolio.model.AssessmentSectionImpl</class>
 		<class>org.olat.modules.portfolio.model.AssignmentImpl</class>
 		<class>org.olat.modules.portfolio.model.BinderUserInfosImpl</class>
+		<class>org.olat.modules.portfolio.model.InvitationImpl</class>
 		<class>org.olat.modules.qpool.model.PoolImpl</class>
 		<class>org.olat.modules.qpool.model.PoolToItem</class>
 		<class>org.olat.modules.qpool.model.PoolItemShortView</class>
@@ -274,8 +264,6 @@
 		<class>org.olat.modules.webFeed.model.FeedImpl</class>
 		<class>org.olat.modules.webFeed.model.ItemImpl</class>
 		<class>org.olat.ims.lti.model.LTIOutcomeImpl</class>
-		<class>org.olat.portfolio.model.InvitationImpl</class>
-		<class>org.olat.portfolio.model.structel.EPStructureElementToGroupRelation</class>
 		<class>org.olat.shibboleth.manager.ShibbolethAutoAccessMethod</class>
 		<class>org.olat.user.UserImpl</class>
 		<class>org.olat.user.model.AbsenceLeaveImpl</class>

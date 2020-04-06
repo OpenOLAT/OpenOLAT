@@ -63,7 +63,6 @@ import org.olat.fileresource.types.BlogFileResource;
 import org.olat.fileresource.types.PodcastFileResource;
 import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.manager.FeedManager;
-import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryManager;
@@ -467,12 +466,6 @@ public class FeedMediaDispatcher implements Dispatcher, GenericEventListener {
 			if (entry != null){
 				if (reSecurity != null && reSecurity.canLaunch()) {
 					hasAccess = true;
-				}
-			} else {
-				// no repository entry -> could be a feed without a repository-entry (ePortfolio-Blog-feed)
-				EPFrontendManager ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
-				if (ePFMgr.checkFeedAccess(feed, identity)){
-					return validAuthentication(identity, path.getToken());
 				}
 			}
 		}

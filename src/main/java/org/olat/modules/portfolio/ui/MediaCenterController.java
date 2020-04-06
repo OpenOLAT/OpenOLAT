@@ -89,12 +89,6 @@ import org.olat.modules.portfolio.ui.media.CollectTextMediaController;
 import org.olat.modules.portfolio.ui.media.CreateFileMediaController;
 import org.olat.modules.portfolio.ui.model.MediaRow;
 import org.olat.modules.portfolio.ui.renderer.MediaTypeCellRenderer;
-import org.olat.portfolio.PortfolioModule;
-import org.olat.portfolio.manager.EPFrontendManager;
-import org.olat.portfolio.model.artefacts.AbstractArtefact;
-import org.olat.portfolio.ui.EPArtefactPoolRunController;
-import org.olat.portfolio.ui.artefacts.view.EPArtefactChoosenEvent;
-import org.olat.portfolio.ui.artefacts.view.EPArtefactListChoosenEvent;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.OrderBy;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -113,7 +107,7 @@ public class MediaCenterController extends FormBasicController
 	private FormLink newMediaCallout;
 	private FlexiTableElement tableEl;
 	private String mapperThumbnailUrl;
-	private Link addFileLink, createFileLink, addMediaLink, addTextLink, addCitationLink, importArtefactV1Link;
+	private Link addFileLink, createFileLink, addMediaLink, addTextLink, addCitationLink;
 	
 	private int counter = 0;
 	private final boolean select;
@@ -126,7 +120,6 @@ public class MediaCenterController extends FormBasicController
 	private MediaUploadController mediaUploadCtrl;
 	private CreateFileMediaController createFileCtrl;
 	private CollectTextMediaController textUploadCtrl;
-	private EPArtefactPoolRunController importArtefactv1Ctrl;
 	private CollectCitationMediaController citationUploadCtrl;
 
 	private NewMediasController newMediasCtrl;
@@ -134,11 +127,6 @@ public class MediaCenterController extends FormBasicController
 	
 	@Autowired
 	private PortfolioService portfolioService;
-	
-	@Autowired
-	private EPFrontendManager legacyEPFontentManager;
-	@Autowired
-	private PortfolioModule legacyPortfolioModule;
 	 
 	public MediaCenterController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "medias");
@@ -192,13 +180,6 @@ public class MediaCenterController extends FormBasicController
 		addCitationLink = LinkFactory.createToolLink("add.citation", translate("add.citation"), this);
 		addCitationLink.setIconLeftCSS("o_icon o_icon-lg o_icon_citation");
 		stackPanel.addTool(addCitationLink, Align.left);
-		
-		// only if there are v1 artefacts available
-		if (legacyPortfolioModule.isEnabled() &&  legacyEPFontentManager.hasMapOrArtefact(getIdentity())) {
-			importArtefactV1Link = LinkFactory.createToolLink("import.artefactV1", translate("import.artefactV1"), this);
-			importArtefactV1Link.setIconLeftCSS("o_icon o_icon-lg o_icon_import");
-			stackPanel.addTool(importArtefactV1Link, Align.left);			
-		}
 	}
 
 	@Override
@@ -415,30 +396,6 @@ public class MediaCenterController extends FormBasicController
 					doSelect(ureq, citationUploadCtrl.getMediaReference().getKey());
 				}
 			}
-		} else if(importArtefactv1Ctrl == source) {
-			Media media = null;
-			if(event instanceof EPArtefactChoosenEvent) {
-				EPArtefactChoosenEvent cEvent = (EPArtefactChoosenEvent)event;
-				media = doImportArtefactV1(cEvent.getArtefact());
-				loadModel();
-				tableEl.reloadData();
-			} else if(event instanceof EPArtefactListChoosenEvent) {
-				EPArtefactListChoosenEvent cmEvent = (EPArtefactListChoosenEvent)event;
-				for(AbstractArtefact artefact:cmEvent.getArtefacts()) {
-					media = doImportArtefactV1(artefact);
-				}
-				if(cmEvent.getArtefacts().size() > 1) {
-					media = null;//only auto select a single media
-				}
-				loadModel();
-				tableEl.reloadData();
-				showInfo("message.imported.successfully", new String[]{ Integer.toString(cmEvent.getArtefacts().size()) });
-			}
-			cmc.deactivate();
-			cleanUp();
-			if(select && media != null) {
-				doSelect(ureq, media.getKey());
-			}
 		} else if(newMediasCtrl == source) {
 			newMediasCalloutCtrl.deactivate();
 			if("add.file".equals(event.getCommand())) {
@@ -449,8 +406,6 @@ public class MediaCenterController extends FormBasicController
 				doAddTextMedia(ureq);
 			} else if("add.citation".equals(event.getCommand())) {
 				doAddCitationMedia(ureq);
-			} else if("import.artefactV1".equals(event.getCommand())) {
-				doChooseArtefactV1(ureq);
 			}
 		} else if(detailsCtrl == source) {
 			if(event instanceof MediaEvent) {
@@ -468,13 +423,11 @@ public class MediaCenterController extends FormBasicController
 	}
 	
 	private void cleanUp() {
-		removeAsListenerAndDispose(importArtefactv1Ctrl);
 		removeAsListenerAndDispose(citationUploadCtrl);
 		removeAsListenerAndDispose(mediaUploadCtrl);
 		removeAsListenerAndDispose(createFileCtrl);
 		removeAsListenerAndDispose(textUploadCtrl);
 		removeAsListenerAndDispose(cmc);
-		importArtefactv1Ctrl = null;
 		citationUploadCtrl = null;
 		mediaUploadCtrl = null;
 		createFileCtrl = null;
@@ -494,8 +447,7 @@ public class MediaCenterController extends FormBasicController
 			doAddTextMedia(ureq);
 		} else if(addCitationLink == source) {
 			doAddCitationMedia(ureq);
-		} else if(importArtefactV1Link == source) {
-			doChooseArtefactV1(ureq);
+
 		} else if(source == mainForm.getInitialComponent()) {
 			if("ONCLICK".equals(event.getCommand())) {
 				String rowKeyStr = ureq.getParameter("img_select");
@@ -572,27 +524,6 @@ public class MediaCenterController extends FormBasicController
 		cmc = new CloseableModalController(getWindowControl(), null, citationUploadCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
-	}
-	
-	private void doChooseArtefactV1(UserRequest ureq) {
-		if(guardModalController(importArtefactv1Ctrl)) return;
-		
-		importArtefactv1Ctrl = new EPArtefactPoolRunController(ureq, this.getWindowControl(), true, false, true);
-		listenTo(importArtefactv1Ctrl);
-		
-		String title = translate("import.artefactV1");
-		cmc = new CloseableModalController(getWindowControl(), null, importArtefactv1Ctrl.getInitialComponent(), true, title, true);
-		listenTo(cmc);
-		cmc.activate();
-	}
-	
-	private Media doImportArtefactV1(AbstractArtefact oldArtefact) {
-		Media media = null;
-		MediaHandler handler = portfolioService.getMediaHandler(oldArtefact.getResourceableTypeName());
-		if(handler != null) {
-			media = handler.createMedia(oldArtefact);
-		}
-		return media;
 	}
 
 	private void doSelect(UserRequest ureq, Long mediaKey) {
@@ -715,12 +646,8 @@ public class MediaCenterController extends FormBasicController
 	}
 	
 	private static class NewMediasController extends BasicController {
-		@Autowired
-		private EPFrontendManager legacyEPFontentManager;
-		@Autowired
-		private PortfolioModule legacyPortfolioModule;
 
-		private final Link addFileLink, addMediaLink, addTextLink, addCitationLink, importArtefactV1Link;
+		private final Link addFileLink, addMediaLink, addTextLink, addCitationLink;
 		
 		public NewMediasController(UserRequest ureq, WindowControl wControl) {
 			super(ureq, wControl);
@@ -738,14 +665,6 @@ public class MediaCenterController extends FormBasicController
 			
 			addCitationLink = LinkFactory.createLink("add.citation", "add.citation", getTranslator(), mainVc, this, Link.LINK);
 			addCitationLink.setIconLeftCSS("o_icon o_icon_citation o_icon-fw");
-			
-			// only if there are v1 artefacts available
-			if (legacyPortfolioModule.isEnabled() && legacyEPFontentManager.hasMapOrArtefact(getIdentity())) {
-				importArtefactV1Link = LinkFactory.createLink("import.artefactV1", "import.artefactV1", getTranslator(), mainVc, this, Link.LINK);
-				importArtefactV1Link.setIconLeftCSS("o_icon o_icon_import o_icon-fw");
-			} else {
-				importArtefactV1Link = null;
-			}
 
 			putInitialPanel(mainVc);
 		}

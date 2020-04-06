@@ -27,7 +27,6 @@ package org.olat.basesecurity;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -70,7 +69,7 @@ import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.login.AuthBFWCParts;
 import org.olat.login.GuestBFWCParts;
-import org.olat.portfolio.manager.InvitationDAO;
+import org.olat.modules.portfolio.manager.InvitationDAO;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -238,7 +237,7 @@ public class AuthHelper {
 
 	public static int doInvitationLogin(String invitationToken, UserRequest ureq, Locale locale) {
 		InvitationDAO invitationDao = CoreSpringFactory.getImpl(InvitationDAO.class);
-		boolean hasPolicies = invitationDao.hasInvitations(invitationToken, new Date());
+		boolean hasPolicies = invitationDao.hasInvitations(invitationToken);
 		if(!hasPolicies) {
 			return LOGIN_DENIED;
 		}

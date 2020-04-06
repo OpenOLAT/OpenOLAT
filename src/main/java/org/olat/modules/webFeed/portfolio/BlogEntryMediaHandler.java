@@ -30,7 +30,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.io.SystemFileFilter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -41,17 +40,13 @@ import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaInformations;
 import org.olat.modules.portfolio.MediaLight;
 import org.olat.modules.portfolio.MediaRenderingHints;
-import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.handler.AbstractMediaHandler;
 import org.olat.modules.portfolio.manager.MediaDAO;
 import org.olat.modules.portfolio.manager.PortfolioFileStorage;
 import org.olat.modules.portfolio.ui.media.StandardEditMediaController;
 import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.manager.FeedManager;
-import org.olat.portfolio.manager.EPFrontendManager;
-import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.user.manager.ManifestBuilder;
-import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -72,8 +67,6 @@ public class BlogEntryMediaHandler extends AbstractMediaHandler {
 	private FeedManager feedManager;
 	@Autowired
 	private PortfolioFileStorage fileStorage;
-	@Autowired
-	private EPFrontendManager oldPortfolioManager;
 	
 	public BlogEntryMediaHandler() {
 		super(BLOG_ENTRY_HANDLER);
@@ -114,40 +107,13 @@ public class BlogEntryMediaHandler extends AbstractMediaHandler {
 		Media media = mediaDao.createMedia(title, description, "", BLOG_ENTRY_HANDLER, businessPath, null, 70, author);
 		File mediaDir = fileStorage.generateMediaSubDirectory(media);
 		String storagePath = fileStorage.getRelativePath(mediaDir);
-		media = mediaDao.updateStoragePath(media, storagePath, BlogArtefact.BLOG_FILE_NAME);
+		media = mediaDao.updateStoragePath(media, storagePath, "item.xml");
 		VFSContainer mediaContainer = fileStorage.getMediaContainer(media);
 		VFSContainer itemContainer = feedManager.getItemContainer(item);
 		FeedManager.getInstance().saveItemAsXML(item);
 		VFSManager.copyContent(itemContainer, mediaContainer);
 		FeedManager.getInstance().deleteItemXML(item);
 		
-		return media;
-	}
-
-	/**
-	 * Copy the item.xml and eventuel some attached medias.
-	 */
-	@Override
-	public Media createMedia(AbstractArtefact artefact) {
-		VFSContainer artefactFolder = oldPortfolioManager.getArtefactContainer(artefact);
-		String businessPath = artefact.getBusinessPath();
-		if(businessPath == null) {
-			businessPath = "[PortfolioV2:0][MediaCenter:0]";
-		}
-
-		String filename = null;
-		Media media = mediaDao.createMedia(artefact.getTitle(), artefact.getDescription(), filename, BLOG_ENTRY_HANDLER,
-				businessPath, artefact.getKey().toString(), artefact.getSignature(), artefact.getAuthor());
-		
-		File mediaDir = fileStorage.generateMediaSubDirectory(media);
-		String storagePath = fileStorage.getRelativePath(mediaDir);
-		mediaDao.updateStoragePath(media, storagePath, BlogArtefact.BLOG_FILE_NAME);
-		VFSContainer mediaContainer = fileStorage.getMediaContainer(media);
-		VFSManager.copyContent(artefactFolder, mediaContainer);
-		
-		ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_MEDIA_ADDED, getClass(),
-				LoggingResourceable.wrap(media));
-
 		return media;
 	}
 	

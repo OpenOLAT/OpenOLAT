@@ -60,12 +60,6 @@
 		<property name="enabled" value="${sites.enable.library}"/>
 		<property name="defaultSiteSecurityCallbackBeanId" value="registredSiteSecurityCallback"/>
 	</bean>
-	
-	<bean id="olatsites_portfolio" class="org.olat.portfolio.site.EPSiteDef">
-	   <property name="order" value="7" />
-	   <property name="enabled" value="${site.portfolio.enable}"/>
-	   	<property name="defaultSiteSecurityCallbackBeanId" value="registredSiteSecurityCallback"/>
-	</bean>
 
 	<bean id="olatsites_coaching" class="org.olat.modules.coach.site.CoachSiteDef">
 		<property name="order" value="8" />

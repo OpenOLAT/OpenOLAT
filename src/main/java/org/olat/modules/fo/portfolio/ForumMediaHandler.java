@@ -36,11 +36,7 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.SystemFileFilter;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.Message;
@@ -55,8 +51,6 @@ import org.olat.modules.portfolio.handler.AbstractMediaHandler;
 import org.olat.modules.portfolio.manager.MediaDAO;
 import org.olat.modules.portfolio.manager.PortfolioFileStorage;
 import org.olat.modules.portfolio.ui.media.StandardEditMediaController;
-import org.olat.portfolio.manager.EPFrontendManager;
-import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.user.manager.ManifestBuilder;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,8 +73,6 @@ public class ForumMediaHandler extends AbstractMediaHandler {
 	private ForumManager forumManager;
 	@Autowired
 	private PortfolioFileStorage fileStorage;
-	@Autowired
-	private EPFrontendManager oldPortfolioManager;
 	
 	public ForumMediaHandler() {
 		super(FORUM_HANDLER);
@@ -145,31 +137,6 @@ public class ForumMediaHandler extends AbstractMediaHandler {
 			}
 		}
 
-		return media;
-	}
-
-	@Override
-	public Media createMedia(AbstractArtefact artefact) {
-		VFSContainer artefactFolder = oldPortfolioManager.getArtefactContainer(artefact);
-
-		String businessPath = artefact.getBusinessPath();
-		if(businessPath == null) {
-			businessPath = "[PortfolioV2:0][MediaCenter:0]";
-		}
-		Media media = mediaDao.createMedia(artefact.getTitle(), artefact.getDescription(), null, FORUM_HANDLER,
-				businessPath, artefact.getKey().toString(), artefact.getSignature(), artefact.getAuthor());
-		ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_MEDIA_ADDED, getClass(),
-				LoggingResourceable.wrap(media));
-		
-		List<VFSItem> items = artefactFolder.getItems(new VFSSystemItemFilter());
-		if(items.size() > 0) {
-			File mediaDir = fileStorage.generateMediaSubDirectory(media);
-			String storagePath = fileStorage.getRelativePath(mediaDir);
-			mediaDao.updateStoragePath(media, storagePath, null);
-			VFSContainer mediaContainer = fileStorage.getMediaContainer(media);
-			VFSManager.copyContent(artefactFolder, mediaContainer);
-		}
-		
 		return media;
 	}
 

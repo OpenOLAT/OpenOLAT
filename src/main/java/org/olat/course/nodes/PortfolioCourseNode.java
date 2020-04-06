@@ -66,15 +66,10 @@ import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.portfolio.PortfolioService;
-import org.olat.portfolio.EPTemplateMapResource;
-import org.olat.portfolio.manager.EPFrontendManager;
-import org.olat.portfolio.manager.EPStructureManager;
-import org.olat.portfolio.model.structel.PortfolioStructure;
+import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.handlers.RepositoryHandler;
-import org.olat.repository.handlers.RepositoryHandlerFactory;
 
 
 /**
@@ -112,19 +107,8 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
 			MSCourseNode.initDefaultConfig(config);
-			config.setConfigurationVersion(CURRENT_CONFIG_VERSION);
 		} 
-		if (config.getConfigurationVersion() < 2) {
-			if(config.get(PortfolioCourseNodeConfiguration.REPO_SOFT_KEY) == null) {
-				Object mapKey = config.get(PortfolioCourseNodeConfiguration.MAP_KEY);
-				if(mapKey instanceof Long) {
-					EPStructureManager eSTMgr = (EPStructureManager) CoreSpringFactory.getBean("epStructureManager");
-					RepositoryEntry re = eSTMgr.loadPortfolioRepositoryEntryByMapKey((Long)mapKey);
-					config.set(PortfolioCourseNodeConfiguration.REPO_SOFT_KEY, re.getSoftkey());
-				}
-			}
-			config.setConfigurationVersion(2);
-		}
+		config.setConfigurationVersion(CURRENT_CONFIG_VERSION);
 	}
 	
 	@Override
@@ -163,7 +147,13 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 			String message = trans.translate("guestnoaccess.message");
 			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		} else {
-			controller = new PortfolioCourseNodeRunController(ureq, wControl, userCourseEnv, this);
+			RepositoryEntry mapEntry = getReferencedRepositoryEntry();
+			if(BinderTemplateResource.TYPE_NAME.equals(mapEntry.getOlatResource().getResourceableTypeName())) {
+				controller = new PortfolioCourseNodeRunController(ureq, wControl, userCourseEnv, this);
+			} else {
+				Translator trans = Util.createPackageTranslator(PortfolioCourseNodeRunController.class, ureq.getLocale());
+				controller = MessageUIFactory.createInfoMessage(ureq, wControl, "", trans.translate("error.portfolioV1"));
+			}
 		}
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_ep_icon");
 		return new NodeRunConstructionResult(ctrl);
@@ -197,12 +187,6 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 			if(entry != null) {
 				return entry;
 			}
-		}
-		Long mapKey = (Long)getModuleConfiguration().get(PortfolioCourseNodeConfiguration.MAP_KEY);
-		if(mapKey != null) {
-			EPStructureManager eSTMgr = (EPStructureManager) CoreSpringFactory.getBean("epStructureManager");
-			RepositoryEntry re = eSTMgr.loadPortfolioRepositoryEntryByMapKey(mapKey);
-			return re;
 		}
 		return null;
 	}
@@ -347,18 +331,6 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences) {
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
 		if (withReferences && rie.anyExportedPropertiesAvailable()) {
-
-			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(EPTemplateMapResource.TYPE_NAME);
-			RepositoryEntry re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
-					rie.getDescription(), false, organisation, locale, rie.importGetExportedFile(), null);
-			if(re != null) {
-				EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
-				PortfolioStructure map = ePFMgr.loadPortfolioStructure(re.getOlatResource());
-				PortfolioCourseNodeEditController.setReference(re, map, getModuleConfiguration());
-			} else {
-				PortfolioCourseNodeEditController.removeReference(getModuleConfiguration());
-			}
-		} else {
 			PortfolioCourseNodeEditController.removeReference(getModuleConfiguration());
 		}
 	}

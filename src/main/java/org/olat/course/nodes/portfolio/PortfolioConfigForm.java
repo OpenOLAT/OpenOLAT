@@ -36,10 +36,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.resource.OresHelper;
-import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.PortfolioCourseNode;
@@ -51,13 +48,6 @@ import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.modules.portfolio.ui.BinderController;
-import org.olat.portfolio.EPSecurityCallback;
-import org.olat.portfolio.EPSecurityCallbackImpl;
-import org.olat.portfolio.EPTemplateMapResource;
-import org.olat.portfolio.EPUIFactory;
-import org.olat.portfolio.manager.EPFrontendManager;
-import org.olat.portfolio.manager.EPStructureManager;
-import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,11 +58,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class PortfolioConfigForm extends FormBasicController {
 
+	private static final String[] BINDER_RESOURCE = new String[]{ BinderTemplateResource.TYPE_NAME};
+
 	private final ModuleConfiguration config;
 
 	private boolean inUse;
 	private Binder binder;
-	private PortfolioStructureMap map;
 	private RepositoryEntry mapEntry;
 	
 	private ReferencableEntriesSearchController searchController;
@@ -91,10 +82,6 @@ public class PortfolioConfigForm extends FormBasicController {
 	private final BreadcrumbPanel stackPanel;
 	
 	@Autowired
-	private EPFrontendManager ePFMgr;
-	@Autowired
-	private EPStructureManager eSTMgr;
-	@Autowired
 	private PortfolioService portfolioService;
 	
 	public PortfolioConfigForm(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
@@ -112,14 +99,6 @@ public class PortfolioConfigForm extends FormBasicController {
 				if (binder != null) {
 					inUse = portfolioService.isTemplateInUse(binder, courseEntry, courseNode.getIdent());
 				}
-			} else {
-			
-				map = (PortfolioStructureMap) ePFMgr.loadPortfolioStructure(mapEntry.getOlatResource());
-				Long courseResId = course.getResourceableId();
-				OLATResourceable courseOres = OresHelper.createOLATResourceableInstance(CourseModule.class, courseResId);
-				if (map != null) {
-					inUse = ePFMgr.isTemplateInUse(map, courseOres, courseNode.getIdent(), null);
-				}
 			}
 		}
 		
@@ -133,13 +112,13 @@ public class PortfolioConfigForm extends FormBasicController {
 
 		String name = getName(mapEntry);
 		mapNameElement = uifactory.addStaticTextElement("map-name", "selected.map", name, formLayout);
-		mapNameElement.setVisible(map == null && binder == null);
+		mapNameElement.setVisible(binder == null);
 		
 		previewMapLink = uifactory.addFormLink("preview", "selected.map", "selected.map", formLayout, Link.LINK);
 		previewMapLink.setCustomEnabledLinkCSS("o_preview");
 		previewMapLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 		previewMapLink.getComponent().setCustomDisplayText(name);
-		previewMapLink.setVisible(map != null || binder != null);
+		previewMapLink.setVisible(binder != null);
 		previewMapLink.setElementCssClass("o_sel_preview_map");
 		
 		if(formLayout instanceof FormLayoutContainer) {
@@ -155,20 +134,18 @@ public class PortfolioConfigForm extends FormBasicController {
 			editMapLink = uifactory.addFormLink("edit.map", buttonGroupLayout, Link.BUTTON);
 			editMapLink.setElementCssClass("o_sel_edit_map");
 			
-			chooseMapLink.setVisible(map == null && binder == null);
+			chooseMapLink.setVisible(binder == null);
 			chooseMapLink.setEnabled(!inUse);
 			chooseMapLink.setTextReasonForDisabling(translate("select.map.disabled.msg"));
-			changeMapLink.setVisible(map != null || binder != null);
+			changeMapLink.setVisible(binder != null);
 			changeMapLink.setEnabled(!inUse);
 			changeMapLink.setTextReasonForDisabling(translate("select.map.disabled.msg"));
-			editMapLink.setVisible(map != null || binder != null);
+			editMapLink.setVisible(binder != null);
 		}
 	}
 	
 	protected ModuleConfiguration getUpdatedConfig() {
-		if(map != null) {
-			PortfolioCourseNodeEditController.setReference(mapEntry, map, config);
-		} else if(binder != null) {
+		if(binder != null) {
 			PortfolioCourseNodeEditController.setReference(mapEntry, config);
 		}
 		return config;
@@ -203,9 +180,6 @@ public class PortfolioConfigForm extends FormBasicController {
 		}
 	}
 	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		super.event(ureq, source, event);
@@ -240,9 +214,8 @@ public class PortfolioConfigForm extends FormBasicController {
 		removeAsListenerAndDispose(searchController);
 		removeAsListenerAndDispose(cmc);
 		
-		searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq,
-				new String[]{ EPTemplateMapResource.TYPE_NAME, BinderTemplateResource.TYPE_NAME},
-				translate("select.map2"), false, true, false, false, false);			
+		searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, BINDER_RESOURCE,
+				translate("select.map2"), false, true, false, false, false);
 		listenTo(searchController);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), searchController.getInitialComponent(), true, translate("select.map"));
@@ -254,10 +227,7 @@ public class PortfolioConfigForm extends FormBasicController {
 		removeAsListenerAndDispose(previewCtr);
 		removeAsListenerAndDispose(columnLayoutCtr);
 		
-		if(map != null) {
-			EPSecurityCallback secCallback = new EPSecurityCallbackImpl(false, true);
-			previewCtr = EPUIFactory.createPortfolioStructureMapPreviewController(ureq, getWindowControl(), map, secCallback);
-		} else if(binder != null && stackPanel instanceof TooledStackedPanel) {
+		if(binder != null && stackPanel instanceof TooledStackedPanel) {
 			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getReadOnlyCallback();
 			BinderConfiguration bConfig = BinderConfiguration.createTemplateConfig(false);
 			previewCtr = new BinderController(ureq, getWindowControl(), (TooledStackedPanel)stackPanel, secCallback, binder, bConfig);
@@ -277,25 +247,21 @@ public class PortfolioConfigForm extends FormBasicController {
 		if (mapEntry != null) {
 			if(BinderTemplateResource.TYPE_NAME.equals(mapEntry.getOlatResource().getResourceableTypeName())) {
 				binder = portfolioService.getBinderByResource(mapEntry.getOlatResource());
-				map = null;
-			} else {
-				map = (PortfolioStructureMap)eSTMgr.loadPortfolioStructure(mapEntry.getOlatResource());
-				binder = null;
 			}
 		}
 		String name = getName(mapEntry);
 		mapNameElement.setValue(name);
-		mapNameElement.setVisible(map == null && binder == null);
+		mapNameElement.setVisible(binder == null);
 		
-		previewMapLink.setVisible(map != null || binder != null);
+		previewMapLink.setVisible(binder != null);
 		previewMapLink.getComponent().setCustomDisplayText(name);
 		previewMapLink.getComponent().setDirty(true);
 		
-		chooseMapLink.setVisible(map == null && binder == null);
-		changeMapLink.setVisible(map != null || binder != null);
-		editMapLink.setVisible(map != null || binder != null);
+		chooseMapLink.setVisible(binder == null);
+		changeMapLink.setVisible(binder != null);
+		editMapLink.setVisible(binder != null);
 		
-		mapNameElement.setVisible(map == null && binder == null);
+		mapNameElement.setVisible(binder == null);
 		flc.setDirty(true);
 	}
 	

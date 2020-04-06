@@ -70,7 +70,6 @@ import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.modules.webFeed.model.ItemImpl;
 import org.olat.modules.webFeed.portfolio.BlogEntryMedia;
 import org.olat.modules.webFeed.portfolio.BlogEntryMediaHandler;
-import org.olat.portfolio.EPUIFactory;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -188,7 +187,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 		startpageLink = LinkFactory.createLink("feed.startpage", vcItems, this);
 		startpageLink.setCustomEnabledLinkCSS("o_first_page");
 
-		createEditButtons(ureq, feed);
+		createEditButtons(feed);
 
 		// Add item details page link
 		createItemLinks();
@@ -231,11 +230,10 @@ public class ItemsController extends BasicController implements Activateable2 {
 
 	/**
 	 * Creates all necessary buttons for editing the feed's items
-	 *
 	 * @param feed
 	 *            the current feed object
 	 */
-	private void createEditButtons(UserRequest ureq, Feed feed) {
+	private void createEditButtons(Feed feed) {
 		editButtons = new ArrayList<>();
 		deleteButtons = new ArrayList<>();
 		artefactLinks = new HashMap<>();
@@ -244,7 +242,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 			addItemButton.setElementCssClass("o_sel_feed_item_new");
 			if (accessibleItems != null) {
 				for (Item item : accessibleItems) {
-					createButtonsForItem(ureq, feed, item);
+					createButtonsForItem(feed, item);
 				}
 			}
 		} else if (feed.isExternal()) {
@@ -364,7 +362,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 		}
 	}
 
-	private void createButtonsForItem(UserRequest ureq, Feed feed, Item item) {
+	private void createButtonsForItem(Feed feed, Item item) {
 		boolean author = getIdentity().getKey().equals(item.getAuthorKey());
 		boolean edit = callback.mayEditItems() || (author && callback.mayEditOwnItems());
 		boolean delete = callback.mayDeleteItems() || (author && callback.mayDeleteOwnItems());
@@ -396,13 +394,6 @@ public class ItemsController extends BasicController implements Activateable2 {
 				MediaCollectorComponent collectorCmp = new MediaCollectorComponent(name, getWindowControl(), media,
 						blogMediaHandler, businessPath);
 				vcItems.put(name, collectorCmp);
-			} else {
-				Controller artefactCtrl = EPUIFactory.createArtefactCollectWizzardController(ureq, getWindowControl(),
-						feedResource, businessPath);
-				if (artefactCtrl != null) {
-					artefactLinks.put(item, artefactCtrl);
-					vcItems.put("feed.artefact.item.".concat(guid), artefactCtrl.getInitialComponent());
-				}
 			}
 		}
 
@@ -531,19 +522,19 @@ public class ItemsController extends BasicController implements Activateable2 {
 			}
 		} else if (source == olderItemsLink) {
 			helper.olderItems();
-			createEditButtons(ureq, feedResource);
+			createEditButtons(feedResource);
 			createCommentsAndRatingsLinks(ureq, feedResource);
 			vcItems.setDirty(true);
 
 		} else if (source == newerItemsLink) {
 			helper.newerItems();
-			createEditButtons(ureq, feedResource);
+			createEditButtons(feedResource);
 			createCommentsAndRatingsLinks(ureq, feedResource);
 			vcItems.setDirty(true);
 
 		} else if (source == startpageLink) {
 			helper.startpage();
-			createEditButtons(ureq, feedResource);
+			createEditButtons(feedResource);
 			createCommentsAndRatingsLinks(ureq, feedResource);
 			vcItems.setDirty(true);
 
@@ -623,7 +614,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 					fireEvent(ureq, ItemsController.FEED_INFO_IS_DIRTY_EVENT);
 				} else {
 					if (callback.mayEditItems() || callback.mayCreateItems()) {
-						createEditButtons(ureq, feedResource);
+						createEditButtons(feedResource);
 					}
 					createCommentsAndRatingsLinks(ureq, feedResource);
 				}
@@ -655,7 +646,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 							// feed
 							feedResource = feedManager.createItem(feedResource, currentItem, mediaFile);
 							if (feedResource != null) {
-								createButtonsForItem(ureq, feedResource, currentItem);
+								createButtonsForItem(feedResource, currentItem);
 								createItemLink(currentItem);
 								// Add date component
 								String guid = currentItem.getGuid();
@@ -741,7 +732,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 				}
 			}
 			if (callback.mayEditItems() || callback.mayCreateItems()) {
-				createEditButtons(ureq, feedResource);
+				createEditButtons(feedResource);
 			}
 			createCommentsAndRatingsLinks(ureq, feedResource);
 			vcItems.setDirty(true);

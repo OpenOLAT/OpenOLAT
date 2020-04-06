@@ -36,11 +36,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.resource.OresHelper;
-import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeConfiguration.DeadlineType;
@@ -48,8 +45,6 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.handler.BinderTemplateResource;
-import org.olat.portfolio.manager.EPFrontendManager;
-import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -79,8 +74,6 @@ public class PortfolioTextForm extends FormBasicController {
 	private final RepositoryEntry courseEntry;
 	
 	@Autowired
-	private EPFrontendManager ePFMgr;
-	@Autowired
 	private PortfolioService portfolioService;
 	
 	public PortfolioTextForm(UserRequest ureq, WindowControl wControl, ICourse course, PortfolioCourseNode courseNode) {
@@ -100,15 +93,6 @@ public class PortfolioTextForm extends FormBasicController {
 					inUse = portfolioService.isTemplateInUse(binder, courseEntry, courseNode.getIdent());
 				}
 				withDeadline = false;
-			} else {
-				PortfolioStructureMap template = (PortfolioStructureMap)ePFMgr.loadPortfolioStructure(mapEntry.getOlatResource());
-				Long courseResId = courseEntry.getOlatResource().getResourceableId();
-				OLATResourceable courseOres = OresHelper
-						.createOLATResourceableInstance(CourseModule.class, courseResId);
-				if (template != null) {
-					inUse = ePFMgr.isTemplateInUse(template, courseOres, courseNode.getIdent(), null);
-				}
-				withDeadline = true;
 			}
 		} else {
 			withDeadline = true;

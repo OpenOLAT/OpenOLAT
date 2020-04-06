@@ -91,7 +91,6 @@ import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.wiki.WikiManager;
 import org.olat.modules.wiki.WikiModule;
-import org.olat.portfolio.PortfolioModule;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
@@ -228,8 +227,6 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private CalendarModule calendarModule;
 	@Autowired
 	private InstantMessagingModule imModule;
-	@Autowired
-	private PortfolioModule portfolioModule;
 	@Autowired
 	private PortfolioV2Module portfolioV2Module;
 	@Autowired
@@ -892,6 +889,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_CLOSED, getClass());
 		
@@ -1231,8 +1229,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			nodeWiki = gtnChild;
 		}
 			
-		if (collabTools.isToolEnabled(CollaborationTools.TOOL_PORTFOLIO) &&
-				(portfolioModule.isEnabled() || portfolioV2Module.isEnabled())) {
+		if (portfolioV2Module.isEnabled() && collabTools.isToolEnabled(CollaborationTools.TOOL_PORTFOLIO)) {
 			gtnChild = new GenericTreeNode(nodeIdPrefix.concat("eportfolio"));
 			gtnChild.setTitle(translate("menutree.portfolio"));
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_PORTFOLIO);

@@ -22,7 +22,6 @@ package org.olat.modules.fo.ui;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.core.gui.control.Controller;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.modules.fo.MessageLight;
@@ -58,7 +57,6 @@ public class MessageView extends MessageLightView {
 	private List<VFSItem> attachments;
 	private VFSContainer messageContainer;
 	
-	private Controller artefact;
 	private DisplayPortraitController portrait;
 	
 	public MessageView(MessageLight message, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
@@ -194,19 +192,5 @@ public class MessageView extends MessageLightView {
 	public void setPortrait(DisplayPortraitController portrait) {
 		this.portrait = portrait;
 	}
-
-	public Controller getArtefact() {
-		return artefact;
-	}
-
-	public void setArtefact(Controller artefact) {
-		this.artefact = artefact;
-	}
-	
-	
-
-
-	
-	
 
 }

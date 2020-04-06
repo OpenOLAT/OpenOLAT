@@ -39,7 +39,6 @@ import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSManager;
 import org.olat.modules.ceditor.InteractiveAddPageElementHandler;
 import org.olat.modules.ceditor.PageElementAddController;
 import org.olat.modules.ceditor.PageElementCategory;
@@ -53,9 +52,6 @@ import org.olat.modules.portfolio.manager.PortfolioFileStorage;
 import org.olat.modules.portfolio.ui.media.CollectFileMediaController;
 import org.olat.modules.portfolio.ui.media.FileMediaController;
 import org.olat.modules.portfolio.ui.media.UploadMedia;
-import org.olat.portfolio.manager.EPFrontendManager;
-import org.olat.portfolio.model.artefacts.AbstractArtefact;
-import org.olat.portfolio.model.artefacts.FileArtefact;
 import org.olat.user.manager.ManifestBuilder;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,8 +72,6 @@ public class FileHandler extends AbstractMediaHandler implements InteractiveAddP
 	private MediaDAO mediaDao;
 	@Autowired
 	private PortfolioFileStorage fileStorage;
-	@Autowired
-	private EPFrontendManager oldPortfolioManager;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 	
@@ -159,36 +153,6 @@ public class FileHandler extends AbstractMediaHandler implements InteractiveAddP
 		FileUtils.copyFileToFile(file, mediaFile, false);
 		String storagePath = fileStorage.getRelativePath(mediaDir);
 		mediaDao.updateStoragePath(media, storagePath, filename);
-		return media;
-	}
-
-	@Override
-	public Media createMedia(AbstractArtefact artefact) {
-		Media media = null;
-		if(artefact instanceof FileArtefact) {
-			VFSContainer artefactFolder = oldPortfolioManager.getArtefactContainer(artefact);
-			String filename = ((FileArtefact)artefact).getFilename();
-			String extension = FileUtils.getFileSuffix(filename);
-			String type = FILE_TYPE;
-			if("jpg".equalsIgnoreCase(extension) || "jpeg".equalsIgnoreCase(extension)
-					|| "png".equalsIgnoreCase(extension) || "gif".equalsIgnoreCase(extension)) {
-				type = ImageHandler.IMAGE_TYPE;
-			}
-			String businessPath = artefact.getBusinessPath();
-			if(businessPath == null) {
-				businessPath = "[PortfolioV2:0][MediaCenter:0]";
-			}
-			media = mediaDao.createMedia(artefact.getTitle(), artefact.getDescription(), filename, type,
-					businessPath, artefact.getKey().toString(), artefact.getSignature(), artefact.getAuthor());
-			ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_MEDIA_ADDED, getClass(),
-					LoggingResourceable.wrap(media));
-		
-			File mediaDir = fileStorage.generateMediaSubDirectory(media);
-			String storagePath = fileStorage.getRelativePath(mediaDir);
-			mediaDao.updateStoragePath(media, storagePath, filename);
-			VFSContainer mediaContainer = fileStorage.getMediaContainer(media);
-			VFSManager.copyContent(artefactFolder, mediaContainer);
-		}
 		return media;
 	}
 

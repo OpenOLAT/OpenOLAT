@@ -37,7 +37,6 @@
 	<import resource="classpath:/org/olat/instantMessaging/_spring/instantMessagingContext.xml"/>
 	<import resource="classpath:/org/olat/ldap/_spring/ldapContext.xml"/>
 	<import resource="classpath:/org/olat/login/_spring/loginContext.xml"/>
-	<import resource="classpath:/org/olat/portfolio/_spring/portfolioContext.xml"/>
 	<import resource="classpath:/org/olat/properties/_spring/propertiesContext.xml"/>
 	<import resource="classpath:/org/olat/registration/_spring/registrationContext.xml"/>
 	<import resource="classpath:/org/olat/repository/_spring/repositoryContext.xml"/>

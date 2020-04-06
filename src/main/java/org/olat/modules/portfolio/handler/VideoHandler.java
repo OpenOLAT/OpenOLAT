@@ -54,7 +54,6 @@ import org.olat.modules.portfolio.manager.PortfolioFileStorage;
 import org.olat.modules.portfolio.ui.media.CollectVideoMediaController;
 import org.olat.modules.portfolio.ui.media.UploadMedia;
 import org.olat.modules.portfolio.ui.media.VideoMediaController;
-import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.user.manager.ManifestBuilder;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -161,11 +160,6 @@ public class VideoHandler extends AbstractMediaHandler implements InteractiveAdd
 		String storagePath = fileStorage.getRelativePath(mediaDir);
 		mediaDao.updateStoragePath(media, storagePath, filename);
 		return media;
-	}
-
-	@Override
-	public Media createMedia(AbstractArtefact artefact) {
-		return null;//no specific image document in old portfolio
 	}
 
 	@Override

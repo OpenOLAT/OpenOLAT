@@ -52,7 +52,6 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
@@ -62,14 +61,12 @@ import org.olat.core.util.Util;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.io.SystemFileFilter;
 import org.olat.core.util.nodes.INode;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
-import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
@@ -113,11 +110,6 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.scorm.assessment.CmiData;
 import org.olat.modules.scorm.assessment.ScormAssessmentManager;
-import org.olat.portfolio.PortfolioModule;
-import org.olat.portfolio.manager.EPFrontendManager;
-import org.olat.portfolio.model.structel.EPStructureElement;
-import org.olat.portfolio.model.structel.PortfolioStructureMap;
-import org.olat.portfolio.model.structel.StructureStatusEnum;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -152,8 +144,6 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 	@Autowired
 	private GTAManager gtaManager;
 	@Autowired
-	private EPFrontendManager ePFMgr;
-	@Autowired
 	private QTIResultManager qtiResultManager;
 	@Autowired
 	private RepositoryService repositoryService;
@@ -162,9 +152,6 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	
-
-	@Autowired
-	private PortfolioModule portfolioModule;
 	@Autowired
 	private PortfolioV2Module portfolioV2Module;
 
@@ -206,38 +193,14 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 	private boolean upgradePortfolioSettings(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
 		boolean allOk = true;
 		if (!uhd.getBooleanDataValue(PORTFOLIO_SETTINGS)) {
-			if(portfolioModule.isEnabled()) {
-				portfolioV2Module.setEnabled(true);
-				
-				boolean hasMaps = hasMap();
-				if(!hasMaps) {
-					portfolioModule.setEnabled(false);
-				}
-			} else {
-				boolean hasBinder = hasBinder();
-				if(!hasBinder) {
-					portfolioV2Module.setEnabled(false);
-				}
+			boolean hasBinder = hasBinder();
+			if(!hasBinder) {
+				portfolioV2Module.setEnabled(false);
 			}
 			uhd.setBooleanDataValue(PORTFOLIO_SETTINGS, allOk);
 			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
 		return allOk;
-	}
-	
-	private boolean hasMap() {
-		try {
-			StringBuilder sb = new StringBuilder();
-			sb.append("select stEl.key from ").append(EPStructureElement.class.getName()).append(" stEl ");
-			List<Long> count =	dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
-					.setFirstResult(0)
-					.setMaxResults(1)
-					.getResultList();
-			return count != null && count.size() > 0 && count.get(0) != null && count.get(0) >= 0;
-		} catch (Exception e) {
-			log.error("", e);
-			return true;
-		}
 	}
 	
 	private boolean hasBinder() {
@@ -410,7 +373,6 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 			
 			//check the transient qti ser
 			CourseNode rootNode = course.getRunStructure().getRootNode();
-			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 			new TreeVisitor(new Visitor() {
 				@Override
 				public void visit(INode node) {
@@ -819,8 +781,6 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 				processAssessmentPropertyForTA(assessedIdentity, entry, (TACourseNode)courseNode, course);
 			} else if(courseNode instanceof IQTESTCourseNode) {
 				processAssessmentPropertyForIQTEST(assessedIdentity, entry, (IQTESTCourseNode)courseNode, course);
-			} else if(courseNode instanceof PortfolioCourseNode) {
-				processAssessmentPropertyForPortfolio(assessedIdentity, entry, (PortfolioCourseNode)courseNode, course);
 			} else if(courseNode instanceof MSCourseNode) {
 				entry.setAssessmentStatus(AssessmentEntryStatus.inReview);
 			} else if(courseNode instanceof BasicLTICourseNode) {
@@ -946,29 +906,6 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 		}
 		qtiEssayMap.put(testEntry.getKey(), Boolean.FALSE);
 		return false;
-	}
-	
-	private void processAssessmentPropertyForPortfolio(Identity assessedIdentity, AssessmentEntryImpl entry, PortfolioCourseNode cNode, ICourse course) {
-		entry.setAssessmentStatus(AssessmentEntryStatus.notStarted);
-		
-		Long courseResId = course.getCourseEnvironment().getCourseResourceableId();
-		RepositoryEntry mapEntry = cNode.getReferencedRepositoryEntry();
-		if(mapEntry != null) {
-			PortfolioStructureMap template = (PortfolioStructureMap) ePFMgr.loadPortfolioStructure(mapEntry.getOlatResource());
-			if(template != null) {
-				OLATResourceable courseOres = OresHelper.createOLATResourceableInstance(CourseModule.class, courseResId);
-				PortfolioStructureMap copy = ePFMgr.loadPortfolioStructureMap(assessedIdentity, template, courseOres, cNode.getIdent(), null);
-				if(copy != null) {
-					String status = copy.getStatus();
-					if(StructureStatusEnum.CLOSED.equals(status)) {
-						entry.setAssessmentStatus(AssessmentEntryStatus.inReview);
-						
-					} else {
-						entry.setAssessmentStatus(AssessmentEntryStatus.inProgress);
-					}
-				}
-			}
-		}
 	}
 	
 	/**

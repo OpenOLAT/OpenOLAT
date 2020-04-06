@@ -29,7 +29,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.user.manager.ManifestBuilder;
 
 /**
@@ -55,8 +54,6 @@ public interface MediaHandler {
 	public MediaInformations getInformations(Object mediaObject);
 	
 	public Media createMedia(String title, String description, Object mediaObject, String businessPath, Identity author);
-	
-	public Media createMedia(AbstractArtefact artefact);
 	
 	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints);
 	

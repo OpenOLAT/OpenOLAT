@@ -42,7 +42,6 @@ import org.olat.modules.portfolio.handler.AbstractMediaHandler;
 import org.olat.modules.portfolio.manager.MediaDAO;
 import org.olat.modules.portfolio.ui.media.StandardEditMediaController;
 import org.olat.modules.wiki.WikiPage;
-import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.user.manager.ManifestBuilder;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,22 +103,6 @@ public class WikiMediaHandler extends AbstractMediaHandler {
 			content = page.getContent();
 		}
 		Media media = mediaDao.createMedia(title, description, content, WIKI_HANDLER, businessPath, null, 70, author);
-		ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_MEDIA_ADDED, getClass(),
-				LoggingResourceable.wrap(media));
-		return media;
-	}
-
-	@Override
-	public Media createMedia(AbstractArtefact artefact) {
-		String title = artefact.getTitle();
-		String description = artefact.getDescription();
-		String content = artefact.getFulltextContent();
-		String businessPath = artefact.getBusinessPath();
-		if(businessPath == null) {
-			businessPath = "[PortfolioV2:0][MediaCenter:0]";
-		}
-		Media media = mediaDao.createMedia(title, description, content, WIKI_HANDLER, businessPath,
-				artefact.getKey().toString(), artefact.getSignature(), artefact.getAuthor());
 		ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_MEDIA_ADDED, getClass(),
 				LoggingResourceable.wrap(media));
 		return media;

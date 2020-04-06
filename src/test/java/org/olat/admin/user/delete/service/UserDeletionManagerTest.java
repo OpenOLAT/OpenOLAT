@@ -51,13 +51,6 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
-import org.olat.portfolio.manager.EPFrontendManager;
-import org.olat.portfolio.manager.EPStructureManager;
-import org.olat.portfolio.manager.EPStructureManagerTest;
-import org.olat.portfolio.model.artefacts.AbstractArtefact;
-import org.olat.portfolio.model.structel.ElementType;
-import org.olat.portfolio.model.structel.PortfolioStructure;
-import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.test.JunitTestHelper;
@@ -82,10 +75,6 @@ public class UserDeletionManagerTest extends OlatTestCase {
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
-	private EPFrontendManager epFrontendManager;
-	@Autowired
-	private EPStructureManager epStructureManager;
-	@Autowired
 	private UserDeletionManager userDeletionManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
@@ -103,16 +92,6 @@ public class UserDeletionManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		// add some stuff
 		
-		//a default map
-		PortfolioStructureMap map = epFrontendManager.createAndPersistPortfolioDefaultMap(identity, "A map to delete", "This map must be deleted");
-		Assert.assertNotNull(map);
-		//a template
-		PortfolioStructureMap template = EPStructureManagerTest.createPortfolioMapTemplate(identity, "A template to delete", "This template must be deleted");
-		epStructureManager.savePortfolioStructure(template);
-		//an artefact
-		AbstractArtefact artefact = epFrontendManager.createAndPersistArtefact(identity, "Forum");
-		dbInstance.commit();
-		Assert.assertNotNull(artefact);
 		//a group
 		BusinessGroup group = businessGroupService.createBusinessGroup(identity, "Group", "Group", -1, -1, false, false, null);
 		Assert.assertNotNull(group);
@@ -130,17 +109,6 @@ public class UserDeletionManagerTest extends OlatTestCase {
 		//check
 		Identity deletedIdentity = securityManager.loadIdentityByKey(identity.getKey());
 		Assert.assertNotNull(deletedIdentity);
-		
-		//check that the artefacts are deleted
-		List<AbstractArtefact> artefacts = epFrontendManager.getArtefactPoolForUser(deletedIdentity);
-		Assert.assertNull(artefacts);
-		//check that the maps are deleted (1)
-		List<PortfolioStructure> maps = epFrontendManager.getStructureElementsForUser(deletedIdentity, ElementType.DEFAULT_MAP);
-		Assert.assertNotNull(maps);
-		Assert.assertEquals(0, maps.size());
-		//check that the maps are deleted (2)
-		PortfolioStructure deletedMap = epStructureManager.loadPortfolioStructureByKey(map.getKey());
-		Assert.assertNull(deletedMap);
 		
 		//check membership of group
 		boolean isMember = businessGroupService.isIdentityInBusinessGroup(deletedIdentity, group);
