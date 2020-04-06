@@ -195,7 +195,7 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 			boolean ok = checkConnection(errors);
 			if(!ok || errors.hasErrors()) {
 				sharedSecretEl.setValue("");
-				urlEl.setErrorKey("error.customerDoesntExist", null);
+				urlEl.setErrorKey("error.connectionValidationFailed", new String[] {errors.getErrorMessages()});
 				allOk &= false;
 			}
 		} catch (Exception e) {
