@@ -208,6 +208,8 @@ public class RepositoryEntrySettingsController extends BasicController implement
 				doOpenMetadata(ureq);
 			} else if("Access".equalsIgnoreCase(type)) {
 				doOpenAccess(ureq);
+			} else if("Catalog".equalsIgnoreCase(type)) {
+				doOpenCatalog(ureq);
 			}
 		}
 	}
