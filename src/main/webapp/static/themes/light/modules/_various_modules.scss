@@ -523,6 +523,11 @@ div.o_assessment_mode_row {
 	}
 }
 
+/* BigBlueButton */
+.o_bbb_deleted td {
+	text-decoration: line-through;
+}
+
 /* vitero */
 .vitero_iframe {
 	width: 100%;

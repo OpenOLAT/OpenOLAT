@@ -66,10 +66,13 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 	
 	private void renderDateElement(StringOutput sb, JSDateChooserComponent jsdcc, int maxlength, Translator translator) {
 		String receiverId = jsdcc.getTextElementComponent().getFormDispatchId();
-		renderDateChooser(sb, jsdcc, receiverId, jsdcc.getValue(), "o_first_date", maxlength, translator);
+		if (!jsdcc.isTimeOnlyEnabled()) {
+			renderDateChooser(sb, jsdcc, receiverId, jsdcc.getValue(), "o_first_date", maxlength, translator);
+		}
 		//input fields for hour and minute
-		if (jsdcc.isDateChooserTimeEnabled()) {
-			renderTime(sb, jsdcc.getDate(), jsdcc.isDefaultTimeAtEndOfDay(), receiverId, "o_first_ms");
+		if (jsdcc.isDateChooserTimeEnabled() || jsdcc.isTimeOnlyEnabled()) {
+			String timeOnlyCss = jsdcc.isTimeOnlyEnabled() ? " o_time_only" : "";
+			renderTime(sb, jsdcc.getDate(), jsdcc.isDefaultTimeAtEndOfDay(), receiverId, "o_first_ms".concat(timeOnlyCss));
 			if(jsdcc.isSecondDate() && jsdcc.isSameDay()) {
 				String separator;
 				if(jsdcc.getSeparator() != null) {
@@ -78,14 +81,16 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 					separator = " - ";
 				}
 				renderSeparator(sb, separator);
-				renderTime(sb, jsdcc.getSecondDate(), jsdcc.isDefaultTimeAtEndOfDay(), receiverId.concat("_snd"), "o_second_ms");
+				renderTime(sb, jsdcc.getSecondDate(), jsdcc.isDefaultTimeAtEndOfDay(), receiverId.concat("_snd"), "o_second_ms".concat(timeOnlyCss));
 			}
 		}
 		if(jsdcc.isSecondDate() && !jsdcc.isSameDay()) {
 			if(jsdcc.getSeparator() != null) {
 				renderSeparator(sb, translator.translate(jsdcc.getSeparator()));
 			}
-			renderDateChooser(sb, jsdcc, receiverId.concat("_snd"), jsdcc.getSecondValue(), "o_second_date", maxlength, translator);
+			if(!jsdcc.isTimeOnlyEnabled() || jsdcc.isTimeOnlyEnabled()) {
+				renderDateChooser(sb, jsdcc, receiverId.concat("_snd"), jsdcc.getSecondValue(), "o_second_date", maxlength, translator);
+			}
 			if (jsdcc.isDateChooserTimeEnabled()) {
 				renderTime(sb, jsdcc.getSecondDate(), jsdcc.isDefaultTimeAtEndOfDay(), receiverId.concat("_snd"), "o_second_ms");
 			}

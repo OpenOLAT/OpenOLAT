@@ -431,7 +431,7 @@ public class LTIConfigForm extends FormBasicController {
 		String guid = Long.toString(CodeHelper.getRAMUniqueID());
 		NameValuePair pair = new NameValuePair(guid);
 		
-		TextElement nameEl = uifactory.addTextElement("name_" + guid, null, 15, key, customParamLayout);
+		TextElement nameEl = uifactory.addTextElement("name_" + guid, null, 100, key, customParamLayout);
 		nameEl.setDisplaySize(16);
 		pair.setNameEl(nameEl);
 		
@@ -460,7 +460,7 @@ public class LTIConfigForm extends FormBasicController {
 		}
 		pair.setUserPropsChoice(userPropsChoice);
 
-		TextElement valEl = uifactory.addTextElement("val_" + guid, null, 15, value, customParamLayout);
+		TextElement valEl = uifactory.addTextElement("val_" + guid, null, 100, value, customParamLayout);
 		valEl.setDisplaySize(16);
 		valEl.setVisible(!userprops);
 		pair.setValueEl(valEl);

@@ -4,3 +4,8 @@
 </div>
 #end
 $r.render("meetings")
+#if($r.visible("delete"))
+<div class="o_button_group">
+	$r.render("delete")
+</div>
+#end

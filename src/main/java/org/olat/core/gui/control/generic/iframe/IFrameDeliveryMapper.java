@@ -229,7 +229,9 @@ public class IFrameDeliveryMapper implements Mapper {
 				String containerPath = path.substring(0, lastSlash);
 				String filename = path.substring(lastSlash + 1);
 				VFSItem parentItem = rootDir.resolve(containerPath);
-				items = ((VFSContainer)parentItem).getItems(new ByNameCaseInsensitive(filename));
+				if(parentItem != null) {
+					items = ((VFSContainer)parentItem).getItems(new ByNameCaseInsensitive(filename));
+				}
 			} else {
 				items = ((VFSContainer)rootDir).getItems(new ByNameCaseInsensitive(path));
 			}

@@ -23,6 +23,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.util.StringHelper;
+
 /**
  * 
  * Initial date: 18 mars 2020<br>
@@ -56,7 +58,15 @@ public class BigBlueButtonErrors implements Serializable {
 		StringBuilder sb = new StringBuilder(256);
 		for(BigBlueButtonError error:errors) {
 			if(sb.length() > 0) sb.append(", ");
+			if (StringHelper.containsNonWhitespace(error.getMessageKey())) {
+				sb.append(error.getMessageKey()).append(": ");
+			}
+			if (StringHelper.containsNonWhitespace(error.getMessage())) {
+				sb.append(error.getMessage()).append(" ");
+			}
+			sb.append("(Code: ");
 			sb.append(error.getCode() == null ? "UNKOWN" : error.getCode().name());
+			sb.append(")");
 		}
 		return sb.toString();
 	}

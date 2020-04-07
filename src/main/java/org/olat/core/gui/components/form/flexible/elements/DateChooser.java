@@ -48,16 +48,22 @@ public interface DateChooser extends TextElement {
 	public Date getSecondDate();
 	
 	public void setSecondDate(Date date);
+	
+	public boolean isTimeOnly();
+	
+	public void setTimeOnly(boolean enable);
 
 	/**
-	 * @return
+	 * @return true if hour / minute fields are enabled
 	 */
 	public boolean isDateChooserTimeEnabled();
 
 	/**
+	 * Enable or disable the hour and minute fields.
+	 * 
 	 * @param dateChooserTimeEnabled
 	 */
-	public void setDateChooserTimeEnabled(boolean dateChooserTimeEnabled);
+	public void setDateChooserTimeEnabled(boolean enable);
 	
 	/**
 	 * @return true if the item handles a second date
