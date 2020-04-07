@@ -112,6 +112,7 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		urlEl = uifactory.addTextElement("bbb-url", "option.baseurl", 255, uriStr, formLayout);
 		urlEl.setDisplaySize(60);
 		urlEl.setExampleKey("option.baseurl.example", null);
+		urlEl.setMandatory(true);
 
 		String sharedSecret = bigBlueButtonModule.getSharedSecret();
 		if(StringHelper.containsNonWhitespace(sharedSecret)) {
@@ -120,7 +121,8 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		}
 		sharedSecretEl = uifactory.addPasswordElement("shared.secret", "option.bigbluebutton.shared.secret", 255, sharedSecret, formLayout);
 		sharedSecretEl.setAutocomplete("new-password");
-
+		sharedSecretEl.setMandatory(true);
+		
 		
 		//buttons save - check
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("save", getTranslator());
