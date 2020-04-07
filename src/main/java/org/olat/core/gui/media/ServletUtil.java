@@ -210,12 +210,9 @@ public class ServletUtil {
 						httpResp.setHeader("content-length", "" + length);
 					}
 					httpResp.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
-					try {
-						httpResp.setBufferSize(2048);
-					} catch (IllegalStateException e) {
-						// Silent catch
-					}
-					copy(out, in, range);
+
+					int bufferSize = httpResp.getBufferSize();
+					copy(out, in, range, bufferSize);
 				} else {
 					if (size != null) {
 						httpResp.setContentLengthLong(size.longValue());
@@ -247,12 +244,12 @@ public class ServletUtil {
 		}
 	}
 	
-	//fxdiff FXOLAT-118: accept range to deliver videos for iPad
-	protected static void copy(OutputStream ostream, InputStream resourceInputStream, Range range) throws IOException {
+	protected static void copy(OutputStream ostream, InputStream resourceInputStream, Range range, int bufferSize) throws IOException {
 		IOException exception = null;
 
-		InputStream istream = new BufferedInputStream(resourceInputStream, 2048);
-		exception = copyRange(istream, ostream, range.start, range.end);
+		InputStream istream = (resourceInputStream instanceof BufferedInputStream)
+				? resourceInputStream : new BufferedInputStream(resourceInputStream, bufferSize);
+		exception = copyRange(istream, ostream, range.start, range.end, bufferSize);
 
 		// Clean up the input stream
 		istream.close();
@@ -261,8 +258,7 @@ public class ServletUtil {
 		if (exception != null) throw exception;
 	}
 	
-	//fxdiff FXOLAT-118: accept range to deliver videos for iPad
-	protected static IOException copyRange(InputStream istream, OutputStream ostream, long start, long end) {
+	protected static IOException copyRange(InputStream istream, OutputStream ostream, long start, long end, int bufferSize) {
 		try {
 			istream.skip(start);
 		} catch (IOException e) {
@@ -272,7 +268,7 @@ public class ServletUtil {
 		IOException exception = null;
 		long bytesToRead = end - start + 1;
 
-		byte buffer[] = new byte[2048];
+		byte[] buffer = new byte[bufferSize];
 		int len = buffer.length;
 		while ((bytesToRead > 0) && (len >= buffer.length)) {
 			try {
@@ -294,7 +290,6 @@ public class ServletUtil {
 		return exception;
 	}
 
-	//fxdiff FXOLAT-118: accept range to deliver videos for iPad
 	protected static List<Range> parseRange(HttpServletRequest request, HttpServletResponse response, long lastModified, long fileLength)
 			throws IOException {
 		
@@ -580,7 +575,6 @@ public class ServletUtil {
 			setNoCacheHeaders(response);
 		} else {
 			long now = System.currentTimeMillis();
-			//res being the HttpServletResponse of the request
 			response.addHeader("Cache-Control", "max-age=" + duration);
 			response.setDateHeader("Expires", now + duration);
 		}
