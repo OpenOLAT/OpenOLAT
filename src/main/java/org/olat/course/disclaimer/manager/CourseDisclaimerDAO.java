@@ -140,6 +140,6 @@ public class CourseDisclaimerDAO {
 		.setParameter("repoEntryKey", repositoryEntryRef.getKey())
 		.getResultList();
 		
-		return count.isEmpty() ? 0 : count.get(0);
+		return count.isEmpty() ? Long.valueOf(0l) : count.get(0);
 	}
 }
