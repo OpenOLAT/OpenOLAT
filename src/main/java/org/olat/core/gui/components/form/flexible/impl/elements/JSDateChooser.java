@@ -61,6 +61,7 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 
 	private Locale locale;
 	private String separatorI18nKey;
+	private boolean timeOnlyEnabled;
 	private boolean dateChooserTimeEnabled;
 	private boolean defaultTimeAtEndOfDay;
 	private String forValidDateErrorKey;
@@ -214,7 +215,7 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 		Date d = null;
 		try {
 			d = parseDate(val);
-			if(d != null && isDateChooserTimeEnabled() && (m >= 0 || h >= 0)) {
+			if(d != null && (isTimeOnly() || isDateChooserTimeEnabled()) && (m >= 0 || h >= 0)) {
 				Calendar cal = Calendar.getInstance();
 				cal.setTime(d);
 				if(h >= 0) {
@@ -266,6 +267,16 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 	@Override
 	public void setSeparator(String i18nKey) {
 		separatorI18nKey = i18nKey;
+	}
+
+	@Override
+	public boolean isTimeOnly() {
+		return timeOnlyEnabled;
+	}
+
+	@Override
+	public void setTimeOnly(boolean enable) {
+		timeOnlyEnabled = enable;
 	}
 
 	@Override

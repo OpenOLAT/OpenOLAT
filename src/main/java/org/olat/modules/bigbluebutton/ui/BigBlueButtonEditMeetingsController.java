@@ -19,10 +19,15 @@
  */
 package org.olat.modules.bigbluebutton.ui;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -41,6 +46,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
@@ -48,6 +56,11 @@ import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonMeetingTableModel.BMeetingsCols;
+import org.olat.modules.bigbluebutton.ui.EditBigBlueButtonMeetingController.Mode;
+import org.olat.modules.bigbluebutton.ui.recurring.RecurringMeeting;
+import org.olat.modules.bigbluebutton.ui.recurring.RecurringMeeting1Step;
+import org.olat.modules.bigbluebutton.ui.recurring.RecurringMeetingsContext;
+import org.olat.modules.bigbluebutton.ui.recurring.RecurringMeetingsContext.RecurringMode;
 import org.olat.modules.gotomeeting.ui.GoToMeetingTableModel.MeetingsCols;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,13 +72,20 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class BigBlueButtonEditMeetingsController extends FormBasicController {
-	
+
+	private FormLink deleteButton;
+	private FormLink addSingleMeetingLink;
+	private FormLink addPermanentMeetingLink;
+	private FormLink addDailyRecurringMeetingsLink;
+	private FormLink addWeekyRecurringMeetingsLink;
 	private FlexiTableElement tableEl;
-	private FormLink addMeetingButton;
 	private BigBlueButtonMeetingTableModel tableModel;
 	
 	private CloseableModalController cmc;
 	private DialogBoxController confirmDelete;
+	private DialogBoxController confirmBatchDelete;
+	private StepsMainRunController addDailyMeetingCtrl;
+	private StepsMainRunController addWeeklyMeetingCtrl;
 	private EditBigBlueButtonMeetingController editMeetingCtlr;
 	
 	private final boolean readOnly;
@@ -92,7 +112,21 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(!readOnly) {
-			addMeetingButton = uifactory.addFormLink("add.meeting", formLayout, Link.BUTTON);
+			DropdownItem addMeetingDropdown = uifactory.addDropdownMenu("add.meeting", "add.meeting", formLayout, getTranslator());
+			addMeetingDropdown.setOrientation(DropdownOrientation.right);
+			
+			addSingleMeetingLink = uifactory.addFormLink("add.single.meeting", formLayout, Link.LINK);
+			addMeetingDropdown.addElement(addSingleMeetingLink);
+			if(bigBlueButtonModule.isPermanentMeetingEnabled()) {
+				addPermanentMeetingLink = uifactory.addFormLink("add.permanent.meeting", formLayout, Link.LINK);
+				addMeetingDropdown.addElement(addPermanentMeetingLink);
+			}
+			addDailyRecurringMeetingsLink = uifactory.addFormLink("add.daily.meeting", formLayout, Link.LINK);
+			addMeetingDropdown.addElement(addDailyRecurringMeetingsLink);
+			addWeekyRecurringMeetingsLink = uifactory.addFormLink("add.weekly.meeting", formLayout, Link.LINK);
+			addMeetingDropdown.addElement(addWeekyRecurringMeetingsLink);
+			
+			deleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
 		}
 		
 		//add the table
@@ -117,6 +151,8 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 		sortOptions.setDefaultOrderBy(new SortKey(MeetingsCols.start.name(), false));
 		tableEl.setSortSettings(sortOptions);
 		tableEl.setAndLoadPersistedPreferences(ureq, "bigbluebutton-connect-edit-meetings-list");
+		tableEl.setMultiSelect(!readOnly);
+		tableEl.setSelectAllEnable(true);
 	}
 
 	@Override
@@ -144,6 +180,21 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 				doDelete(meeting);
 			}
 			cleanUp();
+		} else if(confirmBatchDelete == source) {
+			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+				@SuppressWarnings("unchecked")
+				List<BigBlueButtonMeeting> meetings = (List<BigBlueButtonMeeting>)confirmBatchDelete.getUserObject();
+				doDelete(meetings);
+			}
+			cleanUp();
+		} else if(addDailyMeetingCtrl == source || addWeeklyMeetingCtrl == source) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+					updateModel();
+				}
+				cleanUp();
+			}
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -151,9 +202,15 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(addWeeklyMeetingCtrl);
+		removeAsListenerAndDispose(addDailyMeetingCtrl);
+		removeAsListenerAndDispose(confirmBatchDelete);
 		removeAsListenerAndDispose(editMeetingCtlr);
 		removeAsListenerAndDispose(confirmDelete);
 		removeAsListenerAndDispose(cmc);
+		addWeeklyMeetingCtrl = null;
+		addDailyMeetingCtrl = null;
+		confirmBatchDelete = null;
 		editMeetingCtlr = null;
 		confirmDelete = null;
 		cmc = null;
@@ -166,8 +223,17 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(addMeetingButton == source) {
-			doAddMeeting(ureq);
+		if(deleteButton == source) {
+			List<BigBlueButtonMeeting> selectedMeetings = getSelectedMeetings();
+			doConfirmDelete(ureq, selectedMeetings);
+		} else if(addSingleMeetingLink == source) {
+			doAddSingleMeeting(ureq);
+		} else if(addPermanentMeetingLink == source) {
+			doAddPermanentMeeting(ureq);
+		} else if(addDailyRecurringMeetingsLink == source) {
+			doAddDailyRecurringMeeting(ureq);
+		} else if(addWeekyRecurringMeetingsLink == source) {
+			doAddWeeklyRecurringMeeting(ureq);
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
@@ -181,20 +247,98 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 		super.formInnerEvent(ureq, source, event);
 	}
 	
+	private List<BigBlueButtonMeeting> getSelectedMeetings() {
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		return selectedIndex.stream()
+				.map(index -> tableModel.getObject(index.intValue()))
+				.collect(Collectors.toList());
+	}
+	
 
-	private void doAddMeeting(UserRequest ureq) {
+	private void doAddSingleMeeting(UserRequest ureq) {
 		if(guardModalController(editMeetingCtlr)) return;
 
 		List<BigBlueButtonTemplatePermissions> permissions = bigBlueButtonManager
 				.calculatePermissions(entry, businessGroup, getIdentity(), ureq.getUserSession().getRoles());
 		editMeetingCtlr = new EditBigBlueButtonMeetingController(ureq, getWindowControl(),
-				entry, subIdent, businessGroup, permissions);
+				entry, subIdent, businessGroup, permissions, Mode.dates);
 		listenTo(editMeetingCtlr);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", editMeetingCtlr.getInitialComponent(),
-				true, translate("add.meeting"));
+				true, translate("add.single.meeting"));
 		cmc.activate();
 		listenTo(cmc);
+	}
+	
+	private void doAddPermanentMeeting(UserRequest ureq) {
+		if(guardModalController(editMeetingCtlr)) return;
+
+		List<BigBlueButtonTemplatePermissions> permissions = bigBlueButtonManager
+				.calculatePermissions(entry, businessGroup, getIdentity(), ureq.getUserSession().getRoles());
+		editMeetingCtlr = new EditBigBlueButtonMeetingController(ureq, getWindowControl(),
+				entry, subIdent, businessGroup, permissions, Mode.permanent);
+		listenTo(editMeetingCtlr);
+		
+		cmc = new CloseableModalController(getWindowControl(), "close", editMeetingCtlr.getInitialComponent(),
+				true, translate("add.permanent.meeting"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void doAddDailyRecurringMeeting(UserRequest ureq) {
+		removeAsListenerAndDispose(addDailyMeetingCtrl);
+		
+		List<BigBlueButtonTemplatePermissions> permissions = bigBlueButtonManager
+				.calculatePermissions(entry, businessGroup, getIdentity(), ureq.getUserSession().getRoles());
+		final RecurringMeetingsContext context = new RecurringMeetingsContext(entry, subIdent, businessGroup,
+				permissions, RecurringMode.daily);
+		RecurringMeeting1Step step = new RecurringMeeting1Step(ureq, context);
+		StepRunnerCallback finishCallback = (uureq, swControl, runContext) -> {
+			addRecurringMeetings(context);
+			return StepsMainRunController.DONE_MODIFIED;
+		};
+		String title = translate("add.daily.meeting");
+		addDailyMeetingCtrl = new StepsMainRunController(ureq, getWindowControl(), step, finishCallback, null, title, "");
+		listenTo(addDailyMeetingCtrl);
+		getWindowControl().pushAsModalDialog(addDailyMeetingCtrl.getInitialComponent());
+	}
+	
+	private void doAddWeeklyRecurringMeeting(UserRequest ureq) {
+		removeAsListenerAndDispose(addWeeklyMeetingCtrl);
+		
+		List<BigBlueButtonTemplatePermissions> permissions = bigBlueButtonManager
+				.calculatePermissions(entry, businessGroup, getIdentity(), ureq.getUserSession().getRoles());
+		final RecurringMeetingsContext context = new RecurringMeetingsContext(entry, subIdent, businessGroup,
+				permissions, RecurringMode.weekly);
+		RecurringMeeting1Step step = new RecurringMeeting1Step(ureq, context);
+		StepRunnerCallback finishCallback = (uureq, swControl, runContext) -> {
+			addRecurringMeetings(context);
+			return StepsMainRunController.DONE_MODIFIED;
+		};
+		String title = translate("add.weekly.meeting");
+		addWeeklyMeetingCtrl = new StepsMainRunController(ureq, getWindowControl(), step, finishCallback, null, title, "");
+		listenTo(addWeeklyMeetingCtrl);
+		getWindowControl().pushAsModalDialog(addWeeklyMeetingCtrl.getInitialComponent());
+	}
+	
+	private void addRecurringMeetings(RecurringMeetingsContext context) {
+		for(RecurringMeeting meeting:context.getMeetings()) {
+			if(meeting.isDeleted() || !meeting.isSlotAvailable()) {
+				continue;
+			}
+			
+			BigBlueButtonMeeting bMeeting = bigBlueButtonManager.createAndPersistMeeting(context.getName(),
+					context.getEntry(), context.getSubIdent(), context.getBusinessGroup());
+			bMeeting.setDescription(context.getDescription());
+			bMeeting.setWelcome(context.getWelcome());
+			bMeeting.setPermanent(false);
+			bMeeting.setTemplate(context.getTemplate());
+			bMeeting.setStartDate(meeting.getStartDate());
+			bMeeting.setEndDate(meeting.getEndDate());
+			bMeeting.setLeadTime(context.getLeadTime());
+			bMeeting.setFollowupTime(context.getFollowupTime());
+			bigBlueButtonManager.updateMeeting(bMeeting);
+		}
 	}
 	
 	private void doEditMeeting(UserRequest ureq, BigBlueButtonMeeting meeting) {
@@ -217,6 +361,44 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 		String confirmDeleteText = translate("confirm.delete.meeting", new String[]{ meeting.getName() });
 		confirmDelete = activateYesNoDialog(ureq, confirmDeleteTitle, confirmDeleteText, confirmDelete);
 		confirmDelete.setUserObject(meeting);
+	}
+	
+	private void doConfirmDelete(UserRequest ureq, List<BigBlueButtonMeeting> meetings) {
+		if(meetings.isEmpty()) {
+			showWarning("warning.at.least.one.meeting");
+		} else if(meetings.size() == 1) {
+			doConfirmDelete(ureq, meetings.get(0));
+		} else {
+			Set<String> names = new HashSet<>();
+			StringBuilder namesBuilder = new StringBuilder(128);
+			for(BigBlueButtonMeeting meeting:meetings) {
+				if(names.contains(meeting.getName())) {
+					continue;
+				}
+				
+				if(namesBuilder.length() > 0) namesBuilder.append(", ");
+				namesBuilder.append(StringHelper.escapeHtml(meeting.getName()));
+				names.add(meeting.getName());
+			}
+
+			String confirmDeleteTitle = translate("confirm.delete.meetings.title", new String[]{ Integer.toString(meetings.size()) });
+			String confirmDeleteText = translate("confirm.delete.meetings", new String[]{ Integer.toString(meetings.size()), namesBuilder.toString() });
+			confirmBatchDelete = activateYesNoDialog(ureq, confirmDeleteTitle, confirmDeleteText, confirmBatchDelete);
+			confirmBatchDelete.setUserObject(meetings);
+		}
+	}
+	
+	private void doDelete(List<BigBlueButtonMeeting> meetings) {
+		BigBlueButtonErrors errors = new BigBlueButtonErrors();
+		for(BigBlueButtonMeeting meeting:meetings) {
+			bigBlueButtonManager.deleteMeeting(meeting, errors);
+		}
+		updateModel();
+		if(errors.hasErrors()) {
+			getWindowControl().setError(BigBlueButtonErrorHelper.formatErrors(getTranslator(), errors));
+		} else {
+			showInfo("meeting.deleted");
+		}
 	}
 	
 	private void doDelete(BigBlueButtonMeeting meeting) {

@@ -98,6 +98,10 @@ class JSDateChooserComponent extends FormBaseComponentImpl {
 	public String getDateChooserDateFormat() {
 		return element.getDateChooserDateFormat();
 	}
+	
+	public boolean isTimeOnlyEnabled() {
+		return element.isTimeOnly();
+	}
 
 	public boolean isDateChooserTimeEnabled() {
 		return element.isDateChooserTimeEnabled();

@@ -28,7 +28,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -56,9 +55,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class EditBigBlueButtonMeetingController extends FormBasicController {
-	
-	private static final String[] permKeys = new String[] { "on" };
-	
+
+	private FormLink openCalLink;
 	private TextElement nameEl;
 	private TextElement descriptionEl;
 	private TextElement welcomeEl;
@@ -67,16 +65,16 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	private DateChooser startDateEl;
 	private DateChooser endDateEl;
 	private SingleSelection templateEl;
-	private MultipleSelectionElement permanentEl;
-	
+
+	private final Mode mode;
 	private final String subIdent;
 	private final RepositoryEntry entry;
+	private final boolean withSaveButtons;
 	private final BusinessGroup businessGroup;
 	private BigBlueButtonMeeting meeting;
 	private final List<BigBlueButtonTemplatePermissions> permissions;
 	private List<BigBlueButtonMeetingTemplate> templates;
 	
-	private FormLink openCalLink;
 	private BigBlueButtonMeetingsCalendarController calCtr;
 	private CloseableModalController cmc;
 	
@@ -86,8 +84,12 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	private BigBlueButtonManager bigBlueButtonManager;
 	
 	public EditBigBlueButtonMeetingController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry entry, String subIdent, BusinessGroup businessGroup, List<BigBlueButtonTemplatePermissions> permissions) {
+			RepositoryEntry entry, String subIdent, BusinessGroup businessGroup,
+			List<BigBlueButtonTemplatePermissions> permissions, Mode mode) {
 		super(ureq, wControl);
+		withSaveButtons = true;
+		
+		this.mode = mode;
 		this.entry = entry;
 		this.subIdent = subIdent;
 		this.businessGroup = businessGroup;
@@ -95,12 +97,13 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		templates = bigBlueButtonManager.getTemplates();
 		
 		initForm(ureq);
-		updateUI();
 	}
 	
 	public EditBigBlueButtonMeetingController(UserRequest ureq, WindowControl wControl,
 			BigBlueButtonMeeting meeting, List<BigBlueButtonTemplatePermissions> permissions) {
 		super(ureq, wControl);
+		withSaveButtons = true;
+		mode = (meeting.isPermanent() && bigBlueButtonModule.isPermanentMeetingEnabled()) ? Mode.permanent : Mode.dates;
 		entry = meeting.getEntry();
 		subIdent = meeting.getSubIdent();
 		businessGroup = meeting.getBusinessGroup();
@@ -109,7 +112,6 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		templates = bigBlueButtonManager.getTemplates();
 		
 		initForm(ureq);
-		updateUI();
 	}
 
 	@Override
@@ -156,54 +158,41 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			templateEl.select(templatesKeys[0], true);
 		}
 		openCalLink = uifactory.addFormLink("calendar.open", formLayout);
-		openCalLink.addActionListener(FormEvent.ONCLICK);
 		openCalLink.setIconLeftCSS("o_icon o_icon-fw o_icon_calendar");
 		updateTemplateInformations();
 		
-		String[] permValues = new String[] { translate("meeting.permanent.on") };
-		permanentEl = uifactory.addCheckboxesHorizontal("meeting.permanent", formLayout, permKeys, permValues);
-		permanentEl.addActionListener(FormEvent.ONCHANGE);
-		boolean permanent = meeting != null && bigBlueButtonModule.isPermanentMeetingEnabled() && meeting.isPermanent();
-		permanentEl.select(permKeys[0], permanent);
-		permanentEl.setVisible(bigBlueButtonModule.isPermanentMeetingEnabled());
-
-		Date startDate = meeting == null ? new Date() : meeting.getStartDate();
-		startDateEl = uifactory.addDateChooser("meeting.start", "meeting.start", startDate, formLayout);
-		startDateEl.setMandatory(!permanent);
-		startDateEl.setDateChooserTimeEnabled(true);
-		
-		String leadtime = meeting == null ? null : Long.toString(meeting.getLeadTime());
-		leadTimeEl = uifactory.addTextElement("meeting.leadTime", 8, leadtime, formLayout);
-		
-		Date endDate = meeting == null ? null : meeting.getEndDate();
-		if (endDate == null && startDate != null) {
-			// set meeting time default to 1 hour
-			Calendar calendar = Calendar.getInstance();
-		    calendar.setTime(startDate);
-		    calendar.add(Calendar.HOUR_OF_DAY, 1);
-		    endDate = calendar.getTime();
+		if(mode == Mode.dates) {
+			Date startDate = meeting == null ? new Date() : meeting.getStartDate();
+			startDateEl = uifactory.addDateChooser("meeting.start", "meeting.start", startDate, formLayout);
+			startDateEl.setMandatory(true);
+			startDateEl.setDateChooserTimeEnabled(true);
+			
+			String leadtime = meeting == null ? null : Long.toString(meeting.getLeadTime());
+			leadTimeEl = uifactory.addTextElement("meeting.leadTime", 8, leadtime, formLayout);
+			
+			Date endDate = meeting == null ? null : meeting.getEndDate();
+			if (endDate == null && startDate != null) {
+				// set meeting time default to 1 hour
+				Calendar calendar = Calendar.getInstance();
+			    calendar.setTime(startDate);
+			    calendar.add(Calendar.HOUR_OF_DAY, 1);
+			    endDate = calendar.getTime();
+			}
+			endDateEl = uifactory.addDateChooser("meeting.end", "meeting.end", endDate, formLayout);
+			endDateEl.setMandatory(true);
+			endDateEl.setDefaultValue(startDateEl);
+			endDateEl.setDateChooserTimeEnabled(true);
+			
+			String followup = meeting == null ? null : Long.toString(meeting.getFollowupTime());
+			followupTimeEl = uifactory.addTextElement("meeting.followupTime", 8, followup, formLayout);
 		}
-		endDateEl = uifactory.addDateChooser("meeting.end", "meeting.end", endDate, formLayout);
-		endDateEl.setMandatory(!permanent);
-		endDateEl.setDefaultValue(startDateEl);
-		endDateEl.setDateChooserTimeEnabled(true);
 		
-		String followup = meeting == null ? null : Long.toString(meeting.getFollowupTime());
-		followupTimeEl = uifactory.addTextElement("meeting.followupTime", 8, followup, formLayout);
-		
-		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		formLayout.add("buttons", buttonLayout);
-		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
-		uifactory.addFormSubmitButton("save", buttonLayout);
-	}
-	
-	private void updateUI() {
-		boolean permanent = permanentEl.isAtLeastSelected(1);
-		permanentEl.clearError();
-		startDateEl.setVisible(!permanent);
-		leadTimeEl.setVisible(!permanent);
-		endDateEl.setVisible(!permanent);
-		followupTimeEl.setVisible(!permanent);
+		if(withSaveButtons) {
+			FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+			formLayout.add("buttons", buttonLayout);
+			uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+			uifactory.addFormSubmitButton("save", buttonLayout);
+		}
 	}
 	
 	private void updateTemplateInformations() {
@@ -223,15 +212,10 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		}
 	}
 	
-	
 	private void doOpenCalendar(UserRequest ureq) {
-		// cleanup first
-		if (calCtr != null) {
-			removeAsListenerAndDispose(calCtr);
-		}
-		if (cmc != null) {
-			removeAsListenerAndDispose(cmc);
-		}
+		removeAsListenerAndDispose(calCtr);
+		removeAsListenerAndDispose(cmc);
+
 		// open calendar controller in modal. Not very nice to have stacked modal, but
 		// still better than having no overview at all
 		calCtr = new BigBlueButtonMeetingsCalendarController(ureq, getWindowControl());
@@ -248,12 +232,12 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	}
 
 	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
+	public boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 
-		startDateEl.clearError();
-		endDateEl.clearError();
-		if(!permanentEl.isVisible() || !permanentEl.isAtLeastSelected(1)) {
+		if(mode == Mode.dates) {
+			startDateEl.clearError();
+			endDateEl.clearError();
 			if(startDateEl.getDate() == null) {
 				startDateEl.setErrorKey("form.legende.mandatory", null);
 				allOk &= false;
@@ -277,10 +261,10 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 					allOk &= false;
 				}
 			}
+			
+			allOk &= validateTime(leadTimeEl, 15l);
+			allOk &= validateTime(followupTimeEl, 15l);
 		}
-		
-		allOk &= validateTime(leadTimeEl, 15l);
-		allOk &= validateTime(followupTimeEl, 15l);
 		
 		templateEl.clearError();
 		if(!templateEl.isOneSelected()) {
@@ -289,11 +273,10 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		}
 		
 		// dates ok
-		permanentEl.clearError();
 		if(allOk) {
-			if(permanentEl.isVisible() && permanentEl.isAtLeastSelected(1)) {
+			if(mode == Mode.permanent) {
 				allOk &= validatePermanentSlot();
-			} else {
+			} else if(mode == Mode.dates) {
 				allOk &= validateDuration();
 				allOk &= validateSlot();
 			}
@@ -370,7 +353,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		boolean slotFree = bigBlueButtonManager.isSlotAvailable(meeting, template,
 				new Date(), 0, endDate, 0);
 		if(!slotFree) {
-			permanentEl.setErrorKey("server.overloaded", null);
+			templateEl.setErrorKey("server.overloaded", null);
 			allOk &= false;
 		}
 		
@@ -400,12 +383,28 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		}
 		return followupTime;
 	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(calCtr == source) {
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(calCtr);
+		removeAsListenerAndDispose(cmc);
+		calCtr = null;
+		cmc = null;
+	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(permanentEl == source) {
-			updateUI();
-		} else if(templateEl == source) {
+		if(templateEl == source) {
 			updateTemplateInformations();
 		} else if (openCalLink == source) {
 			doOpenCalendar(ureq);
@@ -427,9 +426,8 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		BigBlueButtonMeetingTemplate template = getSelectedTemplate();
 		meeting.setTemplate(template);
 		
-		boolean permanent = permanentEl.isVisible() && permanentEl.isAtLeastSelected(1);
-		meeting.setPermanent(permanent);
-		if(permanent) {
+		meeting.setPermanent(mode == Mode.permanent);
+		if(mode == Mode.permanent) {
 			meeting.setStartDate(null);
 			meeting.setEndDate(null);
 			meeting.setLeadTime(0l);
@@ -455,15 +453,9 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 	
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(cmc == source) {
-			removeAsListenerAndDispose(calCtr);
-			calCtr = null;
-			removeAsListenerAndDispose(cmc);
-			cmc = null;
-		}
-		super.event(ureq, source, event);
+	public enum Mode {
+		
+		permanent,
+		dates
 	}
-
 }
