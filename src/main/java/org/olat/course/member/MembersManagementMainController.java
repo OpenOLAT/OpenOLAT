@@ -44,7 +44,9 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.course.CourseFactory;
+import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
+import org.olat.course.disclaimer.ui.CourseDisclaimerConsentOverviewController;
 import org.olat.course.groupsandrights.GroupsAndRightsController;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.ui.main.MemberListSecurityCallback;
@@ -71,6 +73,7 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 	private static final String CMD_GROUPS = "Groups";
 	private static final String CMD_BOOKING = "Booking";
 	private static final String CMD_RIGHTS = "Rights";
+	private static final String CMD_CONSENTS = "Consents";
 
 	private final MenuTree menuTree;
 	private final VelocityContainer mainVC;
@@ -81,6 +84,7 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 	private CourseBusinessGroupListController groupsCtrl;
 	private MembersOverviewController membersOverviewCtrl;
 	private GroupsAndRightsController rightsController;
+	private CourseDisclaimerConsentOverviewController disclaimerController;
 	
 	private boolean membersDirty;
 	private RepositoryEntry repoEntry;
@@ -96,6 +100,8 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 	private ACService acService;
 	@Autowired
 	private AccessControlModule acModule;
+	@Autowired 
+	private CourseModule courseModule;
 
 	public MembersManagementMainController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			RepositoryEntry re, UserCourseEnvironment coachCourseEnv, boolean entryAdmin, boolean principal,
@@ -172,6 +178,13 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 			GenericTreeNode node = new GenericTreeNode(translate("menu.rights"), CMD_RIGHTS);
 			node.setAltText(translate("menu.rights.alt"));
 			node.setCssClass("o_sel_membersmgt_rights");
+			root.addChild(node);
+		}
+		
+		if ((entryAdmin || principal || memberManagementRight || groupManagementRight) && courseModule.isDisclaimerEnabled()) {
+			GenericTreeNode node = new GenericTreeNode(translate("menu.consents"), CMD_CONSENTS);
+			node.setAltText("menu.consents.alt");
+			node.setCssClass("o_sel_memebersmgt_consents");
 			root.addChild(node);
 		}
 		return gtm;
@@ -261,6 +274,15 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 				}
 				mainVC.put("content", rightsController.getInitialComponent());
 				selectedCtrl = rightsController;
+			}
+		} else if (CMD_CONSENTS.equals(cmd)) {
+			if ((entryAdmin || principal || memberManagementRight || groupManagementRight) && courseModule.isDisclaimerEnabled()) {
+				if(disclaimerController == null) {
+					disclaimerController = new CourseDisclaimerConsentOverviewController(ureq, bwControl, repoEntry, toolbarPanel);
+					listenTo(disclaimerController);
+				}
+				mainVC.put("content", disclaimerController.getInitialComponent());
+				selectedCtrl = disclaimerController;
 			}
 		}
 		

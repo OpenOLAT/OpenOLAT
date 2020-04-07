@@ -4027,6 +4027,17 @@ alter table o_grad_time_record add constraint grad_time_to_grader_idx foreign ke
 
 alter table o_grad_configuration add constraint grad_config_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 
+-- Course disclaimer
+create table o_course_disclaimer_consent(
+	id bigint not null auto_increment,
+	disc_1_accepted boolean not null,
+	disc_2_accepted boolean not null, 
+	creationdate datetime not null, 
+	lastmodified datetime not null, 
+	fk_repository_entry bigint not null, 
+	fk_identity bigint not null,
+	primary key (id)
+);
 
 
 insert into hibernate_unique_key values ( 0 );

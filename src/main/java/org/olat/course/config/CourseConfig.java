@@ -75,7 +75,7 @@ public class CourseConfig implements Serializable, Cloneable {
 	/**
 	 * current config file version
 	 */
-	private static final transient int CURRENTVERSION = 19;
+	private static final transient int CURRENTVERSION = 20;
 
 	public static final transient String KEY_LOGLEVEL_ADMIN = "LOGLEVELADMIN";
 	public static final transient String KEY_LOGLEVEL_USER = "LOGLEVELUSER";
@@ -120,6 +120,19 @@ public class CourseConfig implements Serializable, Cloneable {
 	public static final transient String KEY_SHAREDFOLDER_READONLY = "SHAREDFOLDER_RO";
 
 	private static final transient String KEY_COMPLETION_TYPE = "COMPLETION_TYPE";
+
+	private static final transient String DISCLAIMER_1_ENABLED = "DISCLAIMER_1_ENABLED";
+	private static final transient String DISCLAIMER_1_TITLE = "DISCLAIMER_1_TITLE";
+	private static final transient String DISCLAIMER_1_TERMS = "DISCLAIMER_1_TERMS";
+	private static final transient String DISCLAIMER_1_LABEL_1 = "DISCLAIMER_1_LABEL_1";
+	private static final transient String DISCLAIMER_1_LABEL_2 = "DISCLAIMER_1_LABEL_2";
+
+	private static final transient String DISCLAIMER_2_ENABLED = "DISCLAIMER_2_ENABLED";
+	private static final transient String DISCLAIMER_2_TITLE = "DISCLAIMER_2_TITLE";
+	private static final transient String DISCLAIMER_2_TERMS = "DISCLAIMER_2_TERMS";
+	private static final transient String DISCLAIMER_2_LABEL_1 = "DISCLAIMER_2_LABEL_1";
+	private static final transient String DISCLAIMER_2_LABEL_2 = "DISCLAIMER_2_LABEL_2";
+
 
 	/**
 	 * current key set
@@ -185,6 +198,19 @@ public class CourseConfig implements Serializable, Cloneable {
 
 		configuration.put(NODE_ACCESS_TYPE, NODE_ACCESS_TYPE_DEFAULT);
 		configuration.put(KEY_COMPLETION_TYPE, CompletionType.numberOfNodes.name());
+
+		// Version 20 
+		configuration.put(DISCLAIMER_1_ENABLED, Boolean.FALSE);
+		configuration.put(DISCLAIMER_1_TITLE, "");
+		configuration.put(DISCLAIMER_1_TERMS, "");
+		configuration.put(DISCLAIMER_1_LABEL_1, "");
+		configuration.put(DISCLAIMER_1_LABEL_2, "");
+
+		configuration.put(DISCLAIMER_2_ENABLED, Boolean.FALSE);
+		configuration.put(DISCLAIMER_2_TITLE, "");
+		configuration.put(DISCLAIMER_2_TERMS, "");
+		configuration.put(DISCLAIMER_2_LABEL_1, "");
+		configuration.put(DISCLAIMER_2_LABEL_2, "");
 
 		this.version = CURRENTVERSION;
 	}
@@ -331,7 +357,7 @@ public class CourseConfig implements Serializable, Cloneable {
 
 				this.version = 18;
 			}
-			
+
 			if (version == 18) {
 				if (!configuration.containsKey(BLOG_ENABLED))
 					configuration.put(BLOG_ENABLED, Boolean.FALSE);
@@ -339,6 +365,32 @@ public class CourseConfig implements Serializable, Cloneable {
 					configuration.put(WIKI_ENABLED, Boolean.FALSE);
 
 				this.version = 19;
+			}
+
+			if (version == 19) {
+				if (!configuration.containsKey(DISCLAIMER_1_ENABLED)) {
+					configuration.put(DISCLAIMER_1_ENABLED, Boolean.FALSE);
+				} if (!configuration.containsKey(DISCLAIMER_1_TITLE)) {
+					configuration.put(DISCLAIMER_1_TITLE, "");
+				} if (!configuration.containsKey(DISCLAIMER_1_TERMS)) {
+					configuration.put(DISCLAIMER_1_TERMS, "");
+				} if (!configuration.containsKey(DISCLAIMER_1_LABEL_1)) {
+					configuration.put(DISCLAIMER_1_LABEL_1, "");
+				} if (!configuration.containsKey(DISCLAIMER_1_LABEL_2)) {
+					configuration.put(DISCLAIMER_1_LABEL_2, "");
+				} 
+				
+				if (!configuration.containsKey(DISCLAIMER_2_ENABLED)) {
+					configuration.put(DISCLAIMER_2_ENABLED, Boolean.FALSE);
+				} if (!configuration.containsKey(DISCLAIMER_2_TITLE)) {
+					configuration.put(DISCLAIMER_2_TITLE, "");
+				} if (!configuration.containsKey(DISCLAIMER_2_TERMS)) {
+					configuration.put(DISCLAIMER_2_TERMS, "");
+				} if (!configuration.containsKey(DISCLAIMER_2_LABEL_1)) {
+					configuration.put(DISCLAIMER_2_LABEL_1, "");
+				} if (!configuration.containsKey(DISCLAIMER_2_LABEL_2)) {
+					configuration.put(DISCLAIMER_2_LABEL_2, "");
+				} 
 			}
 
 			/*
@@ -655,7 +707,7 @@ public class CourseConfig implements Serializable, Cloneable {
 	public void setEmailEnabled(boolean b) {
 		configuration.put(EMAIL_ENABLED, Boolean.valueOf(b));
 	}
-	
+
 	public boolean isBlogEnabled() {
 		Boolean bool = (Boolean) configuration.get(BLOG_ENABLED);
 		return bool.booleanValue();
@@ -669,7 +721,7 @@ public class CourseConfig implements Serializable, Cloneable {
 		Object softKey = configuration.get(BLOG_SOFTKEY);
 		return softKey != null? (String) softKey: null;
 	}
-	
+
 	public void setBlogSoftKey(String blogSoftKey) {
 		if (blogSoftKey != null) {
 			configuration.put(BLOG_SOFTKEY, blogSoftKey);
@@ -699,7 +751,7 @@ public class CourseConfig implements Serializable, Cloneable {
 		Object softKey = configuration.get(WIKI_SOFTKEY);
 		return softKey != null? (String) softKey: null;
 	}
-	
+
 	public void setWikiSoftKey(String wikiSoftKey) {
 		if (wikiSoftKey != null) {
 			configuration.put(WIKI_SOFTKEY, wikiSoftKey);
@@ -733,6 +785,99 @@ public class CourseConfig implements Serializable, Cloneable {
 
 	public void setBreadCrumbEnabled(boolean b) {
 		configuration.put(BREADCRUMB_ENABLED, Boolean.valueOf(b));
+	}
+	
+	public void setDisclaimerEnabled(int disclaimer, boolean enabled) {
+		if (disclaimer == 1) {
+			configuration.put(DISCLAIMER_1_ENABLED, enabled);
+		} else if (disclaimer == 2) {
+			configuration.put(DISCLAIMER_2_ENABLED, enabled);
+		}
+	}
+	
+	public void setDisclaimerTitle(int disclaimer, String title) {
+		if (disclaimer == 1) {
+			configuration.put(DISCLAIMER_1_TITLE, title);
+		} else if (disclaimer == 2) {
+			configuration.put(DISCLAIMER_2_TITLE, title);
+		}
+	}
+	
+	public void setDisclaimerTerms(int disclaimer, String terms) {
+		if (disclaimer == 1) {
+			configuration.put(DISCLAIMER_1_TERMS, terms);
+		} else if (disclaimer == 2) {
+			configuration.put(DISCLAIMER_2_TERMS, terms);
+		}
+	}
+	
+	public void setDisclaimerLabel(int disclaimer, int label, String labelText) {
+		if (disclaimer == 1) {
+			if (label == 1) {
+				configuration.put(DISCLAIMER_1_LABEL_1, labelText);
+			} else if (label == 2) {
+				configuration.put(DISCLAIMER_1_LABEL_2, labelText);
+			}
+			
+		} else if (disclaimer == 2) {
+			if (label == 1) {
+				configuration.put(DISCLAIMER_2_LABEL_1, labelText);
+			} else if (label == 2) {
+				configuration.put(DISCLAIMER_2_LABEL_2, labelText);
+			}
+		}
+	}
+	
+	public boolean isDisclaimerEnabled(int disclaimer) {
+		if (disclaimer == 1) {
+			return (boolean) configuration.getOrDefault(DISCLAIMER_1_ENABLED, false);
+		} else if (disclaimer == 2) {
+			return (boolean) configuration.getOrDefault(DISCLAIMER_2_ENABLED, false);
+		}
+		
+		return false;
+	}
+	
+	public boolean isDisclaimerEnabled() {
+		return isDisclaimerEnabled(1) || isDisclaimerEnabled(2);
+	}
+	
+	public String getDisclaimerTitel(int disclaimer) {
+		if (disclaimer == 1) {
+			return (String) configuration.getOrDefault(DISCLAIMER_1_TITLE, "");
+		} else if (disclaimer == 2) {
+			return (String) configuration.getOrDefault(DISCLAIMER_2_TITLE, "");
+		}
+		
+		return null;
+	}
+	
+	public String getDisclaimerTerms(int disclaimer) {
+		if (disclaimer == 1) {
+			return (String) configuration.getOrDefault(DISCLAIMER_1_TERMS, "");
+		} else if (disclaimer == 2) {
+			return (String) configuration.getOrDefault(DISCLAIMER_2_TERMS, "");
+		}
+		
+		return null;
+	}
+	
+	public String getDisclaimerLabel(int disclaimer, int label) {
+		if (disclaimer == 1) {
+			if (label == 1) {
+				return (String) configuration.getOrDefault(DISCLAIMER_1_LABEL_1, "");
+			} else if (label == 2) {
+				return (String) configuration.getOrDefault(DISCLAIMER_1_LABEL_2, "");
+			}
+		} else if (disclaimer == 2) {
+			if (label == 1) {
+				return (String) configuration.getOrDefault(DISCLAIMER_2_LABEL_1, "");
+			} else if (label == 2) {
+				return (String) configuration.getOrDefault(DISCLAIMER_2_LABEL_2, "");
+			}
+		}
+		
+		return null;
 	}
 
 	@Override
@@ -770,6 +915,16 @@ public class CourseConfig implements Serializable, Cloneable {
 		clone.setDocumentsEnabled(isDocumentsEnabled());
 		clone.setCompletionType(getCompletionType());
 		clone.setNodeAccessType(getNodeAccessType().getType());
+		clone.setDisclaimerEnabled(1, isDisclaimerEnabled(1));
+		clone.setDisclaimerEnabled(2, isDisclaimerEnabled(2));
+		clone.setDisclaimerTitle(1, getDisclaimerTitel(1));
+		clone.setDisclaimerTitle(2, getDisclaimerTitel(2));
+		clone.setDisclaimerTerms(1, getDisclaimerTerms(1));
+		clone.setDisclaimerTerms(2, getDisclaimerTerms(2));
+		clone.setDisclaimerLabel(1, 1, getDisclaimerLabel(1, 1));
+		clone.setDisclaimerLabel(1, 2, getDisclaimerLabel(1, 2));
+		clone.setDisclaimerLabel(2, 1, getDisclaimerLabel(2, 1));
+		clone.setDisclaimerLabel(2, 2, getDisclaimerLabel(2, 2));
 		return clone;
 	}
 
@@ -796,9 +951,23 @@ public class CourseConfig implements Serializable, Cloneable {
 				} else if (aCourseConfig.getGlossarySoftKey() == null && this.getGlossarySoftKey() == null) {
 					sameGlossarySettings = true;
 				}
+				
+				boolean sameDisclaimerSettings = false;
+				if (isDisclaimerEnabled(1) == aCourseConfig.isDisclaimerEnabled(1) &&
+					isDisclaimerEnabled(2) == aCourseConfig.isDisclaimerEnabled(2) &&
+					getDisclaimerTitel(1).equals(aCourseConfig.getDisclaimerTitel(1)) &&
+					getDisclaimerTitel(2).equals(aCourseConfig.getDisclaimerTitel(2)) &&
+					getDisclaimerTerms(1).equals(aCourseConfig.getDisclaimerTerms(1)) &&
+					getDisclaimerTerms(2).equals(aCourseConfig.getDisclaimerTerms(2)) &&
+					getDisclaimerLabel(1, 1).equals(aCourseConfig.getDisclaimerLabel(1, 1)) &&
+					getDisclaimerLabel(1, 2).equals(aCourseConfig.getDisclaimerLabel(1, 2)) &&
+					getDisclaimerLabel(2, 1).equals(aCourseConfig.getDisclaimerLabel(2, 1)) &&
+					getDisclaimerLabel(2, 2).equals(aCourseConfig.getDisclaimerLabel(2, 2))) {
+					sameDisclaimerSettings = true;
+				}
 
 				return sameCalendarSettings && sameChatSettings && sameCssLayout && sameEfficiencyStatementSettings
-						&& sameGlossarySettings && sameSharedFolderSettings;
+						&& sameGlossarySettings && sameSharedFolderSettings && sameDisclaimerSettings;
 
 			} catch (RuntimeException e) {
 				// nothing to do

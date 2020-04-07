@@ -40,7 +40,9 @@ public class AssessableCourseNodeAdminController extends FormBasicController {
 	private static final String[] onKeys = new String[]{ "on" };
 	private final String[] onValues;
 	
-	private MultipleSelectionElement infoBoxEl, changeLogEl;
+	private MultipleSelectionElement infoBoxEl;
+	private MultipleSelectionElement changeLogEl;
+	private MultipleSelectionElement disclaimerEnabledEl;
 
 	@Autowired
 	private CourseModule courseModule;
@@ -68,6 +70,13 @@ public class AssessableCourseNodeAdminController extends FormBasicController {
 		if (courseModule.isDisplayChangeLog()) {
 			changeLogEl.select(onKeys[0], true);
 		}
+		
+		disclaimerEnabledEl = uifactory.addCheckboxesHorizontal("admin.disclaimer.enabled", formLayout, onKeys, onValues);
+		disclaimerEnabledEl.addActionListener(FormEvent.ONCHANGE);
+		if (courseModule.isDisclaimerEnabled()) {
+			disclaimerEnabledEl.select(onKeys[0], true);
+		}
+		
 
 	}
 	
@@ -77,7 +86,9 @@ public class AssessableCourseNodeAdminController extends FormBasicController {
 			courseModule.setDisplayInfoBox(infoBoxEl.isSelected(0));
 		} else if (source == changeLogEl) {
 			courseModule.setDisplayChangeLog(changeLogEl.isSelected(0));
-		}	
+		} else if (source == disclaimerEnabledEl) {
+			courseModule.setDisclaimerEnabled(disclaimerEnabledEl.isSelected(0));
+		}
 		super.formInnerEvent(ureq, source, event);
 	}
 

@@ -33,12 +33,15 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
+import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.ui.courselayout.CourseLayoutGeneratorController;
+import org.olat.course.disclaimer.ui.CourseDisclaimerController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.ui.RepositoryEntrySettingsController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -53,12 +56,18 @@ public class CourseSettingsController extends RepositoryEntrySettingsController 
 	private Link optionsLink;
 	private Link assessmentLink;
 	private Link executionSettingsLink;
+	private Link disclaimerLink;
+	
 	
 	private CourseOptionsController optionsCtrl;
 	private CourseToolbarController toolbarCtrl;
 	private CourseLayoutGeneratorController layoutCtrl;
 	private CourseAssessmentSettingsController assessmentSettingsCtrl;
 	private CourseExecutionSettingsController executionSettingsCtrl;
+	private CourseDisclaimerController courseDisclaimerCtrl;
+	
+	@Autowired
+	private CourseModule courseModule;
 	
 	public CourseSettingsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, RepositoryEntry entry) {
 		super(ureq, wControl, stackPanel, entry);
@@ -71,6 +80,12 @@ public class CourseSettingsController extends RepositoryEntrySettingsController 
 		buttonsGroup.addButton(executionSettingsLink, false);
 		
 		super.initAccessAndBooking();
+		
+		if (courseModule.isDisclaimerEnabled()) {
+			disclaimerLink = LinkFactory.createLink("course.disclaimer", getTranslator(), this);
+			disclaimerLink.setElementCssClass("o_sel_disclaimer");
+			buttonsGroup.addButton(disclaimerLink, false);
+		}
 	}
 
 	@Override
@@ -110,6 +125,8 @@ public class CourseSettingsController extends RepositoryEntrySettingsController 
 				doOpenAssessmentSettings(ureq);
 			} else if("Options".equalsIgnoreCase(type)) {
 				doOpenOptions(ureq);
+			} else if("Disclaimer".equalsIgnoreCase(type)) {
+				doOpenDisclaimer(ureq);
 			}
 		}
 	}
@@ -152,6 +169,9 @@ public class CourseSettingsController extends RepositoryEntrySettingsController 
 			doOpenAssessmentSettings(ureq);
 		} else if(optionsLink == source) {
 			doOpenOptions(ureq);
+		} else if(disclaimerLink == source) {
+			cleanUp();
+			doOpenDisclaimer(ureq);
 		}
 		super.event(ureq, source, event);
 	}
@@ -160,11 +180,13 @@ public class CourseSettingsController extends RepositoryEntrySettingsController 
 	protected void cleanUp() {
 		super.cleanUp();
 		
+		removeAsListenerAndDispose(courseDisclaimerCtrl);
 		removeAsListenerAndDispose(executionSettingsCtrl);
 		removeAsListenerAndDispose(assessmentSettingsCtrl);
 		removeAsListenerAndDispose(optionsCtrl);
 		removeAsListenerAndDispose(toolbarCtrl);
 		removeAsListenerAndDispose(layoutCtrl);
+		courseDisclaimerCtrl = null;
 		executionSettingsCtrl = null;
 		assessmentSettingsCtrl = null;
 		optionsCtrl = null;
@@ -222,5 +244,14 @@ public class CourseSettingsController extends RepositoryEntrySettingsController 
 		listenTo(optionsCtrl);
 		mainPanel.setContent(optionsCtrl.getInitialComponent());
 		buttonsGroup.setSelectedButton(optionsLink);
+	}
+	
+	private void doOpenDisclaimer(UserRequest ureq) {
+		entry = repositoryService.loadByKey(entry.getKey());
+		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Disclaimer"), null);
+		courseDisclaimerCtrl = new CourseDisclaimerController(ureq, swControl, entry);
+		listenTo(courseDisclaimerCtrl);
+		mainPanel.setContent(courseDisclaimerCtrl.getInitialComponent());
+		buttonsGroup.setSelectedButton(disclaimerLink);
 	}
 }

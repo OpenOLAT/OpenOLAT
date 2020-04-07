@@ -56,6 +56,7 @@ public class CourseModule extends AbstractSpringModule {
 
 	private static final String COURSE_DISPLAY_CHANGELOG = "course.display.changelog";
 	private static final String COURSE_DISPLAY_INFOBOX = "course.display.infobox";
+	private static final String COURSE_DISCLAIMER_ENABLED = "course.disclaimer.enabled";
 	
 	@Value("${course.display.participants.count}")
 	private boolean displayParticipantsCount;
@@ -67,6 +68,8 @@ public class CourseModule extends AbstractSpringModule {
 	private boolean displayInfoBox;
 	@Value("${course.display.changelog}")
 	private boolean displayChangeLog;
+	@Value("${course.disclaimer.enabled:false}")
+	private boolean disclaimerEnabled;
 	
 	// Repository types
 	public static final String ORES_TYPE_COURSE = OresHelper.calculateTypeName(CourseModule.class);
@@ -91,6 +94,11 @@ public class CourseModule extends AbstractSpringModule {
 		String authorAllowed = getStringPropertyValue(COURSE_DISPLAY_CHANGELOG, true);
 		if(StringHelper.containsNonWhitespace(authorAllowed)) {
 			displayChangeLog = "true".equals(authorAllowed);
+		}
+		
+		String disclaimerEnabledObj = getStringPropertyValue(COURSE_DISCLAIMER_ENABLED, false);
+		if (StringHelper.containsNonWhitespace(disclaimerEnabledObj)) {
+			disclaimerEnabled = "true".equals(disclaimerEnabledObj);
 		}
 	}
 
@@ -207,5 +215,13 @@ public class CourseModule extends AbstractSpringModule {
 		setStringProperty(COURSE_DISPLAY_CHANGELOG, Boolean.toString(enabled), true);
 	}
 	
+	public void setDisclaimerEnabled(boolean enabled) {
+		disclaimerEnabled = enabled;
+		setStringProperty(COURSE_DISCLAIMER_ENABLED, Boolean.toString(enabled), true);
+	}
+	
+	public boolean isDisclaimerEnabled() {
+		return disclaimerEnabled;
+	}
 	
 }

@@ -85,6 +85,8 @@ import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.disclaimer.CourseDisclaimerManager;
+import org.olat.course.disclaimer.ui.CourseDisclaimerConsentController;
 import org.olat.course.editor.PublishEvent;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodeaccess.NodeAccessService;
@@ -130,7 +132,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private UserCourseEnvironmentImpl uce;
 	private TooledStackedPanel toolbarPanel;
 	private LayoutMain3ColsController columnLayoutCtr;
-
+	private CourseDisclaimerConsentController disclaimerController;
+	
 	private CourseContentController contentCtrl;
 	private CoursePaginationController paginationCtrl;
 	private ProgressBar courseProgress;
@@ -154,6 +157,10 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private RepositoryService repositoryService;
 	@Autowired
 	private NodeAccessService nodeAccessService;
+	@Autowired
+	private CourseModule courseModule;
+	@Autowired 
+	private CourseDisclaimerManager disclaimerManager;
 	
 	/**
 	 * Constructor for the run main controller
@@ -268,7 +275,17 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// see function gotonode in functions.js to see why we need the repositoryentry-key here:
 		// it is to correctly apply external links using course-internal links via javascript
 		coursemain.contextPut("courserepokey", courseRepositoryEntry.getKey());
-		coursemain.put("coursemain", columnLayoutCtr.getInitialComponent());
+		
+		// if a disclaimer is enabled, show it first
+		if (courseModule.isDisclaimerEnabled() && course.getCourseEnvironment().getCourseConfig().isDisclaimerEnabled() && 
+				!disclaimerManager.isAccessGranted(courseRepositoryEntry, getIdentity())) {
+			disclaimerController = new CourseDisclaimerConsentController(ureq, getWindowControl(), courseRepositoryEntry);
+			listenTo(disclaimerController);
+			coursemain.put("coursemain", disclaimerController.getInitialComponent());
+		} else {
+			coursemain.put("coursemain", columnLayoutCtr.getInitialComponent());
+		}
+		
 		// on initial call we have to set the data-nodeid manually. later it
 		// will be updated by updateCourseDataAttributes() automatically, but
 		// only when course visible to users (menu tree not null)
@@ -447,6 +464,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// the new node controller. It is important that the old node controller is 
 		// disposed before the new one to not get conflicts with cacheable mappers that
 		// might be used in both controllers with the same ID (e.g. the course folder)
+		
 		if (currentNodeController != null && !currentNodeController.isDisposed() && !navHandler.isListening(currentNodeController)) {
 			currentNodeController.dispose();
 		}
@@ -717,6 +735,11 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				doAssessmentConfirmation(true);
 			} else if (event == CoursePaginationController.UNCONFIRMED_EVENT) {
 				doAssessmentConfirmation(false);
+			}
+		} else if (source == disclaimerController) {
+			if (event == Event.DONE_EVENT) {
+				coursemain.put("coursemain", columnLayoutCtr.getInitialComponent());
+				coursemain.setDirty(true);
 			}
 		}
 	}

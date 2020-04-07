@@ -143,6 +143,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_filter:before { content: $fa-var-filter;}
 .o_icon_graduate:before { content: $fa-var-graduation-cap; }
 .o_icon_group:before, .o_BusinessGroup_icon:before { content: $fa-var-users; }
+.o_icon_disclaimer:before {content: $fa-var-handshake-o; }
 .o_icon_header:before { content: $fa-var-header;}
 .o_icon_help:before { content: $fa-var-question-circle; cursor: help;}
 .o_icon_home:before { content: $fa-var-home; }

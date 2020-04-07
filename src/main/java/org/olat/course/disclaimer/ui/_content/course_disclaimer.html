@@ -1,0 +1,37 @@
+#if($r.available("disc1")) 
+<div class="o_block">
+	<fieldset class="o_disclaimer">
+		<legend><i class="o_icon o_icon-fw o_icon_disclaimer"> </i> $disc1title</legend>
+		<div class="o_disclaimer_content">
+			<p>$disc1terms</p>
+		</div>
+		#if(!$r.available("disc2")) 
+		<p class="pull-right o_noprint">
+			<a href="javascript:window.print()"><span><i class="o_icon o_icon-fw o_icon_print"> </i> $r.translate("print")</span></a>
+		</p>
+		#end
+		
+		$r.render("disc1")
+	</fieldset>
+</div>
+#end
+
+#if($r.available("disc2")) 
+<div class="o_block">
+	<fieldset class="o_disclaimer">
+		<legend><i class="o_icon o_icon-fw o_icon_disclaimer"> </i> $disc2title</legend>
+		<div class="o_disclaimer_content">
+			<p>$disc2terms</p>
+		</div>
+		<p class="pull-right o_noprint">
+			<a href="javascript:window.print()"><span><i class="o_icon o_icon-fw o_icon_print"> </i> $r.translate("print")</span></a>
+		</p>
+		
+		$r.render("disc2")
+	</fieldset>
+</div>
+#end
+
+#if($r.available("disc1") || $r.available("disc2"))
+$r.render("buttonLayout")
+#end 
