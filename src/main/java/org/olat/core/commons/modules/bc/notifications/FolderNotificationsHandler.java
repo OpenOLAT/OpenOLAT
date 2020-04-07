@@ -49,6 +49,7 @@ import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
@@ -116,7 +117,7 @@ public class FolderNotificationsHandler implements NotificationsHandler {
 					VFSMetadata metaInfo = fi.getMetaInfo();
 					String iconCssClass =  null;
 					if (metaInfo != null) {
-						if (metaInfo.getTitle() != null) {
+						if (StringHelper.containsNonWhitespace(metaInfo.getTitle())) {
 							title += " (" + metaInfo.getTitle() + ")";
 						}
 						iconCssClass = metaInfo.getIconCssClass();
