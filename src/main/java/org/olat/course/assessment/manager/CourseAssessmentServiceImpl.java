@@ -395,15 +395,11 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 		List<Identity> members = repositoryService.getMembers(courseEntry, RepositoryEntryRelationType.all, GroupRoles.participant.name());
 		identities.addAll(members);
 		
-		int count = 0;
 		for(Identity identity: identities) {
 			evaluateAll(courseEnv, identity);
 			log.debug("Evaluated score accounting in course {} for {}", course, identity);
-			if(++count % 10 == 0) {
-				dbInstance.commitAndCloseSession();
-			}
+			dbInstance.commitAndCloseSession();
 		}
-		dbInstance.commitAndCloseSession();
 	}
 
 	private void evaluateAll(CourseEnvironment courseEnv, Identity assessedIdentity) {

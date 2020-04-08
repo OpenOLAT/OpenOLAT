@@ -149,6 +149,8 @@ public class OLATUpgrade_15_pre_0 extends OLATUpgrade {
 				if (runStructure != null) {
 					CourseNode rootNode = runStructure.getRootNode();
 					if (rootNode != null) {
+						log.info("Assessment entries migration started: course {} ({}).",
+								repositoryEntry.getKey(), repositoryEntry.getDisplayname());
 						String ident = rootNode.getIdent();
 						setRootEntryTrue(repositoryEntry, ident);
 						setRootEntryFalse(repositoryEntry, ident);
