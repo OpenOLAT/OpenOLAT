@@ -208,7 +208,7 @@ public class RecurringMeetingsContext {
 		return new RecurringMeeting(start, end);
 	}
 	
-	private Date transferTime(Date date, Date time) {
+	public static final Date transferTime(Date date, Date time) {
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
 		Calendar timeCal = Calendar.getInstance();
