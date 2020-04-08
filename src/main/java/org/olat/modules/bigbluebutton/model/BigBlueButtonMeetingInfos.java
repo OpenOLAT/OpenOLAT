@@ -28,6 +28,7 @@ package org.olat.modules.bigbluebutton.model;
 public class BigBlueButtonMeetingInfos {
 	
 	private final String meetingId;
+	private final boolean running;
 	
 	private long videoCount;
 	private long listenerCount;
@@ -36,12 +37,24 @@ public class BigBlueButtonMeetingInfos {
 	private long participantCount;
 	private long moderatorCount;
 	
-	public BigBlueButtonMeetingInfos(String meetingId) {
+	private boolean recording;
+	private boolean breakout;
+	
+	private long maxUsers;
+	
+	private double load;
+	
+	public BigBlueButtonMeetingInfos(String meetingId, boolean running) {
 		this.meetingId = meetingId;
+		this.running = running;
 	}
 	
 	public String getMeetingId() {
 		return meetingId;
+	}
+	
+	public boolean isRunning() {
+		return running;
 	}
 
 	public long getVideoCount() {
@@ -82,6 +95,38 @@ public class BigBlueButtonMeetingInfos {
 
 	public void setModeratorCount(long moderatorCount) {
 		this.moderatorCount = moderatorCount;
+	}
+
+	public boolean isRecording() {
+		return recording;
+	}
+
+	public void setRecording(boolean recording) {
+		this.recording = recording;
+	}
+
+	public boolean isBreakout() {
+		return breakout;
+	}
+
+	public void setBreakout(boolean breakout) {
+		this.breakout = breakout;
+	}
+
+	public long getMaxUsers() {
+		return maxUsers;
+	}
+
+	public void setMaxUsers(long maxUsers) {
+		this.maxUsers = maxUsers;
+	}
+
+	public double getLoad() {
+		return load;
+	}
+
+	public void setLoad(double load) {
+		this.load = load;
 	}
 
 	@Override

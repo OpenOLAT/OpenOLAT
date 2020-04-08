@@ -22,6 +22,7 @@ package org.olat.modules.bigbluebutton.manager;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -63,6 +64,7 @@ import org.olat.modules.bigbluebutton.model.BigBlueButtonErrorCodes;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingImpl;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingInfos;
+import org.olat.modules.bigbluebutton.model.BigBlueButtonServerInfos;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
@@ -226,6 +228,12 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 	}
 
 	@Override
+	public List<BigBlueButtonServerInfos> getServersInfos() {
+		List<BigBlueButtonServer> servers = getServers();
+		return getServersInfos(servers);
+	}
+
+	@Override
 	public void deleteServer(BigBlueButtonServer server, BigBlueButtonErrors errors) {
 		List<BigBlueButtonMeeting> meetings = bigBlueButtonMeetingDao.getMeetings(server);
 		for(BigBlueButtonMeeting meeting:meetings) {
@@ -349,6 +357,15 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 	}
 	
 	private BigBlueButtonServer getBigBlueButtonServer(List<BigBlueButtonServer> servers) {
+		List<BigBlueButtonServerInfos> serversInfos = getServersInfos(servers);
+		if(serversInfos.isEmpty()) {
+			return null;
+		}
+		Collections.sort(serversInfos, new ServerLoadComparator());
+		return serversInfos.get(0).getServer();
+	}
+	
+	private List<BigBlueButtonServerInfos> getServersInfos(List<BigBlueButtonServer> servers) {
 		CountDownLatch serverLatch = new CountDownLatch(servers.size());
 		
 		List<MeetingInfosThread> threads = new ArrayList<>();
@@ -363,21 +380,16 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 		} catch (InterruptedException e) {
 			log.error("", e);
 		}
-		
-		List<ServerLoad> serversLoad = threads.stream()
-				.filter(MeetingInfosThread::isExecuted)
-				.filter(thread -> !thread.hasErrors())
-				.map(thread -> calculateLoad(thread.getServer(), thread.getMeetingsInfos()))
-				.collect(Collectors.toList());
-		
-		if(serversLoad.isEmpty()) {
-			return null;
-		}
-		Collections.sort(serversLoad);
-		return serversLoad.get(0).getServer();
+
+		return threads.stream()
+			.filter(MeetingInfosThread::isExecuted)
+			.filter(thread -> !thread.hasErrors())
+			.map(thread -> new BigBlueButtonServerInfos(thread.getServer(), thread.getMeetingsInfos(),
+					calculateLoad(thread.getServer(), thread.getMeetingsInfos())))
+			.collect(Collectors.toList());
 	}
 	
-	private ServerLoad calculateLoad(BigBlueButtonServer server, List<BigBlueButtonMeetingInfos> meetingsInfos) {
+	private double calculateLoad(BigBlueButtonServer server, List<BigBlueButtonMeetingInfos> meetingsInfos) {
 		double load = 0.0d;
 		for(BigBlueButtonMeetingInfos meetingInfos:meetingsInfos) {
 			load += meetingInfos.getListenerCount() * 1.0d;
@@ -389,7 +401,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 				&& server.getCapacityFactory().doubleValue() > 1.0) {
 			load = load / server.getCapacityFactory().doubleValue();
 		}
-		return new ServerLoad(server, load);
+		return load;
 	}
 	
 	private List<BigBlueButtonMeetingInfos> getMeetingInfos(BigBlueButtonServer server, BigBlueButtonErrors errors) {
@@ -750,23 +762,13 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 		}
 	}
 	
-	private static class ServerLoad implements Comparable<ServerLoad> {
-		
-		private final double load;
-		private final BigBlueButtonServer server;
-		
-		public ServerLoad(BigBlueButtonServer server, double load) {
-			this.server = server;
-			this.load = load;
-		}
-
-		public BigBlueButtonServer getServer() {
-			return server;
-		}
+	private static class ServerLoadComparator implements Comparator<BigBlueButtonServerInfos> {
 
 		@Override
-		public int compareTo(ServerLoad o) {
-			return Double.compare(load, o.load);
+		public int compare(BigBlueButtonServerInfos o1, BigBlueButtonServerInfos o2) {
+			double l1 = o1.getLoad();
+			double l2 = o2.getLoad();
+			return Double.compare(l1, l2);
 		}
 	}
 	

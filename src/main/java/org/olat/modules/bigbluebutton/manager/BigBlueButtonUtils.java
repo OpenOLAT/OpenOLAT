@@ -135,7 +135,9 @@ public class BigBlueButtonUtils {
     	for(int i=meetingList.getLength(); i-->0; ) {
     		Element meetingEl = (Element)meetingList.item(i);
     		String meetingId = getFirstElementValue(meetingEl, "meetingID");
-    		BigBlueButtonMeetingInfos meeting = new BigBlueButtonMeetingInfos(meetingId);
+    		String running = getFirstElementValue(meetingEl, "running");
+    		
+    		BigBlueButtonMeetingInfos meeting = new BigBlueButtonMeetingInfos(meetingId, "true".equals(running));
     		meetings.add(meeting);
     		
     		String videoCount = getFirstElementValue(meetingEl, "videoCount");
@@ -149,6 +151,14 @@ public class BigBlueButtonUtils {
     		meeting.setParticipantCount(toLong(participantCount));
     		String moderatorCount = getFirstElementValue(meetingEl, "moderatorCount");
     		meeting.setModeratorCount(toLong(moderatorCount));
+    		
+    		String recording = getFirstElementValue(meetingEl, "recording");
+    		meeting.setRecording("true".equals(recording));
+    		String isBreakout = getFirstElementValue(meetingEl, "isBreakout");
+    		meeting.setBreakout("true".equals(isBreakout));
+    		
+    		String maxUsers = getFirstElementValue(meetingEl, "maxUsers");
+    		meeting.setMaxUsers(toLong(maxUsers));
     	}
     	return meetings;
     }

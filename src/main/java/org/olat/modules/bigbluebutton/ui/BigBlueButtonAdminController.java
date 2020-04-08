@@ -47,7 +47,7 @@ import org.olat.core.util.resource.OresHelper;
 public class BigBlueButtonAdminController extends BasicController implements Activateable2 {
 	
 	private Link configurationLink;
-	//private final Link serversLink;
+	private final Link serversLink;
 	private final Link meetingsLink;
 	private final Link templatesLink;
 	private final Link calendarLink;
@@ -55,7 +55,8 @@ public class BigBlueButtonAdminController extends BasicController implements Act
 	private final VelocityContainer mainVC;
 	
 	private final boolean configurationReadOnly;
-	
+
+	private BigBlueButtonAdminServersController serversCtrl;
 	private BigBlueButtonConfigurationController configCtrl;
 	private BigBlueButtonAdminMeetingsController meetingsCtrl;
 	private BigBlueButtonAdminTemplatesController templatesCtrl;
@@ -74,8 +75,8 @@ public class BigBlueButtonAdminController extends BasicController implements Act
 			configurationLink = LinkFactory.createLink("account.configuration", mainVC, this);
 			segmentView.addSegment(configurationLink, true);
 		}
-		//serversLink = LinkFactory.createLink("servers.title", mainVC, this);
-		//segmentView.addSegment(serversLink, false);
+		serversLink = LinkFactory.createLink("servers.title", mainVC, this);
+		segmentView.addSegment(serversLink, false);
 		templatesLink = LinkFactory.createLink("templates.title", mainVC, this);
 		segmentView.addSegment(templatesLink, false);
 		meetingsLink = LinkFactory.createLink("meetings.title", mainVC, this);
@@ -115,6 +116,9 @@ public class BigBlueButtonAdminController extends BasicController implements Act
 		} else if("Calendar".equalsIgnoreCase(type)) {
 			doOpenCalendar(ureq);
 			segmentView.select(calendarLink);
+		} else if("Servers".equalsIgnoreCase(type)) {
+			doOpenServers(ureq);
+			segmentView.select(serversLink);
 		}
 	}
 
@@ -127,12 +131,14 @@ public class BigBlueButtonAdminController extends BasicController implements Act
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == configurationLink) {
 					doOpenConfiguration(ureq);
-				} else if (clickedLink == templatesLink){
+				} else if (clickedLink == templatesLink) {
 					doOpenTemplates(ureq);
-				} else if (clickedLink == meetingsLink){
+				} else if (clickedLink == meetingsLink) {
 					doOpenMeetings(ureq);
-				} else if (clickedLink == calendarLink){
+				} else if (clickedLink == calendarLink) {
 					doOpenCalendar(ureq);
+				} else if (clickedLink == serversLink) {
+					doOpenServers(ureq);
 				}
 			}
 		}
@@ -182,4 +188,14 @@ public class BigBlueButtonAdminController extends BasicController implements Act
 		mainVC.put("segmentCmp", calendarsCtrl.getInitialComponent());
 	}
 	
+	private void doOpenServers(UserRequest ureq) {
+		if(serversCtrl == null) {
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Servers", 0l), null);
+			serversCtrl = new BigBlueButtonAdminServersController(ureq, bwControl);
+			listenTo(serversCtrl);
+		} else {
+			addToHistory(ureq, serversCtrl);
+		}
+		mainVC.put("segmentCmp", serversCtrl.getInitialComponent());
+	}
 }

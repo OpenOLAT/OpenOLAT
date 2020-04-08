@@ -23,9 +23,9 @@ import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.modules.bigbluebutton.BigBlueButtonServer;
 
 /**
  * 
@@ -33,8 +33,10 @@ import org.olat.modules.bigbluebutton.BigBlueButtonServer;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class BigBlueButtonAdminServersTableModel extends DefaultFlexiTableDataModel<BigBlueButtonServer>
-implements SortableFlexiTableDataModel<BigBlueButtonServer> {
+public class BigBlueButtonAdminServersTableModel extends DefaultFlexiTableDataModel<BigBlueButtonServerRow>
+implements SortableFlexiTableDataModel<BigBlueButtonServerRow> {
+	
+	private static final ServersCols[] COLS = ServersCols.values();
 
 	private final Locale locale;
 	
@@ -50,20 +52,69 @@ implements SortableFlexiTableDataModel<BigBlueButtonServer> {
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		// TODO Auto-generated method stub
-		return null;
+		BigBlueButtonServerRow server = getObject(row);
+		return getValueAt(server, col);
 	}
 
 	@Override
-	public Object getValueAt(BigBlueButtonServer row, int col) {
-		return null;
+	public Object getValueAt(BigBlueButtonServerRow row, int col) {
+		switch(COLS[col]) {
+			case url: return row.getUrl();
+			case enabled: return row.isEnabled();
+			case capacityFactor: return row.getCapacityFactor();
+			case moderatorCount: return row.getModeratorCount();
+			case participantCount: return row.getParticipantCount();
+			case listenerCount: return row.getListenerCount();
+			case voiceParticipantCount: return row.getVoiceParticipantCount();
+			case videoCount: return row.getVideoCount();
+			case maxUsers: return row.getMaxUsers();
+			case recordingMeetings: return row.getRecordingMeetings();
+			case breakoutRecordingMeetings: return row.getBreakoutRecordingMeetings();
+			case load: return row.getLoad();
+			default: return "ERROR";
+		}
 	}
 
 	@Override
-	public DefaultFlexiTableDataModel<BigBlueButtonServer> createCopyWithEmptyList() {
-		return null;
+	public BigBlueButtonAdminServersTableModel createCopyWithEmptyList() {
+		return new BigBlueButtonAdminServersTableModel(getTableColumnModel(), locale);
 	}
 	
-	
+	public enum ServersCols implements FlexiSortableColumnDef {
+		
+		url("table.header.server.url"),
+		enabled("table.header.server.enabled"),
+		capacityFactor("table.header.capacity.factor"),
+		moderatorCount("table.header.moderator.count"),
+		participantCount("table.header.participant.count"),
+		listenerCount("table.header.listener.count"),
+		voiceParticipantCount("table.header.voice.participant.count"),
+		videoCount("table.header.video.count"),
+		maxUsers("table.header.max.users"),
+		recordingMeetings("table.header.recording.meetings"),
+		breakoutRecordingMeetings("table.header.breakout.recording.meetings"),
+		load("table.header.load");
+		
+		private final String i18nHeaderKey;
+		
+		private ServersCols(String i18nHeaderKey) {
+			this.i18nHeaderKey = i18nHeaderKey;
+		}
+
+		@Override
+		public boolean sortable() {
+			return true;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
+		}
+
+		@Override
+		public String i18nHeaderKey() {
+			return i18nHeaderKey;
+		}
+	}
 
 }
