@@ -47,6 +47,7 @@ import org.olat.core.util.resource.OresHelper;
 public class BigBlueButtonAdminController extends BasicController implements Activateable2 {
 	
 	private Link configurationLink;
+	//private final Link serversLink;
 	private final Link meetingsLink;
 	private final Link templatesLink;
 	private final Link calendarLink;
@@ -68,11 +69,13 @@ public class BigBlueButtonAdminController extends BasicController implements Act
 		
 		mainVC = createVelocityContainer("bbb_admin");
 		
-			segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
+		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		if(!configurationReadOnly) {
 			configurationLink = LinkFactory.createLink("account.configuration", mainVC, this);
 			segmentView.addSegment(configurationLink, true);
 		}
+		//serversLink = LinkFactory.createLink("servers.title", mainVC, this);
+		//segmentView.addSegment(serversLink, false);
 		templatesLink = LinkFactory.createLink("templates.title", mainVC, this);
 		segmentView.addSegment(templatesLink, false);
 		meetingsLink = LinkFactory.createLink("meetings.title", mainVC, this);

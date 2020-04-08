@@ -1251,6 +1251,19 @@ create table o_bbb_template (
    primary key (id)
 );
 
+create table o_bbb_server (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   b_name varchar(128),
+   b_url varchar(255) not null,
+   b_shared_secret varchar(255),
+   b_recording_url varchar(255),
+   b_enabled bool default true,
+   b_capacity_factor decimal,
+   primary key (id)
+);
+
 create table o_bbb_meeting (
    id bigint not null auto_increment,
    creationdate datetime not null,
@@ -1272,6 +1285,7 @@ create table o_bbb_meeting (
    a_sub_ident varchar(64) default null,
    fk_group_id bigint default null,
    fk_template_id bigint default null,
+   fk_server_id bigint,
    primary key (id)
 );
 
@@ -3299,6 +3313,7 @@ alter table o_aconnect_meeting ENGINE = InnoDB;
 alter table o_aconnect_user ENGINE = InnoDB;
 alter table o_bbb_template ENGINE = InnoDB;
 alter table o_bbb_meeting ENGINE = InnoDB;
+alter table o_bbb_server ENGINE = InnoDB;
 alter table o_im_message ENGINE = InnoDB;
 alter table o_im_notification ENGINE = InnoDB;
 alter table o_im_roster_entry ENGINE = InnoDB;
@@ -3685,6 +3700,8 @@ alter table o_aconnect_user add constraint aconn_ident_idx foreign key (fk_ident
 alter table o_bbb_meeting add constraint bbb_meet_entry_idx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);
 alter table o_bbb_meeting add constraint bbb_meet_grp_idx foreign key (fk_group_id) references o_gp_business (group_id);
 alter table o_bbb_meeting add constraint bbb_meet_template_idx foreign key (fk_template_id) references o_bbb_template (id);
+
+alter table o_bbb_meeting add constraint bbb_meet_serv_idx foreign key (fk_server_id) references o_bbb_server (id);
 
 -- eportfolio
 alter table o_ep_artefact add constraint FKF26C8375236F28X foreign key (fk_artefact_auth_id) references o_bs_identity (id);

@@ -205,6 +205,8 @@ public class StaticServlet extends HttpServlet {
 			try(InputStream in = new FileInputStream(file);
 					BufferedInputStream bis = new BufferedInputStream(in, FileUtils.BSIZE)) {
 				FileUtils.cpio(bis, response.getOutputStream(), "static");
+			} catch(IOException e) {
+				ServletUtil.handleIOException("", e);
 			} catch(Exception ex) {
 				log.error("", ex);
 			}

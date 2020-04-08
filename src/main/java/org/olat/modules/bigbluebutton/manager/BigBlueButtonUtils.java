@@ -43,6 +43,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecording;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonError;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
+import org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingInfos;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonRecordingImpl;
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.Document;
@@ -125,6 +126,43 @@ public class BigBlueButtonUtils {
     		}
     	}
     	return recordings;
+    }
+    
+
+    protected static List<BigBlueButtonMeetingInfos> getMeetings(Document document) {
+    	List<BigBlueButtonMeetingInfos> meetings = new ArrayList<>();
+    	NodeList meetingList = document.getElementsByTagName("meeting");
+    	for(int i=meetingList.getLength(); i-->0; ) {
+    		Element meetingEl = (Element)meetingList.item(i);
+    		String meetingId = getFirstElementValue(meetingEl, "meetingID");
+    		BigBlueButtonMeetingInfos meeting = new BigBlueButtonMeetingInfos(meetingId);
+    		meetings.add(meeting);
+    		
+    		String videoCount = getFirstElementValue(meetingEl, "videoCount");
+    		meeting.setVideoCount(toLong(videoCount));
+    		String listenerCount = getFirstElementValue(meetingEl, "listenerCount");
+    		meeting.setListenerCount(toLong(listenerCount));
+    		String voiceParticipantCount = getFirstElementValue(meetingEl, "voiceParticipantCount");
+    		meeting.setVoiceParticipantCount(toLong(voiceParticipantCount));
+    		
+    		String participantCount = getFirstElementValue(meetingEl, "participantCount");
+    		meeting.setParticipantCount(toLong(participantCount));
+    		String moderatorCount = getFirstElementValue(meetingEl, "moderatorCount");
+    		meeting.setModeratorCount(toLong(moderatorCount));
+    	}
+    	return meetings;
+    }
+    
+    private static long toLong(String text) {
+    	if(StringHelper.isLong(text)) {
+    		try {
+				return Long.parseLong(text);
+			} catch (NumberFormatException e) {
+				log.error("Cannot parse this long: {0}", text, e);
+			}
+    		
+    	}
+    	return 0l;
     }
     
     private static Date toDate(String val) {

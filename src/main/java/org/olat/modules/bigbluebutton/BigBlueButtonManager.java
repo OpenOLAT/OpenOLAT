@@ -37,6 +37,17 @@ import org.olat.repository.RepositoryEntryRef;
  */
 public interface BigBlueButtonManager {
 	
+	public BigBlueButtonServer createServer(String url, String recordingUrl, String sharedSecret);
+	
+	public BigBlueButtonServer updateServer(BigBlueButtonServer server);
+	
+	public boolean hasServer(String url);
+	
+	public List<BigBlueButtonServer> getServers();
+	
+	public void deleteServer(BigBlueButtonServer server, BigBlueButtonErrors errors);
+	
+	
 	/**
 	 * Create and persist a meeting in OpenOlat. The method will generate
 	 * an unique meeting identifier and passwords for attendees and moderators.
