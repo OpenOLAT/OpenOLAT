@@ -25,14 +25,13 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.id.Identity;
@@ -51,16 +50,8 @@ public class CourseDisclaimerConsentImpl implements CourseDisclaimerConsent {
 	private static final long serialVersionUID = 4304769402805394739L;
 
 	@Id
-	@GeneratedValue(generator = "system-uuid")
-	@GenericGenerator(name = "system-uuid", strategy = "enhanced-sequence", parameters={
-		@Parameter(name="sequence_name", value="hibernate_unique_key"),
-		@Parameter(name="force_table_use", value="true"),
-		@Parameter(name="optimizer", value="legacy-hilo"),
-		@Parameter(name="value_column", value="next_hi"),
-		@Parameter(name="increment_size", value="32767"),
-		@Parameter(name="initial_value", value="32767")
-	})
-	@Column(name = "id", nullable = false, unique = true, insertable = true, updatable = false)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id", nullable=false, unique=true, insertable=true, updatable=false)
 	private Long key;
 	
 	@Column(name = "disc_1_accepted", nullable = false, insertable = true, updatable = true)

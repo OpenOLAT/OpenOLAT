@@ -3020,6 +3020,18 @@ create table o_grad_configuration (
    primary key (id)
 );
 
+-- course disclaimer
+create table o_course_disclaimer_consent(
+	id bigserial,
+	disc_1_accepted boolean not null,
+	disc_2_accepted boolean not null, 
+	creationdate timestamp not null, 
+	lastmodified timestamp not null, 
+	fk_repository_entry int8 not null, 
+	fk_identity int8 not null,
+	primary key (id)
+);
+
 -- user view
 create view o_bs_identity_short_v as (
    select
@@ -4123,15 +4135,3 @@ create index idx_grad_config_to_entry_idx on o_grad_configuration (fk_entry);
 
 
 insert into hibernate_unique_key values ( 0 );
-
--- course disclaimer
-create table o_course_disclaimer_consent(
-	id bigserial,
-	disc_1_accepted boolean not null,
-	disc_2_accepted boolean not null, 
-	creationdate timestamp not null, 
-	lastmodified timestamp not null, 
-	fk_repository_entry int8 not null, 
-	fk_identity int8 not null,
-	primary key (id)
-);

@@ -21,3 +21,4 @@ create table o_course_disclaimer_consent(
 	fk_identity bigint not null,
 	primary key (id)
 );
+alter table o_course_disclaimer_consent ENGINE = InnoDB;

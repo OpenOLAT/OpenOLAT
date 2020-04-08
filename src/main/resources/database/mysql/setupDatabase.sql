@@ -2998,6 +2998,18 @@ create table o_grad_configuration (
    primary key (id)
 );
 
+-- course disclaimer
+create table o_course_disclaimer_consent(
+	id bigint not null auto_increment,
+	disc_1_accepted boolean not null,
+	disc_2_accepted boolean not null, 
+	creationdate datetime not null, 
+	lastmodified datetime not null, 
+	fk_repository_entry bigint not null, 
+	fk_identity bigint not null,
+	primary key (id)
+);
+
 -- user view
 create view o_bs_identity_short_v as (
    select
@@ -3330,6 +3342,7 @@ alter table o_grad_to_identity ENGINE = InnoDB;
 alter table o_grad_assignment ENGINE = InnoDB;
 alter table o_grad_time_record ENGINE = InnoDB;
 alter table o_grad_configuration ENGINE = InnoDB;
+alter table o_course_disclaimer_consent ENGINE = InnoDB;
 
 -- rating
 alter table o_userrating add constraint FKF26C8375236F20X foreign key (creator_id) references o_bs_identity (id);
@@ -4026,19 +4039,6 @@ alter table o_grad_time_record add constraint grad_time_to_assign_idx foreign ke
 alter table o_grad_time_record add constraint grad_time_to_grader_idx foreign key (fk_grader) references o_grad_to_identity (id);
 
 alter table o_grad_configuration add constraint grad_config_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
-
--- Course disclaimer
-create table o_course_disclaimer_consent(
-	id bigint not null auto_increment,
-	disc_1_accepted boolean not null,
-	disc_2_accepted boolean not null, 
-	creationdate datetime not null, 
-	lastmodified datetime not null, 
-	fk_repository_entry bigint not null, 
-	fk_identity bigint not null,
-	primary key (id)
-);
-
 
 insert into hibernate_unique_key values ( 0 );
 SET FOREIGN_KEY_CHECKS = 1;

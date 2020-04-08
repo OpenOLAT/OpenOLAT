@@ -3078,6 +3078,18 @@ create table o_grad_configuration (
    primary key (id)
 );
 
+-- course disclaimer
+create table o_course_disclaimer_consent(
+	id number(20) generated always as identity,
+	disc_1_accepted boolean not null,
+	disc_2_accepted boolean not null, 
+	creationdate timestamp not null, 
+	lastmodified timestamp not null, 
+	fk_repository_entry number(20) not null, 
+	fk_identity number(20) not null,
+	primary key (id)
+);
+
 
 -- user view
 create view o_bs_identity_short_v as (
@@ -4233,17 +4245,6 @@ create index idx_grad_config_to_entry_idx on o_grad_configuration (fk_entry);
 insert into o_stat_lastupdated (until_datetime, from_datetime, lastupdated) values (to_date('1999-01-01', 'YYYY-mm-dd'), to_date('1999-01-01', 'YYYY-mm-dd'), to_date('1999-01-01', 'YYYY-mm-dd'));
 insert into hibernate_unique_key values ( 0 );
 
--- Course disclaimer
-create table o_course_disclaimer_consent(
-	id number(20) generated always as identity,
-	disc_1_accepted boolean not null,
-	disc_2_accepted boolean not null, 
-	creationdate timestamp not null, 
-	lastmodified timestamp not null, 
-	fk_repository_entry number(20) not null, 
-	fk_identity number(20) not null,
-	primary key (id)
-);
 
 commit
 /
