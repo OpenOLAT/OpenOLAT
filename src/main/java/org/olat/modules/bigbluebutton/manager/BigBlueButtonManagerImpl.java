@@ -327,9 +327,11 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 	@Override
 	public boolean deleteMeeting(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors) {
 		BigBlueButtonMeeting reloadedMeeting = bigBlueButtonMeetingDao.loadByKey(meeting.getKey());
-		removeCalendarEvent(reloadedMeeting);
-		deleteRecordings(meeting, errors);
-		bigBlueButtonMeetingDao.deleteMeeting(reloadedMeeting);
+		if(reloadedMeeting != null) {
+			removeCalendarEvent(reloadedMeeting);
+			deleteRecordings(meeting, errors);
+			bigBlueButtonMeetingDao.deleteMeeting(reloadedMeeting);
+		}
 		return false;
 	}
 	
@@ -340,7 +342,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 				.collect(Collectors.toList());
 		if(availableServers.isEmpty()) {
 			return null;
-		} else if(availableServers.size() == 1) {//TODO 
+		} else if(availableServers.size() == 1) {
 			return availableServers.get(0);
 		}
 		return getBigBlueButtonServer(servers);
