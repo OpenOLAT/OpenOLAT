@@ -11,8 +11,9 @@
 #if($r.isTrue($ended))
 	<div class="o_block_large o_warning">$r.translate("meeting.ended")</div>
 #end
-
-#if($r.isTrue($notStarted))
+#if($r.isTrue($disabled))
+	<div class="o_block_large o_error" role="alert">$r.translate("error.serverDisabled")</div>
+#elseif($r.isTrue($notStarted))
 <div class="o_block_large o_info">$r.translate("meeting.create.intro")</div>
 #end
 

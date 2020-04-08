@@ -87,4 +87,6 @@ public interface BigBlueButtonMeeting extends ModifiedInfo, CreateInfo {
 	public RepositoryEntry getEntry();
 
 	public String getSubIdent();
+	
+	public BigBlueButtonServer getServer();
 }

@@ -17,21 +17,43 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.bigbluebutton.model;
+package org.olat.modules.bigbluebutton;
+
+import org.olat.core.id.CreateInfo;
+import org.olat.core.id.ModifiedInfo;
 
 /**
  * 
- * Initial date: 18 avr. 2019<br>
+ * Initial date: 7 avr. 2020<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum BigBlueButtonErrorCodes {
+public interface BigBlueButtonServer extends ModifiedInfo, CreateInfo {
 	
-	sharedSecretDenied,
-	deletedObject,
-	serverNotAvailable,
-	serverDisabled,
-	unkown
-	;
+	public Long getKey();
+	
+	public String getName();
+
+	public void setName(String name);
+
+	public String getUrl();
+
+	public void setUrl(String url);
+
+	public String getSharedSecret();
+
+	public void setSharedSecret(String secret);
+
+	public String getRecordingUrl();
+
+	public void setRecordingUrl(String recordingUrl);
+
+	public boolean isEnabled();
+
+	public void setEnabled(boolean enabled);
+	
+	public Double getCapacityFactory();
+
+	public void setCapacityFactory(Double capacityFactory);
 
 }

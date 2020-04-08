@@ -214,6 +214,14 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 			}
 		}
 		
+		if(allOk) {
+			Date firstDate = getFirstDateTime();
+			if(firstDate != null && firstDate.before(new Date())) {
+				startRecurringDateEl.setErrorKey("error.first.date.in.past", null);
+				allOk &= false;
+			}
+		}
+		
 		allOk &= validateTime(leadTimeEl, 15l);
 		allOk &= validateTime(followupTimeEl, 15l);
 		
@@ -237,6 +245,14 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 			allOk &= false;
 		}
 		return allOk;
+	}
+	
+	private Date getFirstDateTime() {
+		if(startRecurringDateEl.getDate() != null && startTimeEl.getDate() != null) {
+			return RecurringMeetingsContext
+					.transferTime(startRecurringDateEl.getDate(), startTimeEl.getDate());
+		}
+		return null;
 	}
 	
 	private boolean validateTime(TextElement el, long maxValue) {

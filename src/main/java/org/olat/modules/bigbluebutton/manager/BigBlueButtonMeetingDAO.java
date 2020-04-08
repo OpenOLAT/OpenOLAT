@@ -24,6 +24,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import javax.persistence.LockModeType;
+import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
@@ -32,6 +34,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
+import org.olat.modules.bigbluebutton.BigBlueButtonServer;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -74,6 +77,7 @@ public class BigBlueButtonMeetingDAO {
 		  .append(" left join fetch meeting.entry as entry")
 		  .append(" left join fetch meeting.businessGroup as businessGroup")
 		  .append(" left join fetch meeting.template as template")
+		  .append(" left join fetch meeting.server as server")
 		  .append(" where meeting.key=:meetingKey");
 		
 		List<BigBlueButtonMeeting> meetings = dbInstance.getCurrentEntityManager()
@@ -81,6 +85,49 @@ public class BigBlueButtonMeetingDAO {
 				.setParameter("meetingKey", key)
 				.getResultList();
 		return meetings == null || meetings.isEmpty() ? null : meetings.get(0);
+	}
+	
+	public List<String> getMeetingsIds(Date from, Date to ) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select meeting.meetingId from bigbluebuttonmeeting as meeting")
+		  .append(" where meeting.permanent=true or (meeting.startDate>:from and meeting.startDate<:to)");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), String.class)
+				.setParameter("from", from, TemporalType.TIMESTAMP)
+				.setParameter("to", to, TemporalType.TIMESTAMP)
+				.getResultList();
+	}
+	
+	public BigBlueButtonMeeting loadForUpdate(BigBlueButtonMeeting meeting) {
+		//first remove it from caches
+		dbInstance.getCurrentEntityManager().detach(meeting);
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select meeting from bigbluebuttonmeeting as meeting")
+		  .append(" where meeting.key=:meetingKey");
+
+		List<BigBlueButtonMeeting> meetings = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), BigBlueButtonMeeting.class)
+				.setParameter("meetingKey", meeting.getKey())
+				.setLockMode(LockModeType.PESSIMISTIC_WRITE)
+				.getResultList();
+		return meetings == null || meetings.isEmpty() ? null : meetings.get(0);
+	}
+	
+	public List<BigBlueButtonMeeting> getMeetings(BigBlueButtonServer server) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select meeting from bigbluebuttonmeeting as meeting")
+		  .append(" left join fetch meeting.entry as entry")
+		  .append(" left join fetch meeting.businessGroup as businessGroup")
+		  .append(" left join fetch meeting.template as template")
+		  .append(" left join fetch meeting.server as server")
+		  .append(" where meeting.server.key=:serverKey");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), BigBlueButtonMeeting.class)
+				.setParameter("serverKey", server.getKey())
+				.getResultList();
 	}
 	
 	public BigBlueButtonMeeting updateMeeting(BigBlueButtonMeeting meeting) {
@@ -155,7 +202,8 @@ public class BigBlueButtonMeetingDAO {
 		sb.append("select meeting from bigbluebuttonmeeting as meeting")
 		  .append(" left join fetch meeting.entry as entry")
 		  .append(" left join fetch meeting.businessGroup as businessGroup")
-		  .append(" left join fetch meeting.template as template");
+		  .append(" left join fetch meeting.template as template")
+		  .append(" left join fetch meeting.server as server");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), BigBlueButtonMeeting.class)
 				.getResultList();
@@ -188,7 +236,8 @@ public class BigBlueButtonMeetingDAO {
 	public List<BigBlueButtonMeeting> getMeetings(RepositoryEntryRef entry, String subIdent, BusinessGroup businessGroup) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select meeting from bigbluebuttonmeeting as meeting")
-		  .append(" left join fetch meeting.template as template");
+		  .append(" left join fetch meeting.template as template")
+		  .append(" left join fetch meeting.server as server");
 		if(entry != null) {
 			sb.and().append("meeting.entry.key=:entryKey");
 			if(StringHelper.containsNonWhitespace(subIdent)) {
@@ -218,6 +267,7 @@ public class BigBlueButtonMeetingDAO {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select meeting from bigbluebuttonmeeting as meeting")
 		  .append(" left join fetch meeting.template as template")
+		  .append(" left join fetch meeting.server as server")
 		  .append(" where meeting.entry.key=:entryKey and meeting.permanent=false")
 		  .append(" and meeting.startDate is not null and meeting.endDate is not null");
 		if(StringHelper.containsNonWhitespace(subIdent)) {

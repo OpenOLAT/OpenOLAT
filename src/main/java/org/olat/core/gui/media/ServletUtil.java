@@ -230,17 +230,23 @@ public class ServletUtil {
 			}
 		} catch (IOException e) {
 			FileUtils.closeSafely(out);
-			String className = e.getClass().getSimpleName();
-			if("ClientAbortException".equals(className)) {
-				if(log.isDebugEnabled()) {//video generate a lot of these errors
-					log.warn("client browser probably abort when serving media resource", e);
-				}
-			} else {
-				log.error("client browser probably abort when serving media resource", e);
-			}
+			handleIOException("client browser probably abort when serving media resource", e);
 		} finally {
 			IOUtils.closeQuietly(bis);
 			IOUtils.closeQuietly(in);
+		}
+	}
+	
+	public static final void handleIOException(String msg, Exception e) {
+		try {
+			String className = e.getClass().getSimpleName();
+			if("ClientAbortException".equals(className)) {
+				log.debug("client browser probably abort during operaation", e);
+			} else {
+				log.error(msg, e);
+			}
+		} catch (Exception e1) {
+			log.error("", e1);
 		}
 	}
 	

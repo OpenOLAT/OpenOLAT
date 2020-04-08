@@ -19,28 +19,31 @@
  */
 package org.olat.modules.bigbluebutton.ui;
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.util.List;
 
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.StringHelper;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
-import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
-import org.olat.modules.bigbluebutton.model.BigBlueButtonException;
+import org.olat.modules.bigbluebutton.BigBlueButtonServer;
+import org.olat.modules.bigbluebutton.ui.BigBlueButtonConfigurationServersTableModel.ConfigServerCols;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -52,21 +55,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class BigBlueButtonConfigurationController extends FormBasicController {
 
 	private static final String[] FOR_KEYS = { "courses", "groups" };
-	private static final String PLACEHOLDER = "xxx-placeholder-xxx";
+	private static final String[] ENABLED_KEY = new String[]{ "on" };
 	
-	private FormLink checkLink;
-	private TextElement urlEl;
-	private SpacerElement spacerEl;
-	private TextElement sharedSecretEl;
 	private MultipleSelectionElement moduleEnabled;
 	private MultipleSelectionElement enabledForEl;
 	private MultipleSelectionElement permanentForEl;
-	private MultipleSelectionElement adhocForEl;
-
-	private static final String[] enabledKeys = new String[]{"on"};
-	private final String[] enabledValues;
 	
-	private String replacedSharedSecretValue;
+	private FormLink addServerButton;
+	private FlexiTableElement serversTableEl;
+	private BigBlueButtonConfigurationServersTableModel serversTableModel;
+	
+	private CloseableModalController cmc;
+	private EditBigBlueButtonServerController editServerCtlr; 
+	private ConfirmDeleteServerController confirmDeleteServerCtrl;
 	
 	@Autowired
 	private BigBlueButtonModule bigBlueButtonModule;
@@ -75,9 +76,10 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 	
 	public BigBlueButtonConfigurationController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		enabledValues = new String[]{translate("enabled")};
+		
 		initForm(ureq);
 		updateUI();
+		loadModel();
 	}
 
 	@Override
@@ -85,9 +87,10 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		setFormTitle("bigbluebutton.title");
 		setFormInfo("bigbluebutton.intro");
 		setFormContextHelp("Communication and Collaboration#_bigbluebutton_config");
+		String[] enabledValues = new String[]{ translate("enabled") };
 		
-		moduleEnabled = uifactory.addCheckboxesHorizontal("bigbluebutton.module.enabled", formLayout, enabledKeys, enabledValues);
-		moduleEnabled.select(enabledKeys[0], bigBlueButtonModule.isEnabled());
+		moduleEnabled = uifactory.addCheckboxesHorizontal("bigbluebutton.module.enabled", formLayout, ENABLED_KEY, enabledValues);
+		moduleEnabled.select(ENABLED_KEY[0], bigBlueButtonModule.isEnabled());
 		moduleEnabled.addActionListener(FormEvent.ONCHANGE);
 		
 		String[] forValues = new String[] {
@@ -97,38 +100,28 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		enabledForEl.select(FOR_KEYS[0], bigBlueButtonModule.isCoursesEnabled());
 		enabledForEl.select(FOR_KEYS[1], bigBlueButtonModule.isGroupsEnabled());
 		
-		permanentForEl = uifactory.addCheckboxesHorizontal("enable.permanent.meeting", formLayout, enabledKeys, enabledValues);
-		permanentForEl.select(enabledKeys[0], bigBlueButtonModule.isPermanentMeetingEnabled());
-		
-		adhocForEl = uifactory.addCheckboxesHorizontal("enable.adhoc.meeting", formLayout, enabledKeys, enabledValues);
-		adhocForEl.select(enabledKeys[0], bigBlueButtonModule.isAdhocMeetingEnabled());
-		adhocForEl.setVisible(false);//TODO bbb
-		
-		//spacer
-		spacerEl = uifactory.addSpacerElement("spacer", formLayout, false);
+		permanentForEl = uifactory.addCheckboxesHorizontal("enable.permanent.meeting", formLayout, ENABLED_KEY, enabledValues);
+		permanentForEl.select(ENABLED_KEY[0], bigBlueButtonModule.isPermanentMeetingEnabled());
 
-		URI uri = bigBlueButtonModule.getBigBlueButtonURI();
-		String uriStr = uri == null ? "" : uri.toString();
-		urlEl = uifactory.addTextElement("bbb-url", "option.baseurl", 255, uriStr, formLayout);
-		urlEl.setDisplaySize(60);
-		urlEl.setExampleKey("option.baseurl.example", null);
-		urlEl.setMandatory(true);
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigServerCols.url));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigServerCols.enabled));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
+		serversTableModel = new BigBlueButtonConfigurationServersTableModel(columnsModel, getLocale());
+		
+		serversTableEl = uifactory.addTableElement(getWindowControl(), "servers", serversTableModel, 10, false, getTranslator(), formLayout);
+		serversTableEl.setCustomizeColumns(false);
+		serversTableEl.setNumOfRowsEnabled(false);
+		serversTableEl.setLabel("bigbluebutton.servers", null);
+		serversTableEl.setEmtpyTableMessageKey("bigbluebutton.servers.empty");
+		
+		addServerButton = uifactory.addFormLink("add.server", formLayout, Link.BUTTON);
 
-		String sharedSecret = bigBlueButtonModule.getSharedSecret();
-		if(StringHelper.containsNonWhitespace(sharedSecret)) {
-			replacedSharedSecretValue = sharedSecret;
-			sharedSecret = PLACEHOLDER;
-		}
-		sharedSecretEl = uifactory.addPasswordElement("shared.secret", "option.bigbluebutton.shared.secret", 255, sharedSecret, formLayout);
-		sharedSecretEl.setAutocomplete("new-password");
-		sharedSecretEl.setMandatory(true);
-		
-		
 		//buttons save - check
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("save", getTranslator());
 		formLayout.add(buttonLayout);
 		uifactory.addFormSubmitButton("save", buttonLayout);
-		checkLink = uifactory.addFormLink("check", buttonLayout, Link.BUTTON);
 	}
 
 	@Override
@@ -138,13 +131,16 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 	
 	private void updateUI() {
 		boolean enabled = moduleEnabled.isAtLeastSelected(1);
-		adhocForEl.setVisible(false);
 		permanentForEl.setVisible(enabled);
 		enabledForEl.setVisible(enabled);
-		checkLink.setVisible(enabled);
-		urlEl.setVisible(enabled);
-		sharedSecretEl.setVisible(enabled);
-		spacerEl.setVisible(enabled);
+		serversTableEl.setVisible(enabled);
+		addServerButton.setVisible(enabled);
+	}
+	
+	private void loadModel() {
+		List<BigBlueButtonServer> servers = bigBlueButtonManager.getServers();
+		serversTableModel.setObjects(servers);
+		serversTableEl.reset(true, true, true);
 	}
 	
 	@Override
@@ -153,67 +149,52 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		
 		//validate only if the module is enabled
 		if(moduleEnabled.isAtLeastSelected(1)) {
-			allOk &= validateUrlFields();
-			if(allOk) {
-				allOk &= validateConnection();
+			if(serversTableModel.getRowCount() == 0) {
+				serversTableEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
 			}
 		}
 		
 		return allOk;
 	}
 
-	private boolean validateUrlFields() {
-		boolean allOk = true;
-		
-		String url = urlEl.getValue();
-		urlEl.clearError();
-		if(StringHelper.containsNonWhitespace(url)) {
-			try {
-				URI uri = new URI(url);
-				uri.getHost();
-			} catch(Exception e) {
-				urlEl.setErrorKey("error.url.invalid", null);
-				allOk &= false;
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(editServerCtlr == source || confirmDeleteServerCtrl == source) {
+			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
+				loadModel();
 			}
-		} else {
-			urlEl.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
 		}
-		
-		String password = sharedSecretEl.getValue();
-		sharedSecretEl.clearError();
-		if(!StringHelper.containsNonWhitespace(password)) {
-			sharedSecretEl.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
-		}
-		
-		return allOk;
+		super.event(ureq, source, event);
 	}
 	
-	private boolean validateConnection() {
-		boolean allOk = true;
-		try {
-			BigBlueButtonErrors errors = new BigBlueButtonErrors();
-			boolean ok = checkConnection(errors);
-			if(!ok || errors.hasErrors()) {
-				sharedSecretEl.setValue("");
-				urlEl.setErrorKey("error.connectionValidationFailed", new String[] {errors.getErrorMessages()});
-				allOk &= false;
-			}
-		} catch (Exception e) {
-			showError(BigBlueButtonException.SERVER_NOT_I18N_KEY);
-			allOk &= false;
-		}
-		return allOk;
+	private void cleanUp() {
+		removeAsListenerAndDispose(confirmDeleteServerCtrl);
+		removeAsListenerAndDispose(editServerCtlr);
+		removeAsListenerAndDispose(cmc);
+		confirmDeleteServerCtrl = null;
+		editServerCtlr = null;
+		cmc = null;
 	}
-	
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == moduleEnabled) {
 			updateUI();
-		} else if(source == checkLink) {
-			if(validateUrlFields()) {
-				doCheckConnection();
+		} else if(addServerButton == source) {
+			addServer(ureq);
+		} else if(serversTableEl == source) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				if("edit".equals(se.getCommand())) {
+					doEditServer(ureq, serversTableModel.getObject(se.getIndex()));
+				} else if("delete".equals(se.getCommand())) {
+					doConfirmDelete(ureq, serversTableModel.getObject(se.getIndex()));
+				}
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -221,63 +202,50 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 	
 	@Override
 	protected void formOK(UserRequest ureq) {
-		try {
-			boolean enabled = moduleEnabled.isSelected(0);
-			bigBlueButtonModule.setEnabled(enabled);
-			// update collaboration tools list
-			if(enabled) {
-				String url = urlEl.getValue();
-				bigBlueButtonModule.setBigBlueButtonURI(new URI(url));
-				bigBlueButtonModule.setCoursesEnabled(enabledForEl.isSelected(0));
-				bigBlueButtonModule.setGroupsEnabled(enabledForEl.isSelected(1));
-				bigBlueButtonModule.setPermanentMeetingEnabled(permanentForEl.isAtLeastSelected(1));
-				bigBlueButtonModule.setAdhocMeetingEnabled(adhocForEl.isAtLeastSelected(1));
-				
-				String sharedSecret = sharedSecretEl.getValue();
-				if(!PLACEHOLDER.equals(sharedSecret)) {
-					bigBlueButtonModule.setSharedSecret(sharedSecret);
-					sharedSecretEl.setValue(PLACEHOLDER);
-				} else if(StringHelper.containsNonWhitespace(replacedSharedSecretValue)) {
-					bigBlueButtonModule.setSharedSecret(replacedSharedSecretValue);
-				}
-			} else {
-				bigBlueButtonModule.setBigBlueButtonURI(null);
-				bigBlueButtonModule.setSecret(null);
-				bigBlueButtonModule.setSharedSecret(null);
-			}
-			CollaborationToolsFactory.getInstance().initAvailableTools();
-		} catch (URISyntaxException e) {
-			logError("", e);
-			urlEl.setErrorKey("error.url.invalid", null);
+		boolean enabled = moduleEnabled.isSelected(0);
+		bigBlueButtonModule.setEnabled(enabled);
+		// update collaboration tools list
+		if(enabled) {
+			bigBlueButtonModule.setCoursesEnabled(enabledForEl.isSelected(0));
+			bigBlueButtonModule.setGroupsEnabled(enabledForEl.isSelected(1));
+			bigBlueButtonModule.setPermanentMeetingEnabled(permanentForEl.isAtLeastSelected(1));
 		}
+		CollaborationToolsFactory.getInstance().initAvailableTools();
 	}
 	
-	private void doCheckConnection() {
-		BigBlueButtonErrors errors = new BigBlueButtonErrors();
-		boolean loginOk = checkConnection(errors);
-		if(errors.hasErrors()) {
-			getWindowControl().setError(BigBlueButtonErrorHelper.formatErrors(getTranslator(), errors));
-		} else if(loginOk) {
-			showInfo("connection.successful");
-		} else {
-			showError("connection.failed");
-		}
-	}
-	
-	private boolean checkConnection(BigBlueButtonErrors errors) {
-		String url = urlEl.getValue();
-		String sharedSecret = sharedSecretEl.getValue();
-		if(PLACEHOLDER.equals(sharedSecret)) {
-			if(StringHelper.containsNonWhitespace(replacedSharedSecretValue)) {
-				sharedSecret = replacedSharedSecretValue;
-			} else {
-				sharedSecret = bigBlueButtonModule.getSharedSecret();
-			}
-		} else {
-			replacedSharedSecretValue = sharedSecret;
-			sharedSecretEl.setValue(PLACEHOLDER);
-		}
+	private void addServer(UserRequest ureq) {
+		if(guardModalController(editServerCtlr)) return;
+
+		editServerCtlr = new EditBigBlueButtonServerController(ureq, getWindowControl());
+		listenTo(editServerCtlr);
 		
-		return bigBlueButtonManager.checkConnection(url, sharedSecret, errors);
+		cmc = new CloseableModalController(getWindowControl(), "close", editServerCtlr.getInitialComponent(),
+				true, translate("add.single.meeting"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void doEditServer(UserRequest ureq, BigBlueButtonServer server) {
+		if(guardModalController(editServerCtlr)) return;
+
+		editServerCtlr = new EditBigBlueButtonServerController(ureq, getWindowControl(), server);
+		listenTo(editServerCtlr);
+		
+		String title = translate("edit.server", new String[] { server.getUrl() });
+		cmc = new CloseableModalController(getWindowControl(), "close", editServerCtlr.getInitialComponent(), true, title);
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void doConfirmDelete(UserRequest ureq, BigBlueButtonServer server) {
+		if(guardModalController(confirmDeleteServerCtrl)) return;
+
+		confirmDeleteServerCtrl = new ConfirmDeleteServerController(ureq, getWindowControl(), server);
+		listenTo(confirmDeleteServerCtrl);
+		
+		String title = translate("confirm.delete.server.title", new String[] { server.getUrl() });
+		cmc = new CloseableModalController(getWindowControl(), "close", confirmDeleteServerCtrl.getInitialComponent(), true, title);
+		cmc.activate();
+		listenTo(cmc);
 	}
 }

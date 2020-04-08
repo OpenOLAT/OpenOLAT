@@ -38,6 +38,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
+import org.olat.modules.bigbluebutton.BigBlueButtonServer;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -110,6 +111,10 @@ public class BigBlueButtonMeetingImpl implements Persistable, BigBlueButtonMeeti
 	@ManyToOne(targetEntity=BigBlueButtonMeetingTemplateImpl.class, fetch=FetchType.LAZY, optional=true)
 	@JoinColumn(name="fk_template_id", nullable=true, insertable=true, updatable=true)
 	private BigBlueButtonMeetingTemplate template;
+	
+	@ManyToOne(targetEntity=BigBlueButtonServerImpl.class, fetch=FetchType.LAZY, optional=true)
+	@JoinColumn(name="fk_server_id", nullable=true, insertable=true, updatable=true)
+	private BigBlueButtonServer server;
 
 	@Override
 	public Long getKey() {
@@ -299,6 +304,15 @@ public class BigBlueButtonMeetingImpl implements Persistable, BigBlueButtonMeeti
 	@Override
 	public void setTemplate(BigBlueButtonMeetingTemplate template) {
 		this.template = template;
+	}
+
+	@Override
+	public BigBlueButtonServer getServer() {
+		return server;
+	}
+
+	public void setServer(BigBlueButtonServer server) {
+		this.server = server;
 	}
 
 	@Override

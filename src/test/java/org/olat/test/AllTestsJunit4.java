@@ -206,6 +206,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.adobeconnect.manager.AdobeConnectUserDAOTest.class,
 	org.olat.modules.adobeconnect.manager.AdobeConnectMeetingDAOTest.class,
 	org.olat.modules.adobeconnect.manager.AdobeConnectUtilsTest.class,
+	org.olat.modules.bigbluebutton.manager.BigBlueButtonServerDAOTest.class,
 	org.olat.modules.bigbluebutton.manager.BigBlueButtonMeetingDAOTest.class,
 	org.olat.modules.bigbluebutton.manager.BigBlueButtonMeetingTemplateDAOTest.class,
 	org.olat.modules.bigbluebutton.manager.BigBlueButtonUriBuilderTest.class,

@@ -26,6 +26,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
+import org.olat.modules.bigbluebutton.model.BigBlueButtonServerInfos;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -36,6 +37,22 @@ import org.olat.repository.RepositoryEntryRef;
  *
  */
 public interface BigBlueButtonManager {
+	
+	public BigBlueButtonServer createServer(String url, String recordingUrl, String sharedSecret);
+	
+	public BigBlueButtonServer updateServer(BigBlueButtonServer server);
+	
+	public boolean hasServer(String url);
+	
+	public List<BigBlueButtonServer> getServers();
+	
+	public List<BigBlueButtonServerInfos> getServersInfos();
+	
+	public List<BigBlueButtonServerInfos> filterServersInfos(List<BigBlueButtonServerInfos> infos);
+	
+	
+	public void deleteServer(BigBlueButtonServer server, BigBlueButtonErrors errors);
+	
 	
 	/**
 	 * Create and persist a meeting in OpenOlat. The method will generate

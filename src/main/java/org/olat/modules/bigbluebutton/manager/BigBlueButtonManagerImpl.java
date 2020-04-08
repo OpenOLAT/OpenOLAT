@@ -21,9 +21,16 @@ package org.olat.modules.bigbluebutton.manager;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -35,6 +42,7 @@ import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
@@ -50,13 +58,16 @@ import org.olat.group.BusinessGroupService;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
-import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecording;
+import org.olat.modules.bigbluebutton.BigBlueButtonServer;
 import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
 import org.olat.modules.bigbluebutton.GuestPolicyEnum;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonError;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrorCodes;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
+import org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingImpl;
+import org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingInfos;
+import org.olat.modules.bigbluebutton.model.BigBlueButtonServerInfos;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntrySecurity;
@@ -79,15 +90,17 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 	private static final Logger log = Tracing.createLoggerFor(BigBlueButtonManagerImpl.class);
 
 	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private CalendarManager calendarManager;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryEntryDAO repositoryEntryDao;
 	@Autowired
-	private BigBlueButtonModule bigBlueButtonModule;
-	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private BigBlueButtonServerDAO bigBlueButtonServerDao;
 	@Autowired
 	private BigBlueButtonMeetingDAO bigBlueButtonMeetingDao;
 	@Autowired
@@ -203,6 +216,64 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 	}
 
 	@Override
+	public BigBlueButtonServer createServer(String url, String recordingUrl, String sharedSecret) {
+		return bigBlueButtonServerDao.createServer(url, recordingUrl, sharedSecret);
+	}
+
+	@Override
+	public BigBlueButtonServer updateServer(BigBlueButtonServer server) {
+		return bigBlueButtonServerDao.updateServer(server);
+	}
+
+	@Override
+	public List<BigBlueButtonServer> getServers() {
+		return bigBlueButtonServerDao.getServers();
+	}
+
+	@Override
+	public List<BigBlueButtonServerInfos> getServersInfos() {
+		List<BigBlueButtonServer> servers = getServers();
+		return getServersInfos(servers);
+	}
+
+	@Override
+	public List<BigBlueButtonServerInfos> filterServersInfos(List<BigBlueButtonServerInfos> infos) {
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.DATE, -5);
+		Date from = cal.getTime();
+		cal.add(Calendar.DATE, 10);
+		Date to = cal.getTime();
+		
+		List<String> meetingsIds = this.bigBlueButtonMeetingDao.getMeetingsIds(from, to);
+		Set<String> instanceMeetingsIds = new HashSet<>(meetingsIds);
+		List<BigBlueButtonServerInfos> instanceInfos = new ArrayList<>();
+		for(BigBlueButtonServerInfos info:infos) {
+			List<BigBlueButtonMeetingInfos> meetings = info.getMeetingsInfos();
+			List<BigBlueButtonMeetingInfos> instanceMeetings = meetings.stream()
+					.filter(meeting -> instanceMeetingsIds.contains(meeting.getMeetingId()))
+					.collect(Collectors.toList());
+			double load = this.calculateLoad(info.getServer(), instanceMeetings);
+			instanceInfos.add(new BigBlueButtonServerInfos(info.getServer(), instanceMeetings, load));
+		}
+		return instanceInfos;
+	}
+
+	@Override
+	public void deleteServer(BigBlueButtonServer server, BigBlueButtonErrors errors) {
+		List<BigBlueButtonMeeting> meetings = bigBlueButtonMeetingDao.getMeetings(server);
+		for(BigBlueButtonMeeting meeting:meetings) {
+			deleteMeeting(meeting, errors);
+		}
+		bigBlueButtonServerDao.deleteServer(server);
+	}
+
+	@Override
+	public boolean hasServer(String url) {
+		List<BigBlueButtonServer> servers = this.getServers();
+		return servers.stream().anyMatch(server -> server.getUrl().startsWith(url) || url.startsWith(server.getUrl()));
+	}
+
+	@Override
 	public BigBlueButtonMeeting createAndPersistMeeting(String name, RepositoryEntry entry, String subIdent, BusinessGroup businessGroup) {
 		return bigBlueButtonMeetingDao.createAndPersistMeeting(name, entry, subIdent, businessGroup);
 	}
@@ -289,10 +360,91 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 	@Override
 	public boolean deleteMeeting(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors) {
 		BigBlueButtonMeeting reloadedMeeting = bigBlueButtonMeetingDao.loadByKey(meeting.getKey());
-		removeCalendarEvent(reloadedMeeting);
-		deleteRecordings(meeting, errors);
-		bigBlueButtonMeetingDao.deleteMeeting(reloadedMeeting);
+		if(reloadedMeeting != null) {
+			removeCalendarEvent(reloadedMeeting);
+			deleteRecordings(meeting, errors);
+			bigBlueButtonMeetingDao.deleteMeeting(reloadedMeeting);
+		}
 		return false;
+	}
+	
+	public BigBlueButtonServer getAvailableServer() {
+		List<BigBlueButtonServer> servers = getServers();
+		List<BigBlueButtonServer> availableServers = servers.stream()
+				.filter(BigBlueButtonServer::isEnabled)
+				.collect(Collectors.toList());
+		if(availableServers.isEmpty()) {
+			return null;
+		} else if(availableServers.size() == 1) {
+			return availableServers.get(0);
+		}
+		return getBigBlueButtonServer(servers);
+	}
+	
+	private BigBlueButtonServer getBigBlueButtonServer(List<BigBlueButtonServer> servers) {
+		List<BigBlueButtonServerInfos> serversInfos = getServersInfos(servers);
+		if(serversInfos.isEmpty()) {
+			return null;
+		}
+		Collections.sort(serversInfos, new ServerLoadComparator());
+		return serversInfos.get(0).getServer();
+	}
+	
+	private List<BigBlueButtonServerInfos> getServersInfos(List<BigBlueButtonServer> servers) {
+		CountDownLatch serverLatch = new CountDownLatch(servers.size());
+		
+		List<MeetingInfosThread> threads = new ArrayList<>();
+		for(BigBlueButtonServer server:servers) {
+			MeetingInfosThread thread = new MeetingInfosThread(server, serverLatch);
+			threads.add(thread);
+			thread.start();
+		}
+		
+		try {
+			serverLatch.await(15, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			log.error("", e);
+		}
+
+		return threads.stream()
+			.filter(MeetingInfosThread::isExecuted)
+			.filter(thread -> !thread.hasErrors())
+			.map(thread -> new BigBlueButtonServerInfos(thread.getServer(), thread.getMeetingsInfos(),
+					calculateLoad(thread.getServer(), thread.getMeetingsInfos())))
+			.collect(Collectors.toList());
+	}
+	
+	private double calculateLoad(BigBlueButtonServer server, List<BigBlueButtonMeetingInfos> meetingsInfos) {
+		double load = 0.0d;
+		for(BigBlueButtonMeetingInfos meetingInfos:meetingsInfos) {
+			load += meetingInfos.getListenerCount() * 1.0d;
+			load += meetingInfos.getVideoCount() * 3.0d;
+			load += meetingInfos.getVoiceParticipantCount() * 2.0d;
+		}
+		if(load > 0.0d
+				&& server.getCapacityFactory() != null
+				&& server.getCapacityFactory().doubleValue() > 1.0) {
+			load = load / server.getCapacityFactory().doubleValue();
+		}
+		return load;
+	}
+	
+	private List<BigBlueButtonMeetingInfos> getMeetingInfos(BigBlueButtonServer server, BigBlueButtonErrors errors) {
+		if(!server.isEnabled()) {
+			errors.append(new BigBlueButtonError(BigBlueButtonErrorCodes.serverDisabled));
+			return new ArrayList<>();
+		}
+		
+		BigBlueButtonUriBuilder uriBuilder = getUriBuilder(server);
+		uriBuilder
+			.operation("getMeetings");
+		
+		Document doc = sendRequest(uriBuilder, errors);
+		BigBlueButtonUtils.print(doc);
+		if(BigBlueButtonUtils.checkSuccess(doc, errors)) {
+			return BigBlueButtonUtils.getMeetings(doc);
+		}
+		return new ArrayList<>();
 	}
 	
 	private void deleteRecordings(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors) {
@@ -310,12 +462,17 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 		}
 		
 		if(sb.length() > 0) {
-			deleteRecording(sb.toString(), errors);
+			deleteRecording(sb.toString(), meeting.getServer(), errors);
 		}
 	}
 	
-	private void deleteRecording(String recordId, BigBlueButtonErrors errors) {
-		BigBlueButtonUriBuilder uriBuilder = getUriBuilder();
+	private void deleteRecording(String recordId, BigBlueButtonServer server, BigBlueButtonErrors errors) {
+		if(!server.isEnabled()) {
+			log.error("Try deleting a recording of a disabled server: {}", server.getUrl());
+			errors.append(new BigBlueButtonError(BigBlueButtonErrorCodes.serverDisabled));
+			return;
+		}
+		BigBlueButtonUriBuilder uriBuilder = getUriBuilder(server);
 		uriBuilder
 			.operation("deleteRecordings")
 			.parameter("recordID", recordId);
@@ -422,7 +579,12 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 
 	@Override
 	public boolean isMeetingRunning(BigBlueButtonMeeting meeting) {
-		BigBlueButtonUriBuilder uriBuilder = getUriBuilder();
+		BigBlueButtonServer server = meeting.getServer();
+		if(server == null || !server.isEnabled()) {
+			return false;
+		}
+		
+		BigBlueButtonUriBuilder uriBuilder = getUriBuilder(server);
 		uriBuilder
 			.operation("isMeetingRunning")
 			.parameter("meetingID", meeting.getMeetingId());
@@ -438,14 +600,21 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 
 	@Override
 	public String join(BigBlueButtonMeeting meeting, Identity identity, boolean moderator, boolean guest, Boolean isRunning, BigBlueButtonErrors errors) {
+		this.getAvailableServer();
+		
 		String joinUrl = null;
-		if((isRunning != null && isRunning.booleanValue()) || createBigBlueButtonMeeting(meeting, errors)) {
-			joinUrl = buildJoinUrl(meeting, identity, moderator, guest);
+		if(isRunning != null && isRunning.booleanValue() && meeting.getServer() != null) {
+			joinUrl = buildJoinUrl(meeting, meeting.getServer(), identity, moderator, guest);
+		} else {
+			meeting = getMeetingWithServer(meeting);
+			if(createBigBlueButtonMeeting(meeting, errors)) {
+				joinUrl = buildJoinUrl(meeting, meeting.getServer(), identity, moderator, guest);
+			}
 		}
 		return joinUrl;
 	}
 	
-	private String buildJoinUrl(BigBlueButtonMeeting meeting, Identity identity, boolean moderator, boolean guest) {
+	private String buildJoinUrl(BigBlueButtonMeeting meeting, BigBlueButtonServer server, Identity identity, boolean moderator, boolean guest) {
 		String password = moderator ? meeting.getModeratorPassword() : meeting.getAttendeePassword();
 		
 		String userId = null;
@@ -453,7 +622,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 			userId = WebappHelper.getInstanceId() + "-" + identity.getKey();
 		}
 
-		BigBlueButtonUriBuilder uriBuilder = getUriBuilder();
+		BigBlueButtonUriBuilder uriBuilder = getUriBuilder(server);
 		return uriBuilder
 			.operation("join")
 			.parameter("meetingID", meeting.getMeetingId())
@@ -491,11 +660,39 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 		}
 		return BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
 	}
+	
+	private BigBlueButtonMeeting getMeetingWithServer(BigBlueButtonMeeting meeting) {
+		meeting = bigBlueButtonMeetingDao.loadByKey(meeting.getKey());
+		if(meeting.getServer() != null) {
+			return meeting;
+		}
+		
+		BigBlueButtonServer availableServer = getAvailableServer();
+		if(availableServer == null) {
+			return meeting;
+		}
+		
+		BigBlueButtonMeeting lockedMeeting = bigBlueButtonMeetingDao.loadForUpdate(meeting);
+		BigBlueButtonServer currentServer = lockedMeeting.getServer();
+		if(currentServer == null) {
+			((BigBlueButtonMeetingImpl)lockedMeeting).setServer(availableServer);
+			meeting = bigBlueButtonMeetingDao.updateMeeting(lockedMeeting);
+			meeting.getServer().getUrl();// ensure server is loaded
+		}
+		dbInstance.commit();
+		
+		return meeting;
+	}
 
 	private boolean createBigBlueButtonMeeting(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors) {
 		BigBlueButtonMeetingTemplate template = meeting.getTemplate();
+		BigBlueButtonServer server = meeting.getServer();
+		if(!server.isEnabled()) {
+			errors.append(new BigBlueButtonError(BigBlueButtonErrorCodes.serverDisabled));
+			return false;
+		}
 		
-		BigBlueButtonUriBuilder uriBuilder = getUriBuilder();
+		BigBlueButtonUriBuilder uriBuilder = getUriBuilder(server);
 		uriBuilder
 			.operation("create")
 			.optionalParameter("name", meeting.getName())
@@ -545,27 +742,20 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 
 	@Override
 	public List<BigBlueButtonRecording> getRecordings(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors) {
-		BigBlueButtonUriBuilder uriBuilder = getUriBuilder();
+		if(meeting.getServer() == null || !meeting.getServer().isEnabled()) {
+			return new ArrayList<>();
+		}
+		
+		BigBlueButtonUriBuilder uriBuilder = getUriBuilder(meeting.getServer());
 		uriBuilder
 			.operation("getRecordings")
 			.parameter("meetingID", meeting.getMeetingId());
 		
 		Document doc = sendRequest(uriBuilder, errors);
-		BigBlueButtonUtils.print(doc);
 		if(BigBlueButtonUtils.checkSuccess(doc, errors)) {
 			return BigBlueButtonUtils.getRecordings(doc);
 		}
 		return Collections.emptyList();
-	}
-	
-	public void getBigBlueButtonDefaultConfigXml() {
-		BigBlueButtonUriBuilder uriBuilder = getUriBuilder();
-		uriBuilder
-			.operation("getDefaultConfigXML");
-		BigBlueButtonErrors errors = new BigBlueButtonErrors();
-		Document doc = sendRequest(uriBuilder, errors);
-		BigBlueButtonUtils.print(doc);
-		BigBlueButtonUtils.checkSuccess(doc, errors);	
 	}
 	
 	@Override
@@ -579,22 +769,78 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 		return false;
 	}
 	
-	private BigBlueButtonUriBuilder getUriBuilder() {
-		return BigBlueButtonUriBuilder.fromUri(bigBlueButtonModule.getBigBlueButtonURI(), bigBlueButtonModule.getSharedSecret());	
+	private BigBlueButtonUriBuilder getUriBuilder(BigBlueButtonServer server) {
+		URI uri = URI.create(server.getUrl());
+		return BigBlueButtonUriBuilder.fromUri(uri, server.getSharedSecret());	
 	}
 	
 	protected Document sendRequest(BigBlueButtonUriBuilder builder, BigBlueButtonErrors errors) {
 		URI uri = builder.build();
 		HttpGet get = new HttpGet(uri);
-		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+		try(CloseableHttpClient httpClient = HttpClientBuilder.create()
+				.disableAutomaticRetries().build();
 				CloseableHttpResponse response = httpClient.execute(get)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			log.debug("Status code of: {} {}", uri, statusCode);
 			return BigBlueButtonUtils.getDocumentFromEntity(response.getEntity());
 		} catch(Exception e) {
 			errors.append(new BigBlueButtonError(BigBlueButtonErrorCodes.unkown));
-			log.error("", e);
+			log.error("Cannot send: {}", uri, e);
 			return null;
+		}
+	}
+	
+	private static class ServerLoadComparator implements Comparator<BigBlueButtonServerInfos> {
+
+		@Override
+		public int compare(BigBlueButtonServerInfos o1, BigBlueButtonServerInfos o2) {
+			double l1 = o1.getLoad();
+			double l2 = o2.getLoad();
+			return Double.compare(l1, l2);
+		}
+	}
+	
+	private class MeetingInfosThread extends Thread {
+		
+		private boolean executed = false;
+		private final CountDownLatch latch;
+		private final BigBlueButtonServer server;
+		private List<BigBlueButtonMeetingInfos> infos;
+		private final BigBlueButtonErrors errors = new BigBlueButtonErrors();
+		
+		public MeetingInfosThread(BigBlueButtonServer server, CountDownLatch latch) {
+			super("BBB-Meetings-Infos");
+			this.latch = latch;
+			this.server = server;
+			setDaemon(true);
+		}
+		
+		public boolean isExecuted() {
+			return executed;
+		}
+		
+		public boolean hasErrors() {
+			return errors.hasErrors();
+		}
+		
+		public List<BigBlueButtonMeetingInfos> getMeetingsInfos() {
+			return infos;
+		}
+		
+		public BigBlueButtonServer getServer() {
+			return server;
+		}
+
+		@Override
+		public void run() {
+			try {
+				infos = getMeetingInfos(server, errors);
+				executed = true;
+			} catch(Exception e) {
+				log.error("", e);
+			} finally {
+				latch.countDown();
+			}
 		}
 	}
 }

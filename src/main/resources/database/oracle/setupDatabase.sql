@@ -1241,6 +1241,19 @@ create table o_bbb_template (
    primary key (id)
 );
 
+create table o_bbb_server (
+   id number(20) generated always as identity,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   b_name varchar(128),
+   b_url varchar(255) not null,
+   b_shared_secret varchar(255),
+   b_recording_url varchar(255),
+   b_enabled number default 1 not null,
+   b_capacity_factor decimal,
+   primary key (id)
+);
+
 create table o_bbb_meeting (
    id number(20) generated always as identity,
    creationdate timestamp not null,
@@ -1262,6 +1275,7 @@ create table o_bbb_meeting (
    a_sub_ident varchar(64) default null,
    fk_group_id number(20) default null,
    fk_template_id number(20) default null,
+   fk_server_id number(20),
    primary key (id)
 );
 
@@ -3673,6 +3687,8 @@ alter table o_bbb_meeting add constraint bbb_meet_grp_idx foreign key (fk_group_
 create index idx_bbb_meet_grp_idx on o_bbb_meeting(fk_group_id);
 alter table o_bbb_meeting add constraint bbb_meet_template_idx foreign key (fk_template_id) references o_bbb_template (id);
 create index idx_bbb_meet_template_idx on o_bbb_meeting(fk_template_id);
+alter table o_bbb_meeting add constraint bbb_meet_serv_idx foreign key (fk_server_id) references o_bbb_server (id);
+create index idx_bbb_meet_serv_idx on o_bbb_meeting(fk_server_id);
 
 -- tag
 alter table o_tag add constraint FK6491FCA5A4FA5DC foreign key (fk_author_id) references o_bs_identity (id);
