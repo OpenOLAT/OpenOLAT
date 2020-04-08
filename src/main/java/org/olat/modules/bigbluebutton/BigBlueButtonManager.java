@@ -48,6 +48,9 @@ public interface BigBlueButtonManager {
 	
 	public List<BigBlueButtonServerInfos> getServersInfos();
 	
+	public List<BigBlueButtonServerInfos> filterServersInfos(List<BigBlueButtonServerInfos> infos);
+	
+	
 	public void deleteServer(BigBlueButtonServer server, BigBlueButtonErrors errors);
 	
 	

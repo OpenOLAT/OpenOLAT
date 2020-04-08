@@ -90,6 +90,9 @@ public class BigBlueButtonUtils {
     }
     
     protected static boolean checkSuccess(Document document, BigBlueButtonErrors errors) {
+    	if(document == null) {
+    		return false;
+    	}
     	String returnCode = getFirstElementValue(document.getDocumentElement(), "returncode");
     	print(document);
     	if(SUCCESS.equals(returnCode)) {

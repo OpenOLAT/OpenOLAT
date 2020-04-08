@@ -19,6 +19,8 @@
  */
 package org.olat.modules.bigbluebutton.ui;
 
+import java.util.ArrayList;
+
 import org.olat.modules.bigbluebutton.BigBlueButtonServer;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonServerInfos;
 
@@ -32,10 +34,16 @@ public class BigBlueButtonServerRow {
 	
 	private final BigBlueButtonServer server;
 	private final BigBlueButtonServerInfos serverInfos;
+	private final BigBlueButtonServerInfos allInstanceServerInfos;
 	
-	public BigBlueButtonServerRow(BigBlueButtonServer server, BigBlueButtonServerInfos serverInfos) {
+	public BigBlueButtonServerRow(BigBlueButtonServer server,
+			BigBlueButtonServerInfos allInstanceServerInfos,
+			BigBlueButtonServerInfos serverInfos) {
 		this.server = server;
-		this.serverInfos = serverInfos;
+		this.serverInfos = serverInfos == null
+				? new BigBlueButtonServerInfos(server, new ArrayList<>(), 0.0d) : serverInfos;
+		this.allInstanceServerInfos = allInstanceServerInfos == null
+				? new BigBlueButtonServerInfos(server, new ArrayList<>(), 0.0d) : allInstanceServerInfos;
 	}
 	
 	public String getUrl() {
@@ -50,40 +58,15 @@ public class BigBlueButtonServerRow {
 		return server.getCapacityFactory();
 	}
 	
-	public double getLoad() {
-		return serverInfos.getLoad();
+	public BigBlueButtonServer getServer() {
+		return server;
 	}
 	
-	public Long getModeratorCount() {
-		return serverInfos.getModeratorCount();
-	}
-	
-	public Long getParticipantCount() {
-		return serverInfos.getParticipantCount();
+	public BigBlueButtonServerInfos getAllInstancesServerInfos() {
+		return allInstanceServerInfos;
 	}
 
-	public Long getListenerCount() {
-		return serverInfos.getListenerCount();
+	public BigBlueButtonServerInfos getServerInfos() {
+		return serverInfos;
 	}
-	
-	public Long getVoiceParticipantCount() {
-		return serverInfos.getVoiceParticipantCount();
-	}
-	
-	public Long getVideoCount() {
-		return serverInfos.getVideoCount();
-	}
-	
-	public Long getMaxUsers() {
-		return serverInfos.getMaxUsers();
-	}
-	
-	public Long getRecordingMeetings() {
-		return serverInfos.getRecordingMeetings();
-	}
-	
-	public Long getBreakoutRecordingMeetings() {
-		return serverInfos.getBreakoutRecordingMeetings();
-	}
-
 }

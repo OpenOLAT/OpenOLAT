@@ -30,6 +30,7 @@ public enum BigBlueButtonErrorCodes {
 	sharedSecretDenied,
 	deletedObject,
 	serverNotAvailable,
+	serverDisabled,
 	unkown
 	;
 

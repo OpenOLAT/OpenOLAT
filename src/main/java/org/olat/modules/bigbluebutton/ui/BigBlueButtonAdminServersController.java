@@ -19,6 +19,7 @@
  */
 package org.olat.modules.bigbluebutton.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -81,6 +83,11 @@ public class BigBlueButtonAdminServersController extends FormBasicController {
 		serversTableEl = uifactory.addTableElement(getWindowControl(), "servers", serversTableModel, 10, false, getTranslator(), formLayout);
 		serversTableEl.setCustomizeColumns(true);
 		serversTableEl.setEmtpyTableMessageKey("bigbluebutton.servers.empty");
+		
+		List<FlexiTableFilter> filters = new ArrayList<>();
+		filters.add(new FlexiTableFilter(translate("filter.all.instances"), "all"));
+		filters.add(new FlexiTableFilter(translate("filter.this.instance"), "this"));
+		serversTableEl.setFilters("", filters, false);
 	}
 
 	@Override
@@ -90,12 +97,19 @@ public class BigBlueButtonAdminServersController extends FormBasicController {
 	
 	private void loadModel() {
 		List<BigBlueButtonServer> servers = bigBlueButtonManager.getServers();
+		
 		List<BigBlueButtonServerInfos> serversInfos = bigBlueButtonManager.getServersInfos();
 		Map<BigBlueButtonServer, BigBlueButtonServerInfos> serversToInfos = serversInfos.stream()
 				.collect(Collectors.toMap(BigBlueButtonServerInfos::getServer, infos -> infos, (u, v) -> u));
+		
+		List<BigBlueButtonServerInfos> instanceServersInfos = bigBlueButtonManager.filterServersInfos(serversInfos);
+		Map<BigBlueButtonServer, BigBlueButtonServerInfos> instanceServersToInfos = instanceServersInfos.stream()
+				.collect(Collectors.toMap(BigBlueButtonServerInfos::getServer, infos -> infos, (u, v) -> u));
+		
 		List<BigBlueButtonServerRow> rows = servers.stream()
-				.map(server -> new BigBlueButtonServerRow(server, serversToInfos.get(server)))
+				.map(server -> new BigBlueButtonServerRow(server, serversToInfos.get(server), instanceServersToInfos.get(server)))
 				.collect(Collectors.toList());
+		
 		serversTableModel.setObjects(rows);
 		serversTableEl.reset(true, true, true);
 	}

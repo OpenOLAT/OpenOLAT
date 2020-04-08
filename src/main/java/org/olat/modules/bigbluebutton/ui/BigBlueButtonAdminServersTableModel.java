@@ -19,10 +19,13 @@
  */
 package org.olat.modules.bigbluebutton.ui;
 
+import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
@@ -34,11 +37,12 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  *
  */
 public class BigBlueButtonAdminServersTableModel extends DefaultFlexiTableDataModel<BigBlueButtonServerRow>
-implements SortableFlexiTableDataModel<BigBlueButtonServerRow> {
+implements SortableFlexiTableDataModel<BigBlueButtonServerRow>, FilterableFlexiTableModel {
 	
 	private static final ServersCols[] COLS = ServersCols.values();
 
 	private final Locale locale;
+	private boolean allInstances = true;
 	
 	public BigBlueButtonAdminServersTableModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
@@ -48,6 +52,15 @@ implements SortableFlexiTableDataModel<BigBlueButtonServerRow> {
 	@Override
 	public void sort(SortKey sortKey) {
 		//
+	}
+
+	@Override
+	public void filter(String searchString, List<FlexiTableFilter> filters) {
+		if(filters != null && !filters.isEmpty() && "this".equals(filters.get(0).getFilter())) {
+			allInstances = false;
+		} else {
+			allInstances = true;
+		}
 	}
 
 	@Override
@@ -62,15 +75,24 @@ implements SortableFlexiTableDataModel<BigBlueButtonServerRow> {
 			case url: return row.getUrl();
 			case enabled: return row.isEnabled();
 			case capacityFactor: return row.getCapacityFactor();
-			case moderatorCount: return row.getModeratorCount();
-			case participantCount: return row.getParticipantCount();
-			case listenerCount: return row.getListenerCount();
-			case voiceParticipantCount: return row.getVoiceParticipantCount();
-			case videoCount: return row.getVideoCount();
-			case maxUsers: return row.getMaxUsers();
-			case recordingMeetings: return row.getRecordingMeetings();
-			case breakoutRecordingMeetings: return row.getBreakoutRecordingMeetings();
-			case load: return row.getLoad();
+			case moderatorCount: return allInstances
+					? row.getAllInstancesServerInfos().getModeratorCount() : row.getServerInfos().getModeratorCount();
+			case participantCount: return allInstances
+					?  row.getAllInstancesServerInfos().getParticipantCount() : row.getServerInfos().getParticipantCount();
+			case listenerCount: return allInstances
+					?  row.getAllInstancesServerInfos().getListenerCount() : row.getServerInfos().getListenerCount();
+			case voiceParticipantCount: return allInstances
+					?  row.getAllInstancesServerInfos().getVoiceParticipantCount() : row.getServerInfos().getVoiceParticipantCount();
+			case videoCount: return allInstances
+					?  row.getAllInstancesServerInfos().getVideoCount() : row.getServerInfos().getVideoCount();
+			case maxUsers: return allInstances
+					?  row.getAllInstancesServerInfos().getMaxUsers() : row.getServerInfos().getMaxUsers();
+			case recordingMeetings: return allInstances
+					?  row.getAllInstancesServerInfos().getRecordingMeetings() : row.getServerInfos().getRecordingMeetings();
+			case breakoutRecordingMeetings: return allInstances
+					?  row.getAllInstancesServerInfos().getBreakoutRecordingMeetings() : row.getServerInfos().getBreakoutRecordingMeetings();
+			case load: return allInstances
+					?   row.getAllInstancesServerInfos().getLoad() : row.getServerInfos().getLoad();
 			default: return "ERROR";
 		}
 	}

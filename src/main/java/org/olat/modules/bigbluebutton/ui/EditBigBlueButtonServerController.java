@@ -126,7 +126,9 @@ public class EditBigBlueButtonServerController extends FormBasicController {
 
 		allOk &= validateUrlFields();
 		if(allOk) {
-			allOk &= validateConnection();
+			if(enabledEl.isAtLeastSelected(1)) {
+				allOk &= validateConnection();
+			}
 			
 			if((server == null || server.getKey() == null)
 					&& bigBlueButtonManager.hasServer(urlEl.getValue())) {

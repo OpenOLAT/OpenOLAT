@@ -166,15 +166,21 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		updateButtonsAndStatus();
 	}
 	
+	private boolean isDisabled() {
+		return meeting.getServer() != null && !meeting.getServer().isEnabled();
+	}
+	
 	private void updateButtonsAndStatus() {
 		boolean isEnded = isEnded();
 		boolean accessible = isAccessible();
+		boolean disabled = isDisabled();
+		flc.contextPut("disabled", Boolean.valueOf(disabled));
 		flc.contextPut("ended", Boolean.valueOf(isEnded));
 		flc.contextPut("notStarted", Boolean.TRUE);
-		joinButton.setVisible(accessible);
+		joinButton.setVisible(accessible && !disabled);
 		joinButton.setEnabled(!readOnly);
 			
-		if(accessible) {
+		if(accessible && !disabled) {
 			boolean running = bigBlueButtonManager.isMeetingRunning(meeting);
 			if(moderator || administrator) {
 				flc.contextPut("notStarted", Boolean.FALSE);

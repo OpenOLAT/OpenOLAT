@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.persistence.LockModeType;
+import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
@@ -84,6 +85,18 @@ public class BigBlueButtonMeetingDAO {
 				.setParameter("meetingKey", key)
 				.getResultList();
 		return meetings == null || meetings.isEmpty() ? null : meetings.get(0);
+	}
+	
+	public List<String> getMeetingsIds(Date from, Date to ) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select meeting.meetingId from bigbluebuttonmeeting as meeting")
+		  .append(" where meeting.permanent=true or (meeting.startDate>:from and meeting.startDate<:to)");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), String.class)
+				.setParameter("from", from, TemporalType.TIMESTAMP)
+				.setParameter("to", to, TemporalType.TIMESTAMP)
+				.getResultList();
 	}
 	
 	public BigBlueButtonMeeting loadForUpdate(BigBlueButtonMeeting meeting) {
