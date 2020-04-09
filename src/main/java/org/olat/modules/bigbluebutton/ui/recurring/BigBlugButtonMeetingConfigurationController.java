@@ -192,6 +192,12 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 			endRecurringDateEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
+		
+		if(startRecurringDateEl.getDate() != null && endRecurringDateEl.getDate() != null
+				&& endRecurringDateEl.getDate().before(startRecurringDateEl.getDate())) {
+			endRecurringDateEl.setErrorKey("error.start.after.end", null);
+			allOk &= false;
+		}
 
 		startTimeEl.clearError();
 		if(startTimeEl.getDate() == null) {
