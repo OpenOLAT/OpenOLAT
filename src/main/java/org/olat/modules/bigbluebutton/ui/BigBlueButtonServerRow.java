@@ -19,8 +19,6 @@
  */
 package org.olat.modules.bigbluebutton.ui;
 
-import java.util.ArrayList;
-
 import org.olat.modules.bigbluebutton.BigBlueButtonServer;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonServerInfos;
 
@@ -40,10 +38,8 @@ public class BigBlueButtonServerRow {
 			BigBlueButtonServerInfos allInstanceServerInfos,
 			BigBlueButtonServerInfos serverInfos) {
 		this.server = server;
-		this.serverInfos = serverInfos == null
-				? new BigBlueButtonServerInfos(server, new ArrayList<>(), 0.0d) : serverInfos;
-		this.allInstanceServerInfos = allInstanceServerInfos == null
-				? new BigBlueButtonServerInfos(server, new ArrayList<>(), 0.0d) : allInstanceServerInfos;
+		this.serverInfos = serverInfos == null ? BigBlueButtonServerInfos.empty(server) : serverInfos;
+		this.allInstanceServerInfos = allInstanceServerInfos == null ? BigBlueButtonServerInfos.empty(server) : allInstanceServerInfos;
 	}
 	
 	public String getUrl() {
@@ -52,6 +48,10 @@ public class BigBlueButtonServerRow {
 	
 	public boolean isEnabled() {
 		return server.isEnabled();
+	}
+	
+	public boolean isAvailable() {
+		return allInstanceServerInfos.isAvailable();
 	}
 	
 	public Double getCapacityFactor() {
