@@ -20,6 +20,7 @@
 package org.olat.modules.grading.ui.component;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import org.apache.velocity.VelocityContext;
@@ -49,18 +50,14 @@ public class GraderMailTemplate extends MailTemplate {
 	private CourseNode courseNode;
 	private RepositoryEntry referenceEntry;
 	
+	private List<RepositoryEntry> entries;
+	private List<CourseNode> courseNodes;
+	
 	private String taxonomyLevel;
 	private String taxonomyLevelPath;
 	
 	public GraderMailTemplate(String subject, String body) {
 		super(subject, body, null);
-	}
-	
-	private GraderMailTemplate(RepositoryEntry entry, CourseNode courseNode, RepositoryEntry referenceEntry) {
-		super(null, null, null);
-		this.entry = entry;
-		this.courseNode = courseNode;
-		this.referenceEntry = referenceEntry;
 	}
 	
 	private GraderMailTemplate(String templateName, RepositoryEntry entry, CourseNode courseNode, RepositoryEntry referenceEntry) {
@@ -155,6 +152,14 @@ public class GraderMailTemplate extends MailTemplate {
 	public void setEntry(RepositoryEntry entry) {
 		this.entry = entry;
 	}
+	
+	public List<RepositoryEntry> getEntries() {
+		return entries;
+	}
+
+	public void setEntries(List<RepositoryEntry> entries) {
+		this.entries = entries;
+	}
 
 	public CourseNode getCourseNode() {
 		return courseNode;
@@ -162,6 +167,14 @@ public class GraderMailTemplate extends MailTemplate {
 
 	public void setCourseNode(CourseNode courseNode) {
 		this.courseNode = courseNode;
+	}
+
+	public List<CourseNode> getCourseNodes() {
+		return courseNodes;
+	}
+
+	public void setCourseNodes(List<CourseNode> courseNodes) {
+		this.courseNodes = courseNodes;
 	}
 
 	public RepositoryEntry getReferenceEntry() {
@@ -187,22 +200,87 @@ public class GraderMailTemplate extends MailTemplate {
 	public void setTaxonomyLevelPath(String taxonomyLevelPath) {
 		this.taxonomyLevelPath = taxonomyLevelPath;
 	}
+	
+	private void putCourseVariablesInMailContext(VelocityContext vContext, RepositoryEntry entry) {
+		String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
+		putVariablesInMailContext(vContext, "courseUrl", url);
+		putVariablesInMailContext(vContext, "courseName", entry.getDisplayname());
+		putVariablesInMailContext(vContext, "courseTitle", entry.getDisplayname());
+		if(StringHelper.containsNonWhitespace(entry.getExternalRef())) {
+			putVariablesInMailContext(vContext, "courseReference", entry.getExternalRef());
+		}
+	}
+	
+	private void putCourseNodeVariablesInMailContext(VelocityContext vContext, CourseNode courseNode) {
+		String title = courseNode.getLongTitle();
+		if(!StringHelper.containsNonWhitespace(title)) {
+			title = courseNode.getShortTitle();
+		}
+		putVariablesInMailContext(vContext, "courseElementTitle", title);
+		putVariablesInMailContext(vContext, "courseElementShortTitle", courseNode.getShortTitle());
+	}
+	
+	private void putCourseNodeVariablesInMailContext(VelocityContext vContext, List<CourseNode> courseNodes) {
+		StringBuilder titleSb = new StringBuilder();
+		StringBuilder shortTitleSb = new StringBuilder();
+		for(CourseNode node:courseNodes) {
+			String title = node.getLongTitle();
+			if(!StringHelper.containsNonWhitespace(title)) {
+				title = node.getShortTitle();
+			}
+			if(titleSb.length() > 0) titleSb.append(", ");
+			if(shortTitleSb.length() > 0) shortTitleSb.append(", ");
+			
+			titleSb.append(title);
+			shortTitleSb.append(node.getShortTitle());
+		}
+		
+		putVariablesInMailContext(vContext, "courseElementTitle", titleSb.toString());
+		putVariablesInMailContext(vContext, "courseElementShortTitle", shortTitleSb.toString());
+	}
+	
+	private void putCourseVariablesInMailContext(VelocityContext vContext, List<RepositoryEntry> entries) {
+		StringBuilder urlSb = new StringBuilder();
+		StringBuilder courseNameSb = new StringBuilder();
+		StringBuilder courseReferenceSb = new StringBuilder();
+		
+		for(RepositoryEntry courseEntry:entries) {
+			String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + courseEntry.getKey();
+			if(urlSb.length() > 0) urlSb.append(", ");
+			urlSb.append(url);
+			
+			String name = courseEntry.getDisplayname();
+			if(courseNameSb.length() > 0) courseNameSb.append(", ");
+			courseNameSb.append(name);
+			
+			if(StringHelper.containsNonWhitespace(courseEntry.getExternalRef())) {
+				if(courseReferenceSb.length() > 0) courseReferenceSb.append(", ");
+				courseReferenceSb.append(courseEntry.getExternalRef());
+			}
+		}
+
+		putVariablesInMailContext(vContext, "courseUrl", urlSb.toString());
+		putVariablesInMailContext(vContext, "courseName", courseNameSb.toString());
+		putVariablesInMailContext(vContext, "courseTitle", courseNameSb.toString());
+		putVariablesInMailContext(vContext, "courseReference", courseReferenceSb.toString());
+	}
 
 	@Override
 	public void putVariablesInMailContext(VelocityContext vContext, Identity recipient) {
 		if(entry != null) {
-			String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
-			putVariablesInMailContext(vContext, "courseUrl", url);
-			putVariablesInMailContext(vContext, "courseName", entry.getDisplayname());
-			putVariablesInMailContext(vContext, "courseTitle", entry.getDisplayname());
-			if(StringHelper.containsNonWhitespace(entry.getExternalRef())) {
-				putVariablesInMailContext(vContext, "courseReference", entry.getExternalRef());
-			}
+			putCourseVariablesInMailContext(vContext, entry);
+		} else if(entries != null && entries.size() == 1) {
+			putCourseVariablesInMailContext(vContext, entries.get(0));
+		} else if(entries != null && entries.size() > 1) {
+			putCourseVariablesInMailContext(vContext, entries);
 		}
 		
 		if(courseNode != null) {
-			putVariablesInMailContext(vContext, "courseElementTitle", courseNode.getLongTitle());
-			putVariablesInMailContext(vContext, "courseElementShortTitle", courseNode.getShortTitle());
+			putCourseNodeVariablesInMailContext(vContext, courseNode);
+		} else if(courseNodes != null && courseNodes.size() == 1) {
+			putCourseNodeVariablesInMailContext(vContext, courseNodes.get(0));
+		} else if(courseNodes != null && courseNodes.size() > 1) {
+			putCourseNodeVariablesInMailContext(vContext, courseNodes);
 		}
 		
 		if(referenceEntry != null) {

@@ -1846,12 +1846,16 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			logRecipients(msg, RecipientType.TO);
 			logRecipients(msg, RecipientType.BCC);
 			logRecipients(msg, RecipientType.CC);
-			log.info("Content    : {}", msg.getContent());
-			
-			//File file = new File("/HotCoffee/tmp/mail_" + CodeHelper.getForeverUniqueID() + ".msg");
-			//OutputStream os = new FileOutputStream(file);
-			//msg.writeTo(os);
-			//IOUtils.closeQuietly(os);
+			Object content = msg.getContent();
+			if(content instanceof MimeMultipart) {
+				MimeMultipart mmp = (MimeMultipart)content;
+				for(int i=0; i<mmp.getCount(); i++) {
+					if(i > 0) log.info("---------------------");
+					log.info("Content    : {}", mmp.getBodyPart(i).getContent());
+				}
+			} else {
+				log.info("Content    : {}", msg.getContent());
+			}
 		} catch (IOException e) {
 			log.error("", e);
 		}
