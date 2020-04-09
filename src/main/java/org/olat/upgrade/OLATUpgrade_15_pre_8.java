@@ -21,12 +21,16 @@ package org.olat.upgrade;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -44,6 +48,8 @@ public class OLATUpgrade_15_pre_8 extends OLATUpgrade {
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private RepositoryService repositoryService;
 
 	public OLATUpgrade_15_pre_8() {
 		super();
@@ -81,14 +87,9 @@ public class OLATUpgrade_15_pre_8 extends OLATUpgrade {
 	private boolean deletePortfolioV1(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
 		boolean allOk = true;
 		if (!uhd.getBooleanDataValue(DELETE_PORTFOLIO_V1)) {
-			
 			try {
-				File portfolioRoot = VFSManager.olatRootContainer(File.separator + "portfolio", null).getBasefile();
-				if(Files.exists(portfolioRoot.toPath())) {
-					FileUtils.deleteDirsAndFiles(portfolioRoot, true, true);
-					dbInstance.commitAndCloseSession();
-					log.info("Delete portfolio v1 root directory.");
-				}
+				deletePortfolioRepositoryEntries();
+				deletePortfolioRootDirectory();
 			} catch (Exception e) {
 				log.error("", e);
 				allOk = false;
@@ -98,6 +99,44 @@ public class OLATUpgrade_15_pre_8 extends OLATUpgrade {
 			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
 		return allOk;
+	}
+
+	private void deletePortfolioRepositoryEntries() {
+		List<RepositoryEntry> portfolioV1Entries = loadPortfolioV1Entries();
+		log.info("Deletion of {} portfolio V1 repository entries started.", portfolioV1Entries.size());
+		
+		AtomicInteger migrationCounter = new AtomicInteger(0);
+		for (RepositoryEntry entry : portfolioV1Entries) {
+			try {
+				repositoryService.deletePermanently(entry, null, null, null);
+				dbInstance.commitAndCloseSession();
+				migrationCounter.incrementAndGet();
+			} catch (Exception e) {
+				log.error("Portfolio V1 repository entry not deleted. Id={}", entry.getKey());
+			}	
+		}
+		log.info("{} Portfolio V1 repository entries deleted.", migrationCounter);
+	}
+
+	private List<RepositoryEntry> loadPortfolioV1Entries() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select v");
+		sb.append("  from repositoryentry v");
+		sb.append("       join fetch v.olatResource as ores");
+		sb.append(" where ores.resName='EPStructuredMapTemplate'");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntry.class)
+				.getResultList();
+	}
+
+	private void deletePortfolioRootDirectory() {
+		File portfolioRoot = VFSManager.olatRootContainer(File.separator + "portfolio", null).getBasefile();
+		if(Files.exists(portfolioRoot.toPath())) {
+			FileUtils.deleteDirsAndFiles(portfolioRoot, true, true);
+			dbInstance.commitAndCloseSession();
+			log.info("Delete portfolio v1 root directory.");
+		}
 	}
 
 }

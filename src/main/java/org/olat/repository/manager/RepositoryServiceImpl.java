@@ -512,7 +512,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(entry);
 		OLATResource resource = entry.getOlatResource();
 		//delete old context
-		if (!handler.readyToDelete(entry, identity, roles, locale, errors)) {
+		if (handler != null && !handler.readyToDelete(entry, identity, roles, locale, errors)) {
 			return errors;
 		}
 
@@ -548,8 +548,10 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		dbInstance.commit();
 
 		// inform handler to do any cleanup work... handler must delete the
-		// referenced resourceable a swell.
-		handler.cleanupOnDelete(entry, resource);
+		// referenced resourceable as well.
+		if (handler != null) {
+			handler.cleanupOnDelete(entry, resource);
+		}
 		dbInstance.commit();
 
 		//delete all test sessions
