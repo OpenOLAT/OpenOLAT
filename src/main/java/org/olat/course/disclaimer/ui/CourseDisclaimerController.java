@@ -168,13 +168,13 @@ public class CourseDisclaimerController extends FormBasicController {
 
 		if (disclaimer1Enabled) {
 			allOk &= validateTextInput(disclaimer1TitleEl, 255);
-			allOk &= validateTextInput(disclaimer1TermsEl, 255);
+			allOk &= validateTextInput(disclaimer1TermsEl, 2550);
 			allOk &= validateTextInput(disclaimer1Label1El, -1);
 		}
 
 		if (disclaimer2Enabled) {
 			allOk &= validateTextInput(disclaimer2TitleEl, 255);
-			allOk &= validateTextInput(disclaimer2TermsEl, 255);
+			allOk &= validateTextInput(disclaimer2TermsEl, 2550);
 			allOk &= validateTextInput(disclaimer2Label1El, -1);
 		}
 
@@ -370,9 +370,7 @@ public class CourseDisclaimerController extends FormBasicController {
 			courseConfig.setDisclaimerTitle(1, disclaimer1TitleEl.getValue());
 			courseConfig.setDisclaimerTerms(1, disclaimer1TermsEl.getValue());
 			courseConfig.setDisclaimerLabel(1, 1, disclaimer1Label1El.getValue());
-			if (StringHelper.containsNonWhitespace(disclaimer1Label2El.getValue())) {
-				courseConfig.setDisclaimerLabel(1, 2, disclaimer1Label2El.getValue());
-			}
+			courseConfig.setDisclaimerLabel(1, 2, disclaimer1Label2El.getValue());
 		}
 
 		courseConfig.setDisclaimerEnabled(2, disclaimer2Enabled);
@@ -380,9 +378,7 @@ public class CourseDisclaimerController extends FormBasicController {
 			courseConfig.setDisclaimerTitle(2, disclaimer2TitleEl.getValue());
 			courseConfig.setDisclaimerTerms(2, disclaimer2TermsEl.getValue());
 			courseConfig.setDisclaimerLabel(2, 1, disclaimer2Label1El.getValue());
-			if (StringHelper.containsNonWhitespace(disclaimer2Label2El.getValue())) {
-				courseConfig.setDisclaimerLabel(2, 2, disclaimer2Label2El.getValue());
-			}
+			courseConfig.setDisclaimerLabel(2, 2, disclaimer2Label2El.getValue());
 		}
 
 		CourseFactory.setCourseConfig(courseOres.getResourceableId(), courseConfig);
