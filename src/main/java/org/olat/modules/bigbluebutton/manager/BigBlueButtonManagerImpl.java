@@ -685,7 +685,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 	private boolean createBigBlueButtonMeeting(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors) {
 		BigBlueButtonMeetingTemplate template = meeting.getTemplate();
 		BigBlueButtonServer server = meeting.getServer();
-		if(!server.isEnabled()) {
+		if(server == null || !server.isEnabled()) {
 			errors.append(new BigBlueButtonError(BigBlueButtonErrorCodes.serverDisabled));
 			return false;
 		}
