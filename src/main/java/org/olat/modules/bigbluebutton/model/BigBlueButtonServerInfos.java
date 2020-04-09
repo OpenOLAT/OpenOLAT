@@ -19,6 +19,7 @@
  */
 package org.olat.modules.bigbluebutton.model;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,17 +34,27 @@ import org.olat.modules.bigbluebutton.BigBlueButtonServer;
 public class BigBlueButtonServerInfos {
 	
 	private double load;
+	private boolean available;
 	private final BigBlueButtonServer server;
 	private final List<BigBlueButtonMeetingInfos> meetingsInfos;
 	
-	public BigBlueButtonServerInfos(BigBlueButtonServer server, List<BigBlueButtonMeetingInfos> meetingsInfos, double load) {
+	public BigBlueButtonServerInfos(BigBlueButtonServer server, boolean available, List<BigBlueButtonMeetingInfos> meetingsInfos, double load) {
 		this.load = load;
 		this.server = server;
+		this.available = available;
 		this.meetingsInfos = meetingsInfos;
+	}
+	
+	public static final BigBlueButtonServerInfos empty(BigBlueButtonServer server) {
+		return new BigBlueButtonServerInfos(server, false, new ArrayList<>(), 0.0d);
 	}
 	
 	public double getLoad() {
 		return load;
+	}
+	
+	public boolean isAvailable() {
+		return available;
 	}
 	
 	public BigBlueButtonServer getServer() {

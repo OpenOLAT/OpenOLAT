@@ -65,7 +65,7 @@ public class BigBlueButtonAdminServersController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ServersCols.enabled));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ServersCols.status, new StatusCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ServersCols.url));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ServersCols.capacityFactor, new CapacityFactorCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ServersCols.moderatorCount));
