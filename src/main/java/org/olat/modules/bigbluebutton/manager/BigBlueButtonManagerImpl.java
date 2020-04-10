@@ -27,6 +27,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -794,7 +795,10 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 		public int compare(BigBlueButtonServerInfos o1, BigBlueButtonServerInfos o2) {
 			double l1 = o1.getLoad();
 			double l2 = o2.getLoad();
-			return Double.compare(l1, l2);
+			if (l1 == l2) {
+				// random order for same load for equal distribution of server usage
+				return (new Random().nextBoolean() ? 1 : -1);
+			}			return Double.compare(l1, l2);
 		}
 	}
 	
