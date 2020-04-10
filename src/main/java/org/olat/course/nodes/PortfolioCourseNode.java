@@ -148,7 +148,7 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		} else {
 			RepositoryEntry mapEntry = getReferencedRepositoryEntry();
-			if(BinderTemplateResource.TYPE_NAME.equals(mapEntry.getOlatResource().getResourceableTypeName())) {
+			if(mapEntry != null && BinderTemplateResource.TYPE_NAME.equals(mapEntry.getOlatResource().getResourceableTypeName())) {
 				controller = new PortfolioCourseNodeRunController(ureq, wControl, userCourseEnv, this);
 			} else {
 				Translator trans = Util.createPackageTranslator(PortfolioCourseNodeRunController.class, ureq.getLocale());

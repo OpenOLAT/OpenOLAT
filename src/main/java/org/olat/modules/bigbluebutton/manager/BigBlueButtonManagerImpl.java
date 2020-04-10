@@ -253,7 +253,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 					.filter(meeting -> instanceMeetingsIds.contains(meeting.getMeetingId()))
 					.collect(Collectors.toList());
 			double load = this.calculateLoad(info.getServer(), instanceMeetings);
-			instanceInfos.add(new BigBlueButtonServerInfos(info.getServer(), instanceMeetings, load));
+			instanceInfos.add(new BigBlueButtonServerInfos(info.getServer(), info.isAvailable(), instanceMeetings, load));
 		}
 		return instanceInfos;
 	}
@@ -409,7 +409,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 		return threads.stream()
 			.filter(MeetingInfosThread::isExecuted)
 			.filter(thread -> !thread.hasErrors())
-			.map(thread -> new BigBlueButtonServerInfos(thread.getServer(), thread.getMeetingsInfos(),
+			.map(thread -> new BigBlueButtonServerInfos(thread.getServer(), thread.isExecuted(), thread.getMeetingsInfos(),
 					calculateLoad(thread.getServer(), thread.getMeetingsInfos())))
 			.collect(Collectors.toList());
 	}
@@ -600,8 +600,6 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 
 	@Override
 	public String join(BigBlueButtonMeeting meeting, Identity identity, boolean moderator, boolean guest, Boolean isRunning, BigBlueButtonErrors errors) {
-		this.getAvailableServer();
-		
 		String joinUrl = null;
 		if(isRunning != null && isRunning.booleanValue() && meeting.getServer() != null) {
 			joinUrl = buildJoinUrl(meeting, meeting.getServer(), identity, moderator, guest);
@@ -687,7 +685,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 	private boolean createBigBlueButtonMeeting(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors) {
 		BigBlueButtonMeetingTemplate template = meeting.getTemplate();
 		BigBlueButtonServer server = meeting.getServer();
-		if(!server.isEnabled()) {
+		if(server == null || !server.isEnabled()) {
 			errors.append(new BigBlueButtonError(BigBlueButtonErrorCodes.serverDisabled));
 			return false;
 		}

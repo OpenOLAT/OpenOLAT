@@ -68,7 +68,7 @@ public class CourseModule extends AbstractSpringModule {
 	private boolean displayInfoBox;
 	@Value("${course.display.changelog}")
 	private boolean displayChangeLog;
-	@Value("${course.disclaimer.enabled:false}")
+	@Value("${course.disclaimer.enabled:true}")
 	private boolean disclaimerEnabled;
 	
 	// Repository types

@@ -137,7 +137,7 @@ public class CourseTemplateSearchController extends FormBasicController {
 					.getNodeById(pNode.getIdent());
 			if (treeNode != null && treeNode.isAccessible()) {
 				RepositoryEntry refEntry = pNode.getReferencedRepositoryEntry();
-				if("BinderTemplate".equals(refEntry.getOlatResource().getResourceableTypeName())) {
+				if(refEntry != null && "BinderTemplate".equals(refEntry.getOlatResource().getResourceableTypeName())) {
 					RepositoryEntry courseEntry = uce.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 					
 					CurrentBinder binderKey = new CurrentBinder(courseEntry.getKey(), pNode.getIdent());
