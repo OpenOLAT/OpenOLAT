@@ -482,19 +482,21 @@ public class LinkFileCombiCalloutController extends BasicController {
 	
 	public boolean isEditorEnabled() {
 		// enable html editor for html files
-		if(editable && StringHelper.containsNonWhitespace(relFilePath)) {
+		return editable && isHtmlFile();
+	}
+	
+	public boolean isHtmlFile() {
+		if(StringHelper.containsNonWhitespace(relFilePath)) {
 			String lowercase = relFilePath.toLowerCase().trim();
 			if (lowercase.endsWith(".html") || lowercase.endsWith(".htm")) {
 				return true;
 			}
 		}
-		// disable html editor for all other cases
 		return false;		
 	}
 
 	@Override
 	protected void doDispose() {
-		// controllers auto-disposed by basic controller
+		//
 	}
-
 }
