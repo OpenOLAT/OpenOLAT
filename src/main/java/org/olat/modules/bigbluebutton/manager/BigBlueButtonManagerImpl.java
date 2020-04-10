@@ -27,7 +27,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -388,7 +387,23 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 			return null;
 		}
 		Collections.sort(serversInfos, new ServerLoadComparator());
-		return serversInfos.get(0).getServer();
+		
+		double load = serversInfos.get(0).getLoad();
+		List<BigBlueButtonServerInfos> sameLoadsServer = new ArrayList<>();
+		for(BigBlueButtonServerInfos serverInfos : serversInfos) {
+			if(serverInfos.getLoad() == load) {
+				sameLoadsServer.add(serverInfos);
+			}
+		}
+		
+		if(sameLoadsServer.isEmpty()) {
+			return serversInfos.get(0).getServer();
+		} else if(sameLoadsServer.size() == 1) {
+			return sameLoadsServer.get(0).getServer();
+		}
+		
+		Collections.shuffle(sameLoadsServer);
+		return sameLoadsServer.get(0).getServer();
 	}
 	
 	private List<BigBlueButtonServerInfos> getServersInfos(List<BigBlueButtonServer> servers) {
@@ -795,10 +810,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 		public int compare(BigBlueButtonServerInfos o1, BigBlueButtonServerInfos o2) {
 			double l1 = o1.getLoad();
 			double l2 = o2.getLoad();
-			if (l1 == l2) {
-				// random order for same load for equal distribution of server usage
-				return (new Random().nextBoolean() ? 1 : -1);
-			}			return Double.compare(l1, l2);
+			return Double.compare(l1, l2);
 		}
 	}
 	
