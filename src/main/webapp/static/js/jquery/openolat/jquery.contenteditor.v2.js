@@ -81,6 +81,7 @@
 		
 		interact('.o_page_part.o_page_part_view, .o_page_fragment_edit').draggable({
 			autoScroll: true,
+			ignoreFrom: '.o_page_part.o_page_edit form',
 			allowFrom: '.o_page_tools_dd, .o_page_part.o_page_part_view',
 			modifiers: [
 				interact.modifiers.restrict({
