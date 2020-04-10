@@ -387,7 +387,23 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 			return null;
 		}
 		Collections.sort(serversInfos, new ServerLoadComparator());
-		return serversInfos.get(0).getServer();
+		
+		double load = serversInfos.get(0).getLoad();
+		List<BigBlueButtonServerInfos> sameLoadsServer = new ArrayList<>();
+		for(BigBlueButtonServerInfos serverInfos : serversInfos) {
+			if(serverInfos.getLoad() == load) {
+				sameLoadsServer.add(serverInfos);
+			}
+		}
+		
+		if(sameLoadsServer.isEmpty()) {
+			return serversInfos.get(0).getServer();
+		} else if(sameLoadsServer.size() == 1) {
+			return sameLoadsServer.get(0).getServer();
+		}
+		
+		Collections.shuffle(sameLoadsServer);
+		return sameLoadsServer.get(0).getServer();
 	}
 	
 	private List<BigBlueButtonServerInfos> getServersInfos(List<BigBlueButtonServer> servers) {
