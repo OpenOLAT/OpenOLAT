@@ -584,24 +584,29 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		
 		AssessmentTestSession session = qtiService
 				.getLastAssessmentTestSessions(entry, courseNode.getIdent(), referenceEntry, assessedIdentity);
-		
-		File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(referenceEntry.getOlatResource());
-		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
-		ManifestBuilder manifestBuilder = ManifestBuilder.read(new File(unzippedDirRoot, "imsmanifest.xml"));
-		TestSessionState testSessionState = qtiService.loadTestSessionState(session);
-		// use mutable maps to allow updates
-		Map<Identity,AssessmentTestSession> lastSessions = new HashMap<>();
-		lastSessions.put(assessedIdentity, session);
-		Map<Identity, TestSessionState> testSessionStates = new HashMap<>();
-		testSessionStates.put(assessedIdentity, testSessionState);
-		CorrectionOverviewModel model = new CorrectionOverviewModel(entry, courseNode, referenceEntry,
-				resolvedAssessmentTest, manifestBuilder, lastSessions, testSessionStates);
-		GradingTimeRecordRef record = gradingService.getCurrentTimeRecord(assignment, ureq.getRequestTimestamp());
-		
-		correctionCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel,
-				model, assessedIdentity, assignment, record, readOnly, anonymous);
-		listenTo(correctionCtrl);
-		stackPanel.pushController(translate("correction"), correctionCtrl);
+		if(session == null) {
+			gradingService.deactivateAssignment(assignment);
+			showWarning("warning.assignement.deactivated");
+			loadModel();
+		} else {
+			File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(referenceEntry.getOlatResource());
+			ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
+			ManifestBuilder manifestBuilder = ManifestBuilder.read(new File(unzippedDirRoot, "imsmanifest.xml"));
+			TestSessionState testSessionState = qtiService.loadTestSessionState(session);
+			// use mutable maps to allow updates
+			Map<Identity,AssessmentTestSession> lastSessions = new HashMap<>();
+			lastSessions.put(assessedIdentity, session);
+			Map<Identity, TestSessionState> testSessionStates = new HashMap<>();
+			testSessionStates.put(assessedIdentity, testSessionState);
+			CorrectionOverviewModel model = new CorrectionOverviewModel(entry, courseNode, referenceEntry,
+					resolvedAssessmentTest, manifestBuilder, lastSessions, testSessionStates);
+			GradingTimeRecordRef record = gradingService.getCurrentTimeRecord(assignment, ureq.getRequestTimestamp());
+			
+			correctionCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel,
+					model, assessedIdentity, assignment, record, readOnly, anonymous);
+			listenTo(correctionCtrl);
+			stackPanel.pushController(translate("correction"), correctionCtrl);
+		}
 	}
 	
 	private void doUpdateCourseNode(AssessmentTestSession testSessionsToComplete, AssessmentTest assessmentTest,

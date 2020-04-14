@@ -30,7 +30,8 @@ public enum GradingAssignmentStatus {
 	unassigned("o_grad_assignment_unassigned"),
 	assigned("o_grad_assignment_assigned"),
 	inProcess("o_grad_assignment_inprocess"),
-	done("o_grad_assignment_done");
+	done("o_grad_assignment_done"),
+	deactivated("o_grad_assignment_deactivated");
 	
 	private final String iconCssClass;
 	

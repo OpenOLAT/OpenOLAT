@@ -302,6 +302,9 @@ public class GradingAssignmentDAO {
 				}
 			}
 			sb.append(")");
+		} else {
+			sb.and().append("assignment.status ").in(GradingAssignmentStatus.unassigned, GradingAssignmentStatus.assigned,
+					GradingAssignmentStatus.inProcess, GradingAssignmentStatus.done);
 		}
 	}
 	

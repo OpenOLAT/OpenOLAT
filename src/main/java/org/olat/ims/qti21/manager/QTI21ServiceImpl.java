@@ -109,6 +109,8 @@ import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
 import org.olat.ims.qti21.ui.event.RetrieveAssessmentTestSessionEvent;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
+import org.olat.modules.grading.GradingAssignment;
+import org.olat.modules.grading.GradingService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.user.UserDataDeletable;
@@ -200,6 +202,8 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private GradingService gradingService;
 	@Autowired
 	private AssessmentTestSessionDAO testSessionDao;
 	@Autowired
@@ -443,6 +447,8 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 
 	@Override
 	public boolean deleteAssessmentTestSession(List<Identity> identities, RepositoryEntryRef testEntry, RepositoryEntryRef entry, String subIdent) {
+		boolean gradingEnabled = gradingService.isGradingEnabled(testEntry, null);
+		
 		Set<AssessmentEntry> entries = new HashSet<>();
 		for(Identity identity:identities) {
 			List<AssessmentTestSession> sessions = testSessionDao.getTestSessions(testEntry, entry, subIdent, identity);
@@ -458,8 +464,18 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 		
 		for(AssessmentEntry assessmentEntry:entries) {
 			assessmentEntryDao.resetAssessmentEntry(assessmentEntry);
+			if(gradingEnabled) {
+				deactivateGradingAssignment(testEntry, assessmentEntry);
+			}
 		}
 		return true;
+	}
+	
+	private void deactivateGradingAssignment(RepositoryEntryRef testEntry, AssessmentEntry assessmentEntry) {
+		GradingAssignment assignment = gradingService.getGradingAssignment(testEntry, assessmentEntry);
+		if(assignment != null) {
+			gradingService.deactivateAssignment(assignment);
+		}
 	}
 
 	@Override

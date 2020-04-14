@@ -763,7 +763,7 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 	@Override
 	public void assignGrader(RepositoryEntry referenceEntry, AssessmentEntry assessmentEntry, boolean updateAssessmentDate) {	
 		GradingAssignment assignment = gradingAssignmentDao.getGradingAssignment(referenceEntry, assessmentEntry);
-		if(assignment != null) {
+		if(assignment != null && assignment.getGrader() != null) {
 			if(updateAssessmentDate) {
 				assignment.setAssessmentDate(new Date());
 				gradingAssignmentDao.updateAssignment(assignment);
@@ -779,7 +779,21 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 			deadLine = CalendarUtils.addWorkingDays(new Date(), config.getGradingPeriod().intValue());
 			deadLine = CalendarUtils.endOfDay(deadLine);
 		}
-		assignment = gradingAssignmentDao.createGradingAssignment(choosedGrader, referenceEntry, assessmentEntry, new Date(), deadLine);
+		
+		if(assignment == null) {
+			assignment = gradingAssignmentDao.createGradingAssignment(choosedGrader, referenceEntry, assessmentEntry, new Date(), deadLine);
+		} else {
+			assignment.setAssessmentDate(new Date());
+			assignment.setDeadline(deadLine);
+			if(choosedGrader == null) {
+				assignment.setAssignmentStatus(GradingAssignmentStatus.unassigned);
+			} else {
+				assignment.setAssignmentStatus(GradingAssignmentStatus.assigned);
+				assignment.setAssignmentDate(new Date());
+				assignment.setGrader(choosedGrader);
+			}
+			assignment = gradingAssignmentDao.updateAssignment(assignment);
+		}
 		dbInstance.commit();
 		
 		if(config != null && config.getNotificationTypeEnum() == GradingNotificationType.afterTestSubmission) {
@@ -914,6 +928,21 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 		((GradingAssignmentImpl)assignment).setGrader(null);
 		assignment = gradingAssignmentDao.updateAssignment(assignment);
 		log.info(Tracing.M_AUDIT, "Unassign assignment {}", assignment.getKey());
+		return assignment;
+	}
+	
+	@Override
+	public GradingAssignment deactivateAssignment(GradingAssignment assignment) {
+		assignment = gradingAssignmentDao.loadByKey(assignment.getKey());
+		
+		assignment.setAssignmentStatus(GradingAssignmentStatus.deactivated);
+		assignment.setExtendedDeadline(null);
+		assignment.setAssignmentDate(null);
+		assignment.setReminder1Date(null);
+		assignment.setReminder2Date(null);
+		((GradingAssignmentImpl)assignment).setGrader(null);
+		assignment = gradingAssignmentDao.updateAssignment(assignment);
+		log.info(Tracing.M_AUDIT, "Deactivate assignment {}", assignment.getKey());
 		return assignment;
 	}
 

@@ -158,6 +158,8 @@ public interface GradingService {
 	
 	public GradingAssignment unassignGrader(GradingAssignment assignment);
 	
+	public GradingAssignment deactivateAssignment(GradingAssignment assignment);
+	
 	/**
 	 * Set the assignment status to done.
 	 * 
