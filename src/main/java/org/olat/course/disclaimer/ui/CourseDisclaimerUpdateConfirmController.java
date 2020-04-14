@@ -96,7 +96,7 @@ public class CourseDisclaimerUpdateConfirmController extends FormBasicController
 				}
 			}
 			
-			confirmMessage += translate("dialog.confirm" + (deleteConfirm ? ".remove" : ".revoke"), String.valueOf(numOfConsents) + (numOfConsents != 1 ? ".plural" : ""));
+			confirmMessage += translate("dialog.confirm" + (deleteConfirm ? ".remove" : ".revoke") + (numOfConsents != 1 ? ".plural" : ""), String.valueOf(numOfConsents));
 			layout.contextPut("confirmMessage", confirmMessage);
 
 			FormLayoutContainer layoutCont = FormLayoutContainer.createDefaultFormLayout("confirm", getTranslator());

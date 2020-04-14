@@ -94,7 +94,7 @@ public interface CourseDisclaimerManager {
 	 * @param repositoryEntryRef
 	 * @return boolean
 	 */
-	public boolean isAnyConsent(RepositoryEntryRef repositoryEntryRef);
+	public boolean hasAnyConsent(RepositoryEntryRef repositoryEntryRef);
 	
 	/**
 	 * Returns the amount of consents to a repository entry
@@ -103,4 +103,11 @@ public interface CourseDisclaimerManager {
 	 * @return Long
 	 */
 	public Long countConsents(RepositoryEntryRef repositoryEntryRef);
+	
+	/**
+	 * Returns whether any entry in the database for this repository entry is existing
+	 * @param repositoryEntryRef
+	 * @return boolean
+	 */
+	public boolean hasAnyEntry(RepositoryEntryRef repositoryEntryRef);
 }

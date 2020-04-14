@@ -118,12 +118,29 @@ public class CourseDisclaimerManagerImpl implements CourseDisclaimerManager {
 	}
 	
 	@Override
-	public boolean isAnyConsent(RepositoryEntryRef repositoryEntryRef) {
-		return !getConsents(repositoryEntryRef).isEmpty();
+	public boolean hasAnyConsent(RepositoryEntryRef repositoryEntryRef) {
+		List<CourseDisclaimerConsent> consents = getConsents(repositoryEntryRef);
+		
+		if (consents.isEmpty()) {
+			return false;
+		} else {
+			for (CourseDisclaimerConsent courseDisclaimerConsent : consents) {
+				if (courseDisclaimerConsent.getConsentDate() != null) {
+					return true;
+				}
+			}
+		}
+		
+		return false;
 	}
 	
 	@Override 
 	public Long countConsents(RepositoryEntryRef repositoryEntryRef) {
 		return courseDisclaimerDAO.countConsents(repositoryEntryRef);
+	}
+	
+	@Override
+	public boolean hasAnyEntry(RepositoryEntryRef repositoryEntryRef) {
+		return !getConsents(repositoryEntryRef).isEmpty();
 	}
 }

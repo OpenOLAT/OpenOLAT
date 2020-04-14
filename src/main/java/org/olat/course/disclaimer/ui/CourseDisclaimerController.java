@@ -153,7 +153,7 @@ public class CourseDisclaimerController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if (disclaimerManager.isAnyConsent(repositoryEntry)) {
+		if (disclaimerManager.hasAnyEntry(repositoryEntry)) {
 			if (!disclaimer1Enabled && !disclaimer2Enabled) {
 				// Ask whether existing entries should be deleted
 				askForRemoval(ureq);
@@ -361,7 +361,7 @@ public class CourseDisclaimerController extends FormBasicController {
 										!StringHelper.containsNonWhitespace(courseConfig.getDisclaimerTerms(2)))) 
 				&&
 				// Check if there any consents yet
-				disclaimerManager.isAnyConsent(repositoryEntry)) {
+				disclaimerManager.hasAnyConsent(repositoryEntry)) {
 				askForRevoke(ureq);
 		}
 
