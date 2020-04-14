@@ -35,14 +35,17 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
@@ -65,13 +68,19 @@ public class ImpressumAdminController extends FormBasicController {
 	
 	private SingleSelection positionEl;
 	private MultipleSelectionElement enableEl;
-	private FormLayoutContainer termsCont, impressumCont;
+	private MultipleSelectionElement contactEnableEl;
+	private TextElement contactMailEl;
+	private FormLayoutContainer termsCont;
+	private FormLayoutContainer impressumCont;
+	private FormLayoutContainer dataPrivacyPolicyCont;
+	private FormSubmit formSubmit;
 
 	private CloseableModalController cmc;
 	private HTMLEditorController editorCtrl;
 	
 	private final VFSContainer impressumDir;
 	private final VFSContainer termsOfUseDir;
+	private final VFSContainer dataPrivacyPolicyDir;
 	
 	@Autowired
 	private I18nModule i18nModule;
@@ -84,6 +93,7 @@ public class ImpressumAdminController extends FormBasicController {
 		super(ureq, wControl);
 		impressumDir = new LocalFolderImpl(impressumModule.getImpressumDirectory());
 		termsOfUseDir = new LocalFolderImpl(impressumModule.getTermsOfUseDirectory());
+		dataPrivacyPolicyDir = new LocalFolderImpl(impressumModule.getPrivacyPolicyDirectory());
 		initForm(ureq);
 	}
 
@@ -92,6 +102,7 @@ public class ImpressumAdminController extends FormBasicController {
 		setFormTitle("menu.impressum");
 		setFormDescription("config.hint");
 		boolean enabled = impressumModule.isEnabled();
+		boolean contactEnabled = impressumModule.isContactEnabled();
 		
 		String[] enableKeys = new String[]{ "on" };
 		enableEl = uifactory.addCheckboxesHorizontal("enable", "enable.impressum", formLayout,
@@ -102,6 +113,7 @@ public class ImpressumAdminController extends FormBasicController {
 		String[] positionValues = new String[]{ translate("position.top"), translate("position.footer") };
 		positionEl = uifactory.addDropdownSingleselect("position", "position", formLayout, positionKeys, positionValues, null);
 		positionEl.addActionListener(FormEvent.ONCHANGE);
+		positionEl.setVisible(enabled);
 		if(impressumModule.getPosition() != null) {
 			switch(impressumModule.getPosition()) {
 				case top: positionEl.select(positionKeys[0], true); break;
@@ -168,6 +180,47 @@ public class ImpressumAdminController extends FormBasicController {
 			deleteLink.setUserObject(group);
 			termsOfUseButtons.add(group);
 		}
+		
+		dataPrivacyPolicyCont = FormLayoutContainer.createCustomFormLayout("dataprivacies", getTranslator(), velocity_root + "/buttongroups.html");
+		dataPrivacyPolicyCont.setLabel("dataprivacy.file", null);
+		dataPrivacyPolicyCont.setVisible(enabled);
+		formLayout.add(dataPrivacyPolicyCont);
+		
+		List<ButtonGroup> dataPrivacyPolicyButtons = new ArrayList<>();
+		dataPrivacyPolicyCont.contextPut("buttons", dataPrivacyPolicyButtons);
+		
+		for(String lang:i18nModule.getEnabledLanguageKeys()) {
+			FormLink editLink = uifactory.addFormLink("dataprivacy." + lang, "dataprivacy", getTranslated(lang), "dataprivacy.file", dataPrivacyPolicyCont, Link.BUTTON | Link.NONTRANSLATED);
+			editLink.setLabel(null, null);
+			String filePath = "index_" + lang + ".html";
+			boolean hasDataPrivacyPolicy = checkContent(dataPrivacyPolicyDir.resolve(filePath));
+			if(hasDataPrivacyPolicy) {
+				editLink.setIconLeftCSS("o_icon o_icon_check");
+			}
+			
+			FormLink deleteLink = uifactory
+					.addFormLink("impressum.del." + lang, "delete-dataprivacy", "", "dataprivacy.file", dataPrivacyPolicyCont, Link.BUTTON | Link.NONTRANSLATED);
+			deleteLink.setLabel(null, null);
+			deleteLink.setIconLeftCSS("o_icon o_icon_delete_item");
+			deleteLink.setVisible(hasDataPrivacyPolicy);
+
+			ButtonGroup group = new ButtonGroup(lang, editLink, deleteLink);
+			editLink.setUserObject(group);
+			deleteLink.setUserObject(group);
+			dataPrivacyPolicyButtons.add(group);
+		}
+		
+		contactEnableEl = uifactory.addCheckboxesHorizontal("contactenable", "enable.contact", formLayout,
+				enableKeys, new String[]{ translate("enable") });
+		contactEnableEl.addActionListener(FormEvent.ONCHANGE);
+		contactEnableEl.select(enableKeys[0], contactEnabled);
+		contactEnableEl.setVisible(enabled);
+		
+		contactMailEl = uifactory.addTextElement("contact.mail", 255, impressumModule.getContactMail(), formLayout);
+		contactMailEl.setVisible(contactEnabled && enabled);
+		contactMailEl.setMandatory(contactEnabled && enabled);
+		
+		formSubmit = uifactory.addFormSubmitButton("submit", formLayout);
 	}
 	
 	private String getTranslated(String lang) {
@@ -188,18 +241,59 @@ public class ImpressumAdminController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		//
+		if (contactEnableEl.getSelectedKeys().contains("on")) {
+			impressumModule.setContactEnabled(true);
+			impressumModule.setContactMail(contactMailEl.getValue());
+		} else {
+			impressumModule.setContactEnabled(false);
+		}		
+	}
+	
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		allOk = validateTextInput(contactMailEl, contactMailEl.getMaxLength(), true);
+		
+		return allOk;
+	}
+	
+	private boolean validateTextInput(TextElement textElement, int lenght, boolean isMail) {		
+		textElement.clearError();
+		if(StringHelper.containsNonWhitespace(textElement.getValue())) {
+			if (isMail) {
+				if (!StringHelper.checkMailFormat(textElement.getValue())) {
+					textElement.setErrorKey("input.wrong.mail", null);
+					return false;
+				}
+			} if(lenght != -1 && textElement.getValue().length() > lenght) {
+				textElement.setErrorKey("input.toolong", new String[]{ String.valueOf(lenght) });
+				return false;
+			}
+		} else if (textElement.isMandatory()) {
+			textElement.setErrorKey("form.legende.mandatory", null);
+			return false;
+		}
+
+		return true;
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(enableEl == source) {
 			boolean enabled = enableEl.isAtLeastSelected(1);
+			boolean contactEnabled = impressumModule.isContactEnabled();
 			impressumModule.setEnabled(enabled);
 			
-			positionEl.setEnabled(enabled);
+			positionEl.setVisible(enabled);
 			termsCont.setVisible(enabled);
 			impressumCont.setVisible(enabled);
+			dataPrivacyPolicyCont.setVisible(enabled);
+			contactEnableEl.setVisible(enabled);
+			contactEnableEl.select("on", contactEnabled);
+			contactMailEl.setVisible(contactEnabled && enabled);
+			contactMailEl.setMandatory(contactEnabled && enabled);
+			formSubmit.setVisible(enabled && contactEnabled);
 			
 			getWindowControl().getWindowBackOffice().getWindow().setDirty(true);
 			getWindowControl().getWindowBackOffice().getChiefController().wishReload(ureq, true);
@@ -210,6 +304,16 @@ public class ImpressumAdminController extends FormBasicController {
 				getWindowControl().getWindowBackOffice().getWindow().setDirty(true);
 				getWindowControl().getWindowBackOffice().getChiefController().wishReload(ureq, true);
 			}
+		} else if (contactEnableEl == source) {
+			boolean contactEnabled = contactEnableEl.isAtLeastSelected(1);
+			impressumModule.setContactEnabled(contactEnabled);
+			
+			contactMailEl.setVisible(contactEnabled);
+			contactMailEl.setMandatory(contactEnabled);
+			formSubmit.setVisible(contactEnabled);
+
+			getWindowControl().getWindowBackOffice().getWindow().setDirty(true);
+			getWindowControl().getWindowBackOffice().getChiefController().wishReload(ureq, true);
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
@@ -225,6 +329,12 @@ public class ImpressumAdminController extends FormBasicController {
 				group.getDeleteButton().setVisible(false);
 			} else if("delete-termsofuse".equals(cmd)) {
 				doDelete(termsOfUseDir, lang);
+				group.getEditButton().setIconLeftCSS(null);
+				group.getDeleteButton().setVisible(false);
+			} else if ("dataprivacy".equals(cmd)) {
+				doEdit(ureq, link, dataPrivacyPolicyDir, lang);
+			} else if ("delete-dataprivacy".equals(cmd)) {
+				doDelete(dataPrivacyPolicyDir, lang);
 				group.getEditButton().setIconLeftCSS(null);
 				group.getDeleteButton().setVisible(false);
 			}

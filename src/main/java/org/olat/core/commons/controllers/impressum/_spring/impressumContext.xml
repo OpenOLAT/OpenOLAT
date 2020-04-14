@@ -4,7 +4,8 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans 
                         http://www.springframework.org/schema/beans/spring-beans.xsd ">
 
-	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+	<bean class="org.olat.core.commons.controllers.impressum.ImpressumExtension" init-method="initExtensionPoints">
+		<constructor-arg index="0" ref="impressumModule" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 				<property name="className" value="org.olat.core.commons.controllers.impressum.ImpressumController"/>
@@ -19,7 +20,8 @@
 		<property name="order" value="701"/>
 	</bean>
 	
-	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+	<bean class="org.olat.core.commons.controllers.impressum.TermsOfUseExtension" init-method="initExtensionPoints">
+		<constructor-arg index="0" ref="impressumModule" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 				<property name="className" value="org.olat.core.commons.controllers.impressum.TermsOfUseController"/>
@@ -34,7 +36,24 @@
 		<property name="order" value="702"/>
 	</bean>
 	
-	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+	<bean class="org.olat.core.commons.controllers.impressum.PrivacyPolicyExtension" init-method="initExtensionPoints">
+		<constructor-arg index="0" ref="impressumModule" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.core.commons.controllers.impressum.PrivacyPolicyController"/>
+			</bean>
+		</property>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.core.commons.controllers.impressum.ImpressumMainController</value>
+				<value>org.olat.core.commons.controllers.impressum.ImpressumDmzMainController</value>
+			</list>
+		</property>
+		<property name="order" value="703"/>
+	</bean>
+	
+	<bean class="org.olat.core.commons.controllers.impressum.ContactExtension" init-method="initExtensionPoints">
+		<constructor-arg index="0" ref="impressumModule" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 				<property name="className" value="org.olat.core.commons.controllers.impressum.ContactController"/>
@@ -45,9 +64,8 @@
 				<value>org.olat.core.commons.controllers.impressum.ImpressumMainController</value>		
 			</list>
 		</property>
-		<property name="order" value="703"/>
+		<property name="order" value="704"/>
 	</bean>
-	
 
 	<bean class="org.olat.core.extensions.action.GenericActionExtension"  init-method="initExtensionPoints">
 		<property name="order" value="7208" />

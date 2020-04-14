@@ -19,20 +19,17 @@
  */
 package org.olat.core.commons.controllers.impressum;
 
-import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.util.StringHelper;
-import org.olat.core.util.WebappHelper;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.modules.co.ContactFormController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <h3>Description:</h3> This controller shows a contact form and has a
@@ -48,6 +45,9 @@ public class ContactController extends BasicController implements GenericEventLi
 	private final VelocityContainer content;
 	private ContactFormController contactForm;
 	private static String contactEmail = null;
+	
+	@Autowired
+	private ImpressumModule impressumModule;
 
 	/**
 	 * Creates this controller.
@@ -61,25 +61,8 @@ public class ContactController extends BasicController implements GenericEventLi
 
 		// load configuration only once
 		if (contactEmail == null) {
-			// Read the destination e-mail address from the configuration file.
-			PersistedProperties contactConfiguration = new PersistedProperties(this);
-			contactConfiguration.init();
-			contactEmail = contactConfiguration.getStringPropertyValue("contact.to.address", true);
-			if (!StringHelper.containsNonWhitespace(contactEmail)) {
-				// fallback to standard email
-				contactEmail = WebappHelper.getMailConfig("mailSupport");
-				if (!StringHelper.containsNonWhitespace(contactEmail)) {
-					throw new OLATRuntimeException(
-							"could not find valid contact email address, configure property 'contact.to.address' in olatdata/system/configuration/"
-									+ this.getClass().getName() + ".properties", null);
-				} else {
-					logInfo("Initialize impressum email with standard support address::" + contactEmail
-							+ " You can configure a specific impressum email in the property 'contact.to.address' in olatdata/system/configuration/"
-							+ this.getClass().getName() + ".properties");
-				}
-			} else {
-				logInfo("Initialize impressum email with address::" + contactEmail);
-			}
+			// Read the destination email from the impressModule
+			contactEmail = impressumModule.getContactMail();
 		}
 
 		// Initialize a few contact list management objects.
@@ -117,6 +100,7 @@ public class ContactController extends BasicController implements GenericEventLi
 	/**
 	 * @see org.olat.core.util.event.GenericEventListener#event(org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(Event event) {
 	// nothing to do, the persisted properties used in this controller are
 	// read-only, no GUI to modify the properties yet

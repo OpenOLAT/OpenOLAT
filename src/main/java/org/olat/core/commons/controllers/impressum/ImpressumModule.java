@@ -42,11 +42,17 @@ public class ImpressumModule extends AbstractSpringModule implements ConfigOnOff
 
 	private static final String ENABLED = "impressum.enabled";
 	private static final String POSITION = "impressum.position";
+	private static final String CONTACT_ENABLED = "impressum.contact.enabled";
+	private static final String CONTACT_MAIL = "impressum.contact.mail";
 	
-	@Value("${topnav.impressum:true}")
+	@Value("${impressum.enabled:true}")
 	private boolean enabled;
 	@Value("${impressum.position:footer}")
 	private String position;
+	@Value("${impressum.contact.enabled:true}")
+	private boolean contactEnabled;
+	@Value("${impressum.contact.mail:webmaster@your.domain}")
+	private String contactMail;
 	
 	@Autowired
 	public ImpressumModule(CoordinatorManager coordinatorManager) {
@@ -64,6 +70,16 @@ public class ImpressumModule extends AbstractSpringModule implements ConfigOnOff
 		if(StringHelper.containsNonWhitespace(positionObj)) {
 			position = positionObj;
 		}
+		
+		String contactEnabledObj = getStringPropertyValue(CONTACT_ENABLED, true);
+		if (StringHelper.containsNonWhitespace(contactEnabledObj)) {
+			contactEnabled = "true".equals(contactEnabledObj);
+		}
+		
+		String contactMailObj = getStringPropertyValue(CONTACT_MAIL, true);
+		if (StringHelper.containsNonWhitespace(contactMailObj)) {
+			contactMail = contactMailObj;
+		} 
 	}
 
 	@Override
@@ -87,6 +103,14 @@ public class ImpressumModule extends AbstractSpringModule implements ConfigOnOff
 		return dir;
 	}
 	
+	public File getPrivacyPolicyDirectory() {
+		File dir = Paths.get(WebappHelper.getUserDataRoot(), "customizing", "data_privacy_policy").toFile();
+		if(!dir.exists()) {
+			dir.mkdirs();
+		}
+		return dir;
+	}
+	
 	@Override
 	public boolean isEnabled() {
 		return enabled;
@@ -95,6 +119,24 @@ public class ImpressumModule extends AbstractSpringModule implements ConfigOnOff
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
 		setStringProperty(ENABLED, Boolean.toString(enabled), true);
+	}
+	
+	public boolean isContactEnabled() {
+		return contactEnabled;
+	}
+	
+	public void setContactEnabled(boolean enabled) {
+		this.contactEnabled = enabled;
+		setStringProperty(CONTACT_ENABLED, Boolean.toString(contactEnabled), true);
+	}
+	
+	public String getContactMail() {
+		return contactMail;
+	}
+	
+	public void setContactMail(String contactMail) {
+		this.contactMail = contactMail;
+		setStringProperty(CONTACT_MAIL, contactMail, true);
 	}
 	
 	public Position getPosition() {
