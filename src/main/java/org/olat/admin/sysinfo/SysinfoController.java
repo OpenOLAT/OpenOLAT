@@ -35,7 +35,6 @@ import java.util.TimeZone;
 import org.olat.admin.sysinfo.manager.SessionStatsManager;
 import org.olat.admin.sysinfo.model.SessionsStats;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
@@ -48,6 +47,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -58,8 +58,10 @@ import org.olat.core.util.WebappHelper;
 */
 public class SysinfoController extends FormBasicController {
 	
-	private final BaseSecurity securityManager;
-	private final SessionStatsManager sessionStatsManager;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private SessionStatsManager sessionStatsManager;
 	
 	/**
 	 * @param ureq
@@ -67,10 +69,6 @@ public class SysinfoController extends FormBasicController {
 	 */
 	public SysinfoController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "sysinfo");
-		
-		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
-		sessionStatsManager = CoreSpringFactory.getImpl(SessionStatsManager.class);
-
 		initForm(ureq);
 	}
 
@@ -97,7 +95,16 @@ public class SysinfoController extends FormBasicController {
 		int controllerCnt = DefaultController.getControllerCount();
 		uifactory.addStaticTextElement("controllercount", "runtime.controllercount", Integer.toString(controllerCnt), runtimeCont);
 		int numOfDispatchingThreads = sessionStatsManager.getConcurrentCounter();
-		uifactory.addStaticTextElement("dispatchingthreads", "runtime.dispatchingthreads", Integer.toString(numOfDispatchingThreads), runtimeCont);
+		int numOfDispatchingStreams =  sessionStatsManager.getConcurrentStreamCounter();
+		String threadsInfos;
+		if(numOfDispatchingStreams == 0) {
+			threadsInfos = Integer.toString(numOfDispatchingThreads);
+		} else {
+			threadsInfos = translate("runtime.dispatchingthreads.infos", new String[] {
+					Integer.toString(numOfDispatchingThreads - numOfDispatchingStreams), Integer.toString(numOfDispatchingStreams)
+			});
+		}
+		uifactory.addStaticTextElement("dispatchingthreads", "runtime.dispatchingthreads", threadsInfos, runtimeCont);
 		
 		//sessions and clicks
 		String sessionAndClicksPage = velocity_root + "/session_clicks.html";
