@@ -47,7 +47,8 @@ public class SessionStatsManager implements Sampler {
 	private	UserSessionManager sessionManager;
 	
 	private SessionStatsSample currentSample;
-	private AtomicInteger concurrentCounter = new AtomicInteger(0);
+	private final AtomicInteger concurrentCounter = new AtomicInteger(0);
+	private final AtomicInteger concurrentStreamCounter = new AtomicInteger(0);
 	private List<SessionStatsSample> sessionStatsSamples = new ArrayList<>();
 
 	public List<SessionStatsSample> getSessionViews() {
@@ -89,7 +90,19 @@ public class SessionStatsManager implements Sampler {
 	public void decrementConcurrentCounter() {
 		concurrentCounter.decrementAndGet();
 	}
+
+	public int getConcurrentStreamCounter() {
+		return concurrentStreamCounter.intValue();
+	}
+
+	public void incrementConcurrentStreamCounter() {
+		concurrentStreamCounter.incrementAndGet();
+	}
 	
+	public void decrementConcurrentStreamCounter() {
+		concurrentStreamCounter.decrementAndGet();
+	}
+
 	public synchronized long getNumOfSessions() {
 		if(currentSample != null) {
 			return currentSample.getNumOfSessions();

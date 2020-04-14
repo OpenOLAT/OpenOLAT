@@ -45,13 +45,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.Logger;
+import org.olat.admin.sysinfo.manager.SessionStatsManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.util.bandwidth.SlowBandWidthSimulator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.AssertException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -252,13 +253,21 @@ public class ServletUtil {
 	
 	protected static void copy(OutputStream ostream, InputStream resourceInputStream, Range range, int bufferSize) throws IOException {
 		IOException exception = null;
+		
+		SessionStatsManager stats = CoreSpringFactory.getImpl(SessionStatsManager.class);
 
-		InputStream istream = (resourceInputStream instanceof BufferedInputStream)
-				? resourceInputStream : new BufferedInputStream(resourceInputStream, bufferSize);
-		exception = copyRange(istream, ostream, range.start, range.end, bufferSize);
-
-		// Clean up the input stream
-		istream.close();
+		try(InputStream istream = (resourceInputStream instanceof BufferedInputStream)
+				? resourceInputStream : new BufferedInputStream(resourceInputStream, bufferSize)) {
+			stats.incrementConcurrentStreamCounter();
+			Thread.sleep(5000);
+			exception = copyRange(istream, ostream, range.start, range.end, bufferSize);
+		} catch(IOException e) {
+			handleIOException("Deliver range of data", e);
+		} catch(Exception e) {
+			log.error("", e);
+		} finally {
+			stats.decrementConcurrentStreamCounter();
+		}
 
 		// Rethrow any exception that has occurred
 		if (exception != null) throw exception;
