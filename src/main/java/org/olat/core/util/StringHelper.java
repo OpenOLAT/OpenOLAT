@@ -46,12 +46,12 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.filter.impl.HtmlScanner;
 import org.olat.core.util.filter.FilterFactory;
+import org.olat.core.util.filter.impl.HtmlScanner;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
 import org.olat.user.UserManager;
 
@@ -70,8 +70,6 @@ public class StringHelper {
 	private static final NumberFormat numFormatter;
 	private static final String WHITESPACE_REGEXP = "^\\s*$";
 	private static final Pattern WHITESPACE_PATTERN = Pattern.compile(WHITESPACE_REGEXP);
-	private static final String EMAIL_REGEXP = "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}";
-	private static final Pattern EMAIL_PATTERN = Pattern.compile(EMAIL_REGEXP);
 	
 	private static final int LONG_MAX_LENGTH = Long.toString(Long.MAX_VALUE).length();
 	
@@ -676,11 +674,5 @@ public class StringHelper {
 			shortenedText = "";
 		}
 		return shortenedText;
-	}
-	
-	public static boolean checkMailFormat(String mail) {
-		Matcher m = EMAIL_PATTERN.matcher(mail);
-
-        return m.matches();
 	}
 }

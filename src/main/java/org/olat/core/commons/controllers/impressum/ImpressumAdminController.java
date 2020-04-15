@@ -50,6 +50,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
+import org.olat.core.util.mail.EmailAddressValidator;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -263,7 +264,7 @@ public class ImpressumAdminController extends FormBasicController {
 		textElement.clearError();
 		if(StringHelper.containsNonWhitespace(textElement.getValue())) {
 			if (isMail) {
-				if (!StringHelper.checkMailFormat(textElement.getValue())) {
+				if (!EmailAddressValidator.isValidEmailAddress(textElement.getValue())) {
 					textElement.setErrorKey("input.wrong.mail", null);
 					return false;
 				}
