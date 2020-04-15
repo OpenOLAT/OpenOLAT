@@ -883,16 +883,21 @@ public class GradingAssignmentsListController extends FormBasicController implem
 	
 	private void doUnassign(UserRequest ureq, List<GradingAssignmentRow> rows) {
 		List<GradingAssignment> assignments = rows.stream()
+				.filter(GradingAssignmentRow::hasGrader)
 				.map(GradingAssignmentRow::getAssignment)
 				.collect(Collectors.toList());
-		confirmUnassignGraderCtrl = new ConfirmUnassignGraderController(ureq, getWindowControl(), assignments);
-		listenTo(confirmUnassignGraderCtrl);
-
-		String gradersNames = getGradersNames(rows);
-		String title = translate("confirm.unassign.grader.title", new String[] { gradersNames });
-		cmc = new CloseableModalController(getWindowControl(), "close", confirmUnassignGraderCtrl.getInitialComponent(), true, title);
-		listenTo(cmc);
-		cmc.activate();
+		if(assignments.isEmpty()) {
+			showWarning("warning.atleastone.assignment.with.grader");
+		} else {
+			confirmUnassignGraderCtrl = new ConfirmUnassignGraderController(ureq, getWindowControl(), assignments);
+			listenTo(confirmUnassignGraderCtrl);
+	
+			String gradersNames = getGradersNames(rows);
+			String title = translate("confirm.unassign.grader.title", new String[] { gradersNames });
+			cmc = new CloseableModalController(getWindowControl(), "close", confirmUnassignGraderCtrl.getInitialComponent(), true, title);
+			listenTo(cmc);
+			cmc.activate();
+		}
 	}
 	
 	private void doBatchExtendDeadline(UserRequest ureq) {
