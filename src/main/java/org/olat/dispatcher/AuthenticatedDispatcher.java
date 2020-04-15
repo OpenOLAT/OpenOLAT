@@ -259,7 +259,7 @@ public class AuthenticatedDispatcher implements Dispatcher {
 	
 	private void processValidDispatchURI(UserRequest ureq, UserSession usess, HttpServletRequest request, HttpServletResponse response) {
 		Windows ws = Windows.getWindows(ureq);
-		ws.disposeClosedWindows();
+		ws.disposeClosedWindows(ureq);
 		Window window = ws.getWindow(ureq);
 		if (window == null) {
 			//probably a 

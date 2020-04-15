@@ -318,6 +318,7 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 		final HttpServletResponse response = ureq.getHttpResp();
 		final String timestampID = ureq.getTimestampID() == null ? "1" : ureq.getTimestampID();
 		final String componentID = ureq.getComponentID();
+		final boolean closeWindow = "close-window".equals(ureq.getParameter("cid"));
 		
 		setMarkToBeRemoved(false);
 
@@ -431,6 +432,10 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 							if (isDebugLog) {
 								long durationAfterDoDispatchToComponent = System.currentTimeMillis() - debug_start;
 								log.debug("Perf-Test: Window durationAfterDoDispatchToComponent=" + durationAfterDoDispatchToComponent);
+							}
+							if(closeWindow) {
+								ureq.getHttpResp().setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+								return;
 							}
 						}	
 							
@@ -713,6 +718,10 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 					long dstop = System.currentTimeMillis();
 					long diff = dstop - dstart;
 					debugMsg.append("disp_comp:").append(diff).append(LOG_SEPARATOR);
+				}
+				if(closeWindow) {
+					ureq.getHttpResp().setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+					return;
 				}
 				if (didDispatch) { // the component with the given id was found
 					mr = ureq.getDispatchResult().getResultingMediaResource();
@@ -1264,7 +1273,7 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 		}
 		
 		ChiefController chief = wbackofficeImpl.getChiefController();
-		boolean reload = chief == null ? false : chief.wishReload(ureq, true);
+		boolean reload = chief != null && chief.wishReload(ureq, true);
 		return new DispatchResult(toDispatch, incTimestamp, reload);
 	}
 	

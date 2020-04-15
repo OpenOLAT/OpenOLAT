@@ -93,12 +93,18 @@ public class Windows implements Disposable, Serializable {
 		return ws;
 	}
 	
-	public boolean disposeClosedWindows() {
+	public boolean disposeClosedWindows(UserRequest ureq) {
+		String winId = ureq.getWindowID();
+		String winCmpId = ureq.getWindowComponentID();
+		
 		boolean canBeRemoved = false;
 		for(Iterator<Map.Entry<UriPrefixIdPair,ChiefController>> chiefIt=windows.getEntryIterator(); chiefIt.hasNext(); ) {
 			Map.Entry<UriPrefixIdPair,ChiefController> entry = chiefIt.next();
-			if(entry.getValue().getWindow().canBeRemoved()) {
-				entry.getValue().getWindow().getWindowBackOffice().dispose();
+			Window window = entry.getValue().getWindow();
+			if(window.getInstanceId().equals(winId) || window.getDispatchID().equals(winCmpId)) {
+				window.setMarkToBeRemoved(false);
+			} else if(window.canBeRemoved()) {
+				window.getWindowBackOffice().dispose();
 				chiefIt.remove();
 				canBeRemoved = true;
 			}
@@ -269,13 +275,6 @@ public class Windows implements Disposable, Serializable {
 	 */
 	public int getWindowCount() {
 		return windows.size();
-	}
-
-	/**
-	 * @return Returns the windowId.
-	 */
-	public int getWindowId() {
-		return windowId;
 	}
 
 	/**
