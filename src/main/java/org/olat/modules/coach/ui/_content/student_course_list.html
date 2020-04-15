@@ -1,6 +1,9 @@
 <div class="o_header_with_buttons">
 	<h3><i class="o_icon o_icon_user"> </i> $studentName</h3>
 	<div class="o_button_group"><div class="btn-group">
+	#if($r.available("reset"))
+		$r.render("reset")
+	#end
 	#if($r.available("home"))
 		$r.render("home")
 	#end

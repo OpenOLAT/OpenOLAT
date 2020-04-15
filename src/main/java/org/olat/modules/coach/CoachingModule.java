@@ -43,6 +43,8 @@ public class CoachingModule  extends AbstractSpringModule implements ConfigOnOff
 
 	@Value("${coaching.enabled:true}")
 	private boolean enabled;
+	@Value("${password.change.by.coach.allowed:false}")
+	private boolean resetPasswordEnabled;
 	
 	@Autowired
 	public CoachingModule(CoordinatorManager coordinatorManager) {
@@ -59,6 +61,10 @@ public class CoachingModule  extends AbstractSpringModule implements ConfigOnOff
 		if(this.enabled != enabled) {
 			setStringProperty("coaching.enabled", Boolean.toString(enabled), true);
 		}
+	}
+	
+	public boolean isResetPasswordEnabled() {
+		return resetPasswordEnabled;
 	}
 
 	@Override
@@ -83,7 +89,4 @@ public class CoachingModule  extends AbstractSpringModule implements ConfigOnOff
 			enabled = "true".equals(enabledObj);
 		}
 	}
-	
-	
-
 }

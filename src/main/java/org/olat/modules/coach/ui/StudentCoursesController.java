@@ -26,6 +26,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
+import org.olat.admin.user.UserChangePasswordController;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -72,6 +73,7 @@ import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer;
 import org.olat.modules.co.ContactFormController;
+import org.olat.modules.coach.CoachingModule;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.IdentityRepositoryEntryKey;
@@ -100,6 +102,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class StudentCoursesController extends FormBasicController implements Activateable2, GenericEventListener, TooledController {
 
 	private final Link homeLink, contactLink;
+	private Link resetLink;
 	private Link nextStudent, detailsStudentCmp, previousStudent;
 
 	private FlexiTableElement tableEl;
@@ -109,6 +112,7 @@ public class StudentCoursesController extends FormBasicController implements Act
 	private CloseableModalController cmc;
 	private ContactFormController contactCtrl;
 	private UserDetailsController statementCtrl;
+	private UserChangePasswordController userChangePasswordController;
 	
 	private boolean hasChanged = false;
 	
@@ -135,6 +139,8 @@ public class StudentCoursesController extends FormBasicController implements Act
 	private CertificatesManager certificatesManager;
 	@Autowired
 	private AssessmentService assessmentService;
+	@Autowired
+	private CoachingModule coachingModule;
 	
 	public StudentCoursesController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			StudentStatEntry statEntry, Identity student, int index, int numOfStudents, boolean fullAccess) {
@@ -160,6 +166,12 @@ public class StudentCoursesController extends FormBasicController implements Act
 		homeLink = LinkFactory.createButton("home.link", flc.getFormItemComponent(), this);
 		homeLink.setIconLeftCSS("o_icon o_icon_home");
 		flc.getFormItemComponent().put("home", homeLink);
+		
+		if (coachingModule.isResetPasswordEnabled()) {
+			resetLink = LinkFactory.createButton("reset.link", flc.getFormItemComponent(), this);
+			resetLink.setIconLeftCSS("o_icon o_icon_password");
+			flc.getFormItemComponent().put("reset", resetLink);
+		}
 		
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.registerFor(this, getIdentity(), CertificatesManager.ORES_CERTIFICATE_EVENT);
@@ -336,6 +348,8 @@ public class StudentCoursesController extends FormBasicController implements Act
 			openHome(ureq);
 		} else if (source == contactLink) {
 			contact(ureq);
+		} else if (source == resetLink) {
+			resetPassword(ureq);
 		} else if(stackPanel == source) {
 			if(event instanceof PopEvent) {
 				PopEvent pe = (PopEvent)event;
@@ -361,14 +375,22 @@ public class StudentCoursesController extends FormBasicController implements Act
 		} else if (source == cmc) {
 			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose(contactCtrl);
+			removeAsListenerAndDispose(userChangePasswordController);
 			cmc = null;
 			contactCtrl = null;
+			userChangePasswordController = null;
 		} else if (source == contactCtrl) {
 			cmc.deactivate();
 			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose(contactCtrl);
 			cmc = null;
 			contactCtrl = null;
+		} else if (source == userChangePasswordController) {
+			cmc.deactivate();
+			removeAsListenerAndDispose(cmc);
+			removeAsListenerAndDispose(userChangePasswordController);
+			cmc = null;
+			userChangePasswordController = null;
 		}
 		super.event(ureq, source, event);
 	}
@@ -402,6 +424,16 @@ public class StudentCoursesController extends FormBasicController implements Act
 		contactCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg);
 		listenTo(contactCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), contactCtrl.getInitialComponent());
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void resetPassword(UserRequest ureq) {
+		removeAsListenerAndDispose(cmc);
+		
+		userChangePasswordController = new UserChangePasswordController(ureq, getWindowControl(), student);;
+		listenTo(userChangePasswordController);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), userChangePasswordController.getInitialComponent());
 		cmc.activate();
 		listenTo(cmc);
 	}
