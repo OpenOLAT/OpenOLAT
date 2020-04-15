@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.admin.user.UserChangePasswordController;
+import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -53,6 +54,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -141,6 +143,8 @@ public class StudentCoursesController extends FormBasicController implements Act
 	private AssessmentService assessmentService;
 	@Autowired
 	private CoachingModule coachingModule;
+	@Autowired
+	private BaseSecurityManager securityManager;
 	
 	public StudentCoursesController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			StudentStatEntry statEntry, Identity student, int index, int numOfStudents, boolean fullAccess) {
@@ -167,7 +171,8 @@ public class StudentCoursesController extends FormBasicController implements Act
 		homeLink.setIconLeftCSS("o_icon o_icon_home");
 		flc.getFormItemComponent().put("home", homeLink);
 		
-		if (coachingModule.isResetPasswordEnabled()) {
+		Roles roles = securityManager.getRoles(student);
+		if (coachingModule.isResetPasswordEnabled() && !(roles.isAuthor() || roles.isManager() || roles.isAdministrator() || roles.isSystemAdmin() || roles.isPrincipal())) {
 			resetLink = LinkFactory.createButton("reset.link", flc.getFormItemComponent(), this);
 			resetLink.setIconLeftCSS("o_icon o_icon_password");
 			flc.getFormItemComponent().put("reset", resetLink);
@@ -433,7 +438,8 @@ public class StudentCoursesController extends FormBasicController implements Act
 		
 		userChangePasswordController = new UserChangePasswordController(ureq, getWindowControl(), student);;
 		listenTo(userChangePasswordController);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), userChangePasswordController.getInitialComponent());
+		String name = student.getUser().getFirstName() + " " + student.getUser().getLastName();
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), userChangePasswordController.getInitialComponent(), true, translate("reset.title", name));
 		cmc.activate();
 		listenTo(cmc);
 	}
