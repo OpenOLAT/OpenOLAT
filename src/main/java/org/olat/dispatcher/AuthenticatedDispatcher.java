@@ -38,19 +38,27 @@ import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.UserRequestImpl;
 import org.olat.core.gui.WindowSettings;
 import org.olat.core.gui.Windows;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.form.flexible.impl.InvalidRequestParameterException;
 import org.olat.core.gui.control.ChiefController;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.gui.exception.MsgFactory;
 import org.olat.core.gui.media.ServletUtil;
+import org.olat.core.gui.render.StringOutput;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.HistoryPoint;
@@ -94,7 +102,7 @@ public class AuthenticatedDispatcher implements Dispatcher {
 	 */
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response) {
-		String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
+		final String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
 
 		UserSession usess = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(request);
 		UserRequest ureq = null;
@@ -198,7 +206,7 @@ public class AuthenticatedDispatcher implements Dispatcher {
 			}
 		} catch (Throwable th) {
 			// Do not log as Warn or Error here, log as ERROR in MsgFactory => ExceptionWindowController throws an OLATRuntimeException 
-			log.debug("handleError in AuthenticatedDispatcher throwable=" + th);
+			log.debug("handleError in AuthenticatedDispatcher throwable", th);
 			DispatcherModule.handleError();
 			ChiefController msgcc = MsgFactory.createMessageChiefController(ureq, th);
 			// the controller's window must be failsafe also
@@ -251,6 +259,7 @@ public class AuthenticatedDispatcher implements Dispatcher {
 	
 	private void processValidDispatchURI(UserRequest ureq, UserSession usess, HttpServletRequest request, HttpServletResponse response) {
 		Windows ws = Windows.getWindows(ureq);
+		ws.disposeClosedWindows();
 		Window window = ws.getWindow(ureq);
 		if (window == null) {
 			//probably a 
@@ -277,18 +286,79 @@ public class AuthenticatedDispatcher implements Dispatcher {
 	}
 	
 	private void processBusinessPath(String businessPath, UserRequest ureq, UserSession usess) {
-		ChiefController chiefController = Windows.getWindows(usess).getChiefController();
-		
-		if(chiefController == null) {
-			if(usess.isAuthenticated()) {
-				AuthHelper.createAuthHome(ureq).getWindow();
-				chiefController = Windows.getWindows(usess).getChiefController();
-			} else {
-				redirectToDefaultDispatcher(ureq.getHttpReq(), ureq.getHttpResp());
-				return;
+		// Check first if URL was opened in an existing window. Send page that reads the
+		// browser window name and redirects back with the attached parameter.
+		String ooBrowserWinCheck = ureq.getHttpReq().getParameter("oow");
+		String windowId = ureq.getWindowID();
+		if (ooBrowserWinCheck == null && (windowId == null || "-1".equals(windowId))) {
+			// not yet checked
+			String newWindow = ureq.getParameter("new-window");
+			String requestUri = ureq.getHttpReq().getRequestURI();
+			if(StringHelper.containsNonWhitespace(businessPath)) {
+				requestUri = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath);
 			}
+			try(StringOutput clientSideWindowCheck = new StringOutput()) {
+				clientSideWindowCheck.append("<!DOCTYPE html>\n<html><head><title>Reload</title><script>")
+					.append("window.location.replace('").append(requestUri).append("?");
+				if(StringHelper.containsNonWhitespace(newWindow)) {
+					clientSideWindowCheck.append("new-window=").append(newWindow).append("&");
+				}
+				clientSideWindowCheck
+					.append("oow=' + window.name").append(");")
+					.append("</script></head><body></body></html>");
+				ServletUtil.serveStringResource(ureq.getHttpResp(), clientSideWindowCheck);
+			} catch(IOException e) {
+				log.error("", e);
+			}
+			return;
 		}
 
+		ChiefController chiefController = Windows.getWindows(usess).getChiefController(ureq);
+		if(chiefController == null && !usess.isAuthenticated()) {
+			redirectToDefaultDispatcher(ureq.getHttpReq(), ureq.getHttpResp());
+			return;
+		}
+		
+		if(chiefController == null) {
+			String newWindow = ureq.getParameter("new-window");
+			if("reduced".equals(newWindow)) {
+				ControllerCreator alternativeWindowControllerCreator = (lureq, lwControl) -> {
+					Controller dummyCtr = new BasicController(lureq, lwControl) {
+						@Override
+						protected void doDispose() {
+							// nothing to dispose
+						}
+						
+						@Override
+						protected void event(UserRequest llureq, Component source, Event event) {
+							// no events
+						}
+					};
+					return new LayoutMain3ColsController(lureq, lwControl, dummyCtr);
+				};
+				PopupBrowserWindow pbw = Windows.getWindows(ureq).getWindowManager().createNewPopupBrowserWindowFor(ureq, alternativeWindowControllerCreator);
+				pbw.open(ureq);
+				chiefController = (ChiefController)pbw;
+			} else {
+				chiefController = AuthHelper.createAuthHome(ureq);
+			}
+			Window window = chiefController.getWindow();
+			window.setUriPrefix(ureq.getUriPrefix());
+			Windows.getWindows(usess).registerWindow(chiefController);
+		}
+		
+		// If no client side window detected => open in new window, create new server side window
+		if ((!StringHelper.containsNonWhitespace(ooBrowserWinCheck) || "-1".equals(ooBrowserWinCheck))
+				&& (windowId == null || "-1".equals(windowId))) {
+			WindowControl wControl = chiefController.getWindowControl();
+			BusinessControl bc = BusinessControlFactory.getInstance().createFromString(businessPath);
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, wControl);
+			NewControllerFactory.getInstance().launch(ureq, bwControl);	
+			chiefController.getWindow().dispatchRequest(ureq, true); // renderOnly
+			chiefController.resetReload();
+			return;
+		}
+		
 		WindowBackOffice windowBackOffice = chiefController.getWindow().getWindowBackOffice();
 		if(chiefController.isLoginInterceptionInProgress()) {
 			Window w = windowBackOffice.getWindow();
@@ -310,13 +380,13 @@ public class AuthenticatedDispatcher implements Dispatcher {
 				if(bc == null) {
 					bc = BusinessControlFactory.getInstance().createFromString(businessPath);
 				}
-	
+					
 				WindowControl wControl = windowBackOffice.getChiefController().getWindowControl();
 				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, wControl);
 				NewControllerFactory.getInstance().launch(ureq, bwControl);	
 				// render the window
 				Window w = windowBackOffice.getWindow();
-				log.debug("Dispatch auth request by window " + w.getInstanceId());
+				log.debug("Dispatch auth request by window {}", w.getInstanceId());
 				w.dispatchRequest(ureq, true); // renderOnly
 				chiefController.resetReload();
 			} catch (Exception e) {

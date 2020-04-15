@@ -368,7 +368,7 @@ public class CourseCreationConfiguration {
 		GlobalSettings globalSettings = new DefaultGlobalSettings();
 		
 		Context context = vc.getContext();
-		Renderer fr = Renderer.getInstance(vc, translator, null, new RenderResult(), globalSettings);
+		Renderer fr = Renderer.getInstance(vc, translator, null, new RenderResult(), globalSettings, "-");// static page
 		try(StringOutput wOut = new StringOutput(10000);
 			VelocityRenderDecorator vrdec = new VelocityRenderDecorator(fr, vc, wOut)) {			
 			context.put("r", vrdec);

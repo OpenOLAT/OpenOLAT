@@ -79,7 +79,7 @@ public class MessageWindowController extends DefaultChiefController {
 		msg.contextPut("enforceTopFrame", Boolean.valueOf(securityModule.isForceTopFrame()));
 		
 		if(th != null) {
-			log.warn(th.getMessage() + " *** User info: " + detailedmessage);
+			log.warn("{} *** User info: {}", th.getMessage() , detailedmessage);
 		}
 		
 		msg.contextPut("buildversion", Settings.getVersion());
@@ -89,7 +89,7 @@ public class MessageWindowController extends DefaultChiefController {
 		}
 
 		Windows ws = Windows.getWindows(ureq);
-		WindowBackOffice wbo = ws.getWindowManager().createWindowBackOffice("messagewindow", this, new WindowSettings());
+		WindowBackOffice wbo = ws.getWindowManager().createWindowBackOffice("messagewindow", ureq.getUserSession().getCsrfToken(), this, new WindowSettings());
 		Window w = wbo.getWindow();
 		
 		msg.put("jsAndCssC", w.getJsCssRawHtmlHeader());

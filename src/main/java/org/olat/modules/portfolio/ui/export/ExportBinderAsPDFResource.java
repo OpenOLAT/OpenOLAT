@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -211,7 +212,7 @@ public class ExportBinderAsPDFResource implements MediaResource {
 		File indexHtml = new File(outputDir, "index.html");
 		html = exportMedia(html, outputDir);
 		try(OutputStream out= new FileOutputStream(indexHtml)) {
-			IOUtils.write(html, out, "UTF-8");
+			IOUtils.write(html, out, StandardCharsets.UTF_8);
 		} catch(IOException e) {
 			log.error("", e);
 		}
@@ -225,8 +226,8 @@ public class ExportBinderAsPDFResource implements MediaResource {
 		mainVC.put("cmp", content);
 		mainVC.contextPut("bodyCssClass", "o_portfolio_export");
 
-		URLBuilder ubu = new URLBuilder("auth", "1", "0");
-		Renderer renderer = Renderer.getInstance(mainVC, translator, ubu, new RenderResult(), new DefaultGlobalSettings());
+		URLBuilder ubu = new URLBuilder("auth", "1", "0", "1");
+		Renderer renderer = Renderer.getInstance(mainVC, translator, ubu, new RenderResult(), new DefaultGlobalSettings(), "");// no token here
 		try(StringOutput sb = new StringOutput(32000);
 				VelocityRenderDecorator vrdec = new VelocityRenderDecorator(renderer, mainVC, sb)) {
 			mainVC.contextPut("r", vrdec);

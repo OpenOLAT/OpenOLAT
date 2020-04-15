@@ -30,9 +30,11 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -42,7 +44,6 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
@@ -160,7 +161,8 @@ public class LinkRenderer extends DefaultComponentRenderer {
 					try(StringOutput href = new StringOutput()) {
 						subu.buildURI(href, AJAXFlags.MODE_NORMAL,
 								new NameValuePair("dispatchuri", dispatchUri),
-								new NameValuePair("dispatchevent", "2"));
+								new NameValuePair("dispatchevent", "2"),
+								new NameValuePair(Form.FORM_CSRF, renderer.getCsrfToken()));
 						sb.append("href=\"javascript:;\" onclick=\"o_openTab('").append(href).append("'); return false;\" ");
 					} catch(IOException e) {
 						log.error("", e);
@@ -172,10 +174,12 @@ public class LinkRenderer extends DefaultComponentRenderer {
 					try(StringOutput href = new StringOutput()) {
 						subu.buildURI(href, AJAXFlags.MODE_NORMAL,
 								new NameValuePair("dispatchuri", dispatchUri),
-								new NameValuePair("dispatchevent", "2"));
+								new NameValuePair("dispatchevent", "2"),
+								new NameValuePair(Form.FORM_CSRF, renderer.getCsrfToken()));
 						sb.append("href=\"javascript:;\" onclick=\"o_openPopUp('").append(href).append("','")
 						  .append(popup.getTarget()).append("',").append(popup.getWidth())
-						  .append(",").append(popup.getHeight()).append("); return false;\" ");
+						  .append(",").append(popup.getHeight()).append(",").append(popup.isMenuBar())
+						  .append("); return false;\" ");
 					} catch(IOException e) {
 						log.error("", e);
 					}

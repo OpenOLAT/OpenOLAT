@@ -172,7 +172,7 @@ public abstract class AbstractMediaHandler implements MediaHandler, PageElementH
 	}
 	
 	private void render(StringOutput sb, VelocityContainer component, Translator translator) {
-		Renderer renderer = Renderer.getInstance(component, translator, new EmptyURLBuilder(), new RenderResult(), new DefaultGlobalSettings());
+		Renderer renderer = Renderer.getInstance(component, translator, new EmptyURLBuilder(), new RenderResult(), new DefaultGlobalSettings(), "-");
 		try(VelocityRenderDecorator vrdec = new VelocityRenderDecorator(renderer, component, sb)) {
 			component.contextPut("r", vrdec);
 			renderer.render(sb, component, null);

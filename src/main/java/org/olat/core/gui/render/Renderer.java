@@ -47,6 +47,7 @@ public class Renderer {
 	private final ComponentCollection renderContainer;
 	private final RenderResult renderResult;
 	private final GlobalSettings globalSettings;
+	private final String csrfToken;
 
 	/**
 	 * @param renderContainer is used as a starting node for searching a component
@@ -57,17 +58,18 @@ public class Renderer {
 	 * @return an instance of the renderer
 	 */
 	public static Renderer getInstance(ComponentCollection renderContainer, Translator translator, URLBuilder ubu, RenderResult renderResult,
-			GlobalSettings globalSettings) {
-		return new Renderer(renderContainer, translator, ubu, renderResult, globalSettings);
+			GlobalSettings globalSettings, String csrfToken) {
+		return new Renderer(renderContainer, translator, ubu, renderResult, globalSettings, csrfToken);
 	}
 
 	private Renderer(ComponentCollection renderContainer, Translator translator, URLBuilder ubu, RenderResult renderResult,
-			GlobalSettings globalSettings) {
+			GlobalSettings globalSettings, String csrfToken) {
 		this.renderContainer = renderContainer;
 		this.translator = translator;
 		this.urlBuilder = ubu;
 		this.renderResult = renderResult;
 		this.globalSettings = globalSettings;
+		this.csrfToken = csrfToken;
 	}
 
 	/**
@@ -311,6 +313,10 @@ public class Renderer {
 	 */
 	public String getUriPrefix() {
 		return urlBuilder.getUriPrefix();
+	}
+	
+	public String getCsrfToken() {
+		return csrfToken;
 	}
 
 	

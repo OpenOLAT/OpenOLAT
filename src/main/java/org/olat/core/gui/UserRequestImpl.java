@@ -44,12 +44,15 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.components.Window;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.DispatchResult;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.session.UserSessionManager;
 
@@ -83,8 +86,10 @@ public class UserRequestImpl implements UserRequest {
 	private String timestampID;
 	private String componentID;
 	private String componentTimestamp;
-	private int mode;
+	private String windowComponentId;
+	private String csrfToken;
 
+	private int mode;
 	private boolean isValidDispatchURI;
 
 	private final String uuid;
@@ -192,6 +197,16 @@ public class UserRequestImpl implements UserRequest {
 	public Identity getIdentity() {
 		return getUserSession().getIdentity();
 	}
+	
+	@Override
+	public String getRequestCsrfToken() {
+		return csrfToken;
+	}
+	
+	@Override
+	public void setRequestCsrfToken(String token) {
+		csrfToken = token;
+	}
 
 	/**
 	 * <pre>
@@ -296,12 +311,42 @@ public class UserRequestImpl implements UserRequest {
 		if (nextSlash == -1) return; //no params
 		String encparams = nonParsedUri.substring(0, nextSlash);
 		parseEncodedParams(encparams);
+		
+		// Restore browser window id in case of a browser reload or opening of a resource in an existing OO window
+		windowComponentId = hreq.getParameter("oow");
+		if (windowComponentId != null && StringHelper.isLong(windowComponentId)) {
+			Windows windows = Windows.getWindows(this);
+			Iterator<Window> it = windows.getWindowIterator();
+			while (it.hasNext()) {
+				Window window = it.next();
+				if (window.getDispatchID().equals(windowComponentId.trim())) {
+					windowID = window.getInstanceId();
+					break;
+				}
+			}
+		}
 
 		// get moduleURI
 		if (nextSlash + 1 < nonParsedUri.length()) {
 			moduleURI = nonParsedUri.substring(nextSlash + 1);
 			if (moduleURI.indexOf("../") != -1) throw new AssertException("a non-normalized url encountered "+moduleURI);
 		}
+
+		csrfToken = getParameter(Form.FORM_CSRF);
+	}
+	
+	@Override
+	public String getWindowComponentID() {
+		return windowComponentId;
+	}
+	
+	@Override
+	public void overrideWindowComponentID(String dispatchId) {
+		setWindowComponentId(dispatchId);	
+	}
+
+	private void setWindowComponentId(String dispatchId) {
+		this.windowComponentId = dispatchId;
 	}
 
 	private void appendFormattedKeyValue(StringBuilder sb, String key, Object value) {

@@ -56,10 +56,6 @@ public class OLATAuthentcationForm extends FormBasicController {
 		initForm(ureq);
 	}
 
-	
-	/**
-	 * @see org.olat.core.gui.components.Form#validate(org.olat.core.gui.UserRequest, Identity)
-	 */
 	@Override
 	public boolean validateFormLogic(UserRequest ureq) {
 		boolean valid = true;
@@ -116,6 +112,7 @@ public class OLATAuthentcationForm extends FormBasicController {
 		
 		// turn off the dirty message when leaving the login form without loggin in (e.g. pressing guest login)
 		flc.getRootForm().setHideDirtyMarkingMessage(true);
+		flc.getRootForm().setCsrfProtection(false);
 	}
 
 	@Override

@@ -22,6 +22,7 @@ package org.olat.group.model;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupShort;
@@ -51,6 +52,8 @@ public class BusinessGroupRow implements BusinessGroupRef, BusinessGroupShort {
 	
 	private boolean marked;
 	
+	private final String url;
+	
 	private BusinessGroupMembershipImpl member;
 	
 	private List<PriceMethodBundle> bundles;
@@ -68,6 +71,9 @@ public class BusinessGroupRow implements BusinessGroupRef, BusinessGroupShort {
 		waitingListEnabled = businessGroup.getWaitingListEnabled();
 		autoCloseRanksEnabled = businessGroup.getAutoCloseRanksEnabled();
 		maxParticipants = businessGroup.getMaxParticipants();
+		
+		String path = "[BusinessGroup:" + businessGroup.getKey() + "]";
+		url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(path);
 	}
 	
 	public BusinessGroupRow(BusinessGroupRow businessGroup) {
@@ -82,6 +88,9 @@ public class BusinessGroupRow implements BusinessGroupRef, BusinessGroupShort {
 		waitingListEnabled = businessGroup.isWaitingListEnabled();
 		autoCloseRanksEnabled = businessGroup.isAutoCloseRanksEnabled();
 		maxParticipants = businessGroup.getMaxParticipants();
+		
+		String path = "[BusinessGroup:" + businessGroup.getKey() + "]";
+		url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(path);
 	}
 	
 	public boolean isWaitingListEnabled() {
@@ -94,6 +103,10 @@ public class BusinessGroupRow implements BusinessGroupRef, BusinessGroupShort {
 	
 	public Integer getMaxParticipants() {
 		return maxParticipants;
+	}
+	
+	public String getUrl() {
+		return url;
 	}
 
 	@Override

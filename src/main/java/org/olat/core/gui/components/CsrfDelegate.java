@@ -17,39 +17,16 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.gui.render;
-
-import org.olat.core.gui.components.Component;
+package org.olat.core.gui.components;
 
 /**
+ * Marker interface for component which handle the CSRF validation
+ * them self.
  * 
- * Initial date: 21.03.2014<br>
+ * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class EmptyURLBuilder extends URLBuilder {
+public interface CsrfDelegate {
 
-	public EmptyURLBuilder() {
-		super(null, null, null, null);
-	}
-
-	@Override
-	public void buildURI(StringOutput buf, String[] keys, String[] values, int mode) {
-		// nothing to do
-	}
-
-	@Override
-	public void buildURI(StringOutput buf, String[] keys, String[] values, String modURI, int mode) {
-		// nothing to do
-	}
-
-	@Override
-	public void buildURI(StringOutput buf, String[] keys, String[] values) {
-		// nothing to do
-	}
-
-	@Override
-	public URLBuilder createCopyFor(Component source) {
-		return super.createCopyFor(source);
-	}
 }

@@ -26,7 +26,6 @@ package org.olat.login;
 
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -47,7 +46,6 @@ public class DMZContentControllerCreator implements ControllerCreator {
 		dmzSitesAndNav.setContentControllerCreator(contentControllerCreator);
 		ChiefController cc = new BaseFullWebappController(ureq, dmzSitesAndNav);
 		cc.addBodyCssClass("o_dmz");
-		Windows.getWindows(ureq.getUserSession()).setChiefController(cc);
 		return cc;
 	}
 }

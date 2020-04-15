@@ -31,13 +31,14 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Window;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.logging.AssertException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
@@ -55,6 +56,7 @@ public class URLBuilder {
 	private final String uriPrefix;
 	private final String windowID;
 	private final String timestampID;
+	private final String csrfToken;
 	private String componentID;
 	private String componentTimestamp;
 
@@ -64,17 +66,18 @@ public class URLBuilder {
 	 * @param timestampID
 	 * @param businessControlPath may be null
 	 */
-	public URLBuilder(String uriPrefix, String windowID, String timestampID) {
+	public URLBuilder(String uriPrefix, String windowID, String timestampID, String csrfToken) {
 		this.uriPrefix = uriPrefix; // e.g. /olat/auth
 		this.windowID = windowID;
 		this.timestampID = timestampID;
+		this.csrfToken = csrfToken;
 	}
 
 	/**
 	 * @return
 	 */
 	public URLBuilder createCopyFor(Component source) {
-		URLBuilder n = new URLBuilder(uriPrefix, windowID, timestampID);
+		URLBuilder n = new URLBuilder(uriPrefix, windowID, timestampID, csrfToken);
 		// adjust the component id of the urlbuilder for the new component
 		n.componentID = source.getDispatchID();
 		// for ajax-mode needed: (but we set it anyway)
@@ -99,6 +102,10 @@ public class URLBuilder {
 	 * @param mode indicates what kind of link it is (0 normal, 1 into background-iframe, ...)
 	 */
 	public void buildURI(StringOutput buf, String[] keys, String[] values, String modURI, int mode) {
+		buildURI(buf, keys, values, modURI, mode, true);
+	}
+	
+	public void buildURI(StringOutput buf, String[] keys, String[] values, String modURI, int mode, boolean csrf) {
 		try(StringOutput result = new StringOutput(100)) {
 			result.append(uriPrefix);
 			encodeParams(result, mode);
@@ -110,6 +117,13 @@ public class URLBuilder {
 					      .append(UserRequest.PARAM_DELIM)
 					      .append(values[i]);
 				}
+			}
+			
+			if(csrf) {
+				result.append(UserRequest.PARAM_DELIM)
+				      .append(Form.FORM_CSRF)
+				      .append(UserRequest.PARAM_DELIM)
+				      .append(csrfToken);
 			}
 			
 			result.append("/");
@@ -173,13 +187,21 @@ public class URLBuilder {
 	}
 	
 	public StringOutput buildHrefAndOnclick(StringOutput sb, boolean ajaxEnabled, NameValuePair... commands) {
-		return buildHrefAndOnclick(sb, null, ajaxEnabled, true, true, commands);
+		return buildHrefAndOnclick(sb, null, null, ajaxEnabled, true, true, commands);
 	}
 	
 	public StringOutput buildHrefAndOnclick(StringOutput sb, String urlEnding, boolean ajaxEnabled, boolean dirtyCheck, boolean pushState, NameValuePair... commands) {
+		return buildHrefAndOnclick(sb, null, urlEnding, ajaxEnabled, dirtyCheck, pushState, commands);	
+	}
+	
+	public StringOutput buildHrefAndOnclick(StringOutput sb, String bPathUrl, String urlEnding, boolean ajaxEnabled, boolean dirtyCheck, boolean pushState, NameValuePair... commands) {
 		sb.append(" href=\"");
 		if(ajaxEnabled) {
-			sb.append("javascript:;");
+			if(StringHelper.containsNonWhitespace(bPathUrl)) {
+				sb.append(bPathUrl);
+			} else {
+				sb.append("javascript:;");
+			}
 		} else {
 			buildURI(sb, AJAXFlags.MODE_NORMAL, commands);
 		}
@@ -207,6 +229,7 @@ public class URLBuilder {
 		}
 		sb.append("',").append(dirtyCheck).append(",").append(pushState);
 		commandParameters(sb, commands);
+		commandParameters(sb, new NameValuePair(Form.FORM_CSRF, csrfToken));
 		return sb;
 	}
 
@@ -223,6 +246,7 @@ public class URLBuilder {
 		}
 		sb.append("'");
 		commandParameters(sb, commands);
+		commandParameters(sb, new NameValuePair(Form.FORM_CSRF, csrfToken));
 		//no response marker
 		commandParameters(sb, new NameValuePair(Window.NO_RESPONSE_PARAMETER_MARKER, Window.NO_RESPONSE_VALUE_MARKER));
 		return sb;

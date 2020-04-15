@@ -575,6 +575,9 @@ public abstract class FormItemImpl implements InlineElement {
 			case FormEvent.ONCHANGE:
 				getRootForm().fireFormEvent(ureq, new FormEvent("ONCHANGE", this, FormEvent.ONCHANGE));
 				break;
+			case FormEvent.ONKEYUP:
+				getRootForm().fireFormEvent(ureq, new FormEvent("ONCHANGE", this, FormEvent.ONKEYUP));
+				break;
 			default:
 				//nothing to do, default is handled
 		}
@@ -616,9 +619,6 @@ public abstract class FormItemImpl implements InlineElement {
 		//default implementation does nothing
 	}
 	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormComponent#validate(java.util.List, Identity)
-	 */
 	@Override
 	public void validate(List<ValidationStatus> validationResults) {
 		//

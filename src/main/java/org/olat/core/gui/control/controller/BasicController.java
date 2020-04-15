@@ -41,11 +41,15 @@ import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.DefaultController;
+import org.olat.core.gui.control.ModalController;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
@@ -171,6 +175,30 @@ public abstract class BasicController extends DefaultController {
 	
 	protected boolean guardModalController(Controller controller) {
 		return controller != null && !controller.isDisposed();
+	}
+	
+	protected void removeModalControllers() {
+		if(childControllers != null) {
+			List<Controller> copyList = new ArrayList<>(childControllers);
+			for(Controller controller:copyList) {
+				if(controller instanceof ModalController) {
+					ModalController modalController = (ModalController)controller;
+					if(modalController.isCloseable()) {
+						if(controller instanceof CloseableModalController) {
+							((CloseableModalController)controller).deactivate();
+							removeAsListenerAndDispose(controller);
+						} else if(controller instanceof CloseableCalloutWindowController) {
+							((CloseableCalloutWindowController)controller).deactivate();
+							removeAsListenerAndDispose(controller);
+						} else if(controller instanceof StepsMainRunController) {
+							removeAsListenerAndDispose(controller);
+						}
+					}
+				} else if(controller instanceof BasicController) {
+					((BasicController)controller).removeModalControllers();
+				}
+			}
+		}
 	}
 
 	/**
@@ -529,6 +557,11 @@ public abstract class BasicController extends DefaultController {
 	protected void showError(String key, String arg) {
 		getWindowControl().setError(
 				getTranslator().translate(key, new String[] { arg }));
+	}
+	
+	protected void showError(String key, String[] args) {
+		getWindowControl().setError(
+				getTranslator().translate(key, args));
 	}
 
 	/**

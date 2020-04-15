@@ -181,7 +181,7 @@ public class SmsPhoneElement extends FormItemImpl implements FormItemCollection,
 	}
 	
 	private void doEdit(UserRequest ureq) {
-		ChiefController chief = Windows.getWindows(ureq).getChiefController();
+		ChiefController chief = Windows.getWindows(ureq).getChiefController(ureq);
 		WindowControl wControl = chief.getWindowControl();
 		if (wControl != null) {
 			smsPhoneCtrl = new SmsPhoneController(ureq, wControl, handler, editedUser);

@@ -136,6 +136,7 @@ public class AjaxController extends DefaultController {
 				if(ws != null && wboImpl.getChiefController() != null) {
 					ChiefController cc = wboImpl.getChiefController();
 					reload = cc.wishAsyncReload(uureq, false);
+					cc.getWindow().setMarkToBeRemoved(false);
 				}
 				
 				MediaResource resource;
@@ -175,6 +176,9 @@ public class AjaxController extends DefaultController {
 		mKey = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), m);
 		myContent.contextPut("mapuri", mKey.getUrl());
 		
+		final String csrfToken = ureq.getUserSession().getCsrfToken();
+		myContent.contextPut("csrfToken", csrfToken);
+		
 		mainP = new Panel("ajaxMainPanel");
 		mainP.setContent(myContent);
 		
@@ -204,7 +208,7 @@ public class AjaxController extends DefaultController {
 					StaticMediaDispatcher.renderStaticURI(slink, null);
 					//slink now holds static url base like /olat/raw/700/
 					
-					URLBuilder ubu = new URLBuilder(WebappHelper.getServletContextPath() + DispatcherModule.PATH_AUTHENTICATED, "1", "1");
+					URLBuilder ubu = new URLBuilder(WebappHelper.getServletContextPath() + DispatcherModule.PATH_AUTHENTICATED, "1", "1", csrfToken);
 					ubu.buildURI(blink, null, null);
 					//blink holds the link back to olat like /olat/auth/1%3A1%3A0%3A0%3A0/
 		
@@ -437,8 +441,10 @@ public class AjaxController extends DefaultController {
 	 * @param pollperiod time in ms between two polls
 	 */
 	public void setPollPeriod(int pollperiod) {
+		if (pollperiod == -1) {
+			pollperiod = DEFAULT_POLLPERIOD;
+		}
 		if (pollperiod != this.pollperiod) {
-			if (pollperiod == -1) pollperiod = DEFAULT_POLLPERIOD;
 			this.pollperiod = pollperiod;
 			pollPeriodContent.contextPut("pollperiod", Integer.valueOf(pollperiod));
 		} // else no need to change anything

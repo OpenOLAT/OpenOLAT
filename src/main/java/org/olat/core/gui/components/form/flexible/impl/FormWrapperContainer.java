@@ -32,10 +32,11 @@ import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.CsrfDelegate;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.translator.Translator;
 
-class FormWrapperContainer extends AbstractComponent implements ComponentCollection {
+class FormWrapperContainer extends AbstractComponent implements ComponentCollection, CsrfDelegate {
 
 	// Renderer
 	private static final ComponentRenderer RENDERER = new FormWrapperContainerRenderer();
@@ -63,6 +64,10 @@ class FormWrapperContainer extends AbstractComponent implements ComponentCollect
 
 	public String getFormName() {
 		return form.getFormName();
+	}
+	
+	public boolean isCsrfProtected() {
+		return form.isCsrfProtection();
 	}
 
 	/**

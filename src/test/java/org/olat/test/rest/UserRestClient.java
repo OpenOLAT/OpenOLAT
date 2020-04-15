@@ -22,6 +22,7 @@ package org.olat.test.rest;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -66,6 +67,17 @@ public class UserRestClient {
 		this.password = password;
 	}
 	
+	public String login(String username, String login)
+	throws IOException, URISyntaxException {
+		RestConnection restConnection = new RestConnection(deploymentUrl);
+		String securityToken = null;
+		if(restConnection.login(username, login)) {
+			securityToken = restConnection.getSecurityToken();
+		}
+		restConnection.shutdown();
+		return securityToken;
+	}
+	
 	public UserVO createRandomUser()
 	throws IOException, URISyntaxException {
 		return createRandomUser("Selena");
@@ -75,9 +87,7 @@ public class UserRestClient {
 	throws IOException, URISyntaxException {
 		RestConnection restConnection = new RestConnection(deploymentUrl);
 		assertTrue(restConnection.login(username, password));
-		
 		UserVO user = createUser(restConnection, name, "Rnd");
-
 		restConnection.shutdown();
 		return user;
 	}
@@ -167,6 +177,11 @@ public class UserRestClient {
 		HttpResponse response = restConnection.execute(method);
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
+	}
+	
+	public URL getRestURI()
+	throws URISyntaxException, MalformedURLException {
+		return UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi").build().toURL();
 	}
 	
 	private UriBuilder getUsersURIBuilder()

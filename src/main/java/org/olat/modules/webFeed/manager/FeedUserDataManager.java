@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -106,7 +107,7 @@ public class FeedUserDataManager implements UserDataExportable {
 		File mediaFile = new File(itemDir, "index.html");
 		try(OutputStream out = new FileOutputStream(mediaFile)) {
 			String content = exportContent(item, attachments, locale);
-			out.write(content.getBytes("UTF-8"));
+			out.write(content.getBytes(StandardCharsets.UTF_8));
 			out.flush();
 		} catch(IOException e) {
 			log.error("", e);
@@ -114,22 +115,29 @@ public class FeedUserDataManager implements UserDataExportable {
 	}
 
 	private String exportContent(Item item,  List<File> attachments, Locale locale) {
-		StringOutput sb = new StringOutput(10000);
-		Translator translator = Util.createPackageTranslator(MediaCenterController.class, locale);
-		String pagePath = Util.getPackageVelocityRoot(FeedUserDataManager.class) + "/export_item.html";
-		VelocityContainer component = new VelocityContainer("html", pagePath, translator, null);
-		component.contextPut("item", item);
-		component.contextPut("content", item.getContent());
-		component.contextPut("attachments", attachments);
-
-		Renderer renderer = Renderer.getInstance(component, translator, new EmptyURLBuilder(), new RenderResult(), new DefaultGlobalSettings());
+		try(StringOutput sb = new StringOutput(10000)) {
+			Translator translator = Util.createPackageTranslator(MediaCenterController.class, locale);
+			String pagePath = Util.getPackageVelocityRoot(FeedUserDataManager.class) + "/export_item.html";
+			VelocityContainer component = new VelocityContainer("html", pagePath, translator, null);
+			component.contextPut("item", item);
+			component.contextPut("content", item.getContent());
+			component.contextPut("attachments", attachments);
+			render(sb, component, translator);
+			return sb.toString();
+		} catch(IOException e) {
+			log.error("", e);
+			return "";
+		}
+	}
+	
+	private void render(StringOutput sb, VelocityContainer component, Translator translator) {
+		Renderer renderer = Renderer.getInstance(component, translator, new EmptyURLBuilder(), new RenderResult(), new DefaultGlobalSettings(), "-");
 		try(VelocityRenderDecorator vrdec = new VelocityRenderDecorator(renderer, component, sb)) {
 			component.contextPut("r", vrdec);
 			renderer.render(sb, component, null);
 		} catch(IOException e) {
 			log.error("", e);
 		}
-		return sb.toString();
 	}
 
 }

@@ -20,6 +20,7 @@
 
 package org.olat.core.gui.control;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -47,6 +49,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -61,6 +64,8 @@ import org.olat.core.util.StringHelper;
  * @author Felix Jost
  */
 public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
+	
+	private static final Logger log = Tracing.createLoggerFor(JSAndCSSAdderImpl.class);
 
 	private DelegatingComponent dc;
 
@@ -134,31 +139,30 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 		addRequiredJsFile(jsFileName, fileEncoding, preAJAXAddJsCode);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.JSAndCSSAdder#addRequiredJsFile(java.lang.Class,
-	 *      java.lang.String, java.lang.String, java.lang.String)
-	 */
 	private void addRequiredJsFile(String jsFileName, String fileEncoding, String AJAXAddJsCode) {
-		StringOutput sb = new StringOutput(50);
-		String jsPath;
-		if(jsFileName.startsWith("http:") || jsFileName.startsWith("https:") || jsFileName.startsWith("//")) {
-			jsPath = jsFileName;
-		} else {
-			Renderer.renderStaticURI(sb, jsFileName);
-			jsPath = sb.toString();
-		}
-
-		if (!curJsList.contains(jsPath)) {
-			curJsList.add(jsPath);
-			jsPathToJsFileName.put(jsPath, jsFileName);
-			if (StringHelper.containsNonWhitespace(AJAXAddJsCode)) {
-				jsPathToEvalBeforeAJAXAddJsCode.put(jsPath, AJAXAddJsCode);
-			}
-			if (fileEncoding != null) {
-				jsPathToEvalFileEncoding.put(jsPath, fileEncoding);
+		try(StringOutput sb = new StringOutput(50)) {
+			String jsPath;
+			if(jsFileName.startsWith("http:") || jsFileName.startsWith("https:") || jsFileName.startsWith("//")) {
+				jsPath = jsFileName;
 			} else {
-				jsPathToEvalFileEncoding.put(jsPath, ENCODING_DEFAULT);
+				Renderer.renderStaticURI(sb, jsFileName);
+				jsPath = sb.toString();
 			}
+	
+			if (!curJsList.contains(jsPath)) {
+				curJsList.add(jsPath);
+				jsPathToJsFileName.put(jsPath, jsFileName);
+				if (StringHelper.containsNonWhitespace(AJAXAddJsCode)) {
+					jsPathToEvalBeforeAJAXAddJsCode.put(jsPath, AJAXAddJsCode);
+				}
+				if (fileEncoding != null) {
+					jsPathToEvalFileEncoding.put(jsPath, fileEncoding);
+				} else {
+					jsPathToEvalFileEncoding.put(jsPath, ENCODING_DEFAULT);
+				}
+			}
+		} catch(IOException e) {
+			log.error("", e);
 		}		
 	}
 
@@ -166,14 +170,10 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 	public void addStaticCSSPath(String cssPath) {
 		addRequiredCSSPath(cssPath, false, JSAndCSSAdder.CSS_INDEX_BEFORE_THEME);
 	}
-	
-	/**
-	 * @see org.olat.core.gui.control.JSAndCSSAdder#addRequiredCSSPath(java.lang.String, boolean, int)
-	 */
+
 	@Override
 	public void addRequiredCSSPath(String cssPath, boolean forceRemove, Integer cssLoadIndex) {
 		if (!curCssList.contains(cssPath)) {
-			//System.out.println("reqCss:"+cssPath+" force "+forceRemove);
 			String id = cssPathToId.get(cssPath);
 			if (id == null) { // no html id for this stylesheet import yet -> create one
 				cssPathToId.put(cssPath, "o_css"+(++cssCounter));

@@ -55,7 +55,7 @@ public class PageEditorComponentRenderer extends DefaultComponentRenderer {
 			RenderResult renderResult, String[] args) {
 		PageEditorComponent cmp = (PageEditorComponent)source;
 
-		Renderer fr = Renderer.getInstance(cmp, translator, ubu, new RenderResult(), renderer.getGlobalSettings());
+		Renderer fr = Renderer.getInstance(cmp, translator, ubu, new RenderResult(), renderer.getGlobalSettings(), renderer.getCsrfToken());
 		sb.append("<div id='o_c").append(cmp.getDispatchID()).append("' class='o_page_content_editor o_drake' data-oo-content-editor-url='")
 		  .append(fr.getUrlBuilder().getJavascriptURI()).append("'>");
 		renderFlatFragments(fr, sb, cmp, ubu, translator, renderResult, args);
@@ -163,7 +163,7 @@ public class PageEditorComponentRenderer extends DefaultComponentRenderer {
 		if(additionalTools != null && !additionalTools.isEmpty()) {
 			for(Link additionalTool:additionalTools) {
 				ComponentCollection col = (ComponentCollection)fragment.getComponent();
-				Renderer fr = Renderer.getInstance(col, translator, ubu, new RenderResult(), renderer.getGlobalSettings());
+				Renderer fr = Renderer.getInstance(col, translator, ubu, new RenderResult(), renderer.getGlobalSettings(), renderer.getCsrfToken());
 				URLBuilder aubu = ubu.createCopyFor(additionalTool);
 				additionalTool.getHTMLRendererSingleton().render(fr, sb, additionalTool, aubu, translator, renderResult, args);
 				additionalTool.setDirty(false);

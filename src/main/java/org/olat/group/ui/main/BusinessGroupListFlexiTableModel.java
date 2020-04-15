@@ -24,7 +24,9 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusinessPathModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.util.Formatter;
@@ -39,7 +41,7 @@ import org.olat.group.BusinessGroupMembership;
  *
  */
 public class BusinessGroupListFlexiTableModel extends DefaultFlexiTableDataModel<BGTableItem>
-	implements SortableFlexiTableDataModel<BGTableItem> {
+	implements SortableFlexiTableDataModel<BGTableItem>, FlexiBusinessPathModel {
 	
 	private final Locale locale;
 
@@ -50,10 +52,15 @@ public class BusinessGroupListFlexiTableModel extends DefaultFlexiTableDataModel
 		super(new ArrayList<BGTableItem>(), columnModel);
 		this.locale = locale;
 	}
+	
+	@Override
+	public String getUrl(Component source, Object object, String action) {
+		if(AbstractBusinessGroupListController.TABLE_ACTION_LAUNCH.equals(action) && object instanceof BGTableItem) {
+			return ((BGTableItem)object).getUrl();
+		}
+		return null;
+	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
-	 */
 	@Override
 	public Object getValueAt(int row, int col) {
 		BGTableItem wrapped = getObject(row);
@@ -158,13 +165,6 @@ public class BusinessGroupListFlexiTableModel extends DefaultFlexiTableDataModel
 			List<BGTableItem> views = new BusinessGroupFlexiTableModelSort(orderBy, this, locale).sort();
 			super.setObjects(views);
 		}
-	}
-
-	/**
-	 * @param owned
-	 */
-	public void setEntries(List<BGTableItem> owned) {
-		setObjects(owned);
 	}
 	
 	public void removeBusinessGroup(Long bgKey) {

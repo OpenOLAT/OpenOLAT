@@ -46,12 +46,12 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.logging.log4j.Logger;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.filter.impl.HtmlScanner;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
 import org.olat.user.UserManager;
 
@@ -639,6 +639,28 @@ public class StringHelper {
 		Collections.sort(rv);
 		
 		return formatAsCSVString(rv);
+	}
+	
+	public static String lenientInteger(String value) {
+		if(value == null) return null;
+		value = value.replace(" ", "");
+		if(StringHelper.containsNonWhitespace(value)) {
+			value = removeFraction(value, '.');
+			value = removeFraction(value, ',');
+		}
+		return value.replace(".", "").replace(",", "").replace("'", "")
+				.replace("\u2019", "").replace("\u2032", "");
+	}
+	
+	private static String removeFraction(String value, char separator) {
+		int lastIndex = value.lastIndexOf(separator);
+		if(lastIndex > 0) {
+			int backIndex = value.length() - lastIndex - 1;
+			if(backIndex == 1 || backIndex == 2) {
+				return value.substring(0, lastIndex);
+			}
+		}
+		return value;
 	}
 
 	public static String truncateText(String text) {

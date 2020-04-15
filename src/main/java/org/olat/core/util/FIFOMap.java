@@ -28,6 +28,7 @@ package org.olat.core.util;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -115,6 +116,14 @@ public class FIFOMap<T,U> {
 	 */
 	public Iterator<U> getValueIterator() {
 		return lhm.values().iterator();
+	}
+	
+	public Iterator<Map.Entry<T,U>> getEntryIterator() {
+		return lhm.entrySet().iterator();
+	}
+	
+	public void clear() {
+		lhm.clear();
 	}
 
 }

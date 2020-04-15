@@ -94,7 +94,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 			
 			switch(currentTextMode) {
 				case formatted:
-					renderTinyMCE_4(sb, domID, teC, ubu, source.getTranslator());
+					renderTinyMCE_4(renderer, sb, domID, teC, ubu, source.getTranslator());
 					break;
 				case multiLine:
 					renderMultiLine(sb, domID, teC);
@@ -186,7 +186,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		  .append(FormJSHelper.getJSEnd());
 	}
 
-	private void renderTinyMCE_4(StringOutput sb, String domID, RichTextElementComponent teC, URLBuilder ubu, Translator translator) {
+	private void renderTinyMCE_4(Renderer renderer, StringOutput sb, String domID, RichTextElementComponent teC, URLBuilder ubu, Translator translator) {
 		RichTextElementImpl te = teC.getRichTextElementImpl();
 		te.setRenderingMode(TextMode.formatted);
 		RichTextConfiguration config = te.getEditorConfiguration();
@@ -205,7 +205,8 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		
 		Form form = te.getRootForm();
 		configurations.append("ffxhrevent: { formNam:\"").append(form.getFormName()).append("\", dispIdField:\"").append(form.getDispatchFieldId()).append("\",")
-		 .append(" dispId:\"").append(teC.getFormDispatchId()).append("\", eventIdField:\"").append(form.getEventFieldId()).append("\"},\n");
+		  .append(" dispId:\"").append(teC.getFormDispatchId()).append("\", eventIdField:\"").append(form.getEventFieldId())
+		  .append("\", csrf:\"").append(renderer.getCsrfToken()).append("\"},\n");
 		configurations.append("contextPath: \"").append(Settings.getServerContextPath()).append("\",\n");
 		if(te.getMaxLength() > 0) {
 			configurations.append("maxSize:").append(te.getMaxLength()).append("\n");

@@ -21,6 +21,7 @@ package org.olat.core.commons.controllers.impressum;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -381,7 +382,7 @@ public class ImpressumAdminController extends FormBasicController {
 			if(file instanceof LocalFileImpl) {
 				File f = ((LocalFileImpl)file).getBasefile();
 				try {
-					String content = FileUtils.readFileToString(f);
+					String content = FileUtils.readFileToString(f, StandardCharsets.UTF_8);
 					content = FilterFactory.getHtmlTagAndDescapingFilter().filter(content);
 					if(content.length() > 0) {
 						content = content.trim();

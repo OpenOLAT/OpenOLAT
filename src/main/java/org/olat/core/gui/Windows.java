@@ -27,9 +27,14 @@
 package org.olat.core.gui;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.ComponentHelper;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Disposable;
@@ -37,6 +42,7 @@ import org.olat.core.gui.control.winmgr.WindowManagerImpl;
 import org.olat.core.gui.util.bandwidth.SlowBandWidthSimulator;
 import org.olat.core.gui.util.bandwidth.SlowBandWidthSimulatorImpl;
 import org.olat.core.util.FIFOMap;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 
 /**
@@ -48,13 +54,12 @@ public class Windows implements Disposable, Serializable {
 	private static final long serialVersionUID = -106724331637750672L;
 	private static final String SESSIONID_NAME_FOR_WINDOWS = Windows.class.getName();
 
-	private transient FIFOMap<UriPrefixIdPair,Window> windows = new FIFOMap<>(100); // one user may at most save 100
+	private transient FIFOMap<UriPrefixIdPair,ChiefController> windows = new FIFOMap<>(100); // one user may at most save 100
 	// windows in a session
 	private int windowId = 1;
 	private Boolean fullScreen;
 	private final AtomicInteger assessmentStarted = new AtomicInteger();
 	private transient WindowManager windowManagerImpl;
-	private transient ChiefController chiefController;
 
 	private transient SlowBandWidthSimulator sbws;
 	
@@ -87,6 +92,19 @@ public class Windows implements Disposable, Serializable {
 		}
 		return ws;
 	}
+	
+	public boolean disposeClosedWindows() {
+		boolean canBeRemoved = false;
+		for(Iterator<Map.Entry<UriPrefixIdPair,ChiefController>> chiefIt=windows.getEntryIterator(); chiefIt.hasNext(); ) {
+			Map.Entry<UriPrefixIdPair,ChiefController> entry = chiefIt.next();
+			if(entry.getValue().getWindow().canBeRemoved()) {
+				entry.getValue().getWindow().getWindowBackOffice().dispose();
+				chiefIt.remove();
+				canBeRemoved = true;
+			}
+		}
+		return canBeRemoved;
+	}
 
 	/**
 	 * @param wId
@@ -94,6 +112,16 @@ public class Windows implements Disposable, Serializable {
 	 */
 	public boolean isExisting(String uriPrefix, String wId) {
 		return (getWindow(uriPrefix, wId) != null);
+	}
+	
+	public Window getFirstWindow() {
+		for(Iterator<Map.Entry<UriPrefixIdPair,ChiefController>> chiefIt=windows.getEntryIterator(); chiefIt.hasNext(); ) {
+			Map.Entry<UriPrefixIdPair,ChiefController> entry = chiefIt.next();
+			if("/auth/".equals(entry.getKey().uriPrefix)) {
+				return entry.getValue().getWindow();
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -105,9 +133,72 @@ public class Windows implements Disposable, Serializable {
 	 */
 	public Window getWindow(UserRequest ureq) {
 		String windowID = ureq.getWindowID();
-		if (windowID == null) return null;
+		String componentId = ureq.getComponentID();
+		String windowComponentId = ureq.getWindowComponentID();
+		
+		Window window = null;
+		if (StringHelper.containsNonWhitespace(windowID)) {
+			String uriPrefix = ureq.getUriPrefix();
+			window = getWindow(uriPrefix, windowID);
+		}
+		
+		if(window == null && StringHelper.containsNonWhitespace(windowComponentId)) {
+			for(Iterator<ChiefController> chiefIt=windows.getValueIterator(); chiefIt.hasNext(); ) {
+				ChiefController cc = chiefIt.next();
+				if(windowComponentId.equals(cc.getWindow().getDispatchID())) {
+					window = cc.getWindow();
+					break;
+				}
+			}
+		}
+		
+		if(window == null && StringHelper.containsNonWhitespace(componentId)) {
+			for(Iterator<ChiefController> chiefIt=windows.getValueIterator(); chiefIt.hasNext(); ) {
+				Window w = chiefIt.next().getWindow();
+				List<Component> cmps = new ArrayList<>();
+				Component cmp = ComponentHelper.findDescendantOrSelfByID(w.getContentPane(), componentId, cmps);
+				if(cmp != null) {
+					window = w;
+					break;
+				}
+			}
+		}
+		return window;
+	}
+	
+	public ChiefController getChiefController(UserRequest ureq) {
 		String uriPrefix = ureq.getUriPrefix();
-		return getWindow(uriPrefix, windowID);
+		String windowID = ureq.getWindowID();
+		String componentId = ureq.getComponentID();
+		String windowComponentId = ureq.getWindowComponentID();
+		
+		ChiefController chief = null;
+		if (windowID != null) {
+			chief = windows.get(new UriPrefixIdPair(uriPrefix, windowID));
+		}
+		
+		if(chief == null && StringHelper.containsNonWhitespace(windowComponentId)) {
+			for(Iterator<ChiefController> chiefIt=windows.getValueIterator(); chiefIt.hasNext(); ) {
+				ChiefController cc = chiefIt.next();
+				if(windowComponentId.equals(cc.getWindow().getDispatchID())) {
+					chief = cc;
+					break;
+				}
+			}
+		}
+		
+		if(chief == null && StringHelper.containsNonWhitespace(componentId)) {
+			for(Iterator<ChiefController> chiefIt=windows.getValueIterator(); chiefIt.hasNext(); ) {
+				ChiefController cc = chiefIt.next();
+				List<Component> path = new ArrayList<>();
+				Component cmp = ComponentHelper.findDescendantOrSelfByID(cc.getWindow().getContentPane(), componentId, path);
+				if(cmp != null) {
+					chief = cc;
+					break;
+				}
+			}
+		}
+		return chief;
 	}
 
 	/**
@@ -117,8 +208,8 @@ public class Windows implements Disposable, Serializable {
 	 * @return null if the window is not existing (here in windows)
 	 */
 	private Window getWindow(String uriPrefix, String windowID) {
-		Window w = windows.get(new UriPrefixIdPair(uriPrefix, windowID));
-		return w;
+		ChiefController chief = windows.get(new UriPrefixIdPair(uriPrefix, windowID));
+		return chief == null ? null : chief.getWindow();
 	}
 
 	/**
@@ -137,7 +228,8 @@ public class Windows implements Disposable, Serializable {
 	 * 
 	 * @param w
 	 */
-	public void registerWindow(Window w) {
+	public void registerWindow(ChiefController chief) {
+		Window w = chief.getWindow();
 		String uriPrefix = w.getUriPrefix();
 		String id = w.getInstanceId();
 		if (windows.get(new UriPrefixIdPair(uriPrefix, id)) != null) {
@@ -145,7 +237,7 @@ public class Windows implements Disposable, Serializable {
 		}
 		String wiid = String.valueOf(windowId++); // ok since per user session, not
 		w.setInstanceId(wiid);
-		windows.put(new UriPrefixIdPair(uriPrefix, wiid), w);
+		windows.put(new UriPrefixIdPair(uriPrefix, wiid), chief);
 	}
 
 	/**
@@ -165,7 +257,11 @@ public class Windows implements Disposable, Serializable {
 	 * @return the iterator with windows in it
 	 */
 	public Iterator<Window> getWindowIterator() {
-		return windows.getValueIterator();
+		List<Window> ws = new ArrayList<>(windows.size());
+		for(Iterator<ChiefController> chiefIt=windows.getValueIterator(); chiefIt.hasNext(); ) {
+			ws.add(chiefIt.next().getWindow());
+		}
+		return ws.iterator();
 	}
 
 	/**
@@ -201,22 +297,12 @@ public class Windows implements Disposable, Serializable {
 		return assessmentStarted;
 	}
 
-	public ChiefController getChiefController() {
-		return chiefController;
-	}
-
-	public void setChiefController(ChiefController chiefController) {
-		this.chiefController = chiefController;
-	}
-
 	@Override
 	public void dispose() {
-		if(chiefController != null) {
-			chiefController.dispose();
+		for(Iterator<ChiefController> chiefIt=windows.getValueIterator(); chiefIt.hasNext(); ) {
+			chiefIt.next().getWindow().getWindowBackOffice().dispose();
 		}
-		if(windowManagerImpl != null) {
-			windowManagerImpl.dispose();
-		}
+		windows.clear();
 	}
 
 	/**

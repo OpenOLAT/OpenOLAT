@@ -114,6 +114,7 @@ public class OverviewRepositoryListController extends BasicController implements
 
 		MainPanel mainPanel = new MainPanel("myCoursesMainPanel");
 		mainPanel.setDomReplaceable(false);
+		mainPanel.setCssClass("o_sel_my_repository_entries");
 		mainVC = createVelocityContainer("overview");
 		mainPanel.setContent(mainVC);
 		

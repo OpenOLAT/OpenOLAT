@@ -782,24 +782,24 @@ function setFormDirty(formId) {
 
 //Pop-up window for context-sensitive help
 function contextHelpWindow(URI) {
-	helpWindow = window.open(URI, "HelpWindow", "height=760, width=940, left=0, top=0, location=no, menubar=no, resizable=yes, scrollbars=yes, toolbar=no");
+	var helpWindow = window.open(URI, "HelpWindow", "height=760, width=940, left=0, top=0, location=no, menubar=no, resizable=yes, scrollbars=yes, toolbar=no");
 	helpWindow.focus();
 }
 
 function o_openPopUp(url, windowname, width, height, menubar) {
 	// generic window popup function
-	attributes = "height=" + height + ", width=" + width + ", resizable=yes, scrollbars=yes, left=100, top=100, ";
+	var attributes = "height=" + height + ", width=" + width + ", resizable=yes, scrollbars=yes, left=100, top=100, ";
 	if (menubar) {
 		attributes += "location=yes, menubar=yes, status=yes, toolbar=yes";
 	} else {
-		attributes += "location=no, menubar=no, status=no, toolbar=no";
+		attributes += "location=no, menubar=no,status=no,toolbar=no";
 	}
 
 	var win;
 	try {
 		win = window.open(url, windowname, attributes);
 	} catch(e) {
-		win = window.open(url, 'OpenOLAT', attributes);
+		win = window.open(url, 'OpenOlat', attributes);
 	}
 	
 	win.focus();
@@ -1395,7 +1395,7 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirt
 	} else {
 		if(!o2cl_noDirtyCheck()) return false;
 	}	
-	// Start event execution, start server to prevend concurrent executions of other events. 
+	// Start event execution, start server to prevent concurrent executions of other events. 
 	// o_afterserver() called when AJAX call terminates
 	o_beforeserver();
 	
@@ -1410,6 +1410,8 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirt
 				data[nameValue.name] = nameValue.value;
 			}
 		}
+	} else {
+		data['_csrf'] = jQuery('#' + formNam + " input[name='_csrf']").val();
 	}
 	
 	data['dispatchuri'] = dispId;
@@ -1454,6 +1456,12 @@ function o_ffXHRNFEvent(formNam, dispIdField, dispId, eventIdField, eventInt) {
 	var data = new Object();
 	data['dispatchuri'] = dispId;
 	data['dispatchevent'] = eventInt;
+	
+	var csrfEl = jQuery('#' + formNam + " input[name='_csrf']");
+	if(csrfEl != null && csrfEl.length > 0) {
+		data['_csrf'] = csrfEl.val();
+	}
+	
 	if(arguments.length > 5) {
 		var argLength = arguments.length;
 		for(var i=5; i<argLength; i=i+2) {

@@ -34,10 +34,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Stack;
+import java.util.UUID;
 
 import javax.servlet.http.HttpSessionBindingEvent;
 import javax.servlet.http.HttpSessionBindingListener;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
@@ -50,7 +52,6 @@ import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.id.context.HistoryPointImpl;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -87,16 +88,24 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	 * things to put into that should not be clear when signing on (e.g. remember url for a direct jump)
 	 */
 	private transient Map<String,Object> nonClearedStore = new HashMap<>();
-	private String lockStores = "";
+	private transient Object lockStores = new Object();
 	private boolean authenticated = false;
 	private boolean savedSession = false;
 	private transient Preferences guiPreferences;
 	private transient EventBus singleUserSystemBus;
 	private List<String> chats;
-	private Stack<HistoryPoint> history = new Stack<>();
+	private final Stack<HistoryPoint> history = new Stack<>();
+	
+	private String csrfToken;
 
 	public UserSession() {
 		init();
+		csrfToken = UUID.randomUUID().toString();
+	}
+	
+	public UserSession(String csrfToken) {
+		init();
+		this.csrfToken = csrfToken;
 	}
 
 	public void init() {
@@ -107,7 +116,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 		sessionInfo = null;
 	}
 	
-	private Object readResolve() {
+	protected Object readResolve() {
 		store = new HashMap<>(4);
 		nonClearedStore = new HashMap<>();
 		singleUserSystemBus = CoordinatorManager.getInstance().getCoordinator().createSingleUserInstance();
@@ -133,6 +142,10 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 
 	public void setSavedSession(boolean savedSession) {
 		this.savedSession = savedSession;
+	}
+	
+	public String getCsrfToken() {
+		return csrfToken;
 	}
 
 	public List<Object> getStoreValues() {

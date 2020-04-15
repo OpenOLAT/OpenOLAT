@@ -45,10 +45,12 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.cookie.Cookie;
 import org.junit.Test;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.restapi.security.RestSecurityBean;
 import org.olat.restapi.security.RestSecurityBeanImpl;
 import org.olat.restapi.security.RestSecurityHelper;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatRestTestCase;
 
 /**
@@ -96,6 +98,23 @@ public class RestApiLoginFilterTest extends OlatRestTestCase {
 		conn.shutdown();
 	}
 	
+	/**
+	 * Test if a standard user can get a security token too.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void testTokenAuthentication_user() throws IOException, URISyntaxException {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("x-token-1");
+		RestConnection conn = new RestConnection();
+		boolean loggedIn = conn.login(id.getName(), JunitTestHelper.PWD);
+		String securityToken = conn.getSecurityToken();
+		//log user in
+		assertTrue(loggedIn);
+		assertTrue(StringHelper.containsNonWhitespace(securityToken));
+		conn.shutdown();
+	}
 	
 	/**
 	 * Test if the token survive several requests

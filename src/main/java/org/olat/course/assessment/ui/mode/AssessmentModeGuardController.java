@@ -369,7 +369,7 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 			cmc.deactivate();
 			
 			//make sure to see the navigation bar
-			ChiefController cc = Windows.getWindows(ureq).getChiefController();
+			ChiefController cc = Windows.getWindows(ureq).getChiefController(ureq);
 			cc.getScreenMode().setMode(Mode.standard, null);
 			
 			fireEvent(ureq, new Event("continue"));

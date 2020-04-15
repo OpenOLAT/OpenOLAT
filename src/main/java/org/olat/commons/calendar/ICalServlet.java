@@ -257,44 +257,47 @@ public class ICalServlet extends HttpServlet {
 		Agent agent = getAgent(request);
 		updateUrlProperties(calendar);
 		
-		Writer out = response.getWriter();
-		out.write(Calendar.BEGIN);
-		out.write(':');
-		out.write(Calendar.VCALENDAR);
-		out.write(Strings.LINE_SEPARATOR);
-		out.write(Version.VERSION_2_0.toString());
-		
-		boolean calScale = false;
-		for (Iterator<?> propIter = calendar.getProperties().iterator(); propIter.hasNext();) {
-			Object pobject = propIter.next();
-			if(pobject instanceof Property) {
-				Property property = (Property)pobject;
-				if(Property.VERSION.equals(property.getName())) {
-					//we force version 2.0
-				} else if(Property.CALSCALE.equals(property.getName())) {
-					out.write(property.toString());
-					calScale = true;
-				} else {
-					out.write(property.toString());
+		try(Writer out = response.getWriter()) {
+			out.write(Calendar.BEGIN);
+			out.write(':');
+			out.write(Calendar.VCALENDAR);
+			out.write(Strings.LINE_SEPARATOR);
+			out.write(Version.VERSION_2_0.toString());
+			
+			boolean calScale = false;
+			for (Iterator<?> propIter = calendar.getProperties().iterator(); propIter.hasNext();) {
+				Object pobject = propIter.next();
+				if(pobject instanceof Property) {
+					Property property = (Property)pobject;
+					if(Property.VERSION.equals(property.getName())) {
+						//we force version 2.0
+					} else if(Property.CALSCALE.equals(property.getName())) {
+						out.write(property.toString());
+						calScale = true;
+					} else {
+						out.write(property.toString());
+					}
 				}
 			}
+			
+			if(!calScale) {
+				out.write(CalScale.GREGORIAN.toString());
+			}
+	
+			outputTTL(agent, out);
+	
+			Set<String> timezoneIds = new HashSet<>();
+			outputCalendarComponents(calendar, out, agent, timezoneIds);
+			if(agent == Agent.outlook) {
+				outputTimeZoneForOutlook(timezoneIds, out);
+			}
+			
+			out.write(Calendar.END);
+			out.write(':');
+			out.write(Calendar.VCALENDAR);
+		} catch(IOException e) {
+			log.error("", e);
 		}
-		
-		if(!calScale) {
-			out.write(CalScale.GREGORIAN.toString());
-		}
-
-		outputTTL(agent, out);
-
-		Set<String> timezoneIds = new HashSet<>();
-		outputCalendarComponents(calendar, out, agent, timezoneIds);
-		if(agent == Agent.outlook) {
-			outputTimeZoneForOutlook(timezoneIds, out);
-		}
-		
-		out.write(Calendar.END);
-		out.write(':');
-		out.write(Calendar.VCALENDAR);
 	}
 	
 	/**
@@ -314,28 +317,31 @@ public class ICalServlet extends HttpServlet {
 			DBFactory.getInstance().commitAndCloseSession();
 			Agent agent = getAgent(request);
 			
-			Writer out = response.getWriter();
-			out.write(Calendar.BEGIN);
-			out.write(':');
-			out.write(Calendar.VCALENDAR);
-			out.write(Strings.LINE_SEPARATOR);
-			out.write(Version.VERSION_2_0.toString());
-			out.write(CalScale.GREGORIAN.toString());
-			
-			outputTTL(agent, out);
-
-			Set<String> timezoneIds = new HashSet<>();
-			int numOfFiles = iCalFiles.size();
-			for(int i=0; i<numOfFiles; i++) {
-				outputCalendar(iCalFiles.get(i), out, agent, timezoneIds);
+			try(Writer out = response.getWriter()) {
+				out.write(Calendar.BEGIN);
+				out.write(':');
+				out.write(Calendar.VCALENDAR);
+				out.write(Strings.LINE_SEPARATOR);
+				out.write(Version.VERSION_2_0.toString());
+				out.write(CalScale.GREGORIAN.toString());
+				
+				outputTTL(agent, out);
+	
+				Set<String> timezoneIds = new HashSet<>();
+				int numOfFiles = iCalFiles.size();
+				for(int i=0; i<numOfFiles; i++) {
+					outputCalendar(iCalFiles.get(i), out, agent, timezoneIds);
+				}
+				if(agent == Agent.outlook) {
+					outputTimeZoneForOutlook(timezoneIds, out);
+				}
+				
+				out.write(Calendar.END);
+				out.write(':');
+				out.write(Calendar.VCALENDAR);
+			} catch(IOException e) {
+				log.error("", e);
 			}
-			if(agent == Agent.outlook) {
-				outputTimeZoneForOutlook(timezoneIds, out);
-			}
-			
-			out.write(Calendar.END);
-			out.write(':');
-			out.write(Calendar.VCALENDAR);
 		}
 	}
 	

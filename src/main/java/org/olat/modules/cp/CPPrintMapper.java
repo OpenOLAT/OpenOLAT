@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -71,7 +72,6 @@ public class CPPrintMapper implements Mapper {
 	private static final Logger log = Tracing.createLoggerFor(CPPrintMapper.class);
 	
 	private static final String DEFAULT_ENCODING = "iso-8859-1";
-	private static final String UNICODE_ENCODING = "unicode";
 	private static final String DEFAULT_CONTENT_TYPE = "text/html";
 	private static final String XHTML_EXTENSION = "xhtml";
 	private static final String XHTML_CONTENT_TYPE = "application/xhtml+xml";
@@ -181,14 +181,16 @@ public class CPPrintMapper implements Mapper {
 		for(String nodeId:nodeIds) {
 			HtmlPageHandler parsedPage = null;
 			TreeNode treeNode = ctm.getNodeById(nodeId);
-			String identifierRes = ((UserObject)treeNode.getUserObject()).getHref();
-			if(StringHelper.containsNonWhitespace(identifierRes)) {
-				VFSItem currentItem = rootDir.resolve(identifierRes);
-				if(currentItem instanceof VFSLeaf) {
-					String extension = FileUtils.getFileSuffix(currentItem.getName());
-					if("htm".equalsIgnoreCase(extension) || "html".equalsIgnoreCase(extension) || "xhtml".equalsIgnoreCase(extension)) {
-						VFSLeaf currentLeaf = (VFSLeaf)currentItem;
-						parsedPage = parsePage(identifierRes, currentLeaf, treeNode);
+			if(treeNode != null && treeNode.getUserObject() instanceof UserObject) {
+				String identifierRes = ((UserObject)treeNode.getUserObject()).getHref();
+				if(StringHelper.containsNonWhitespace(identifierRes)) {
+					VFSItem currentItem = rootDir.resolve(identifierRes);
+					if(currentItem instanceof VFSLeaf) {
+						String extension = FileUtils.getFileSuffix(currentItem.getName());
+						if("htm".equalsIgnoreCase(extension) || "html".equalsIgnoreCase(extension) || "xhtml".equalsIgnoreCase(extension)) {
+							VFSLeaf currentLeaf = (VFSLeaf)currentItem;
+							parsedPage = parsePage(identifierRes, currentLeaf, treeNode);
+						}
 					}
 				}
 			}
@@ -328,8 +330,8 @@ public class CPPrintMapper implements Mapper {
 		boolean guessed = loadPageWithGuess(page, content, DEFAULT_ENCODING);
 		if(!guessed) {
 			//try opening it with utf-8
-			String contentUnicode = FileUtils.load(vfsPage.getInputStream(), UNICODE_ENCODING);
-			guessed = loadPageWithGuess(page, contentUnicode, UNICODE_ENCODING);
+			String contentUnicode = FileUtils.load(vfsPage.getInputStream(), StandardCharsets.UTF_8.name());
+			guessed = loadPageWithGuess(page, contentUnicode, StandardCharsets.UTF_8.name());
 			if(!guessed) {
 				//take default
 				page.setPage(content);

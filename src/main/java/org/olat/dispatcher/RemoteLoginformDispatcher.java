@@ -19,12 +19,14 @@
  */
 package org.olat.dispatcher;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -41,7 +43,6 @@ import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.util.StringHelper;
@@ -187,7 +188,7 @@ public class RemoteLoginformDispatcher implements Dispatcher {
 						}
 						
 						usess.putEntryInNonClearedStore(AuthenticatedDispatcher.AUTHDISPATCHER_BUSINESSPATH, businessPath);
-						String url = getRedirectToURL(usess);
+						String url = getRedirectToURL(usess, ureq);
 						DispatcherModule.redirectTo(response, url);
 					} else {
 						//redirect
@@ -213,13 +214,16 @@ public class RemoteLoginformDispatcher implements Dispatcher {
 		}
 	}
 	
-	private String getRedirectToURL(UserSession usess) {
-		Window w = Windows.getWindows(usess).getChiefController().getWindow();
+	private String getRedirectToURL(UserSession usess, UserRequest ureq) {
+		Window w = Windows.getWindows(usess).getChiefController(ureq).getWindow();
 		
-		URLBuilder ubu = new URLBuilder("", w.getInstanceId(), String.valueOf(w.getTimestamp()));
-		StringOutput sout = new StringOutput(30);
-		ubu.buildURI(sout, null, null);
-		
-		return WebappHelper.getServletContextPath() + DispatcherModule.PATH_AUTHENTICATED + sout.toString();
+		URLBuilder ubu = new URLBuilder("", w.getInstanceId(), w.getTimestamp(), usess.getCsrfToken());
+		try(StringOutput sout = new StringOutput(30)) {
+			ubu.buildURI(sout, null, null);
+			return WebappHelper.getServletContextPath() + DispatcherModule.PATH_AUTHENTICATED + sout.toString();
+		} catch(IOException e) {
+			log.error("", e);
+			return WebappHelper.getServletContextPath();
+		}
 	}
 }

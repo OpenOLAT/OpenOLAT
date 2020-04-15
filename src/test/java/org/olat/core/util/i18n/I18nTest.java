@@ -690,7 +690,7 @@ public class I18nTest extends OlatTestCase {
 	 */
   private class jUnitURLBuilder extends URLBuilder {
 		public jUnitURLBuilder() {
-			super(null, null, null);
+			super(null, null, null, null);
 		}
 	 	public void buildURI(StringOutput buf, String[] keys, String[] values) {
 	 		buf.append("http://do.test.com");

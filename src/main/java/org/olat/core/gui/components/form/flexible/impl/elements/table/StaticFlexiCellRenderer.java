@@ -181,8 +181,17 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 				}
 				target.append("<a href=\"javascript:").append(jsCode).append(";\"");
 			} else {
+				String href = null;
+				FlexiTableDataModel<?> model = source.getFlexiTableElement().getTableDataModel();
+				if(model instanceof FlexiBusinessPathModel) {
+					Object object = source.getFlexiTableElement().getTableDataModel().getObject(row);
+					href = ((FlexiBusinessPathModel)model).getUrl(source, object, action);
+				}
+				if(!StringHelper.containsNonWhitespace(href)) {
+					href = "javascript:;";
+				}
 				String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, dirtyCheck, true, false, pair);
-				target.append("<a href=\"javascript:;\" onclick=\"").append(jsCode).append(";\"");
+				target.append("<a href=\"").append(href).append("\" onclick=\"").append(jsCode).append(";\"");
 			}
 			
 			if(StringHelper.containsNonWhitespace(linkTitle)) {

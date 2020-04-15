@@ -99,6 +99,7 @@ public class Link extends AbstractComponent implements ComponentCollection {
 	private String iconRightCSS;
 	private String labelCSS;
 	private String target;
+	private String url;
 	private FormLink flexiLink;
 	private Object userObject;
 	private String accessKey;
@@ -493,6 +494,21 @@ public class Link extends AbstractComponent implements ComponentCollection {
 	 */
 	public void setTarget(String target) {
 		this.target = target;
+	}
+	
+	/**
+	 * 
+	 * @return Internal business path URL for "Open in new window"
+	 */
+	public String getUrl() {
+		return url;
+	}
+	
+	/**
+	 * @param url Set an alternative URL for "open in new window"
+	 */
+	public void setUrl(String url) {
+		this.url = url;
 	}
 
 	public Object getUserObject() {

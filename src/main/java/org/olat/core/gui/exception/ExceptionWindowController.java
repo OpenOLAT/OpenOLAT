@@ -175,7 +175,7 @@ public class ExceptionWindowController extends DefaultChiefController {
 		Logger o3log = Tracing.createLoggerFor(o3e.getThrowingClazz());
 		String refNum = ureq.getUuid();
 		String componentListenerInfoFlat = componentListenerInfo.replace('\n', ' ').replace('\t', ' ');
-		o3log.error("**RedScreen** "+ o3e.getLogMsg() + " ::_::" + componentListenerInfoFlat + " ::_::", o3e);
+		o3log.error("**RedScreen** {} ::_::{} ::_::", o3e.getLogMsg(), componentListenerInfoFlat, o3e);
 		// only if debug
 		if (Settings.isDebuging()) {
 			msg.contextPut("debug", Boolean.TRUE);
@@ -195,7 +195,7 @@ public class ExceptionWindowController extends DefaultChiefController {
 		msg.contextPut("supportaddress", WebappHelper.getMailConfig("mailError"));
 		msg.contextPut("time", formatter.formatDateAndTime(new Date()));
 
-		WindowBackOffice wbo = ws.getWindowManager().createWindowBackOffice("errormessagewindow", this, new WindowSettings());
+		WindowBackOffice wbo = ws.getWindowManager().createWindowBackOffice("errormessagewindow", ureq.getUserSession().getCsrfToken(), this, new WindowSettings());
 		Window w = wbo.getWindow();
 		
 		msg.put("jsCssRawHtmlHeader", w.getJsCssRawHtmlHeader());		

@@ -117,6 +117,16 @@ public class SyntheticUserRequest implements UserRequest {
 	public String getWindowID() {
 		return null;
 	}
+	
+	@Override
+	public String getWindowComponentID() {
+		return null;
+	}
+	
+	@Override
+	public void overrideWindowComponentID(String dispatchId) {
+		//
+	}
 
 	@Override
 	public String getTimestampID() {
@@ -131,6 +141,16 @@ public class SyntheticUserRequest implements UserRequest {
 	@Override
 	public String getComponentTimestamp() {
 		return null;
+	}
+
+	@Override
+	public String getRequestCsrfToken() {
+		return null;
+	}
+
+	@Override
+	public void setRequestCsrfToken(String token) {
+		//
 	}
 
 	@Override

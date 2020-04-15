@@ -101,9 +101,21 @@ public interface UserRequest {
 	 * Only getter provided. User URLBuilder to set the resulting respond's
 	 * windowID.
 	 * 
-	 * @return the windowid
+	 * @return The window ID
 	 */
 	public String getWindowID();
+	
+
+	/**
+	 * @return The window component ID
+	 */
+	public String getWindowComponentID();
+	
+	/**
+	 * 
+	 * @param dispatchId
+	 */
+	public void overrideWindowComponentID(String dispatchId);
 
 	/**
 	 * Only getter provided. User URLBuilder to set the resulting respond's
@@ -125,7 +137,10 @@ public interface UserRequest {
 	 * @return
 	 */
 	public String getComponentTimestamp();
-
+	
+	public String getRequestCsrfToken();
+	
+	public void setRequestCsrfToken(String token);
 
 	/**
 	 * @return true if the url containing the encoded params for timestamp,

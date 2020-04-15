@@ -95,10 +95,10 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 	
 	private transient List<GenericEventListener> cycleListeners = new CopyOnWriteArrayList<>();
 	
-	WindowBackOfficeImpl(final WindowManagerImpl winmgrImpl, String windowName, ChiefController windowOwner, WindowSettings settings) {
+	WindowBackOfficeImpl(final WindowManagerImpl winmgrImpl, String windowName, String csrfToken, ChiefController windowOwner, WindowSettings settings) {
 		this.winmgrImpl = winmgrImpl;
 		this.windowOwner = windowOwner;
-		window = new Window(windowName, this);
+		window = new Window(windowName, csrfToken, this);
 		this.settings = settings;
 
 		linkedInterceptHandler = new InterceptHandler() {
@@ -263,6 +263,9 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 	@Override
 	public void dispose() {
 		windowOwner.dispose();
+		if(ajaxC != null) {
+			ajaxC.dispose();
+		}
 	}
 
 	/**

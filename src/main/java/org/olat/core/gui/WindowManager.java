@@ -27,7 +27,6 @@
 package org.olat.core.gui;
 
 import org.olat.core.gui.control.ChiefController;
-import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
@@ -39,7 +38,7 @@ import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
  * 
  * @author Felix Jost
  */
-public interface WindowManager extends Disposable {
+public interface WindowManager {
 	
 	/**
 	 * Call this method after having e.g. logged on, and when you would like to switch to ajax mode.<br>
@@ -57,8 +56,8 @@ public interface WindowManager extends Disposable {
 	 * @param owner
 	 * @return
 	 */
-	public WindowBackOffice createWindowBackOffice(String windowName, ChiefController owner, WindowSettings settings);
-	
+	public WindowBackOffice createWindowBackOffice(String windowName, String csrfToken, ChiefController owner, WindowSettings settings);
+
 	/**
 	 * whether or not ajax mode ("web 2.0") is enabled. should only called by controllers to determine whether they can offer additional ui capabilites due to ajax turned on.
 	 * e.g. provide an autocompletion

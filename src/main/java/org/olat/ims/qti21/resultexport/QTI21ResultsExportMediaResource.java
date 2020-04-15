@@ -92,11 +92,8 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 	
 	private static final String DATA = "userdata/";
 	private static final String SEP = File.separator;
-	private static final SimpleDateFormat assessmentDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	private static final SimpleDateFormat displayDateFormat = new SimpleDateFormat("HH:mm:ss");
-	static {
-		displayDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-	}
+	private final SimpleDateFormat assessmentDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private final SimpleDateFormat displayDateFormat;
 	
 	private VelocityHelper velocityHelper;
 	
@@ -118,6 +115,9 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		this.courseNode = courseNode;
 		this.identities = identities;
 		this.courseEnv = courseEnv;
+		
+		displayDateFormat = new SimpleDateFormat("HH:mm:ss");
+		displayDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 		
 		ureq = new SyntheticUserRequest(new TransientIdentity(), locale, new UserSession());
 		ureq.getUserSession().setRoles(Roles.userRoles());
@@ -330,14 +330,14 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 	
 	private String createResultHTML(Component results) {
 		String pagePath = Util.getPackageVelocityRoot(this.getClass()) + "/qti21results.html";
-		URLBuilder ubu = new URLBuilder("auth", "1", "0");
+		URLBuilder ubu = new URLBuilder("auth", "1", "0", "-");
 		//generate VelocityContainer and put Component
 		VelocityContainer mainVC = new VelocityContainer("html", pagePath, translator, null);
 		mainVC.contextPut("rootTitle", translator.translate("table.grading"));
 		mainVC.put("results", results);
 		
 		//render VelocityContainer to StringOutPut
-		Renderer renderer = Renderer.getInstance(mainVC, translator, ubu, new RenderResult(), new DefaultGlobalSettings());
+		Renderer renderer = Renderer.getInstance(mainVC, translator, ubu, new RenderResult(), new DefaultGlobalSettings(), "-");
 		try(StringOutput sb = new StringOutput(32000);
 			VelocityRenderDecorator vrdec = new VelocityRenderDecorator(renderer, mainVC, sb)) {
 			mainVC.contextPut("r", vrdec);

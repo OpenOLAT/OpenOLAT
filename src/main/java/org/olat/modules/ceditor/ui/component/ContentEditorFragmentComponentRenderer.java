@@ -65,7 +65,7 @@ public class ContentEditorFragmentComponentRenderer extends AbstractContentEdito
 			URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
 
 		URLBuilder fragmentUbu = ubu.createCopyFor(cmp);
-		Renderer fr = Renderer.getInstance(cmp, translator, fragmentUbu, new RenderResult(), renderer.getGlobalSettings());
+		Renderer fr = Renderer.getInstance(cmp, translator, fragmentUbu, new RenderResult(), renderer.getGlobalSettings(), renderer.getCsrfToken());
 
 		sb.append("<div id='o_c").append(cmp.getDispatchID()).append("' class='o_page_fragment_edit' data-oo-page-fragment='").append(cmp.getComponentName()).append("'>");
 
@@ -101,7 +101,7 @@ public class ContentEditorFragmentComponentRenderer extends AbstractContentEdito
 		List<Link> additionalTools = cmp.getAdditionalTools();
 		if(additionalTools != null && !additionalTools.isEmpty()) {
 			for(Link additionalTool:additionalTools) {
-				Renderer fr = Renderer.getInstance(cmp, translator, fragmentUbu, new RenderResult(), renderer.getGlobalSettings());
+				Renderer fr = Renderer.getInstance(cmp, translator, fragmentUbu, new RenderResult(), renderer.getGlobalSettings(), renderer.getCsrfToken());
 				URLBuilder aubu = fragmentUbu.createCopyFor(additionalTool);
 				additionalTool.getHTMLRendererSingleton().render(fr, sb, additionalTool, aubu, translator, renderResult, args);
 				additionalTool.setDirty(false);
@@ -116,7 +116,7 @@ public class ContentEditorFragmentComponentRenderer extends AbstractContentEdito
 			URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
 
 		URLBuilder fragmentUbu = ubu.createCopyFor(cmp);
-		Renderer fr = Renderer.getInstance(cmp, translator, fragmentUbu, new RenderResult(), renderer.getGlobalSettings());
+		Renderer fr = Renderer.getInstance(cmp, translator, fragmentUbu, new RenderResult(), renderer.getGlobalSettings(), renderer.getCsrfToken());
 
 		sb.append("<div id='o_c").append(cmp.getDispatchID()).append("' data-oo-page-fragment='").append(cmp.getComponentName()).append("'")
 		  .append(" data-oo-page-element-id='").append(cmp.getElementId()).append("'")

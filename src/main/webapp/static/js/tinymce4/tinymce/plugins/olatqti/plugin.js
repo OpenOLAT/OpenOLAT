@@ -78,7 +78,7 @@
 					var solution = jQuery(textEntryEl).children().html();
 					var emptySolution = (solution == "" || solution == "&nbsp;" ? "true" : "false");
 					o_ffXHREvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, 2, false, false, false,
-							'cmd', 'gapentry', 'responseIdentifier', responseIdentifier, 'selectedText', solution, 'emptySolution', emptySolution, 'newEntry', false);
+							'_csrf', ffxhrevent.csrf, 'cmd', 'gapentry', 'responseIdentifier', responseIdentifier, 'selectedText', solution, 'emptySolution', emptySolution, 'newEntry', false);
 				} else {
 					var counter = 1;
 					var newSelectedText = ed.selection.getContent({format: 'text'})
@@ -103,7 +103,7 @@
 					ed.insertContent(holderHtml);
 
 					o_ffXHREvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, 2, false, false, false,
-							'cmd', 'gapentry', 'responseIdentifier', responseIdentifier, 'newEntry', true, 'selectedText', newSelectedText, 'gapType', gapType);
+							'_csrf', ffxhrevent.csrf, 'cmd', 'gapentry', 'responseIdentifier', responseIdentifier, 'newEntry', true, 'selectedText', newSelectedText, 'gapType', gapType);
 				}
 				ed.setDirty(true);
 			}
@@ -244,7 +244,7 @@
 								var ffxhrevent = ed.getParam("ffxhrevent");
 								var identifier = jQuery(el).data('qti-identifier');
 								o_ffXHRNFEvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, 2,
-									'cmd', 'hottext', 'identifier', identifier, 'correct', 'true');
+									'_csrf', ffxhrevent.csrf, 'cmd', 'hottext', 'identifier', identifier, 'correct', 'true');
 							}
 						}
 					});
@@ -369,7 +369,7 @@
 					var jLinkEl = jQuery(linkEl);
 					var identifier = jLinkEl.parent("span.hottext").data('qti-identifier');
 					o_ffXHRNFEvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, 2,
-							'cmd', 'hottext', 'identifier', identifier, 'correct', jLinkEl.hasClass('checked') ? "false" : "true");
+							'_csrf', ffxhrevent.csrf, 'cmd', 'hottext', 'identifier', identifier, 'correct', jLinkEl.hasClass('checked') ? "false" : "true");
 					if(jLinkEl.hasClass('checked')) {
 						jLinkEl.removeClass('checked');
 						jLinkEl.parent("span.hottext").attr('data-qti-checked', "false");
@@ -388,7 +388,7 @@
 					var solution = jQuery(textEntryEl).children().html();
 					var emptySolution = (solution == "" || solution == "&nbsp;" ? "true" : "false");
 					o_ffXHREvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, 2, false, false, false,
-							'cmd', 'gapentry', 'responseIdentifier', responseIdentifier, 'selectedText', solution, 'emptySolution', emptySolution);
+							'_csrf', ffxhrevent.csrf, 'cmd', 'gapentry', 'responseIdentifier', responseIdentifier, 'selectedText', solution, 'emptySolution', emptySolution);
 					ed.setDirty(true);
 				});
 			}
@@ -540,7 +540,7 @@
 					var solution = jQuery(el).attr("data-qti-solution");
 					var ffxhrevent = ed.getParam("ffxhrevent");
 					o_ffXHRNFEvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, 2,
-							'cmd', 'copy-gapentry', 'responseIdentifier', entryId, 'newEntry', true, 'selectedText', solution, 'gapType', gapType);
+							'_csrf', ffxhrevent.csrf, 'cmd', 'copy-gapentry', 'responseIdentifier', entryId, 'newEntry', true, 'selectedText', solution, 'gapType', gapType);
 					//add it because tiny delete it
 					jQuery("a.o_ops", el).append(jQuery("<i class='visible'>&nbsp;</i>"));
 					

@@ -26,7 +26,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.dispatcher.Dispatcher;
+import org.olat.core.logging.Tracing;
 
 /**
  * 
@@ -35,6 +37,8 @@ import org.olat.core.dispatcher.Dispatcher;
  *
  */
 public class RobotsDispatcher implements Dispatcher {
+	
+	private static final Logger log = Tracing.createLoggerFor(RobotsDispatcher.class);
 
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response)
@@ -45,8 +49,11 @@ public class RobotsDispatcher implements Dispatcher {
 			//we do our best
 		}
 		response.setContentType("text/plain");
-		PrintWriter writer = response.getWriter();
-		writer.write("User-agent: *\n");
-		writer.write("Disallow: /");
+		try(PrintWriter writer = response.getWriter()) {
+			writer.write("User-agent: *\n");
+			writer.write("Disallow: /");
+		} catch(IOException e) {
+			log.error("", e);
+		}
 	}
 }

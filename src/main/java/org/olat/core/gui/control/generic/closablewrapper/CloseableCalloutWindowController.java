@@ -29,6 +29,7 @@ import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.ModalController;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -58,7 +59,7 @@ import org.olat.core.util.StringHelper;
  * 
  * @author gnaegi
  */
-public class CloseableCalloutWindowController extends BasicController {
+public class CloseableCalloutWindowController extends BasicController implements ModalController {
 	public static final Event CLOSE_WINDOW_EVENT = new Event("CLOSE_WINDOW_EVENT");
 
 	private final CalloutSettings settings;
@@ -208,6 +209,11 @@ public class CloseableCalloutWindowController extends BasicController {
 				+ targetFormLink.getComponent().getDispatchID(), title, closable, cssClasses, settings);
 	}
 	
+	@Override
+	public boolean isCloseable() {
+		return true;
+	}
+
 	public String getDOMTarget() {
 		if (calloutVC != null) {
 			// Setting the new target makes this callout VC dirty which redraws

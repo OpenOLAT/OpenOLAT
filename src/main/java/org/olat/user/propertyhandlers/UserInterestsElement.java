@@ -169,7 +169,7 @@ public class UserInterestsElement extends FormItemImpl implements FormItemCollec
 	}
 
 	private void doEdit(UserRequest ureq) {
-		ChiefController chief = Windows.getWindows(ureq).getChiefController();
+		ChiefController chief = Windows.getWindows(ureq).getChiefController(ureq);
 		WindowControl wControl = chief.getWindowControl();
 		if (wControl != null) {
 			List<UserInterestsCategory> availableUserInterests = UserInterestsPropertyHandler.loadAvailableUserInterests();

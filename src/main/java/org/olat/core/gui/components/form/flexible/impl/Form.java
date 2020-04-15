@@ -27,6 +27,7 @@ package org.olat.core.gui.components.form.flexible.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -43,6 +44,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.Part;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.Logger;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.csp.CSPModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentCollection;
@@ -52,14 +56,15 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.Submit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.component.FormComponentTraverser;
@@ -147,6 +152,7 @@ public class Form {
 	public static final String FORMCMD = "fid";
 	public static final String FORMID = "ofo_";
 	public static final String FORM_UNDEFINED="undefined";
+	public static final String FORM_CSRF = "_csrf";
 	
 	public static final int REQUEST_ERROR_NO_ERROR = -1;
 	public static final int REQUEST_ERROR_GENERAL = 1;
@@ -162,11 +168,13 @@ public class Form {
 	private FormWrapperContainer formWrapperComponent;
 	private Integer action;
 	private boolean hasAlreadyFired;
+	private WindowControl windowControl;
 	private List<FormBasicController> formListeners;
 	private boolean isValidAndSubmitted=true;
 	private boolean isDirtyMarking=true;
 	private boolean isHideDirtyMarkingMessage = false;
 	private boolean multipartEnabled = false;
+	private boolean csrfProtection = true;
 	// temporary form data, only valid within execution of evalFormRequest()
 	private Map<String,String[]> requestParams = new HashMap<>();
 	private Map<String, File> requestMultipartFiles = new HashMap<>();
@@ -198,6 +206,7 @@ public class Form {
 		if(listener instanceof FormBasicController){
 			form.formListeners.add((FormBasicController)listener);
 		}
+		form.windowControl = listener.getWindowControlForDebug();
 		Translator translator = formLayout.getTranslator();
 		if (translator == null) { throw new AssertException("please provide a translator in the FormItemContainer <" + formLayout.getName()
 				+ ">"); }
@@ -224,6 +233,17 @@ public class Form {
 			doInitRequestParameter(ureq);
 		}
 		
+		String csrfToken = getRequestParameter(Form.FORM_CSRF);
+		if(csrfProtection && (csrfToken == null || !csrfToken.equals(ureq.getUserSession().getCsrfToken()))) {
+			log.warn("CSRF mismatch");
+			if(CoreSpringFactory.getImpl(CSPModule.class).isCsrfEnabled()) {
+				String warning = Util.createPackageTranslator(Form.class, ureq.getLocale()).translate("warning.invalid.csrf");
+				windowControl.setWarning(warning);
+				ureq.getHttpResp().setStatus(403);
+				return;
+			}
+		}
+
 		String dispatchUri = getRequestParameter("dispatchuri");
 		String dispatchAction = getRequestParameter("dispatchevent");
 		boolean invalidDispatchUri = dispatchUri == null || dispatchUri.equals(FORM_UNDEFINED);
@@ -287,7 +307,7 @@ public class Form {
 					}
 					fbc.append(i.getClass().getName());
 				}
-				log.warn("OLAT-5061: Could not determine request source in FlexiForm >"+formName+"<. Check >"+fbc+"<");
+				log.warn("OLAT-5061: Could not determine request source in FlexiForm >{}<. Check >{}<", formName, fbc);
 				// Assuming the same as "implicitFormSubmit" for now.
 				submit(ureq);
 				
@@ -324,7 +344,7 @@ public class Form {
 					requestMultipartFileNames.put(name, fileName);
 					requestMultipartFileMimeTypes.put(name, contentType);
 				} else {
-					String value = IOUtils.toString(part.getInputStream(), "UTF-8");
+					String value = IOUtils.toString(part.getInputStream(), StandardCharsets.UTF_8);
 					addRequestParameter(name, value);
 				}
 				part.delete();
@@ -482,7 +502,7 @@ public class Form {
 		return (ComponentCollection) formLayout.getComponent();
 	}
 	
-	FormItemContainer getFormItemContainer() {
+	public FormItemContainer getFormItemContainer() {
 		return formLayout;
 	}
 
@@ -693,7 +713,7 @@ public class Form {
 	}
 
 	private static class ResettingFormComponentVisitor implements FormComponentVisitor {
-
+		@Override
 		public boolean visit(FormItem comp, UserRequest ureq) {
 			//reset all fields including also non visible and disabled form items!
 			comp.reset();
@@ -718,7 +738,7 @@ public class Form {
 		hasAlreadyFired = true;
 	}
 
-	boolean hasAlreadyFired(){
+	public boolean hasAlreadyFired(){
 		return hasAlreadyFired;
 	}
 	/**
@@ -785,5 +805,13 @@ public class Form {
 	
 	public boolean isMultipartEnabled() {
 		return multipartEnabled;
+	}
+
+	public boolean isCsrfProtection() {
+		return csrfProtection;
+	}
+
+	public void setCsrfProtection(boolean csrfProtection) {
+		this.csrfProtection = csrfProtection;
 	}
 }

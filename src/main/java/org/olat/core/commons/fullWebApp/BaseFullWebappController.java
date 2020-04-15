@@ -217,7 +217,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		WindowManager winman = Windows.getWindows(ureq).getWindowManager();
 		String windowSettings = (String)usess.removeEntryFromNonClearedStore(Dispatcher.WINDOW_SETTINGS);
 		WindowSettings settings = WindowSettings.parse(windowSettings);
-		wbo = winman.createWindowBackOffice("basechiefwindow", this, settings);
+		wbo = winman.createWindowBackOffice("basechiefwindow", usess.getCsrfToken(), this, settings);
 		
 		IdentityEnvironment identityEnv = usess.getIdentityEnvironment();
 		if(identityEnv != null && identityEnv.getRoles() != null) {	
@@ -247,9 +247,11 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		
 		initialPanel.setDomReplaceable(false);
 		// ------ all the frame preparation is finished ----
-		initializeBase(ureq, winman, initialPanel);
+		initializeBase(ureq, initialPanel);
 		
-		if(usess.isAuthenticated() && !isAdmin && usess.getAssessmentModes() != null && usess.getAssessmentModes().size() > 0) {
+		logAudit("BaseFullWebappController: " + usess.getEntry(PRESENTED_AFTER_LOGIN_WORKFLOW));
+		
+		if(usess.isAuthenticated() && !isAdmin && usess.getAssessmentModes() != null && !usess.getAssessmentModes().isEmpty()) {
     		assessmentGuardCtrl = new AssessmentModeGuardController(ureq, getWindowControl(),
     				usess.getAssessmentModes(), false);
     		listenTo(assessmentGuardCtrl);
@@ -316,12 +318,8 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
     	usess.removeEntryFromNonClearedStore("redirect-bc");
 	}
 	
-	private void initializeBase(UserRequest ureq, WindowManager winman, ComponentCollection mainPanel) {
+	private void initializeBase(UserRequest ureq, ComponentCollection mainPanel) {
 		UserSession usess = ureq.getUserSession();
-		
-		// component-id of mainPanel for the window id
-		mainVc.contextPut("o_winid", mainPanel.getDispatchID());
-		
 		mainVc.contextPut("enforceTopFrame", cspModule.isForceTopFrame());
 
 		// add optional css classes
@@ -430,6 +428,12 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	@Override
 	public WindowControl getWindowControl() {
 		return super.getWindowControl();
+	}
+	
+	public void setStartBusinessPath(String path) {
+		String businessPath = BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathString(path);
+		mainVc.contextPut("startBusinessPath", businessPath);
 	}
 
 	private void initialize(UserRequest ureq) {
@@ -672,6 +676,8 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			} else if ("width.standard".equals(event.getCommand())) {
 				mainVc.contextPut("pageSizeCss", "");			
 				mainVc.setDirty(false);
+			} else if("close-window".equals(event.getCommand())) {
+				getWindow().setMarkToBeRemoved(true);
 			}
 		}
 	}
@@ -1403,8 +1409,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			UserRequest ureq = lce.getCurrentUreq();
 			getTranslator().setLocale(lce.getNewLocale());
 			initialize(ureq);
-			WindowManager winman = Windows.getWindows(ureq).getWindowManager();
-			initializeBase(ureq, winman, initialPanel);
+			initializeBase(ureq, initialPanel);
 			initialPanel.setContent(mainVc);
 			
 			reload = Boolean.TRUE;

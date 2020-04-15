@@ -30,15 +30,25 @@ public class LinkPopupSettings {
 	private final int width;
 	private final int height;
 	private final String target;
+	private final boolean menuBar;
 	
 	public LinkPopupSettings() {
-		this(500, 400, "Open");
+		this(500, 400, "Open", false);
 	}
 	
 	public LinkPopupSettings(int width, int height, String target) {
+		this(width, height, target, false);
+	}
+	
+	public LinkPopupSettings(int width, int height, String target, boolean menuBar) {
 		this.width = width;
 		this.height = height;
 		this.target = target;
+		this.menuBar = menuBar;
+	}
+	
+	public static LinkPopupSettings blank(int width, int height, boolean menuBar) {
+		return new LinkPopupSettings(width, height, "_blank", menuBar);
 	}
 
 	public int getWidth() {
@@ -51,5 +61,9 @@ public class LinkPopupSettings {
 
 	public String getTarget() {
 		return target;
+	}
+	
+	public boolean isMenuBar() {
+		return menuBar;
 	}
 }

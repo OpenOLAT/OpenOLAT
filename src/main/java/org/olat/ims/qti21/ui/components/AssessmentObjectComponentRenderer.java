@@ -1030,7 +1030,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		ctx.put("isCorrectionSolution", component.isCorrectionSolution());
 		ctx.put("isSolutionMode", renderer.isSolutionMode());
 
-		Renderer fr = Renderer.getInstance(component, translator, ubu, new RenderResult(), renderer.getGlobalSettings());
+		Renderer fr = Renderer.getInstance(component, translator, ubu, new RenderResult(), renderer.getGlobalSettings(), renderer.getRenderer().getCsrfToken());
 		AssessmentRenderer fHints = renderer.newHints(fr);
 		try(AssessmentObjectVelocityRenderDecorator vrdec
 			= new AssessmentObjectVelocityRenderDecorator(fHints, sb, component, resolvedAssessmentItem, itemSessionState, ubu, translator)) {

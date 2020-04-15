@@ -120,7 +120,7 @@ public class DMZDispatcher implements Dispatcher {
 			}
 			if (!validBypass) {
 				final String rejectUrl = request.getRequestURI();
-				log.info("Rejecting request to DMZDispatcher (AuthHelper.isRejectDMZRequests() is true) to " + rejectUrl);
+				log.info("Rejecting request to DMZDispatcher (AuthHelper.isRejectDMZRequests() is true) to {}", rejectUrl);
 				if (sessionCookie!=null) {
 					String newSessionId = sessionCookie.getValue().substring(0, sessionCookie.getValue().length()-2);
 					response.setHeader("Set-Cookie", "JSESSIONID="+newSessionId+"; Path="+request.getContextPath()+(request.isSecure()?"":"; Secure"));
@@ -159,15 +159,12 @@ public class DMZDispatcher implements Dispatcher {
 			// showing redscreens for non valid URL is wrong instead
 			// a 404 message must be shown -> e.g. robots correct their links.
 			if (log.isDebugEnabled()) {
-				log.debug("Bad Request " + request.getPathInfo());
+				log.debug("Bad Request {}", request.getPathInfo());
 			}
 			DispatcherModule.sendBadRequest(request.getPathInfo(), response);
 			return;
 		}
-		//set load performance mode depending on logged in user or global parameter
-		//here in the DMZ only the global parameter plays a role.
-		//XX:GUIInterna.setLoadPerformanceMode(ureq);
-		
+
 		try {
 			// find out about which subdispatcher is meant
 			// e.g. got here because of /dmz/...
@@ -196,8 +193,7 @@ public class DMZDispatcher implements Dispatcher {
 						ChiefController occ = subPathccc.createChiefController(ureq);
 						Window window = occ.getWindow();
 						window.setUriPrefix(uriPrefix);
-						ws.registerWindow(window);
-						
+						ws.registerWindow(occ);
 						window.dispatchRequest(ureq, true);
 						return;
 					}					
@@ -259,7 +255,7 @@ public class DMZDispatcher implements Dispatcher {
 					
 					window = occ.getWindow();
 					window.setUriPrefix(uriPrefix);
-					ws.registerWindow(window);
+					ws.registerWindow(occ);
 					
 					String businessPath = (String) usess.removeEntryFromNonClearedStore(DMZDISPATCHER_BUSINESSPATH);
 					if (businessPath != null) {

@@ -121,6 +121,10 @@ public class KeyValues {
 		return keyValues.isEmpty();
 	}
 	
+	public List<KeyValue> keyValues() {
+		return new ArrayList<>(keyValues);
+	}
+	
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();

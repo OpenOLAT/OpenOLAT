@@ -385,8 +385,8 @@ public class ExportBinderAsCPResource implements MediaResource {
 	}
 	
 	private String renderVelocityContainer(VelocityContainer mainVC) {
-		URLBuilder ubu = new URLBuilder("auth", "1", "0");
-		Renderer renderer = Renderer.getInstance(mainVC, translator, ubu, new RenderResult(), new DefaultGlobalSettings());
+		URLBuilder ubu = new URLBuilder("auth", "1", "0", "1");
+		Renderer renderer = Renderer.getInstance(mainVC, translator, ubu, new RenderResult(), new DefaultGlobalSettings(), "-");
 		try(StringOutput sb = new StringOutput(32000);
 				VelocityRenderDecorator vrdec = new VelocityRenderDecorator(renderer, mainVC, sb)) {
 			mainVC.contextPut("r", vrdec);

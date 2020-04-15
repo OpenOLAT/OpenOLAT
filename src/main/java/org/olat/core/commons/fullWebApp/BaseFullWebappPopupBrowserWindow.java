@@ -49,6 +49,10 @@ public class BaseFullWebappPopupBrowserWindow extends BaseFullWebappController i
 			MainLayoutController mainLayoutCtr = (MainLayoutController) contentCtrl;
 			addCurrentCustomCSSToView(mainLayoutCtr.getCustomCSS());
 		}
+		if(contentCtrl != null) {
+			String path = ureq.getUserSession().getLastHistoryPoint().getBusinessPath();
+			setStartBusinessPath(path);
+		}
 	}
 
 	@Override

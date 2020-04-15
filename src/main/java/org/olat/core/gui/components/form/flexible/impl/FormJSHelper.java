@@ -67,7 +67,7 @@ public class FormJSHelper {
 			if (actions - FormEvent.ON_DOTDOTDOT[i] > 0)
 				throw new AssertionError("only one actions supported here");
 			if (actions - FormEvent.ON_DOTDOTDOT[i] == 0) {
-				sb.append(" on" + EXTJSACTIONS[i]);// javascript action
+				sb.append(" on").append(EXTJSACTIONS[i]);// javascript action
 				sb.append("=\"");
 				sb.append(getJSFnCallFor(form, id, i));
 				sb.append("\"");

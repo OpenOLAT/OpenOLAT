@@ -1,7 +1,6 @@
 ## Set height to 0 to fix IE rendering issue (div would consume some visible space)
 <div style="height:0px">
 <script>
-/* <![CDATA[ */ 
 var stopped = true;
 function initPolling () {
 	o_info.lastClickTime = new Date().getTime();
@@ -27,45 +26,21 @@ var pollError = 0;
 var pollgrowth = 0;
 var timestampLastPoll = new Date().getTime();
 
-// set timestamp cookie to inform other windows that they are outdated
-var sbtimestamp = new Date().getTime();
-var sbcookie = 'OLAT-UI-TIMESTAMP';
-if (thickCheckStandBy()) {
-	document.cookie = sbcookie+'='+sbtimestamp+'; path=/; SameSite=strict';
-}
-
 ## starts an interval which checks every second whether to send an poll request based on
 ## the pollperiod or not 10 min after the last click the poll process stops
-
-function thickCheckStandBy() {
-	var check = false;
-	try {
-		if (window.opener == null) {
-			check = true;
-		## if the opener is an external location, it will produce an exception
-		} else if(window.opener.location.hostname != document.location.hostname) {
-			check = true;
-		}
-	} catch(e) {
-		if(window.console) console.log(e);
-		check = true;
-	}
-	return check;
-}
-
 function tick () {
 	o_info.poller = jQuery.periodic({period: $pollperiod, decay:1.005, max_period: Number.MAX_VALUE}, function() {
 		if ( !o_info.linkbusy && (this.period > 1000) && (pollError < 2) ) {
 			try {
 				var now = new Date().getTime();
-				if ((now - o_info.lastClickTime) < (pollminutes*60*1000)) {
+				if ((now - o_info.lastClickTime) < (pollminutes * 60 * 1000)) {
 					if ((now - timestampLastPoll) > (this.period + pollgrowth)) {
 						timestampLastPoll = now;
 						pollcount++;
 						pollgrowth = Math.ceil((this.period+pollgrowth)*(100+growthrate)/100) - this.period;
 						o_info.ajaxpp = jQuery.ajax({
 							method:'POST',
-							url:'$mapuri/',
+							url:'$mapuri/?_csrf=$csrfToken&oow=' + window.name,
 							cache: false,
 							success:onPollSuccess,
 							error:onPollFailure
@@ -80,45 +55,8 @@ function tick () {
 			}
 		}
 
-		// if window is not a popup window, become a standby window 
-		// in case the cookie timestamp is newer than the own one set while loading
-		// because another window holds the current UI which works
-		if (thickCheckStandBy()) {
-			var p = sbcookie + "=";
-			var ca = document.cookie.split(';');
-			for(var i=0;i < ca.length;i++) {
-				var c = ca[i];
-				while (c.charAt(0)==' ') c = c.substring(1,c.length);
-				if (c.indexOf(p) == 0) {
-					try {
-						var ts = Math.floor(c.substring(p.length,c.length));
-						if (ts > sbtimestamp) {
-							window.onunload=null;
-							window.onbeforeunload=null;
-							## First probe if the standby window mapper is available
-							jQuery.ajax({
-								method:'get',
-								url:'$sburi/',
-								cache: false,
-								success:function() {
-									## OK, so redirect to standby
-									window.location='$sburi/';
-								},
-								error: function() {
-									## NOK: standby not available. This happens when the other opened window can not be detected
-									## (e.g. in other browser or loaded from a bookmark etc). Normally this is already done by onPollFailure,
-									## but this does not catch all cases. 
-								  	## Only solution: stop poller as this triggers some fancy ***.dms file downloads
-									o_info.poller.cancel(); 
-								}
-							})();
-							
-						}
-					} catch (e) {
-						// does not matter
-					};
-				}
-			}
+		if(pollError >= 2) {
+			window.close();
 		}
 	});
 }

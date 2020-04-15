@@ -25,7 +25,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -43,11 +42,9 @@ import org.olat.core.id.Persistable;
  */
 @Entity(name="pmapper")
 @Table(name="o_mapper")
-@NamedQueries({
-	@NamedQuery(name="loadMapperByKeyOrdered", query="select mapper from pmapper as mapper where mapper.mapperId=:mapperId order by mapper.key"),
-	@NamedQuery(name="loadMapperByKey", query="select mapper from pmapper as mapper where mapper.mapperId=:mapperId"),
-	@NamedQuery(name="updateMapperByMapperId", query="update pmapper set lastModified=:now, expirationDate=:expirationDate, xmlConfiguration=:config where mapperId=:mapperId")
-})
+@NamedQuery(name="loadMapperByKeyOrdered", query="select mapper from pmapper as mapper where mapper.mapperId=:mapperId order by mapper.key")
+@NamedQuery(name="loadMapperByKey", query="select mapper from pmapper as mapper where mapper.mapperId=:mapperId")
+@NamedQuery(name="updateMapperByMapperId", query="update pmapper set lastModified=:now, expirationDate=:expirationDate, xmlConfiguration=:config where mapperId=:mapperId")
 public class PersistedMapper implements CreateInfo, ModifiedInfo, Persistable {
 
 	private static final long serialVersionUID = 7297417374497607347L;

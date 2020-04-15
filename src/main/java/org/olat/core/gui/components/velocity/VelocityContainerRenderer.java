@@ -58,7 +58,7 @@ public class VelocityContainerRenderer implements ComponentRenderer {
 		
 		// the component id of the urlbuilder  will be overwritten by the recursive render call for
 		// subcomponents (see Renderer)
-		Renderer fr = Renderer.getInstance(vc, translator, ubu, renderResult, renderer.getGlobalSettings());
+		Renderer fr = Renderer.getInstance(vc, translator, ubu, renderResult, renderer.getGlobalSettings(), renderer.getCsrfToken());
 		try(VelocityRenderDecorator vrdec = new VelocityRenderDecorator(fr, vc, target)) {
 			ctx.put("r", vrdec);
 			VelocityHelper vh = VelocityHelper.getInstance();

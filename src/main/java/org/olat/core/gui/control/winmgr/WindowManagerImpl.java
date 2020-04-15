@@ -26,9 +26,6 @@
 
 package org.olat.core.gui.control.winmgr;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.GlobalSettings;
 import org.olat.core.gui.UserRequest;
@@ -48,8 +45,6 @@ import org.olat.core.helpers.Settings;
  * @author Felix Jost
  */
 public class WindowManagerImpl implements WindowManager {
-	
-	private List<WindowBackOfficeImpl> wbos = new ArrayList<>();
 	
 	private GlobalSettings globalSettings;
 	private boolean ajaxEnabled = false;
@@ -100,31 +95,16 @@ public class WindowManagerImpl implements WindowManager {
 	 */
 	@Override
 	public void setAjaxEnabled(boolean enabled) {
-		this.ajaxEnabled  = enabled;
-		for (WindowBackOfficeImpl wboImpl : wbos) {
-			wboImpl.setAjaxEnabled(enabled);
-		}			
+		this.ajaxEnabled  = enabled;		
 	}
 	
 	public void setShowDebugInfo(boolean showDebugInfo) {
-		this.showDebugInfo = showDebugInfo;
-		for (WindowBackOfficeImpl wboImpl : wbos) {
-			wboImpl.setShowDebugInfo(showDebugInfo);
-		}			
+		this.showDebugInfo = showDebugInfo;			
 	}
 
 	@Override
-	public WindowBackOffice createWindowBackOffice(String windowName, ChiefController owner, WindowSettings settings) {
-		WindowBackOfficeImpl wbo = new WindowBackOfficeImpl(this, windowName, owner, settings);
-		wbos.add(wbo);
-		return wbo;
-	}
-
-	@Override
-	public void dispose() {
-		for (WindowBackOfficeImpl wboImpl : wbos) {
-			wboImpl.dispose();
-		}		
+	public WindowBackOffice createWindowBackOffice(String windowName, String csrfToken, ChiefController owner, WindowSettings settings) {
+		return new WindowBackOfficeImpl(this, windowName, csrfToken, owner, settings);
 	}
 
 	protected boolean isShowDebugInfo() {

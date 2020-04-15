@@ -36,6 +36,7 @@ import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.ModalController;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.util.ZIndexWrapper;
@@ -60,7 +61,7 @@ import org.olat.core.util.Util;
  * </pre>
  * 
  */
-public class CloseableModalController extends DefaultController {
+public class CloseableModalController extends DefaultController implements ModalController {
 	/**
 	 * Comment for <code>CLOSE_MODAL_EVENT</code>
 	 */
@@ -68,6 +69,7 @@ public class CloseableModalController extends DefaultController {
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(CloseableModalController.class);
 	
 	private Link closeIcon;
+	private boolean closeable;
 	private boolean displayAsOverlay;
 	private VelocityContainer myContent;
 
@@ -78,15 +80,25 @@ public class CloseableModalController extends DefaultController {
 	 * @param modalContent
 	 */
 	public CloseableModalController(WindowControl wControl, String closeButtonText, Component modalContent) {
-		this(wControl, closeButtonText, modalContent, true, null);
+		this(wControl, closeButtonText, modalContent, null);
 	}
 	
-	public CloseableModalController(WindowControl wControl, String closeButtonText, Component modalContent, boolean displayAsOverlay, String title) {
-		 this(wControl, closeButtonText, modalContent, displayAsOverlay, title, true);
+	public CloseableModalController(WindowControl wControl, String closeButtonText, Component modalContent, boolean displayAsOverlay,
+			String title) {
+		 this(wControl, closeButtonText, modalContent, displayAsOverlay, title, true, true);
+	}
+	
+	public CloseableModalController(WindowControl wControl, String closeButtonText, Component modalContent, String title) {
+		 this(wControl, closeButtonText, modalContent, true, title, true);
 	}
 
-	private CloseableModalController(WindowControl wControl, String closeButtonText, Component modalContent, boolean showCloseIcon) {
+	public CloseableModalController(WindowControl wControl, String closeButtonText, Component modalContent, boolean showCloseIcon) {
 		 this(wControl, closeButtonText, modalContent, true, null, showCloseIcon);
+	}
+	
+	public CloseableModalController(WindowControl wControl, String closeButtonText, Component modalContent, boolean displayAsOverlay,
+			String title, boolean showCloseIcon) {
+		this(wControl, closeButtonText, modalContent, displayAsOverlay, title, showCloseIcon, true);
 	}
 
 	/**
@@ -97,8 +109,10 @@ public class CloseableModalController extends DefaultController {
 	 * @param showAsOverlay
 	 * @param showCloseIcon make visibility of close-button optional
 	 */
-	public CloseableModalController(WindowControl wControl, String closeButtonText, Component modalContent, boolean displayAsOverlay, String title, boolean showCloseIcon) {
+	public CloseableModalController(WindowControl wControl, String closeButtonText, Component modalContent, boolean displayAsOverlay,
+			String title, boolean showCloseIcon, boolean closeable) {
 		super(wControl);
+		this.closeable = closeable;
 		final Panel guiMsgPlace = new Panel("guimessage_place");
 		myContent = new VelocityContainer("closeablewrapper", VELOCITY_ROOT + "/index.html", null, this) {
 			public void validate(UserRequest ureq, ValidationResult vr) {
@@ -123,7 +137,12 @@ public class CloseableModalController extends DefaultController {
 
 		setInitialComponent(myContent);
 	}
-	
+
+	@Override
+	public boolean isCloseable() {
+		return closeable;
+	}
+
 	/**
 	 * Suppress the form warning on close. This can be used for selection
 	 * popup.

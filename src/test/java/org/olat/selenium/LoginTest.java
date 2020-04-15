@@ -33,14 +33,17 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.core.util.CodeHelper;
+import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.Participant;
 import org.olat.selenium.page.Student;
 import org.olat.selenium.page.core.AdministrationMessagesPage;
+import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.user.RegistrationPage;
 import org.olat.test.rest.UserRestClient;
 import org.olat.user.restapi.UserVO;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
 import com.dumbster.smtp.SmtpMessage;
@@ -111,6 +114,39 @@ public class LoginTest extends Deployments {
 				.assertOnLoginPage();
 		//login
 		loginPage.loginAs(user.getLogin(), user.getPassword());
+	}
+	
+	
+	/**
+	 * Create a new user and she logs in with the REST API and after
+	 * uses the REST security token to jump directly in "My courses".
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void loginWithRestToken()
+	throws IOException, URISyntaxException {
+		//create a random user
+		UserRestClient adminClient = new UserRestClient(deploymentUrl);
+		UserVO user = adminClient.createRandomUser();
+
+		// user log in via REST
+		UserRestClient userClient = new UserRestClient(adminClient.getRestURI(), user.getLogin(), user.getPassword());
+		String token = userClient.login(user.getLogin(), user.getPassword());
+
+		// user uses its x-token to enter OpenOlat
+		String restRequest = deploymentUrl.toString() + "url/MyCoursesSite/0/My/0"
+				+ "?" + RestSecurityHelper.SEC_TOKEN + "=" + token;
+		URL restUrl = new URL(restRequest);
+		browser.navigate().to(restUrl);
+		
+		LoginPage loginPage = new LoginPage(browser);
+		loginPage.assertLoggedIn(user);
+		
+		By myEntriesBy = By.cssSelector("#o_main.o_sel_my_repository_entries");
+		OOGraphene.waitElement(myEntriesBy, browser);
 	}
 	
 	/**

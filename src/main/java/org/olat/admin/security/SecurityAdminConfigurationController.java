@@ -52,7 +52,8 @@ public class SecurityAdminConfigurationController extends FormBasicController {
 	
 	private MultipleSelectionElement topFrameEl;
 	private MultipleSelectionElement forceDownloadEl;
-	
+
+	private MultipleSelectionElement csrfEl;
 	private MultipleSelectionElement strictTransportSecurityEl;
 	private MultipleSelectionElement xContentTypeOptionsEl;
 	private MultipleSelectionElement xFrameOptionsSameoriginEl;
@@ -132,6 +133,15 @@ public class SecurityAdminConfigurationController extends FormBasicController {
 		xContentTypeOptionsEl.addActionListener(FormEvent.ONCHANGE);
 		if(cspModule.isXContentTypeOptionsEnabled()) {
 			xContentTypeOptionsEl.select("on", true);
+		}
+		
+		FormLayoutContainer csrfCont = FormLayoutContainer.createDefaultFormLayout("csrf", getTranslator());
+		formLayout.add(csrfCont);
+		csrfCont.setFormDescription(translate("sec.description.csrf"));
+		
+		csrfEl = uifactory.addCheckboxesHorizontal("sec.csrf", "sec.csrf", csrfCont, keys, values);
+		if(cspModule.isCsrfEnabled()) {
+			csrfEl.select("on", true);
 		}
 		
 		FormLayoutContainer cspCont = FormLayoutContainer.createDefaultFormLayout("csp", getTranslator());
@@ -220,6 +230,7 @@ public class SecurityAdminConfigurationController extends FormBasicController {
 		cspModule.setxContentTypeOptions(xContentTypeOptionsEl.isAtLeastSelected(1));
 		folderModule.setForceDownload(forceDownloadEl.isAtLeastSelected(1));
 		cspModule.setContentSecurityPolicy(contentSecurityPolicyEl.isAtLeastSelected(1));
+		cspModule.setCsrfEnabled(csrfEl.isAtLeastSelected(1));
 		
 		boolean cspEnabled = contentSecurityPolicyEl.isAtLeastSelected(1);
 		cspModule.setContentSecurityPolicy(cspEnabled);

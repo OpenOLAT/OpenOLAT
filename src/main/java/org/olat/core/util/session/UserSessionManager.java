@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -34,6 +35,7 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.control.Disposable;
@@ -45,7 +47,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.HistoryManager;
 import org.olat.core.logging.AssertException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.OlatLoggingAction;
@@ -75,6 +76,7 @@ public class UserSessionManager implements GenericEventListener {
 	
 	private static final Logger log = Tracing.createLoggerFor(UserSessionManager.class);
 	private static final String USERSESSIONKEY = UserSession.class.getName();
+	private static final String CSRFSESSIONTOKEN = "user-session-csrf-token";
 	
 	public static final OLATResourceable ORES_USERSESSION = OresHelper.createOLATResourceableType(UserSession.class);
 	public static final String STORE_KEY_KILLED_EXISTING_SESSION = "killedExistingSession";
@@ -115,7 +117,12 @@ public class UserSessionManager implements GenericEventListener {
 			synchronized (session) {//o_clusterOK by:fj
 				us = (UserSession) session.getAttribute(USERSESSIONKEY);
 				if (us == null) {
-					us = new UserSession();
+					String csrfToken = (String)session.getAttribute(CSRFSESSIONTOKEN);
+					if(csrfToken == null) {
+						csrfToken = UUID.randomUUID().toString();
+						session.setAttribute(CSRFSESSIONTOKEN, csrfToken);
+					}
+					us = new UserSession(csrfToken);
 					session.setAttribute(USERSESSIONKEY, us); // triggers the
 					// valueBoundEvent -> nothing
 					// more to do here

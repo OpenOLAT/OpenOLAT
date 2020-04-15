@@ -47,6 +47,7 @@ public class CSPModule extends AbstractSpringModule {
 	public static final String DEFAULT_CONTENT_SECURITY_POLICY_OBJECT_SRC = "'self'";
 	public static final String DEFAULT_CONTENT_SECURITY_POLICY_PLUGIN_TYPE_SRC = null;
 	
+	private static final String CSRF = "csrf";
 	private static final String FORCE_TOP_FRAME = "forceTopFrame";
 	private static final String X_FRAME_OPTIONS_SAMEORIGIN = "xFrameOptionsSameOrigin";
 	private static final String STRICT_TRANSPORT_SECURITY = "strictTransportSecurity";
@@ -65,6 +66,8 @@ public class CSPModule extends AbstractSpringModule {
 	private static final String CONTENT_SECURITY_POLICY_OBJECT_SRC = "base.security.contentSecurityPolicy.objectSrc";
 	private static final String CONTENT_SECURITY_POLICY_PLUGIN_TYPE = "base.security.contentSecurityPolicy.pluginType";
 
+	@Value("${base.security.csrf:disabled}")
+	private String csrf;
 	@Value("${base.security.frameOptionsSameOrigine:enabled}")
 	private String xFrameOptionsSameorigin;
 	@Value("${base.security.strictTransportSecurity:enabled}")
@@ -119,6 +122,10 @@ public class CSPModule extends AbstractSpringModule {
 		String enabled = getStringPropertyValue(X_FRAME_OPTIONS_SAMEORIGIN, true);
 		if(StringHelper.containsNonWhitespace(enabled)) {
 			xFrameOptionsSameorigin = enabled;
+		}
+		enabled = getStringPropertyValue(CSRF, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			csrf = enabled;
 		}
 		enabled = getStringPropertyValue(STRICT_TRANSPORT_SECURITY, true);
 		if(StringHelper.containsNonWhitespace(enabled)) {
@@ -189,6 +196,16 @@ public class CSPModule extends AbstractSpringModule {
 	public void setForceTopFrame(boolean enable) {
 		String enabled = enable ? "enabled" : "disabled";
 		setStringProperty(FORCE_TOP_FRAME, enabled, true);
+	}
+	
+	public boolean isCsrfEnabled() {
+		return "enabled".equals(csrf);
+	}
+	
+	public void setCsrfEnabled(boolean enable) {
+		String enabled = enable ? "enabled" : "disabled";
+		csrf = enabled;
+		setStringProperty(CSRF, enabled, true);
 	}
 
 	public boolean isXFrameOptionsSameoriginEnabled() {

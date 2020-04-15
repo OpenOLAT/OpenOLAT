@@ -399,7 +399,7 @@ public class PersistenceHelper {
 	public static String extractString(Object[] results, int pos) {
 		if(results == null || pos >= results.length ) return null;
 		Object obj = results[pos];
-		return obj == null ? null : obj.toString();
+		return obj == null ? null : (obj instanceof String ? (String)obj : obj.toString());
 	}
 	
 	public static boolean extractBoolean(Object[] results, int pos, boolean def) {

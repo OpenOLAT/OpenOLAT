@@ -72,7 +72,7 @@ public class MessageWindowController extends DefaultChiefController {
 		Translator trans = Util.createPackageTranslator(MessageWindowController.class, ureq.getLocale());
 		VelocityContainer msg = new VelocityContainer("olatmain", VELOCITY_ROOT + "/message.html", trans, this);
 		CSPModule securityModule = CoreSpringFactory.getImpl(CSPModule.class);
-		msg.contextPut("enforceTopFrame", new Boolean(securityModule.isForceTopFrame()));
+		msg.contextPut("enforceTopFrame", Boolean.valueOf(securityModule.isForceTopFrame()));
 		msg.contextPut("buildversion", Settings.getVersion());
 		msg.contextPut("detailedmessage", message);					
 		if(supportEmail != null) {
@@ -80,7 +80,7 @@ public class MessageWindowController extends DefaultChiefController {
 		}
 
 		Windows ws = Windows.getWindows(ureq);
-		WindowBackOffice wbo = ws.getWindowManager().createWindowBackOffice("messagewindow", this, new WindowSettings());
+		WindowBackOffice wbo = ws.getWindowManager().createWindowBackOffice("messagewindow", ureq.getUserSession().getCsrfToken(), this, new WindowSettings());
 		Window w = wbo.getWindow();
 		
 		msg.put("jsAndCssC", w.getJsCssRawHtmlHeader());

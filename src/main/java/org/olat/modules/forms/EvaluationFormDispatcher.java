@@ -41,7 +41,10 @@ import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.core.gui.media.ServletUtil;
+import org.olat.core.gui.render.StringOutput;
 import org.olat.core.helpers.Settings;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -77,7 +80,7 @@ public class EvaluationFormDispatcher implements Dispatcher {
 	
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		log.debug("Dispatch survey request: " + request.getRequestURI());
+		log.debug("Dispatch survey request: {}", request.getRequestURI());
 		
 		EvaluationFormParticipationIdentifier identifier = getIdentifier(request);
 		if (identifier == null) {
@@ -92,7 +95,7 @@ public class EvaluationFormDispatcher implements Dispatcher {
 			uriPrefix = uriPrefix + identifier.getType() + "/";
 			ureq = new UserRequestImpl(uriPrefix, request, response);
 		} catch(NumberFormatException nfe) {
-			log.debug("Bad Request "+request.getPathInfo());
+			log.debug("Bad Request {}", request.getPathInfo());
 			DispatcherModule.sendBadRequest(request.getPathInfo(), response);
 			return;
 		}
@@ -115,25 +118,46 @@ public class EvaluationFormDispatcher implements Dispatcher {
 				.getImpl(EvaluationFormStandaloneProviderFactory.class)
 				.getProvider(participation.getSurvey().getIdentifier().getOLATResourceable());
 		if (participation.getExecutor().equals(usess.getIdentity()) && standaloneProvider.hasBusinessPath(participation)) {
-			ChiefController chiefController = Windows.getWindows(usess).getChiefController();
-			WindowBackOffice windowBackOffice = chiefController.getWindow().getWindowBackOffice();
-			WindowControl wControl = chiefController.getWindowControl();
 			String path = standaloneProvider.getBusinessPath(participation);
-			NewControllerFactory.getInstance().launch(path, ureq, wControl);	
-			Window w = windowBackOffice.getWindow();
-			log.debug("Dispatch survey request by window " + w.getInstanceId());
-			w.dispatchRequest(ureq, true);
-			chiefController.resetReload();
+			dispatchAuthenticated(ureq, usess, path);
 		} else {
 			DispatcherModule.redirectToDefaultDispatcher(response);
 		}
 	}
+	
+	private void dispatchAuthenticated(UserRequest ureq, UserSession usess, String path) {
+		ChiefController chiefController = Windows.getWindows(usess).getChiefController(ureq);
+		if(chiefController == null) {
+			// not yet checked
+			String requestUri = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(path);
+			try(StringOutput clientSideWindowCheck = new StringOutput()) {
+				clientSideWindowCheck.append("<!DOCTYPE html>\n<html><head><title>Reload</title><script>")
+					.append("window.location.replace('").append(requestUri).append("?");
+				clientSideWindowCheck
+					.append("oow=' + window.name").append(");")
+					.append("</script></head><body></body></html>");
+				ServletUtil.serveStringResource(ureq.getHttpResp(), clientSideWindowCheck);
+			} catch(IOException e) {
+				log.error("", e);
+			}
+			return;
+		}
+		
+		WindowBackOffice windowBackOffice = chiefController.getWindow().getWindowBackOffice();
+		WindowControl wControl = chiefController.getWindowControl();
+		NewControllerFactory.getInstance().launch(path, ureq, wControl);
 
+		Window w = windowBackOffice.getWindow();
+		log.debug("Dispatch survey request by window {}", w.getInstanceId());
+		w.dispatchRequest(ureq, true);
+		chiefController.resetReload();
+	}
+	
 	private void dispatchValidUnauthenticated(UserRequest ureq) {
 		Windows windows = Windows.getWindows(ureq);
 		Window window = windows.getWindow(ureq);
 		window.dispatchRequest(ureq);
-		log.debug("Dispatch survey request by window " + window.getInstanceId());
+		log.debug("Dispatch survey request by window {}", window.getInstanceId());
 	}
 	
 	private void dispatchUnautenticated(UserRequest ureq, EvaluationFormParticipationIdentifier identifier, String uriPrefix) {
@@ -154,13 +178,13 @@ public class EvaluationFormDispatcher implements Dispatcher {
 				ChiefController cc = new BaseFullWebappController(ureq, bfwcParts);
 				Window window = cc.getWindow();
 				window.setUriPrefix(uriPrefix);
-				windows.registerWindow(window);
-				windows.setChiefController(cc);
+				ureq.overrideWindowComponentID(window.getDispatchID());
+				windows.registerWindow(cc);
 			}
 		}
 
 		windows.getWindowManager().setAjaxWanted(ureq);
-		ChiefController chiefController = windows.getChiefController();
+		ChiefController chiefController = windows.getChiefController(ureq);
 		try {
 			WindowControl wControl = chiefController.getWindowControl();
 			NewControllerFactory.getInstance().launch(ureq, wControl);	

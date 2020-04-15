@@ -54,7 +54,7 @@ public class JSRedirectWindowController extends DefaultChiefController {
 		msg.contextPut("callbackUrl", callbackUrl);
 		
 		Windows ws = Windows.getWindows(ureq);
-		WindowBackOffice wbo = ws.getWindowManager().createWindowBackOffice("jsredirectwindow", this, new WindowSettings());
+		WindowBackOffice wbo = ws.getWindowManager().createWindowBackOffice("jsredirectwindow", ureq.getUserSession().getCsrfToken(), this, new WindowSettings());
 		Window w = wbo.getWindow();
 		msg.contextPut("theme", w.getGuiTheme());
 		w.setContentPane(msg);

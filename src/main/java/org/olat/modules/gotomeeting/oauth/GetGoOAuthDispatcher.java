@@ -71,7 +71,7 @@ public class GetGoOAuthDispatcher implements Dispatcher {
 			ureq = new UserRequestImpl(uriPrefix, request, response);
 		} catch(NumberFormatException nfe) {
 			if(log.isDebugEnabled()){
-				log.debug("Bad Request "+request.getPathInfo());
+				log.debug("Bad Request {}", request.getPathInfo());
 			}
 			DispatcherModule.sendBadRequest(request.getPathInfo(), response);
 			return;

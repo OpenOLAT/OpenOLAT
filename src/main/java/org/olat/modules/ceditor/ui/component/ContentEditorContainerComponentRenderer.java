@@ -56,7 +56,7 @@ public class ContentEditorContainerComponentRenderer extends AbstractContentEdit
 	
 	private void renderPreviewContainer(Renderer renderer, StringOutput sb, ContentEditorContainerComponent cmp, URLBuilder containerUbu,
 			Translator translator, RenderResult renderResult, String[] args) {
-		Renderer fr = Renderer.getInstance(cmp, translator, containerUbu, new RenderResult(), renderer.getGlobalSettings());
+		Renderer fr = Renderer.getInstance(cmp, translator, containerUbu, new RenderResult(), renderer.getGlobalSettings(), renderer.getCsrfToken());
 
 		sb.append("<div id='o_c").append(cmp.getDispatchID()).append("' data-oo-page-fragment='").append(cmp.getComponentName()).append("'")
 		  .append(" data-oo-page-element-id='").append(cmp.getElementId()).append("'")

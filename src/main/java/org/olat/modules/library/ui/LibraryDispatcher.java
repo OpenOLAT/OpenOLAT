@@ -91,9 +91,7 @@ public class LibraryDispatcher  implements Dispatcher {
 			//or authors copy-pasted links to the content.
 			//showing redscreens for non valid URL is wrong instead
 			//a 404 message must be shown -> e.g. robots correct their links.
-			if(log.isDebugEnabled()){
-				log.debug("Bad Request "+request.getPathInfo());
-			}
+			log.debug("Bad Request {}", request.getPathInfo());
 			DispatcherModule.sendBadRequest(request.getPathInfo(), response);
 			return;
 		}
@@ -122,7 +120,7 @@ public class LibraryDispatcher  implements Dispatcher {
 				int loginStatus = AuthHelper.doAnonymousLogin(ureq, guestLoc);
 				if ( loginStatus == AuthHelper.LOGIN_OK) {
 					//logged in as anonymous user, continue
-					String url = getRedirectToURL(usess);
+					String url = getRedirectToURL(usess, ureq);
 					DispatcherModule.redirectTo(response, url);
 				} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
 					DispatcherModule.redirectToServiceNotAvailable(response);
@@ -186,12 +184,12 @@ public class LibraryDispatcher  implements Dispatcher {
 		this.libraryBeanId = beanId;
 	}
 	
-	private String getRedirectToURL(UserSession usess) {
-		ChiefController cc = Windows.getWindows(usess).getChiefController();
+	private String getRedirectToURL(UserSession usess, UserRequest ureq) {
+		ChiefController cc = Windows.getWindows(usess).getChiefController(ureq);
 		Window w = cc.getWindow();
 		
 		try(StringOutput sout = new StringOutput(30)) {
-			URLBuilder ubu = new URLBuilder("", w.getInstanceId(), String.valueOf(w.getTimestamp()));
+			URLBuilder ubu = new URLBuilder("", w.getInstanceId(), w.getTimestamp(), usess.getCsrfToken());
 			ubu.buildURI(sout, null, null);
 			return WebappHelper.getServletContextPath() + DispatcherModule.PATH_AUTHENTICATED + sout.toString();
 		} catch(IOException e) {

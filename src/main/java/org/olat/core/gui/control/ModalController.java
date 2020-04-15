@@ -17,39 +17,21 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.gui.render;
-
-import org.olat.core.gui.components.Component;
+package org.olat.core.gui.control;
 
 /**
  * 
- * Initial date: 21.03.2014<br>
+ * Initial date: 4 nov. 2019<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class EmptyURLBuilder extends URLBuilder {
+public interface ModalController {
+	
+	/**
+	 * Can the controller be closed because of reload, back button click...
+	 * 
+	 * @return true if the controller allowed closing
+	 */
+	public boolean isCloseable();
 
-	public EmptyURLBuilder() {
-		super(null, null, null, null);
-	}
-
-	@Override
-	public void buildURI(StringOutput buf, String[] keys, String[] values, int mode) {
-		// nothing to do
-	}
-
-	@Override
-	public void buildURI(StringOutput buf, String[] keys, String[] values, String modURI, int mode) {
-		// nothing to do
-	}
-
-	@Override
-	public void buildURI(StringOutput buf, String[] keys, String[] values) {
-		// nothing to do
-	}
-
-	@Override
-	public URLBuilder createCopyFor(Component source) {
-		return super.createCopyFor(source);
-	}
 }

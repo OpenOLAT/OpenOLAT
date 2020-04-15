@@ -6,22 +6,21 @@
 <meta name="google" content="notranslate" />
 <meta name="description" content="$r.translate("meta.description")" />
 <meta name="keywords" content="$r.translate("meta.keywords")" /> 
-<meta name="dcterms.creator" content="OpenOLAT - http://www.openolat.org" />
+<meta name="dcterms.creator" content="OpenOLAT - https://www.openolat.org" />
 <meta name="dcterms.subject" content="OpenOLAT - infinite learning - Your Open Source Learning Management System" />
-<meta name="dcterms.contributor" content="see http://www.openolat.org" />
+<meta name="dcterms.contributor" content="see https://www.openolat.org" />
 <meta name="dcterms.date" content="2010-03-16" />
 <meta name="dcterms.type" content="Interactive Resource" />
-<meta name="dcterms.identifier" content="http://www.openolat.org" />
-<meta name="dcterms.rights" content="http://www.openolat.org" />
+<meta name="dcterms.identifier" content="https://www.openolat.org" />
+<meta name="dcterms.rights" content="https://www.openolat.org" />
 ## hide toolbar on ios with minimal-ui
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-## <!-- IE cache -->
 <script>
-/* <![CDATA[ */ 
 var o_info = new Object();
 o_info.initialPageLoadFinished = false;
 o_info.o_winid = '$o_winid';
+window.name  = '$o_winid';
 #if($userJSON)o_info.o_user = $userJSON; #end 
 o_info.uriprefix="$r.relWinLink()";
 o_info.bc="$o_bc";
@@ -94,18 +93,16 @@ function o_mathjax(fct_success) {
 $!analytics
 ##
 
-/* ]]> */
-</script>
-<script>
-/* <![CDATA[ */ 
 try{
 	if(o_info.startBusinessPath != null && o_info.startBusinessPath.length > 0
 			&& window.history && !(typeof window.history === "undefined") && window.history.pushState) {
 		window.history.pushState('', document.title, o_info.startBusinessPath);
 		o_info.startBusinessPath = null;
 	}
+	if (document.location.href.indexOf('oow') != -1) {
+		window.history.replaceState(window.history.state, document.title, window.location.href.split("?")[0]);
+	}
 } catch(e) { }
-/* ]]> */
 </script>
 ## jQuery libraries
 <script src='$r.staticLink("js/jquery/jquery-3.4.1.min.js")'></script>
@@ -152,7 +149,6 @@ try{
 	<link href='$r.staticLink("js/js.plugins.min.css")' rel="stylesheet" />
 #end
 <script>
-/* <![CDATA[ */ 
 	jQuery.noConflict();
 	
 	## Initialize js translator factory with the js translator mapper path
@@ -161,9 +157,26 @@ try{
 	## History and back button support
 	jQuery(window).on("popstate", function(e) {
 		if(e.originalEvent.state && e.originalEvent.state.businessPath) {
-			window.location.href = e.originalEvent.state.businessPath;
+			if (e.originalEvent.state.businessPath.indexOf('oow') == -1) {
+				var windowedPath = e.originalEvent.state.businessPath + '?oow=' + window.name;
+				window.history.replaceState(e.originalEvent.state, document.title, windowedPath);
+				window.location.reload();
+			} else {
+				window.location.href = e.originalEvent.state.businessPath;
+			}
 		}
 	});
+	
+	var closing = function(e) {
+		if(navigator.sendBeacon) {
+			var beaconUrl = '$r.formURI("close-window")';
+			if(beaconUrl.indexOf("/dmz/") == -1) {
+				navigator.sendBeacon(beaconUrl, null);
+			}
+		}
+	};
+	window.onbeforeunload = closing;
+	window.onunload = closing;
 ## same configuration in 
 jQuery(function() {
 	if ((window.unsafeWindow == null ? window : unsafeWindow).MathJax == null) {
@@ -173,7 +186,6 @@ jQuery(function() {
 		}
 	}
 });
-/* ]]> */
 </script>
 
 ## LAYOUT
@@ -243,7 +255,7 @@ $r.renderForce("development")
 ## IE can't render empty div's properly which results in an ugly white bar.
 <div id="o_messages" class="hidden-print">$r.renderForce("guimessage")</div>
 ## ---- END #o_messages ---
-	
+<a id='o_top' aria-hidden="true"></a>	
 ## ---- START #o_header ---
 #if($screenMode.standardScreen)
 <div id="o_header_wrapper"> 
@@ -259,7 +271,7 @@ $r.renderForce("development")
 </div>
 #end
 ## ---- END #o_header ---	
-<a id='o_top' aria-hidden='true'></a>
+
 ## ---- START #o_navbar ---
 #if($screenMode.standardScreen)
 <div id="o_offcanvas_right" class="o_navbar o_navbar-offcanvas " role="navigation">
