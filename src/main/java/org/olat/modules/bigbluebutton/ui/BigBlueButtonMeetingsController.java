@@ -91,6 +91,7 @@ public class BigBlueButtonMeetingsController extends FormBasicController {
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.start));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.end));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BMeetingsCols.server, new ServerCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
 
 		upcomingTableModel = new BigBlueButtonMeetingTableModel(columnsModel, getLocale());
@@ -110,6 +111,7 @@ public class BigBlueButtonMeetingsController extends FormBasicController {
 		}
 		pastColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.start));
 		pastColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.end));
+		pastColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BMeetingsCols.server, new ServerCellRenderer()));
 		pastColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
 
 		pastTableModel = new BigBlueButtonMeetingTableModel(pastColumnsModel, getLocale());

@@ -61,6 +61,10 @@ public class BigBlueButtonServerInfos {
 		return server;
 	}
 	
+	public int getNumberOfMeetings() {
+		return meetingsInfos.size();
+	}
+	
 	public List<BigBlueButtonMeetingInfos> getMeetingsInfos() {
 		return meetingsInfos;
 	}

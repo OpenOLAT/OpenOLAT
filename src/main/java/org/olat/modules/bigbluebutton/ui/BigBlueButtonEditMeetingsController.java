@@ -138,6 +138,7 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.start));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.end));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.template));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BMeetingsCols.server, new ServerCellRenderer()));
 		if(!readOnly) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
