@@ -84,6 +84,7 @@ public class BigBlueButtonAdminMeetingsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.start));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.end));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.template));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.server, new ServerCellRenderer()));
 		FlexiCellRenderer renderer = new StaticFlexiCellRenderer("resource", new TextFlexiCellRenderer());
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.resource.i18nHeaderKey(), BMeetingsCols.resource.ordinal(), "resource",
 				true, BMeetingsCols.resource.name(), renderer));

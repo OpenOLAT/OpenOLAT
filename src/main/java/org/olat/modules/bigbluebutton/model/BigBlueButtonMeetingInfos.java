@@ -19,6 +19,8 @@
  */
 package org.olat.modules.bigbluebutton.model;
 
+import java.util.Date;
+
 /**
  * 
  * Initial date: 8 avr. 2020<br>
@@ -29,6 +31,9 @@ public class BigBlueButtonMeetingInfos {
 	
 	private final String meetingId;
 	private final boolean running;
+	private final boolean hasBeenForciblyEnded;
+	
+	private Date startTime;
 	
 	private long videoCount;
 	private long listenerCount;
@@ -41,12 +46,13 @@ public class BigBlueButtonMeetingInfos {
 	private boolean breakout;
 	
 	private long maxUsers;
-	
+
 	private double load;
 	
-	public BigBlueButtonMeetingInfos(String meetingId, boolean running) {
+	public BigBlueButtonMeetingInfos(String meetingId, boolean running, boolean hasBeenForciblyEnded) {
 		this.meetingId = meetingId;
 		this.running = running;
+		this.hasBeenForciblyEnded = hasBeenForciblyEnded;
 	}
 	
 	public String getMeetingId() {
@@ -55,6 +61,18 @@ public class BigBlueButtonMeetingInfos {
 	
 	public boolean isRunning() {
 		return running;
+	}
+
+	public boolean isHasBeenForciblyEnded() {
+		return hasBeenForciblyEnded;
+	}
+	
+	public Date getStartTime() {
+		return startTime;
+	}
+
+	public void setStartTime(Date startTime) {
+		this.startTime = startTime;
 	}
 
 	public long getVideoCount() {

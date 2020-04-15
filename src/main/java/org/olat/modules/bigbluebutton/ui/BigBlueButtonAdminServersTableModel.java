@@ -75,6 +75,8 @@ implements SortableFlexiTableDataModel<BigBlueButtonServerRow>, FilterableFlexiT
 			case url: return row.getUrl();
 			case status: return row.isEnabled();
 			case capacityFactor: return row.getCapacityFactor();
+			case numberMeetings:return allInstances
+					? row.getAllInstancesServerInfos().getNumberOfMeetings() : row.getServerInfos().getNumberOfMeetings();
 			case moderatorCount: return allInstances
 					? row.getAllInstancesServerInfos().getModeratorCount() : row.getServerInfos().getModeratorCount();
 			case participantCount: return allInstances
@@ -105,8 +107,9 @@ implements SortableFlexiTableDataModel<BigBlueButtonServerRow>, FilterableFlexiT
 	public enum ServersCols implements FlexiSortableColumnDef {
 		
 		url("table.header.server.url"),
-		status("table.header.server.enabled"),
+		status("table.header.server.status"),
 		capacityFactor("table.header.capacity.factor"),
+		numberMeetings("table.header.number.meetings"),
 		moderatorCount("table.header.moderator.count"),
 		participantCount("table.header.participant.count"),
 		listenerCount("table.header.listener.count"),

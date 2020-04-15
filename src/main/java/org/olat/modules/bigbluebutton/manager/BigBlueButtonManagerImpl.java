@@ -388,10 +388,10 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 		}
 		Collections.sort(serversInfos, new ServerLoadComparator());
 		
-		double load = serversInfos.get(0).getLoad();
+		long load = Math.round(serversInfos.get(0).getLoad());
 		List<BigBlueButtonServerInfos> sameLoadsServer = new ArrayList<>();
 		for(BigBlueButtonServerInfos serverInfos : serversInfos) {
-			if(serverInfos.getLoad() == load) {
+			if(Math.round(serverInfos.getLoad()) == load) {
 				sameLoadsServer.add(serverInfos);
 			}
 		}
@@ -433,14 +433,43 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 	private double calculateLoad(BigBlueButtonServer server, List<BigBlueButtonMeetingInfos> meetingsInfos) {
 		double load = 0.0d;
 		for(BigBlueButtonMeetingInfos meetingInfos:meetingsInfos) {
-			load += meetingInfos.getListenerCount() * 1.0d;
-			load += meetingInfos.getVideoCount() * 3.0d;
-			load += meetingInfos.getVoiceParticipantCount() * 2.0d;
+			load += calculateMeetingLoad(meetingInfos);
 		}
 		if(load > 0.0d
 				&& server.getCapacityFactory() != null
 				&& server.getCapacityFactory().doubleValue() > 1.0) {
 			load = load / server.getCapacityFactory().doubleValue();
+		}
+		return load;
+	}
+	
+	/**
+	 * 
+	 * @param meetingInfos The meeting to calculate the load
+	 * @return The load
+	 */
+	private double calculateMeetingLoad(BigBlueButtonMeetingInfos meetingInfos) {
+		double load = 0.0d;
+		Date now = new Date();
+		
+		Date startTime = meetingInfos.getStartTime();
+		// We assume that after 10 minutes that all users are in the room,
+		// before we take the max. users to better evaluate the load in the future 
+		if(!meetingInfos.isBreakout() && (startTime != null && (now.getTime() - startTime.getTime()) < 10 * 60 * 1000)) {
+			long maxUsers = meetingInfos.getMaxUsers();
+			if(maxUsers == 0) {
+				maxUsers = 1;// mathematical paranoia
+			}
+			load += maxUsers * 1.0d;
+			// count at least 3
+			long videoCount = Math.max(meetingInfos.getVideoCount(), 3);
+			load += videoCount * 3.0d;
+			long voiceCount = Math.max(meetingInfos.getVoiceParticipantCount(), (maxUsers / 4));
+			load += voiceCount * 2.0d;
+		} else {
+			load += meetingInfos.getListenerCount() * 1.0d;
+			load += meetingInfos.getVideoCount() * 3.0d;
+			load += meetingInfos.getVoiceParticipantCount() * 2.0d;
 		}
 		return load;
 	}

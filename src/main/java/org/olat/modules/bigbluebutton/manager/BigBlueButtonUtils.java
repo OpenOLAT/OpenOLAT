@@ -139,8 +139,10 @@ public class BigBlueButtonUtils {
     		Element meetingEl = (Element)meetingList.item(i);
     		String meetingId = getFirstElementValue(meetingEl, "meetingID");
     		String running = getFirstElementValue(meetingEl, "running");
+    		String hasBeenForciblyEnded = getFirstElementValue(meetingEl, "hasBeenForciblyEnded");
     		
-    		BigBlueButtonMeetingInfos meeting = new BigBlueButtonMeetingInfos(meetingId, "true".equals(running));
+    		BigBlueButtonMeetingInfos meeting = new BigBlueButtonMeetingInfos(meetingId,
+    				"true".equals(running), "true".equals(hasBeenForciblyEnded));
     		meetings.add(meeting);
     		
     		String videoCount = getFirstElementValue(meetingEl, "videoCount");
@@ -162,6 +164,9 @@ public class BigBlueButtonUtils {
     		
     		String maxUsers = getFirstElementValue(meetingEl, "maxUsers");
     		meeting.setMaxUsers(toLong(maxUsers));
+    		
+    		String startTime = getFirstElementValue(meetingEl, "startTime");
+    		meeting.setStartTime(toDate(startTime));
     	}
     	return meetings;
     }
@@ -173,7 +178,6 @@ public class BigBlueButtonUtils {
 			} catch (NumberFormatException e) {
 				log.error("Cannot parse this long: {0}", text, e);
 			}
-    		
     	}
     	return 0l;
     }
@@ -183,7 +187,6 @@ public class BigBlueButtonUtils {
     		Long time = Long.parseLong(val);
     		return new Date(time.longValue());
     	}
-    	
     	return null;
     }
     
