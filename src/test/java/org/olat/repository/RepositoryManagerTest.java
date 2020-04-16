@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import org.apache.logging.log4j.Logger;
 import org.hibernate.LazyInitializationException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -49,7 +50,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.resource.OresHelper;
@@ -63,6 +63,12 @@ import org.olat.repository.model.RepositoryEntryMembership;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.Offer;
+import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.resource.accesscontrol.manager.ACMethodDAO;
+import org.olat.resource.accesscontrol.model.AccessMethod;
+import org.olat.resource.accesscontrol.model.TokenAccessMethod;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,7 +101,11 @@ public class RepositoryManagerTest extends OlatTestCase {
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
+	private ACService acService;
+	@Autowired
 	private MarkManager markManager;
+	@Autowired
+	private ACMethodDAO acMethodManager;
 	@Autowired
 	private RepositoryEntryLifecycleDAO lifecycleDao;
 
@@ -418,11 +428,12 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("webdav-courses-2");
 		RepositoryEntry course = JunitTestHelper.deployBasicCourse(owner);
 		markManager.setMark(course, participant, null, "[RepositoryEntry:" + course.getKey() + "]");
+		repositoryEntryRelationDao.addRole(participant, course, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
 		//participant bookmarks
 		Roles roles = Roles.userRoles();
-		List<RepositoryEntry> courses = repositoryManager.getLearningResourcesAsBookmark(participant, roles, "CourseModule", 0, -1);
+		List<RepositoryEntry> courses = repositoryManager.getLearningResourcesAsBookmarkedMember(participant, roles, "CourseModule", 0, -1);
 		Assert.assertNotNull(courses);
 		Assert.assertEquals(1, courses.size());
 	}
@@ -437,14 +448,71 @@ public class RepositoryManagerTest extends OlatTestCase {
 		RepositoryEntry course = JunitTestHelper.deployBasicCourse(owner);
 		markManager.setMark(course, participant, null, "[RepositoryEntry:" + course.getKey() + "]");
 		dbInstance.commitAndCloseSession();
-		repositoryManager.setAccess(course, RepositoryEntryStatusEnum.preparation, false, false);
+		repositoryManager.setAccess(course, RepositoryEntryStatusEnum.published, false, false);
 		dbInstance.commitAndCloseSession();
 		
 		//participant bookmarks
 		Roles roles = Roles.userRoles();
-		List<RepositoryEntry> courses = repositoryManager.getLearningResourcesAsBookmark(participant, roles, "CourseModule", 0, -1);
+		List<RepositoryEntry> courses = repositoryManager.getLearningResourcesAsBookmarkedMember(participant, roles, "CourseModule", 0, -1);
 		Assert.assertNotNull(courses);
 		Assert.assertEquals(0, courses.size());
+	}
+	
+	/**
+	 * Check that the method return only courses within the permissions of the user.
+	 */
+	@Test
+	public void getLearningResourcesAsBookmark_notPublished() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("webdav-courses-1");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("webdav-courses-2");
+		RepositoryEntry course = JunitTestHelper.deployBasicCourse(owner);
+		markManager.setMark(course, participant, null, "[RepositoryEntry:" + course.getKey() + "]");
+		repositoryEntryRelationDao.addRole(participant, course, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		repositoryManager.setAccess(course, RepositoryEntryStatusEnum.coachpublished, false, false);
+		dbInstance.commitAndCloseSession();
+		
+		//participant bookmarks
+		Roles roles = Roles.userRoles();
+		List<RepositoryEntry> courses = repositoryManager.getLearningResourcesAsBookmarkedMember(participant, roles, "CourseModule", 0, -1);
+		Assert.assertNotNull(courses);
+		Assert.assertEquals(0, courses.size());
+	}
+	
+	/**
+	 * Check that the method return only courses within the permissions of the user.
+	 */
+	@Test
+	public void getLearningResourcesAsBookmark_noPermissionsBookable() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("webdav-courses-1");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("webdav-courses-2");
+		RepositoryEntry course = JunitTestHelper.deployBasicCourse(owner);
+		markManager.setMark(course, participant, null, "[RepositoryEntry:" + course.getKey() + "]");
+		repositoryManager.setAccess(course, false, false, true, RepositoryEntryAllowToLeaveOptions.never, null);
+		repositoryManager.setAccess(course, RepositoryEntryStatusEnum.published, false, false);
+		
+		//create and save an offer
+		Offer offer = acService.createOffer(course.getOlatResource(), course.getDisplayname());
+		offer = acService.save(offer);
+		dbInstance.commitAndCloseSession();
+
+		//create a link offer to method
+		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(TokenAccessMethod.class);
+		AccessMethod method = methods.get(0);
+		OfferAccess access = acMethodManager.createOfferAccess(offer, method);
+		acMethodManager.save(access);
+
+		dbInstance.commitAndCloseSession();
+
+		//participant bookmarks
+		Roles roles = Roles.userRoles();
+		List<RepositoryEntry> courses = repositoryManager.getLearningResourcesAsBookmarkedMember(participant, roles, "CourseModule", 0, -1);
+		Assert.assertNotNull(courses);
+		Assert.assertEquals(0, courses.size());
+		
+		// beacause it triggers issues with other tests
+		repositoryManager.setAccess(course, RepositoryEntryStatusEnum.preparation, false, false);
+		
 	}
 	
 	@Test

@@ -1741,7 +1741,17 @@ public class RepositoryManager {
 				.getResultList();
 	}
 
-	public List<RepositoryEntry> getLearningResourcesAsBookmark(Identity identity, Roles roles, String type, int firstResult, int maxResults) {
+	/**
+	 * This method only returns entries with a valid membership.
+	 * 
+	 * @param identity The identity
+	 * @param roles The roles of the identity
+	 * @param type The type of resource to search for
+	 * @param firstResult The first result
+	 * @param maxResults The max. numbers of results to return or -1 if all
+	 * @return A list of repository entries
+	 */
+	public List<RepositoryEntry> getLearningResourcesAsBookmarkedMember(Identity identity, Roles roles, String type, int firstResult, int maxResults) {
 		if(roles.isGuestOnly()) {
 			return Collections.emptyList();
 		}
@@ -1756,7 +1766,7 @@ public class RepositoryManager {
 		  .append(" ) ")
 		  .append(" and res.resName=:resourceType")
 		  .append(" and exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership")
-		  .append("   where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity.key=:identityKey")
+		  .append("   where rel.entry.key=v.key and rel.group.key=baseGroup.key and membership.group.key=baseGroup.key and membership.identity.key=:identityKey")
 		  .append("   and (")
 		  .append("     (")
 		  .append("      membership.role ").in(OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, GroupRoles.owner).append(" and v.status").in(RepositoryEntryStatusEnum.preparationToClosed())
@@ -1764,9 +1774,6 @@ public class RepositoryManager {
 		  .append("      membership.role ").in(GroupRoles.coach).append(" and v.status").in(RepositoryEntryStatusEnum.coachPublishedToClosed())
 		  .append("     ) or (")
 		  .append("      membership.role ").in(GroupRoles.participant).append(" and v.status").in(RepositoryEntryStatusEnum.publishedAndClosed())
-		  .append("     ) or (")
-		  .append("      (v.allUsers=true or v.bookable=true) and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed())
-		  .append("       and membership.role not ").in(OrganisationRoles.invitee, OrganisationRoles.guest, GroupRoles.waiting)
 		  .append("     )")
 		  .append("   )")
 		  .append(" )");
