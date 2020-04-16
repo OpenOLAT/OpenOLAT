@@ -74,6 +74,7 @@ implements SortableFlexiTableDataModel<BigBlueButtonMeeting> {
 			case template: return getTemplate(row);
 			case server: return getServer(row);
 			case resource: return getResourceName(row);
+			case edit: return row.isPermanent() || row.getServer() == null;
 			default: return "ERROR";
 		}
 	}
@@ -111,7 +112,8 @@ implements SortableFlexiTableDataModel<BigBlueButtonMeeting> {
 		end("meeting.end"),
 		template("table.header.template"),
 		server("table.header.server"),
-		resource("meeting.resource");
+		resource("meeting.resource"),
+		edit("edit");
 		
 		private final String i18nHeaderKey;
 		

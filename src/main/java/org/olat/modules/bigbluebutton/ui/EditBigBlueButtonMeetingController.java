@@ -68,6 +68,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 
 	private final Mode mode;
 	private final String subIdent;
+	private final boolean editable;
 	private final RepositoryEntry entry;
 	private final boolean withSaveButtons;
 	private final BusinessGroup businessGroup;
@@ -88,6 +89,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			List<BigBlueButtonTemplatePermissions> permissions, Mode mode) {
 		super(ureq, wControl);
 		withSaveButtons = true;
+		editable = true;
 		
 		this.mode = mode;
 		this.entry = entry;
@@ -109,6 +111,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		businessGroup = meeting.getBusinessGroup();
 		this.meeting = meeting;
 		this.permissions = permissions;
+		editable = meeting.getServer() == null || meeting.isPermanent();
 		templates = bigBlueButtonManager.getTemplates();
 		
 		initForm(ureq);
@@ -116,18 +119,26 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		
+		if(!editable) {
+			setFormWarning("warning.meeting.started");
+		}
+		
 		String name = meeting == null ? "" : meeting.getName();
 		nameEl = uifactory.addTextElement("meeting.name", "meeting.name", 128, name, formLayout);
 		nameEl.setMandatory(true);
-		if(!StringHelper.containsNonWhitespace(name)) {
+		nameEl.setEnabled(editable);
+		if(editable && !StringHelper.containsNonWhitespace(name)) {
 			nameEl.setFocus(true);
 		}
 		
 		String description = meeting == null ? "" : meeting.getDescription();
 		descriptionEl = uifactory.addTextAreaElement("meeting.description", "meeting.description", 2000, 4, 72, false, false, description, formLayout);
-
+		descriptionEl.setEnabled(editable);
+		
 		String welcome = meeting == null ? "" : meeting.getWelcome();
 		welcomeEl = uifactory.addRichTextElementForStringDataMinimalistic("meeting.welcome", "meeting.welcome", welcome, 8, 60, formLayout, getWindowControl());
+		welcomeEl.setEnabled(editable);
 		
 		Long selectedTemplateKey = meeting == null || meeting.getTemplate() == null
 				? null : meeting.getTemplate().getKey();
@@ -144,6 +155,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		templateEl.addActionListener(FormEvent.ONCHANGE);
 		templateEl.setMandatory(true);
 		templateEl.setElementCssClass("o_omit_margin");
+		templateEl.setEnabled(editable);
 		boolean templateSelected = false;
 		if(selectedTemplateKey != null) {
 			String currentTemplateId = selectedTemplateKey.toString();
@@ -157,6 +169,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		if(!templateSelected && templatesKeys.length > 0) {
 			templateEl.select(templatesKeys[0], true);
 		}
+		
 		openCalLink = uifactory.addFormLink("calendar.open", formLayout);
 		openCalLink.setIconLeftCSS("o_icon o_icon-fw o_icon_calendar");
 		updateTemplateInformations();
@@ -166,9 +179,11 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			startDateEl = uifactory.addDateChooser("meeting.start", "meeting.start", startDate, formLayout);
 			startDateEl.setMandatory(true);
 			startDateEl.setDateChooserTimeEnabled(true);
+			startDateEl.setEnabled(editable);
 			
 			String leadtime = meeting == null ? null : Long.toString(meeting.getLeadTime());
 			leadTimeEl = uifactory.addTextElement("meeting.leadTime", 8, leadtime, formLayout);
+			leadTimeEl.setEnabled(editable);
 			
 			Date endDate = meeting == null ? null : meeting.getEndDate();
 			if (endDate == null && startDate != null) {
@@ -182,16 +197,20 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			endDateEl.setMandatory(true);
 			endDateEl.setDefaultValue(startDateEl);
 			endDateEl.setDateChooserTimeEnabled(true);
+			endDateEl.setEnabled(editable);
 			
 			String followup = meeting == null ? null : Long.toString(meeting.getFollowupTime());
 			followupTimeEl = uifactory.addTextElement("meeting.followupTime", 8, followup, formLayout);
+			followupTimeEl.setEnabled(editable);
 		}
 		
 		if(withSaveButtons) {
 			FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 			formLayout.add("buttons", buttonLayout);
 			uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
-			uifactory.addFormSubmitButton("save", buttonLayout);
+			if(editable) {
+				uifactory.addFormSubmitButton("save", buttonLayout);
+			}
 		}
 	}
 	
