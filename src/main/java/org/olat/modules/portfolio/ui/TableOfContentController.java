@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
@@ -57,9 +58,9 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.spacesaver.ToggleBoxController;
 import org.olat.core.gui.control.winmgr.ScrollTopCommand;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -108,9 +109,18 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TableOfContentController extends BasicController implements TooledController, Activateable2 {
 	
-	private Link newSectionTool, newSectionButton, newEntryLink, newAssignmentLink,
-		editBinderMetadataLink, moveToTrashBinderLink, deleteBinderLink, restoreBinderLink,
-		exportBinderAsCpLink, printLink, exportBinderAsPdfLink;
+	private Link printLink;
+	private Link newEntryLink;
+	private Link newSectionTool;
+	private Link deleteBinderLink;
+	private Link newSectionButton;
+	private Link restoreBinderLink;
+	private Link newAssignmentLink;
+	private Link toReferenceEntryLink;
+	private Link editBinderMetadataLink;
+	private Link moveToTrashBinderLink;
+	private Link exportBinderAsCpLink;
+	private Link exportBinderAsPdfLink;
 	
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel stackPanel;
@@ -122,12 +132,14 @@ public class TableOfContentController extends BasicController implements TooledC
 	private SectionEditController newSectionCtrl;
 	private SectionEditController editSectionCtrl;
 	private AssignmentEditController newAssignmentCtrl;
+	private DialogBoxController confirmCloseSectionCtrl;
+	private DialogBoxController confirmReopenSectionCtrl;
+	private DialogBoxController confirmDeleteSectionCtrl;
+	private DialogBoxController confirmRestoreBinderCtrl;
 	private ConfirmDeleteBinderController deleteBinderCtrl;
 	private SectionDatesEditController editSectionDatesCtrl;
 	private BinderMetadataEditController binderMetadataCtrl;
 	private ConfirmMoveBinderToTrashController moveBinderToTrashCtrl;
-	private DialogBoxController confirmCloseSectionCtrl, confirmReopenSectionCtrl,
-				confirmDeleteSectionCtrl, confirmRestoreBinderCtrl;
 	
 	private PageRunController pageCtrl;
 	private PageMetadataEditController newPageCtrl;
@@ -172,9 +184,14 @@ public class TableOfContentController extends BasicController implements TooledC
 
 		RepositoryEntry repoEntry = binder.getEntry();
 		if (repoEntry != null) {
-			mainVC.contextPut("referenceEntryName", repoEntry.getDisplayname());
-			String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + repoEntry.getKey();
-			mainVC.contextPut("referenceEntryUrl", url);
+			String repoEntryPath = "[RepositoryEntry:" + repoEntry.getKey() + "]";
+			String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString(repoEntryPath);
+			String name = translate("binder.entry.name") + ": " + StringHelper.escapeHtml(repoEntry.getDisplayname());
+			toReferenceEntryLink = LinkFactory.createLink("to.ref.entry", "to.ref.entry", "to.ref.rentry", name, getTranslator(), mainVC, this, Link.NONTRANSLATED);
+			toReferenceEntryLink.setDomReplacementWrapperRequired(false);
+			toReferenceEntryLink.setIconLeftCSS("o_icon o_CourseModule_icon");
+			toReferenceEntryLink.setElementCssClass("small");
+			toReferenceEntryLink.setUrl(url);
 		}
 		
 		summaryComp = TextFactory.createTextComponentFromString("summaryCmp" + CodeHelper.getRAMUniqueID(), "", null,
@@ -656,6 +673,8 @@ public class TableOfContentController extends BasicController implements TooledC
 			doPrint(ureq);
 		} else if(exportBinderAsPdfLink == source) {
 			doExportBinderAsPdf(ureq);
+		} else if(toReferenceEntryLink == source) {
+			doOpenReferenceEntry(ureq);
 		} else if(stackPanel == source) {
 			if(event instanceof PopEvent && pageCtrl != null && ((PopEvent)event).getController() == pageCtrl && pageCtrl.getSection() != null) {
 				stackPanel.popUserObject(new TOCSection(pageCtrl.getSection()));
@@ -838,6 +857,11 @@ public class TableOfContentController extends BasicController implements TooledC
 		}
 		
 		return pageCtrl;
+	}
+	
+	private void doOpenReferenceEntry(UserRequest ureq) {
+		String businessPath = "[RepositoryEntry:" + binder.getEntry().getKey() + "]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
 	private void doCreateNewEntry(UserRequest ureq) {

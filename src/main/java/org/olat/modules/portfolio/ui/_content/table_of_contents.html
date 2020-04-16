@@ -7,8 +7,8 @@
 		$r.contextHelpWithWrapper("Portfolio task and assignment: Collecting and editing")
 	#end
 	<h2>$r.translate("table.of.contents", $binderTitle) #if($owners && !$owners.isEmpty())<small>$r.translate("binder.by",$owners)</small>#end </h2>
-	#if($r.isNotNull($referenceEntryName))
-		<div class="o_portfolio_repo_link o_block_bottom o_block_move_up_small"><a href="$referenceEntryUrl" class="small"><i class="o_icon o_CourseModule_icon"> </i> $r.translate("binder.entry.name"): $r.escapeHtml($referenceEntryName)</a></div>
+	#if($r.available("to.ref.entry"))
+		<div class="o_portfolio_repo_link o_block_bottom o_block_move_up_small">$r.render("to.ref.entry")</div>
 	#end
 	#if($r.available("summary"))
 		$r.render("summary")

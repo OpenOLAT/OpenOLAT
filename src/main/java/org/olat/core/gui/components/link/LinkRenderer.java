@@ -214,7 +214,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			} else {
 				 // a link may force a non ajax-mode and a custom targ
 				boolean iframePostEnabled = flags.isIframePostEnabled() && link.isAjaxEnabled() && link.getTarget() == null;
-				ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, !link.isSuppressDirtyFormWarning(), true,
+				ubu.buildHrefAndOnclick(sb, link.getUrl(), null, iframePostEnabled, !link.isSuppressDirtyFormWarning(), true,
 						new NameValuePair(VelocityContainer.COMMAND_ID, command));
 			}
 			
