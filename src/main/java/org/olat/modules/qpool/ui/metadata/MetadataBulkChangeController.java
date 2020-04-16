@@ -81,7 +81,11 @@ public class MetadataBulkChangeController extends FormBasicController {
 
 	private static final String[] EMPTY_VALUES = new String[]{ "" };
 	
-	private TextElement topicEl, keywordsEl, coverageEl, addInfosEl, languageEl;
+	private TextElement topicEl;
+	private TextElement keywordsEl;
+	private TextElement coverageEl;
+	private TextElement addInfosEl;
+	private TextElement languageEl;
 	private SingleSelection taxonomyLevelEl;
 	private SingleSelection contextEl;
 	private FormLayoutContainer learningTimeContainer;
@@ -102,6 +106,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 	private Map<MultipleSelectionElement, FormLayoutContainer> checkboxContainer = new HashMap<>();
 	private final List<MultipleSelectionElement> checkboxSwitch = new ArrayList<>();
 	
+	private KeyValues contextsKeyValues;
 	private final QPoolSecurityCallback qpoolSecurityCallback;
 	private List<QuestionItem> updatedItems;
 	private final List<ItemRow> items;
@@ -165,9 +170,9 @@ public class MetadataBulkChangeController extends FormBasicController {
 		}
 	
 		if (qpoolSecurityCallback.canUseEducationalContext()) {
-			KeyValues contexts = MetaUIFactory.getContextKeyValues(getTranslator(), qpoolService);
+			contextsKeyValues = MetaUIFactory.getContextKeyValues(getTranslator(), qpoolService);
 			contextEl = uifactory.addDropdownSingleselect("educational.context", "educational.context", generalCont,
-					contexts.getKeys(), contexts.getValues(), null);
+					contextsKeyValues.getKeys(), contextsKeyValues.getValues(), null);
 			contextEl.setAllowNoSelection(true);
 			decorate(contextEl, generalCont);
 		}
@@ -417,7 +422,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 	private void formOKQuestion(QuestionItemImpl itemImpl) {
 		if(isEnabled(contextEl)) {
 			if(contextEl.isOneSelected()) {
-				QEducationalContext context = qpoolService.getEducationlContextByLevel(contextEl.getSelectedKey());
+				QEducationalContext context = MetaUIFactory.getContextByKey(contextEl.getSelectedKey(), qpoolService);
 				itemImpl.setEducationalContext(context);
 			} else {
 				itemImpl.setEducationalContext(null);
