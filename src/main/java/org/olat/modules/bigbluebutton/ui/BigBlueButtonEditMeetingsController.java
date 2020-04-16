@@ -35,10 +35,12 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -140,7 +142,13 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.template));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BMeetingsCols.server, new ServerCellRenderer()));
 		if(!readOnly) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
+			DefaultFlexiColumnModel editViewCol = new DefaultFlexiColumnModel(BMeetingsCols.edit, "edit",
+					new BooleanCellRenderer(
+							new StaticFlexiCellRenderer(translate("edit"), "edit"),
+							new StaticFlexiCellRenderer(translate("view"), "edit")));
+			editViewCol.setExportable(false);
+			editViewCol.setAlwaysVisible(true);
+			columnsModel.addFlexiColumnModel(editViewCol);
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
 		}
 		
@@ -345,6 +353,7 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 	private void doEditMeeting(UserRequest ureq, BigBlueButtonMeeting meeting) {
 		if(guardModalController(editMeetingCtlr)) return;
 		
+		meeting = bigBlueButtonManager.getMeeting(meeting);
 		List<BigBlueButtonTemplatePermissions> permissions = bigBlueButtonManager
 				.calculatePermissions(entry, businessGroup, getIdentity(), ureq.getUserSession().getRoles());
 		editMeetingCtlr = new EditBigBlueButtonMeetingController(ureq, getWindowControl(),
