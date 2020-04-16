@@ -194,7 +194,8 @@ public class DeleteTaxonomyLevelController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder deletedLevels = new StringBuilder();
+		StringBuilder notDeletedLevels = new StringBuilder();
 		
 		if(levels.size() > 1) {
 			Collections.sort(levels, new TaxonomyLevelDepthComparator());
@@ -210,14 +211,29 @@ public class DeleteTaxonomyLevelController extends FormBasicController {
 		for(TaxonomyLevel level:levels) {
 			TaxonomyLevel taxonomyLevel = taxonomyService.getTaxonomyLevel(level);
 			if(taxonomyService.deleteTaxonomyLevel(taxonomyLevel, mergeTo)) {
-				if(sb.length() > 0) sb.append(", ");
-				sb.append(StringHelper.escapeHtml(taxonomyLevel.getDisplayName()));
+				if(deletedLevels.length() > 0) deletedLevels.append(", ");
+				deletedLevels.append(StringHelper.escapeHtml(taxonomyLevel.getDisplayName()));
+			} else {
+				if(notDeletedLevels.length() > 0) notDeletedLevels.append(", ");
+				notDeletedLevels.append(StringHelper.escapeHtml(taxonomyLevel.getDisplayName()));
 			}
 		}
 		dbInstance.commit();//commit before sending event
 		fireEvent(ureq, new DeleteTaxonomyLevelEvent());
-		showInfo("confirm.deleted.level", new String[] { sb.toString() });
-
+	
+		if(notDeletedLevels.length() == 0) {
+			showInfo("confirm.deleted.level", new String[] { deletedLevels.toString() });
+		} else if(deletedLevels.length() == 0) {
+			if(levels.size() == 1) {
+				showWarning("warning.delete.level");
+			} else {
+				showWarning("warning.deleted.level.nothing");
+			}
+		} else {
+			showWarning("warning.deleted.level.partial", new String[] {
+					deletedLevels.toString(), notDeletedLevels.toString() });
+		}
+		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
