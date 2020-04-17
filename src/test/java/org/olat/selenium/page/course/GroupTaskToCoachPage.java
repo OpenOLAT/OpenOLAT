@@ -137,6 +137,8 @@ public class GroupTaskToCoachPage {
 		By inputBy = By.cssSelector(".o_fileinput input[type='file']");
 		OOGraphene.uploadFile(inputBy, correctionFile, browser);
 		OOGraphene.waitBusy(browser);
+		By uploadedBy = By.cssSelector(".o_sel_course_gta_upload_form .o_sel_file_uploaded");
+		OOGraphene.waitElement(uploadedBy, browser);
 		
 		By saveButtonBy = By.cssSelector(".o_sel_course_gta_upload_form button.btn-primary");
 		browser.findElement(saveButtonBy).click();

@@ -93,7 +93,9 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 			boolean showDeleteButton = fileElem.isDeleteEnabled()
 					&& (fileElem.getInitialFile() != null || fileElem.getUploadFile() != null);
 			
-			sb.append("<div class='o_fileinput'>");	
+			sb.append("<div class='o_fileinput")
+			  .append(" o_sel_file_uploaded", fileElem.getUploadFile() != null)
+			  .append("'>");
 			// input.Browse is the real filebrowser, but set to be transparent. 
 			// the div.o_fakechooser is layered below the input.Browse and represents the visual GUI. 
 			// Since input.Browse is layered above div.o_fakechooser, all click events to go input.Browse
@@ -106,7 +108,9 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 				 if (fileElem.getMaxUploadSizeKB() != FileElement.UPLOAD_UNLIMITED) {
 					 sb.append("\" data-max-size=\"").append(fileElem.getMaxUploadSizeKB() * 1024l);
 				 }
-				 sb.append("\" class='form-control o_realchooser ").append(" o_chooser_with_delete", showDeleteButton).append("' ");
+				 sb.append("\" class='form-control o_realchooser ")
+				   .append(" o_chooser_with_delete", showDeleteButton)
+				   .append("' ");
 				 // Add on* event handlers
 				 StringBuilder eventHandlers = FormJSHelper.getRawJSFor(fileElem.getRootForm(), id, fileElem.getAction());
 				 int onChangePos = eventHandlers.indexOf("onchange=");

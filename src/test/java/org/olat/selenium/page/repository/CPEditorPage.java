@@ -92,11 +92,13 @@ public class CPEditorPage {
 		
 		//wait popup
 		By metadataPopupBy = By.cssSelector("fieldset.o_sel_cp_import");
-		OOGraphene.waitElement(metadataPopupBy, 2, browser);
+		OOGraphene.waitElement(metadataPopupBy, browser);
 		
 		By inputBy = By.cssSelector("fieldset.o_sel_cp_import .o_fileinput input[type='file']");
 		OOGraphene.uploadFile(inputBy, page, browser);
-		OOGraphene.waitingALittleLonger();//wait event
+		OOGraphene.waitBusy(browser);
+		By uploadedBy = By.cssSelector("fieldset.o_sel_cp_import .o_sel_file_uploaded");
+		OOGraphene.waitElement(uploadedBy, browser);
 		
 		//ok save
 		By saveBy = By.cssSelector("fieldset.o_sel_cp_import button.btn-primary");

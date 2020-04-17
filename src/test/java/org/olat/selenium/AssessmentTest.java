@@ -936,7 +936,7 @@ public class AssessmentTest extends Deployments {
 			@Drone @Participant WebDriver kanuBrowser)
 	throws IOException, URISyntaxException {
 			
-		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
 

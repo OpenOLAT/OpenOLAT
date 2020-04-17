@@ -55,6 +55,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import nu.validator.htmlparser.common.XmlViolationPolicy;
 import nu.validator.htmlparser.sax.HtmlParser;
+import uk.ac.ed.ph.jqtiplus.internal.util.StringUtilities;
 
 /**
  * 
@@ -357,6 +358,7 @@ public class FIBEditorController extends FormBasicController {
 						solution = attributes.getValue(i);
 						if(solution != null) {
 							solution = itemBuilder.unescapeDataQtiSolution(solution);
+							solution = StringUtilities.trim(solution);
 						}
 					} else if("data-qti-solution-empty".equals(name)) {
 						solutionEmpty = attributes.getValue(i);

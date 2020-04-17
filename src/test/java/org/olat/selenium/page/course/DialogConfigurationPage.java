@@ -53,6 +53,8 @@ public class DialogConfigurationPage {
 		By inputBy = By.xpath("//div[contains(@class,'modal-body')]//div[@class='o_fileinput']/input[@type='file']");
 		OOGraphene.uploadFile(inputBy, file, browser);
 		OOGraphene.waitBusy(browser);
+		By uploadedBy = By.cssSelector("div.modal-body .o_sel_file_uploaded");
+		OOGraphene.waitElement(uploadedBy, browser);
 		
 		By uploadButtonBy = By.cssSelector("div.modal-body div.o_sel_upload_buttons button.btn-primary");
 		OOGraphene.waitElement(uploadButtonBy, browser);

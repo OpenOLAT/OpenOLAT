@@ -41,6 +41,7 @@ import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEn
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntryAlternative;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 
+import uk.ac.ed.ph.jqtiplus.internal.util.StringUtilities;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 
 /**
@@ -241,7 +242,7 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		interaction.setSolution(solutionEl.getValue());
+		interaction.setSolution(StringUtilities.trim(solutionEl.getValue()));
 		interaction.setPlaceholder(placeholderEl.getValue());
 		List<TextEntryAlternative> alternatives = new ArrayList<>(alternativeRows.size());
 		for(AlternativeRow row:alternativeRows) {
@@ -253,24 +254,24 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 				String[] valArr = val.split("[;]");
 				for(int i=0;i<valArr.length; i++) {
 					if(i==0) {
-						alternative.setAlternative(valArr[i]);
+						alternative.setAlternative(StringUtilities.trim(valArr[i]));
 						alternatives.add(alternative);
 					} else {
 						TextEntryAlternative newAlternative = new TextEntryAlternative();
-						newAlternative.setAlternative(valArr[i]);
+						newAlternative.setAlternative(StringUtilities.trim(valArr[i]));
 						newAlternative.setScore(alternative.getScore());
 						alternatives.add(newAlternative);
 					}
 				}
 			} else {
-				alternative.setAlternative(val);
+				alternative.setAlternative(StringUtilities.trim(val));
 				alternatives.add(alternative);
 			}
 		}
 		interaction.setAlternatives(alternatives);
 		interaction.setCaseSensitive(caseSensitiveEl.isAtLeastSelected(1));
 		if(StringHelper.containsNonWhitespace(expectedLengthEl.getValue())) {
-			interaction.setExpectedLength(new Integer(expectedLengthEl.getValue()));
+			interaction.setExpectedLength(Integer.valueOf(expectedLengthEl.getValue()));
 		} else {
 			interaction.setExpectedLength(null);
 		}
