@@ -52,6 +52,22 @@
 		<property name="order" value="703"/>
 	</bean>
 	
+	<bean class="org.olat.core.commons.controllers.impressum.EmptyImpressumExtension" init-method="initExtensionPoints">
+		<constructor-arg index="0" ref="impressumModule" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.core.commons.controllers.impressum.EmptyImpressumController"/>
+			</bean>
+		</property>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.core.commons.controllers.impressum.ImpressumMainController</value>
+				<value>org.olat.core.commons.controllers.impressum.ImpressumDmzMainController</value>
+			</list>
+		</property>
+		<property name="order" value="705"/>
+	</bean>
+	
 	<bean class="org.olat.core.commons.controllers.impressum.ContactExtension" init-method="initExtensionPoints">
 		<constructor-arg index="0" ref="impressumModule" />
 		<property name="actionController">	

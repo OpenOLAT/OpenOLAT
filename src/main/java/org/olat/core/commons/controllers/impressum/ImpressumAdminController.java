@@ -212,6 +212,9 @@ public class ImpressumAdminController extends FormBasicController {
 			dataPrivacyPolicyButtons.add(group);
 		}
 		
+		uifactory.addSpacerElement("spacer", formLayout, true);
+		uifactory.addSpacerElement("spacer_line", formLayout, false);
+		
 		contactEnableEl = uifactory.addCheckboxesHorizontal("contactenable", "enable.contact", formLayout,
 				enableKeys, new String[]{ translate("enable") });
 		contactEnableEl.addActionListener(FormEvent.ONCHANGE);
@@ -223,6 +226,7 @@ public class ImpressumAdminController extends FormBasicController {
 		contactMailEl.setMandatory(contactEnabled && enabled);
 		
 		formSubmit = uifactory.addFormSubmitButton("submit", formLayout);
+		formSubmit.setVisible(contactEnabled && enabled);
 	}
 	
 	private String getTranslated(String lang) {
@@ -313,9 +317,6 @@ public class ImpressumAdminController extends FormBasicController {
 			contactMailEl.setVisible(contactEnabled);
 			contactMailEl.setMandatory(contactEnabled);
 			formSubmit.setVisible(contactEnabled);
-
-			getWindowControl().getWindowBackOffice().getWindow().setDirty(true);
-			getWindowControl().getWindowBackOffice().getChiefController().wishReload(ureq, true);
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
@@ -340,6 +341,7 @@ public class ImpressumAdminController extends FormBasicController {
 				group.getEditButton().setIconLeftCSS(null);
 				group.getDeleteButton().setVisible(false);
 			}
+			// TODO AB No dirty
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -361,6 +363,8 @@ public class ImpressumAdminController extends FormBasicController {
 				exists = checkContent(impressumDir.resolve(filePath));
 			} else if("termsofuse".equals(cmd)) {
 				exists = checkContent(termsOfUseDir.resolve(filePath));
+			} else if ("dataprivacy".equals(cmd)) {
+				exists = checkContent(dataPrivacyPolicyDir.resolve(filePath));
 			}
 			
 			if(exists) {

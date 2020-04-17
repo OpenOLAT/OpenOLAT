@@ -27,6 +27,7 @@ import org.apache.commons.io.FileUtils;
 import org.olat.core.extensions.ExtensionElement;
 import org.olat.core.extensions.action.GenericActionExtension;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.filter.FilterFactory;
@@ -40,27 +41,30 @@ import org.olat.core.util.vfs.VFSLeaf;
  * Initial date: 12 Apr 2020<br>
  * @author aboeckle, alexander.boeckle@frentix.com
  */
-public class ImpressumExtension extends GenericActionExtension {
+public class EmptyImpressumExtension extends GenericActionExtension {
 	
 	private final ImpressumModule impressumModule;
 	
-	public ImpressumExtension(ImpressumModule impressumModule) {
+	private VelocityContainer vc;
+	
+	public EmptyImpressumExtension(ImpressumModule impressumModule) {
 		this.impressumModule = impressumModule;
 	}
 	
 
 	@Override
 	public Controller createController(UserRequest ureq, WindowControl wControl, Object arg) {
-		return new ImpressumController(ureq, wControl);
+		return new EmptyImpressumController(ureq, wControl);
 	}
 	
 	@Override
 	public ExtensionElement getExtensionFor(String extensionPoint, UserRequest ureq) {
 		boolean enabled = false;
 		
-		if (impressumModule.isEnabled()) {
+		if (impressumModule.isEnabled() && !impressumModule.isContactEnabled()) {
 			VFSContainer impressumDir = new LocalFolderImpl(impressumModule.getImpressumDirectory());
-			enabled = true;
+			VFSContainer termsOfUseDir = new LocalFolderImpl(impressumModule.getTermsOfUseDirectory());
+			VFSContainer privacyPoliciyDir = new LocalFolderImpl(impressumModule.getPrivacyPolicyDirectory());
 			
 			if (checkContent(impressumDir.resolve("index_" + ureq.getLocale().getLanguage() + ".html"))) {
 				// Nothing to do here
@@ -68,9 +72,21 @@ public class ImpressumExtension extends GenericActionExtension {
 				// Nothing to do here
 			} else if (checkContent(impressumDir.resolve("index_de.html"))) {
 				// Nothing to do here
+			} else if (checkContent(termsOfUseDir.resolve("index_" + ureq.getLocale().getLanguage() + ".html"))) {
+				// Nothing to do here
+			} else if (checkContent(termsOfUseDir.resolve("index_en.html"))) {
+				// Nothing to do here
+			} else if (checkContent(termsOfUseDir.resolve("index_de.html"))) {
+				// Nothing to do here
+			} else if (checkContent(privacyPoliciyDir.resolve("index_" + ureq.getLocale().getLanguage() + ".html"))) {
+				// Nothing to do here
+			} else if (checkContent(privacyPoliciyDir.resolve("index_en.html"))) {
+				// Nothing to do here
+			} else if (checkContent(privacyPoliciyDir.resolve("index_de.html"))) {
+				// Nothing to do here
 			} else {
 				// Nothing found
-				enabled &= false;
+				enabled |= true;
 			}
 		}
 		
