@@ -130,7 +130,9 @@ public class EntryPage {
 		
 		By inputBy = By.cssSelector("fieldset.o_sel_pf_collect_document_form .o_fileinput input[type='file']");
 		OOGraphene.uploadFile(inputBy, document, browser);
-		OOGraphene.waitingALittleLonger();//wait event
+		OOGraphene.waitBusy(browser);
+		By uploadedBy = By.cssSelector("fieldset.o_sel_pf_collect_document_form .o_sel_file_uploaded");
+		OOGraphene.waitElement(uploadedBy, browser);
 		
 		By titleBy = By.cssSelector("fieldset.o_sel_pf_collect_document_form .o_sel_pf_collect_title input[type='text']");
 		browser.findElement(titleBy).sendKeys(title);
@@ -139,6 +141,7 @@ public class EntryPage {
 		By saveBy = By.cssSelector("fieldset.o_sel_pf_collect_document_form button.btn-primary");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
