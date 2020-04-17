@@ -191,7 +191,7 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 					href = "javascript:;";
 				}
 				String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, dirtyCheck, true, false, pair);
-				target.append("<a href=\"").append(href).append("\" onclick=\"").append(jsCode).append(";\"");
+				target.append("<a href=\"").append(href).append("\" onclick=\"").append(jsCode).append("; return false;\"");
 			}
 			
 			if(StringHelper.containsNonWhitespace(linkTitle)) {
