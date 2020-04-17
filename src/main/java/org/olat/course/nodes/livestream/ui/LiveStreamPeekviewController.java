@@ -20,14 +20,12 @@
 package org.olat.course.nodes.livestream.ui;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 import org.apache.commons.lang.time.DateUtils;
-import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlsite.OlatCmdEvent;
@@ -110,24 +108,37 @@ public class LiveStreamPeekviewController extends BasicController implements Con
 		String title = translate(titleI18n, new String[] {event.getSubject()});
 		
 		Locale locale = getLocale();
-		Calendar cal = CalendarUtils.createCalendarInstance(locale);
 		Date begin = event.getBegin();
 		Date end = event.getEnd();
-		cal.setTime(begin);
-		StringBuilder dateSb = new StringBuilder();
-		dateSb.append(StringHelper.formatLocaleDateFull(begin.getTime(), locale));
-		String date  = dateSb.toString();
-		
+		String date = null;
 		String time = null;
-		if (!event.isAllDayEvent()) {
-			StringBuilder timeSb = new StringBuilder();
-			timeSb.append(StringHelper.formatLocaleTime(begin.getTime(), locale));
-			timeSb.append(" - ");
-			if (!DateUtils.isSameDay(begin, end)) {
-				timeSb.append(StringHelper.formatLocaleDateFull(end.getTime(), locale)).append(", ");
-			} 
-			timeSb.append(StringHelper.formatLocaleTime(end.getTime(), locale));
-			time = timeSb.toString();
+		
+		boolean sameDay = DateUtils.isSameDay(begin, end);
+		if (sameDay) {
+			StringBuilder dateSb = new StringBuilder();
+			dateSb.append(StringHelper.formatLocaleDateFull(begin.getTime(), locale));
+			date = dateSb.toString();
+			if (!event.isAllDayEvent()) {
+				StringBuilder timeSb = new StringBuilder();
+				timeSb.append(StringHelper.formatLocaleTime(begin.getTime(), locale));
+				timeSb.append(" - ");
+				timeSb.append(StringHelper.formatLocaleTime(end.getTime(), locale));
+				time = timeSb.toString();
+			}
+		} else {
+			StringBuilder dateSb = new StringBuilder();
+			dateSb.append(StringHelper.formatLocaleDateFull(begin.getTime(), locale));
+			if (!event.isAllDayEvent()) {
+				dateSb.append(" ");
+				dateSb.append(StringHelper.formatLocaleTime(begin.getTime(), locale));
+			}
+			dateSb.append(" - ");
+			dateSb.append(StringHelper.formatLocaleDateFull(end.getTime(), locale));
+			if (!event.isAllDayEvent()) {
+				dateSb.append(" ");
+				dateSb.append(StringHelper.formatLocaleTime(end.getTime(), locale));
+			}
+			date = dateSb.toString();
 		}
 
 		String location = event.getLocation();

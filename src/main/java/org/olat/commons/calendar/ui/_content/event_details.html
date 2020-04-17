@@ -5,6 +5,12 @@
 		<i class="o_icon o_icon-fw o_icon_calendar">&nbsp;</i>
 		$date
 	</div>
+	#if($date2 && $date2 != "")
+	<div class="o_cal_time text-muted">
+		<i class="o_icon o_icon-fw ">&nbsp;</i>
+		$date2
+	</div>
+	#end
 	#if($time && $time != "")
 	<div class="o_cal_time text-muted">
 		<i class="o_icon o_icon-fw o_icon_time">&nbsp;</i>
