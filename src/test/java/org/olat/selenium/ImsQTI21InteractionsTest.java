@@ -313,9 +313,9 @@ public class ImsQTI21InteractionsTest extends Deployments {
 		qtiPage
 			.clickToolbarBack()
 			.assertOnAssessmentItem()
-			.answerOrderDropItem("Jenson")
-			.answerOrderDropItem("Rubens")
-			.answerOrderDropItem("Michael")
+			.answerOrderDropItem("Jenson", false)
+			.answerOrderDropItem("Rubens", false)
+			.answerOrderDropItem("Michael", false)
 			.saveAnswer()
 			.endTest()
 			.closeTest();

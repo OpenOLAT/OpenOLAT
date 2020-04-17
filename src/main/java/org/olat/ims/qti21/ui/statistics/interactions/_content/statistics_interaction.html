@@ -2,11 +2,11 @@
 	<h4>$r.translate("fig.title")</h4>
 	<table class="o_qti_statistics_figures"><tbody>
 		#if($rightAnswers)
-		<tr><td>$r.translate("fig.correctanswers")</td>
+		<tr><th scope="row">$r.translate("fig.correctanswers")</th>
 			<td>$rightAnswers</td></tr>
 		#end
 		#if($wrongAnswers)
-		<tr><td>$r.translate("fig.wronganswers")</td>
+		<tr><th scope="row">$r.translate("fig.wronganswers")</th>
 			<td>$wrongAnswers</td></tr>
 		#end
 	</tbody></table>
@@ -26,6 +26,8 @@
 			#else
 			<li class="o_qti_statistics-kminus">
 			#end
+		#elseif($responseInfo.ordered) 
+			<li class="o_qti_statistics-ordered">
 		#else
 			#if($responseInfo.correct)
 			<li class="o_qti_statistics-correct">

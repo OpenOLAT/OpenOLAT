@@ -45,6 +45,7 @@ import org.olat.ims.qti21.ui.statistics.interactions.HotspotInteractionStatistic
 import org.olat.ims.qti21.ui.statistics.interactions.HottextInteractionStatisticsController;
 import org.olat.ims.qti21.ui.statistics.interactions.KPrimStatisticsController;
 import org.olat.ims.qti21.ui.statistics.interactions.MatchStatisticsController;
+import org.olat.ims.qti21.ui.statistics.interactions.OrderInteractionStatisticsController;
 import org.olat.ims.qti21.ui.statistics.interactions.SimpleChoiceInteractionStatisticsController;
 import org.olat.ims.qti21.ui.statistics.interactions.TextEntryInteractionsStatisticsController;
 import org.olat.ims.qti21.ui.statistics.interactions.UnsupportedInteractionController;
@@ -59,6 +60,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.HotspotInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HottextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.OrderInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
@@ -176,6 +178,9 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 		if(interaction instanceof ChoiceInteraction) {
 			interactionCtrl = new SimpleChoiceInteractionStatisticsController(ureq, getWindowControl(),
 					itemRef, item, (ChoiceInteraction)interaction, itemStats, resourceResult, mapperUri);
+		} else if(interaction instanceof OrderInteraction) {
+			interactionCtrl = new OrderInteractionStatisticsController(ureq, getWindowControl(),
+					itemRef, item, (OrderInteraction)interaction, resourceResult, mapperUri);
 		} else if(interaction instanceof MatchInteraction) {
 			String responseIdentifier = interaction.getResponseIdentifier().toString();
 			if(responseIdentifier.startsWith("KPRIM_") 

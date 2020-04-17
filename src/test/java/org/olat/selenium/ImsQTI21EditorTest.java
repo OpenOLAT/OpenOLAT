@@ -46,6 +46,7 @@ import org.olat.selenium.page.qti.QTI21KprimEditorPage;
 import org.olat.selenium.page.qti.QTI21LobEditorPage;
 import org.olat.selenium.page.qti.QTI21MatchEditorPage;
 import org.olat.selenium.page.qti.QTI21MultipleChoiceEditorPage;
+import org.olat.selenium.page.qti.QTI21OrderEditorPage;
 import org.olat.selenium.page.qti.QTI21Page;
 import org.olat.selenium.page.qti.QTI21Page.TrueFalse;
 import org.olat.selenium.page.qti.QTI21SingleChoiceEditorPage;
@@ -1926,6 +1927,122 @@ public class ImsQTI21EditorTest extends Deployments {
 			.endTest()
 			.assertOnAssessmentResults()
 			.assertOnAssessmentTestScore(3);// 3 points from the first question	
+	}
+	
+	/**
+	 * Test the order editor. An author
+	 * make a test with an order interaction and feedbacks.<br>
+	 * A second user make the test and check the score at the end of
+	 * the test.
+	 * 
+	 * @param authorLoginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21EditorOrder(@Drone @User WebDriver ryomouBrowser)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		String qtiTestTitle = "Order QTI 2.1 " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.createQTI21Test(qtiTestTitle)
+			.clickToolbarBack();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI21Page(browser);
+		QTI21EditorPage qtiEditor = qtiPage
+				.assertOnAssessmentItem()
+				.edit();
+		//start a blank test
+		qtiEditor
+			.selectNode("Single Choice")
+			.deleteNode();
+		
+		//add a single choice: all answers score
+		QTI21OrderEditorPage orderEditor = qtiEditor
+			.addOrder();
+		orderEditor
+			.setAnswer(0, "Mercury")
+			.addChoice(1)
+			.setAnswer(1, "Venus")
+			.addChoice(2)
+			.setAnswer(2, "Earth")
+			.addChoice(3)
+			.setAnswer(3, "Mars")
+			.save();
+		// change max score
+		orderEditor
+			.selectScores()
+			.setMaxScore("3")
+			.save();
+		// set some feedbacks
+		orderEditor
+			.selectFeedbacks()
+			.setHint("Hint", "This is an ordered hint")
+			.setCorrectSolution("Correct solution", "You need to order the solution correctly")
+			.setCorrectFeedback("Correct feedback", "You ordered the solution correctly")
+			.setIncorrectFeedback("Incorrect", "Your answer is shuffled")
+			.save();
+		
+		qtiPage
+			.clickToolbarBack();
+		// access to all
+		qtiPage
+			.settings()
+			.accessConfiguration()
+			.setUserAccess(UserAccess.guest)
+			.save()
+			.clickToolbarBack();
+		qtiPage
+			.publish();
+		// show results
+		qtiPage
+			.settings()
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+		
+
+		//a user search the content package
+		LoginPage userLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
+		userLoginPage
+			.loginAs(ryomou.getLogin(), ryomou.getPassword())
+			.resume();
+		NavigationPage userNavBar = NavigationPage.load(ryomouBrowser);
+		userNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// make the test
+		QTI21Page ryomouQtiPage = QTI21Page
+				.getQTI21Page(ryomouBrowser);
+		ryomouQtiPage
+			.assertOnAssessmentItem()
+			.answerOrderDropItem("Mercury", true)
+			.answerOrderDropItem("Venus", true)
+			.answerOrderDropItem("Earth", true)
+			.answerOrderDropItem("Mars", true)
+			.saveAnswer()
+			.assertFeedback("Incorrect")
+			// try again
+			.moveOrderDropItemTop("Earth", true)
+			.moveOrderDropItemTop("Venus", true)
+			.moveOrderDropItemTop("Mercury", true)
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(3);
 	}
 	
 	/**

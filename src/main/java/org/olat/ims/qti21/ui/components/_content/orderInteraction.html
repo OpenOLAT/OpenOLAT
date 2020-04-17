@@ -7,7 +7,7 @@
 #set($responseValue = $r.getResponseValue($interaction.responseIdentifier))
 
 <input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1" />
-<div class="$localName">
+<div class="$localName clearfix">
 	#if($interaction.getPrompt())
 	<div class="prompt">$r.renderPrompt($interaction.getPrompt())</div>
 	#end
@@ -19,7 +19,7 @@
 	<div id="qtiworks_response_${responseIdentifier}">
 		## Create holder for hidden form fields that will contain the actual data to pass back
 		<div class="hiddenInputContainer"></div>
-		<div class="source box ${orientation}">
+		<div class="source box ${orientation} #if($orientation == "horizontal") clearfix #end">
 			#if($r.isItemSessionOpen())
 				<span class="info">$r.translate("interaction.order.drag.msg")</span>
 			#end

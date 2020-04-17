@@ -298,11 +298,15 @@ public class QTI21ImportProcessor {
 			case kprim: return qItemTypeDao.loadByType(QuestionType.KPRIM.name());
 			case match: return qItemTypeDao.loadByType(QuestionType.MATCH.name());
 			case matchdraganddrop: return qItemTypeDao.loadByType(QuestionType.MATCHDRAGANDDROP.name());
+			case matchtruefalse: return qItemTypeDao.loadByType(QuestionType.MATCHTRUEFALSE.name());
 			case fib: return qItemTypeDao.loadByType(QuestionType.FIB.name());
 			case numerical: return qItemTypeDao.loadByType(QuestionType.NUMERICAL.name());
 			case hotspot: return qItemTypeDao.loadByType(QuestionType.HOTSPOT.name());
+			case hottext: return qItemTypeDao.loadByType(QuestionType.HOTTEXT.name());
 			case essay: return qItemTypeDao.loadByType(QuestionType.ESSAY.name());
 			case upload: return qItemTypeDao.loadByType(QuestionType.UPLOAD.name());
+			case drawing: return qItemTypeDao.loadByType(QuestionType.DRAWING.name());
+			case order: return qItemTypeDao.loadByType(QuestionType.ORDER.name());
 			default: return qItemTypeDao.loadByType(QuestionType.UNKOWN.name());
 		}
 	}

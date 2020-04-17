@@ -107,6 +107,11 @@ public class QTI21EditorPage {
 		return new QTI21MultipleChoiceEditorPage(browser);
 	}
 	
+	public QTI21OrderEditorPage addOrder() {
+		addQuestion(QTI21QuestionType.order);
+		return new QTI21OrderEditorPage(browser);
+	}
+	
 	public QTI21KprimEditorPage addKprim() {
 		addQuestion(QTI21QuestionType.kprim);
 		return new QTI21KprimEditorPage(browser);

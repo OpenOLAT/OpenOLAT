@@ -50,6 +50,7 @@ import org.olat.ims.qti21.model.statistics.HotspotChoiceStatistics;
 import org.olat.ims.qti21.ui.statistics.QTI21AssessmentItemStatisticsController;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.olat.ims.qti21.ui.statistics.SeriesFactory;
+import org.olat.ims.qti21.ui.statistics.interactions.ResponseInfos.ExplanationType;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.object.Object;
@@ -201,7 +202,7 @@ public class HotspotInteractionStatisticsController extends BasicController {
 			String label = Integer.toString(++i);
 			d1.add(ans_count, label, cssColor);
 
-			responseInfos.add(new ResponseInfos(label, text, null, null, points, correct, survey, false));
+			responseInfos.add(new ResponseInfos(label, text, null, null, points, correct, survey, ExplanationType.standard));
 		}
 		
 		if(numOfResults != numOfParticipants) {
@@ -209,7 +210,7 @@ public class HotspotInteractionStatisticsController extends BasicController {
 			if(notAnswered > 0) {
 				String label = Integer.toString(++i);
 				String text = translate("user.not.answer");
-				responseInfos.add(new ResponseInfos(label, text, null, null, null, false, survey, false));
+				responseInfos.add(new ResponseInfos(label, text, null, null, null, false, survey, ExplanationType.standard));
 				d1.add(notAnswered, label, "bar_grey");
 			}
 		}
@@ -261,7 +262,7 @@ public class HotspotInteractionStatisticsController extends BasicController {
 			d3.add(notAnswered, label);
 			
 			Float pointsObj = survey ? null : (correct ? 1.0f : 0.0f);
-			responseInfos.add(new ResponseInfos(label, text, null, null, pointsObj, correct, survey, false));
+			responseInfos.add(new ResponseInfos(label, text, null, null, pointsObj, correct, survey, ExplanationType.standard));
 		}
 
 		List<BarSeries> serieList = new ArrayList<>(3);

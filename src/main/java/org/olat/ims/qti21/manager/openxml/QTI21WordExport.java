@@ -45,6 +45,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.io.ShieldOutputStream;
 import org.olat.core.util.openxml.HTMLToOpenXMLHandler;
 import org.olat.core.util.openxml.OpenXMLConstants;
@@ -95,9 +96,11 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.HotspotInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HottextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.OrderInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.PositionObjectInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.SelectPointInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleAssociableChoice;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleMatchSet;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.content.Hottext;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.graphic.HotspotChoice;
@@ -118,6 +121,7 @@ import uk.ac.ed.ph.jqtiplus.utils.QueryUtils;
 import uk.ac.ed.ph.jqtiplus.value.BaseType;
 import uk.ac.ed.ph.jqtiplus.value.Cardinality;
 import uk.ac.ed.ph.jqtiplus.value.DirectedPairValue;
+import uk.ac.ed.ph.jqtiplus.value.Orientation;
 import uk.ac.ed.ph.jqtiplus.value.SingleValue;
 
 /**
@@ -437,6 +441,10 @@ public class QTI21WordExport implements MediaResource {
 					renderElement = false;
 					startHottext(attributes);
 					break;
+				case "orderinteraction":
+					renderElement = false;
+					startOrder(attributes);
+					break;
 				case "matchinteraction":
 					renderElement = false;
 					
@@ -491,7 +499,7 @@ public class QTI21WordExport implements MediaResource {
 				}
 			}
 		}
-
+		
 		@Override
 		public void characters(char[] ch, int start, int length) {
 			if(renderElement) {
@@ -541,7 +549,7 @@ public class QTI21WordExport implements MediaResource {
 			Node checkboxNode = getCurrentTable().addCellEl(checkboxCell, 1);
 			
 			boolean checked = false;
-			if(withResponses) {
+			if(withResponses && responseIdentifier != null) {
 				Identifier identifier = Identifier.assumedLegal(simpleChoiceIdentifier);
 				List<Identifier> correctAnswers = CorrectResponsesUtil
 						.getCorrectIdentifierResponses(assessmentItem, Identifier.assumedLegal(responseIdentifier));
@@ -679,6 +687,296 @@ public class QTI21WordExport implements MediaResource {
 			}
 		}
 		
+		private void startOrder(Attributes attributes) {
+			Interaction interaction = getInteractionByResponseIdentifier(attributes);
+			if(interaction instanceof OrderInteraction) {
+				OrderInteraction orderInteraction = (OrderInteraction)interaction;
+				Orientation orientation = orderInteraction.getOrientation();
+				if(orientation == Orientation.HORIZONTAL) {
+					startOrderHorizontal(orderInteraction);
+				} else {
+					startOrderVertical(orderInteraction);
+				}
+			}
+		}
+		
+		private void startOrderHorizontal(OrderInteraction orderInteraction) {
+			List<SimpleChoice> rawChoices = orderInteraction.getSimpleChoices();
+			List<SimpleChoice> orderChoices = CorrectResponsesUtil.getCorrectOrderedChoices(assessmentItem, orderInteraction);
+			List<SimpleChoice> shuffledChoices = new ArrayList<>(rawChoices);
+			if(orderInteraction.getShuffle()) {
+				Collections.shuffle(shuffledChoices);
+			}
+
+			// calculate the width of the table () and of its columns
+			int tableWidthDxa = OpenXMLConstants.TABLE_FULL_WIDTH_DXA;
+			int tableWidthPct = OpenXMLConstants.TABLE_FULL_WIDTH_PCT;
+			int numOfColumns = evaluateOrderHorizontalColumn(orderChoices);
+			int columnWidthDxa = tableWidthDxa / numOfColumns;
+			int columnWidthPct = tableWidthPct / numOfColumns;
+			
+			Integer[] columnsWidth = new Integer[numOfColumns];
+			for(int i=numOfColumns; i-->0; ) {
+				columnsWidth[i] = columnWidthDxa;
+			}
+			
+			appendParagraph(new Spacing(0,0));
+			appendText(translator.translate("form.imd.layout.order.sources"));
+			
+			startTable(Columns.valueOf(columnsWidth));
+			
+			appendOrderSourcesHorizontal(shuffledChoices, numOfColumns, columnWidthPct);
+			endTable();
+			
+			appendParagraph(new Spacing(20,0));
+			appendText(translator.translate("form.imd.layout.order.targets"));
+			
+			startTable(Columns.valueOf(columnsWidth));
+			
+			appendOrderTargetsHorizontal(orderChoices, numOfColumns, columnWidthPct);
+			
+			endTable();
+		}
+		
+		/**
+		 * 
+		 * @param choices The list of choices
+		 * @return An "optimized" number of columns
+		 */
+		private int evaluateOrderHorizontalColumn(List<SimpleChoice> choices) {
+			for(SimpleChoice choice:choices) {
+				String html = htmlBuilder.flowStaticString(choice.getFlowStatics());
+				String text = FilterFactory.getHtmlTagAndDescapingFilter().filter(html);
+				if(text.length() > 128) {
+					return 2;
+				}
+			}
+			return 3;
+		}
+		
+		private void appendOrderSourcesHorizontal(List<SimpleChoice> choices, int numOfColumns, int columnWidthPct) {
+			
+			String backgroundColor = "FFFFFF";
+			Border border = new Border(0, 6, "E9EAF2");
+			Border noBorder = new Border(0, 0, "FFFFFF");
+			
+			for(int i=0; i<choices.size(); ) {
+				getCurrentTable().addRowEl();
+	
+				for(int j=0; j<numOfColumns; j++, i++) {
+					if(i < choices.size()) {
+						Node contentCell = getCurrentTable().addCellEl(factory.createTableCell(backgroundColor, border, columnWidthPct - 10, Unit.pct), 1);
+						SimpleChoice choice = choices.get(i);
+						// add cell
+						String html = htmlBuilder.flowStaticString(choice.getFlowStatics());
+						List<Node> nodes = appendHtmlText(html, factory.createParagraphEl(), 7.5);
+						if(nodes.isEmpty()) {
+							contentCell.appendChild(factory.createParagraphEl());
+						} else {
+							for(Node node:nodes) {
+								contentCell.appendChild(node);
+							}
+							contentCell.appendChild(factory.createParagraphEl());
+						}
+					} else {
+						Node contentCell = getCurrentTable().addCellEl(factory.createTableCell(backgroundColor, noBorder, columnWidthPct - 10, Unit.pct), 1);
+						contentCell.appendChild(factory.createParagraphEl());
+					}
+				}
+				
+				getCurrentTable().closeRow();
+			}	
+		}
+		
+		private void appendOrderTargetsHorizontal(List<SimpleChoice> choices, int numOfColumns, int columnWidthPct) {
+			String backgroundColor = "E9EAF2";
+			Border border = new Border(0, 6, "E9EAF2");
+			
+			String dropBackgroundColor = "FFFFFF";
+			Border targetBorder = new Border(0, 6, "E9EAF2");
+			Border dropBorder = new Border(0, 6, "EEEEEE");
+
+			String noBackgroundColor = "FFFFFF";
+			Border noBorder = new Border(0, 0, "FFFFFF");
+			
+			for(int i=0; i<choices.size(); ) {
+				getCurrentTable().addRowEl(true);
+
+				for(int j=0; j<numOfColumns; j++, i++) {
+
+					if(i < choices.size()) {
+						Node contentCell = getCurrentTable().addCellEl(factory.createTableCell(backgroundColor, border, columnWidthPct - 10, Unit.pct), 1);
+						
+						Element wrapEl = factory.createParagraphEl();
+						// add the drop panels
+						HTMLToOpenXMLHandler dropTable = new HTMLToOpenXMLHandler(factory, relPath, wrapEl, false);
+						dropTable.setMaxWidthCm(7);
+						dropTable.startTable(Columns.valueOf(columnWidthPct - 50));
+						
+						SimpleChoice choice = choices.get(i);
+						if(withResponses) {
+							dropTable.startCurrentTableRow();
+							Node answerCell = dropTable.addCell(factory.createTableCell(dropBackgroundColor, targetBorder, columnWidthPct - 10, Unit.pct));
+							String answerHtml = htmlBuilder.flowStaticString(choice.getFlowStatics());
+							List<Node> answerNodes = appendHtmlText(answerHtml, factory.createParagraphEl(), 7.5);
+							if(answerNodes.isEmpty()) {
+								answerCell.appendChild(factory.createParagraphEl());
+							} else {
+								for(Node answerNode:answerNodes) {
+									answerCell.appendChild(answerNode);
+								}
+							}
+							dropTable.closeCurrentTableRow();
+						} else {
+							dropTable.startCurrentTableRow();
+							Node dropCell = dropTable.addCell(factory.createTableCell(dropBackgroundColor, dropBorder, columnWidthPct - 10, Unit.pct));
+							appendDropPlaceholder(dropCell);
+							dropTable.closeCurrentTableRow();
+						}
+						
+						dropTable.endTable();
+
+						List<Node> dropNodes = dropTable.getContent();
+						for(Node dropNode:dropNodes ) {
+							contentCell.appendChild(dropNode);
+						}
+						contentCell.appendChild(factory.createParagraphEl());
+					} else {
+						Node contentCell = getCurrentTable().addCellEl(factory.createTableCell(noBackgroundColor, noBorder, columnWidthPct - 10, Unit.pct), 1);
+						contentCell.appendChild(factory.createParagraphEl());
+					}
+				}
+				getCurrentTable().closeRow();
+			}
+		}
+		
+		private void startOrderVertical(OrderInteraction orderInteraction) {
+			List<SimpleChoice> rawChoices = orderInteraction.getSimpleChoices();
+			List<SimpleChoice> orderChoices = CorrectResponsesUtil.getCorrectOrderedChoices(assessmentItem, orderInteraction);
+			List<SimpleChoice> shuffledChoices = new ArrayList<>(rawChoices);
+			if(orderInteraction.getShuffle()) {
+				Collections.shuffle(shuffledChoices);
+			}
+
+			// calculate the width of the table () and of its columns
+			int tableWidthDxa = OpenXMLConstants.TABLE_FULL_WIDTH_DXA;
+			int tableWidthPct = OpenXMLConstants.TABLE_FULL_WIDTH_PCT;
+			int numOfColumns = 2;
+			int columnWidthDxa = tableWidthDxa / numOfColumns;
+			int columnWidthPct = tableWidthPct / numOfColumns;
+			
+			Integer[] columnsWidth = new Integer[numOfColumns];
+			for(int i=numOfColumns; i-->0; ) {
+				columnsWidth[i] = columnWidthDxa;
+			}
+			startTable(Columns.valueOf(columnsWidth));
+
+			getCurrentTable().addRowEl();
+			createCellHeader(translator.translate("form.imd.layout.order.sources"), columnWidthPct, 50);
+			createCellHeader(translator.translate("form.imd.layout.order.targets"), columnWidthPct, 50);
+			getCurrentTable().closeRow();
+				
+			getCurrentTable().addRowEl();
+			Element listCell = getCurrentTable().addCellEl(factory.createTableCell(null, columnWidthPct, Unit.pct), 1);
+			appendOrderSourcesVertical(shuffledChoices, columnWidthPct, listCell);
+			Element answersCel = getCurrentTable().addCellEl(factory.createTableCell(null, columnWidthPct, Unit.pct), 1);
+			appendOrderTargetsVertical(orderChoices, columnWidthPct, answersCel);
+			getCurrentTable().closeRow();
+
+			endTable();
+		}
+		
+		private void appendOrderSourcesVertical(List<SimpleChoice> choices, int columnWidthPct, Element sourcesCell) {
+			Element wrapEl = factory.createParagraphEl();
+			
+			String backgroundColor = "FFFFFF";
+			Border border = new Border(0, 6, "E9EAF2");
+	
+			HTMLToOpenXMLHandler innerTable = new HTMLToOpenXMLHandler(factory, relPath, wrapEl, false);
+			innerTable.setMaxWidthCm(7.5);
+			innerTable.startTable(Columns.valueOf(columnWidthPct));
+			for(SimpleChoice choice:choices) {
+				innerTable.startCurrentTableRow();
+				Node contentCell = innerTable.addCell(factory.createTableCell(backgroundColor, border, columnWidthPct - 10, Unit.pct));
+
+				String html = htmlBuilder.flowStaticString(choice.getFlowStatics());
+				List<Node> nodes = appendHtmlText(html, factory.createParagraphEl(), 7.5);
+				if(nodes.isEmpty()) {
+					contentCell.appendChild(factory.createParagraphEl());
+				} else {
+					for(Node node:nodes) {
+						contentCell.appendChild(node);
+					}
+					contentCell.appendChild(factory.createParagraphEl());
+				}
+				
+				innerTable.closeCurrentTableRow();
+			}
+			innerTable.endTable();
+
+			List<Node> innerNodes = innerTable.getContent();
+			for(int i=1; i< innerNodes.size(); i++) {
+				sourcesCell.appendChild(innerNodes.get(i));
+			}
+			sourcesCell.appendChild(factory.createParagraphEl());
+		}
+		
+		private void appendOrderTargetsVertical(List<SimpleChoice> choices, int columnWidthPct, Element sourcesCell) {
+
+			String backgroundColor = "E9EAF2";
+			String dropBackgroundColor = "FFFFFF";
+			Border targetBorder = new Border(0, 6, "E9EAF2");
+			Border dropBorder = new Border(0, 6, "EEEEEE");
+			Element wrapEl = factory.createParagraphEl();
+
+			HTMLToOpenXMLHandler innerTable = new HTMLToOpenXMLHandler(factory, relPath, wrapEl, false);
+			innerTable.setMaxWidthCm(7.5);
+			innerTable.startTable(Columns.valueOf(columnWidthPct));
+			for(SimpleChoice choice:choices) {
+				innerTable.startCurrentTableRow();
+				Node contentCell = innerTable.addCell(factory.createTableCell(backgroundColor, targetBorder, columnWidthPct - 10, Unit.pct));
+
+				// add the drop panels
+				HTMLToOpenXMLHandler dropTable = new HTMLToOpenXMLHandler(factory, relPath, wrapEl, false);
+				dropTable.setMaxWidthCm(7);
+				dropTable.startTable(Columns.valueOf(columnWidthPct - 50));
+				if(withResponses) {
+					dropTable.startCurrentTableRow();
+					Node answerCell = dropTable.addCell(factory.createTableCell(dropBackgroundColor, targetBorder, columnWidthPct - 10, Unit.pct));
+					String answerHtml = htmlBuilder.flowStaticString(choice.getFlowStatics());
+					List<Node> answerNodes = appendHtmlText(answerHtml, factory.createParagraphEl(), 7.5);
+					if(answerNodes.isEmpty()) {
+						answerCell.appendChild(factory.createParagraphEl());
+					} else {
+						for(Node answerNode:answerNodes) {
+							answerCell.appendChild(answerNode);
+						}
+					}
+					dropTable.closeCurrentTableRow();
+				} else {
+					dropTable.startCurrentTableRow();
+					Node dropCell = dropTable.addCell(factory.createTableCell(dropBackgroundColor, dropBorder, columnWidthPct - 10, Unit.pct));
+					appendDropPlaceholder(dropCell);
+					dropTable.closeCurrentTableRow();
+				}
+				dropTable.endTable();
+
+				List<Node> dropNodes = dropTable.getContent();
+				for(int i=1; i<dropNodes.size(); i++) {
+					contentCell.appendChild(dropNodes.get(i));
+				}
+				contentCell.appendChild(factory.createParagraphEl());
+				innerTable.closeCurrentTableRow();
+			}
+			innerTable.endTable();
+
+			List<Node> innerNodes = innerTable.getContent();
+			for(int i=1; i<innerNodes.size(); i++) {
+				sourcesCell.appendChild(innerNodes.get(i));
+			}
+			sourcesCell.appendChild(factory.createParagraphEl());
+		}
+		
 		private void startMatch(MatchInteraction matchInteraction) {
 			List<String> cssClasses = matchInteraction.getClassAttr();
 			if(cssClasses != null && cssClasses.contains(QTI21Constants.CSS_MATCH_DRAG_AND_DROP)) {
@@ -728,7 +1026,7 @@ public class QTI21WordExport implements MediaResource {
 				
 				String html = htmlBuilder.flowStaticString(choice.getFlowStatics());
 				List<Node> nodes = appendHtmlText(html, factory.createParagraphEl(), 7.5);
-				if(nodes.size() == 0) {
+				if(nodes.isEmpty()) {
 					contentCell.appendChild(factory.createParagraphEl());
 				} else {
 					for(Node node:nodes) {
@@ -778,7 +1076,7 @@ public class QTI21WordExport implements MediaResource {
 							Node answerCell = dropTable.addCell(factory.createTableCell(dropBackgroundColor, targetBorder, columnWidthPct - 10, Unit.pct));
 							String answerHtml = htmlBuilder.flowStaticString(sourceChoice.getFlowStatics());
 							List<Node> answerNodes = appendHtmlText(answerHtml, factory.createParagraphEl(), 7.5);
-							if(answerNodes.size() == 0) {
+							if(answerNodes.isEmpty()) {
 								answerCell.appendChild(factory.createParagraphEl());
 							} else {
 								for(Node answerNode:answerNodes) {

@@ -1,6 +1,5 @@
-<div id="$r.getId('d3div')"><div id='$r.getId("d3holder")' class='d3chart' style='min-height:300px'></div>
+<div id="$r.getId('d3div')"><div id='$r.getId("d3holder")' class='d3chart' style='min-height:120px'></div>
 <script>
-/* <![CDATA[ */
 jQuery(function () {
 	jQuery('#$r.getId("d3holder")').qtiStatistics('$series.chartType', {
 		values: [$series.datas.data],
@@ -12,13 +11,13 @@ jQuery(function () {
 		yLeftLegend: '$r.translate("chart.item")',
 	})
 });
-/* ]]> */</script>
+</script>
 </div>
 #if($series.legend)
 <div class="o_qti_statistics_legend panel center-block">
 	<ul class="list-inline">
 		#foreach($barserie in $series.series)
-	    	<li><span class="$barserie.cssClass"><img src='$r.staticLink("images/qti/${barserie.color}.png")' width='16' height='16' /></span> $barserie.legend</li>
+	    	<li><span class="bar_color_legend $barserie.cssClass"> </span> $barserie.legend</li>
 	    #end
 	</ul>
 </div>

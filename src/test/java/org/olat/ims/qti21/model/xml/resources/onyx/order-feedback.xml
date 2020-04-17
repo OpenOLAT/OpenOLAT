@@ -1,0 +1,142 @@
+<?xml version='1.0' encoding='utf-8'?>
+<assessmentItem
+	xmlns="http://www.imsglobal.org/xsd/imsqti_v2p1"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqti_v2p1 http://www.imsglobal.org/xsd/qti/qtiv2p1/imsqti_v2p1p1.xsd http://www.w3.org/1998/Math/MathML http://www.w3.org/Math/XMLSchema/mathml2/mathml2.xsd"
+	identifier="idf557ed43-5778-43c7-8d87-cb387750a10b"
+	title="Bringen Sie die Antworten in die richtige Reihenfolge"
+	adaptive="false" timeDependent="false">
+	<responseDeclaration identifier="RESPONSE_1"
+		cardinality="ordered" baseType="identifier">
+		<correctResponse>
+			<value>id05f38611-389c-491b-899d-10adb3318339</value>
+			<value>idefec576a-964b-4029-a50b-fe213baba365</value>
+			<value>id31d7c9af-e640-4bdb-ad36-c8c009a62aeb</value>
+		</correctResponse>
+	</responseDeclaration>
+	<outcomeDeclaration identifier="SCORE"
+		cardinality="single" baseType="float">
+		<defaultValue>
+			<value>0</value>
+		</defaultValue>
+	</outcomeDeclaration>
+	<outcomeDeclaration identifier="MAXSCORE"
+		cardinality="single" baseType="float">
+		<defaultValue>
+			<value>10</value>
+		</defaultValue>
+	</outcomeDeclaration>
+	<outcomeDeclaration identifier="FEEDBACKBASIC"
+		cardinality="single" baseType="identifier">
+		<defaultValue>
+			<value>empty</value>
+		</defaultValue>
+	</outcomeDeclaration>
+	<outcomeDeclaration identifier="FEEDBACKMODAL"
+		cardinality="multiple" baseType="identifier" view="testConstructor" />
+	<itemBody>
+		<p>Ordnen Sie die folgenden Kostenwerte für eine streng monoton
+			steigende Kostenfunktion der Höhe der Kosten K(x) nach (höchsten Wert
+			nach oben).</p>
+		<orderInteraction responseIdentifier="RESPONSE_1"
+			shuffle="true">
+			<simpleChoice
+				identifier="id31d7c9af-e640-4bdb-ad36-c8c009a62aeb">
+				<p>
+					K(x
+					<sub>0</sub>
+					-2)
+				</p>
+			</simpleChoice>
+			<simpleChoice
+				identifier="id05f38611-389c-491b-899d-10adb3318339">
+				<p>
+					K(x
+					<sub>0</sub>
+					+3)
+				</p>
+			</simpleChoice>
+			<simpleChoice
+				identifier="idefec576a-964b-4029-a50b-fe213baba365">
+				<p>
+					K(x
+					<sub>0</sub>
+					)
+				</p>
+			</simpleChoice>
+		</orderInteraction>
+	</itemBody>
+	<responseProcessing>
+		<responseCondition>
+			<responseIf>
+				<isNull>
+					<variable identifier="RESPONSE_1" />
+				</isNull>
+				<setOutcomeValue identifier="FEEDBACKBASIC">
+					<baseValue baseType="identifier">empty</baseValue>
+				</setOutcomeValue>
+			</responseIf>
+			<responseElseIf>
+				<match>
+					<variable identifier="RESPONSE_1" />
+					<correct identifier="RESPONSE_1" />
+				</match>
+				<setOutcomeValue identifier="SCORE">
+					<sum>
+						<variable identifier="SCORE" />
+						<variable identifier="MAXSCORE" />
+					</sum>
+				</setOutcomeValue>
+				<setOutcomeValue identifier="FEEDBACKBASIC">
+					<baseValue baseType="identifier">correct</baseValue>
+				</setOutcomeValue>
+			</responseElseIf>
+			<responseElse>
+				<setOutcomeValue identifier="FEEDBACKBASIC">
+					<baseValue baseType="identifier">incorrect</baseValue>
+				</setOutcomeValue>
+			</responseElse>
+		</responseCondition>
+		<responseCondition>
+			<responseIf>
+				<and>
+					<match>
+						<baseValue baseType="identifier">correct</baseValue>
+						<variable identifier="FEEDBACKBASIC" />
+					</match>
+				</and>
+				<setOutcomeValue identifier="FEEDBACKMODAL">
+					<multiple>
+						<variable identifier="FEEDBACKMODAL" />
+						<baseValue baseType="identifier">Feedback1106148020</baseValue>
+					</multiple>
+				</setOutcomeValue>
+			</responseIf>
+		</responseCondition>
+		<responseCondition>
+			<responseIf>
+				<and>
+					<match>
+						<baseValue baseType="identifier">incorrect</baseValue>
+						<variable identifier="FEEDBACKBASIC" />
+					</match>
+				</and>
+				<setOutcomeValue identifier="FEEDBACKMODAL">
+					<multiple>
+						<variable identifier="FEEDBACKMODAL" />
+						<baseValue baseType="identifier">Feedback616881305</baseValue>
+					</multiple>
+				</setOutcomeValue>
+			</responseIf>
+		</responseCondition>
+	</responseProcessing>
+	<modalFeedback identifier="Feedback1106148020"
+		outcomeIdentifier="FEEDBACKMODAL" showHide="show" title="RICHTIG!">
+		<p>Gut gemacht!</p>
+	</modalFeedback>
+	<modalFeedback identifier="Feedback616881305"
+		outcomeIdentifier="FEEDBACKMODAL" showHide="show"
+		title="NICHT RICHTIG!">
+		<p>Bitte noch einmal ordnen!</p>
+	</modalFeedback>
+</assessmentItem>

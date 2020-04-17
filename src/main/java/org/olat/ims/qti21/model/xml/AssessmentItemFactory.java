@@ -74,6 +74,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HotspotInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HottextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.OrderInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.UploadInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleAssociableChoice;
@@ -710,6 +711,72 @@ public class AssessmentItemFactory {
 		return responseDeclaration;
 	}
 	
+	public static OrderInteraction createOrderInteraction(AssessmentItem assessmentItem, Identifier responseDeclarationId, Orientation orientation) {
+		OrderInteraction orderInteraction = new OrderInteraction(assessmentItem.getItemBody());
+		orderInteraction.setMaxChoices(0);
+		orderInteraction.setMinChoices(0);
+		orderInteraction.setShuffle(true);
+		if(orientation != null) {
+			orderInteraction.setOrientation(orientation);
+		}
+		orderInteraction.setResponseIdentifier(responseDeclarationId);
+		
+		PromptGroup prompts = new PromptGroup(orderInteraction);
+		orderInteraction.getNodeGroups().add(prompts);
+		
+		SimpleChoiceGroup singleChoices = new SimpleChoiceGroup(orderInteraction);
+		orderInteraction.getNodeGroups().add(singleChoices);
+		return orderInteraction;
+	}
+	
+	public static OrderInteraction appendOrderInteraction(ItemBody itemBody, Identifier responseDeclarationId, int maxChoices, boolean shuffle) {
+		OrderInteraction orderInteraction = new OrderInteraction(itemBody);
+		orderInteraction.setMaxChoices(maxChoices);
+		orderInteraction.setMinChoices(0);
+		orderInteraction.setShuffle(shuffle);
+		orderInteraction.setResponseIdentifier(responseDeclarationId);
+		itemBody.getBlocks().add(orderInteraction);
+		
+		PromptGroup prompts = new PromptGroup(orderInteraction);
+		orderInteraction.getNodeGroups().add(prompts);
+		
+		SimpleChoiceGroup singleChoices = new SimpleChoiceGroup(orderInteraction);
+		orderInteraction.getNodeGroups().add(singleChoices);
+		return orderInteraction;
+	}
+	
+	public static ResponseDeclaration createOrderCorrectResponseDeclaration(AssessmentItem assessmentItem, Identifier declarationId, List<Identifier> correctResponseIds) {
+		ResponseDeclaration responseDeclaration = new ResponseDeclaration(assessmentItem);
+		responseDeclaration.setIdentifier(declarationId);
+		responseDeclaration.setCardinality(Cardinality.ORDERED);
+		responseDeclaration.setBaseType(BaseType.IDENTIFIER);
+
+		CorrectResponse correctResponse = new CorrectResponse(responseDeclaration);
+		responseDeclaration.setCorrectResponse(correctResponse);
+		
+		for(Identifier correctResponseId:correctResponseIds) {
+			appendIdentifierValue(correctResponse, correctResponseId);
+		}
+		return responseDeclaration;
+	}
+	
+	public static SimpleChoice createSimpleChoice(OrderInteraction orderInteraction, String text, String prefix) {
+		SimpleChoice newChoice = new SimpleChoice(orderInteraction);
+		newChoice.setIdentifier(IdentifierGenerator.newAsIdentifier(prefix));
+		P firstChoiceText = AssessmentItemFactory.getParagraph(newChoice, text);
+		newChoice.getFlowStatics().add(firstChoiceText);
+		return newChoice;
+	}
+	
+	public static SimpleChoice appendSimpleChoice(OrderInteraction orderInteraction, String text, Identifier identifier) {
+		SimpleChoice newChoice = new SimpleChoice(orderInteraction);
+		newChoice.setIdentifier(identifier);
+		P firstChoiceText = AssessmentItemFactory.getParagraph(newChoice, text);
+		newChoice.getFlowStatics().add(firstChoiceText);
+		orderInteraction.getNodeGroups().getSimpleChoiceGroup().getSimpleChoices().add(newChoice);
+		return newChoice;
+	}
+	
 	public static ChoiceInteraction appendChoiceInteraction(ItemBody itemBody, Identifier responseDeclarationId, int maxChoices, boolean shuffle) {
 		ChoiceInteraction choiceInteraction = new ChoiceInteraction(itemBody);
 		choiceInteraction.setMaxChoices(maxChoices);
@@ -1119,7 +1186,7 @@ public class AssessmentItemFactory {
 		if(orientation != null) {
 			choiceInteraction.setOrientation(orientation);
 		}
-		if(classAtrr != null && classAtrr.size() > 0) {
+		if(classAtrr != null && !classAtrr.isEmpty()) {
 			choiceInteraction.setClassAttr(classAtrr);
 		}
 		choiceInteraction.setResponseIdentifier(responseDeclarationId);

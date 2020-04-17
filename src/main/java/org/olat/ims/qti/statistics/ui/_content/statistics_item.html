@@ -11,35 +11,35 @@
 	<h4>$r.translate("fig.title")</h4>
 	<table class="o_qti_statistics_figures"><tbody>
 		#if($numOfParticipants)
-		<tr><td>$r.translate("fig.participants")</td>
+		<tr><th scope="row">$r.translate("fig.participants")</th>
 			<td>$numOfParticipants</td></tr>
 		#end
 		#if($maxScore)
-		<tr><td>$r.translate("chart.maxscore")</td>
+		<tr><th scope="row">$r.translate("chart.maxscore")</th>
 			<td>$maxScore</td></tr>
 		#end
 		#if($rightAnswers)
-		<tr><td>$r.translate("fig.correctanswers")</td>
+		<tr><th scope="row">$r.translate("fig.correctanswers")</th>
 			<td>$rightAnswers</td></tr>
 		#end
 		#if($wrongAnswers)
-		<tr><td>$r.translate("fig.wronganswers")</td>
+		<tr><th scope="row">$r.translate("fig.wronganswers")</th>
 			<td>$wrongAnswers</td></tr>
 		#end
 		#if($notAnswered)
-		<tr><td>$r.translate("fig.notanswered")</td>
+		<tr><th scope="row">$r.translate("fig.notanswered")</th>
 			<td>$notAnswered</td></tr>
 		#end
 		#if($itemDifficulty)
-		<tr><td>$r.translate("fig.itemdiff")</td>
+		<tr><th scope="row">$r.translate("fig.itemdiff")</th>
 			<td>$itemDifficulty</td></tr>
 		#end
 		#if($averageScore)
-		<tr><td>$r.translate("fig.averagescore")</td>
+		<tr><th scope="row">$r.translate("fig.averagescore")</th>
 			<td>$averageScore</td></tr>
 		#end
 		#if($averageDuration)
-		<tr><td>$r.translate("fig.averagedur")</td>
+		<tr><th scope="row">$r.translate("fig.averagedur")</th>
 			<td>$averageDuration</td></tr>
 		#end
 	</tbody></table>

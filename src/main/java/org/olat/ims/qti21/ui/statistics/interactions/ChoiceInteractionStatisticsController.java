@@ -39,6 +39,7 @@ import org.olat.ims.qti21.model.statistics.ChoiceStatistics;
 import org.olat.ims.qti21.ui.statistics.QTI21AssessmentItemStatisticsController;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.olat.ims.qti21.ui.statistics.SeriesFactory;
+import org.olat.ims.qti21.ui.statistics.interactions.ResponseInfos.ExplanationType;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -152,7 +153,7 @@ public abstract class ChoiceInteractionStatisticsController extends BasicControl
 			String label = Integer.toString(++i);
 			d1.add(ansCount, label, cssColor);
 
-			responseInfos.add(new ResponseInfos(label, text, points, correct, survey, false));
+			responseInfos.add(new ResponseInfos(label, text, points, correct, survey));
 		}
 		
 		if(numOfResults != numOfParticipants) {
@@ -160,7 +161,7 @@ public abstract class ChoiceInteractionStatisticsController extends BasicControl
 			if(notAnswered > 0) {
 				String label = Integer.toString(++i);
 				String text = translate("user.not.answer");
-				responseInfos.add(new ResponseInfos(label, text, null, null, null, false, survey, false));
+				responseInfos.add(new ResponseInfos(label, text, null, null, null, false, survey, ExplanationType.standard));
 				d1.add(notAnswered, label, "bar_grey");
 			}
 		}
@@ -223,7 +224,7 @@ public abstract class ChoiceInteractionStatisticsController extends BasicControl
 					pointsObj = correct ? 1.0f : 0.0f;
 				}
 			}
-			responseInfos.add(new ResponseInfos(label, text, pointsObj, correct, survey, false));
+			responseInfos.add(new ResponseInfos(label, text, pointsObj, correct, survey));
 		}
 
 		List<BarSeries> serieList = new ArrayList<>(3);

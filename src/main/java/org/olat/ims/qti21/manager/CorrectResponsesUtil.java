@@ -39,8 +39,10 @@ import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.OrderInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.Choice;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.MapEntry;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.Mapping;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
@@ -239,7 +241,27 @@ public class CorrectResponsesUtil {
 		return correctAnswers;
 	}
 	
-	
+	public static final List<SimpleChoice> getCorrectOrderedChoices(AssessmentItem assessmentItem, OrderInteraction interaction) {
+		List<Identifier> orderedIdentifiers = getCorrectOrderedIdentifierResponses(assessmentItem, interaction);
+		
+		List<SimpleChoice> choices = new ArrayList<>(interaction.getSimpleChoices());
+		List<SimpleChoice> orderedChoices = new ArrayList<>(choices.size());
+		for(Identifier identifier:orderedIdentifiers) {
+			for(SimpleChoice choice:choices) {
+				if(identifier.equals(choice.getIdentifier())) {
+					orderedChoices.add(choice);
+					choices.remove(choice);
+					break;
+				}
+			}
+		}
+		
+		if(!choices.isEmpty()) {
+			orderedChoices.addAll(choices);
+		}
+		return orderedChoices;
+	}
+
 	public static final List<Identifier> getCorrectOrderedIdentifierResponses(AssessmentItem assessmentItem, Interaction interaction) {
 		List<Identifier> correctAnswers = new ArrayList<>(5);
 		

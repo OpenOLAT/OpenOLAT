@@ -771,16 +771,27 @@ public class OpenXMLDocument {
 		
 		return tableEl;
 	}
+	
+	public Element createTableRow() {
+		return createTableRow(false);
+	}
+	
 /*
  * For the moment, only w:tr
 <w:tr>
 	<w:trPr>
+		<w:cantSplit />
 		<w:tblCellSpacing w:w="22" w:type="dxa" />
 	</w:trPr>
  */
-	public Element createTableRow() {
+	public Element createTableRow(boolean cantSplit) {
 		Element rowEl = document.createElement("w:tr");
-		//trPr
+		if(cantSplit) {
+			//trPr
+			Element rowPrEl = (Element)rowEl.appendChild(document.createElement("w:trPr"));
+			//cantSplit
+			rowPrEl.appendChild(document.createElement("w:cantSplit"));
+		}
 		return rowEl;	
 	}
 /*

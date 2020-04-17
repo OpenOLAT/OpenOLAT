@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='utf-8'?><!--This file was created using: Onyx 
+	Editor, Version 3.6 (Full, licensed by Virtueller Campus Rheinland Pfalz), 
+	(c)2012 BPS Bildungsportal Sachsen GmbH -->
+<assessmentItem
+	xmlns="http://www.imsglobal.org/xsd/imsqti_v2p1"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqti_v2p1 imsqti_v2p1.xsd"
+	identifier="Reihenfolgenaufgabe_2102326169" title="Reihenfolgenaufgabe"
+	adaptive="false" timeDependent="false">
+	<responseDeclaration identifier="RESPONSE_21193585"
+		cardinality="ordered" baseType="identifier">
+		<correctResponse>
+			<value>Choice2</value>
+			<value>Choice0</value>
+			<value>Choice3</value>
+			<value>Choice1</value>
+		</correctResponse>
+	</responseDeclaration>
+	<outcomeDeclaration identifier="SCORE"
+		cardinality="single" baseType="float">
+		<defaultValue>
+			<value>0</value>
+		</defaultValue>
+	</outcomeDeclaration>
+	<outcomeDeclaration identifier="MAXSCORE"
+		cardinality="single" baseType="float">
+		<defaultValue>
+			<value>1</value>
+		</defaultValue>
+	</outcomeDeclaration>
+	<outcomeDeclaration identifier="FEEDBACKBASIC"
+		cardinality="single" baseType="identifier">
+		<defaultValue>
+			<value>empty</value>
+		</defaultValue>
+	</outcomeDeclaration>
+	<itemBody>
+		<p>Bringen Sie folgende Ereignisse in die richtige Reihenfolge!</p>
+		<orderInteraction
+			responseIdentifier="RESPONSE_21193585" shuffle="false">
+			<simpleChoice identifier="Choice0">1. Weltkrieg</simpleChoice>
+			<simpleChoice identifier="Choice1">Vietnamkrieg</simpleChoice>
+			<simpleChoice identifier="Choice2">Dreißigjähriger Krieg
+			</simpleChoice>
+			<simpleChoice identifier="Choice3">2. Weltkrieg</simpleChoice>
+		</orderInteraction>
+	</itemBody>
+	<responseProcessing>
+		<responseCondition>
+			<responseIf>
+				<isNull>
+					<variable identifier="RESPONSE_21193585" />
+				</isNull>
+				<setOutcomeValue identifier="FEEDBACKBASIC">
+					<baseValue baseType="identifier">empty</baseValue>
+				</setOutcomeValue>
+			</responseIf>
+			<responseElseIf>
+				<match>
+					<variable identifier="RESPONSE_21193585" />
+					<correct identifier="RESPONSE_21193585" />
+				</match>
+				<setOutcomeValue identifier="SCORE">
+					<sum>
+						<variable identifier="SCORE" />
+						<variable identifier="MAXSCORE" />
+					</sum>
+				</setOutcomeValue>
+				<setOutcomeValue identifier="FEEDBACKBASIC">
+					<baseValue baseType="identifier">correct</baseValue>
+				</setOutcomeValue>
+			</responseElseIf>
+			<responseElse>
+				<setOutcomeValue identifier="FEEDBACKBASIC">
+					<baseValue baseType="identifier">incorrect</baseValue>
+				</setOutcomeValue>
+			</responseElse>
+		</responseCondition>
+	</responseProcessing>
+</assessmentItem>

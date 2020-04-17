@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.DoubleAdder;
+import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
 
@@ -36,6 +37,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.ims.qti.statistics.manager.Statistics;
 import org.olat.ims.qti.statistics.model.StatisticAssessment;
 import org.olat.ims.qti.statistics.model.StatisticsItem;
@@ -48,6 +50,7 @@ import org.olat.ims.qti21.model.statistics.HotspotChoiceStatistics;
 import org.olat.ims.qti21.model.statistics.KPrimStatistics;
 import org.olat.ims.qti21.model.statistics.MatchStatistics;
 import org.olat.ims.qti21.model.statistics.NumericalInputInteractionStatistics;
+import org.olat.ims.qti21.model.statistics.OrderStatistics;
 import org.olat.ims.qti21.model.statistics.TextEntryInteractionStatistics;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
@@ -62,6 +65,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HotspotInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HottextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.OrderInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleAssociableChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
@@ -125,7 +129,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 			sb.append(" and asession.identity.key in (select data.identity.key from assessmententry data")
 			  .append("   where data.repositoryEntry.key=asession.repositoryEntry.key")
 			  .append(" )");
-		} else if(searchParams.getLimitToGroups() != null && searchParams.getLimitToGroups().size() > 0) {
+		} else if(searchParams.getLimitToGroups() != null && !searchParams.getLimitToGroups().isEmpty()) {
 			sb.append(" and asession.identity.key in ( select membership.identity.key from bgroupmember membership")
 			  .append("   where membership.group in (:baseGroups) and membership.role='").append(GroupRole.participant).append("'")
 			  .append(" )");
@@ -164,7 +168,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 			//
 		} else if(searchParams.isViewAllUsers()) {
 			//
-		} else if(searchParams.getLimitToGroups() != null && searchParams.getLimitToGroups().size() > 0) {
+		} else if(searchParams.getLimitToGroups() != null && !searchParams.getLimitToGroups().isEmpty()) {
 			query.setParameter("baseGroups", searchParams.getLimitToGroups());
 		}
 	}
@@ -236,7 +240,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 			}
 			dataPos++;
 		}
-		if (rawDatas.size() == 0) {
+		if (rawDatas.isEmpty()) {
 			minScore = 0;
 		}
 		
@@ -330,6 +334,75 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		stats.setNumOfIncorrectAnswers(numOfIncorrectAnswers);
 		return stats;
 	}
+	
+	@Override
+	public List<OrderStatistics> getOrderInteractionStatistics(String itemRefIdent,
+			AssessmentItem assessmentItem, OrderInteraction orderInteraction, QTI21StatisticSearchParams searchParams) {
+
+		List<RawData> results = getRawDatas(itemRefIdent, orderInteraction.getResponseIdentifier().toString(), searchParams);
+		
+		List<SimpleChoice> orderedChoices = CorrectResponsesUtil.getCorrectOrderedChoices(assessmentItem, orderInteraction);
+		long[] numOfCorrects = new long[orderedChoices.size()];
+		long[] numOfIncorrects = new long[orderedChoices.size()];
+		long[] numOfNotAnswered = new long[orderedChoices.size()];
+		for(int i=numOfCorrects.length; i-->0; ) {
+			numOfCorrects[i] = 0l;
+			numOfIncorrects[i] = 0l;
+			numOfNotAnswered[i] = 0l;
+		}
+		
+		List<Identifier> orderedChoiceIdentifiers = CorrectResponsesUtil.getCorrectOrderedIdentifierResponses(assessmentItem, orderInteraction);
+		List<String> orderedStringIdentifiers = orderedChoiceIdentifiers.stream()
+				.map(Identifier::toString)
+				.collect(Collectors.toList());
+
+		for(RawData result:results) {
+			Long numOfAnswers = result.getCount();
+			if(numOfAnswers != null && numOfAnswers.longValue() > 0) {
+				String stringuifiedResponse = result.getStringuifiedResponse();
+				List<String> orderedResponses = splitStringuifiedResponse(stringuifiedResponse);
+
+				for(int i=0; i<orderedChoices.size(); i++) {
+					if(i < orderedStringIdentifiers.size()) {
+						String identifier = orderedStringIdentifiers.get(i);
+						if(i < orderedResponses.size()) {
+							if(identifier.equals(orderedResponses.get(i))) {
+								numOfCorrects[i]++;
+							} else {
+								numOfIncorrects[i]++;
+							}		
+						} else {
+							numOfNotAnswered[i]++;
+						}
+					} else {
+						// not the same number of choices as the number of defined correct answers
+						if(i < orderedResponses.size()) {
+							numOfIncorrects[i]++;
+						} else {
+							numOfCorrects[i]++;
+						}
+					}
+				}
+			}
+		}
+
+		List<OrderStatistics> choicesStatistics = new ArrayList<>();
+		for(int i=0; i<orderedChoices.size(); i++) {
+			choicesStatistics.add(new OrderStatistics(orderedChoices.get(i), numOfCorrects[i], numOfIncorrects[i], numOfNotAnswered[i]));
+		}
+		return choicesStatistics;
+	}
+	
+	private List<String> splitStringuifiedResponse(String stringuifiedResponse) {
+		String[] orderResponses = stringuifiedResponse.split("[\\[,\\]]");
+		List<String> orderResponsesList = new ArrayList<>(orderResponses.length);
+		for(String orderResponse:orderResponses) {
+			if(StringHelper.containsNonWhitespace(orderResponse)) {
+				orderResponsesList.add(orderResponse);
+			}
+		}
+		return orderResponsesList;
+	}
 
 	@Override
 	public List<ChoiceStatistics> getChoiceInteractionStatistics(String itemRefIdent,
@@ -344,7 +417,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		}
 
 		for(RawData result:results) {
-			Long numOfAnswers = result.getCount();;
+			Long numOfAnswers = result.getCount();
 			if(numOfAnswers != null && numOfAnswers.longValue() > 0) {
 				String stringuifiedResponse = result.getStringuifiedResponse();
 				for(int i=simpleChoices.size(); i-->0; ) {
@@ -377,7 +450,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		}
 
 		for(RawData result:results) {
-			Long numOfAnswers = result.getCount();;
+			Long numOfAnswers = result.getCount();
 			if(numOfAnswers != null && numOfAnswers.longValue() > 0) {
 				String stringuifiedResponse = result.getStringuifiedResponse();
 				for(int i=hottexts.size(); i-->0; ) {
@@ -410,7 +483,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		}
 
 		for(RawData result:results) {
-			Long numOfAnswers = result.getCount();;
+			Long numOfAnswers = result.getCount();
 			if(numOfAnswers != null && numOfAnswers.longValue() > 0) {
 				String stringuifiedResponse = result.getStringuifiedResponse();
 				for(int i=hotspotChoices.size(); i-->0; ) {
@@ -583,7 +656,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 			correctResponse = solution.toString();
 		}
 		
-		double points = Double.NaN;
+		double points;
 		if(numericalEntry.getScore() == null) {
 			points = 0.0d;//all score
 		} else  {

@@ -8,50 +8,50 @@
 #end
 <h4>$r.translate("fig.title")</h4>
 <table class="o_qti_statistics_figures">
-	<tr><td>$r.translate("fig.courseId")</td>
+	<tr><th scope="row">$r.translate("fig.courseId")</th>
 		<td>$courseId</td></tr>
-	<tr><td>#if($type == "survey") $r.translate("fig.surveyId") #else $r.translate("fig.testId") #end</td>
+	<tr><th scope="row">#if($type == "survey") $r.translate("fig.surveyId") #else $r.translate("fig.testId") #end</th>
 		<td>$testId</td></tr>
-	<tr><td>$r.translate("fig.participants")</td>
+	<tr><th scope="row">$r.translate("fig.participants")</th>
 		<td>$numOfParticipants</td></tr>
 	#if($numOfPassed)
-		<tr><td>$r.translate("fig.passed")</td>
+		<tr><th scope="row">$r.translate("fig.passed")</th>
 			<td>$numOfPassed</td></tr>
 	#end
 	#if($numOfFailed)
-		<tr><td>$r.translate("fig.failed")</td>
+		<tr><th scope="row">$r.translate("fig.failed")</th>
 			<td>$numOfFailed</td></tr>
 	#end
 	#if($maxScore)
-		<tr><td>$r.translate("chart.maxscore")</td>
+		<tr><th scope="row">$r.translate("chart.maxscore")</th>
 			<td>$maxScore</td></tr>
 	#end
 	#if($cutScore)
-	<tr><td>$r.translate("chart.cutscore")</td>
+	<tr><th scope="row">$r.translate("chart.cutscore")</th>
 		<td>$cutScore</td></tr>
 	#end
 	#if($average)
-	<tr><td>$r.translate("fig.avg")</td>
+	<tr><th scope="row">$r.translate("fig.avg")</th>
 		<td>$average</td></tr>
 	#end
 	#if($range)
-	<tr><td>$r.translate("fig.span")</td>
+	<tr><th scope="row">$r.translate("fig.span")</th>
 		<td>$range</td></tr>
 	#end
 	#if($standardDeviation)
-	<tr><td>$r.translate("fig.stddev")</td>
+	<tr><th scope="row">$r.translate("fig.stddev")</th>
 		<td>$standardDeviation</td></tr>
 	#end
 	#if($mode)
-	<tr><td>$r.translate("fig.mode")</td>
+	<tr><th scope="row">$r.translate("fig.mode")</th>
 		<td>$mode</td></tr>
 	#end
 	#if($median)
-	<tr><td>$r.translate("fig.median")</td>
+	<tr><th scope="row">$r.translate("fig.median")</th>
 		<td>$median</td></tr>
 	#end
 	#if($averageDuration)
-	<tr><td>$r.translate("fig.averagedur")</td>
+	<tr><th scope="row">$r.translate("fig.averagedur")</th>
 		<td>$averageDuration</td></tr>
 	#end
 </table>

@@ -15,19 +15,19 @@
 	<h4>$r.translate("fig.title")</h4>
 	<table class="o_qti_statistics_figures"><tbody>
 		#if($numOfParticipants)
-		<tr><td>$r.translate("fig.participants")</td>
+		<tr><th scope="row">$r.translate("fig.participants")</th>
 			<td>$numOfParticipants</td></tr>
 		#end
 		#if($maxScore)
-		<tr><td>$r.translate("chart.maxscore")</td>
+		<tr><th scope="row">$r.translate("chart.maxscore")</th>
 			<td>$maxScore</td></tr>
 		#end
 		#if($averageDuration)
-		<tr><td>$r.translate("fig.averagedur")</td>
+		<tr><th scope="row">$r.translate("fig.averagedur")</th>
 			<td>$averageDuration</td></tr>
 		#end
 		#if($numOfResults)
-		<tr><td>$r.translate("chart.answerscount")</td>
+		<tr><th scope="row">$r.translate("chart.answerscount")</th>
 			<td>$numOfResults</td></tr>
 		#end
 	</tbody></table>

@@ -17,30 +17,44 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool;
+package org.olat.ims.qti21.model.statistics;
+
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 
 /**
  * 
- * Initial date: 20.02.2013<br>
+ * Initial date: 16 avr. 2020<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum QuestionType {
+public class OrderStatistics {
 
-	MC,
-	FIB,
-	SC,
-	KPRIM,
-	ESSAY,
-	NUMERICAL,
-	HOTSPOT,
-	UPLOAD,
-	DRAWING,
-	MATCH,
-	MATCHDRAGANDDROP,
-	MATCHTRUEFALSE,
-	HOTTEXT,
-	ORDER,
-	UNKOWN
+	private final SimpleChoice choice;
+	
+	private final long numOfCorrect;
+	private final long numOfIncorrect;
+	private final long notAnswered;
+	
+	public OrderStatistics(SimpleChoice choice, long numOfCorrect, long numOfIncorrect, long notAnswered) {
+		this.numOfCorrect = numOfCorrect;
+		this.numOfIncorrect = numOfIncorrect;
+		this.notAnswered = notAnswered;
+		this.choice = choice;
+	}
+	
+	public long getNumOfCorrect() {
+		return numOfCorrect;
+	}
 
+	public long getNumOfIncorrect() {
+		return numOfIncorrect;
+	}
+
+	public long getNotAnswered() {
+		return notAnswered;
+	}
+
+	public SimpleChoice getChoice() {
+		return choice;
+	}
 }

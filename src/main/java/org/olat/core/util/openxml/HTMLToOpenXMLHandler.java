@@ -399,7 +399,11 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 	}
 	
 	public void startCurrentTableRow() {
-		getCurrentTable().addRowEl();
+		startCurrentTableRow(false);
+	}
+	
+	public void startCurrentTableRow(boolean cantSplit) {
+		getCurrentTable().addRowEl(cantSplit);
 	}
 	
 	public Node addCell(int colSpan, int rowSpan) {
@@ -465,7 +469,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		} else if("table".equals(tag)) {
 			startTable();
 		} else if("tr".equals(tag)) {
-			startCurrentTableRow();
+			startCurrentTableRow(false);
 		} else if("td".equals(tag) || "th".equals(tag)) {
 			int colspan = OpenXMLUtils.getSpanAttribute("colspan", attributes);
 			int rowspan = OpenXMLUtils.getSpanAttribute("rowspan", attributes);
@@ -503,6 +507,13 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 			return relPath.concat(path);
 		}
 		return path;
+	}
+	
+	public void appendText(String text) {
+		if(textBuffer == null) {
+			textBuffer = new StringBuilder();
+		}
+		textBuffer.append(text);
 	}
 
 	@Override
@@ -619,6 +630,15 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		}
 		
 		public Node addRowEl() {
+			return addRowEl(false);
+		}
+		
+		/**
+		 * Add a new row in the table.
+		 * @param cantSplit true to prevent the cells to be splitted across 2 pages
+		 * @return The row element
+		 */
+		public Node addRowEl(boolean cantSplit) {
 			for(int i=rowSpans.length; i-->0; ) {
 				if(rowSpans[i] != null) {
 					rowSpans[i].unDone();
@@ -626,7 +646,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 			}
 			
 			nextCol = 0;
-			currentRowEl = factory.createTableRow();
+			currentRowEl = factory.createTableRow(cantSplit);
 			return tableEl.appendChild(currentRowEl);
 		}
 		

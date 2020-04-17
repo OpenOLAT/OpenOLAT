@@ -38,6 +38,7 @@ import org.olat.ims.qti21.model.statistics.TextEntryInteractionStatistics;
 import org.olat.ims.qti21.ui.statistics.QTI21AssessmentItemStatisticsController;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.olat.ims.qti21.ui.statistics.SeriesFactory;
+import org.olat.ims.qti21.ui.statistics.interactions.ResponseInfos.ExplanationType;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -121,7 +122,7 @@ public class TextEntryInteractionsStatisticsController extends BasicController {
 			}
 			
 			Float score = entry.getPoints() == null ? null : entry.getPoints().floatValue();
-			responseInfos.add(new ResponseInfos(label, text.toString(), null, entry.getWrongAnswers(), score, true, survey, false));
+			responseInfos.add(new ResponseInfos(label, text.toString(), null, entry.getWrongAnswers(), score, true, survey, ExplanationType.standard));
 		}
 		
 		List<BarSeries> serieList = Collections.singletonList(d1);

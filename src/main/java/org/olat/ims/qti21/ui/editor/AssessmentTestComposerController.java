@@ -106,6 +106,7 @@ import org.olat.ims.qti21.model.xml.interactions.HottextAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MatchAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.OrderAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.UploadAssessmentItemBuilder;
 import org.olat.ims.qti21.pool.QTI21QPoolServiceProvider;
@@ -166,7 +167,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private Dropdown exportItemTools, addItemTools, changeItemTools;
 	private Link newTestPartLink, newSectionLink, newSingleChoiceLink, newMultipleChoiceLink,
 			newKPrimLink, newMatchLink, newMatchDragAndDropLink, newMatchTrueFalseLink,
-			newFIBLink, newNumericalLink, newHotspotLink, newHottextLink,
+			newFIBLink, newNumericalLink, newHotspotLink, newHottextLink, newOrderLink,
 			newEssayLink, newUploadLink, newDrawingLink;
 	private Link importFromPoolLink, importFromTableLink, exportToPoolLink, exportToDocxLink;
 	private Link reloadInCacheLink, deleteLink, copyLink;
@@ -308,6 +309,9 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		newHotspotLink = LinkFactory.createToolLink("new.hotspot", translate("new.hotspot"), this, "o_mi_qtihotspot");
 		newHotspotLink.setDomReplacementWrapperRequired(false);
 		addItemTools.addComponent(newHotspotLink);
+		newOrderLink = LinkFactory.createToolLink("new.order", translate("new.order"), this, "o_mi_qtiorder");
+		newOrderLink.setDomReplacementWrapperRequired(false);
+		addItemTools.addComponent(newOrderLink);
 		
 		newEssayLink = LinkFactory.createToolLink("new.essay", translate("new.essay"), this, "o_mi_qtiessay");
 		newEssayLink.setDomReplacementWrapperRequired(false);
@@ -562,6 +566,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new HotspotAssessmentItemBuilder(translate("new.hotspot"), qtiService.qtiSerializer()));
 		} else if(newHottextLink == source) {
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new HottextAssessmentItemBuilder(translate("new.hottext"), translate("new.hottext.start"), translate("new.hottext.text"), qtiService.qtiSerializer()));
+		} else if(newOrderLink == source) {
+			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new OrderAssessmentItemBuilder(translate("new.order"), translate("new.answer"), qtiService.qtiSerializer()));
 		} else if(newEssayLink == source) {
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new EssayAssessmentItemBuilder(translate("new.essay"), qtiService.qtiSerializer()));
 		} else if(newUploadLink == source) {

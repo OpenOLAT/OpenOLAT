@@ -80,6 +80,7 @@ public class NewQuestionItemCalloutController extends BasicController {
 		addLink("new.fib.numerical", QTI21QuestionType.numerical, links);
 		addLink("new.hottext", QTI21QuestionType.hottext, links);
 		addLink("new.hotspot", QTI21QuestionType.hotspot, links);
+		addLink("new.order", QTI21QuestionType.order, links);
 		
 		mainVC.contextPut("links", links);
 		putInitialPanel(mainVC);

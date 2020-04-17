@@ -40,24 +40,28 @@ public class ResponseInfos {
 	private final Float points;
 	private final boolean correct;
 	private final boolean survey;
-	private final boolean kprim;
+	private final ExplanationType explanationType;
 	
 	private final List<String> wrongAnswers;
 	
-	public ResponseInfos(String label, Component textComponent, Float points, boolean correct, boolean survey, boolean kprim) {
-		this(label, null, textComponent, Collections.<String>emptyList(),  points, correct, survey, kprim);
+	public ResponseInfos(String label, Component textComponent, Float points, boolean correct, boolean survey) {
+		this(label, null, textComponent, Collections.<String>emptyList(),  points, correct, survey, ExplanationType.standard);
+	}
+	
+	public ResponseInfos(String label, Component textComponent, Float points, boolean correct, boolean survey, ExplanationType explanationType) {
+		this(label, null, textComponent, Collections.<String>emptyList(),  points, correct, survey, explanationType);
 	}
 	
 	public ResponseInfos(String label, String text, Component textComponent, List<String> wrongAnswers, Float points,
-			boolean correct, boolean survey, boolean kprim) {
+			boolean correct, boolean survey, ExplanationType explanationType) {
 		this.label = label;
 		this.text = text;
 		this.textComponent = textComponent;
 		this.points = points;
 		this.survey = survey;
-		this.kprim = kprim;
 		this.correct = correct;
 		this.wrongAnswers = wrongAnswers;
+		this.explanationType = explanationType;
 	}
 
 	public String getLabel() {
@@ -84,7 +88,7 @@ public class ResponseInfos {
 	}
 	
 	public boolean isWrongAnswersAvailable() {
-		return wrongAnswers != null && wrongAnswers.size() > 0;
+		return wrongAnswers != null && !wrongAnswers.isEmpty();
 	}
 
 	public List<String> getWrongAnswers() {
@@ -92,7 +96,7 @@ public class ResponseInfos {
 	}
 	
 	public String getFormattedWrongAnswers() {
-		if(wrongAnswers != null && wrongAnswers.size() > 0) {
+		if(wrongAnswers != null && !wrongAnswers.isEmpty()) {
 			StringBuilder sb = new StringBuilder();
 			for(String answer:wrongAnswers) {
 				if(sb.length() > 0) sb.append(", ");
@@ -113,10 +117,20 @@ public class ResponseInfos {
 	}
 
 	public boolean isKprim() {
-		return kprim;
+		return explanationType == ExplanationType.kprim;
+	}
+	
+	public boolean isOrdered() {
+		return explanationType == ExplanationType.ordered;
 	}
 
 	public boolean isCorrect() {
 		return correct;
+	}
+	
+	public enum ExplanationType {
+		kprim,
+		ordered,
+		standard
 	}
 }

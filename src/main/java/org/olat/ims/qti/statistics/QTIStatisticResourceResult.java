@@ -56,7 +56,6 @@ import org.olat.ims.qti.process.ImsRepositoryResolver;
 import org.olat.ims.qti.statistics.model.StatisticAssessment;
 import org.olat.ims.qti.statistics.ui.QTI12AssessmentStatisticsController;
 import org.olat.ims.qti.statistics.ui.QTI12ItemStatisticsController;
-import org.olat.ims.qti.statistics.ui.QTI21OnyxAssessmentStatisticsController;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -192,8 +191,6 @@ public class QTIStatisticResourceResult implements StatisticResourceResult {
 			Translator translator = Util.createPackageTranslator(QTI12AssessmentStatisticsController.class, ureq.getLocale());
 			String text = translator.translate("error.notfound.text");
 			ctrl = MessageUIFactory.createErrorMessage(ureq, wControl, null, text);
-		} else if (type == QTIType.onyx){
-			ctrl = new QTI21OnyxAssessmentStatisticsController(ureq, wControl, this, printMode);
 		} else {
 			ctrl = new QTI12AssessmentStatisticsController(ureq, wControl, stackPanel, this, printMode);
 		}

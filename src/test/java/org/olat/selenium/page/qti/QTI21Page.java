@@ -418,11 +418,17 @@ public class QTI21Page {
 		return this;
 	}
 	
-	public QTI21Page answerOrderDropItem(String source) {
-		By sourceBy = By.xpath("//li[@class='o_assessmentitem_order_item'][contains(text(),'" + source + "')]");
-		OOGraphene.waitElement(sourceBy, 5, browser);
+	public QTI21Page answerOrderDropItem(String source, boolean wrappedInParagraph) {
+		By sourceBy;
+		if(wrappedInParagraph) {
+			sourceBy = By.xpath("//li[@class='o_assessmentitem_order_item']/p[contains(text(),'" + source + "')]");
+		} else {
+			sourceBy = By.xpath("//li[@class='o_assessmentitem_order_item'][contains(text(),'" + source + "')]");
+		}
+		
+		OOGraphene.waitElement(sourceBy, browser);
 		WebElement sourceEl = browser.findElement(sourceBy);
-		By targetBy = By.xpath("//div[@class='orderInteraction']//div[contains(@class,'target')]/ul");
+		By targetBy = By.xpath("//div[contains(@class,'orderInteraction')]//div[contains(@class,'target')]/ul");
 		WebElement targetEl = browser.findElement(targetBy);
 		
 		Position sourcePos = Position.valueOf(30, 30, sourceEl.getSize());
@@ -435,8 +441,40 @@ public class QTI21Page {
 			.build()
 			.perform();
 
-		By sourceDroppedBy = By.xpath("//div[@class='orderInteraction']//div[contains(@class,'target')]/ul/li[text()[contains(.,'" + source + "')]]");
-		OOGraphene.waitElement(sourceDroppedBy, 5, browser);
+		By sourceDroppedBy;
+		if(wrappedInParagraph) {
+			sourceDroppedBy = By.xpath("//div[contains(@class,'orderInteraction')]//div[contains(@class,'target')]/ul/li/p[text()[contains(.,'" + source + "')]]");
+		} else {
+			sourceDroppedBy = By.xpath("//div[contains(@class,'orderInteraction')]//div[contains(@class,'target')]/ul/li[text()[contains(.,'" + source + "')]]");
+		}
+		OOGraphene.waitElement(sourceDroppedBy, browser);
+		return this;
+	}
+	
+	public QTI21Page moveOrderDropItemTop(String source, boolean wrappedInParagraph) {
+		By sourceDroppedBy;
+		if(wrappedInParagraph) {
+			sourceDroppedBy = By.xpath("//div[contains(@class,'orderInteraction')]//div[contains(@class,'target')]/ul/li/p[text()[contains(.,'" + source + "')]]");
+		} else {
+			sourceDroppedBy = By.xpath("//div[contains(@class,'orderInteraction')]//div[contains(@class,'target')]/ul/li[text()[contains(.,'" + source + "')]]");
+		}
+
+		OOGraphene.waitElement(sourceDroppedBy, browser);
+		WebElement sourceDroppedEl = browser.findElement(sourceDroppedBy);
+		By targetContainerBy = By.xpath("//div[contains(@class,'orderInteraction')]//div[contains(@class,'target')]/ul");
+		WebElement targetContainerEl = browser.findElement(targetContainerBy);
+		
+		Position sourcePos = Position.valueOf(30, 30, sourceDroppedEl.getSize());
+		Position targetPos = Position.valueOf(5, 5, targetContainerEl.getSize());
+		new Actions(browser)
+			.moveToElement(sourceDroppedEl, sourcePos.getX(), sourcePos.getY())
+			.clickAndHold()
+			.moveToElement(targetContainerEl, targetPos.getX(), targetPos.getY())
+			.release()
+			.build()
+			.perform();
+
+		OOGraphene.waitElement(sourceDroppedBy, browser);
 		return this;
 	}
 	

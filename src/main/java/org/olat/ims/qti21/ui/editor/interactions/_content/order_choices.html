@@ -1,0 +1,38 @@
+<fieldset class="o_form form-horizontal">
+<div class="form-group #if($f.hasError($item)) has-feedback has-error #end clearfix">
+	<div class="col-sm-offset-1 col-sm-11"><strong>$r.translate("answers")</strong></div>
+</div>
+#foreach($choice in $choices)
+<div class="form-group #if($f.hasError($item)) has-feedback has-error #end clearfix o_sel_choice_${foreach.index}">
+	<div class="col-sm-1">
+		#if($r.available(${choice.getRemove().getComponent().getComponentName()}) && $r.visible(${choice.getRemove().getComponent().getComponentName()}))
+			<div>$r.render(${choice.getRemove().getComponent().getComponentName()})</div>
+		#end
+		#if($r.available(${choice.getAdd().getComponent().getComponentName()}) && $r.visible(${choice.getAdd().getComponent().getComponentName()}))
+			<div class="o_sel_add_choice_${foreach.count}">$r.render(${choice.getAdd().getComponent().getComponentName()})</div>
+		#end
+		#if($r.available(${choice.getUp().getComponent().getComponentName()}) && $r.visible(${choice.getUp().getComponent().getComponentName()}))
+			<div>$r.render(${choice.getUp().getComponent().getComponentName()})</div>
+		#end
+		#if($r.available(${choice.getDown().getComponent().getComponentName()}) && $r.visible(${choice.getDown().getComponent().getComponentName()}))
+			<div>$r.render(${choice.getDown().getComponent().getComponentName()})</div>
+		#end
+	</div>
+	<div class="col-sm-11">
+		#if($r.visible($choice.answer))
+			$r.render(${choice.getAnswer().getComponent().getComponentName()})
+		#else
+			$r.render(${choice.getAnswerReadOnly().getComponent().getComponentName()})
+		#end
+		#if($f.hasError($item))
+			<span class="o_icon o_icon_error form-control-feedback"></span>
+		#end
+	</div>
+	#if($f.hasError($item))
+		<div class="col-sm-offset-1 col-sm-11">
+			$r.render("${item}_ERROR")
+		</div>
+	#end
+</div>
+#end
+</fieldset>
