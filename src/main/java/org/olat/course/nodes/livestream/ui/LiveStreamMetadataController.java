@@ -19,13 +19,11 @@
  */
 package org.olat.course.nodes.livestream.ui;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
 import org.apache.commons.lang.time.DateUtils;
 import org.olat.commons.calendar.CalendarManager;
-import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -78,28 +76,38 @@ public class LiveStreamMetadataController extends BasicController {
 		}
 	}
 	
-	private String addDateToMainVC(LiveStreamEvent calEvent) {
+	private void addDateToMainVC(LiveStreamEvent calEvent) {
 		Locale locale = getLocale();
-		Calendar cal = CalendarUtils.createCalendarInstance(locale);
 		Date begin = calEvent.getBegin();
-		Date end = calEvent.getEnd();	
-		cal.setTime(begin);
+		Date end = calEvent.getEnd();
 		
-		StringBuilder sb = new StringBuilder();
-		sb.append(StringHelper.formatLocaleDateFull(begin.getTime(), locale));
-		mainVC.contextPut("date", sb.toString());
-
-		if (!calEvent.isAllDayEvent()) {
-			sb = new StringBuilder();
-			sb.append(StringHelper.formatLocaleTime(begin.getTime(), locale));
-			sb.append(" - ");
-			if (!DateUtils.isSameDay(begin, end)) {
-				sb.append(StringHelper.formatLocaleDateFull(end.getTime(), locale)).append(", ");
-			} 
-			sb.append(StringHelper.formatLocaleTime(end.getTime(), locale));
-			mainVC.contextPut("time", sb.toString());
+		boolean sameDay = DateUtils.isSameDay(begin, end);
+		if (sameDay) {
+			StringBuilder dateSb = new StringBuilder();
+			dateSb.append(StringHelper.formatLocaleDateFull(begin.getTime(), locale));
+			mainVC.contextPut("date", dateSb.toString());
+			if (!calEvent.isAllDayEvent()) {
+				StringBuilder timeSb = new StringBuilder();
+				timeSb.append(StringHelper.formatLocaleTime(begin.getTime(), locale));
+				timeSb.append(" - ");
+				timeSb.append(StringHelper.formatLocaleTime(end.getTime(), locale));
+				mainVC.contextPut("time", timeSb.toString());
+			}
+		} else {
+			StringBuilder dateSb = new StringBuilder();
+			dateSb.append(StringHelper.formatLocaleDateFull(begin.getTime(), locale));
+			if (!calEvent.isAllDayEvent()) {
+				dateSb.append(" ");
+				dateSb.append(StringHelper.formatLocaleTime(begin.getTime(), locale));
+			}
+			dateSb.append(" - ");
+			dateSb.append(StringHelper.formatLocaleDateFull(end.getTime(), locale));
+			if (!calEvent.isAllDayEvent()) {
+				dateSb.append(" ");
+				dateSb.append(StringHelper.formatLocaleTime(end.getTime(), locale));
+			}
+			mainVC.contextPut("date", dateSb.toString());
 		}
-		return sb.toString();
 	}
 
 	@Override

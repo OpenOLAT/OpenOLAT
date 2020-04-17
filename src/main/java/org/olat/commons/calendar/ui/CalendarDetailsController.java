@@ -20,7 +20,6 @@
 package org.olat.commons.calendar.ui;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -29,7 +28,6 @@ import org.apache.commons.lang.time.DateUtils;
 import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarModule;
-import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
@@ -103,30 +101,41 @@ public class CalendarDetailsController extends BasicController {
 		putInitialPanel(mainVC);
 	}
 	
-	private String addDateToMainVC() {
+	private void addDateToMainVC() {
 		Locale locale = getLocale();
-		Calendar cal = CalendarUtils.createCalendarInstance(locale);
 		Date begin = calEvent.getBegin();
-		Date end = calEvent.getEnd();	
-		cal.setTime(begin);
+		Date end = calEvent.getEnd();
 		
-		StringBuilder sb = new StringBuilder();
-		sb.append(StringHelper.formatLocaleDateFull(begin.getTime(), locale));
-		mainVC.contextPut("date", sb.toString());
-
-		if (!calEvent.isAllDayEvent()) {
-			sb = new StringBuilder();
-			sb.append(StringHelper.formatLocaleTime(begin.getTime(), locale));
-			sb.append(" - ");
-			if (!DateUtils.isSameDay(begin, end)) {
-				sb.append(StringHelper.formatLocaleDateFull(end.getTime(), locale)).append(", ");
-			} 
-			sb.append(StringHelper.formatLocaleTime(end.getTime(), locale));
-			mainVC.contextPut("time", sb.toString());
+		boolean sameDay = DateUtils.isSameDay(begin, end);
+		if (sameDay) {
+			StringBuilder dateSb = new StringBuilder();
+			dateSb.append(StringHelper.formatLocaleDateFull(begin.getTime(), locale));
+			mainVC.contextPut("date", dateSb.toString());
+			if (!calEvent.isAllDayEvent()) {
+				StringBuilder timeSb = new StringBuilder();
+				timeSb.append(StringHelper.formatLocaleTime(begin.getTime(), locale));
+				timeSb.append(" - ");
+				timeSb.append(StringHelper.formatLocaleTime(end.getTime(), locale));
+				mainVC.contextPut("time", timeSb.toString());
+			}
+		} else {
+			StringBuilder dateSb = new StringBuilder();
+			dateSb.append(StringHelper.formatLocaleDateFull(begin.getTime(), locale));
+			if (!calEvent.isAllDayEvent()) {
+				dateSb.append(" ");
+				dateSb.append(StringHelper.formatLocaleTime(begin.getTime(), locale));
+			}
+			dateSb.append(" -");
+			mainVC.contextPut("date", dateSb.toString());
+			StringBuilder date2Sb = new StringBuilder();
+			date2Sb.append(StringHelper.formatLocaleDateFull(end.getTime(), locale));
+			if (!calEvent.isAllDayEvent()) {
+				date2Sb.append(" ");
+				date2Sb.append(StringHelper.formatLocaleTime(end.getTime(), locale));
+			}
+			mainVC.contextPut("date2", date2Sb.toString());
 		}
-		return sb.toString();
 	}
-	
 	
 	private List<LinkWrapper> renderEventLinks() {
 		List<LinkWrapper> linkWrappers = new ArrayList<>();
