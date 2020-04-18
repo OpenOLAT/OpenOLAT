@@ -23,6 +23,16 @@
 			formDispatchFieldId: ''
 		}, params );
 		
+		var usePointerApi = false;
+		if (window.PointerEvent) {
+			usePointerApi = true;
+		}
+		
+		var useRequestAnimationFrame = false;
+		if (window.requestAnimationFrame) {
+			useRequestAnimationFrame = true;
+		}
+		
 		var inputHolderId = this.settings.inputHolderId;
 		var formDispatchFieldId = this.settings.formDispatchFieldId;
 		
@@ -74,24 +84,6 @@
 			jQuery(this).addClass('active');
 			drawBrush();
 		});
-	
-		/* Mouse Capturing Work */
-		jQuery(tmp_canvas).on('mousemove touchmove', function(e) {
-			copyEventCoordinateToMouse(e, tmp_canvas);
-		});
-		
-		/* Mouse Capturing Work out of the canvas */
-		jQuery(document).on('mousemove touchmove', function(e) {
-			if(mouse.leave) {
-				var rect = tmp_canvas.getBoundingClientRect();
-				mouse.out_x = e.clientX - rect.left;
-				mouse.out_y = e.clientY - rect.top;
-			}
-		});
-	
-		jQuery(this.canvas).on('mousemove touchmove', function(e) {
-			copyEventCoordinateToMouse(e, this.canvas);
-		});
 		
 		/* Draw the example brush */
 		var drawBrush = function() {
@@ -117,13 +109,38 @@
 				
 		//show current brush view
 		drawBrush();
+		
+		var startEvents = usePointerApi ? 'pointerdown' : 'mousedown touchstart';
+		var leaveEvents = usePointerApi ? 'pointerleave' : 'mouseleave';
+		var enterEvents = usePointerApi ? 'pointerenter' : 'mouseenter';
+		var stopLeaveEvents = usePointerApi ? 'pointerup click' : 'mouseup touchend';
+		var stopEvents = usePointerApi ? 'pointerup click' : 'mouseup click touchend';
+		var moveEvents = usePointerApi ? 'pointermove' : 'mousemove touchmove';
+		
+		/* Mouse Capturing Work */
+		jQuery(tmp_canvas).on(moveEvents, function(e) {
+			copyEventCoordinateToMouse(e, tmp_canvas);
+		});
+		
+		/* Mouse Capturing Work out of the canvas */
+		jQuery(document).on(moveEvents, function(e) {
+			if(mouse.leave) {
+				var rect = tmp_canvas.getBoundingClientRect();
+				mouse.out_x = e.clientX - rect.left;
+				mouse.out_y = e.clientY - rect.top;
+			}
+		});
 
-		jQuery(tmp_canvas).on('mousedown touchstart', function(e) {
+		jQuery(this.canvas).on(moveEvents, function(e) {
+			copyEventCoordinateToMouse(e, this.canvas);
+		});
+
+		jQuery(tmp_canvas).on(startEvents, function(e) {
 
 			if(isDoubleTouch(e) || isRightClick(e)) {
 				return;
 			}
-			jQuery(tmp_canvas).on('mousemove touchmove', onPaint);
+			jQuery(tmp_canvas).on(moveEvents, onPaint);
 
 			copyEventCoordinateToMouse(e, tmp_canvas);
 			
@@ -137,10 +154,10 @@
 			sprayIntervalID = setInterval(onPaint, 50);
 			
 			onPaint(e);
-		}).on('mousedown touchstart', {formId: formDispatchFieldId}, setFlexiFormDirtyByListener);
+		}).on(startEvents, {formId: formDispatchFieldId}, setFlexiFormDirtyByListener);
 	
 		/* Events which stops drawing */
-		jQuery(tmp_canvas).on('mouseup click touchend', function() {
+		jQuery(tmp_canvas).on(stopEvents, function() {
 			stopPainting();
 		});
 		
@@ -149,20 +166,20 @@
 			return false;
 		});
 		
-		jQuery(tmp_canvas).on('mouseleave', function(e) {
+		jQuery(tmp_canvas).on(leaveEvents, function(e) {
 			mouse.leave = true;
 			if(tool == "brush") {
 				ppts.push({x: -1, y: -1});
 			}
 			
-			jQuery(document).on("mouseup touchend", function(e){
+			jQuery(document).on(stopLeaveEvents, function(e){
 				stopPainting();
 			});
 		});
 		
-		jQuery(tmp_canvas).on('mouseenter', function(e) {
+		jQuery(tmp_canvas).on(enterEvents, function(e) {
 			mouse.leave = false;
-			jQuery(document).off("mouseup touchend");
+			jQuery(document).off(stopLeaveEvents);
 		});
 		
 		var copyEventCoordinateToMouse = function(e, canvasElement) {
@@ -182,8 +199,12 @@
 			}
 		}
 		
+		var mouseSameAsLastPoint = function() {
+			return (ppts.length > 0 && ppts[ppts.length - 1].x == mouse.x && ppts[ppts.length - 1].y == mouse.y);
+		};
+		
 		var stopPainting = function() {
-			jQuery(tmp_canvas).off('mousemove touchmove', onPaint);
+			jQuery(tmp_canvas).off(moveEvents, onPaint);
 			
 			// for erasing
 			ctx.globalCompositeOperation = 'source-over';
@@ -263,6 +284,9 @@
 		var onPaintBrush = function() {
 			// Saving all the points in an array
 			if(!mouse.leave) {
+				if(mouseSameAsLastPoint()) {
+					return;
+				}
 				ppts.push({x: mouse.x, y: mouse.y});
 			}
 
@@ -276,8 +300,19 @@
 				}
 				return;
 			}
-			
-			
+
+			drawCanvas(drawPaintBrush);
+		};
+		
+		var drawCanvas = function(drawingCallback) {
+			if(useRequestAnimationFrame) {
+				requestAnimationFrame(drawingCallback);
+			} else {
+				drawingCallback();
+			}
+		};
+		
+		var drawPaintBrush = function() {
 			// Tmp canvas is always cleared up before drawing.
 			tmp_ctx.clearRect(0, 0, tmp_canvas.width, tmp_canvas.height);
 			
@@ -457,10 +492,12 @@
 		
 		function isRightClick(e) {
 			try {
-				if(!(typeof e == "undefined")
-						&& !(typeof e.which == "undefined")
-						&& (e.which == 2 || e.which == 3)) {
-					return true;
+				if(!(typeof e == "undefined")) {
+					if(!(typeof e.button == "undefined") && e.button > 0) {
+						return true;
+					} else if(!(typeof e.which == "undefined") && (e.which == 2 || e.which == 3)) {
+						return true;
+					} 
 				}
 			} catch(ex) {
 				if(window.console) console.log(ex);
@@ -475,20 +512,23 @@
 				}
 				e.preventDefault();
 			}
-			if ( tool == 'brush' ) {
+			
+			if(mouseSameAsLastPoint()) {
+				// drop event
+			} else if ( tool == 'brush' ) {
 				onPaintBrush();
 			} else if ( tool == 'circle' ) {
-				onPaintCircle();
+				drawCanvas(onPaintCircle);
 			} else if ( tool == 'line' ) {
-				onPaintLine();
+				drawCanvas(onPaintLine);
 			} else if ( tool == 'rectangle' ) {
-				onPaintRect();
+				drawCanvas(onPaintRect);
 			} else if ( tool == 'ellipse' ) {
-				onPaintEllipse();
+				drawCanvas(onPaintEllipse);
 			} else if ( tool == 'eraser' ) {
-				onErase();
+				drawCanvas(onErase);
 			} else if ( tool == 'spray' ) {
-				generateSprayParticles();
+				drawCanvas(generateSprayParticles);
 			}
 		}
 	}
