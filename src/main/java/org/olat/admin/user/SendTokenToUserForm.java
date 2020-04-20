@@ -181,7 +181,7 @@ public class SendTokenToUserForm extends FormBasicController {
 		if(result.getReturnCode() == 0) {
 			showInfo("email.sent");
 		} else {
-			showInfo("email.notsent");
+			showError("email.notsent");
 		}
 	}
 }
