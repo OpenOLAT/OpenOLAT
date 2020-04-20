@@ -65,6 +65,7 @@ import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.manager.AssessmentModeDAO;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.disclaimer.CourseDisclaimerManager;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.curriculum.CurriculumService;
@@ -540,6 +541,8 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		//delete license
 		CoreSpringFactory.getImpl(LicenseService.class).delete(resource);
 		dbInstance.commit();
+		//delete all consents
+		CoreSpringFactory.getImpl(CourseDisclaimerManager.class).removeAllConsents(entry);
 		//detach portfolio if there are some lost
 		CoreSpringFactory.getImpl(PortfolioService.class).detachCourseFromBinders(entry);
 		dbInstance.commit();
