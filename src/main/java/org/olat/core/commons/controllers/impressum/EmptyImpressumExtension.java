@@ -27,10 +27,10 @@ import org.apache.commons.io.FileUtils;
 import org.olat.core.extensions.ExtensionElement;
 import org.olat.core.extensions.action.GenericActionExtension;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.filter.FilterFactory;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -44,11 +44,11 @@ import org.olat.core.util.vfs.VFSLeaf;
 public class EmptyImpressumExtension extends GenericActionExtension {
 	
 	private final ImpressumModule impressumModule;
+	private final I18nModule i18nModule;
 	
-	private VelocityContainer vc;
-	
-	public EmptyImpressumExtension(ImpressumModule impressumModule) {
+	public EmptyImpressumExtension(ImpressumModule impressumModule, I18nModule i18nModule) {
 		this.impressumModule = impressumModule;
+		this.i18nModule = i18nModule;
 	}
 	
 
@@ -59,38 +59,33 @@ public class EmptyImpressumExtension extends GenericActionExtension {
 	
 	@Override
 	public ExtensionElement getExtensionFor(String extensionPoint, UserRequest ureq) {
-		boolean enabled = false;
+		// Something is enabled (imprint, terms of use, privacy policy or contact)
+		// First check: Contact module
+		boolean enabled = impressumModule.isContactEnabled();
 		
-		if (impressumModule.isEnabled() && !impressumModule.isContactEnabled()) {
+		// Second check: Impressum module
+		if (impressumModule.isEnabled()) {
 			VFSContainer impressumDir = new LocalFolderImpl(impressumModule.getImpressumDirectory());
 			VFSContainer termsOfUseDir = new LocalFolderImpl(impressumModule.getTermsOfUseDirectory());
 			VFSContainer privacyPoliciyDir = new LocalFolderImpl(impressumModule.getPrivacyPolicyDirectory());
 			
-			if (checkContent(impressumDir.resolve("index_" + ureq.getLocale().getLanguage() + ".html"))) {
-				// Nothing to do here
-			} else if (checkContent(impressumDir.resolve("index_en.html"))) {
-				// Nothing to do here
-			} else if (checkContent(impressumDir.resolve("index_de.html"))) {
-				// Nothing to do here
-			} else if (checkContent(termsOfUseDir.resolve("index_" + ureq.getLocale().getLanguage() + ".html"))) {
-				// Nothing to do here
-			} else if (checkContent(termsOfUseDir.resolve("index_en.html"))) {
-				// Nothing to do here
-			} else if (checkContent(termsOfUseDir.resolve("index_de.html"))) {
-				// Nothing to do here
-			} else if (checkContent(privacyPoliciyDir.resolve("index_" + ureq.getLocale().getLanguage() + ".html"))) {
-				// Nothing to do here
-			} else if (checkContent(privacyPoliciyDir.resolve("index_en.html"))) {
-				// Nothing to do here
-			} else if (checkContent(privacyPoliciyDir.resolve("index_de.html"))) {
-				// Nothing to do here
-			} else {
-				// Nothing found
-				enabled |= true;
+			// First check the imprint 
+			enabled |= checkModule(impressumDir, ureq);
+			
+			// Go on if enabled is false
+			// and check the terms of use
+			if (!enabled) {
+				enabled |= checkModule(termsOfUseDir, ureq);
+			}
+			
+			// Go on if enabled is still false
+			// and check the privacy policy
+			if (!enabled) {
+				enabled |= checkModule(privacyPoliciyDir, ureq);
 			}
 		}
 		
-		return enabled ? super.getExtensionFor(extensionPoint, ureq) : null;
+		return enabled ? null : super.getExtensionFor(extensionPoint, ureq);
 	}
 	
 	private boolean checkContent(VFSItem file) {
@@ -115,5 +110,25 @@ public class EmptyImpressumExtension extends GenericActionExtension {
 			}
 		}
 		return check;
+	}
+	
+	private boolean checkModule(VFSContainer baseFolder, UserRequest ureq) {
+		boolean enabled = true;
+		
+		if (checkContent(baseFolder.resolve("index_" + ureq.getLocale().getLanguage() + ".html"))) {
+			// Nothing to do here
+		} else if (checkContent(baseFolder.resolve("index_" + I18nModule.getDefaultLocale().getLanguage() + ".html"))) {
+			// Nothing to do here
+		} else {
+			for (String locale : i18nModule.getEnabledLanguageKeys()) {
+				if (checkContent(baseFolder.resolve("index_" + locale + ".html"))) {
+					return enabled;
+				}
+			}
+			
+			enabled &= false;
+		} 
+		
+		return enabled;
 	}
 }

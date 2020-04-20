@@ -30,6 +30,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.filter.FilterFactory;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -43,9 +44,11 @@ import org.olat.core.util.vfs.VFSLeaf;
 public class ImpressumExtension extends GenericActionExtension {
 	
 	private final ImpressumModule impressumModule;
+	private final I18nModule i18nModule;
 	
-	public ImpressumExtension(ImpressumModule impressumModule) {
+	public ImpressumExtension(ImpressumModule impressumModule, I18nModule i18nModule) {
 		this.impressumModule = impressumModule;
+		this.i18nModule = i18nModule;
 	}
 	
 
@@ -56,22 +59,25 @@ public class ImpressumExtension extends GenericActionExtension {
 	
 	@Override
 	public ExtensionElement getExtensionFor(String extensionPoint, UserRequest ureq) {
-		boolean enabled = false;
+boolean enabled = false;
 		
 		if (impressumModule.isEnabled()) {
 			VFSContainer impressumDir = new LocalFolderImpl(impressumModule.getImpressumDirectory());
-			enabled = true;
 			
 			if (checkContent(impressumDir.resolve("index_" + ureq.getLocale().getLanguage() + ".html"))) {
-				// Nothing to do here
-			} else if (checkContent(impressumDir.resolve("index_en.html"))) {
-				// Nothing to do here
-			} else if (checkContent(impressumDir.resolve("index_de.html"))) {
-				// Nothing to do here
+				enabled |= true;
+			} else if (checkContent(impressumDir.resolve("index_" + I18nModule.getDefaultLocale().getLanguage() + ".html"))) {
+				enabled |= true;
 			} else {
-				// Nothing found
-				enabled &= false;
-			}
+				
+				for (String locale : i18nModule.getEnabledLanguageKeys()) {
+					if (checkContent(impressumDir.resolve("index_" + locale + ".html"))) {
+						enabled |= true;
+						break;
+					}
+				}
+			} 
+				
 		}
 		
 		return enabled ? super.getExtensionFor(extensionPoint, ureq) : null;

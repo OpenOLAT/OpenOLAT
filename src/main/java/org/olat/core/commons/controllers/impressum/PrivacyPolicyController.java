@@ -27,6 +27,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
+import org.olat.core.util.i18n.I18nModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /* 
@@ -37,6 +38,8 @@ public class PrivacyPolicyController extends BasicController {
 	
 	@Autowired
 	private ImpressumModule impressumModule;
+	@Autowired
+	private I18nModule i18nModule;
 
 	public PrivacyPolicyController(UserRequest ureq, WindowControl control) {
 		super(ureq, control);
@@ -48,10 +51,20 @@ public class PrivacyPolicyController extends BasicController {
 		String fileName = "index_" + langCode + ".html";
 		if (new File (baseFolder, fileName).exists()){
 			iframe.setCurrentURI(fileName);
-		} else if(new File (baseFolder, "index_de.html").exists()) {
-			iframe.setCurrentURI("index_de.html");
-		} else if(new File (baseFolder, "index_en.html").exists()) {
-			iframe.setCurrentURI("index_en.html");
+		} else {
+			langCode = I18nModule.getDefaultLocale().getLanguage();
+			fileName = "index_" + langCode + ".html";
+			if (new File(baseFolder, fileName).exists()) {
+				iframe.setCurrentURI(fileName);
+			} else {
+				for (String lang : i18nModule.getEnabledLanguageKeys()) {
+					fileName = "index_" + lang + ".html";
+					if (new File(baseFolder, fileName).exists()) {
+						iframe.setCurrentURI(fileName);
+						break;
+					}
+				}
+			}
 		}
 		
 		putInitialPanel(iframe.getInitialComponent());

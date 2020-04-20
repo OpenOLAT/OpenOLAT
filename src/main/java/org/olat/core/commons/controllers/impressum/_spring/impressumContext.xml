@@ -6,6 +6,7 @@
 
 	<bean class="org.olat.core.commons.controllers.impressum.ImpressumExtension" init-method="initExtensionPoints">
 		<constructor-arg index="0" ref="impressumModule" />
+		<constructor-arg index="1" ref="i18nModule" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 				<property name="className" value="org.olat.core.commons.controllers.impressum.ImpressumController"/>
@@ -22,6 +23,7 @@
 	
 	<bean class="org.olat.core.commons.controllers.impressum.TermsOfUseExtension" init-method="initExtensionPoints">
 		<constructor-arg index="0" ref="impressumModule" />
+		<constructor-arg index="1" ref="i18nModule" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 				<property name="className" value="org.olat.core.commons.controllers.impressum.TermsOfUseController"/>
@@ -38,6 +40,7 @@
 	
 	<bean class="org.olat.core.commons.controllers.impressum.PrivacyPolicyExtension" init-method="initExtensionPoints">
 		<constructor-arg index="0" ref="impressumModule" />
+		<constructor-arg index="1" ref="i18nModule" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 				<property name="className" value="org.olat.core.commons.controllers.impressum.PrivacyPolicyController"/>
@@ -54,6 +57,7 @@
 	
 	<bean class="org.olat.core.commons.controllers.impressum.EmptyImpressumExtension" init-method="initExtensionPoints">
 		<constructor-arg index="0" ref="impressumModule" />
+		<constructor-arg index="1" ref="i18nModule" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 				<property name="className" value="org.olat.core.commons.controllers.impressum.EmptyImpressumController"/>
