@@ -44,6 +44,7 @@ public class ErrorsDispatcher implements Dispatcher {
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		try(PrintWriter writer = response.getWriter()) {
+			response.setContentType("text/html;charset=utf-8");
 			writer.append("<!DOCTYPE html><html>")
 			      .append("<head><title>Unexpected error</title></head>")
 			      .append("<body><h3>An unexpected error occured... Sorry!</h3><p>Error code: ")

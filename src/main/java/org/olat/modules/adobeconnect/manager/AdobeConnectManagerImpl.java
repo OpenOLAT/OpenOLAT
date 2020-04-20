@@ -389,24 +389,26 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 			}
 			
 			AdobeConnectSco sco = getAdapter().getScoMeeting(meeting, errors);
-			String urlPath = sco.getUrlPath();
-			UriBuilder builder = adobeConnectModule
-					.getAdobeConnectHostUriBuilder()
-					.path(urlPath);
-
-			BreezeSession session = null;
-			Authentication authentication = securityManager.findAuthentication(identity, ACONNECT_PROVIDER);
-			if(authentication != null) {
-				session = getAdapter().commonInfo(authentication, errors);
+			if(sco != null) {
+				String urlPath = sco.getUrlPath();
+				UriBuilder builder = adobeConnectModule
+						.getAdobeConnectHostUriBuilder()
+						.path(urlPath);
+	
+				BreezeSession session = null;
+				Authentication authentication = securityManager.findAuthentication(identity, ACONNECT_PROVIDER);
+				if(authentication != null) {
+					session = getAdapter().commonInfo(authentication, errors);
+				}
+	
+				if(session != null && StringHelper.containsNonWhitespace(session.getSession())) {
+					builder.queryParam("session", session.getSession());
+				} else {
+					String fullName = userManager.getUserDisplayName(identity);
+					builder.queryParam("guestName", fullName).build();
+				}
+				return builder.build().toString();
 			}
-
-			if(session != null && StringHelper.containsNonWhitespace(session.getSession())) {
-				builder.queryParam("session", session.getSession());
-			} else {
-				String fullName = userManager.getUserDisplayName(identity);
-				builder.queryParam("guestName", fullName).build();
-			}
-			return builder.build().toString();
 		}
 		return null;
 	}
