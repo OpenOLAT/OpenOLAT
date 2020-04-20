@@ -246,6 +246,8 @@ public class RepositoryEntryInfoController extends FormBasicController {
 		} else {
 			displayName.clearError();
 		}
+		
+		allOk &= validateTextElement(description, 80000);
 
 		allOk &= validateTextElement(objectives, 2000);
 		allOk &= validateTextElement(requirements, 2000);
