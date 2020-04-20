@@ -86,7 +86,7 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("bigbluebutton.title");
 		setFormInfo("bigbluebutton.intro");
-		setFormContextHelp("Communication and Collaboration#_bigbluebutton_config");
+		setFormContextHelp("BigBlueButton+module");
 		String[] enabledValues = new String[]{ translate("enabled") };
 		
 		moduleEnabled = uifactory.addCheckboxesHorizontal("bigbluebutton.module.enabled", formLayout, ENABLED_KEY, enabledValues);
@@ -220,7 +220,7 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		listenTo(editServerCtlr);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", editServerCtlr.getInitialComponent(),
-				true, translate("add.single.meeting"));
+				true, translate("add.server"));
 		cmc.activate();
 		listenTo(cmc);
 	}

@@ -54,6 +54,8 @@ public class BigBlueButtonConfigForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormContextHelp("Course+element+BigBlueButton");
+		
 		String[] accessValues = new String[] { translate("vc.access.start") };
 		
 		boolean moderatorStart = config.getBooleanSafe(BigBlueButtonEditController.MODERATOR_START_MEETING, true);
