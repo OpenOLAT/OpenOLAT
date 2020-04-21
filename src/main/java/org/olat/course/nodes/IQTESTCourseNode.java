@@ -713,7 +713,12 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		// 1) prepare result export
 		CourseEnvironment courseEnv = course.getCourseEnvironment();
 		try {
-			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, true);
+			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, false);
+			if(re == null) {
+				log.error("Cannot archive course node. Missing repository entry with soft key: ", repositorySoftKey);
+				return false;
+			}
+			
 			boolean onyx = QTIResourceTypeModule.isOnyxTest(re.getOlatResource());
 			if (onyx) {
 				return true;

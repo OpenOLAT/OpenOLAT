@@ -260,7 +260,11 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options,
 			ZipOutputStream exportStream, String archivePath, String charset) {
 		String repositorySoftKey = (String) getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
-		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, true);
+		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, false);
+		if(re == null) {
+			log.error("Cannot archive course node. Missing repository entry with soft key: ", repositorySoftKey);
+			return false;
+		}
 		
 		try {
 			if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
