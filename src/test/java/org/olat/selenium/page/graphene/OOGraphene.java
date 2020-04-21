@@ -126,10 +126,10 @@ public class OOGraphene {
 	}
 	
 	public static void waitBusy(WebDriver browser) {
-		waitBusy(browser, (int) timeout.getSeconds());
+		waitBusy(browser, timeout.getSeconds());
 	}
 	
-	public static void waitBusy(WebDriver browser, int timeoutInSeconds) {
+	public static void waitBusy(WebDriver browser, long timeoutInSeconds) {
 		new WebDriverWait(browser, driverTimeout)
 			.withTimeout(Duration.ofSeconds(timeoutInSeconds)).pollingEvery(poolingDuration)
 			.until(new BusyPredicate());
@@ -141,7 +141,7 @@ public class OOGraphene {
 	 * @param browser
 	 */
 	public static void waitElement(By element, WebDriver browser) {
-		waitElement(element, (int) timeout.getSeconds(), browser);
+		waitElement(element, timeout.getSeconds(), browser);
 	}
 	
 	public static void waitElementClickable(By element, WebDriver browser) {
@@ -157,8 +157,8 @@ public class OOGraphene {
 	 * @param timeoutInSeconds The timeout in seconds
 	 * @param browser The web driver
 	 */
-	public static void waitElement(By element, int timeoutInSeconds, WebDriver browser) {
-		waitElement(element, timeoutInSeconds, (int) polling.getSeconds(), browser);
+	public static void waitElement(By element, long timeoutInSeconds, WebDriver browser) {
+		waitElement(element, timeoutInSeconds, polling.getSeconds(), browser);
 	}
 	
 	/**
@@ -169,8 +169,8 @@ public class OOGraphene {
 	 * @param timeoutInSeconds The timeout in seconds
 	 * @param browser The web driver
 	 */
-	public static void waitElementSlowly(By element, int timeoutInSeconds, WebDriver browser) {
-		waitElement(element, timeoutInSeconds, (int) poolingSlower.getSeconds(), browser);
+	public static void waitElementSlowly(By element, long timeoutInSeconds, WebDriver browser) {
+		waitElement(element, timeoutInSeconds, poolingSlower.getSeconds(), browser);
 	}
 	
 	/**
@@ -180,7 +180,7 @@ public class OOGraphene {
 	 * @param timeoutInSeconds The timeout in seconds
 	 * @param browser The web driver
 	 */
-	public static void waitElement(By element, int timeoutInSeconds, int pollingInSeconds, WebDriver browser) {
+	public static void waitElement(By element, long timeoutInSeconds, long pollingInSeconds, WebDriver browser) {
 		new WebDriverWait(browser, driverTimeout)
 			.withTimeout(Duration.ofSeconds(timeoutInSeconds)).pollingEvery(Duration.ofSeconds(pollingInSeconds))
 			.until(ExpectedConditions.visibilityOfElementLocated(element));
@@ -509,7 +509,7 @@ public class OOGraphene {
 		waitingALittleBit();
 	}
 
-	public static final void waiting(int millis) {
+	private static final void waiting(int millis) {
 		try {
 			Thread.sleep(millis);
 		} catch (InterruptedException e) {
@@ -576,6 +576,15 @@ public class OOGraphene {
 			browser.findElement(backBy).click();
 		}
 		waitBusy(browser);
+	}
+	
+	public static final void closeErrorBox(WebDriver browser) {
+		By errorBoxBy = By.cssSelector(".modal-body.alert.alert-danger");
+		waitElement(errorBoxBy, browser);
+		By closeButtonBy = By.xpath("//div[not(@id='o_form_dirty_message')]/div[contains(@class,'modal-dialog')]//button[@class='close']");
+		waitElement(closeButtonBy, browser);
+		browser.findElement(closeButtonBy).click();
+		waitModalDialogDisappears(browser);
 	}
 
 	public static final void closeWarningBox(WebDriver browser) {
