@@ -81,7 +81,7 @@ public class LectureRepositoryParticipantsPage {
 
 		//wait until
 		By datePickerBy = By.id("ui-datepicker-div");
-		OOGraphene.waitElementUntilNotVisible(datePickerBy, 5, browser);
+		OOGraphene.waitElementDisappears(datePickerBy, 5, browser);
 		return this;
 	}
 	
