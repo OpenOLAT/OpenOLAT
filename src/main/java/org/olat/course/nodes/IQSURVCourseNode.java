@@ -291,7 +291,11 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 			ZipOutputStream exportStream, String archivePath, String charset) {
 		QTIExportManager qem = QTIExportManager.getInstance();
 		String repositorySoftKey = (String) getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
-		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, true);
+		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, false);
+		if(re == null) {
+			log.error("Cannot archive course node. Missing repository entry with soft key: ", repositorySoftKey);
+			return false;
+		}
 
 		QTIExportFormatter qef = new QTIExportFormatterCSVType3(locale, null,"\t", "\"", "\r\n", false);
 		try {
