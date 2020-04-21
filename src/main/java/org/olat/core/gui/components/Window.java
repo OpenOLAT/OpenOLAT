@@ -188,7 +188,7 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 	
 	/**
 	 * @param name
-	 * @param chiefController
+	 * @param wbackoffice
 	 */
 	public Window(String name, WindowBackOfficeImpl wbackoffice) {
 		super(name);
@@ -213,7 +213,7 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 
 	/**
 	 * 
-	 * @param guiThemeBaseUri the URI of the base folder of the current Gui theme, r.g.  'http://www.myserver.com/olat/raw/themes/default/'
+	 * @param guiTheme the URI of the base folder of the current Gui theme, r.g.  'http://www.myserver.com/olat/raw/themes/default/'
 	 */
 	public void setGuiTheme(Theme guiTheme) {
 		this.guiTheme = guiTheme;
@@ -233,8 +233,9 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 		return title;
 	}
 
-	/** 
-	 * @param title The new title of this window (for browser history)
+	/**
+	 * @param translator
+	 * @param newTitle The new title of this window (for browser history)
 	 */
 	public void setTitle(Translator translator, String newTitle) {
 		this.title = translator.translate("page.appname") + " - " + newTitle;
@@ -915,20 +916,6 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 		}
 		return null;
 	}
-	
-	public String renderComponent(Component cmp) {
-		RenderResult renderResult = new RenderResult();
-		URLBuilder ubu = new URLBuilder(getUriPrefix(), getInstanceId(), getTimestamp());
-		Renderer fr = Renderer.getInstance(cmp.getParent(), cmp.getTranslator(), ubu, renderResult, wbackofficeImpl.getGlobalSettings());
-		
-		try(StringOutput sb = StringOutputPool.allocStringBuilder(2048)) {
-			fr.render(cmp, sb, null);
-			return StringOutputPool.freePop(sb);
-		} catch(IOException e) {
-			log.error("", e);
-			return null;
-		}
-	}
 
 	/**
 	 * to be called by Window.java or the AjaxController only!
@@ -1142,9 +1129,7 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 	 * 
 	 * @param win the window id the new url
 	 * @param timestampId
-	 * @param componentId
 	 * @param moduleUri
-	 * @param bc the businesscontrolpath
 	 * @return the new (relative) url as a string
 	 */
 	public String buildURIFor(Window win, String timestampId, String moduleUri) {

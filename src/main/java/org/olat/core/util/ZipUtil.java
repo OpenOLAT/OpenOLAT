@@ -431,76 +431,12 @@ public class ZipUtil {
 		}
 		vfsRepositoryService.updateMetadata(info);
 	}
-	
-	/**
-	 * Check if a file in the zip is already in the path
-	 * @param zipLeaf
-	 * @param targetDir
-	 * @param identity
-	 * @param isAdmin
-	 * @return the list of files which already exist
-	 */
-	public static List<String> checkLockedFileBeforeUnzip(VFSLeaf zipLeaf, VFSContainer targetDir, Identity identity) {
-		List<String> lockedFiles = new ArrayList<>();
-		VFSLockManager vfsLockManager = CoreSpringFactory.getImpl(VFSLockManager.class);
-		
-		try(InputStream in = zipLeaf.getInputStream();
-				ZipInputStream oZip = new ZipInputStream(in)) {
-			// unzip files
-			ZipEntry oEntr = oZip.getNextEntry();
-			while (oEntr != null) {
-				if (oEntr.getName() != null && !oEntr.getName().startsWith(DIR_NAME__MACOSX)) {
-					if (oEntr.isDirectory()) {
-						// skip MacOSX specific metadata directory
-						// directories aren't locked
-						oZip.closeEntry();
-						oEntr = oZip.getNextEntry();
-						continue;
-					} else {
-						// search file
-						VFSContainer createIn = targetDir;
-						String name = oEntr.getName();
-						// check if entry has directories which did not show up as
-						// directories above
-						int dirSepIndex = name.lastIndexOf('/');
-						if (dirSepIndex == -1) {
-							// try it windows style, backslash is also valid format
-							dirSepIndex = name.lastIndexOf('\\');
-						}
-						if (dirSepIndex > 0) {
-							// get subdirs
-							createIn = getAllSubdirs(targetDir, name.substring(0, dirSepIndex), identity, false);
-							if (createIn == null) {
-								//sub directories don't exist, and aren't locked
-								oZip.closeEntry();
-								oEntr = oZip.getNextEntry();
-								continue;
-							}
-							name = name.substring(dirSepIndex + 1);
-						}
-						
-						VFSLeaf newEntry = (VFSLeaf)createIn.resolve(name);
-						if(vfsLockManager.isLockedForMe(newEntry, identity, VFSLockApplicationType.vfs, null)) {
-							lockedFiles.add(name);
-						}
-					}
-				}
-				oZip.closeEntry();
-				oEntr = oZip.getNextEntry();
-			}
-		} catch (IOException e) {
-			return null;
-		}
 
-		return lockedFiles;
-	}
-	
 	/**
 	 * 
 	 * @param zipLeaf
 	 * @param targetDir
 	 * @param identity
-	 * @param roles
 	 * @return
 	 */
 	public static List<String> checkLockedFileBeforeUnzipNonStrict(VFSLeaf zipLeaf, VFSContainer targetDir, Identity identity) {
