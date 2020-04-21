@@ -38,7 +38,6 @@ import org.olat.course.nodes.SurveyCourseNode;
 import org.olat.course.nodes.survey.SurveyManager;
 import org.olat.course.nodes.survey.SurveyRunSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.modules.card2brain.manager.Card2BrainManagerImpl;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSurvey;
@@ -56,7 +55,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class SurveyRunController extends BasicController {
 
-	private static final Logger log = Tracing.createLoggerFor(Card2BrainManagerImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(SurveyRunController.class);
 	
 	private VelocityContainer mainVC;
 	private Link resetLink;

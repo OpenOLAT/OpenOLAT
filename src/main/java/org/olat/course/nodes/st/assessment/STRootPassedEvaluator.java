@@ -32,7 +32,6 @@ import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.RootPassedEvaluator;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.card2brain.manager.Card2BrainManagerImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntryLifecycle;
@@ -45,7 +44,7 @@ import org.olat.repository.model.RepositoryEntryLifecycle;
  */
 public class STRootPassedEvaluator implements RootPassedEvaluator {
 
-	private static final Logger log = Tracing.createLoggerFor(Card2BrainManagerImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(STRootPassedEvaluator.class);
 	
 	private final PassCounter passCounter;
 	
