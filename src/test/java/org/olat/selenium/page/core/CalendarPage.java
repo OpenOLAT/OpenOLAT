@@ -80,7 +80,6 @@ public class CalendarPage {
 	 * Add an event but don't fill the form.
 	 * 
 	 * @param day
-	 * @param subject
 	 * @return
 	 */
 	public CalendarPage addEvent(int day) {
@@ -160,7 +159,7 @@ public class CalendarPage {
 		By dayBy = By.xpath("//div[@id='ui-datepicker-div']//td//a[normalize-space(text())='" + day + "']");
 		OOGraphene.waitElement(dayBy, browser);
 		browser.findElement(dayBy).click();
-		OOGraphene.waitElementUntilNotVisible(datePickerBy, 5, browser);
+		OOGraphene.waitElementDisappears(datePickerBy, 5, browser);
 		return this;
 	}
 	

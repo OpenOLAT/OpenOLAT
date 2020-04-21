@@ -102,7 +102,7 @@ public class EditLectureBlockPage {
 		OOGraphene.waitElement(dayBy, 5, browser);
 		browser.findElement(dayBy).click();
 		
-		OOGraphene.waitElementUntilNotVisible(datePickerBy, 5, browser);
+		OOGraphene.waitElementDisappears(datePickerBy, 5, browser);
 		return this;
 	}
 	
