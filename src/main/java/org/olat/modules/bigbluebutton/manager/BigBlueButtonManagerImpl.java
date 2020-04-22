@@ -70,6 +70,7 @@ import org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingImpl;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingInfos;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonServerInfos;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryDataDeletable;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.manager.RepositoryEntryDAO;
@@ -86,7 +87,8 @@ import org.w3c.dom.Document;
  *
  */
 @Service
-public class BigBlueButtonManagerImpl implements BigBlueButtonManager, DeletableGroupData, InitializingBean {
+public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
+	DeletableGroupData, RepositoryEntryDataDeletable, InitializingBean {
 	
 	private static final Logger log = Tracing.createLoggerFor(BigBlueButtonManagerImpl.class);
 
@@ -219,6 +221,16 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Deletable
 	@Override
 	public boolean deleteGroupDataFor(BusinessGroup group) {
 		List<BigBlueButtonMeeting> meetings = bigBlueButtonMeetingDao.getMeetings(null, null, group);
+		BigBlueButtonErrors errors = new BigBlueButtonErrors();
+		for(BigBlueButtonMeeting meeting:meetings) {
+			deleteMeeting(meeting, errors);
+		}
+		return !errors.hasErrors();
+	}
+	
+	@Override
+	public boolean deleteRepositoryEntryData(RepositoryEntry re) {
+		List<BigBlueButtonMeeting> meetings = bigBlueButtonMeetingDao.getMeetings(re, null, null);
 		BigBlueButtonErrors errors = new BigBlueButtonErrors();
 		for(BigBlueButtonMeeting meeting:meetings) {
 			deleteMeeting(meeting, errors);
