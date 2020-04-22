@@ -93,6 +93,13 @@ public class AdobeConnectModule extends AbstractSpringModule implements ConfigOn
 	private String createMeetingImmediately;
 	@Value("${vc.adobe.login.compatibility.mode:false}")
 	private String loginCompatibilityMode;
+
+	@Value("${vc.http.connect.timeout:30000}")
+	private int httpConnectTimeout;
+	@Value("${vc.http.connect.request.timeout:30000}")
+	private int httpConnectRequestTimeout;
+	@Value("${vc.http.connect.socket.timeout:30000}")
+	private int httpSocketTimeout;
 	
 	@Autowired
 	public AdobeConnectModule(CoordinatorManager coordinatorManager) {
@@ -342,5 +349,17 @@ public class AdobeConnectModule extends AbstractSpringModule implements ConfigOn
 	 */
 	public boolean isLoginCompatibilityMode() {
 		return "true".equals(loginCompatibilityMode);
+	}
+
+	public int getHttpConnectTimeout() {
+		return httpConnectTimeout;
+	}
+
+	public int getHttpConnectRequestTimeout() {
+		return httpConnectRequestTimeout;
+	}
+
+	public int getHttpSocketTimeout() {
+		return httpSocketTimeout;
 	}
 }

@@ -51,6 +51,13 @@ public class GoToMeetingModule extends AbstractSpringModule implements ConfigOnO
 	@Value("${vc.gotomeetings.timezone.id:null}")
 	private String goToTimeZoneId;
 	
+	@Value("${vc.http.connect.timeout:30000}")
+	private int httpConnectTimeout;
+	@Value("${vc.http.connect.request.timeout:30000}")
+	private int httpConnectRequestTimeout;
+	@Value("${vc.http.connect.socket.timeout:30000}")
+	private int httpSocketTimeout;
+	
 	@Autowired
 	public GoToMeetingModule(CoordinatorManager coordinatorManager) {
 		super(coordinatorManager);
@@ -122,5 +129,15 @@ public class GoToMeetingModule extends AbstractSpringModule implements ConfigOnO
 		setStringProperty(GOTO_TIMEZONEID, goToTimeZoneId, true);
 	}
 	
-	
+	public int getHttpConnectTimeout() {
+		return httpConnectTimeout;
+	}
+
+	public int getHttpConnectRequestTimeout() {
+		return httpConnectRequestTimeout;
+	}
+
+	public int getHttpSocketTimeout() {
+		return httpSocketTimeout;
+	}
 }

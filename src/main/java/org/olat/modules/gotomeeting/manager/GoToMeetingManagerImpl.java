@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -161,7 +162,7 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 			RepositoryEntry resourceOwner, String subIdentifier, BusinessGroup businessGroup, GoToError error) {
 		
 		GoToMeeting scheduledMeeting = null;
-		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+		try {
 			String url = gotoTrainingUrl + "/organizers/" + organizer.getOrganizerKey() + "/trainings";
 			HttpPost post = new HttpPost(url);
 			decorateWithAccessToken(post, organizer);
@@ -172,7 +173,7 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 			String objectStr = trainingJson.toString();
 			post.setEntity(new StringEntity(objectStr, ContentType.APPLICATION_JSON));
 			
-			GoToResponse response = execute(httpClient, post);
+			GoToResponse response = execute(post);
 			int status = response.status();
 			if(status == 201) {//created
 				String trainingKey = response.content();
@@ -215,7 +216,7 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 	}
 	
 	private void updateStartEnd(GoToMeetingImpl meeting, Date start, Date end, GoToError error) {
-		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+		try {
 			GoToOrganizer organizer = meeting.getOrganizer();
 			String url = gotoTrainingUrl + "/organizers/" + organizer.getOrganizerKey() + "/trainings/" + meeting.getMeetingKey() + "/times";
 
@@ -225,7 +226,7 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 			String payload = GoToJsonUtil.trainingTimes(goToMeetingModule.getGoToTimeZoneId(), start, end).toString();
 			put.setEntity(new StringEntity(payload, ContentType.APPLICATION_JSON));
 			
-			GoToResponse response = execute(httpClient, put);
+			GoToResponse response = execute(put);
 			int status = response.status();
 			if(status == 200) {//created
 				meeting.setStartDate(start);
@@ -239,7 +240,7 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 	}
 	
 	private void updateNameDescription(GoToMeetingImpl meeting, GoToTrainingG2T training, String name, String description, GoToError error) {
-		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+		try {
 			GoToOrganizer organizer = meeting.getOrganizer();
 			String url = gotoTrainingUrl + "/organizers/" + organizer.getOrganizerKey() + "/trainings/" + meeting.getMeetingKey() + "/nameDescription";
 
@@ -253,7 +254,7 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 			String payload = GoToJsonUtil.trainingNameDescription(name, description).toString();
 			put.setEntity(new StringEntity(payload, ContentType.APPLICATION_JSON));
 			
-			GoToResponse response = execute(httpClient, put);
+			GoToResponse response = execute(put);
 			int status = response.status();
 			if(status == 204) {//created
 				meeting.setName(name);
@@ -273,7 +274,7 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 	public GoToRegistrant registerTraining(GoToMeeting meeting, Identity trainee, GoToError error) {
 		GoToRegistrant registrant = registrantDao.getRegistrant(meeting, trainee);
 		if(registrant == null) {
-			try(CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+			try {
 				GoToOrganizer organizer = meeting.getOrganizer();
 				String url = gotoTrainingUrl + "/organizers/" + organizer.getOrganizerKey() + "/trainings/" + meeting.getMeetingKey() + "/registrants";
 
@@ -283,7 +284,7 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 				String traineeJson = GoToJsonUtil.registrant(trainee).toString();
 				post.setEntity(new StringEntity(traineeJson, ContentType.APPLICATION_JSON));
 				
-				GoToResponse response = execute(httpClient, post);
+				GoToResponse response = execute(post);
 				int status = response.status();
 				if(status == 201) {//created
 					String content = response.content();
@@ -310,14 +311,14 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 	}
 	
 	private GoToRegistrantG2T getRegistrant(String registrantKey, GoToMeeting meeting, GoToError error) {
-		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+		try {
 			GoToOrganizer organizer = meeting.getOrganizer();
 			String url = gotoTrainingUrl + "/organizers/" + organizer.getOrganizerKey() + "/trainings/" + meeting.getMeetingKey() + "/registrants/" + registrantKey;
 
 			HttpGet get = new HttpGet(url);
 			decorateWithAccessToken(get, organizer);
 
-			GoToResponse response = execute(httpClient, get);
+			GoToResponse response = execute(get);
 			if(response.status() == 200) {
 				String content = response.content();
 				return GoToJsonUtil.parseAddRegistrant(content);
@@ -345,13 +346,13 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 		} catch (Exception e) {
 			log.error("", e);
 		} finally {
-			log.error(method + " return " + status + ": " + responseString);
+			log.error("{} return {}: {}", method, status, responseString);
 		}
 	}
 	
 	private void logGoToError(String method, int status, String responseString, GoToError error) {
 		error.setErrorCode(status);
-		log.error(method + " return " + status + ": " + responseString);
+		log.error("{} return {}: {}", method, status, responseString);
 	}
 	
 	@Override
@@ -387,14 +388,14 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 	}
 	
 	private GoToTrainingG2T getTraining(GoToMeeting meeting, GoToError error) {
-		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+		try {
 			GoToOrganizer organizer = meeting.getOrganizer();
 			String url = gotoTrainingUrl + "/organizers/" + organizer.getOrganizerKey() + "/trainings/" + meeting.getMeetingKey();
 
 			HttpGet get = new HttpGet(url);
 			decorateWithAccessToken(get, organizer);
 
-			GoToResponse response = execute(httpClient, get);
+			GoToResponse response = execute(get);
 			int status = response.status();
 			if(status == 200) {//deleted
 				String content = response.content();
@@ -411,14 +412,14 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 
 	@Override
 	public String startTraining(GoToMeeting meeting, GoToError error) {
-		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+		try {
 			GoToOrganizer organizer = meeting.getOrganizer();
 			String url = gotoTrainingUrl + "/trainings/" + meeting.getMeetingKey() + "/start";
 
 			HttpGet get = new HttpGet(url);
 			decorateWithAccessToken(get, organizer);
 
-			GoToResponse response = execute(httpClient, get);
+			GoToResponse response = execute(get);
 			int status = response.status();
 			if(status == 200) {//deleted
 				String content = response.content();
@@ -445,14 +446,14 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 
 	@Override
 	public List<GoToRecordingsG2T> getRecordings(GoToMeeting meeting, GoToError error) {
-		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+		try {
 			GoToOrganizer organizer = meeting.getOrganizer();
 			String url = gotoTrainingUrl + "/trainings/" + meeting.getMeetingKey() + "/recordings";
 
 			HttpGet get = new HttpGet(url);
 			decorateWithAccessToken(get, organizer);
 
-			GoToResponse response = execute(httpClient, get);
+			GoToResponse response = execute(get);
 			int status = response.status();
 			if(status == 200) {//deleted
 				String content = response.content();
@@ -481,14 +482,14 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 	}
 	
 	private boolean deleteTraining(GoToMeeting meeting, GoToError error) {
-		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+		try {
 			GoToOrganizer organizer = meeting.getOrganizer();
 			String url = gotoTrainingUrl + "/organizers/" + organizer.getOrganizerKey() + "/trainings/" + meeting.getMeetingKey();
 
 			HttpDelete delete = new HttpDelete(url);
 			decorateWithAccessToken(delete, organizer);
 
-			GoToResponse response = execute(httpClient, delete);
+			GoToResponse response = execute(delete);
 			int status = response.status();
 			if(status == 204) {//deleted
 				return true;
@@ -500,7 +501,7 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 					error.setError(errorVo.getErrorCode());
 					error.setDescription(errorVo.getDescription());
 				} else {
-					log.error("deleteTraining return " + status + ": " + content);
+					log.error("deleteTraining return {}: {}", status, content);
 				}
 			} else {
 				logGoToError("deleteTraining", response, error);
@@ -532,7 +533,7 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 	public boolean refreshToken(GoToOrganizer organizer) {
 		GoToOrganizer reloadedOrganizer = organizerDao.loadOrganizerForUpdate(organizer);
 		boolean success = false;
-		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+		try {
 			HttpPost post = new HttpPost(tokenUrl);
 			post.addHeader("Accept", "application/json");
 			
@@ -545,7 +546,7 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 			urlParameters.add(new BasicNameValuePair("refresh_token", reloadedOrganizer.getRefreshToken()));
 			post.setEntity(new UrlEncodedFormEntity(urlParameters));
 			
-			GoToResponse response = execute(httpClient, post);
+			GoToResponse response = execute(post);
 			if(response.status() < 400) {
 				GoToOrganizerG2T org = GoToJsonUtil.parseToken(response.content());
 				organizerDao.updateOrganizer(reloadedOrganizer, org.getAccessToken(), org.getRefreshToken(), org.getExpiresIn());
@@ -574,7 +575,7 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 	 */
 	public GoToOrganizerG2T login(String username, String password, GoToError error) {
 		GoToOrganizerG2T organizer = null;
-		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+		try {
 			HttpPost post = new HttpPost(tokenUrl);
 			post.addHeader("Accept", "application/json");
 			
@@ -588,7 +589,7 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 			urlParameters.add(new BasicNameValuePair("password", password));
 			post.setEntity(new UrlEncodedFormEntity(urlParameters));
 			
-			GoToResponse response = execute(httpClient, post);
+			GoToResponse response = execute(post);
 			if(response.status() < 400) {
 				organizer = GoToJsonUtil.parseToken(response.content());
 			} else {
@@ -640,8 +641,18 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 		return new Date().after(cal.getTime());
 	}
 	
-	private GoToResponse execute(CloseableHttpClient httpClient, HttpUriRequest request) {
-		try(CloseableHttpResponse response = httpClient.execute(request)) {
+	private GoToResponse execute(HttpUriRequest request) {
+		dbInstance.commit();// free connection
+		
+		RequestConfig requestConfig = RequestConfig.copy(RequestConfig.DEFAULT)
+				.setConnectTimeout(goToMeetingModule.getHttpConnectTimeout())
+				.setConnectionRequestTimeout(goToMeetingModule.getHttpConnectRequestTimeout())
+				.setSocketTimeout(goToMeetingModule.getHttpSocketTimeout())
+				.build();
+		
+		try(CloseableHttpClient httpClient = HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).build();
+				
+				CloseableHttpResponse response = httpClient.execute(request)) {
 			int status = response.getStatusLine().getStatusCode();
 			HttpEntity entity = response.getEntity();
 			String content;
