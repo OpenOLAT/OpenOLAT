@@ -33,6 +33,7 @@ import javax.annotation.PostConstruct;
 import javax.ws.rs.core.UriBuilder;
 import javax.xml.ws.BindingProvider;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.openmeetings.axis.services.GetRoomsWithCurrentUsersByListAndType;
 import org.apache.openmeetings.axis.services.RoomService;
 import org.apache.openmeetings.axis.services.RoomServicePortType;
@@ -43,11 +44,11 @@ import org.apache.openmeetings.axis.services.xsd.RoomUser;
 import org.apache.openmeetings.db.dto.record.xsd.RecordingDTO;
 import org.apache.openmeetings.db.dto.room.xsd.RoomDTO;
 import org.apache.openmeetings.db.entity.server.xsd.Sessiondata;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -78,6 +79,8 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	
 	private static final Logger log = Tracing.createLoggerFor(OpenMeetingsManagerImpl.class);
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private OpenMeetingsDAO openMeetingsDao;
 	@Autowired
@@ -718,6 +721,8 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	}
 
 	private final RoomServicePortType getRoomWebService() {
+		dbInstance.commit();// free connection before an HTTP call
+		
 		RoomService ss = new RoomService();
 		RoomServicePortType port = ss.getRoomServiceHttpSoap11Endpoint();
 		String endPoint = getOpenMeetingsEndPoint() + "RoomService?wsdl";
@@ -726,6 +731,8 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	}
 	
 	private final UserServicePortType getUserWebService() {
+		dbInstance.commit();// free connection before an HTTP call
+		
 		UserService ss = new UserService();
 		UserServicePortType port = ss.getUserServiceHttpSoap11Endpoint();
 		String endPoint = getOpenMeetingsEndPoint() + "UserService?wsdl";

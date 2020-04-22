@@ -81,6 +81,12 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 	@Value("${vc.bigbluebutton.user.bandwidth.requirement:0.4}")
 	private Double userBandwidhtRequirement;
 	
+	@Value("${vc.http.connect.timeout:30000}")
+	private int httpConnectTimeout;
+	@Value("${vc.http.connect.request.timeout:30000}")
+	private int httpConnectRequestTimeout;
+	@Value("${vc.http.connect.socket.timeout:30000}")
+	private int httpSocketTimeout;
 	
 	@Autowired
 	public BigBlueButtonModule(CoordinatorManager coordinatorManager) {
@@ -281,5 +287,17 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 	public void setAdhocMeetingEnabled(boolean adhocMeetingEnabled) {
 		this.adhocMeetingEnabled = Boolean.toString(adhocMeetingEnabled);
 		setStringProperty(PROP_ADHOC_MEETING, this.adhocMeetingEnabled, true);
-	}	
+	}
+	
+	public int getHttpConnectTimeout() {
+		return httpConnectTimeout;
+	}
+
+	public int getHttpConnectRequestTimeout() {
+		return httpConnectRequestTimeout;
+	}
+
+	public int getHttpSocketTimeout() {
+		return httpSocketTimeout;
+	}
 }

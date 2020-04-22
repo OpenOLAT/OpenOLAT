@@ -31,7 +31,6 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.config.RequestConfig.Builder;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -39,6 +38,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nModule;
@@ -82,6 +82,8 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 	private String adminFolderScoId;
 	private BreezeSession currentSession;
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	protected AdobeConnectModule adobeConnectModule;
 	
@@ -633,10 +635,12 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 	}
 
 	private CloseableHttpClient buildHttpClient() {
+		dbInstance.commit();// free connection
+		
 		RequestConfig requestConfig = RequestConfig.copy(RequestConfig.DEFAULT)
-				.setConnectTimeout(10000)
-				.setConnectionRequestTimeout(10000)
-				.setSocketTimeout(20000)
+				.setConnectTimeout(adobeConnectModule.getHttpConnectTimeout())
+				.setConnectionRequestTimeout(adobeConnectModule.getHttpConnectRequestTimeout())
+				.setSocketTimeout(adobeConnectModule.getHttpSocketTimeout())
 				.build();
 		return HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).build();
 	}

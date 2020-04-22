@@ -32,6 +32,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -59,6 +60,7 @@ import org.olat.group.DeletableGroupData;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
+import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecording;
 import org.olat.modules.bigbluebutton.BigBlueButtonServer;
 import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
@@ -102,6 +104,8 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	private RepositoryEntryDAO repositoryEntryDao;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private BigBlueButtonModule bigBlueButtonModule;
 	@Autowired
 	private BigBlueButtonServerDAO bigBlueButtonServerDao;
 	@Autowired
@@ -841,10 +845,19 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	}
 	
 	protected Document sendRequest(BigBlueButtonUriBuilder builder, BigBlueButtonErrors errors) {
+		dbInstance.commit();
+		
 		URI uri = builder.build();
 		HttpGet get = new HttpGet(uri);
+		RequestConfig requestConfig = RequestConfig.copy(RequestConfig.DEFAULT)
+				.setConnectTimeout(bigBlueButtonModule.getHttpConnectTimeout())
+				.setConnectionRequestTimeout(bigBlueButtonModule.getHttpConnectRequestTimeout())
+				.setSocketTimeout(bigBlueButtonModule.getHttpSocketTimeout())
+				.build();
 		try(CloseableHttpClient httpClient = HttpClientBuilder.create()
-				.disableAutomaticRetries().build();
+				.setDefaultRequestConfig(requestConfig)
+				.disableAutomaticRetries()
+				.build();
 				CloseableHttpResponse response = httpClient.execute(get)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			log.debug("Status code of: {} {}", uri, statusCode);
