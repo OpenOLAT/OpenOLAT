@@ -186,9 +186,9 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 		return new NodeRunConstructionResult(forumC);
 	}
 
-	private boolean isModerator(UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
+	public boolean isModerator(UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
 		if (hasCustomPreConditions()) {
-			return ne != null? ne.isCapabilityAccessible("moderator"): false;
+			return ne != null && ne.isCapabilityAccessible("moderator");
 		} else if (getModuleConfiguration().getBooleanSafe(CONFIG_COACH_MODERATE_ALLOWED) && userCourseEnv.isCoach()) {
 			return true;
 		}
@@ -197,7 +197,7 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 	
 	public boolean isPoster(UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
 		if (hasCustomPreConditions()) {
-			return ne != null ? ne.isCapabilityAccessible("poster") : false;
+			return ne != null && ne.isCapabilityAccessible("poster");
 		} else if ((getModuleConfiguration().getBooleanSafe(CONFIG_COACH_POST_ALLOWED) && userCourseEnv.isCoach())
 				|| (getModuleConfiguration().getBooleanSafe(CONFIG_PARTICIPANT_POST_ALLOWED) && userCourseEnv.isParticipant())) {
 			return true;
@@ -278,8 +278,7 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 	private Forum createForum(final CourseEnvironment courseEnv) {
 		final ForumManager fom = CoreSpringFactory.getImpl(ForumManager.class);
 		// creates resourceable from FOCourseNode.class and the current node id as key
-		OLATResourceable courseNodeResourceable = OresHelper.createOLATResourceableInstance(FOCourseNode.class,
-				new Long(getIdent()));
+		OLATResourceable courseNodeResourceable = OresHelper.createOLATResourceableInstance(FOCourseNode.class, Long.valueOf(getIdent()));
 		// o_clusterOK by:ld
 		return CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(courseNodeResourceable,
 				new SyncerCallback<Forum>() {
@@ -337,7 +336,7 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public Controller createPreviewController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
-		return new FOPreviewController(ureq, wControl, nodeSecCallback.getNodeEvaluation());
+		return new FOPreviewController(ureq, wControl, this, userCourseEnv, nodeSecCallback);
 	}
 
 	@Override

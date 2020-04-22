@@ -64,7 +64,7 @@ public class BCPreviewController extends DefaultController {
 		previewVC.put("folder", folder.getInitialComponent());
 		// get additional infos
 		boolean canDownload = node.canDownload(ne);
-		boolean canUpload = node.canUpload(userCourseEnv, ne);;
+		boolean canUpload = node.canUpload(userCourseEnv, ne);
 		VFSSecurityCallback secCallback = new FolderNodeCallback(namedContainer.getRelPath(), canDownload, canUpload, false, false, null);
 		previewVC.contextPut("canUpload", Boolean.valueOf(secCallback.canWrite()));
 		previewVC.contextPut("canDownload", Boolean.valueOf(secCallback.canRead()));

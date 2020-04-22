@@ -33,7 +33,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
-import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.course.nodes.FOCourseNode;
+import org.olat.course.run.userview.CourseNodeSecurityCallback;
+import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
  * Description: <br>
@@ -52,13 +54,14 @@ public class FOPreviewController extends DefaultController {
 	 * @param node
 	 * @param ne
 	 */
-	public FOPreviewController(UserRequest ureq, WindowControl wControl, NodeEvaluation ne) {
+	public FOPreviewController(UserRequest ureq, WindowControl wControl, FOCourseNode courseNode,
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
 		super(wControl);
 		trans = Util.createPackageTranslator(FOPreviewController.class, ureq.getLocale());
 		previewVC = new VelocityContainer("foPreviewVC", VELOCITY_ROOT + "/preview.html", trans, this);
-		previewVC.contextPut("canRead", Boolean.valueOf(ne.isCapabilityAccessible("reader")));
-		previewVC.contextPut("canPost", Boolean.valueOf(ne.isCapabilityAccessible("poster")));
-		previewVC.contextPut("canModerate", Boolean.valueOf(ne.isCapabilityAccessible("moderator")));
+		previewVC.contextPut("canRead", nodeSecCallback.isAccessible());
+		previewVC.contextPut("canPost", courseNode.isPoster(userCourseEnv, nodeSecCallback.getNodeEvaluation()));
+		previewVC.contextPut("canModerate", courseNode.isModerator(userCourseEnv, nodeSecCallback.getNodeEvaluation()));
 		setInitialComponent(previewVC);
 	}
 
