@@ -149,7 +149,7 @@ public class EditCurriculumElementController extends FormBasicController {
 			uifactory.addStaticTextElement("curriculum.element.external.id", externalId, formLayout);
 		}
 		
-		boolean canEdit = element == null ? true : secCallback.canEditCurriculumElement(element);
+		boolean canEdit = element == null || secCallback.canEditCurriculumElement(element);
 		
 		String identifier = element == null ? "" : element.getIdentifier();
 		identifierEl = uifactory.addTextElement("identifier", "curriculum.element.identifier", 255, identifier, formLayout);
@@ -309,9 +309,7 @@ public class EditCurriculumElementController extends FormBasicController {
 	
 	private List<CurriculumElementType> getTypes() {
 		List<CurriculumElementType> types;
-		if(element != null) {
-			types = getTypes(element);
-		} else if(parentElement != null) {
+		if(parentElement != null) {
 			types = getTypes(parentElement);
 		} else {
 			types = new ArrayList<>();
@@ -325,10 +323,10 @@ public class EditCurriculumElementController extends FormBasicController {
 		return types;
 	}
 	
-	private List<CurriculumElementType> getTypes(CurriculumElement curriculumElement)  {
+	private List<CurriculumElementType> getTypes(CurriculumElement curriculumParentElement)  {
 		List<CurriculumElementType> types = new ArrayList<>();
-		List<CurriculumElement> parentLine = curriculumService.getCurriculumElementParentLine(curriculumElement);
-		for(int i=parentLine.size() - 1; i-->0; ) {
+		List<CurriculumElement> parentLine = curriculumService.getCurriculumElementParentLine(curriculumParentElement);
+		for(int i=parentLine.size(); i-->0; ) {
 			CurriculumElement parent = parentLine.get(i);
 			CurriculumElementType parentType = parent.getType();
 			if(parentType != null) {
