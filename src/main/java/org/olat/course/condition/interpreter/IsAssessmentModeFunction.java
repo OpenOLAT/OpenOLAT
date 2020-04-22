@@ -19,18 +19,26 @@
  */
 package org.olat.course.condition.interpreter;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.tree.TreeHelper;
 import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.scoring.ScoreAccounting;
+import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -93,12 +101,68 @@ public class IsAssessmentModeFunction extends AbstractFunction {
 		if (foundNode == null) {
 			return Boolean.FALSE;
 		}
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		AssessmentConfig config = courseAssessmentService.getAssessmentConfig(foundNode);
+		if(!config.isAssessable()) {
+			return Boolean.FALSE;
+		}
+		
+		if (foundNode instanceof STCourseNode) {
+			return isScoreUserVisible((STCourseNode)foundNode, sa, courseAssessmentService);
+		}
 		ScoreEvaluation se = sa.evalCourseNode(foundNode);
+		// check if the results are visible
+		return isScoreUserVisible(se);
+	}
+	
+	private boolean isScoreUserVisible(ScoreEvaluation se) {
 		if (se == null) {
 			return Boolean.FALSE;
 		}
+		
 		// check if the results are visible
-		return se.getUserVisible() != null && se.getUserVisible().booleanValue();
+		AssessmentRunStatus status = se.getCurrentRunStatus();
+		return (status == AssessmentRunStatus.running || status == AssessmentRunStatus.done)
+				&& se.getUserVisible() != null && se.getUserVisible().booleanValue();
+	}
+	
+	/**
+	 * The method calculate is the course elements defined to calculate
+	 * sum or passed of the structure course element have some visible results.
+	 * If there isn't any node defined, the method will look at its children
+	 * and return true if one of them has results visible.
+	 * 
+	 * @param stNode The structure node
+	 * @param sa The score accounting used during the calculation
+	 * @return true or false
+	 */
+	private boolean isScoreUserVisible(STCourseNode stNode, ScoreAccounting sa, CourseAssessmentService courseAssessmentService) {
+		ScoreCalculator scoreCalculator = stNode.getScoreCalculator();
+		List<String> nodes = new ArrayList<>();
+		List<String> passedNodes = scoreCalculator.getPassedNodes();
+		if(passedNodes != null) {
+			nodes.addAll(passedNodes);
+		}
+		List<String> sumNodes = scoreCalculator.getSumOfScoreNodes();
+		if(sumNodes != null) {
+			nodes.addAll(sumNodes);
+		}
+		if(nodes.isEmpty()) {
+			TreeHelper.collectNodeIdentifiersRecursive(stNode, nodes);
+			nodes.remove(stNode.getIdent());
+		}
+		
+		for(String childIdent:nodes) {
+			CourseNode childNode = getUserCourseEnv().getCourseEnvironment().getRunStructure().getNode(childIdent);
+			AssessmentConfig config = courseAssessmentService.getAssessmentConfig(childNode);
+			if(config.isAssessable() && !(childNode instanceof STCourseNode)) {
+				ScoreEvaluation se = sa.evalCourseNode(childNode);
+				if (isScoreUserVisible(se)) {
+					return Boolean.TRUE;
+				}
+			}
+		}
+		return Boolean.FALSE;
 	}
 	
 	private boolean isAssessmentModeActive(OLATResourceable lockedResource) {

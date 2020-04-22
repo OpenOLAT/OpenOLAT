@@ -55,6 +55,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.DeletableGroupData;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
@@ -69,6 +70,7 @@ import org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingImpl;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingInfos;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonServerInfos;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryDataDeletable;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryManager;
@@ -85,7 +87,8 @@ import org.w3c.dom.Document;
  *
  */
 @Service
-public class BigBlueButtonManagerImpl implements BigBlueButtonManager, InitializingBean {
+public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
+	DeletableGroupData, RepositoryEntryDataDeletable, InitializingBean {
 	
 	private static final Logger log = Tracing.createLoggerFor(BigBlueButtonManagerImpl.class);
 
@@ -213,6 +216,26 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager, Initializ
 		template.setGuestPolicyEnum(guestPolicy);
 		template.setEnabled(enabled);
 		bigBlueButtonMeetingTemplateDao.updateTemplate(template);
+	}
+
+	@Override
+	public boolean deleteGroupDataFor(BusinessGroup group) {
+		List<BigBlueButtonMeeting> meetings = bigBlueButtonMeetingDao.getMeetings(null, null, group);
+		BigBlueButtonErrors errors = new BigBlueButtonErrors();
+		for(BigBlueButtonMeeting meeting:meetings) {
+			deleteMeeting(meeting, errors);
+		}
+		return !errors.hasErrors();
+	}
+	
+	@Override
+	public boolean deleteRepositoryEntryData(RepositoryEntry re) {
+		List<BigBlueButtonMeeting> meetings = bigBlueButtonMeetingDao.getMeetings(re, null, null);
+		BigBlueButtonErrors errors = new BigBlueButtonErrors();
+		for(BigBlueButtonMeeting meeting:meetings) {
+			deleteMeeting(meeting, errors);
+		}
+		return !errors.hasErrors();
 	}
 
 	@Override

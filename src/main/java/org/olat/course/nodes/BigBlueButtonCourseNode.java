@@ -21,6 +21,7 @@ package org.olat.course.nodes;
 
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
@@ -42,6 +43,9 @@ import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.bigbluebutton.BigBlueButtonManager;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonMeetingDefaultConfiguration;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonRunController;
 import org.olat.repository.RepositoryEntry;
@@ -153,5 +157,19 @@ public class BigBlueButtonCourseNode extends AbstractAccessableCourseNode {
 	public boolean needsReferenceToARepositoryEntry() {
 		return false;
 	}
+
+	@Override
+	public void cleanupOnDelete(ICourse course) {
+		BigBlueButtonManager bigBlueButtonManager = CoreSpringFactory.getImpl(BigBlueButtonManager.class);
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		List<BigBlueButtonMeeting> meetings = bigBlueButtonManager.getMeetings(courseEntry, getIdent(), null);
+		BigBlueButtonErrors errors = new BigBlueButtonErrors();
+		for(BigBlueButtonMeeting meeting:meetings) {
+			CoreSpringFactory.getImpl(BigBlueButtonManager.class).deleteMeeting(meeting, errors);
+		}
+		super.cleanupOnDelete(course);
+	}
+	
+	
 
 }
