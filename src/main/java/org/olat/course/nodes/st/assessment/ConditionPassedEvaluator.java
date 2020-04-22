@@ -81,7 +81,11 @@ public class ConditionPassedEvaluator implements PassedEvaluator {
 	
 	private RepositoryEntryLifecycle getRepositoryEntryLifecycle(RepositoryEntry courseEntry) {
 		try {
-			return courseEntry.getLifecycle();
+			RepositoryEntryLifecycle lifecycle = courseEntry.getLifecycle();
+			if(lifecycle != null) {
+				lifecycle.getValidTo();
+			}
+			return lifecycle;
 		} catch (LazyInitializationException e) {
 			RepositoryEntry reloadedEntry = CoreSpringFactory.getImpl(RepositoryService.class)
 					.loadByKey(courseEntry.getKey());

@@ -155,6 +155,9 @@ public class STRootPassedEvaluator implements RootPassedEvaluator {
 		if (courseEntry != null) {
 			try {
 				lifecycle = courseEntry.getLifecycle();
+				if(lifecycle != null) {
+					lifecycle.getValidTo();
+				}
 			} catch (LazyInitializationException lie) {
 				RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 				RepositoryEntry repositoryEntry = repositoryService.loadByKey(courseEntry.getKey());
