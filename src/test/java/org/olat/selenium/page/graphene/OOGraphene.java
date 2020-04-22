@@ -303,6 +303,12 @@ public class OOGraphene {
 		OOGraphene.waitingALittleLonger();
 	}
 
+	/**
+	 * The method waits for the element specified by the by selector.
+	 * 
+	 * @param by The selector
+	 * @param browser The browser
+	 */
 	public static void moveTo(By by, WebDriver browser) {
 		waitElement(by, browser);
 		WebElement el = browser.findElement(by);
@@ -322,9 +328,20 @@ public class OOGraphene {
 		scrollTo(By.id("o_top"), browser);
 	}
 	
+	/**
+	 * The method doesn't wait for the element.
+	 * 
+	 * @param by The selector
+	 * @param browser The browser
+	 */
 	public static void moveTop(WebDriver browser) {
 		By topBy = By.id("o_top");
-		moveTo(topBy, browser);
+		scrollTo(topBy, browser);
+		WebElement el = browser.findElement(topBy);
+		new Actions(browser)
+			.moveToElement(el)
+			.pause(moveToPause)
+			.perform();
 	}
 	
 	public static final void waitTinymce(WebDriver browser) {
@@ -578,6 +595,11 @@ public class OOGraphene {
 		waitBusy(browser);
 	}
 	
+	/**
+	 * Useful method to close error messages.
+	 * 
+	 * @param browser The browser
+	 */
 	public static final void closeErrorBox(WebDriver browser) {
 		By errorBoxBy = By.cssSelector(".modal-body.alert.alert-danger");
 		waitElement(errorBoxBy, browser);
@@ -587,6 +609,11 @@ public class OOGraphene {
 		waitModalDialogDisappears(browser);
 	}
 
+	/**
+	 * Useful method to close warning messages.
+	 * 
+	 * @param browser The browser
+	 */
 	public static final void closeWarningBox(WebDriver browser) {
 		By errorBoxBy = By.cssSelector(".modal-body.alert.alert-warning");
 		waitElement(errorBoxBy, browser);
