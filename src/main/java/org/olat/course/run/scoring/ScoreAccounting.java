@@ -26,6 +26,7 @@
 package org.olat.course.run.scoring;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -38,6 +39,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
+import org.olat.core.util.tree.TreeHelper;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
@@ -46,6 +48,7 @@ import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CalculatedAssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.PersistentAssessableCourseNode;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -496,6 +499,10 @@ public class ScoreAccounting {
 			error = true;
 			return Boolean.FALSE;
 		}
+		if(foundNode instanceof STCourseNode) {
+			return evalUserVisibleOfCourseNode((STCourseNode)foundNode);
+		}
+		
 		AssessableCourseNode acn = (AssessableCourseNode) foundNode;
 		ScoreEvaluation se = evalCourseNode(acn);
 		if (se == null) { // the node could not provide any sensible information on scoring. e.g. a STNode with no calculating rules
@@ -504,6 +511,35 @@ public class ScoreAccounting {
 		}
 		// check if the results are visible
 		return se.getUserVisible() != null && se.getUserVisible().booleanValue();
+	}
+	
+	private boolean evalUserVisibleOfCourseNode(STCourseNode stNode) {
+		ScoreCalculator scoreCalculator = stNode.getScoreCalculator();
+		List<String> nodes = new ArrayList<>();
+		List<String> passedNodes = scoreCalculator.getPassedNodes();
+		if(passedNodes != null) {
+			nodes.addAll(passedNodes);
+		}
+		List<String> sumNodes = scoreCalculator.getSumOfScoreNodes();
+		if(sumNodes != null) {
+			nodes.addAll(sumNodes);
+		}
+		if(nodes.isEmpty()) {
+			TreeHelper.collectNodeIdentifiersRecursive(stNode, nodes);
+			nodes.remove(stNode.getIdent());
+		}
+		
+		for(String childIdent:nodes) {
+			CourseNode childNode = findChildByID(childIdent);
+			if(childNode instanceof AssessableCourseNode && !(childNode instanceof STCourseNode)) {
+				AssessableCourseNode acn = (AssessableCourseNode)childNode;
+				ScoreEvaluation se = evalCourseNode(acn);
+				if (se != null && se.getUserVisible() != null && se.getUserVisible().booleanValue()) {
+					return Boolean.TRUE;
+				}
+			}
+		}
+		return Boolean.FALSE;
 	}
 
 	private CourseNode findChildByID(String id) {
