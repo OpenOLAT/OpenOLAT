@@ -63,7 +63,6 @@ ul.sessionControl {
 
 .sketch, .sketch>canvas {
 	touch-action: none;
-	user-drag: none;
 	-webkit-user-drag: none;
 	user-select: none;
 	-moz-user-select: none;
@@ -1425,7 +1424,7 @@ ul.o_qti_statistics_answers li span.o_qti_statistics_answer {
 						margin: 0;
 						padding: 5px 10px 10px 5px;
 						border-top: 1px solid $panel-default-border;
-						broder-bottom: 1px solid $panel-default-border;
+						border-bottom: 1px solid $panel-default-border;
 						h4 {
 							font-size: 100%;
 							font-weight: bold;
