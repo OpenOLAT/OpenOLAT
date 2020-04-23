@@ -168,39 +168,42 @@
 		}
 	}
 	
-	.o_dnd_item {
-		cursor:move; z-index: 100;
-	}
-	.o_dnd_proxy {
-		@include opacity(.4);
-		background-color: $o-tree-dnd-hover;
-		padding: 5px 10px 5px 10px;
-		border: 1px solid $o-tree-border-color;
-		@include border-top-radius($o-tree-border-radius);
-    	@include border-bottom-radius($o-tree-border-radius);
-	}
-	.o_dnd_item.o_dnd_over {
-		background-color: #ffff60;
-	}
-	.o_dnd_sibling {
-		height:7px;
-		width:100%;
-	}
-	.o_dnd_sibling.o_dnd_over {
-		background:transparent url(../light/images/arrow_dd.png) top left no-repeat;
-	}
+	ul li {
 	
-	.o_dnd_l1 { margin-left:0 !important; }
-	.o_dnd_l2 { margin-left:1em !important; }
-	.o_dnd_l3 { margin-left:2em !important; }
-	.o_dnd_l4 { margin-left:3em !important; }
-	.o_dnd_l5 { margin-left:4em !important; }
-	.o_dnd_l6 { margin-left:5em !important; }
-	.o_dnd_l7 { margin-left:6em !important; }
-	.o_dnd_l8 { margin-left:7em !important; }
-	.o_dnd_l9 { margin-left:8em !important; }
-	.o_dnd_l10 { margin-left:9em !important; }
-	.o_dnd_l11 { margin-left:10em !important; }
+		.o_dnd_item {
+			cursor:move; z-index: 100;
+		}
+		.o_dnd_proxy {
+			@include opacity(.4);
+			background-color: $o-tree-dnd-hover;
+			padding: 5px 10px 5px 10px;
+			border: 1px solid $o-tree-border-color;
+			@include border-top-radius($o-tree-border-radius);
+	    	@include border-bottom-radius($o-tree-border-radius);
+		}
+		.o_dnd_item.o_dnd_over, .o_dnd_item.o_dnd_over .o_tree_link {
+			background-color: #ffff60;
+		}
+		.o_dnd_sibling {
+			height:7px;
+			width:100%;
+		}
+		.o_dnd_sibling.o_dnd_over {
+			background:transparent url(../light/images/arrow_dd.png) top left no-repeat;
+		}
+		
+		.o_dnd_l1 { margin-left:0 !important; }
+		.o_dnd_l2 { margin-left:1em !important; }
+		.o_dnd_l3 { margin-left:2em !important; }
+		.o_dnd_l4 { margin-left:3em !important; }
+		.o_dnd_l5 { margin-left:4em !important; }
+		.o_dnd_l6 { margin-left:5em !important; }
+		.o_dnd_l7 { margin-left:6em !important; }
+		.o_dnd_l8 { margin-left:7em !important; }
+		.o_dnd_l9 { margin-left:8em !important; }
+		.o_dnd_l10 { margin-left:9em !important; }
+		.o_dnd_l11 { margin-left:10em !important; }
+	}
 }
 
 .o_tree.o_tree_insert_tool span.o_tree_link a {
