@@ -117,8 +117,10 @@ public class LearningPathServiceImpl implements LearningPathService {
 		
 		TreeVisitor tv = new TreeVisitor(new PostMigrationVisitor(registry), course.getEditorTreeModel().getRootNode(), false);
 		tv.visitAll();
+		tv = new TreeVisitor(new PostMigrationVisitor(registry), course.getRunStructure().getRootNode(), false);
+		tv.visitAll();
 		
-		CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
+		CourseFactory.saveCourse(course.getResourceableId());
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
 		return lpEntry;
 	}

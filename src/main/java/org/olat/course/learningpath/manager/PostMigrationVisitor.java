@@ -41,9 +41,15 @@ public class PostMigrationVisitor implements Visitor {
 
 	@Override
 	public void visit(INode node) {
+		CourseNode courseNode = null;
 		if (node instanceof CourseEditorTreeNode) {
 			CourseEditorTreeNode courseEditorTreeNode = (CourseEditorTreeNode)node;
-			CourseNode courseNode = courseEditorTreeNode.getCourseNode();
+			courseNode = courseEditorTreeNode.getCourseNode();
+		}
+		if (node instanceof CourseNode) {
+			courseNode = (CourseNode)node;
+		}
+		if (courseNode != null) {
 			LearningPathNodeHandler lpHandler = registry.getLearningPathNodeHandler(courseNode);
 			lpHandler.onMigrated(courseNode);
 		}
