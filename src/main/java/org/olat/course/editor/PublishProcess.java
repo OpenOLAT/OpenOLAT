@@ -62,6 +62,7 @@ import org.olat.course.ICourse;
 import org.olat.course.Structure;
 import org.olat.course.editor.PublishStepCatalog.CategoryLabel;
 import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
@@ -270,7 +271,8 @@ public class PublishProcess {
 		 * virtual course editor for using the validation facilities of the editor
 		 * environment.
 		 */
-		CourseEditorEnv tmpCEV = new CourseEditorEnvImpl(cloneCETM, course.getCourseEnvironment().getCourseGroupManager(), locale);
+		CourseEditorEnv tmpCEV = new CourseEditorEnvImpl(cloneCETM,
+				course.getCourseEnvironment().getCourseGroupManager(), locale, NodeAccessType.of(course));
 		// the resulting object is not needed, but constructor makes
 		// initializations within tmpCEV!! thus important step.
 		new EditorUserCourseEnvironmentImpl(tmpCEV, null);

@@ -533,34 +533,37 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 		} else {
 			retVal = new ArrayList<>();
 		}
-		// init passedExpression and scoreExpression
-		getScoreCalculator();
+		
+		if (getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_SCORE_CALCULATOR_SUPPORTED, true)) {
+			// init passedExpression and scoreExpression
+			getScoreCalculator();
 
-		passedExpression.setExpertMode(true);
-		String coS = passedExpression.getConditionExpression();
-		if (StringHelper.containsNonWhitespace(coS)) {
-			// an active condition is defined
-			ConditionExpression ce = new ConditionExpression(passedExpression.getConditionId());
-			ce.setExpressionString(passedExpression.getConditionExpression());
-			retVal.add(ce);
-		}
-		
-		scoreExpression.setExpertMode(true);
-		coS = scoreExpression.getConditionExpression();
-		if (StringHelper.containsNonWhitespace(coS)) {
-			// an active condition is defined
-			ConditionExpression ce = new ConditionExpression(scoreExpression.getConditionId());
-			ce.setExpressionString(scoreExpression.getConditionExpression());
-			retVal.add(ce);
-		}
-		
-		failedExpression.setExpertMode(true);
-		coS = failedExpression.getConditionExpression();
-		if (StringHelper.containsNonWhitespace(coS)) {
-			// an active condition is defined
-			ConditionExpression ce = new ConditionExpression(failedExpression.getConditionId());
-			ce.setExpressionString(failedExpression.getConditionExpression());
-			retVal.add(ce);
+			passedExpression.setExpertMode(true);
+			String coS = passedExpression.getConditionExpression();
+			if (StringHelper.containsNonWhitespace(coS)) {
+				// an active condition is defined
+				ConditionExpression ce = new ConditionExpression(passedExpression.getConditionId());
+				ce.setExpressionString(passedExpression.getConditionExpression());
+				retVal.add(ce);
+			}
+			
+			scoreExpression.setExpertMode(true);
+			coS = scoreExpression.getConditionExpression();
+			if (StringHelper.containsNonWhitespace(coS)) {
+				// an active condition is defined
+				ConditionExpression ce = new ConditionExpression(scoreExpression.getConditionId());
+				ce.setExpressionString(scoreExpression.getConditionExpression());
+				retVal.add(ce);
+			}
+			
+			failedExpression.setExpertMode(true);
+			coS = failedExpression.getConditionExpression();
+			if (StringHelper.containsNonWhitespace(coS)) {
+				// an active condition is defined
+				ConditionExpression ce = new ConditionExpression(failedExpression.getConditionId());
+				ce.setExpressionString(failedExpression.getConditionExpression());
+				retVal.add(ce);
+			}
 		}
 		return retVal;
 	}

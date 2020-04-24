@@ -262,7 +262,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				 */
 				cetm = course.getEditorTreeModel();
 	
-				CourseEditorEnv cev = new CourseEditorEnvImpl(cetm, cgm, getLocale());
+				CourseEditorEnv cev = new CourseEditorEnvImpl(cetm, cgm, getLocale(), NodeAccessType.of(course));
 				euce = new EditorUserCourseEnvironmentImpl(cev, getWindowControl());
 				euce.getCourseEditorEnv().setCurrentCourseNodeId(null);
 				

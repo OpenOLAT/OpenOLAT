@@ -93,6 +93,11 @@ public class NodeAccessServiceImpl implements NodeAccessService, NodeVisitedList
 	}
 
 	@Override
+	public boolean isConditionExpressionSupported(NodeAccessType type) {
+		return getNodeAccessProvider(type).isConditionExpressionSupported();
+	}
+
+	@Override
 	public boolean isScoreCalculatorSupported(NodeAccessType type) {
 		return getNodeAccessProvider(type).isScoreCalculatorSupported();
 	}

@@ -72,6 +72,11 @@ public class ConditionNodeAccessProvider implements NodeAccessProvider {
 	}
 
 	@Override
+	public boolean isConditionExpressionSupported() {
+		return true;
+	}
+
+	@Override
 	public boolean isScoreCalculatorSupported() {
 		return true;
 	}

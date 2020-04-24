@@ -42,6 +42,8 @@ public interface NodeAccessProvider extends NodeAccessProviderIdentifier {
 	public boolean isSupported(String courseNodeType);
 
 	public boolean isGuestSupported();
+
+	public boolean isConditionExpressionSupported();
 	
 	public boolean isScoreCalculatorSupported();
 

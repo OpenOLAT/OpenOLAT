@@ -56,6 +56,8 @@ public interface NodeAccessService {
 	 */
 	public boolean isGuestSupported(NodeAccessType type);
 	
+	public boolean isConditionExpressionSupported(NodeAccessType type);
+	
 	public boolean isScoreCalculatorSupported(NodeAccessType type);
 
 	/**

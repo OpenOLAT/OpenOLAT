@@ -87,6 +87,11 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider {
 	}
 
 	@Override
+	public boolean isConditionExpressionSupported() {
+		return false;
+	}
+
+	@Override
 	public boolean isScoreCalculatorSupported() {
 		return false;
 	}

@@ -40,6 +40,7 @@ import org._3pq.jgrapht.alg.CycleDetector;
 import org._3pq.jgrapht.edge.EdgeFactories;
 import org._3pq.jgrapht.edge.EdgeFactories.DirectedEdgeFactory;
 import org._3pq.jgrapht.graph.DefaultDirectedGraph;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeVisitor;
@@ -51,6 +52,8 @@ import org.olat.course.condition.interpreter.ConditionErrorMessage;
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ENCourseNode;
@@ -100,23 +103,24 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 	 * the condition interpreter for evaluating the condtion expressions.
 	 */
 	private ConditionInterpreter ci = null;
+	
+	private final boolean conditionExporessionSupported;
 
-	public CourseEditorEnvImpl(CourseEditorTreeModel cetm, CourseGroupManager cgm, Locale editorLocale) {
+	public CourseEditorEnvImpl(CourseEditorTreeModel cetm, CourseGroupManager cgm, Locale editorLocale,
+			NodeAccessType nodeAccessType) {
 		this.cetm = cetm;
 		this.cgm = cgm;
 		this.editorLocale = editorLocale;
+		this.conditionExporessionSupported = CoreSpringFactory.getImpl(NodeAccessService.class)
+				.isConditionExpressionSupported(nodeAccessType);
 	}
 
-	/**
-	 * @param ci
-	 */
+	@Override
 	public void setConditionInterpreter(ConditionInterpreter ci) {
 		this.ci = ci;
 	}
 
-	/**
-	 * @see org.olat.course.editor.CourseEditorEnv#isEnrollmentNode(java.lang.String)
-	 */
+	@Override
 	public boolean isEnrollmentNode(String nodeId) {
 		CourseEditorTreeNode cen = cetm.getCourseEditorNodeById(nodeId);
 		if (cen == null) return false;
@@ -126,9 +130,7 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 		return (cen.getCourseNode() instanceof ENCourseNode);
 	}
 
-	/**
-	 * @see org.olat.course.editor.CourseEditorEnv#isAssessable(java.lang.String)
-	 */
+	@Override
 	public boolean isAssessable(String nodeId) {
 		CourseEditorTreeNode cen = cetm.getCourseEditorNodeById(nodeId);
 		if (cen == null) return false;
@@ -138,19 +140,13 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 		return AssessmentHelper.checkIfNodeIsAssessable(cen.getCourseNode());
 	}
 
-	/**
-	 * @see org.olat.course.editor.CourseEditorEnv#existsNode(java.lang.String)
-	 */
+	@Override
 	public boolean existsNode(String nodeId) {
 		CourseEditorTreeNode cen = cetm.getCourseEditorNodeById(nodeId);
 		boolean retVal = cen != null && !cen.isDeleted();
 		return retVal;
 	}
 	
-	// <OLATCE-91>
-	/**
-	 * @see org.olat.course.editor.CourseEditorEnv#getNode(java.lang.String)
-	 */
 	@Override
 	public CourseNode getNode(String nodeId) {
 		CourseNode cen = cetm.getCourseNode(nodeId);
@@ -158,16 +154,12 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 	}
 	// </OLATCE-91>
 
-	/**
-	 * @see org.olat.course.editor.CourseEditorEnv#existsGroup(java.lang.String)
-	 */
+	@Override
 	public boolean existsGroup(String groupNameOrKey) {
 		return cgm.existGroup(groupNameOrKey);
 	}
 
-	/**
-	 * @see org.olat.course.editor.CourseEditorEnv#existsArea(java.lang.String)
-	 */
+	@Override
 	public boolean existsArea(String areaNameOrKey) {
 		return cgm.existArea(areaNameOrKey);
 	}
@@ -190,31 +182,25 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 		return invalidNames;
 	}
 
-	/**
-	 * @see org.olat.course.editor.CourseEditorEnv#getCurrentCourseNodeId()
-	 */
+	@Override
 	public String getCurrentCourseNodeId() {
 		return currentCourseNodeId;
 	}
 
-	/**
-	 * @see org.olat.course.editor.CourseEditorEnv#setCurrentCourseNodeId(java.lang.String)
-	 */
+	@Override
 	public void setCurrentCourseNodeId(String courseNodeId) {
 		this.currentCourseNodeId = courseNodeId;
 	}
 
-	/**
-	 * @see org.olat.course.editor.CourseEditorEnv#getEditorEnvLocale()
-	 */
+	@Override
 	public Locale getEditorEnvLocale() {
 		return editorLocale;
 	}
 
-	/**
-	 * @see org.olat.course.editor.CourseEditorEnv#validateConditionExpression(org.olat.course.condition.interpreter.ConditionExpression)
-	 */
+	@Override
 	public ConditionErrorMessage[] validateConditionExpression(ConditionExpression condExpr) {
+		if (!conditionExporessionSupported) return null;
+		
 		// first set the active condition expression, which will be accessed from
 		// the conditions functions inserting soft references
 		currentConditionExpression = condExpr;
@@ -241,27 +227,17 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 		return cems;
 	}
 
-	/**
-	 * @see org.olat.course.editor.CourseEditorEnv#addSoftReference(java.lang.String,
-	 *      java.lang.String)
-	 */
 	@Override
 	public void addSoftReference(String category, String softReference, boolean cycleDetector) {
 		currentConditionExpression.addSoftReference(category, softReference, cycleDetector);
 
 	}
 
-	/**
-	 * @see org.olat.course.editor.CourseEditorEnv#pushError(java.lang.Exception)
-	 */
 	@Override
 	public void pushError(Exception e) {
 		currentConditionExpression.pushError(e);
 	}
 
-	/**
-	 * @see org.olat.course.editor.CourseEditorEnv#validateCourse()
-	 */
 	@Override
 	public void validateCourse() {
 		/*
@@ -269,22 +245,22 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 		 * configuration errors.
 		 */
 		String currentNodeWas = currentCourseNodeId;
-		// reset all
-		softRefs = new HashMap<>();
-		Visitor v = new CollectConditionExpressionsVisitor();
-		(new TreeVisitor(v, cetm.getRootNode(), true)).visitAll();
+		if (conditionExporessionSupported) {
+			// reset all
+			softRefs = new HashMap<>();
+			Visitor conditionVisitor = new CollectConditionExpressionsVisitor();
+			(new TreeVisitor(conditionVisitor, cetm.getRootNode(), true)).visitAll();
+		}
 
 		// refresh,create status descriptions of the course
 		statusDescs = new HashMap<>();
-		v = new CollectStatusDescriptionVisitor(this);
-		(new TreeVisitor(v, cetm.getRootNode(), true)).visitAll();
+		Visitor statusVisitor = new CollectStatusDescriptionVisitor(this);
+		(new TreeVisitor(statusVisitor, cetm.getRootNode(), true)).visitAll();
 		//
 		currentCourseNodeId = currentNodeWas;
 	}
 
-	/**
-	 * @see org.olat.course.editor.CourseEditorEnv#getCourseStatus()
-	 */
+	@Override
 	public StatusDescription[] getCourseStatus() {
 		String[] a = statusDescs.keySet().toArray(new String[statusDescs.keySet().size()]);
 		Arrays.sort(a);
@@ -363,9 +339,7 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 			this.cev = cev;
 		}
 
-		/**
-		 * @see org.olat.core.util.tree.Visitor#visit(org.olat.core.util.nodes.INode)
-		 */
+		@Override
 		public void visit(INode node) {
 			/**
 			 * collect only status descriptions of not deleted nodes
@@ -393,9 +367,8 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 	}
 
 	class CollectConditionExpressionsVisitor implements Visitor {
-		/**
-		 * @see org.olat.core.util.tree.Visitor#visit(org.olat.core.util.nodes.INode)
-		 */
+		
+		@Override
 		public void visit(INode node) {
 			/**
 			 * collect condition expressions only for not deleted nodes
@@ -446,10 +419,6 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 		
 	}
 	
-	/**
-	 * 
-	 * @see org.olat.course.editor.CourseEditorEnv#listCycles()
-	 */
 	@Override
 	public Set<String> listCycles() {
 		/*
@@ -513,17 +482,14 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 		return cycleIds;
 	}
 
-	/**
-	 * 
-	 * @return CourseGroupManager for this course environment
-	 */
+	@Override
 	public CourseGroupManager getCourseGroupManager() {
 		return cgm;
 	}
 	
+	@Override
 	public String getRootNodeId() {
 		return cetm.getRootNode().getIdent();
 	}
-
 
 }
