@@ -33,6 +33,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
+import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
@@ -85,12 +86,17 @@ public class BigBlueButtonCourseNode extends AbstractAccessableCourseNode {
 			ICourse course, UserCourseEnvironment userCourseEnv) {
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(userCourseEnv.getCourseEditorEnv().getCurrentCourseNodeId());
 		// create edit controller
-		BigBlueButtonEditController childTabCtrl = new BigBlueButtonEditController(ureq, wControl, this, course, userCourseEnv);
+		BigBlueButtonEditController childTabCtrl = new BigBlueButtonEditController(ureq, wControl, this);
 		
 		NodeEditController nodeEditCtr = new NodeEditController(ureq, wControl, course, chosenNode,
 				userCourseEnv, childTabCtrl);
 		nodeEditCtr.addControllerListener(childTabCtrl);
 		return nodeEditCtr;
+	}
+
+	@Override
+	public ConditionAccessEditConfig getAccessEditConfig() {
+		return ConditionAccessEditConfig.regular(false);
 	}
 
 	@Override

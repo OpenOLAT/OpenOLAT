@@ -22,18 +22,12 @@ package org.olat.course.nodes.bigbluebutton;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
-import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.condition.Condition;
-import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.BigBlueButtonCourseNode;
-import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 
 /**
@@ -48,23 +42,17 @@ public class BigBlueButtonEditController extends ActivateableTabbableDefaultCont
 	public static final String GUEST_ACCESS_ALLOWED = "guestAccessAllowed";
 	public static final String MODERATOR_START_MEETING = "moderatorStartMeeting";
 	
-	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
 	public static final String PANE_TAB_VCCONFIG = "pane.tab.vcconfig";
-	private static final String[] paneKeys = { PANE_TAB_VCCONFIG, PANE_TAB_ACCESSIBILITY };
+	private static final String[] paneKeys = { PANE_TAB_VCCONFIG };
 	
 	private TabbedPane tabPane;
-	private final VelocityContainer myContent;
 
 	private BigBlueButtonConfigForm configCtrl;
-	private ConditionEditController accessibilityCondContr;
 	
 	private final ModuleConfiguration config;
-	private final BigBlueButtonCourseNode courseNode;
 	
-	public BigBlueButtonEditController(UserRequest ureq, WindowControl wControl, BigBlueButtonCourseNode courseNode,
-			ICourse course, UserCourseEnvironment userCourseEnv) {
+	public BigBlueButtonEditController(UserRequest ureq, WindowControl wControl, BigBlueButtonCourseNode courseNode) {
 		super(ureq, wControl);
-		this.courseNode = courseNode;
 		config = courseNode.getModuleConfiguration();	
 		
 		String providerId = config.getStringValue("vc_provider_id");
@@ -72,16 +60,8 @@ public class BigBlueButtonEditController extends ActivateableTabbableDefaultCont
 			showWarning("wimba.not.supported.message");
 		}
 		
-		Condition accessCondition = courseNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, wControl, userCourseEnv,
-				accessCondition, AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode));
-		listenTo(accessibilityCondContr);
-		
-		myContent = createVelocityContainer("edit");
-		
 		configCtrl = new BigBlueButtonConfigForm(ureq, getWindowControl(), config);
 		listenTo(configCtrl);
-		myContent.put("configuration", configCtrl.getInitialComponent());
 	}
 	
 	@Override
@@ -106,13 +86,7 @@ public class BigBlueButtonEditController extends ActivateableTabbableDefaultCont
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == accessibilityCondContr) {
-			if (event == Event.CHANGED_EVENT) {
-				Condition cond = accessibilityCondContr.getCondition();
-				courseNode.setPreConditionAccess(cond);
-				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-			}
-		} else if (source == configCtrl) {
+		if (source == configCtrl) {
 			if (event == Event.CANCELLED_EVENT) {
 				// do nothing
 			} else if (event == Event.DONE_EVENT || event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
@@ -124,6 +98,6 @@ public class BigBlueButtonEditController extends ActivateableTabbableDefaultCont
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		tabPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_VCCONFIG), myContent);
+		tabbedPane.addTab(translate(PANE_TAB_VCCONFIG), configCtrl.getInitialComponent());
 	}
 }
