@@ -1,0 +1,49 @@
+name: Java CI
+env:
+  MAVEN_OPTS: -Xms2048m -Xmx4096m
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres
+        # Provide the password for postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Opens tcp port 6379 on the host and service container
+          - 5432:5432
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Cache
+      uses: actions/cache@v1
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
+    - name: Set up JDK 1.8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+    - name: Build with Maven
+      run: mvn -B package --file pom.xml
+    - name: Run tests
+      run: mvn test jacoco:report coveralls:report -Dwith-postgresql -Dtest.env.db.host=localhost -Dtest.env.db.postgresql.user=postgres -Dtest.env.db.postgresql.pass=postgres -Dtest=org.olat.test.AllTestsJunit4 -Ptomcat
+    - name: SonarCloud Scan
+      run: mvn sonar:sonar -Dsonar.projectKey=tomgross_OpenOLAT -Dsonar.organization=tomgross-github -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }} -Dsonar.pullrequest.provider=github -Dsonar.exclusions=src/main/webapp/static/js/paella/**/*  -Ponly-eclipse 
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

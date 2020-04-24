@@ -7,6 +7,7 @@
 A sophisticated modular toolkit provides course authors with a wide range of didactic possibilities. Each OpenOlat installation can be individually extended, adapted to organizational needs, and integrated into existing IT infrastructures. The architecture is designed for minimal resource consumption, scalability and security in order to guarantee high system reliability.
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Ftomgross%2FOpenOLAT%2Fbadge%3Fref%3Dmaster&style=flat)](https://actions-badge.atrox.dev/tomgross/OpenOLAT/goto?ref=master)
 
 ## Table of Contents
 
