@@ -19,10 +19,10 @@ is copyrighted by their respective party and released under the Apache 2.0 Licen
 
 Contributors and copy right holders of openolat.org codebase since 2011:
 -----------------------------------------------------------------------
-- frentix GmbH, Switzerland [http://www.frentix.com]
-  Michael Enz, Christian Franck, Florian Gnägi, Roman Haag, Joël Krähemann, Matthai Kurian, Stéphane Rossé, 
-  Kirsten Scherer, Sergio Trentini, Marco Ferrari, Sabrina Scheiwiler, Oliver Kant, Fabian Kiefer,
-  Urs Hensler, Mandy Menzel, Saara Welti
+- frentix GmbH, Switzerland [https://www.frentix.com]
+  Alexander Böckle, Rico Eberle, Michael Enz, Christian Franck, Florian Gnägi, Roman Haag, Joël Krähemann, 
+  Matthai Kurian, Stéphane Rossé, Martin Sauerbrey, Kirsten Scherer, Sergio Trentini, Marco Ferrari, 
+  Sabrina Scheiwiler, Oliver Kant, Fabian Kiefer, Urs Hensler, Mandy Menzel, Saara Welti
 - BPS Bildungsportal Sachsen GmbH, Germany [http://www.bildungsportal.sachsen.de]:
   Armin Blawitzki, Stefan Köber, Sven Morgner
 - VCRP Virtueller Campus Rheinland-Pfalz [http://www.vcrp.de]

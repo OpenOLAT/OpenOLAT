@@ -745,8 +745,10 @@ i.o_lp_done:before { content: $fa-var-check;}
 .o_icon_digg:before { content: $fa-var-digg;}
 .o_icon_mailto:before { content: $fa-var-envelope-square;}
 .o_icon_link:before { content: $fa-var-link;}
+.o_icon_linkedin:before { content: $fa-var-linkedin-square;}
 .o_icon_yahoo:before { content: $fa-var-yahoo;}
-
+.o_icon_youtube:before { content: $fa-var-youtube-square;}
+	
 /* evaluation form and survey course node*/
 .o_icon_eva_disclaimer:before { content: $fa-var-gavel; }
 .o_icon_eva_end_show:before { content: $fa-var-arrows-h; }
