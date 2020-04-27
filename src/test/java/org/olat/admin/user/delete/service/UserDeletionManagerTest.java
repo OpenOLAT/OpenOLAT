@@ -26,6 +26,7 @@
 
 package org.olat.admin.user.delete.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -45,10 +46,14 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
+import org.olat.course.CourseFactory;
+import org.olat.course.config.CourseConfig;
+import org.olat.course.disclaimer.CourseDisclaimerManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
@@ -78,6 +83,8 @@ public class UserDeletionManagerTest extends OlatTestCase {
 	private UserDeletionManager userDeletionManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private CourseDisclaimerManager courseDisclaimerManager;
 	
 	@Test
 	public void deleteIdentity() {
@@ -99,8 +106,21 @@ public class UserDeletionManagerTest extends OlatTestCase {
 		//a course
 		RepositoryEntry course = JunitTestHelper.deployBasicCourse(identity);
 		dbInstance.commitAndCloseSession();
+		//a course disclaimer
+		OLATResourceable courseOres = course.getOlatResource();
+		CourseConfig courseConfig = CourseFactory.openCourseEditSession(courseOres.getResourceableId()).getCourseEnvironment().getCourseConfig();
+		courseConfig.setDisclaimerEnabled(1, true);
+		courseConfig.setDisclaimerEnabled(2, true);
+		CourseFactory.setCourseConfig(courseOres.getResourceableId(), courseConfig);
+		CourseFactory.saveCourse(courseOres.getResourceableId());
+		CourseFactory.closeCourseEditSession(courseOres.getResourceableId(), true);
+		//a consent to the disclaimer
+		courseDisclaimerManager.acceptDisclaimer(course, identity, true, true);
+		
+		Assert.assertTrue(courseDisclaimerManager.isAccessGranted(course, identity));		
 		Assert.assertEquals(username, course.getInitialAuthor());
 		Assert.assertTrue(repositoryService.hasRoleExpanded(identity, GroupRoles.owner.name()));
+		assertThat(courseDisclaimerManager.getConsents(course)).hasSize(1);
 		
 		//delete the identity
 		userDeletionManager.deleteIdentity(identity, null);
@@ -117,6 +137,9 @@ public class UserDeletionManagerTest extends OlatTestCase {
 		Assert.assertFalse(reloadedCourse.getInitialAuthor().equals(username));
 		boolean isOwner = repositoryService.hasRoleExpanded(identity, GroupRoles.owner.name());
 		Assert.assertFalse(isOwner);
+		
+		//check deleted consents
+		assertThat(courseDisclaimerManager.getConsents(course)).hasSize(0);
 		
 		User deletedUser = deletedIdentity.getUser();
 		// process keep first name last name from user with some "administrative"

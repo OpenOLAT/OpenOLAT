@@ -21,9 +21,11 @@ package org.olat.course.disclaimer.manager;
 
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.disclaimer.CourseDisclaimerConsent;
@@ -31,6 +33,7 @@ import org.olat.course.disclaimer.CourseDisclaimerManager;
 import org.olat.course.disclaimer.model.CourseDisclaimerConsentImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -39,8 +42,10 @@ import org.springframework.stereotype.Service;
  * @author Alexander Boeckle
  */
 @Service
-public class CourseDisclaimerManagerImpl implements CourseDisclaimerManager {
-
+public class CourseDisclaimerManagerImpl implements CourseDisclaimerManager, UserDataDeletable {
+	
+	private static final Logger log = Tracing.createLoggerFor(CourseDisclaimerConsentImpl.class);
+	
 	@Autowired
 	private CourseDisclaimerDAO courseDisclaimerDAO;
 	
@@ -147,5 +152,11 @@ public class CourseDisclaimerManagerImpl implements CourseDisclaimerManager {
 	@Override
 	public void removeAllConsents(IdentityRef identityRef) {
 		courseDisclaimerDAO.removeAllConsents(identityRef);
+	}
+
+	@Override
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
+		removeAllConsents(identity);
+		log.info(Tracing.M_AUDIT, "Course related consents deleted for identity=" + identity.getKey());
 	}
 }

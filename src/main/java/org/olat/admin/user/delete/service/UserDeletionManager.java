@@ -60,7 +60,6 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.session.UserSessionManager;
-import org.olat.course.disclaimer.CourseDisclaimerManager;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.repository.RepositoryDeletionModule;
@@ -105,8 +104,6 @@ public class UserDeletionManager {
 	private UserSessionManager userSessionManager;
 	@Autowired
 	private GroupDAO groupDao;
-	@Autowired
-	private CourseDisclaimerManager courseDisclaimermanager;
 	@Autowired
 	private DB dbInstance;
 
@@ -317,9 +314,6 @@ public class UserDeletionManager {
 		// Remove identity from all remaining groups and remove roles
 		int count = groupDao.removeMemberships(identity);
 		log.info("Delete " + count + " group memberships/roles for identity::" + identity.getKey());
-		
-		// Remove all course related consents
-		courseDisclaimermanager.removeAllConsents(identity);
 
 		// Cleanup lifecycle data
 		LifeCycleManager.createInstanceFor(identity).markTimestampFor(USER_DELETED_ACTION, null);
