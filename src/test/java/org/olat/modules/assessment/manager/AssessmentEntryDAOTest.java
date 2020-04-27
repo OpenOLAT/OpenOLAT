@@ -47,6 +47,7 @@ import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentEntryCompletion;
+import org.olat.modules.assessment.AssessmentEntryScoring;
 import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentEntryImpl;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -704,11 +705,11 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		List<Long> entryKeys = Arrays.asList(entry1.getKey(), entry2.getKey());
-		List<AssessmentEntry> assessmentEnries = assessmentEntryDao.loadRootAssessmentEntriesByAssessedIdentity(assessedIdentity, entryKeys);
+		List<AssessmentEntryScoring> assessmentEnries = assessmentEntryDao.loadRootAssessmentEntriesByAssessedIdentity(assessedIdentity, entryKeys);
 		
 		Assert.assertEquals(2, assessmentEnries.size());
-		Map<Long, AssessmentEntry> keysToCompletion = assessmentEnries.stream()
-				.collect(Collectors.toMap(ae -> ae.getRepositoryEntry().getKey(), Function.identity()));
+		Map<Long, AssessmentEntryScoring> keysToCompletion = assessmentEnries.stream()
+				.collect(Collectors.toMap(ae -> ae.getRepositoryEntryKey(), Function.identity()));
 		Assert.assertEquals(1, keysToCompletion.get(entry1.getKey()).getCompletion().intValue());
 		Assert.assertEquals(0, keysToCompletion.get(entry2.getKey()).getCompletion().intValue());
 	}

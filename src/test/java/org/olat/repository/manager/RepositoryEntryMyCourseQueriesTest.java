@@ -19,9 +19,15 @@
  */
 package org.olat.repository.manager;
 
+import static org.olat.test.JunitTestHelper.random;
+
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import org.assertj.core.api.SoftAssertions;
+import org.assertj.core.data.Offset;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
@@ -29,11 +35,14 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
+import org.olat.repository.model.SearchMyRepositoryEntryViewParams.Filter;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.OrderBy;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -55,6 +64,8 @@ public class RepositoryEntryMyCourseQueriesTest extends OlatTestCase {
 	private BaseSecurity securityManager;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private AssessmentService assessmentService;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
@@ -98,6 +109,27 @@ public class RepositoryEntryMyCourseQueriesTest extends OlatTestCase {
 			Assert.assertNotNull(viewDesc);
 		}
 	}
+	
+	/**
+	 * Check only the syntax of the filter statements..
+	 */
+	@Test
+	public void searchViews_filter() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("mycourses-view-2-");
+		dbInstance.commit();
+		Roles roles = securityManager.getRoles(id);
+		
+		SearchMyRepositoryEntryViewParams params
+			= new SearchMyRepositoryEntryViewParams(id, roles);
+		params.setMarked(Boolean.TRUE);
+		
+		for(Filter filter:Filter.values()) {
+			params.setFilters(Arrays.asList(filter));
+			List<RepositoryEntryMyView> viewAsc = repositoryEntryMyCourseViewQueries.searchViews(params, 0, 10);
+			Assert.assertNotNull(viewAsc);
+		}
+	}
+
 	
 	/**
 	 * Check the search parameter mandatory membership.
@@ -447,6 +479,37 @@ public class RepositoryEntryMyCourseQueriesTest extends OlatTestCase {
 		List<RepositoryEntryMyView> views = repositoryEntryMyCourseViewQueries.searchViews(params, 0, -1);
 		Assert.assertFalse(contains(reCoach, views));
 		Assert.assertFalse(contains(reNotCoach, views));
+	}
+	
+	@Test
+	public void searchViews_assessment_values() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("mycourses-view-11-");
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		repositoryManager.setAccess(re, RepositoryEntryStatusEnum.published, false, false);
+		repositoryEntryRelationDao.addRole(id, re, GroupRoles.participant.name());
+		
+		AssessmentEntry rootAE = assessmentService.getOrCreateAssessmentEntry(id, null, re, random(), Boolean.TRUE, null);
+		rootAE.setPassed(Boolean.TRUE);
+		rootAE.setScore(BigDecimal.valueOf(0.9));
+		rootAE.setCompletion(Double.valueOf(0.8));
+		rootAE = assessmentService.updateAssessmentEntry(rootAE);
+		AssessmentEntry childAE = assessmentService.getOrCreateAssessmentEntry(id, null, re, random(), Boolean.FALSE, null);
+		childAE.setPassed(Boolean.TRUE);
+		childAE.setScore(BigDecimal.valueOf(0.3));
+		childAE.setCompletion(Double.valueOf(0.2));
+		childAE = assessmentService.updateAssessmentEntry(childAE);
+		dbInstance.closeSession();
+		
+		SearchMyRepositoryEntryViewParams params = new SearchMyRepositoryEntryViewParams(id, Roles.userRoles());
+		params.setIdAndRefs(re.getKey().toString());
+		
+		List<RepositoryEntryMyView> views = repositoryEntryMyCourseViewQueries.searchViews(params, 0, -1);
+		RepositoryEntryMyView view = views.get(0);
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(view.getPassed()).isTrue();
+		softly.assertThat(view.getScore()).isEqualTo(0.9f, Offset.offset(0.001f));
+		softly.assertThat(view.getCompletion()).isEqualTo(0.8, Offset.offset(0.001));
+		softly.assertAll();
 	}
 	
 	private final boolean contains(RepositoryEntry re, List<RepositoryEntryMyView> views) {

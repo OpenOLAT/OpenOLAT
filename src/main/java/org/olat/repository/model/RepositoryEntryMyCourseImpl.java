@@ -23,7 +23,6 @@ import java.util.Date;
 
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
-import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -74,7 +73,7 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	private final long offersAvailable;
 	
 	public RepositoryEntryMyCourseImpl(RepositoryEntry re, RepositoryEntryStatistics stats,
-			boolean marked, long offersAvailable, Integer myRating, Double completion) {
+			boolean marked, long offersAvailable, Integer myRating) {
 		key = re.getKey();
 		externalId = re.getExternalId();
 		externalRef = re.getExternalRef();
@@ -93,10 +92,8 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 		olatResource = re.getOlatResource();
 		lifecycle = re.getLifecycle();
 	
-
 		this.marked = marked;
 		this.myRating = myRating;
-		this.completion = completion;
 
 		if(stats != null) {
 			averageRating = stats.getRating();
@@ -111,13 +108,6 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 		}
 		
 		this.offersAvailable = offersAvailable;
-	}
-	
-	public void setEfficiencyStatement(UserEfficiencyStatementLight efficiencyStatment) {
-		if(efficiencyStatment != null) {
-			score = efficiencyStatment.getScore();
-			passed = efficiencyStatment.getPassed();
-		}
 	}
 
 	@Override
@@ -226,14 +216,26 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 		return score;
 	}
 
+	public void setScore(Float score) {
+		this.score = score;
+	}
+
 	@Override
 	public Boolean getPassed() {
 		return passed;
+	}
+
+	public void setPassed(Boolean passed) {
+		this.passed = passed;
 	}
 	
 	@Override
 	public Double getCompletion() {
 		return completion;
+	}
+
+	public void setCompletion(Double completion) {
+		this.completion = completion;
 	}
 
 	@Override

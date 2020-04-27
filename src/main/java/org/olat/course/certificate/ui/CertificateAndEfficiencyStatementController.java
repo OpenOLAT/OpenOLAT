@@ -74,7 +74,7 @@ import org.olat.course.certificate.CertificatesManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
-import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentEntryScoring;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.portfolio.PortfolioV2Module;
@@ -270,7 +270,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 			}
 		}
 		
-		List<AssessmentEntry> completions = Collections.emptyList();
+		List<AssessmentEntryScoring> completions = Collections.emptyList();
 		if(courseRepoEntry != null) {
 			completions = assessmentService.loadRootAssessmentEntriesByAssessedIdentity(statementOwner,
 				Collections.singletonList(courseRepoEntry.getKey()));

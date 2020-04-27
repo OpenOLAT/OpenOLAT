@@ -53,7 +53,7 @@ import org.olat.resource.accesscontrol.ui.PriceFormat;
  *
  */
 public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDelegate<RepositoryEntryRow> {
-	
+
 	private final RepositoryEntryDataSourceUIFactory uifactory;
 	private final SearchMyRepositoryEntryViewParams searchParams;
 	

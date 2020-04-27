@@ -19,12 +19,13 @@
  */
 package org.olat.repository.manager;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.persistence.FlushModeType;
@@ -42,10 +43,10 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.model.UserEfficiencyStatementImpl;
-import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 import org.olat.fileresource.types.VideoFileResource;
+import org.olat.modules.assessment.AssessmentEntryScoring;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
@@ -56,7 +57,6 @@ import org.olat.repository.model.RepositoryEntryStatistics;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.Filter;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.OrderBy;
-import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 import org.olat.user.UserImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,7 +82,7 @@ public class RepositoryEntryMyCourseQueries {
 	@Autowired
 	private RepositoryModule repositoryModule;
 	@Autowired
-	private EfficiencyStatementManager efficiencyStatementManager;
+	private AssessmentService assessmentService;
 	
 	public int countViews(SearchMyRepositoryEntryViewParams params) {
 		if(params.getIdentity() == null) {
@@ -116,10 +116,9 @@ public class RepositoryEntryMyCourseQueries {
 		boolean needStats = repositoryModule.isRatingEnabled() || repositoryModule.isCommentEnabled() ||
 				(params.getResourceTypes() != null && params.getResourceTypes().contains(VideoFileResource.TYPE_NAME));
 		
-		List<Long> effKeys = new ArrayList<>();
+		List<Long> repoKeys = new ArrayList<>();
 		List<Object[]> objects = query.getResultList();
-		List<RepositoryEntryMyView> views = new ArrayList<>(objects.size());
-		Map<OLATResource,RepositoryEntryMyCourseImpl> viewsMap = new HashMap<>();
+		List<RepositoryEntryMyCourseImpl> viewImpls = new ArrayList<>(objects.size());
 		for(Object[] object:objects) {
 			RepositoryEntry re = (RepositoryEntry)object[0];
 			Number numOfMarks = (Number)object[1];
@@ -127,7 +126,6 @@ public class RepositoryEntryMyCourseQueries {
 			Number numOffers = (Number)object[2];
 			long offers = numOffers == null ? 0l : numOffers.longValue();
 			Integer myRating = (Integer)object[3];
-			Double completion = (Double)object[4];
 			
 			RepositoryEntryStatistics stats;
 			if (needStats) {
@@ -135,25 +133,26 @@ public class RepositoryEntryMyCourseQueries {
 			} else {
 				stats = null;
 			}
-			RepositoryEntryMyCourseImpl view = new RepositoryEntryMyCourseImpl(re, stats, hasMarks, offers, myRating, completion);
-			views.add(view);
-			viewsMap.put(re.getOlatResource(), view);
-
-			Long effKey = (Long)object[5];
-			if(effKey != null) {
-				effKeys.add(effKey);
-			}
+			RepositoryEntryMyCourseImpl view = new RepositoryEntryMyCourseImpl(re, stats, hasMarks, offers, myRating);
+			viewImpls.add(view);
+			repoKeys.add(re.getKey());
 		}
 		
-		if(!effKeys.isEmpty()) {
-			List<UserEfficiencyStatementLight> efficiencyStatements =
-					efficiencyStatementManager.findEfficiencyStatementsLight(effKeys);
-			for(UserEfficiencyStatementLight efficiencyStatement:efficiencyStatements) {
-				if(viewsMap.containsKey(efficiencyStatement.getResource())) {
-					viewsMap.get(efficiencyStatement.getResource()).setEfficiencyStatement(efficiencyStatement);
-				}
+		Map<Long, AssessmentEntryScoring> repoKeyToAssessmentEntry = assessmentService
+				.loadRootAssessmentEntriesByAssessedIdentity(params.getIdentity(), repoKeys).stream()
+				.collect(Collectors.toMap(ae -> ae.getRepositoryEntryKey(), Function.identity()));
+		List<RepositoryEntryMyView> views = new ArrayList<>(viewImpls.size());
+		for (RepositoryEntryMyCourseImpl view: viewImpls) {
+			AssessmentEntryScoring assessmentEntry = repoKeyToAssessmentEntry.getOrDefault(view.getKey(), null);
+			if (assessmentEntry != null) {
+				BigDecimal score = assessmentEntry.getScore();
+				view.setScore(score != null? Float.valueOf(score.floatValue()): null);
+				view.setPassed(assessmentEntry.getPassed());
+				view.setCompletion(assessmentEntry.getCompletion());
 			}
+			views.add(view);
 		}
+
 		return views;
 	}
 
@@ -197,15 +196,7 @@ public class RepositoryEntryMyCourseQueries {
 				sb.append(" 0 as myrating");
 			}
 			needIdentityKey = true;
-			sb.append(" ,(select ae.completion")
-			  .append("     from assessmententry as ae")
-			  .append("    where ae.repositoryEntry.key = v.key")
-			  .append("      and ae.entryRoot = true")
-			  .append("      and ae.identity.key=:identityKey")
-			  .append("  ) as completion");
-			sb.append(" ,(select eff.key from ").append(UserEfficiencyStatementImpl.class.getName()).append(" as eff")
-			  .append("    where eff.resource=res and eff.identity.key=:identityKey")
-			  .append(" ) as effKey");
+			
 			needIdentityKey |= appendOrderByInSelect(params, sb);
 			sb.append(" from repositoryentry as v")
 			  .append(" inner join ").append(oracle ? "" : "fetch").append(" v.olatResource as res");
@@ -214,8 +205,6 @@ public class RepositoryEntryMyCourseQueries {
 			}
 			sb.append(" left join fetch v.lifecycle as lifecycle ");
 		}
-		//user course informations
-		//efficiency statements
 		
 		if(params.getParentEntry() != null) {
 			sb.append(" inner join catalogentry as cei on (v.key = cei.repositoryEntry.key)");
@@ -463,20 +452,20 @@ public class RepositoryEntryMyCourseQueries {
 				break;
 			case passed:
 				needIdentityKey = true;
-				sb.append(" and exists (select eff2.key from ").append(UserEfficiencyStatementImpl.class.getName()).append(" as eff2")
-				  .append("    where eff2.resource=res and eff2.identity.key=:identityKey and eff2.passed=true")
+				sb.append(" and exists (select ae2.key from assessmententry as ae2")
+				  .append("    where ae2.repositoryEntry.key = v.key and ae2.passed=true and ae2.entryRoot = true and ae2.identity.key=:identityKey")
 				  .append(" )");
 				break;
 			case notPassed:
 				needIdentityKey = true;
-				sb.append(" and exists (select eff3.key from ").append(UserEfficiencyStatementImpl.class.getName()).append(" as eff3")
-				  .append("    where eff3.resource=res and eff3.identity.key=:identityKey and eff3.passed=false")
+				sb.append(" and exists (select ae3.key from assessmententry as ae3")
+				  .append("    where ae3.repositoryEntry.key = v.key and ae3.entryRoot = true and ae3.identity.key=:identityKey and ae3.passed=false")
 				  .append(" )");
 				break;
 			case withoutPassedInfos:
 				needIdentityKey = true;
-				sb.append(" and exists (select eff4.key from ").append(UserEfficiencyStatementImpl.class.getName()).append(" as eff4")
-				  .append("    where eff4.resource=res and eff4.identity.key=:identityKey and eff4.passed is null")
+				sb.append(" and exists (select ae4.key from assessmententry as ae4")
+				  .append("    where ae4.repositoryEntry.key = v.key  and ae4.entryRoot = true and ae4.identity.key=:identityKey and ae4.passed is null")
 				  .append(" )");
 				break;
 			default: {}
@@ -515,6 +504,15 @@ public class RepositoryEntryMyCourseQueries {
 					sb.append(" ,(select eff4.score from ").append(UserEfficiencyStatementImpl.class.getName()).append(" as eff4")
 					  .append("    where eff4.resource=res and eff4.identity.key=:identityKey")
 					  .append(" ) as score");
+					break;
+				case completion:
+					needIdentityKey = true;
+					sb.append(" ,(select ae.completion")
+					  .append("     from assessmententry as ae")
+					  .append("    where ae.repositoryEntry.key = v.key")
+					  .append("      and ae.entryRoot = true")
+					  .append("      and ae.identity.key=:identityKey")
+					  .append("  ) as completion");
 					break;
 				default: //do nothing
 			}

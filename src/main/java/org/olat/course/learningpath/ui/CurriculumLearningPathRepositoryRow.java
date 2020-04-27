@@ -22,7 +22,7 @@ package org.olat.course.learningpath.ui;
 import java.math.BigDecimal;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentEntryScoring;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -40,7 +40,7 @@ public class CurriculumLearningPathRepositoryRow {
 	
 	private FormLink learningPathLink;
 
-	public CurriculumLearningPathRepositoryRow(RepositoryEntry repositoryEntry, AssessmentEntry assessmentEntry) {
+	public CurriculumLearningPathRepositoryRow(RepositoryEntry repositoryEntry, AssessmentEntryScoring assessmentEntry) {
 		this.repositoryEntry = repositoryEntry;
 		this.completion = assessmentEntry != null ? assessmentEntry.getCompletion(): null;
 		this.passed = assessmentEntry != null ? assessmentEntry.getPassed(): null;

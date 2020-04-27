@@ -54,7 +54,7 @@ import org.olat.course.learningpath.ui.CurriculumLearningPathRepositoryDataModel
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
-import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentEntryScoring;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer;
@@ -127,15 +127,15 @@ public class CurriculumLearningPathRepositoryListController extends FormBasicCon
 				.map(RepositoryEntry::getKey)
 				.collect(Collectors.toList());
 		
-		List<AssessmentEntry> assessmentEntries = assessmentService.loadRootAssessmentEntriesByAssessedIdentity(participant, entryKeys);
-		Map<Long, AssessmentEntry> identityKeyToCompletion = new HashMap<>();
-		for (AssessmentEntry assessmentEntry : assessmentEntries) {
-			identityKeyToCompletion.put(assessmentEntry.getRepositoryEntry().getKey(), assessmentEntry);
+		List<AssessmentEntryScoring> assessmentEntries = assessmentService.loadRootAssessmentEntriesByAssessedIdentity(participant, entryKeys);
+		Map<Long, AssessmentEntryScoring> identityKeyToCompletion = new HashMap<>();
+		for (AssessmentEntryScoring assessmentEntry : assessmentEntries) {
+			identityKeyToCompletion.put(assessmentEntry.getRepositoryEntryKey(), assessmentEntry);
 		}
 		
 		List<CurriculumLearningPathRepositoryRow> rows = new ArrayList<>(repoEntries.size());
 		for (RepositoryEntry repositoryEntry : repoEntries) {
-			AssessmentEntry assessmentEntry = identityKeyToCompletion.get(repositoryEntry.getKey());
+			AssessmentEntryScoring assessmentEntry = identityKeyToCompletion.get(repositoryEntry.getKey());
 			CurriculumLearningPathRepositoryRow row = new CurriculumLearningPathRepositoryRow(repositoryEntry, assessmentEntry);
 			rows.add(row);
 			forgeLinks(row);

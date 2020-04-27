@@ -34,6 +34,7 @@ import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentEntryCompletion;
+import org.olat.modules.assessment.AssessmentEntryScoring;
 import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentEntryImpl;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -407,18 +408,26 @@ public class AssessmentEntryDAO {
 				.getResultList();
 	}
 
-	public List<AssessmentEntry> loadRootAssessmentEntriesByAssessedIdentity(Identity assessedIdentity, Collection<Long> entryKeys) {
+	public List<AssessmentEntryScoring> loadRootAssessmentEntriesByAssessedIdentity(Identity assessedIdentity, Collection<Long> entryKeys) {
 		if (assessedIdentity == null || entryKeys == null || entryKeys.isEmpty()) return Collections.emptyList();
 		
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select ae");
+		sb.append("select new org.olat.modules.assessment.model.AssessmentEntryScoringImpl(");
+		sb.append("       ae.key");
+		sb.append("     , ae.repositoryEntry.key");
+		sb.append("     , ae.completion");
+		sb.append("     , ae.score");
+		sb.append("     , ae.passed");
+		sb.append("     , ae.passedOriginal");
+		sb.append("     , ae.passedModificationDate");
+		sb.append("     )");
 		sb.append("  from assessmententry ae");
 		sb.and().append(" ae.entryRoot = true");
 		sb.and().append(" ae.identity.key = :identityKey");
 		sb.and().append(" ae.repositoryEntry.key in (:entryKeys)");
 		
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), AssessmentEntry.class)
+				.createQuery(sb.toString(), AssessmentEntryScoring.class)
 				.setParameter("identityKey", assessedIdentity.getKey())
 				.setParameter("entryKeys", entryKeys)
 				.getResultList();

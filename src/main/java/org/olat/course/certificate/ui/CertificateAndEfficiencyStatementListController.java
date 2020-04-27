@@ -228,7 +228,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				.loadRootAssessmentEntriesByAssessedIdentity(assessedIdentity, courseEntryKeys).stream()
 				.filter(ae -> ae.getCompletion() != null)
 				.collect(Collectors.toMap(
-						ae -> ae.getRepositoryEntry().getKey(),
+						ae -> ae.getRepositoryEntryKey(),
 						ae -> ae.getCompletion()
 					));
 		
