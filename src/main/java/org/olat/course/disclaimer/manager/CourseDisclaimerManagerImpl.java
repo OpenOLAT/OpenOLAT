@@ -143,4 +143,9 @@ public class CourseDisclaimerManagerImpl implements CourseDisclaimerManager {
 	public boolean hasAnyEntry(RepositoryEntryRef repositoryEntryRef) {
 		return !getConsents(repositoryEntryRef).isEmpty();
 	}
+	
+	@Override
+	public void removeAllConsents(IdentityRef identityRef) {
+		courseDisclaimerDAO.removeAllConsents(identityRef);
+	}
 }

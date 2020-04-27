@@ -106,8 +106,16 @@ public interface CourseDisclaimerManager {
 	
 	/**
 	 * Returns whether any entry in the database for this repository entry is existing
+	 * 
 	 * @param repositoryEntryRef
 	 * @return boolean
 	 */
 	public boolean hasAnyEntry(RepositoryEntryRef repositoryEntryRef);
+
+	/**
+	 * Removes all consents from the database related to an identity 
+	 * 
+	 * @param identityRef
+	 */
+	public void removeAllConsents(IdentityRef identityRef);
 }

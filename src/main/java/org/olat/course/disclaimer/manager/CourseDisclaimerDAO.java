@@ -142,4 +142,16 @@ public class CourseDisclaimerDAO {
 		
 		return count.isEmpty() ? Long.valueOf(0l) : count.get(0);
 	}
+	
+	public void removeAllConsents(IdentityRef identityRef) {
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("delete from coursedisclaimerconsent as consent")
+		.append(" where consent.identity.key=:identityKey");
+
+		dbInstance.getCurrentEntityManager()
+		.createQuery(sb.toString())
+		.setParameter("identityKeyList", identityRef.getKey())
+		.executeUpdate();
+	}
 }
