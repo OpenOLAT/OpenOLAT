@@ -46,9 +46,9 @@ public class IQTESTLearningPathNodeHandler implements LearningPathNodeHandler {
 			.enableConfirmed()
 			.enableScore()
 			.enablePassed()
-			.enableStatusDone()
+			.enableStatusInReview()
 			.withTranslations(IQEditController.class)
-				.withTriggerStatusDone("fully.assessed.trigger.status.in.review")
+				.withTriggerStatusInReview("fully.assessed.trigger.status.in.review")
 				.buildTranslations()
 			.build();
 
