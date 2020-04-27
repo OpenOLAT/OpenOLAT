@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -56,6 +57,7 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeVisitedListener;
 import org.olat.course.run.scoring.AccountingEvaluators;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
@@ -406,7 +408,24 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 		IdentityEnvironment identityEnv = new IdentityEnvironment();
 		identityEnv.setIdentity(assessedIdentity);
 		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, courseEnv);
-		userCourseEnv.getScoreAccounting().evaluateAll(true);
+		
+		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+		CourseNode rootNode = courseEnv.getRunStructure().getRootNode();
+		AssessmentEntry rootAssessmentEntry = assessmentService.loadAssessmentEntry(assessedIdentity, courseEntry, rootNode.getIdent());
+		Boolean previousPassed = rootAssessmentEntry != null
+				? rootAssessmentEntry.getPassedOverridable().getCurrent()
+				: null;
+		
+		ScoreAccounting scoreAccounting = userCourseEnv.getScoreAccounting();
+		scoreAccounting.evaluateAll(true);
+		
+		AssessmentEvaluation rootAssessmentEvaluation = scoreAccounting.evalCourseNode(rootNode);
+		Boolean currentPassed = rootAssessmentEvaluation.getPassed();
+		
+		// Save root score evaluation to propagate to efficiency statement
+		if (!Objects.equals(previousPassed, currentPassed)) {
+			saveScoreEvaluation(rootNode, null, rootAssessmentEvaluation, userCourseEnv, false, null);
+		}
 	}
 
 	@Override
