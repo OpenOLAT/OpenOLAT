@@ -82,6 +82,7 @@
 		<property name="extensionPoints">
 			<list>	
 				<value>org.olat.core.commons.controllers.impressum.ImpressumMainController</value>		
+				<value>org.olat.core.commons.controllers.impressum.ImpressumDmzMainController</value>
 			</list>
 		</property>
 		<property name="order" value="704"/>

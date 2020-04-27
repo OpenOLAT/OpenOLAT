@@ -44,7 +44,7 @@ public class ContactController extends BasicController implements GenericEventLi
 
 	private final VelocityContainer content;
 	private ContactFormController contactForm;
-	private static String contactEmail = null;
+	private String contactEmail = null;
 	
 	@Autowired
 	private ImpressumModule impressumModule;
@@ -59,11 +59,9 @@ public class ContactController extends BasicController implements GenericEventLi
 		super(ureq, control);
 		this.content = createVelocityContainer("contact");
 
-		// load configuration only once
-		if (contactEmail == null) {
-			// Read the destination email from the impressModule
-			contactEmail = impressumModule.getContactMail();
-		}
+		// Read the destination email from the impressModule
+		contactEmail = impressumModule.getContactMail();
+		System.out.println(contactEmail);
 
 		// Initialize a few contact list management objects.
 		ContactMessage contactMessage = new ContactMessage(ureq.getIdentity());
