@@ -147,7 +147,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private boolean needsRebuildAfter = false;
 	private boolean needsRebuildAfterPublish = false;
 	private boolean needsRebuildAfterRunDone = false;
-	private boolean assessmentChangedEventReceived = false;
 	
 	private String courseTitle;
 	private Link nextLink, previousLink;
@@ -775,11 +774,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	}
 
 	private void doNodeClick(UserRequest ureq, TreeEvent tev) {
-		if(assessmentChangedEventReceived) {
-			uce.getScoreAccounting().evaluateAll();
-			assessmentChangedEventReceived = false;
-		}
-		
 		// goto node:
 		// after a click in the tree, evaluate the model anew, and set the
 		// selection of the tree again
@@ -877,9 +871,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				// do not re-evaluate things if only comment has been changed
 				if (assessmentChangeType.equals(AssessmentChangedEvent.TYPE_SCORE_EVAL_CHANGED)
 						|| assessmentChangeType.equals(AssessmentChangedEvent.TYPE_ATTEMPTS_CHANGED)) {
-					//LD: do not recalculate the score now, but at the next click, since the event comes before DB commit
-					//uce.getScoreAccounting().evaluateAll(); 
-					assessmentChangedEventReceived = true;										
+					uce.getScoreAccounting().evaluateAll();
+					updateProgressUI();
+					updateAfterChanges(getCurrentCourseNode(), luTree.getSelectedNodeId());
 				}
 				// raise a flag to indicate refresh
 				needsRebuildAfterRunDone = true;
