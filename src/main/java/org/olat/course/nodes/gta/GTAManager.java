@@ -34,6 +34,7 @@ import org.olat.course.nodes.gta.model.Solution;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.course.nodes.gta.ui.events.SubmitEvent;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
 import org.olat.modules.assessment.Role;
@@ -220,6 +221,18 @@ public interface GTAManager {
 	 * @return
 	 */
 	public AssessmentEntryStatus convertToAssessmentEntryStatus(Task task, GTACourseNode cNode);
+	
+	/**
+	 * Synchronize the assessment entry with the state of the task.
+	 * 
+	 * @param task The task
+	 * @param cNode The course element
+	 * @param assessedUserCourseEnv Optional: the user course environment to be directly updatet
+	 * @param doerIdentity the identity which do the action
+	 * @param by The role of the doer
+	 * @return true if the status is done
+	 */
+	public boolean syncAssessmentEntry(Task task, GTACourseNode cNode, UserCourseEnvironment assessedUserCourseEnv, Identity doerIdentity, Role by);
 	
 	/**
 	 * Are users already processing this task?

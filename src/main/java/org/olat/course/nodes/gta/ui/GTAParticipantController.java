@@ -616,6 +616,11 @@ public class GTAParticipantController extends GTAAbstractController implements A
 				solutionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer, "run.solutions.description", "bulk.solutions", "solutions");
 				listenTo(solutionsCtrl);
 				mainVC.put("solutions", solutionsCtrl.getInitialComponent());
+				
+				if(gtaManager.firstStep(gtaNode) == TaskProcess.solution) {
+					assignedTask = gtaManager.ensureTaskExists(assignedTask, assessedGroup, assessedIdentity, courseEntry, gtaNode);
+					gtaManager.syncAssessmentEntry(assignedTask, gtaNode, userCourseEnv, getIdentity(), Role.user);
+				}
 			} else {
 				VelocityContainer waitVC = createVelocityContainer("no_solutions_foryou");
 				mainVC.put("solutions", waitVC);

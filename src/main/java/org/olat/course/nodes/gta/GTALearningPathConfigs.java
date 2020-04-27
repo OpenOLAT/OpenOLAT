@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.gta;
 
+import org.olat.course.learningpath.FullyAssessedTrigger;
+import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.model.ModuleLearningPathConfigs;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.MSCourseNode;
@@ -35,6 +37,24 @@ public class GTALearningPathConfigs extends ModuleLearningPathConfigs {
 
 	public GTALearningPathConfigs(ModuleConfiguration moduleConfiguration) {
 		super(moduleConfiguration, false);
+	}
+	
+	@Override
+	public FullyAssessedResult isFullyAssessedOnNodeVisited() {
+		FullyAssessedResult result = super.isFullyAssessedOnNodeVisited();
+		FullyAssessedTrigger fullyAssedTrigger = getFullyAssessedTrigger();
+		if(!result.isFullyAssessed() && fullyAssedTrigger == FullyAssessedTrigger.statusDone) {
+			// can be fully assessed on node visited if only solutions are configured
+			if(moduleConfiguration.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION)
+					&& !moduleConfiguration.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
+					&& !moduleConfiguration.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)
+					&& !moduleConfiguration.getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION)
+					&& !moduleConfiguration.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)
+					&& !moduleConfiguration.getBooleanSafe(GTACourseNode.GTASK_GRADING)) {
+				return LearningPathConfigs.fullyAssessed(true, true, false);
+			}
+		}
+		return result;
 	}
 
 	@Override
