@@ -151,7 +151,7 @@ public class CourseDisclaimerDAO {
 
 		dbInstance.getCurrentEntityManager()
 		.createQuery(sb.toString())
-		.setParameter("identityKeyList", identityRef.getKey())
+		.setParameter("identityKey", identityRef.getKey())
 		.executeUpdate();
 	}
 }
