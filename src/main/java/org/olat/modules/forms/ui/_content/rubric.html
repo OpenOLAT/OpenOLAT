@@ -119,7 +119,7 @@
 	#end
 	#foreach($slider in $element.getSliders())
 	<div class="o_slider clearfix">
-		<div class="$colLeft o_evaluation_left_label #if($hasRightLabels) o_evaluation_left_label_la #end">$slider.startLabel</div>
+		<div class="$colLeft o_evaluation_left_label #if(!$hasRightLabels) o_evaluation_left_label_la #end">$slider.startLabel</div>
 		<div class="$colMiddle ">
 			#if($element.isStepLabels()) 
 					<div class="o_evaluation_step_labels o_small hidden-sm hidden-md hidden-lg">
@@ -160,7 +160,7 @@
 	</div>
 	#foreach($slider in $element.getSliders())
 	<div class="o_slider clearfix">
-		<div class="$colLeft o_evaluation_left_label #if($hasRightLabels) o_evaluation_left_label_la #end">$slider.startLabel</div>
+		<div class="$colLeft o_evaluation_left_label #if(!$hasRightLabels) o_evaluation_left_label_la #end">$slider.startLabel</div>
 		<div class="$colMiddle">$r.render($slider.formItem)</div>
 		#if($isNoResponseEnabled)
 			<div class="$colNoResponse text-center o_small o_evaluation_no_response">$r.render($slider.noResponseEl)</div>
