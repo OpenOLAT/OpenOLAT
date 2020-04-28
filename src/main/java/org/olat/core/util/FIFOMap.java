@@ -26,10 +26,11 @@
 
 package org.olat.core.util;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Description: <br>
@@ -50,16 +51,15 @@ public class FIFOMap<T,U> {
 	public FIFOMap(int maxsize) {
 		this.maxsize = maxsize;
 		lhm = new LinkedHashMap<>();
-		//Map m = lhm;
 	}
 
 	/**
-	 * put a (key,value) tupel
+	 * Put a (key,value) tuple
 	 * 
-	 * @param key
-	 * @param value
+	 * @param key The key
+	 * @param value The value
 	 */
-	public void put(T key, U value) {
+	public synchronized void put(T key, U value) {
 		lhm.put(key, value);
 		if (lhm.size() > maxsize) {
 			// removed oldest = 1. in queue
@@ -74,7 +74,7 @@ public class FIFOMap<T,U> {
 	 * @param key
 	 * @return the value for the supplied key
 	 */
-	public U get(T key) {
+	public synchronized U get(T key) {
 		return lhm.get(key);
 	}
 
@@ -83,47 +83,41 @@ public class FIFOMap<T,U> {
 	 * @param key
 	 * @return value of removed key
 	 */
-	public U remove(T key) {
+	public synchronized U remove(T key) {
 		U o = lhm.get(key);
 		lhm.remove(key);
 		return o;
 	}
 
 	/**
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return "FIFOMap:" + lhm.size() + ": " + lhm.keySet().toString() + ", super:" + super.toString();
-	}
-
-	/**
 	 * @return size of this map
 	 */
-	public int size() {
+	public synchronized int size() {
 		return lhm.size();
 	}
-
-	/**
-	 * @return ordered set of keys
-	 */
-	public Set<T> getOrderedKeySet() {
-		return lhm.keySet();
-	}
-
-	/**
-	 * @return value iterator
-	 */
-	public Iterator<U> getValueIterator() {
-		return lhm.values().iterator();
-	}
 	
-	public Iterator<Map.Entry<T,U>> getEntryIterator() {
-		return lhm.entrySet().iterator();
+	/**
+	 * 
+	 * @return List of values
+	 */
+	public synchronized List<U> values() {
+		return new ArrayList<>(lhm.values());
+	}
+
+	/**
+	 * @return A copy of the entries
+	 */
+	public synchronized Map<T,U> copyEntries() {
+		return new LinkedHashMap<>(lhm);
 	}
 	
 	public void clear() {
 		lhm.clear();
+	}
+	
+	@Override
+	public String toString() {
+		return "FIFOMap:" + lhm.size() + ": " + lhm.keySet().toString() + ", super:" + super.toString();
 	}
 
 }
