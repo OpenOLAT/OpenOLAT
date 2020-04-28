@@ -29,6 +29,7 @@ package org.olat.core.util.vfs;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -47,6 +48,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.core.util.vfs.filters.VFSVersionsItemFilter;
@@ -390,5 +392,35 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 	@Override
 	public VFSItemFilter getDefaultItemFilter() {
 		return defaultFilter;
+	}
+
+	public boolean isSafeHtmlFile(String filename) {
+		boolean check = false;
+		VFSItem file = resolve(filename);
+		if (!(file instanceof LocalFileImpl)) {
+			// we are not even a file
+			return false;
+		} else {
+			String content;
+			File f = ((LocalFileImpl) file).getBasefile();
+			try {
+				if (org.apache.commons.io.FileUtils.directoryContains(getBasefile(), f)) {
+					content = org.apache.commons.io.FileUtils.readFileToString(f, StandardCharsets.UTF_8);
+					content = FilterFactory.getHtmlTagAndDescapingFilter().filter(content);
+				} else {
+					content = "";
+				}
+				if (content.length() > 0) {
+					content = content.trim();
+				}
+				if (content.length() > 0) {
+					check = true;
+				}
+			} catch (IOException e) {
+				// Nothing to to here
+			}
+
+		}
+		return check;
 	}
 }

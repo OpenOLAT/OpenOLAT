@@ -19,14 +19,10 @@
  */
 package org.olat.core.commons.controllers.impressum;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.commons.io.FileUtils;
 import org.olat.core.commons.controllers.impressum.ImpressumModule.Position;
 import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
@@ -47,15 +43,12 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.EmailAddressValidator;
-import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
-import org.olat.core.util.vfs.VFSLeaf;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -80,9 +73,9 @@ public class ImpressumAdminController extends FormBasicController {
 	private CloseableModalController cmc;
 	private HTMLEditorController editorCtrl;
 	
-	private final VFSContainer impressumDir;
-	private final VFSContainer termsOfUseDir;
-	private final VFSContainer dataPrivacyPolicyDir;
+	private final LocalFolderImpl impressumDir;
+	private final LocalFolderImpl termsOfUseDir;
+	private final LocalFolderImpl dataPrivacyPolicyDir;
 	
 	@Autowired
 	private I18nModule i18nModule;
@@ -137,7 +130,7 @@ public class ImpressumAdminController extends FormBasicController {
 					.addFormLink("impressum." + lang, "impressum", getTranslated(lang), "impressum.file", impressumCont, Link.BUTTON | Link.NONTRANSLATED);
 			editLink.setLabel(null, null);
 			String filePath = "index_" + lang + ".html";
-			boolean hasImpressum = checkContent(impressumDir.resolve(filePath));
+			boolean hasImpressum = impressumDir.isSafeHtmlFile(filePath);
 			if(hasImpressum) {
 				editLink.setIconLeftCSS("o_icon o_icon_check");	
 			}
@@ -166,7 +159,7 @@ public class ImpressumAdminController extends FormBasicController {
 			FormLink editLink = uifactory.addFormLink("termofuser." + lang, "termsofuse", getTranslated(lang), "termofuse.file", termsCont, Link.BUTTON | Link.NONTRANSLATED);
 			editLink.setLabel(null, null);
 			String filePath = "index_" + lang + ".html";
-			boolean hasTermsOfUse = checkContent(termsOfUseDir.resolve(filePath));
+			boolean hasTermsOfUse = termsOfUseDir.isSafeHtmlFile(filePath);
 			if(hasTermsOfUse) {
 				editLink.setIconLeftCSS("o_icon o_icon_check");
 			}
@@ -195,7 +188,7 @@ public class ImpressumAdminController extends FormBasicController {
 			FormLink editLink = uifactory.addFormLink("dataprivacy." + lang, "dataprivacy", getTranslated(lang), "dataprivacy.file", dataPrivacyPolicyCont, Link.BUTTON | Link.NONTRANSLATED);
 			editLink.setLabel(null, null);
 			String filePath = "index_" + lang + ".html";
-			boolean hasDataPrivacyPolicy = checkContent(dataPrivacyPolicyDir.resolve(filePath));
+			boolean hasDataPrivacyPolicy = dataPrivacyPolicyDir.isSafeHtmlFile(filePath);
 			if(hasDataPrivacyPolicy) {
 				editLink.setIconLeftCSS("o_icon o_icon_check");
 			}
@@ -360,11 +353,11 @@ public class ImpressumAdminController extends FormBasicController {
 			
 			boolean exists = false;
 			if("impressum".equals(cmd)) {
-				exists = checkContent(impressumDir.resolve(filePath));
+				exists = impressumDir.isSafeHtmlFile(filePath);
 			} else if("termsofuse".equals(cmd)) {
-				exists = checkContent(termsOfUseDir.resolve(filePath));
+				exists = termsOfUseDir.isSafeHtmlFile(filePath);
 			} else if ("dataprivacy".equals(cmd)) {
-				exists = checkContent(dataPrivacyPolicyDir.resolve(filePath));
+				exists = dataPrivacyPolicyDir.isSafeHtmlFile(filePath);
 			}
 			
 			if(exists) {
@@ -380,31 +373,7 @@ public class ImpressumAdminController extends FormBasicController {
 			cleanUp();
 		}
 	}
-	
-	private boolean checkContent(VFSItem file) {
-		boolean check = false;
-		if(file instanceof VFSLeaf && file.exists() ) {
-			if(file instanceof LocalFileImpl) {
-				File f = ((LocalFileImpl)file).getBasefile();
-				try {
-					String content = FileUtils.readFileToString(f, StandardCharsets.UTF_8);
-					content = FilterFactory.getHtmlTagAndDescapingFilter().filter(content);
-					if(content.length() > 0) {
-						content = content.trim();
-					}
-					if(content.length() > 0) {
-						check = true;
-					}
-				} catch (IOException e) {
-					logError("", e);
-				}
-			} else {
-				check = true;
-			}
-		}
-		return check;
-	}
-	
+
 	private void cleanUp() {
 		removeAsListenerAndDispose(editorCtrl);
 		removeAsListenerAndDispose(cmc);
