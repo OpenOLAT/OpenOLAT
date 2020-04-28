@@ -221,10 +221,13 @@ public class PageMetadataController extends BasicController {
 			List<File> documents = null;
 
 			File storage = fileStorage.getAssignmentDirectory(assignment);
-			if(storage != null) {
-				documents = Arrays.<File>asList(storage.listFiles(SystemFileFilter.DIRECTORY_FILES));
-				if(!documents.isEmpty()) {
-					needMapper = true;
+			if(storage != null && storage.exists()) {
+				File[] files = storage.listFiles(SystemFileFilter.DIRECTORY_FILES);
+				if(files != null && files.length > 0) {
+					documents = Arrays.<File>asList(files);
+					if(!documents.isEmpty()) {
+						needMapper = true;
+					}
 				}
 			}
 
