@@ -308,13 +308,16 @@ div.o_page_content_editor .gu-mirror, .o_page_content_editor .gu-transit {
 	content: '';
 }
 
-.o_page_part.oo-dragging {
-	opacity: 0.4;
-	background-color: white;
+.oo-dragging {
+	z-index: 4;
+}
+
+.o_page_part.oo-dragging, .o_page_fragment_edit.oo-dragging .o_page_part {
+	opacity: 0.6;
+	background-color: rgba(255, 255, 255, 0.6);
 	border: $o-panel-placeholder-border-width dotted $o-editor-drag-accepted-color;
 	box-shadow: 0px 0px 20px #aaa;
 }
-
 
 .gu-transit {
 	border: $o-panel-placeholder-border-width dotted $o-editor-drag-accepted-color;    	

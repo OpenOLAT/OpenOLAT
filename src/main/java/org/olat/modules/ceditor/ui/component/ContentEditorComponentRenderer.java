@@ -56,7 +56,8 @@ public class ContentEditorComponentRenderer extends AbstractContentEditorCompone
 		sb.append("<script>\n")
 		  .append("jQuery(function() {\n")
 		  .append(" jQuery('#o_c").append(cmp.getDispatchID()).append("').ceditor({\n")
-		  .append("  componentUrl: '").append(renderer.getUrlBuilder().getJavascriptURI()).append("'\n")
+		  .append("  componentUrl: '").append(renderer.getUrlBuilder().getJavascriptURI()).append("',\n")
+		  .append("  csrfToken: '").append(renderer.getCsrfToken()).append("'\n")
 		  .append(" });\n")
 		  .append("});\n")
 		  .append("</script>");

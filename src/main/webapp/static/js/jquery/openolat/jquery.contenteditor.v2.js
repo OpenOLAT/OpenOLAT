@@ -28,21 +28,23 @@
     	if(typeof editor === "undefined") {
     		editor = new ContentEditor(this.get(0), options);
     		this.data("data-oo-ceditor", editor);
+    		jQuery('#o_main_wrapper').css('z-index', 5);
     	} else {// if the same DOM element exists
-    		editor.initWindowListener();
+    		editor.initWindowListener(editor.settings);
+    		editor.initInteractJs(editor.settings);
     	}
-    	initInteractJs();
     	return editor;
 	};
 	
 	var ContentEditor = function(container, params) {
 		this.settings = $.extend({
-			componentUrl: ''
+			componentUrl: '',
+			csrfToken: ''
 		}, params);
 		
-		initWindowListener();
+		initWindowListener(this.settings);
 		this.container = container;
-		initInteractJs();
+		initInteractJs(this.settings);
 	};
 	
 	function isTop(target, y) {
@@ -64,8 +66,9 @@
 		return parseInt(style.height) + parseInt(style.marginTop) + parseInt(style.marginBottom);
 	}
 	
-	function initInteractJs() {
-		var position = { x: 0, y: 0 }
+	function initInteractJs(settings) {
+		var position = { x: 0, y: 0 };
+		var $settings = settings;
 		
 		function setPositionClass(target, top) {
 			if(top) {
@@ -114,7 +117,7 @@
 					setPositionClass(event.target, top);
 				},
 				drop: function(event) {
-				    drop(event, event.target, event.relatedTarget);
+				    drop($settings, event, event.target, event.relatedTarget);
 				}
 			},
 			checker: function (dragEvent, event, dropped, dropzone, dropElement, draggable, draggableElement) {
@@ -133,7 +136,7 @@
 		return null;
 	}
 	
-	function initWindowListener() {
+	function initWindowListener(settings) {
 		if(o_info.contentEditorWindowListener === undefined || o_info.contentEditorWindowListener == null) {
 			o_info.contentEditorWindowListener = function(e) {
 				var componentUrl = jQuery(".o_page_content_editor").data("oo-content-editor-url");
@@ -159,9 +162,9 @@
 						if(parts.length == 1) {
 							var element = jQuery(parts.get(0));
 							var elementUrl = element.data("oo-content-editor-url");
-							o_XHREvent(elementUrl, false, false, 'cid', 'edit_fragment', 'fragment', element.data('oo-page-fragment'));
+							o_XHREvent(elementUrl, false, false, '_csrf', settings.csrfToken, 'cid', 'edit_fragment', 'fragment', element.data('oo-page-fragment'));
 						} else if(!edited) {
-							o_XHREvent(componentUrl, false, false, 'cid', 'close_edit_fragment');
+							o_XHREvent(componentUrl, false, false, '_csrf', settings.csrfToken, 'cid', 'close_edit_fragment');
 						}
 					}
 				}
@@ -170,7 +173,7 @@
 		}
 	}
 	
-	function drop(event, target, source) {
+	function drop(settings, event, target, source) {
 		var draggedId = jQuery(source).data('oo-page-fragment');
 		
 		var slotId = null;
@@ -193,7 +196,7 @@
 			componentUrl = jQuery(target).closest(".o_page_content_editor")
 		}
 
-		o_XHREvent(componentUrl, false, false, "cid", "drop_fragment", "fragment", targetId, "dragged", draggedId, "source", draggedId, "target", targetId, "container", containerId, "slot", slotId, "position", position);
+		o_XHREvent(componentUrl, false, false, "_csrf", settings.csrfToken, "cid", "drop_fragment", "fragment", targetId, "dragged", draggedId, "source", draggedId, "target", targetId, "container", containerId, "slot", slotId, "position", position);
 	}
 	
 }(jQuery));
