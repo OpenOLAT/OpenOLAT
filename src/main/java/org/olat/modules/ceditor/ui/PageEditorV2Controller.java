@@ -52,7 +52,9 @@ import org.olat.modules.ceditor.ui.component.ContentEditorContainerComponent;
 import org.olat.modules.ceditor.ui.component.ContentEditorFragment;
 import org.olat.modules.ceditor.ui.component.ContentEditorFragmentComponent;
 import org.olat.modules.ceditor.ui.event.AddElementEvent;
+import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.ceditor.ui.event.CloseElementsEvent;
+import org.olat.modules.ceditor.ui.event.ClosePartEvent;
 import org.olat.modules.ceditor.ui.event.DeleteElementEvent;
 import org.olat.modules.ceditor.ui.event.DropToEditorEvent;
 import org.olat.modules.ceditor.ui.event.DropToPageElementEvent;
@@ -171,6 +173,12 @@ public class PageEditorV2Controller extends BasicController {
 			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
+		} else if(event instanceof ChangePartEvent) {
+			ChangePartEvent cpe = (ChangePartEvent)event;
+			doSaveElement(ureq, cpe.getElement());
+		} else if(event instanceof ClosePartEvent) {
+			ClosePartEvent cpe = (ClosePartEvent)event;
+			doCloseEditor(ureq, cpe.getElement());
 		}
 		super.event(ureq, source, event);
 	}
@@ -209,6 +217,18 @@ public class PageEditorV2Controller extends BasicController {
 		} else if(event instanceof DropToPageElementEvent) {
 			doDrop(ureq, (DropToPageElementEvent)event);
 		}
+	}
+	
+	private void doCloseEditor(UserRequest ureq, PageElement element) {
+		new ComponentTraverser((comp, uureq) -> {
+			if(comp instanceof ContentEditorFragment) {
+				ContentEditorFragment elementCmp = (ContentEditorFragment)comp;
+				if(elementCmp.getElementId().equals(element.getId()) && elementCmp.isEditMode()) {
+					elementCmp.setEditMode(false);
+				}
+			}
+			return true;
+		}, editorCmp, false).visitAll(ureq);
 	}
 	
 	private void doCloseEditionEvent(UserRequest ureq, String elementId) {
@@ -359,6 +379,11 @@ public class PageEditorV2Controller extends BasicController {
 		ContentEditorFragment fragment = createFragmentComponent(ureq, pageElement);
 		editorCmp.addRootComponent(fragment);
 		return fragment;
+	}
+	
+	private void doSaveElement(UserRequest ureq, PageElement element) {
+		doCloseEditor(ureq, element);
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
 	private void doSaveElement(UserRequest ureq, ContentEditorFragment fragment) {

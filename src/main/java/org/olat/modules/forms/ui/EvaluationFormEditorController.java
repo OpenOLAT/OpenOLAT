@@ -37,7 +37,7 @@ import org.olat.modules.ceditor.PageEditorSecurityCallback;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementHandler;
 import org.olat.modules.ceditor.ui.FullEditorSecurityCallback;
-import org.olat.modules.ceditor.ui.PageEditorController;
+import org.olat.modules.ceditor.ui.PageEditorV2Controller;
 import org.olat.modules.forms.handler.ContainerHandler;
 import org.olat.modules.forms.handler.DisclaimerHandler;
 import org.olat.modules.forms.handler.FileUploadHandler;
@@ -73,7 +73,7 @@ public class EvaluationFormEditorController extends BasicController {
 	private final boolean restrictedEdit;
 	private final boolean restrictedEditWeight;
 	
-	private PageEditorController pageEditCtrl;
+	private PageEditorV2Controller pageEditCtrl;
 	
 	public EvaluationFormEditorController(UserRequest ureq, WindowControl wControl, File formFile, DataStorage storage,
 			boolean restrictedEdit, boolean restrictedEditWeight) {
@@ -92,7 +92,7 @@ public class EvaluationFormEditorController extends BasicController {
 		mainVC = createVelocityContainer("editor");
 		
 		PageEditorSecurityCallback secCallback = restrictedEdit ? new RestrictedEditorSecurityCallback() : new FullEditorSecurityCallback();
-		pageEditCtrl = new PageEditorController(ureq, getWindowControl(), new FormPageEditorProvider(), secCallback, getTranslator());
+		pageEditCtrl = new PageEditorV2Controller(ureq, getWindowControl(), new FormPageEditorProvider(), secCallback, getTranslator());
 		listenTo(pageEditCtrl);
 		mainVC.put("page", pageEditCtrl.getInitialComponent());
 		
