@@ -174,8 +174,7 @@ public class PageEditorV2Controller extends BasicController {
 		} else if(cmc == source) {
 			cleanUp();
 		} else if(event instanceof ChangePartEvent) {
-			ChangePartEvent cpe = (ChangePartEvent)event;
-			doSaveElement(ureq, cpe.getElement());
+			doSaveElement(ureq);
 		} else if(event instanceof ClosePartEvent) {
 			ClosePartEvent cpe = (ClosePartEvent)event;
 			doCloseEditor(ureq, cpe.getElement());
@@ -381,8 +380,7 @@ public class PageEditorV2Controller extends BasicController {
 		return fragment;
 	}
 	
-	private void doSaveElement(UserRequest ureq, PageElement element) {
-		doCloseEditor(ureq, element);
+	private void doSaveElement(UserRequest ureq) {
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
