@@ -144,14 +144,17 @@
 					jQuery(window).off('click', o_info.contentEditorWindowListener);
 					o_info.contentEditorWindowListener = null;
 				} else {
-					var excludedEls = jQuery(e.target).closest(".o_popover").length > 0
-						|| jQuery(e.target).closest(".o_page_add_in_container").length > 0
-						|| jQuery(e.target).closest(".mce-menu").length > 0
-						|| jQuery(e.target).closest(".mce-window").length > 0
-						|| jQuery(e.target).closest(".mce-container").length > 0
-						|| jQuery(e.target).closest(".mce-widget").length > 0
-						|| jQuery(e.target).closest(".o_layered_panel .popover").length > 0
-						|| jQuery(e.target).closest(".o_layered_panel .modal-dialog").length > 0
+					var jTarget = jQuery(e.target);
+					var excludedEls = jTarget.closest(".o_popover").length > 0
+						|| jTarget.closest(".o_page_add_in_container").length > 0
+						|| jTarget.closest(".mce-menu").length > 0
+						|| jTarget.closest(".mce-window").length > 0
+						|| jTarget.closest(".mce-container").length > 0
+						|| jTarget.closest(".mce-widget").length > 0
+						|| jTarget.closest(".o_layered_panel .popover").length > 0
+						|| jTarget.closest(".o_layered_panel .modal-dialog").length > 0
+						|| jTarget.closest(".o_evaluation_editor_form").length > 0
+						|| jTarget.closest(".o_page_with_side_options_wrapper").length > 0
 						|| e.target.nodeName == 'BODY';
 					
 					if(!excludedEls) {	
@@ -195,7 +198,8 @@
 		if(componentUrl == null) {
 			componentUrl = jQuery(target).closest(".o_page_content_editor")
 		}
-
+		
+		jQuery(source).css('display', 'none');// seem successful, prevent transformation return of end listener
 		o_XHREvent(componentUrl, false, false, "_csrf", settings.csrfToken, "cid", "drop_fragment", "fragment", targetId, "dragged", draggedId, "source", draggedId, "target", targetId, "container", containerId, "slot", slotId, "position", position);
 	}
 	
