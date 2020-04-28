@@ -23,8 +23,10 @@ import java.util.List;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.gta.ui.component.SubmissionDateCellRenderer;
 
 /**
@@ -62,16 +64,26 @@ public class CoachGroupsTableModel extends DefaultFlexiTableDataModel<CoachedGro
 	public Object getValueAt(CoachedGroupRow row, int col) {
 		switch(CGCols.values()[col]) {
 			case name: return row.getName();
-			case taskName: return row.getTaskName();
+			case taskName: return row.getDownloadTaskFileLink() == null ? row.getTaskName() : row.getDownloadTaskFileLink();
+			case taskTitle: return getTaskTitle(row);
 			case taskStatus: return row.getTaskStatus();
 			case submissionDate: return SubmissionDateCellRenderer.cascading(row);
 			default: return "ERROR";
 		}
 	}
 	
-	public enum CGCols {
+	private String getTaskTitle(CoachedGroupRow row) {
+		String title = row.getTaskTitle();
+		if(!StringHelper.containsNonWhitespace(title)) {
+			title = row.getTaskName();
+		}
+		return title;
+	}
+	
+	public enum CGCols implements FlexiSortableColumnDef {
 		name("table.header.group.name"),
 		taskName("table.header.group.taskName"),
+		taskTitle("table.header.group.taskTitle"),
 		taskStatus("table.header.group.step"),
 		submissionDate("table.header.submissionDate");
 		
@@ -81,8 +93,19 @@ public class CoachGroupsTableModel extends DefaultFlexiTableDataModel<CoachedGro
 			this.i18nKey = i18nKey;
 		}
 		
-		public String i18nKey() {
+		@Override
+		public String i18nHeaderKey() {
 			return i18nKey;
+		}
+
+		@Override
+		public boolean sortable() {
+			return true;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
 		}
 	}
 }

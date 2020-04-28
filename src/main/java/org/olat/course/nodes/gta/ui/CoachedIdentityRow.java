@@ -22,9 +22,11 @@ package org.olat.course.nodes.gta.ui;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.course.nodes.gta.TaskLight;
 import org.olat.course.nodes.gta.TaskProcess;
+import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.user.UserPropertiesRow;
 
 /**
@@ -36,6 +38,7 @@ import org.olat.user.UserPropertiesRow;
 public class CoachedIdentityRow implements CoachedElementRow {
 
 	private final TaskLight task;
+	private final TaskDefinition taskDefinition;
 	private final Date submissionDueDate;
 	private final Date syntheticSubmissionDate;
 	private final boolean hasSubmittedDocuments;
@@ -47,11 +50,14 @@ public class CoachedIdentityRow implements CoachedElementRow {
 	private final int numOfSubmissionDocs;
 	private final int numOfCollectedDocs;
 	
-	public CoachedIdentityRow(UserPropertiesRow identity, TaskLight task, Date submissionDueDate,
+	private DownloadLink downloadTaskFileLink;
+	
+	public CoachedIdentityRow(UserPropertiesRow identity, TaskLight task, TaskDefinition taskDefinition, Date submissionDueDate,
 			Date syntheticSubmissionDate, boolean hasSubmittedDocuments, FormLink markLink, Boolean userVisibility,
 			BigDecimal score, Boolean passed, int numOfSubmissionDocs, int numOfCollectedDocs) {
 		this.identity = identity;
 		this.task = task;
+		this.taskDefinition = taskDefinition;
 		this.submissionDueDate = submissionDueDate;
 		this.hasSubmittedDocuments = hasSubmittedDocuments;
 		this.syntheticSubmissionDate = syntheticSubmissionDate;
@@ -68,6 +74,11 @@ public class CoachedIdentityRow implements CoachedElementRow {
 		return task == null ? null : task.getTaskName();
 	}
 	
+	@Override
+	public String getTaskTitle() {
+		return taskDefinition == null ? null : taskDefinition.getTitle();
+	}
+
 	@Override
 	public TaskProcess getTaskStatus() {
 		return task == null ? null : task.getTaskStatus();
@@ -135,5 +146,12 @@ public class CoachedIdentityRow implements CoachedElementRow {
 	public int getNumOfCollectedDocs() {
 		return numOfCollectedDocs;
 	}
-	
+
+	public DownloadLink getDownloadTaskFileLink() {
+		return downloadTaskFileLink;
+	}
+
+	public void setDownloadTaskFileLink(DownloadLink downloadTaskFileLink) {
+		this.downloadTaskFileLink = downloadTaskFileLink;
+	}
 }

@@ -19,15 +19,20 @@
  */
 package org.olat.course.nodes.gta.ui;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -47,6 +52,7 @@ import org.olat.course.nodes.gta.TaskLight;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.model.DueDate;
+import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.course.nodes.gta.ui.CoachGroupsTableModel.CGCols;
 import org.olat.course.nodes.gta.ui.component.SubmissionDateCellRenderer;
 import org.olat.course.nodes.gta.ui.component.TaskStatusCellRenderer;
@@ -72,6 +78,7 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 	private GTACoachController coachingCtrl;
 	private EditDueDatesController editDueDatesCtrl;
 	
+	private int count = 0;
 	private final List<BusinessGroup> coachedGroups;
 	private final UserCourseEnvironment coachCourseEnv;
 	
@@ -102,18 +109,15 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 		super.initForm(formLayout, listener, ureq);
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.name.i18nKey(), CGCols.name.ordinal(),
-				true,  CGCols.name.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.name));
 		
 		if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.taskName.i18nKey(), CGCols.taskName.ordinal(),
-					true, CGCols.taskName.name()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.taskTitle));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CGCols.taskName));
 		}
 		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.taskStatus.i18nKey(), CGCols.taskStatus.ordinal(),
-				true, CGCols.taskStatus.name(), new TaskStatusCellRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.submissionDate.i18nKey(), CGCols.submissionDate.ordinal(),
-				true, CGCols.submissionDate.name(), new SubmissionDateCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.taskStatus, new TaskStatusCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.submissionDate, new SubmissionDateCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
 		if(gtaManager.isDueDateEnabled(gtaNode)) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.duedates", translate("duedates"), "duedates"));
@@ -122,7 +126,7 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 
 		tableEl = uifactory.addTableElement(getWindowControl(), "entries", tableModel, 10, false, getTranslator(), formLayout);
 		tableEl.setShowAllRowsEnabled(true);
-		tableEl.setAndLoadPersistedPreferences(ureq, "gta-coached-groups");
+		tableEl.setAndLoadPersistedPreferences(ureq, "gta-coached-groups-v2");
 	}
 
 	public List<BusinessGroup> getCoachedGroups() {
@@ -130,6 +134,12 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 	}
 	
 	protected void updateModel() {
+		List<TaskDefinition> taskDefinitions = gtaManager.getTaskDefinitions(courseEnv, gtaNode);
+		Map<String,TaskDefinition> fileNameToDefinitions = taskDefinitions.stream()
+				.filter(def -> Objects.nonNull(def.getFilename()))
+				.collect(Collectors.toMap(TaskDefinition::getFilename, Function.identity(), (u, v) -> u));
+		File tasksFolder = gtaManager.getTasksDirectory(courseEnv, gtaNode);
+		
 		RepositoryEntry entry = courseEnv.getCourseGroupManager().getCourseEntry();
 		List<TaskLight> tasks = gtaManager.getTasksLight(entry, gtaNode);
 		Map<Long,TaskLight> groupToTasks = new HashMap<>();
@@ -158,7 +168,20 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 					hasSubmittedDocument = this.hasSubmittedDocument(task);
 				}
 			}
-			rows.add(new CoachedGroupRow(group, task, submissionDueDate, syntheticSubmissionDate, hasSubmittedDocument));
+			
+			String taskName = task == null ? null : task.getTaskName();
+			TaskDefinition taskDefinition = null;
+			if(StringHelper.containsNonWhitespace(taskName)) {
+				taskDefinition = fileNameToDefinitions.get(taskName);
+			}
+			
+			CoachedGroupRow row = new CoachedGroupRow(group, task, taskDefinition, submissionDueDate, syntheticSubmissionDate, hasSubmittedDocument);
+			if(taskDefinition != null) {
+				File file = new File(tasksFolder, taskDefinition.getFilename());
+				DownloadLink downloadLink = uifactory.addDownloadLink("task_" + (count++), taskDefinition.getFilename(), null, file, tableEl);
+				row.setDownloadTaskFileLink(downloadLink);
+			}
+			rows.add(row);
 		}
 		
 		tableModel.setObjects(rows);

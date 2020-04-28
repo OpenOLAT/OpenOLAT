@@ -21,8 +21,10 @@ package org.olat.course.nodes.gta.ui;
 
 import java.util.Date;
 
+import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
 import org.olat.course.nodes.gta.TaskLight;
 import org.olat.course.nodes.gta.TaskProcess;
+import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.group.BusinessGroup;
 
 /**
@@ -34,14 +36,18 @@ import org.olat.group.BusinessGroup;
 public class CoachedGroupRow implements CoachedElementRow {
 	
 	private final TaskLight task;
+	private final TaskDefinition taskDefinition;
 	private final Date submissionDueDate;
 	private final Date syntheticSubmissionDate;
 	private final boolean hasSubmittedDocuments;
 	private final BusinessGroup businessGroup;
 	
-	public CoachedGroupRow(BusinessGroup businessGroup, TaskLight task, Date submissionDueDate,
-			Date syntheticSubmissionDate, boolean hasSubmittedDocuments) {
+	private DownloadLink downloadTaskFileLink;
+	
+	public CoachedGroupRow(BusinessGroup businessGroup, TaskLight task, TaskDefinition taskDefinition,
+			Date submissionDueDate, Date syntheticSubmissionDate, boolean hasSubmittedDocuments) {
 		this.task = task;
+		this.taskDefinition = taskDefinition;
 		this.businessGroup = businessGroup;
 		this.submissionDueDate = submissionDueDate;
 		this.hasSubmittedDocuments = hasSubmittedDocuments;
@@ -55,6 +61,11 @@ public class CoachedGroupRow implements CoachedElementRow {
 	@Override
 	public String getTaskName() {
 		return task == null ? null : task.getTaskName();
+	}
+
+	@Override
+	public String getTaskTitle() {
+		return taskDefinition == null ? null : taskDefinition.getTitle();
 	}
 
 	@Override
@@ -99,5 +110,13 @@ public class CoachedGroupRow implements CoachedElementRow {
 	
 	public BusinessGroup getBusinessGroup() {
 		return businessGroup;
+	}
+
+	public DownloadLink getDownloadTaskFileLink() {
+		return downloadTaskFileLink;
+	}
+
+	public void setDownloadTaskFileLink(DownloadLink downloadTaskFileLink) {
+		this.downloadTaskFileLink = downloadTaskFileLink;
 	}
 }

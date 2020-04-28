@@ -48,7 +48,7 @@ public class DownloadComponentRenderer extends DefaultComponentRenderer {
 			URLBuilder ubu, Translator translator, RenderResult renderResult,
 			String[] args) {
 		DownloadComponent comp = (DownloadComponent) source;
-		if (comp.getDownloadMediaResoruce() == null)
+		if (comp.getDownloadMediaResource() == null)
 			return;
 		
 		boolean form = args != null && args.length == 1 && "form".equals(args[0]);

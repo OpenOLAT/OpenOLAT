@@ -60,6 +60,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
@@ -163,6 +164,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		fileExistsRenderer.setFilenames(tasksFolder.list());
 		List<TaskDefinition> taskDefinitions = gtaManager.getTaskDefinitions(courseEnv, gtaNode);
 		List<TaskDefinitionRow> rows = new ArrayList<>(taskDefinitions.size());
+		Roles roles = ureq.getUserSession().getRoles();
 		for(TaskDefinition def:taskDefinitions) {
 			DownloadLink downloadLink = null;
 			Mode mode = null;
@@ -171,7 +173,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 				VFSLeaf vfsLeaf = (VFSLeaf)item;
 				downloadLink = uifactory
 					.addDownloadLink("file_" + (++linkCounter), def.getFilename(), null, vfsLeaf, taskDefTableEl);
-				mode = getOpenMode(getIdentity(), ureq.getUserSession().getRoles(), vfsLeaf, readOnly);
+				mode = getOpenMode(getIdentity(), roles, vfsLeaf, readOnly);
 			}
 			
 			TaskDefinitionRow row = new TaskDefinitionRow(def, downloadLink, mode);

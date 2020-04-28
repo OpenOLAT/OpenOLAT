@@ -19,13 +19,16 @@
  */
 package org.olat.course.nodes.gta.ui;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -37,6 +40,7 @@ import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -67,6 +71,7 @@ import org.olat.course.nodes.gta.TaskLight;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.model.DueDate;
+import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.course.nodes.gta.ui.CoachParticipantsTableModel.CGCols;
 import org.olat.course.nodes.gta.ui.component.SubmissionDateCellRenderer;
 import org.olat.course.nodes.gta.ui.component.TaskStatusCellRenderer;
@@ -97,6 +102,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	private List<UserPropertiesRow> assessableIdentities;
 	private final UserCourseEnvironment coachCourseEnv;
 	
+	private int count;
 	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final boolean markedOnly;
@@ -194,7 +200,8 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		}
 
 		if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.taskName));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.taskTitle));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CGCols.taskName));
 		}
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.taskStatus, new TaskStatusCellRenderer(getTranslator())));
@@ -216,7 +223,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		tableEl = uifactory.addTableElement(getWindowControl(), "entries", tableModel, 10, false, getTranslator(), formLayout);
 		tableEl.setShowAllRowsEnabled(true);
 		tableEl.setExportEnabled(true);
-		tableEl.setAndLoadPersistedPreferences(ureq, "gta-coached-participants-" + markedOnly);
+		tableEl.setAndLoadPersistedPreferences(ureq, "gta-coached-participants-v2-" + markedOnly);
 		if(gtaManager.isDueDateEnabled(gtaNode) && !gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES)) {
 			tableEl.setMultiSelect(true);
 			extendButton = uifactory.addFormLink("extend.list", "duedates", "duedates", formLayout, Link.BUTTON);
@@ -224,6 +231,13 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	}
 	
 	protected void updateModel(UserRequest ureq) {
+		List<TaskDefinition> taskDefinitions = gtaManager.getTaskDefinitions(courseEnv, gtaNode);
+		Map<String,TaskDefinition> fileNameToDefinitions = taskDefinitions.stream()
+				.filter(def -> Objects.nonNull(def.getFilename()))
+				.collect(Collectors.toMap(TaskDefinition::getFilename, Function.identity(), (u, v) -> u));
+		File tasksFolder = gtaManager.getTasksDirectory(courseEnv, gtaNode);
+		
+		
 		RepositoryEntry entry = courseEnv.getCourseGroupManager().getCourseEntry();
 		List<TaskLight> tasks = gtaManager.getTasksLight(entry, gtaNode);
 		Map<Long,TaskLight> identityToTasks = new HashMap<>(tasks.size());
@@ -284,9 +298,21 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			BigDecimal score = assessment!=null? assessment.getScore(): null;
 			Boolean passed = assessment!=null? assessment.getPassed(): null;
 			
-			rows.add(new CoachedIdentityRow(assessableIdentity, task, submissionDueDate, syntheticSubmissionDate,
+			String taskName = task == null ? null : task.getTaskName();
+			TaskDefinition taskDefinition = null;
+			if(StringHelper.containsNonWhitespace(taskName)) {
+				taskDefinition = fileNameToDefinitions.get(taskName);
+			}
+			
+			CoachedIdentityRow row = new CoachedIdentityRow(assessableIdentity, task, taskDefinition, submissionDueDate, syntheticSubmissionDate,
 					hasSubmittedDocument, markLink, userVisibility, score, passed,
-					numSubmittedDocs, numOfCollectedDocs));
+					numSubmittedDocs, numOfCollectedDocs);
+			if(taskDefinition != null) {
+				File file = new File(tasksFolder, taskDefinition.getFilename());
+				DownloadLink downloadLink = uifactory.addDownloadLink("task_" + (count++), taskDefinition.getFilename(), null, file, tableEl);
+				row.setDownloadTaskFileLink(downloadLink);
+			}
+			rows.add(row);
 		}
 		
 		tableModel.setObjects(rows);

@@ -49,12 +49,22 @@ public class CoachParticipantsModelSort extends SortableFlexiTableModelDelegate<
 			CGCols column = CGCols.values()[columnIndex];
 			switch(column) {
 				case taskStatus: Collections.sort(rows, new TaskStatusComparator()); break;
+				case taskName: Collections.sort(rows, new TaskNameComparator()); break;
 				default: {
 					super.sort(rows);
 				}
 			}
 		} else {
 			super.sort(rows);
+		}
+	}
+	
+	private class TaskNameComparator implements Comparator<CoachedIdentityRow> {
+		@Override
+		public int compare(CoachedIdentityRow o1, CoachedIdentityRow o2) {
+			String n1 = o1.getTaskName();
+			String n2 = o2.getTaskName();
+			return compareString(n1, n2);
 		}
 	}
 	

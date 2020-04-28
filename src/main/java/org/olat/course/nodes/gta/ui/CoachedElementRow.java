@@ -35,6 +35,8 @@ public interface CoachedElementRow {
 	
 	public String getTaskName();
 	
+	public String getTaskTitle();
+	
 	public TaskProcess getTaskStatus();
 	
 	/**

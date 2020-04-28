@@ -162,7 +162,7 @@ public class DownloadComponent extends AbstractComponent {
 	 * 
 	 * @return
 	 */
-	MediaResource getDownloadMediaResoruce() {
+	MediaResource getDownloadMediaResource() {
 		return mediaResource;
 	}
 
