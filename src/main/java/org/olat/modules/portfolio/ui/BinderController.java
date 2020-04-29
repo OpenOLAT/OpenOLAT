@@ -176,7 +176,9 @@ public class BinderController extends BasicController implements TooledControlle
 
 	@Override
 	protected void doDispose() {
-		//
+		if(stackPanel != null) {
+			stackPanel.removeListener(this);
+		}
 	}
 
 	@Override

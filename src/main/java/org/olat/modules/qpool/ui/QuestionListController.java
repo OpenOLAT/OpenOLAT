@@ -259,6 +259,14 @@ public class QuestionListController extends AbstractItemListController implement
 			bulkChange = uifactory.addFormLink("bulk.change", formLayout, Link.BUTTON);
 		}
 	}
+	
+	@Override
+	protected void doDispose() {
+		if(stackPanel != null) {
+			stackPanel.removeListener(this);
+		}
+		super.doDispose();
+	}
 
 	public QuestionItemCollection getItemCollection() {
 		return itemCollection;

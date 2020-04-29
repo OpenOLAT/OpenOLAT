@@ -274,6 +274,7 @@ public class CurriculumComposerController extends FormBasicController implements
 
 	@Override
 	protected void doDispose() {
+		toolbarPanel.removeListener(this);
 		if(!toolbarPanel.isToolbarEnabled()) {
 			toolbarPanel.setToolbarEnabled(true);
 		}

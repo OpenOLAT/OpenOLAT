@@ -210,7 +210,9 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 
 	@Override
 	protected void doDispose() {
-		//
+		if(stackPanel != null) {
+			stackPanel.removeListener(this);
+		}
 	}
 
 	@Override

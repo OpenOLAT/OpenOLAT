@@ -1037,20 +1037,28 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	@Override
 	protected void cleanUp() {
 		removeAsListenerAndDispose(lifeCycleChangeCtr);
+		removeAsListenerAndDispose(assessmentModeCtrl);
+		removeAsListenerAndDispose(lecturesAdminCtrl);
 		removeAsListenerAndDispose(assessmentToolCtr);
 		removeAsListenerAndDispose(courseFolderCtrl);
 		removeAsListenerAndDispose(statisticsCtrl);
+		removeAsListenerAndDispose(remindersCtrl);
 		removeAsListenerAndDispose(databasesCtrl);
+		removeAsListenerAndDispose(lecturesCtrl);
 		removeAsListenerAndDispose(archiverCtrl);
 		removeAsListenerAndDispose(statsToolCtr);
 		removeAsListenerAndDispose(membersCtrl);
 		removeAsListenerAndDispose(areasCtrl);
 		removeAsListenerAndDispose(leaveDialogBox);
 		lifeCycleChangeCtr = null;
+		assessmentModeCtrl = null;
+		lecturesAdminCtrl = null;
 		assessmentToolCtr = null;
 		courseFolderCtrl = null;
 		statisticsCtrl = null;
+		remindersCtrl = null;
 		databasesCtrl = null;
+		lecturesCtrl = null;
 		archiverCtrl = null;
 		statsToolCtr = null;
 		membersCtrl = null;

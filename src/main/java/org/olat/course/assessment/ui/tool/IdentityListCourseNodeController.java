@@ -555,6 +555,9 @@ public class IdentityListCourseNodeController extends FormBasicController
 
 	@Override
 	protected void doDispose() {
+		if(stackPanel != null) {
+			stackPanel.removeListener(this);
+		}
 		coordinatorManager.getCoordinator().getEventBus()
 			.deregisterFor(this, courseEntry.getOlatResource());
 	}
