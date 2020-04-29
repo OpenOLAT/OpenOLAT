@@ -323,7 +323,7 @@
 		var more = $('#o_navbar_more');
 		if(more.length == 0){
 			more = $('<ul id="o_navbar_more" class="nav o_navbar-nav o_dropdown_toggle"><li>'
-						+ '<a class="dropdown-toggle" data-toggle="dropdown" href="#"">'+o_info.i18n_topnav_more+' <b class="caret"></b></a>'
+						+ '<a class="dropdown-toggle" data-toggle="dropdown" href="#">'+o_info.i18n_topnav_more+' <b class="caret"></b></a>'
 						+ '<ul class="dropdown-menu dropdown-menu-right"></ul>'
 					+ '</li></ul>');
 			more.appendTo(collapse);
