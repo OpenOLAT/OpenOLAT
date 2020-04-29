@@ -19,7 +19,6 @@
  */
 package org.olat.core.commons.services.doceditor.wopi;
 
-import java.io.File;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
