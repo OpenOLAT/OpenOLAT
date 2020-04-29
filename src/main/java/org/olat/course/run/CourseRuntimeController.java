@@ -1161,10 +1161,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	protected void cleanUp() {
 		removeAsListenerAndDispose(unsupportedCourseNodesCtrl);
 		removeAsListenerAndDispose(lifeCycleChangeCtr);
+		removeAsListenerAndDispose(assessmentModeCtrl);
+		removeAsListenerAndDispose(lecturesAdminCtrl);
 		removeAsListenerAndDispose(assessmentToolCtr);
 		removeAsListenerAndDispose(courseFolderCtrl);
 		removeAsListenerAndDispose(statisticsCtrl);
+		removeAsListenerAndDispose(remindersCtrl);
 		removeAsListenerAndDispose(databasesCtrl);
+		removeAsListenerAndDispose(lecturesCtrl);
 		removeAsListenerAndDispose(archiverCtrl);
 		removeAsListenerAndDispose(statsToolCtr);
 		removeAsListenerAndDispose(membersCtrl);
@@ -1172,10 +1176,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		removeAsListenerAndDispose(leaveDialogBox);
 		unsupportedCourseNodesCtrl = null;
 		lifeCycleChangeCtr = null;
+		assessmentModeCtrl = null;
+		lecturesAdminCtrl = null;
 		assessmentToolCtr = null;
 		courseFolderCtrl = null;
 		statisticsCtrl = null;
+		remindersCtrl = null;
 		databasesCtrl = null;
+		lecturesCtrl = null;
 		archiverCtrl = null;
 		statsToolCtr = null;
 		membersCtrl = null;

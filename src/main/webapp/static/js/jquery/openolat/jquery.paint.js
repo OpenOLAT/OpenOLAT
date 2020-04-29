@@ -25,7 +25,7 @@
 		
 		var usePointerApi = false;
 		if (window.PointerEvent) {
-			usePointerApi = true;
+			usePointerApi = false;
 		}
 		
 		var useRequestAnimationFrame = false;

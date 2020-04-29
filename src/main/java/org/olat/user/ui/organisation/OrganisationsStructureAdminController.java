@@ -136,7 +136,9 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 
 	@Override
 	protected void doDispose() {
-		//
+		if(stackPanel != null) {
+			stackPanel.removeListener(this);
+		}
 	}
 	
 	private void loadModel(boolean reset) {

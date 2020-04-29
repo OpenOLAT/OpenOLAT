@@ -355,6 +355,9 @@ public class PageRunController extends BasicController implements TooledControll
 	
 	@Override
 	protected void doDispose() {
+		if(stackPanel != null) {
+			stackPanel.removeListener(this);
+		}
 		if (lockEntry != null && lockEntry.isSuccess()) {
 			// release lock
 			coordinator.getCoordinator().getLocker().releaseLock(lockEntry);

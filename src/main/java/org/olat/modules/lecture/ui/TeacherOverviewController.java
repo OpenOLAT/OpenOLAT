@@ -96,6 +96,14 @@ public class TeacherOverviewController extends AbstractTeacherOverviewController
 	}
 
 	@Override
+	protected void doDispose() {
+		if(toolbarPanel != null) {
+			toolbarPanel.removeListener(this);
+		}
+		super.doDispose();
+	}
+
+	@Override
 	protected List<LectureBlockRow> getRows(LecturesBlockSearchParameters searchParams) {
 		Identity filterByTeacher = ((Boolean)allTeachersSwitch.getUserObject()).booleanValue() ? null : getIdentity();
 		searchParams.setTeacher(filterByTeacher);

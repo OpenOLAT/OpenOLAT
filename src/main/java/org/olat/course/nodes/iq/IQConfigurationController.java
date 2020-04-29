@@ -664,6 +664,9 @@ public class IQConfigurationController extends BasicController {
 
 	@Override
 	protected void doDispose() {
+		if(stackPanel != null) {
+			stackPanel.removeListener(this);
+		}
 		//child controllers registered with listenTo() get disposed in BasicController
 		if (previewLayoutCtr != null) {
 			previewLayoutCtr.dispose();
