@@ -77,18 +77,4 @@ public class XMLParser {
 		return document;
 	}
 
-	/**
-	 * @return entity resolver instance
-	 */
-	public EntityResolver getEntityResolver() {
-		return er;
-	}
-
-	/**
-	 * @param resolver
-	 */
-	public void setEntityResolver(EntityResolver resolver) {
-		er = resolver;
-	}
-
 }

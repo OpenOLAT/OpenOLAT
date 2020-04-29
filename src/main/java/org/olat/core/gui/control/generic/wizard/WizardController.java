@@ -75,12 +75,6 @@ public class WizardController extends BasicController {
 		wizardVC.put("wic", wic.getInitialComponent());
 		putInitialPanel(wizardVC);
 	}
-	
-	public String getAndRemoveWizardTitle() {
-		String wizardTitle = (String)wizardVC.contextGet("wizardTitle");
-		wizardVC.contextRemove("wizardTitle");
-		return wizardTitle;
-	}
 
 	/**
 	 * @param wizardTitle
@@ -89,15 +83,6 @@ public class WizardController extends BasicController {
 		wizardVC.contextPut("wizardTitle", wizardTitle);
 	}
 
-	/**
-	 * @param stepTitle
-	 * @param component
-	 */
-	public void setBackWizardStep(String stepTitle, Component component) {
-		this.currentStep--;
-		setWizardVcContent(stepTitle, component);
-	}
-	
 	/**
 	 * @param stepTitle
 	 * @param component

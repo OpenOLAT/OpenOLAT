@@ -62,8 +62,8 @@ public class WysiwygFactory {
 	 *            true: check if file has been created with another tool and
 	 *            warn user about potential data loss; false: ignore other
 	 *            authoring tools
-	 * @param userActivityLogger
-	 *            the userActivity Logger if used
+	 * @param versions
+	 *
 	 * @return
 	 */
 	public static HTMLEditorController createWysiwygController(UserRequest ureq, WindowControl wControl,
@@ -74,17 +74,9 @@ public class WysiwygFactory {
 	public static HTMLEditorController createWysiwygController(UserRequest ureq, WindowControl wControl,
 			VFSContainer rootDir, String filePath, boolean editorCheckEnabled, boolean versions,
 			VFSEdusharingProvider edusharingProvider) {
-		return new HTMLEditorController(ureq, wControl, rootDir, filePath, null, null, editorCheckEnabled, versions,
-				edusharingProvider);
+		return createWysiwygController(ureq, wControl, rootDir, filePath, null, editorCheckEnabled,  versions, edusharingProvider);
 	}
-	
-	public static HTMLEditorController createWysiwygController(
-			UserRequest ureq, WindowControl wControl, VFSContainer rootDir,
-			String filePath, String mediaPath, boolean editorCheckEnabled, boolean versions) {
-		return new HTMLEditorController(ureq, wControl, rootDir, filePath,
-				null, mediaPath, editorCheckEnabled, versions, null);
-	}
-	
+
 	public static HTMLEditorController createWysiwygController(UserRequest ureq, WindowControl wControl,
 			VFSContainer rootDir, String filePath, String mediaPath, boolean editorCheckEnabled, boolean versions,
 			VFSEdusharingProvider edusharingProvider) {

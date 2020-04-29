@@ -39,11 +39,6 @@ public class WopiRestHelper {
 		return requestHeader != null && !requestHeader.isEmpty()? requestHeader.get(0): null;
 	}
 
-	public static String getLastModifiedAsIso8601(File file) {
-		long lastModified = file.lastModified();
-		return Instant.ofEpochMilli(lastModified).toString();
-	}
-	
 	public static String getAsIso8601(Date date) {
 		long lastModified = date.getTime();
 		return Instant.ofEpochMilli(lastModified).toString();

@@ -361,10 +361,6 @@ class VideoOptionsForm extends FormBasicController{
 		initForm(ureq);
 	}
 
-	public boolean isVideoComments() {
-		return videoComments.isSelected(0);
-	}
-
 	@Override
 	protected void formOK(UserRequest ureq) {
 		config.setBooleanEntry(VideoEditController.CONFIG_KEY_COMMENTS, videoComments.isSelected(0));
