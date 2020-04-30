@@ -40,7 +40,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.Util;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
@@ -57,8 +56,6 @@ import de.bps.course.nodes.DENCourseNode;
   * @author skoeber
   */
 public class DENRunController extends BasicController implements GenericEventListener {
-
-	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(DENRunController.class);
 
 	private DENCourseNode courseNode;
 	private DENStatus status;
@@ -109,9 +106,9 @@ public class DENRunController extends BasicController implements GenericEventLis
 		createOrUpdateDateTable(ureq, denCourseNode);
 		runDENTable = denManager.createRunDatesTable(ureq, wControl, getTranslator(), runTableData);
 		listenTo(runDENTable);
-		
-		runVC = new VelocityContainer("dateVC", VELOCITY_ROOT + "/run.html", getTranslator(), this);
-		
+
+		runVC = createVelocityContainer("dateVC", "run");
+
 		//show only the options for managing dates and participants if user is admin or course coach
 		if(userCourseEnv.isAdmin() || userCourseEnv.isCoach()) {
 			// subscription

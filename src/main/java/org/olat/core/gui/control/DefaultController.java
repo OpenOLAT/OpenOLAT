@@ -126,11 +126,11 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	}
 	
 	/**
-	 * do NOT use normally. use the constructor super(wControl). only used for classes which are loaded by Class.forName and need an empty contstructor
+	 * do NOT use normally. use the constructor super(wControl). only used for classes which are loaded by Class.forName and need an empty constructor
 	 * @param wControl not null
 	 */
 	protected void setOrigWControl(WindowControl wControl) {
-		if (wControl == null) throw new AssertException("can not accept a null Windowcontrol here");
+		if (wControl == null) throw new AssertException("Can not accept a null WindowControl here.");
 		this.newWControl = new LocalWindowControl(wControl,this);
 	}
 	
@@ -183,8 +183,8 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	/**
 	 * fires events to registered listeners of controller events.
 	 * To see all events set this class and also AbstractEventBus and Component to debug.
+	 * @param ureq
 	 * @param event
-	 * @param ores
 	 */
 	protected void fireEvent(UserRequest ureq, Event event) {
 		if (listeners != null && listeners.size() > 0) {
@@ -377,14 +377,6 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	/**
 	 * Controller should override the method doDispose() instead of this one.
 	 * makes sure that doDispose is only called once.
-	 * 
-	 * @param asynchronous if true, then this method is invoked by a different
-	 *          thread than the current user-gui-thread ("mouse-click-thread").
-	 *          this means if set to true, then you should inform the user by
-	 *          replacing the current render subtree of your controller's
-	 *          component with e.g. a velocitycontainer stating a message like
-	 *          'this object has been disposed by an other process/user. please
-	 *          click some other link to continue...
 	 */
 	public synchronized void dispose() { //o_clusterOK by:fj
 		// protect setting disposed to true by synchronized block
@@ -428,8 +420,7 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 			Component dispMsgVC = new VelocityContainer(DEFAULTDISPOSED_PAGE,DefaultController.class,DEFAULTDISPOSED_PAGE,pT,null);
 			wrapperPanel.pushContent(dispMsgVC);
 		}
-			
-			
+
 		controllerCnt.decrementAndGet();//count controller count down. this should event work if a disposed msg controller is created.
 			
 	}
@@ -520,7 +511,7 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	/**
 	 * register a controller creator which is used in case the controller was 
 	 * disposed and a specific message should be displayed.
-	 * @param disposeMsgControllerCreator
+	 * @param disposeMsgController
 	 */
 	protected void setDisposedMsgController(Controller disposeMsgController) {
 		disposedMessageController = disposeMsgController;

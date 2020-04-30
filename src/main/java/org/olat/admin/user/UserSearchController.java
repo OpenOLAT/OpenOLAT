@@ -54,14 +54,11 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.ajax.autocompletion.AutoCompleterController;
 import org.olat.core.gui.control.generic.ajax.autocompletion.EntriesChosenEvent;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
-import org.olat.core.util.Util;
-import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -97,10 +94,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *         select multiple identities from within the search results.
  */
 public class UserSearchController extends BasicController {
-	// Needs PACKAGE and VELOCITY_ROOT because DeletableUserSearchController extends AddUserSearchController and re-use translations
-	private static final String PACKAGE = UserSearchController.class.getPackage().getName();
-	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(PACKAGE);
-	
+
 	private static final String ACTION_SINGLESELECT_CHOOSE = "ssc";
 	private static final String ACTION_MULTISELECT_CHOOSE = "msc";
 	
@@ -133,16 +127,15 @@ public class UserSearchController extends BasicController {
 	private IdentityPowerSearchQueries identitySearchQueries;
 
 	public UserSearchController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, false, false, false);
+		this(ureq, wControl, false, false, false, false);
 	}
 
 	public UserSearchController(UserRequest ureq, WindowControl wControl, boolean cancelbutton) {
-		this(ureq, wControl, cancelbutton, false, false);
+		this(ureq, wControl, cancelbutton, false, false, false);
 	}
 
-
 	public UserSearchController(UserRequest ureq, WindowControl windowControl, boolean cancelbutton, boolean userMultiSelect, String actionKeyChooseFinish) {
-		this(ureq, windowControl, cancelbutton, userMultiSelect, false);
+		this(ureq, windowControl, cancelbutton, userMultiSelect, false, false);
 		this.actionKeyChoose = actionKeyChooseFinish;
 	}
 
@@ -165,9 +158,8 @@ public class UserSearchController extends BasicController {
 		super(ureq, wControl);
 		this.useMultiSelect = userMultiSelect;
 		this.actionKeyChoose = ACTION_KEY_CHOOSE;
-	  // Needs PACKAGE and VELOCITY_ROOT because DeletableUserSearchController extends AddUserSearchController and re-use translations
-		Translator pT = UserManager.getInstance().getPropertyHandlerTranslator(Util.createPackageTranslator(UserSearchController.class, ureq.getLocale()) );	
-		myContent = new VelocityContainer("olatusersearch", VELOCITY_ROOT + "/usersearch.html", pT, this);
+
+		myContent = createVelocityContainer("olatusersearch", "usersearch");
 		backLink = LinkFactory.createButton("btn.back", myContent, this);
 		
 		searchPanel = new SimpleStackedPanel("usersearchPanel");
@@ -281,7 +273,7 @@ public class UserSearchController extends BasicController {
 	}
 	
 	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
+	 * @see org.olat.core.gui.control.DefaultController#doDispose
 	 */
 	@Override
 	protected void doDispose() {

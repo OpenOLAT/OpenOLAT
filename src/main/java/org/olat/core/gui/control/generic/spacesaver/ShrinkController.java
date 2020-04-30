@@ -56,7 +56,6 @@ public class ShrinkController extends DefaultController {
 	private VelocityContainer myContent;
 
 	/**
-	 * @param ureq
 	 * @param initiallyExpanded
 	 * @param shrinkcontent
 	 * @param title the name of the link to click (e.g "Details")

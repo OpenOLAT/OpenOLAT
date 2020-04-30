@@ -34,7 +34,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
 
 /**
  * Initial Date: Apr 7, 2004
@@ -48,7 +47,6 @@ import org.olat.core.util.Util;
  *         example.
  */
 public class NoAccessExplEditController extends BasicController {
-	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(NoAccessExplEditController.class);
 
 	private VelocityContainer myContent;
 
@@ -63,20 +61,18 @@ public class NoAccessExplEditController extends BasicController {
 	 * the noAccessExplanation field.
 	 * 
 	 * @param ureq The UserRequest
+	 * @param wControl The window controller
 	 * @param noAccessExplanation The current no access explanation string or null
-	 * @param wContr The window controller
 	 */
 	public NoAccessExplEditController(UserRequest ureq, WindowControl wControl, String noAccessExplanation) {
 		super(ureq, wControl);
 		this.noAccessExplanation = noAccessExplanation;
 
-		trans = Util.createPackageTranslator(NoAccessExplEditController.class, ureq.getLocale());
-
 		// Main component is a velocity container. It has a name choosen by the
 		// controller who
 		// called this constructor
-		myContent = new VelocityContainer("noAccessExplanationComp", VELOCITY_ROOT + "/noAccessExplEdit.html", trans, this);
-		
+		myContent = createVelocityContainer("noAccessExplanationComp", "noAccessExplEdit");
+
 		noAccessExplanationController = new NoAccessExplanationFormController(ureq, wControl, noAccessExplanation);
 		listenTo(noAccessExplanationController);
 		myContent.put("noAccexplForm", noAccessExplanationController.getInitialComponent());
@@ -130,7 +126,7 @@ public class NoAccessExplEditController extends BasicController {
 	}
 
 	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
+	 * @see org.olat.core.gui.control.DefaultController#doDispose
 	 */
 	@Override
 	protected void doDispose() {
