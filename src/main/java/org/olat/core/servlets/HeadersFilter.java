@@ -85,10 +85,12 @@ public class HeadersFilter implements Filter {
 
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-		if(securityModule == null || edubaseModule != null
-				|| analyticsModule != null || card2BrainModule != null
-				|| openMeetingsModule != null|| edusharingModule != null
-				|| viteroModule != null) {
+		if(securityModule == null || edubaseModule == null
+				|| analyticsModule == null || card2BrainModule == null
+				|| openMeetingsModule == null|| edusharingModule == null
+				|| viteroModule == null || onlyOfficeModule == null
+				|| office365Module == null ||  office365Service == null
+				|| collaboraModule == null) {
 			CoreSpringFactory.autowireObject(this);
 		}
 		addSecurityHeaders(response);

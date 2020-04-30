@@ -278,6 +278,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 			return null;
 		}
 		
+		dbInstance.commit();
 		LdapContext ctx = bindSystem();
 		if (ctx == null) {
 			errors.insert("LDAP connection error");
@@ -307,6 +308,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		}
 
 		try {
+			dbInstance.commit();
 			Control[] connectCtls = new Control[]{};
 			LdapContext userBind = new InitialLdapContext(env, connectCtls);
 			Attributes attributes = userBind.getAttributes(userDN, userAttr);

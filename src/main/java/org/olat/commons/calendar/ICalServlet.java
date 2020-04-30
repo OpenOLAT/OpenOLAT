@@ -233,13 +233,13 @@ public class ICalServlet extends HttpServlet {
 			if(savedToken == null) {
 				savedToken = calendarManager.getCalendarToken(calendarType, calendarID, userName);
 			}
+			DBFactory.getInstance().commitAndCloseSession();
 			if (authToken == null || savedToken == null || !savedToken.equals(authToken)) {
 				log.warn("Authenticity Check failed for the ical feed path: {}", pathInfo);
 				response.sendError(HttpServletResponse.SC_UNAUTHORIZED, requestUrl);
 			} else {
 				// read and return the calendar file
 				Calendar calendar = calendarManager.readCalendar(calendarType, calendarID);
-				DBFactory.getInstance().commitAndCloseSession();
 				outputCalendar(calendar, request, response);
 			}
 		} else {

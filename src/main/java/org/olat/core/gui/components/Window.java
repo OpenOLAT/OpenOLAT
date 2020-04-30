@@ -600,6 +600,7 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 							log.debug("Perf-Test: Window durationBeforeServeResource=" + durationBeforeServeResource);
 						}
 						
+						DBFactory.getInstance().commit();
 						wbackofficeImpl.pushCommands(ureq, request, response);
 					}  catch (InvalidRequestParameterException e) {
 						try {
@@ -886,6 +887,7 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 						debugMsg.append("inl_serve:").append(diff).append(LOG_SEPARATOR);
 					}
 			} 
+			DBFactory.getInstance().commit();
 			//else serve mediaresource, but postpone serving to when lock has been released,
 			// otherwise e.g. a large download blocks the window, so that the user cannot click until the download is finished
 		} // end of synchronized(this)

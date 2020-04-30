@@ -205,14 +205,14 @@ public class ImportCalendarManager {
 		String url = importedCalendar.getUrl();
 		Date lastUpdate = importedCalendar.getLastUpdate();
 		if (url != null && (timestamp - lastUpdate.getTime() > RELOAD_INTERVAL)) {
-			log.info("Calendar reload started from url=" + url);
+			log.info("Calendar reload started from url={}", url);
 			importedCalendar.setLastUpdate(new Date());
 			importedCalendar = importedCalendarDao.update(importedCalendar);
 			dbInstance.commit();
 			
 			String calendarId = importedCalendar.getCalendarId();
 			reloadCalendarFromUrl(url, CalendarManager.TYPE_USER, calendarId, filter);
-			log.info("Calendar reloaded from url=" + url);
+			log.info("Calendar reloaded from url={}", url);
 		}
 	}
 
