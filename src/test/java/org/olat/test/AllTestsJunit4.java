@@ -44,6 +44,7 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
 	org.olat.admin.layout.LayoutModuleTest.class,
+	org.olat.admin.user.UserSearchControllerTest.class,
 	org.olat.core.util.i18n.I18nTest.class,
 	// org.olat.core.util.mail.MailTest.class, // redisabled since mails are sent despite the fact that the whitelist is enabled
 	org.olat.core.gui.components.table.MultiSelectColumnDescriptorTest.class,
