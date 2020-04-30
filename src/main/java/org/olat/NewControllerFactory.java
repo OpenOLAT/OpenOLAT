@@ -35,6 +35,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.olat.core.commons.chiefcontrollers.BaseChiefController;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Window;
@@ -252,6 +253,7 @@ public class NewControllerFactory {
 				launched = true;
 			}
 		}
+		DBFactory.getInstance().commit();
 		return launched;
 	}
 }
