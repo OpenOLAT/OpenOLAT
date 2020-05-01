@@ -56,6 +56,9 @@ public class ExternalLinkRenderer extends DefaultComponentRenderer {
 		if(StringHelper.containsNonWhitespace(link.getTooltip())) {
 			sb.append(" title=\"").append(link.getTooltip()).append("\"");
 		}
+		if(StringHelper.containsNonWhitespace(link.getTooltip())) {
+			sb.append(" rel=\"noopener noreferrer\"");
+		}
 		sb.append(">");
 		
 		if(StringHelper.containsNonWhitespace(link.getIconLeftCSS())) {

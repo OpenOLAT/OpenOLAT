@@ -3,7 +3,7 @@
 	#foreach($link in $linkList)
 		<li class="o_block">
 			<h5>
-				<a href="#if($link.intern) $mapperBaseUrl$link.getTarget() #else $link.getTarget() #end" target="$link.getHtmlTarget()" class="o_desc">
+				<a href="#if($link.intern) $mapperBaseUrl$link.getTarget() #else $link.getTarget() #end" target="$link.getHtmlTarget()" rel="noopener noreferrer" class="o_desc">
 					$r.escapeHtml($link.getDescription())
 					<small>
 						#if($link.intern) $mapperBaseUrl$link.getTarget() #else $link.getTarget() #end
