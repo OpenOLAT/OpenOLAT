@@ -66,7 +66,6 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	private FormLink resetButton;
 	private FormLink statsButton;
 	
-	private CloseableModalController cmc;
 	private MSResetDataController resetDataCtrl;
 	private MSStatisticController statsCtrl;
 

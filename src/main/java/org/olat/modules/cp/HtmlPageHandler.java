@@ -42,9 +42,9 @@ public class HtmlPageHandler extends DefaultHandler {
 	private final StringBuilder header = new StringBuilder(4096);
 	private final StringBuilder body = new StringBuilder(8192);
 	
-	private static final String HEAD = "head";
-	private static final String BODY = "body";
-	private static final String SCRIPT = "script";
+	private static final String HTML_HEAD = "head";
+	private static final String HTML_BODY = "body";
+	private static final String HTML_SCRIPT = "script";
 	
 	private boolean pauseOutput;
 	private StringBuilder output;
@@ -107,11 +107,11 @@ public class HtmlPageHandler extends DefaultHandler {
 
 	@Override
 	public final void startElement(String uri, String localName, String qName, Attributes attributes) {
-		if (HEAD.equalsIgnoreCase(localName)) {
+		if (HTML_HEAD.equalsIgnoreCase(localName)) {
 			output = header;
-		} else if (BODY.equalsIgnoreCase(localName)) {
+		} else if (HTML_BODY.equalsIgnoreCase(localName)) {
 			output = body;
-		} else if (SCRIPT.equalsIgnoreCase(localName)) {
+		} else if (HTML_SCRIPT.equalsIgnoreCase(localName)) {
 			pauseOutput = true;
 		} else if (output != null) {
 			pauseOutput = false;
@@ -204,11 +204,11 @@ public class HtmlPageHandler extends DefaultHandler {
 	
 	@Override
 	public final void endElement(String uri, String localName, String qName) {
-		if(HEAD.equals(localName)) {
+		if(HTML_HEAD.equals(localName)) {
 			output = null;
-		} else if (BODY.equals(localName)) {
+		} else if (HTML_BODY.equals(localName)) {
 			output = null;
-		} else if (SCRIPT.equals(localName)) {
+		} else if (HTML_SCRIPT.equals(localName)) {
 			pauseOutput = false;
 		} else if (output != null) {
 			output.append("</").append(localName).append(">");
