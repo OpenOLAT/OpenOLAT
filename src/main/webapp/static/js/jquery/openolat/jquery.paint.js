@@ -25,7 +25,7 @@
 		
 		var usePointerApi = false;
 		if (window.PointerEvent) {
-			usePointerApi = false;
+			usePointerApi = true;
 		}
 		
 		var useRequestAnimationFrame = false;
@@ -113,7 +113,7 @@
 		var startEvents = usePointerApi ? 'pointerdown' : 'mousedown touchstart';
 		var leaveEvents = usePointerApi ? 'pointerleave' : 'mouseleave';
 		var enterEvents = usePointerApi ? 'pointerenter' : 'mouseenter';
-		var stopLeaveEvents = usePointerApi ? 'pointerup click' : 'mouseup touchend';
+		var stopLeaveEvents = usePointerApi ? 'pointerup' : 'mouseup touchend';
 		var stopEvents = usePointerApi ? 'pointerup click' : 'mouseup click touchend';
 		var moveEvents = usePointerApi ? 'pointermove' : 'mousemove touchmove';
 		
@@ -123,11 +123,14 @@
 		});
 		
 		/* Mouse Capturing Work out of the canvas */
-		jQuery(document).on(moveEvents, function(e) {
+		jQuery(document).on(moveEvents, function catchMouseLeave(e) {
 			if(mouse.leave) {
 				var rect = tmp_canvas.getBoundingClientRect();
 				mouse.out_x = e.clientX - rect.left;
 				mouse.out_y = e.clientY - rect.top;
+			}
+			if(jQuery("#" + sketchId).length == 0) {
+				jQuery(document).off(moveEvents, catchMouseLeave);
 			}
 		});
 
@@ -171,9 +174,10 @@
 			if(tool == "brush") {
 				ppts.push({x: -1, y: -1});
 			}
-			
-			jQuery(document).on(stopLeaveEvents, function(e){
+
+			jQuery(document).on(stopLeaveEvents, function stopListener() {
 				stopPainting();
+				jQuery(document).off(stopLeaveEvents, stopListener);
 			});
 		});
 		
@@ -204,8 +208,10 @@
 		};
 		
 		var stopPainting = function() {
-			jQuery(tmp_canvas).off(moveEvents, onPaint);
+			if(!mouse.paint) return;
+			mouse.paint = false;
 			
+			jQuery(tmp_canvas).off(moveEvents, onPaint);
 			// for erasing
 			ctx.globalCompositeOperation = 'source-over';
 			//spraying tool.
@@ -271,11 +277,11 @@
 			modal += '  </div>';
 			modal += '</div>';
 			jQuery("body").append(modal);
-			$('#paintModal').modal('show');
-			$('#paintModal button.btn-primary').on('click', function() {
+			jQuery('#paintModal').modal('show');
+			jQuery('#paintModal button.btn-primary').on('click', function() {
 				ctx.clearRect(0, 0, tmp_canvas.width, tmp_canvas.height);
 			});
-			$('#paintModal').on('hidden.bs.modal', function (event) {
+			jQuery('#paintModal').on('hidden.bs.modal', function (event) {
 				jQuery("#paintModal").remove();
 			});
 			o_scrollToElement('#o_top');
@@ -313,6 +319,10 @@
 		};
 		
 		var drawPaintBrush = function() {
+			if(!mouse.paint) {
+				return;
+			}
+			
 			// Tmp canvas is always cleared up before drawing.
 			tmp_ctx.clearRect(0, 0, tmp_canvas.width, tmp_canvas.height);
 			
@@ -345,6 +355,10 @@
 		};
 	
 		var onPaintLine = function() {
+			if(!mouse.paint) {
+				return;
+			}
+			
 		    // Tmp canvas is always cleared up before drawing.
 		    tmp_ctx.clearRect(0, 0, tmp_canvas.width, tmp_canvas.height);
 		 
@@ -356,6 +370,10 @@
 		};
 		
 		var onPaintCircle = function() {
+			if(!mouse.paint) {
+				return;
+			}
+			
 		    // Tmp canvas is always cleared up before drawing.
 		    tmp_ctx.clearRect(0, 0, tmp_canvas.width, tmp_canvas.height);
 		    
@@ -364,15 +382,19 @@
 
 		    var x = (mx + start_mouse.x) / 2;
 			var y = (my + start_mouse.y) / 2;
-			var radius = Math.max(Math.abs(mx - start_mouse.x), Math.abs(my - start_mouse.y)) / 2;
+			var circleRadius = Math.max(Math.abs(mx - start_mouse.x), Math.abs(my - start_mouse.y)) / 2;
 
 		    tmp_ctx.beginPath();
-		    tmp_ctx.arc(x, y, radius, 0, Math.PI*2, false);
+		    tmp_ctx.arc(x, y, circleRadius, 0, Math.PI*2, false);
 		    tmp_ctx.stroke();
 		    tmp_ctx.closePath();
 		};
 
 		var onPaintRect = function() {
+			if(!mouse.paint) {
+				return;
+			}
+			
 		    // Tmp canvas is always cleared up before drawing.
 		    tmp_ctx.clearRect(0, 0, tmp_canvas.width, tmp_canvas.height);
 		    
@@ -386,7 +408,11 @@
 			tmp_ctx.strokeRect(x, y, width, height);
 		};
 
-		function onPaintEllipse(ctx) {
+		function onPaintEllipse() {
+			if(!mouse.paint) {
+				return;
+			}
+			
 			tmp_ctx.clearRect(0, 0, tmp_canvas.width, tmp_canvas.height);
 			
 		    var mx = mouse.leave ? mouse.out_x : mouse.x;
@@ -417,6 +443,10 @@
 		}
 	
 		var onErase = function() {
+			if(!mouse.paint) {
+				return;
+			}
+			
 			// Saving all the points in an array
 			ppts.push({x: mouse.x, y: mouse.y});
 			
