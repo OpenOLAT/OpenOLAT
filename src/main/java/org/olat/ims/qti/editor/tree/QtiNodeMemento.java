@@ -27,14 +27,24 @@ package org.olat.ims.qti.editor.tree;
 
 import java.util.Map;
 
-import org.olat.core.util.memento.DefaultMemento;
+import org.olat.core.util.memento.Memento;
 
 /**
  * Description:<br>
  * Initial Date:  Nov 25, 2005 <br>
  * @author patrick
  */
-public class QtiNodeMemento extends DefaultMemento {
+public class QtiNodeMemento extends Memento {
+
+	private int version = 0;
+
+	/**
+	 *
+	 * @see org.olat.core.util.memento.Memento#resolveVersionIssues()
+	 */
+	protected void resolveVersionIssues() {
+		//
+	}
 
 	/**
 	 * 
@@ -49,6 +59,15 @@ public class QtiNodeMemento extends DefaultMemento {
 	 */
 	protected Map<String,Object> getQtiState(){
 		return (Map<String,Object>)super.getState();
+	}
+
+	/**
+	 *
+	 * @see org.olat.core.util.memento.Memento#getVersion()
+	 */
+	protected int getVersion() {
+		// default implementation just return 0
+		return version;
 	}
 	
 }

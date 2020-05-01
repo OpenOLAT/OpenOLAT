@@ -87,7 +87,7 @@ public class FeedNodeConfigController extends FormBasicController {
 	private final ICourse course;
 	private final AbstractFeedCourseNode courseNode;
 	private final ModuleConfiguration moduleConfig;
-	private final FeedUIFactory uiFactory;
+	private final FeedUIFactory feedUIFactory;
 	private final String resourceTypeName;
 	private final String helpUrl;
 	private RepositoryEntry feedEntry;
@@ -100,7 +100,7 @@ public class FeedNodeConfigController extends FormBasicController {
 		this.course = course;
 		this.courseNode = courseNode;
 		this.moduleConfig = courseNode.getModuleConfiguration();
-		this.uiFactory = uiFactory;
+		this.feedUIFactory = uiFactory;
 		this.resourceTypeName = resourceTypeName;
 		this.feedEntry = courseNode.getReferencedRepositoryEntry();
 		this.helpUrl = helpUrl;
@@ -224,7 +224,7 @@ public class FeedNodeConfigController extends FormBasicController {
 		} else {
 			removeAsListenerAndDispose(feedCtrl);
 			FeedSecurityCallback callback = new FeedPreviewSecurityCallback();
-			feedCtrl = uiFactory.createMainController(feedEntry.getOlatResource(), ureq, getWindowControl(), callback, course
+			feedCtrl = feedUIFactory.createMainController(feedEntry.getOlatResource(), ureq, getWindowControl(), callback, course
 					.getResourceableId(), courseNode.getIdent());
 			listenTo(feedCtrl);
 			stackPanel.pushController(translate("preview"), feedCtrl);
