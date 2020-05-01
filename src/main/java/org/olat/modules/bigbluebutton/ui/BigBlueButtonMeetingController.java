@@ -121,6 +121,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		joinButton = LinkFactory.createButtonLarge("meeting.join.button", flc.getFormItemComponent(), this);
 		joinButton.setTarget("_blank");
 		joinButton.setVisible(!ended);
+		joinButton.setTextReasonForDisabling(translate("warning.no.access"));
 	}
 	
 	private void initRecordings(FormItemContainer formLayout) {
@@ -151,6 +152,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 	}
 	
 	private boolean isAccessible() {
+		if(meeting == null) return false;
 		if(meeting.isPermanent()) {
 			return bigBlueButtonModule.isPermanentMeetingEnabled();
 		}
@@ -167,7 +169,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 	}
 	
 	private boolean isDisabled() {
-		return meeting.getServer() != null && !meeting.getServer().isEnabled();
+		return meeting != null && meeting.getServer() != null && !meeting.getServer().isEnabled();
 	}
 	
 	private void updateButtonsAndStatus() {
@@ -177,7 +179,10 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		flc.contextPut("disabled", Boolean.valueOf(disabled));
 		flc.contextPut("ended", Boolean.valueOf(isEnded));
 		flc.contextPut("notStarted", Boolean.TRUE);
-		joinButton.setVisible(accessible && !disabled);
+		// only change from invisible to visible
+		if(!joinButton.isVisible()) {
+			joinButton.setVisible(accessible && !disabled);
+		}
 		joinButton.setEnabled(!readOnly);
 			
 		if(accessible && !disabled) {

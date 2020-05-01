@@ -322,6 +322,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 
 	@Override
 	public BigBlueButtonMeeting getMeeting(BigBlueButtonMeeting meeting) {
+		if(meeting == null) return null;
 		return bigBlueButtonMeetingDao.loadByKey(meeting.getKey());
 	}
 
