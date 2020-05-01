@@ -25,7 +25,6 @@ jobs:
         ports:
           # Opens tcp port 6379 on the host and service container
           - 5432:5432
-
     steps:
     - uses: actions/checkout@v2
     - name: Cache
@@ -44,6 +43,6 @@ jobs:
     - name: Run tests
       run: mvn test jacoco:report coveralls:report -Dwith-postgresql -Dtest.env.db.host=localhost -Dtest.env.db.postgresql.user=postgres -Dtest.env.db.postgresql.pass=postgres -Dtest=org.olat.test.AllTestsJunit4 -Ptomcat
     - name: SonarCloud Scan
-      run: mvn sonar:sonar -Dsonar.projectKey=tomgross_OpenOLAT -Dsonar.organization=tomgross-github -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }} -Dsonar.pullrequest.provider=github -Dsonar.exclusions=src/main/webapp/static/js/paella/**/*  -Ponly-eclipse 
+      run: mvn sonar:sonar -Dsonar.projectKey=tomgross_OpenOLAT -Dsonar.organization=tomgross-github -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }} -Dsonar.pullrequest.provider=github -Dsonar.exclusions=src/main/webapp/static/js/paella/**/*,src/main/webapp/static/bootstrap/**/*,src/main/webapp/static/movie/**/* -Ponly-eclipse
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
