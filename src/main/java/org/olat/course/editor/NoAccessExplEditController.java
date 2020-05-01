@@ -32,7 +32,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -49,9 +48,6 @@ import org.olat.core.util.StringHelper;
 public class NoAccessExplEditController extends BasicController {
 
 	private VelocityContainer myContent;
-
-	// render edit button
-	private Translator trans;
 
 	private NoAccessExplanationFormController noAccessExplanationController;
 	private String noAccessExplanation;

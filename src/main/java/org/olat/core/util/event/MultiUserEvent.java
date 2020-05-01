@@ -47,10 +47,9 @@ public class MultiUserEvent extends Event {
 
 	private static final long serialVersionUID = -3371406997475826632L;
 	//used to mark event
-	//comparing VM_MARKER == vm_marker gives the info if the (deserialized) event comes
+	//comparing node id == vm_marker gives the info if the (deserialized) event comes
 	//from the same node. Most of the time such a comparison is wrong, especially for strings
 	//here it is used as "feature".
-	protected static String VM_MARKER = "VM_MARKER";
 	protected int vm_marker; 
 	
 	/**
