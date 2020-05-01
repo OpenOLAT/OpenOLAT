@@ -70,7 +70,7 @@ import org.olat.repository.RepositoryManager;
  */
 public class NewControllerFactory {
 	private static final Logger log = Tracing.createLoggerFor(NewControllerFactory.class);
-	private static NewControllerFactory INSTANCE = new NewControllerFactory();
+	private static final NewControllerFactory INSTANCE = new NewControllerFactory();
 	// map of controller creators, setted by Spring configuration
 	private Map<String, ContextEntryControllerCreator> contextEntryControllerCreators = new HashMap<>();
 
@@ -171,89 +171,93 @@ public class NewControllerFactory {
 			return false;//nothing to launch
 		}
 		OLATResourceable ores = mainCe.getOLATResourceable();
-
-		// Check for RepositoryEntry resource
-		RepositoryEntry re = null;
-		if (ores.getResourceableTypeName().equals(OresHelper.calculateTypeName(RepositoryEntry.class))) {
-			if(ores instanceof RepositoryEntry) {
-				re = (RepositoryEntry)ores;
-				ores = re.getOlatResource();
-			} else {
-				// It is a repository-entry => get OLATResourceable from RepositoryEntry
-				RepositoryManager repom = RepositoryManager.getInstance();
-				re = repom.lookupRepositoryEntry(ores.getResourceableId());
-				if (re != null){
-					ores = re.getOlatResource();
-					mainCe.upgradeOLATResourceable(re);
-				}
-			}
-		}
-
+		
 		UserSession usess = ureq.getUserSession();
 		Window window = Windows.getWindows(usess).getWindow(ureq);
-
 		if (window == null) {
 			log.debug("Found no window for jumpin => take WindowBackOffice");
 			window = wControl.getWindowBackOffice().getWindow();
 		}
-		DTabs dts = window.getDTabs();
 
-		String firstType = mainCe.getOLATResourceable().getResourceableTypeName();
-		// String firstTypeId = ClassToId.getInstance().lookup() BusinessGroup
-		ContextEntryControllerCreator typeHandler = getContextEntryControllerCreator(firstType);
-		if (typeHandler == null) {
-			log.warn("Cannot found an handler for context entry: " + mainCe);
-			return false;//simply return and don't throw a red screen
-		}
-		if (!typeHandler.validateContextEntryAndShowError(mainCe, ureq, wControl)){
-			//simply return and don't throw a red screen
-			return false;
-		}
-		
-		List<ContextEntry> entries = new ArrayList<>(5);
-		while(bc.hasContextEntry()) {
-			entries.add(bc.popLauncherContextEntry());
-		}
-		List<ContextEntry> ces = new ArrayList<>(entries.size() + 1);
-		ces.add(mainCe);
-		if(entries.size() > 0) {
-			ces.addAll(entries);
-		}
-
-		TabContext context = typeHandler.getTabContext(ureq, ores, mainCe, entries);
-		String siteClassName = typeHandler.getSiteClassName(ces, ureq);	
-		// open in existing site
-		
 		boolean launched = false;
-		boolean assessmentMode = usess.isInAssessmentModeProcess();
-		if (siteClassName != null) {
-			if(!assessmentMode) {
-				dts.activateStatic(ureq, siteClassName, context.getContext());
-				launched = true;
-			}
-		} else if(!assessmentMode || usess.matchLockResource(ores)) {
-			// get current tab or create new tab
-			DTab dt = dts.getDTab(ores);
-			if (dt == null) {
-				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, dts.getWindowControl());
-				usess.addToHistory(ureq, bc);
-
-				Controller launchC = typeHandler.createController(ces, ureq, bwControl);
-				if (launchC != null) {
-					dt = dts.createDTab(context.getTabResource(), re, launchC, context.getName());
-					if (dt == null) {
-						launched = false;
-					} else if(dts.addDTab(ureq, dt)) {
-						dts.activate(ureq, dt, context.getContext());
-						launched = true;
+		synchronized(window) {
+	
+			// Check for RepositoryEntry resource
+			RepositoryEntry re = null;
+			if (ores.getResourceableTypeName().equals(OresHelper.calculateTypeName(RepositoryEntry.class))) {
+				if(ores instanceof RepositoryEntry) {
+					re = (RepositoryEntry)ores;
+					ores = re.getOlatResource();
+				} else {
+					// It is a repository-entry => get OLATResourceable from RepositoryEntry
+					RepositoryManager repom = RepositoryManager.getInstance();
+					re = repom.lookupRepositoryEntry(ores.getResourceableId());
+					if (re != null){
+						ores = re.getOlatResource();
+						mainCe.upgradeOLATResourceable(re);
 					}
 				}
-			} else {
-				dts.activate(ureq, dt, context.getContext());
-				launched = true;
 			}
+	
+			
+			DTabs dts = window.getDTabs();
+	
+			String firstType = mainCe.getOLATResourceable().getResourceableTypeName();
+			// String firstTypeId = ClassToId.getInstance().lookup() BusinessGroup
+			ContextEntryControllerCreator typeHandler = getContextEntryControllerCreator(firstType);
+			if (typeHandler == null) {
+				log.warn("Cannot found an handler for context entry: {}", mainCe);
+				return false;//simply return and don't throw a red screen
+			}
+			if (!typeHandler.validateContextEntryAndShowError(mainCe, ureq, wControl)){
+				//simply return and don't throw a red screen
+				return false;
+			}
+			
+			List<ContextEntry> entries = new ArrayList<>(5);
+			while(bc.hasContextEntry()) {
+				entries.add(bc.popLauncherContextEntry());
+			}
+			List<ContextEntry> ces = new ArrayList<>(entries.size() + 1);
+			ces.add(mainCe);
+			if(!entries.isEmpty()) {
+				ces.addAll(entries);
+			}
+	
+			TabContext context = typeHandler.getTabContext(ureq, ores, mainCe, entries);
+			String siteClassName = typeHandler.getSiteClassName(ces, ureq);	
+			// open in existing site
+			
+			boolean assessmentMode = usess.isInAssessmentModeProcess();
+			if (siteClassName != null) {
+				if(!assessmentMode) {
+					dts.activateStatic(ureq, siteClassName, context.getContext());
+					launched = true;
+				}
+			} else if(!assessmentMode || usess.matchLockResource(ores)) {
+				// get current tab or create new tab
+				DTab dt = dts.getDTab(ores);
+				if (dt == null) {
+					WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, dts.getWindowControl());
+					usess.addToHistory(ureq, bc);
+	
+					Controller launchC = typeHandler.createController(ces, ureq, bwControl);
+					if (launchC != null) {
+						dt = dts.createDTab(context.getTabResource(), re, launchC, context.getName());
+						if (dt == null) {
+							launched = false;
+						} else if(dts.addDTab(ureq, dt)) {
+							dts.activate(ureq, dt, context.getContext());
+							launched = true;
+						}
+					}
+				} else {
+					dts.activate(ureq, dt, context.getContext());
+					launched = true;
+				}
+			}
+			DBFactory.getInstance().commit();
 		}
-		DBFactory.getInstance().commit();
 		return launched;
 	}
 }
