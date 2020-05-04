@@ -249,8 +249,6 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		// ------ all the frame preparation is finished ----
 		initializeBase(ureq, initialPanel);
 		
-		logAudit("BaseFullWebappController: " + usess.getEntry(PRESENTED_AFTER_LOGIN_WORKFLOW));
-		
 		if(usess.isAuthenticated() && !isAdmin && usess.getAssessmentModes() != null && !usess.getAssessmentModes().isEmpty()) {
     		assessmentGuardCtrl = new AssessmentModeGuardController(ureq, getWindowControl(),
     				usess.getAssessmentModes(), false);

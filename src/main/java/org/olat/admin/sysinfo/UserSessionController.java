@@ -116,7 +116,9 @@ public class UserSessionController extends BasicController implements Breadcrumb
 		Collection<UserSession> authUserSessions = sessionManager.getAuthenticatedUserSessions();
 		List<UserSessionView> authUserSessionViews = new ArrayList<>(authUserSessions.size());
 		for(UserSession authUserSession:authUserSessions) {
-			authUserSessionViews.add(new UserSessionView(authUserSession));
+			if(authUserSession != null) {
+				authUserSessionViews.add(new UserSessionView(authUserSession));
+			}
 		}
 		usessTableModel = new UserSessionTableModel(authUserSessionViews, getIdentity().getKey());
 		tableCtr.setTableDataModel(usessTableModel);

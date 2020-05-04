@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.FlushModeType;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.Group;
@@ -430,6 +431,7 @@ public class AssessmentEntryDAO {
 				.createQuery(sb.toString(), AssessmentEntryScoring.class)
 				.setParameter("identityKey", assessedIdentity.getKey())
 				.setParameter("entryKeys", entryKeys)
+				.setFlushMode(FlushModeType.COMMIT)
 				.getResultList();
 	}
 
