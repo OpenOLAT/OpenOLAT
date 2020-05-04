@@ -19,9 +19,13 @@
  */
 package org.olat.course.nodes.iq;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.IQTESTCourseNode;
+import org.olat.ims.qti21.QTI21DeliveryOptions;
+import org.olat.ims.qti21.QTI21DeliveryOptions.PassedType;
+import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
@@ -123,7 +127,35 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 	
 	@Override
 	public Mode getPassedMode() {
-		return Mode.setByNode;
+		Mode mode = Mode.none;
+		
+		ModuleConfiguration config = courseNode.getModuleConfiguration();
+		// for onyx and QTI 1.2
+		if (IQEditController.CONFIG_VALUE_QTI2.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI))
+				|| IQEditController.CONFIG_VALUE_QTI1.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI))) {
+			mode = Mode.setByNode;
+		} else {
+			RepositoryEntry testEntry = courseNode.getReferencedRepositoryEntry();
+			if (testEntry != null) {
+				if(QTIResourceTypeModule.isQtiWorks(testEntry.getOlatResource())) {
+					AssessmentTest assessmentTest = courseNode.loadAssessmentTest(testEntry);
+					if(assessmentTest != null) {
+						QTI21Service qti21Service = CoreSpringFactory.getImpl(QTI21Service.class);
+						QTI21DeliveryOptions deliveryOptions = qti21Service.getDeliveryOptions(testEntry);
+						if (deliveryOptions != null) {
+							Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
+							PassedType passedType = deliveryOptions.getPassedType(cutValue);
+							if (passedType == PassedType.cutValue || passedType == PassedType.manually) {
+								mode = Mode.setByNode;
+							}
+						}
+					}
+				} else {
+					mode = Mode.setByNode;
+				}
+			}
+		}
+		return mode;
 	}
 
 	@Override

@@ -39,6 +39,7 @@ import org.olat.ims.qti21.model.xml.AssessmentTestBuilder;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentTestEvent;
 import org.olat.ims.qti21.ui.editor.events.SelectEvent.SelectionTarget;
+import org.olat.repository.RepositoryEntry;
 
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
@@ -62,15 +63,17 @@ public class AssessmentTestEditorController extends BasicController implements A
 	private final File rootDirectory;
 	private final VFSContainer rootContainer;
 	
+	private final RepositoryEntry testEntry;
 	private final boolean restrictedEdit;
 	private final TestPart testPart;
 	private final AssessmentTest assessmentTest;
 	private final AssessmentTestBuilder testBuilder;
 	
 	public AssessmentTestEditorController(UserRequest ureq, WindowControl wControl,
-			AssessmentTestBuilder testBuilder, TestPart testPart,
+			RepositoryEntry testEntry, AssessmentTestBuilder testBuilder, TestPart testPart,
 			File rootDirectory, VFSContainer rootContainer, File testFile,boolean restrictedEdit) {
 		super(ureq, wControl, Util.createPackageTranslator(AssessmentTestDisplayController.class, ureq.getLocale()));
+		this.testEntry = testEntry;
 		this.testBuilder = testBuilder;
 		this.testPart = testPart;
 		this.assessmentTest = testBuilder.getAssessmentTest();
@@ -96,12 +99,12 @@ public class AssessmentTestEditorController extends BasicController implements A
 	
 	private void initTestEditor(UserRequest ureq) {
 		if(testPart != null) {//combined test and single part editor
-			optionsCtrl = new AssessmentTestOptionsEditorController(ureq, getWindowControl(), assessmentTest, testBuilder, restrictedEdit);
+			optionsCtrl = new AssessmentTestOptionsEditorController(ureq, getWindowControl(), testEntry, assessmentTest, testBuilder, restrictedEdit);
 			testPartOptionsCtrl = new AssessmentTestPartEditorController(ureq, getWindowControl(), testPart, restrictedEdit, testBuilder.isEditable());
 			testPartOptionsCtrl.setFormTitle(null);
 			listenTo(testPartOptionsCtrl);
 		} else {
-			optionsCtrl = new AssessmentTestOptionsEditorController(ureq, getWindowControl(), assessmentTest, testBuilder, restrictedEdit);
+			optionsCtrl = new AssessmentTestOptionsEditorController(ureq, getWindowControl(), testEntry, assessmentTest, testBuilder, restrictedEdit);
 		}
 		listenTo(optionsCtrl);
 		

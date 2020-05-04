@@ -45,6 +45,7 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
+import org.olat.ims.qti21.QTI21DeliveryOptions.PassedType;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.AssessmentTestBuilder;
 import org.olat.modules.ModuleConfiguration;
@@ -84,7 +85,7 @@ public class QTI21EditForm extends FormBasicController {
 	private DateChooser endTestDateElement;
 	private StaticTextElement minScoreEl;
 	private StaticTextElement maxScoreEl;
-	private StaticTextElement cutValueEl;
+	private StaticTextElement passedTypeEl;
 	private MultipleSelectionElement ignoreInCourseAssessmentEl;
 	private MultipleSelectionElement showResultsOnFinishEl;
 	private MultipleSelectionElement assessmentResultsOnFinishEl;
@@ -141,8 +142,7 @@ public class QTI21EditForm extends FormBasicController {
 		minScoreEl.setVisible(false);
 		maxScoreEl = uifactory.addStaticTextElement("score.max", "", formLayout);
 		maxScoreEl.setVisible(false);
-		cutValueEl = uifactory.addStaticTextElement("score.cut", "", formLayout);
-		cutValueEl.setVisible(false);
+		passedTypeEl = uifactory.addStaticTextElement("score.passed", "", formLayout);
 		
 		ignoreInCourseAssessmentEl = uifactory.addCheckboxesHorizontal("ignore.in.course.assessment", formLayout,
 				new String[] { "xx" }, new String[] { null });
@@ -387,13 +387,25 @@ public class QTI21EditForm extends FormBasicController {
 			}
 		}
 
-		// Put values to module configuration
 		minScoreEl.setValue(minValue == null ? "" : AssessmentHelper.getRoundedScore(minValue));
 		minScoreEl.setVisible(minValue != null);
 		maxScoreEl.setValue(maxValue == null ? "" : AssessmentHelper.getRoundedScore(maxValue));
 		maxScoreEl.setVisible(maxValue != null);
-		cutValueEl.setValue(cutValue == null ? "" : AssessmentHelper.getRoundedScore(cutValue));
-		cutValueEl.setVisible(cutValue != null);
+		
+		PassedType passedType = deliveryOptions.getPassedType(cutValue);
+		String passedTypeValue;
+		switch (passedType) {
+		case cutValue:
+			passedTypeValue = translate("score.passed.cut.value", new String[] { AssessmentHelper.getRoundedScore(cutValue) });
+			break;
+		case manually:
+			passedTypeValue = translate("score.passed.manually");
+			break;
+		default:
+			passedTypeValue = translate("score.passed.none");
+			break;
+		}
+		passedTypeEl.setValue(passedTypeValue);
 		
 		update();
 	}

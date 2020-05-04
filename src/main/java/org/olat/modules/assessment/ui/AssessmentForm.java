@@ -326,13 +326,25 @@ public class AssessmentForm extends FormBasicController {
 		}
 		
 		if (assessableElement.hasPassedConfigured()) {
-			String selected = passed.getSelectedKey();
-			if("true".equals(selected)) {
-				assessmentEntry.setPassed(Boolean.TRUE);
-			} else if("false".equals(selected)) {
-				assessmentEntry.setPassed(Boolean.FALSE);
+			if (assessableElement.getCutValueConfiguration() != null) {
+				if (StringHelper.containsNonWhitespace(score.getValue())) {
+					Double scoreValue = Double.valueOf(score.getValue());
+					Boolean passed = scoreValue.doubleValue() >= assessableElement.getCutValueConfiguration().doubleValue()
+							? Boolean.TRUE
+							: Boolean.FALSE;
+					assessmentEntry.setPassed(passed);
+				} else {
+					assessmentEntry.setPassed(null);
+				}
 			} else {
-				assessmentEntry.setPassed(null);
+				String selected = passed.getSelectedKey();
+				if("true".equals(selected)) {
+					assessmentEntry.setPassed(Boolean.TRUE);
+				} else if("false".equals(selected)) {
+					assessmentEntry.setPassed(Boolean.FALSE);
+				} else {
+					assessmentEntry.setPassed(null);
+				}
 			}
 		}
 		

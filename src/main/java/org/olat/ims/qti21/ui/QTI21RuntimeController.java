@@ -40,6 +40,8 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Constants;
+import org.olat.ims.qti21.QTI21DeliveryOptions;
+import org.olat.ims.qti21.QTI21DeliveryOptions.PassedType;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.editor.AssessmentTestComposerController;
@@ -283,12 +285,16 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 		FileResourceManager frm = FileResourceManager.getInstance();
 		File fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
 		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
-		
 		AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
+		
+		Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
+		QTI21DeliveryOptions deliveryOptions = qtiService.getDeliveryOptions(testEntry);
+		PassedType passedType = deliveryOptions.getPassedType(cutValue);
+		
 		Double maxScore = QtiNodesExtractor.extractMaxScore(assessmentTest);
 		Double minScore = QtiNodesExtractor.extractMinScore(assessmentTest);
 		boolean hasScore = assessmentTest.getOutcomeDeclaration(QTI21Constants.SCORE_IDENTIFIER) != null;
-		boolean hasPassed = assessmentTest.getOutcomeDeclaration(QTI21Constants.PASS_IDENTIFIER) != null;
-		return new QTI21AssessableResource(hasScore, hasPassed, true, true, minScore, maxScore, null);
+		boolean hasPassed = passedType != PassedType.none;
+		return new QTI21AssessableResource(hasScore, hasPassed, true, true, minScore, maxScore, cutValue);
 	}
 }

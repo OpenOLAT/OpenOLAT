@@ -64,6 +64,7 @@ public class QTI21DeliveryOptions {
 	
 	private TestType testType;
 	private ShowResultsOnFinish showResultsOnFinish;
+	private PassedType passedType;
 	private QTI21AssessmentResultsOptions assessmentResultsOptions;
 
 	public boolean isEnableCancel() {
@@ -197,6 +198,23 @@ public class QTI21DeliveryOptions {
 
 	public void setShowResultsOnFinish(ShowResultsOnFinish showResultsOnFinish) {
 		this.showResultsOnFinish = showResultsOnFinish;
+	}
+	
+	/**
+	 * Legacy options do not have a PassedType. Use this method to get the PassedTpe
+	 * even for null values.
+	 * 
+	 * @param cutValue
+	 * @return
+	 */
+	public PassedType getPassedType(Double cutValue) {
+		return passedType != null
+				? passedType
+				: cutValue != null? PassedType.cutValue: PassedType.manually;
+	}
+	
+	public void setPassedType(PassedType passedType) {
+		this.passedType = passedType;
 	}
 
 	public QTI21AssessmentResultsOptions getAssessmentResultsOptions() {
@@ -336,6 +354,7 @@ public class QTI21DeliveryOptions {
 		defaultSettings.digitalSignature = false;
 		defaultSettings.digitalSignatureMail = false;
 		defaultSettings.testType = TestType.formative;
+		defaultSettings.passedType = null; // not part of the profile
 		defaultSettings.enableAssessmentItemBack = false;
 		defaultSettings.enableAssessmentItemResetSoft = false;
 		defaultSettings.enableAssessmentItemResetHard = false;
@@ -363,6 +382,7 @@ public class QTI21DeliveryOptions {
 		defaultSettings.digitalSignature = false;
 		defaultSettings.digitalSignatureMail = false;
 		defaultSettings.testType = TestType.summative;
+		defaultSettings.passedType = null; // not part of the profile
 		defaultSettings.enableAssessmentItemBack = false;
 		defaultSettings.enableAssessmentItemResetSoft = false;
 		defaultSettings.enableAssessmentItemResetHard = false;
@@ -393,6 +413,7 @@ public class QTI21DeliveryOptions {
 		clone.assessmentResultsOptions = getAssessmentResultsOptions().clone();
 		clone.showAssessmentResultsOnFinish = showAssessmentResultsOnFinish;
 		clone.testType = testType;
+		clone.passedType = passedType;
 		clone.enableAssessmentItemBack = enableAssessmentItemBack;
 		clone.enableAssessmentItemResetSoft = enableAssessmentItemResetSoft;
 		clone.enableAssessmentItemResetHard = enableAssessmentItemResetHard;
@@ -433,5 +454,12 @@ public class QTI21DeliveryOptions {
 			}
 			return defaultValue;
 		}
+	}
+	
+	public enum PassedType {	
+		none,
+		cutValue,
+		manually;
+	
 	}
 }
