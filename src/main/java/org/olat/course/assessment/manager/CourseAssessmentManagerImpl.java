@@ -472,6 +472,9 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
 		scoreAccounting.evaluateAll(true);
 		DBFactory.getInstance().commit();
+		
+		updateUserEfficiencyStatement(userCourseEnvironment);
+		generateCertificate(userCourseEnvironment, course);
 	}
 
 	@Override
@@ -569,7 +572,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			}
 		}
 		
-		updateUserEfficiencyStatement(userCourseEnv, courseNode);
+		updateUserEfficiencyStatement(userCourseEnv);
 		generateCertificate(userCourseEnv, course);
 	}
 	
@@ -615,7 +618,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_SCORE_EVAL_CHANGED, assessedIdentity);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, course);
 		
-		updateUserEfficiencyStatement(userCourseEnvironment, rootNode);
+		updateUserEfficiencyStatement(userCourseEnvironment);
 		generateCertificate(userCourseEnvironment, course);
 		
 		return assessmentEntry.getPassedOverridable();
@@ -653,7 +656,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_SCORE_EVAL_CHANGED, assessedIdentity);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, course);
 		
-		updateUserEfficiencyStatement(userCourseEnvironment, rootNode);
+		updateUserEfficiencyStatement(userCourseEnvironment);
 		generateCertificate(userCourseEnvironment, course);
 		
 		return assessmentEntry.getPassedOverridable();
@@ -684,7 +687,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		}
 	}
 
-	private void updateUserEfficiencyStatement(UserCourseEnvironment userCourseEnvironment, CourseNode courseNode) {
+	private void updateUserEfficiencyStatement(UserCourseEnvironment userCourseEnvironment) {
 		CourseEnvironment courseEnv = userCourseEnvironment.getCourseEnvironment();
 		// write only when enabled for this course
 		if (courseEnv.getCourseConfig().isEfficencyStatementEnabled()) {
