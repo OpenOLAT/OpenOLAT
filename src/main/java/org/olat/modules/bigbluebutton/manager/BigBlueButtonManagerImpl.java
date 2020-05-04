@@ -813,7 +813,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 
 	@Override
 	public List<BigBlueButtonRecording> getRecordings(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors) {
-		if(meeting.getServer() == null || !meeting.getServer().isEnabled()) {
+		if(meeting == null || meeting.getServer() == null || !meeting.getServer().isEnabled()) {
 			return new ArrayList<>();
 		}
 		

@@ -581,6 +581,11 @@ function o_ainvoke(r) {
 									}
 								}
 								
+								var videos = jQuery('div.o_video_run video', newc);
+								if(videos.length > 0) {
+									destroyRunningVideos(videos);
+								}
+								
 								if(civis) { // needed only for ie 6/7 bug where an empty div requires space on screen
 									newc.css('display','');//.style.display="";//reset?
 								} else {
@@ -1586,7 +1591,7 @@ function o_onXHRError(jqXHR, textStatus, errorThrown) {
 		var msg = o_info.oo_noresponse.replace("reload.html", window.document.location.href);
 		showMessageBox('error', o_info.oo_noresponse_title, msg, undefined);
 	} else if(window.console) {
-		console.log('Error status 2', textStatus, errorThrown, jqXHR.responseText);
+		console.log('Error status 2', jqXHR.status, textStatus, errorThrown, jqXHR.responseText);
 		console.log(jqXHR);
 	}
 }
@@ -1654,6 +1659,28 @@ function checkDrakes() {
 		if(jQuery(".o_drake").length == 0) {
 			destroyDrakes();
 		}
+	}
+}
+
+function destroyRunningVideos(videos) {
+	try {
+		if(videos !== "undefined" && videos != null && videos.length > 0) {
+			videos.each(function() {
+				try {
+					if(this.player) {
+						this.player.setMuted(true);
+						this.player.pause();
+						this.player.remove();
+					} else {
+						console.log('Not found');
+					} 
+				} catch(e) {
+					if(window.console) console.log(e);
+				}
+			});
+		}
+	} catch(e) {
+		if(window.console) console.log(e);
 	}
 }
 
