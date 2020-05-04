@@ -29,6 +29,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindowController;
+import org.olat.core.util.UserSession;
 
 /**
  * @author patrickb
@@ -50,8 +51,11 @@ public class BaseFullWebappPopupBrowserWindow extends BaseFullWebappController i
 			addCurrentCustomCSSToView(mainLayoutCtr.getCustomCSS());
 		}
 		if(contentCtrl != null) {
-			String path = ureq.getUserSession().getLastHistoryPoint().getBusinessPath();
-			setStartBusinessPath(path);
+			UserSession usess = ureq.getUserSession();
+			if(usess != null && usess.getLastHistoryPoint() != null) {
+				String path = usess.getLastHistoryPoint().getBusinessPath();
+				setStartBusinessPath(path);
+			}
 		}
 	}
 
