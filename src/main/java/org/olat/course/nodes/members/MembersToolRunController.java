@@ -78,7 +78,7 @@ private MembersDisplayRunController membersDisplayRunController;
 		boolean showCoaches = true;
 		boolean showParticipants = true;
 		boolean showWaiting = false;
-		boolean editable = false;
+		boolean editable = true;
 		membersDisplayRunController = new MembersDisplayRunController(ureq, wControl, getTranslator(), userCourseEnv,
 				null, owners, coaches, participants, waiting, curriculumInfos, canEmail, canDownload, deduplicateList,
 				showOwners, showCoaches, showParticipants, showWaiting, editable);
