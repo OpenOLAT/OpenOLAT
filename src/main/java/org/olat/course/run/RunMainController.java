@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -117,6 +118,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author Felix Jost
  */
 public class RunMainController extends MainLayoutBasicController implements GenericEventListener, Activateable2 {
+
+	private static final Logger log = Tracing.createLoggerFor(RunMainController.class);
 
 	public static final String REBUILD = "rebuild";
 	public static final String ORES_TYPE_COURSE_RUN = OresHelper.calculateTypeName(RunMainController.class, CourseModule.ORES_TYPE_COURSE);
@@ -825,11 +828,20 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		if (currentNodeController != null && !currentNodeController.isDisposed() && !navHandler.isListening(currentNodeController)) {
 			currentNodeController.dispose();
 		}
-		currentNodeController = nclr.getRunController();
 		updateLastUsage(nclr.getCalledCourseNode());
-		Component nodeComp = currentNodeController.getInitialComponent();
-		contentP.setContent(nodeComp);
-		addToHistory(ureq, currentNodeController);
+		try {
+			currentNodeController = nclr.getRunController();
+			Component nodeComp = currentNodeController.getInitialComponent();
+			contentP.setContent(nodeComp);
+			addToHistory(ureq, currentNodeController);
+		} catch (Exception e) {
+			log.error("Error on course node clicked! repositoryEntry={}, node={}, selectedNode={}, subTreeListener={}"
+					, course.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getKey()
+					, nclr.getCalledCourseNode().getIdent()
+					, nclr.getSelectedNodeId()
+					, nclr.isHandledBySubTreeModelListener());
+			log.error("", e);
+		}
 		
 		// set glossary wrapper dirty after menu click to make it reload the glossary
 		// stuff properly when in AJAX mode
