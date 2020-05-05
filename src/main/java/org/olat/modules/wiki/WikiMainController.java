@@ -1201,7 +1201,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 
 	@Override
 	public Controller cloneController(UserRequest ureq, WindowControl wControl) {
-		return WikiManager.getInstance().createWikiMainController(ureq, wControl, ores, securityCallback, null, null);
+		return WikiManager.getInstance().createWikiMainController(ureq, wControl, ores, securityCallback, assessmentProvider, null);
 	}
 
 	private void doReleaseEditLock() {
