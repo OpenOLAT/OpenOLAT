@@ -482,7 +482,6 @@ $fa-css-prefix: "o_icon" !default;
 /* portfolio icons */
 .o_icon_pf_section_draft:before { content: $fa-var-eye-slash; color: $o-portfolio-entry-draft-color;}
 .o_icon_pf_section_progress:before { content: $fa-var-refresh; color: $o-portfolio-entry-draft-color;}
-.o_icon_pf_section_submitted:before { content: $fa-var-refresh; color: $o-portfolio-entry-published-color; }
 .o_icon_pf_section_closed:before { content: $fa-var-lock; color: $o-portfolio-entry-closed-color;}
 .o_icon_pf_binder:before { content: $fa-var-briefcase; }
 .o_icon_pf_entry:before { content: $fa-var-file; }

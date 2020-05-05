@@ -43,7 +43,6 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.model.GroupImpl;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Persistable;
-import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.Page;
@@ -184,7 +183,7 @@ public class SectionImpl implements Persistable, CreateInfo, Section {
 	@Override
 	@Transient
 	public SectionStatus getSectionStatus() {
-		return StringHelper.containsNonWhitespace(status) ? SectionStatus.valueOf(status) : null;
+		return SectionStatus.secureValueOf(status);
 	}
 	
 	public void setSectionStatus(SectionStatus sectionStatus) {

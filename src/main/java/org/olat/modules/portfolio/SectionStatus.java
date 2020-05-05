@@ -31,7 +31,6 @@ public enum SectionStatus {
 	
 	notStarted("o_icon_pf_section_draft", "status.not.started"),
 	inProgress("o_icon_pf_section_progress", "status.in.progress"),
-	submitted("o_icon_pf_section_submitted", "status.submitted"),
 	closed("o_icon_pf_section_closed", "status.closed");
 	
 	private final String cssClass;
@@ -48,6 +47,16 @@ public enum SectionStatus {
 	
 	public String i18nKey() {
 		return i18nKey;
+	}
+	
+	public static final SectionStatus secureValueOf(String val) {
+		if(val == null) return null;
+		for(SectionStatus value:values()) {
+			if(val.equals(value.name())) {
+				return value;
+			}
+		}
+		return null;
 	}
 
 	public static final boolean isValueOf(String val) {

@@ -328,7 +328,7 @@ public class SharedWithMeQueries {
 						binder.setNumOfOpenSections(binder.getNumOfOpenSections() + 1);
 					}
 
-					if(status == SectionStatus.inProgress || status == SectionStatus.submitted || status == SectionStatus.closed) {
+					if(status == SectionStatus.inProgress || status == SectionStatus.closed) {
 						if(binder.getSections() == null) {
 							binder.setSections(new ArrayList<>());
 						}
