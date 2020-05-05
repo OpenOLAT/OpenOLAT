@@ -206,7 +206,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		zoomColumn.setExportable(false);
 		zoomColumn.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(zoomColumn);
-		if(secCallback.canEditCurriculumElements()) {
+		if(secCallback.canEditCurriculumElements() || (!managed && secCallback.canManagerCurriculumElementsUsers())) {
 			DefaultFlexiColumnModel toolsColumn = new DefaultFlexiColumnModel(ElementCols.tools);
 			toolsColumn.setExportable(false);
 			toolsColumn.setAlwaysVisible(true);
@@ -554,9 +554,13 @@ public class CurriculumComposerController extends FormBasicController implements
 	}
 	
 	private void doChooseMembers(UserRequest ureq) {
+		CurriculumElementRow focusedRow = tableModel.getFocusedCurriculumElementRow();
+		doChooseMembers(ureq, focusedRow);
+	}
+	
+	private void doChooseMembers(UserRequest ureq, CurriculumElementRow focusedRow) {
 		removeAsListenerAndDispose(importMembersWizard);
 
-		CurriculumElementRow focusedRow = tableModel.getFocusedCurriculumElementRow();
 		CurriculumElement focusedElement = focusedRow == null ? null : focusedRow.getCurriculumElement();
 		ImportMembersContext membersContext= ImportMembersContext.valueOf(curriculum, focusedElement, overrideManaged);
 		Step start = new ImportMember_1b_ChooseMemberStep(ureq, membersContext);
@@ -572,9 +576,13 @@ public class CurriculumComposerController extends FormBasicController implements
 	}
 	
 	private void doImportMembers(UserRequest ureq) {
-		removeAsListenerAndDispose(importMembersWizard);
-
 		CurriculumElementRow focusedRow = tableModel.getFocusedCurriculumElementRow();
+		doImportMembers(ureq, focusedRow);
+	}
+	
+	private void doImportMembers(UserRequest ureq, CurriculumElementRow focusedRow) {
+		removeAsListenerAndDispose(importMembersWizard);
+		
 		CurriculumElement focusedElement = focusedRow == null ? null : focusedRow.getCurriculumElement();
 		ImportMembersContext membersContext= ImportMembersContext.valueOf(curriculum, focusedElement, overrideManaged);
 		Step start = new ImportMember_1a_LoginListStep(ureq, membersContext);
@@ -699,6 +707,8 @@ public class CurriculumComposerController extends FormBasicController implements
 		private Link moveLink;
 		private Link copyLink;
 		private Link deleteLink;
+		private Link addMemberLink;
+		private Link importMemberLink;
 		
 		private CurriculumElementRow row;
 		
@@ -713,17 +723,27 @@ public class CurriculumComposerController extends FormBasicController implements
 			if(secCallback.canEditCurriculumElement(element)) {
 				editLink = addLink("edit", "o_icon_edit", links);
 				if(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.move)) {
-						moveLink = addLink("move.element", "o_icon_move", links);
+					moveLink = addLink("move.element", "o_icon_move", links);
 				}
 				if(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.addChildren)) {
-						newLink = addLink("add.element.under", "o_icon_levels", links);
+					newLink = addLink("add.element.under", "o_icon_levels", links);
 				}
 				copyLink = addLink("copy.element", "o_icon_copy", links);
-				if(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.delete)) {
-					links.add("-");
-					deleteLink = addLink("delete", "o_icon_delete_item", links);
-				}
 			}
+
+			if(!managed && secCallback.canManagerCurriculumElementUsers(element)) {
+				if(!links.isEmpty()) {
+					links.add("-");
+				}
+				addMemberLink = addLink("add.member", "o_icon_add_member", links);
+				importMemberLink = addLink("import.member", "o_icon_import", links);
+			}
+			
+			if(secCallback.canEditCurriculumElement(element) && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.delete)) {
+				links.add("-");
+				deleteLink = addLink("delete", "o_icon_delete_item", links);
+			}
+
 			mainVC.contextPut("links", links);
 			
 			putInitialPanel(mainVC);
@@ -759,6 +779,12 @@ public class CurriculumComposerController extends FormBasicController implements
 			} else if(copyLink == source) {
 				close();
 				doCopyCurriculumElement(ureq, row);
+			} else if(addMemberLink == source) {
+				close();
+				doChooseMembers(ureq, row);
+			} else if(importMemberLink == source) {
+				close();
+				doImportMembers(ureq, row);
 			}
 		}
 		
