@@ -835,11 +835,12 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			contentP.setContent(nodeComp);
 			addToHistory(ureq, currentNodeController);
 		} catch (Exception e) {
-			log.error("Error on course node clicked! repositoryEntry={}, node={}, selectedNode={}, subTreeListener={}"
+			log.error("Error on course node clicked! repositoryEntry={}, node={}, selectedNode={}, subTreeListener={}, identity={}"
 					, course.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getKey()
 					, nclr.getCalledCourseNode().getIdent()
 					, nclr.getSelectedNodeId()
-					, nclr.isHandledBySubTreeModelListener());
+					, nclr.isHandledBySubTreeModelListener()
+					, getIdentity());
 			log.error("", e);
 		}
 		
