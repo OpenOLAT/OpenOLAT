@@ -61,13 +61,20 @@ public class CreateCourseRepositoryEntryController extends CreateRepositoryEntry
 	@Override
 	protected void initAdditionalFormElements(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		KeyValues nodeAccessKV = new KeyValues();
+		String helpText = "";
 		for (NodeAccessProviderIdentifier identifier : nodeAccessService.getNodeAccessProviderIdentifer()) {
-			nodeAccessKV.add(KeyValues.entry(identifier.getType(), identifier.getDisplayName(getLocale())));
+			String title = identifier.getDisplayName(getLocale());
+			nodeAccessKV.add(KeyValues.entry(identifier.getType(), title));
+			helpText += "<strong>" + title + "</strong><br />" + identifier.getToolTipHelpText(getLocale()) + "<br /><br />";
 		}
-		nodeAccessEl = uifactory.addDropdownSingleselect("cif.node.access", "cif.node.access", formLayout,
+		nodeAccessEl = uifactory.addRadiosVertical("cif.node.access", "cif.node.access", formLayout,
 				nodeAccessKV.keys(), nodeAccessKV.values());
+		
 		nodeAccessEl.select(CourseConfig.NODE_ACCESS_TYPE_DEFAULT, true);
 		nodeAccessEl.addActionListener(FormEvent.ONCHANGE);
+		
+		nodeAccessEl.setHelpText(helpText);
+		nodeAccessEl.setHelpUrlForManualPage("Learning path course");
 	}
 
 	private void updateUI() {

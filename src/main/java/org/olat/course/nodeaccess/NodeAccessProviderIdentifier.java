@@ -28,7 +28,21 @@ import java.util.Locale;
  *
  */
 public interface NodeAccessProviderIdentifier extends NodeAccessType {
-	
+
+	/**
+	 * The localized node access type name
+	 * @param locale
+	 * @return
+	 */
 	public String getDisplayName(Locale locale);
+
+	/**
+	 * A localized help text that describes the main features of this access type
+	 * for a tooltip help
+	 * 
+	 * @param locale
+	 * @return
+	 */
+	public String getToolTipHelpText(Locale locale);
 
 }

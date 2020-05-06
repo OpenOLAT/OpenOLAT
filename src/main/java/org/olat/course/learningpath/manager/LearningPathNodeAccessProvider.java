@@ -43,6 +43,7 @@ import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
 /**
@@ -52,6 +53,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
+@Order(1)
 public class LearningPathNodeAccessProvider implements NodeAccessProvider {
 
 	public static final String TYPE = "learningpath";
@@ -74,6 +76,12 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider {
 	public String getDisplayName(Locale locale) {
 		Translator translator = Util.createPackageTranslator(LearningPathNodeConfigController.class, locale);
 		return translator.translate("access.provider.name");
+	}
+	
+	@Override
+	public String getToolTipHelpText(Locale locale) {
+		Translator translator = Util.createPackageTranslator(LearningPathNodeConfigController.class, locale);
+		return translator.translate("access.provider.toolTip");
 	}
 
 	@Override
