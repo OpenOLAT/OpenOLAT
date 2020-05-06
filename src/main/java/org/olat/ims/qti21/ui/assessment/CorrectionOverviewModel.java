@@ -28,8 +28,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -57,6 +59,8 @@ import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
  */
 public class CorrectionOverviewModel {
 	
+	private static final Logger log = Tracing.createLoggerFor(CorrectionOverviewModel.class);
+	
 	private CourseEnvironment courseEnv;
 	
 	private final RepositoryEntry testEntry;
@@ -66,6 +70,7 @@ public class CorrectionOverviewModel {
 	private final ManifestBuilder manifestBuilder;
 	private final ResolvedAssessmentTest resolvedAssessmentTest;
 	private final Map<Identity, TestSessionState> testSessionStates;
+	private final Set<Identity> identityWithErrors = new HashSet<>();
 	private final Map<String,Boolean> manualCorrections = new ConcurrentHashMap<>();
 
 	private Map<Identity,AssessmentTestSession> lastSessions;
@@ -140,6 +145,14 @@ public class CorrectionOverviewModel {
 		return assessedIdentities;
 	}
 	
+	public boolean hasErrors() {
+		return !identityWithErrors.isEmpty();
+	}
+	
+	public List<Identity> getIdentityWithErrors() {
+		return new ArrayList<>(identityWithErrors);
+	}
+	
 	public int getNumberOfAssessedIdentities() {
 		return assessedIdentities == null ? 0 : assessedIdentities.size();
 	}
@@ -201,9 +214,14 @@ public class CorrectionOverviewModel {
 	private Map<Identity, TestSessionState> getTestSessionStates(Map<Identity,AssessmentTestSession> sessions) {
 		Map<Identity, TestSessionState> identityToStates = new HashMap<>();
 		for(Map.Entry<Identity, AssessmentTestSession> entry:sessions.entrySet()) {
-			TestSessionState sessionState = qtiService.loadTestSessionState(entry.getValue());
-			if(sessionState != null) {
-				identityToStates.put(entry.getKey(), sessionState);
+			try {
+				TestSessionState sessionState = qtiService.loadTestSessionState(entry.getValue());
+				if(sessionState != null) {
+					identityToStates.put(entry.getKey(), sessionState);
+				}
+			} catch (Exception e) {
+				log.error("Cannot read test results of: " + entry.getKey(), e);
+				identityWithErrors.add(entry.getKey());
 			}
 		}
 		return identityToStates;

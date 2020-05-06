@@ -85,6 +85,7 @@ import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.QTI21AssessmentTestSessionTableModel.TSCols;
 import org.olat.ims.qti21.ui.assessment.CorrectionIdentityAssessmentItemListController;
 import org.olat.ims.qti21.ui.assessment.CorrectionOverviewModel;
+import org.olat.ims.qti21.ui.components.AssessmentTestSessionDetailsNumberRenderer;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
@@ -221,9 +222,9 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.terminationTime));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.lastModified));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.duration, new TextFlexiCellRenderer(EscapeMode.none)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.numOfItemSessions, new TextFlexiCellRenderer(EscapeMode.none)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.responded, new TextFlexiCellRenderer(EscapeMode.none)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.corrected, new TextFlexiCellRenderer(EscapeMode.none)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.numOfItemSessions, new AssessmentTestSessionDetailsNumberRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.responded, new AssessmentTestSessionDetailsNumberRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.corrected, new AssessmentTestSessionDetailsNumberRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.score, new TextFlexiCellRenderer(EscapeMode.none)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.manualScore, new TextFlexiCellRenderer(EscapeMode.none)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.finalScore, new TextFlexiCellRenderer(EscapeMode.none)));
@@ -267,35 +268,8 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		List<AssessmentTestSessionStatistics> sessionsStatistics = qtiService.getAssessmentTestSessionsStatistics(entry, subIdent, assessedIdentity);
 		List<QTI21AssessmentTestSessionDetails> infos = new ArrayList<>();
 		for(AssessmentTestSessionStatistics sessionStatistics:sessionsStatistics) {
-			AssessmentTestSession testSession = sessionStatistics.getTestSession();
-			TestSessionState testSessionState = qtiService.loadTestSessionState(testSession);
-			TestPlan testPlan = testSessionState.getTestPlan();
-			List<TestPlanNode> nodes = testPlan.getTestPlanNodeList();
-			
-			int responded = 0;
-			int numOfItems = 0;
-			for(TestPlanNode node:nodes) {
-				TestNodeType testNodeType = node.getTestNodeType();
-				ItemSessionState itemSessionState = testSessionState.getItemSessionStates().get(node.getKey());
-
-				TestPlanNodeKey testPlanNodeKey = node.getKey();
-				if(testPlanNodeKey != null && testPlanNodeKey.getIdentifier() != null
-						&& testNodeType == TestNodeType.ASSESSMENT_ITEM_REF) {
-					numOfItems++;
-					if(itemSessionState.isResponded()) {
-						responded++;
-					}
-				}
-			}
-			QTI21AssessmentTestSessionDetails row = new QTI21AssessmentTestSessionDetails(testSession,
-					numOfItems, responded, sessionStatistics.getNumOfCorrectedItems());
-			
-			FormLink tools = uifactory.addFormLink("tools_" + (++count), "tools", null, flc, Link.LINK);
-			row.setToolsLink(tools);
-			tools.setUserObject(row);
-			infos.add(row);
+			infos.add(forgeDetailsRow(sessionStatistics));
 		}
-		
 		
 		Collections.sort(infos, new AssessmentTestSessionDetailsComparator());
 		tableModel.setObjects(infos);
@@ -305,6 +279,42 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		if(resetButton != null) {
 			resetButton.setVisible(!sessionsStatistics.isEmpty());
 		}
+	}
+	
+	private QTI21AssessmentTestSessionDetails forgeDetailsRow(AssessmentTestSessionStatistics sessionStatistics) {
+		AssessmentTestSession testSession = sessionStatistics.getTestSession();
+		
+		int responded = 0;
+		int numOfItems = 0;
+		boolean error = false;
+		try {
+			TestSessionState testSessionState = qtiService.loadTestSessionState(testSession);
+			TestPlan testPlan = testSessionState.getTestPlan();
+			List<TestPlanNode> nodes = testPlan.getTestPlanNodeList();
+			for(TestPlanNode node:nodes) {
+				TestNodeType testNodeType = node.getTestNodeType();
+				ItemSessionState itemSessionState = testSessionState.getItemSessionStates().get(node.getKey());
+	
+				TestPlanNodeKey testPlanNodeKey = node.getKey();
+				if(testPlanNodeKey != null && testPlanNodeKey.getIdentifier() != null
+						&& testNodeType == TestNodeType.ASSESSMENT_ITEM_REF) {
+					numOfItems++;
+					if(itemSessionState.isResponded()) {
+						responded++;
+					}
+				}
+			}
+		} catch(Exception e) {
+			logError("Cannot read test results", e);
+			error = true;
+		}
+
+		QTI21AssessmentTestSessionDetails row = new QTI21AssessmentTestSessionDetails(testSession,
+				numOfItems, responded, sessionStatistics.getNumOfCorrectedItems(), error);
+		FormLink tools = uifactory.addFormLink("tools_" + (++count), "tools", null, flc, Link.LINK);
+		row.setToolsLink(tools);
+		tools.setUserObject(row);
+		return row;
 	}
 
 	@Override
@@ -413,17 +423,24 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
 		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
 		ManifestBuilder manifestBuilder = ManifestBuilder.read(new File(unzippedDirRoot, "imsmanifest.xml"));
-		TestSessionState testSessionState = qtiService.loadTestSessionState(session);
-		// use mutable maps to allow updates
-		Map<Identity,AssessmentTestSession> lastSessions = new HashMap<>();
-		lastSessions.put(assessedIdentity, session);
-		Map<Identity, TestSessionState> testSessionStates = new HashMap<>();
-		testSessionStates.put(assessedIdentity, testSessionState);
-		CorrectionOverviewModel model = new CorrectionOverviewModel(entry, courseNode, testEntry,
-				resolvedAssessmentTest, manifestBuilder, lastSessions, testSessionStates);
-		correctionCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel, model, assessedIdentity);
-		listenTo(correctionCtrl);
-		stackPanel.pushController(translate("correction"), correctionCtrl);
+		
+		try {
+			
+			TestSessionState testSessionState = qtiService.loadTestSessionState(session);
+			// use mutable maps to allow updates
+			Map<Identity,AssessmentTestSession> lastSessions = new HashMap<>();
+			lastSessions.put(assessedIdentity, session);
+			Map<Identity, TestSessionState> testSessionStates = new HashMap<>();
+			testSessionStates.put(assessedIdentity, testSessionState);
+			CorrectionOverviewModel model = new CorrectionOverviewModel(entry, courseNode, testEntry,
+					resolvedAssessmentTest, manifestBuilder, lastSessions, testSessionStates);
+			correctionCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel, model, assessedIdentity);
+			listenTo(correctionCtrl);
+			stackPanel.pushController(translate("correction"), correctionCtrl);
+		} catch(Exception e) {
+			logError("Cannot red results", e);
+			showError("error.assessment.test.session");
+		}
 	}
 	
 	private void doUpdateCourseNode(AssessmentTestSession session, AssessmentTest assessmentTest, AssessmentEntryStatus entryStatus) {

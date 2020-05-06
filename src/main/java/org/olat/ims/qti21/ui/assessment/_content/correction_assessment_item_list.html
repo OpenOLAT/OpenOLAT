@@ -1,3 +1,6 @@
+#if($r.isNotEmpty($errorMsg))
+	<div class="o_error" role="alert">$r.xssScan($errorMsg)</div>
+#end
 $r.render("table")
 <div class="o_button_group">
 	$r.render("save.tests")

@@ -30,6 +30,7 @@ import org.olat.ims.qti21.AssessmentTestSession;
  */
 public class QTI21AssessmentTestSessionDetails {
 	
+	private final boolean error;
 	private final int numOfItems;
 	private final int numOfItemsResponded;
 	private final int numOfItemsCorrected;
@@ -38,7 +39,8 @@ public class QTI21AssessmentTestSessionDetails {
 	private FormLink toolsLink;
 	
 	public QTI21AssessmentTestSessionDetails(AssessmentTestSession testSession,
-			int numOfItems, int numOfItemsResponded, int numOfItemsCorrected) {
+			int numOfItems, int numOfItemsResponded, int numOfItemsCorrected, boolean error) {
+		this.error = error;
 		this.testSession = testSession;
 		this.numOfItems = numOfItems;
 		this.numOfItemsResponded = numOfItemsResponded;
@@ -59,6 +61,10 @@ public class QTI21AssessmentTestSessionDetails {
 	
 	public AssessmentTestSession getTestSession() {
 		return testSession;
+	}
+	
+	public boolean isError() {
+		return error;
 	}
 
 	public FormLink getToolsLink() {

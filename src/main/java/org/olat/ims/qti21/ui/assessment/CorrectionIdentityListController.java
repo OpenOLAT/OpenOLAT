@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -139,6 +140,11 @@ public class CorrectionIdentityListController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(model.hasErrors() && formLayout instanceof FormLayoutContainer) {
+			String errorMsg = getErrorMessage();
+			((FormLayoutContainer)formLayout).contextPut("errorMsg", errorMsg);
+		}
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if(anonymous) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.user, "select"));
@@ -174,6 +180,16 @@ public class CorrectionIdentityListController extends FormBasicController {
 		tableEl.setSelectAllEnable(true);
 		
 		saveTestsButton = uifactory.addFormLink("save.tests", formLayout, Link.BUTTON);
+	}
+	
+	public String getErrorMessage() {
+		StringBuilder sb = new StringBuilder(1024);
+		List<Identity> identities = model.getIdentityWithErrors();
+		for(Identity identity:identities) {
+			if(sb.length() > 0) sb.append(", ");
+			sb.append(userManager.getUserDisplayName(identity));
+		}
+		return translate("error.assessment.test.session.identities", new String[] { sb.toString() });
 	}
 	
 	public void reloadModel() {

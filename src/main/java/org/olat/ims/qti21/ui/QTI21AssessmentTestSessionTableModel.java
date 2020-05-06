@@ -75,15 +75,9 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 				return "<span class='o_ochre'>" + translator.translate("assessment.test.open") + "</span>";
 			}
 			case test: return session.getTestSession().getTestEntry().getDisplayname();
-			case numOfItemSessions: {
-				return session.getNumOfItems();
-			}
-			case responded: {
-				return session.getNumOfItemsResponded();
-			}
-			case corrected: {
-				return session.getNumOfItemsCorrected();
-			}
+			case numOfItemSessions: return session.getNumOfItems();
+			case responded: return session.getNumOfItemsResponded();
+			case corrected: return session.getNumOfItemsCorrected();
 			case score: {
 				if(session.getTestSession().getFinishTime() != null) {
 					return AssessmentHelper.getRoundedScore(session.getTestSession().getScore());
