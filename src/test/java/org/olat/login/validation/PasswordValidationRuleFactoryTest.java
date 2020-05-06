@@ -83,6 +83,7 @@ public class PasswordValidationRuleFactoryTest {
 		softly.assertThat(rule.validate("1234", iMock)).isFalse();
 		softly.assertThat(rule.validate("abc4", iMock)).isFalse();
 		softly.assertThat(rule.validate("abc$", iMock)).isFalse();
+		softly.assertThat(rule.validate("abc_", iMock)).isFalse();
 		softly.assertThat(rule.validate("abc.", iMock)).isFalse();
 		softly.assertThat(rule.validate("😀😀😀😀", iMock)).isFalse();
 		softly.assertThat(rule.validate("\\u0001\\u0001\\u0001", iMock)).isFalse();
@@ -105,6 +106,7 @@ public class PasswordValidationRuleFactoryTest {
 		softly.assertThat(rule.validate("ಮಣೆ", iMock)).isFalse();
 		softly.assertThat(rule.validate("1234", iMock)).isFalse();
 		softly.assertThat(rule.validate("ABC4", iMock)).isFalse();
+		softly.assertThat(rule.validate("ABC_", iMock)).isFalse();
 		softly.assertThat(rule.validate("ABC$", iMock)).isFalse();
 		softly.assertThat(rule.validate("ABC.", iMock)).isFalse();
 		softly.assertThat(rule.validate("abcd", iMock)).isFalse();
@@ -127,6 +129,7 @@ public class PasswordValidationRuleFactoryTest {
 		softly.assertThat(rule.validate("ಮಣೆ", iMock)).isFalse();
 		softly.assertThat(rule.validate("1234", iMock)).isFalse();
 		softly.assertThat(rule.validate("ABC4", iMock)).isFalse();
+		softly.assertThat(rule.validate("ABC_", iMock)).isFalse();
 		softly.assertThat(rule.validate("ABC$", iMock)).isFalse();
 		softly.assertThat(rule.validate("ABC.", iMock)).isFalse();
 		softly.assertThat(rule.validate("ABCD", iMock)).isFalse();
@@ -145,6 +148,7 @@ public class PasswordValidationRuleFactoryTest {
 		SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(rule.validate("123", iMock)).isFalse();
 		softly.assertThat(rule.validate("abc123", iMock)).isFalse();
+		softly.assertThat(rule.validate("ab_123", iMock)).isFalse();
 		softly.assertThat(rule.validate("😀😀😀😀", iMock)).isFalse();
 		softly.assertThat(rule.validate("1234", iMock)).isTrue();
 		softly.assertThat(rule.validate("abc1234", iMock)).isTrue();
@@ -164,6 +168,7 @@ public class PasswordValidationRuleFactoryTest {
 		softly.assertThat(rule.validate("äöü", iMock)).isFalse();
 		softly.assertThat(rule.validate("я́блоня", iMock)).isFalse();
 		softly.assertThat(rule.validate("a+.", iMock)).isTrue();
+		softly.assertThat(rule.validate("a__", iMock)).isTrue();
 		softly.assertThat(rule.validate("a+b£", iMock)).isTrue();
 		softly.assertThat(rule.validate("a+b£c", iMock)).isTrue();
 		softly.assertThat(rule.validate("!a+b£c", iMock)).isTrue();
@@ -190,6 +195,7 @@ public class PasswordValidationRuleFactoryTest {
 		softly.assertThat(rule.validate("4§", iMock)).isTrue();
 		softly.assertThat(rule.validate("a1/", iMock)).isTrue();
 		softly.assertThat(rule.validate("a+.", iMock)).isTrue();
+		softly.assertThat(rule.validate("a_2", iMock)).isTrue();
 		softly.assertThat(rule.validate("a+b£", iMock)).isTrue();
 		softly.assertThat(rule.validate("a1b£", iMock)).isTrue();
 		softly.assertThat(rule.validate("a+b£", iMock)).isTrue();
@@ -217,6 +223,7 @@ public class PasswordValidationRuleFactoryTest {
 		softly.assertThat(rule.validate("*", iMock)).isTrue();
 		softly.assertThat(rule.validate("1", iMock)).isTrue();
 		softly.assertThat(rule.validate("4§", iMock)).isTrue();
+		softly.assertThat(rule.validate("___", iMock)).isTrue();
 		softly.assertThat(rule.validate("😀😀😀😀", iMock)).isTrue();
 		softly.assertThat(rule.validate(" ", iMock)).isTrue();
 		softly.assertAll();
@@ -237,6 +244,7 @@ public class PasswordValidationRuleFactoryTest {
 		softly.assertThat(rule.validate("4§", iMock)).isTrue();
 		softly.assertThat(rule.validate("äü", iMock)).isTrue();
 		softly.assertThat(rule.validate("abc", iMock)).isTrue();
+		softly.assertThat(rule.validate("___", iMock)).isTrue();
 		softly.assertThat(rule.validate("😀😀😀😀", iMock)).isTrue();
 		softly.assertThat(rule.validate(" ", iMock)).isTrue();
 		softly.assertAll();
@@ -257,6 +265,7 @@ public class PasswordValidationRuleFactoryTest {
 		softly.assertThat(rule.validate("4§", iMock)).isTrue();
 		softly.assertThat(rule.validate("ÖÜ", iMock)).isTrue();
 		softly.assertThat(rule.validate("ABC", iMock)).isTrue();
+		softly.assertThat(rule.validate("___", iMock)).isTrue();
 		softly.assertThat(rule.validate("😀😀😀😀", iMock)).isTrue();
 		softly.assertThat(rule.validate(" ", iMock)).isTrue();
 		softly.assertAll();
@@ -275,6 +284,7 @@ public class PasswordValidationRuleFactoryTest {
 		softly.assertThat(rule.validate("äöü", iMock)).isTrue();
 		softly.assertThat(rule.validate("я́блоня", iMock)).isTrue();
 		softly.assertThat(rule.validate("*", iMock)).isTrue();
+		softly.assertThat(rule.validate("_", iMock)).isTrue();
 		softly.assertThat(rule.validate("😀😀😀😀", iMock)).isTrue();
 		softly.assertThat(rule.validate(" ", iMock)).isTrue();
 		softly.assertAll();
@@ -287,6 +297,7 @@ public class PasswordValidationRuleFactoryTest {
 		SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(rule.validate("*", iMock)).isFalse();
 		softly.assertThat(rule.validate("4%", iMock)).isFalse();
+		softly.assertThat(rule.validate("a_a", iMock)).isFalse();
 		softly.assertThat(rule.validate("😀😀😀😀", iMock)).isFalse();
 		softly.assertThat(rule.validate("a v", iMock)).isFalse();
 		softly.assertThat(rule.validate("\\u0001cd", iMock)).isFalse();
@@ -310,6 +321,7 @@ public class PasswordValidationRuleFactoryTest {
 		softly.assertThat(rule.validate("4%", iMock)).isFalse();
 		softly.assertThat(rule.validate("😀😀😀😀", iMock)).isFalse();
 		softly.assertThat(rule.validate("a v", iMock)).isFalse();
+		softly.assertThat(rule.validate("a_v", iMock)).isFalse();
 		softly.assertThat(rule.validate("\\u0001cd", iMock)).isFalse();
 		softly.assertThat(rule.validate("1", iMock)).isFalse();
 		softly.assertThat(rule.validate("1C", iMock)).isFalse();
@@ -373,8 +385,6 @@ public class PasswordValidationRuleFactoryTest {
 		softly.assertThat(rule.validate("superman", identity)).isTrue();
 		softly.assertAll();
 	}
-
-	
 	
 	private static class TestableValidationRuleFactory extends PasswordValidationRuleFactory {
 
