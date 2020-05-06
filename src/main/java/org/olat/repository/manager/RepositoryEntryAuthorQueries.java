@@ -135,7 +135,7 @@ public class RepositoryEntryAuthorQueries {
 		return new RepositoryEntryAuthorViewResults(views, maxResults <= 0);
 	}
 
-	protected <T> TypedQuery<T> createViewQuery(SearchAuthorRepositoryEntryViewParams params, Class<T> type) {
+	private <T> TypedQuery<T> createViewQuery(SearchAuthorRepositoryEntryViewParams params, Class<T> type) {
 
 		IdentityRef identity = params.getIdentity();
 		List<String> resourceTypes = params.getResourceTypes();

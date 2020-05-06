@@ -463,7 +463,6 @@ public class BinderSecurityCallbackFactory {
 				return owner && (deliveryOptions == null || deliveryOptions.isAllowNewEntries());
 			}
 			return owner && !SectionStatus.isClosed(section)
-					&& section.getSectionStatus() != SectionStatus.submitted
 					&& (deliveryOptions == null || deliveryOptions.isAllowNewEntries());
 		}
 		

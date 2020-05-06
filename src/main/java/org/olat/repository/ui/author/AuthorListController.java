@@ -99,6 +99,7 @@ import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.ui.UnsupportedCourseNodesController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.login.LoginModule;
+import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.modules.quality.QualityDataCollectionLight;
@@ -188,6 +189,8 @@ public class AuthorListController extends FormBasicController implements Activat
 	private MarkManager markManager;
 	@Autowired
 	private LoginModule loginModule;
+	@Autowired
+	private LectureModule lectureModule;
 	@Autowired
 	protected RepositoryModule repositoryModule;
 	@Autowired
@@ -353,9 +356,11 @@ public class AuthorListController extends FormBasicController implements Activat
 				true, OrderBy.lastUsage.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.references.i18nKey(), Cols.references.ordinal(),
 				true, OrderBy.references.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lectureInfos.i18nKey(), Cols.lectureInfos.ordinal(),
-				true, OrderBy.lectureEnabled.name(), FlexiColumnModel.ALIGNMENT_LEFT, new LectureInfosRenderer(getTranslator())));
 		
+		if(lectureModule.isEnabled()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lectureInfos.i18nKey(), Cols.lectureInfos.ordinal(),
+				true, OrderBy.lectureEnabled.name(), FlexiColumnModel.ALIGNMENT_LEFT, new LectureInfosRenderer(getTranslator())));
+		}
 		if (licenseModule.isEnabled(licenseHandler)) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, false, Cols.license.i18nKey(), null, Cols.license.ordinal(), "license", false, null, FlexiColumnModel.ALIGNMENT_LEFT,
 					 new StaticFlexiCellRenderer("license", new LicenseRenderer(getLocale()))));

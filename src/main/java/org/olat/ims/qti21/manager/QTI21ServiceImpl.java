@@ -28,6 +28,7 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.math.BigDecimal;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -106,6 +107,7 @@ import org.olat.ims.qti21.model.audit.CandidateTestEventType;
 import org.olat.ims.qti21.model.jpa.AssessmentTestSessionStatistics;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
+import org.olat.ims.qti21.ui.event.DeleteAssessmentTestSessionEvent;
 import org.olat.ims.qti21.ui.event.RetrieveAssessmentTestSessionEvent;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
@@ -447,8 +449,9 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 
 	@Override
 	public boolean deleteAssessmentTestSession(List<Identity> identities, RepositoryEntryRef testEntry, RepositoryEntryRef entry, String subIdent) {
+		log.info(Tracing.M_AUDIT, "Delete assessment sessions for test: {} in course: {} element: {}", testEntry, entry, subIdent);
+
 		boolean gradingEnabled = gradingService.isGradingEnabled(testEntry, null);
-		
 		Set<AssessmentEntry> entries = new HashSet<>();
 		for(Identity identity:identities) {
 			List<AssessmentTestSession> sessions = testSessionDao.getTestSessions(testEntry, entry, subIdent, identity);
@@ -459,6 +462,10 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 				File fileStorage = testSessionDao.getSessionStorage(session);
 				testSessionDao.deleteTestSession(session);
 				FileUtils.deleteDirsAndFiles(fileStorage, true, true);
+				
+				OLATResourceable sessionOres = OresHelper.createOLATResourceableInstance(AssessmentTestSession.class, session.getKey());
+				coordinatorManager.getCoordinator().getEventBus()
+					.fireEventToListenersOf(new DeleteAssessmentTestSessionEvent(session.getKey()), sessionOres);
 			}
 		}
 		
@@ -676,7 +683,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 
 	private Document loadFilteredStateDocument(File sessionFile) {
     		try(InputStream in = new FileInputStream(sessionFile)) {
-    			String xmlContent = IOUtils.toString(in, "UTF-8");
+    			String xmlContent = IOUtils.toString(in, StandardCharsets.UTF_8);
     			String filteredContent = FilterFactory.getXMLValidEntityFilter().filter(xmlContent);
 	        DocumentBuilder documentBuilder = XmlFactories.newDocumentBuilder();
             return documentBuilder.parse(new InputSource(new StringReader(filteredContent)));

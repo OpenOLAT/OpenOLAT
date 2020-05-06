@@ -69,7 +69,9 @@
 	$r.render("assessedIdentityInfos")
 #end
 
-#if($r.isNotNull($testSessionNotFound) && $testSessionNotFound)
+#if($r.isTrue($testSessionError))
+<div class="o_error" role="alert">$r.translate("error.assessment.test.session")</div>
+#elseif($r.isTrue($testSessionNotFound))
 <div class="o_warning">$r.translate("assessment.test.session.reseted")</div>
 #end
 

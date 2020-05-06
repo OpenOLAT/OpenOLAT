@@ -115,16 +115,17 @@ public class AssessmentResultController extends FormBasicController {
 	private String signatureMapperUri;
 	private final String submissionMapperUri;
 	private final QTI21AssessmentResultsOptions options;
+	private boolean testSessionError = false;
 	
 	private final boolean anonym;
 	private final boolean withPrint;
 	private final boolean withTitle;
 	private final boolean toggleSolution;
 	private final Identity assessedIdentity;
-	private final TestSessionState testSessionState;
-	private final AssessmentResult assessmentResult;
-	private final AssessmentTestSession candidateSession;
-	private final CandidateSessionContext candidateSessionContext;
+	private TestSessionState testSessionState;
+	private AssessmentResult assessmentResult;
+	private AssessmentTestSession candidateSession;
+	private CandidateSessionContext candidateSessionContext;
 
 	private final File fUnzippedDirRoot;
 	private final URI assessmentObjectUri;
@@ -193,12 +194,17 @@ public class AssessmentResultController extends FormBasicController {
 			}
 		}
 		
-		testSessionState = qtiService.loadTestSessionState(candidateSession);
-		assessmentResult = qtiService.getAssessmentResult(candidateSession);
-		candidateSessionContext = new TerminatedStaticCandidateSessionContext(candidateSession);
-		List<AssessmentItemSession> itemSessions = qtiService.getAssessmentItemSessions(candidateSession);
-		for(AssessmentItemSession itemSession:itemSessions) {
-			identifierToItemSession.put(itemSession.getAssessmentItemIdentifier(), itemSession);
+		try {
+			testSessionState = qtiService.loadTestSessionState(candidateSession);
+			assessmentResult = qtiService.getAssessmentResult(candidateSession);
+			candidateSessionContext = new TerminatedStaticCandidateSessionContext(candidateSession);
+			List<AssessmentItemSession> itemSessions = qtiService.getAssessmentItemSessions(candidateSession);
+			for(AssessmentItemSession itemSession:itemSessions) {
+				identifierToItemSession.put(itemSession.getAssessmentItemIdentifier(), itemSession);
+			}
+		} catch(Exception e) {
+			logError("Cannot show results", e);
+			testSessionError = true;
 		}
 
 		initForm(ureq);
@@ -214,8 +220,7 @@ public class AssessmentResultController extends FormBasicController {
 			} else {
 				layoutCont.contextPut("userDisplayName", Boolean.FALSE);
 			}
-			
-			
+
 			if(testSessionState == null || assessmentResult == null) {
 				// An author has deleted the test session before the user end it.
 				// It can happen with time limited tests.
@@ -223,6 +228,9 @@ public class AssessmentResultController extends FormBasicController {
 				layoutCont.contextPut("testResults", results);
 				layoutCont.contextPut("itemResults", new ArrayList<>());
 				layoutCont.contextPut("testSessionNotFound", Boolean.TRUE);
+				if(testSessionError) {
+					layoutCont.contextPut("testSessionError", Boolean.TRUE);
+				}
 			} else {
 				
 				if (candidateSession != null) {
