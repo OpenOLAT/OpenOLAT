@@ -176,7 +176,7 @@ public class QTI21ResetDataController extends FormBasicController {
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		acknowledgeEl.clearError();
 		if(!acknowledgeEl.isAtLeastSelected(1)) {
@@ -184,7 +184,7 @@ public class QTI21ResetDataController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

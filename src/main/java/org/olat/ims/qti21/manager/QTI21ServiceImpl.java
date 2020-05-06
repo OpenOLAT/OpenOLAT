@@ -28,6 +28,7 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.math.BigDecimal;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -50,6 +51,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
@@ -59,7 +61,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Persistable;
 import org.olat.core.id.User;
 import org.olat.core.logging.OLATRuntimeException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
@@ -104,6 +105,7 @@ import org.olat.ims.qti21.model.audit.CandidateEvent;
 import org.olat.ims.qti21.model.audit.CandidateItemEventType;
 import org.olat.ims.qti21.model.audit.CandidateTestEventType;
 import org.olat.ims.qti21.model.jpa.AssessmentTestSessionStatistics;
+import org.olat.ims.qti21.ui.event.DeleteAssessmentTestSessionEvent;
 import org.olat.ims.qti21.ui.event.RetrieveAssessmentTestSessionEvent;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
@@ -438,6 +440,8 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 
 	@Override
 	public boolean deleteAssessmentTestSession(List<Identity> identities, RepositoryEntryRef testEntry, RepositoryEntryRef entry, String subIdent) {
+		log.info(Tracing.M_AUDIT, "Delete assessment sessions for test: {} in course: {} element: {}", testEntry, entry, subIdent);
+		
 		Set<AssessmentEntry> entries = new HashSet<>();
 		for(Identity identity:identities) {
 			List<AssessmentTestSession> sessions = testSessionDao.getTestSessions(testEntry, entry, subIdent, identity);
@@ -448,6 +452,10 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 				File fileStorage = testSessionDao.getSessionStorage(session);
 				testSessionDao.deleteTestSession(session);
 				FileUtils.deleteDirsAndFiles(fileStorage, true, true);
+				
+				OLATResourceable sessionOres = OresHelper.createOLATResourceableInstance(AssessmentTestSession.class, session.getKey());
+				coordinatorManager.getCoordinator().getEventBus()
+					.fireEventToListenersOf(new DeleteAssessmentTestSessionEvent(session.getKey()), sessionOres);
 			}
 		}
 		
@@ -655,7 +663,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 
 	private Document loadFilteredStateDocument(File sessionFile) {
     		try(InputStream in = new FileInputStream(sessionFile)) {
-    			String xmlContent = IOUtils.toString(in, "UTF-8");
+    			String xmlContent = IOUtils.toString(in, StandardCharsets.UTF_8);
     			String filteredContent = FilterFactory.getXMLValidEntityFilter().filter(xmlContent);
 	        DocumentBuilder documentBuilder = XmlFactories.newDocumentBuilder();
             return documentBuilder.parse(new InputSource(new StringReader(filteredContent)));
@@ -1233,7 +1241,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	
 	private void recordOutcomeVariable(AssessmentTestSession candidateSession, OutcomeVariable outcomeVariable, Map<Identifier,String> outcomes) {
 		if(outcomeVariable.getCardinality() == null) {
-			log.error("Error outcome variable without cardinlaity: " + outcomeVariable);
+			log.error("Error outcome variable without cardinlaity: {}", outcomeVariable);
 			return;
 		}
 		
@@ -1256,8 +1264,8 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 			
 			outcomes.put(identifier, stringifyQtiValue(computedValue));
 		} catch (Exception e) {
-			log.error("Error recording outcome variable: " + identifier, e);
-			log.error("Error recording outcome variable: " + outcomeVariable);
+			log.error("Error recording outcome variable: {}", identifier, e);
+			log.error("Error recording outcome variable: {}", outcomeVariable);
 		}
 	}
     

@@ -54,6 +54,10 @@
 	</div>
 	#end
 	
+	#if($r.isTrue($testSessionDeleted))
+		<div class="o_warning">$r.translate("warning.reset.assessmenttest.data")</div>
+	#end
+	
 	#if($r.visible("qtiResults"))
 		<div id="o_main_center">
 			<a id="o_content" aria-hidden="true"></a>

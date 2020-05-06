@@ -97,6 +97,7 @@ import org.olat.ims.qti21.ui.ResponseInput.StringInput;
 import org.olat.ims.qti21.ui.components.AssessmentTestFormItem;
 import org.olat.ims.qti21.ui.components.AssessmentTestTimerFormItem;
 import org.olat.ims.qti21.ui.components.AssessmentTreeFormItem;
+import org.olat.ims.qti21.ui.event.DeleteAssessmentTestSessionEvent;
 import org.olat.ims.qti21.ui.event.RestartEvent;
 import org.olat.ims.qti21.ui.event.RetrieveAssessmentTestSessionEvent;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -195,6 +196,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	 * Additional time in seconds
 	 */
 	private Integer extraTime;
+	private boolean sessionDeleted = false;
 	private final boolean showCloseResults;
 	private OutcomesListener outcomesListener;
 	private AssessmentSessionAuditLogger candidateAuditLogger;
@@ -459,13 +461,27 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	public void event(Event event) {
 		if(event instanceof RetrieveAssessmentTestSessionEvent) {
 			RetrieveAssessmentTestSessionEvent rats = (RetrieveAssessmentTestSessionEvent)event;
-			if(candidateSession != null && candidateSession.getKey().equals(rats.getAssessmentTestSessionKey())) {
-				candidateSession = qtiService.reloadAssessmentTestSession(candidateSession);
-				extraTime = candidateSession.getExtraTime();
-				if(extraTime != null) {
-					qtiWorksCtrl.extraTime();
-				}
+			processRetrieveAssessmentTestSessionEvent(rats);
+		} else if(event instanceof DeleteAssessmentTestSessionEvent) {
+			DeleteAssessmentTestSessionEvent dats = (DeleteAssessmentTestSessionEvent)event;
+			processDeleteAssessmentTestSessionEvent(dats);
+		}
+	}
+	
+	private void processRetrieveAssessmentTestSessionEvent(RetrieveAssessmentTestSessionEvent rats) {
+		if(candidateSession != null && candidateSession.getKey().equals(rats.getAssessmentTestSessionKey())) {
+			candidateSession = qtiService.reloadAssessmentTestSession(candidateSession);
+			extraTime = candidateSession.getExtraTime();
+			if(extraTime != null) {
+				qtiWorksCtrl.extraTime();
 			}
+		}
+	}
+	
+	private void processDeleteAssessmentTestSessionEvent(DeleteAssessmentTestSessionEvent dats) {
+		if(candidateSession != null && candidateSession.getKey().equals(dats.getAssessmentTestSessionKey())) {
+			candidateSession = qtiService.reloadAssessmentTestSession(candidateSession);
+			sessionDeleted = true;
 		}
 	}
 
@@ -606,6 +622,15 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		candidateSession = null;
 	}
 	
+	private boolean sessionReseted(UserRequest ureq) {
+		if(sessionDeleted) {
+			qtiWorksCtrl.markSessionAsDeleted();
+			doExitTest(ureq);
+			showWarning("warning.reset.assessmenttest.data");
+		}
+		return sessionDeleted;
+	}
+	
 	private boolean timeLimitBarrier(UserRequest ureq) {
 		Long assessmentTestMaxTimeLimits = getAssessmentTestMaxTimeLimit();
 		if(assessmentTestMaxTimeLimits != null) {
@@ -698,8 +723,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	}
 
 	private void processQTIEvent(UserRequest ureq, QTIWorksAssessmentTestEvent qe) {
-		if(timeLimitBarrier(ureq)) {
-			return;//
+		if(timeLimitBarrier(ureq) || sessionReseted(ureq)) {
+			return;
 		}
 		
 		currentRequestTimestamp = ureq.getRequestTimestamp();
@@ -1034,7 +1059,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
 		TestSessionState testSessionState = testSessionController.getTestSessionState();
 		TestPlanNodeKey currentItemKey = testSessionState.getCurrentItemKey();
-		if(currentItemKey == null) {
+		if(currentItemKey == null || sessionDeleted) {
 			return;//
 		}
 		
@@ -2073,7 +2098,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			} else if(restartTest == source) {
 				restartTest(ureq);
 				return;// test will be completely reloaded
-			} else if(!timeLimitBarrier(ureq)) {
+			} else if(!timeLimitBarrier(ureq) && !sessionReseted(ureq)) {
 				if(endTestPartButton == source) {
 					doEndTestPart(ureq);
 				} else if(closeTestButton == source) {
@@ -2237,6 +2262,10 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			closeResultsButton.setVisible(resultsVisible && showCloseResults);
 			updateQtiWorksStatus();
 			return resultsVisible;
+		}
+		
+		private void markSessionAsDeleted() {
+			flc.contextPut("testSessionDeleted", Boolean.TRUE);
 		}
 		
 		private void updateQtiWorksStatus() {
