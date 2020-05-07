@@ -622,7 +622,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			List<RepositoryEntryPermissionChangeEvent> changes = Collections.singletonList((RepositoryEntryPermissionChangeEvent)e);
 			repositoryManager.updateRepositoryEntryMemberships(getIdentity(), roles, repoEntry, changes, mailing);
 			
-			curriculumService.updateCurriculumElementMemberships(getIdentity(), roles, e.getCurriculumChanges());
+			curriculumService.updateCurriculumElementMemberships(getIdentity(), roles, e.getCurriculumChanges(), mailing);
 		}
 
 		businessGroupService.updateMemberships(getIdentity(), e.getGroupChanges(), mailing);
@@ -638,7 +638,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			List<RepositoryEntryPermissionChangeEvent> repoChanges = changes.generateRepositoryChanges(members);
 			repositoryManager.updateRepositoryEntryMemberships(getIdentity(), roles, repoEntry, repoChanges, mailing);
 
-			curriculumService.updateCurriculumElementMemberships(getIdentity(), roles, changes.getCurriculumChanges());
+			curriculumService.updateCurriculumElementMemberships(getIdentity(), roles, changes.getCurriculumChanges(), mailing);
 		}
 
 		//commit all changes to the group memberships

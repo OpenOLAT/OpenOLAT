@@ -365,7 +365,7 @@ public class CourseOverviewController extends FormBasicController  {
 			List<RepositoryEntryPermissionChangeEvent> changes = Collections.singletonList((RepositoryEntryPermissionChangeEvent)e);
 			repositoryManager.updateRepositoryEntryMemberships(getIdentity(), roles, re, changes, mailing);
 			
-			curriculumService.updateCurriculumElementMemberships(getIdentity(), roles, e.getCurriculumChanges());
+			curriculumService.updateCurriculumElementMemberships(getIdentity(), roles, e.getCurriculumChanges(), mailing);
 		}
 
 		businessGroupService.updateMemberships(getIdentity(), e.getGroupChanges(), mailing);

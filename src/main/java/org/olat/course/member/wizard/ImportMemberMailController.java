@@ -38,6 +38,9 @@ import org.olat.group.manager.BusinessGroupMailing.MailType;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
 import org.olat.group.ui.wizard.BGMailTemplateController;
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.ui.CurriculumMailing;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryMailing;
 
@@ -73,12 +76,20 @@ public class ImportMemberMailController extends StepFormBasicController {
 			mailTemplate = RepositoryMailing.getDefaultTemplate(defaultRepoType, repoEntry, getIdentity());
 		} else if(hasCourseRights(e)) {
 			mailTemplate = RepositoryMailing.createAddParticipantMailTemplate(repoEntry, getIdentity());
+		} else if(hasCurriculumRights(e)) {
+			CurriculumElement curriculumElement = e.getRootCurriculumElement();
+			Curriculum curriculum = curriculumElement.getCurriculum();
+			mailTemplate = CurriculumMailing.getDefaultMailTemplate(curriculum, curriculumElement, getIdentity());
 		} else {
 			mailTemplate = BusinessGroupMailing.getDefaultTemplate(MailType.addParticipant, null, getIdentity());
 		}
 		mailTemplateForm = new BGMailTemplateController(ureq, wControl, mailTemplate, false, true, false, mandatoryEmail, rootForm);
 		
 		initForm (ureq);
+	}
+	
+	private boolean hasCurriculumRights(MemberPermissionChangeEvent e) {
+		return e != null && e.getCurriculumChanges() != null && !e.getCurriculumChanges().isEmpty();
 	}
 	
 	private boolean hasCourseRights(MemberPermissionChangeEvent e) {

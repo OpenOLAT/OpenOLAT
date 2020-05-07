@@ -50,6 +50,7 @@ import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
@@ -86,6 +87,7 @@ import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
+import org.olat.modules.curriculum.ui.CurriculumMailing;
 import org.olat.modules.lecture.manager.LectureBlockToGroupDAO;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
@@ -595,7 +597,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 
 	@Override
 	public void updateCurriculumElementMemberships(Identity doer, Roles roles,
-			List<CurriculumElementMembershipChange> changes) {
+			List<CurriculumElementMembershipChange> changes, MailPackage mailing) {
 		
 		int count = 0;
 		for(CurriculumElementMembershipChange change:changes) {
@@ -605,6 +607,31 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			}
 		}
 		dbInstance.commitAndCloseSession();
+		
+		if(mailing != null && mailing.isSendEmail()) {
+			sendMembershipNotificationsEmail(doer, changes, mailing);
+		}
+	}
+	
+	private void sendMembershipNotificationsEmail(Identity doer, List<CurriculumElementMembershipChange> changes, MailPackage mailing) {
+		Map<Identity,CurriculumElementMembershipChange> additionsToNotifiy = new HashMap<>();
+		for(CurriculumElementMembershipChange change:changes) {
+			if(change.addRole()) {
+				if(!additionsToNotifiy.containsKey(change.getMember())) {
+					additionsToNotifiy.put(change.getMember(), change);
+				} else {
+					CurriculumElementMembershipChange currentChange = additionsToNotifiy.get(change.getMember());
+					if(change.numOfSegments() < currentChange.numOfSegments()) {
+						additionsToNotifiy.put(change.getMember(), change);
+					}
+				}
+			}
+		}
+		
+		for(CurriculumElementMembershipChange additionToNotifiy:additionsToNotifiy.values()) {
+			Curriculum curriculum = additionToNotifiy.getElement().getCurriculum();
+			CurriculumMailing.sendEmail(doer, additionToNotifiy.getMember(), curriculum, additionToNotifiy.getElement(), mailing);
+		}
 	}
 	
 	private void updateCurriculumElementMembership(CurriculumElementMembershipChange changes) {
@@ -652,6 +679,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			inheritanceMode = GroupMembershipInheritance.none;
 		}
 		addMember(element, member, role, inheritanceMode);
+		dbInstance.commit();
 	}
 	
 	public void addMember(CurriculumElement element, Identity member, CurriculumRoles role, GroupMembershipInheritance inheritanceMode) {

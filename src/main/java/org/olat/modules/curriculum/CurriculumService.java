@@ -28,6 +28,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
+import org.olat.core.util.mail.MailPackage;
 import org.olat.modules.curriculum.model.CurriculumCopySettings;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
@@ -374,7 +375,7 @@ public interface CurriculumService {
 	
 	public List<CurriculumElementMembership> getCurriculumElementMemberships(Collection<CurriculumElement> elements, Identity... identities);
 	
-	public void updateCurriculumElementMemberships(Identity doer, Roles roles, List<CurriculumElementMembershipChange> changes);
+	public void updateCurriculumElementMemberships(Identity doer, Roles roles, List<CurriculumElementMembershipChange> changes, MailPackage mailing);
 	
 	/**
 	 * Add a member with the specified role to the curriculum element. The

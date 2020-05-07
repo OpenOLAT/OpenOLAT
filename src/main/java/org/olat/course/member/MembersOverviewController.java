@@ -416,12 +416,12 @@ public class MembersOverviewController extends BasicController implements Activa
 		MailPackage mailing = new MailPackage(template, result, getWindowControl().getBusinessControl().getAsString(), template != null);
 		businessGroupService.updateMemberships(getIdentity(), allModifications, mailing);
 		
-		boolean detailedErrorOutput = roles.isAdministrator() || roles.isSystemAdmin();
-		MailHelper.printErrorsAndWarnings(result, getWindowControl(), detailedErrorOutput, getLocale());
-		
 		//commit all changes to the curriculum memberships
 		List<CurriculumElementMembershipChange> curriculumChanges = changes.generateCurriculumElementMembershipChange(members);
-		curriculumService.updateCurriculumElementMemberships(getIdentity(), roles, curriculumChanges);
+		curriculumService.updateCurriculumElementMemberships(getIdentity(), roles, curriculumChanges, mailing);
+		
+		boolean detailedErrorOutput = roles.isAdministrator() || roles.isSystemAdmin();
+		MailHelper.printErrorsAndWarnings(result, getWindowControl(), detailedErrorOutput, getLocale());
 		
 		switchToAllMembers(ureq);
 	}
