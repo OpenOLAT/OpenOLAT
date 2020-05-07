@@ -26,6 +26,7 @@ import java.util.List;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.model.BusinessGroupMembershipChange;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
 
@@ -127,4 +128,26 @@ public class MemberPermissionChangeEvent extends RepositoryEntryPermissionChange
 		}
 		return allModifications;
 	}
+	
+	/**
+	 * @return The first curriculum element with the shortest path.
+	 */
+	public CurriculumElement getRootCurriculumElement() {
+		if(curriculumChanges == null || curriculumChanges.isEmpty()) return null;
+
+		int numOfSegments = -1;
+		CurriculumElement root = null; 
+		
+		for(CurriculumElementMembershipChange change:curriculumChanges) {
+			int segments = change.numOfSegments();
+			if(root == null || segments < numOfSegments) {
+				root = change.getElement();
+				numOfSegments = segments;
+			}
+		}
+		
+		return root;
+	}
+	
+
 }

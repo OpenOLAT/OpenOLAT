@@ -21,6 +21,7 @@ package org.olat.modules.curriculum.model;
 
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumElement;
 
 /**
@@ -102,5 +103,26 @@ public class CurriculumElementMembershipChange extends Event {
 
 	public void setCoach(Boolean coach) {
 		this.coach = coach;
+	}
+	
+	public boolean addRole() {
+		return (getParticipant() != null && getParticipant().booleanValue())
+				|| (getCoach() != null && getCoach().booleanValue())
+				|| (getCurriculumElementOwner() != null && getCurriculumElementOwner().booleanValue())
+				|| (getRepositoryEntryOwner() != null || this.getRepositoryEntryOwner().booleanValue());
+	}
+	
+	public int numOfSegments() {
+		String path = element.getMaterializedPathKeys();
+		int count = 0;
+		if(StringHelper.containsNonWhitespace(path)) {
+			char[] pathArr = path.toCharArray();
+			for(int i=pathArr.length; i-->1; ) {
+				if(pathArr[i] == '/') {
+					count++;
+				}
+			}
+		}
+		return count;
 	}
 }

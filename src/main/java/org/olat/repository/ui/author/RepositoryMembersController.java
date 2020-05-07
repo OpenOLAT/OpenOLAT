@@ -199,7 +199,8 @@ public class RepositoryMembersController extends AbstractMemberListController {
 		MailHelper.printErrorsAndWarnings(result, getWindowControl(), detailedErrorOutput, getLocale());
 		
 		//commit all changes to the curriculum memberships
+		MailPackage curMailing = new MailPackage(template, result, getWindowControl().getBusinessControl().getAsString(), template != null);
 		List<CurriculumElementMembershipChange> curriculumChanges = changes.generateCurriculumElementMembershipChange(members);
-		curriculumService.updateCurriculumElementMemberships(getIdentity(), roles, curriculumChanges);
+		curriculumService.updateCurriculumElementMemberships(getIdentity(), roles, curriculumChanges, curMailing);
 	}
 }

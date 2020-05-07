@@ -70,6 +70,8 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.mail.MailHelper;
+import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.member.wizard.ImportMembersContext;
@@ -606,11 +608,11 @@ public class CurriculumComposerController extends FormBasicController implements
 		@SuppressWarnings("unchecked")
 		List<Identity> members = (List<Identity>)runContext.get("members");
 		MailTemplate template = (MailTemplate)runContext.get("mailTemplate");
+		MailPackage mailing = new MailPackage(template, getWindowControl().getBusinessControl().getAsString(), template != null);
 		MemberPermissionChangeEvent changes = (MemberPermissionChangeEvent)runContext.get("permissions");
-		//TODO curriculum
-		//commit all changes to the curriculum memberships
 		List<CurriculumElementMembershipChange> curriculumChanges = changes.generateCurriculumElementMembershipChange(members);
-		curriculumService.updateCurriculumElementMemberships(getIdentity(), roles, curriculumChanges);
+		curriculumService.updateCurriculumElementMemberships(getIdentity(), roles, curriculumChanges, mailing);
+		MailHelper.printErrorsAndWarnings(mailing.getResult(), getWindowControl(), false, getLocale());
 	}
 	
 	private void doOpenTools(UserRequest ureq, CurriculumElementRow row, FormLink link) {

@@ -50,7 +50,6 @@ public class ImportMember_4_MailStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		ImportMemberMailController controller = new ImportMemberMailController(ureq, wControl, repoEntry, form, runContext);
-		return controller;
+		return new ImportMemberMailController(ureq, wControl, repoEntry, form, runContext);
 	}
 }
