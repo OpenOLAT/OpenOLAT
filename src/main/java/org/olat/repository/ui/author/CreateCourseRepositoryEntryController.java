@@ -19,7 +19,6 @@
  */
 package org.olat.repository.ui.author;
 
-import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -28,7 +27,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.config.CourseConfig;
@@ -46,8 +44,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CreateCourseRepositoryEntryController extends CreateRepositoryEntryController {
 
-	private static final Logger log = Tracing.createLoggerFor(CreateCourseRepositoryEntryController.class);
-	
 	private SingleSelection nodeAccessEl;
 	
 	@Autowired
