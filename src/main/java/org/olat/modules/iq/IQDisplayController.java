@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.dom4j.Document;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
@@ -52,7 +53,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.StringResourceableType;
@@ -416,7 +416,10 @@ public class IQDisplayController extends DefaultController implements GenericEve
 		if(event.getAssessementMode().getResource().getResourceableId().equals(courseResId)) {
 			String cmd = event.getCommand();
 			if(cmd.equals(AssessmentModeNotificationEvent.STOP_ASSESSMENT) || cmd.equals(AssessmentModeNotificationEvent.END)) {
-				stoppedFlag = true;
+				// Check if event relevant for current assessed identity
+				if (event.getAssessedIdentityKeys() != null && event.getAssessedIdentityKeys().contains(assessedIdentity.getKey())) {
+					stoppedFlag = true;
+				}				
 			}
 		}
 	}

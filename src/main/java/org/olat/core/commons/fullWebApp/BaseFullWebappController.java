@@ -1421,37 +1421,38 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	}
 	
 	private void processAssessmentModeNotificationEvent(AssessmentModeNotificationEvent event) {
-		if(getIdentity() == null) return;
+		if(getIdentity() == null || !event.isModeOf(lockMode, getIdentity())) {
+			return;
+		}
 		
 		String cmd = event.getCommand();
-		if(AssessmentModeNotificationEvent.STOP_WARNING.equals(cmd)) {
-			lockResourceMessage(event.getAssessementMode());
-		} else if(event.getAssessedIdentityKeys() != null && event.getAssessedIdentityKeys().contains(getIdentity().getKey())) {
-			switch(cmd) {
-				case AssessmentModeNotificationEvent.BEFORE:
-					if(asyncUnlockResource(event.getAssessementMode())) {
-						stickyMessageCmp.setDelegateComponent(null);
-					}
-					break;	
-				case AssessmentModeNotificationEvent.LEADTIME:
-					if(asyncLockResource(event.getAssessementMode())) {
-						stickyMessageCmp.setDelegateComponent(null);
-					}
-					break;
-				case AssessmentModeNotificationEvent.START_ASSESSMENT:
-					asyncLockResource(event.getAssessementMode());
-					break;
-				case AssessmentModeNotificationEvent.STOP_ASSESSMENT:
-					if(asyncLockResource(event.getAssessementMode())) {
-						stickyMessageCmp.setDelegateComponent(null);
-					}
-					break;
-				case AssessmentModeNotificationEvent.END:
-					if(asyncUnlockResource(event.getAssessementMode())) {
-						stickyMessageCmp.setDelegateComponent(null);
-					}
-					break;	
-			}
+		switch(cmd) {
+			case AssessmentModeNotificationEvent.STOP_WARNING:
+				lockResourceMessage(event.getAssessementMode());
+				break;
+			case AssessmentModeNotificationEvent.BEFORE:
+				if(asyncUnlockResource(event.getAssessementMode())) {
+					stickyMessageCmp.setDelegateComponent(null);
+				}
+				break;	
+			case AssessmentModeNotificationEvent.LEADTIME:
+				if(asyncLockResource(event.getAssessementMode())) {
+					stickyMessageCmp.setDelegateComponent(null);
+				}
+				break;
+			case AssessmentModeNotificationEvent.START_ASSESSMENT:
+				asyncLockResource(event.getAssessementMode());
+				break;
+			case AssessmentModeNotificationEvent.STOP_ASSESSMENT:
+				if(asyncLockResource(event.getAssessementMode())) {
+					stickyMessageCmp.setDelegateComponent(null);
+				}
+				break;
+			case AssessmentModeNotificationEvent.END:
+				if(asyncUnlockResource(event.getAssessementMode())) {
+					stickyMessageCmp.setDelegateComponent(null);
+				}
+				break;	
 		}
 	}
 
