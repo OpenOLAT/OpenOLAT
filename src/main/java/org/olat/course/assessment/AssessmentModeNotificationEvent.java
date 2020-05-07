@@ -21,6 +21,7 @@ package org.olat.course.assessment;
 
 import java.util.Set;
 
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.resource.OresHelper;
@@ -60,5 +61,12 @@ public class AssessmentModeNotificationEvent extends MultiUserEvent  {
 
 	public Set<Long> getAssessedIdentityKeys() {
 		return assessedIdentityKeys;
+	}
+	
+	public boolean isModeOf(TransientAssessmentMode assessmentMode, Identity identity) {
+		if(assessmentMode != null && assessmentMode.getModeKey().equals(mode.getModeKey())) {
+			return true;
+		}
+		return (assessedIdentityKeys != null && identity != null && assessedIdentityKeys.contains(identity.getKey()));
 	}
 }
