@@ -57,6 +57,11 @@
 	.o_date.form-inline  {
 		.form-group {
 			margin-left: 0;
+			display: inline-block;
+			vertical-align: middle;
+		}
+		.form-control {
+			display: inline-block;
 		}
 		.form-group.o_second_date, .o_date_ms.form-group, .form-group.o_date_separator {
 			margin-left: 25px;
