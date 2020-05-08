@@ -950,7 +950,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			// guest are allowed to see resource with BARG
 			if(security.canLaunch()) {
 				launchContent(ureq);
-			} else if(re.isBookable()) {
+			} else if(re.isBookable() && canBook()) {
 				AccessResult acResult = acService.isAccessible(re, getIdentity(), security.isMember(), false);
 				if(acResult.isAccessible()) {
 					launchContent(ureq);
@@ -976,6 +976,11 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				accessRefused(ureq);
 			}
 		}
+	}
+	
+	private boolean canBook() {
+		// need to check organization too?
+		return !roles.isGuestOnly();
 	}
 	
 	private void accessRefused(UserRequest ureq) {

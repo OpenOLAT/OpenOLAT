@@ -70,11 +70,11 @@ public class OlatTopNavController extends BasicController implements LockableCon
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean isGuest = roles.isGuestOnly();
 		boolean isInvitee = roles.isInvitee();
-		topNavVC.contextPut("isGuest", new Boolean(isGuest));
-		topNavVC.contextPut("isInvitee", new Boolean(isInvitee));
+		topNavVC.contextPut("isGuest", Boolean.valueOf(isGuest));
+		topNavVC.contextPut("isInvitee", Boolean.valueOf(isInvitee));
 		
 		// login link
-		if (ureq.getIdentity() == null) {
+		if (ureq.getIdentity() == null || isGuest) {
 			loginLink = LinkFactory.createLink("topnav.login", topNavVC, this);
 			loginLink.setIconLeftCSS("o_icon o_icon_login o_icon-lg");
 			loginLink.setTooltip("topnav.login.alt");
