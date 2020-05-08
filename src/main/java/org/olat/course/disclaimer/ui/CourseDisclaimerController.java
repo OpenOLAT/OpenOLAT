@@ -98,8 +98,7 @@ public class CourseDisclaimerController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("course.disclaimer.headline");
-		setFormContextHelp("Course related disclaimer page");
-
+		setFormContextHelp("Course Settings#_course_disclaimer");
 		// Enable and disable the disclaimers
 		disclaimer1CheckBoxEl = uifactory.addCheckboxesHorizontal("course.disclaimer.1", formLayout, onKeys, onValues);
 		disclaimer1CheckBoxEl.select(onKeys[0], disclaimer1Enabled);
