@@ -40,9 +40,7 @@ import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
@@ -1044,12 +1042,7 @@ public class OpenXMLDocument {
 			while (entry != null) {
 				String name = entry.getName();
 				if(name.endsWith("word/document.xml")) {
-					
-					DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-					factory.setValidating(false);
-					factory.setNamespaceAware(false);
-					DocumentBuilder builder = factory.newDocumentBuilder();
+					DocumentBuilder builder = OpenXMLUtils.getDocumentBuilder(true, false, false);
 					Document doc = builder.parse(new ShieldInputStream(zip));
 					
 					NodeList bodyList = doc.getElementsByTagName("w:body");

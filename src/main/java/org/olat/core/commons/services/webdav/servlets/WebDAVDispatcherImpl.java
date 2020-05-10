@@ -45,9 +45,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.olat.core.commons.services.webdav.WebDAVDispatcher;
@@ -60,6 +58,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.openxml.OpenXMLUtils;
 import org.olat.core.util.vfs.QuotaExceededException;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.lock.LockInfo;
@@ -255,13 +254,8 @@ public class WebDAVDispatcherImpl
     protected DocumentBuilder getDocumentBuilder(HttpServletRequest req)
         throws ServletException {
         DocumentBuilder documentBuilder = null;
-        DocumentBuilderFactory documentBuilderFactory = null;
         try {
-            documentBuilderFactory = DocumentBuilderFactory.newInstance();
-            documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            documentBuilderFactory.setNamespaceAware(true);
-            documentBuilderFactory.setExpandEntityReferences(false);
-            documentBuilder = documentBuilderFactory.newDocumentBuilder();
+            documentBuilder = OpenXMLUtils.getDocumentBuilder(false, true, false);
             documentBuilder.setEntityResolver(
                     new WebdavResolver(req.getServletContext()));
         } catch(ParserConfigurationException e) {

@@ -24,7 +24,6 @@ import java.io.StringWriter;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
@@ -38,6 +37,7 @@ import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.openxml.OpenXMLUtils;
 import org.olat.modules.adobeconnect.model.AdobeConnectError;
 import org.olat.modules.adobeconnect.model.AdobeConnectErrorCodes;
 import org.olat.modules.adobeconnect.model.AdobeConnectErrors;
@@ -128,9 +128,7 @@ public class AdobeConnectUtils {
 	
     protected static Document getDocumentFromEntity(HttpEntity entity) throws Exception {
     	try(InputStream in=entity.getContent()) {
-	        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-	        dbFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-	        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+	        DocumentBuilder dBuilder = OpenXMLUtils.getDocumentBuilder(true, false, false);
 	        return dBuilder.parse(in);
     	} catch(Exception e) {
     		throw e;

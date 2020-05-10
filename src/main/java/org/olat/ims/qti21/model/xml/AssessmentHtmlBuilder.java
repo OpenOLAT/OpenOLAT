@@ -24,9 +24,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.logging.log4j.Logger;
@@ -34,6 +32,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.impl.HtmlFilter;
+import org.olat.core.util.openxml.OpenXMLUtils;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -224,9 +223,7 @@ public class AssessmentHtmlBuilder {
 		try {
 			// Alter infoset because of special namespace on tag p
 			HtmlParser parser = new HtmlParser(XmlViolationPolicy.ALTER_INFOSET);
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-	        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-			DocumentBuilder builder = factory.newDocumentBuilder();
+			DocumentBuilder builder = OpenXMLUtils.getDocumentBuilder(true, false, false);
 			Document document = builder.newDocument();
 			HtmlToDomBuilderHandler contentHandler = new HtmlToDomBuilderHandler(document, convertInputValue);
 			parser.setContentHandler(contentHandler);

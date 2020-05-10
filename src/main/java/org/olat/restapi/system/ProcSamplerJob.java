@@ -28,7 +28,6 @@ import java.util.Random;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
@@ -39,6 +38,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.openxml.OpenXMLUtils;
 import org.olat.restapi.system.MonitoringService.Statistics;
 import org.olat.restapi.system.vo.SessionsVO;
 import org.olat.search.SearchServiceStatus;
@@ -147,9 +147,7 @@ public class ProcSamplerJob extends QuartzJobBean {
 	
 	private Document loadDocument(File xmlFile) {
 		try {
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-	        dbFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			DocumentBuilder dBuilder = OpenXMLUtils.getDocumentBuilder(true, false, false);
 			Document doc = null;
 			if(xmlFile.exists()) {
 				try {

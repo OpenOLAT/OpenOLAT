@@ -65,43 +65,41 @@ public class OpenXMLUtils {
 
 	public static final double emusPerInch = 914400.0d;
 	public static final double emusPerCm = 360000.0d;
-	
 
 	public static final int convertPixelToEMUs(int pixel, int dpi, double resizeRatio) {
 		double rezDpi = dpi * 1.0d;
 		return (int)(((pixel / rezDpi) * emusPerInch) * resizeRatio);
 	}
-	
-	public static final OpenXMLSize convertPixelToEMUs2(Size img, int dpi) {
-		int widthPx = img.getWidth();
-		int heightPx = img.getHeight();
-		double horzRezDpi = dpi * 1.0d;
-		double vertRezDpi = dpi * 1.0d;
-		
-		double widthEmus = (widthPx / horzRezDpi) * emusPerInch;
-		double heightEmus = (heightPx / vertRezDpi) * emusPerInch;
-		
-		return new OpenXMLSize(widthPx, heightPx, (int)widthEmus, (int)heightEmus, 1.0d);
+
+	public static final DocumentBuilder getDocumentBuilder (boolean expandEntityRef, boolean namespaceAware, boolean validating) throws ParserConfigurationException {
+		DocumentBuilderFactory df = DocumentBuilderFactory.newInstance();
+		df.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+		df.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+		// default: true
+		df.setExpandEntityReferences(expandEntityRef);
+		// default: false
+		df.setNamespaceAware(namespaceAware);
+		// default: false
+		df.setValidating(validating);
+		return df.newDocumentBuilder();
 	}
 	
 	public static final OpenXMLSize convertPixelToEMUs(Size img, int dpi, double maxWidthCm) {
 		int widthPx = img.getWidth();
 		int heightPx = img.getHeight();
-		double horzRezDpi = dpi * 1.0d;
-		double vertRezDpi = dpi * 1.0d;
-		
-		double widthEmus = (widthPx / horzRezDpi) * emusPerInch;
-		double heightEmus = (heightPx / vertRezDpi) * emusPerInch;
+		double resizeRatio = 1.0d;
+
+		double widthEmus = convertPixelToEMUs(widthPx, dpi, resizeRatio);
+		double heightEmus = convertPixelToEMUs(heightPx, dpi, resizeRatio);
 
 		double maxWidthEmus = maxWidthCm * emusPerCm;
-		double resizeRatio = 1.0d;
+
 		if (widthEmus > maxWidthEmus) {
 			resizeRatio = maxWidthEmus / widthEmus;
 			double ratio = heightEmus / widthEmus;
 			widthEmus = maxWidthEmus;
 			heightEmus = widthEmus * ratio;
 		}
-
 		return new OpenXMLSize(widthPx, heightPx, (int)widthEmus, (int)heightEmus, resizeRatio);
 	}
 	
@@ -141,14 +139,8 @@ public class OpenXMLUtils {
 	
 	public static final Document createDocument() {
 		try {
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-	        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-			// Turn on validation, and turn on namespaces
-			factory.setValidating(true);
-			factory.setNamespaceAware(false);
-			DocumentBuilder builder = factory.newDocumentBuilder();
-			Document doc = builder.newDocument();
-			return doc;
+			DocumentBuilder builder = getDocumentBuilder(true, false, true);
+			return builder.newDocument();
 		} catch (ParserConfigurationException e) {
 			log.error("", e);
 			return null;
@@ -163,14 +155,8 @@ public class OpenXMLUtils {
 	 */
 	public static final Document createDocument(InputStream in) {
 		try {
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-	        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-			// Turn on validation, and turn on namespaces
-			factory.setValidating(false);
-			factory.setNamespaceAware(false);
-			DocumentBuilder builder = factory.newDocumentBuilder();
-			Document doc = builder.parse(in);
-			return doc;
+			DocumentBuilder builder = getDocumentBuilder(true, false, false);
+			return builder.parse(in);
 		} catch (ParserConfigurationException | IOException | SAXException e) {
 			log.error("", e);
 			return null;
@@ -179,14 +165,8 @@ public class OpenXMLUtils {
 	
 	public static final Document createDocument(String in) {
 		try {
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-	        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-			// Turn on validation, and turn on namespaces
-			factory.setValidating(false);
-			factory.setNamespaceAware(false);
-			DocumentBuilder builder = factory.newDocumentBuilder();
-			Document doc = builder.parse(new InputSource(new StringReader(in)));
-			return doc;
+			DocumentBuilder builder = getDocumentBuilder(true, false, false);
+			return builder.parse(new InputSource(new StringReader(in)));
 		} catch (ParserConfigurationException | IOException | SAXException e) {
 			log.error("", e);
 			return null;

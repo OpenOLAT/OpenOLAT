@@ -65,6 +65,7 @@ import javax.xml.crypto.dsig.keyinfo.KeyInfoFactory;
 import javax.xml.crypto.dsig.keyinfo.X509Data;
 import javax.xml.crypto.dsig.spec.C14NMethodParameterSpec;
 import javax.xml.crypto.dsig.spec.TransformParameterSpec;
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
@@ -79,6 +80,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.openxml.OpenXMLUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -419,18 +421,14 @@ public class XMLDigitalSignatureUtil {
 	
 	public static Document getDocument(File xmlFile)
 	throws ParserConfigurationException, SAXException, IOException {
-		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-        dbFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-		dbFactory.setNamespaceAware(true);
-		return dbFactory.newDocumentBuilder().parse(xmlFile);
+		DocumentBuilder builder = OpenXMLUtils.getDocumentBuilder(true, true, false);
+		return builder.parse(xmlFile);
 	}
 	
 	public static Document createDocument()
 	throws ParserConfigurationException {
-		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-        dbFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-		dbFactory.setNamespaceAware(true);
-		return dbFactory.newDocumentBuilder().newDocument();
+		DocumentBuilder builder = OpenXMLUtils.getDocumentBuilder(true, true, false);
+		return builder.newDocument();
 	}
 	
 	public static String getReferenceURI(Document doc) {

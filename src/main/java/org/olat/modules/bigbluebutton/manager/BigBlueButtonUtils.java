@@ -19,17 +19,14 @@
  */
 package org.olat.modules.bigbluebutton.manager;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
@@ -40,6 +37,7 @@ import org.apache.http.HttpEntity;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.openxml.OpenXMLUtils;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecording;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonError;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
@@ -63,24 +61,10 @@ public class BigBlueButtonUtils {
 	
 	public static final String SUCCESS = "SUCCESS";
 	public static final String FAILED = "FAILED";
-	public static final String CHECKSUM_ERROR = "checksumError";
-	
-    protected static Document getDocumentFromEntity(String content) throws Exception {
-    	try(InputStream in=new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8))) {
-	        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-	        dbFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-	        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-	        return dBuilder.parse(in);
-    	} catch(Exception e) {
-    		throw e;
-    	}
-    }
 
     protected static Document getDocumentFromEntity(HttpEntity entity) throws Exception {
     	try(InputStream in=entity.getContent()) {
-	        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-	        dbFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-	        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			DocumentBuilder dBuilder = OpenXMLUtils.getDocumentBuilder(true, false, false);
 	        Document doc = dBuilder.parse(in);
 	        print(doc);
 	        return doc;
