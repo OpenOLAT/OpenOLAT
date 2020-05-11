@@ -30,11 +30,9 @@ import java.util.Locale;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpEntity;
-import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
@@ -634,15 +632,9 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 		return scos;
 	}
 
-	private CloseableHttpClient buildHttpClient() {
+	protected CloseableHttpClient buildHttpClient() {
 		dbInstance.commit();// free connection
-		
-		RequestConfig requestConfig = RequestConfig.copy(RequestConfig.DEFAULT)
-				.setConnectTimeout(adobeConnectModule.getHttpConnectTimeout())
-				.setConnectionRequestTimeout(adobeConnectModule.getHttpConnectRequestTimeout())
-				.setSocketTimeout(adobeConnectModule.getHttpSocketTimeout())
-				.build();
-		return HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).build();
+		return adobeConnectModule.httpClientBuilder().build();
 	}
 	
 	protected List<AdobeConnectPrincipal> sendPrincipalRequest(UriBuilder builder, AdobeConnectErrors errors) {

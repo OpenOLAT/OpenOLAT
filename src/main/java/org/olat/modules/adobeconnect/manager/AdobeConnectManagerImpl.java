@@ -33,7 +33,6 @@ import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
@@ -586,13 +585,15 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 
 	@Override
 	public boolean checkConnection(String url, String login, String password, AdobeConnectErrors error) {
+		dbInstance.commit();
+		
 		boolean allOk = false;
 		
 		String common = buildUrl(url, null) + "?action=common-info";
 		
 		BreezeSession session = null;
 		HttpGet commonGet = new HttpGet(common);
-		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+		try(CloseableHttpClient httpClient = adobeConnectModule.httpClientBuilder().build();
 			CloseableHttpResponse response = httpClient.execute(commonGet)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			if(statusCode == 200) {
@@ -612,7 +613,7 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 			request += "&session" + session.getSession();
 			get.setHeader(new BasicHeader("Cookie", AbstractAdobeConnectProvider.COOKIE + session.getSession()));
 		}
-		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+		try(CloseableHttpClient httpClient = adobeConnectModule.httpClientBuilder().build();
 			CloseableHttpResponse response = httpClient.execute(get)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			if(statusCode == 200 && AdobeConnectUtils.isStatusOk(response.getEntity())) {

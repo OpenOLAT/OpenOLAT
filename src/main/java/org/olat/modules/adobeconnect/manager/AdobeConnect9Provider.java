@@ -30,7 +30,6 @@ import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Authentication;
@@ -134,7 +133,7 @@ public class AdobeConnect9Provider extends AbstractAdobeConnectProvider {
 		URI uri = builder.build();
 		BreezeSession session = null;
 		HttpGet getInfo = new HttpGet(uri);
-		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+		try(CloseableHttpClient httpClient = buildHttpClient();
 			CloseableHttpResponse response = httpClient.execute(getInfo)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			if(statusCode == 200 && AdobeConnectUtils.isStatusOk(response.getEntity())) {

@@ -91,5 +91,4 @@ public interface AdobeConnectSPI {
 	
 	public BreezeSession commonInfo(Authentication authentication, AdobeConnectErrors error);
 	
-
 }
