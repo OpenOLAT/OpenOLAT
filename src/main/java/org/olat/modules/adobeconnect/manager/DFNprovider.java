@@ -29,7 +29,6 @@ import javax.ws.rs.core.UriBuilder;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Authentication;
@@ -75,7 +74,7 @@ public class DFNprovider extends AbstractAdobeConnectProvider {
 		List<AdobeConnectPrincipal> users = null;
 		HttpGet get = createAdminMethod(builder, errors);
 		if(get != null) {
-			try(CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+			try(CloseableHttpClient httpClient = buildHttpClient();
 					CloseableHttpResponse response = httpClient.execute(get)) {
 				int statusCode = response.getStatusLine().getStatusCode();
 				if(statusCode == 200 || statusCode == 201) {
@@ -102,7 +101,7 @@ public class DFNprovider extends AbstractAdobeConnectProvider {
 		List<AdobeConnectPrincipal> users = null;
 		HttpGet get = createAdminMethod(builder, errors);
 		if(get != null) {
-			try(CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+			try(CloseableHttpClient httpClient = buildHttpClient();
 					CloseableHttpResponse response = httpClient.execute(get)) {
 				int statusCode = response.getStatusLine().getStatusCode();
 				if(statusCode == 200 || statusCode == 201) {
@@ -132,7 +131,7 @@ public class DFNprovider extends AbstractAdobeConnectProvider {
 		BreezeSession session = null;
 		HttpGet get = createAdminMethod(builder, errors);
 		if(get != null) {
-			try(CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+			try(CloseableHttpClient httpClient = buildHttpClient();
 					CloseableHttpResponse response = httpClient.execute(get)) {
 				int statusCode = response.getStatusLine().getStatusCode();
 				if(statusCode == 200) {
