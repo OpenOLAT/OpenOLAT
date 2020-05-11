@@ -23,6 +23,8 @@ import java.net.URI;
 
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.util.StringHelper;
@@ -361,5 +363,14 @@ public class AdobeConnectModule extends AbstractSpringModule implements ConfigOn
 
 	public int getHttpSocketTimeout() {
 		return httpSocketTimeout;
+	}
+	
+	public HttpClientBuilder httpClientBuilder() {
+		RequestConfig requestConfig = RequestConfig.copy(RequestConfig.DEFAULT)
+				.setConnectTimeout(getHttpConnectTimeout())
+				.setConnectionRequestTimeout(getHttpConnectRequestTimeout())
+				.setSocketTimeout(getHttpSocketTimeout())
+				.build();
+		return HttpClientBuilder.create().setDefaultRequestConfig(requestConfig);
 	}
 }

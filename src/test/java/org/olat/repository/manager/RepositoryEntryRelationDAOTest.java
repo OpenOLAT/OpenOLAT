@@ -714,7 +714,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		List<Identity> groupdParticipants = repositoryEntryRelationDao.getCoachedParticipants(groupCoach1_1, entry);
 		assertThat(groupdParticipants)
 				.hasSize(2)
-				.containsExactly(groupParticipant1_1, groupParticipant1_2);
+				.containsExactlyInAnyOrder(groupParticipant1_1, groupParticipant1_2);
 		
 		// Coach of group 1 is now coach of group 2 as well
 		businessGroupRelationDao.addRole(groupCoach1_1, group2, GroupRoles.coach.name());
@@ -723,7 +723,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		groupdParticipants = repositoryEntryRelationDao.getCoachedParticipants(groupCoach1_1, entry);
 		assertThat(groupdParticipants)
 				.hasSize(4)
-				.containsExactly(groupParticipant1_1, groupParticipant1_2, groupParticipant2_1, groupParticipant2_2);
+				.containsExactlyInAnyOrder(groupParticipant1_1, groupParticipant1_2, groupParticipant2_1, groupParticipant2_2);
 		
 		// Participant of group 1 is now member of group 2 as well. Get it only once.
 		businessGroupRelationDao.addRole(groupParticipant1_1, group2, GroupRoles.participant.name());
@@ -732,7 +732,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		groupdParticipants = repositoryEntryRelationDao.getCoachedParticipants(groupCoach1_1, entry);
 		assertThat(groupdParticipants)
 				.hasSize(4)
-				.containsExactly(groupParticipant1_1, groupParticipant1_2, groupParticipant2_1, groupParticipant2_2);
+				.containsExactlyInAnyOrder(groupParticipant1_1, groupParticipant1_2, groupParticipant2_1, groupParticipant2_2);
 		
 		// Course coach is now participant of group 1. He still coaches only the course participants
 		businessGroupRelationDao.addRole(courseCoach, group1, GroupRoles.participant.name());
