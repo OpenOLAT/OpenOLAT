@@ -52,16 +52,14 @@ public class MyCoursesPage {
 	
 	public MyCoursesPage openSearch() {
 		By searchBy = By.className("o_sel_mycourses_search");
-		WebElement searchLink = browser.findElement(searchBy);
-		searchLink.click();
+		browser.findElement(searchBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
 	public MyCoursesPage openCatalog() {
 		By catalogBy = By.className("o_sel_mycourses_catlog");
-		WebElement catalogLink = browser.findElement(catalogBy);
-		catalogLink.click();
+		browser.findElement(catalogBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -95,9 +93,8 @@ public class MyCoursesPage {
 	 */
 	public MyCoursesPage select(String title) {
 		By titleBy = By.xpath("//h4[contains(@class,'o_title')]/a[span[text()[contains(.,'" + title + "')]]]");
-		List<WebElement> titleLinks = browser.findElements(titleBy);
-		Assert.assertEquals(1, titleLinks.size());
-		titleLinks.get(0).click();
+		OOGraphene.waitElement(titleBy, browser);
+		browser.findElement(titleBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -127,17 +124,15 @@ public class MyCoursesPage {
 	
 	public MyCoursesPage selectCatalogEntry(String title) {
 		By titleBy = By.xpath("//div[contains(@class,'o_sublevel')]//div[contains(@class,'o_meta')]//h4[contains(@class,'o_title')]/a/span[text()[contains(.,'" + title + "')]]");
-		List<WebElement> titleLinks = browser.findElements(titleBy);
-		Assert.assertEquals(1, titleLinks.size());
-		titleLinks.get(0).click();
+		OOGraphene.waitElement(titleBy, browser);
+		browser.findElement(titleBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
 	public void start() {
 		By startBy = By.className("o_start");
-		WebElement startLink = browser.findElement(startBy);
-		startLink.click();
+		browser.findElement(startBy).click();
 		OOGraphene.waitBusy(browser);
 	}
 
