@@ -333,7 +333,12 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 				allSaved = false;
 			}
 		}
-		dbInstance.commit();
+		try {
+			dbInstance.commit();
+		} catch (Exception e) {
+			log.error("Commiting saved evaluation form response failed!", e);
+			allSaved = false;
+		}
 		if (!allSaved) {
 			showError("error.cannot.save");
 		}
