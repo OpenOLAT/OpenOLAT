@@ -224,7 +224,7 @@ class EvaluationFormSessionDAO {
 					sessionImpl.setFirstSubmissionDate(sessionImpl.getSubmissionDate());
 				}
 			}
-			dbInstance.getCurrentEntityManager().merge(sessionImpl);
+			session = dbInstance.getCurrentEntityManager().merge(sessionImpl);
 		}
 		return session;
 	}
