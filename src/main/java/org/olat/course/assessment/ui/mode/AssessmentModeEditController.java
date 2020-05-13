@@ -89,19 +89,29 @@ public class AssessmentModeEditController extends FormBasicController {
 	private static final String[] onValues = new String[]{ "" };
 	private static final String[] startModeKeys = new String[] { "automatic", "manual" };
 
-	private SingleSelection targetEl, startModeEl;
-	private IntegerElement leadTimeEl, followupTimeEl;
-	private DateChooser beginEl, endEl;
+	private SingleSelection targetEl;
+	private SingleSelection startModeEl;
+	private IntegerElement leadTimeEl;
+	private IntegerElement followupTimeEl;
+	private DateChooser beginEl;
+	private DateChooser endEl;
 	private StaticTextElement startElementEl;
 	private FormLink chooseGroupsButton;
 	private FormLink chooseAreasButton;
 	private FormLink chooseStartElementButton;
 	private FormLink chooseElementsButton;
 	private FormLink chooseCurriculumElementsButton;
-	private TextElement nameEl, ipListEl, safeExamBrowserKeyEl;
-	private RichTextElement descriptionEl, safeExamBrowserHintEl;
-	private FormLayoutContainer chooseGroupsCont, chooseElementsCont;
-	private MultipleSelectionElement ipsEl, safeExamBrowserEl, forCoachEl, courseElementsRestrictionEl;
+	private TextElement nameEl;
+	private TextElement ipListEl;
+	private TextElement safeExamBrowserKeyEl;
+	private RichTextElement descriptionEl;
+	private RichTextElement safeExamBrowserHintEl;
+	private FormLayoutContainer chooseGroupsCont;
+	private FormLayoutContainer chooseElementsCont;
+	private MultipleSelectionElement ipsEl;
+	private MultipleSelectionElement forCoachEl;
+	private MultipleSelectionElement safeExamBrowserEl;
+	private MultipleSelectionElement courseElementsRestrictionEl;
 	
 	private CloseableModalController cmc;
 	private DialogBoxController confirmCtrl;
@@ -242,13 +252,13 @@ public class AssessmentModeEditController extends FormBasicController {
 		
 		KeyValues targetKeyValues = new KeyValues();
 		boolean curriculumEnabled = curriculumModule.isEnabled();
-		String allLabel = curriculumEnabled ? translate("target.courseGroupsAndCurriculums") : translate("target.courseAndGroups");
-		targetKeyValues.add(KeyValues.entry(AssessmentMode.Target.courseAndGroups.name(), allLabel));
 		targetKeyValues.add(KeyValues.entry(AssessmentMode.Target.course.name(), translate("target.course")));
 		targetKeyValues.add(KeyValues.entry(AssessmentMode.Target.groups.name(), translate("target.groups")));
 		if(curriculumEnabled) {
 			targetKeyValues.add(KeyValues.entry(AssessmentMode.Target.curriculumEls.name(), translate("target.curriculumElements")));
 		}
+		String allLabel = curriculumEnabled ? translate("target.courseGroupsAndCurriculums") : translate("target.courseAndGroups");
+		targetKeyValues.add(KeyValues.entry(AssessmentMode.Target.courseAndGroups.name(), allLabel));
 		targetEl = uifactory.addRadiosVertical("audience", "mode.target", formLayout, targetKeyValues.keys(), targetKeyValues.values());
 		targetEl.setElementCssClass("o_sel_assessment_mode_audience");
 		targetEl.setEnabled(status != Status.end);
@@ -494,20 +504,17 @@ public class AssessmentModeEditController extends FormBasicController {
 			endEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
-		if(beginEl.getDate() != null && endEl.getDate() != null) {
-			if(beginEl.getDate().compareTo(endEl.getDate()) >= 0) {
-				beginEl.setErrorKey("error.begin.after.end", null);
-				endEl.setErrorKey("error.begin.after.end", null);
-				allOk &= false;
-			}
+		if(beginEl.getDate() != null && endEl.getDate() != null
+				&& beginEl.getDate().compareTo(endEl.getDate()) >= 0) {
+			beginEl.setErrorKey("error.begin.after.end", null);
+			endEl.setErrorKey("error.begin.after.end", null);
+			allOk &= false;
 		}
 		
 		courseElementsRestrictionEl.clearError();
-		if(courseElementsRestrictionEl.isAtLeastSelected(1)) {
-			if(elementKeys.isEmpty()) {
-				courseElementsRestrictionEl.setErrorKey("error.course.element.mandatory", null);
-				allOk &= false;
-			}
+		if(courseElementsRestrictionEl.isAtLeastSelected(1) && elementKeys.isEmpty()) {
+			courseElementsRestrictionEl.setErrorKey("error.course.element.mandatory", null);
+			allOk &= false;
 		}
 		
 		targetEl.clearError();
