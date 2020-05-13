@@ -51,6 +51,8 @@ public interface AssessmentModeManager {
 	public AssessmentMode createAssessmentMode(RepositoryEntry entry);
 	
 	public AssessmentMode createAssessmentMode(LectureBlock lectureBlock, int leadTime, int followUpTime, String ips, String sebKeys);
+	
+	public AssessmentMode createAssessmentMode(AssessmentMode assessmentMode);
 
 	/**
 	 * Create and persist a relation between the specified assessment mode

@@ -137,6 +137,7 @@ public class AssessmentModeListController extends FormBasicController implements
 		}
 		if(secCallback.canEditAssessmentMode()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("copy", translate("copy"), "copy"));
 		}
 		
 		model = new AssessmentModeListModel(columnsModel, getTranslator(), assessmentModeCoordinationService);
@@ -231,6 +232,8 @@ public class AssessmentModeListController extends FormBasicController implements
 				AssessmentMode row = model.getObject(se.getIndex());
 				if("edit".equals(cmd)) {
 					doEdit(ureq, row);
+				} else if("copy".equals(cmd)) {
+					doCopy(ureq, row);
 				} else if("start".equals(cmd)) {
 					doConfirmStart(ureq, row);
 				} else if("stop".equals(cmd)) {
@@ -284,6 +287,22 @@ public class AssessmentModeListController extends FormBasicController implements
 		}
 		loadModel();
 		tableEl.deselectAll();
+	}
+	
+	private void doCopy(UserRequest ureq, AssessmentMode mode) {
+		AssessmentMode modeToCopy = assessmentModeMgr.getAssessmentModeById(mode.getKey());
+		AssessmentMode newMode = assessmentModeMgr.createAssessmentMode(modeToCopy);
+		newMode.setName(translate("copy.name", new String[] { modeToCopy.getName() }));
+		
+		AssessmentModeEditController modeEditCtrl = new AssessmentModeEditController(ureq, getWindowControl(), entry.getOlatResource(), newMode);
+		modeEditCtrl.selectBusinessGroups(modeToCopy.getGroups());
+		modeEditCtrl.selectAreas(modeToCopy.getAreas());
+		modeEditCtrl.selectCurriculumElements(modeToCopy.getCurriculumElements());
+		
+		listenTo(modeEditCtrl);
+		toolbarPanel.pushController(newMode.getName(), modeEditCtrl);
+		
+		editCtrl = modeEditCtrl;
 	}
 	
 	private void doEdit(UserRequest ureq, AssessmentMode mode) {

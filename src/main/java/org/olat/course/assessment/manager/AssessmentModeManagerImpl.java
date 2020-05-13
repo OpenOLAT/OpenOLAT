@@ -106,7 +106,7 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	public AssessmentMode createAssessmentMode(RepositoryEntry entry) {
 		AssessmentModeImpl mode = new AssessmentModeImpl();
 		mode.setCreationDate(new Date());
-		mode.setLastModified(new Date());
+		mode.setLastModified(mode.getCreationDate());
 		mode.setRepositoryEntry(entry);
 		mode.setStatus(Status.none);
 		mode.setManualBeginEnd(true);
@@ -118,7 +118,7 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 			int leadTime, int followupTime, String ips, String sebKeys) {
 		AssessmentModeImpl mode = new AssessmentModeImpl();
 		mode.setCreationDate(new Date());
-		mode.setLastModified(new Date());
+		mode.setLastModified(mode.getCreationDate());
 		mode.setName(lectureBlock.getTitle());
 		mode.setDescription(lectureBlock.getDescription());
 		mode.setBegin(lectureBlock.getStartDate());
@@ -139,6 +139,41 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		mode.setLectureBlock(lectureBlock);
 		mode.setStatus(Status.none);
 		mode.setManualBeginEnd(true);
+		return mode;
+	}
+
+	@Override
+	public AssessmentMode createAssessmentMode(AssessmentMode assessmentMode) {
+		AssessmentModeImpl mode = new AssessmentModeImpl();
+		mode.setCreationDate(new Date());
+		mode.setLastModified(mode.getCreationDate());
+		mode.setName(assessmentMode.getName());
+		mode.setDescription(assessmentMode.getDescription());
+		mode.setBegin(null);
+		mode.setEnd(null);
+		mode.setLeadTime(assessmentMode.getLeadTime());
+		mode.setFollowupTime(assessmentMode.getFollowupTime());
+		
+		mode.setElementList(assessmentMode.getElementList());
+		mode.setRestrictAccessElements(assessmentMode.isRestrictAccessElements());
+		mode.setStartElement(assessmentMode.getStartElement());
+		
+		mode.setRestrictAccessIps(assessmentMode.isRestrictAccessIps());
+		if(assessmentMode.isRestrictAccessIps()) {
+			mode.setIpList(assessmentMode.getIpList());
+		}
+		
+		mode.setSafeExamBrowser(assessmentMode.isSafeExamBrowser());
+		if(assessmentMode.isSafeExamBrowser()) {
+			mode.setSafeExamBrowserKey(assessmentMode.getSafeExamBrowserKey());
+			mode.setSafeExamBrowserHint(assessmentMode.getSafeExamBrowserHint());
+		}
+		
+		mode.setStatus(Status.none);
+		mode.setManualBeginEnd(assessmentMode.isManualBeginEnd());
+		mode.setTargetAudience(assessmentMode.getTargetAudience());
+		mode.setRepositoryEntry(assessmentMode.getRepositoryEntry());
+		mode.setApplySettingsForCoach(assessmentMode.isApplySettingsForCoach());
 		return mode;
 	}
 

@@ -287,32 +287,9 @@ public class AssessmentModeEditController extends FormBasicController {
 		chooseCurriculumElementsButton.setEnabled(status != Status.end);
 		chooseCurriculumElementsButton.setVisible(curriculumEnabled);
 
-		groupKeys = new ArrayList<>();
-		groupNames = new ArrayList<>();
-		for(AssessmentModeToGroup modeToGroup: assessmentMode.getGroups()) {
-			BusinessGroup group = modeToGroup.getBusinessGroup();
-			groupKeys.add(group.getKey());
-			groupNames.add(StringHelper.escapeHtml(group.getName()));
-		}
-		chooseGroupsCont.getFormItemComponent().contextPut("groupNames", groupNames);
-
-		areaKeys = new ArrayList<>();
-		areaNames = new ArrayList<>();
-		for(AssessmentModeToArea modeToArea: assessmentMode.getAreas()) {
-			BGArea area = modeToArea.getArea();
-			areaKeys.add(area.getKey());
-			areaNames.add(StringHelper.escapeHtml(area.getName()));
-		}
-		chooseGroupsCont.getFormItemComponent().contextPut("areaNames", areaNames);
-
-		curriculumElementKeys = new ArrayList<>();
-		curriculumElementNames = new ArrayList<>();
-		for(AssessmentModeToCurriculumElement modeToElement: assessmentMode.getCurriculumElements()) {
-			CurriculumElement element = modeToElement.getCurriculumElement();
-			curriculumElementKeys.add(element.getKey());
-			curriculumElementNames.add(StringHelper.escapeHtml(element.getDisplayName()));
-		}
-		chooseGroupsCont.getFormItemComponent().contextPut("curriculumElementNames", curriculumElementNames);
+		selectBusinessGroups(assessmentMode.getGroups());
+		selectAreas(assessmentMode.getAreas());
+		selectCurriculumElements(assessmentMode.getCurriculumElements());
 
 		//course elements
 		courseElementsRestrictionEl = uifactory.addCheckboxesHorizontal("cer", "mode.course.element.restriction", formLayout, onKeys, onValues);
@@ -388,6 +365,39 @@ public class AssessmentModeEditController extends FormBasicController {
 		if(status != Status.end) {
 			uifactory.addFormSubmitButton("save", buttonCont);
 		}
+	}
+	
+	protected void selectBusinessGroups(Set<AssessmentModeToGroup> assessmentModeToGroups) {
+		groupKeys = new ArrayList<>();
+		groupNames = new ArrayList<>();
+		for(AssessmentModeToGroup modeToGroup:assessmentModeToGroups) {
+			BusinessGroup group = modeToGroup.getBusinessGroup();
+			groupKeys.add(group.getKey());
+			groupNames.add(StringHelper.escapeHtml(group.getName()));
+		}
+		chooseGroupsCont.getFormItemComponent().contextPut("groupNames", groupNames);
+	}
+	
+	protected void selectAreas(Set<AssessmentModeToArea> assessmentModeToAreas) {
+		areaKeys = new ArrayList<>();
+		areaNames = new ArrayList<>();
+		for(AssessmentModeToArea modeToArea: assessmentModeToAreas) {
+			BGArea area = modeToArea.getArea();
+			areaKeys.add(area.getKey());
+			areaNames.add(StringHelper.escapeHtml(area.getName()));
+		}
+		chooseGroupsCont.getFormItemComponent().contextPut("areaNames", areaNames);
+	}
+	
+	protected void selectCurriculumElements(Set<AssessmentModeToCurriculumElement> assessmentModeToCurriculumElements) {
+		curriculumElementKeys = new ArrayList<>();
+		curriculumElementNames = new ArrayList<>();
+		for(AssessmentModeToCurriculumElement modeToElement: assessmentModeToCurriculumElements) {
+			CurriculumElement element = modeToElement.getCurriculumElement();
+			curriculumElementKeys.add(element.getKey());
+			curriculumElementNames.add(StringHelper.escapeHtml(element.getDisplayName()));
+		}
+		chooseGroupsCont.getFormItemComponent().contextPut("curriculumElementNames", curriculumElementNames);
 	}
 	
 	private String getCourseNodeName(String ident, CourseEditorTreeModel treeModel) {
