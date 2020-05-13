@@ -52,6 +52,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
@@ -632,12 +633,17 @@ public class CourseFactory {
 	 */
 	public static Controller createHelpCourseLaunchController(UserRequest ureq, WindowControl wControl) {
 		// Find repository entry for this course
-		String helpCourseSoftKey = CoreSpringFactory.getImpl(CourseModule.class).getHelpCourseSoftKey();
+		String helpCourseSoftKey = CoreSpringFactory.getImpl(HelpModule.class).getCourseSoftkey();
 		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryEntry entry = null;
 		if (StringHelper.containsNonWhitespace(helpCourseSoftKey)) {
 			entry = rm.lookupRepositoryEntryBySoftkey(helpCourseSoftKey, false);
+			if (entry == null) {
+				try {
+					entry = rm.lookupRepositoryEntry(Long.valueOf(helpCourseSoftKey), false);
+				} catch (Exception e) {}
+			}
 		}
 		if (entry == null) {
 			Translator translator = Util.createPackageTranslator(CourseFactory.class, ureq.getLocale());
@@ -654,6 +660,23 @@ public class CourseFactory {
 			RepositoryEntrySecurity reSecurity = new RepositoryEntrySecurityImpl(false, false, false, false, false, false, false, false, false, false, false, false, true, false);
 			return new RunMainController(ureq, bwControl, null, course, entry, reSecurity, null);
 		}
+	}
+	
+	public static boolean isHelpCourseExisting(String helpCourseKey) {
+		// Find repository entry for this course
+		RepositoryManager rm = RepositoryManager.getInstance();
+		RepositoryEntry entry = null;
+		
+		if (StringHelper.containsNonWhitespace(helpCourseKey)) {
+			entry = rm.lookupRepositoryEntryBySoftkey(helpCourseKey, false);
+			if (entry == null) {
+				try {
+					entry = rm.lookupRepositoryEntry(Long.valueOf(helpCourseKey), false);
+				} catch (Exception e) {}
+			}
+		}
+		
+		return entry != null;
 	}
 
 	/**

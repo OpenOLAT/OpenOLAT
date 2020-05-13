@@ -24,6 +24,10 @@
 */
 package org.olat.gui.control;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.olat.admin.help.ui.HelpAdminController;
 import org.olat.core.commons.chiefcontrollers.LanguageChooserController;
 import org.olat.core.commons.controllers.impressum.ImpressumDmzMainController;
 import org.olat.core.commons.controllers.impressum.ImpressumInformations;
@@ -43,6 +47,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
+import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.login.AboutController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +69,9 @@ public class OlatDmzTopNavController extends BasicController implements Lockable
 	public OlatDmzTopNavController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 
+		// Add translator for help plugins
+		setTranslator(Util.createPackageTranslator(HelpAdminController.class, getLocale(), getTranslator()));
+		
 		VelocityContainer vc = createVelocityContainer("dmztopnav");
 		
 		// impressum
@@ -77,12 +85,11 @@ public class OlatDmzTopNavController extends BasicController implements Lockable
 
 		// help on login page
 		if (helpModule.isHelpEnabled()) {
-			HelpLinkSPI provider = helpModule.getHelpProvider();
-			Component helpLink = provider.getHelpPageLink(ureq, translate("topnav.help"), translate("topnav.help.alt"), "o_icon o_icon-wf o_icon_help", null, "Login Page");
-			vc.put("topnav.help", helpLink);
-			
-			Component browsercheckLink = provider.getHelpPageLink(ureq, translate("topnav.check"), translate("topnav.check.alt"), "o_icon o_icon-wf o_icon_browsercheck", null, "Login Page#login_browsercheck");
-			vc.put("topnav.browsercheck", browsercheckLink);
+			List<String> helpPlugins = new ArrayList<>();
+			for (HelpLinkSPI helpLinkSPI : helpModule.getDMZHelpPlugins()) {
+				helpPlugins.add(helpLinkSPI.getHelpUserTool(getWindowControl()).getMenuComponent(ureq, vc).getComponentName());
+			}
+			vc.contextPut("helpPlugins", helpPlugins);
 		}
 		// about link
 		aboutLink = AboutController.aboutLinkFactory("top.menu.about", getLocale(), this, true, false);

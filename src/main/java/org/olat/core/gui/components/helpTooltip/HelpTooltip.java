@@ -45,8 +45,8 @@ public class HelpTooltip extends AbstractComponent {
 	static {
 		// load help provider only once if enabled
 		HelpModule helpModule = CoreSpringFactory.getImpl(HelpModule.class);
-		if (helpModule.isHelpEnabled()) {
-			helpProvider = helpModule.getHelpProvider();
+		if (helpModule.isManualEnabled()) {
+			helpProvider = helpModule.getManualProvider();
 		} else {
 			helpProvider = null;
 		}

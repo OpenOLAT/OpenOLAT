@@ -88,7 +88,7 @@ public class CPContentController extends BasicController {
 
 		// init help link, can't do this in initToolbar because ureq is missing
 		if (helpModule.isHelpEnabled()) {
-			HelpLinkSPI provider = helpModule.getHelpProvider();
+			HelpLinkSPI provider = helpModule.getManualProvider();
 			helpLink = provider.getHelpPageLink(ureq, translate("help"), translate("helpbutton"), "o_icon o_icon-lg o_icon_help", null, "CP Editor");
 		}
 		

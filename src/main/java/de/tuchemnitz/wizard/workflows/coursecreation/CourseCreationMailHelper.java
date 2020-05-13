@@ -103,8 +103,10 @@ public class CourseCreationMailHelper {
 			body += translator.translate("mail.body.4.6", new String[] {Integer.toString(++counter)});
 		}
 		body += translator.translate("mail.body.5");
-		String url = CoreSpringFactory.getImpl(HelpModule.class).getHelpProvider().getURL(ureq.getLocale(), "");
-		body += translator.translate("mail.body.6", new String[]{ url });
+		if (CoreSpringFactory.getImpl(HelpModule.class).isManualEnabled()) {
+			String url = CoreSpringFactory.getImpl(HelpModule.class).getManualProvider().getURL(ureq.getLocale(), "");
+			body += translator.translate("mail.body.6", new String[]{ url });
+		}
 		body += translator.translate("mail.body.greetings");
 		
 		MailBundle bundle = new MailBundle();

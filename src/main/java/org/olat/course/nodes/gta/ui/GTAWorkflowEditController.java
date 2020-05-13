@@ -513,7 +513,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 	
 	private void doConfirmChanges(UserRequest ureq) {
 		String title = translate("warning.tasks.in.process.title");
-		String url = helpModule.getHelpProvider().getURL(getLocale(), "Task - Further Configurations#_concurrent_edits");
+		String url = helpModule.getManualProvider().getURL(getLocale(), "Task - Further Configurations#_concurrent_edits");
 		String text = translate("warning.tasks.in.process.text", new String[]{ url });
 		confirmChangesCtrl = activateOkCancelDialog(ureq, title, text, confirmChangesCtrl);
 	}

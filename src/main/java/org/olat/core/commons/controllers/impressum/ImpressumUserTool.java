@@ -44,7 +44,7 @@ public class ImpressumUserTool implements UserTool, ComponentEventListener {
 	public Component getMenuComponent(UserRequest ureq, VelocityContainer container) {
 		Link impressumLink = LinkFactory.createLink("topnav.impressum", container, this);
 		impressumLink.setTooltip("topnav.impressum.alt");
-		impressumLink.setIconLeftCSS("o_icon o_icon_impress o_icon-lg");
+		impressumLink.setIconLeftCSS("o_icon o_icon_impress o_icon-fw");
 		impressumLink.setAjaxEnabled(false);
 		impressumLink.setTarget("_blank");
 		return impressumLink;
@@ -53,6 +53,7 @@ public class ImpressumUserTool implements UserTool, ComponentEventListener {
 	@Override
 	public void dispatchEvent(UserRequest ureq, Component source, Event event) {
 		ControllerCreator impressumControllerCreator = new ControllerCreator() {
+			@Override
 			public Controller createController(UserRequest lureq, WindowControl lwControl) {
 				return new ImpressumMainController(lureq, lwControl);
 			}

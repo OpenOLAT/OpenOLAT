@@ -17,6 +17,13 @@
 			 	<li>$r.render($config)</li>
 			#end
 		#end
+		#if($helpPlugins && $helpPlugins.size() > 0)
+			<li role="presentation" class="divider"></li>
+			<li role="presentation" class="dropdown-header">$r.translate("topnav.my.menu.help")</li>
+			#foreach($helpPlugin in $helpPlugins)
+			 	<li>$r.render($helpPlugin)</li>
+			#end
+		#end
 		#if($systems && $systems.size() > 0)
 			<li role="presentation" class="divider"></li>
 			<li role="presentation" class="dropdown-header">$r.translate("topnav.my.menu.systems")</li>

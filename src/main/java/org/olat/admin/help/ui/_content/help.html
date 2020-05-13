@@ -1,0 +1,14 @@
+## Min-heigt fixes drop down not displayed when table not filled
+<fieldset style="min-height: 80vh">
+	<legend>$r.translate("help.admin.title")</legend>
+	#if($isHelpEnabled)
+	<div class="pull-right">
+		$r.render("help.admin.add.help")
+	</div>
+	$r.render("help_table")
+	#else
+	<div class="o_info">
+		$r.translate("help.admin.is.disabled")
+	</div>
+	#end
+</fieldset>

@@ -24,12 +24,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.admin.help.ui.HelpAdminController;
 import org.olat.admin.user.tools.UserTool;
 import org.olat.admin.user.tools.UserToolCategory;
 import org.olat.admin.user.tools.UserToolExtension;
 import org.olat.admin.user.tools.UserToolsModule;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.core.commons.fullWebApp.LockableController;
+import org.olat.core.commons.services.help.HelpLinkSPI;
+import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -39,6 +42,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.Util;
 import org.olat.core.util.prefs.Preferences;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -57,9 +61,13 @@ public class UserToolsMenuController extends BasicController implements Lockable
 	
 	@Autowired
 	private UserToolsModule userToolsModule;
+	@Autowired
+	private HelpModule helpModule;
 	
 	public UserToolsMenuController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		
+		setTranslator(Util.createPackageTranslator(HelpAdminController.class, getLocale(), getTranslator()));
 		
 		menuVC = createVelocityContainer("menu");
 		menuVC.setDomReplacementWrapperRequired(false);
@@ -82,6 +90,7 @@ public class UserToolsMenuController extends BasicController implements Lockable
 		List<String> configLinksName = new ArrayList<>();
 		List<String> searchLinksName = new ArrayList<>();
 		List<String> systemLinksName = new ArrayList<>();
+		List<String> helpLinksName = new ArrayList<>();
 		
 		Preferences prefs = ureq.getUserSession().getGuiPreferences();
 		String selectedTools = userToolsModule.getUserTools(prefs);
@@ -111,12 +120,27 @@ public class UserToolsMenuController extends BasicController implements Lockable
 						case personal: linksName.add(linkName); break;
 						case config: configLinksName.add(linkName); break;
 						case system: systemLinksName.add(linkName); break;
+						case help: 
+							// Load help plugins
+							for (HelpLinkSPI helpLinkSPI : helpModule.getUserToolHelpPlugins()) {
+								UserTool helpTool = helpLinkSPI.getHelpUserTool(getWindowControl());
+								if (helpTool != null) {
+									Component helpLink = helpTool.getMenuComponent(ureq, menuVC);
+									String helpLinkName = helpLink.getComponentName();
+									
+									helpLinksName.add(helpLinkName);
+									
+									disposableTools.add(helpTool);
+								}
+							}
+							break;
 					}
 					disposableTools.add(tool);
 				}
 			}
 		}
 		
+		menuVC.contextPut("helpPlugins", helpLinksName);
 		menuVC.contextPut("personalTools", linksName);
 		menuVC.contextPut("configs", configLinksName);
 		menuVC.contextPut("systems", systemLinksName);

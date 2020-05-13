@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.NewControllerFactory;
+import org.olat.admin.help.ui.HelpAdminController;
 import org.olat.admin.user.UserSearchController;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
@@ -33,6 +34,8 @@ import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.commons.services.help.HelpLinkSPI;
+import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.ui.LicenseRenderer;
 import org.olat.core.commons.services.mark.Mark;
@@ -41,6 +44,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.dropdown.Dropdown.Spacer;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -205,6 +209,8 @@ public class AuthorListController extends FormBasicController implements Activat
 	private RepositoryEntryLicenseHandler licenseHandler;
 	@Autowired
 	private LearningPathService learningPathService;
+	@Autowired
+	private HelpModule helpModule;
 	
 	public AuthorListController(UserRequest ureq, WindowControl wControl, String i18nName,
 			SearchAuthorRepositoryEntryViewParams searchParams, boolean withSearch, boolean withClosedfilter) {
@@ -264,6 +270,27 @@ public class AuthorListController extends FormBasicController implements Activat
 				}
 			}
 			stackPanel.addTool(createDropdown, Align.left);
+			
+			// Help module
+			if (helpModule.isHelpEnabled()) {
+				VelocityContainer helpVC = createVelocityContainer("help");
+				helpVC.setTranslator(Util.createPackageTranslator(HelpAdminController.class, getLocale()));
+				List<HelpLinkSPI> helpLinks = helpModule.getAuthorSiteHelpPlugins();
+				
+				if (helpLinks.size() == 1) {
+					stackPanel.addTool(helpLinks.get(0).getHelpUserTool(getWindowControl()).getMenuComponent(ureq, helpVC), Align.right);
+				} else if (helpLinks.size() > 1) {
+					Dropdown helpDropdown = new Dropdown("help.list", "help.authoring", false, Util.createPackageTranslator(HelpAdminController.class, getLocale()));
+					helpDropdown.setIconCSS("o_icon o_icon_help");
+					helpDropdown.setOrientation(DropdownOrientation.right);
+					
+					for (HelpLinkSPI helpLinkSPI : helpLinks) {
+						helpDropdown.addComponent(helpLinkSPI.getHelpUserTool(getWindowControl()).getMenuComponent(ureq, helpVC));
+					}
+					
+					stackPanel.addTool(helpDropdown, Align.right);
+				}
+			}
 		}
 	}
 	

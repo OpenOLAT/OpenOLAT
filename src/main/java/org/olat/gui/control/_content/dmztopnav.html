@@ -8,14 +8,11 @@
 				<i class="o_icon o_icon_help o_icon-lg"></i> $r.translate("topnav.help")
 			</a>
 			<ul class="dropdown-menu dropdown-menu-right">          
-			#if($r.available("topnav.help"))
-				<li id="o_navbar_help">
-					$r.render("topnav.help")
-				</li>
-				<li>
-					$r.render("topnav.browsercheck")
-				</li>
-			#end		
+			#if($helpPlugins && $helpPlugins.size() > 0)
+				#foreach($helpPlugin in $helpPlugins)
+			 		<li>$r.render($helpPlugin)</li>
+				#end
+			#end	
 				<li id="o_navbar_about">
 					$r.render("topnav.about")
 				</li>

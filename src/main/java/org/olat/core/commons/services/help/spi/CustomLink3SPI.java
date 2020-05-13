@@ -35,38 +35,37 @@ import org.springframework.stereotype.Service;
 
 /**
  * 
- * Build a link to openolat confluence. It has the following form:<br/>
- * https://confluence.openolat.org/display/OO100DE/OpenOLAT+10+Benutzerhandbuch
- * 
- * Initial date: 07.01.2015<br>
- * 
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 27.04.2020<br>
+ * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  *
  */
-@Service("ooConfluenceLinkHelp")
-public class ConfluenceLinkSPI implements HelpLinkSPI {
+@Service("customLink3Help")
+public class CustomLink3SPI implements HelpLinkSPI  {
 
-	private static final String PLUGIN_NAME = "manual";
+	private static final String PLUGIN_NAME = "custom3";
 	
-	@Autowired
-	HelpModule helpModule;
+	@Autowired 
+	private HelpModule helpModule;
 	
 	@Override
 	public UserTool getHelpUserTool(WindowControl wControl) {
-		return new ConfluenceUserTool();
+		return new Custom3LinkUserTool(wControl);
 	}
 	
-	public class ConfluenceUserTool implements UserTool {
+	public class Custom3LinkUserTool implements UserTool {
+		
+		public Custom3LinkUserTool(WindowControl wControl) {
+		}
 
 		@Override
 		public Component getMenuComponent(UserRequest ureq, VelocityContainer container) {
-			ExternalLink helpLink = new ExternalLink("help.confluence");
-			helpLink.setIconLeftCSS("o_icon o_icon-fw " + helpModule.getConfluenceIcon());
-			helpLink.setName(container.getTranslator().translate("help.confluence"));
-			helpLink.setTooltip(container.getTranslator().translate("help.confluence"));
-			helpLink.setTarget("oohelp");
-			helpLink.setUrl(getURL(ureq.getLocale(), null));
-			container.put("help.confluence", helpLink);
+			ExternalLink helpLink = new ExternalLink("help.custom3");
+			helpLink.setIconLeftCSS("o_icon o_icon-fw " + helpModule.getCustom3Icon());
+			helpLink.setName(container.getTranslator().translate("help.custom3"));
+			helpLink.setTooltip(container.getTranslator().translate("help.custom3"));
+			helpLink.setTarget(helpModule.isCustom3NewWindow() ? "custom3" : "");
+			helpLink.setUrl(helpModule.getCustom3Link());
+			container.put("help.custom3", helpLink);
 			return helpLink;
 		}
 
@@ -75,17 +74,17 @@ public class ConfluenceLinkSPI implements HelpLinkSPI {
 			//
 		}
 	}
-
+	
 	@Override
 	public String getURL(Locale locale, String page) {
-		// delegate to helper
+		// Fallback to confluence context help
 		return ConfluenceHelper.getURL(locale, page);
 	}
 
 	@Override
 	public Component getHelpPageLink(UserRequest ureq, String title, String tooltip, String iconCSS, String elementCSS,
 			String page) {
-		// delegate to helper
+		// Fallback to confluence context help
 		return ConfluenceHelper.createHelpPageLink(ureq, title, tooltip, iconCSS, elementCSS, page);
 	}
 	

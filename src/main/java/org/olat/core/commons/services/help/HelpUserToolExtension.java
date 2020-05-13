@@ -49,7 +49,7 @@ public class HelpUserToolExtension extends UserToolExtension {
 	
 	@Override
 	public UserToolCategory getUserToolCategory() {
-		return UserToolCategory.system;
+		return UserToolCategory.help;
 	}
 
 	@Override
@@ -67,9 +67,7 @@ public class HelpUserToolExtension extends UserToolExtension {
 			return null;
 		}
 		
-		HelpModule helpModule = CoreSpringFactory.getImpl(HelpModule.class);
-		HelpLinkSPI provider = helpModule.getHelpProvider();
-		return provider.getHelpUserTool(wControl);
+		return super.createUserTool(ureq, wControl, locale);
 	}
 
 	@Override

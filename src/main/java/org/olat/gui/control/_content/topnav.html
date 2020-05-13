@@ -4,6 +4,25 @@
 		#foreach($personalTool in $toolSet)
 			 <li #if($personalTool.shortCutCssId) id="$personalTool.shortCutCssId" #end class="o_navbar_tool #if($personalTool.shortCutCssClass) $personalTool.shortCutCssClass #end">$r.render($personalTool.shortCutComponentName)</li>
 		#end
+		#if($helpPlugins)
+			#if($helpPlugins.size() == 1)
+				#foreach($helpPlugin in $helpPlugins)
+			 		<li #if($helpPlugin.shortCutCssId) id="$helpPlugin.shortCutCssId" #end class="o_navbar_tool #if($helpPlugin.shortCutCssClass) $helpPlugin.shortCutCssClass #end">$r.render($helpPlugin.shortCutComponentName)</li>
+				#end
+			#elseif($helpPlugins.size() > 1) 
+				<li id="o_navbar_help_opener" class="o_navbar_tool dropdown">
+					<a id="o_help_tool_toggler" href="#" class="dropdown-toggle" data-toggle="dropdown" title="$r.translate("search")" aria-label="$r.translate("search")">
+						<i class="o_icon o_icon_help o_icon-lg"></i>
+						<span>$r.translate("topnav.search")</span>
+					</a>
+					<ul class="dropdown-menu dropdown-menu-right">          
+						#foreach($helpPlugin in $helpPlugins)
+			 				<li #if($helpPlugin.shortCutCssId) id="$helpPlugin.shortCutCssId" #end class="o_navbar_tool #if($helpPlugin.shortCutCssClass) $helpPlugin.shortCutCssClass #end">$r.render($helpPlugin.shortCutComponentName)</li>
+						#end
+					</ul>
+				</li>
+			#end
+		#end
 	#end
 	#if (!$isGuest && !$isInvitee)
 		<li id="o_navbar_my_menu" class="o_portrait">
@@ -20,3 +39,12 @@
 	#end
 	</ul>
 </div>
+
+## focus search input field whenever search is displayed
+<script>
+jQuery('#o_help_tool_toggler').click(function () {
+	setTimeout(function() {
+		jQuery('#o_help_tool_toggler[aria-expanded="true"] + .dropdown-menu #o_navbar_help_list input:text').focus();	
+	},0);
+});
+</script>

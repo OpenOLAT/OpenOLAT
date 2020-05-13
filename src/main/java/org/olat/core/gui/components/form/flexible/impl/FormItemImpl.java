@@ -386,8 +386,11 @@ public abstract class FormItemImpl implements InlineElement {
 	@Override
 	public void setHelpUrlForManualPage(String manualAliasName) {
 		HelpModule helpModule = CoreSpringFactory.getImpl(HelpModule.class);
-		Locale locale = getTranslator().getLocale();
-		this.helpUrl = helpModule.getHelpProvider().getURL(locale, manualAliasName);
+		
+		if (helpModule.isManualEnabled()) {
+			Locale locale = getTranslator().getLocale();
+			this.helpUrl = helpModule.getManualProvider().getURL(locale, manualAliasName);
+		}
 	}
 
 	/**

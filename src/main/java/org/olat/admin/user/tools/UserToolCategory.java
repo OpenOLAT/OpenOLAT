@@ -29,6 +29,6 @@ public enum UserToolCategory {
 	search,
 	personal,
 	config,
-	system
-
+	system,
+	help
 }

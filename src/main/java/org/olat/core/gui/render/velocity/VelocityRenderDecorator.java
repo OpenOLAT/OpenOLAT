@@ -456,9 +456,9 @@ public class VelocityRenderDecorator implements Closeable {
 	 */
 	public StringOutput contextHelpWithWrapper(String page) {
 		StringOutput sb = new StringOutput(192);
-		if (getHelpModule().isHelpEnabled()) {
+		if (getHelpModule().isManualEnabled()) {
 			Locale locale = renderer.getTranslator().getLocale();
-			String url = getHelpModule().getHelpProvider().getURL(locale, page);
+			String url = getHelpModule().getManualProvider().getURL(locale, page);
 			if(url != null) {
 				String title = StringHelper.escapeHtml(renderer.getTranslator().translate("help.button"));
 				sb.append("<span class=\"o_chelp_wrapper\">")
@@ -481,7 +481,7 @@ public class VelocityRenderDecorator implements Closeable {
 		StringOutput sb = new StringOutput(100);
 		if (getHelpModule().isHelpEnabled()) {
 			Locale locale = renderer.getTranslator().getLocale();
-			String url = getHelpModule().getHelpProvider().getURL(locale, page);
+			String url = getHelpModule().getManualProvider().getURL(locale, page);
 			sb.append("contextHelpWindow('").append(url).append("')");
 		}
 		return sb;
@@ -498,7 +498,7 @@ public class VelocityRenderDecorator implements Closeable {
 	public StringOutput contextHelpLink(String page) {
 		StringOutput sb = new StringOutput(100);
 		if (getHelpModule().isHelpEnabled()) {
-			String url = getHelpModule().getHelpProvider().getURL(renderer.getTranslator().getLocale(), page);
+			String url = getHelpModule().getManualProvider().getURL(renderer.getTranslator().getLocale(), page);
 			sb.append(url);
 		}
 		return sb;
@@ -652,6 +652,7 @@ public class VelocityRenderDecorator implements Closeable {
 	 * @deprecated please use escapeHtml.
 	 * @return the escaped string
 	 */
+	@Deprecated
 	public String escapeDoubleQuotes(String in) {
 	    return Formatter.escapeDoubleQuotes(in).toString();
 	}

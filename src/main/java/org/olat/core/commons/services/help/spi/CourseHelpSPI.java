@@ -22,52 +22,78 @@ package org.olat.core.commons.services.help.spi;
 import java.util.Locale;
 
 import org.olat.admin.user.tools.UserTool;
+import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.services.help.ConfluenceHelper;
 import org.olat.core.commons.services.help.HelpLinkSPI;
 import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.ExternalLink;
+import org.olat.core.gui.components.ComponentEventListener;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.course.CourseFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * 
- * Build a link to openolat confluence. It has the following form:<br/>
- * https://confluence.openolat.org/display/OO100DE/OpenOLAT+10+Benutzerhandbuch
+ * Legacy course help system which uses the old help course when clicking the
+ * manual button. Since the course can not support the context help we use the
+ * confluence context help for context help.
  * 
  * Initial date: 07.01.2015<br>
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Service("ooConfluenceLinkHelp")
-public class ConfluenceLinkSPI implements HelpLinkSPI {
+@Service("courseHelp")
+public class CourseHelpSPI implements HelpLinkSPI  {
 
-	private static final String PLUGIN_NAME = "manual";
+	private static final String PLUGIN_NAME = "course";
 	
 	@Autowired
-	HelpModule helpModule;
+	private HelpModule helpModule;
 	
 	@Override
 	public UserTool getHelpUserTool(WindowControl wControl) {
-		return new ConfluenceUserTool();
+		return new HelpCourseUserTool(wControl);
 	}
 	
-	public class ConfluenceUserTool implements UserTool {
+	public class HelpCourseUserTool implements UserTool, ComponentEventListener {
+		
+		private final WindowControl wControl;
+		
+		public HelpCourseUserTool(WindowControl wControl) {
+			this.wControl = wControl;
+		}
 
 		@Override
 		public Component getMenuComponent(UserRequest ureq, VelocityContainer container) {
-			ExternalLink helpLink = new ExternalLink("help.confluence");
-			helpLink.setIconLeftCSS("o_icon o_icon-fw " + helpModule.getConfluenceIcon());
-			helpLink.setName(container.getTranslator().translate("help.confluence"));
-			helpLink.setTooltip(container.getTranslator().translate("help.confluence"));
+			Link helpLink = LinkFactory.createLink("help.course", container, this);
+			helpLink.setIconLeftCSS("o_icon o_icon-fw " + helpModule.getCourseIcon());
+			helpLink.setTooltip("help.course");
 			helpLink.setTarget("oohelp");
-			helpLink.setUrl(getURL(ureq.getLocale(), null));
-			container.put("help.confluence", helpLink);
 			return helpLink;
+		}
+
+		@Override
+		public void dispatchEvent(UserRequest ureq, Component source, Event event) {
+			ControllerCreator ctrlCreator = new ControllerCreator() {
+				@Override
+				public Controller createController(UserRequest lureq, WindowControl lwControl) {
+					return CourseFactory.createHelpCourseLaunchController(lureq, lwControl);
+				}					
+			};
+			//wrap the content controller into a full header layout
+			ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createMinimalPopupLayout(ctrlCreator);
+			//open in new browser window
+			wControl.getWindowBackOffice().getWindowManager()
+					.createNewPopupBrowserWindowFor(ureq, layoutCtrlr)
+					.open(ureq);
 		}
 
 		@Override
@@ -75,17 +101,17 @@ public class ConfluenceLinkSPI implements HelpLinkSPI {
 			//
 		}
 	}
-
+	
 	@Override
 	public String getURL(Locale locale, String page) {
-		// delegate to helper
+		// Fallback to confluence context help
 		return ConfluenceHelper.getURL(locale, page);
 	}
 
 	@Override
 	public Component getHelpPageLink(UserRequest ureq, String title, String tooltip, String iconCSS, String elementCSS,
 			String page) {
-		// delegate to helper
+		// Fallback to confluence context help
 		return ConfluenceHelper.createHelpPageLink(ureq, title, tooltip, iconCSS, elementCSS, page);
 	}
 	

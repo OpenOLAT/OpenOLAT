@@ -37,6 +37,9 @@ public interface HelpLinkSPI {
 	public String getURL(Locale locale, String module);
 	
 	public UserTool getHelpUserTool(WindowControl wControl);
-
+	
 	public Component getHelpPageLink(UserRequest ureq, String title, String tooltip, String iconCSS, String elementCSS, String page);
+	
+	public String getPluginName();
+	
 }

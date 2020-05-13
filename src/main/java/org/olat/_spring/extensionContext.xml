@@ -520,10 +520,29 @@
 			</property>
 		</bean>	
 
+		<!-- Help module -->
+		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="order" value="7401" />
+			<property name="actionController">
+				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+					<property name="className" value="org.olat.admin.help.ui.HelpAdminController"/>
+				</bean>
+			</property>
+			<property name="navigationKey" value="help" />
+			<property name="translationPackage" value="org.olat.admin" />
+			<property name="i18nActionKey" value="menu.help"/>
+			<property name="i18nDescriptionKey" value="menu.help.alt"/>
+			<property name="extensionPoints">
+				<list>	
+					<value>org.olat.admin.SystemAdminMainController</value>		
+				</list>
+			</property>
+			<property name="parentTreeNodeIdentifier" value="sysAdminMenueNodeCustomizing" />
+		</bean>	
 	
 		<!-- Customizin / "Sprachanpassungswerkzeug" -->
 		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
-			<property name="order" value="7401" />
+			<property name="order" value="7402" />
 			<property name="actionController">
 				<bean class="org.olat.core.gui.control.creator.FactoryControllerCreator" scope="prototype">
 					<property name="factoryName" value="org.olat.core.util.i18n.ui.I18nUIFactory"/>
@@ -544,7 +563,7 @@
 		
 		<!-- System registration -->
 		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
-			<property name="order" value="7402" />
+			<property name="order" value="7403" />
 			<property name="actionController">
 				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 					<property name="className" value="org.olat.admin.registration.SystemRegistrationAdminController"/>

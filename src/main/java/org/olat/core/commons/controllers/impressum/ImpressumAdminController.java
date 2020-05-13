@@ -341,7 +341,6 @@ public class ImpressumAdminController extends FormBasicController {
 				group.getEditButton().setIconLeftCSS(null);
 				group.getDeleteButton().setVisible(false);
 			}
-			// TODO AB No dirty
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
