@@ -173,7 +173,11 @@ public class LoginPage {
 		}
 		
 		//wait until the content appears
-		OOGraphene.waitElement(landingPointBy, 30, browser);
+		try {
+			OOGraphene.waitElement(landingPointBy, 30, browser);
+		} catch(Exception e) {
+			OOGraphene.takeScreenshot("Login", browser);
+		}
 		return this;
 	}
 	
