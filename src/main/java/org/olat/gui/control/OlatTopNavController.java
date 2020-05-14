@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.admin.help.ui.HelpAdminController;
 import org.olat.admin.user.tools.UserTool;
 import org.olat.admin.user.tools.UserToolCategory;
 import org.olat.admin.user.tools.UserToolExtension;
@@ -46,6 +47,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.user.DisplayPortraitController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,6 +71,10 @@ public class OlatTopNavController extends BasicController implements LockableCon
 	
 	public OlatTopNavController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		
+		// Include translator for help
+		setTranslator(Util.createPackageTranslator(HelpAdminController.class, getLocale(), getTranslator()));
+		
 		topNavVC = createVelocityContainer("topnav");
 		topNavVC.setDomReplacementWrapperRequired(false); // we provide our own DOM replacmenet ID
 		

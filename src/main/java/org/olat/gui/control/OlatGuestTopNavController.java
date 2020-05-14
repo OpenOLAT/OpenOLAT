@@ -28,6 +28,7 @@ package org.olat.gui.control;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.admin.help.ui.HelpAdminController;
 import org.olat.admin.user.tools.UserTool;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.core.CoreSpringFactory;
@@ -49,6 +50,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
+import org.olat.core.util.Util;
 import org.olat.gui.control.OlatTopNavController.Tool;
 import org.olat.search.SearchModule;
 import org.olat.search.SearchUserToolExtension;
@@ -71,6 +73,9 @@ public class OlatGuestTopNavController extends BasicController implements Lockab
 	
 	public OlatGuestTopNavController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		
+		setTranslator(Util.createPackageTranslator(HelpAdminController.class, getLocale(), getTranslator()));
+		
 		VelocityContainer vc = createVelocityContainer("guesttopnav");
 		vc.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
 		

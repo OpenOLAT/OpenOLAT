@@ -184,11 +184,13 @@ public class HelpAdminEditController extends FormBasicController {
 			String translation = i18nManager.getLocalizedString(HelpAdminController.class.getPackage().getName(), "help." + helpPlugin, null, Locale.forLanguageTag(locale), false, false, false, false, 0);
 			String overlayTranslation = i18nManager.getLocalizedString(HelpAdminController.class.getPackage().getName(), "help." + helpPlugin, null, Locale.forLanguageTag(locale), true, false, false, false, 0);
 			
-			if (translation != null && overlayTranslation != null && translation.equals(overlayTranslation)) {
-				labelElementsMap.get(locale).setPlaceholderText(translation);
-			} else {
+			// Value must be placed before placeholder
+			// If not, placeholder is not visible when removing content in GUI
+			if (translation != null && overlayTranslation != null && !translation.equals(overlayTranslation)) {
 				labelElementsMap.get(locale).setValue(overlayTranslation);
 			}
+			
+			labelElementsMap.get(locale).setPlaceholderText(translation);
 		}
 	}
 
@@ -211,7 +213,7 @@ public class HelpAdminEditController extends FormBasicController {
 		}
 		iconEl = uifactory.addTextElement("help.admin.icon", 255, "", formLayout);
 		iconEl.setValue(HelpModule.DEFAULT_ICON);
-		iconEl.setExampleKey("help.admin.icon.examples", new String[] {"o_icon_help, o_icon_video, o_icon_wiki, o_course_icon, o_icon_external_link, o_icon_link, ..."});
+		iconEl.setExampleKey("help.admin.icon.examples", new String[] {"o_icon_help, o_icon_manual, o_icon_mail, o_icon_video, o_icon_wiki, o_course_icon, o_icon_external_link, o_icon_link, ..."});
 		iconEl.setMandatory(true);
 		inputEl = uifactory.addTextElement("help.admin.input.support", 255, "", formLayout);
 		inputEl.setMandatory(true);
