@@ -161,7 +161,7 @@ public class IQ12EditForm extends FormBasicController {
 		if (!isSurvey) {
 			modConfig.set(IQEditController.CONFIG_KEY_SUMMARY, getSummary());
 			modConfig.set(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS, new Boolean(isShowResultsDateDependent()));
-			modConfig.set(IQEditController.CONFIG_KEY_RESULTS_START_DATE, getShowResultsStartDate());
+			modConfig.set(IQEditController.CONFIG_KEY_RESULTS_START_DATE, getShowResultsStartDate()); 
 			modConfig.set(IQEditController.CONFIG_KEY_RESULTS_END_DATE, getShowResultsEndDate());
 			modConfig.set(IQEditController.CONFIG_KEY_RESULT_ON_FINISH, isShowResultsAfterFinishTest());
 			modConfig.set(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE, isShowResultsOnHomePage());
@@ -238,8 +238,8 @@ public class IQ12EditForm extends FormBasicController {
 		}
 	
 		Date startDate = null;
-		if(modConfig.get(IQEditController.CONFIG_KEY_RESULTS_START_DATE) instanceof Date) {
-			startDate = (Date)modConfig.get(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
+		if(modConfig.get(IQEditController.CONFIG_KEY_RESULTS_START_DATE) instanceof Date) { 
+			startDate = (Date)modConfig.get(IQEditController.CONFIG_KEY_RESULTS_START_DATE); 
 		}
 		startDateElement = uifactory.addDateChooser("qti_form_start_date", "qti.form.date.start", null, formLayout);
 		startDateElement.setDateChooserTimeEnabled(true);

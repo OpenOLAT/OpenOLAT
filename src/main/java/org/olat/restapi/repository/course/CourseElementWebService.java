@@ -2231,10 +2231,14 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		config.setShowQuestionTitle(showQuestionTitle == null ? true : showQuestionTitle);
 		Boolean showResFinish = (Boolean)moduleConfig.get(IQEditController.CONFIG_KEY_RESULT_ON_FINISH);
 		config.setShowResultsAfterFinish(showResFinish == null ? true : showResFinish);
-		Boolean showResDate = (Boolean)moduleConfig.get(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS);
-		config.setShowResultsDependendOnDate(showResDate == null ? false : showResDate);
+		String showResDate = (String)moduleConfig.get(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS);
+		config.setShowResultsDependendOnDate(showResDate == null ? IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_ALWAYS : showResDate);
 		config.setShowResultsStartDate((Date) moduleConfig.get(IQEditController.CONFIG_KEY_RESULTS_START_DATE));
 		config.setShowResultsEndDate((Date) moduleConfig.get(IQEditController.CONFIG_KEY_RESULTS_END_DATE));
+		config.setShowResultsPassedStartDate((Date) moduleConfig.get(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE));
+		config.setShowResultsPassedEndDate((Date) moduleConfig.get(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE));
+		config.setShowResultsFailedStartDate((Date) moduleConfig.get(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE));
+		config.setShowResultsFailedEndDate((Date) moduleConfig.get(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE));
 		Boolean showResHomepage = (Boolean)moduleConfig.get(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE);
 		config.setShowResultsOnHomepage(showResHomepage == null ? false : showResHomepage);
 		Boolean showScoreInfo = (Boolean)moduleConfig.get(IQEditController.CONFIG_KEY_ENABLESCOREINFO);
@@ -2606,7 +2610,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			if(startDate != null && endDate != null) {
 				moduleConfig.set(IQEditController.CONFIG_KEY_RESULTS_START_DATE, new Date(startDate));
 				moduleConfig.set(IQEditController.CONFIG_KEY_RESULTS_END_DATE, new Date(endDate));
-			}
+			} 
 			if(showResultsOnHomepage != null) moduleConfig.set(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE, showResultsOnHomepage);
 			if(showScoreInfo != null) moduleConfig.set(IQEditController.CONFIG_KEY_ENABLESCOREINFO, showScoreInfo);
 			if(showQuestionProgress != null) moduleConfig.set(IQEditController.CONFIG_KEY_QUESTIONPROGRESS, showQuestionProgress);

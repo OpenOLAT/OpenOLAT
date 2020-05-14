@@ -30,7 +30,6 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -57,7 +56,6 @@ import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.ScormCourseNode;
-import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreAccounting;
@@ -65,7 +63,6 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
-import org.olat.modules.ModuleConfiguration;
 
 /**
  * Description:<br>
@@ -505,29 +502,5 @@ public class AssessmentHelper {
 			return 0;
 		}
 		return numOfChildren + 1;//add itself
-	}
-	
-	/**
-	 * Evaluates if the results are visble or not in respect of the configured CONFIG_KEY_DATE_DEPENDENT_RESULTS parameter. <br>
-	 * The results are always visible if no date dependent, 
-	 * or if date dependent only in the period: startDate-endDate. 
-	 * EndDate could be null, that is there is no restriction for the end date.
-	 * 
-	 * @return true if is visible.
-	 */
-	public static boolean isResultVisible(ModuleConfiguration modConfig) {
-		boolean isVisible = false;
-		Boolean showResultsActive = modConfig.getBooleanEntry(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS);
-		if(showResultsActive != null && showResultsActive.booleanValue()) {
-			Date startDate = (Date)modConfig.get(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
-			Date endDate = (Date)modConfig.get(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
-			Date currentDate = new Date();
-			if(startDate != null && currentDate.after(startDate) && (endDate == null || currentDate.before(endDate))) {
-				isVisible = true;
-			}
-		} else {
-			isVisible = true;
-		}
-		return isVisible;
 	}
 }

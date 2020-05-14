@@ -717,7 +717,7 @@ public class IQRunController extends BasicController implements GenericEventList
 			boolean showResultsOnHomePage = (showResultsObj!=null && showResultsObj.booleanValue());
 			myContent.contextPut("showResultsOnHomePage",new Boolean(showResultsOnHomePage));
 			myContent.contextPut("in-results", isPanelOpen(ureq, "results", true));
-			boolean dateRelatedVisibility = AssessmentHelper.isResultVisible(modConfig);		
+			boolean dateRelatedVisibility = isResultVisible();		
 			if(showResultsOnHomePage && dateRelatedVisibility) {
 				myContent.contextPut("showResultsVisible",Boolean.TRUE);
 				showResultsButton = LinkFactory.createButton("command.showResults", myContent, this);
@@ -735,6 +735,71 @@ public class IQRunController extends BasicController implements GenericEventList
 				myContent.contextPut("showResultsVisible",Boolean.FALSE);
 			}
 		}		
+	}
+	
+	/**
+	 * Evaluates if the results are visble or not in respect of the configured CONFIG_KEY_DATE_DEPENDENT_RESULTS parameter. <br>
+	 * The results are always visible if not date dependent.
+	 * EndDate could be null, that is there is no restriction for the end date.
+	 * 
+	 * @return true if is visible.
+	 */
+	private boolean isResultVisible() {
+		boolean isVisible = false;
+		String showResultsActive = modConfig.getStringValue(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS, IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_ALWAYS);
+		Date startDate, endDate;
+		Date passedStartDate, passedEndDate;
+		Date failedStartDate, failedEndDate;
+		Date currentDate;
+		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv);
+		
+		switch (showResultsActive) {
+		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_ALWAYS:
+			isVisible = true;
+			break;
+		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_DIFFERENT:
+			passedStartDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE);
+			passedEndDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE);
+			currentDate = new Date();
+			if(scoreEval.getPassed() && passedStartDate != null && currentDate.after(passedStartDate) && (passedEndDate == null || currentDate.before(passedEndDate))) {
+				isVisible = true;
+				break;
+			}
+			
+			failedStartDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
+			failedEndDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
+			if(!scoreEval.getPassed() && failedStartDate != null && currentDate.after(failedStartDate) && (failedEndDate == null || currentDate.before(failedEndDate))) {
+				isVisible = true;
+				break;
+			}
+			break;
+		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_FAILED_ONLY:
+			if (scoreEval.getPassed()) {
+				isVisible = false;
+				break;
+			}
+			currentDate = new Date();
+			failedStartDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
+			failedEndDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
+			if(!scoreEval.getPassed() && failedStartDate != null && currentDate.after(failedStartDate) && (failedEndDate == null || currentDate.before(failedEndDate))) {
+				isVisible = true;
+				break;
+			}
+			break;
+		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_SAME:
+			startDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
+			endDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
+			currentDate = new Date();
+			if(startDate != null && currentDate.after(startDate) && (endDate == null || currentDate.before(endDate))) {
+				isVisible = true;
+			}
+			break;
+		default:
+			isVisible = true;
+			break;
+		}
+
+		return isVisible;
 	}
 
 	private void exposeUserQuestionnaireDataToVC() {

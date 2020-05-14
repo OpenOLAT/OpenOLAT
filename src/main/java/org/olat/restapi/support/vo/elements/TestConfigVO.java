@@ -57,9 +57,13 @@ public class TestConfigVO {
 	private Boolean showScoreInfo;
 	private Boolean showResultsAfterFinish;
 	private Boolean showResultsOnHomepage;
-	private Boolean showResultsDependendOnDate;
+	private String showResultsDependendOnDate;
 	private Date showResultsStartDate;
 	private Date showResultsEndDate;
+	private Date showResultsFailedStartDate;
+	private Date showResultsFailedEndDate;
+	private Date showResultsPassedStartDate;
+	private Date showResultsPassedEndDate;
 
 	public TestConfigVO() {
 		//make JAXB happy
@@ -177,11 +181,11 @@ public class TestConfigVO {
 		this.showResultsOnHomepage = showResultsOnHomepage;
 	}
 
-	public Boolean getShowResultsDependendOnDate() {
+	public String getShowResultsDependendOnDate() {
 		return showResultsDependendOnDate;
 	}
 
-	public void setShowResultsDependendOnDate(Boolean showResultsDependendOnDate) {
+	public void setShowResultsDependendOnDate(String showResultsDependendOnDate) {
 		this.showResultsDependendOnDate = showResultsDependendOnDate;
 	}
 
@@ -199,5 +203,37 @@ public class TestConfigVO {
 
 	public void setShowResultsEndDate(Date showResultsEndDate) {
 		this.showResultsEndDate = showResultsEndDate;
+	}
+
+	public Date getShowResultsFailedStartDate() {
+		return showResultsFailedStartDate;
+	}
+
+	public void setShowResultsFailedStartDate(Date showResultsFailedStartDate) {
+		this.showResultsFailedStartDate = showResultsFailedStartDate;
+	}
+
+	public Date getShowResultsFailedEndDate() {
+		return showResultsFailedEndDate;
+	}
+
+	public void setShowResultsFailedEndDate(Date showResultsFailedEndDate) {
+		this.showResultsFailedEndDate = showResultsFailedEndDate;
+	}
+
+	public Date getShowResultsPassedStartDate() {
+		return showResultsPassedStartDate;
+	}
+
+	public void setShowResultsPassedStartDate(Date showResultsPassedStartDate) {
+		this.showResultsPassedStartDate = showResultsPassedStartDate;
+	}
+
+	public Date getShowResultsPassedEndDate() {
+		return showResultsPassedEndDate;
+	}
+
+	public void setShowResultsPassedEndDate(Date showResultsPassedEndDate) {
+		this.showResultsPassedEndDate = showResultsPassedEndDate;
 	}
 }

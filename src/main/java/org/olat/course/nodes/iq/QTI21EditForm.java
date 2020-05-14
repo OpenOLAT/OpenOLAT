@@ -73,13 +73,25 @@ public class QTI21EditForm extends FormBasicController {
 			QTI21AssessmentResultsOptions.QUESTION_SUMMARY,
 			QTI21AssessmentResultsOptions.USER_SOLUTIONS, QTI21AssessmentResultsOptions.CORRECT_SOLUTIONS
 	};
+	private static final String dateBase = "date.";
+	private static final String[] dateKeys = new String[] { 
+			"no",
+			IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_ALWAYS,
+			IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_FAILED_ONLY,
+			IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_DIFFERENT,
+			IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_SAME,
+	};
+	private static final String[] dateValues = new String[dateKeys.length];
 
 	private SingleSelection correctionModeEl;
-	private MultipleSelectionElement showResultsOnHomePage;
+	private SingleSelection showResultsDateDependentEl;
 	private MultipleSelectionElement scoreInfo;
-	private MultipleSelectionElement showResultsDateDependentButton;
-	private DateChooser endDateElement;
-	private DateChooser startDateElement;
+	private DateChooser generalEndDateElement;
+	private DateChooser generalStartDateElement;
+	private DateChooser failedEndDateElement;
+	private DateChooser failedStartDateElement;
+	private DateChooser passedEndDateElement;
+	private DateChooser passedStartDateElement;
 	private MultipleSelectionElement testDateDependentEl;
 	private DateChooser startTestDateElement;
 	private DateChooser endTestDateElement;
@@ -111,6 +123,10 @@ public class QTI21EditForm extends FormBasicController {
 		this.ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(nodeAccessType);
 		this.deliveryOptions = (deliveryOptions == null ? new QTI21DeliveryOptions() : deliveryOptions);
 		this.needManualCorrection = needManualCorrection;
+		
+		for (int i = 0; i < dateKeys.length; i++) {
+			dateValues[i] = translate(dateBase + dateKeys[i]);
+		}
 		
 		initForm(ureq);
 	}
@@ -156,12 +172,12 @@ public class QTI21EditForm extends FormBasicController {
 		testDateDependentEl.setHelpTextKey("qti.form.test.date.help", null);
 		testDateDependentEl.addActionListener(FormEvent.ONCLICK);
 	
-		Date startTestDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_START_TEST_DATE);
+		Date startTestDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_START_TEST_DATE);
 		startTestDateElement = uifactory.addDateChooser("qti_form_start_test_date", "qti.form.date.start", startTestDate, formLayout);
 		startTestDateElement.setDateChooserTimeEnabled(true);
 		startTestDateElement.setMandatory(true);
 		
-		Date endTestDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_TEST_DATE);
+		Date endTestDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_END_TEST_DATE);
 		endTestDateElement = uifactory.addDateChooser("qti_form_end_test_date", "qti.form.date.end", endTestDate, formLayout);
 		endTestDateElement.setDateChooserTimeEnabled(true);
 	}
@@ -206,29 +222,44 @@ public class QTI21EditForm extends FormBasicController {
 		}
 		scoreInfo.addActionListener(FormEvent.ONCLICK);
 		
-		boolean showResultOnHomePage = modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE);
-		showResultsOnHomePage = uifactory.addCheckboxesHorizontal("qti_enableResultsOnHomePage", "qti.form.results.onhomepage", formLayout, new String[]{"xx"}, new String[]{null});
-		if(showResultOnHomePage) {
-			showResultsOnHomePage.select("xx", showResultOnHomePage);
-		}
-		showResultsOnHomePage.setElementCssClass("o_sel_results_on_homepage");
-		showResultsOnHomePage.addActionListener(FormEvent.ONCLICK);
-		
-		boolean showResultsDateDependent = modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS);
-		showResultsDateDependentButton = uifactory.addCheckboxesHorizontal("qti_showresult", "qti.form.show.results", formLayout, new String[]{"xx"}, new String[]{null});
-		showResultsDateDependentButton.select("xx", showResultsDateDependent);
-		showResultsDateDependentButton.addActionListener(FormEvent.ONCLICK);
+		boolean showResultOnHomePage = modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE);		
+		String showResultsDateDependent = modConfig.getStringValue(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS, IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_ALWAYS);  
+		showResultsDateDependentEl = uifactory.addDropdownSingleselect("qti_showresult", "qti.form.results.onhomepage", formLayout, dateKeys, dateValues);
+		showResultsDateDependentEl.select(showResultOnHomePage ? showResultsDateDependent : "no", true);
+		showResultsDateDependentEl.addActionListener(FormEvent.ONCHANGE);
 	
-		Date startDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
-		startDateElement = uifactory.addDateChooser("qti_form_start_date", "qti.form.date.start", null, formLayout);
-		startDateElement.setDateChooserTimeEnabled(true);
-		startDateElement.setDate(startDate);
-		startDateElement.setMandatory(true);
+		Date generalStartDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
+		generalStartDateElement = uifactory.addDateChooser("qti_form__general_start_date", "qti.form.date.start", null, formLayout);
+		generalStartDateElement.setDateChooserTimeEnabled(true);
+		generalStartDateElement.setDate(generalStartDate);
+		generalStartDateElement.setMandatory(true);
 		
-		Date endDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
-		endDateElement = uifactory.addDateChooser("qti_form_end_date", "qti.form.date.end", null, formLayout);
-		endDateElement.setDateChooserTimeEnabled(true);
-		endDateElement.setDate(endDate);
+		Date generalEndDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
+		generalEndDateElement = uifactory.addDateChooser("qti_form_general_end_date", "qti.form.date.end", null, formLayout);
+		generalEndDateElement.setDateChooserTimeEnabled(true);
+		generalEndDateElement.setDate(generalEndDate);
+		
+		Date failedStartDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
+		failedStartDateElement = uifactory.addDateChooser("qti_form_failed_start_date", "qti.form.date.failed.start", null, formLayout);
+		failedStartDateElement.setDateChooserTimeEnabled(true);
+		failedStartDateElement.setDate(failedStartDate);
+		failedStartDateElement.setMandatory(true);
+		
+		Date failedEndDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
+		failedEndDateElement = uifactory.addDateChooser("qti_form_failed_end_date", "qti.form.date.end", null, formLayout);
+		failedEndDateElement.setDateChooserTimeEnabled(true);
+		failedEndDateElement.setDate(failedEndDate);
+		
+		Date passedStartDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
+		passedStartDateElement = uifactory.addDateChooser("qti_form_passed_start_date", "qti.form.date.passed.start", null, formLayout);
+		passedStartDateElement.setDateChooserTimeEnabled(true);
+		passedStartDateElement.setDate(passedStartDate);
+		passedStartDateElement.setMandatory(true);
+		
+		Date passedEndDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
+		passedEndDateElement = uifactory.addDateChooser("qti_form_passed_end_date", "qti.form.date.end", null, formLayout);
+		passedEndDateElement.setDateChooserTimeEnabled(true);
+		passedEndDateElement.setDate(passedEndDate);
 		
 		QTI21AssessmentResultsOptions resultsOptions = deliveryOptions.getAssessmentResultsOptions();
 		if(!AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT.equals(modConfig.getStringValue(IQEditController.CONFIG_KEY_SUMMARY))) {
@@ -299,25 +330,54 @@ public class QTI21EditForm extends FormBasicController {
 			}
 		}
 
-		startDateElement.clearError();
-		if(showResultsDateDependentButton.isSelected(0)) {
-			if(startDateElement.getDate() == null) {
-				startDateElement.setErrorKey("form.legende.mandatory", null);
+		generalStartDateElement.clearError();
+		
+		switch (showResultsDateDependentEl.getSelectedKey()) {			
+		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_DIFFERENT:
+			if(passedStartDateElement.getDate() == null) {
+				passedStartDateElement.setErrorKey("form.legende.mandatory", null);
 				allOk &= false;
-			} else if(endDateElement.getDate() != null && startDateElement.getDate().after(endDateElement.getDate())) {
-				startDateElement.setErrorKey("error.begin.after.end", null);
+			} else if(passedEndDateElement.getDate() != null && passedStartDateElement.getDate().after(passedEndDateElement.getDate())) {
+				passedStartDateElement.setErrorKey("error.begin.after.end", null);
+				allOk &= false;
+			} 
+			
+			if(failedStartDateElement.getDate() == null) {
+				failedStartDateElement.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			} else if(failedEndDateElement.getDate() != null && failedStartDateElement.getDate().after(failedEndDateElement.getDate())) {
+				failedStartDateElement.setErrorKey("error.begin.after.end", null);
 				allOk &= false;
 			}
+			break;
+		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_FAILED_ONLY:
+			if(failedStartDateElement.getDate() == null) {
+				failedStartDateElement.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			} else if(failedEndDateElement.getDate() != null && failedStartDateElement.getDate().after(failedEndDateElement.getDate())) {
+				failedStartDateElement.setErrorKey("error.begin.after.end", null);
+				allOk &= false;
+			}
+			break;
+		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_SAME:
+			if(generalStartDateElement.getDate() == null) {
+				generalStartDateElement.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			} else if(generalEndDateElement.getDate() != null && generalStartDateElement.getDate().after(generalEndDateElement.getDate())) {
+				generalStartDateElement.setErrorKey("error.begin.after.end", null);
+				allOk &= false;
+			}
+			break;
+		default:
+			break;
 		}
-
+		
 		return allOk;
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(showResultsOnFinishEl == source
-				|| showResultsOnHomePage == source
-				|| showResultsDateDependentButton == source) {
+		if(showResultsOnFinishEl == source || showResultsDateDependentEl == source) {
 			update();
 		} else if(testDateDependentEl == source) {
 			if(testDateDependentEl.isAtLeastSelected(1)) {
@@ -330,15 +390,70 @@ public class QTI21EditForm extends FormBasicController {
 	}
 	
 	private void update() {
-		showResultsDateDependentButton.setVisible(showResultsOnHomePage.isSelected(0));
-
-		assessmentResultsOnFinishEl.setVisible(showResultsOnFinishEl.isSelected(0) || showResultsOnHomePage.isSelected(0));
-
-		resetDateChooser(startDateElement, showResultsDateDependentButton);
-		resetDateChooser(endDateElement, showResultsDateDependentButton);
+		assessmentResultsOnFinishEl.setVisible(showResultsOnFinishEl.isSelected(0) || !showResultsDateDependentEl.isSelected(0));
+		
+		resetDateChooser(generalStartDateElement);
+		resetDateChooser(generalEndDateElement);
+		resetDateChooser(failedStartDateElement);
+		resetDateChooser(failedEndDateElement);
+		resetDateChooser(passedStartDateElement);
+		resetDateChooser(passedEndDateElement);
 		
 		resetDateChooser(startTestDateElement, testDateDependentEl);
 		resetDateChooser(endTestDateElement, testDateDependentEl);
+
+		switch (showResultsDateDependentEl.getSelectedKey()) {
+		case "no":
+			generalStartDateElement.setVisible(false);
+			generalEndDateElement.setVisible(false);
+			failedStartDateElement.setVisible(false);
+			failedEndDateElement.setVisible(false);
+			passedStartDateElement.setVisible(false);
+			passedEndDateElement.setVisible(false);
+			break;
+		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_DIFFERENT:
+			generalStartDateElement.setVisible(false);
+			generalEndDateElement.setVisible(false);
+			failedStartDateElement.setVisible(true);
+			failedStartDateElement.setDate(modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE));
+			failedEndDateElement.setVisible(true);
+			failedEndDateElement.setDate(modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE));
+			passedStartDateElement.setVisible(true);
+			passedStartDateElement.setDate(modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE));
+			passedEndDateElement.setVisible(true);
+			passedEndDateElement.setDate(modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE));
+			break;
+		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_FAILED_ONLY:
+			generalStartDateElement.setVisible(false);
+			generalEndDateElement.setVisible(false);
+			failedStartDateElement.setVisible(true);
+			failedStartDateElement.setDate(modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE));
+			failedEndDateElement.setVisible(true);
+			failedEndDateElement.setDate(modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE));
+			passedStartDateElement.setVisible(false);
+			passedEndDateElement.setVisible(false);
+			break;
+		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_ALWAYS:
+			generalStartDateElement.setVisible(false);
+			generalEndDateElement.setVisible(false);
+			failedStartDateElement.setVisible(false);
+			failedEndDateElement.setVisible(false);
+			passedStartDateElement.setVisible(false);
+			passedEndDateElement.setVisible(false);
+			break;
+		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_SAME:
+			generalStartDateElement.setVisible(true);
+			generalStartDateElement.setDate(modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE));
+			generalEndDateElement.setVisible(true);
+			generalEndDateElement.setDate(modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_DATE));
+			failedStartDateElement.setVisible(false);
+			failedEndDateElement.setVisible(false);
+			passedStartDateElement.setVisible(false);
+			passedEndDateElement.setVisible(false);
+			break;
+		default:
+			break;
+		}
 	}
 	
 	private void resetDateChooser(DateChooser dateElement, MultipleSelectionElement parentEl) {
@@ -347,6 +462,13 @@ public class QTI21EditForm extends FormBasicController {
 			dateElement.setValue("");
 		}
 		dateElement.setVisible(parentEl.isVisible() && parentEl.isSelected(0));
+	}  
+	
+	private void resetDateChooser(DateChooser dateElement) {
+		dateElement.clearError();
+		if (!dateElement.isVisible()){
+			dateElement.setValue("");
+		}
 	}
 	
 	private void updateAssessmentResultsOnFinish(QTI21AssessmentResultsOptions resultsOptions) {
@@ -423,23 +545,61 @@ public class QTI21EditForm extends FormBasicController {
 		
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_DATE_DEPENDENT_TEST, testDateDependentEl.isSelected(0));
 		
-		modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_START_TEST_DATE, startTestDateElement.getDate());
-		modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_END_TEST_DATE, endTestDateElement.getDate());
+		modConfig.setDateValue(IQEditController.CONFIG_KEY_START_TEST_DATE, startTestDateElement.getDate());
+		modConfig.setDateValue(IQEditController.CONFIG_KEY_END_TEST_DATE, endTestDateElement.getDate());
 		
 		if(correctionModeEl.isOneSelected()) {
 			modConfig.setStringValue(IQEditController.CONFIG_CORRECTION_MODE, correctionModeEl.getSelectedKey());
 		}
 
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_ENABLESCOREINFO, scoreInfo.isSelected(0));
-		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS, showResultsDateDependentButton.isSelected(0));
+		modConfig.setStringValue(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS, showResultsDateDependentEl.getSelectedKey());
 		
-		modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE, startDateElement.getDate());
-		modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_END_DATE, endDateElement.getDate());
+		switch (showResultsDateDependentEl.getSelectedKey()) {
+		case "no":
+		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_ALWAYS:
+			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
+			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
+			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE);
+			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE);
+			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
+			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
+			break;
+		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_DIFFERENT:
+			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
+			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
+			
+			modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE, failedStartDateElement.getDate());
+			modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE, failedEndDateElement.getDate());
+			modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE, passedStartDateElement.getDate());
+			modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE, passedEndDateElement.getDate());
+			break;
+		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_FAILED_ONLY:
+			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
+			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
+			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE);
+			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE);
+			
+			modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE, failedStartDateElement.getDate());
+			modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE, failedEndDateElement.getDate());
+			break;
+		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_SAME:
+			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE);
+			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE);
+			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
+			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
+			
+			modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE, generalStartDateElement.getDate());
+			modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_END_DATE, generalEndDateElement.getDate());
+			break;
+		default:
+			break;
+		}
 		
-		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE, showResultsOnHomePage.isSelected(0));
+		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE, !showResultsDateDependentEl.isSelected(0));
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_RESULT_ON_FINISH, showResultsOnFinishEl.isSelected(0));
 		
-		if(showResultsOnFinishEl.isSelected(0) || showResultsOnHomePage.isSelected(0)) {
+		if(showResultsOnFinishEl.isSelected(0) || !showResultsDateDependentEl.isSelected(0)) {
 			if(assessmentResultsOnFinishEl.isAtLeastSelected(1)) {
 				String options = QTI21AssessmentResultsOptions.toString(assessmentResultsOnFinishEl.getSelectedKeys());
 				modConfig.set(IQEditController.CONFIG_KEY_SUMMARY, options);
