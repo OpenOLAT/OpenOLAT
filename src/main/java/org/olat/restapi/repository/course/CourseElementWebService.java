@@ -2104,7 +2104,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			@QueryParam("showNavigation") @DefaultValue("true") Boolean showNavigation,
 			@QueryParam("showQuestionTitle") @DefaultValue("true") Boolean showQuestionTitle,
 			@QueryParam("showResultsAfterFinish") @DefaultValue("true") Boolean showResultsAfterFinish,
-			@QueryParam("showResultsDependendOnDate") @DefaultValue("false") Boolean showResultsDependendOnDate,
+			@QueryParam("showResultsDependendOnDate") @DefaultValue("false") String showResultsDependendOnDate,
 			@QueryParam("showResultsOnHomepage") @DefaultValue("false") Boolean showResultsOnHomepage,
 			@QueryParam("showScoreInfo") @DefaultValue("true") Boolean showScoreInfo,
 			@QueryParam("showQuestionProgress") @DefaultValue("true") Boolean showQuestionProgress,
@@ -2113,7 +2113,6 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			@QueryParam("summaryPresentation") @DefaultValue(AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT) String summaryPresentation,
 			@QueryParam("startDate") Long startDate, @QueryParam("endDate") Long endDate,
 			@Context HttpServletRequest request) {
-		
 		return addTestConfiguration(courseId, nodeId, allowCancel, allowNavigation, allowSuspend, numAttempts, sequencePresentation, showNavigation, showQuestionTitle, showResultsAfterFinish, showResultsDependendOnDate, showResultsOnHomepage, showScoreInfo, showQuestionProgress, showScoreProgress, showSectionsOnly, summaryPresentation, startDate, endDate, request);
 	}
 	
@@ -2172,7 +2171,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			@QueryParam("showNavigation") @DefaultValue("true") Boolean showNavigation,
 			@QueryParam("showQuestionTitle") @DefaultValue("true") Boolean showQuestionTitle,
 			@QueryParam("showResultsAfterFinish") @DefaultValue("true") Boolean showResultsAfterFinish,
-			@QueryParam("showResultsDependendOnDate") @DefaultValue("false") Boolean showResultsDependendOnDate,
+			@QueryParam("showResultsDependendOnDate") @DefaultValue("false") String showResultsDependendOnDate,
 			@QueryParam("showResultsOnHomepage") @DefaultValue("false") Boolean showResultsOnHomepage,
 			@QueryParam("showScoreInfo") @DefaultValue("true") Boolean showScoreInfo,
 			@QueryParam("showQuestionProgress") @DefaultValue("true") Boolean showQuestionProgress,
@@ -2547,7 +2546,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		private final Boolean allowCancel;
 		private final Boolean allowSuspend;
 		private final Boolean allowNavigation;
-		private final Boolean showResultsDependendOnDate;
+		private final String showResultsDependendOnDate;
 		private final Boolean showNavigation;
 		private final String sequencePresentation;
 		private final Boolean showQuestionTitle;
@@ -2564,7 +2563,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 
 		public TestFullConfig(Boolean allowCancel, Boolean allowNavigation, Boolean allowSuspend,
 			int numAttempts, final String sequencePresentation, Boolean showNavigation, Boolean showQuestionTitle,
-			Boolean showResultsAfterFinish, Boolean showResultsDependendOnDate, Boolean showResultsOnHomepage,
+			Boolean showResultsAfterFinish, String showResultsDependendOnDate, Boolean showResultsOnHomepage,
 			Boolean showScoreInfo, Boolean showQuestionProgress, Boolean showScoreProgress,
 			Boolean showSectionsOnly, String summaryPresentation, Long startDate, Long endDate) {
 				this.allowCancel = allowCancel;
