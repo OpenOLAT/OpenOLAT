@@ -77,6 +77,12 @@ public interface LectureBlock extends LectureBlockRef, ModifiedInfo, CreateInfo,
 	public int getEffectiveLecturesNumber();
 
 	public void setEffectiveLecturesNumber(int effectiveLecturesNumber);
+	
+	/**
+	 * @return The calculated number of lectures dependent of planned and
+	 * 		effective lectures and the status of the block.
+	 */
+	public int getCalculatedLecturesNumber();
 
 	public Date getStartDate();
 
