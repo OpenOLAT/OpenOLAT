@@ -254,11 +254,8 @@ public class LecturesCockpitController extends BasicController implements Activa
 		List<Link> pendingLinks = new ArrayList<>();
 		Set<String> deduplicate = new HashSet<>();
 		for(LectureBlock lectureBlock:lectureBlocks) {
-			int lectures = lectureBlock.getEffectiveLecturesNumber();
-			if(lectures <= 0) {
-				lectures = lectureBlock.getPlannedLecturesNumber();
-			}
-			
+			int lectures = lectureBlock.getCalculatedLecturesNumber();
+
 			Date startdDate = lectureBlock.getStartDate();
 			String day = formatter.dayOfWeek(startdDate);
 			String date = formatter.formatDate(startdDate);

@@ -33,7 +33,6 @@ import org.olat.core.id.User;
 import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
 import org.olat.modules.lecture.AbsenceNotice;
 import org.olat.modules.lecture.LectureBlock;
-import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -78,7 +77,7 @@ implements SortableFlexiTableDataModel<AbsenceNoticeRow> {
 			switch(NoticeCols.values()[col]) {
 				case id: return row.getKey();
 				case username: return row.getIdentityName();
-				case date: return row.getAbsenceNotice();
+				case date: return row;
 				case start: return row.getStartDate();
 				case end: return row.getEndDate();
 				case entry: return row.getEntriesLink();
@@ -119,11 +118,7 @@ implements SortableFlexiTableDataModel<AbsenceNoticeRow> {
 	private int getNumOfLectures(AbsenceNoticeRow row) {
 		int totalLectures = 0;
 		for(LectureBlock lectureBlock:row.getLectureBlocks()) {
-			int numOfLectures = lectureBlock.getEffectiveLecturesNumber();
-			if(numOfLectures <= 0 && lectureBlock.getStatus() != LectureBlockStatus.cancelled) {
-				numOfLectures = lectureBlock.getPlannedLecturesNumber();
-			}
-			totalLectures += numOfLectures;
+			totalLectures += lectureBlock.getCalculatedLecturesNumber();
 		}
 		return totalLectures;
 	}

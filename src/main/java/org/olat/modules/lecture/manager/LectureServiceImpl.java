@@ -268,11 +268,8 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		lectureBlock.setRollCallStatus(LectureRollCallStatus.closed);
 		LectureBlockImpl block = (LectureBlockImpl)lectureBlockDao.update(lectureBlock);
 		
-		int numOfLectures = block.getEffectiveLecturesNumber();
-		if(numOfLectures <= 0 && block.getStatus() != LectureBlockStatus.cancelled) {
-			numOfLectures = block.getPlannedLecturesNumber();
-		}
-		
+		int numOfLectures = block.getCalculatedLecturesNumber();
+
 		List<LectureBlockRollCall> rollCallList = lectureBlockRollCallDao.getRollCalls(lectureBlock);
 		for(LectureBlockRollCall rollCall:rollCallList) {
 			lectureBlockRollCallDao.adaptLecture(block, rollCall, numOfLectures, author);
@@ -1140,10 +1137,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		Map<Identity,LectureBlockRollCall> identityToRollCallMap = rollCalls.stream()
 				.collect(Collectors.toMap(LectureBlockRollCall::getIdentity, call -> call, (u, v) -> u));
 		
-		int numOfLectures = lectureBlock.getEffectiveLecturesNumber();
-		if(numOfLectures <= 0 && lectureBlock.getStatus() != LectureBlockStatus.cancelled) {
-			numOfLectures = lectureBlock.getPlannedLecturesNumber();
-		}
+		int numOfLectures = lectureBlock.getCalculatedLecturesNumber();
 		
 		for(Identity participant:participants) {
 			LectureBlockRollCall rollCall = identityToRollCallMap.get(participant);
@@ -1211,10 +1205,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 
 		List<LectureBlockRollCall> rollCallList = lectureBlockRollCallDao.getRollCalls(lectureBlock);
 		for(LectureBlockRollCall rollCall:rollCallList) {
-			int numOfLectures = lectureBlock.getEffectiveLecturesNumber();
-			if(numOfLectures <= 0 && lectureBlock.getStatus() != LectureBlockStatus.cancelled) {
-				numOfLectures = lectureBlock.getPlannedLecturesNumber();
-			}
+			int numOfLectures = lectureBlock.getCalculatedLecturesNumber();
 			lectureBlockRollCallDao.adaptLecture(lectureBlock, rollCall, numOfLectures, null);
 		}
 	}
@@ -1225,10 +1216,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		for(LectureBlock lectureBlock:lectureBlocks) {
 			List<LectureBlockRollCall> rollCallList = lectureBlockRollCallDao.getRollCalls(lectureBlock);
 			for(LectureBlockRollCall rollCall:rollCallList) {
-				int numOfLectures = lectureBlock.getEffectiveLecturesNumber();
-				if(numOfLectures <= 0 && lectureBlock.getStatus() != LectureBlockStatus.cancelled) {
-					numOfLectures = lectureBlock.getPlannedLecturesNumber();
-				}
+				int numOfLectures = lectureBlock.getCalculatedLecturesNumber();
 				lectureBlockRollCallDao.adaptLecture(lectureBlock, rollCall, numOfLectures, author);
 			}
 			dbInstance.commitAndCloseSession();

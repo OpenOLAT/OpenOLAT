@@ -120,11 +120,8 @@ public class LectureBlockRollCallDAO {
 			call.setLecturesAbsentList(currentAbsentList);
 			call.setLecturesAbsentNumber(currentAbsentList.size());
 			
-			int numOfLectures = lectureBlock.getEffectiveLecturesNumber();
-			if(numOfLectures <= 0 && lectureBlock.getStatus() != LectureBlockStatus.cancelled) {
-				numOfLectures = lectureBlock.getPlannedLecturesNumber();
-			}
-			
+			int numOfLectures = lectureBlock.getCalculatedLecturesNumber();
+
 			List<Integer> attendedList = new ArrayList<>();
 			for(int i=0; i<numOfLectures; i++) {
 				if(!currentAbsentList.contains(i)) {
@@ -152,10 +149,7 @@ public class LectureBlockRollCallDAO {
 			call.setLecturesAbsentList(currentAbsentList);
 			call.setLecturesAbsentNumber(currentAbsentList.size());
 
-			int numOfLectures = lectureBlock.getEffectiveLecturesNumber();
-			if(numOfLectures <= 0 && lectureBlock.getStatus() != LectureBlockStatus.cancelled) {
-				numOfLectures = lectureBlock.getPlannedLecturesNumber();
-			}
+			int numOfLectures = lectureBlock.getCalculatedLecturesNumber();
 
 			List<Integer> attendedList = new ArrayList<>();
 			for(int i=0; i<numOfLectures; i++) {
@@ -178,7 +172,7 @@ public class LectureBlockRollCallDAO {
 		List<Integer> currentAbsentList = call.getLecturesAbsentList();
 		List<Integer> currentAttendedList = call.getLecturesAttendedList();
 		
-		if((currentAbsentList != null && currentAbsentList.size() > 0) || (currentAttendedList != null && currentAttendedList.size() > 0)) {
+		if((currentAbsentList != null && !currentAbsentList.isEmpty()) || (currentAttendedList != null && !currentAttendedList.isEmpty())) {
 			String before = auditLogDao.toXml(rollCall);
 			
 			int currentLectures = currentAbsentList.size() + currentAttendedList.size();
@@ -877,7 +871,7 @@ public class LectureBlockRollCallDAO {
 				String qName = "p_" + ++count;
 				
 				UserPropertyHandler handler = userManager.getUserPropertiesConfig().getPropertyHandler(propName);
-				if(handler == null) {// fallback if the haandler is disabled
+				if(handler == null) {// fallback if the handler is disabled
 					for(UserPropertyHandler userPropertyHandler:userPropertyHandlers) {
 						if(propName.equals(userPropertyHandler.getName())) {
 							handler = userPropertyHandler;

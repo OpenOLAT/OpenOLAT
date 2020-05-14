@@ -88,11 +88,7 @@ public class LectureBlockAndRollCall {
 			
 			if(absenceNotice != null) {
 				lecturesAttendedNumber = 0;
-				int numOfLectures = lectureBlock.getEffectiveLecturesNumber();
-				if(numOfLectures <= 0) {
-					numOfLectures = lectureBlock.getPlannedLecturesNumber();
-				}
-				lecturesAbsentNumber = numOfLectures;
+				lecturesAbsentNumber = lectureBlock.getCalculatedLecturesNumber();
 				lecturesAuthorizedAbsent = absenceNotice.getAbsenceAuthorized();
 			} else {
 				lecturesAttendedNumber = rollCall.getLecturesAttendedNumber();
