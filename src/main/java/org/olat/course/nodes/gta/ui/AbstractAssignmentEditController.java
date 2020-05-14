@@ -85,15 +85,17 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 abstract class AbstractAssignmentEditController extends FormBasicController implements Activateable2 {
 
-	private FormLink addTaskLink, createTaskLink;
+	private FormLink addTaskLink;
+	private FormLink createTaskLink;
 	private FlexiTableElement taskDefTableEl;
 	private TaskDefinitionTableModel taskModel;
 	private WarningFlexiCellRenderer fileExistsRenderer;
 	
 	private CloseableModalController cmc;
 	private NewTaskController newTaskCtrl;
+	private EditTaskController addTaskCtrl;
+	private EditTaskController editTaskCtrl;
 	private DialogBoxController confirmDeleteCtrl;
-	private EditTaskController addTaskCtrl, editTaskCtrl;
 	private DocEditorFullscreenController docEditorCtrl;
 	
 	private final File tasksFolder;

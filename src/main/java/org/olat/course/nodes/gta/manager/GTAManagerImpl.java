@@ -186,16 +186,13 @@ public class GTAManagerImpl implements GTAManager {
 				taskDefinitions.addAll(taskDefinitionsList.getTasks());
 			}
 		} else {
-			syncWithTaskList(courseEnv, cNode, new TaskListSynched() {
-				@Override
-				public void sync() {
-					ModuleConfiguration config = cNode.getModuleConfiguration();
-					TaskDefinitionList tasks = (TaskDefinitionList)config.get(GTACourseNode.GTASK_TASKS);
-					if(tasks != null) {
-						taskDefinitions.addAll(tasks.getTasks());
-					}
-					storeTaskDefinitions(taskDefinitions, courseEnv, cNode);
+			syncWithTaskList(courseEnv, cNode, () -> {
+				ModuleConfiguration config = cNode.getModuleConfiguration();
+				TaskDefinitionList tasks = (TaskDefinitionList)config.get(GTACourseNode.GTASK_TASKS);
+				if(tasks != null) {
+					taskDefinitions.addAll(tasks.getTasks());
 				}
+				storeTaskDefinitions(taskDefinitions, courseEnv, cNode);
 			});
 		}
 		return	taskDefinitions;
@@ -203,43 +200,40 @@ public class GTAManagerImpl implements GTAManager {
 
 	@Override
 	public void addTaskDefinition(TaskDefinition newTask, CourseEnvironment courseEnv, GTACourseNode cNode) {
-		syncWithTaskList( courseEnv, cNode, new TaskListSynched() {
-			@Override
-			public void sync() {
-				List<TaskDefinition> taskDefinitions = getTaskDefinitions(courseEnv, cNode);
-				taskDefinitions.add(newTask);
-				storeTaskDefinitions(taskDefinitions, courseEnv, cNode);
-			}
+		syncWithTaskList(courseEnv, cNode, () -> {
+			List<TaskDefinition> taskDefinitions = getTaskDefinitions(courseEnv, cNode);
+			taskDefinitions.add(newTask);
+			storeTaskDefinitions(taskDefinitions, courseEnv, cNode);
 		});
 	}
 
 	@Override
 	public void removeTaskDefinition(TaskDefinition removedTask, CourseEnvironment courseEnv, GTACourseNode cNode) {
-		syncWithTaskList( courseEnv, cNode, new TaskListSynched() {
-			@Override
-			public void sync() {
-				List<TaskDefinition> taskDefinitions = getTaskDefinitions(courseEnv, cNode);
-				boolean deleteFile = true;
-				for(int i=taskDefinitions.size(); i-->0; ) {
-					if(taskDefinitions.get(i).getTitle().equals(removedTask.getTitle())) {
-						taskDefinitions.remove(i);
-					} else if(taskDefinitions.get(i).getFilename().equals(removedTask.getFilename())) {
-						deleteFile = false;
-					}
+		syncWithTaskList(courseEnv, cNode, () -> {
+			List<TaskDefinition> taskDefinitions = getTaskDefinitions(courseEnv, cNode);
+			boolean deleteFile = true;
+			for(int i=taskDefinitions.size(); i-->0; ) {
+				if(taskDefinitions.get(i).equals(removedTask)) {
+					taskDefinitions.remove(i);
 				}
-				
-				if(deleteFile) {
-					VFSContainer tasksContainer = getTasksContainer(courseEnv, cNode);
-					VFSItem item = tasksContainer.resolve(removedTask.getFilename());
-					deleteEdusharingUsages(courseEnv, item);
-					if(item != null) {
-						item.delete();
-					}
-				}
-				storeTaskDefinitions(taskDefinitions, courseEnv, cNode);
 			}
+			
+			for(int i=taskDefinitions.size(); i-->0; ) {
+				if(taskDefinitions.get(i).getFilename().equals(removedTask.getFilename())) {
+					deleteFile = false;
+				}
+			}
+
+			if(deleteFile) {
+				VFSContainer tasksContainer = getTasksContainer(courseEnv, cNode);
+				VFSItem item = tasksContainer.resolve(removedTask.getFilename());
+				deleteEdusharingUsages(courseEnv, item);
+				if(item != null) {
+					item.delete();
+				}
+			}
+			storeTaskDefinitions(taskDefinitions, courseEnv, cNode);
 		});
-		
 	}
 	
 	private void deleteEdusharingUsages(CourseEnvironment courseEnv, VFSItem item) {
@@ -251,19 +245,16 @@ public class GTAManagerImpl implements GTAManager {
 
 	@Override
 	public void updateTaskDefinition(String currentFilename, TaskDefinition task, CourseEnvironment courseEnv, GTACourseNode cNode) {
-		syncWithTaskList( courseEnv, cNode, new TaskListSynched() {
-			@Override
-			public void sync() {
-				String filename = currentFilename == null ? task.getFilename() : currentFilename;
-				List<TaskDefinition> taskDefinitions = getTaskDefinitions(courseEnv, cNode);
-				for(int i=taskDefinitions.size(); i-->0; ) {
-					if(taskDefinitions.get(i).getFilename().equals(filename)) {
-						taskDefinitions.set(i, task);
-						break;
-					}
+		syncWithTaskList( courseEnv, cNode, () -> {
+			String filename = currentFilename == null ? task.getFilename() : currentFilename;
+			List<TaskDefinition> taskDefinitions = getTaskDefinitions(courseEnv, cNode);
+			for(int i=taskDefinitions.size(); i-->0; ) {
+				if(taskDefinitions.get(i).getFilename().equals(filename)) {
+					taskDefinitions.set(i, task);
+					break;
 				}
-				storeTaskDefinitions(taskDefinitions, courseEnv, cNode);
 			}
+			storeTaskDefinitions(taskDefinitions, courseEnv, cNode);
 		});
 	}
 	
@@ -304,16 +295,13 @@ public class GTAManagerImpl implements GTAManager {
 				solutionsDefinitions.addAll(solutionDefinitionsList.getSolutions());
 			}
 		} else {
-			syncWithTaskList( courseEnv, cNode, new TaskListSynched() {
-				@Override
-				public void sync() {
-					ModuleConfiguration config = cNode.getModuleConfiguration();
-					SolutionList solutions = (SolutionList)config.get(GTACourseNode.GTASK_SOLUTIONS);
-					if(solutions != null && solutions.getSolutions() != null) {
-						solutionsDefinitions.addAll(solutions.getSolutions());
-					}
-					storeSolutions(solutionsDefinitions, courseEnv, cNode);
+			syncWithTaskList(courseEnv, cNode, () -> {
+				ModuleConfiguration config = cNode.getModuleConfiguration();
+				SolutionList solutions = (SolutionList)config.get(GTACourseNode.GTASK_SOLUTIONS);
+				if(solutions != null && solutions.getSolutions() != null) {
+					solutionsDefinitions.addAll(solutions.getSolutions());
 				}
+				storeSolutions(solutionsDefinitions, courseEnv, cNode);
 			});
 		}
 		return solutionsDefinitions;
@@ -321,48 +309,39 @@ public class GTAManagerImpl implements GTAManager {
 
 	@Override
 	public void addSolution(Solution newSolution, CourseEnvironment courseEnv, GTACourseNode cNode) {
-		syncWithTaskList( courseEnv, cNode, new TaskListSynched() {
-			@Override
-			public void sync() {
-				List<Solution> solutions = getSolutions(courseEnv, cNode);
-				solutions.add(newSolution);
-				storeSolutions(solutions, courseEnv, cNode);
-			}
+		syncWithTaskList( courseEnv, cNode, () -> {
+			List<Solution> solutions = getSolutions(courseEnv, cNode);
+			solutions.add(newSolution);
+			storeSolutions(solutions, courseEnv, cNode);
 		});
 	}
 
 	@Override
 	public void removeSolution(Solution removedSolution, CourseEnvironment courseEnv, GTACourseNode cNode) {
-		syncWithTaskList( courseEnv, cNode, new TaskListSynched() {
-			@Override
-			public void sync() {
-				List<Solution> solutions = getSolutions(courseEnv, cNode);
-				for(int i=solutions.size(); i-->0; ) {
-					if(solutions.get(i).getFilename().equals(removedSolution.getFilename())) {
-						solutions.remove(i);
-						break;
-					}
+		syncWithTaskList( courseEnv, cNode, () -> {
+			List<Solution> solutions = getSolutions(courseEnv, cNode);
+			for(int i=solutions.size(); i-->0; ) {
+				if(solutions.get(i).getFilename().equals(removedSolution.getFilename())) {
+					solutions.remove(i);
+					break;
 				}
-				storeSolutions(solutions, courseEnv, cNode);
 			}
+			storeSolutions(solutions, courseEnv, cNode);
 		});
 	}
 	
 	@Override
 	public void updateSolution(String currentFilename, Solution solution, CourseEnvironment courseEnv, GTACourseNode cNode) {
-		syncWithTaskList( courseEnv, cNode, new TaskListSynched() {
-			@Override
-			public void sync() {
-				String filename = currentFilename == null ? solution.getFilename() : currentFilename;
-				List<Solution> solutions = getSolutions(courseEnv, cNode);
-				for(int i=solutions.size(); i-->0; ) {
-					if(solutions.get(i).getFilename().equals(filename)) {
-						solutions.set(i, solution);
-						break;
-					}
+		syncWithTaskList( courseEnv, cNode, () -> {
+			String filename = currentFilename == null ? solution.getFilename() : currentFilename;
+			List<Solution> solutions = getSolutions(courseEnv, cNode);
+			for(int i=solutions.size(); i-->0; ) {
+				if(solutions.get(i).getFilename().equals(filename)) {
+					solutions.set(i, solution);
+					break;
 				}
-				storeSolutions(solutions, courseEnv, cNode);
 			}
+			storeSolutions(solutions, courseEnv, cNode);
 		});
 	}
 	
@@ -608,7 +587,7 @@ public class GTAManagerImpl implements GTAManager {
 	
 	private List<BusinessGroup> getBusinessGroups(IdentityRef identity, List<Long> groupKeys, List<Long> areaKeys, GroupRoles role) {
 		List<Long> consolidatedGroupKeys = new ArrayList<>();
-		if(groupKeys != null && groupKeys.size() > 0) {
+		if(groupKeys != null && !groupKeys.isEmpty()) {
 			consolidatedGroupKeys.addAll(groupKeys);
 		}
 		consolidatedGroupKeys.addAll(areaManager.findBusinessGroupKeysOfAreaKeys(areaKeys));
@@ -625,7 +604,7 @@ public class GTAManagerImpl implements GTAManager {
 			List<Long> areaKeys = config.getList(GTACourseNode.GTASK_AREAS, Long.class);
 			
 			List<Long> consolidatedGroupKeys = new ArrayList<>();
-			if(groupKeys != null && groupKeys.size() > 0) {
+			if(groupKeys != null && !groupKeys.isEmpty()) {
 				consolidatedGroupKeys.addAll(groupKeys);
 			}
 			consolidatedGroupKeys.addAll(areaManager.findBusinessGroupKeysOfAreaKeys(areaKeys));
@@ -646,7 +625,7 @@ public class GTAManagerImpl implements GTAManager {
 			List<Long> areaKeys = config.getList(GTACourseNode.GTASK_AREAS, Long.class);
 
 			List<Long> consolidatedGroupKeys = new ArrayList<>();
-			if(groupKeys != null && groupKeys.size() > 0) {
+			if(groupKeys != null && !groupKeys.isEmpty()) {
 				consolidatedGroupKeys.addAll(groupKeys);
 			}
 			consolidatedGroupKeys.addAll(areaManager.findBusinessGroupKeysOfAreaKeys(areaKeys));
@@ -1262,7 +1241,6 @@ public class GTAManagerImpl implements GTAManager {
 	public boolean isDueDateEnabled(GTACourseNode cNode) {
 		if(cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES, false)
 				|| cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES, false)
-				|| cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES, false)
 				|| cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD, false)) {
 			return true;
 		} else if(cNode.getModuleConfiguration().getDateValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE) != null
@@ -1806,7 +1784,7 @@ public class GTAManagerImpl implements GTAManager {
 		String taskName = taskToString(assignedTask);
 		String msg = step + " of " + taskName + ": " + operation;
 		if(GTAType.group.name().equals(cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
-			log.info(Tracing.M_AUDIT, msg + " to business group: " + assessedGroup.getName());
+			log.info(Tracing.M_AUDIT, "{} to business group: {}", msg,  assessedGroup.getName());
 			courseEnv.getAuditManager()
 				.appendToUserNodeLog(cNode, actor, assessedGroup, msg, by);
 		} else {
@@ -1825,7 +1803,7 @@ public class GTAManagerImpl implements GTAManager {
 		String taskName = taskToString(assignedTask);
 		String msg = step + " of " + taskName + ": " + operation + " " + file;
 		if(GTAType.group.name().equals(cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
-			log.info(Tracing.M_AUDIT, msg + " to business group: " + assessedGroup.getName());
+			log.info(Tracing.M_AUDIT, "{} to business group: {}", msg, assessedGroup.getName());
 			courseEnv.getAuditManager()
 				.appendToUserNodeLog(cNode, actor, assessedGroup, msg, by);
 		} else {
