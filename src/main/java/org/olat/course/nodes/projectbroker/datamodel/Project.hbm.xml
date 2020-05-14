@@ -40,7 +40,7 @@
 		column="projectgroup_fk" outer-join="false" cascade="none"/> 
 
 	<many-to-one name="projectBroker" class="org.olat.course.nodes.projectbroker.datamodel.ProjectBrokerImpl"  
-		column="projectbroker_fk" cascade="none"/>
+		column="projectbroker_fk" cascade="none" fetch="join"/>
  
  	<map name="customfields" table="o_projectbroker_customfields" cascade="all,delete-orphan" fetch="join">
         <key column="fk_project_id" not-null="true"/>
