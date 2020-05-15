@@ -81,7 +81,7 @@ public class QTI21EditForm extends FormBasicController {
 			IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_DIFFERENT,
 			IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_SAME,
 	};
-	private static final String[] dateValues = new String[dateKeys.length];
+	private final String[] dateValues = new String[dateKeys.length];
 
 	private SingleSelection correctionModeEl;
 	private SingleSelection showResultsDateDependentEl;
@@ -227,6 +227,7 @@ public class QTI21EditForm extends FormBasicController {
 		showResultsDateDependentEl = uifactory.addDropdownSingleselect("qti_showresult", "qti.form.results.onhomepage", formLayout, dateKeys, dateValues);
 		showResultsDateDependentEl.select(showResultOnHomePage ? showResultsDateDependent : "no", true);
 		showResultsDateDependentEl.addActionListener(FormEvent.ONCHANGE);
+		showResultsDateDependentEl.setElementCssClass("o_sel_results_on_homepage");
 	
 		Date generalStartDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
 		generalStartDateElement = uifactory.addDateChooser("qti_form__general_start_date", "qti.form.date.start", null, formLayout);

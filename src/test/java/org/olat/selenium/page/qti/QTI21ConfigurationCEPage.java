@@ -24,6 +24,7 @@ import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.Select;
 
 /**
  * 
@@ -45,9 +46,10 @@ public class QTI21ConfigurationCEPage {
 	}
 	
 	public QTI21ConfigurationCEPage showScoreOnHomepage(boolean showResults) {
-		By scoreBy = By.cssSelector(".o_sel_results_on_homepage input[type='checkbox']");
+		By scoreBy = By.cssSelector(".o_sel_results_on_homepage select#o_fioqti_showresult_SELBOX");
 		WebElement scoreEl = browser.findElement(scoreBy);
-		OOGraphene.check(scoreEl, showResults);
+		String val = showResults ? "false" : "no";
+		new Select(scoreEl).selectByValue(val);
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
