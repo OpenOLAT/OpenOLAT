@@ -230,7 +230,7 @@ public class CorrectionOverviewModel {
 					identityToStates.put(entry.getKey(), sessionState);
 				}
 			} catch (Exception e) {
-				log.error("Cannot read test results of: " + entry.getKey(), e);
+				log.error("Cannot read test results of: {}", entry, e);
 				identityWithErrors.add(entry.getKey());
 			}
 		}

@@ -139,11 +139,8 @@ public class TeacherRollCallController extends FormBasicController {
 		this.withBack = withBack;
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
-		numOfLectures = lectureBlock.getEffectiveLecturesNumber();
-		if(numOfLectures <= 0 && lectureBlock.getStatus() != LectureBlockStatus.cancelled) {
-			numOfLectures = lectureBlock.getPlannedLecturesNumber();
-		}
-		
+		numOfLectures = lectureBlock.getCalculatedLecturesNumber();
+
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);

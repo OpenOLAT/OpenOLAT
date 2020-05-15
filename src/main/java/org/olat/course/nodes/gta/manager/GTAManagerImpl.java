@@ -203,7 +203,7 @@ public class GTAManagerImpl implements GTAManager {
 
 	@Override
 	public void addTaskDefinition(TaskDefinition newTask, CourseEnvironment courseEnv, GTACourseNode cNode) {
-		syncWithTaskList( courseEnv, cNode, () -> {
+		syncWithTaskList(courseEnv, cNode, () -> {
 			List<TaskDefinition> taskDefinitions = getTaskDefinitions(courseEnv, cNode);
 			taskDefinitions.add(newTask);
 			storeTaskDefinitions(taskDefinitions, courseEnv, cNode);
@@ -212,17 +212,21 @@ public class GTAManagerImpl implements GTAManager {
 
 	@Override
 	public void removeTaskDefinition(TaskDefinition removedTask, CourseEnvironment courseEnv, GTACourseNode cNode) {
-		syncWithTaskList( courseEnv, cNode, () -> {
+		syncWithTaskList(courseEnv, cNode, () -> {
 			List<TaskDefinition> taskDefinitions = getTaskDefinitions(courseEnv, cNode);
 			boolean deleteFile = true;
 			for(int i=taskDefinitions.size(); i-->0; ) {
-				if(taskDefinitions.get(i).getTitle().equals(removedTask.getTitle())) {
+				if(taskDefinitions.get(i).equals(removedTask)) {
 					taskDefinitions.remove(i);
-				} else if(taskDefinitions.get(i).getFilename().equals(removedTask.getFilename())) {
+				}
+			}
+
+			for(int i=taskDefinitions.size(); i-->0; ) {
+				if(taskDefinitions.get(i).getFilename().equals(removedTask.getFilename())) {
 					deleteFile = false;
 				}
 			}
-			
+
 			if(deleteFile) {
 				VFSContainer tasksContainer = getTasksContainer(courseEnv, cNode);
 				VFSItem item = tasksContainer.resolve(removedTask.getFilename());
@@ -294,7 +298,7 @@ public class GTAManagerImpl implements GTAManager {
 				solutionsDefinitions.addAll(solutionDefinitionsList.getSolutions());
 			}
 		} else {
-			syncWithTaskList( courseEnv, cNode, () -> {
+			syncWithTaskList(courseEnv, cNode, () -> {
 				ModuleConfiguration config = cNode.getModuleConfiguration();
 				SolutionList solutions = (SolutionList)config.get(GTACourseNode.GTASK_SOLUTIONS);
 				if(solutions != null && solutions.getSolutions() != null) {
@@ -1837,7 +1841,7 @@ public class GTAManagerImpl implements GTAManager {
 		String taskName = taskToString(assignedTask);
 		String msg = step + " of " + taskName + ": " + operation + " " + file;
 		if(GTAType.group.name().equals(cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
-			log.info(Tracing.M_AUDIT, "{} to business group: {}",msg , assessedGroup.getName());
+			log.info(Tracing.M_AUDIT, "{} to business group: {}", msg, assessedGroup.getName());
 			courseEnv.getAuditManager()
 				.appendToUserNodeLog(cNode, actor, assessedGroup, msg, by);
 		} else {

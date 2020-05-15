@@ -102,12 +102,13 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 	 * @param projectbroker_id
 	 * @return List of projects for certain project-broker
 	 */
+	@Override
 	public List<Project> getProjectListBy(final Long projectBrokerId) {
 		final boolean debug = log.isDebugEnabled();
 
 		long rstart = 0;
 		if(debug){
-			log.debug("getProjectListBy for projectBroker=" + projectBrokerId);
+			log.debug("getProjectListBy for projectBroker={}", projectBrokerId);
 			rstart = System.currentTimeMillis();
 		}
 		OLATResourceable projectBrokerOres = OresHelper.createOLATResourceableInstance(this.getClass(),projectBrokerId);
@@ -118,7 +119,7 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 	
 		if(debug){
 			long rstop = System.currentTimeMillis();
-			log.debug("time to fetch project with projectbroker_id " + projectBrokerId + " :" + (rstop - rstart));
+			log.debug("time to fetch project with projectbroker_id {} :{}", projectBrokerId, (rstop - rstart));
 		}
 		return projectList;
 	}
@@ -274,12 +275,12 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 			// invalide with removing from cache
 			projectCache.remove(projectBrokerId.toString());
 			if (deleteGroup) {
-				log.debug("start deleteProjectGroupFor project group=" + projectGroup);
+				log.debug("start deleteProjectGroupFor project group={}", projectGroup);
 				businessGroupService.deleteBusinessGroup(projectGroup);
 			}
 		});
 		
-		log.debug("DONE deleteProjectGroupFor project=" + project);
+		log.debug("DONE deleteProjectGroupFor project={}", project);
 	}
 
 	public int getNbrSelectedProjects(Identity identity, List<Project> projectList) {
@@ -341,7 +342,8 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 		return true;
 	}
 
-	public boolean canBeCancelEnrollmentBy(Identity identity,Project project,ProjectBrokerModuleConfiguration moduleConfig) {
+	@Override
+	public boolean canBeCancelEnrollmentBy(Identity identity, Project project, ProjectBrokerModuleConfiguration moduleConfig) {
 		// 6. date for enrollemnt ok
 		if (!isEnrollmentDateOk(project,moduleConfig) ){
 			return false;
@@ -350,10 +352,10 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 		if(!projectGroupManager.isDeselectionAllowed(project)){
 			return false;
 		} else {
-		if (moduleConfig.isAcceptSelectionManually()) {
-		  // could only cancel enrollment, when projectleader did not accept yet
-			return projectGroupManager.isProjectCandidate(identity, project) && !project.getState().equals(Project.STATE_ASSIGNED);
-		}
+			if (moduleConfig.isAcceptSelectionManually()) {
+			  // could only cancel enrollment, when projectleader did not accept yet
+				return projectGroupManager.isProjectCandidate(identity, project) && !project.getState().equals(Project.STATE_ASSIGNED);
+			}
 		  // could always cancel enrollment
 			return projectGroupManager.isProjectParticipant(identity, project); 
 		}
@@ -506,7 +508,7 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 	private void deleteAllReturnboxFilesOfProject(Project project, CourseEnvironment courseEnv, CourseNode cNode) {
 		VFSContainer returnboxDir = VFSManager.olatRootContainer(ProjectBrokerReturnboxController.getReturnboxBasePathForProject(project,courseEnv,cNode), null);
 		returnboxDir.delete();
-		log.debug("deleteAllReturnboxFilesOfProject path=" + returnboxDir);
+		log.debug("deleteAllReturnboxFilesOfProject path={}", returnboxDir);
 	}
 
 
@@ -517,7 +519,7 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 		// 1. check if alreday a projectBroker is in the cache
 		ProjectBroker projectBroker = projectCache.get(projectBrokerId.toString());
 		if (projectBroker == null) {
-			log.debug("find no projectBroker in the cache => create a new one projectBrokerId=" + projectBrokerId);
+			log.debug("find no projectBroker in the cache => create a new one projectBrokerId={}", projectBrokerId);
 			StringBuilder sb = new StringBuilder();
 			sb.append("select distinct project from ").append(ProjectImpl.class.getName()).append(" as project ")
 			  .append(" left join fetch project.projectGroup pGroup")
@@ -582,7 +584,11 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 	public List<Project> getProjectsWith(BusinessGroup group) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select project from ").append(ProjectImpl.class.getName()).append(" as project")
-		  .append(" where project.projectGroup.key=:groupKey");
+		  .append(" left join fetch project.projectGroup pGroup")
+		  .append(" left join fetch pGroup.baseGroup bGroup")
+		  .append(" left join fetch project.candidateGroup cGroup")
+		  .append(" left join fetch project.projectBroker pBroker")
+		  .append(" where pGroup.key=:groupKey");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Project.class)
 				.setParameter("groupKey", group.getKey())
@@ -629,7 +635,7 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 		Number count = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
 			.setParameter("projectBrokerId", projectBrokerId).setParameter("title", newProjectTitle)
 			.getSingleResult();
-		return count == null ? false : count.intValue() > 0;
+		return count != null && count.intValue() > 0;
 	}
 
 	@Override

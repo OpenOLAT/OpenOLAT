@@ -324,7 +324,7 @@ public interface LectureService {
 	/**
 	 * Delete the absence notice and remove the absences from the roll calls.
 	 * 
-	 * @param absenceNotice Absence nnotice to delete
+	 * @param absenceNotice Absence notice to delete
 	 */
 	public void deleteAbsenceNotice(AbsenceNotice absenceNotice, Identity actingIdentity);
 	

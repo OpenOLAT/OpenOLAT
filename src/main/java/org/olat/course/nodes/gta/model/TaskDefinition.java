@@ -58,4 +58,23 @@ public class TaskDefinition implements Serializable {
 	public void setFilename(String filename) {
 		this.filename = filename;
 	}
+	
+	@Override
+	public int hashCode() {
+		return (title == null ? 7215649 : title.hashCode())
+				+ (filename == null ? -212459 : filename.hashCode());
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == this) {
+			return true;
+		}
+		if(obj instanceof TaskDefinition) {
+			TaskDefinition taskDef = (TaskDefinition)obj;
+			return ((title == null && taskDef.title == null) || (title != null && title.equals(taskDef.title)))
+					&& ((filename == null && taskDef.filename == null) || (filename != null && filename.equals(taskDef.filename)));
+		}
+		return false;
+	}
 }
