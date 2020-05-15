@@ -25,7 +25,7 @@
 
 package org.olat.modules.wiki.gui.components.wikiToHtml;
 
-import org.jamwiki.DataHandler;
+import org.jamwiki.DefaultDataHandler;
 import org.jamwiki.model.Topic;
 import org.jamwiki.model.WikiFile;
 import org.jamwiki.utils.NamespaceHandler;
@@ -39,7 +39,7 @@ import org.olat.modules.wiki.WikiManager;
  * 
  * @author guido
  */
-public class StaticExportWikiDataHandler implements DataHandler {
+public class StaticExportWikiDataHandler extends DefaultDataHandler {
 
 	private OLATResourceable ores;
 	
@@ -75,12 +75,4 @@ public class StaticExportWikiDataHandler implements DataHandler {
 		wikifile.setAbsUrl(WikiManager.getInstance().getMediaFolder(ores).getBasefile().getAbsolutePath());
 		return wikifile;
 	}
-
-	
-
-	public boolean exists(String virtualWiki, String topic) {
-		return true;
-	}
-
-
 }

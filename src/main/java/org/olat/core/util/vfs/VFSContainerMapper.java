@@ -44,13 +44,14 @@ public class VFSContainerMapper  implements Mapper {
 		this.container = container;
 	}
 	
+	@Override
 	public MediaResource handle(String relPath, HttpServletRequest request) {
 		VFSItem vfsItem = container.resolve(relPath);
 		MediaResource mr;
-		if (vfsItem == null || !(vfsItem instanceof VFSLeaf)) {
-			mr = new NotFoundMediaResource();
-		} else {
+		if (vfsItem instanceof VFSLeaf) {
 			mr = new VFSMediaResource((VFSLeaf) vfsItem);
+		} else {
+			mr = new NotFoundMediaResource();
 		}
 		return mr;
 	}

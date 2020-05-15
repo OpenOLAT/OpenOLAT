@@ -24,17 +24,25 @@
 */
 package org.olat.modules.wiki.gui.components.wikiToHtml;
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
+import org.apache.logging.log4j.Logger;
 import org.jamwiki.DataHandler;
+import org.jamwiki.WikiMediaDimension;
 import org.jamwiki.model.Topic;
 import org.jamwiki.model.WikiFile;
 import org.jamwiki.utils.InterWikiHandler;
 import org.jamwiki.utils.PseudoTopicHandler;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.image.ImageService;
+import org.olat.core.commons.services.image.Size;
+import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.id.OLATResourceable;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.wiki.Wiki;
 import org.olat.modules.wiki.WikiManager;
 import org.springframework.util.StringUtils;
@@ -52,8 +60,8 @@ public class OlatWikiDataHandler implements DataHandler {
 
 	private OLATResourceable ores;
 	private String imageUri;
-	private final String IMAGE_NAMESPACE = "Image:";
-	private final String MEDIA_NAMESPACE = "Media:";
+	private static final String IMAGE_NAMESPACE = "Image:";
+	private static final String MEDIA_NAMESPACE = "Media:";
 
 	/**
 	 * @param ores
@@ -64,10 +72,6 @@ public class OlatWikiDataHandler implements DataHandler {
 		this.imageUri = imageUri;
 	}
 
-	/**
-	 * @see org.jamwiki.DataHandler#lookupTopic(java.lang.String,
-	 *      java.lang.String, boolean, java.lang.Object)
-	 */
 	@Override
 	public Topic lookupTopic(String virtualWiki, String topicName, boolean deleteOK, Object transactionObject) throws Exception {
 		String decodedName = null;
@@ -79,17 +83,20 @@ public class OlatWikiDataHandler implements DataHandler {
 			//
 		}
 		if (log.isDebugEnabled()) {
-			log.debug("page name not normalized: " + topicName);
-			log.debug("page name normalized: " + FilterUtil.normalizeWikiLink(topicName));
+			log.debug("page name not normalized: {}", topicName);
+			log.debug("page name normalized: {}", FilterUtil.normalizeWikiLink(topicName));
 			try {
-				log.debug("page name urldecoded name: " + URLDecoder.decode(topicName, "utf-8"));
-				log.debug("page name urldecoded and normalized: " + FilterUtil.normalizeWikiLink(URLDecoder.decode(topicName, "utf-8")));
-				log.debug("page name urldecoded normalized and transformed to id: "
-						+ wiki.generatePageId(FilterUtil.normalizeWikiLink(decodedName)));
+				log.debug("page name urldecoded name: {}", URLDecoder.decode(topicName, "utf-8"));
+				log.debug("page name urldecoded and normalized: {}", FilterUtil.normalizeWikiLink(URLDecoder.decode(topicName, "utf-8")));
+				log.debug("page name urldecoded normalized and transformed to id: {}", wiki.generatePageId(FilterUtil.normalizeWikiLink(decodedName)));
 			} catch (UnsupportedEncodingException e) {
 				//
 			}
 		}
+		if(decodedName == null) {
+			return null;
+		}
+
 		Topic topic = new Topic();
 		if (decodedName.startsWith(IMAGE_NAMESPACE)) {
 			String imageName = topicName.substring(IMAGE_NAMESPACE.length());
@@ -99,9 +106,19 @@ public class OlatWikiDataHandler implements DataHandler {
 			return topic;
 		} else if (decodedName.startsWith(MEDIA_NAMESPACE)) {
 			String mediaName = topicName.substring(MEDIA_NAMESPACE.length(), topicName.length());
-			if (!wiki.mediaFileExists(mediaName)) return null;
+			if (!wiki.mediaFileExists(mediaName)) {
+				return null;
+			}
 			topic.setName(mediaName);
-			topic.setTopicType(Topic.TYPE_FILE);
+			
+			String type = mediaName.toLowerCase();
+			if(type.endsWith(".mp4") || type.endsWith(".m4v") || type.endsWith(".mov")) {
+				topic.setTopicType(Topic.TYPE_VIDEO);
+			} else if(type.endsWith(".mp3") || type.endsWith(".aac") || type.endsWith(".m4a")) {
+				topic.setTopicType(Topic.TYPE_AUDIO);
+			} else {
+				topic.setTopicType(Topic.TYPE_FILE);
+			}
 			return topic;
 		}
 		if (wiki.pageExists(wiki.generatePageId(FilterUtil.normalizeWikiLink(decodedName)))) {
@@ -111,10 +128,6 @@ public class OlatWikiDataHandler implements DataHandler {
 		return null;
 	}
 
-	/**
-	 * @see org.jamwiki.DataHandler#lookupWikiFile(java.lang.String,
-	 *      java.lang.String)
-	 */
 	@Override
 	public WikiFile lookupWikiFile(String virtualWiki, String topicName) throws Exception {
 		WikiFile wikifile = new WikiFile();
@@ -130,9 +143,6 @@ public class OlatWikiDataHandler implements DataHandler {
 		return wikifile;
 	}
 
-	/**
-	 * @see org.jamwiki.DataHandler#exists(java.lang.String, java.lang.String)
-	 */
 	@Override
 	public boolean exists(String virtualWiki, String topic) {
 		if (!StringUtils.hasText(topic)) {
@@ -158,4 +168,22 @@ public class OlatWikiDataHandler implements DataHandler {
 		return wiki.pageExists(pageId);
 	}
 
+	@Override
+	public WikiMediaDimension getImageDimension(File file) {
+		Size size = CoreSpringFactory.getImpl(ImageService.class).getSize(file, null);
+		if(size == null) {
+			return null;
+		}
+		return new WikiMediaDimension(size.getWidth(), size.getHeight());
+	}
+
+	@Override
+	public WikiMediaDimension getVideoDimension(File file) {
+		VFSLeaf leaf = new LocalFileImpl(file);
+		Size size = CoreSpringFactory.getImpl(MovieService.class).getSize(leaf, "mp4");
+		if(size == null) {
+			return null;
+		}
+		return new WikiMediaDimension(size.getWidth(), size.getHeight());
+	}
 }
