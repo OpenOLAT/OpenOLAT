@@ -19,7 +19,7 @@
  */
 package org.olat.modules.video.ui;
 
-import java.text.SimpleDateFormat;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -69,7 +69,7 @@ public class VideoTrackUploadForm extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		List<String> langs = new ArrayList<>();
 		List<String> dispLangs = new ArrayList<>();
-		for(Locale locale : SimpleDateFormat.getAvailableLocales()){
+		for(Locale locale : DateFormat.getAvailableLocales()){
 			if(locale.hashCode() != 0){
 				langs.add(locale.getLanguage());
 				dispLangs.add(locale.getDisplayLanguage(getTranslator().getLocale()));
@@ -95,7 +95,7 @@ public class VideoTrackUploadForm extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		fileEl.clearError();
 		if (fileEl.isUploadSuccess()) {
@@ -109,7 +109,7 @@ public class VideoTrackUploadForm extends FormBasicController {
 			allOk &= false;
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

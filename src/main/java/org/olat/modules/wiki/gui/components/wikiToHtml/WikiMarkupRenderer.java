@@ -117,6 +117,7 @@ public class WikiMarkupRenderer extends DefaultComponentRenderer {
 		//set targets of media, image and external links to target "_blank" 
 		sb.append("<script>")
 		  .append("changeAnchorTargets('").append(uniqueId).append("','").append(Settings.getServerContextPathURI()).append("');")
+		  .append("wikiMediaPlayer('").append(uniqueId).append("','").append(Settings.getServerContextPathURI()).append("');")
 		  .append("</script>");
 	}
 }

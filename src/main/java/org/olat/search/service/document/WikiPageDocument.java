@@ -31,8 +31,7 @@ import java.util.Locale;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.jamwiki.DataHandler;
-import org.jamwiki.model.Topic;
-import org.jamwiki.model.WikiFile;
+import org.jamwiki.DefaultDataHandler;
 import org.jamwiki.parser.AbstractParser;
 import org.jamwiki.parser.ParserDocument;
 import org.jamwiki.parser.ParserInput;
@@ -54,7 +53,7 @@ public class WikiPageDocument extends OlatDocument {
 
 	private static final long serialVersionUID = -1210392466207248182L;
 	private static final Logger log = Tracing.createLoggerFor(WikiPageDocument.class);
-	private static final DummyDataHandler DUMMY_DATA_HANDLER = new DummyDataHandler();
+	private static final DataHandler DUMMY_DATA_HANDLER = new DefaultDataHandler();
 	
 
 	public WikiPageDocument() {
@@ -105,24 +104,6 @@ public class WikiPageDocument extends OlatDocument {
 		} catch(Exception e) {
 			log.error("", e);
 			return wikiPage.getContent();
-		}
-	}
-	
-	private static class DummyDataHandler implements DataHandler {
-
-		@Override
-		public boolean exists(String virtualWiki, String topic) {
-			return true;
-		}
-
-		@Override
-		public Topic lookupTopic(String virtualWiki, String topicName, boolean deleteOK, Object transactionObject) throws Exception {
-			return null;
-		}
-
-		@Override
-		public WikiFile lookupWikiFile(String virtualWiki, String topicName) throws Exception {
-			return null;
 		}
 	}
 }

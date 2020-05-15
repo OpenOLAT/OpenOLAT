@@ -67,7 +67,7 @@ public class OpenOLATPolicy {
 			.matching(Pattern.compile("[a-zA-Z]{2,20}")).globally()
 			
 		.allowUrlProtocols("mailto", "http", "https")
-			.allowElements("img", "a")
+			.allowElements("img", "a", "video", "audio")
 		// Fix::dir
 		.allowAttributes("charoff")
 			.matching(Pattern.compile("numberOrPercent"))
@@ -102,6 +102,15 @@ public class OpenOLATPolicy {
 			.matching(NUMBER).onElements("img")
 		.allowAttributes("width")
 			.matching(NUMBERORPERCENT).onElements("img")
+		// video, audio
+		.allowAttributes("src")
+			.matching(new Patterns(ONSITEURL, OFFSITEURL)).onElements("audio", "video")	
+		.allowAttributes("class")
+			.matching(HTMLCLASS).onElements("audio", "video")
+		.allowAttributes("height")
+			.matching(NUMBER).onElements("video")
+		.allowAttributes("width")
+			.matching(NUMBER).onElements("video")
 		// edu-sharing
 		.allowAttributes("data-es_identifier")
 			.matching(Pattern.compile("[a-zA-Z0-9_\\-\\:]+")).onElements("img")
@@ -239,7 +248,7 @@ public class OpenOLATPolicy {
 		
 		.allowElements("dd","tbody","dl","caption","hr","div","dt","ul","init","blockquote","pre","em","figcaption","sub",
 				"strong","img","thead","h1","h2","h3","h4","h5","h6","sup","ol","table","b","figure","strike","i","p",
-				"tfoot","td","s","th","u","li","tr", "span")
+				"tfoot","td","s","th","u","li","tr", "span", "video", "audio")
 		
 		.allowElements("hr")
 			.allowWithoutAttributes("hr")

@@ -51,6 +51,19 @@ function changeAnchorTargets(id, hostUrl) {
 	});
 }
 
+function wikiMediaPlayer(id, hostUrl) {
+	jQuery(".wikivideo").each(function(index, el) {
+		var spanEl = jQuery(el);
+		var url = hostUrl + spanEl.children("video").attr('src');
+		BPlayer.insertPlayer(url, spanEl.attr('id'), 320, 240, 0, null, "video", undefined, false, false, true, null, undefined);
+	});
+	
+	jQuery(".wikiaudio").each(function(index, el) {
+		var spanEl = jQuery(el);
+		var url = hostUrl + spanEl.children("audio").attr('src');
+		BPlayer.insertPlayer(url, spanEl.attr('id'), 320, 24, 0, null, "audio", undefined, false, false, true, null, undefined);
+	});
+}
 
 // apply tagOpen/tagClose to selection in textarea,
 // use sampleText instead of selection if there is none

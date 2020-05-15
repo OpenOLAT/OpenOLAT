@@ -193,6 +193,10 @@ public class XSSFilterParamTest {
 			{ "<a href=\"#Title_1\">Title 1</a>", "<a href=\"#Title_1\">Title 1</a>" },
 			{ "<a href=\"#Title 1\">Title with space</a>", "<a>Title with space</a>" },
 			{ "<a href=\"#Title#1\">Title with #</a>", "<a>Title with #</a>" },
+			// video tag
+			{ "<video src=\"http://localhost/win/video.mp4\" width=\"320\" height=\"240\"></video>", "<video src=\"http://localhost/win/video.mp4\" width=\"320\" height=\"240\"></video>" },
+			{ "<audio src=\"http://localhost/win/video.mp4\"></audio>", "<audio src=\"http://localhost/win/video.mp4\"></audio>" },
+			
 			{ null, "" } // be tolerant	
         });
     }
