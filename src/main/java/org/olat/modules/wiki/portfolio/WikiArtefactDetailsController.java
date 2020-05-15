@@ -21,9 +21,8 @@ package org.olat.modules.wiki.portfolio;
 
 import java.util.Locale;
 
-import org.jamwiki.DataHandler;
-import org.jamwiki.model.Topic;
-import org.jamwiki.model.WikiFile;
+import org.apache.logging.log4j.Logger;
+import org.jamwiki.DefaultDataHandler;
 import org.jamwiki.parser.AbstractParser;
 import org.jamwiki.parser.ParserDocument;
 import org.jamwiki.parser.ParserInput;
@@ -35,7 +34,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.portfolio.manager.EPFrontendManager;
@@ -80,14 +78,14 @@ public class WikiArtefactDetailsController extends BasicController {
 		try {
 			ParserInput input = new ParserInput();
 			input.setWikiUser(null);
-	    input.setAllowSectionEdit(false);
-	    input.setDepth(2);
-	    input.setContext("");
-	    input.setLocale(Locale.ENGLISH);
-	    input.setTopicName("dummy");
-	    input.setUserIpAddress("0.0.0.0");
-	    input.setDataHandler(new DummyDataHandler());
-	    input.setVirtualWiki("/olat");
+			input.setAllowSectionEdit(false);
+			input.setDepth(2);
+			input.setContext("");
+			input.setLocale(Locale.ENGLISH);
+			input.setTopicName("dummy");
+			input.setUserIpAddress("0.0.0.0");
+			input.setDataHandler(new DefaultDataHandler());
+			input.setVirtualWiki("/olat");
 
 			AbstractParser parser = new JFlexParser(input);
 			ParserDocument parsedDoc = parser.parseHTML(content);
@@ -96,24 +94,6 @@ public class WikiArtefactDetailsController extends BasicController {
 		} catch(Exception e) {
 			log.error("", e);
 			return content;
-		}
-	}
-	
-	public static class DummyDataHandler implements DataHandler {
-
-		@Override
-		public boolean exists(String virtualWiki, String topic) {
-			return true;
-		}
-
-		@Override
-		public Topic lookupTopic(String virtualWiki, String topicName, boolean deleteOK, Object transactionObject) throws Exception {
-			return null;
-		}
-
-		@Override
-		public WikiFile lookupWikiFile(String virtualWiki, String topicName) throws Exception {
-			return null;
 		}
 	}
 }
