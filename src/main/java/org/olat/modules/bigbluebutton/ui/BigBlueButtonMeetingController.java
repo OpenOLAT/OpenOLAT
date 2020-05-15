@@ -183,7 +183,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		if(!joinButton.isVisible()) {
 			joinButton.setVisible(accessible && !disabled);
 		}
-		joinButton.setEnabled(!readOnly);
+		joinButton.setEnabled(!readOnly && accessible && !disabled);
 			
 		if(accessible && !disabled) {
 			boolean running = bigBlueButtonManager.isMeetingRunning(meeting);
