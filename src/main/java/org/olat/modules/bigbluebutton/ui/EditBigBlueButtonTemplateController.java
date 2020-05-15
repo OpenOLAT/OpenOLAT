@@ -22,6 +22,7 @@ package org.olat.modules.bigbluebutton.ui;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -401,6 +402,8 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 		template = bigBlueButtonManager.updateTemplate(template);
 		dbInstance.commit();
 		fireEvent(ureq, Event.DONE_EVENT);
+
+		CollaborationToolsFactory.getInstance().initAvailableTools();
 	}
 	
 	private Boolean getSelected(SingleSelection selectEl) {

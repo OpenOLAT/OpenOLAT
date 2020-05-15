@@ -112,6 +112,9 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 		adhocMeetingEnabled = getStringPropertyValue(PROP_ADHOC_MEETING, adhocMeetingEnabled);
 		permanentMeetingEnabled = getStringPropertyValue(PROP_PERMANENT_MEETING, permanentMeetingEnabled);
 		
+		groupsEnabled = getStringPropertyValue(PROP_GROUP_ENABLED, groupsEnabled);
+		coursesEnabled = getStringPropertyValue(PROP_COURSE_ENABLED, coursesEnabled);
+		
 		String bandwidthReqObj = getStringPropertyValue(PROP_USER_BANDWIDTH_REQUIREMENT, true);
 		if(StringHelper.containsNonWhitespace(bandwidthReqObj)) {
 			userBandwidhtRequirement = Double.parseDouble(bandwidthReqObj);
