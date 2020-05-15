@@ -316,10 +316,11 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 	private String getRepositoryEntryLabel(Map.Entry<RepositoryEntry, Long> entryOfMap) {
 		RepositoryEntry entry = entryOfMap.getKey();
 		int numOfLectureBlocks = entryOfMap.getValue().intValue();
+		String externalRef = StringHelper.containsNonWhitespace(entry.getExternalRef()) ? StringHelper.escapeHtml(entry.getExternalRef()) : "";
 		
 		String[] args = new String[] {
 			StringHelper.escapeHtml(entry.getDisplayname()), 	// 0
-			StringHelper.escapeHtml(entry.getExternalRef()), 	// 1
+			externalRef, 										// 1
 			Integer.toString(numOfLectureBlocks)
 		};
 		
@@ -377,9 +378,12 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 		LectureBlock block = lectureBlock.getLectureBlock();
 		RepositoryEntry entry = block.getEntry();
 		
+		String entryExternalRef = StringHelper.containsNonWhitespace(entry.getExternalRef())
+				? StringHelper.escapeHtml(entry.getExternalRef()) : "";
+		
 		String[] args = new String[] {
 			StringHelper.escapeHtml(entry.getDisplayname()),	// 0
-			StringHelper.escapeHtml(entry.getExternalRef()),	// 1
+			StringHelper.escapeHtml(entryExternalRef),			// 1
 			formatter.formatDate(block.getStartDate()), 		// 2
 			formatter.formatTimeShort(block.getStartDate()), 	// 3
 			formatter.formatTimeShort(block.getEndDate()), 		// 4

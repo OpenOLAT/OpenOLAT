@@ -49,7 +49,9 @@ public class GTAAssignmentEditController extends AbstractAssignmentEditControlle
 	private static final String[] onKeys = new String[] { "on" };
 	
 	private RichTextElement textEl;
-	private SingleSelection typeEl, previewEl, samplingEl;
+	private SingleSelection typeEl;
+	private SingleSelection previewEl;
+	private SingleSelection samplingEl;
 	private MultipleSelectionElement coachAllowedTasksEl;
 
 	public GTAAssignmentEditController(UserRequest ureq, WindowControl wControl,

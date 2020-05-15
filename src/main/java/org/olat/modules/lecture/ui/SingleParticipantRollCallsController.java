@@ -55,7 +55,6 @@ import org.olat.modules.lecture.AbsenceNotice;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockRollCall;
-import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RollCallSecurityCallback;
@@ -118,7 +117,7 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 		hasCompulsory = lectureBlocks.stream()
 				.anyMatch(LectureBlock::isCompulsory);
 		maxNumOfLectures = lectureBlocks.stream()
-				.mapToInt(SingleParticipantRollCallsController::numOfLectures)
+				.mapToInt(LectureBlock::getCalculatedLecturesNumber)
 				.max().orElse(0);
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 		absenceDefaultAuthorized = lectureModule.isAbsenceDefaultAuthorized();
@@ -138,14 +137,6 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 		return secCallbackMap;
 	}
 	
-	private static int numOfLectures(LectureBlock lectureBlock) {
-		int numOfLectures = lectureBlock.getEffectiveLecturesNumber();
-		if(numOfLectures <= 0 && lectureBlock.getStatus() != LectureBlockStatus.cancelled) {
-			numOfLectures = lectureBlock.getPlannedLecturesNumber();
-		}
-		return numOfLectures;
-	}
-
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// identity screen and title
@@ -249,7 +240,7 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 	
 	private SingleParticipantRollCallRow forgeRow(LectureBlock lectureBlock, LectureBlockRollCall rollCall,
 			AbsenceNotice notice, List<Identity> teachers, RollCallSecurityCallback secCallback) {
-		int numOfLectures = numOfLectures(lectureBlock);
+		int numOfLectures = lectureBlock.getCalculatedLecturesNumber();
 		SingleParticipantRollCallRow row = new SingleParticipantRollCallRow(lectureBlock, notice, numOfLectures, teachers);
 		
 		int numOfChecks = lectureBlock.isCompulsory() ? numOfLectures : 0;
@@ -385,7 +376,7 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 			}
 			reasonCalloutCtrl.deactivate();
 			cleanUp();
-		} else if(reasonCalloutCtrl == source) {
+		} else if(reasonCalloutCtrl == source || noticeCalloutCtrl == null) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
@@ -393,8 +384,12 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(reasonCalloutCtrl);
+		removeAsListenerAndDispose(noticeCalloutCtrl);
+		removeAsListenerAndDispose(noticeDetailsCtrl);
 		removeAsListenerAndDispose(reasonCtrl);
 		reasonCalloutCtrl = null;
+		noticeCalloutCtrl = null;
+		noticeDetailsCtrl = null;
 		reasonCtrl = null;
 	}
 

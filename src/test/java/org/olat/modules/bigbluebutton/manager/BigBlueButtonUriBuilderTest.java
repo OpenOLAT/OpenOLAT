@@ -46,7 +46,7 @@ public class BigBlueButtonUriBuilderTest {
 		       .parameter("moderatorPW", "333444");
 		
 		String url = builder.build().toString();
-		Assert.assertEquals("https://bbb.openolat.org/bigbluebutton/api/create?name=Test+Meeting&meetingID=abc123&attendeePW=111222&moderatorPW=333444&checksum=da9185f7f333cfdfcd6eeac32dca3777510c4c436020d8b887ba5515bd1d189e" , url);
+		Assert.assertEquals("https://bbb.openolat.org/bigbluebutton/api/create?name=Test+Meeting&meetingID=abc123&attendeePW=111222&moderatorPW=333444&checksum=1fcbb0c4fc1f039f73aa6d697d2db9ba7f803f17" , url);
 	}
 	
 	@Test
@@ -62,7 +62,7 @@ public class BigBlueButtonUriBuilderTest {
 		       .parameter("moderatorPW", "333444");
 		
 		String url = builder.build().toString();
-		Assert.assertEquals("https://bbb.openolat.org/bigbluebutton/api/create?name=Test+%C3%A9v%C3%A9nement&meetingID=abc123&attendeePW=111222&moderatorPW=333444&checksum=bedc6c6bf6edf42c5ac0f2f3c34cbc8283435029edfa590f43c670e18c4324f9", url);
+		Assert.assertEquals("https://bbb.openolat.org/bigbluebutton/api/create?name=Test+%C3%A9v%C3%A9nement&meetingID=abc123&attendeePW=111222&moderatorPW=333444&checksum=736920ac314bd083e97708e10c778254805967b9", url);
 	}
 
 }

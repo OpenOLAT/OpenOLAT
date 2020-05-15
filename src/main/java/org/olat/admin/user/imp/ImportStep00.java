@@ -28,7 +28,6 @@ import static org.olat.login.ui.LoginUIFactory.formatDescriptionAsList;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -147,7 +146,7 @@ class ImportStep00 extends BasicStep {
 			addToRunContext("updateIdents", updateIdents);
 			addToRunContext("validImport", Boolean.TRUE);
 			boolean newUsers = false;
-			if (newIdents.size() != 0) {
+			if (!newIdents.isEmpty()) {
 				setNextStep(new ImportStep01(ureq, canCreateOLATPassword, true));
 				newUsers = true;
 			}
@@ -196,7 +195,9 @@ class ImportStep00 extends BasicStep {
 				// use comma as fallback delimiter, e.g. for better testing
 				if (line.indexOf(delimiter) == -1) delimiter = ",";
 				String[] parts = line.split(delimiter);
-				String login, pwd, lang;
+				String login;
+				String pwd;
+				String lang;
 
 				int columnId = 0;
 
@@ -262,9 +263,9 @@ class ImportStep00 extends BasicStep {
 					
 					UpdateIdentity uIdentity = new UpdateIdentity(ident, pwd, lang);
 					
-					importDataError = updateUserProperties(uIdentity, ident.getUser(), parts, i, columnId, importedEmails);
+					importDataError |= updateUserProperties(uIdentity, ident.getUser(), parts, i, columnId, importedEmails);
 					if(importDataError) break;
-					importDataError = !validatePassword(pwd, uIdentity, i);
+					importDataError |= !validatePassword(pwd, uIdentity, i);
 					if(importDataError) break;
 
 					idents.add(uIdentity);
@@ -272,8 +273,7 @@ class ImportStep00 extends BasicStep {
 				} else {
 					// no identity/user yet, create
 					// check that no user with same login name is already in list
-					for (Iterator<TransientIdentity> it_news = newIdents.iterator(); it_news.hasNext();) {
-						TransientIdentity singleUser = it_news.next();
+					for (TransientIdentity singleUser:newIdents) {
 						if (singleUser.getName().equalsIgnoreCase(login)) {
 							textAreaElement.setErrorKey("error.login.douplicate", new String[] { String.valueOf(i + 1), login });
 							importDataError = true;
@@ -287,11 +287,11 @@ class ImportStep00 extends BasicStep {
 					uIdentity.setPassword(pwd);
 					uIdentity.setLanguage(lang);
 					
-					importDataError = updateUserProperties(uIdentity, null, parts, i, columnId, importedEmails);
+					importDataError |= updateUserProperties(uIdentity, null, parts, i, columnId, importedEmails);
 					if(importDataError) break;
-					importDataError = !validateUsername(login, uIdentity, i);
+					importDataError |= !validateUsername(login, uIdentity, i);
 					if(importDataError) break;
-					importDataError = !validatePassword(pwd, uIdentity, i);
+					importDataError |= !validatePassword(pwd, uIdentity, i);
 					if(importDataError) break;
 					
 					idents.add(uIdentity);

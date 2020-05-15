@@ -36,6 +36,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.model.GroupImpl;
@@ -273,6 +274,16 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 	@Override
 	public void setEffectiveLecturesNumber(int effectiveLecturesNumber) {
 		this.effectiveLecturesNumber = effectiveLecturesNumber;
+	}
+	
+	@Transient
+	@Override
+	public int getCalculatedLecturesNumber() {
+		int numOfLectures = getEffectiveLecturesNumber();
+		if(numOfLectures <= 0 && getStatus() != LectureBlockStatus.cancelled) {
+			numOfLectures = getPlannedLecturesNumber();
+		}
+		return numOfLectures;
 	}
 
 	@Override

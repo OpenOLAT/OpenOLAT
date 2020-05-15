@@ -78,10 +78,7 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 		this.lectureBlock = lectureBlock;
 		this.authorizedAbsenceEnabled = authorizedAbsenceEnabled;
 		
-		numOfLectures = lectureBlock.getEffectiveLecturesNumber();
-		if(numOfLectures <= 0) {
-			numOfLectures = lectureBlock.getPlannedLecturesNumber();
-		}
+		numOfLectures = lectureBlock.getCalculatedLecturesNumber();
 	}
 
 	public String getTeacher() {
@@ -253,7 +250,7 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 	        		if(rollCall.getLecturesAbsentList() != null) {
 		        		List<Integer> absenceList = rollCall.getLecturesAbsentList();
 		        		for(int j=0; j<numOfLectures; j++) {
-		        			absences[j] = absenceList.contains(new Integer(j));
+		        			absences[j] = absenceList.contains(Integer.valueOf(j));
 		        		}
 		        	}
 	        		if(rollCall.getAbsenceAuthorized() != null) {

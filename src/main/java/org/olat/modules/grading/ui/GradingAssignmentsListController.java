@@ -589,23 +589,30 @@ public class GradingAssignmentsListController extends FormBasicController implem
 			showWarning("warning.assignement.deactivated");
 			loadModel();
 		} else {
-			File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(referenceEntry.getOlatResource());
-			ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
-			ManifestBuilder manifestBuilder = ManifestBuilder.read(new File(unzippedDirRoot, "imsmanifest.xml"));
-			TestSessionState testSessionState = qtiService.loadTestSessionState(session);
-			// use mutable maps to allow updates
-			Map<Identity,AssessmentTestSession> lastSessions = new HashMap<>();
-			lastSessions.put(assessedIdentity, session);
-			Map<Identity, TestSessionState> testSessionStates = new HashMap<>();
-			testSessionStates.put(assessedIdentity, testSessionState);
-			CorrectionOverviewModel model = new CorrectionOverviewModel(entry, courseNode, referenceEntry,
-					resolvedAssessmentTest, manifestBuilder, lastSessions, testSessionStates);
-			GradingTimeRecordRef record = gradingService.getCurrentTimeRecord(assignment, ureq.getRequestTimestamp());
-			
-			correctionCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel,
-					model, assessedIdentity, assignment, record, readOnly, anonymous);
-			listenTo(correctionCtrl);
-			stackPanel.pushController(translate("correction"), correctionCtrl);
+			try {
+				File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(referenceEntry.getOlatResource());
+				ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
+				ManifestBuilder manifestBuilder = ManifestBuilder.read(new File(unzippedDirRoot, "imsmanifest.xml"));
+				TestSessionState testSessionState = qtiService.loadTestSessionState(session);
+				// use mutable maps to allow updates
+				Map<Identity,AssessmentTestSession> lastSessions = new HashMap<>();
+				lastSessions.put(assessedIdentity, session);
+				Map<Identity, TestSessionState> testSessionStates = new HashMap<>();
+				testSessionStates.put(assessedIdentity, testSessionState);
+				CorrectionOverviewModel model = new CorrectionOverviewModel(entry, courseNode, referenceEntry,
+						resolvedAssessmentTest, manifestBuilder, lastSessions, testSessionStates);
+				GradingTimeRecordRef record = gradingService.getCurrentTimeRecord(assignment, ureq.getRequestTimestamp());
+				
+				correctionCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel,
+						model, assessedIdentity, assignment, record, readOnly, anonymous);
+				listenTo(correctionCtrl);
+				stackPanel.pushController(translate("correction"), correctionCtrl);
+			} catch (Exception e) {
+				logError("", e);
+				
+				String assessedFullname = userManager.getUserDisplayName(assessedIdentity);
+				showError("error.assessment.test.session.identities", new String[] { assessedFullname });
+			}
 		}
 	}
 	
