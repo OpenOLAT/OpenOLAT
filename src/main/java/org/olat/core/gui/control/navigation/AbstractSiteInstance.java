@@ -47,9 +47,6 @@ public abstract class AbstractSiteInstance implements SiteInstance {
 	public AbstractSiteInstance(SiteDefinition siteDef) {
 		this.siteDef = siteDef;
 	}
-	
-	@Override
-	public abstract NavElement getNavElement();
 
 	@Override
 	public final Controller createController(UserRequest ureq, WindowControl wControl) {
@@ -57,7 +54,7 @@ public abstract class AbstractSiteInstance implements SiteInstance {
 		SiteConfiguration config = siteDefinitions.getConfigurationSite(siteDef);
 		if(config != null && StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
 			String secCallbackBeanId = config.getSecurityCallbackBeanId();
-			Object siteSecCallback = getSiteSecurityCallback(secCallbackBeanId);;
+			Object siteSecCallback = getSiteSecurityCallback(secCallbackBeanId);
 			if (siteSecCallback instanceof SiteSecurityCallback
 					&& !((SiteSecurityCallback)siteSecCallback).isAllowedToLaunchSite(ureq)) {
 				return getAlternativeController(ureq, wControl, config);
@@ -70,7 +67,7 @@ public abstract class AbstractSiteInstance implements SiteInstance {
 		try {
 			return CoreSpringFactory.getBean(secCallbackBeanId);
 		} catch (Exception e) {
-			log.error("Cannot find security callback: " + secCallbackBeanId + " return administrator only security callback");
+			log.error("Cannot find security callback: {} return administrator only security callback", secCallbackBeanId);
 			return CoreSpringFactory.getBean("adminSiteSecurityCallback");
 		}
 	}

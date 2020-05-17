@@ -160,21 +160,18 @@ public class ImportUserPage {
 
 	public ImportUserPage nextData() {
 		OOGraphene.nextStep(browser);
-		//OOGraphene.closeBlueMessageWindow(browser);
 		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_import_users_overview"), browser);
 		return this;
 	}
 	
 	public ImportUserPage nextOverview() {
 		OOGraphene.nextStep(browser);
-		//OOGraphene.closeBlueMessageWindow(browser);
 		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_groups_search"), browser);
 		return this;
 	}
 	
 	public ImportUserPage nextGroups() {
 		OOGraphene.nextStep(browser);
-		//OOGraphene.closeBlueMessageWindow(browser);
 		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_users_import_contact"), browser);
 		return this;
 	}
@@ -185,7 +182,6 @@ public class ImportUserPage {
 	 */
 	public ImportUserPage finish() {
 		OOGraphene.finishStep(browser);
-		OOGraphene.closeBlueMessageWindow(browser);
 		return this;
 	}
 

@@ -61,21 +61,18 @@ public class BinderMemberWizardPage {
 	
 	public BinderMemberWizardPage nextUsers() {
 		OOGraphene.nextStep(browser);
-		OOGraphene.closeBlueMessageWindow(browser);
 		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_user_import_overview"), browser);
 		return this;
 	}
 	
 	public BinderMemberWizardPage nextOverview() {
 		OOGraphene.nextStep(browser);
-		OOGraphene.closeBlueMessageWindow(browser);
 		OOGraphene.waitElement(By.cssSelector("div.o_portfolio_rights"), browser);
 		return this;
 	}
 	
 	public BinderMemberWizardPage nextPermissions() {
 		OOGraphene.nextStep(browser);
-		OOGraphene.closeBlueMessageWindow(browser);
 		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_contact_form"), browser);
 		return this;
 	}

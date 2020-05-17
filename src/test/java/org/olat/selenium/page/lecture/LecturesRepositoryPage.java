@@ -53,7 +53,6 @@ public class LecturesRepositoryPage {
 	 * @return
 	 */
 	public CoursePageFragment clickToolbarRootCrumb() {
-		OOGraphene.closeBlueMessageWindow(browser);
 		By toolbarBackBy = By.xpath("//li[contains(@class,'o_breadcrumb_back')]/following-sibling::li/a");
 		browser.findElement(toolbarBackBy).click();
 		OOGraphene.waitBusy(browser);

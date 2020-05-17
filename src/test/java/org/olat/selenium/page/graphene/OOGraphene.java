@@ -254,7 +254,9 @@ public class OOGraphene {
 		WebElement buttonEl = browser.findElement(buttonBy);
 		boolean move = buttonEl.getLocation().getY() > 669;
 		if(move) {
-			scrollTo(buttonBy, browser);
+			if(browser instanceof FirefoxDriver) {
+				scrollTo(buttonBy, browser);// Firefox doesn't implement moveToElement
+			}
 			new Actions(browser)
 				.moveToElement(buttonEl)
 				.pause(movePause)
@@ -280,7 +282,9 @@ public class OOGraphene {
 		WebElement buttonEl = browser.findElement(buttonBy);
 		boolean move = buttonEl.getLocation().getY() > 669;
 		if(move) {
-			scrollTo(buttonBy, browser);
+			if(browser instanceof FirefoxDriver) {
+				scrollTo(buttonBy, browser);// Firefox doesn't implement moveToElement
+			}
 			new Actions(browser)
 				.moveToElement(buttonEl)
 				.pause(movePause)
@@ -312,7 +316,9 @@ public class OOGraphene {
 	public static void moveTo(By by, WebDriver browser) {
 		waitElement(by, browser);
 		WebElement el = browser.findElement(by);
-		scrollTo(by, browser);
+		if(browser instanceof FirefoxDriver) {
+			scrollTo(by, browser);
+		}
 		new Actions(browser)
 			.moveToElement(el)
 			.pause(moveToPause)
@@ -336,7 +342,9 @@ public class OOGraphene {
 	 */
 	public static void moveTop(WebDriver browser) {
 		By topBy = By.id("o_top");
-		scrollTo(topBy, browser);
+		if(browser instanceof FirefoxDriver) {
+			scrollTo(topBy, browser);// Firefox doesn't implement moveToElement
+		}
 		WebElement el = browser.findElement(topBy);
 		new Actions(browser)
 			.moveToElement(el)
@@ -634,7 +642,7 @@ public class OOGraphene {
 		closeBlueMessageWindow(browser);
 	}
 	
-	public static final void closeBlueMessageWindow(WebDriver browser) {
+	private static final void closeBlueMessageWindow(WebDriver browser) {
 		List<WebElement> closeButtons = browser.findElements(closeBlueBoxButtonBy);
 		for(WebElement closeButton:closeButtons) {
 			if(closeButton.isDisplayed()) {

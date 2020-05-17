@@ -178,7 +178,6 @@ public class UserToolsPage {
 	 * Log out and wait until the login form appears
 	 */
 	public void logout() {
-		OOGraphene.closeBlueMessageWindow(browser);
 		openUserToolsMenu();
 
 		By logoutBy = By.className("o_logout");

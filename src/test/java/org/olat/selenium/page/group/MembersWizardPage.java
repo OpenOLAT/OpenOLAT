@@ -46,21 +46,18 @@ public class MembersWizardPage {
 	
 	public MembersWizardPage nextUsers() {
 		OOGraphene.nextStep(browser);
-		OOGraphene.closeBlueMessageWindow(browser);
 		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_user_import_overview"), 5, browser);
 		return this;
 	}
 	
 	public MembersWizardPage nextOverview() {
 		OOGraphene.nextStep(browser);
-		OOGraphene.closeBlueMessageWindow(browser);
 		OOGraphene.waitElement(By.cssSelector("div.o_sel_edit_permissions"), browser);
 		return this;
 	}
 	
 	public MembersWizardPage nextPermissions() {
 		OOGraphene.nextStep(browser);
-		OOGraphene.closeBlueMessageWindow(browser);
 		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_contact_form"), browser);
 		return this;
 	}
@@ -92,8 +89,13 @@ public class MembersWizardPage {
 		String search = admin ? user.getLogin() : user.getFirstName();
 		searchFields.get(0).sendKeys(search);
 
-		By searchBy = By.cssSelector(".o_sel_usersearch_searchform a.btn-default");
-		OOGraphene.clickAndWait(searchBy, browser);
+		try {
+			By searchBy = By.cssSelector(".o_sel_usersearch_searchform a.btn-default");
+			OOGraphene.clickAndWait(searchBy, browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Search member", browser);
+			throw e;
+		}
 
 		// select all
 		By selectAll = By.xpath("//div[contains(@class,'modal')]//div[contains(@class,'o_table_checkall')]/a[i[contains(@class,'o_icon_check_on')]]");

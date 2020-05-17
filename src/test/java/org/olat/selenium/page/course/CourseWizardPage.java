@@ -55,7 +55,6 @@ public class CourseWizardPage {
 	 */
 	public CourseWizardPage nextNodes() {
 		OOGraphene.nextStep(browser);
-		OOGraphene.closeBlueMessageWindow(browser);
 		OOGraphene.waitElement(By.cssSelector("div.o_sel_catalog_chooser_tree"), 5, browser);
 		return this;
 	}
@@ -67,7 +66,6 @@ public class CourseWizardPage {
 	 */
 	public CourseWizardPage nextCatalog() {
 		OOGraphene.nextStep(browser);
-		OOGraphene.closeBlueMessageWindow(browser);
 		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_repo_access_configuration"), browser);
 		return this;
 	}

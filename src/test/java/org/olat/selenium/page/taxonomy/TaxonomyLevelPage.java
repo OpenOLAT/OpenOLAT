@@ -24,11 +24,11 @@ import java.util.List;
 import org.junit.Assert;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
 import org.olat.selenium.page.graphene.OOGraphene;
-import org.olat.selenium.page.group.MembersWizardPage;
 import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxDriver;
 
 /**
  * 
@@ -67,14 +67,37 @@ public class TaxonomyLevelPage {
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		
-		MembersWizardPage members = new MembersWizardPage(browser);
-		members.searchMember(user, true);
-		OOGraphene.waitBusy(browser);
+		searchMember(user);
 		
 		By chooseBy = By.xpath("//fieldset[@class='o_sel_usersearch_searchform']//div[@class='o_table_buttons']/button[@name='msc']");
 		browser.findElement(chooseBy).click();
 		OOGraphene.waitModalDialogDisappears(browser);
 		
+		return this;
+	}
+	
+	/**
+	 * Search member and select them
+	 * @param user
+	 * @return
+	 */
+	private TaxonomyLevelPage searchMember(UserVO user) {
+		//Search by username
+		By usernameBy = By.cssSelector(".o_sel_usersearch_searchform input.o_sel_user_search_username[type='text']");
+		OOGraphene.waitElement(usernameBy, browser);	
+		browser.findElement(usernameBy).sendKeys(user.getLogin());
+
+		By searchBy = By.cssSelector(".o_sel_usersearch_searchform a.btn-default");
+		OOGraphene.moveAndClick(searchBy, browser);
+
+		// select all
+		By selectAll = By.xpath("//div[contains(@class,'modal')]//div[contains(@class,'o_table_checkall')]/a[i[contains(@class,'o_icon_check_on')]]");
+		OOGraphene.waitElement(selectAll, browser);
+		if(browser instanceof FirefoxDriver) {
+			OOGraphene.waitingALittleLonger();// link is obscured by the scroll bar
+		}
+		browser.findElement(selectAll).click();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	

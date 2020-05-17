@@ -148,19 +148,11 @@ public class AssessmentToolPage {
 	}
 	
 	public AssessmentToolPage assertPassed(UserVO user) {
-		By userInfosBy = By.cssSelector("div.o_user_infos div.o_user_infos_inner table tr td");
-		List<WebElement> userInfoList = browser.findElements(userInfosBy);
-		Assert.assertFalse(userInfoList.isEmpty());
-		boolean foundFirstName = false;
-		for(WebElement userInfo:userInfoList) {
-			foundFirstName |= userInfo.getText().contains(user.getFirstName());
-		}
-		Assert.assertTrue(foundFirstName);
+		By userInfosBy = By.xpath("//div[@class='o_user_infos']/div[@class='o_user_infos_inner']//tr[contains(@class,'o_userDisplayName')]/td[text()[contains(.,'" + user.getFirstName() + "')]]");
+		OOGraphene.waitElement(userInfosBy, browser);
 		
 		By passedBy = By.cssSelector("div.o_table_wrapper table tr td.text-left span.o_state.o_passed");
-		List<WebElement> passedEl = browser.findElements(passedBy);
-		Assert.assertFalse(passedEl.isEmpty());
-		Assert.assertTrue(passedEl.get(0).isDisplayed());
+		OOGraphene.waitElement(passedBy, browser);
 		return this;
 	}
 	
@@ -234,7 +226,6 @@ public class AssessmentToolPage {
 	 * @return
 	 */
 	public CoursePageFragment clickToolbarRootCrumb() {
-		OOGraphene.closeBlueMessageWindow(browser);
 		By toolbarBackBy = By.xpath("//li[contains(@class,'o_breadcrumb_back')]/following-sibling::li/a");
 		browser.findElement(toolbarBackBy).click();
 		OOGraphene.waitBusy(browser);

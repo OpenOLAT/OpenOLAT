@@ -248,7 +248,7 @@ public class CourseTest extends Deployments {
 			.nextNodes()
 			.nextCatalog()
 			.finish();
-		OOGraphene.closeBlueMessageWindow(browser);
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		
 		RepositorySettingsPage settings = new RepositorySettingsPage(browser);
 		//from description editor, back to details and launch the course
@@ -921,10 +921,10 @@ public class CourseTest extends Deployments {
 	public void courseBooking(@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
 		
-		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage.loginAs(author.getLogin(), author.getPassword());
-		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
 		
 		//go to authoring
 		NavigationPage navBar = NavigationPage.load(browser);

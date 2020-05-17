@@ -76,7 +76,6 @@ public class CourseEditorPageFragment {
 	
 	public static CourseEditorPageFragment getEditor(WebDriver browser) {
 		OOGraphene.waitElement(editorBy, browser);
-		OOGraphene.closeBlueMessageWindow(browser);
 		return new CourseEditorPageFragment(browser);
 	}
 	
@@ -463,8 +462,6 @@ public class CourseEditorPageFragment {
 	}
 	
 	private CourseEditorPageFragment createResource(By chooseButton, String resourceTitle, String resourceType) {
-		OOGraphene.closeBlueMessageWindow(browser);
-		
 		browser.findElement(chooseButton).click();
 		OOGraphene.waitBusy(browser);
 		//popup
@@ -541,7 +538,6 @@ public class CourseEditorPageFragment {
 	public CoursePageFragment clickToolbarBack() {
 		browser.findElement(toolbarBackBy).click();
 		OOGraphene.waitBusy(browser);
-		OOGraphene.closeBlueMessageWindow(browser);
 		
 		By mainId = By.id("o_main");
 		OOGraphene.waitElement(mainId, 5, browser);
