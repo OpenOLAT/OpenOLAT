@@ -138,7 +138,6 @@ public class CPEditorPage {
 	}
 	
 	public CPPage clickToolbarBack() {
-		OOGraphene.closeBlueMessageWindow(browser);
 		browser.findElement(NavigationPage.toolbarBackBy).click();
 		OOGraphene.waitBusy(browser);
 		

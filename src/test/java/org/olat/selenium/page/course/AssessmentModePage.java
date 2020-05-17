@@ -68,8 +68,6 @@ public class AssessmentModePage {
 	 * @return
 	 */
 	public AssessmentModePage editAssessment(String name, Date begin, Date end, boolean manual) {
-		OOGraphene.closeBlueMessageWindow(browser);
-		
 		By nameBy = By.cssSelector("div.o_sel_assessment_mode_name input[type='text']");
 		OOGraphene.waitElement(nameBy, browser);
 		browser.findElement(nameBy).sendKeys(name);

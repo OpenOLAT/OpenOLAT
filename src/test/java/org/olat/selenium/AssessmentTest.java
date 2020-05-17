@@ -527,7 +527,6 @@ public class AssessmentTest extends Deployments {
 		courseRuntime
 			.clickTree()
 			.selectWithTitle(testNodeTitle);
-		OOGraphene.closeBlueMessageWindow(browser);
 		
 		//check that the title of the start page of test is correct
 		WebElement testH2 = browser.findElement(By.cssSelector("div.o_course_run h2"));

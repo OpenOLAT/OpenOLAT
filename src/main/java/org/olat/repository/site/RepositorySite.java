@@ -66,9 +66,7 @@ public class RepositorySite extends AbstractSiteInstance {
 		curNavElem = new DefaultNavElement(origNavElem);
 	}
 
-	/**
-	 * @see org.olat.navigation.SiteInstance#getNavElement()
-	 */
+	@Override
 	public NavElement getNavElement() {
 		return curNavElem;
 	}
@@ -81,13 +79,7 @@ public class RepositorySite extends AbstractSiteInstance {
 		return new OverviewAuthoringController(ureq, bwControl);
 	}
 
-	/**
-	 * @see org.olat.navigation.SiteInstance#isKeepState()
-	 */
-	public boolean isKeepState() {
-		return true;
-	}
-	
+	@Override
 	public void reset() {
 		curNavElem = new DefaultNavElement(origNavElem);
 	}

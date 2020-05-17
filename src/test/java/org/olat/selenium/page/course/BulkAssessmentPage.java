@@ -69,7 +69,6 @@ public class BulkAssessmentPage {
 	
 	public BulkAssessmentPage nextNodes() {
 		OOGraphene.nextStep(browser);
-		OOGraphene.closeBlueMessageWindow(browser);
 		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_bulk_assessment_data"), browser);
 		return this;
 	}
@@ -81,21 +80,18 @@ public class BulkAssessmentPage {
 			OOGraphene.moveTo(modalFooterBy, browser);
 		}
 		OOGraphene.nextStep(browser);
-		OOGraphene.closeBlueMessageWindow(browser);
 		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_bulk_assessment_columns"), browser);
 		return this;
 	}
 	
 	public BulkAssessmentPage nextColumns() {
 		OOGraphene.nextStep(browser);
-		OOGraphene.closeBlueMessageWindow(browser);
 		OOGraphene.waitElement(By.cssSelector("div.o_sel_bulk_assessment_validation"), browser);
 		return this;
 	}
 	
 	public BulkAssessmentPage nextValidation() {
 		OOGraphene.nextStep(browser);
-		OOGraphene.closeBlueMessageWindow(browser);
 		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_bulk_assessment_schedule"), browser);
 		return this;
 	}

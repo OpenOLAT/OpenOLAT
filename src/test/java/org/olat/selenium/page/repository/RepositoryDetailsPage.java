@@ -60,13 +60,11 @@ public class RepositoryDetailsPage {
 	public void launch() {
 		browser.findElement(launchBy).click();
 		OOGraphene.waitBusy(browser);
-		OOGraphene.closeBlueMessageWindow(browser);
 	}
 	
 	public void edit() {
 		browser.findElement(editBy).click();
 		OOGraphene.waitBusy(browser);
-		OOGraphene.closeBlueMessageWindow(browser);
 	}
 
 }

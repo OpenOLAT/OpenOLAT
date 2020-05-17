@@ -31,7 +31,6 @@ import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -57,9 +56,9 @@ import org.olat.selenium.page.course.MemberListPage;
 import org.olat.selenium.page.course.MembersPage;
 import org.olat.selenium.page.course.ParticipantFolderPage;
 import org.olat.selenium.page.course.STConfigurationPage;
+import org.olat.selenium.page.course.STConfigurationPage.DisplayType;
 import org.olat.selenium.page.course.SinglePage;
 import org.olat.selenium.page.course.SinglePageConfigurationPage;
-import org.olat.selenium.page.course.STConfigurationPage.DisplayType;
 import org.olat.selenium.page.forum.ForumPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
@@ -1292,13 +1291,12 @@ public class CourseElementTest extends Deployments {
 	 * @throws URISyntaxException
 	 */
 	@Test
-	@Ignore
 	@RunAsClient
 	public void courseWithForum_concurrent(@Drone @Participant WebDriver kanuBrowser,
 			@Drone @Student WebDriver reiBrowser)
 	throws IOException, URISyntaxException {
 		
-		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -1316,12 +1314,30 @@ public class CourseElementTest extends Deployments {
 		String foTitle = "FO - " + UUID.randomUUID();
 		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
 			.edit();
+		// setup peekview
+		STConfigurationPage stConfig = new STConfigurationPage(browser);
+		stConfig
+			.selectOverview()
+			.setDisplay(DisplayType.peekview);
+		// create forum
 		courseEditor
 			.createNode("fo")
 			.nodeTitle(foTitle)
-		//publish the course
+		// publish the course
 			.publish()
-			.quickPublish(UserAccess.registred);
+			.quickPublish(UserAccess.membersOnly);
+	
+		MembersPage membersPage = courseEditor		
+			.clickToolbarBack()
+			.members();
+	
+		membersPage
+			.importMembers()
+			.setMembers(kanu, rei)
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
+			.finish();
 		
 		//go to the forum
 		courseEditor
@@ -1345,13 +1361,13 @@ public class CourseElementTest extends Deployments {
 			.openMyCourses()
 			.openSearch()
 			.extendedSearch(courseTitle)
-			.select(courseTitle)
-			.start();
+			.select(courseTitle);
 		
 		//go to the forum
 		new CoursePageFragment(kanuBrowser)
 			.clickTree()
-			.selectWithTitle(foTitle.substring(0, 20));
+			.selectWithTitle(foTitle.substring(0, 20))
+			.assertWithTitleSelected(foTitle.substring(0, 20));
 		
 		ForumPage kanuForum = ForumPage
 			.getCourseForumPage(kanuBrowser)
@@ -1368,8 +1384,8 @@ public class CourseElementTest extends Deployments {
 			.openMyCourses()
 			.openSearch()
 			.extendedSearch(courseTitle)
-			.select(courseTitle)
-			.start();
+			.select(courseTitle);
+		
 		//select the thread in peekview
 		ForumPage reiForum = new ForumPage(reiBrowser)
 			.openThreadInPeekview("The best anime ever");

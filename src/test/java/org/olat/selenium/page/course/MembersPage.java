@@ -253,7 +253,6 @@ public class MembersPage {
 	 * @return
 	 */
 	public CoursePageFragment clickToolbarBack() {
-		OOGraphene.closeBlueMessageWindow(browser);
 		OOGraphene.clickBreadcrumbBack(browser);
 		return new CoursePageFragment(browser);
 	}

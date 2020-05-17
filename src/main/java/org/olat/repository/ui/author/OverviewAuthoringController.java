@@ -67,12 +67,17 @@ public class OverviewAuthoringController extends BasicController implements Acti
 	private Link favoriteLink;
 	private final Link searchLink;
 	private final Link myEntriesLink;
-	private AuthorListController currentCtrl, markedCtrl, myEntriesCtrl, searchEntriesCtrl;
+	private AuthorListController markedCtrl;
+	private AuthorListController currentCtrl;
+	private AuthorListController myEntriesCtrl;
+	private AuthorListController searchEntriesCtrl;
 	private AuthorDeletedListController deletedEntriesCtrl;
 
 	private final boolean isAdministrator;
 	private final boolean isGuestOnly;
-	private boolean favoritDirty, myDirty, deletedDirty;
+	private boolean myDirty;
+	private boolean favoritDirty;
+	private boolean deletedDirty;
 	private final EventBus eventBus;
 	
 	public OverviewAuthoringController(UserRequest ureq, WindowControl wControl) {

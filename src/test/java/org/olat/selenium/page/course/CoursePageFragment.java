@@ -139,8 +139,7 @@ public class CoursePageFragment {
 	public MenuTreePageFragment clickTree() {
 		OOGraphene.waitElement(MenuTreePageFragment.treeBy, browser);
 		MenuTreePageFragment menuTree = new MenuTreePageFragment(browser);
-		menuTree.selectRoot();
-		return menuTree;
+		return menuTree.selectRoot();
 	}
 	
 	/**
@@ -187,8 +186,7 @@ public class CoursePageFragment {
 		}
 		browser.findElement(editCourseBy).click();
 		OOGraphene.waitBusy(browser);
-		OOGraphene.waitElement(By.xpath("//div[contains(@class,'o_edit_mode')]"), 5, browser);
-		OOGraphene.closeBlueMessageWindow(browser);
+		OOGraphene.waitElement(By.xpath("//div[contains(@class,'o_edit_mode')]"), browser);
 		return new CourseEditorPageFragment(browser);
 	}
 	
@@ -203,7 +201,6 @@ public class CoursePageFragment {
 		}
 		browser.findElement(editCourseBy).click();
 		OOGraphene.waitBusy(browser);
-		OOGraphene.closeBlueMessageWindow(browser);
 		return new CourseEditorPageFragment(browser);
 	}
 	

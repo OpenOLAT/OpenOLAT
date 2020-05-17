@@ -78,8 +78,8 @@ public class NavigationPage {
 	}
 	
 	public AuthoringEnvPage openAuthoringEnvironment() {
-		OOGraphene.closeBlueMessageWindow(browser);
 		navigate(authoringEnvTabBy);
+		OOGraphene.waitElement(By.className("o_sel_author_env"), browser);
 		return new AuthoringEnvPage(browser);
 	}
 	
@@ -95,9 +95,14 @@ public class NavigationPage {
 	}
 	
 	public MyCoursesPage openMyCourses() {
-		navigate(myCoursesBy);
-		OOGraphene.waitElement(myCoursesAssertBy, browser);
-		return new MyCoursesPage(browser);
+		try {
+			navigate(myCoursesBy);
+			OOGraphene.waitElement(myCoursesAssertBy, browser);
+			return new MyCoursesPage(browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Open my courses", browser);
+			throw e;
+		}
 	}
 	
 	public UserAdminPage openUserManagement() {
@@ -126,7 +131,6 @@ public class NavigationPage {
 	}
 	
 	private void navigate(By linkBy) {
-		OOGraphene.closeBlueMessageWindow(browser);
 		List<WebElement> links = browser.findElements(linkBy);
 		if(links.isEmpty() || !links.get(0).isDisplayed()) {
 			//try to open the more menu
@@ -150,7 +154,6 @@ public class NavigationPage {
 		
 		courseLinks.get(0).click();
 		OOGraphene.waitBusy(browser);
-		OOGraphene.closeBlueMessageWindow(browser);
 	}
 	
 	private void openMoreMenu() {

@@ -66,7 +66,6 @@ public class LectureRepositoryAdminPage {
 	 * @return
 	 */
 	public CoursePageFragment clickToolbarRootCrumb() {
-		OOGraphene.closeBlueMessageWindow(browser);
 		OOGraphene.clickBreadcrumbBack(browser);
 		return new CoursePageFragment(browser);
 	}
