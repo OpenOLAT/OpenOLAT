@@ -98,9 +98,11 @@ public class BigBlueButtonRunController extends BasicController implements Activ
 			
 			segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 			meetingsLink = LinkFactory.createLink("meetings.title", mainVC, this);
+			meetingsLink.setElementCssClass("o_sel_bbb_meetings_segment");
 			segmentView.addSegment(meetingsLink, true);
 			
 			adminLink = LinkFactory.createLink("meetings.admin.title", mainVC, this);
+			adminLink.setElementCssClass("o_sel_bbb_edit_meetings_segment");
 			segmentView.addSegment(adminLink, false);
 			
 			doOpenMeetings(ureq);

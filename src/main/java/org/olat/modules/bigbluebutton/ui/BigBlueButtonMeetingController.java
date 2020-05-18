@@ -119,6 +119,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		}
 		
 		joinButton = LinkFactory.createButtonLarge("meeting.join.button", flc.getFormItemComponent(), this);
+		joinButton.setElementCssClass("o_sel_bbb_join");
 		joinButton.setTarget("_blank");
 		joinButton.setVisible(!ended);
 		joinButton.setTextReasonForDisabling(translate("warning.no.access"));

@@ -116,16 +116,21 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 		if(!readOnly) {
 			DropdownItem addMeetingDropdown = uifactory.addDropdownMenu("add.meeting", "add.meeting", formLayout, getTranslator());
 			addMeetingDropdown.setOrientation(DropdownOrientation.right);
+			addMeetingDropdown.setElementCssClass("o_sel_bbb_meeting_add");
 			
 			addSingleMeetingLink = uifactory.addFormLink("add.single.meeting", formLayout, Link.LINK);
+			addSingleMeetingLink.setElementCssClass("o_sel_bbb_single_meeting_add");
 			addMeetingDropdown.addElement(addSingleMeetingLink);
 			if(bigBlueButtonModule.isPermanentMeetingEnabled()) {
 				addPermanentMeetingLink = uifactory.addFormLink("add.permanent.meeting", formLayout, Link.LINK);
+				addPermanentMeetingLink.setElementCssClass("o_sel_bbb_permanent_meeting_add");
 				addMeetingDropdown.addElement(addPermanentMeetingLink);
 			}
 			addDailyRecurringMeetingsLink = uifactory.addFormLink("add.daily.meeting", formLayout, Link.LINK);
+			addDailyRecurringMeetingsLink.setElementCssClass("o_sel_bbb_daily_meeting_add");
 			addMeetingDropdown.addElement(addDailyRecurringMeetingsLink);
 			addWeekyRecurringMeetingsLink = uifactory.addFormLink("add.weekly.meeting", formLayout, Link.LINK);
+			addWeekyRecurringMeetingsLink.setElementCssClass("o_sel_bbb_weekly_meeting_add");
 			addMeetingDropdown.addElement(addWeekyRecurringMeetingsLink);
 			
 			deleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);

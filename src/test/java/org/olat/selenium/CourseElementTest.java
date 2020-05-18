@@ -42,6 +42,7 @@ import org.olat.selenium.page.User;
 import org.olat.selenium.page.core.ContactPage;
 import org.olat.selenium.page.core.FolderPage;
 import org.olat.selenium.page.core.MenuTreePageFragment;
+import org.olat.selenium.page.course.BigBlueButtonPage;
 import org.olat.selenium.page.course.ContactConfigPage;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
@@ -1977,5 +1978,64 @@ public class CourseElementTest extends Deployments {
 			//.answerSingleChoice("Venus")
 			.saveAndCloseSurvey()
 			.assertOnSurveyClosed();
+	}
+	
+	
+
+	/**
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithBigBlueButton()
+	throws IOException, URISyntaxException {
+
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Course-With-BBB-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle, true)
+			.clickToolbarBack();
+		
+		String nodeTitle = "BBB Node-1";
+		//create a course element of type CP with the CP that we create above
+		CoursePageFragment course = CoursePageFragment.getCourse(browser);
+		CourseEditorPageFragment courseEditor = course
+			.edit();
+		courseEditor
+			.createNode("bigbluebutton")
+			.nodeTitle(nodeTitle);
+		
+		//publish the course
+		courseEditor
+			.publish()
+			.quickPublish(UserAccess.membersOnly);
+		courseEditor
+			.clickToolbarBack();
+		
+		course
+			.clickTree()
+			.selectWithTitle(nodeTitle);
+		
+		String meetingName = "Quick meeting";
+		BigBlueButtonPage bigBlueButton = new BigBlueButtonPage(browser);
+		bigBlueButton
+			.assertOnRuntime()
+			.selectEditMeetingsList()
+			.addSingleMeeting(meetingName, "Classroom")
+			.assertOnList(meetingName)
+			.selectMeetingsList()
+			.assertOnList(meetingName)
+			.selectMeeting(meetingName)
+			.assertOnMeeting(meetingName)
+			.assertOnJoin();
 	}
 }
