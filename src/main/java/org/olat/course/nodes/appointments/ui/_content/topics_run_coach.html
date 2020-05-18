@@ -1,0 +1,107 @@
+<div class="o_appointments o_topics_coach_run">
+#if($r.available("infoSubscription"))
+	<div class="clearfix">
+		$r.render("infoSubscription")
+	</div>
+#end
+#if($r.visible("add.topic"))
+	<div class="o_button_group o_button_group_right">
+		$r.render("add.topic")
+	</div>
+#end
+#if($r.isNotEmpty($topics))
+	#foreach($topic in $topics)
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					$topic.title
+				</h4>
+			</div>
+			<div class="panel-body">
+				<div class="o_topic">
+					<div class="col-sm-6">
+						#if($r.isNotEmpty($topic.organizers))
+							<div class="o_organizers">
+								#foreach($organizer in $topic.organizers)
+									<span class='o_organizer'><i class='o_icon o_icon-fw o_icon_coach'>&nbsp;</i> $organizer</span>
+								#end
+							</div>
+						#end
+						
+						<div class="o_warning">
+							#if($r.isNull($topic.getTotalAppointments()) || $topic.getTotalAppointments() == 0)
+								$r.translate("no.appointments")
+							#else
+								$r.translate("participations.selected", $topic.getSelectedParticipations().toString(), $topic.getTotalAppointments().toString())
+							#end
+							
+							#if($r.isNotNull($topic.getConfirmableAppointments()))
+								<br>
+								#if($topic.getConfirmableAppointments() == 1) 
+									$r.translate("appointments.confirmable.one", $topic.getConfirmableAppointments().toString())
+								#else
+									$r.translate("appointments.confirmable", $topic.getConfirmableAppointments().toString())
+								#end
+							#end
+						</div>
+					</div>
+					
+					<div class="col-sm-6">
+						<div class="o_next_appointment">
+							#if($topic.getDate() && $topic.getDate() != "")
+								<h5>$r.translate("appointment.next")</h5>
+								<div class="o_date">
+									<i class="o_icon o_icon-fw o_icon_calendar">&nbsp;</i>
+									$topic.getDate()
+								</div>
+							#end
+							#if($topic.getDate2() && $topic.getDate2() != "")
+								<div class="o_date">
+									<i class="o_icon o_icon-fw">&nbsp;</i>
+									$topic.getDate2()
+								</div>
+							#end
+							#if($topic.getTime() && $topic.getTime() != "")
+								<div class="o_time">
+									<i class="o_icon o_icon-fw o_icon_time">&nbsp;</i>
+									$topic.getTime()
+								</div>
+							#end
+							#if($topic.getLocation() && $topic.getLocation() != "")
+								<div>
+									<i class="o_icon o_icon-fw o_icon_home">&nbsp;</i>
+									$r.escapeHtml($topic.getLocation())
+								</div>
+							#end
+							#if($topic.getDetails() && $topic.getDetails() != "")
+								<div>
+									<i class="o_icon o_icon-fw o_icon_info_ap">&nbsp;</i>
+									$r.escapeHtml($topic.getDetails())
+								</div>
+							#end
+							#if($r.isNotEmpty($topic.participants))
+								<div class="text-muted">
+									#foreach($participant in $topic.participants)
+										<span class='o_participant'><i class='o_icon o_icon_user'>&nbsp;</i>$participant &nbsp;</span>
+									#end
+								</div>
+							#end
+						</div>
+						
+						<div class="o_button_group o_button_group_right">
+							#if($r.isNotNull($topic.getOpenLinkName()))
+								$r.render($topic.getOpenLinkName())
+							#end
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	#end
+#else
+	<div class="o_info">
+		$r.translate("no.topics")
+	</div>
+#end
+</div>
+

@@ -95,6 +95,10 @@
 		<class>org.olat.course.assessment.model.UserEfficiencyStatementStandalone</class>
 		<class>org.olat.course.assessment.model.UserEfficiencyStatementForCoaching</class>
 		<class>org.olat.course.disclaimer.model.CourseDisclaimerConsentImpl</class>
+		<class>org.olat.course.nodes.appointments.model.AppointmentImpl</class>
+		<class>org.olat.course.nodes.appointments.model.OrganizerImpl</class>
+		<class>org.olat.course.nodes.appointments.model.ParticipationImpl</class>
+		<class>org.olat.course.nodes.appointments.model.TopicImpl</class>
 		<class>org.olat.course.nodes.cl.model.DBCheckbox</class>
 		<class>org.olat.course.nodes.cl.model.DBCheck</class>
 		<class>org.olat.course.nodes.dialog.model.DialogElementImpl</class>

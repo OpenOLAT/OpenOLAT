@@ -156,6 +156,10 @@
 		<property name="order" value="200" />
 	</bean>
 	
+	<bean id="appointment" class="org.olat.course.nodes.appointments.AppointmentsCourseNodeConfiguration" scope="prototype">
+		<property name="order" value="202" />
+	</bean>
+	
 	<bean id="checklist" class="org.olat.course.nodes.cl.CheckListCourseNodeConfiguration" scope="prototype" >
 		<property name="enabled" value="${course.node.modern.checklist.enabled}" />
 		<property name="order" value="210" />
