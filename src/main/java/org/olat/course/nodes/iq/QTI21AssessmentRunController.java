@@ -273,7 +273,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				mainVC.contextPut("passed", scoreEval.getPassed());
 				mainVC.contextPut("attempts", attempts); //at least one attempt
 				mainVC.contextPut("showChangeLog", Boolean.TRUE && enableScoreInfo);
-				exposeResults(ureq, true, scoreEval.getPassed());
+				exposeResults(ureq, true, scoreEval.getPassed() != null && scoreEval.getPassed().booleanValue());
 			} else {
 				exposeResults(ureq, false, false);
 			}
