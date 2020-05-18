@@ -119,6 +119,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_bbb_edit_meeting");
 		
 		if(!editable) {
 			setFormWarning("warning.meeting.started");
@@ -126,6 +127,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		
 		String name = meeting == null ? "" : meeting.getName();
 		nameEl = uifactory.addTextElement("meeting.name", "meeting.name", 128, name, formLayout);
+		nameEl.setElementCssClass("o_sel_bbb_edit_meeting_name");
 		nameEl.setMandatory(true);
 		nameEl.setEnabled(editable);
 		if(editable && !StringHelper.containsNonWhitespace(name)) {

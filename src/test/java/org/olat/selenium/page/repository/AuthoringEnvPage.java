@@ -82,9 +82,13 @@ public class AuthoringEnvPage {
 	}
 	
 	public CourseSettingsPage createCourse(String title) {
+		return createCourse(title, false);
+	}
+	
+	public CourseSettingsPage createCourse(String title, boolean learnPath) {
 		openCreateDropDown()
 			.clickCreate(ResourceType.course)
-			.fillCreateCourseForm(title, false)
+			.fillCreateCourseForm(title, learnPath)
 			.assertOnInfos();
 		return new CourseSettingsPage(browser);
 	}
