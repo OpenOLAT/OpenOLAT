@@ -67,7 +67,7 @@ public class AppointmentImpl implements Persistable, Appointment {
 	@Column(name="a_status", nullable=false, insertable=true, updatable=true)
 	private Status status;
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="o_status_mod_date", nullable=false, insertable=true, updatable=true)
+	@Column(name="a_status_mod_date", nullable=false, insertable=true, updatable=true)
 	private Date statusModified;
 	@Column(name="a_start", nullable=true, insertable=true, updatable=true)
 	private Date start;
