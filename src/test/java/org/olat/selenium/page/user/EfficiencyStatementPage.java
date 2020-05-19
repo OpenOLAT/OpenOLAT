@@ -105,19 +105,9 @@ public class EfficiencyStatementPage {
 	 * @return
 	 */
 	public EfficiencyStatementPage assertOnCourseDetails(String testNodeTitle, boolean passed) {
-		By courseCertificateBy = By.xpath("//div[contains(@class,'o_efficiencystatement')]//table//tr[td/span[contains(text(),'" + testNodeTitle + "')]]");
-		List<WebElement> certifiatesTable = browser.findElements(courseCertificateBy);
-		Assert.assertFalse(certifiatesTable.isEmpty());
-		
-		By by;
-		if(passed) {
-			by = By.cssSelector("td.text-left span.o_state.o_passed");
-		} else {
-			by = By.cssSelector("td.text-left span.o_state.o_failed");
-		}
-		List<WebElement> passedEl = certifiatesTable.get(0).findElements(by);
-		Assert.assertFalse(passedEl.isEmpty());
-		Assert.assertTrue(passedEl.get(0).isDisplayed());
+		String stateClassname = passed ? "o_passed" : "o_failed";
+		By courseCertificateBy = By.xpath("//div[contains(@class,'o_efficiencystatement')]//table//tr[td/span[contains(text(),'" + testNodeTitle + "')]]/td[contains(@class,'text-left')]/span[contains(@class,'o_state')][contains(@class,'" + stateClassname + "')]");
+		OOGraphene.waitElement(courseCertificateBy, browser);
 		return this;
 	}
 	
