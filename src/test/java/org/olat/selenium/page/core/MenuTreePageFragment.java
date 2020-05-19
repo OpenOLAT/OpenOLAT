@@ -51,7 +51,7 @@ public class MenuTreePageFragment {
 	 * @return The menu page fragment
 	 */
 	public MenuTreePageFragment selectRoot() {
-		By rootNodeBy = By.cssSelector("div.o_tree span.o_tree_link.o_tree_l0>a");
+		By rootNodeBy = By.xpath("//div[contains(@class,'o_tree')]//span[contains(@class,'o_tree_link')][contains(@class,'o_tree_l0')]/a");
 		OOGraphene.waitElement(rootNodeBy, browser);
 		browser.findElement(rootNodeBy).click();
 		OOGraphene.waitBusy(browser);
