@@ -297,7 +297,6 @@ public class VideoManagerImpl implements VideoManager {
 
 			// close everything to prevent resource leaks
 			frameOutputStream.close();
-			in.close();
 
 			return true;
 		} catch (Exception | AssertionError e) {
@@ -348,7 +347,6 @@ public class VideoManagerImpl implements VideoManager {
 			} 
 			// close everything to prevent resource leaks
 			frameOutputStream.close();
-			in.close();
 
 			return imgBlack;
 		} catch (Exception | AssertionError e) {
@@ -914,6 +912,9 @@ public class VideoManagerImpl implements VideoManager {
 		VFSContainer masterContainer = getMasterContainer(entry.getOlatResource());
 		VFSLeaf posterFile = masterContainer.createChildLeaf(FILENAME_POSTER_JPG);
 		
+		if(url.contains(" ")) {
+			url = url.replace(" ", "%20");
+		}
 		HttpGet get = new HttpGet(url);
 		get.addHeader("Accept", "image/jpg");
 		
@@ -944,6 +945,9 @@ public class VideoManagerImpl implements VideoManager {
 		}
 		VFSLeaf videoFile = tmpContainer.createChildLeaf(FILENAME_VIDEO_MP4);
 		
+		if(url.contains(" ")) {
+			url = url.replace(" ", "%20");
+		}
 		HttpGet get = new HttpGet(url);
 		get.addHeader("Accept", "video/mp4");
 		
@@ -953,6 +957,8 @@ public class VideoManagerImpl implements VideoManager {
 		} catch(Exception e) {
 			log.error("", e);
 		}
+		// make sure that a metadata is created
+		vfsRepositoryService.getMetadataFor(videoFile);
 		return videoFile;
 	}
 
@@ -964,8 +970,6 @@ public class VideoManagerImpl implements VideoManager {
 			log.error("", e);
 		}	
 	}
-	
-
 
 	@Override
 	public VideoTranscoding updateVideoTranscoding(VideoTranscoding videoTranscoding) {
