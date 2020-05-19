@@ -158,7 +158,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		}
 
 		Date now = new Date();
-		Date start = meeting.getStartWithLeadTime();
+		Date start = (administrator || moderator) ? meeting.getStartWithLeadTime() : meeting.getStartDate();
 		Date end = meeting.getEndWithFollowupTime();
 		return !((start != null && start.compareTo(now) >= 0) || (end != null && end.compareTo(now) <= 0));
 	}
