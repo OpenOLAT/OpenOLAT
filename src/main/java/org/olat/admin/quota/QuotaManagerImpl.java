@@ -542,8 +542,10 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 		} else if(path.startsWith("/cts/folders/BusinessGroup/")) {
 			identifier = QuotaConstants.IDENTIFIER_DEFAULT_GROUPS;
 		} else if(path.startsWith("/repository/")) {
-			if(path.indexOf("/_unzipped_") >= 0 || path.indexOf("/_sharedfolder_") >= 0) {
+			if(path.indexOf("/_unzipped_") >= 0) {
 				identifier = QuotaConstants.IDENTIFIER_DEFAULT_REPO;
+			} else if(path.indexOf("/_sharedfolder_") >= 0) {
+				identifier = QuotaConstants.IDENTIFIER_DEFAULT_COURSE;
 			} else if(endWithLong(path)) {
 				identifier = QuotaConstants.IDENTIFIER_DEFAULT_FEEDS;
 			} else {
