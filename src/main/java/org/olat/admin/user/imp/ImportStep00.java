@@ -165,6 +165,7 @@ class ImportStep00 extends BasicStep {
 
 			String defaultlang = i18nModule.getDefaultLocale().toString();
 			List<String> importedEmails = new ArrayList<>();
+			List<String> importedInstitutionalEmails = new ArrayList<>();
 
 			boolean importDataError = false;
 
@@ -263,7 +264,7 @@ class ImportStep00 extends BasicStep {
 					
 					UpdateIdentity uIdentity = new UpdateIdentity(ident, pwd, lang);
 					
-					importDataError |= updateUserProperties(uIdentity, ident.getUser(), parts, i, columnId, importedEmails);
+					importDataError |= updateUserProperties(uIdentity, ident.getUser(), parts, i, columnId, importedEmails, importedInstitutionalEmails);
 					if(importDataError) break;
 					importDataError |= !validatePassword(pwd, uIdentity, i);
 					if(importDataError) break;
@@ -287,7 +288,7 @@ class ImportStep00 extends BasicStep {
 					uIdentity.setPassword(pwd);
 					uIdentity.setLanguage(lang);
 					
-					importDataError |= updateUserProperties(uIdentity, null, parts, i, columnId, importedEmails);
+					importDataError |= updateUserProperties(uIdentity, null, parts, i, columnId, importedEmails, importedInstitutionalEmails);
 					if(importDataError) break;
 					importDataError |= !validateUsername(login, uIdentity, i);
 					if(importDataError) break;
@@ -303,7 +304,7 @@ class ImportStep00 extends BasicStep {
 		}
 		
 		private boolean updateUserProperties(Identity ud, User originalUser, String[] parts, int i, int columnId,
-				List<String> importedEmails) {
+				List<String> importedEmails, List<String> importedInstitutionalEmails) {
 			
 			boolean importDataError = false;
 			for (int j = 0; j < userPropertyHandlers.size(); j++) {
@@ -348,28 +349,53 @@ class ImportStep00 extends BasicStep {
 				}
 				// check that no user with same (institutional) e-mail is already in OLAT
 				if ( (thisKey.equals(UserConstants.INSTITUTIONALEMAIL) && !thisValue.isEmpty()) || thisKey.equals(UserConstants.EMAIL)) {
-					if (!UserManager.getInstance().isEmailAllowed(thisValue, originalUser)) {
+					if (!um.isEmailAllowed(thisValue, originalUser)) {
 						textAreaElement.setErrorKey("error.email.exists", new String[] { String.valueOf(i + 1), thisValue });
 						importDataError = true;
 						break;
 					}
 				}
 				// check that no user with same email is already in list
-				if (thisKey.equals(UserConstants.EMAIL) && StringHelper.containsNonWhitespace(thisValue)
-						&& userModule.isEmailUnique()) {
-					// check that no user with same email is already in list
-					Integer mailPos = importedEmails.indexOf(thisValue);
-					boolean duplicate = mailPos != -1;
-					if (duplicate) {
-						mailPos++;
-						textAreaElement.setErrorKey("error.email.douplicate",
-								new String[] { String.valueOf(i + 1), thisValue, mailPos.toString() });
-						importDataError = true;
-						break;
-					} else {
-						importedEmails.add(thisValue);
+				if(userModule.isEmailUnique() && StringHelper.containsNonWhitespace(thisValue)) {
+					if (thisKey.equals(UserConstants.EMAIL)) {
+						// check that no user with same email is already in list
+						int mailPos = importedEmails.indexOf(thisValue);
+						if(mailPos < 0) {
+							mailPos = importedInstitutionalEmails.indexOf(thisValue);
+							if(mailPos >= 0 && thisValue.equals(ud.getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, getLocale()))) {
+								mailPos = -1;
+							}
+						}
+						boolean duplicate = mailPos > -1;
+						if (duplicate) {
+							mailPos++;
+							textAreaElement.setErrorKey("error.email.douplicate", new String[] { String.valueOf(i + 1), thisValue, Integer.toString(mailPos) });
+							importDataError = true;
+							break;
+						} else {
+							importedEmails.add(thisValue);
+						}
+					} else if (thisKey.equals(UserConstants.INSTITUTIONALEMAIL)) {
+						// check that no user with same email is already in list
+						int mailPos = importedInstitutionalEmails.indexOf(thisValue);
+						if(mailPos < 0) {
+							mailPos = importedEmails.indexOf(thisValue);
+							if(mailPos >= 0 && thisValue.equals(ud.getUser().getProperty(UserConstants.EMAIL, getLocale()))) {
+								mailPos = -1;
+							}
+						}
+						boolean duplicate = mailPos > -1;
+						if (duplicate) {
+							mailPos++;
+							textAreaElement.setErrorKey("error.email.douplicate", new String[] { String.valueOf(i + 1), thisValue, Integer.toString(mailPos) });
+							importDataError = true;
+							break;
+						} else {
+							importedInstitutionalEmails.add(thisValue);
+						}
 					}
 				}
+
 				ud.getUser().setProperty(thisKey, thisValue);
 				columnId++;
 			}
@@ -476,6 +502,5 @@ class ImportStep00 extends BasicStep {
 				}
 			};
 		}
-
 	}
 }
