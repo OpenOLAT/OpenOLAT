@@ -729,8 +729,12 @@ public class VFSManager {
 				successful = false;
 			}
 			
-			if(withMetadata && source.canMeta() == VFSConstants.YES && target.canMeta() == VFSConstants.YES) {
-				CoreSpringFactory.getImpl(VFSRepositoryService.class).copyTo(source, target, target.getParentContainer());
+			if(withMetadata) {
+				if(source.canMeta() == VFSConstants.YES && target.canMeta() == VFSConstants.YES) {
+					CoreSpringFactory.getImpl(VFSRepositoryService.class).copyTo(source, target, target.getParentContainer());
+				} else if(target.canMeta() == VFSConstants.YES)  {
+					CoreSpringFactory.getImpl(VFSRepositoryService.class).getMetadataFor(target);
+				}
 			}
 		} else {
 			// source or target is null

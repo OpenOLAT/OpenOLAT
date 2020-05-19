@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.fileresource.types.ResourceEvaluation;
@@ -249,7 +250,7 @@ public interface VideoManager {
 	 *            The repository entry that represents the video in the repository
 	 * @param masterVideo The video file to be added to the repository. Must be an mp4 file.
 	 */
-	public VideoMeta importFromMasterFile(RepositoryEntry repoEntry, VFSLeaf masterVideo);
+	public VideoMeta importFromMasterFile(RepositoryEntry repoEntry, VFSLeaf masterVideo, Identity initialAuthor);
 
 	/**
 	 * Import the given export archive to the resource on disk
@@ -260,7 +261,7 @@ public interface VideoManager {
 	 *            The archive to be added to the repository. The archive must be
 	 *            created by the video export feature.
 	 */
-	public VideoMeta importFromExportArchive(RepositoryEntry repoEntry, VFSLeaf exportArchive);
+	public VideoMeta importFromExportArchive(RepositoryEntry repoEntry, VFSLeaf exportArchive, Identity initialAuthor);
 
 	/**
 	 * Update video transcoding

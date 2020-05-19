@@ -56,8 +56,11 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.image.Crop;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
@@ -151,6 +154,8 @@ public class VideoManagerImpl implements VideoManager {
 	private VideoTranscodingDAO videoTranscodingDao;
 	@Autowired
 	private VideoMetadataDAO videoMetadataDao;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
 	private Scheduler scheduler;
 	@Autowired
@@ -292,7 +297,6 @@ public class VideoManagerImpl implements VideoManager {
 
 			// close everything to prevent resource leaks
 			frameOutputStream.close();
-			in.close();
 
 			return true;
 		} catch (Exception | AssertionError e) {
@@ -343,7 +347,6 @@ public class VideoManagerImpl implements VideoManager {
 			} 
 			// close everything to prevent resource leaks
 			frameOutputStream.close();
-			in.close();
 
 			return imgBlack;
 		} catch (Exception | AssertionError e) {
@@ -665,13 +668,13 @@ public class VideoManagerImpl implements VideoManager {
 	}
 	
 	@Override
-	public VideoMeta importFromMasterFile(RepositoryEntry repoEntry, VFSLeaf masterVideo) {
+	public VideoMeta importFromMasterFile(RepositoryEntry repoEntry, VFSLeaf masterVideo, Identity initialAuthor) {
 		OLATResource videoResource = repoEntry.getOlatResource();
 		
 		// 1) copy master video to final destination with standard name
 		VFSContainer masterContainer = getMasterContainer(videoResource);
 		VFSLeaf targetFile = VFSManager.resolveOrCreateLeafFromPath(masterContainer, FILENAME_VIDEO_MP4);
-		VFSManager.copyContent(masterVideo, targetFile, false);
+		VFSManager.copyContent(masterVideo, targetFile, true);
 		masterVideo.delete();
 
 		// calculate video duration
@@ -694,12 +697,18 @@ public class VideoManagerImpl implements VideoManager {
 			createVideoMetadata(repoEntry, targetFile.getSize(), targetFile.getName());
 			dbInstance.commit();
 			meta = updateVideoMetadata(videoResource, targetFile);
+			
+			VFSMetadata vfsMetadata = targetFile.getMetaInfo();
+			if(vfsMetadata != null) {
+				vfsMetadata.setAuthor(initialAuthor);
+				vfsRepositoryService.updateMetadata(vfsMetadata);
+			}
 		}		
 		return meta;
 	}
 	
 	@Override
-	public VideoMeta importFromExportArchive(RepositoryEntry repoEntry, VFSLeaf exportArchive) {
+	public VideoMeta importFromExportArchive(RepositoryEntry repoEntry, VFSLeaf exportArchive, Identity initialAuthor) {
 		OLATResource videoResource = repoEntry.getOlatResource();
 		// 1) unzip archive
 		VFSContainer baseContainer= FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
@@ -745,6 +754,12 @@ public class VideoManagerImpl implements VideoManager {
 			// check if these are default settings
 			if(meta != null && meta.getWidth() == 800 && meta.getHeight() == 600) {
 				meta = updateVideoMetadata(videoResource, videoFile);
+			}
+			
+			VFSMetadata vfsMetadata = videoFile.getMetaInfo();
+			if(vfsMetadata != null) {
+				vfsMetadata.setAuthor(initialAuthor);
+				vfsRepositoryService.updateMetadata(vfsMetadata);
 			}
 		}
 		return meta;
@@ -897,6 +912,9 @@ public class VideoManagerImpl implements VideoManager {
 		VFSContainer masterContainer = getMasterContainer(entry.getOlatResource());
 		VFSLeaf posterFile = masterContainer.createChildLeaf(FILENAME_POSTER_JPG);
 		
+		if(url.contains(" ")) {
+			url = url.replace(" ", "%20");
+		}
 		HttpGet get = new HttpGet(url);
 		get.addHeader("Accept", "image/jpg");
 		
@@ -927,6 +945,9 @@ public class VideoManagerImpl implements VideoManager {
 		}
 		VFSLeaf videoFile = tmpContainer.createChildLeaf(FILENAME_VIDEO_MP4);
 		
+		if(url.contains(" ")) {
+			url = url.replace(" ", "%20");
+		}
 		HttpGet get = new HttpGet(url);
 		get.addHeader("Accept", "video/mp4");
 		
@@ -936,6 +957,8 @@ public class VideoManagerImpl implements VideoManager {
 		} catch(Exception e) {
 			log.error("", e);
 		}
+		// make sure that a metadata is created
+		vfsRepositoryService.getMetadataFor(videoFile);
 		return videoFile;
 	}
 
@@ -947,8 +970,6 @@ public class VideoManagerImpl implements VideoManager {
 			log.error("", e);
 		}	
 	}
-	
-
 
 	@Override
 	public VideoTranscoding updateVideoTranscoding(VideoTranscoding videoTranscoding) {
