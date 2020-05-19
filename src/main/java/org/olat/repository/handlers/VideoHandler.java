@@ -172,10 +172,10 @@ public class VideoHandler extends FileHandler {
 		VideoMeta videoMeta = null;
 		if (fileName.endsWith(".mp4") || fileName.endsWith(".mov") || fileName.endsWith(".m4v")) {
 			// 2a) import video from raw mp4 master video file
-			videoMeta = videoManager.importFromMasterFile(repoEntry, importFile);
+			videoMeta = videoManager.importFromMasterFile(repoEntry, importFile, initialAuthor);
 		} else if (fileName.endsWith(".zip")) {
 			// 2b) import video from archive from another OpenOLAT instance
-			videoMeta = videoManager.importFromExportArchive(repoEntry, importFile);
+			videoMeta = videoManager.importFromExportArchive(repoEntry, importFile, initialAuthor);
 		}
 		dbInstance.commit();
 		
