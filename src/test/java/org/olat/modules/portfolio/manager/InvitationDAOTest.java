@@ -19,7 +19,6 @@
  */
 package org.olat.modules.portfolio.manager;
 
-import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -93,11 +92,9 @@ public class InvitationDAOTest extends OlatTestCase {
 		Assert.assertEquals(invitation.getToken(), reloadedInvitation.getToken());
 	}
 	
-	
 	@Test
 	public void hasInvitationPolicies_testHQL() {
 		String token = UUID.randomUUID().toString();
-		Date atDate = new Date();
 		boolean hasInvitation = invitationDao.hasInvitations(token);
 		Assert.assertFalse(hasInvitation);
 	}
@@ -175,6 +172,14 @@ public class InvitationDAOTest extends OlatTestCase {
 		
 		long numOfInvitations = invitationDao.countInvitations();
 		Assert.assertTrue(numOfInvitations > 0l);
+	}
+	
+	/**
+	 * Only check if the query is valid.
+	 */
+	@Test
+	public void cleanUpInvitations() {
+		invitationDao.cleanUpInvitations();
 	}
 
 }

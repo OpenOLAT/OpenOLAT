@@ -317,7 +317,6 @@ public class InvitationDAO {
 	public void cleanUpInvitations() {
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(new Date());
-		Date currentTime = cal.getTime();
 		cal.add(Calendar.HOUR, -6);
 		Date dateLimit = cal.getTime();
 
@@ -328,7 +327,6 @@ public class InvitationDAO {
 		
 		List<Invitation> oldInvitations = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Invitation.class)
-				.setParameter("currentDate", currentTime)
 				.setParameter("dateLimit", dateLimit)
 				.getResultList();
 		
