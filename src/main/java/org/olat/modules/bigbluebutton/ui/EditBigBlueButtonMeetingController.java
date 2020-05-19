@@ -186,6 +186,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			String leadtime = meeting == null ? null : Long.toString(meeting.getLeadTime());
 			leadTimeEl = uifactory.addTextElement("meeting.leadTime", 8, leadtime, formLayout);
 			leadTimeEl.setEnabled(editable);
+			leadTimeEl.setExampleKey("meeting.leadTime.explain", null);
 			
 			Date endDate = meeting == null ? null : meeting.getEndDate();
 			if (endDate == null && startDate != null) {

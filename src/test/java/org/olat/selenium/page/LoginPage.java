@@ -233,9 +233,9 @@ public class LoginPage {
 	public LoginPage resume() {
 		List<WebElement> resumes = browser.findElements(resumeButton);
 		if(resumes.size() > 0 && resumes.get(0).isDisplayed()) {
-			WebElement resume = resumes.get(0);
-			resume.click();
+			resumes.get(0).click();
 			OOGraphene.waitBusy(browser);
+			OOGraphene.waitModalDialogDisappears(browser);
 		}
 		return this;
 	}
