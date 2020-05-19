@@ -148,7 +148,7 @@ public class AppointmentEditController extends FormBasicController {
 				if (value < 1) {
 					maxParticipationsEl.setErrorKey("error.positiv.number", null);
 					allOk &= false;
-				} else {
+				} else if (appointment != null) {
 					ParticipationSearchParams params = new ParticipationSearchParams();
 					params.setAppointments(Collections.singletonList(appointment));
 					Long count = appointmentsService.getParticipationCount(params);
