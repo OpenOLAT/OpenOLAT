@@ -197,9 +197,11 @@ public class BigBlueButtonRunController extends BasicController implements Activ
 	}
 	
 	private void back() {
-		mainVC.remove(meetingCtrl.getInitialComponent());
-		removeAsListenerAndDispose(meetingCtrl);
-		meetingCtrl = null;
+		if(meetingCtrl != null) {
+			mainVC.remove(meetingCtrl.getInitialComponent());
+			removeAsListenerAndDispose(meetingCtrl);
+			meetingCtrl = null;
+		}
 	}
 	
 	private void doOpenMeetings(UserRequest ureq) {
