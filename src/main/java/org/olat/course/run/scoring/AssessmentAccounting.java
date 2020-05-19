@@ -150,7 +150,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 	private AccountingResult updateEntryRecursiv(CourseNode courseNode, Blocker blocker) {
 		log.debug("Evaluate course node: type '{}', ident: '{}'", courseNode.getType(), courseNode.getIdent());
 		
-		AssessmentEvaluation currentEvaluation = courseNodeToEval.get(courseNode);
+		AssessmentEvaluation currentEvaluation = evalCourseNode(courseNode);
 		AccountingResult result = new AccountingResult(currentEvaluation);
 		
 		AccountingEvaluators evaluators = courseAssessmentService.getEvaluators(courseNode, courseConfig);
