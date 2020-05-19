@@ -20,6 +20,7 @@
 package org.olat.selenium.page.qti;
 
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
@@ -60,7 +61,7 @@ public class QTI21CSVImportWizard {
 	public QTI21CSVImportWizard importFile(String filename) {
 		StringBuilder sb = new StringBuilder(32000);
 		try(InputStream inStream = JunitTestHelper.class.getResourceAsStream("file_resources/" + filename)) {
-			String content = IOUtils.toString(inStream, "UTF-8");
+			String content = IOUtils.toString(inStream, StandardCharsets.UTF_8);
 			String[] lines = content.split("\r?\n");
 			for(String line:lines) {
 				String[] cols = line.split("\t");

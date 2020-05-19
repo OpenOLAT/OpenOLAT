@@ -39,6 +39,7 @@ import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.EntryType;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntry;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.LobAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MatchAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder;
@@ -650,7 +651,8 @@ public class CSVToAssessmentItemConverter {
 		if (itemBuilder instanceof SimpleChoiceAssessmentItemBuilder
 				|| itemBuilder instanceof FIBAssessmentItemBuilder
 				|| itemBuilder instanceof KPrimAssessmentItemBuilder
-				|| itemBuilder instanceof MatchAssessmentItemBuilder) {
+				|| itemBuilder instanceof MatchAssessmentItemBuilder
+				|| itemBuilder instanceof LobAssessmentItemBuilder) {
 			itemBuilder.setMinScore(0.0d);
 			itemBuilder.setMaxScore(points);
 		}
