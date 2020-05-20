@@ -356,7 +356,10 @@ public class CorrectResponsesUtil {
 	
 	public static final AbstractEntry getCorrectTextResponses(AssessmentItem assessmentItem, TextEntryInteraction interaction) {
 		ResponseDeclaration responseDeclaration = assessmentItem.getResponseDeclaration(interaction.getResponseIdentifier());
-		if(responseDeclaration.hasBaseType(BaseType.STRING) && responseDeclaration.hasCardinality(Cardinality.SINGLE)) {
+		if(responseDeclaration == null) {
+			log.error("Missing declaration for interaction: {} of assessment item: {}", interaction, assessmentItem);
+			return null;
+		} else if(responseDeclaration.hasBaseType(BaseType.STRING) && responseDeclaration.hasCardinality(Cardinality.SINGLE)) {
 			TextEntry textEntry = new TextEntry(interaction);
 			FIBAssessmentItemBuilder.extractTextEntrySettingsFromResponseDeclaration(textEntry, responseDeclaration, new AtomicInteger(), new DoubleAdder());
 			return textEntry;
