@@ -20,6 +20,7 @@
 package org.olat.course.nodes.appointments;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.stream.Collectors;
 
@@ -112,6 +113,10 @@ public class ParticipationSearchParams {
 		this.appointmentKeys = appointments.stream()
 				.map(AppointmentRef::getKey)
 				.collect(Collectors.toSet());
+	}
+	
+	public void setAppointment(AppointmentRef appointment) {
+		this.appointmentKeys = Collections.singletonList(appointment.getKey());
 	}
 
 	public Date getStartAfter() {

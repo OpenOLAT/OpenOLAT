@@ -56,6 +56,7 @@ public class AppointmentEditController extends FormBasicController {
 	
 	private Topic topic;
 	private Appointment appointment;
+	private final boolean hasParticipations;
 	
 	@Autowired
 	private AppointmentsService appointmentsService;
@@ -63,12 +64,18 @@ public class AppointmentEditController extends FormBasicController {
 	public AppointmentEditController(UserRequest ureq, WindowControl wControl, Topic topic) {
 		super(ureq, wControl);
 		this.topic = topic;
+		this.hasParticipations = false;
 		initForm(ureq);
 	}
 
 	public AppointmentEditController(UserRequest ureq, WindowControl wControl, Appointment appointment) {
 		super(ureq, wControl);
 		this.appointment = appointment;
+		
+		ParticipationSearchParams params = new ParticipationSearchParams();
+		params.setAppointment(appointment);
+		this.hasParticipations = appointmentsService.getParticipationCount(params).longValue() > 0;
+		
 		initForm(ureq);
 	}
 
@@ -78,12 +85,14 @@ public class AppointmentEditController extends FormBasicController {
 		startEl = uifactory.addDateChooser("appointment.start", start, formLayout);
 		startEl.setDateChooserTimeEnabled(true);
 		startEl.setMandatory(true);
+		startEl.setEnabled(!hasParticipations);
 		startEl.addActionListener(FormEvent.ONCHANGE);
 		
 		Date end = appointment != null? appointment.getEnd(): null;
 		endEl = uifactory.addDateChooser("appointment.end", end, formLayout);
 		endEl.setDateChooserTimeEnabled(true);
 		endEl.setMandatory(true);
+		endEl.setEnabled(!hasParticipations);
 		
 		String location = appointment != null? appointment.getLocation(): null;
 		locationEl = uifactory.addTextElement("appointment.location", 128, location, formLayout);
