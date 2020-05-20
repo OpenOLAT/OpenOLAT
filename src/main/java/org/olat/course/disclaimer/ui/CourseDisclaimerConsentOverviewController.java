@@ -211,11 +211,15 @@ public class CourseDisclaimerConsentOverviewController extends FormBasicControll
 
 		if (rows.isEmpty()) {
 			revokeBtn.setVisible(false);
-			removeBtn.setVisible(false);
+			if (removeBtn != null && isAdministrativeUser) {
+				removeBtn.setVisible(false);
+			}
 			tableEl.setSearchEnabled(false);
 		} else {
 			revokeBtn.setVisible(true);
-			removeBtn.setVisible(true);
+			if (removeBtn != null && isAdministrativeUser) {
+				removeBtn.setVisible(true);
+			}
 			tableEl.setSearchEnabled(true);
 		}
 
