@@ -21,6 +21,7 @@ package org.olat.course.nodes.appointments.manager;
 
 import static java.util.Collections.singletonList;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -36,10 +37,12 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.appointments.Appointment;
 import org.olat.course.nodes.appointments.Appointment.Status;
+import org.olat.course.nodes.appointments.AppointmentRef;
 import org.olat.course.nodes.appointments.AppointmentSearchParams;
 import org.olat.course.nodes.appointments.AppointmentsService;
 import org.olat.course.nodes.appointments.Organizer;
 import org.olat.course.nodes.appointments.Participation;
+import org.olat.course.nodes.appointments.ParticipationRef;
 import org.olat.course.nodes.appointments.ParticipationResult;
 import org.olat.course.nodes.appointments.ParticipationSearchParams;
 import org.olat.course.nodes.appointments.Topic;
@@ -195,7 +198,7 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 	@Override
 	public void confirmAppointment(Appointment appointment) {
 		AppointmentSearchParams appointmentParams = new AppointmentSearchParams();
-		appointmentParams.setAppointmentKey(appointment.getKey());
+		appointmentParams.setAppointment(appointment);
 		appointmentParams.setFetchTopic(true);
 		List<Appointment> appointments = appointmentDao.loadAppointments(appointmentParams);
 		if (!appointments.isEmpty()) {
@@ -228,7 +231,7 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 	@Override
 	public void unconfirmAppointment(Appointment appointment) {
 		AppointmentSearchParams appointmentParams = new AppointmentSearchParams();
-		appointmentParams.setAppointmentKey(appointment.getKey());
+		appointmentParams.setAppointment(appointment);
 		appointmentParams.setFetchTopic(true);
 		List<Appointment> appointments = appointmentDao.loadAppointments(appointmentParams);
 		if (!appointments.isEmpty()) {
@@ -257,7 +260,7 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 	public ParticipationResult createParticipation(Appointment appointment, Identity identity,
 			boolean autoConfirmation) {
 		AppointmentSearchParams appointmentParams = new AppointmentSearchParams();
-		appointmentParams.setAppointmentKey(appointment.getKey());
+		appointmentParams.setAppointment(appointment);
 		appointmentParams.setFetchTopic(true);
 		List<Appointment> appointments = appointmentDao.loadAppointments(appointmentParams);
 		if (appointments.isEmpty()) {
@@ -287,6 +290,55 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 		}
 		
 		return ParticipationResult.of(participation);
+	}
+
+	@Override
+	public ParticipationResult rebookParticipations(AppointmentRef toAppointmentRef,
+			Collection<? extends ParticipationRef> participationRefs, boolean autoConfirmation) {
+		AppointmentSearchParams aParams = new AppointmentSearchParams();
+		aParams.setAppointment(toAppointmentRef);
+		aParams.setFetchTopic(true);
+		List<Appointment> appointments = appointmentDao.loadAppointments(aParams);
+		if (appointments.isEmpty()) {
+			return ParticipationResult.APPOINTMENT_DELETED;
+		}
+		Appointment toAppointment = appointments.get(0);
+		
+		if (toAppointment.getMaxParticipations() != null) {
+			ParticipationSearchParams participationParams = new ParticipationSearchParams();
+			participationParams.setAppointments(singletonList(toAppointment));
+			Long count = participationDao.loadParticipationCount(participationParams);
+			if ((count.longValue() + participationRefs.size()) > toAppointment.getMaxParticipations().intValue()) {
+				return ParticipationResult.APPOINTMENT_FULL;
+			}
+		}
+		
+		ParticipationSearchParams pParams = new ParticipationSearchParams();
+		pParams.setParticipations(participationRefs);
+		pParams.setFetchIdentities(true);
+		List<Participation> fromParticipations = participationDao.loadParticipations(pParams);
+		if (fromParticipations.isEmpty()) {
+			return ParticipationResult.NO_PARTICIPATIONS;
+		}
+		
+		List<Participation> participations = new ArrayList<>(fromParticipations.size());
+		for (Participation fromParticipation : fromParticipations) {
+			Identity identity = fromParticipation.getIdentity();
+			Participation participation = participationDao.createParticipation(toAppointment, identity);
+			participations.add(participation);
+			calendarSyncher.syncCalendar(toAppointment, identity);
+		}
+		markNews(toAppointment.getTopic());
+		appointmentsMailing.sendRebook(toAppointment, fromParticipations);
+
+		if (autoConfirmation) {
+			confirmReloadedAppointment(toAppointment, false);
+		}
+		
+		// Delete after send email to have the from participations informations in the email
+		fromParticipations.forEach(this::deleteParticipation);
+		
+		return ParticipationResult.of(participations);
 	}
 
 	@Override

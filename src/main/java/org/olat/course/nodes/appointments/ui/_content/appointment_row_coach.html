@@ -65,6 +65,9 @@
 
 		<div class="o_buttons">
 			<div class="o_button_group o_button_group_right">
+				#if($row.rebookLinkName)
+					$r.render($row.rebookLinkName)
+				#end
 				#if($row.confirmLinkName)
 					$r.render($row.confirmLinkName)
 				#end

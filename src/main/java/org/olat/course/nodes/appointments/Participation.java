@@ -29,9 +29,7 @@ import org.olat.core.id.ModifiedInfo;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface Participation extends ModifiedInfo, CreateInfo {
-	
-	public Long getKey();
+public interface Participation extends ParticipationRef, ModifiedInfo, CreateInfo {
 	
 	public Appointment getAppointment();
 	

@@ -191,6 +191,9 @@ class ParticipationDAO {
 		if (params.getCreatedAfter() != null) {
 			sb.and().append("participation.creationDate >= :createdAfter");
 		}
+		if (params.getParticipationKeys() != null && !params.getParticipationKeys().isEmpty()) {
+			sb.and().append("participation.key in (:participationKeys)");
+		}
 		if (params.getAppointmentKeys() != null && !params.getAppointmentKeys().isEmpty()) {
 			sb.and().append("participation.appointment.key in (:appointmentKeys)");
 		}
@@ -223,6 +226,9 @@ class ParticipationDAO {
 		}
 		if (params.getCreatedAfter() != null) {
 			query.setParameter("createdAfter", params.getCreatedAfter());
+		}
+		if (params.getParticipationKeys() != null && !params.getParticipationKeys().isEmpty()) {
+			query.setParameter("participationKeys", params.getParticipationKeys());
 		}
 		if (params.getAppointmentKeys() != null && !params.getAppointmentKeys().isEmpty()) {
 			query.setParameter("appointmentKeys", params.getAppointmentKeys());

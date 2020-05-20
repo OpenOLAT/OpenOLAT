@@ -43,10 +43,10 @@ public class AppointmentSearchParams {
 		return appointmentKey;
 	}
 
-	public void setAppointmentKey(Long appointmentKey) {
-		this.appointmentKey = appointmentKey;
+	public void setAppointment(AppointmentRef appointment) {
+		this.appointmentKey = appointment.getKey();
 	}
-	
+
 	public Topic getTopic() {
 		return topic;
 	}

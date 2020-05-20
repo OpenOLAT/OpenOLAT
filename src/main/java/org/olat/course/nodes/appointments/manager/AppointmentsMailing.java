@@ -161,6 +161,45 @@ public class AppointmentsMailing {
 		}
 	}
 	
+	void sendRebook(Appointment toAppointment, List<Participation> fromParticipations) {
+		if (toAppointment == null || fromParticipations == null || fromParticipations.isEmpty()) return;
+		
+		ParticipationSearchParams participationParams = new ParticipationSearchParams();
+		participationParams.setParticipations(fromParticipations);
+		participationParams.setFetchAppointments(true);
+		participationParams.setFetchTopics(true);
+		participationParams.setFetchIdentities(true);
+		participationParams.setFetchUser(true);
+		participationDao.loadParticipations(participationParams).stream()
+				.forEach(participation -> sendRebook(toAppointment, participation));
+	}
+	
+	void sendRebook(Appointment toAppointment, Participation fromParticipation) {
+		Identity identity = fromParticipation.getIdentity();
+		Locale locale = I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage());
+		Translator translator = Util.createPackageTranslator(AppointmentsRunController.class, locale);
+				
+		String subject = translator.translate("mail.rebooked.subject");
+		String body = translator.translate("mail.rebooked.body", new String[] {
+				userManager.getUserDisplayName(identity.getKey()),
+				createFormatedAppointments(singletonList(fromParticipation.getAppointment()), translator),
+				createFormatedAppointments(singletonList(toAppointment), translator)
+		});
+		
+		MailerResult result = new MailerResult();
+		MailBundle bundle = new MailBundle();
+		bundle.setToId(identity);
+		bundle.setContent(subject, body);
+		bundle.setContext(getMailContext(toAppointment.getTopic()));
+		
+		result = mailManager.sendMessage(bundle);
+		if (!result.isSuccessful()) {
+			log.warn(MessageFormat.format("Sending rebook appointment [from key={0}, to key={1}] to {2} failed: {3}",
+					fromParticipation.getAppointment().getKey(), toAppointment.getKey(),
+					fromParticipation.getIdentity(), result.getErrorMessage()));
+		}
+	}
+	
 	private String createFormatedAppointments(List<Appointment> appointments, Translator translator) {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < appointments.size(); i++) {

@@ -17,41 +17,20 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.appointments.model;
-
-import java.util.Collection;
-
-import org.olat.course.nodes.appointments.Participation;
-import org.olat.course.nodes.appointments.ParticipationResult;
+package org.olat.course.nodes.appointments;
 
 /**
  * 
- * Initial date: 12 May 2020<br>
+ * Initial date: 19 May 2020<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ParticipationResultImpl implements ParticipationResult {
-
-	private final Status status;
-	private final Collection<Participation> participations;
+public interface AppointmentRef {
 	
-	public ParticipationResultImpl(Status status) {
-		this(status, null);
-	}
+	public Long getKey();
 	
-	public ParticipationResultImpl(Status status, Collection<Participation> participations) {
-		this.status = status;
-		this.participations = participations;
-	}
-
-	@Override
-	public Status getStatus() {
-		return status;
-	}
-
-	@Override
-	public Collection<Participation> getParticipations() {
-		return participations;
+	public static AppointmentRef of(Long key) {
+		return () -> key;
 	}
 
 }

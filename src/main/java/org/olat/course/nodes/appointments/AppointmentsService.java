@@ -68,7 +68,11 @@ public interface AppointmentsService {
 
 	public List<Appointment> getAppointments(AppointmentSearchParams params);
 
-	public ParticipationResult createParticipation(Appointment appointment, Identity identity, boolean autoConfirmation);
+	public ParticipationResult createParticipation(Appointment appointment, Identity identity,
+			boolean autoConfirmation);
+	
+	public ParticipationResult rebookParticipations(AppointmentRef toAppointmenRef,
+			Collection<? extends ParticipationRef> participationRefs, boolean autoConfirmation);
 
 	public void deleteParticipation(Participation participation);
 

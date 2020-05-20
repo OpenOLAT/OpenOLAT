@@ -19,6 +19,9 @@
  */
 package org.olat.course.nodes.appointments;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.olat.course.nodes.appointments.model.ParticipationResultImpl;
 
 /**
@@ -32,24 +35,30 @@ public interface ParticipationResult {
 	static final ParticipationResult APPOINTMENT_DELETED = new ParticipationResultImpl(Status.appointmentDeleted);
 	static final ParticipationResult APPOINTMENT_FULL = new ParticipationResultImpl(Status.appointmentFull);
 	static final ParticipationResult APPOINTMENT_CONFIRMED = new ParticipationResultImpl(Status.appointmentConfirmed);
+	static final ParticipationResult NO_PARTICIPATIONS = new ParticipationResultImpl(Status.noParticipations);
 	
 	static ParticipationResult of(Participation participation) {
-		return new ParticipationResultImpl(Status.ok, participation);
+		return of(Collections.singletonList(participation));
+	}
+	
+	static ParticipationResult of(Collection<Participation> participations) {
+		return new ParticipationResultImpl(Status.ok, participations);
 	}
 	
 	enum Status {
 		ok,
 		appointmentDeleted,
 		appointmentFull,
-		appointmentConfirmed
+		appointmentConfirmed,
+		noParticipations
 	}
 	
 	public Status getStatus();
 	
 	/**
 	 *
-	 * @return the participation if status == ok.
+	 * @return the participations if status == ok.
 	 */
-	public Participation getParticipation();
+	public Collection<Participation> getParticipations();
 
 }

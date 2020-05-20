@@ -46,6 +46,7 @@ public class AppointmentRow {
 	private String statusCSS;
 	private Integer freeParticipations;
 	private Integer maxParticipations;
+	private FormLink rebookLink;
 	private FormLink confirmLink;
 	private FormLink deleteLink;
 	private FormLink editLink;
@@ -162,6 +163,14 @@ public class AppointmentRow {
 		this.maxParticipations = maxParticipations;
 	}
 
+	public FormLink getRebookLink() {
+		return rebookLink;
+	}
+
+	public String getRebookLinkName() {
+		return rebookLink != null? rebookLink.getName(): null;
+	}
+	
 	public FormLink getConfirmLink() {
 		return confirmLink;
 	}
@@ -172,6 +181,10 @@ public class AppointmentRow {
 
 	public void setConfirmLink(FormLink confirmLink) {
 		this.confirmLink = confirmLink;
+	}
+
+	public void setRebookLink(FormLink rebookLink) {
+		this.rebookLink = rebookLink;
 	}
 
 	public FormLink getDeleteLink() {

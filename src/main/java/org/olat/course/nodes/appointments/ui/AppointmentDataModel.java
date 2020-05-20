@@ -69,6 +69,7 @@ implements SortableFlexiTableDataModel<AppointmentRow> {
 			case maxParticipations: return row.getAppointment().getMaxParticipations();
 			case freeParticipations: return row.getFreeParticipations();
 			case participants: return row.getParticipantsWrapper();
+			case rebook: return row.getRebookLink();
 			case confirm: return row.getConfirmLink();
 			case delete: return row.getDeleteLink();
 			case edit: return row.getEditLink();
@@ -91,6 +92,7 @@ implements SortableFlexiTableDataModel<AppointmentRow> {
 		maxParticipations("appointment.max.participations"),
 		freeParticipations("appointment.free.participations"),
 		participants("participants"),
+		rebook("rebook"),
 		confirm("confirm"),
 		edit("edit"),
 		delete("delete");

@@ -35,6 +35,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.course.nodes.appointments.Appointment;
 import org.olat.course.nodes.appointments.Appointment.Status;
+import org.olat.course.nodes.appointments.AppointmentRef;
 import org.olat.course.nodes.appointments.Participation;
 import org.olat.course.nodes.appointments.ParticipationSearchParams;
 import org.olat.course.nodes.appointments.Topic;
@@ -213,10 +214,10 @@ public class ParticipationDAOTest extends OlatTestCase {
 		sut.createParticipation(appointmentD1 , identity1);
 		dbInstance.commitAndCloseSession();
 		
-		Collection<Long> appointmentKeys = Arrays.asList(appointmentA1.getKey(), appointmentA2.getKey(),
-				appointmentB1.getKey(), appointmentD1.getKey());
+		Collection<AppointmentRef> appointments = Arrays.asList(appointmentA1, appointmentA2, appointmentB1,
+				appointmentD1);
 		ParticipationSearchParams params = new ParticipationSearchParams();
-		params.setAppointmentKeys(appointmentKeys);
+		params.setAppointments(appointments);
 		params.setStatus(Status.confirmed);
 		Long count = sut.loadParticipationCount(params);
 		
@@ -303,11 +304,37 @@ public class ParticipationDAOTest extends OlatTestCase {
 		
 		//Is just a syntax check. The appointment key is the limiting clause.
 		ParticipationSearchParams params = new ParticipationSearchParams();
-		params.setAppointmentKeys(asList(appointment.getKey()));
+		params.setAppointments(asList(appointment));
 		params.setCreatedAfter(new GregorianCalendar(2000, 1, 1).getTime());
 		List<Participation> participations = sut.loadParticipations(params);
 		
 		assertThat(participations).containsExactlyInAnyOrder(participation);
+	}
+	
+	@Test
+	public void shouldLoadKeys() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsUser(random());
+		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsUser(random());
+		Topic topic1 = topicDao.createTopic(entry, JunitTestHelper.random());
+		Topic topic2 = topicDao.createTopic(entry, JunitTestHelper.random());
+		Appointment appointment11 = appointmentDao.createAppointment(topic1);
+		Appointment appointment12 = appointmentDao.createAppointment(topic1);
+		Appointment appointment21 = appointmentDao.createAppointment(topic2);
+		Participation participation111 = sut.createParticipation(appointment11, identity1);
+		Participation participation121 = sut.createParticipation(appointment12, identity1);
+		Participation participation112 = sut.createParticipation(appointment11, identity2);
+		Participation participation211 = sut.createParticipation(appointment21, identity1);
+		dbInstance.commitAndCloseSession();
+		
+		ParticipationSearchParams params = new ParticipationSearchParams();
+		Collection<Participation> asList = Arrays.asList(participation112, participation211);
+		params.setParticipations(asList);
+		List<Participation> participations = sut.loadParticipations(params);
+		
+		assertThat(participations)
+				.containsExactlyInAnyOrder(participation112, participation211)
+				.doesNotContain(participation111, participation121);
 	}
 	
 	@Test
@@ -337,9 +364,9 @@ public class ParticipationDAOTest extends OlatTestCase {
 		Participation participationD11 = sut.createParticipation(appointmentD1 , identity1);
 		dbInstance.commitAndCloseSession();
 		
-		Collection<Long> appointmentKeys = Arrays.asList(appointmentA1.getKey(), appointmentA2.getKey(), appointmentC1.getKey());
+		Collection<Appointment> appointments = Arrays.asList(appointmentA1, appointmentA2, appointmentC1);
 		ParticipationSearchParams params = new ParticipationSearchParams();
-		params.setAppointmentKeys(appointmentKeys);
+		params.setAppointments(appointments);
 		List<Participation> participations = sut.loadParticipations(params);
 		
 		assertThat(participations)
@@ -386,10 +413,10 @@ public class ParticipationDAOTest extends OlatTestCase {
 		Participation participationD11 = sut.createParticipation(appointmentD1 , identity1);
 		dbInstance.commitAndCloseSession();
 		
-		Collection<Long> appointmentKeys = Arrays.asList(appointmentA1.getKey(), appointmentA2.getKey(),
-				appointmentB1.getKey(), appointmentD1.getKey());
+		Collection<Appointment> appointments = Arrays.asList(appointmentA1, appointmentA2, appointmentB1,
+				appointmentD1);
 		ParticipationSearchParams params = new ParticipationSearchParams();
-		params.setAppointmentKeys(appointmentKeys);
+		params.setAppointments(appointments);
 		params.setStartAfter(new GregorianCalendar(2020, 1, 1).getTime());
 		List<Participation> participations = sut.loadParticipations(params);
 		
@@ -432,10 +459,10 @@ public class ParticipationDAOTest extends OlatTestCase {
 		Participation participationD11 = sut.createParticipation(appointmentD1 , identity1);
 		dbInstance.commitAndCloseSession();
 		
-		Collection<Long> appointmentKeys = Arrays.asList(appointmentA1.getKey(), appointmentA2.getKey(),
-				appointmentB1.getKey(), appointmentD1.getKey());
+		Collection<Appointment> appointments = Arrays.asList(appointmentA1, appointmentA2, appointmentB1,
+				appointmentD1);
 		ParticipationSearchParams params = new ParticipationSearchParams();
-		params.setAppointmentKeys(appointmentKeys);
+		params.setAppointments(appointments);
 		params.setStatus(Status.confirmed);
 		List<Participation> participations = sut.loadParticipations(params);
 		
@@ -474,10 +501,9 @@ public class ParticipationDAOTest extends OlatTestCase {
 		Participation participationD11 = sut.createParticipation(appointmentD1 , identity);
 		dbInstance.commitAndCloseSession();
 		
-		Collection<Long> appointmentKeys = Arrays.asList(appointmentA1.getKey(), appointmentA2.getKey(),
-				appointmentB1.getKey(), appointmentD1.getKey());
+		Collection<Appointment> appointments = Arrays.asList(appointmentA1, appointmentA2, appointmentB1, appointmentD1);
 		ParticipationSearchParams params = new ParticipationSearchParams();
-		params.setAppointmentKeys(appointmentKeys);
+		params.setAppointments(appointments);
 		params.setStatusModifiedAfter(new GregorianCalendar(2020, 3, 1, 12, 30, 0).getTime());
 		List<Participation> participations = sut.loadParticipations(params);
 		

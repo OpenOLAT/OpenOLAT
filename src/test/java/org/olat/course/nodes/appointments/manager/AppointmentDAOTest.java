@@ -247,7 +247,7 @@ public class AppointmentDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		AppointmentSearchParams params = new AppointmentSearchParams();
-		params.setAppointmentKey(appointment.getKey());
+		params.setAppointment(appointment);
 		List<Appointment> appointments = sut.loadAppointments(params);
 		
 		assertThat(appointments).containsExactlyInAnyOrder(appointment);

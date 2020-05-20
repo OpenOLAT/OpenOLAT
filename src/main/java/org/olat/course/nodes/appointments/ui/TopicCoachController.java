@@ -73,6 +73,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TopicCoachController extends FormBasicController implements FlexiTableComponentDelegate {
 	
+	private static final String CMD_REBOOK = "rebook";
 	private static final String CMD_CONFIRM = "confirm";
 	private static final String CMD_DELETE = "delete";
 	private static final String CMD_EDIT = "edit";
@@ -88,8 +89,9 @@ public class TopicCoachController extends FormBasicController implements FlexiTa
 	private TopicEditController topicEditCtrl;
 	private OrganizersEditController organizersEditCtrl;
 	private AppointmentEditController appointmentEditCtrl;
+	private RebookController rebookCtrl;
 	private DialogBoxController confirmDeleteTopicCrtl;
-	private DialogBoxController confirmDeletionCrtl;
+	private AppointmentDeleteController appointmentDeleteCtrl;
 
 	private Topic topic;
 	private final AppointmentsSecurityCallback secCallback;
@@ -153,6 +155,9 @@ public class TopicCoachController extends FormBasicController implements FlexiTa
 		participantsModel.setCellRenderer(new ParticipationsRenderer());
 		participantsModel.setDefaultVisible(false);
 		columnsModel.addFlexiColumnModel(participantsModel);
+		DefaultFlexiColumnModel rebookModel = new DefaultFlexiColumnModel(AppointmentCols.rebook);
+		rebookModel.setExportable(false);
+		columnsModel.addFlexiColumnModel(rebookModel);
 		DefaultFlexiColumnModel confirmModel = new DefaultFlexiColumnModel(AppointmentCols.confirm);
 		confirmModel.setExportable(false);
 		columnsModel.addFlexiColumnModel(confirmModel);
@@ -276,6 +281,9 @@ public class TopicCoachController extends FormBasicController implements FlexiTa
 		row.setTranslatedStatus(translate("appointment.status." + appointment.getStatus().name()));
 		row.setStatusCSS("o_ap_status_" + appointment.getStatus().name());
 
+		if (participations.size() > 0) {
+			forgeRebookLink(row);
+		}
 		if (config.isConfirmation()) {
 			boolean confirmable = Appointment.Status.planned == appointment.getStatus()
 					&& participations.size() > 0;
@@ -290,6 +298,12 @@ public class TopicCoachController extends FormBasicController implements FlexiTa
 		return row;
 	}
 
+	private void forgeRebookLink(AppointmentRow row) {
+		FormLink link = uifactory.addFormLink("rebook_" + row.getKey(), CMD_REBOOK, "rebook", null, null, Link.LINK);
+		link.setUserObject(row);
+		row.setRebookLink(link);
+	}
+	
 	private void forgeConfirmLink(AppointmentRow row, boolean confirmable) {
 		String i18nKey = confirmable? "confirm": "unconfirm";
 		FormLink link = uifactory.addFormLink("confirm_" + row.getKey(), CMD_CONFIRM, i18nKey, null, null, Link.LINK);
@@ -331,7 +345,10 @@ public class TopicCoachController extends FormBasicController implements FlexiTa
 			} else if (CMD_CONFIRM.equals(cmd)) {
 				AppointmentRow row = (AppointmentRow)link.getUserObject();
 				doConfirm(row.getAppointment());
-			}
+			} else if (CMD_REBOOK.equals(cmd)) {
+				AppointmentRow row = (AppointmentRow)link.getUserObject();
+				doRebook(ureq, row.getAppointment());
+			} 
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -357,14 +374,21 @@ public class TopicCoachController extends FormBasicController implements FlexiTa
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if (appointmentDeleteCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				updateModel();
+			}
+			cmc.deactivate();
+			cleanUp();
+		}  else if (rebookCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				updateModel();
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if (source == confirmDeleteTopicCrtl) {
 			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
 				doDeleteTopic(ureq);
-			}
-		} else if (source == confirmDeletionCrtl) {
-			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
-				Appointment appointment = (Appointment)confirmDeletionCrtl.getUserObject();
-				doDelete(appointment);
 			}
 		} else if (cmc == source) {
 			cleanUp();
@@ -373,9 +397,13 @@ public class TopicCoachController extends FormBasicController implements FlexiTa
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(appointmentDeleteCtrl);
 		removeAsListenerAndDispose(appointmentEditCtrl);
+		removeAsListenerAndDispose(rebookCtrl);
 		removeAsListenerAndDispose(cmc);
+		appointmentDeleteCtrl = null;
 		appointmentEditCtrl = null;
+		rebookCtrl = null;
 		cmc = null;
 	}
 
@@ -436,10 +464,13 @@ public class TopicCoachController extends FormBasicController implements FlexiTa
 	}
 	
 	private void doConfirmDeletion(UserRequest ureq, Appointment appointment) {
-		String title = translate("confirm.delete.title");
-		String text = translate("confirm.delete");
-		confirmDeletionCrtl = activateYesNoDialog(ureq, title, text, confirmDeletionCrtl);
-		confirmDeletionCrtl.setUserObject(appointment);
+		appointmentDeleteCtrl = new AppointmentDeleteController(ureq, getWindowControl(), appointment, config);
+		listenTo(appointmentDeleteCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), "close", appointmentDeleteCtrl.getInitialComponent(),
+				true, translate("confirm.appointment.delete.title"));
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	private void doConfirm(Appointment appointment) {
@@ -450,10 +481,15 @@ public class TopicCoachController extends FormBasicController implements FlexiTa
 		}
 		updateModel();
 	}
+	
+	private void doRebook(UserRequest ureq, Appointment appointment) {
+		rebookCtrl = new RebookController(ureq, getWindowControl(), appointment, config);
+		listenTo(rebookCtrl);
 
-	private void doDelete(Appointment appointment) {
-		appointmentsService.deleteAppointment(appointment);
-		updateModel();
+		cmc = new CloseableModalController(getWindowControl(), "close", rebookCtrl.getInitialComponent(),
+				true, translate("rebook.title"));
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	@Override

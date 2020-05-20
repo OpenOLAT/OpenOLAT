@@ -30,14 +30,12 @@ import org.olat.core.id.ModifiedInfo;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface Appointment extends ModifiedInfo, CreateInfo {
+public interface Appointment extends AppointmentRef, ModifiedInfo, CreateInfo {
 	
 	public enum Status {
 		planned,
 		confirmed
 	}
-	
-	public Long getKey();
 	
 	public Status getStatus();
 	

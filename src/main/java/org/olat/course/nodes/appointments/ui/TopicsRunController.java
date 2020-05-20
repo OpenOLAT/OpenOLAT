@@ -137,10 +137,10 @@ public class TopicsRunController extends BasicController {
 		List<Participation> myParticipations = appointmentsService.getParticipations(myParticipationsParams);
 		Map<Long, List<Participation>> topicKeyToMyParticipation = myParticipations.stream()
 				.collect(Collectors.groupingBy(p -> p.getAppointment().getTopic().getKey()));
-		Map<Long, List<Participation>> appointmentKeyToMyParticipation = myParticipations.stream()
+		Map<Long, List<Participation>> appointmentsToMyParticipation = myParticipations.stream()
 				.collect(Collectors.groupingBy(p -> p.getAppointment().getKey()));
 		
-		Set<Long> myAppointmentKeys = appointmentKeyToMyParticipation.keySet();
+		Set<Long> myAppointmentKeys = appointmentsToMyParticipation.keySet();
 		ParticipationSearchParams allParticipationParams = new ParticipationSearchParams();
 		allParticipationParams.setAppointmentKeys(myAppointmentKeys);
 		Map<Long, List<Participation>> appointmentKeyToAllParticipations = appointmentsService
@@ -154,7 +154,7 @@ public class TopicsRunController extends BasicController {
 			wrapOrganizers(wrapper, organizers);
 			List<Appointment> appointments = topicKeyToAppointments.getOrDefault(topic.getKey(), emptyList());
 			List<Participation> topicParticipations = topicKeyToMyParticipation.getOrDefault(topic.getKey(), emptyList());
-			wrapParticpations(wrapper, topic, topicParticipations, appointments, appointmentKeyToMyParticipation,
+			wrapParticpations(wrapper, topic, topicParticipations, appointments, appointmentsToMyParticipation,
 					appointmentKeyToAllParticipations);
 			wrappers.add(wrapper);
 		}
