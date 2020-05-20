@@ -603,7 +603,9 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	}
 	
 	public Boolean isCorrectTextEntry(TextEntryInteraction textEntry) {
-		if(textEntry == null) return null;
+		if(textEntry == null) {
+			return null;
+		}
 		
 		Value val = getResponseValue(textEntry.getResponseIdentifier());
 		if(val == null) {
@@ -612,6 +614,9 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		
 		String stringuifiedResponses = toString(val);
 		AbstractEntry correctAnswers = CorrectResponsesUtil.getCorrectTextResponses(assessmentItem, textEntry);
+		if(correctAnswers == null) {
+			return null;
+		}
 		stringuifiedResponses = CorrectResponsesUtil.stripResponse(stringuifiedResponses);
 		boolean correct = correctAnswers.match(stringuifiedResponses);
 		return Boolean.valueOf(correct);
