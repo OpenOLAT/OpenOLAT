@@ -143,9 +143,20 @@ public class EdusharingCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public StatusDescription isConfigValid() {
-		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
-		
+		if (oneClickStatusCache != null) {
+			return oneClickStatusCache[0];
+		}
+
 		StatusDescription sd = StatusDescription.NOERROR;
+		if (!getModuleConfiguration().has(CONFIG_IDENTIFIER)) {
+			String shortKey = "error.no.item.short";
+			String longKey = "error.no.item.long";
+			String[] params = new String[] { this.getShortTitle() };
+			sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, params, TRANSLATOR_PACKAGE);
+			sd.setDescriptionForUnit(getIdent());
+			// set which pane is affected by error
+			sd.setActivateableViewIdentifier(EdusharingEditController.PANE_TAB_CONFIG);
+		}
 		return sd;
 	}
 
