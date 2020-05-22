@@ -108,16 +108,16 @@ class EdusharingUsageDAO {
 		return query.getResultList();
 	}
 
-	void delete(String identifier) {
-		if (!StringHelper.containsNonWhitespace(identifier)) return;
+	void delete(EdusharingUsage usage) {
+		if (usage == null) return;
 		
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("delete from edusharingusage as usage");
-		sb.append(" where usage.identifier = :identifier");
+		sb.append(" where usage.key = :usageKey");
 		
 		dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString())
-				.setParameter("identifier", identifier)
+				.setParameter("usageKey", usage.getKey())
 				.executeUpdate();
 	}
 

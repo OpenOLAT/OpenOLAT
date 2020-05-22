@@ -129,16 +129,16 @@ public class EdusharingUsageDAOTest extends OlatTestCase {
 	}
 
 	@Test
-	public void shouldDeleteUsageByIdentifier() {
+	public void shouldDeleteUsage() {
 		OLATResource ores = JunitTestHelper.createRandomResource();
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("es");
 		String identifier = random();
 		String objectUrl = random();
 		EdusharingHtmlElement element = new EdusharingHtmlElement(identifier, objectUrl);
-		sut.create(identity, element, ores);
+		EdusharingUsage usage = sut.create(identity, element, ores);
 		dbInstance.commitAndCloseSession();
 		
-		sut.delete(identifier);
+		sut.delete(usage);
 		dbInstance.commitAndCloseSession();
 		EdusharingUsage loadedUsage = sut.loadByIdentifier(identifier);
 		

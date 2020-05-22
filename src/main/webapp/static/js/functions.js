@@ -2181,8 +2181,11 @@ var OOEdusharing = {
 		return html;
 	},
 	
-	replaceWithRendered: function(node, identifier, width, height, esClass, showLicense, showInfos, isIFrame) {
+	replaceWithRendered: function(node, identifier, version, width, height, esClass, showLicense, showInfos, isIFrame) {
 		var url = o_info.uriprefix.replace("auth", "edusharing") + "render?identifier=" + identifier;
+		if (version >= 0) {
+			url = url + "&version=" + version;
+		}
 		if (width > 0) {
 			url = url + "&width=" + width;
 		}
@@ -2225,6 +2228,7 @@ var OOEdusharing = {
 		
 	replace: function(node, isIFrame) {
 		var identifier = node.data("es_identifier");
+		var version = node.data("es_version");
 		var width = node.attr("width");
 		var height = node.attr("height");
 		var esClass = node.attr('class');
@@ -2232,7 +2236,7 @@ var OOEdusharing = {
 		var showInfos = node.data("es_show_infos");
 		
 		var spinner = OOEdusharing.replaceWithSpinner(node, width, height);
-		OOEdusharing.replaceWithRendered(spinner, identifier, width, height, esClass, showLicense, showInfos, isIFrame);
+		OOEdusharing.replaceWithRendered(spinner, identifier, version, width, height, esClass, showLicense, showInfos, isIFrame);
 	},
 	
 	/**

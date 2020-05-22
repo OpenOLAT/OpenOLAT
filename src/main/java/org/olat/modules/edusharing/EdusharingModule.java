@@ -45,6 +45,7 @@ public class EdusharingModule extends AbstractSpringModule implements ConfigOnOf
 	private static final Logger log = Tracing.createLoggerFor(EdusharingModule.class);
 
 	private static final String EDUSHARING_ENABLED = "edusharing.enabled";
+	private static final String EDUSHARING_COURSE_NODE_ENABLED = "edusharing.course.node.enabled";
 	private static final String EDUSHARING_BASE_URL = "edusharing.url";
 	private static final String EDUSHARING_APP_ID = "edusharing.app.id";
 	private static final String EDUSHARING_HOST = "edusharing.host";
@@ -55,6 +56,8 @@ public class EdusharingModule extends AbstractSpringModule implements ConfigOnOf
 	
 	@Value("${edusharing.enabled:false}")
 	private boolean enabled;
+	@Value("${edusharing.couse.node.enabled:false}")
+	private boolean courseNodeEnabled;
 	@Value("${edusharing.url}")
 	private String baseUrl;
 	@Value("${edusharing.app.id}")
@@ -110,6 +113,11 @@ public class EdusharingModule extends AbstractSpringModule implements ConfigOnOf
 			enabled = "true".equals(enabledObj);
 		}
 		
+		String courseNodeEnabledObj = getStringPropertyValue(EDUSHARING_COURSE_NODE_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(courseNodeEnabledObj)) {
+			courseNodeEnabled = "true".equals(courseNodeEnabledObj);
+		}
+		
 		String baseUrlObj = getStringPropertyValue(EDUSHARING_BASE_URL, true);
 		if(StringHelper.containsNonWhitespace(baseUrlObj)) {
 			baseUrl = baseUrlObj;
@@ -151,6 +159,15 @@ public class EdusharingModule extends AbstractSpringModule implements ConfigOnOf
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
 		setStringProperty(EDUSHARING_ENABLED, Boolean.toString(enabled), true);
+	}
+	
+	public boolean isCourseNodeEnabled() {
+		return courseNodeEnabled;
+	}
+
+	public void setCourseNodeEnabled(boolean courseNodeEnabled) {
+		this.courseNodeEnabled = courseNodeEnabled;
+		setStringProperty(EDUSHARING_COURSE_NODE_ENABLED, Boolean.toString(courseNodeEnabled), true);
 	}
 	
 	public String getBaseUrl() {

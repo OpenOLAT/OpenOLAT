@@ -154,8 +154,8 @@ public class EdusharingServiceImpl implements EdusharingService, RepositoryEntry
 	}
 	
 	@Override
-	public EdusharingResponse getRendered(Identity viewer, String identifier, String width, String height,
-			String language) throws EdusharingException {
+	public EdusharingResponse getRendered(Identity viewer, String identifier, String version, String width,
+			String height, String language) throws EdusharingException {
 		EdusharingUsage usage = usageDao.loadByIdentifier(identifier);
 		if (usage == null) {
 			return new EdusharingErrorResponse(404);
@@ -175,7 +175,7 @@ public class EdusharingServiceImpl implements EdusharingService, RepositoryEntry
 				nodeIdentifier.getNodeId(),
 				identifier,
 				courseId,
-				usage.getVersion(),
+				version,
 				language,
 				language,
 				signature.getSigned(),
@@ -259,12 +259,12 @@ public class EdusharingServiceImpl implements EdusharingService, RepositoryEntry
 
 		deleteUsage(usage, userIdentifier);
 	}
-
+	
 	@Override
-	public boolean deleteRepositoryEntryData(RepositoryEntry re) {
-		deleteUsages(re, null);
-		return true;
+	public void deleteUsage(EdusharingUsage usage) throws EdusharingException {
+		deleteUsage(usage, null);
 	}
+	
 	@Override
 	public void deleteUsages(EdusharingProvider edusharingProvider) {
 		deleteUsages(edusharingProvider.getOlatResourceable(), edusharingProvider.getSubPath());
@@ -296,7 +296,13 @@ public class EdusharingServiceImpl implements EdusharingService, RepositoryEntry
 		client.deleteUsage(parameter);
 		log.debug("edu-sharing usage deleted for identifier: " + usage.getIdentifier());
 		
-		usageDao.delete(usage.getIdentifier());
+		usageDao.delete(usage);
+	}
+
+	@Override
+	public boolean deleteRepositoryEntryData(RepositoryEntry re) {
+		deleteUsages(re, null);
+		return true;
 	}
 
 }

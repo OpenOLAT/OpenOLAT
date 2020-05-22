@@ -61,7 +61,7 @@ public interface EdusharingService {
 	public EdusharingResponse getPreview(Ticket ticket, String objectUrl) throws EdusharingException;
 
 	public EdusharingResponse getRendered(Identity viewer, String identifier, String width, String height,
-			String language) throws EdusharingException;
+			String language, String language2) throws EdusharingException;
 	
 	public String getRenderAsWindowUrl(Ticket ticket, Identity viewer, String identifier, String language);
 
@@ -71,6 +71,8 @@ public interface EdusharingService {
 	public EdusharingUsage loadUsageByIdentifier(String identifier);
 
 	public List<EdusharingUsage> loadUsages(OLATResourceable ores, String subPath);
+	
+	public void deleteUsage(EdusharingUsage usage) throws EdusharingException;
 
 	public void deleteUsage(Identity identity, String identifier) throws EdusharingException;
 	

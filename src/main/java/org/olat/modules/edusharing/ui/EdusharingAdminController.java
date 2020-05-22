@@ -66,6 +66,7 @@ public class EdusharingAdminController extends FormBasicController {
 	private static final String[] ENABLED_KEYS = new String[]{"on"};
 	
 	private MultipleSelectionElement enabledEl;
+	private MultipleSelectionElement cnEnabledEl;
 	private TextElement urlEl;
 	private TextElement appIdEl;
 	private TextElement hostEl;
@@ -103,6 +104,10 @@ public class EdusharingAdminController extends FormBasicController {
 			enabledEl.select(ENABLED_KEYS[0], true);
 		}
 		enabledEl.addActionListener(FormEvent.ONCHANGE);
+		
+		cnEnabledEl = uifactory.addCheckboxesHorizontal("admin.course.node.enabled", formLayout, ENABLED_KEYS,
+				translateAll(getTranslator(), ENABLED_KEYS));
+		cnEnabledEl.select(ENABLED_KEYS[0], edusharingModule.isCourseNodeEnabled());
 		
 		String url = edusharingModule.getBaseUrl();
 		urlEl = uifactory.addTextElement("admin.url", 128, url, formLayout);
@@ -192,6 +197,9 @@ public class EdusharingAdminController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		boolean enabled = enabledEl.isAtLeastSelected(1);
 		edusharingModule.setEnabled(enabled);
+		
+		boolean courseNodeEnabled = cnEnabledEl.isAtLeastSelected(1);
+		edusharingModule.setCourseNodeEnabled(enabled && courseNodeEnabled);
 		
 		String url = urlEl.getValue();
 		url = url.endsWith("/")? url: url + "/";

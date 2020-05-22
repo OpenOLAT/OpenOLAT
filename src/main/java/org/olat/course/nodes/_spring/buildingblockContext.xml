@@ -100,6 +100,10 @@
 	<bean id="livestream" class="org.olat.course.nodes.livestream.LiveStreamCourseNodeConfiguration" scope="prototype">
 		<property name="order" value="222" />
 	</bean>
+		
+	<bean id="edusharing" class="org.olat.course.nodes.edusharing.EdusharingCourseNodeConfiguration" scope="prototype">
+		<property name="order" value="224" />
+	</bean>
 	
 	<bean id="ita" class="org.olat.course.nodes.gta.GTACourseNodeConfiguration" scope="prototype">
 		<constructor-arg index="0" value="true" />

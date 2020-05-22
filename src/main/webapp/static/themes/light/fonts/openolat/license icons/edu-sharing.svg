@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   height="403.248779296875px"
+   width="402.689697265625px"
+   y="0px"
+   x="0px"
+   version="1.1"
+   viewBox="0 0 402.689697265625 403.248779296875"
+   id="master-artboard">
+  <metadata
+     id="metadata178">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs176" />
+  <g
+     id="g171"
+     transform="matrix(2.9351425170898438, 0, 0, 2.9351425170898438, 0.35588908195495605, 232.20303344726562)">
+    <title
+       id="title166">edu-sharing Logo</title>
+    <path
+       d="M 18.16,136.84 0,105.72 18.16,74.59 h 36.33 l 18.16,31.13 -18.16,31.12 H 18.16 m 0,-74.17 L 0,31.54 18.16,0.41 H 54.49 L 72.65,31.54 54.49,62.67 H 18.16 M 81.86,99.76 63.7,68.63 81.86,37.5 h 36.33 l 18.16,31.13 -18.16,31.13 H 81.86"
+       transform="matrix(1, 0, 0, 1, 0.34069889631220307, -78.99173736572266)"
+       id="Fill-14" />
+  </g>
+</svg>

@@ -17,52 +17,24 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.edusharing;
+package org.olat.course.nodes.edusharing;
 
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.Identity;
-import org.olat.core.id.ModifiedInfo;
-import org.olat.core.id.OLATResourceable;
+import org.olat.course.learningpath.LearningPathOnlyAssessmentHandler;
+import org.olat.course.nodes.EdusharingCourseNode;
+import org.springframework.stereotype.Service;
 
 /**
  * 
- * Initial date: 9 Dec 2018<br>
+ * Initial date: 19 May 2020<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface EdusharingUsage extends ModifiedInfo, CreateInfo {
+@Service
+public class EdusharingAssessmentHandler extends LearningPathOnlyAssessmentHandler {
 
-	public Long getKey();
-	
-	/**
-	 * The identifier is the shared key between edu-sharing and OpenOLAT. In
-	 * edu-sharing that key is called "resourceId".
-	 *
-	 * @return
-	 */
-	public String getIdentifier();
-	
-	public Identity getIdentity();
-	
-	public String getObjectUrl();
+	@Override
+	public String acceptCourseNodeType() {
+		return EdusharingCourseNode.TYPE;
+	}
 
-	public String getVersion();
-	
-	public String getMimeType();
-	
-	public String getMediaType();
-	
-	public String getWidth();
-	
-	public String getHeight();
-	
-	public OLATResourceable getOlatResourceable();
-	
-	/**
-	 * Identifies the usage distinctly inside an OLATResourceable.
-	 *
-	 * @return
-	 */
-	public String getSubPath();
-	
 }
