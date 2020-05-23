@@ -62,7 +62,7 @@ public class KeyTranslator implements Translator {
 
 	@Override
 	public String translate(String key, String[] args) {
-		return key;
+		return key + ": " + String.join(", ", args);
 	}
 
 	@Override

@@ -170,7 +170,19 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			if(rowCount == 1) {
 				sb.append(rowCount).append(" ").append(ftE.getTranslator().translate("table.entry"));
 			} else if(rowCount > 1) {
-				sb.append(rowCount).append(" ").append(ftE.getTranslator().translate("table.entries"));
+				int maxPage = (int) Math.ceil(((double) rowCount / (double) ftE.getPageSize()));
+				if (maxPage <= 1) {
+					sb.append(rowCount).append(" ").append(ftE.getTranslator().translate("table.entries"));
+				} else {
+					int firstRow = ftE.getFirstRow();
+					int maxRows = ftE.getMaxRows();
+					int lastRow = Math.min(rowCount, firstRow + maxRows);
+					sb.append(translator.translate("page.size.c", new String[]{
+							Integer.toString(firstRow + 1),
+							Integer.toString(lastRow),
+							Integer.toString(rowCount)
+					}));
+				}
 			}
 		}
 		sb.append("</div><div class='col-sm-4 col-xs-8'><div class='pull-right'><div class='o_table_tools o_noprint'>");
@@ -611,7 +623,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	}
 	
 	private void renderPageNextLink(StringOutput sb, FlexiTableComponent ftC, int page, int maxPage) {
-		boolean disabled = (page >= maxPage);
+		boolean disabled = (page+1 >= maxPage);
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 		Form theForm = ftE.getRootForm();
 		sb.append("<li ").append(" class='disabled'", disabled).append("><a href=\"");
