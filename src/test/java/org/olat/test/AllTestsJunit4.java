@@ -392,6 +392,8 @@ import org.junit.runners.Suite;
 	//org.olat.course.statistic.weekly.TestWeeklyStatisticManager_fillGaps.class, don't know what it tests
 	org.olat.core.commons.services.commentAndRating.manager.UserCommentsDAOTest.class,
 	org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAOTest.class,
+	org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableClassicRendererTest.class,
+	org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCustomRendererTest.class,
 	org.olat.course.auditing.UserNodeAuditManagerTest.class,
 	org.olat.shibboleth.handler.SpringShibbolethAttributeHandlerFactoryTest.class,
 	org.olat.core.CoreSpringFactoryTest.class,
