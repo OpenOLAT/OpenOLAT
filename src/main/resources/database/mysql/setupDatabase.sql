@@ -1291,7 +1291,7 @@ create table o_as_entry (
    a_last_visit datetime,
    a_num_visits int8,
    fk_entry bigint not null,
-   a_subident varchar(64),
+   a_subident varchar(512),
    a_entry_root bit default null,
    fk_reference_entry bigint,
    fk_identity bigint default null,

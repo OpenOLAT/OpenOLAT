@@ -407,6 +407,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 		for (WikiPage page : pages) {
 			String link = page.getPageName();
 			Link menuLink = LinkFactory.createToolLink(link, "select-page", link, this);
+			menuLink.setElementCssClass("o_wiki_menu");
 			wikiMenuDropdown.addComponent(menuLink);
 		}
 		if (editMenuButton != null) {

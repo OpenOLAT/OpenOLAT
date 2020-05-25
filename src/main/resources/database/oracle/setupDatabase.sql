@@ -1353,7 +1353,7 @@ create table o_as_entry (
    a_last_visit date,
    a_num_visits number(20),
    fk_entry number(20) not null,
-   a_subident varchar2(64 char),
+   a_subident varchar2(512 char),
    a_entry_root number default null,
    fk_reference_entry number(20),
    fk_identity number(20) default null,
