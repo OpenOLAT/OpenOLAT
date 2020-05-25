@@ -56,3 +56,7 @@ alter table o_ap_participation add constraint ap_part_appointment_idx foreign ke
 create index idx_ap_part_appointment_idx on o_ap_participation(fk_appointment_id);
 alter table o_ap_participation add constraint ap_part_identity_idx foreign key (fk_identity_id) references o_bs_identity (id);
 create index idx_ap_part_identitiy_idx on o_ap_participation(fk_identity_id);
+
+-- Quality management
+create index idx_eva_part_survey_idx on o_eva_form_participation (fk_survey);
+
