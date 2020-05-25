@@ -447,20 +447,87 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private void exposeVisiblityPeriod(boolean passed) {
 		String showResultsActive = config.getStringValue(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS);
 		
-		Date startDate;
-		Date endDate;
-		Date currentDate = new Date();
-		
-		switch (showResultsActive) {
-		
-		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_ALWAYS:
-			mainVC.contextPut("visibilityPeriod", translate("showResults.visibility.future"));
-			break;
-		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_DIFFERENT:
-			if (passed) {
-				startDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE);
-				endDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE);
-				
+		if (showResultsActive != null) {
+			Date startDate;
+			Date endDate;
+			Date currentDate = new Date();
+
+			switch (showResultsActive) {
+			case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_ALWAYS:
+				mainVC.contextPut("visibilityPeriod", translate("showResults.visibility.future"));
+				break;
+			case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_DIFFERENT:
+				if (passed) {
+					startDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE);
+					endDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE);
+
+					if(startDate != null && currentDate.before(startDate)) {
+						Formatter formatter = Formatter.getInstance(getLocale());
+						String visibilityStartDate = formatter.formatDate(startDate);
+						String visibilityEndDate = "-";
+						if(endDate != null && currentDate.before(endDate)) {
+							visibilityEndDate = formatter.formatDate(endDate);
+						} else if(endDate != null && currentDate.after(endDate)) {
+							String visibilityPeriod = translate("showResults.visibility.past");
+							mainVC.contextPut("visibilityPeriod", visibilityPeriod);
+							break;
+						}
+						String visibilityPeriod = translate("showResults.visibility", new String[] { visibilityStartDate, visibilityEndDate });
+						mainVC.contextPut("visibilityPeriod", visibilityPeriod);
+						break;
+					}
+				} else {
+					startDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
+					endDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
+
+					if(startDate != null && currentDate.before(startDate)) {
+						Formatter formatter = Formatter.getInstance(getLocale());
+						String visibilityStartDate = formatter.formatDate(startDate);
+						String visibilityEndDate = "-";
+						if(endDate != null && currentDate.before(endDate)) {
+							visibilityEndDate = formatter.formatDate(endDate);
+						} else if(endDate != null && currentDate.after(endDate)) {
+							String visibilityPeriod = translate("showResults.visibility.past");
+							mainVC.contextPut("visibilityPeriod", visibilityPeriod);
+							break;
+						}
+						String visibilityPeriod = translate("showResults.visibility", new String[] { visibilityStartDate, visibilityEndDate });
+						mainVC.contextPut("visibilityPeriod", visibilityPeriod);
+						break;
+					}
+				}
+				mainVC.contextPut("visibilityPeriod", translate("showResults.visibility.future"));
+				break;
+			case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_FAILED_ONLY:
+				if (!passed) {
+					startDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
+					endDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
+
+					if(startDate != null && currentDate.before(startDate)) {
+						Formatter formatter = Formatter.getInstance(getLocale());
+						String visibilityStartDate = formatter.formatDate(startDate);
+						String visibilityEndDate = "-";
+						if(endDate != null && currentDate.before(endDate)) {
+							visibilityEndDate = formatter.formatDate(endDate);
+						} else if(endDate != null && currentDate.after(endDate)) {
+							String visibilityPeriod = translate("showResults.visibility.past");
+							mainVC.contextPut("visibilityPeriod", visibilityPeriod);
+							break;
+						}
+						String visibilityPeriod = translate("showResults.visibility", new String[] { visibilityStartDate, visibilityEndDate });
+						mainVC.contextPut("visibilityPeriod", visibilityPeriod);
+						break;
+					}
+				} else {
+					mainVC.contextPut("showResultsOnHomePage", Boolean.valueOf(false));
+					break;
+				}
+				mainVC.contextPut("visibilityPeriod", translate("showResults.visibility.future"));
+				break;
+			case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_SAME:
+				startDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
+				endDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
+
 				if(startDate != null && currentDate.before(startDate)) {
 					Formatter formatter = Formatter.getInstance(getLocale());
 					String visibilityStartDate = formatter.formatDate(startDate);
@@ -476,78 +543,12 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 					mainVC.contextPut("visibilityPeriod", visibilityPeriod);
 					break;
 				}
-			} else {
-				startDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
-				endDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
-				
-				if(startDate != null && currentDate.before(startDate)) {
-					Formatter formatter = Formatter.getInstance(getLocale());
-					String visibilityStartDate = formatter.formatDate(startDate);
-					String visibilityEndDate = "-";
-					if(endDate != null && currentDate.before(endDate)) {
-						visibilityEndDate = formatter.formatDate(endDate);
-					} else if(endDate != null && currentDate.after(endDate)) {
-						String visibilityPeriod = translate("showResults.visibility.past");
-						mainVC.contextPut("visibilityPeriod", visibilityPeriod);
-						break;
-					}
-					String visibilityPeriod = translate("showResults.visibility", new String[] { visibilityStartDate, visibilityEndDate });
-					mainVC.contextPut("visibilityPeriod", visibilityPeriod);
-					break;
-				}
-			}
-			mainVC.contextPut("visibilityPeriod", translate("showResults.visibility.future"));
-			break;
-		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_FAILED_ONLY:
-			if (!passed) {
-				startDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
-				endDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
-				
-				if(startDate != null && currentDate.before(startDate)) {
-					Formatter formatter = Formatter.getInstance(getLocale());
-					String visibilityStartDate = formatter.formatDate(startDate);
-					String visibilityEndDate = "-";
-					if(endDate != null && currentDate.before(endDate)) {
-						visibilityEndDate = formatter.formatDate(endDate);
-					} else if(endDate != null && currentDate.after(endDate)) {
-						String visibilityPeriod = translate("showResults.visibility.past");
-						mainVC.contextPut("visibilityPeriod", visibilityPeriod);
-						break;
-					}
-					String visibilityPeriod = translate("showResults.visibility", new String[] { visibilityStartDate, visibilityEndDate });
-					mainVC.contextPut("visibilityPeriod", visibilityPeriod);
-					break;
-				}
-			} else {
-				mainVC.contextPut("showResultsOnHomePage", Boolean.valueOf(false));
+				mainVC.contextPut("visibilityPeriod", translate("showResults.visibility.future"));
+				break;
+			default:
+				mainVC.contextPut("visibilityPeriod", translate("showResults.visibility.future"));
 				break;
 			}
-			mainVC.contextPut("visibilityPeriod", translate("showResults.visibility.future"));
-			break;
-		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_SAME:
-			startDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
-			endDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
-			
-			if(startDate != null && currentDate.before(startDate)) {
-				Formatter formatter = Formatter.getInstance(getLocale());
-				String visibilityStartDate = formatter.formatDate(startDate);
-				String visibilityEndDate = "-";
-				if(endDate != null && currentDate.before(endDate)) {
-					visibilityEndDate = formatter.formatDate(endDate);
-				} else if(endDate != null && currentDate.after(endDate)) {
-					String visibilityPeriod = translate("showResults.visibility.past");
-					mainVC.contextPut("visibilityPeriod", visibilityPeriod);
-					break;
-				}
-				String visibilityPeriod = translate("showResults.visibility", new String[] { visibilityStartDate, visibilityEndDate });
-				mainVC.contextPut("visibilityPeriod", visibilityPeriod);
-				break;
-			}
-			mainVC.contextPut("visibilityPeriod", translate("showResults.visibility.future"));
-			break;
-		default:
-			mainVC.contextPut("visibilityPeriod", translate("showResults.visibility.future"));
-			break;
 		}
 	}
 	
