@@ -1313,7 +1313,7 @@ create table o_as_entry (
    a_last_visit timestamp,
    a_num_visits int8,
    fk_entry int8 not null,
-   a_subident varchar(64),
+   a_subident varchar(512),
    a_entry_root bool,
    fk_reference_entry int8,
    fk_identity int8 default null,
