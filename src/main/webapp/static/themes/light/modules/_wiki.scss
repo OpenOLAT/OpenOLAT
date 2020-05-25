@@ -11,6 +11,10 @@
 		position: relative;
 		top: -5px;
 	}
+	.o_wiki_menu {
+		@extend %o_nowrap;
+		width: 500px;
+	}
 }
 
 .o_wikimod_editform_wrapper {
