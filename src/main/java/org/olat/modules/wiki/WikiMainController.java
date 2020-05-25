@@ -404,13 +404,8 @@ public class WikiMainController extends BasicController implements CloneableCont
 		}
 		
 		wikiMenuDropdown.removeAllComponents();
-<<<<<<< HEAD
 		for (WikiPage page : pages) {
 			String link = page.getPageName();
-=======
-		for (String link : links) {
-//			link = Formatter.truncate(link, 60);
->>>>>>> refs/heads/OpenOLAT_14.2
 			Link menuLink = LinkFactory.createToolLink(link, "select-page", link, this);
 			menuLink.setElementCssClass("o_wiki_menu");
 			wikiMenuDropdown.addComponent(menuLink);
