@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.services.notifications.NotificationsManager;
@@ -78,7 +79,6 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.OLATRuntimeException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
@@ -394,7 +394,9 @@ public class WikiMainController extends BasicController implements CloneableCont
 
 		wikiMenuDropdown.removeAllComponents();
 		for (String link : links) {
+//			link = Formatter.truncate(link, 60);
 			Link menuLink = LinkFactory.createToolLink(link, "select-page", link, this);
+			menuLink.setElementCssClass("o_wiki_menu");
 			wikiMenuDropdown.addComponent(menuLink);
 		}
 		if (editMenuButton != null) {
