@@ -214,6 +214,11 @@ public class DMZDispatcher implements Dispatcher {
 					// when a previous user logged off, and 30min later (when the httpsession is invalidated), the next user clicks e.g. on 
 					// the log-in link in the -same- browser window ->
 					// -> there is no window -> create a new one
+					if(ignoreMisssingWindow(request)) {
+						DispatcherModule.setNotContent(request.getPathInfo(), response);
+						return;
+					}
+					
 					window = null;
 					CoreSpringFactory.getImpl(UserSessionManager.class).signOffAndClear(usess);
 					usess.setLocale(LocaleNegotiator.getPreferedLocale(ureq));
@@ -284,6 +289,15 @@ public class DMZDispatcher implements Dispatcher {
 				log.error("An exception occured while handling the exception...", t);
 			}
 		}
+	}
+	
+	private boolean ignoreMisssingWindow(HttpServletRequest request) {
+		String pathInfo = request.getPathInfo();
+		if(pathInfo.contains("cid:close-window")) {
+			return true;
+		}
+		log.info("DMZ log off triggered by {}", pathInfo);
+		return false;
 	}
 	
 	private boolean canRedirectOAuth(HttpServletRequest request, OAuthLoginModule oauthModule) {
