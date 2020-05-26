@@ -31,32 +31,43 @@ import org.olat.course.run.scoring.Blocker;
  */
 public class WithoutSequenceBlocker implements Blocker {
 
-	private final boolean blocked;
-	private final Date startDate;
+	private final Blocker parent;
+	private boolean blocked;
+	private Date startDate;
 	
-	public WithoutSequenceBlocker(boolean blocked, Date startDate) {
-		this.blocked = blocked;
-		this.startDate = startDate;
+	public WithoutSequenceBlocker(Blocker parent) {
+		this.parent = parent;
 	}
 
 	@Override
 	public boolean isBlocked() {
-		return blocked;
+		return blocked
+				? true 
+				: parent != null? parent.isBlocked(): false;
 	}
 
 	@Override
 	public void block() {
-		//
+		blocked = true;
 	}
-
+	
 	@Override
 	public void block(Date startDate) {
-		//
+		this.startDate = startDate;
+		block();
 	}
 
 	@Override
 	public Date getStartDate() {
-		return startDate;
+		return startDate != null
+				? startDate
+				: parent != null? parent.getStartDate(): null;
+	}
+
+	@Override
+	public void nextCourseNode() {
+		blocked = false;
+		startDate = null;
 	}
 
 }

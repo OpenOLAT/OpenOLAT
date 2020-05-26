@@ -48,4 +48,9 @@ public class SequentialBlocker implements Blocker {
 	public Date getStartDate() {
 		return startDate;
 	}
+
+	@Override
+	public void nextCourseNode() {
+		//
+	}
 }

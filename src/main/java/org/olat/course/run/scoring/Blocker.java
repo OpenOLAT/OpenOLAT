@@ -36,5 +36,7 @@ public interface Blocker {
 	void block(Date startDate);
 
 	Date getStartDate();
+	
+	void nextCourseNode();
 
 }
