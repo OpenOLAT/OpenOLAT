@@ -19,8 +19,6 @@
  */
 package org.olat.course.nodes.st.assessment;
 
-import java.util.Date;
-
 import org.olat.course.run.scoring.Blocker;
 import org.olat.course.run.scoring.BlockerEvaluator;
 
@@ -34,9 +32,7 @@ public class STWithoutSequenceBlockerEvaluator implements BlockerEvaluator {
 
 	@Override
 	public Blocker getChildrenBlocker(Blocker blocker) {
-		boolean blocked = blocker != null? blocker.isBlocked(): false;
-		Date startDate = blocker != null? blocker.getStartDate(): null;
-		return new WithoutSequenceBlocker(blocked, startDate);
+		return new WithoutSequenceBlocker(blocker);
 	}
 
 	@Override

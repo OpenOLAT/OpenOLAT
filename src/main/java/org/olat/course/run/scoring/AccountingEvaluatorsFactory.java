@@ -113,7 +113,7 @@ class AccountingEvaluatorsFactory {
 
 		@Override
 		public Blocker getChildrenBlocker(Blocker blocker) {
-			return blocker != null? blocker: new WithoutSequenceBlocker(false, null);
+			return blocker != null? blocker: new WithoutSequenceBlocker(null);
 		}
 
 		@Override

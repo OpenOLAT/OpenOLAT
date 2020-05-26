@@ -152,6 +152,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 		
 		AssessmentEvaluation currentEvaluation = evalCourseNode(courseNode);
 		AccountingResult result = new AccountingResult(currentEvaluation);
+		blocker.nextCourseNode();
 		
 		AccountingEvaluators evaluators = courseAssessmentService.getEvaluators(courseNode, courseConfig);
 		
