@@ -677,6 +677,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			long timeLimits = assessmentTest.getTimeLimits().getMaximum().longValue();
 			return Math.min(leadingDuration, timeLimits) + extra;
 		}
+		if(leadingTimeInMilliSeconds != null) {
+			return leadingDuration + extra;
+		}
 		return null;
 	}
 
