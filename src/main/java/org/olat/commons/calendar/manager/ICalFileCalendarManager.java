@@ -255,9 +255,9 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 				cal.addEvent(calEvent);
 			} else if (comp instanceof VTimeZone) {
 				log.info("createKalendar: VTimeZone Component is not supported and will not be added to calender");
-				log.debug("createKalendar: VTimeZone=" + comp);
+				log.debug("createKalendar: VTimeZone={}", comp);
 			} else {
-				log.warn("createKalendar: unknown Component=" + comp);
+				log.warn("createKalendar: unknown Component={}", comp);
 			}
 		}
 		return cal;
@@ -659,7 +659,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		String recurenceId = kEvent.getRecurrenceID();
 		if(StringHelper.containsNonWhitespace(recurenceId)) {
 			try {
-				RecurrenceId recurId = new RecurrenceId(tz);
+				RecurrenceId recurId;
 				// VALUE=DATE recurrence id need to be specially saved
 				if(recurenceId.length() < 9) {
 					recurId = new RecurrenceId(tz);

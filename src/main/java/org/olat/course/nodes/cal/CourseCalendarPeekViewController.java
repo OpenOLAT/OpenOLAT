@@ -21,13 +21,14 @@
 package org.olat.course.nodes.cal;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.commons.calendar.model.Kalendar;
+import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.gui.UserRequest;
@@ -42,6 +43,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.course.nodes.CalCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -56,6 +58,9 @@ import org.olat.modules.ModuleConfiguration;
  */
 public class CourseCalendarPeekViewController extends BasicController {
 	private TableController tableController;
+	
+	@Autowired
+	private CalendarManager calendarManager;
 
 	public CourseCalendarPeekViewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			CalCourseNode courseNode, CalSecurityCallback secCallback) {
@@ -87,11 +92,15 @@ public class CourseCalendarPeekViewController extends BasicController {
 			refDate = CalEditController.getStartDate(config);
 			if (refDate == null) refDate = new Date();
 		}
+		
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(refDate);
+		cal.add(Calendar.YEAR, 1);
 
 		List<KalendarEvent> nextEvents = new ArrayList<>();
 		for (KalendarRenderWrapper calendar : myCal.getCalendars()) {
-			Kalendar cal = calendar.getKalendar();
-			Collection<KalendarEvent> events = cal.getEvents();
+			Collection<KalendarEvent> events = calendarManager
+					.getEvents(calendar.getKalendar(), refDate, cal.getTime(), calendar.isPrivateEventsVisible());
 			for (KalendarEvent event : events) {
 				if (refDate.compareTo(event.getBegin()) <= 0) {
 					nextEvents.add(event);
