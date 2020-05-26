@@ -140,7 +140,7 @@ public class RepositoryEntryMyCourseQueries {
 		
 		Map<Long, AssessmentEntryScoring> repoKeyToAssessmentEntry = assessmentService
 				.loadRootAssessmentEntriesByAssessedIdentity(params.getIdentity(), repoKeys).stream()
-				.collect(Collectors.toMap(ae -> ae.getRepositoryEntryKey(), Function.identity()));
+				.collect(Collectors.toMap(AssessmentEntryScoring::getRepositoryEntryKey, Function.identity(), (u, v) -> u));
 		List<RepositoryEntryMyView> views = new ArrayList<>(viewImpls.size());
 		for (RepositoryEntryMyCourseImpl view: viewImpls) {
 			AssessmentEntryScoring assessmentEntry = repoKeyToAssessmentEntry.getOrDefault(view.getKey(), null);
