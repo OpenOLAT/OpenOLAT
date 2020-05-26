@@ -194,6 +194,20 @@ public class DispatcherModule {
 	}
 	
 	/**
+	 * Set the status 204 No content to the specified response.
+	 * 
+	 * @param url The url (for log purpose)
+	 * @param response The HTTP response
+	 */
+	public static final void setNotContent(String url, HttpServletResponse response) {
+		try {
+			response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+		} catch (Exception e) {
+			log.error("Send 204 failed: url=" + url, e);
+		}
+	}
+	
+	/**
 	 * Sent to standard 503 if not available
 	 * @param response
 	 */
