@@ -229,8 +229,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		if(ImsQTI21Resource.TYPE_NAME.equals(testEntry.getOlatResource().getResourceableTypeName())) {
 			ModuleConfiguration config = getModuleConfiguration();
 			boolean configRef = config.getBooleanSafe(IQEditController.CONFIG_KEY_CONFIG_REF, false);
-			if(!configRef && (config.getIntegerSafe(IQEditController.CONFIG_KEY_TIME_LIMIT, -1) > 0
-					|| config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_TEST_DATE) != null)) {
+			if((!configRef && config.getIntegerSafe(IQEditController.CONFIG_KEY_TIME_LIMIT, -1) > 0)
+					|| config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_TEST_DATE) != null) {
 				timeLimit = true;
 			} else {
 				AssessmentTest assessmentTest = loadAssessmentTest(testEntry);
