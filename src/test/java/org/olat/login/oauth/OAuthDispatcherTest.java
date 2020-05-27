@@ -51,17 +51,12 @@ public class OAuthDispatcherTest {
 	
 	@Test
 	public void parseEmail_linkedIn() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("{\n")
-		  .append("\"emailAddress\": \"j.smith@openolat.com\",\n")
-		  .append("\"firstName\": \"John\",\n")
-		  .append("\"id\": \"saasdhgdhj\",")
-		  .append("\"lastName\": \"Smith\"")
-		  .append("}");
-		
-		
-		OAuthUser infos = new LinkedInProvider().parseInfos(sb.toString());
+		String profile = "{\"localizedLastName\":\"Smith\",\"id\":\"saasdhgdhj\",\"localizedFirstName\":\"John\"}";
+		String email = "{\"elements\":[{\"handle~\":{\"emailAddress\":\"j.smith@openolat.com\"},\"handle\":\"urn:li:emailAddress:477232709\"}]}";
+
+		OAuthUser infos = new LinkedInProvider().parseInfos(profile, email);
 		Assert.assertNotNull(infos);
+		Assert.assertEquals("saasdhgdhj", infos.getId());
 		Assert.assertEquals("John", infos.getFirstName());
 		Assert.assertEquals("Smith", infos.getLastName());
 		Assert.assertEquals("j.smith@openolat.com", infos.getEmail());

@@ -22,9 +22,10 @@ package org.olat.login.oauth.spi;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
+import org.apache.logging.log4j.Logger;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.login.oauth.OAuthLoginModule;
@@ -93,32 +94,49 @@ public class LinkedInProvider implements OAuthSPI {
 		return new ServiceBuilder(oauthModule.getLinkedInApiKey())
                 .apiSecret(oauthModule.getLinkedInApiSecret())
                 .callback(oauthModule.getCallbackUrl())
-                .defaultScope("r_basicprofile r_emailaddress")
+                .defaultScope("r_liteprofile r_emailaddress")
                 .build(LinkedInApi20.instance());
 	}
 
 	@Override
 	public  OAuthUser getUser(OAuthService service, Token accessToken)
 	throws InterruptedException, ExecutionException, IOException {
-		OAuth20Service oauthService = (OAuth20Service)service;
-		OAuthRequest oauthRequest = new OAuthRequest(Verb.GET, "https://api.linkedin.com/v1/people/~:(id,first-name,last-name,email-address)");
-		oauthRequest.addHeader("x-li-format", "json");
-		oauthRequest.addHeader("Accept-Language", "en-GB");
-		oauthService.signRequest((OAuth2AccessToken)accessToken, oauthRequest);
-		Response oauthResponse = oauthService.execute(oauthRequest);
-		String body = oauthResponse.getBody();
-		return parseInfos(body);
+		String profile = getInfos((OAuth20Service)service, (OAuth2AccessToken)accessToken,
+				"https://api.linkedin.com/v2/me?projection=(id,localizedFirstName,localizedLastName)");
+		String email = getInfos((OAuth20Service)service, (OAuth2AccessToken)accessToken,
+				"https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))");
+		return parseInfos(profile, email);
 	}
 	
-	public OAuthUser parseInfos(String body) {
+	private String getInfos(OAuth20Service oauthService, OAuth2AccessToken accessToken, String url)
+	throws InterruptedException, ExecutionException, IOException {
+		OAuthRequest oauthRequest = new OAuthRequest(Verb.GET, url);
+		oauthRequest.addHeader("x-li-format", "json");
+		oauthRequest.addHeader("Accept-Language", "en-GB");
+		oauthService.signRequest(accessToken, oauthRequest);
+		Response oauthResponse = oauthService.execute(oauthRequest);
+		return oauthResponse.getBody();
+	}
+	
+	public OAuthUser parseInfos(String profile, String email) {
 		OAuthUser user = new OAuthUser();
 		
 		try {
-			JSONObject obj = new JSONObject(body);
+			JSONObject obj = new JSONObject(profile);
 			user.setId(getValue(obj, "id"));
-			user.setFirstName(getValue(obj, "firstName"));
-			user.setLastName(getValue(obj, "lastName"));
+			user.setFirstName(getValue(obj, "localizedFirstName"));
+			user.setLastName(getValue(obj, "localizedLastName"));
 			user.setEmail(getValue(obj, "emailAddress"));
+		} catch (JSONException e) {
+			log.error("", e);
+		}
+		
+		try {
+			JSONObject obj = new JSONObject(email);
+			JSONArray elements = obj.getJSONArray("elements");
+			JSONObject firstElement = elements.getJSONObject(0);
+			JSONObject handle = firstElement.getJSONObject("handle~");
+			user.setEmail(getValue(handle, "emailAddress"));
 		} catch (JSONException e) {
 			log.error("", e);
 		}
