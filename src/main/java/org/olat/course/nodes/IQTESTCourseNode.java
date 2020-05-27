@@ -52,6 +52,7 @@ import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.KnownIssueException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
+import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.ICourse;
@@ -220,7 +221,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		if(ImsQTI21Resource.TYPE_NAME.equals(testEntry.getOlatResource().getResourceableTypeName())) {
 			ModuleConfiguration config = getModuleConfiguration();
 			boolean configRef = config.getBooleanSafe(IQEditController.CONFIG_KEY_CONFIG_REF, false);
-			if(!configRef && config.getIntegerSafe(IQEditController.CONFIG_KEY_TIME_LIMIT, -1) > 0) {
+			if(!configRef && (config.getIntegerSafe(IQEditController.CONFIG_KEY_TIME_LIMIT, -1) > 0
+					|| config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_TEST_DATE) != null)) {
 				timeLimit = true;
 			} else {
 				AssessmentTest assessmentTest = loadAssessmentTest(testEntry);
@@ -344,9 +346,6 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		return false;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#isConfigValid()
-	 */
 	@Override
 	public StatusDescription isConfigValid() {
 		/*
@@ -357,7 +356,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		boolean isValid = getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY) != null;
 		if (isValid) {
 			/*
-			 * COnfiugre an IQxxx BB with a repo entry, do not publish
+			 * Configure an IQxxx BB with a repo entry, do not publish
 			 * this BB, mark IQxxx as deleted, remove repo entry, undelete BB IQxxx
 			 * and bang you enter this if.
 			 */
@@ -372,7 +371,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 			String shortKey = "error.test.undefined.short";
 			String longKey = "error.test.undefined.long";
 			String[] params = new String[] { getShortTitle() };
-			sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, params, translatorStr);
+			sd = new StatusDescription(ValidationStatus.ERROR, shortKey, longKey, params, translatorStr);
 			sd.setDescriptionForUnit(getIdent());
 			// set which pane is affected by error
 			sd.setActivateableViewIdentifier(IQEditController.PANE_TAB_IQCONFIG_TEST);
@@ -715,7 +714,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		try {
 			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, false);
 			if(re == null) {
-				log.error("Cannot archive course node. Missing repository entry with soft key: ", repositorySoftKey);
+				log.error("Cannot archive course node. Missing repository entry with soft key: {}", repositorySoftKey);
 				return false;
 			}
 			
