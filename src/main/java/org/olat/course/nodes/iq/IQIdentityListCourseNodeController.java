@@ -160,7 +160,8 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		if(testCourseNode != null && testCourseNode.hasQTI21TimeLimit(qtiTestEntry)) {
 			int timeLimitInSeconds = testCourseNode.getQTI21TimeLimitMaxInSeconds(qtiTestEntry);
 			boolean suspendEnabled = isSuspendEnable();
-			FlexiCellRenderer renderer = new ExtraTimeCellRenderer(!suspendEnabled, timeLimitInSeconds, getLocale());
+			Date endDate = testCourseNode.getModuleConfiguration().getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_TEST_DATE);
+			FlexiCellRenderer renderer = new ExtraTimeCellRenderer(!suspendEnabled, timeLimitInSeconds, endDate, getLocale());
 			String header = suspendEnabled ? "table.header.extra.time" : "table.header.end.date";
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(header, IdentityCourseElementCols.details.ordinal(), renderer));
 		}
@@ -336,6 +337,8 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 				doUpdateCourseNode(catse.getTestSessions(), catse.getAssessmentTest(), catse.getStatus());
 				loadModel(ureq);	
 				fireEvent(ureq, Event.CHANGED_EVENT);
+			} else if(event == Event.DONE_EVENT) {
+				loadModel(ureq);
 			}
 		}
 		super.event(ureq, source, event);
