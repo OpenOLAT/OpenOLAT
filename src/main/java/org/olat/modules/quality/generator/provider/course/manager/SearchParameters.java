@@ -44,7 +44,8 @@ public class SearchParameters {
 	private Date endFrom;
 	private Date endTo;
 	private Date lifecycleValidAt;
-	private Collection<? extends RepositoryEntryRef> repositoryEntryRefs;
+	private Collection<? extends RepositoryEntryRef> whiteListRefs;
+	private Collection<? extends RepositoryEntryRef> blackListRefs;
 	
 	public QualityGeneratorRef getGeneratorRef() {
 		return generatorRef;
@@ -52,6 +53,14 @@ public class SearchParameters {
 	}
 	public void setGeneratorRef(QualityGeneratorRef generatorRef) {
 		this.generatorRef = generatorRef;
+	}
+	
+	public Date getGeneratorDataCollectionStart() {
+		return generatorDataCollectionStart;
+	}
+
+	public void setGeneratorDataCollectionStart(Date generatorDataCollectionStart) {
+		this.generatorDataCollectionStart = generatorDataCollectionStart;
 	}
 
 	public List<? extends OrganisationRef> getOrganisationRefs() {
@@ -101,23 +110,23 @@ public class SearchParameters {
 	public void setLifecycleValidAt(Date lifecycleValidAt) {
 		this.lifecycleValidAt = lifecycleValidAt;
 	}
-	
-	public Collection<? extends RepositoryEntryRef> getRepositoryEntryRefs() {
-		return repositoryEntryRefs;
-	}
-	
-	public void setRepositoryEntryRefs(Collection<? extends RepositoryEntryRef> repositoryEntryRefs) {
-		this.repositoryEntryRefs = repositoryEntryRefs;
-	}
-	
-	public Date getGeneratorDataCollectionStart() {
-		return generatorDataCollectionStart;
-	}
 
-	public void setGeneratorDataCollectionStart(Date generatorDataCollectionStart) {
-		this.generatorDataCollectionStart = generatorDataCollectionStart;
+	public Collection<? extends RepositoryEntryRef> getWhiteListRefs() {
+		return whiteListRefs;
 	}
-
+	
+	public void setWhiteListRefs(Collection<? extends RepositoryEntryRef> whiteListRefs) {
+		this.whiteListRefs = whiteListRefs;
+	}
+	
+	public Collection<? extends RepositoryEntryRef> getBlackListRefs() {
+		return blackListRefs;
+	}
+	
+	public void setBlackListRefs(Collection<? extends RepositoryEntryRef> blackListRefs) {
+		this.blackListRefs = blackListRefs;
+	}
+	
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
@@ -137,8 +146,18 @@ public class SearchParameters {
 		builder.append(endFrom);
 		builder.append(", endTo=");
 		builder.append(endTo);
-		builder.append(", repositoryEntryRefs=");
-		builder.append(repositoryEntryRefs);
+		builder.append(", whiteListRefs (keys)=[");
+		builder.append(whiteListRefs.stream()
+				.map(RepositoryEntryRef::getKey)
+				.map(r -> r.toString())
+				.collect(Collectors.joining(", ")));
+		builder.append("]");
+		builder.append(", blackListRefs (keys)=[");
+		builder.append(blackListRefs.stream()
+				.map(RepositoryEntryRef::getKey)
+				.map(r -> r.toString())
+				.collect(Collectors.joining(", ")));
+		builder.append("]");
 		builder.append(", generatorDataCollectionStart=");
 		builder.append(generatorDataCollectionStart);
 		builder.append("]");

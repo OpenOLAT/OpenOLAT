@@ -98,8 +98,11 @@ public class CurriculumElementProviderDAO {
 				}
 			}
 		}
-		if (searchParams.getCurriculumElementRefs() != null && !searchParams.getCurriculumElementRefs().isEmpty()) {
-			sb.and().append("curEle.key in :curEleKeys");
+		if (searchParams.getWhiteListRefs() != null && !searchParams.getWhiteListRefs().isEmpty()) {
+			sb.and().append("curEle.key in (:whiteListKeys)");
+		}
+		if (searchParams.getBlackListRefs() != null && !searchParams.getBlackListRefs().isEmpty()) {
+			sb.and().append("curEle.key not in (:blackListKeys)");
 		}
 	}
 	
@@ -130,10 +133,15 @@ public class CurriculumElementProviderDAO {
 				query.setParameter(parameter, value);
 			}
 		}
-		if (searchParams.getCurriculumElementRefs() != null && !searchParams.getCurriculumElementRefs().isEmpty()) {
-			List<Long> curEleKeys = searchParams.getCurriculumElementRefs().stream().map(CurriculumElementRef::getKey).collect(toList());
-			query.setParameter("curEleKeys", curEleKeys);
+		if (searchParams.getWhiteListRefs() != null && !searchParams.getWhiteListRefs().isEmpty()) {
+			List<Long> curEleKeys = searchParams.getWhiteListRefs().stream().map(CurriculumElementRef::getKey).collect(toList());
+			query.setParameter("whiteListKeys", curEleKeys);
 		}
+		if (searchParams.getBlackListRefs() != null && !searchParams.getBlackListRefs().isEmpty()) {
+			List<Long> curEleKeys = searchParams.getBlackListRefs().stream().map(CurriculumElementRef::getKey).collect(toList());
+			query.setParameter("blackListKeys", curEleKeys);
+		}
+
 	}
 
 }

@@ -67,13 +67,15 @@ public class GeneratorController extends BasicController implements TooledContro
 	private Link configurationLink;
 	private Link reportAccessLink;
 	private Link whiteListLink;
+	private Link blackListLink;
 	private final ButtonGroupComponent segmentButtonsCmp;
 	private final TooledStackedPanel stackPanel;
 	private final StackedPanel mainPanel;
 	
 	private GeneratorEditController configCtrl;
 	private GeneratorReportAccessController reportAccessCtrl;
-	private GeneratorWhiteListController whiteListCtrl;
+	private Controller whiteListCtrl;
+	private Controller blackListCtrl;
 	private CloseableModalController cmc;
 	private GeneratorEnableConfirmationController enableConfirmationCtrl;
 	private GeneratorDisableConfirmationController disableConfirmationCtrl;
@@ -103,6 +105,10 @@ public class GeneratorController extends BasicController implements TooledContro
 		if (generatorService.hasWhiteListController(generator)) {
 			whiteListLink = LinkFactory.createLink("generator.white.list", getTranslator(), this);
 			segmentButtonsCmp.addButton(whiteListLink, false);
+		}
+		if (generatorService.hasBlackListController(generator)) {
+			blackListLink = LinkFactory.createLink("generator.black.list", getTranslator(), this);
+			segmentButtonsCmp.addButton(blackListLink, false);
 		}
 		
 		mainPanel = putInitialPanel(new SimpleStackedPanel("dataCollectionSegments"));
@@ -165,6 +171,8 @@ public class GeneratorController extends BasicController implements TooledContro
 			doOpenReportAccess(ureq);
 		} else if(whiteListLink == source) {
 			doOpenWhiteList(ureq);
+		} else if(blackListLink == source) {
+			doOpenBlackList(ureq);
 		} else if (stackPanel == source && stackPanel.getLastController() == this && event instanceof PopEvent) {
 			PopEvent popEvent = (PopEvent) event;
 			if (popEvent.isClose()) {
@@ -242,6 +250,15 @@ public class GeneratorController extends BasicController implements TooledContro
 		stackPanel.popUpToController(this);
 		stackPanel.pushController(translate("generator.white.list"), whiteListCtrl);
 		segmentButtonsCmp.setSelectedButton(whiteListLink);
+	}
+	
+	private void doOpenBlackList(UserRequest ureq) {
+		blackListCtrl = generatorService.getBlackListController(ureq, getWindowControl(), secCallback, stackPanel,
+				generator);
+		listenTo(blackListCtrl);
+		stackPanel.popUpToController(this);
+		stackPanel.pushController(translate("generator.black.list"), blackListCtrl);
+		segmentButtonsCmp.setSelectedButton(blackListLink);
 	}
 
 	private void doConfirmEnableGenerator(UserRequest ureq) {

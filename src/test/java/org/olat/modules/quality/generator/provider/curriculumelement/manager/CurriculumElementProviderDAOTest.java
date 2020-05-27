@@ -175,7 +175,7 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldFilterByCurriculumElement() {
+	public void shouldFilterByWhiteList() {
 		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null, null);
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, organisation);
 		dbInstance.commitAndCloseSession();
@@ -192,7 +192,35 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		SearchParameters searchParams = new SearchParameters();
-		searchParams.setCurriculumElementRefs(asList(curriculumElement1, curriculumElement2));
+		searchParams.setWhiteListRefs(asList(curriculumElement1, curriculumElement2));
+		List<CurriculumElement> pending = sut.loadPending(searchParams);
+
+		assertThat(pending)
+				.containsExactlyInAnyOrder(curriculumElement1, curriculumElement2)
+				.doesNotContain(otherCurriculumElement);
+	}
+	
+	@Test
+	public void shouldFilterByBlackList() {
+		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null, null);
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, organisation);
+		CurriculumElementType type = curriculumService.createCurriculumElementType(random(), random(), random(), null);
+		dbInstance.commitAndCloseSession();
+
+		CurriculumElement curriculumElement1 = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, oneDayAgo(), inOneDay(), null, type, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement curriculumElement2 = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, oneDayAgo(), inOneDay(), null, type, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement otherCurriculumElement = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, oneDayAgo(), inOneDay(), null, type, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		dbInstance.commitAndCloseSession();
+
+		SearchParameters searchParams = new SearchParameters();
+		searchParams.setCeTypeKey(type.getKey());
+		searchParams.setBlackListRefs(asList(otherCurriculumElement));
 		List<CurriculumElement> pending = sut.loadPending(searchParams);
 
 		assertThat(pending)

@@ -26,9 +26,9 @@ import java.util.Locale;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.quality.QualityDataCollection;
-import org.olat.modules.quality.generator.ui.GeneratorWhiteListController;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
 import org.olat.modules.quality.ui.security.GeneratorSecurityCallback;
 
@@ -52,7 +52,13 @@ public interface QualityGeneratorProvider {
 
 	public boolean hasWhiteListController();
 
-	public GeneratorWhiteListController getWhiteListController(UserRequest ureq, WindowControl wControl,
+	public Controller getWhiteListController(UserRequest ureq, WindowControl wControl,
+			GeneratorSecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator,
+			QualityGeneratorConfigs configs);
+	
+	public boolean hasBlackListController();
+
+	public Controller getBlackListController(UserRequest ureq, WindowControl wControl,
 			GeneratorSecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator,
 			QualityGeneratorConfigs configs);
 

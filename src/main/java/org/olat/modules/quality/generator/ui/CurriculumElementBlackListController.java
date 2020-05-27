@@ -30,15 +30,15 @@ import org.olat.modules.quality.generator.QualityGeneratorConfigs;
 
 /**
  * 
- * Initial date: 21.08.2018<br>
+ * Initial date: 27 May 2020<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumElementWhiteListController extends CurriculumElementListController {
+public class CurriculumElementBlackListController extends CurriculumElementListController {
 
-	private static final String CONFIG_KEY = "curriculum.element.white.list";
+	private static final String CONFIG_KEY = "curriculum.element.black.list";
 
-	public CurriculumElementWhiteListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+	public CurriculumElementBlackListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			QualityGenerator generator, QualityGeneratorConfigs configs) {
 		super(ureq, wControl, stackPanel, generator, configs);
 	}
@@ -50,7 +50,7 @@ public class CurriculumElementWhiteListController extends CurriculumElementListC
 
 	@Override
 	protected String getTablePrefsKey() {
-		return "quality-ce-white-list";
+		return "quality-ce-black-list";
 	}
 	
 	public static List<CurriculumElementRef> getCurriculumElementRefs(QualityGeneratorConfigs generatorConfigs) {

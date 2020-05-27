@@ -50,7 +50,8 @@ public class SearchParameters {
 	private QualityGeneratorRef excludeGeneratorAndTopicRepositoryRef;
 	private IdentityRef teacherRef;
 	private Collection<? extends RepositoryEntryRef> courseRefs;
-	private Collection<? extends CurriculumElementRef> curriculumElementRefs;
+	private Collection<? extends CurriculumElementRef> whiteListRefs;
+	private Collection<? extends CurriculumElementRef> blackListRefs;
 	private List<? extends OrganisationRef> organisationRefs;
 	private Date from;
 	private Date to;
@@ -138,15 +139,26 @@ public class SearchParameters {
 		this.courseRefs = courseRefs;
 	}
 
-	public Collection<? extends CurriculumElementRef> getCurriculumElementRefs() {
-		if (curriculumElementRefs == null) {
-			curriculumElementRefs = Collections.emptyList();
+	public Collection<? extends CurriculumElementRef> getWhiteListRefs() {
+		if (whiteListRefs == null) {
+			whiteListRefs = Collections.emptyList();
 		}
-		return curriculumElementRefs;
+		return whiteListRefs;
 	}
 
-	public void setCurriculumElementRefs(Collection<? extends CurriculumElementRef> curriculumElementRefs) {
-		this.curriculumElementRefs = curriculumElementRefs;
+	public void setWhiteListRefs(Collection<? extends CurriculumElementRef> whiteListRefs) {
+		this.whiteListRefs = whiteListRefs;
+	}
+
+	public Collection<? extends CurriculumElementRef> getBlackListRefs() {
+		if (blackListRefs == null) {
+			blackListRefs = Collections.emptyList();
+		}
+		return blackListRefs;
+	}
+
+	public void setBlackListRefs(Collection<? extends CurriculumElementRef> blackListRefs) {
+		this.blackListRefs = blackListRefs;
 	}
 
 	public List<? extends OrganisationRef> getOrganisationRefs() {
@@ -200,7 +212,7 @@ public class SearchParameters {
 		builder.append(", courseRefs=");
 		builder.append(courseRefs);
 		builder.append(", curriculumElementRefs={");
-		builder.append(curriculumElementRefs.stream()
+		builder.append(whiteListRefs.stream()
 				.map(CurriculumElementRef::getKey)
 				.map(k -> k.toString())
 				.collect(Collectors.joining(", ")));

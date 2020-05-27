@@ -39,6 +39,7 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -62,8 +63,8 @@ import org.olat.modules.quality.generator.TitleCreator;
 import org.olat.modules.quality.generator.provider.course.manager.CourseProviderDAO;
 import org.olat.modules.quality.generator.provider.course.manager.SearchParameters;
 import org.olat.modules.quality.generator.provider.course.ui.CourseProviderConfigController;
-import org.olat.modules.quality.generator.ui.GeneratorWhiteListController;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
+import org.olat.modules.quality.generator.ui.RepositoryEntryBlackListController;
 import org.olat.modules.quality.generator.ui.RepositoryEntryWhiteListController;
 import org.olat.modules.quality.ui.security.GeneratorSecurityCallback;
 import org.olat.repository.RepositoryEntry;
@@ -162,10 +163,22 @@ public class CourseProvider implements QualityGeneratorProvider {
 	}
 
 	@Override
-	public GeneratorWhiteListController getWhiteListController(UserRequest ureq, WindowControl wControl,
+	public Controller getWhiteListController(UserRequest ureq, WindowControl wControl,
 			GeneratorSecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator,
 			QualityGeneratorConfigs configs) {
 		return new RepositoryEntryWhiteListController(ureq, wControl, stackPanel, configs);
+	}
+
+	@Override
+	public boolean hasBlackListController() {
+		return true;
+	}
+
+	@Override
+	public Controller getBlackListController(UserRequest ureq, WindowControl wControl,
+			GeneratorSecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator,
+			QualityGeneratorConfigs configs) {
+		return new RepositoryEntryBlackListController(ureq, wControl, stackPanel, configs);
 	}
 
 	@Override
@@ -344,8 +357,10 @@ public class CourseProvider implements QualityGeneratorProvider {
 		SearchParameters searchParams = new SearchParameters();
 		searchParams.setGeneratorRef(generator);
 		searchParams.setOrganisationRefs(organisations);
-		List<RepositoryEntryRef> repositoryEntryRefs = RepositoryEntryWhiteListController.getRepositoryEntryRefs(configs);
-		searchParams.setRepositoryEntryRefs(repositoryEntryRefs);
+		List<RepositoryEntryRef> whiteListRefs = RepositoryEntryWhiteListController.getRepositoryEntryRefs(configs);
+		searchParams.setWhiteListRefs(whiteListRefs);
+		List<RepositoryEntryRef> blackListRefs = RepositoryEntryBlackListController.getRepositoryEntryRefs(configs);
+		searchParams.setBlackListRefs(blackListRefs);
 		return searchParams;
 	}
 	

@@ -30,12 +30,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityGeneratorProviderReferenceable;
@@ -50,7 +51,6 @@ import org.olat.modules.quality.generator.QualityGeneratorSearchParams;
 import org.olat.modules.quality.generator.QualityGeneratorService;
 import org.olat.modules.quality.generator.QualityGeneratorToOrganisation;
 import org.olat.modules.quality.generator.QualityGeneratorView;
-import org.olat.modules.quality.generator.ui.GeneratorWhiteListController;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
 import org.olat.modules.quality.ui.security.GeneratorSecurityCallback;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -177,11 +177,25 @@ public class QualityGeneratorServiceImpl implements QualityGeneratorService {
 	}
 
 	@Override
-	public GeneratorWhiteListController getWhiteListController(UserRequest ureq, WindowControl wControl,
+	public Controller getWhiteListController(UserRequest ureq, WindowControl wControl,
 			GeneratorSecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator) {
 		QualityGeneratorProvider provider = providerFactory.getProvider(generator.getType());
 		QualityGeneratorConfigsImpl configs = new QualityGeneratorConfigsImpl(generator);
 		return provider.getWhiteListController(ureq, wControl, secCallback, stackPanel, generator, configs);
+	}
+
+	@Override
+	public boolean hasBlackListController(QualityGenerator generator) {
+		QualityGeneratorProvider provider = providerFactory.getProvider(generator.getType());
+		return provider.hasBlackListController();
+	}
+
+	@Override
+	public Controller getBlackListController(UserRequest ureq, WindowControl wControl,
+			GeneratorSecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator) {
+		QualityGeneratorProvider provider = providerFactory.getProvider(generator.getType());
+		QualityGeneratorConfigsImpl configs = new QualityGeneratorConfigsImpl(generator);
+		return provider.getBlackListController(ureq, wControl, secCallback, stackPanel, generator, configs);
 	}
 
 	@Override

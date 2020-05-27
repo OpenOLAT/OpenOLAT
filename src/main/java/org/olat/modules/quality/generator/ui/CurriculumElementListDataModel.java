@@ -28,66 +28,63 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
-import org.olat.repository.RepositoryEntry;
-import org.olat.repository.model.RepositoryEntryLifecycle;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementType;
 
 /**
  * 
- * Initial date: 09.10.2018<br>
+ * Initial date: 21.08.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-class RepositoryEntryWhiteListDataModel extends DefaultFlexiTableDataModel<RepositoryEntry>
-		implements SortableFlexiTableDataModel<RepositoryEntry> {
+class CurriculumElementListDataModel extends DefaultFlexiTableDataModel<CurriculumElement>
+		implements SortableFlexiTableDataModel<CurriculumElement> {
 	
 	private final Locale locale;
 	
-	RepositoryEntryWhiteListDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
+	CurriculumElementListDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
 		this.locale = locale;
 	}
 
 	@Override
 	public void sort(SortKey orderBy) {
-		List<RepositoryEntry> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+		List<CurriculumElement> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
 		super.setObjects(rows);
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		RepositoryEntry course = getObject(row);
-		return getValueAt(course, col);
+		CurriculumElement curriculumElement = getObject(row);
+		return getValueAt(curriculumElement, col);
 	}
 
 	@Override
-	public Object getValueAt(RepositoryEntry row, int col) {
+	public Object getValueAt(CurriculumElement row, int col) {
 		switch(Cols.values()[col]) {
-			case id: return row.getKey();
-			case displayName: return row.getDisplayname();
-			case identifier: return row.getExternalRef();
-			case begin: {
-				RepositoryEntryLifecycle lifecycle = row.getLifecycle();
-				return lifecycle != null? lifecycle.getValidFrom(): null;
+			case displayName: return row.getDisplayName();
+			case identifier: return row.getIdentifier();
+			case typeName: {
+				CurriculumElementType type = row.getType();
+				return type != null? type.getDisplayName(): null;
 			}
-			case end:  {
-				RepositoryEntryLifecycle lifecycle = row.getLifecycle();
-				return lifecycle != null? lifecycle.getValidTo(): null;
-			}
+			case begin: return row.getBeginDate();
+			case end: return row.getEndDate();
 			default: return null;
 		}
 	}
 
 	@Override
-	public DefaultFlexiTableDataModel<RepositoryEntry> createCopyWithEmptyList() {
-		return new RepositoryEntryWhiteListDataModel(getTableColumnModel(), locale);
+	public DefaultFlexiTableDataModel<CurriculumElement> createCopyWithEmptyList() {
+		return new CurriculumElementListDataModel(getTableColumnModel(), locale);
 	}
 	
 	public enum Cols implements FlexiSortableColumnDef {
-		id("repository.entry.id"),
-		identifier("repository.entry.identifier"),
-		displayName("repository.entry.display.name"),
-		begin("repository.entry.begin"),
-		end("repository.entry.end");
+		displayName("curriculum.element.display.name"),
+		identifier("curriculum.element.identifier"),
+		typeName("curriculum.element.type.name"),
+		begin("curriculum.element.begin"),
+		end("curriculum.element.end");
 		
 		private final String i18nHeaderKey;
 		

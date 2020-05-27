@@ -24,23 +24,22 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.curriculum.CurriculumElementRef;
-import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
- * Initial date: 21.08.2018<br>
+ * Initial date: 27 May 2020<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumElementWhiteListController extends CurriculumElementListController {
+public class RepositoryEntryBlackListController extends RepositoryEntryListController {
+	
+	private static final String CONFIG_KEY = "course.black.list";
 
-	private static final String CONFIG_KEY = "curriculum.element.white.list";
-
-	public CurriculumElementWhiteListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			QualityGenerator generator, QualityGeneratorConfigs configs) {
-		super(ureq, wControl, stackPanel, generator, configs);
+	public RepositoryEntryBlackListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			QualityGeneratorConfigs configs) {
+		super(ureq, wControl, stackPanel, configs);
 	}
 
 	@Override
@@ -49,17 +48,16 @@ public class CurriculumElementWhiteListController extends CurriculumElementListC
 	}
 
 	@Override
-	protected String getTablePrefsKey() {
-		return "quality-ce-white-list";
+	protected String getTablePrefKey() {
+		return "quality-re-black-list";
 	}
 	
-	public static List<CurriculumElementRef> getCurriculumElementRefs(QualityGeneratorConfigs generatorConfigs) {
-		return CurriculumElementListController.getCurriculumElementRefs(generatorConfigs, CONFIG_KEY);
+	public static List<RepositoryEntryRef> getRepositoryEntryRefs(QualityGeneratorConfigs generatorConfigs) {
+		return RepositoryEntryListController.getRepositoryEntryRefs(generatorConfigs, CONFIG_KEY);
 	}
 	
-	public static void setCurriculumElementRefs(QualityGeneratorConfigs generatorConfigs,
-			List<? extends CurriculumElementRef> elements) {
-		CurriculumElementListController.setCurriculumElementRefs(generatorConfigs, elements, CONFIG_KEY);
+	public static void setRepositoryEntryRefs(QualityGeneratorConfigs generatorConfigs, List<? extends RepositoryEntryRef> entries) {
+		RepositoryEntryListController.setRepositoryEntryRefs(generatorConfigs, entries, CONFIG_KEY);
 	}
 
 }

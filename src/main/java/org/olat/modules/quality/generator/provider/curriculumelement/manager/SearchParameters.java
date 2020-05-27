@@ -39,7 +39,8 @@ public class SearchParameters {
 	private QualityGeneratorRef generatorRef;
 	private List<? extends OrganisationRef> organisationRefs;
 	private Long ceTypeKey;
-	private Collection<? extends CurriculumElementRef> curriculumElementRefs;
+	private Collection<? extends CurriculumElementRef> whiteListRefs;
+	private Collection<? extends CurriculumElementRef> blackListRefs;
 	private Date from;
 	private Date to;
 	private boolean startDate;
@@ -60,12 +61,20 @@ public class SearchParameters {
 		this.organisationRefs = organisations;
 	}
 
-	public Collection<? extends CurriculumElementRef> getCurriculumElementRefs() {
-		return curriculumElementRefs;
+	public Collection<? extends CurriculumElementRef> getWhiteListRefs() {
+		return whiteListRefs;
 	}
 
-	public void setCurriculumElementRefs(Collection<? extends CurriculumElementRef> curriculumElementRefs) {
-		this.curriculumElementRefs = curriculumElementRefs;
+	public void setWhiteListRefs(Collection<? extends CurriculumElementRef> whiteListRefs) {
+		this.whiteListRefs = whiteListRefs;
+	}
+
+	public Collection<? extends CurriculumElementRef> getBlackListRefs() {
+		return blackListRefs;
+	}
+
+	public void setBlackListRefs(Collection<? extends CurriculumElementRef> blackListRefs) {
+		this.blackListRefs = blackListRefs;
 	}
 
 	public Long getCeTypeKey() {
@@ -111,8 +120,14 @@ public class SearchParameters {
 		builder.append("]");
 		builder.append(", ceTypeKey=");
 		builder.append(ceTypeKey);
-		builder.append(", curriculumElementRefs=");
-		builder.append(curriculumElementRefs);
+		builder.append(", whiteListRefs (keys)=[");
+		builder.append(whiteListRefs.stream().map(CurriculumElementRef::getKey).map(ce -> ce.toString())
+				.collect(Collectors.joining(", ")));
+		builder.append("]");
+		builder.append(", blackListRefs (keys)=[");
+		builder.append(blackListRefs.stream().map(CurriculumElementRef::getKey).map(ce -> ce.toString())
+				.collect(Collectors.joining(", ")));
+		builder.append("]");
 		builder.append(", from=");
 		builder.append(from);
 		builder.append(", to=");

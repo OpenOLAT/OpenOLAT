@@ -239,19 +239,35 @@ public class CourseProviderDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldFilterByRepositoryEntryRefs() {
+	public void shouldFilterByWhiteListRefs() {
 		RepositoryEntry course1 = createEntry(null, null, null);
 		RepositoryEntry course2 = createEntry(null, null, null);
 		RepositoryEntry other = createEntry(null, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		SearchParameters seachParameters = new SearchParameters();
-		seachParameters.setRepositoryEntryRefs(asList(course1, course2));
+		seachParameters.setWhiteListRefs(asList(course1, course2));
 		List<RepositoryEntry> courses = sut.loadCourses(seachParameters);
 
 		assertThat(courses)
 				.contains(course1, course2)
 				.doesNotContain(other);
+	}
+	
+	@Test
+	public void shouldFilterByBlackListRefs() {
+		RepositoryEntry course1 = createEntry(null, null, null);
+		RepositoryEntry course2 = createEntry(null, null, null);
+		RepositoryEntry blackList = createEntry(null, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		SearchParameters seachParameters = new SearchParameters();
+		seachParameters.setBlackListRefs(asList(blackList));
+		List<RepositoryEntry> courses = sut.loadCourses(seachParameters);
+
+		assertThat(courses)
+				.contains(course1, course2)
+				.doesNotContain(blackList);
 	}
 	
 	@Test

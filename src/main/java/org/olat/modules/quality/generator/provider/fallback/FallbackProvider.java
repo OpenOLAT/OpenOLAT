@@ -27,6 +27,7 @@ import java.util.Locale;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
@@ -35,7 +36,6 @@ import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
 import org.olat.modules.quality.generator.QualityGeneratorProvider;
 import org.olat.modules.quality.generator.ui.GeneratorListController;
-import org.olat.modules.quality.generator.ui.GeneratorWhiteListController;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
 import org.olat.modules.quality.ui.security.GeneratorSecurityCallback;
 import org.springframework.stereotype.Service;
@@ -79,7 +79,19 @@ public class FallbackProvider implements QualityGeneratorProvider {
 	}
 
 	@Override
-	public GeneratorWhiteListController getWhiteListController(UserRequest ureq, WindowControl wControl,
+	public Controller getWhiteListController(UserRequest ureq, WindowControl wControl,
+			GeneratorSecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator,
+			QualityGeneratorConfigs configs) {
+		return null;
+	}
+
+	@Override
+	public boolean hasBlackListController() {
+		return false;
+	}
+
+	@Override
+	public Controller getBlackListController(UserRequest ureq, WindowControl wControl,
 			GeneratorSecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator,
 			QualityGeneratorConfigs configs) {
 		return null;

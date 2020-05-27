@@ -84,7 +84,7 @@ public class CurriculumElementProviderTest extends OlatTestCase {
 		
 		QualityGenerator generator = createGeneratorInDefaultOrganisation();
 		String durationDays = "10";
-		QualityGeneratorConfigs configs = createAfterSecondLectureConfigs(generator, durationDays, curriculumElement);
+		QualityGeneratorConfigs configs = createZeroDaysAfterBeginConfigs(generator, durationDays, curriculumElement);
 		
 		Date lastRun = new GregorianCalendar(2010, 6, 1).getTime();
 		Date now = new GregorianCalendar(2010, 6, 13).getTime();
@@ -99,7 +99,7 @@ public class CurriculumElementProviderTest extends OlatTestCase {
 				.doesNotContain(defaultOrganisation);
 	}
 
-	private QualityGeneratorConfigs createAfterSecondLectureConfigs(QualityGenerator generator, String durationDays,
+	private QualityGeneratorConfigs createZeroDaysAfterBeginConfigs(QualityGenerator generator, String durationDays,
 			CurriculumElementRef curriculumElementRef) {
 		QualityGeneratorConfigs configs = new QualityGeneratorConfigsImpl(generator);
 		configs.setValue(CurriculumElementProvider.CONFIG_KEY_TITLE, "DATA_COLLECTION_TITLE");

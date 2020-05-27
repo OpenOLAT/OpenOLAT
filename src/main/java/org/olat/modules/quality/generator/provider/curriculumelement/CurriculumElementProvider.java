@@ -33,6 +33,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -58,8 +59,8 @@ import org.olat.modules.quality.generator.TitleCreator;
 import org.olat.modules.quality.generator.provider.curriculumelement.manager.CurriculumElementProviderDAO;
 import org.olat.modules.quality.generator.provider.curriculumelement.manager.SearchParameters;
 import org.olat.modules.quality.generator.provider.curriculumelement.ui.CurriculumElementProviderConfigController;
+import org.olat.modules.quality.generator.ui.CurriculumElementBlackListController;
 import org.olat.modules.quality.generator.ui.CurriculumElementWhiteListController;
-import org.olat.modules.quality.generator.ui.GeneratorWhiteListController;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
 import org.olat.modules.quality.ui.security.GeneratorSecurityCallback;
 import org.olat.repository.RepositoryEntry;
@@ -136,10 +137,22 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 	}
 
 	@Override
-	public GeneratorWhiteListController getWhiteListController(UserRequest ureq, WindowControl wControl,
+	public Controller getWhiteListController(UserRequest ureq, WindowControl wControl,
 			GeneratorSecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator,
 			QualityGeneratorConfigs configs) {
 		return new CurriculumElementWhiteListController(ureq, wControl, stackPanel, generator, configs);
+	}
+
+	@Override
+	public boolean hasBlackListController() {
+		return true;
+	}
+
+	@Override
+	public Controller getBlackListController(UserRequest ureq, WindowControl wControl,
+			GeneratorSecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator,
+			QualityGeneratorConfigs configs) {
+		return new CurriculumElementBlackListController(ureq, wControl, stackPanel, generator, configs);
 	}
 
 	@Override
@@ -255,8 +268,10 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 			searchParams.setStartDate(false);
 		}
 		
-		List<CurriculumElementRef> curriculumElementRefs = CurriculumElementWhiteListController.getCurriculumElementRefs(configs);
-		searchParams.setCurriculumElementRefs(curriculumElementRefs);
+		List<CurriculumElementRef> whiteListRefs = CurriculumElementWhiteListController.getCurriculumElementRefs(configs);
+		searchParams.setWhiteListRefs(whiteListRefs);
+		List<CurriculumElementRef> blackListRefs = CurriculumElementBlackListController.getCurriculumElementRefs(configs);
+		searchParams.setBlackListRefs(blackListRefs);
 		
 		return searchParams;
 	}

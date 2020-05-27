@@ -119,8 +119,11 @@ public class CourseProviderDAO {
 			sb.and();
 			sb.append("(lifecycle.validTo >= :validAt or lifecycle.validTo is null)");
 		}
-		if (searchParams.getRepositoryEntryRefs() != null && !searchParams.getRepositoryEntryRefs().isEmpty()) {
-			sb.and().append("entry.key in :repositoryKeys");
+		if (searchParams.getWhiteListRefs() != null && !searchParams.getWhiteListRefs().isEmpty()) {
+			sb.and().append("entry.key in (:whiteListKeys)");
+		}
+		if (searchParams.getBlackListRefs() != null && !searchParams.getBlackListRefs().isEmpty()) {
+			sb.and().append("entry.key not in (:blackListKeys)");
 		}
 	}
 
@@ -154,9 +157,13 @@ public class CourseProviderDAO {
 		if (searchParams.getLifecycleValidAt() != null) {
 			query.setParameter("validAt", searchParams.getLifecycleValidAt());
 		}
-		if (searchParams.getRepositoryEntryRefs() != null && !searchParams.getRepositoryEntryRefs().isEmpty()) {
-			List<Long> keys = searchParams.getRepositoryEntryRefs().stream().map(RepositoryEntryRef::getKey).collect(toList());
-			query.setParameter("repositoryKeys", keys);
+		if (searchParams.getWhiteListRefs() != null && !searchParams.getWhiteListRefs().isEmpty()) {
+			List<Long> keys = searchParams.getWhiteListRefs().stream().map(RepositoryEntryRef::getKey).collect(toList());
+			query.setParameter("whiteListKeys", keys);
+		}
+		if (searchParams.getBlackListRefs() != null && !searchParams.getBlackListRefs().isEmpty()) {
+			List<Long> keys = searchParams.getBlackListRefs().stream().map(RepositoryEntryRef::getKey).collect(toList());
+			query.setParameter("blackListKeys", keys);
 		}
 	}
 

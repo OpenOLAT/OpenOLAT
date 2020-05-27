@@ -203,7 +203,7 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldFilterLectureBlockInfosByCurriculumElements() {
+	public void shouldFilterLectureBlockInfosByWhiteList() {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
 		Organisation organisation = organisationService.createOrganisation("org", "Org", null, null, null);
 		Curriculum curriculum = curriculumService.createCurriculum("Curriculum", "Curriculum", null, organisation);
@@ -226,14 +226,45 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 
 		SearchParameters searchParams = new SearchParameters();
 		searchParams.setTeacherRef(teacher);
-		searchParams.setCurriculumElementRefs(Arrays.asList(element));
+		searchParams.setWhiteListRefs(Arrays.asList(element));
 		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
 
 		assertThat(infos).extracting(LectureBlockInfo::getCourseRepoKey)
 				.containsExactlyInAnyOrder(course1.getKey(), course2.getKey())
 				.doesNotContain(otherCourse.getKey());
 	}
+	
+	@Test
+	public void shouldFilterLectureBlockInfosByBlackList() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
+		Organisation organisation = organisationService.createOrganisation("org", "Org", null, null, null);
+		Curriculum curriculum = curriculumService.createCurriculum("Curriculum", "Curriculum", null, organisation);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element", "Element",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement otherElement = curriculumService.createCurriculumElement("Element", "Element",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		RepositoryEntry course1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry course2 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry otherCourse = JunitTestHelper.createAndPersistRepositoryEntry();
+		createLectureBlock(course1, teacher, 1);
+		createLectureBlock(course2, teacher, 1);
+		createLectureBlock(otherCourse, teacher, 1);
+		curriculumService.addRepositoryEntry(element, course1, false);
+		curriculumService.addRepositoryEntry(element, course2, false);
+		curriculumService.addRepositoryEntry(otherElement, otherCourse, false);
+		dbInstance.commitAndCloseSession();
 
+		SearchParameters searchParams = new SearchParameters();
+		searchParams.setTeacherRef(teacher);
+		searchParams.setBlackListRefs(Arrays.asList(otherElement));
+		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
+
+		assertThat(infos).extracting(LectureBlockInfo::getCourseRepoKey)
+				.containsExactlyInAnyOrder(course1.getKey(), course2.getKey())
+				.doesNotContain(otherCourse.getKey());
+	}
 	
 	@Test
 	public void shouldFilterLectureBlockInfosByEndDate() {
@@ -581,11 +612,11 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 		assertThat(count).isEqualTo(2);
 	}
 	
-	public LectureBlock createLectureBlock(RepositoryEntry course, Identity teacher, int numLectures) {
+	private LectureBlock createLectureBlock(RepositoryEntry course, Identity teacher, int numLectures) {
 		return createLectureBlock(course, teacher, numLectures, nextHour(), nextHour());
 	}
 	
-	public LectureBlock createLectureBlock(RepositoryEntry course, Identity teacher, int numLectures, Date start, Date end) {
+	private LectureBlock createLectureBlock(RepositoryEntry course, Identity teacher, int numLectures, Date start, Date end) {
 		LectureBlock lectureBlock = lectureService.createLectureBlock(course);
 		lectureBlock.setStartDate(start);
 		lectureBlock.setEndDate(end);
