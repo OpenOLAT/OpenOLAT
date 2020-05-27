@@ -39,11 +39,13 @@ import org.olat.core.util.Formatter;
  */
 public class ExtraTimeCellRenderer implements FlexiCellRenderer {
 	
+	private final Date endDate;
 	private final boolean renderDueDate;
 	private final int timeLimitInSeconds;
 	private final Formatter formatter;
 	
-	public ExtraTimeCellRenderer(boolean renderDueDate, int timeLimitInSeconds, Locale locale) {
+	public ExtraTimeCellRenderer(boolean renderDueDate, int timeLimitInSeconds, Date endDate, Locale locale) {
+		this.endDate = endDate;
 		this.renderDueDate = renderDueDate;
 		this.timeLimitInSeconds = timeLimitInSeconds;
 		formatter = Formatter.getInstance(locale);
@@ -59,6 +61,16 @@ public class ExtraTimeCellRenderer implements FlexiCellRenderer {
 			if(renderDueDate) {
 				if(infos.getStart() != null) {
 					int totalTime = timeLimitInSeconds;
+					if(endDate != null) {
+						long leadingTimeInMilliSeconds = endDate.getTime() - infos.getStart().getTime();
+						int leadingTime = Math.round(leadingTimeInMilliSeconds / 1000f);
+						if(timeLimitInSeconds > 0) {
+							totalTime = Math.min(totalTime, leadingTime);
+						} else {
+							totalTime = leadingTime;
+						}
+					}
+	
 					if(extraTimeInSeconds != null) {
 						totalTime += extraTimeInSeconds;
 					}

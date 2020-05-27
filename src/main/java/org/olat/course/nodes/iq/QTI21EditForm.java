@@ -90,6 +90,7 @@ public class QTI21EditForm extends FormBasicController {
 	private MultipleSelectionElement showResultsOnFinishEl;
 	private MultipleSelectionElement assessmentResultsOnFinishEl;
 	private FormLayoutContainer reportLayout;
+	private FormLayoutContainer testLayout;
 	
 	private final boolean needManualCorrection;
 	private final ModuleConfiguration modConfig;
@@ -117,7 +118,7 @@ public class QTI21EditForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer testLayout = FormLayoutContainer.createDefaultFormLayout("testInfos", getTranslator());
+		testLayout = FormLayoutContainer.createDefaultFormLayout("testInfos", getTranslator());
 		testLayout.setRootForm(mainForm);
 		formLayout.add(testLayout);
 		initFormAssessmentInfos(testLayout);
@@ -276,7 +277,7 @@ public class QTI21EditForm extends FormBasicController {
 		if(confirmTestDateCtrl == source) {
 			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
 				update();
-				reportLayout.setDirty(true);
+				testLayout.setDirty(true);
 			} else {
 				testDateDependentEl.uncheckAll();
 			}

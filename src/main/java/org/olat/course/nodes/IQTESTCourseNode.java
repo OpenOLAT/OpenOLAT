@@ -229,7 +229,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		if(ImsQTI21Resource.TYPE_NAME.equals(testEntry.getOlatResource().getResourceableTypeName())) {
 			ModuleConfiguration config = getModuleConfiguration();
 			boolean configRef = config.getBooleanSafe(IQEditController.CONFIG_KEY_CONFIG_REF, false);
-			if(!configRef && config.getIntegerSafe(IQEditController.CONFIG_KEY_TIME_LIMIT, -1) > 0) {
+			if(!configRef && (config.getIntegerSafe(IQEditController.CONFIG_KEY_TIME_LIMIT, -1) > 0
+					|| config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_TEST_DATE) != null)) {
 				timeLimit = true;
 			} else {
 				AssessmentTest assessmentTest = loadAssessmentTest(testEntry);
@@ -369,7 +370,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		boolean hasTestReference = getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY) != null;
 		if (hasTestReference) {
 			/*
-			 * COnfiugre an IQxxx BB with a repo entry, do not publish
+			 * Configure an IQxxx BB with a repo entry, do not publish
 			 * this BB, mark IQxxx as deleted, remove repo entry, undelete BB IQxxx
 			 * and bang you enter this if.
 			 */
@@ -479,7 +480,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		try {
 			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, false);
 			if(re == null) {
-				log.error("Cannot archive course node. Missing repository entry with soft key: ", repositorySoftKey);
+				log.error("Cannot archive course node. Missing repository entry with soft key: {}", repositorySoftKey);
 				return false;
 			}
 			
