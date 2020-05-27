@@ -94,7 +94,7 @@ public class OAuthDispatcher implements Dispatcher {
 			ureq = new UserRequestImpl(uriPrefix, request, response);
 		} catch(NumberFormatException nfe) {
 			if(log.isDebugEnabled()){
-				log.debug("Bad Request "+request.getPathInfo());
+				log.debug("Bad Request {}", request.getPathInfo());
 			}
 			DispatcherModule.sendBadRequest(request.getPathInfo(), response);
 			return;
@@ -156,7 +156,7 @@ public class OAuthDispatcher implements Dispatcher {
 			OAuthUser infos = provider.getUser(service, accessToken);
 			if(infos == null || !StringHelper.containsNonWhitespace(infos.getId())) {
 				error(ureq, translate(ureq, "error.no.id"));
-				log.error("OAuth Login failed, no infos extracted from access token: " + accessToken);
+				log.error("OAuth Login failed, no infos extracted from access token: {}", accessToken);
 				return;
 			}
 
@@ -178,7 +178,7 @@ public class OAuthDispatcher implements Dispatcher {
 					register(request, response, registration);
 				} else {
 					error(ureq, translate(ureq, "error.account.creation"));
-					log.error("OAuth Login ok but the user has not an account on OpenOLAT: " + infos);
+					log.error("OAuth Login ok but the user has not an account on OpenOLAT: {}", infos);
 				}
 			} else {
 				if(ureq.getUserSession() != null) {
@@ -235,7 +235,7 @@ public class OAuthDispatcher implements Dispatcher {
 						securityManager.createAndPersistAuthentication(identity, registration.getAuthProvider(), id, null, null);
 						registration.setIdentity(identity);
 					} else {
-						log.error("OAuth Login failed, user with user name " + email + " not found.");
+						log.error("OAuth Login failed, user with user name {} not found.", email);
 					}
 				}
 			} else {
