@@ -92,6 +92,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("config.title");
 		setFormContextHelp("Learning path element");
+		formLayout.setElementCssClass("o_sel_learnpath_element");
 		KeyValues obligationKV = new KeyValues();
 		obligationKV.add(entry(AssessmentObligation.mandatory.name(), translate("config.obligation.mandatory")));
 		obligationKV.add(entry(AssessmentObligation.optional.name(), translate("config.obligation.optional")));

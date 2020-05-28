@@ -34,6 +34,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.olat.course.learningpath.FullyAssessedTrigger;
 import org.olat.repository.model.SingleRoleRepositoryEntrySecurity.Role;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
@@ -1871,7 +1872,7 @@ public class AssessmentTest extends Deployments {
 	
 	/**
 	 * An author create a course with an heavy customized task
-	 * coure element. Assignment and submission are disabled.
+	 * course element. Assignment and submission are disabled.
 	 * The participant doesn't to interact with the course, the
 	 * author / coach upload a correction and marks the task as
 	 * reviewed and uses the assessment tool to set the score.<br>
@@ -2112,5 +2113,108 @@ public class AssessmentTest extends Deployments {
 			.assertPassed()
 			.openSolutions()
 			.assertSolution("solution_1.txt");
+	}
+	
+	/**
+	 * This is a degenerated form of task but the case exists.
+	 * An author creates a course (learn path) with a task course
+	 * element. The task is configured to only show the solution,
+	 * and the course element to be passed if the task is done. In
+	 * this case, the participant only need to see the solution to
+	 * get the node done.
+	 * 
+	 * @param participantBrowser Browser of the participant
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void taskLearnPathSolutionsOnly(@Drone @User WebDriver participantBrowser)
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("kanu");
+		
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Course-with-auto-task-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle, true)
+			.clickToolbarBack();
+
+		//create a course element of type Test with the test that we create above
+		String gtaNodeTitle = "Solution 1";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("ita")
+			.nodeTitle(gtaNodeTitle);
+		
+		courseEditor
+			.selectTabLearnPath()
+			.setCompletionCriterion(FullyAssessedTrigger.statusDone)
+			.save();
+		
+		GroupTaskConfigurationPage gtaConfig = new GroupTaskConfigurationPage(browser);
+		gtaConfig
+			.selectWorkflow()
+			.enableAssignment(false)
+			.enableSubmission(false)
+			.enableReview(false)
+			.enableGrading(false)
+			.saveWorkflow();
+		
+		URL solutionUrl = JunitTestHelper.class.getResource("file_resources/solution_1.txt");
+		File solutionFile = new File(solutionUrl.toURI());
+		gtaConfig
+			.selectSolution()
+			.uploadSolution("A possible solution", solutionFile);
+		
+		courseEditor
+			.publish()
+			.quickPublish(UserAccess.membersOnly);
+		
+
+		MembersPage membersPage = courseEditor
+			.clickToolbarBack()
+			.members();
+		
+		membersPage
+			.importMembers()
+			.setMembers(participant)
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
+			.finish();
+		
+		//Participant log in
+		LoginPage participantLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
+		participantLoginPage
+			.loginAs(participant)
+			.resume();
+		
+		//open the course
+		NavigationPage participantNavBar = NavigationPage.load(participantBrowser);
+		participantNavBar
+			.openMyCourses()
+			.select(courseTitle);
+		
+		//go to the group task
+		CoursePageFragment participantCourse = new CoursePageFragment(participantBrowser);
+		participantCourse
+			.clickTree()
+			.selectWithTitle(gtaNodeTitle);
+		
+		GroupTaskPage participantTask = new GroupTaskPage(participantBrowser);
+		participantTask
+			.openSolutions()
+			.assertSolution("solution_1.txt");
+		// seeing the solution got the job done
+		participantCourse
+			.assertOnLearnPathNodeDone(gtaNodeTitle);
 	}
 }

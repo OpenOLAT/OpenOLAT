@@ -92,6 +92,12 @@ public class CoursePageFragment {
 		return this;
 	}
 	
+	public CoursePageFragment assertOnLearnPathNodeDone(String nodeTitle) {
+		By nodeDoneBy = By.xpath("//div[contains(@class,'o_lp_tree')]//span[contains(@class,'o_tree_l1')]/a[i[contains(@class,'o_lp_done')]][span[text()[contains(.,'" + nodeTitle + "')]]]");
+		OOGraphene.waitElement(nodeDoneBy, browser);
+		return this;
+	}
+	
 	/**
 	 * Assert if the password field is displayed.
 	 * @return
