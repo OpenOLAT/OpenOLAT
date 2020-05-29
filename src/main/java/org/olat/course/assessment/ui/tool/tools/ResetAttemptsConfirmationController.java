@@ -76,8 +76,8 @@ public class ResetAttemptsConfirmationController extends FormBasicController {
 		AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, courseEnv);
 		UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
 				.createAndInitUserCourseEnvironment(assessedIdentity, courseEnv);
-		courseAssessmentService.updateAttempts(courseNode, Integer.valueOf(0), assessedUserCourseEnv, getIdentity(),
-				Role.coach);
+		courseAssessmentService.updateAttempts(courseNode, Integer.valueOf(0), null, assessedUserCourseEnv,
+				getIdentity(), Role.coach);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 

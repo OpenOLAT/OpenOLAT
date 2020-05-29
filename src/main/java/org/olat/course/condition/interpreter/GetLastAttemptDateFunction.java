@@ -21,10 +21,9 @@ package org.olat.course.condition.interpreter;
 
 import java.util.Date;
 
-import org.olat.core.id.Identity;
-import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
@@ -43,18 +42,11 @@ public class GetLastAttemptDateFunction extends AbstractFunction {
 
 	public static final String name = "getLastAttemptDate";
 
-	/**
-	 * Default constructor to use the get attempts object
-	 * 
-	 * @param userCourseEnv
-	 */
 	public GetLastAttemptDateFunction(UserCourseEnvironment userCourseEnv) {
 		super(userCourseEnv);
 	}
 
-	/**
-	 * @see com.neemsoft.jmep.FunctionCB#call(java.lang.Object[])
-	 */
+	@Override
 	public Object call(Object[] inStack) {
 		/*
 		 * argument check
@@ -96,30 +88,23 @@ public class GetLastAttemptDateFunction extends AbstractFunction {
 			// return a valid value to continue with condition evaluation test
 			return defaultValue();
 		}
-
-		/*
-		 * the real function evaluation which is used during run time
-		 */
+		
 		CourseNode node = getUserCourseEnv().getCourseEnvironment().getRunStructure().getNode(nodeId);
-		AssessmentManager am = getUserCourseEnv().getCourseEnvironment().getAssessmentManager();
-		Identity identity = getUserCourseEnv().getIdentityEnvironment().getIdentity();
-
-		// use the last modified date from the course node
-		Date lastModified = am.getScoreLastModifiedDate(node, identity);
-
-	    if (lastModified != null && lastModified.getTime() > 0) {
-	    	return Double.valueOf(lastModified.getTime());
-	    } else {
-	    	// what to do in case of no date available??? -> return date in the future
-	    	return new Double(Double.POSITIVE_INFINITY);
-	    }
+		if (node != null) {
+			AssessmentEvaluation assessmentEvaluation = getUserCourseEnv().getScoreAccounting().evalCourseNode(node);
+			Integer attempts = assessmentEvaluation.getAttempts();
+			Date lastAttempt = assessmentEvaluation.getLastAttempt();
+			if (attempts != null && attempts.intValue() > 0 && lastAttempt != null && lastAttempt.getTime() > 0) {
+				return Double.valueOf(lastAttempt.getTime());
+			}
+		}
+				
+		return Double.POSITIVE_INFINITY; // date in future
 	}
 
-	/**
-	 * @see org.olat.course.condition.interpreter.AbstractFunction#defaultValue()
-	 */
+	@Override
 	protected Object defaultValue() {
-		return new Double(Double.MIN_VALUE);
+		return Double.MIN_VALUE;
 	}
 
 }

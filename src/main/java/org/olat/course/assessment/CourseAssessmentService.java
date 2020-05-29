@@ -153,12 +153,13 @@ public interface CourseAssessmentService {
 	 * 
 	 * @param courseNode
 	 * @param userAttempts
+	 * @param lastAttempt 
 	 * @param userCourseEnvironment
 	 * @param coachingIdentity
 	 * @param doneBy
 	 */
 	public void updateAttempts(CourseNode courseNode, Integer userAttempts,
-			UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, Role doneBy);
+			Date lastAttempt, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, Role doneBy);
 	
 	/**
 	 * @param courseNode

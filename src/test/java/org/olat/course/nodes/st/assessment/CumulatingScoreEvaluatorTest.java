@@ -160,7 +160,7 @@ public class CumulatingScoreEvaluatorTest {
 
 	
 	private AssessmentEvaluation createAssessmentEvaluation(Float score, Boolean userVisibility) {
-		return new AssessmentEvaluation(score, null, null, null, null, null, userVisibility, null, null, null, null,
+		return new AssessmentEvaluation(score, null, null, null, null, null, null, userVisibility, null, null, null, null,
 				null, null, null, 0, null, null, null, null, null, null, null, null, null, null);
 	}
 

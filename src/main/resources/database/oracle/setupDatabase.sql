@@ -1324,6 +1324,7 @@ create table o_as_entry (
    lastcoachmodified date,
    lastusermodified date,
    a_attemtps number(20) default null,
+   a_last_attempt date null,
    a_score decimal default null,
    a_passed number default null,
    a_passed_original number,

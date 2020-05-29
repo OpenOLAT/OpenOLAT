@@ -158,7 +158,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	}
 
 	@Override
-	public void saveNodeAttempts(CourseNode courseNode, Identity identity, Identity assessedIdentity, Integer attempts, Role by) {
+	public void saveNodeAttempts(CourseNode courseNode, Identity identity, Identity assessedIdentity, Integer attempts, Date lastAttempt, Role by) {
 		ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
 		
 		Boolean entryRoot = isEntryRoot(course, courseNode);
@@ -169,6 +169,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			nodeAssessment.setLastUserModified(new Date());
 		}
 		nodeAssessment.setAttempts(attempts);
+		nodeAssessment.setLastAttempt(lastAttempt);
 		assessmentService.updateAssessmentEntry(nodeAssessment);
 
 		//node log
@@ -326,6 +327,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		AssessmentEntry nodeAssessment = getOrCreateAssessmentEntry(courseNode, assessedIdentity, entryRoot);
 		int attempts = nodeAssessment.getAttempts() == null ? 1 :nodeAssessment.getAttempts().intValue() + 1;
 		nodeAssessment.setAttempts(attempts);
+		nodeAssessment.setLastAttempt(new Date());
 		if(by == Role.coach) {
 			nodeAssessment.setLastCoachModified(new Date());
 		} else if(by == Role.user) {
@@ -526,6 +528,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		if(incrementUserAttempts) {
 			attempts = assessmentEntry.getAttempts() == null ? 1 :assessmentEntry.getAttempts().intValue() + 1;
 			assessmentEntry.setAttempts(attempts);
+			assessmentEntry.setLastAttempt(new Date());
 		}
 		assessmentEntry = assessmentService.updateAssessmentEntry(assessmentEntry);
 		DBFactory.getInstance().commit();

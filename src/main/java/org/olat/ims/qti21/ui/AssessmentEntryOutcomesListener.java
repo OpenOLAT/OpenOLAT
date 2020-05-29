@@ -144,6 +144,7 @@ public class AssessmentEntryOutcomesListener implements OutcomesListener {
 		if(incrementAttempts.getAndSet(false)) {
 			int currentAttempts = assessmentEntry.getAttempts() == null ? 0 : assessmentEntry.getAttempts().intValue();
 			assessmentEntry.setAttempts(currentAttempts + 1);
+			assessmentEntry.setLastAttempt(new Date());
 		}
 		
 		assessmentEntry = assessmentService.updateAssessmentEntry(assessmentEntry);

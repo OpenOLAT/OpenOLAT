@@ -98,7 +98,7 @@ final class PreviewAssessmentManager implements AssessmentManager {
 	}
 
 	@Override
-	public void saveNodeAttempts(CourseNode courseNode, Identity identity, Identity assessedIdentity, Integer attempts, Role by) {
+	public void saveNodeAttempts(CourseNode courseNode, Identity identity, Identity assessedIdentity, Integer attempts, Date lastAttempt, Role by) {
 		nodeAttempts.put(courseNode.getIdent(), attempts);
 	}
 
