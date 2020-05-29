@@ -33,7 +33,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.LoggingObject;
 import org.olat.core.util.StringHelper;
-import org.olat.course.nodes.livestream.manager.LiveStreamLaunchDAO;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.repository.RepositoryEntry;
@@ -50,10 +49,8 @@ public class OLATUpgrade_15_0_3 extends OLATUpgrade {
 
 	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_15_0_3.class);
 	
-	private static final int BATCH_SIZE = 100;
-	
 	private static final String VERSION = "OLAT_15.0.3";
-	private static final String LIVE_STREAM_LAUNCHES = "ASSESSMENT LAST ATTEMPTS";
+	private static final String ASSESSMENT_LAST_ATTEMPTS = "ASSESSMENT LAST ATTEMPTS";
 	
 	@Autowired
 	private DB dbInstance;
@@ -61,8 +58,6 @@ public class OLATUpgrade_15_0_3 extends OLATUpgrade {
 	private AssessmentService assessmentService;
 	@Autowired
 	private RepositoryEntryDAO repositoryEntryDao;
-	@Autowired
-	private LiveStreamLaunchDAO liveStreamLaunchDao;
 	@Autowired
 	private BaseSecurity securityManager;
 	
@@ -93,14 +88,14 @@ public class OLATUpgrade_15_0_3 extends OLATUpgrade {
 		if(allOk) {
 			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_15_0_3 successfully!");
 		} else {
-			log.info(Tracing.M_AUDIT, "OLATUpgrade_14_0_3 not finished, try to restart OpenOlat!");
+			log.info(Tracing.M_AUDIT, "OLATUpgrade_15_0_3 not finished, try to restart OpenOlat!");
 		}
 		return allOk;
 	}
 	
 	private boolean migrateLastAttempts(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
 		boolean allOk = true;
-		if (!uhd.getBooleanDataValue(LIVE_STREAM_LAUNCHES)) {
+		if (!uhd.getBooleanDataValue(ASSESSMENT_LAST_ATTEMPTS)) {
 			try {
 				List<LoggingObject> loggedLaunches = getLoggedLastAttempts();
 				migrateLoggedAttempts(loggedLaunches);
@@ -111,7 +106,7 @@ public class OLATUpgrade_15_0_3 extends OLATUpgrade {
 				log.error("", e);
 				allOk = false;
 			}
-			uhd.setBooleanDataValue(LIVE_STREAM_LAUNCHES, allOk);
+			uhd.setBooleanDataValue(ASSESSMENT_LAST_ATTEMPTS, allOk);
 			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
 		return allOk;
