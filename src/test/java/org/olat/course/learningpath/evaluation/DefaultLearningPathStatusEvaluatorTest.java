@@ -35,9 +35,9 @@ import org.olat.modules.assessment.model.AssessmentObligation;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class DefaultStatusEvaluatorTest {
+public class DefaultLearningPathStatusEvaluatorTest {
 	
-	private DefaultStatusEvaluator sut = new DefaultStatusEvaluator();
+	private DefaultLearningPathStatusEvaluator sut = new DefaultLearningPathStatusEvaluator();
 	
 	@Test
 	public void shouldBlockIfMandatoryAndNotFullyAssessed() {

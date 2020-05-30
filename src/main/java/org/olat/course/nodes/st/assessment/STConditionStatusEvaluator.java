@@ -32,7 +32,7 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ScoreStatusEvaluator implements StatusEvaluator {
+public class STConditionStatusEvaluator implements StatusEvaluator {
 
 	@Override
 	public AssessmentEntryStatus getStatus(AssessmentEvaluation currentEvaluation,

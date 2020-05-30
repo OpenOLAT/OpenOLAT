@@ -37,9 +37,9 @@ import org.olat.modules.assessment.model.AssessmentObligation;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class STStatusEvaluatorTest {
+public class STLearningPathStatusEvaluatorTest {
 	
-	private STStatusEvaluator sut = new STStatusEvaluator();
+	private STLearningPathStatusEvaluator sut = new STLearningPathStatusEvaluator();
 	
 	@Test
 	public void shouldNotBlockIfMandatoryAndNotFullyAssessed() {
