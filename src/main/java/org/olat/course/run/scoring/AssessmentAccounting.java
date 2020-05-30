@@ -174,12 +174,6 @@ public class AssessmentAccounting implements ScoreAccounting {
 			result.setDuration(duration);
 		}
 		
-		PassedEvaluator passedEvaluator = evaluators.getPassedEvaluator();
-		Boolean passed = passedEvaluator.getPassed(result, courseNode,
-				userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
-				userCourseEnvironment.getConditionInterpreter());
-		result.setPassed(passed);
-		
 		StatusEvaluator statusEvaluator = evaluators.getStatusEvaluator();
 		AssessmentEntryStatus status = statusEvaluator.getStatus(result, blocker);
 		result.setStatus(status);
@@ -215,6 +209,12 @@ public class AssessmentAccounting implements ScoreAccounting {
 		
 		obligation = obligationEvaluator.getObligation(result, children);
 		result.setObligation(obligation);
+		
+		PassedEvaluator passedEvaluator = evaluators.getPassedEvaluator();
+		Boolean passed = passedEvaluator.getPassed(result, courseNode,
+				userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+				userCourseEnvironment.getConditionInterpreter());
+		result.setPassed(passed);
 		
 		FullyAssessedEvaluator fullyAssessedEvaluator = evaluators.getFullyAssessedEvaluator();
 		Boolean fullyAssessed = fullyAssessedEvaluator.getFullyAssessed(result, children, blocker);

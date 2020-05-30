@@ -37,18 +37,18 @@ public class ScoreStatusEvaluator implements StatusEvaluator {
 	@Override
 	public AssessmentEntryStatus getStatus(AssessmentEvaluation currentEvaluation,
 			Blocker blocker) {
+			return currentEvaluation.getAssessmentStatus();
+	}
+
+	@Override
+	public AssessmentEntryStatus getStatus(AssessmentEvaluation currentEvaluation,
+			List<AssessmentEvaluation> children) {
 		if (currentEvaluation.getPassed() != null && currentEvaluation.getPassed().booleanValue()) {
 			return AssessmentEntryStatus.done;
 		} else if (currentEvaluation.getScore() != null || currentEvaluation.getCompletion() != null) {
 			return AssessmentEntryStatus.inProgress;
 		}
 		return AssessmentEntryStatus.notStarted;
-	}
-
-	@Override
-	public AssessmentEntryStatus getStatus(AssessmentEvaluation currentEvaluation,
-			List<AssessmentEvaluation> children) {
-		return currentEvaluation.getAssessmentStatus();
 	}
 
 }
