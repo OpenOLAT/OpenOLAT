@@ -282,7 +282,7 @@ public class CourseScoreController extends FormBasicController {
 	}
 
 	private void doConfirmSetting(UserRequest ureq) {
-		assessmentResetCtrl = new AssessmentResetController(ureq, getWindowControl(), true);
+		assessmentResetCtrl = new AssessmentResetController(ureq, getWindowControl(), true, true);
 		listenTo(assessmentResetCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				assessmentResetCtrl.getInitialComponent(), true, translate("assessment.reset.title"), true);
