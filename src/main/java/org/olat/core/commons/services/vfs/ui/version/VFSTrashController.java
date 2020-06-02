@@ -209,7 +209,9 @@ public class VFSTrashController extends FormBasicController implements ProgressD
 	private void doDelete(List<VersionsDeletedFileRow> rowsToDelete) {
 		for(VersionsDeletedFileRow row:rowsToDelete) {
 			VFSRevision revision = vfsRepositoryService.getRevision(new VFSRevisionRefImpl(row.getRevisionKey()));
-			doDelete(revision);
+			if(revision != null) {
+				doDelete(revision);
+			}
 		}
 	}
 	
