@@ -52,7 +52,9 @@ public class QualitySecurityCallbackFactory {
 		boolean canEdit = roles.isAdministrator() || roles.isQualityManager();
 		boolean canView = canEdit || roles.isPrincipal();
 		List<OrganisationRef> organisations = getViewOrganisations(roles, canView);
-		return new MainSecurityCallbackImpl(identityRef, canView, canEdit, organisations);
+		List<OrganisationRef> learnResourceManagerOrganisations = getLearnResourceManagerOrganisations(roles);
+		
+		return new MainSecurityCallbackImpl(identityRef, canView, canEdit, organisations, learnResourceManagerOrganisations);
 	}
 	
 	private static List<OrganisationRef> getViewOrganisations(Roles roles, boolean canView) {
@@ -64,6 +66,14 @@ public class QualitySecurityCallbackFactory {
 			return null; // null = all organisations
 		}
 		return Collections.emptyList(); // empty list = no organisations
+	}
+	
+	private static List<OrganisationRef> getLearnResourceManagerOrganisations(Roles roles) {
+		OrganisationModule organisationModule = CoreSpringFactory.getImpl(OrganisationModule.class);
+		if (organisationModule.isEnabled()) {
+			return roles.getOrganisationsWithRoles(OrganisationRoles.learnresourcemanager);
+		}
+		return null; // all organisations
 	}
 	
 	public static DataCollectionSecurityCallback createDataCollectionSecurityCallback(Roles roles,

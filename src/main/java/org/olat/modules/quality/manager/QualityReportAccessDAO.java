@@ -29,6 +29,7 @@ import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.Group;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
@@ -212,6 +213,7 @@ class QualityReportAccessDAO {
 		case TopicIdentity: return loadRecipientsOfTopicIdentity(reportAccess);
 		case ReportMember: return loadRecipientsOfReportMember(reportAccess);
 		case RelationRole: return loadRecipientsOfRelationRole(reportAccess);
+		case LearnResourceManager: return loadLearnResourceManagers(reportAccess);
 		default: return Collections.emptyList();
 		}
 	}
@@ -324,6 +326,28 @@ class QualityReportAccessDAO {
 		sb.append("       join roleRel.right as rright");
 		sb.and().append(" rright.right = '").append(QualityReportAccessRightProvider.RELATION_RIGHT).append("'");
 		sb.and().append(" ra.key = :reportAccessKey");
+		
+		return dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString(), Identity.class)
+					.setParameter("reportAccessKey", reportAccess.getKey())
+					.getResultList();
+	}
+	
+	private List<Identity> loadLearnResourceManagers(QualityReportAccess reportAccess) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select membership.identity");
+		sb.append("  from qualityreportaccess ra");
+		sb.append("       join ra.dataCollection dc");
+		sb.append("       join qualitycontext as context");
+		sb.append("         on context.dataCollection.key = dc.key");
+		sb.append("       join repoentrytoorganisation as re_org");
+		sb.append("         on re_org.entry.key = context.audienceRepositoryEntry.key");
+		sb.append("       join organisation as org");
+		sb.append("         on org.key = re_org.organisation.key");
+		sb.append("       join org.group baseGroup");
+		sb.append("       join baseGroup.members membership");
+		sb.and().append("membership.role = '").append(OrganisationRoles.learnresourcemanager).append("'");
+		sb.and().append("ra.key = :reportAccessKey");
 		
 		return dbInstance.getCurrentEntityManager()
 					.createQuery(sb.toString(), Identity.class)

@@ -536,6 +536,22 @@ public class QualityDataCollectionDAO {
 						sb.append(")");
 					}
 				}
+				if (searchParams.getLearnResourceManagerOrganisationRefs() != null) {
+					sb.append(" or ");
+					sb.append("collection.key in (");
+					sb.append("select ra.dataCollection.key");
+					sb.append("  from qualityreportaccess ra");
+					sb.append("       join ra.dataCollection dc");
+					sb.append("       join qualitycontext as context");
+					sb.append("         on context.dataCollection.key = dc.key");
+					sb.append("       join repoentrytoorganisation as re_org");
+					sb.append("         on re_org.entry.key = context.audienceRepositoryEntry.key");
+					sb.append("        and re_org.organisation.key in (:learnResourceManagerKeys)");
+					sb.append(" where ra.online = true");
+					sb.append("   and ra.type = '").append(QualityReportAccess.Type.LearnResourceManager).append("'");
+					sb.append("   and dc.status = '").append(QualityDataCollectionStatus.FINISHED).append("'");
+					sb.append(")");
+				}
 				sb.append(")");
 			}
 		}
@@ -553,6 +569,12 @@ public class QualityDataCollectionDAO {
 				query.setParameter("organisationKeys", organiationKeys);
 				if (searchParams.getReportAccessIdentity() != null) {
 					query.setParameter("reportAccessIdentityKey", searchParams.getReportAccessIdentity().getKey());
+				}
+				if (searchParams.getLearnResourceManagerOrganisationRefs() != null) {
+					List<Long> learnResourceManagerKeys = searchParams.getLearnResourceManagerOrganisationRefs().stream()
+							.map(OrganisationRef::getKey).collect(toList());
+					learnResourceManagerKeys = !learnResourceManagerKeys.isEmpty() ? learnResourceManagerKeys : Collections.singletonList(-1l);
+					query.setParameter("learnResourceManagerKeys", learnResourceManagerKeys);
 				}
 			}
 		}

@@ -27,14 +27,15 @@ import static org.olat.modules.quality.QualityDataCollectionStatus.PREPARATION;
 import static org.olat.modules.quality.QualityDataCollectionStatus.READY;
 import static org.olat.modules.quality.QualityDataCollectionStatus.RUNNING;
 import static org.olat.modules.quality.QualityReportAccessReference.of;
+import static org.olat.test.JunitTestHelper.random;
 
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -1141,8 +1142,86 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 						);
 	}
 	
-	private String random() {
-		return UUID.randomUUID().toString();
+	@Test
+	public void shouldFilterDataCollectionsByLearningResourceOrganisations() {
+		Organisation organisation1 = qualityTestHelper.createOrganisation();
+		Organisation organisation11 = qualityTestHelper.createOrganisation(organisation1);
+		Organisation organisation12 = qualityTestHelper.createOrganisation(organisation1);
+		Organisation organisation111 = qualityTestHelper.createOrganisation(organisation11);
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser("e1");
+		
+		// Everything fulfilled
+		QualityDataCollection dc = qualityTestHelper.createDataCollection();
+		dc = qualityService.updateDataCollectionStatus(dc, QualityDataCollectionStatus.FINISHED);
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryService.addOrganisation(entry, organisation11);
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dc, Collections.singletonList(executor));
+		qualityService.createContextBuilder(dc, participations.get(0), entry, GroupRoles.participant).build();
+		QualityReportAccess ra = qualityService.createReportAccess(of(dc), QualityReportAccess.Type.LearnResourceManager, null);
+		ra.setOnline(true);
+		qualityService.updateReportAccess(ra);
+		
+		// Suborganisation
+		QualityDataCollection dcSubOrg = qualityTestHelper.createDataCollection();
+		dcSubOrg = qualityService.updateDataCollectionStatus(dcSubOrg, QualityDataCollectionStatus.FINISHED);
+		RepositoryEntry entrySubOrg = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryService.addOrganisation(entrySubOrg, organisation111);
+		List<EvaluationFormParticipation> participationsSubOrg = qualityService.addParticipations(dcSubOrg, Collections.singletonList(executor));
+		qualityService.createContextBuilder(dcSubOrg, participationsSubOrg.get(0), entrySubOrg, GroupRoles.participant).build();
+		QualityReportAccess raSubOrg = qualityService.createReportAccess(of(dcSubOrg), QualityReportAccess.Type.LearnResourceManager, null);
+		raSubOrg.setOnline(true);
+		qualityService.updateReportAccess(raSubOrg);
+		
+		// other organisation
+		QualityDataCollection dcOtherOrg = qualityTestHelper.createDataCollection();
+		dcOtherOrg = qualityService.updateDataCollectionStatus(dcOtherOrg, QualityDataCollectionStatus.FINISHED);
+		RepositoryEntry entryOtherOrg = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryService.addOrganisation(entryOtherOrg, organisation12);
+		List<EvaluationFormParticipation> participationsOtherOrg = qualityService.addParticipations(dcOtherOrg, Collections.singletonList(executor));
+		qualityService.createContextBuilder(dcOtherOrg, participationsOtherOrg.get(0), entryOtherOrg, GroupRoles.participant).build();
+		QualityReportAccess raOtherOrg = qualityService.createReportAccess(of(dcOtherOrg), QualityReportAccess.Type.LearnResourceManager, null);
+		raOtherOrg.setOnline(true);
+		qualityService.updateReportAccess(raOtherOrg);
+		
+		// not finished
+		QualityDataCollection dcNotFinished = qualityTestHelper.createDataCollection();
+		dcNotFinished = qualityService.updateDataCollectionStatus(dcNotFinished, QualityDataCollectionStatus.RUNNING);
+		RepositoryEntry entryNotFinished = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryService.addOrganisation(entryNotFinished, organisation11);
+		List<EvaluationFormParticipation> participationsNoFinished = qualityService.addParticipations(dcNotFinished, Collections.singletonList(executor));
+		qualityService.createContextBuilder(dcNotFinished, participationsNoFinished.get(0), entryNotFinished, GroupRoles.participant).build();
+		QualityReportAccess raNotFinished = qualityService.createReportAccess(of(dcNotFinished), QualityReportAccess.Type.LearnResourceManager, null);
+		raNotFinished.setOnline(true);
+		qualityService.updateReportAccess(raNotFinished);
+		
+		// no report access
+		QualityDataCollection dcNoAccess = qualityTestHelper.createDataCollection();
+		dcNoAccess = qualityService.updateDataCollectionStatus(dcNoAccess, QualityDataCollectionStatus.FINISHED);
+		RepositoryEntry entryNoAccess = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryService.addOrganisation(entryNoAccess, organisation11);
+		List<EvaluationFormParticipation> participationsNoAccess = qualityService.addParticipations(dcNoAccess, Collections.singletonList(executor));
+		qualityService.createContextBuilder(dcNoAccess, participationsNoAccess.get(0), entryNoAccess, GroupRoles.participant).build();
+		QualityReportAccess raNoAccess = qualityService.createReportAccess(of(dcNoAccess), QualityReportAccess.Type.LearnResourceManager, null);
+		raNoAccess.setOnline(false);
+		qualityService.updateReportAccess(raNoAccess);
+		
+		dbInstance.commitAndCloseSession();
+		
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setOrgansationRefs(Collections.emptyList());
+		searchParams.setLearnResourceManagerOrganisationRefs(Arrays.asList(organisation11, organisation111));
+		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
+		
+		assertThat(dataCollections)
+				.extracting(QualityDataCollectionView::getKey)
+				.containsExactlyInAnyOrder(
+						dc.getKey(),
+						dcSubOrg.getKey())
+				.doesNotContain(
+						dcOtherOrg.getKey(),
+						dcNotFinished.getKey(),
+						dcNoAccess.getKey()
+						);
 	}
 
 }

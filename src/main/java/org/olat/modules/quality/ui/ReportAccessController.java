@@ -198,6 +198,7 @@ public abstract class ReportAccessController extends FormBasicController {
 		rows.add(createRow(translate("report.access.name.participants.done"), Type.Participants, EvaluationFormParticipationStatus.done.name()));
 		rows.add(createRow(translate("report.access.name.repo.owner"), Type.GroupRoles, GroupRoles.owner.name()));
 		rows.add(createRow(translate("report.access.name.repo.coach"), Type.GroupRoles, GroupRoles.coach.name()));
+		rows.add(createRow(translate("report.access.name.repo.lrm"), Type.LearnResourceManager, null));
 		
 		String topicIdentityRowName = StringHelper.containsNonWhitespace(topicIdentityName)
 				? translate("report.access.name.topic.identity.name", new String[] {topicIdentityName})

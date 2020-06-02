@@ -114,7 +114,9 @@ public class DataCollectionListController extends FormBasicController implements
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, DataCollectionCols.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, DataCollectionCols.generatorTitle));
 		
-		DataCollectionDataSource dataSource = new DataCollectionDataSource(getTranslator(), secCallback.getViewDataCollectionOrganisationRefs(), getIdentity());
+		DataCollectionDataSource dataSource = new DataCollectionDataSource(getTranslator(),
+				secCallback.getViewDataCollectionOrganisationRefs(), getIdentity(),
+				secCallback.getLearnResourceManagerOrganisationRefs());
 		dataModel = new DataCollectionDataModel(dataSource, columnsModel, getTranslator(), secCallback);
 		tableEl = uifactory.addTableElement(getWindowControl(), "dataCollections", dataModel, 25, true, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_qual_dc_list");

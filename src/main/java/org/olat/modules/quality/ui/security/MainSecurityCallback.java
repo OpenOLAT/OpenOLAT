@@ -41,6 +41,8 @@ public interface MainSecurityCallback {
 	
 	public List<OrganisationRef> getViewDataCollectionOrganisationRefs();
 	
+	public List<OrganisationRef> getLearnResourceManagerOrganisationRefs();
+	
 	public boolean canCreateDataCollections();
 	
 	public boolean canViewGenerators();

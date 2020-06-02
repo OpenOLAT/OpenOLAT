@@ -43,7 +43,8 @@ class MainSecurityCallbackImpl implements MainSecurityCallback {
 
 	private final boolean canView;
 	private final boolean canEdit;
-	private List<OrganisationRef> viewerOrganisationRefs;
+	private final List<OrganisationRef> viewerOrganisationRefs;
+	private final List<OrganisationRef> learnResourceManagerOrganisationRefs;
 	private final QualityDataCollectionViewSearchParams reportAccessParams;
 	private boolean canViewDataCollections;
 	
@@ -54,15 +55,18 @@ class MainSecurityCallbackImpl implements MainSecurityCallback {
 	@Autowired
 	private BaseSecurityModule securityModule;
 
-	public MainSecurityCallbackImpl(IdentityRef identityRef, boolean canView, boolean canEdit, List<OrganisationRef> viewerOrganisationRefs) {
+	public MainSecurityCallbackImpl(IdentityRef identityRef, boolean canView, boolean canEdit,
+			List<OrganisationRef> viewerOrganisationRefs, List<OrganisationRef> learnResourceManagerOrganisationRefs) {
 		this.canView = canView;
 		this.canEdit = canEdit;
 		this.viewerOrganisationRefs = viewerOrganisationRefs;
+		this.learnResourceManagerOrganisationRefs = learnResourceManagerOrganisationRefs;
 		CoreSpringFactory.autowireObject(this);
 		
 		reportAccessParams = new QualityDataCollectionViewSearchParams();
 		reportAccessParams.setOrgansationRefs(viewerOrganisationRefs);
 		reportAccessParams.setReportAccessIdentity(identityRef);
+		reportAccessParams.setLearnResourceManagerOrganisationRefs(learnResourceManagerOrganisationRefs);
 		reportAccessParams.setIgnoreReportAccessRelationRole(!securityModule.isRelationRoleEnabled());
 	}
 
@@ -94,6 +98,11 @@ class MainSecurityCallbackImpl implements MainSecurityCallback {
 	@Override
 	public List<OrganisationRef> getViewDataCollectionOrganisationRefs() {
 		return viewerOrganisationRefs;
+	}
+
+	@Override
+	public List<OrganisationRef> getLearnResourceManagerOrganisationRefs() {
+		return learnResourceManagerOrganisationRefs;
 	}
 
 	@Override

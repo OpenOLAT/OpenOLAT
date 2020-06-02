@@ -56,12 +56,13 @@ public class DataCollectionDataSource implements FlexiTableDataSourceDelegate<Da
 	private BaseSecurityModule securityModule;
 
 	public DataCollectionDataSource(Translator translator, Collection<? extends OrganisationRef> organsationRefs,
-			IdentityRef identityRef) {
+			IdentityRef identityRef, Collection<? extends OrganisationRef> learnResourceManagerOrganisationRefs) {
 		this.translator = translator;
 		CoreSpringFactory.autowireObject(this);
 		searchParams = new QualityDataCollectionViewSearchParams();
 		searchParams.setOrgansationRefs(organsationRefs);
 		searchParams.setReportAccessIdentity(identityRef);
+		searchParams.setLearnResourceManagerOrganisationRefs(learnResourceManagerOrganisationRefs);
 		searchParams.setIgnoreReportAccessRelationRole(!securityModule.isRelationRoleEnabled());
 	}
 
