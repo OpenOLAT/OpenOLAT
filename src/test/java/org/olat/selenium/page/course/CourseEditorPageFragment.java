@@ -146,6 +146,12 @@ public class CourseEditorPageFragment {
 		return selectTab(scoreTabBy);
 	}
 	
+	public LearnPathCourseElementEditorPage selectTabLearnPath() {
+		By learnPathTabBy = By.cssSelector("fieldset.o_sel_learnpath_element");
+		selectTab(learnPathTabBy);
+		return new LearnPathCourseElementEditorPage(browser);
+	}
+	
 	private CourseEditorPageFragment selectTab(By tabBy) {
 		//make sure the tab bar is loaded
 		OOGraphene.selectTab("o_node_config", tabBy, browser);

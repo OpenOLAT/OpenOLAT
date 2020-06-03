@@ -240,6 +240,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 
 		// add a history that displays visited pages
 		breadcrumpDropdown = new Dropdown("breadcrump", "navigation.history", false, getTranslator());
+		breadcrumpDropdown.setElementCssClass("o_menu");
 		Link indexLink = LinkFactory.createToolLink(WikiPage.WIKI_INDEX_PAGE, "select-page", WikiPage.WIKI_INDEX_PAGE,
 				this);
 		breadcrumpDropdown.addComponent(indexLink);
@@ -254,6 +255,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 		}
 
 		navigationDropdown = new Dropdown("navi", "navigation.navigation", false, getTranslator());
+		navigationDropdown.setElementCssClass("o_menu");
 		navigationContent.put("navi", navigationDropdown);
 
 		toMainPageLink = LinkFactory.createLink("navigation.mainpage", navigationContent, this);
@@ -294,6 +296,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 
 		// attach menu
 		wikiMenuDropdown = new Dropdown("wikiMenu", "navigation.menu", false, getTranslator());
+		wikiMenuDropdown.setElementCssClass("o_menu");
 		if (securityCallback.mayEditWikiMenu()) {
 			editMenuButton = LinkFactory.createLink("edit.menu", navigationContent, this);
 			editMenuButton.setIconLeftCSS("o_icon o_icon_edit");
@@ -407,7 +410,6 @@ public class WikiMainController extends BasicController implements CloneableCont
 		for (WikiPage page : pages) {
 			String link = page.getPageName();
 			Link menuLink = LinkFactory.createToolLink(link, "select-page", link, this);
-			menuLink.setElementCssClass("o_wiki_menu");
 			wikiMenuDropdown.addComponent(menuLink);
 		}
 		if (editMenuButton != null) {

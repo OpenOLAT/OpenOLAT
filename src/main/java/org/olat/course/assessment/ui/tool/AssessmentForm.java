@@ -27,6 +27,7 @@ package org.olat.course.assessment.ui.tool;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -361,7 +362,10 @@ public class AssessmentForm extends FormBasicController {
 		Boolean updatedPassed = null;
 
 		if (isHasAttempts() && isAttemptsDirty()) {
-			courseAssessmentService.updateAttempts(courseNode, new Integer(getAttempts()),
+			int updatedAttempts = getAttempts();
+			Date lastAttempt = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(courseNode).getLastAttempt();
+			lastAttempt = updatedAttempts > 0? lastAttempt: null;
+			courseAssessmentService.updateAttempts(courseNode, Integer.valueOf(updatedAttempts), lastAttempt,
 					assessedUserCourseEnv, getIdentity(), Role.coach);
 		}
 

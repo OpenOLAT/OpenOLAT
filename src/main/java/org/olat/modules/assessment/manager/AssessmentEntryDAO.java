@@ -181,6 +181,7 @@ public class AssessmentEntryDAO {
 	public AssessmentEntry resetAssessmentEntry(AssessmentEntry nodeAssessment) {
 		nodeAssessment.setScore(null);
 		nodeAssessment.setAttempts(0);
+		nodeAssessment.setLastAttempt(null);
 		nodeAssessment.setCompletion(null);
 		nodeAssessment.setAssessmentStatus(AssessmentEntryStatus.notStarted);
 		if (nodeAssessment instanceof AssessmentEntryImpl) {

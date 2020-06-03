@@ -220,14 +220,15 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	}
 
 	@Override
-	public void updateAttempts(CourseNode courseNode, Integer userAttempts,
+	public void updateAttempts(CourseNode courseNode, Integer userAttempts, Date lastAttempt,
 			UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, Role by) {
-		if (!userCourseEnvironment.isParticipant()) return;
+		if (!userCourseEnvironment.isParticipant())
+			return;
 		
 		if (userAttempts != null) {
 			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-			am.saveNodeAttempts(courseNode, coachingIdentity, assessedIdentity, userAttempts, by);
+			am.saveNodeAttempts(courseNode, coachingIdentity, assessedIdentity, userAttempts, lastAttempt, by);
 		}
 	}
 

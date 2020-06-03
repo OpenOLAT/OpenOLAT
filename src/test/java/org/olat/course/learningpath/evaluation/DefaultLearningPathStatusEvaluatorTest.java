@@ -35,9 +35,9 @@ import org.olat.modules.assessment.model.AssessmentObligation;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class DefaultStatusEvaluatorTest {
+public class DefaultLearningPathStatusEvaluatorTest {
 	
-	private DefaultStatusEvaluator sut = new DefaultStatusEvaluator();
+	private DefaultLearningPathStatusEvaluator sut = new DefaultLearningPathStatusEvaluator();
 	
 	@Test
 	public void shouldBlockIfMandatoryAndNotFullyAssessed() {
@@ -124,9 +124,9 @@ public class DefaultStatusEvaluatorTest {
 	}
 
 	private AssessmentEvaluation getAssessmentEvaluation(Boolean fullyAssessd, AssessmentEntryStatus assessmentStatus, AssessmentObligation obligation) {
-		return new AssessmentEvaluation(null, null, null, null, null, assessmentStatus, null, fullyAssessd, null, null,
-				null, null, null, null, 0, null, null, null, null, null, null, Overridable.of(obligation), null, null,
-				null);
+		return new AssessmentEvaluation(null, null, null, null, null, null, assessmentStatus, null, fullyAssessd, null,
+				null, null, null, null, null, 0, null, null, null, null, null, null, Overridable.of(obligation), null,
+				null, null);
 	}
 
 }

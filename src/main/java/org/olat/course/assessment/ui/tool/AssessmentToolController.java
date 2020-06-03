@@ -63,6 +63,7 @@ import org.olat.course.assessment.ui.tool.event.AssessmentModeStatusEvent;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
 import org.olat.course.config.ui.AssessmentResetController;
 import org.olat.course.config.ui.AssessmentResetController.AssessmentResetEvent;
+import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
@@ -114,6 +115,8 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	private AssessmentModeManager assessmentModeManager;
 	@Autowired
 	private AssessmentModeCoordinationService assessmentModeCoordinationService;
+	@Autowired
+	private NodeAccessService nodeAccessService;
 	
 	public AssessmentToolController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, UserCourseEnvironment coachUserEnv, AssessmentToolSecurityCallback assessmentCallback) {
@@ -355,7 +358,9 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	}
 	
 	private void doOpenRecaluclate(UserRequest ureq) {
-		assessmentResetCtrl = new AssessmentResetController(ureq, getWindowControl(), false);
+		boolean showResetOverriden = !nodeAccessService
+				.isScoreCalculatorSupported(coachUserEnv.getCourseEnvironment().getCourseConfig().getNodeAccessType());
+		assessmentResetCtrl = new AssessmentResetController(ureq, getWindowControl(), showResetOverriden, false);
 		listenTo(assessmentResetCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				assessmentResetCtrl.getInitialComponent(), true, translate("assessment.reset.title"), true);

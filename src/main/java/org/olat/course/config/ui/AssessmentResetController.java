@@ -50,10 +50,12 @@ public class AssessmentResetController extends FormBasicController {
 	private MultipleSelectionElement resetOverridenEl;
 	private FormLink discardButton;
 
+	private final boolean showResetOverriden;
 	private final boolean showDiscard;
 
-	public AssessmentResetController(UserRequest ureq, WindowControl wControl, boolean showDiscard) {
+	public AssessmentResetController(UserRequest ureq, WindowControl wControl, boolean showResetOverriden, boolean showDiscard) {
 		super(ureq, wControl);
+		this.showResetOverriden = showResetOverriden;
 		this.showDiscard = showDiscard;
 		initForm(ureq);
 	}
@@ -71,9 +73,9 @@ public class AssessmentResetController extends FormBasicController {
 		resetPassedEl = uifactory.addCheckboxesVertical("reset.passed", "assessment.reset.passed.label",
 				formLayout, ENABLE_KEYS, new String[] { translate("assessment.reset.passed") }, 1);
 
-		resetOverridenEl = uifactory.addCheckboxesVertical("reset.overriden",
-				"assessment.reset.overriden.label", formLayout, ENABLE_KEYS,
-				new String[] { translate("assessment.reset.overriden") }, 1);
+		resetOverridenEl = uifactory.addCheckboxesVertical("reset.overriden", "assessment.reset.overriden.label",
+				formLayout, ENABLE_KEYS, new String[] { translate("assessment.reset.overriden") }, 1);
+		resetOverridenEl.setVisible(showResetOverriden);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);

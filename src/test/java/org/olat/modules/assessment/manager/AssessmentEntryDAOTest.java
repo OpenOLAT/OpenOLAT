@@ -20,6 +20,7 @@
 package org.olat.modules.assessment.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.offset;
 import static org.assertj.core.api.Assertions.within;
 import static org.olat.test.JunitTestHelper.random;
 
@@ -52,6 +53,7 @@ import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentEntryImpl;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
+import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -241,7 +243,8 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		Assert.assertNull(resetedAssessmentRef.getPassedOverridable().getOriginal());
 		Assert.assertNull(resetedAssessmentRef.getPassedOverridable().getModBy());
 		Assert.assertNull(resetedAssessmentRef.getPassedOverridable().getModDate());
-		Assert.assertEquals(new Integer(0), resetedAssessmentRef.getAttempts());
+		Assert.assertEquals(Integer.valueOf(0), resetedAssessmentRef.getAttempts());
+		Assert.assertNull(resetedAssessmentRef.getLastAttempt());
 		Assert.assertNull(resetedAssessmentRef.getCompletion());
 		
 		// double check by reloading the entry
@@ -258,6 +261,53 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		Assert.assertNull(reloadedAssessmentRef.getPassedOverridable().getModDate());
 		Assert.assertEquals(new Integer(0), reloadedAssessmentRef.getAttempts());
 		Assert.assertNull(reloadedAssessmentRef.getCompletion());
+	}
+	
+	@Test
+	public void shouldUpdateScore() {
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-6");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String subIdent = UUID.randomUUID().toString();
+		AssessmentEntry ae = assessmentEntryDao.createAssessmentEntry(assessedIdentity, null, entry, subIdent, null,
+				refEntry);
+		dbInstance.commitAndCloseSession();
+
+		Date lastCoachModified = new GregorianCalendar(2919, 5, 1, 10, 10, 0).getTime();
+		ae.setLastCoachModified(lastCoachModified);
+		Date lastUserModified = new GregorianCalendar(2919, 5, 1, 11, 10, 0).getTime();
+		ae.setLastUserModified(lastUserModified);
+		ae.setAttempts(Integer.valueOf(3));
+		Date lastAttempt = new GregorianCalendar(2020, 5, 1).getTime();
+		ae.setLastAttempt(lastAttempt);
+		ae.setScore(BigDecimal.valueOf(2.0));
+		ae.setPassed(Boolean.TRUE);
+		ae.setUserVisibility(Boolean.TRUE);
+		ae.setCompletion(Double.valueOf(0.5));
+		ae.setCurrentRunCompletion(Double.valueOf(0.3));
+		ae.setCurrentRunStatus(AssessmentRunStatus.running);
+		ae.setNumberOfAssessmentDocuments(10);
+		ae.setComment("very good");
+		ae.setCoachComment("coach comment");
+		assessmentEntryDao.updateAssessmentEntry(ae);
+		dbInstance.commitAndCloseSession();
+		
+		AssessmentEntry reloaded = assessmentEntryDao.loadAssessmentEntryById(ae.getKey());
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(reloaded.getLastCoachModified()).isCloseTo(lastCoachModified, within(2, ChronoUnit.SECONDS).getValue());
+		softly.assertThat(reloaded.getLastUserModified()).isCloseTo(lastUserModified, within(2, ChronoUnit.SECONDS).getValue());
+		softly.assertThat(reloaded.getAttempts()).isEqualTo(3);
+		softly.assertThat(reloaded.getLastAttempt()).isCloseTo(lastAttempt, within(2, ChronoUnit.SECONDS).getValue());
+		softly.assertThat(reloaded.getScore()).isEqualByComparingTo(BigDecimal.valueOf(2.0));
+		softly.assertThat(reloaded.getPassed()).isTrue();
+		softly.assertThat(reloaded.getUserVisibility()).isTrue();
+		softly.assertThat(reloaded.getCompletion()).isEqualTo(0.5d);
+		softly.assertThat(reloaded.getCurrentRunCompletion()).isEqualTo(0.3d, offset(0.001d));
+		softly.assertThat(reloaded.getCurrentRunStatus()).isEqualTo(AssessmentRunStatus.running);
+		softly.assertThat(reloaded.getNumberOfAssessmentDocuments()).isEqualTo(10);
+		softly.assertThat(reloaded.getComment()).isEqualTo("very good");
+		softly.assertThat(reloaded.getCoachComment()).isEqualTo("coach comment");
+		softly.assertAll();
 	}
 	
 	@Test

@@ -174,7 +174,7 @@ public class AssessmentManagerTest extends OlatTestCase  {
 		assessmentManager.saveNodeComment(assessableCourseNode, tutor, student, userComment);
     
 		attempts++;
-		assessmentManager.saveNodeAttempts(assessableCourseNode, tutor, student, attempts, Role.coach);
+		assessmentManager.saveNodeAttempts(assessableCourseNode, tutor, student, attempts, null, Role.coach);
 		assertEquals(attempts, assessmentManager.getNodeAttempts(assessableCourseNode, student));    
 		        
 		assertEquals(score, assessmentManager.getNodeScore(assessableCourseNode, student));

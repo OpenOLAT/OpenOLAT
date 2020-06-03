@@ -65,8 +65,10 @@ public interface AssessmentManager {
 	 * @param identity The user who changes this score
 	 * @param assessedIdentity The user whose score is changed
 	 * @param attempts The new attempts
+	 * @param lastAttempt 
+	 * @param by
 	 */
-	public void saveNodeAttempts(CourseNode courseNode, Identity identity, Identity assessedIdentity, Integer attempts, Role by);
+	public void saveNodeAttempts(CourseNode courseNode, Identity identity, Identity assessedIdentity, Integer attempts, Date lastAttempt, Role by);
 	
 	/**
 	 * Change the last modification dates.

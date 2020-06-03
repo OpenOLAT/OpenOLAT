@@ -35,9 +35,9 @@ import org.olat.modules.assessment.model.AssessmentObligation;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class STStatusEvaluator implements StatusEvaluator {
+public class STLearningPathStatusEvaluator implements StatusEvaluator {
 
-	private static final Logger log = Tracing.createLoggerFor(STStatusEvaluator.class);
+	private static final Logger log = Tracing.createLoggerFor(STLearningPathStatusEvaluator.class);
 
 	@Override
 	public AssessmentEntryStatus getStatus(AssessmentEvaluation currentEvaluation,

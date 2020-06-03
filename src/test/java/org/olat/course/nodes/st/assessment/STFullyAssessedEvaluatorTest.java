@@ -93,8 +93,8 @@ public class STFullyAssessedEvaluatorTest {
 	
 
 	private AssessmentEvaluation createAssessmentEvaluation(Boolean fullyAssessd, AssessmentObligation obligation) {
-		return new AssessmentEvaluation(null, null, null, null, null, null, null, fullyAssessd, null, null, null, null,
-				null, null, 0, null, null, null, null, null, null, Overridable.of(obligation), null, null, null);
+		return new AssessmentEvaluation(null, null, null, null, null, null, null, null, fullyAssessd, null, null, null,
+				null, null, null, 0, null, null, null, null, null, null, Overridable.of(obligation), null, null, null);
 	}
 
 }

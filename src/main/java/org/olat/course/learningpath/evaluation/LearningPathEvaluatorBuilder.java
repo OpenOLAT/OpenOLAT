@@ -37,7 +37,7 @@ public class LearningPathEvaluatorBuilder {
 	private static final EndDateEvaluator CONFIG_END_DATE_EVALUATOR = new ConfigEndDateEvaluator();
 	private static final ConfigObligationEvaluator CONFIG_OBLIGATION_EVALUATOR = new ConfigObligationEvaluator();
 	private static final ConfigDurationEvaluator CONFIG_DURATION_EVALUATOR = new ConfigDurationEvaluator();
-	private static final StatusEvaluator STATUS_EVALUATOR = new DefaultStatusEvaluator();
+	private static final StatusEvaluator STATUS_EVALUATOR = new DefaultLearningPathStatusEvaluator();
 	private static final AccountingEvaluators DEFAULT = AccountingEvaluatorsBuilder
 			.builder()
 			.withStartDateEvaluator(CONFIG_START_DATE_EVALUATOR)

@@ -84,6 +84,8 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 
 	@Column(name="a_attemtps", nullable=true, insertable=true, updatable=true)
 	private Integer attempts;
+	@Column(name="a_last_attempt", nullable=true, insertable=true, updatable=true)
+	private Date lastAttempt;
 	@Column(name="a_score", nullable=true, insertable=true, updatable=true)
 	private BigDecimal score;
 	private transient Overridable<Boolean> passedOverridable;
@@ -236,6 +238,16 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	@Override
 	public void setAttempts(Integer attempts) {
 		this.attempts = attempts;
+	}
+
+	@Override
+	public Date getLastAttempt() {
+		return lastAttempt;
+	}
+
+	@Override
+	public void setLastAttempt(Date lastAttempt) {
+		this.lastAttempt = lastAttempt;
 	}
 
 	@Override

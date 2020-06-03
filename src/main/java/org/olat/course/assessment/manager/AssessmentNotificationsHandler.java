@@ -55,6 +55,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.CourseFactory;
@@ -351,9 +352,9 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 					for (CourseNode test:testNodes) {
 						List<AssessmentEntry> assessments = courseNodeAssessmentDao.loadAssessmentEntryBySubIdent(cgm.getCourseEntry(), test.getIdent());
 						for(AssessmentEntry assessment:assessments) {
-							Date modDate = assessment.getLastModified();
+							Date modDate = DateUtils.getLater(assessment.getLastUserModified(), assessment.getLastCoachModified());
 							Identity assessedIdentity = assessment.getIdentity();
-							if (modDate.after(compareDate) && (hasFullAccess || coachedUsers.contains(assessedIdentity))) {
+							if (modDate != null && modDate.after(compareDate) && (hasFullAccess || coachedUsers.contains(assessedIdentity))) {
 								BigDecimal score = assessment.getScore();
 								if(test instanceof ScormCourseNode) {
 									ScormCourseNode scormTest = (ScormCourseNode)test;

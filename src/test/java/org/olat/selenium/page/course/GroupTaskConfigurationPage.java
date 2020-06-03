@@ -79,6 +79,10 @@ public class GroupTaskConfigurationPage {
 		return enableStep("sample", enable);
 	}
 	
+	public GroupTaskConfigurationPage enableGrading(boolean enable) {
+		return enableStep("grading", enable);
+	}
+	
 	private GroupTaskConfigurationPage enableStep(String name, boolean enable) {
 		By checkboxStepBy = By.xpath("//fieldset[contains(@class,'o_sel_course_gta_steps')]//label/input[@name='" + name + "']");
 		WebElement checkboxEl = browser.findElement(checkboxStepBy);
