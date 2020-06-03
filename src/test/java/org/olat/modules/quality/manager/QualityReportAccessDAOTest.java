@@ -35,6 +35,7 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRelationshipService;
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.RelationRight;
 import org.olat.basesecurity.RelationRole;
 import org.olat.basesecurity.manager.GroupDAO;
@@ -91,6 +92,8 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 	private IdentityRelationshipService identityRelationshipService;
 	@Autowired
 	private BaseSecurityManager baseSecurityManager;
+	@Autowired
+	private OrganisationService organisatioService;
 	
 	@Autowired
 	private QualityReportAccessDAO sut;
@@ -561,6 +564,7 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 		dc = qualityService.updateDataCollectionStatus(dc, QualityDataCollectionStatus.FINISHED);
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		repositoryService.addOrganisation(entry, organisation11);
+		repositoryService.removeOrganisation(entry, organisatioService.getDefaultOrganisation());
 		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dc, Collections.singletonList(executor));
 		qualityService.createContextBuilder(dc, participations.get(0), entry, GroupRoles.participant).build();
 		dbInstance.commitAndCloseSession();
