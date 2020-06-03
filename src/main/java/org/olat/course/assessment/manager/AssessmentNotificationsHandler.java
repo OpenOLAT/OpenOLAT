@@ -351,9 +351,9 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 					for (CourseNode test:testNodes) {
 						List<AssessmentEntry> assessments = courseNodeAssessmentDao.loadAssessmentEntryBySubIdent(cgm.getCourseEntry(), test.getIdent());
 						for(AssessmentEntry assessment:assessments) {
-							Date modDate = assessment.getLastModified();
+							Date modDate = getLater(assessment.getLastUserModified(), assessment.getLastCoachModified());
 							Identity assessedIdentity = assessment.getIdentity();
-							if (modDate.after(compareDate) && (hasFullAccess || coachedUsers.contains(assessedIdentity))) {
+							if (modDate != null && modDate.after(compareDate) && (hasFullAccess || coachedUsers.contains(assessedIdentity))) {
 								BigDecimal score = assessment.getScore();
 								if(test instanceof ScormCourseNode) {
 									ScormCourseNode scormTest = (ScormCourseNode)test;
@@ -403,6 +403,13 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 			checkPublisher(p);
 			return notificationsManager.getNoSubscriptionInfo();
 		}
+	}
+	
+	private Date getLater(Date date1, Date date2) {
+		if (date1 == null) return date2;
+		if (date2 == null) return date1;
+		
+		return date1.after(date2)? date1: date2;
 	}
 	
 	private void checkPublisher(Publisher p) {
