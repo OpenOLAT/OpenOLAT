@@ -41,7 +41,7 @@
 		#if($linkList.size() > 0)	
 		<div class="btn-group">
   			<button id="wiki-button-link-insert" type="button" class="btn btn-default dropdown-toggle">$r.translateInAttribute("link.insert") <span class="caret"></span></button>
-  			<div id="wiki-list-link-insert" class="hide"><ul class="o_dropdown list-unstyled">
+  			<div id="wiki-list-link-insert" class="hide"><ul class="o_dropdown o_wiki_dropdown list-unstyled">
   				#foreach($link in $linkList)
   					<li><a href="#" onclick="javascript:insertTags('[[',']]','$link')">$link</a></li>
 				#end
@@ -56,7 +56,7 @@
 		#if($fileList.size() > 0)
 		<div class="btn-group">
 			<button id="wiki-button-media-insert" type="button" class="btn btn-default dropdown-toggle">$r.translateInAttribute("media.insert") <span class="caret"></span></button>
-  			<div id="wiki-list-media-insert" class="hide"><ul class="o_dropdown list-unstyled" role="menu">
+  			<div id="wiki-list-media-insert" class="hide"><ul class="o_dropdown o_wiki_dropdown list-unstyled" role="menu">
   				#foreach($file in $fileList)
   					<li><a href="#" onclick="javascript:insertMediaTag('$r.escapeHtml($file.getName())')">$r.escapeHtml($file.getName())</a></li>
 				#end
