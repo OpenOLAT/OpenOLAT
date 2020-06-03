@@ -16,14 +16,15 @@
 	
 	$r.render("selection")
 #elseif($r.available("list"))
+	#if($r.available("contextualSubscription") || $r.available("bulk.download.title"))
 	<div class="o_button_group o_button_group_right">
-		$r.render("bulk.download.title")
-			
+		#if($r.available("bulk.download.title"))
+			$r.render("bulk.download.title")
+		#end
 		#if($r.available("contextualSubscription"))
-			<div style="display:inline-block;">
-			$r.render("contextualSubscription")
-			</div>
-		</div>
+			<div style="display:inline-block;">$r.render("contextualSubscription")</div>
+		#end
+	</div>
 	#end
 	$r.render("list")
 #end
