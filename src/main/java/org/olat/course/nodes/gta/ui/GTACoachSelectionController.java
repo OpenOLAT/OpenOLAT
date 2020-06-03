@@ -107,6 +107,7 @@ public class GTACoachSelectionController extends BasicController implements Acti
 		
 		downloadButton = LinkFactory.createButton("bulk.download.title", mainVC, this);
 		downloadButton.setTranslator(getTranslator());
+		downloadButton.setVisible(isDownloadAvailable());
 		
 		PublisherData publisherData = gtaManager.getPublisherData(courseEnv, gtaNode, markedOnly);
 		SubscriptionContext subsContext = gtaManager.getSubscriptionContext(courseEnv, gtaNode, markedOnly);
@@ -140,6 +141,14 @@ public class GTACoachSelectionController extends BasicController implements Acti
 		}
 		
 		putInitialPanel(mainVC);
+	}
+	
+	private boolean isDownloadAvailable() {
+		ModuleConfiguration config = gtaNode.getModuleConfiguration();
+		return config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)
+				|| config.getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION)
+				|| config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)
+				|| config.getBooleanSafe(GTACourseNode.GTASK_GRADING);
 	}
 
 	@Override
