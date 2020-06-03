@@ -40,6 +40,11 @@ public class DryRunAssessmentProvider implements WikiAssessmentProvider {
 	}
 
 	@Override
+	public boolean isLearningPathCSS() {
+		return false;
+	}
+
+	@Override
 	public void setStatusDone(String pageId) {
 		//
 	}
