@@ -55,6 +55,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.CourseFactory;
@@ -351,7 +352,7 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 					for (CourseNode test:testNodes) {
 						List<AssessmentEntry> assessments = courseNodeAssessmentDao.loadAssessmentEntryBySubIdent(cgm.getCourseEntry(), test.getIdent());
 						for(AssessmentEntry assessment:assessments) {
-							Date modDate = getLater(assessment.getLastUserModified(), assessment.getLastCoachModified());
+							Date modDate = DateUtils.getLater(assessment.getLastUserModified(), assessment.getLastCoachModified());
 							Identity assessedIdentity = assessment.getIdentity();
 							if (modDate != null && modDate.after(compareDate) && (hasFullAccess || coachedUsers.contains(assessedIdentity))) {
 								BigDecimal score = assessment.getScore();
@@ -403,13 +404,6 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 			checkPublisher(p);
 			return notificationsManager.getNoSubscriptionInfo();
 		}
-	}
-	
-	private Date getLater(Date date1, Date date2) {
-		if (date1 == null) return date2;
-		if (date2 == null) return date1;
-		
-		return date1.after(date2)? date1: date2;
 	}
 	
 	private void checkPublisher(Publisher p) {
