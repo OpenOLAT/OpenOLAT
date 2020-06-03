@@ -205,7 +205,7 @@ public class CPRunController extends BasicController implements ControllerEventL
 			
 			cpAssessmentProvider = userCourseEnv.getIdentityEnvironment().getRoles().isGuestOnly()
 					? DryRunAssessmentProvider.create()
-					: PersistingAssessmentProvider.create(re, getIdentity());
+					: PersistingAssessmentProvider.create(re, getIdentity(), userCourseEnv.isParticipant());
 		}
 		// else cpRoot is already set (save some db access if the user opens /
 		// closes / reopens the cp from the same CPRuncontroller instance)

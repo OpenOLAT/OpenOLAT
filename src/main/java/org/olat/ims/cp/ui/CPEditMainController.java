@@ -108,7 +108,7 @@ public class CPEditMainController extends BasicController implements ToolbarAwar
 			} else {
 				showInfo("contentcontroller.no.lock");
 				
-				CPAssessmentProvider cpAssessmentProvider = PersistingAssessmentProvider.create(cpEntry, getIdentity());
+				CPAssessmentProvider cpAssessmentProvider = PersistingAssessmentProvider.create(cpEntry, getIdentity(), false);
 				Controller cpCtr = CPUIFactory.getInstance()
 						.createMainLayoutController(ureq, wControl, cpContainer, true, deliveryOptions, cpAssessmentProvider);
 				putInitialPanel(cpCtr.getInitialComponent());

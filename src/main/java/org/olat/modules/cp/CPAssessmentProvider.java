@@ -29,6 +29,8 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
  */
 public interface CPAssessmentProvider {
 	
+	boolean isLearningPathCSS();
+	
 	AssessmentEntryStatus onPageVisited(String itemIdentifier);
 
 	AssessmentEntryStatus getStatus(String itemIdentifier);

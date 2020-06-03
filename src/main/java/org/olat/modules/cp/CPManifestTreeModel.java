@@ -212,7 +212,9 @@ public class CPManifestTreeModel extends GenericTreeModel {
 			}
 		} else if (item.getName().equals("item")) {
 			gtn.setIconCssClass("o_cp_item");
-			gtn.setCssClass(getItemCssClass(identifier));
+			if (cpAssessmentProvider.isLearningPathCSS()) {
+				gtn.setCssClass(getItemCssClass(identifier));
+			}
 			//set resolved file path directly
 			String identifierref = item.attributeValue("identifierref");
 			if(identifierref != null) {
