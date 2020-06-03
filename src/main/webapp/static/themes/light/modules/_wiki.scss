@@ -11,9 +11,20 @@
 		position: relative;
 		top: -5px;
 	}
-	.o_wiki_menu {
+	
+	.o_menu,
+	.o_dropdown {
+		a {
+			@extend %o_nowrap;
+			max-width: 500px;
+		}
+	}
+}
+
+ul.o_wiki_dropdown {
+	a {
 		@extend %o_nowrap;
-		width: 500px;
+		max-width: 500px;
 	}
 }
 
