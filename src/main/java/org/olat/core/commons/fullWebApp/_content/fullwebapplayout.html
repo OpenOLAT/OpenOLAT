@@ -373,7 +373,14 @@ $r.render("modalpanel")
 ## ---- END #o_form_dirty_message ---
 
 ## the div for the busy-wait animated-gif
-<div id="o_ajax_busy"><i class="o_icon o_icon_busy o_icon-5x o_icon-spin"></i></div>
+<div id="o_ajax_busy">
+	<i class="o_icon o_icon_busy o_icon-5x o_icon-spin"></i>	
+	<div id="o_ajax_progress">
+		<div class="o_label">$r.translate("ajax.busy.progress")</div>
+		<div class="progress"><div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"></div></div>
+		<div class="o_progress_info text-muted small"> </div>
+	</div>
+</div>
 
 ## hidden div for EM-PX factor readout 
 <div id="o_width_1em" style="width:1em; position: absolute; left: -1000px;"></div>

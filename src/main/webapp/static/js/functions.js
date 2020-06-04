@@ -251,6 +251,11 @@ var BFormatter = {
 		} catch(e) {
 			if (window.console) console.log("error in BFormatter.alignTableColumns: ", e);
 		}	
+	},
+	// Format bytes in a human readable format
+	formatBytes : function(size) {
+	    var i = Math.floor( Math.log(size) / Math.log(1024) );
+	    return ( size / Math.pow(1024, i) ).toFixed(2) * 1 + ' ' + ['B', 'kB', 'MB', 'GB', 'TB'][i];
 	}
 };
 
@@ -1306,16 +1311,42 @@ function o_XHRSubmit(formNam) {
 	}
 
 	o_beforeserver();
-	var push = true;
 	var form = jQuery('#' + formNam);
 	var enctype = form.attr('enctype');
 	if(enctype && enctype.indexOf("multipart") == 0) {
-		var iframeName = "openolat-submit-" + ("" + Math.random()).substr(2);
-		var iframe = o_createIFrame(iframeName);
-		document.body.appendChild(iframe);
-		form.attr('target', iframe.name);
-		return true;
+		if (window.FormData && ("upload" in (jQuery.ajaxSettings.xhr()))) {
+			// Send files via XHR and show upload progress
+			var formData = new FormData(form[0]);		
+			var targetUrl = form.attr("action");
+			jQuery.ajax(targetUrl,{
+				xhr: function() {
+					var xhr = new window.XMLHttpRequest();
+					xhr.upload.addEventListener("loadstart", o_XHRLoadstart, false);
+					xhr.upload.addEventListener("progress", o_XHRProgress, false);
+					xhr.upload.addEventListener("loadend", o_XHRLoadend, false);
+					return xhr;
+			    },
+				type:'POST',
+				data: formData,
+				cache: false,
+				contentType: false,
+				enctype: 'multipart/form-data',
+			    processData: false,
+				dataType: 'json',
+				success: o_onXHRSuccess,
+				error: o_onXHRError
+			});
+			return false;
+		} else {
+			// iframe fallback for very old browsers without upload progress. Subject to be removed in future OO releses
+			var iframeName = "openolat-submit-" + ("" + Math.random()).substr(2);
+			var iframe = o_createIFrame(iframeName);
+			document.body.appendChild(iframe);
+			form.attr('target', iframe.name);
+			return true;
+		}
 	} else {
+		// Normal non-multipart forms
 		var data = form.serializeArray();
 		if(arguments.length > 1) {
 			var argLength = arguments.length;
@@ -1328,33 +1359,65 @@ function o_XHRSubmit(formNam) {
 				}
 			}
 		}
-
+	
 		var targetUrl = form.attr("action");
 		jQuery.ajax(targetUrl,{
 			type:'POST',
 			data: data,
 			cache: false,
 			dataType: 'json',
-			success: function(data, textStatus, jqXHR) {
-				try {
-					o_ainvoke(data);
-					if(push) {
-						var businessPath = data['businessPath'];
-						var documentTitle = data['documentTitle'];
-						var historyPointId = data['historyPointId'];
-						if(businessPath) {
-							o_pushState(historyPointId, documentTitle, businessPath);
-						}
-					}
-				} catch(e) {
-					if(window.console) console.log(e);
-				} finally {
-					o_afterserver();
-				}
-			},
+			success: o_onXHRSuccess,
 			error: o_onXHRError
 		});
 		return false;
+	}
+}
+
+function o_XHRLoadstart(evt) {
+	// Do only once: remove spinner and show upload progress 
+	jQuery('#o_ajax_progress').show();
+	jQuery('#o_ajax_busy .o_icon_busy').hide();
+	o_info.ajaxBusyLastProgress = Date.now();
+}
+function o_XHRProgress(evt) {
+    if (evt.lengthComputable) {
+        var percentComplete = Math.floor((evt.loaded / evt.total) * 100);
+        // only upldate UI once in a while, painting is a lot slower than progress updates
+        var now = Date.now();
+		if (now - o_info.ajaxBusyLastProgress > 100) {        			
+			o_info.ajaxBusyLastProgress = now;
+			jQuery('#o_ajax_busy .progress-bar').attr('aria-valuenow', percentComplete).css('width', percentComplete + '%');        		
+			jQuery('#o_ajax_progress .o_progress_info').text(BFormatter.formatBytes(evt.loaded) + '  /  ' + BFormatter.formatBytes(evt.total));        	
+		}
+		if (percentComplete == 100) {
+			// Cleanup now, even when on server side something is still working
+			o_XHRLoadend();
+		}
+    }
+}
+function o_XHRLoadend() {
+	// Upload done, reset progress bar and activate spinner again to indicated server activity
+    jQuery('#o_ajax_busy .progress-bar').attr('aria-valuenow', 0).css('width', 0 + '%');        		
+	jQuery('#o_ajax_progress').hide();
+	jQuery('#o_ajax_busy .o_icon_busy').show();   	
+	jQuery('#o_ajax_progress .o_progress_info').text('');
+	o_info.ajaxBusyLastProgress = null;
+}
+
+
+function o_onXHRSuccess (data, textStatus, jqXHR) {
+	try {	
+		o_ainvoke(data);
+		var businessPath = data['businessPath'];
+		var documentTitle = data['documentTitle'];
+		var historyPointId = data['historyPointId'];
+		if(businessPath) {
+			o_pushState(historyPointId, documentTitle, businessPath);
+		}
+	} catch(e) {
+		if(window.console) console.log(e);
+	} finally {
+		o_afterserver();
 	}
 }
 

@@ -625,12 +625,28 @@ div.o_assessment_mode_row {
 	position: absolute; 
 	left:50%; 
 	top: 20em;
-	margin-left: -2.5em;
+	margin-left: -120px;
 	height: 5em; 
-	width: 5em;
+	width: 240px;
+	text-align: center;
 	color: #fff; 
 	z-index: 1201; /* modal backdrop set to 1200 */
 	display: none;
+}
+#o_ajax_progress {
+	dipslay: none;
+	
+	border: 1px solid #888;
+	border-radius: 4px;
+	background: rgba(255,255,255,0.75);
+	padding: 20px 15px;
+	color:#222;
+	text-align: left;
+		
+	.progress {
+		margin-top: 0.5em;
+		height: 10px;	
+	}
 }	
 #o_body.o_ajax_busy {
 	cursor: busy;
