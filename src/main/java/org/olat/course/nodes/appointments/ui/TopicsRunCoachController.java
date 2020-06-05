@@ -73,7 +73,7 @@ public class TopicsRunCoachController extends BasicController {
 
 	private final BreadcrumbedStackedPanel stackPanel;
 	private CloseableModalController cmc;
-	private TopicEditController topicEditCtrl;
+	private TopicCreateController topicCreateCtrl;
 	private TopicRunCoachController topicRunCtrl;
 	private ContextualSubscriptionController subscriptionCtrl;
 	
@@ -266,9 +266,9 @@ public class TopicsRunCoachController extends BasicController {
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == topicEditCtrl) {
+		if (source == topicCreateCtrl) {
 			if (event == Event.DONE_EVENT) {
-				Topic topic = topicEditCtrl.getTopic();
+				Topic topic = topicCreateCtrl.getTopic();
 				cmc.deactivate();
 				cleanUp();
 				doOpenTopic(ureq, topic);
@@ -287,10 +287,10 @@ public class TopicsRunCoachController extends BasicController {
 	}
 
 	private void cleanUp() {
-		removeAsListenerAndDispose(topicEditCtrl);
+		removeAsListenerAndDispose(topicCreateCtrl);
 		removeAsListenerAndDispose(topicRunCtrl);
 		removeAsListenerAndDispose(cmc);
-		topicEditCtrl = null;
+		topicCreateCtrl = null;
 		topicRunCtrl = null;
 		cmc = null;
 	}
@@ -310,10 +310,10 @@ public class TopicsRunCoachController extends BasicController {
 	}
 	
 	private void doAddTopic(UserRequest ureq) {
-		topicEditCtrl = new TopicEditController(ureq, getWindowControl(), secCallback, entry, subIdent);
-		listenTo(topicEditCtrl);
+		topicCreateCtrl = new TopicCreateController(ureq, getWindowControl(), secCallback, entry, subIdent);
+		listenTo(topicCreateCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", topicEditCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), "close", topicCreateCtrl.getInitialComponent(), true,
 				translate("add.topic.title"));
 		listenTo(cmc);
 		cmc.activate();

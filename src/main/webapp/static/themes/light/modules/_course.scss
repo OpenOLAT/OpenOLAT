@@ -738,6 +738,30 @@ div.o_correction_navigation {
 			font-weight: bold;
 		}
 	}
+}
 
+.o_appointments_create {
+	.o_appointment {
+		display: flex;
+		flex-flow: row wrap;
+		
+		// Space in every screen size
+		margin-top: 8px;
+		&:first-child {
+			margin-top: -8px;
+		}
+		> div {
+			margin-top: 7px;
+		}
+		@media all and (max-width: $screen-sm-min) {
+			.form-group {
+				margin-bottom: 0px;
+			}
+		}
+	}
+	
+	.o_icon_error {
+		display: none;
+	}
 }
 
