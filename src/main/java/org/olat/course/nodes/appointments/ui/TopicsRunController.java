@@ -43,6 +43,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.appointments.Appointment;
 import org.olat.course.nodes.appointments.AppointmentSearchParams;
@@ -61,7 +64,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class TopicsRunController extends BasicController {
+public class TopicsRunController extends BasicController implements Activateable2 {
 
 	private static final String CMD_OPEN = "open";
 	private static final String CMD_EMAIL = "email";
@@ -77,6 +80,7 @@ public class TopicsRunController extends BasicController {
 	private final String subIdent;
 	private final Configuration config;
 
+	private List<TopicWrapper> topics;
 	private int counter;
 	
 	@Autowired
@@ -98,9 +102,19 @@ public class TopicsRunController extends BasicController {
 		putInitialPanel(mainVC);
 	}
 	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if (topics.size() == 1) {
+			TopicWrapper topicWrapper = topics.get(0);
+			if (topicWrapper.getDate() == null) {
+				doOpenTopic(ureq, topicWrapper.getTopic());
+			}
+		}
+	}
+	
 	private void refresh() {
 		removeButtons();
-		List<TopicWrapper> topics = loadTopicWrappers();
+		topics = loadTopicWrappers();
 		mainVC.contextPut("topics", topics);
 	}
 

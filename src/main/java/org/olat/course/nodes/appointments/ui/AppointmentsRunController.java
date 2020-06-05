@@ -27,6 +27,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.course.nodes.appointments.AppointmentsSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 
@@ -58,6 +59,10 @@ public class AppointmentsRunController extends BasicController {
 		}
 		listenTo(topicsCtrl);
 		stackPanel.pushController("topics", topicsCtrl);
+		if (topicsCtrl instanceof Activateable2) {
+			((Activateable2)topicsCtrl).activate(ureq, null, null);
+		}
+			
 		mainVC.put("topics", stackPanel);
 		
 		putInitialPanel(mainVC);
