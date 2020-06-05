@@ -35,7 +35,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
-import org.olat.course.condition.ConditionEditController;
+import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.PublishEvents;
@@ -61,8 +61,9 @@ import org.olat.repository.RepositoryEntry;
 public class AppointmentsCourseNode extends AbstractAccessableCourseNode {
 	
 	private static final long serialVersionUID = 2684639881298198543L;
+	
 	@SuppressWarnings("deprecation")
-	private static final String TRANSLATOR_PACKAGE = Util.getPackageName(ConditionEditController.class);
+	private static final String TRANSLATOR_PACKAGE = Util.getPackageName(AppointmentsEditController.class);
 
 	public static final String TYPE = "appointments";
 	public static final String ICON_CSS = "o_appointment_icon";
@@ -91,6 +92,11 @@ public class AppointmentsCourseNode extends AbstractAccessableCourseNode {
 				userCourseEnv, childTabCtrl);
 		nodeEditCtr.addControllerListener(childTabCtrl);
 		return nodeEditCtr;
+	}
+
+	@Override
+	public ConditionAccessEditConfig getAccessEditConfig() {
+		return ConditionAccessEditConfig.regular(false);
 	}
 
 	@Override

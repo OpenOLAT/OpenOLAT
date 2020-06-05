@@ -36,9 +36,8 @@ import org.olat.course.nodes.AppointmentsCourseNode;
  */
 public class AppointmentsEditController extends ActivateableTabbableDefaultController {
 	
-	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
 	private static final String PANE_TAB_CONFIG = "pane.tab.config";
-	private static final String[] paneKeys = { PANE_TAB_CONFIG, PANE_TAB_ACCESSIBILITY };
+	private static final String[] paneKeys = { PANE_TAB_CONFIG };
 	
 	private TabbedPane tabPane;
 	private AppointmentsConfigController configCtrl;

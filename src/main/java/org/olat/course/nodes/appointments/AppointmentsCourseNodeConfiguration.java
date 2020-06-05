@@ -32,8 +32,6 @@ import org.olat.course.nodes.CourseNodeGroup;
 import org.olat.course.nodes.appointments.ui.AppointmentsEditController;
 
 /**
- * Description:<br>
- * Configuration for the BigBlueButton course element.
  * 
  * Initial date: 13 Apr 2020<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
