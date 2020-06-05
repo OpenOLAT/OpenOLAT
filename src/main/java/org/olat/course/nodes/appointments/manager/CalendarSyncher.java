@@ -21,6 +21,7 @@ package org.olat.course.nodes.appointments.manager;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -28,8 +29,10 @@ import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
@@ -39,6 +42,7 @@ import org.olat.course.nodes.appointments.Participation;
 import org.olat.course.nodes.appointments.ParticipationSearchParams;
 import org.olat.course.nodes.appointments.Topic;
 import org.olat.course.nodes.appointments.ui.AppointmentsRunController;
+import org.olat.repository.RepositoryManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -58,7 +62,9 @@ public class CalendarSyncher {
 	@Autowired
 	private ParticipationDAO participationDao;
 	@Autowired
-	private CalendarManager calendarMgr;
+	private CalendarManager calendarManager;
+	@Autowired
+	private RepositoryManager repositoryManager;
 	
 	/**
 	 * Sync the calendar events of all organizers and all participants.
@@ -85,7 +91,7 @@ public class CalendarSyncher {
 	}
 		
 	void syncCalendar(Collection<Appointment> appointments, Identity identity) {
-		Kalendar cal = calendarMgr.getCalendar(CalendarManager.TYPE_USER, identity.getName());
+		Kalendar cal = calendarManager.getCalendar(CalendarManager.TYPE_USER, identity.getName());
 		syncCalendar(appointments, identity, cal);
 	}
 	
@@ -99,14 +105,14 @@ public class CalendarSyncher {
 		for (KalendarEvent event : cal.getEvents()) {
 			if (eventExternalId.equals(event.getExternalId())) {
 				updateEvent(appointment, event, identity);
-				calendarMgr.updateEventFrom(cal, event);
+				calendarManager.updateEventFrom(cal, event);
 				return;
 			}
 		}
 		
 		// create new event if no existing
 		KalendarEvent newEvent = createEvent(appointment, identity);
-		calendarMgr.addEventTo(cal, newEvent);
+		calendarManager.addEventTo(cal, newEvent);
 	}
 	
 	/**
@@ -133,7 +139,7 @@ public class CalendarSyncher {
 	}
 	
 	void unsyncCalendar(Collection<Appointment> appointments, Identity identity) {
-		Kalendar cal = calendarMgr.getCalendar(CalendarManager.TYPE_USER, identity.getName());
+		Kalendar cal = calendarManager.getCalendar(CalendarManager.TYPE_USER, identity.getName());
 		unsyncCalendar(appointments, cal);
 	}
 	
@@ -145,7 +151,7 @@ public class CalendarSyncher {
 		String externalId = generateExternalId(appointment);
 		cal.getEvents().stream()
 				.filter(event -> externalId.equals(event.getExternalId()))
-				.forEach(event -> calendarMgr.removeEventFrom(cal, event));
+				.forEach(event -> calendarManager.removeEventFrom(cal, event));
 	}
 	
 	private KalendarEvent createEvent(Appointment appointement, Identity identity) {
@@ -155,6 +161,7 @@ public class CalendarSyncher {
 		event.setExternalId(generateExternalId(appointement));
 		event.setLocation(appointement.getLocation());
 		updateEventDescription(appointement, event);
+		addKalendarEventLinks(appointement.getTopic(), event);
 		event.setManagedFlags(CAL_MANAGED_FLAGS);
 		return event;
 	}
@@ -165,6 +172,7 @@ public class CalendarSyncher {
 		event.setEnd(appointement.getEnd());
 		event.setLocation(appointement.getLocation());
 		updateEventDescription(appointement, event);
+		addKalendarEventLinks(appointement.getTopic(), event);
 		event.setManagedFlags(CAL_MANAGED_FLAGS);
 	}
 	
@@ -192,6 +200,29 @@ public class CalendarSyncher {
 			descr.append(appointement.getDetails());
 		}
 		event.setDescription(descr.toString());
+	}
+	
+	private void addKalendarEventLinks(Topic topic, KalendarEvent event) {
+		List<KalendarEventLink> kalendarEventLinks = event.getKalendarEventLinks();
+		String id = topic.getKey().toString();
+		String displayName = repositoryManager.lookupDisplayName(topic.getEntry().getKey());
+		String businessPath = getBusinessPath(topic);
+		KalendarEventLink link = new KalendarEventLink("appointments", id, displayName, businessPath, "o_CourseModule_icon");
+		kalendarEventLinks.clear();
+		kalendarEventLinks.add(link);
+	}
+	
+	private String getBusinessPath(Topic topic) {
+		String businessPath;
+		if (topic.getEntry() != null) {
+			businessPath = "[RepositoryEntry:" + topic.getEntry().getKey() + "]";
+			if (StringHelper.containsNonWhitespace(topic.getSubIdent())) {
+				businessPath += "[CourseNode:" + topic.getSubIdent() + "]";
+			}
+		} else {
+			businessPath = "[RepositoryEntry:0]";
+		}
+		return BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
 	}
 	
 	private String generateExternalId(Appointment appointment) {
