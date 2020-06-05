@@ -1315,8 +1315,13 @@ function o_XHRSubmit(formNam) {
 	var enctype = form.attr('enctype');
 	if(enctype && enctype.indexOf("multipart") == 0) {
 		if (window.FormData && ("upload" in (jQuery.ajaxSettings.xhr()))) {
+			if(typeof top.tinymce !== 'undefined') {
+				top.tinymce.triggerSave(true,true);
+			}
+	
 			// Send files via XHR and show upload progress
-			var formData = new FormData(form[0]);		
+			var formData = new FormData(form[0]);	
+			console.log(formData.keys());
 			var targetUrl = form.attr("action");
 			jQuery.ajax(targetUrl,{
 				xhr: function() {
