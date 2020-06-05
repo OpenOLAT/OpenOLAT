@@ -22,6 +22,8 @@ package org.olat.course.nodes.appointments.ui;
 import static org.olat.core.gui.components.util.KeyValues.VALUE_ASC;
 import static org.olat.core.gui.components.util.KeyValues.entry;
 
+import java.time.DayOfWeek;
+import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -46,6 +48,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.appointments.Appointment;
 import org.olat.course.nodes.appointments.AppointmentsSecurityCallback;
@@ -74,7 +77,11 @@ public class TopicCreateController extends FormBasicController {
 	private MultipleSelectionElement organizerEl;
 	private TextElement locationEl;
 	private TextElement maxParticipationsEl;
-	private FormLayoutContainer appointmentsCont;
+	private MultipleSelectionElement recurringEl;
+	private FormLayoutContainer singleCont;
+	private DateChooser recurringFirstEl;
+	private MultipleSelectionElement recurringDaysOfWeekEl;
+	private DateChooser recurringLastEl;
 	
 	private RepositoryEntry entry;
 	private String subIdent;
@@ -112,16 +119,11 @@ public class TopicCreateController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// Topic
-		String title = topic == null ? "" : topic.getTitle();
-		titleEl = uifactory.addTextElement("topic.title", "topic.title", 128, title, formLayout);
+		titleEl = uifactory.addTextElement("topic.title", "topic.title", 128, null, formLayout);
 		titleEl.setMandatory(true);
-		if(!StringHelper.containsNonWhitespace(title)) {
-			titleEl.setFocus(true);
-		}
 		
-		String description = topic == null ? "" : topic.getDescription();
 		descriptionEl = uifactory.addTextAreaElement("topic.description", "topic.description", 2000, 4, 72, false,
-				false, description, formLayout);
+				false, null, formLayout);
 		
 		// Organizer
 		KeyValues coachesKV = new KeyValues();
@@ -143,25 +145,62 @@ public class TopicCreateController extends FormBasicController {
 		
 		maxParticipationsEl = uifactory.addTextElement("appointment.max.participations", 5, null, formLayout);
 		
-		appointmentsCont = FormLayoutContainer.createCustomFormLayout("appointmentsCont", getTranslator(), velocity_root + "/appointments_create.html");
-		formLayout.add(appointmentsCont);
-		appointmentsCont.setRootForm(mainForm);
-		appointmentsCont.setLabel("appointments", null);
+		recurringEl = uifactory.addCheckboxesHorizontal("appointments.recurring", formLayout,
+				new String[] { "xx" }, new String[] { null });
+		recurringEl.addActionListener(FormEvent.ONCHANGE);
+		
+		// Single appointments
+		singleCont = FormLayoutContainer.createCustomFormLayout("singleCont", getTranslator(), velocity_root + "/appointments_single.html");
+		formLayout.add(singleCont);
+		singleCont.setRootForm(mainForm);
+		singleCont.setLabel("appointments", null);
 		
 		appointmentWrappers = new ArrayList<>();
 		doCreateAppointmentWrapper(null);
-		appointmentsCont.contextPut("appointments", appointmentWrappers);
+		singleCont.contextPut("appointments", appointmentWrappers);
 		
+		// Reccuring appointments
+		recurringFirstEl = uifactory.addDateChooser("appointments.recurring.first", null, formLayout);
+		recurringFirstEl.setDateChooserTimeEnabled(true);
+		recurringFirstEl.setSecondDate(true);
+		recurringFirstEl.setSameDay(true);
+		recurringFirstEl.setMandatory(true);
+		
+		DayOfWeek[] dayOfWeeks = DayOfWeek.values();
+		KeyValues dayOfWeekKV = new KeyValues();
+		for (int i = 0; i < dayOfWeeks.length; i++) {
+			dayOfWeekKV.add(entry(dayOfWeeks[i].name(), dayOfWeeks[i].getDisplayName(TextStyle.FULL_STANDALONE, getLocale())));
+		}
+		recurringDaysOfWeekEl = uifactory.addCheckboxesHorizontal("appointments.recurring.days.of.week", formLayout,
+				dayOfWeekKV.keys(), dayOfWeekKV.values());
+		recurringDaysOfWeekEl.setMandatory(true);
+		
+		recurringLastEl = uifactory.addDateChooser("appointments.recurring.last", null, formLayout);
+		recurringLastEl.setMandatory(true);
+		
+		// Buttons
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
 		buttonsCont.setRootForm(mainForm);
 		uifactory.addFormSubmitButton("save", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		
+		updateUI();
+	}
+
+	private void updateUI() {
+		boolean recurring = recurringEl.isAtLeastSelected(1);
+		singleCont.setVisible(!recurring);
+		recurringFirstEl.setVisible(recurring);
+		recurringDaysOfWeekEl.setVisible(recurring);
+		recurringLastEl.setVisible(recurring);
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source instanceof DateChooser) {
+		if (source == recurringEl) {
+			updateUI();
+		} else if (source instanceof DateChooser) {
 			DateChooser dateChooser = (DateChooser)source;
 			AppointmentWrapper wrapper = (AppointmentWrapper)dateChooser.getUserObject();
 			doInitEndDate(wrapper);
@@ -204,26 +243,59 @@ public class TopicCreateController extends FormBasicController {
 			}
 		}
 		
+		boolean recurring = recurringEl.isAtLeastSelected(1);
+			
 		for (AppointmentWrapper wrapper : appointmentWrappers) {
 			DateChooser startEl = wrapper.getStartEl();
 			DateChooser endEl = wrapper.getEndEl();
 			startEl.clearError();
 			endEl.clearError();
-			if (startEl.getDate() == null && endEl.getDate() != null) {
-				startEl.setErrorKey("form.legende.mandatory", null);
-				allOk &= false;
-			}
-			if (endEl.getDate() == null && startEl.getDate() != null) {
-				endEl.setErrorKey("form.legende.mandatory", null);
-				allOk &= false;
-			}
-			if (startEl.getDate() != null && endEl.getDate() != null) {
-				Date start = startEl.getDate();
-				Date end = endEl.getDate();
-				if(end.before(start)) {
-					endEl.setErrorKey("error.start.after.end", null);
+			if (!recurring) {
+				if (startEl.getDate() == null && endEl.getDate() != null) {
+					startEl.setErrorKey("form.legende.mandatory", null);
 					allOk &= false;
 				}
+				if (endEl.getDate() == null && startEl.getDate() != null) {
+					endEl.setErrorKey("form.legende.mandatory", null);
+					allOk &= false;
+				}
+				if (startEl.getDate() != null && endEl.getDate() != null) {
+					Date start = startEl.getDate();
+					Date end = endEl.getDate();
+					if(end.before(start)) {
+						endEl.setErrorKey("error.start.after.end", null);
+						allOk &= false;
+					}
+				}
+			}
+		}
+		
+		recurringFirstEl.clearError();
+		recurringDaysOfWeekEl.clearError();
+		recurringLastEl.clearError();
+		if (recurring) {
+			if (recurringFirstEl.getDate() == null || recurringFirstEl.getSecondDate() == null) {
+				recurringFirstEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			} else if (recurringFirstEl.getDate().after(recurringFirstEl.getSecondDate())) {
+				recurringFirstEl.setErrorKey("error.start.after.end", null);
+				allOk &= false;
+			}
+			
+			if (!recurringDaysOfWeekEl.isAtLeastSelected(1)) {
+				recurringDaysOfWeekEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
+			
+			if (recurringLastEl.getDate() == null) {
+				recurringLastEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
+			
+			if (recurringFirstEl.getDate() != null && recurringLastEl.getDate() != null
+					&& recurringFirstEl.getDate().after(recurringLastEl.getDate())) {
+				recurringLastEl.setErrorKey("error.first.after.start", null);
+				allOk &= false;
 			}
 		}
 		
@@ -244,7 +316,13 @@ public class TopicCreateController extends FormBasicController {
 	private void doSave() {
 		doSaveTopic();
 		doSaveOrganizers();
-		doSaveAppointments();
+		
+		boolean reccuring = recurringEl.isAtLeastSelected(1);
+		if (reccuring) {
+			doSaveReccuringAppointments();
+		} else {
+			doSaveSingleAppointments();
+		}
 	}
 
 	private void doSaveTopic() {
@@ -282,7 +360,7 @@ public class TopicCreateController extends FormBasicController {
 				.forEach(coach -> appointmentsService.createOrganizer(topic, coach));
 	}
 
-	private void doSaveAppointments() {
+	private void doSaveSingleAppointments() {
 		for (AppointmentWrapper wrapper : appointmentWrappers) {
 			DateChooser startEl = wrapper.getStartEl();
 			DateChooser endEl = wrapper.getEndEl();
@@ -308,26 +386,58 @@ public class TopicCreateController extends FormBasicController {
 			}
 		}
 	}
+
+	private void doSaveReccuringAppointments() {
+		Date firstStart = recurringFirstEl.getDate();
+		Date firstEnd = recurringFirstEl.getSecondDate();
+		Date last = recurringLastEl.getDate();
+		last = DateUtils.setTime(last, 23, 59, 59);
+		
+		Collection<DayOfWeek> daysOfWeek = recurringDaysOfWeekEl.getSelectedKeys().stream()
+				.map(DayOfWeek::valueOf)
+				.collect(Collectors.toList());
+		
+		List<Date> starts = DateUtils.getDaysInRange(firstStart, last, daysOfWeek);
+		for (Date start : starts) {
+			Appointment appointment = appointmentsService.createUnsavedAppointment(topic);
+			
+			appointment.setStart(start);
+			
+			Date end = DateUtils.copyTime(start, firstEnd);
+			appointment.setEnd(end);
+			
+			String location = locationEl.getValue();
+			appointment.setLocation(location);
+			
+			String maxParticipationsValue = maxParticipationsEl.getValue();
+			Integer maxParticipations = StringHelper.containsNonWhitespace(maxParticipationsValue)
+					? Integer.valueOf(maxParticipationsValue)
+					: null;
+			appointment.setMaxParticipations(maxParticipations);
+			
+			appointmentsService.saveAppointment(appointment);
+		}
+	}
 	
 	private void doCreateAppointmentWrapper(AppointmentWrapper after) {
 		AppointmentWrapper wrapper = new AppointmentWrapper();
 		
-		DateChooser startEl = uifactory.addDateChooser("start_" + counter++, null, appointmentsCont);
+		DateChooser startEl = uifactory.addDateChooser("start_" + counter++, null, singleCont);
 		startEl.setDateChooserTimeEnabled(true);
 		startEl.setUserObject(wrapper);
 		startEl.addActionListener(FormEvent.ONCHANGE);
 		wrapper.setStartEl(startEl);
 		
-		DateChooser endEl = uifactory.addDateChooser("end_" + counter++, null, appointmentsCont);
+		DateChooser endEl = uifactory.addDateChooser("end_" + counter++, null, singleCont);
 		endEl.setDateChooserTimeEnabled(true);
 		wrapper.setEndEl(endEl);
 		
-		FormLink addEl = uifactory.addFormLink("add_" + counter++, CMD_ADD, "", null, appointmentsCont, Link.NONTRANSLATED + Link.BUTTON);
+		FormLink addEl = uifactory.addFormLink("add_" + counter++, CMD_ADD, "", null, singleCont, Link.NONTRANSLATED + Link.BUTTON);
 		addEl.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
 		addEl.setUserObject(wrapper);
 		wrapper.setAddEl(addEl);
 		
-		FormLink removeEl = uifactory.addFormLink("remove_" + counter++, CMD_REMOVE, "", null, appointmentsCont, Link.NONTRANSLATED + Link.BUTTON);
+		FormLink removeEl = uifactory.addFormLink("remove_" + counter++, CMD_REMOVE, "", null, singleCont, Link.NONTRANSLATED + Link.BUTTON);
 		removeEl.setIconLeftCSS("o_icon o_icon-lg o_icon_delete");
 		removeEl.setUserObject(wrapper);
 		wrapper.setRemoveEl(removeEl);

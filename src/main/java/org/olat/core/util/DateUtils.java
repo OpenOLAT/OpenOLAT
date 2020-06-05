@@ -19,12 +19,17 @@
  */
 package org.olat.core.util;
 
+import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
 
 /**
  * 
@@ -58,6 +63,35 @@ public class DateUtils {
 		return Instant.ofEpochMilli(date.getTime()).atZone(ZoneId.systemDefault()).toLocalDateTime();
 	}
 	
+	public static Date setTime(Date date, int hour, int minutes, int seconds) {
+		Calendar calendar = new GregorianCalendar();
+		calendar.setTime(date);
+		calendar.set(Calendar.HOUR, hour);
+		calendar.set(Calendar.MINUTE, minutes);
+		calendar.set(Calendar.SECOND, seconds);
+		return calendar.getTime();
+	}
+	
+	/**
+	 * Keeps the day of the date but copies the date from the from date.
+	 *
+	 * @param to
+	 * @param from
+	 * @return
+	 */
+	public static Date copyTime(Date date, Date from) {
+		Calendar fromCalendar = new GregorianCalendar();
+		fromCalendar.setTime(from);
+		
+		Calendar toCalendar = new GregorianCalendar();
+		toCalendar.setTime(date);
+		toCalendar.set(Calendar.HOUR, fromCalendar.get(Calendar.HOUR));
+		toCalendar.set(Calendar.MINUTE, fromCalendar.get(Calendar.MINUTE));
+		toCalendar.set(Calendar.SECOND, fromCalendar.get(Calendar.SECOND));
+		
+		return toCalendar.getTime();
+	}
+	
 	public static Date addDays(Date date, int days) {
 		Calendar c = Calendar.getInstance();
 		c.setTime(date);
@@ -70,6 +104,37 @@ public class DateUtils {
 		if (date2 == null) return date1;
 		
 		return date1.after(date2)? date1: date2;
+	}
+	
+	public static List<Date> getDaysInRange(Date start, Date end) {
+		List<Date> dates = new ArrayList<>();
+		Calendar calendar = new GregorianCalendar();
+		calendar.setTime(start);
+	 
+		while (calendar.getTime().before(end)) {
+			Date result = calendar.getTime();
+			dates.add(result);
+			calendar.add(Calendar.DATE, 1);
+		}
+		
+		return dates;
+	}
+	
+	public static List<Date> getDaysInRange(Date start, Date end, Collection<DayOfWeek> daysOfWeek) {
+		List<Date> dates = new ArrayList<>();
+		Calendar calendar = new GregorianCalendar();
+		calendar.setTime(start);
+	 
+		while (calendar.getTime().before(end)) {
+			DayOfWeek dayOfWeek = toLocalDate(calendar.getTime()).getDayOfWeek();
+			if (daysOfWeek.contains(dayOfWeek)) {
+				Date result = calendar.getTime();
+				dates.add(result);
+			}
+			calendar.add(Calendar.DATE, 1);
+		}
+		
+		return dates;
 	}
 
 }
