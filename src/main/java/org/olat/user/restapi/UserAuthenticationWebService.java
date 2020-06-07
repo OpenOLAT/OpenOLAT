@@ -21,7 +21,6 @@ package org.olat.user.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 
-
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -39,12 +38,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.restapi.security.RestSecurityHelper;
@@ -59,7 +58,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -83,16 +81,13 @@ public class UserAuthenticationWebService {
 	
 	/**
 	 * The version of the User Authentication Web Service
-	 * @response.representation.200.mediaType text/plain
-	 * @response.representation.200.doc The version of this specific Web Service
-	 * @response.representation.200.example 1.0
+	 * 
 	 * @return The version number
 	 */
 	@GET
 	@Path("version")
 	@Operation(summary = "The version of the User Authentication Web Service", description = "The version of the User Authentication Web Service")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The version of this specific Web Service") })	
+	@ApiResponse(responseCode = "200", description = "The version of this specific Web Service")
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
@@ -100,24 +95,18 @@ public class UserAuthenticationWebService {
 
 	/**
 	 * Returns all user authentications
-	 * @response.representation.200.qname {http://www.example.com}authenticationVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The list of all users in the OLAT system
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_AUTHVOes}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The identity not found
+	 * 
 	 * @param username The username of the user to retrieve authentication
 	 * @param request The HTTP request
 	 * @return
 	 */
 	@GET
 	@Operation(summary = "Returns all user authentications", description = "Returns all user authentications")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The list of all users in the OLAT system", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = AuthenticationVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = AuthenticationVO.class))) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The identity not found") })	
+	@ApiResponse(responseCode = "200", description = "The list of all users in the OLAT system", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = AuthenticationVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = AuthenticationVO.class))) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The identity not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getAuthenticationTokenList(@PathParam("username") String username, @Context HttpServletRequest request) {
 		Identity identity = securityManager.findIdentityByName(username);
@@ -139,18 +128,7 @@ public class UserAuthenticationWebService {
 	
 	/**
 	 * Creates and persists an authentication
-	 * @response.representation.qname {http://www.example.com}authenticationVO
-	 * @response.representation.mediaType application/xml, application/json
-	 * @response.representation.doc An authentication to save
-	 * @response.representation.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_AUTHVO}
-	 * @response.representation.200.qname {http://www.example.com}authenticationVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The saved authentication
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_AUTHVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The identity not found
-	 * @response.representation.406.doc Cannot create the authentication for an unkown reason
-	 * @response.representation.409.doc Cannot create the authentication because the authentication username is already used by someone else within the same provider
+	 *
 	 * @param username The username of the user
 	 * @param authenticationVO The authentication object to persist
 	 * @param request The HTTP request
@@ -158,14 +136,13 @@ public class UserAuthenticationWebService {
 	 */
 	@PUT
 	@Operation(summary = "Creates and persists an authentication", description = "Creates and persists an authentication")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The saved authentication", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = AuthenticationVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = AuthenticationVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The identity not found") ,
-			@ApiResponse(responseCode = "406", description = "Cannot create the authentication for an unkown reason"), 
-			@ApiResponse(responseCode = "409", description = "Cannot create the authentication because the authentication username is already used by someone else within the same provider") })	
+	@ApiResponse(responseCode = "200", description = "The saved authentication", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = AuthenticationVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = AuthenticationVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The identity not found") 
+	@ApiResponse(responseCode = "406", description = "Cannot create the authentication for an unkown reason")
+	@ApiResponse(responseCode = "409", description = "Cannot create the authentication because the authentication username is already used by someone else within the same provider")	
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response create(@PathParam("username") String username, AuthenticationVO authenticationVO, @Context HttpServletRequest request) {
@@ -185,29 +162,25 @@ public class UserAuthenticationWebService {
 		String credentials = authenticationVO.getCredential();
 		
 		Authentication currentAuthentication = securityManager.findAuthenticationByAuthusername(authUsername, provider);
-		if(currentAuthentication != null) {
-			if(!currentAuthentication.getIdentity().equals(identity)) {
-				ErrorVO error = new ErrorVO();
-				error.setCode("unkown:409");
-				error.setTranslation("Authentication name used by: " + currentAuthentication.getIdentity().getUser().getEmail());
-				return Response.serverError().status(Status.CONFLICT).entity(error).build();
-			}
+		if(currentAuthentication != null && !currentAuthentication.getIdentity().equals(identity)) {
+			ErrorVO error = new ErrorVO();
+			error.setCode("unkown:409");
+			error.setTranslation("Authentication name used by: " + currentAuthentication.getIdentity().getUser().getEmail());
+			return Response.serverError().status(Status.CONFLICT).entity(error).build();
 		}
 		
 		Authentication authentication = securityManager.createAndPersistAuthentication(identity, provider, authUsername, credentials, null);
 		if(authentication == null) {
 			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
 		}
-		log.info(Tracing.M_AUDIT, "New authentication created for " + authUsername + " with provider " + provider);
+		log.info(Tracing.M_AUDIT, "New authentication created for {} with provider {}", authUsername, provider);
 		AuthenticationVO savedAuth = ObjectFactory.get(authentication, true);
 		return Response.ok(savedAuth).build();
 	}
 
 	/**
 	 * Deletes an authentication from the system
-	 * @response.representation.200.doc The authentication successfully deleted
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The identity or the authentication not found
+	 * 
 	 * @param username The username of the user
 	 * @param authKey The authentication key identifier
 	 * @param request The HTTP request
@@ -217,10 +190,9 @@ public class UserAuthenticationWebService {
 	@DELETE
 	@Path("{authKey}")
 	@Operation(summary = "Deletes an authentication from the system", description = "Deletes an authentication from the system")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The authentication successfully deleted"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The identity not found")  })	
+	@ApiResponse(responseCode = "200", description = "The authentication successfully deleted")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The identity not found")
 	public Response delete(@PathParam("username") String username, @PathParam("authKey") Long authKey, @Context HttpServletRequest request) {
 		Identity identity = securityManager.findIdentityByName(username);
 		if(identity == null) {
@@ -243,10 +215,6 @@ public class UserAuthenticationWebService {
 	/**
 	 * Change the password of a user.
 	 * 
-	 * @response.representation.200.doc The password successfully changed
-	 * @response.representation.304.doc The password was not changed
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The identity or the authentication not found
 	 * @param username The username of the user to change the password
 	 * @param newPassword The new password
 	 * @param request The HTTP request
@@ -255,11 +223,10 @@ public class UserAuthenticationWebService {
 	@POST
 	@Path("password")
 	@Operation(summary = "Change the password of a user", description = "Change the password of a user")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The password successfully changed"),
-			@ApiResponse(responseCode = "304", description = "The password was not changed"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The identity or the authentication not found")  })	
+	@ApiResponse(responseCode = "200", description = "The password successfully changed")
+	@ApiResponse(responseCode = "304", description = "The password was not changed")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The identity or the authentication not found")
 	public Response changePassword(@PathParam("username") String username, @FormParam("newPassword") String newPassword,
 			@Context HttpServletRequest request) {
 		Identity doer = getIdentity(request);

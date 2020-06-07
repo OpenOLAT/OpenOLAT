@@ -20,7 +20,6 @@
 package org.olat.user.restapi;
 
 import java.util.Collections;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -52,7 +51,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -73,16 +71,13 @@ public class RelationRolesWebService {
 	
 	/**
 	 * The version of the Web Service
-	 * @response.representation.200.mediaType text/plain
- 	 * @response.representation.200.doc The version of this specific Web Service
- 	 * @response.representation.200.example 1.0
+	 * 
 	 * @return The version number
 	 */
 	@GET
 	@Path("version")
 	@Operation(summary = "The version of the Web Service", description = "The version of the Web Service")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The version of this specific Web Service") })	
+	@ApiResponse(responseCode = "200", description = "The version of this specific Web Service")
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
@@ -91,22 +86,16 @@ public class RelationRolesWebService {
 	/**
 	 * List of relation roles.
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}relationRoleVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The list of all relation roles in the OpenOLAT system
-	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_RELATIONROLEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @param httpRequest The HTTP request
 	 * @return An array of organizations
 	 */
 	@GET
 	@Path("roles")
 	@Operation(summary = "List of relation roles", description = "List of relation roles")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The list of all relation roles in the OpenOLAT system", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = RelationRoleVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = RelationRoleVO.class))) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })	
+	@ApiResponse(responseCode = "200", description = "The list of all relation roles in the OpenOLAT system", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = RelationRoleVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = RelationRoleVO.class))) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getRoles(@Context HttpServletRequest httpRequest) {
 		if(!isAdministrator(httpRequest)) {
@@ -121,15 +110,6 @@ public class RelationRolesWebService {
 	/**
 	 * Creates and persists a new relation role entity.
 	 * 
-	 * @response.representation.qname {http://www.example.com}relationRoleVO
-	 * @response.representation.mediaType application/xml, application/json
-	 * @response.representation.doc The relation role to persist
-	 * @response.representation.example {@link org.olat.user.restapi.Examples#SAMPLE_RELATIONROLEVO}
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The persisted relation role
-	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_RELATIONROLEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.406.mediaType application/xml, application/json
 	 * @param relationRoleVo The relation role to persist
 	 * @param request The HTTP request
 	 * @return The new persisted <code>relation role</code>
@@ -137,12 +117,11 @@ public class RelationRolesWebService {
 	@PUT
 	@Path("roles")
 	@Operation(summary = "Creates and persists a new relation role entity", description = "Creates and persists a new relation role entity")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The persisted relation role", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = RelationRoleVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = RelationRoleVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "406", description = "application/xml, application/json")})	
+	@ApiResponse(responseCode = "200", description = "The persisted relation role", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = RelationRoleVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = RelationRoleVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "406", description = "application/xml, application/json")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putRelationRole(RelationRoleVO relationRoleVo, @Context HttpServletRequest httpRequest) {
@@ -156,15 +135,6 @@ public class RelationRolesWebService {
 	/**
 	 * Updates a relation role entity.
 	 * 
-	 * @response.representation.qname {http://www.example.com}relationRoleVO
-	 * @response.representation.mediaType application/xml, application/json
-	 * @response.representation.doc The relation role to update
-	 * @response.representation.example {@link org.olat.user.restapi.Examples#SAMPLE_RELATIONROLEVO}
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The merged relation role
-	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_RELATIONROLEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.406.mediaType application/xml, application/json
 	 * @param relationRoleVo The relation role to merge
 	 * @param request The HTTP request
 	 * @return The merged <code>relation role</code>
@@ -172,12 +142,11 @@ public class RelationRolesWebService {
 	@POST
 	@Path("roles")
 	@Operation(summary = "Update a relation role entity", description = "Updates a relation role entity")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The merged relation role", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = RelationRoleVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = RelationRoleVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "406", description = "application/xml, application/json")})	
+	@ApiResponse(responseCode = "200", description = "The merged relation role", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = RelationRoleVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = RelationRoleVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "406", description = "application/xml, application/json")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postRelationRole(RelationRoleVO relationRoleVo, @Context HttpServletRequest httpRequest) {
@@ -191,15 +160,6 @@ public class RelationRolesWebService {
 	/**
 	 * Updates a relation role entity.
 	 * 
-	 * @response.representation.qname {http://www.example.com}relationRoleVO
-	 * @response.representation.mediaType application/xml, application/json
-	 * @response.representation.doc The relation role to update
-	 * @response.representation.example {@link org.olat.user.restapi.Examples#SAMPLE_RELATIONROLEVO}
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The merged relation role
-	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_RELATIONROLEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.406.mediaType application/xml, application/json
 	 * @param relationRoleVo The relation role to merge
 	 * @param request The HTTP request
 	 * @return The merged <code>relation role</code>
@@ -207,12 +167,11 @@ public class RelationRolesWebService {
 	@POST
 	@Path("roles/{relationRoleKey}")
 	@Operation(summary = "Update a relation role entity", description = "Updates a relation role entity")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The merged relation role", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = RelationRoleVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = RelationRoleVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "406", description = "application/xml, application/json")})	
+	@ApiResponse(responseCode = "200", description = "The merged relation role", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = RelationRoleVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = RelationRoleVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "406", description = "application/xml, application/json")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postRelationRole(RelationRoleVO relationRoleVo, @PathParam("relationRoleKey") Long relationRoleKey,
@@ -254,10 +213,9 @@ public class RelationRolesWebService {
 	@DELETE
 	@Path("roles/{relationRoleKey}")
 	@Operation(summary = "Remove role", description = "Remove a role")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The role has been removed"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "Role not found")})	
+	@ApiResponse(responseCode = "200", description = "The role has been removed")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "Role not found")
 	public Response deleteRelationRole(@PathParam("relationRoleKey") Long relationRoleKey, @Context HttpServletRequest httpRequest) {
 		if(!isAdministrator(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();

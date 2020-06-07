@@ -58,7 +58,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * 
@@ -84,11 +83,7 @@ public class MyGroupWebService {
 	
 	/**
 	 * Return all groups of a user where the user is coach or participant.
-	 * @response.representation.200.qname {http://www.example.com}groupVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The groups of the user
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_GROUPVOes}
-	 * @response.representation.404.doc The identity not found
+	 * 
 	 * @param start The first result
 	 * @param limit The maximum results
 	 * @param externalId Search with an external ID
@@ -99,11 +94,10 @@ public class MyGroupWebService {
 	 */
 	@GET
 	@Operation(summary = "Return all groups of a user where the user is coach or participant", description = "Return all groups of a user where the user is coach or participant")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The groups of the user", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class))) }),
-			@ApiResponse(responseCode = "404", description = "The identity not found") })	
+	@ApiResponse(responseCode = "200", description = "The groups of the user", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class))) })
+	@ApiResponse(responseCode = "404", description = "The identity not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getUserGroupList(@QueryParam("start") @Parameter(description = "The first result") @DefaultValue("0") Integer start, @QueryParam("limit") @Parameter(description = "The maximum results")  @DefaultValue("25") Integer limit,
 			@QueryParam("externalId") @Parameter(description = "Search with an external ID") String externalId, @QueryParam("managed") @Parameter(description = "(true / false) Search only managed / not managed groups") Boolean managed,
@@ -114,11 +108,7 @@ public class MyGroupWebService {
 	
 	/**
 	 * Return all groups of a user where the user is coach/owner.
-	 * @response.representation.200.qname {http://www.example.com}groupVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The groups of the user
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_GROUPVOes}
-	 * @response.representation.404.doc The identity not found
+	 * 
 	 * @param start The first result
 	 * @param limit The maximum results
 	 * @param externalId Search with an external ID
@@ -130,11 +120,10 @@ public class MyGroupWebService {
 	@GET
 	@Path("owner")
 	@Operation(summary = "Return all groups of a user where the user is coach/owner", description = "Return all groups of a user where the user is coach/owner")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The groups of the user", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class))) }),
-			@ApiResponse(responseCode = "404", description = "The identity not found") })	
+	@ApiResponse(responseCode = "200", description = "The groups of the user", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class))) })
+	@ApiResponse(responseCode = "404", description = "The identity not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getOwnedGroupList(@QueryParam("start") @Parameter(description = "The first result") @DefaultValue("0") Integer start, @QueryParam("limit") @Parameter(description = "The maximum results") @DefaultValue("25") Integer limit,
 			@QueryParam("externalId") @Parameter(description = "Search with an external ID") String externalId, @QueryParam("managed") @Parameter(description = "(true / false) Search only managed / not managed groups") Boolean managed,
@@ -144,11 +133,7 @@ public class MyGroupWebService {
 	
 	/**
 	 * Return all groups of a user where the user is participant.
-	 * @response.representation.200.qname {http://www.example.com}groupVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The groups of the user
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_GROUPVOes}
-	 * @response.representation.404.doc The identity not found
+	 * 
 	 * @param start The first result
 	 * @param limit The maximum results
 	 * @param externalId Search with an external ID
@@ -160,11 +145,10 @@ public class MyGroupWebService {
 	@GET
 	@Path("participant")
 	@Operation(summary = "Return all groups of a user where the user is participant", description = "Return all groups of a user where the user is participant")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The groups of the user", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class))) }),
-			@ApiResponse(responseCode = "404", description = "The identity not found") })	
+	@ApiResponse(responseCode = "200", description = "The groups of the user", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class))) })
+	@ApiResponse(responseCode = "404", description = "The identity not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getParticipatingGroupList(@QueryParam("start") @DefaultValue("0") Integer start, @QueryParam("limit") @DefaultValue("25") Integer limit,
 			@QueryParam("externalId") String externalId, @QueryParam("managed") Boolean managed,
@@ -214,11 +198,7 @@ public class MyGroupWebService {
 	
 	/**
 	 * Return all groups with information of a user. Paging is mandatory!
-	 * @response.representation.200.qname {http://www.example.com}groupInfoVO
-	 * @response.representation.200.mediaType application/xml;pagingspec=1.0, application/json;pagingspec=1.0
-	 * @response.representation.200.doc The groups of the user
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_GROUPINFOVOes}
-	 * @response.representation.406.doc The request hasn't paging information
+	 * 
 	 * @param start The first result
 	 * @param limit The maximum results
 	 * @param externalId Search with an external ID
@@ -230,11 +210,10 @@ public class MyGroupWebService {
 	@GET
 	@Path("infos")
 	@Operation(summary = "Return all groups with information of a user", description = "Return all groups with information of a user. Paging is mandatory")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The groups of the user", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = GroupInfoVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = GroupInfoVO.class))) }),
-			@ApiResponse(responseCode = "406", description = "The request hasn't paging information") })	
+	@ApiResponse(responseCode = "200", description = "The groups of the user", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = GroupInfoVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = GroupInfoVO.class))) })
+	@ApiResponse(responseCode = "406", description = "The request hasn't paging information")	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getUserGroupInfosList(@QueryParam("start") @DefaultValue("0") Integer start,
 			@QueryParam("limit") @DefaultValue("25") Integer limit,

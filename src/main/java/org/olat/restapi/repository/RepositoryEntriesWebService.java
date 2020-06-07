@@ -84,11 +84,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.info.Contact;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.info.License;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.servers.Server;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -141,20 +140,15 @@ public class RepositoryEntriesWebService {
 	@GET
 	@Path("version")
 	@Operation(summary = "The version number of this web service", description = "The version number of this web service")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The version number of this web service" )})	
-			
+	@ApiResponse(responseCode = "200", description = "The version number of this web service")		
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
 	}
 	
 	/**
-	 * List all entries in the OLAT repository
-	 * @response.representation.200.qname {http://www.example.com}repositoryEntryVO
-	 * @response.representation.200.mediaType text/plain, text/html, application/xml, application/json
-	 * @response.representation.200.doc List all entries in the repository
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_REPOENTRYVOes}
+	 * List all entries in the repository
+	 * 
 	 * @param start (optional)
 	 * @param limit (optional)
 	 * @param managed (optional)
@@ -167,15 +161,12 @@ public class RepositoryEntriesWebService {
 	 */
 	@GET
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-	@ApiResponses(value = {
-		@ApiResponse(responseCode = "200",
-			description = "JVM system properties of a particular host.",
-			content = {
-				@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = RepositoryEntryVO.class))),
-				@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = RepositoryEntryVO.class)))
-			}
-		)}
-	)
+	@ApiResponse(responseCode = "200",
+		description = "List all entries in the repository.",
+		content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = RepositoryEntryVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = RepositoryEntryVO.class)))
+		})
 	@Operation(summary = "List all entries in the repository",
 		description = "List all entries in the OpenOLAT repository.")
 	public Response getEntries(@QueryParam("start") @DefaultValue("0") Integer start,
@@ -228,13 +219,7 @@ public class RepositoryEntriesWebService {
 
 	/**
 	 * Search for repository entries, possible search attributes are name, author and type
-	 * @response.representation.mediaType multipart/form-data
-	 * @response.representation.doc Search for repository entries
-	 * @response.representation.200.qname {http://www.example.com}repositoryEntryVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc Search for repository entries
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_REPOENTRYVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * 
 	 * @param type Filter by the file resource type of the repository entry
 	 * @param author Filter by the author's username
 	 * @param name Filter by name of repository entry
@@ -245,11 +230,10 @@ public class RepositoryEntriesWebService {
 	@GET
 	@Path("search")
 	@Operation(summary = "Search for repository entries", description = "Search for repository entries, possible search attributes are name, author and type")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "Search for repository entries", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })	
+	@ApiResponse(responseCode = "200", description = "Search for repository entries", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response searchEntries(@QueryParam("type") String type, @QueryParam("author") @DefaultValue("*") String author,
 			@QueryParam("name") @DefaultValue("*") String name, @QueryParam("myentries") @DefaultValue("false") boolean myEntries,
@@ -301,13 +285,7 @@ public class RepositoryEntriesWebService {
 	
 	/**
 	 * Import a resource in the repository
-	 * @response.representation.mediaType multipart/form-data
-	 * @response.representation.doc The file, its name and the resourcename
-	 * @response.representation.200.qname {http://www.example.com}repositoryEntryVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc Import the resource and return the repository entry
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_REPOENTRYVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * 
 	 * @param filename The name of the imported file
 	 * @param file The file input stream
 	 * @param resourcename The name of the resource
@@ -318,11 +296,10 @@ public class RepositoryEntriesWebService {
 	 */
 	@PUT
 	@Operation(summary = "Import a resource in the repository", description = "Import a resource in the repository")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "Import the resource and return the repository entry", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })	
+	@ApiResponse(responseCode = "200", description = "Import the resource and return the repository entry", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.MULTIPART_FORM_DATA})
 	public Response putResource(@Context HttpServletRequest request) {

@@ -40,11 +40,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.modules.qpool.QPoolService;
@@ -63,7 +63,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -81,10 +80,10 @@ public class QuestionPoolWebService {
 	
 	@PUT
 	@Operation(summary = "Put QuestionItem", description = "Put QuestionItem")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The QuestionItem", content = {
+	@ApiResponse(responseCode = "200", description = "The QuestionItem", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = QuestionItemVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = QuestionItemVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")})
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = QuestionItemVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.MULTIPART_FORM_DATA})
 	public Response importQuestionItemsPut(@Context HttpServletRequest request) {
@@ -93,10 +92,10 @@ public class QuestionPoolWebService {
 	
 	@POST
 	@Operation(summary = "Post QuestionItem", description = "Post QuestionItem")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The QuestionItem", content = {
+	@ApiResponse(responseCode = "200", description = "The QuestionItem", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = QuestionItemVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = QuestionItemVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")})
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = QuestionItemVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.MULTIPART_FORM_DATA})
 	public Response importQuestionItemsPost(@Context HttpServletRequest request) {
@@ -153,9 +152,6 @@ public class QuestionPoolWebService {
 	/**
 	 * Delete a question item by id.
 	 * 
-	 * @response.representation.200.doc Nothing
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The question item not found
 	 * @param itemKey The question item identifier
 	 * @param request The HTTP request
 	 * @return Nothing
@@ -163,11 +159,9 @@ public class QuestionPoolWebService {
 	@DELETE
 	@Path("{itemKey}")
 	@Operation(summary = "Delete a question item by id", description = "Delete a question item by id")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "Nothing"),
-		@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-		@ApiResponse(responseCode = "404", description = "The question item not found")}
-)	
+	@ApiResponse(responseCode = "200", description = "Nothing")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The question item not found")
 	public Response deleteQuestionItem(@PathParam("itemKey") Long itemKey, @Context HttpServletRequest request) {
 		if(!isQuestionPoolManager(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -191,11 +185,6 @@ public class QuestionPoolWebService {
 	/**
 	 * Get all authors of the question item.
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}userVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The array of authors
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The question item not found
 	 * @param itemKey The question item identifier
 	 * @param httpRequest The HTTP request
 	 * @return It returns an array of <code>UserVO</code>
@@ -203,11 +192,11 @@ public class QuestionPoolWebService {
 	@GET
 	@Path("{itemKey}/authors")
 	@Operation(summary = "Get all authors of the question item", description = "Get all authors of the question item")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The array of authors", content = {
+	@ApiResponse(responseCode = "200", description = "The array of authors", content = {
 			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
-			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The question item not found") })
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The question item not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getAuthors(@PathParam("itemKey") Long itemKey,
 			@Context HttpServletRequest request) {
@@ -234,11 +223,6 @@ public class QuestionPoolWebService {
 	/**
 	 * Get this specific author of the quesiton item.
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}userVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The author
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The question item not found or the user is not an author of the course
 	 * @param itemKey The question item identifier
 	 * @param identityKey The user identifier
 	 * @param httpRequest The HTTP request
@@ -247,16 +231,13 @@ public class QuestionPoolWebService {
 	@GET
 	@Path("{itemKey}/authors/{identityKey}")
 	@Operation(summary = "Get this specific author of the quesiton item", description = "Get this specific author of the quesiton item")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "The author",
-				content = {
-						@Content(mediaType = "application/json", schema = @Schema(implementation = UserVO.class)),
-						@Content(mediaType = "application/xml", schema = @Schema(implementation = UserVO.class))
-					} 
-		),
-		@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-		@ApiResponse(responseCode = "404", description = "The question item not found")}
-)	
+	@ApiResponse(responseCode = "200", description = "The author",
+			content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = UserVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = UserVO.class))
+				})
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The question item not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getAuthor(@PathParam("itemKey") Long itemKey, @PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest request) {
@@ -282,9 +263,6 @@ public class QuestionPoolWebService {
 	/**
 	 * Add an author to the question item.
 	 * 
-	 * @response.representation.200.doc The user is an author of the question item
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The question item or the user not found
 	 * @param itemKey The question item identifier
 	 * @param identityKey The user identifier
 	 * @param httpRequest The HTTP request
@@ -293,12 +271,9 @@ public class QuestionPoolWebService {
 	@PUT
 	@Path("{itemKey}/authors/{identityKey}")
 	@Operation(summary = "Add an author to the question item", description = "Add an author to the question item")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "The user is an author of the question item"
-		),
-		@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-		@ApiResponse(responseCode = "404", description = "The question item or the user not found")}
-)	
+	@ApiResponse(responseCode = "200", description = "The user is an author of the question item")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The question item or the user not found")
 	public Response addAuthor(@PathParam("itemKey") Long itemKey, @PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {
 		if(!isQuestionPoolManager(httpRequest)) {
@@ -326,9 +301,6 @@ public class QuestionPoolWebService {
 	/**
 	 * Remove an author to the question item.
 	 * 
-	 * @response.representation.200.doc The user was successfully removed as author of the question item
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The question item or the user not found
 	 * @param itemKey The question item identifier
 	 * @param identityKey The user identifier
 	 * @param httpRequest The HTTP request
@@ -337,12 +309,9 @@ public class QuestionPoolWebService {
 	@DELETE
 	@Path("{itemKey}/authors/{identityKey}")
 	@Operation(summary = "Remove an author to the question item", description = "Remove an author to the question item")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "The user was successfully removed as author of the question item"
-		),
-		@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-		@ApiResponse(responseCode = "404", description = "The question item or the user not found")}
-)	
+	@ApiResponse(responseCode = "200", description = "The user was successfully removed as author of the question item")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The question item or the user not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response removeAuthor(@PathParam("itemKey") Long itemKey, @PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {

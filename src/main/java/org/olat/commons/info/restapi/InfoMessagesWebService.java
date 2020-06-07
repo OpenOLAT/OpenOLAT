@@ -20,8 +20,8 @@
 
 package org.olat.commons.info.restapi;
 
-import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
+import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 
 import java.util.Collections;
 
@@ -53,7 +53,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -78,9 +77,7 @@ public class InfoMessagesWebService {
 	
 	/**
 	 * The version of the Info messages Web Service
-	 * @response.representation.200.mediaType text/plain
-	 * @response.representation.200.doc The version of this specific Web Service
-	 * @response.representation.200.example 1.0
+	 * 
 	 * @return
 	 */
 	@GET
@@ -95,11 +92,7 @@ public class InfoMessagesWebService {
 	
 	/**
 	 * Creates a new info message
-	 * @response.representation.200.qname {http://www.example.com}infoMessageVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The info message
-	 * @response.representation.200.example {@link org.olat.commons.info.restapi.Examples#SAMPLE_INFOMESSAGEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * 
 	 * @param resName The OLAT Resourceable name
 	 * @param resId The OLAT Resourceable id
 	 * @param resSubPath The resource sub path (optional)
@@ -111,18 +104,14 @@ public class InfoMessagesWebService {
 	 * @return It returns the id of the newly info message
 	 */
 	@PUT
-	@Operation(summary = "Creates a new info message",
-	description = "Creates a new info message")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "The info message",
-					content = {
-							@Content(mediaType = "application/json", schema = @Schema(implementation = InfoMessageVO.class)),
-							@Content(mediaType = "application/xml", schema = @Schema(implementation = InfoMessageVO.class))
-						} 
-			),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "Not Found")}
-		)
+	@Operation(summary = "Creates a new info message", description = "Creates a new info message")
+	@ApiResponse(responseCode = "200", description = "The info message",
+			content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = InfoMessageVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = InfoMessageVO.class))
+				})
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "Not Found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response createEmptyCourse(final @QueryParam("resName") @Parameter(description = "The OLAT Resourceable name") String resName,
 			final @QueryParam("resId") @Parameter(description = "The OLAT Resourceable id") Long resId, @QueryParam("resSubPath") @Parameter(description = "The resource sub path (optional)") String resSubPath,

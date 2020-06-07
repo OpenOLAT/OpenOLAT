@@ -46,7 +46,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -65,20 +64,16 @@ public class RepositoryEntryLifecycleWebService {
 	
 	/**
 	 * List all public lifecycles
-	 * @response.representation.200.qname {http://www.example.com}repositoryEntryVO
-	 * @response.representation.200.mediaType text/plain, text/html, application/xml, application/json
-	 * @response.representation.200.doc List all entries in the repository
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_REPOENTRYVOes}
+	 * 
 	 * @param uriInfo The URI information
 	 * @param httpRequest The HTTP request
 	 * @return
 	 */
 	@GET
 	@Operation(summary = "List all public lifecycles", description = "List all public lifecycles")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "List all entries in the repository", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = RepositoryEntryVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = RepositoryEntryVO.class))) })})	
+	@ApiResponse(responseCode = "200", description = "List all entries in the repository", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = RepositoryEntryVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = RepositoryEntryVO.class))) })
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getPublicLifeCycles(@Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);

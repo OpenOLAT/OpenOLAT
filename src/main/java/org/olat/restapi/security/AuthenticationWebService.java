@@ -43,7 +43,6 @@ import org.springframework.stereotype.Component;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * 
@@ -71,9 +70,7 @@ public class AuthenticationWebService {
 	
 	/**
 	 * Retrieves the version of the User Authentication Web Service
-	 * @response.representation.200.mediaType text/plain
-	 * @response.representation.200.doc The version of this specific Web Service
-	 * @response.representation.200.example 1.0
+	 * 
 	 * @return
 	 */
 	@GET
@@ -99,19 +96,9 @@ public class AuthenticationWebService {
 	 * When using the REST API, best-practice is to use basic authentication and
 	 * activate cookies in your HTTP client for automatic session management.
 	 * 
-	 * @response.representation.200.mediaType text/plain, application/xml
-	 * @response.representation.200.doc Say hello to the authenticated user, and
-	 *                                  give it a security
-	 *                                  token @response.representation.200.example
-	 *                                  &lt;hello&gt;Hello john&lt;/hello&gt;
-	 * @response.representation.401.doc The authentication has failed
-	 * @response.representation.404.doc The identity not found
-	 * @param username
-	 *            The username
-	 * @param password
-	 *            The password (the password is in clear text, not encrypted)
-	 * @param httpRequest
-	 *            The HTTP request
+	 * @param username The username
+	 * @param password The password (the password is in clear text, not encrypted)
+	 * @param httpRequest The HTTP request
 	 * @return
 	 */
 	@GET
@@ -127,13 +114,11 @@ public class AuthenticationWebService {
 			"	  \n" + 
 			"	  When using the REST API, best-practice is to use basic authentication and\n" + 
 			"	  activate cookies in your HTTP client for automatic session management.")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "Say hello to the authenticated user, and\n" + 
-					"	 *                                  give it a security\n" + 
-					"	 *                                  token @response.representation.200.example\n" + 
-					"	 *                                  &lt;hello&gt;Hello john&lt;/hello&gt;"),
-			@ApiResponse(responseCode = "401", description = "The authentication has failed"),
-			@ApiResponse(responseCode = "404", description = "The identity not found") })	
+	@ApiResponse(responseCode = "200", description = "Say hello to the authenticated user, and\n" + 
+			"	 *                                  give it a security token\n" + 
+			"	 *                                  &lt;hello&gt;Hello john&lt;/hello&gt;")
+	@ApiResponse(responseCode = "401", description = "The authentication has failed")
+	@ApiResponse(responseCode = "404", description = "The identity not found")
 	@Produces({MediaType.TEXT_PLAIN, MediaType.APPLICATION_XML})
 	public Response login(@PathParam("username") String username,
 			@QueryParam("password") String password,

@@ -47,7 +47,6 @@ import org.springframework.stereotype.Component;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 
 /**
@@ -78,9 +77,8 @@ public class ChangePasswordWebService {
 	 */
 	@PUT
 	@Operation(summary = "Change password", description = "Change password")
-	@ApiResponses({	
-		@ApiResponse(responseCode = "200", description = "Password has been changed"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })	
+	@ApiResponse(responseCode = "200", description = "Password has been changed")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response register(@QueryParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		if(!isUserManagerOf(identityKey, request)) {

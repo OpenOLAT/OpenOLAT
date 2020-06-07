@@ -23,7 +23,6 @@ package org.olat.modules.lecture.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,7 +58,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * 
@@ -77,11 +75,6 @@ public class LectureBlockRollCallWebService {
 	/**
 	 * Return a list lecture block roll call.
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}lectureBlockRollCallVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc A lecture block roll call
-	 * @response.representation.200.example {@link org.olat.modules.lecture.restapi.Examples#SAMPLE_LECTUREBLOCKROLLCALLVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @param closed If true, the status of the block is done or the status of the roll call is closed or auto closed
 	 * @param hasAbsence If true, the roll call has an absence
 	 * @param hasSupervisorNotificationDate If true, the roll call has a supervisor notification date set
@@ -92,16 +85,13 @@ public class LectureBlockRollCallWebService {
 	@Path("/")
 	@Operation(summary = "Return a list lecture block roll call", description = "Return a list lecture block roll call" + 
 			"the user is a participant (owner, tutor or participant)")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "A lecture block roll call",
-				content = {
-						@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = LectureBlockRollCallVO.class))),
-						@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = LectureBlockRollCallVO.class)))
-					} 
-		),
-		@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-		@ApiResponse(responseCode = "404", description = "Not found")}
-)	
+	@ApiResponse(responseCode = "200", description = "A lecture block roll call",
+			content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = LectureBlockRollCallVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = LectureBlockRollCallVO.class)))
+				})
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "Not found")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getRollCalls(@QueryParam("closed") @Parameter(description = "If true, the status of the block is done or the status of the roll call is closed or auto closed") Boolean closed, @QueryParam("hasAbsence") @Parameter(description = "If true, the roll call has an absence") Boolean hasAbsence, 
 			@QueryParam("hasSupervisorNotificationDate") @Parameter(description = "If true, the roll call has a supervisor notification date set") Boolean hasSupervisorNotificationDate,
@@ -138,12 +128,6 @@ public class LectureBlockRollCallWebService {
 	/**
 	 * Return the lecture block roll call specified by the primary key.
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}lectureBlockRollCallVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc A lecture block roll call
-	 * @response.representation.200.example {@link org.olat.modules.lecture.restapi.Examples#SAMPLE_LECTUREBLOCKROLLCALLVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The role call was not found
 	 * @param rollCallKey The primary key of the roll call
 	 * @param httpRequest  The HTTP request
 	 * @return The roll call
@@ -152,16 +136,13 @@ public class LectureBlockRollCallWebService {
 	@Path("{rollCallKey}")
 	@Operation(summary = "Return the lecture block roll call specified by the primary key", description = "Return the lecture block roll call specified by the primary key" + 
 			"the user is a participant (owner, tutor or participant)")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "A lecture block roll call",
-				content = {
-						@Content(mediaType = "application/json", schema = @Schema(implementation = LectureBlockRollCallVO.class)),
-						@Content(mediaType = "application/xml", schema = @Schema(implementation = LectureBlockRollCallVO.class))
-					} 
-		),
-		@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-		@ApiResponse(responseCode = "404", description = "Not found")}
-)	
+	@ApiResponse(responseCode = "200", description = "A lecture block roll call",
+			content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = LectureBlockRollCallVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = LectureBlockRollCallVO.class))
+				})
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "Not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getRollCall(@PathParam("rollCallKey") Long rollCallKey, @Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
@@ -189,12 +170,6 @@ public class LectureBlockRollCallWebService {
 	 * supervisor notification date, the comment and the reason. The method doesn't
 	 * create a new roll call.
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}lectureBlockRollCallVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc A lecture block roll call
-	 * @response.representation.200.example {@link org.olat.modules.lecture.restapi.Examples#SAMPLE_LECTUREBLOCKROLLCALLVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The role call was not found
 	 * @param rollCallVo The roll call to update
 	 * @param httpRequest  The HTTP request
 	 * @return The updated roll call
@@ -205,16 +180,13 @@ public class LectureBlockRollCallWebService {
 			"Update a roll call. The absence are not updated by this method! Only the\n" + 
 			"	  supervisor notification date, the comment and the reason. The method doesn't\n" + 
 			"	  create a new roll call")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "A lecture block roll call",
-				content = {
-						@Content(mediaType = "application/json", schema = @Schema(implementation = LectureBlockRollCallVO.class)),
-						@Content(mediaType = "application/xml", schema = @Schema(implementation = LectureBlockRollCallVO.class))
-					} 
-		),
-		@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-		@ApiResponse(responseCode = "404", description = "The role call was not found")}
-)	
+	@ApiResponse(responseCode = "200", description = "A lecture block roll call",
+			content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = LectureBlockRollCallVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = LectureBlockRollCallVO.class))
+				})
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The role call was not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updateRollCallPut(LectureBlockRollCallVO rollCallVo, @Context HttpServletRequest httpRequest) {
@@ -226,12 +198,6 @@ public class LectureBlockRollCallWebService {
 	 * supervisor notification date, the comment and the reason. The method doesn't
 	 * create a new roll call.
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}lectureBlockRollCallVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc A lecture block roll call
-	 * @response.representation.200.example {@link org.olat.modules.lecture.restapi.Examples#SAMPLE_LECTUREBLOCKROLLCALLVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The role call was not found
 	 * @param rollCallVo The roll call to update
 	 * @param httpRequest  The HTTP request
 	 * @return The updated roll call
@@ -242,16 +208,13 @@ public class LectureBlockRollCallWebService {
 			"Update a roll call. The absence are not updated by this method! Only the\n" + 
 			"	  supervisor notification date, the comment and the reason. The method doesn't\n" + 
 			"	  create a new roll call")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "A lecture block roll call",
-				content = {
-						@Content(mediaType = "application/json", schema = @Schema(implementation = LectureBlockRollCallVO.class)),
-						@Content(mediaType = "application/xml", schema = @Schema(implementation = LectureBlockRollCallVO.class))
-					} 
-		),
-		@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-		@ApiResponse(responseCode = "404", description = "The role call was not found")}
-)	
+	@ApiResponse(responseCode = "200", description = "A lecture block roll call",
+			content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = LectureBlockRollCallVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = LectureBlockRollCallVO.class))
+				})
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The role call was not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updateRollCall(LectureBlockRollCallVO rollCallVo, @Context HttpServletRequest httpRequest) {

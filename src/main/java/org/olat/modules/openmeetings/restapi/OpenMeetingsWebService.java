@@ -20,7 +20,6 @@
 package org.olat.modules.openmeetings.restapi;
 
 import java.io.File;
-
 import java.util.Date;
 
 import javax.ws.rs.GET;
@@ -43,7 +42,6 @@ import org.springframework.stereotype.Component;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * 
@@ -59,9 +57,7 @@ public class OpenMeetingsWebService {
 	
 	/**
 	 * Retrieves the portrait of an user
-	 * @response.representation.200.mediaType application/octet-stream
-	 * @response.representation.200.doc The portrait as image
-   * @response.representation.404.doc The identity or the portrait not found
+	 * 
 	 * @param identityToken The identity key of the user being searched
 	 * @param request The REST request
 	 * @return The image
@@ -69,9 +65,8 @@ public class OpenMeetingsWebService {
 	@GET
 	@Path("{identityToken}/portrait")
 	@Operation(summary = "Retrieve the portrait of an user", description = "Retrieves the portrait of an user")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The portrait as image"),
-			@ApiResponse(responseCode = "404", description = "The identity or the portrait not found") })	
+	@ApiResponse(responseCode = "200", description = "The portrait as image")
+	@ApiResponse(responseCode = "404", description = "The identity or the portrait not found")
 	@Produces({"image/jpeg","image/jpg",MediaType.APPLICATION_OCTET_STREAM})
 	public Response getPortrait(@PathParam("identityToken") String identityToken, @Context Request request) {
 		OpenMeetingsModule module = CoreSpringFactory.getImpl(OpenMeetingsModule.class);

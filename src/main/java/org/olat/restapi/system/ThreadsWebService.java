@@ -43,11 +43,8 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
- * 
- * <h3>Description:</h3>
  * 
  * Initial Date:  21 juin 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, www.frentix.com
@@ -73,10 +70,9 @@ public class ThreadsWebService implements Sampler {
 	@GET
 	@Path("cpu")
 	@Operation(summary = "Retrieve cpu info", description = "Retrieve cpu info")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The infos", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ThreadVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = ThreadVO.class))) }) })		
+	@ApiResponse(responseCode = "200", description = "The infos", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ThreadVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = ThreadVO.class))) })	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public synchronized Response getThreadsCpu() {
 		List<ThreadView> threadViews = CoreSpringFactory.getImpl(ThreadInfosManager.class).getThreadViews();

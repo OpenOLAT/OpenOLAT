@@ -29,8 +29,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.olat.core.CoreSpringFactory;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.Tracing;
 import org.olat.restapi.system.vo.NotificationsStatus;
 import org.quartz.JobExecutionContext;
@@ -40,7 +40,6 @@ import org.quartz.SchedulerException;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * 
@@ -54,17 +53,14 @@ public class NotificationsAdminWebService {
 	
 	/**
 	 * Return the status of the notifications job: running, stopped
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The status of the notifications job
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * 
 	 * @return The status of the notifications job
 	 */
 	@GET
 	@Path("status")
 	@Operation(summary = "Return the status", description = "Return the status of the notifications job: running, stopped")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The status of the notifications job"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")})	
+	@ApiResponse(responseCode = "200", description = "The status of the notifications job")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getStatus() {
 		return Response.ok(new NotificationsStatus(getJobStatus())).build();
@@ -72,17 +68,14 @@ public class NotificationsAdminWebService {
 	
 	/**
 	 * Return the status of the notifications job: running, stopped
-   * @response.representation.200.mediaType text/plain
-   * @response.representation.200.doc The status of the notifications job
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * 
 	 * @return The status of the notifications job
 	 */
 	@GET
 	@Path("status")
 	@Operation(summary = "Return the status", description = "Return the status of the notifications job: running, stopped")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The status of the notifications job"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")})	
+	@ApiResponse(responseCode = "200", description = "The status of the notifications job")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.TEXT_PLAIN})
 	public Response getPlainTextStatus() {
 		return Response.ok(getJobStatus()).build();
@@ -107,16 +100,14 @@ public class NotificationsAdminWebService {
 	/**
 	 * Update the status of the notifications job: running, stopped.
 	 * Running start the indexer, stopped, stop it.
-   * @response.representation.200.doc The status has changed
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * 
 	 * @return The status of the notification
 	 */
 	@POST
 	@Path("status")
 	@Operation(summary = "Update the status", description = "Update the status of the notifications job: running, stopped. Running start the indexer, stopped, stop it")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The status of the notifications job"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")})	
+	@ApiResponse(responseCode = "200", description = "The status of the notifications job")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")	
 	public Response setStatus(@FormParam("status") String status) {
 		if("running".equals(status)) {
 			try {

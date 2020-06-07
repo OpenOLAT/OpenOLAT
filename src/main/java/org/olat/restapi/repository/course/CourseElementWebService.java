@@ -86,7 +86,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 
@@ -106,18 +105,13 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	
 	/**
 	 * The version of the Course Elements Web Service
-	 * @response.representation.200.mediaType text/plain
-	 * @response.representation.200.doc The version of this specific Web Service
-	 * @response.representation.200.example 1.0
+	 * 
 	 * @return
 	 */
 	@GET
 	@Path("version")
 	@Operation(summary = "The version of the Course Elements Web Service", description = "The version of the Course Elements Web Service")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "The version of this specific Web Service"
-		)}
-)	
+	@ApiResponse(responseCode = "200", description = "The version of this specific Web Service")
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
@@ -126,12 +120,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	
 	/**
 	 * Retrieves metadata of the course node
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The course node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or parentNode not found
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param nodeId The node's id
 	 * @param request The HTTP request
@@ -140,11 +129,11 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@GET
 	@Path("{nodeId}")
 	@Operation(summary = "Retrieves metadata of the course node", description = "Retrieves metadata of the course node")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
-			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or parentNode not found") })
+	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
+		@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
+		@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCourseNode(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
 			@Context HttpServletRequest request) {
@@ -167,14 +156,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	
 	/**
 	 * This updates a Structure Element onto a given course.
-	 * @response.representation.mediaType application/x-www-form-urlencoded, multipart/form-data
-	 * @response.representation.doc The course node metadatas
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The course node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or parentNode not found
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param nodeId The node's id of this structure
 	 * @param shortTitle The node short title
@@ -192,11 +174,11 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@POST
 	@Path("structure/{nodeId}")
 	@Operation(summary = "Update structure element", description = "This updates a Structure Element onto a given course")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
-			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or parentNode not found") })
+	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
+		@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
+		@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes({MediaType.APPLICATION_FORM_URLENCODED, MediaType.MULTIPART_FORM_DATA})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updateStructure(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
@@ -230,14 +212,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	/**
 	 * This attaches a Structure Element onto a given course. The element will be
 	 * inserted underneath the supplied parentNodeId.
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The course node metadatas
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The course node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or parentNode not found
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param parentNodeId The node's id which will be the parent of this
 	 *          structure
@@ -254,11 +229,11 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Path("structure")
 	@Operation(summary = "Attach structure element to course", description = "This attaches a Structure Element onto a given course. The element will be\n" + 
 			"	  inserted underneath the supplied parentNodeId")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
-			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or parentNode not found") })
+	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
+		@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
+		@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachStructurePostMultiparts(@PathParam("courseId") Long courseId, 
@@ -294,14 +269,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	/**
 	 * This attaches a Structure Element onto a given course. The element will be
 	 * inserted underneath the supplied parentNodeId.
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The course node metadatas
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The course node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or parentNode not found
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param parentNodeId The node's id which will be the parent of this
 	 *          structure
@@ -318,11 +286,11 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Path("structure")
 	@Operation(summary = "Attach structure element to course", description = "This attaches a Structure Element onto a given course. The element will be\n" + 
 			"	  inserted underneath the supplied parentNodeId")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
-			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or parentNode not found") })
+	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
+		@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
+		@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachStructure(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
@@ -331,21 +299,13 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			@QueryParam("visibilityExpertRules") String visibilityExpertRules, @QueryParam("accessExpertRules") String accessExpertRules,
 			@QueryParam("displayType") @DefaultValue(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_TOC) String displayType,
 			@Context HttpServletRequest request) {
-		//fxdiff FXOLAT-122: course management
 		CustomConfigDelegate config = new StructureFullConfig(displayType, null, null);
 		return attach(courseId, parentNodeId, "st", position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
 	}
 	
 	/**
 	 * This updates a Single Page Element onto a given course.
-	 * @response.representation.mediaType multipart/form-data
-	 * @response.representation.doc The content of the single page
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc the course node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or parentNode not found
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param nodeId The node's id of this single page
 	 * @param position The node's position relative to its sibling nodes (optional)
@@ -362,11 +322,11 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@POST
 	@Path("singlepage/{nodeId}")
 	@Operation(summary = "Update a Single Page Element on course", description = "This updates a Single Page Element onto a given course")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
-			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or parentNode not found") })
+	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
+		@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
+		@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updateSinglePage(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
@@ -397,14 +357,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	/**
 	 * This attaches a Single Page Element onto a given course. The element will
 	 * be inserted underneath the supplied parentNodeId.
-	 * @response.representation.mediaType multipart/form-data
-	 * @response.representation.doc The content of the single page
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The course node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or parentNode not found
+	 * 
 	 * @param courseId The course resourceable id
 	 * @param parentNodeId The node's id which will be the parent of this single
 	 *          page
@@ -423,11 +376,11 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Path("singlepage")
 	@Operation(summary = "Attach a Single Page Element on course", description = "This attaches a Single Page Element onto a given course. The element will\n" + 
 			"	  be inserted underneath the supplied parentNodeId")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
-			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or parentNode not found") })
+	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
+		@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
+		@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachSinglePagePost(@PathParam("courseId") Long courseId, @Context HttpServletRequest request) {
@@ -437,14 +390,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	/**
 	 * This attaches a Single Page Element onto a given course. The element will
 	 * be inserted underneath the supplied parentNodeId.
-	 * @response.representation.mediaType multipart/form-data
-	 * @response.representation.doc The content of the single page
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc the course node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or parentNode not found
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param parentNodeId The node's id which will be the parent of this single
 	 *          page
@@ -463,11 +409,11 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Path("singlepage")
 	@Operation(summary = "Attach a Single Page Element on course", description = "This attaches a Single Page Element onto a given course. The element will\n" + 
 			"	  be inserted underneath the supplied parentNodeId")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
-			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or parentNode not found") })
+	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
+		@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
+		@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachSinglePage(@PathParam("courseId") Long courseId, @Context HttpServletRequest request) {
@@ -499,14 +445,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 * This attaches a Single Page Element onto a given course. The element will
 	 * be inserted underneath the supplied parentNodeId. The page is found in the
 	 * resource folder of the course.
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The content of the single page
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc the course node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or parentNode not found
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param parentNodeId The node's id which will be the parent of this single
 	 *          page
@@ -525,11 +464,11 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Path("singlepage")
 	@Operation(summary = "Attach a Single Page Element on course", description = "This attaches a Single Page Element onto a given course. The element will\n" + 
 			"	  be inserted underneath the supplied parentNodeId")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
+	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or parentNode not found") })
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachSinglePagePost(@PathParam("courseId") Long courseId, @FormParam("parentNodeId") String parentNodeId,
@@ -544,14 +483,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 * This attaches a Single Page Element onto a given course. The element will
 	 * be inserted underneath the supplied parentNodeId. The page is found in the
 	 * resource folder of the course.
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The content of the single page
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc the course node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or parentNode not found
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param parentNodeId The node's id which will be the parent of this single
 	 *          page
@@ -571,11 +503,11 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Operation(summary = "Attach a Single Page Element on course", description = "This attaches a Single Page Element onto a given course. The element will\n" + 
 			"	 be inserted underneath the supplied parentNodeId. The page is found in the\n" + 
 			"	 resource folder of the course.")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The content of the single page", content = {
-			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or parentNode not found") })
+	@ApiResponse(responseCode = "200", description = "The content of the single page", content = {
+		@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
+		@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachSinglePage(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
@@ -589,14 +521,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	
 	/**
 	 * This updates a Task Element onto a given course.
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The task node metadatas
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The course node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or parentNode not found
+	 * 
 	 * @param courseId The course resourceable id
 	 * @param nodeId The node's id of this task
 	 * @param shortTitle The node short title
@@ -612,14 +537,13 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@POST
 	@Path("task/{nodeId}")
 	@Operation(summary = "Update a Task Element onto a given course", description = "This updates a Task Element onto a given course")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
-			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or parentNode not found") })
+	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
+		@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
+		@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	//fxdiff FXOLAT-122: course management
 	public Response updateTask(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
 			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle, 
 			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
@@ -633,14 +557,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	/**
 	 * This attaches a Task Element onto a given course. The element will be
 	 * inserted underneath the supplied parentNodeId.
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The task node metadatas
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The course node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or parentNode not found
+	 * 
 	 * @param courseId The course resourceable id
 	 * @param parentNodeId The node's id which will be the parent of this task
 	 * @param position The node's position relative to its sibling nodes (optional)
@@ -658,11 +575,11 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Path("task")
 	@Operation(summary = "Attach Task Element on course", description = "This attaches a Task Element onto a given course. The element will be\n" + 
 			"	  inserted underneath the supplied parentNodeId.")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
-			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or parentNode not found") })
+	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
+		@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
+		@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachTaskPost(@PathParam("courseId") Long courseId, @FormParam("parentNodeId") String parentNodeId,
@@ -677,14 +594,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	/**
 	 * This attaches a Task Element onto a given course. The element will be
 	 * inserted underneath the supplied parentNodeId.
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The task node metadatas
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The course node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or parentNode not found
+	 * 
 	 * @param courseId The course resourceable id
 	 * @param parentNodeId The node's id which will be the parent of this task
 	 * @param position The node's position relative to its sibling nodes (optional)
@@ -702,11 +612,11 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Path("task")
 	@Operation(summary = "Attach Task Element on course", description = "This attaches a Task Element onto a given course. The element will be\n" + 
 			"	  inserted underneath the supplied parentNodeId.")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
+	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or parentNode not found") })
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachTask(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
@@ -721,14 +631,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	
 	/**
 	 * This updates a Test Element onto a given course.
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The course node metadatas
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The test node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course, parentNode or test not found
+	 *
 	 * @param courseId The course resourceable id
 	 * @param nodeId The node's id of this test
 	 * @param testResourceableId The test node's id which is retorned in the
@@ -746,14 +649,13 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@POST
 	@Path("test/{nodeId}")
 	@Operation(summary = "Update a Test Element onto a given course", description = "This updates a Test Element onto a given course")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The test node metadatas", content = {
+	@ApiResponse(responseCode = "200", description = "The test node metadatas", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or parentNode not found") })
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	//fxdiff FXOLAT-122: course management
 	public Response updateTest(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
 			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle, 
 			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
@@ -771,14 +673,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	/**
 	 * This attaches a Test Element onto a given course. The element will be
 	 * inserted underneath the supplied parentNodeId.
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The course node metadatas
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The test node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course, parentNode or test not found
+	 * 
 	 * @param courseId The course resourceable id
 	 * @param parentNodeId The node's id which will be the parent of this test
 	 * @param testResourceableId The test node's id which is retorned in the
@@ -796,11 +691,11 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Path("test")
 	@Operation(summary = "Update a Test Element onto a given course", description = "This attaches a Test Element onto a given course. The element will be\n" + 
 			"	  inserted underneath the supplied parentNodeId")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The test node metadatas", content = {
+	@ApiResponse(responseCode = "200", description = "The test node metadatas", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "course, parentNode or test not found") })
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "course, parentNode or test not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachTestPost(@PathParam("courseId") Long courseId, @FormParam("parentNodeId") String parentNodeId,
@@ -814,14 +709,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	/**
 	 * This attaches a Test Element onto a given course. The element will be
 	 * inserted underneath the supplied parentNodeId.
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc the course node metadatas
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc the test node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc course, parentNode or test not found
+	 * 
 	 * @param courseId The course resourceable id
 	 * @param parentNodeId The node's id which will be the parent of this test
 	 * @param testResourceableId The test node's id which is retorned in the
@@ -839,11 +727,11 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Path("test")
 	@Operation(summary = "Update a Test Element onto a given course", description = "This attaches a Test Element onto a given course. The element will be\n" + 
 			"	  inserted underneath the supplied parentNodeId")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The test node metadatas", content = {
+	@ApiResponse(responseCode = "200", description = "The test node metadatas", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "course, parentNode or test not found") })
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "course, parentNode or test not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachTest(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
@@ -863,14 +751,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	
 	/**
 	 * Updates an assessment building block.
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The assessment node metadatas
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The course node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or parentNode not found
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param nodeId The node's id of this assessment
 	 * @param shortTitle The node short title
@@ -884,14 +765,13 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@POST
 	@Path("assessment/{nodeId}")
 	@Operation(summary = "Update an assessment building block", description = "Updates an assessment building block")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
+	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or parentNode not found") })
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	//fxdiff FXOLAT-122: course management
 	public Response updateAssessment(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
 			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
 			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
@@ -903,14 +783,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	
 	/**
 	 * Attaches an assessment building block.
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The assessment node metadatas
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The course node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or parentNode not found
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param parentNodeId The node's id which will be the parent of this assessment
 	 * @param position The node's position relative to its sibling nodes (optional)
@@ -925,11 +798,11 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@POST
 	@Path("assessment")
 	@Operation(summary = "Attaches an assessment building block", description = "Attaches an assessment building block")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The assessment node metadatas", content = {
+	@ApiResponse(responseCode = "200", description = "The assessment node metadatas", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or parentNode not found") })
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachAssessmentPost(@PathParam("courseId") Long courseId, @FormParam("parentNodeId") String parentNodeId,
@@ -942,14 +815,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	
 	/**
 	 * Attaches an assessment building block.
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The assessment node metadatas
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The course node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or parentNode not found
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param parentNodeId The node's id which will be the parent of this assessment
 	 * @param position The node's position relative to its sibling nodes (optional)
@@ -964,11 +830,11 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@PUT
 	@Path("assessment")
 	@Operation(summary = "Attaches an assessment building block", description = "Attaches an assessment building block")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
+	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or parentNode not found") })
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachAssessment(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
@@ -982,14 +848,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	
 	/**
 	 * Attaches an wiki building block.
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The assessment node metadatas
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The course node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or parentNode not found
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param nodeId The node's id which of this wiki
 	 * @param shortTitle The node short title
@@ -1004,14 +863,13 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@POST
 	@Path("wiki/{nodeId}")
 	@Operation(summary = "Attaches an wiki building block", description = "Attaches an wiki building block")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
+	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or parentNode not found") })
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	//fxdiff FXOLAT-122: course management
 	public Response updateWiki(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
 			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
 			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
@@ -1031,14 +889,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	
 	/**
 	 * Attaches an wiki building block.
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The assessment node metadatas
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The course node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or parentNode not found
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param parentNodeId The node's id which will be the parent of this assessment
 	 * @param position The node's position relative to its sibling nodes (optional)
@@ -1053,11 +904,11 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@POST
 	@Path("wiki")
 	@Operation(summary = "Attaches an wiki building block", description = "Attaches an wiki building block")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
+	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or parentNode not found") })
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachWikiPost(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
@@ -1070,14 +921,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	
 	/**
 	 * Attaches an wiki building block.
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The assessment node metadatas
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The course node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or parentNode not found
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param parentNodeId The node's id which will be the parent of this assessment
 	 * @param position The node's position relative to its sibling nodes (optional)
@@ -1092,11 +936,11 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@PUT
 	@Path("wiki")
 	@Operation(summary = "Attaches an wiki building block", description = "Attaches an wiki building block")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
+	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or parentNode not found") })
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachWiki(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
@@ -1115,14 +959,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	
 	/**
 	 * Update an blog building block.
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The assessment node metadatas
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The course node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or parentNode not found
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param nodeId The node's id of this blog
 	 * @param shortTitle The node short title
@@ -1137,14 +974,13 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@POST
 	@Path("blog/{nodeId}")
 	@Operation(summary = "Update an blog building block", description = "Update an blog building block")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
+	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or parentNode not found") })
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	//fxdiff FXOLAT-122: course management
 	public Response updateBlog(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
 			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
 			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
@@ -1164,14 +1000,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	
 	/**
 	 * Attaches an blog building block.
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The assessment node metadatas
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The course node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or parentNode not found
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param parentNodeId The node's id which will be the parent of this assessment
 	 * @param position The node's position relative to its sibling nodes (optional)
@@ -1187,11 +1016,11 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@POST
 	@Path("blog")
 	@Operation(summary = "Attaches an blog building block", description = "Attaches an blog building block")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
+	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or parentNode not found") })
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachBlogPost(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
@@ -1204,14 +1033,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	
 	/**
 	 * Attaches an blog building block.
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The assessment node metadatas
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The course node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or parentNode not found
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param parentNodeId The node's id which will be the parent of this assessment
 	 * @param position The node's position relative to its sibling nodes (optional)
@@ -1227,11 +1049,11 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@PUT
 	@Path("blog")
 	@Operation(summary = "Attaches an blog building block", description = "Attaches an blog building block")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
+	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or parentNode not found") })
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachBlog(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
@@ -1251,14 +1073,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	
 	/**
 	 * Attaches an survey building block.
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The assessment node metadatas
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The course node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or parentNode not found
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param parentNodeId The node's id which will be the parent of this assessment
 	 * @param position The node's position relative to its sibling nodes (optional)
@@ -1273,11 +1088,11 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@POST
 	@Path("survey/{nodeId}")
 	@Operation(summary = "Attaches an survey building block", description = "Attaches an survey building block")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
+	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or parentNode not found") })
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachSurveyPost(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
@@ -1297,14 +1112,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	
 	/**
 	 * Attaches an survey building block.
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The assessment node metadatas
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The course node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or parentNode not found
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param parentNodeId The node's id which will be the parent of this assessment
 	 * @param position The node's position relative to its sibling nodes (optional)
@@ -1319,11 +1127,11 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@POST
 	@Path("survey")
 	@Operation(summary = "Attaches an survey building block", description = "Attaches an survey building block")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
+	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or parentNode not found") })
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachSurveyPost(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
@@ -1336,14 +1144,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	
 	/**
 	 * Attaches an survey building block.
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The assessment node metadatas
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The course node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or parentNode not found
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param parentNodeId The node's id which will be the parent of this assessment
 	 * @param position The node's position relative to its sibling nodes (optional)
@@ -1358,11 +1159,11 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@PUT
 	@Path("survey")
 	@Operation(summary = "Attaches an survey building block", description = "Attaches an survey building block")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
+	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or parentNode not found") })
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachSurvey(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
@@ -1382,14 +1183,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	
 	/**
 	 * Update an external page building block.
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The external page node metadatas
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The course node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or parentNode not found
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param nodeId The node's id of this external page
 	 * @param shortTitle The node short title
@@ -1404,14 +1198,13 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@POST
 	@Path("externalpage/{nodeId}")
 	@Operation(summary = "Update an external page building block", description = "Update an external page building block")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
+	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or parentNode not found") })
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	//fxdiff FXOLAT-122: course management
 	public Response updateExternalPage(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
 			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
 			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
@@ -1431,14 +1224,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	
 	/**
 	 * Attaches an external page building block.
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The external page node metadatas
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The course node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or parentNode not found
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param parentNodeId The node's id which will be the parent of this assessment
 	 * @param position The node's position relative to its sibling nodes (optional)
@@ -1454,11 +1240,11 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@POST
 	@Path("externalpage")
 	@Operation(summary = "Update an external page building block", description = "Update an external page building block")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
+	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or parentNode not found") })
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachExternalPagePost(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
@@ -1471,15 +1257,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	
 	/**
 	 * Attaches an external page building block.
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The external page node metadatas
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The course node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or parentNode not found
-	 * @response.representation.409.doc The given URL is not valid
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param parentNodeId The node's id which will be the parent of this assessment
 	 * @param position The node's position relative to its sibling nodes (optional)
@@ -1495,11 +1273,11 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@PUT
 	@Path("externalpage")
 	@Operation(summary = "Attaches an external page building block", description = "Attaches an external page building block")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
+	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or parentNode not found") })
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachExternalPage(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
@@ -1520,14 +1298,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	
 	/**
 	 * This attaches a Task file onto a given task element.
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The task node metadatas
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The course node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or parentNode not found
+	 * 
 	 * @param courseId The course resourceable id
 	 * @param nodeId The node's id which will be the parent of this task file
 	 * @param request The HTTP request
@@ -1536,11 +1307,11 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@POST
 	@Path("task/{nodeId}/file")
 	@Operation(summary = "This attaches a Task file onto a given task element", description = "This attaches a Task file onto a given task element")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The task node metadatas", content = {
+	@ApiResponse(responseCode = "200", description = "The task node metadatas", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or parentNode not found") })
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachTaskFilePost(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
@@ -1550,15 +1321,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 
 	/**
 	 * This attaches a Task file onto a given task element.
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The task node metadatas
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The course node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or parentNode not found
-	 * @response.representation.406.doc The course node is not of type task
+	 * 
 	 * @param courseId The course resourceable id
 	 * @param nodeId The node's id which will be the parent of this task file
 	 * @param request The HTTP request
@@ -1567,11 +1330,11 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@PUT
 	@Path("task/{nodeId}/file")
 	@Operation(summary = "This attaches a Task file onto a given task element", description = "This attaches a Task file onto a given task element")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The task node metadatas", content = {
+	@ApiResponse(responseCode = "200", description = "The task node metadatas", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or parentNode not found") })
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachTaskFile(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
@@ -1623,16 +1386,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	
 	/**
 	 * This attaches the run-time configuration onto a given task element.
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The task node configuration
-	 * @response.representation.200.qname {http://www.example.com}surveyConfigVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The task node configuration
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or task node not found
-	 * @response.representation.406.doc The call is not applicable to task course node
-	 * @response.representation.409.doc The configuration is not valid 
+	 * 
 	 * @param courseId
 	 * @param nodeId
 	 * @param enableAssignment
@@ -1666,13 +1420,13 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@POST
 	@Path("task/{nodeId}/configuration")
 	@Operation(summary = "This attaches the run-time configuration", description = "This attaches the run-time configuration onto a given task element")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The task node configuration", content = {
+	@ApiResponse(responseCode = "200", description = "The task node configuration", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = SurveyConfigVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = SurveyConfigVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or task node not found"),
-			@ApiResponse(responseCode = "406", description = "The call is not applicable to task course node"),
-			@ApiResponse(responseCode = "409", description = "The configuration is not valid ") })
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = SurveyConfigVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or task node not found")
+	@ApiResponse(responseCode = "406", description = "The call is not applicable to task course node")
+	@ApiResponse(responseCode = "409", description = "The configuration is not valid ")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response addTaskConfigurationPost(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
@@ -1712,16 +1466,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	
 	/**
 	 * This attaches the run-time configuration onto a given task element.
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The task node configuration
-	 * @response.representation.200.qname {http://www.example.com}surveyConfigVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The task node configuration
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or task node not found
-	 * @response.representation.406.doc The call is not applicable to task course node
-	 * @response.representation.409.doc The configuration is not valid 
+	 * 
 	 * @param courseId
 	 * @param nodeId
 	 * @param enableAssignment
@@ -1755,13 +1500,13 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@PUT
 	@Path("task/{nodeId}/configuration")
 	@Operation(summary = "This attaches the run-time configuration", description = "This attaches the run-time configuration onto a given task element")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The task node configuration", content = {
+	@ApiResponse(responseCode = "200", description = "The task node configuration", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = SurveyConfigVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = SurveyConfigVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or task node not found"),
-			@ApiResponse(responseCode = "406", description = "The call is not applicable to task course node"),
-			@ApiResponse(responseCode = "409", description = "The configuration is not valid ") })
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = SurveyConfigVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or task node not found")
+	@ApiResponse(responseCode = "406", description = "The call is not applicable to task course node")
+	@ApiResponse(responseCode = "409", description = "The configuration is not valid ")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response addTaskConfiguration(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
@@ -1803,12 +1548,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	
 	/**
 	 * Retrieves configuration of the task course node
-	 * @response.representation.200.qname {http://www.example.com}surveyConfigVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The course node configuration
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or task node not found
+	 * 
 	 * @param courseId
 	 * @param nodeId
 	 * @return the task course node configuration
@@ -1816,11 +1556,11 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@GET
 	@Path("task/{nodeId}/configuration")
 	@Operation(summary = "Retrieve configuration", description = "Retrieves configuration of the task course node")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The course node configuration", content = {
+	@ApiResponse(responseCode = "200", description = "The course node configuration", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = SurveyConfigVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = SurveyConfigVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or task node not found")})
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = SurveyConfigVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or task node not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getTaskConfiguration(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
 			@Context HttpServletRequest httpRequest) {
@@ -1898,16 +1638,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	
 	/**
 	 * This attaches the run-time configuration onto a given survey element.
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The test node configuration
-	 * @response.representation.200.qname {http://www.example.com}surveyConfigVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The survey node configuration
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or survey node not found
-	 * @response.representation.406.doc The call is not applicable to survey course node
-	 * @response.representation.409.doc The configuration is not valid 
+	 * 
 	 * @param courseId
 	 * @param nodeId
 	 * @param allowCancel
@@ -1923,13 +1654,13 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@POST
 	@Path("survey/{nodeId}/configuration")
 	@Operation(summary = "Attach the run-time configuration", description = "This attaches the run-time configuration onto a given survey element")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The test node configuration", content = {
+	@ApiResponse(responseCode = "200", description = "The test node configuration", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = SurveyConfigVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = SurveyConfigVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or task node not found"),
-			@ApiResponse(responseCode = "406", description = "The call is not applicable to survey course node"),
-			@ApiResponse(responseCode = "409", description = "The configuration is not valid")})
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = SurveyConfigVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or task node not found")
+	@ApiResponse(responseCode = "406", description = "The call is not applicable to survey course node")
+	@ApiResponse(responseCode = "409", description = "The configuration is not valid")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response addSurveyConfigurationPost(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
@@ -1947,16 +1678,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	
 	/**
 	 * This attaches the run-time configuration onto a given survey element.
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The test node configuration
-	 * @response.representation.200.qname {http://www.example.com}surveyConfigVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The survey node configuration
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or survey node not found
-	 * @response.representation.406.doc The call is not applicable to survey course node
-	 * @response.representation.409.doc The configuration is not valid 
+	 * 
 	 * @param courseId
 	 * @param nodeId
 	 * @param allowCancel
@@ -1972,13 +1694,13 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@PUT
 	@Path("survey/{nodeId}/configuration")
 	@Operation(summary = "Attach the run-time configuration", description = "This attaches the run-time configuration onto a given survey element")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The test node configuration", content = {
+	@ApiResponse(responseCode = "200", description = "The test node configuration", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = SurveyConfigVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = SurveyConfigVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or task node not found"),
-			@ApiResponse(responseCode = "406", description = "The call is not applicable to survey course node"),
-			@ApiResponse(responseCode = "409", description = "The configuration is not valid")})
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = SurveyConfigVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or task node not found")
+	@ApiResponse(responseCode = "406", description = "The call is not applicable to survey course node")
+	@ApiResponse(responseCode = "409", description = "The configuration is not valid")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response addSurveyConfiguration(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
@@ -1999,12 +1721,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	
 	/**
 	 * Retrieves configuration of the survey course node
-	 * @response.representation.200.qname {http://www.example.com}surveyConfigVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The course node configuration
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or survey node not found
+	 * 
 	 * @param courseId
 	 * @param nodeId
 	 * @return survey course node configuration
@@ -2012,11 +1729,11 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@GET
 	@Path("survey/{nodeId}/configuration")
 	@Operation(summary = "Retrieve configuration", description = "Retrieves configuration of the survey course node")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The course node configuration", content = {
+	@ApiResponse(responseCode = "200", description = "The course node configuration", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = SurveyConfigVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = SurveyConfigVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or task node not found")})
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = SurveyConfigVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or task node not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getSurveyConfiguration(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
 			@Context HttpServletRequest httpRequest) {
@@ -2051,16 +1768,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	
 	/**
 	 * This attaches the run-time configuration onto a given test element.
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The test node configuration
-	 * @response.representation.200.qname {http://www.example.com}testConfigVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The test node configuration
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or test node not found
-	 * @response.representation.406.doc The call is not applicable to test course node
-	 * @response.representation.409.doc The configuration is not valid 
+	 * 
 	 * @param courseId
 	 * @param nodeId
 	 * @param allowCancel
@@ -2086,13 +1794,13 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@POST
 	@Path("test/{nodeId}/configuration")
 	@Operation(summary = "Attach the run-time configuration", description = "This attaches the run-time configuration onto a given survey element")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The test node configuration", content = {
+	@ApiResponse(responseCode = "200", description = "The test node configuration", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = SurveyConfigVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = SurveyConfigVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or task node not found"),
-			@ApiResponse(responseCode = "406", description = "The call is not applicable to survey course node"),
-			@ApiResponse(responseCode = "409", description = "The configuration is not valid")})
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = SurveyConfigVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or task node not found")
+	@ApiResponse(responseCode = "406", description = "The call is not applicable to survey course node")
+	@ApiResponse(responseCode = "409", description = "The configuration is not valid")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response addTestConfigurationPost(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
@@ -2118,16 +1826,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	
 	/**
 	 * This attaches the run-time configuration onto a given test element.
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The test node configuration
-	 * @response.representation.200.qname {http://www.example.com}testConfigVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The test node configuration
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or test node not found
-	 * @response.representation.406.doc The call is not applicable to test course node
-	 * @response.representation.409.doc The configuration is not valid 
+	 * 
 	 * @param courseId
 	 * @param nodeId
 	 * @param allowCancel
@@ -2153,13 +1852,13 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@PUT
 	@Path("test/{nodeId}/configuration")
 	@Operation(summary = "Attach the run-time configuration", description = "This attaches the run-time configuration onto a given survey element")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The test node configuration", content = {
+	@ApiResponse(responseCode = "200", description = "The test node configuration", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = SurveyConfigVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = SurveyConfigVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or task node not found"),
-			@ApiResponse(responseCode = "406", description = "The call is not applicable to survey course node"),
-			@ApiResponse(responseCode = "409", description = "The configuration is not valid")})
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = SurveyConfigVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or task node not found")
+	@ApiResponse(responseCode = "406", description = "The call is not applicable to survey course node")
+	@ApiResponse(responseCode = "409", description = "The configuration is not valid")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response addTestConfiguration(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
@@ -2190,12 +1889,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	
 	/**
 	 * Retrieves configuration of the test course node
-	 * @response.representation.200.qname {http://www.example.com}testConfigVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The course node configuration
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or test node not found
+	 * 
 	 * @param courseId
 	 * @param nodeId
 	 * @return test course node configuration
@@ -2203,11 +1897,11 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@GET
 	@Path("test/{nodeId}/configuration")
 	@Operation(summary = "Retrieve configuration", description = "Retrieves configuration of the survey course node")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The course node configuration", content = {
+	@ApiResponse(responseCode = "200", description = "The course node configuration", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = SurveyConfigVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = SurveyConfigVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or task node not found")})
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = SurveyConfigVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or task node not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getTestConfiguration(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId) {
 		
@@ -2268,7 +1962,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		@Override
 		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
 			moduleConfig.setBooleanEntry(NodeEditController.CONFIG_STARTPAGE, Boolean.FALSE.booleanValue());
-			    //fxdiff FXOLAT-122: course management
+			
 			if(url != null) {
 				moduleConfig.setConfigurationVersion(2);
 				moduleConfig.set(TUConfigForm.CONFIGKEY_PROTO, url.getProtocol());
@@ -2276,7 +1970,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 				moduleConfig.set(TUConfigForm.CONFIGKEY_URI, url.getPath());
 				moduleConfig.set(TUConfigForm.CONFIGKEY_QUERY, url.getQuery());
 				int port = url.getPort();
-				moduleConfig.set(TUConfigForm.CONFIGKEY_PORT, new Integer(port != -1 ? port : url.getDefaultPort()));
+				moduleConfig.set(TUConfigForm.CONFIGKEY_PORT, Integer.valueOf(port != -1 ? port : url.getDefaultPort()));
 				moduleConfig.setBooleanEntry(TUConfigForm.CONFIG_IFRAME, true);
 			}
 		}
@@ -2485,7 +2179,6 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		}
 	}
 	
-	//fxdiff FXOLAT-122: course management
 	public class StructureFullConfig implements FullConfigDelegate {
 		
 		private final String displayType;
@@ -2689,7 +2382,6 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		@Override
 		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
 			newNode.updateModuleConfigDefaults(true, null);
-			//fxdiff FXOLAT-122: course management
 			if(text != null) {
 				moduleConfig.set(TACourseNode.CONF_TASK_TEXT, text);
 			}

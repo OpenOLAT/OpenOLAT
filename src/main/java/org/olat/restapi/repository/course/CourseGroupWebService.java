@@ -21,7 +21,6 @@ package org.olat.restapi.repository.course;
 
 import static org.olat.restapi.security.RestSecurityHelper.isGroupManager;
 
-
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -73,7 +72,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -100,18 +98,13 @@ public class CourseGroupWebService {
 	
 	/**
 	 * Retrieves the version of the Course Group Web Service.
-   * @response.representation.200.mediaType text/plain
-   * @response.representation.200.doc The version of this specific Web Service
-   * @response.representation.200.example 1.0
+	 * 
 	 * @return
 	 */
 	@GET
 	@Path("version")
 	@Operation(summary = "Retrieves the version of the Course Group Web Service", description = "Retrieves the version of the Course Group Web Service")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "The version of this specific Web Service"
-		)}
-)	
+	@ApiResponse(responseCode = "200", description = "The version of this specific Web Service")
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
@@ -185,25 +178,18 @@ public class CourseGroupWebService {
 	
 	/**
 	 * Lists all learn groups of the specified course.
-	 * @response.representation.200.qname {http://www.example.com}groupVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The list of all learning group of the course
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_GROUPVOes}
-   * @response.representation.404.doc The context of the group not found
+	 * 
 	 * @param request The HTTP request
 	 * @return
 	 */
 	@GET
 	@Operation(summary = "Lists all learn groups", description = "Lists all learn groups of the specified course")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "The list of all learning group of the course",
-				content = {
-						@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class))),
-						@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class)))
-					} 
-		),
-		@ApiResponse(responseCode = "404", description = "The context of the group not found")}
-)	
+	@ApiResponse(responseCode = "200", description = "The list of all learning group of the course",
+			content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class)))
+				})
+	@ApiResponse(responseCode = "404", description = "The context of the group not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getGroupList() {
     BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
@@ -220,26 +206,17 @@ public class CourseGroupWebService {
 	
 	/**
 	 * Creates a new group for the course.
-	 * @response.representation.qname {http://www.example.com}groupVO
-   * @response.representation.mediaType application/xml, application/json
-   * @response.representation.doc A group to save
-   * @response.representation.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_GROUPVO}
-	 * @response.representation.200.qname {http://www.example.com}groupVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The persisted group
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_GROUPVO}
-   * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * 
    * @param group The group's metadatas
    * @param request The HTTP request
 	 * @return
 	 */
 	@PUT
 	@Operation(summary = "Create a new group", description = "Creates a new group for the course")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "A group to save", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = GroupVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = GroupVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })
+	@ApiResponse(responseCode = "200", description = "A group to save", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = GroupVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = GroupVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putNewGroup(GroupVO group, @Context HttpServletRequest request) {
@@ -251,7 +228,7 @@ public class CourseGroupWebService {
 		}
 
 		UserRequest ureq = RestSecurityHelper.getUserRequest(request);
-    BusinessGroupService bgm = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		BusinessGroupService bgm = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		RepositoryEntry courseRe = RepositoryManager.getInstance().lookupRepositoryEntry(course, false);
     
 		BusinessGroup bg;
@@ -271,24 +248,20 @@ public class CourseGroupWebService {
 	
 	/**
 	 * Retrieves the metadata of the specified group.
-	 * @response.representation.200.qname {http://www.example.com}groupVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc This is the list of all groups in OLAT system
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_GROUPVO}
-	 * @response.representation.404.doc The business group cannot be found
-   * @param groupKey The group's id
-   * @param request The REST request
-   * @param httpRequest The HTTP request
+	 * 
+	 * @param groupKey The group's id
+	 * @param request The REST request
+	 * @param httpRequest The HTTP request
 	 * @return
 	 */
 	@GET
 	@Path("{groupKey}")
 	@Operation(summary = "Retrieves the metadata of the specified group", description = "Retrieves the metadata of the specified group")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "This is the list of all groups in OLAT system", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class))) }),
-			@ApiResponse(responseCode = "404", description = "The business group cannot be found") })
+	@ApiResponse(responseCode = "200", description = "This is the list of all groups in OLAT system", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class)))
+	})
+	@ApiResponse(responseCode = "404", description = "The business group cannot be found")
 	public Response getGroup(@PathParam("groupKey") Long groupKey, @Context Request request, @Context HttpServletRequest httpRequest) {
 		//further security check: group is in the course
 		return new LearningGroupWebService().findById(groupKey, request, httpRequest);
@@ -296,30 +269,20 @@ public class CourseGroupWebService {
 
 	/**
 	 * Updates the metadata for the specified group.
-	 * @response.representation.qname {http://www.example.com}groupVO
-   * @response.representation.mediaType application/xml, application/json
-   * @response.representation.doc The group to update
-   * @response.representation.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_GROUPVO}
-	 * @response.representation.200.qname {http://www.example.com}groupVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The saved group
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_GROUPVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The business group cannot be found
-   * @param groupKey The group's id
-   * @param group The group metadatas
-   * @param request The HTTP request
+	 * 
+	 * @param groupKey The group's id
+	 * @param group The group metadatas
+	 * @param request The HTTP request
 	 * @return
 	 */
 	@POST
 	@Path("{groupKey}")
 	@Operation(summary = "Updates the metadata for the specified group", description = "Updates the metadata for the specified group")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The saved group", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = GroupVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = GroupVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The business group cannot be found") })
+	@ApiResponse(responseCode = "200", description = "The saved group", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = GroupVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = GroupVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The business group cannot be found")
 	public Response updateGroup(@PathParam("groupKey") Long groupKey, GroupVO group, @Context HttpServletRequest request) {
 		if(!isGroupManager(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -329,9 +292,7 @@ public class CourseGroupWebService {
 	
 	/**
 	 * Deletes the business group specified by the key of the group.
-	 * @response.representation.200.doc The business group is deleted
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The business group cannot be found
+	 * 
 	 * @param groupKey The group id
 	 * @param request The HTTP request
 	 * @return
@@ -339,10 +300,9 @@ public class CourseGroupWebService {
 	@DELETE
 	@Path("{groupKey}")
 	@Operation(summary = "Deletes the business group", description = "Deletes the business group specified by the key of the group")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The business group is deleted"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The business group cannot be found") })
+	@ApiResponse(responseCode = "200", description = "The business group is deleted")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The business group cannot be found")
 	public Response deleteGroup(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
 		if(!isGroupManager(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -355,7 +315,6 @@ public class CourseGroupWebService {
 	 * @return value bigger or equal than 0
 	 */
 	private int normalize(Integer integer) {
-	    //fxdiff FXOLAT-122: course management
 		if(integer == null) return -1;
 		if(integer.intValue() < 0) return -1;
 		return integer.intValue();

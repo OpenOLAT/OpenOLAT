@@ -91,7 +91,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -118,16 +117,13 @@ public class LearningGroupWebService {
 	
 	/**
 	 * Retrieves the version of the Group Web Service.
-	 * @response.representation.200.mediaType text/plain
-	 * @response.representation.200.doc The version of this specific Web Service
-	 * @response.representation.200.example 1.0
+	 *
 	 * @return
 	 */
 	@GET
 	@Path("version")
 	@Operation(summary = "Retrieves the version of the Group Web Service", description = "Retrieves the version of the Group Web Service")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The version of this specific Web Service")})	
+	@ApiResponse(responseCode = "200", description = "The version of this specific Web Service")
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
@@ -136,10 +132,7 @@ public class LearningGroupWebService {
 	/**
 	 * Return the list of all groups if you have group manager permission, or all
 	 * learning group that you particip with or owne.
-	 * @response.representation.200.qname {http://www.example.com}groupVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc This is the list of all groups in OLAT system
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_GROUPVOes}
+	 * 
 	 * @param externalId Search with an external ID
 	 * @param managed (true / false) Search only managed / not managed groups 
 	 * @param request The HTTP Request
@@ -148,10 +141,9 @@ public class LearningGroupWebService {
 	@GET
 	@Operation(summary = "Return the list of all groups ", description = "Return the list of all groups if you have group manager permission, or all\n" + 
 			"	  learning group that you particip with or owne")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "This is the list of all groups in OLAT system", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class))) })})
+	@ApiResponse(responseCode = "200", description = "This is the list of all groups in OLAT system", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class))) })
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getGroupList(@QueryParam("externalId") @Parameter(description = "Search with an external ID") String externalId, @QueryParam("managed") @Parameter(description = "(true / false) Search only managed / not managed groups") Boolean managed,
 			@Context HttpServletRequest request) {
@@ -180,10 +172,7 @@ public class LearningGroupWebService {
 	
 	/**
 	 * Return the group specified by the key of the group.
-	 * @response.representation.200.qname {http://www.example.com}groupVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc A business group in the OLAT system
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_GROUPVO}
+	 * 
 	 * @param groupKey The key of the group
 	 * @param request The REST request
 	 * @param httpRequest The HTTP request
@@ -192,10 +181,9 @@ public class LearningGroupWebService {
 	@GET
 	@Path("{groupKey}")
 	@Operation(summary = "Return the group specified by the key of the group", description = "RReturn the group specified by the key of the group")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "A business group in the OLAT system", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = GroupVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = GroupVO.class)) })})
+	@ApiResponse(responseCode = "200", description = "A business group in the OLAT system", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = GroupVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = GroupVO.class)) })
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response findById(@PathParam("groupKey") Long groupKey, @Context Request request,
 			@Context HttpServletRequest httpRequest) {
@@ -220,16 +208,7 @@ public class LearningGroupWebService {
 	
 	/**
 	 * Create a group.
-	 * @response.representation.qname {http://www.example.com}groupVO
-   * @response.representation.mediaType application/xml, application/json
-   * @response.representation.doc A business group in the OLAT system
-   * @response.representation.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_GROUPVO}
-	 * @response.representation.200.qname {http://www.example.com}groupVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The saved business group
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_GROUPVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The business group cannot be found
+	 * 
 	 * @param groupKey The key of the group
 	 * @param group The group
 	 * @param request The HTTP request
@@ -237,12 +216,11 @@ public class LearningGroupWebService {
 	 */
 	@PUT
 	@Operation(summary = "Create a group", description = "Create a group")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The saved business group", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = GroupVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = GroupVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The business group cannot be found") })	
+	@ApiResponse(responseCode = "200", description = "The saved business group", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = GroupVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = GroupVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The business group cannot be found")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response createGroup(final GroupVO group, @Context HttpServletRequest request) {
@@ -271,16 +249,7 @@ public class LearningGroupWebService {
 	
 	/**
 	 * Updates a group.
-	 * @response.representation.qname {http://www.example.com}groupVO
-	 * @response.representation.mediaType application/xml, application/json
-	 * @response.representation.doc A business group in the OLAT system
-	 * @response.representation.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_GROUPVO}
-	 * @response.representation.200.qname {http://www.example.com}groupVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The saved business group
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_GROUPVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The business group cannot be found
+	 * 
 	 * @param groupKey The key of the group
 	 * @param group The group
 	 * @param request The HTTP request
@@ -289,12 +258,11 @@ public class LearningGroupWebService {
 	@POST
 	@Path("{groupKey}")
 	@Operation(summary = "Update a group", description = "Update a group")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The saved business group", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = GroupVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = GroupVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The business group cannot be found") })	
+	@ApiResponse(responseCode = "200", description = "The saved business group", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = GroupVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = GroupVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The business group cannot be found")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postGroup(@PathParam("groupKey") Long groupKey, final GroupVO group, @Context HttpServletRequest request) {
@@ -322,8 +290,6 @@ public class LearningGroupWebService {
 	/**
 	 * Returns the  news.
 	 * 
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The business group cannot be found or the news tool is not enabled
 	 * @param groupKey The key of the group
 	 * @param request The HTTP Request
 	 * @return
@@ -331,12 +297,11 @@ public class LearningGroupWebService {
 	@GET
 	@Path("{groupKey}/news")
 	@Operation(summary = "Returns the news", description = "Returns the news")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The news", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = String.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = String.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The business group cannot be found or the news tool is not enabled") })	
+	@ApiResponse(responseCode = "200", description = "The news", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = String.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = String.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The business group cannot be found or the news tool is not enabled")
 	@Produces({MediaType.TEXT_PLAIN})
 	public Response getNews(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
@@ -367,8 +332,6 @@ public class LearningGroupWebService {
 	/**
 	 * Update the news.
 	 * 
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The business group cannot be found or the news tool is not enabled
 	 * @param groupKey The key of the group
 	 * @param news The news
 	 * @param request The HTTP request
@@ -377,12 +340,11 @@ public class LearningGroupWebService {
 	@POST
 	@Path("{groupKey}/news")
 	@Operation(summary = "Update the news", description = "Update the news")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The updated news", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = String.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = String.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The business group cannot be found or the news tool is not enabled") })	
+	@ApiResponse(responseCode = "200", description = "The updated news", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = String.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = String.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The business group cannot be found or the news tool is not enabled")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	public Response postNews(@PathParam("groupKey") Long groupKey, @FormParam("news") String news, @Context HttpServletRequest request) {
 		BusinessGroup bg = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(groupKey);
@@ -404,9 +366,7 @@ public class LearningGroupWebService {
 	
 	/**
 	 * Deletes the news of the group if the news tool is enabled.
-	 * @response.representation.200.doc The news are deleted
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The business group cannot be found or hte news tool is not enabled
+	 * 
 	 * @param groupKey The key of the group
 	 * @param request The HTTP request
 	 * @return
@@ -414,10 +374,9 @@ public class LearningGroupWebService {
 	@DELETE
 	@Path("{groupKey}/news")
 	@Operation(summary = "Deletes the news of the group if the news tool is enabled", description = "Deletes the news of the group if the news tool is enabled")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The new are deleted"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The business group cannot be found or the news tool is not enabled") })	
+	@ApiResponse(responseCode = "200", description = "The new are deleted")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The business group cannot be found or the news tool is not enabled")
 	public Response deleteNews(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
 		BusinessGroup bg = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(groupKey);
 		if(bg == null) {
@@ -439,10 +398,9 @@ public class LearningGroupWebService {
 	@POST
 	@Path("{groupKey}/configuration")
 	@Operation(summary = "Post configuration", description = "Post configuration")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "Configuration posted"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "Group not found") })	
+	@ApiResponse(responseCode = "200", description = "Configuration posted")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "Group not found")
 	public Response postGroupConfiguration(@PathParam("groupKey") Long groupKey, final GroupConfigurationVO group, @Context HttpServletRequest request) {
 		if(!isGroupManager(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -517,9 +475,7 @@ public class LearningGroupWebService {
 	
 	/**
 	 * Deletes the business group specified by the groupKey.
-	 * @response.representation.200.doc The business group is deleted
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The business group cannot be found
+	 * 
 	 * @param groupKey The key of the group
 	 * @param request The HTTP request
 	 * @return
@@ -527,10 +483,9 @@ public class LearningGroupWebService {
 	@DELETE
 	@Path("{groupKey}")
 	@Operation(summary = "Deletes the business group specified by the groupKey", description = "Deletes the business group specified by the groupKey")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The business group is deleted"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The business group cannot be found or the news tool is not enabled") })
+	@ApiResponse(responseCode = "200", description = "The business group is deleted")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The business group cannot be found or the news tool is not enabled")
 	public Response deleteGroup(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
 		if(!isGroupManager(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -547,11 +502,7 @@ public class LearningGroupWebService {
 	
 	/**
 	 * Returns the informations of the group specified by the groupKey.
-	 * @response.representation.200.qname {http://www.example.com}groupInfoVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc Participants of the business group
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_GROUPINFOVO}
-	 * @response.representation.404.doc The business group cannot be found
+	 * 
 	 * @param groupKey The key of the group
 	 * @param request The HTTP Request
 	 * @return
@@ -559,11 +510,10 @@ public class LearningGroupWebService {
 	@GET
 	@Path("{groupKey}/infos")
 	@Operation(summary = " Returns the informations of the group specified by the groupKey", description = " Returns the informations of the group specified by the groupKey")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The updated news", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = GroupInfoVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = GroupInfoVO.class)) }),
-			@ApiResponse(responseCode = "404", description = "The business group cannot be found") })	
+	@ApiResponse(responseCode = "200", description = "The updated news", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = GroupInfoVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = GroupInfoVO.class)) })
+	@ApiResponse(responseCode = "404", description = "The business group cannot be found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getInformations(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
@@ -720,11 +670,7 @@ public class LearningGroupWebService {
 	
 	/**
 	 * Returns the list of owners of the group specified by the groupKey.
-	 * @response.representation.200.qname {http://www.example.com}userVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc Owners of the business group
-   * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVOes}
-	 * @response.representation.404.doc The business group cannot be found
+	 * 
 	 * @param groupKey The key of the group
 	 * @param request The HTTP Request
 	 * @return
@@ -732,12 +678,10 @@ public class LearningGroupWebService {
 	@GET
 	@Path("{groupKey}/owners")
 	@Operation(summary = "Returns the list of owners of the group specified by the groupKey", description = "Returns the list of owners of the group specified by the groupKey")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "Owners of the business group", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))) }),
-			@ApiResponse(responseCode = "404", description = "The business group cannot be found")
-			})
+	@ApiResponse(responseCode = "200", description = "Owners of the business group", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))) })
+	@ApiResponse(responseCode = "404", description = "The business group cannot be found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getTutors(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
@@ -763,11 +707,7 @@ public class LearningGroupWebService {
 	
 	/**
 	 * Returns the list of participants of the group specified by the groupKey.
-	 * @response.representation.200.qname {http://www.example.com}userVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc Participants of the business group
-   * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVOes}
-	 * @response.representation.404.doc The business group cannot be found
+	 * 
 	 * @param groupKey The key of the group
 	 * @param request The HTTP Request
 	 * @return
@@ -775,12 +715,10 @@ public class LearningGroupWebService {
 	@GET
 	@Path("{groupKey}/participants")
 	@Operation(summary = "Returns the list of participants of the group specified by the groupKey", description = "Returns the list of participants of the group specified by the groupKey")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "Participants of the business group", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))) }),
-			@ApiResponse(responseCode = "404", description = "The business group cannot be found")
-			})
+	@ApiResponse(responseCode = "200", description = "Participants of the business group", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))) })
+	@ApiResponse(responseCode = "404", description = "The business group cannot be found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getParticipants(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
@@ -815,9 +753,7 @@ public class LearningGroupWebService {
 	
 	/**
 	 * Adds an owner to the group.
-	 * @response.representation.200.doc The user is added as owner of the group
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The business group or the user cannot be found
+	 * 
 	 * @param groupKey The key of the group 
 	 * @param identityKey The user's id
 	 * @param request The HTTP request
@@ -826,11 +762,9 @@ public class LearningGroupWebService {
 	@PUT
 	@Path("{groupKey}/owners/{identityKey}")
 	@Operation(summary = "Add an owner to the group", description = "Adds an owner to the group")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The user is added as owner of the group"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The business group cannot be found")
-			})
+	@ApiResponse(responseCode = "200", description = "The user is added as owner of the group")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The business group cannot be found")
 	public Response addTutor(@PathParam("groupKey") Long groupKey, @PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		try {
 			if(!isGroupManager(request)) {
@@ -855,9 +789,7 @@ public class LearningGroupWebService {
 	
 	/**
 	 * Removes the owner from the group.
-	 * @response.representation.200.doc The user is removed as owner from the group
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The business group or the user cannot be found
+	 * 
 	 * @param groupKey The key of the group
 	 * @param identityKey The user's id
 	 * @param request The HTTP request
@@ -866,11 +798,9 @@ public class LearningGroupWebService {
 	@DELETE
 	@Path("{groupKey}/owners/{identityKey}")
 	@Operation(summary = "Removes the owner from the group", description = "Removes the owner from the group")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The user is removed as owner from the group"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The business group or the user cannot be found")
-			})
+	@ApiResponse(responseCode = "200", description = "The user is removed as owner from the group")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The business group or the user cannot be found")
 	public Response removeTutor(@PathParam("groupKey") Long groupKey, @PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		try {
 			if(!isGroupManager(request)) {
@@ -895,9 +825,7 @@ public class LearningGroupWebService {
 	
 	/**
 	 * Adds a participant to the group.
-	 * @response.representation.200.doc The user is added as participant of the group
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The business group or the user cannot be found
+	 * 
 	 * @param groupKey The key of the group
 	 * @param identityKey The user's id
 	 * @param request The HTTP request
@@ -906,11 +834,9 @@ public class LearningGroupWebService {
 	@PUT
 	@Path("{groupKey}/participants/{identityKey}")
 	@Operation(summary = "Adds a participant to the group", description = "Adds a participant to the group")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The user is added as participant of the group"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The business group or the user cannot be found")
-			})
+	@ApiResponse(responseCode = "200", description = "The user is added as participant of the group")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The business group or the user cannot be found")
 	public Response addParticipant(@PathParam("groupKey") Long groupKey, @PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		try {
 			if(!isGroupManager(request)) {
@@ -940,9 +866,7 @@ public class LearningGroupWebService {
 	
 	/**
 	 * Removes a participant from the group.
-	 * @response.representation.200.doc The user is remove from the group as participant
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The business group or the user cannot be found
+	 * 
 	 * @param groupKey The key of the group
 	 * @param identityKey The id of the user
 	 * @param request The HTTP request
@@ -951,11 +875,9 @@ public class LearningGroupWebService {
 	@DELETE
 	@Path("{groupKey}/participants/{identityKey}")
 	@Operation(summary = "Removes a participant from the group", description = "Removes a participant from the group")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The user is remove from the group as participant"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The business group or the user cannot be found")
-			})
+	@ApiResponse(responseCode = "200", description = "The user is remove from the group as participant")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The business group or the user cannot be found")
 	public Response removeParticipant(@PathParam("groupKey") Long groupKey, @PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		try {
 			if(!isGroupManager(request)) {

@@ -60,7 +60,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -83,14 +82,7 @@ public class ENWebService extends AbstractCourseNodeWebService {
 	/**
 	 * This attaches an enrollment element onto a given course, the element will be
 	 * inserted underneath the supplied parentNodeId
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The course node metadatas
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The course node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or parentNode not found
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param parentNodeId The node's id which will be the parent of this structure
 	 * @param position The node's position relative to its sibling nodes (optional)
@@ -106,18 +98,15 @@ public class ENWebService extends AbstractCourseNodeWebService {
 	 */
 	@PUT
 	@Operation(summary = "attach an enrollment element onto a given course",
-	description = "This attaches a contact element onto a given course, the element will be\n" + 
+		description = "This attaches a contact element onto a given course, the element will be\n" + 
 			"	  inserted underneath the supplied parentNodeId")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "The course node metadatas",
-					content = {
-							@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-							@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class))
-						} 
-			),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or parentNode not found")}
-		)
+	@ApiResponse(responseCode = "200", description = "The course node metadatas",
+			content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class))
+				})
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachEnrolmment(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") @Parameter(description = "The node's id which will be the parent of this structure") String parentNodeId,
@@ -134,14 +123,7 @@ public class ENWebService extends AbstractCourseNodeWebService {
 	/**
 	 * This attaches an enrollment element onto a given course, the element will be
 	 * inserted underneath the supplied parentNodeId
-	 * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.doc The course node metadatas
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The course node metadatas
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or parentNode not found
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param parentNodeId The node's id which will be the parent of this
 	 *          structure
@@ -158,18 +140,15 @@ public class ENWebService extends AbstractCourseNodeWebService {
 	 */
 	@POST
 	@Operation(summary = "attach an enrollment element onto a given course",
-	description = "This attaches a contact element onto a given course, the element will be\n" + 
+		description = "This attaches a contact element onto a given course, the element will be\n" + 
 			"	  inserted underneath the supplied parentNodeId")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "The course node metadatas",
-					content = {
-							@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
-							@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class))
-						} 
-			),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or parentNode not found")}
-		)
+	@ApiResponse(responseCode = "200", description = "The course node metadatas",
+			content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class))
+				})
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachEnrollmenetPost(@PathParam("courseId") Long courseId, @FormParam("parentNodeId") String parentNodeId,
@@ -184,12 +163,7 @@ public class ENWebService extends AbstractCourseNodeWebService {
 	
 	/**
 	 * Retrieves the groups where the enrollment happens
-	 * @response.representation.200.qname {http://www.example.com}groupVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc Retrieves the groups where the enrollment happens
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_GROUPVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or course node not found
+	 * 
 	 * @param nodeId The node's id
 	 * @param httpRequest The HTTP request
 	 * @return An array of groups
@@ -197,17 +171,14 @@ public class ENWebService extends AbstractCourseNodeWebService {
 	@GET
 	@Path("{nodeId}/groups")
 	@Operation(summary = "Retrieves the groups where the enrollment happens",
-	description = "Retrieves the groups where the enrollment happens")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Retrieves the groups where the enrollment happens",
-					content = {
-							@Content(mediaType = "application/json", schema = @Schema(implementation = GroupVO.class)),
-							@Content(mediaType = "application/xml", schema = @Schema(implementation = GroupVO.class))
-						} 
-			),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or parentNode not found")}
-		)
+		description = "Retrieves the groups where the enrollment happens")
+	@ApiResponse(responseCode = "200", description = "Retrieves the groups where the enrollment happens",
+			content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = GroupVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = GroupVO.class))
+				})
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getGroups(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId, @Context HttpServletRequest httpRequest) {
 		ICourse course = CoursesWebService.loadCourse(courseId);
@@ -240,8 +211,6 @@ public class ENWebService extends AbstractCourseNodeWebService {
 		voes.toArray(voArr);
 		return Response.ok(voArr).build();
 	}
-	
-	
 	
 	private class EnrollmentConfigDelegate implements CustomConfigDelegate {
 		private final boolean cancelEnabled;

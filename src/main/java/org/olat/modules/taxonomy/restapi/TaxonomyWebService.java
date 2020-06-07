@@ -21,7 +21,6 @@ package org.olat.modules.taxonomy.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -61,7 +60,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * 
@@ -84,23 +82,17 @@ public class TaxonomyWebService {
 	/**
 	 * Return the taxonomy object specified by the key in path.
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}taxonomyVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc A taxonomy
-	 * @response.representation.200.example {@link org.olat.modules.taxonomy.restapi.Examples#SAMPLE_TAXONOMYVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @param taxonomyKey If true, the status of the block is done or the status of the roll call is closed or auto closed
 	 * @param httpRequest  The HTTP request
 	 * @return The taxonomy
 	 */
 	@GET
 	@Operation(summary = "Return the taxonomy object", description = "Return the taxonomy object specified by the key in path")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "A taxonomy", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = TaxonomyVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = TaxonomyVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "Not found") })
+	@ApiResponse(responseCode = "200", description = "A taxonomy", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = TaxonomyVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = TaxonomyVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "Not found")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getTaxonomy() {
 		TaxonomyVO taxonomyVo = new TaxonomyVO(taxonomy);
@@ -110,11 +102,6 @@ public class TaxonomyWebService {
 	/**
 	 * Return the flatted levels of a taxonomy.
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}taxonomyLevelVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc A taxonomy
-	 * @response.representation.200.example {@link org.olat.modules.taxonomy.restapi.Examples#SAMPLE_TAXONOMYLEVELVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @param taxonomyKey If true, the status of the block is done or the status of the roll call is closed or auto closed
 	 * @param httpRequest  The HTTP request
 	 * @return An array of taxonomy levels
@@ -122,12 +109,11 @@ public class TaxonomyWebService {
 	@GET
 	@Path("levels")
 	@Operation(summary = "Return the flatted levels of a taxonomy", description = "Return the flatted levels of a taxonomy")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "A taxonomy", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = TaxonomyLevelVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = TaxonomyLevelVO.class))) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "Not found") })
+	@ApiResponse(responseCode = "200", description = "A taxonomy", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = TaxonomyLevelVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = TaxonomyLevelVO.class))) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "Not found")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getFlatTaxonomyLevels() {
 		List<TaxonomyLevel> levels = taxonomyService.getTaxonomyLevels(taxonomy);
@@ -143,12 +129,6 @@ public class TaxonomyWebService {
 	 * null parent key will make the level a root one, a new parent key will move
 	 * the level.
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}taxonomyLevelVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc A taxonomy level
-	 * @response.representation.200.example {@link org.olat.modules.taxonomy.restapi.Examples#SAMPLE_TAXONOMYLEVELVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc An existant level was not found
 	 * @param taxonomyKey The taxonomy tree where this level is
 	 * @param httpRequest  The HTTP request
 	 * @param levelVo The roll call to update
@@ -159,12 +139,11 @@ public class TaxonomyWebService {
 	@Operation(summary = "Create or update a taxonomy level", description = "Create or update a taxonomy level. The method changes to tree structure, a\n" + 
 			"	  null parent key will make the level a root one, a new parent key will move\n" + 
 			"	 the level")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "A taxonomy level", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = TaxonomyLevelVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = TaxonomyLevelVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "An existant level was not found") })
+	@ApiResponse(responseCode = "200", description = "A taxonomy level", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = TaxonomyLevelVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = TaxonomyLevelVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "An existant level was not found")
 	@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response putTaxonomyLevel(TaxonomyLevelVO levelVo) {
@@ -224,12 +203,6 @@ public class TaxonomyWebService {
 	/**
 	 * Delete the taxonomy level definitively.
 	 * 
-	 * @response.representation.200.doc The level was successfully deleted
-	 * @response.representation.304.doc The level cannot be deleted and was not modified
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The level was not found
-	 * @response.representation.404.doc The level taxonomy doesn't match the taxonomy of the web service
-	 * 
 	 * @param taxonomyKey The taxonomy tree
 	 * @param taxonomyLevelKey The level of the taxonomy to delete
 	 * @return Nothing
@@ -237,11 +210,10 @@ public class TaxonomyWebService {
 	@DELETE
 	@Path("levels/{taxonomyLevelKey}")
 	@Operation(summary = "Delete the taxonomy level definitively", description = "Delete the taxonomy level definitively")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The level was successfully deleted"),
-			@ApiResponse(responseCode = "304", description = "The level cannot be deleted and was not modified"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The level was not found OR The level taxonomy doesn't match the taxonomy of the web service") })
+	@ApiResponse(responseCode = "200", description = "The level was successfully deleted")
+	@ApiResponse(responseCode = "304", description = "The level cannot be deleted and was not modified")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The level was not found OR The level taxonomy doesn't match the taxonomy of the web service")
 	public Response deleteTaxonomyLevel(@PathParam("taxonomyLevelKey") String taxonomyLevelKey) {
 		TaxonomyLevel level = taxonomyService.getTaxonomyLevel(new TaxonomyLevelRefImpl(new Long(taxonomyLevelKey)));
 		if(level == null) {
@@ -261,11 +233,6 @@ public class TaxonomyWebService {
 	/**
 	 * Return the competences of users on the taxonomy level specified in the key in path.
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}taxonomyCompetenceVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc An array of competences
-	 * @response.representation.200.example {@link org.olat.modules.taxonomy.restapi.Examples#SAMPLE_TAXONOMYCOMPETENCEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @param taxonomyKey The taxonomy tree
 	 * @param taxonomyLevelKey The level of the taxonomy
 	 * @param httpRequest  The HTTP request
@@ -274,11 +241,10 @@ public class TaxonomyWebService {
 	@GET
 	@Path("levels/{taxonomyLevelKey}/competences")
 	@Operation(summary = "Return the competences", description = "Return the competences of users on the taxonomy level specified in the key in path")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "An array of competences", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = TaxonomyCompetenceVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = TaxonomyCompetenceVO.class))) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })
+	@ApiResponse(responseCode = "200", description = "An array of competences", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = TaxonomyCompetenceVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = TaxonomyCompetenceVO.class))) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getTaxonomyLevelComptences(@PathParam("taxonomyLevelKey") Long taxonomyLevelKey) {
@@ -298,11 +264,6 @@ public class TaxonomyWebService {
 	/**
 	 * Return the competences of a specific user in the taxonomy tree.
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}taxonomyCompetenceVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc An array of competences
-	 * @response.representation.200.example {@link org.olat.modules.taxonomy.restapi.Examples#SAMPLE_TAXONOMYCOMPETENCEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @param taxonomyKey The taxonomy tree
 	 * @param identityKey The user
 	 * @param httpRequest  The HTTP request
@@ -311,11 +272,10 @@ public class TaxonomyWebService {
 	@GET
 	@Path("competences/{identityKey}")
 	@Operation(summary = "Return the competences", description = "Return the competences of a specific user in the taxonomy tree")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "An array of competences", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = TaxonomyCompetenceVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = TaxonomyCompetenceVO.class))) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })
+	@ApiResponse(responseCode = "200", description = "An array of competences", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = TaxonomyCompetenceVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = TaxonomyCompetenceVO.class))) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getTaxonomyComptencesByIdentity(@PathParam("identityKey") Long identityKey) {
@@ -336,11 +296,6 @@ public class TaxonomyWebService {
 	 * Return the competences of a specific user on the taxonomy level
 	 * specified in the key in path.
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}taxonomyCompetenceVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc An array of competences
-	 * @response.representation.200.example {@link org.olat.modules.taxonomy.restapi.Examples#SAMPLE_TAXONOMYCOMPETENCEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @param taxonomyKey The taxonomy tree
 	 * @param taxonomyLevelKey The level of the taxonomy
 	 * @param identityKey The user
@@ -351,11 +306,10 @@ public class TaxonomyWebService {
 	@Path("levels/{taxonomyLevelKey}/competences/{identityKey}")
 	@Operation(summary = "Return the competences", description = "Return the competences of a specific user on the taxonomy level\n" + 
 			"	  specified in the key in path")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "An array of competences", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = TaxonomyCompetenceVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = TaxonomyCompetenceVO.class))) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })
+	@ApiResponse(responseCode = "200", description = "An array of competences", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = TaxonomyCompetenceVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = TaxonomyCompetenceVO.class))) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getTaxonomyLevelComptencesByIdentity(@PathParam("taxonomyLevelKey") Long taxonomyLevelKey,
@@ -380,13 +334,6 @@ public class TaxonomyWebService {
 	/**
 	 * Add a competence on a specific level of a taxonomy tree.
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}taxonomyCompetenceVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc A competence
-	 * @response.representation.200.example {@link org.olat.modules.taxonomy.restapi.Examples#SAMPLE_TAXONOMYCOMPETENCEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The taxonomy level type to update was not found
-	 * @response.representation.409.doc The taxonomy level key of the competence doesn't match the one in URL
 	 * @param taxonomyKey The taxonomy tree
 	 * @param taxonomyLevelKey The taxonomy level
 	 * @param comptenceVo The competence to add or update
@@ -396,11 +343,10 @@ public class TaxonomyWebService {
 	@PUT
 	@Path("levels/{taxonomyLevelKey}/competences")
 	@Operation(summary = "Add a competence", description = "Add a competence on a specific level of a taxonomy tree")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "A competence", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = TaxonomyCompetenceVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = TaxonomyCompetenceVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })
+	@ApiResponse(responseCode = "200", description = "A competence", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = TaxonomyCompetenceVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = TaxonomyCompetenceVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response putTaxonomyLevelComptencesByIdentity(@PathParam("taxonomyLevelKey") Long taxonomyLevelKey,
@@ -452,9 +398,6 @@ public class TaxonomyWebService {
 	/**
 	 * Remove a competence.
 	 * 
-	 * @response.representation.200.doc The competence was removed sucessfully
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The competence was not found
 	 * @param taxonomyKey The taxonomy tree
 	 * @param taxonomyLevelKey The taxonomy level
 	 * @param competenceKey The competence to remove
@@ -464,10 +407,9 @@ public class TaxonomyWebService {
 	@DELETE
 	@Path("levels/{taxonomyLevelKey}/competences/{competenceKey}")
 	@Operation(summary = "Remove a competence", description = "Remove a competence")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The competence was removed sucessfully"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The competence was not found")})
+	@ApiResponse(responseCode = "200", description = "The competence was removed sucessfully")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The competence was not found")
 	@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response removeTaxonomyLevelCompetence(@PathParam("taxonomyLevelKey") Long taxonomyLevelKey,
 			@PathParam("competenceKey") Long competenceKey, @Context HttpServletRequest httpRequest) {
@@ -487,12 +429,6 @@ public class TaxonomyWebService {
 	/**
 	 * Get the configurations for taxonomy levels for the whole taxonomy.
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}taxonomyLevelTypeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc A taxonomy level
-	 * @response.representation.200.example {@link org.olat.modules.taxonomy.restapi.Examples#SAMPLE_TAXONOMYLEVELTYPEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The taxonomy was not found
 	 * @param taxonomyKey The taxonomy tree
 	 * @param httpRequest  The HTTP request
 	 * @return An array of taxonomy levels types
@@ -500,12 +436,11 @@ public class TaxonomyWebService {
 	@GET
 	@Path("types")
 	@Operation(summary = "Get the configurations", description = "Get the configurations for taxonomy levels for the whole taxonomy")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The competence was removed sucessfully", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = TaxonomyLevelTypeVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = TaxonomyLevelTypeVO.class))) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The taxonomy was not found")})
+	@ApiResponse(responseCode = "200", description = "The competence was removed sucessfully", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = TaxonomyLevelTypeVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = TaxonomyLevelTypeVO.class))) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The taxonomy was not found")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getTaxonomyLevelTypes() {
 		List<TaxonomyLevelType> types = taxonomyService.getTaxonomyLevelTypes(taxonomy);
@@ -519,12 +454,6 @@ public class TaxonomyWebService {
 	/**
 	 * Create or Update a taxonomy level's type.
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}taxonomyLevelTypeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc A taxonomy level type
-	 * @response.representation.200.example {@link org.olat.modules.taxonomy.restapi.Examples#SAMPLE_TAXONOMYLEVELTYPEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The taxonomy level type to update was not found
 	 * @param taxonomyKey The taxonomy tree
 	 * @param httpRequest  The HTTP request
 	 * @param typeVo The taxonomy level type to create or update
@@ -533,12 +462,11 @@ public class TaxonomyWebService {
 	@PUT
 	@Path("types")
 	@Operation(summary = "Create or Update a taxonomy level's type", description = "Create or Update a taxonomy level's type")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "A taxonomy level type", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = TaxonomyLevelTypeVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = TaxonomyLevelTypeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The taxonomy level type to update was not found")})
+	@ApiResponse(responseCode = "200", description = "A taxonomy level type", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = TaxonomyLevelTypeVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = TaxonomyLevelTypeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The taxonomy level type to update was not found")
 	@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response putTaxonomyLevelType(TaxonomyLevelTypeVO typeVo) {
@@ -606,12 +534,6 @@ public class TaxonomyWebService {
 	/**
 	 * Get a taxonomy level's type.
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}taxonomyLevelTypeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc A taxonomy level type
-	 * @response.representation.200.example {@link org.olat.modules.taxonomy.restapi.Examples#SAMPLE_TAXONOMYLEVELTYPEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The taxonomy level type was not found
 	 * @param taxonomyKey The taxonomy tree
 	 * @param httpRequest  The HTTP request
 	 * @param typeKey The primary key of the taxonomy level type to retrieve
@@ -620,12 +542,11 @@ public class TaxonomyWebService {
 	@GET
 	@Path("types/{typeKey}")
 	@Operation(summary = "Get a taxonomy level's type", description = "Get a taxonomy level's type")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "A taxonomy level type", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = TaxonomyLevelTypeVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = TaxonomyLevelTypeVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The taxonomy level type was not found")})
+	@ApiResponse(responseCode = "200", description = "A taxonomy level type", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = TaxonomyLevelTypeVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = TaxonomyLevelTypeVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The taxonomy level type was not found")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getTaxonomyLevelType(@PathParam("typeKey") Long typeKey) {
 		TaxonomyLevelType type = taxonomyService.getTaxonomyLevelType(new TaxonomyLevelTypeRefImpl(typeKey));
@@ -638,12 +559,6 @@ public class TaxonomyWebService {
 	/**
 	 * Get the allowed sub-types of a specified taxonomy level's type.
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}taxonomyLevelTypeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc An array of taxonomy level types
-	 * @response.representation.200.example {@link org.olat.modules.taxonomy.restapi.Examples#SAMPLE_TAXONOMYLEVELTYPEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The taxonomy level type was not found
 	 * @param taxonomyKey The taxonomy tree
 	 * @param httpRequest  The HTTP request
 	 * @param typeKey The primary key of the taxonomy level type
@@ -652,12 +567,11 @@ public class TaxonomyWebService {
 	@GET
 	@Path("types/{typeKey}/allowedSubTypes")
 	@Operation(summary = "Get the allowed sub-types", description = "Get the allowed sub-types of a specified taxonomy level's type")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "An array of taxonomy level types", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = TaxonomyLevelTypeVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = TaxonomyLevelTypeVO.class))) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The taxonomy level type was not found")})
+	@ApiResponse(responseCode = "200", description = "An array of taxonomy level types", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = TaxonomyLevelTypeVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = TaxonomyLevelTypeVO.class))) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The taxonomy level type was not found")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getAllowedSubTaxonomyLevelTypes(@PathParam("typeKey") Long typeKey) {
 		TaxonomyLevelType type = taxonomyService.getTaxonomyLevelType(new TaxonomyLevelTypeRefImpl(typeKey));
@@ -676,12 +590,6 @@ public class TaxonomyWebService {
 	/**
 	 * Add a sub-type to a specified taxonomy level's type.
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}taxonomyLevelTypeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The sub type was added to the allowed sub types
-	 * @response.representation.200.example {@link org.olat.modules.taxonomy.restapi.Examples#SAMPLE_TAXONOMYLEVELTYPEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The taxonomy level type was not found
 	 * @param taxonomyKey The taxonomy tree
 	 * @param typeKey The type
 	 * @param subTypeKey The sub type
@@ -691,10 +599,9 @@ public class TaxonomyWebService {
 	@PUT
 	@Path("types/{typeKey}/allowedSubTypes/{subTypeKey}")
 	@Operation(summary = "Add a sub-type", description = "Add a sub-type to a specified taxonomy level's type")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The sub type was added to the allowed sub types"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The taxonomy level type was not found")})
+	@ApiResponse(responseCode = "200", description = "The sub type was added to the allowed sub types")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The taxonomy level type was not found")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response allowSubTaxonomyLevelType(@PathParam("typeKey") Long typeKey, @PathParam("subTypeKey") Long subTypeKey) {
 		TaxonomyLevelType type = taxonomyService.getTaxonomyLevelType(new TaxonomyLevelTypeRefImpl(typeKey));
@@ -709,9 +616,6 @@ public class TaxonomyWebService {
 	/**
 	 * Remove a sub-type to a specified taxonomy level's type.
 	 * 
-	 * @response.representation.200.doc The sub type was removed sucessfully
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The taxonomy level type was not found
 	 * @param taxonomyKey The taxonomy tree
 	 * @param typeKey The type
 	 * @param subTypeKey The sub type to remove
@@ -721,10 +625,9 @@ public class TaxonomyWebService {
 	@DELETE
 	@Path("types/{typeKey}/allowedSubTypes/{subTypeKey}")
 	@Operation(summary = "Remove a sub-type", description = "Remove a sub-type to a specified taxonomy level's type")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The sub type was removed sucessfully"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The taxonomy level type was not found")})
+	@ApiResponse(responseCode = "200", description = "The sub type was removed sucessfully")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The taxonomy level type was not found")
 	public Response disalloweSubTaxonomyLevelType(@PathParam("typeKey") Long typeKey, @PathParam("subTypeKey") Long subTypeKey) {
 		TaxonomyLevelType type = taxonomyService.getTaxonomyLevelType(new TaxonomyLevelTypeRefImpl(typeKey));
 		TaxonomyLevelType subType = taxonomyService.getTaxonomyLevelType(new TaxonomyLevelTypeRefImpl(subTypeKey));

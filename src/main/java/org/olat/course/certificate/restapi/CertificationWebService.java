@@ -67,7 +67,6 @@ import org.springframework.stereotype.Component;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -91,10 +90,9 @@ public class CertificationWebService {
 	@HEAD
 	@Path("{identityKey}")
 	@Operation(summary = "Return the certificate", description = "Return the certificate ")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The certificate"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The owner or the certificate cannot be found") })	
+	@ApiResponse(responseCode = "200", description = "The certificate")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The owner or the certificate cannot be found")
 	@Produces({"application/pdf"})
 	public Response getCertificateInfo(@PathParam("identityKey") Long identityKey, @PathParam("resourceKey") Long resourceKey,
 			@Context HttpServletRequest request) {
@@ -130,10 +128,6 @@ public class CertificationWebService {
 	/**
 	 * Return the certificate as PDF file.
 	 * 
-	 * @response.representation.200.mediaType application/pdf
-	 * @response.representation.200.doc The certificate as file
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The owner or the certificate cannot be found
 	 * @param identityKey The owner of the certificate
 	 * @param resourceKey The primary key of the resource of the repository entry of the course.
 	 * @param request The request
@@ -142,10 +136,9 @@ public class CertificationWebService {
 	@GET
 	@Path("{identityKey}")
 	@Operation(summary = "Return the certificate as PDF file", description = "Return the certificate as PDF file")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The certificate as file"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The owner or the certificate cannot be found") })	
+	@ApiResponse(responseCode = "200", description = "The certificate as file")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The owner or the certificate cannot be found")
 	@Produces({"application/pdf"})
 	public Response getCertificate(@PathParam("identityKey") Long identityKey, @PathParam("resourceKey") Long resourceKey,
 			@Context HttpServletRequest request) {
@@ -172,10 +165,9 @@ public class CertificationWebService {
 	@DELETE
 	@Path("{identityKey}")
 	@Operation(summary = "Delete certificate", description = "Delete certificate")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The certificate was deleted"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The owner or the certificate cannot be found") })	
+	@ApiResponse(responseCode = "200", description = "The certificate was deleted")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The owner or the certificate cannot be found")
 	public Response deleteCertificateInfo(@PathParam("identityKey") Long identityKey, @PathParam("resourceKey") Long resourceKey,
 			@Context HttpServletRequest request) {
 		Identity identity = securityManager.loadIdentityByKey(identityKey);
@@ -207,10 +199,6 @@ public class CertificationWebService {
 	/**
 	 * Generate a new certificate.
 	 * 
-	 * @response.representation.200.doc If the certificate was created  
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The identity or the resource cannot be found
-	 * @response.representation.500.doc An unexpected error happened during the creation of the certificate
 	 * @param identityKey The owner of the certificate
 	 * @param resourceKey The primary key of the resource of the repository entry of the course.
 	 * @param score The score which appears in the certificate
@@ -222,11 +210,10 @@ public class CertificationWebService {
 	@PUT
 	@Path("{identityKey}")
 	@Operation(summary = "Generate a new certificate", description = "Generate a new certificate")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "If the certificate was created "),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The identity or the resource cannot be found"),
-			@ApiResponse(responseCode = "500", description = "An unexpected error happened during the creation of the certificate")})	
+	@ApiResponse(responseCode = "200", description = "If the certificate was created ")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The identity or the resource cannot be found")
+	@ApiResponse(responseCode = "500", description = "An unexpected error happened during the creation of the certificate")
 	public Response putCertificate(@PathParam("identityKey") Long identityKey, @PathParam("resourceKey") Long resourceKey,
 			@QueryParam("score")@Parameter(description = "The score which appears in the certificate") Float score,
 			@QueryParam("maxScore")@Parameter(description = "The max score which appears in the certificate") Float maxScore,
@@ -283,9 +270,6 @@ public class CertificationWebService {
 	/**
 	 * Upload a new certificate.
 	 * 
-	 * @response.representation.200.doc if the certificate was uploaded 
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The identity or the resource cannot be found
 	 * @param identityKey The owner of the certificate
 	 * @param resourceKey The primary key of the resource of the repository entry of the course.
 	 * @param request The request
@@ -294,10 +278,9 @@ public class CertificationWebService {
 	@POST
 	@Path("{identityKey}")
 	@Operation(summary = "Upload a new certificate", description = "Upload a new certificate")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "if the certificate was uploaded"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The owner or the certificate cannot be found") })	
+	@ApiResponse(responseCode = "200", description = "if the certificate was uploaded")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The owner or the certificate cannot be found")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response postCertificate(@PathParam("identityKey") Long identityKey, @PathParam("resourceKey") Long resourceKey,
 			@Context HttpServletRequest request) {

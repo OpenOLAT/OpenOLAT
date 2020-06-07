@@ -93,7 +93,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -128,18 +127,13 @@ public class CourseAssessmentWebService {
 	
 	/**
 	 * Retireves the version of the Course Assessment Web Service.
-	 * @response.representation.200.mediaType text/plain
-	 * @response.representation.200.doc The version of this specific Web Service
-	 * @response.representation.200.example 1.0
+	 * 
 	 * @return
 	 */
 	@GET
 	@Path("version")
 	@Operation(summary = "Retireves the version of the Course Assessment Web Service", description = "Retireves the version of the Course Assessment Web Service")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "The version of this specific Web Service" 
-		)}
-)	
+	@ApiResponse(responseCode = "200", description = "The version of this specific Web Service")
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
@@ -147,12 +141,7 @@ public class CourseAssessmentWebService {
 	
 	/**
 	 * Returns the results of the course.
-	 * @response.representation.200.qname {http://www.example.com}assessableResultsVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc Array of results for the whole the course
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_ASSESSABLERESULTSVOes}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course not found
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param httpRequest The HTTP request
 	 * @param request The REST request
@@ -160,12 +149,11 @@ public class CourseAssessmentWebService {
 	 */
 	@GET
 	@Operation(summary = "Returns the results of the course", description = "Returns the results of the course")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "Array of results for the whole the course", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = AssessableResultsVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = AssessableResultsVO.class))) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course not found") })	
+	@ApiResponse(responseCode = "200", description = "Array of results for the whole the course", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = AssessableResultsVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = AssessableResultsVO.class))) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCourseResults(@PathParam("courseId") Long courseId, @Context HttpServletRequest httpRequest, @Context Request request) {
 		ICourse course = CoursesWebService.loadCourse(courseId);
@@ -201,27 +189,21 @@ public class CourseAssessmentWebService {
 	
 	/**
 	 * Returns the results of the course.
-	 * @response.representation.200.qname {http://www.example.com}assessableResultsVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The result of the course
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_ASSESSABLERESULTSVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The identity or the course not found
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param identityKey The id of the user
 	 * @param httpRequest The HTTP request
 	 * @param request The REST request
 	 * @return
 	 */
-	
 	@GET
 	@Path("users/{identityKey}")
 	@Operation(summary = "Returns the results of the course", description = "Returns the results of the course")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The result of the course", content = {
-			@Content(mediaType = "application/json", schema = @Schema(implementation = AssessableResultsVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = AssessableResultsVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course not found") })
+	@ApiResponse(responseCode = "200", description = "The result of the course", content = {
+		@Content(mediaType = "application/json", schema = @Schema(implementation = AssessableResultsVO.class)),
+		@Content(mediaType = "application/xml", schema = @Schema(implementation = AssessableResultsVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCourseResultsOf(@PathParam("courseId") Long courseId, @PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest, @Context Request request) {
 		ICourse course = CoursesWebService.loadCourse(courseId);
@@ -254,12 +236,7 @@ public class CourseAssessmentWebService {
 	
 	/**
 	 * Exports results for an assessable course node for all students.
-	 * @response.representation.200.qname {http://www.example.com}assessableResultsVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc Export all results of all user of the course
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_ASSESSABLERESULTSVOes}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course not found
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param nodeId The id of the course building block
 	 * @param httpRequest The HTTP request
@@ -269,11 +246,11 @@ public class CourseAssessmentWebService {
 	@GET
 	@Path("{nodeId}")
 	@Operation(summary = "Export results", description = "Exports results for an assessable course node for all students")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "Export all results of all user of the course", content = {
-			@Content(mediaType = "application/json", schema = @Schema(implementation = AssessableResultsVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = AssessableResultsVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course not found") })
+	@ApiResponse(responseCode = "200", description = "Export all results of all user of the course", content = {
+		@Content(mediaType = "application/json", schema = @Schema(implementation = AssessableResultsVO.class)),
+		@Content(mediaType = "application/xml", schema = @Schema(implementation = AssessableResultsVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces( { MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public Response getAssessableResults(@PathParam("courseId") Long courseId, @PathParam("nodeId") Long nodeId,
 			@Context HttpServletRequest httpRequest, @Context Request request) {
@@ -310,13 +287,7 @@ public class CourseAssessmentWebService {
 	
 	/**
 	 * Imports results for an assessable course node for the authenticated student.
-	 * @response.representation.qname {http://www.example.com}assessableResultsVO
-	 * @response.representation.mediaType application/xml, application/json
-	 * @response.representation.doc A result to import
-	 * @response.representation.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_ASSESSABLERESULTSVO}
-	 * @response.representation.200.doc Import successful
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The identity not found
+	 * 
 	 * @param courseId The resourceable id of the course
 	 * @param nodeId The id of the course building block
 	 * @param resultsVO The results
@@ -326,11 +297,11 @@ public class CourseAssessmentWebService {
 	@POST
 	@Path("{nodeId}")
 	@Operation(summary = "Import results", description = "Imports results for an assessable course node for the authenticated student")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "A result to import", content = {
-			@Content(mediaType = "application/json", schema = @Schema(implementation = AssessableResultsVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = AssessableResultsVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course not found") })
+	@ApiResponse(responseCode = "200", description = "A result to import", content = {
+		@Content(mediaType = "application/json", schema = @Schema(implementation = AssessableResultsVO.class)),
+		@Content(mediaType = "application/xml", schema = @Schema(implementation = AssessableResultsVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Consumes( { MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public Response postAssessableResults(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
 			AssessableResultsVO resultsVO, @Context HttpServletRequest request) {
@@ -489,12 +460,7 @@ public class CourseAssessmentWebService {
 
 	/**
 	 * Returns the results of a student at a specific assessable node
-	 * @response.representation.200.qname {http://www.example.com}assessableResultsVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The result of a user at a specific node
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_ASSESSABLERESULTSVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The identity or the course not found
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param nodeId The ident of the course building block
 	 * @param identityKey The id of the user
@@ -505,11 +471,11 @@ public class CourseAssessmentWebService {
 	@GET
 	@Path("{nodeId}/users/{identityKey}")
 	@Operation(summary = "Return results", description = "Returns the results of a student at a specific assessable node")
-	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The result of a user at a specific node", content = {
-			@Content(mediaType = "application/json", schema = @Schema(implementation = AssessableResultsVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = AssessableResultsVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course not found") })
+	@ApiResponse(responseCode = "200", description = "The result of a user at a specific node", content = {
+		@Content(mediaType = "application/json", schema = @Schema(implementation = AssessableResultsVO.class)),
+		@Content(mediaType = "application/xml", schema = @Schema(implementation = AssessableResultsVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCourseNodeResultsForNode(@PathParam("courseId") Long courseId, @PathParam("nodeId") Long nodeId, @PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest, @Context Request request) {

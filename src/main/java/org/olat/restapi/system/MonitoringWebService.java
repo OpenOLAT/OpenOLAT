@@ -40,7 +40,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * 
@@ -98,11 +97,6 @@ public class MonitoringWebService {
 	 * Return the configuration of the monitoring, which probes are available,
 	 * which dependency...
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}releaseVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The verison of the instance
-   * @response.representation.200.example {@link org.olat.restapi.system.vo.Examples#SAMPLE_MONITORINGCONFIGVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
    * @param request The HTTP request
 	 * @return The informations about the memory
 	 */
@@ -110,12 +104,11 @@ public class MonitoringWebService {
 	@Path("configuration")
 	@Operation(summary = "Return the configuration of the monitoring", description = "Return the configuration of the monitoring, which probes are available,\n" + 
 			"	  which dependency...")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "he version of the instance", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = MonitoringInfosVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = MonitoringInfosVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course not found") })	
+	@ApiResponse(responseCode = "200", description = "he version of the instance", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = MonitoringInfosVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = MonitoringInfosVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getImplementedProbes() {
 		MonitoringInfosVO vo = new MonitoringInfosVO();

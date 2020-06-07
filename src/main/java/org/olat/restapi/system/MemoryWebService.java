@@ -46,7 +46,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 
 /**
@@ -90,17 +89,14 @@ public class MemoryWebService implements Sampler {
 
 	/**
 	 * Return informations about memory.
-   * @response.representation.200.mediaType text/plain
-   * @response.representation.200.doc Informations about memory
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * 
    * @param request The HTTP request
 	 * @return The informations about the memory
 	 */
 	@GET
 	@Operation(summary = "Return informations about memory", description = "Return informations about memory")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "Informations about memory"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })
+	@ApiResponse(responseCode = "200", description = "Informations about memory")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getMemory() {	
 		MemoryVO vo = createMemoryVO();
@@ -109,21 +105,16 @@ public class MemoryWebService implements Sampler {
 	
 	/**
 	 * Return some informations about memory.
-	 * @response.representation.200.qname {http://www.example.com}memoryVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc A short summary of the number of classes
-   * @response.representation.200.example {@link org.olat.restapi.system.vo.Examples#SAMPLE_MEMORYVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @param request The HTTP request
+	 * 
+	 * @param request The HTTP request
 	 * @return The informations about the memory
 	 */
 	@GET
 	@Operation(summary = "Return some informations about memory", description = "Return some informations about memory")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "A short summary of the number of classes", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = MemoryVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = MemoryVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })	
+	@ApiResponse(responseCode = "200", description = "A short summary of the number of classes", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = MemoryVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = MemoryVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getMemoryXml() {	
 		MemoryVO vo = createMemoryVO();
@@ -137,16 +128,14 @@ public class MemoryWebService implements Sampler {
 		long totalUsed = (totalMem - r.freeMemory()) / 1000000; 
 		// Max available memory in VM in megabytes
 		long maxAvailable = r.maxMemory() / 1000000; 
-		MemoryVO vo = new MemoryVO(totalMem/1000000, totalUsed, maxAvailable);
-		return vo;
+		return new MemoryVO(totalMem/1000000, totalUsed, maxAvailable);
 	}
 
 	@GET
 	@Path("pools")
 	@Operation(summary = "Get pools", description = "Get the pools")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The pools"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")})	
+	@ApiResponse(responseCode = "200", description = "The pools")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getMemoryPools() {
 		MemoryPoolVO[] voes = createMemoryPools();
@@ -160,9 +149,8 @@ public class MemoryWebService implements Sampler {
 	@GET
 	@Path("pools")
 	@Operation(summary = "Get pools", description = "Get the pools")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The pools"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")})	
+	@ApiResponse(responseCode = "200", description = "The pools")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getMemoryPoolsXml() {
 		MemoryPoolVO[] voes = createMemoryPools();
@@ -172,9 +160,8 @@ public class MemoryWebService implements Sampler {
 	@GET
 	@Path("samples")
 	@Operation(summary = "Get samples", description = "Get the samples")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The samples"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")})	
+	@ApiResponse(responseCode = "200", description = "The samples")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getSamplesXml(@QueryParam("from") String from, @QueryParam("to") String to, @QueryParam("lastSamples") Integer maxResults) {
 		List<MemorySampleVO> samples = new ArrayList<>(memorySamples);

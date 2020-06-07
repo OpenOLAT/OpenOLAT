@@ -29,7 +29,6 @@ import javax.ws.rs.core.Response;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -49,16 +48,13 @@ public class Ping {
 	
 	/**
 	 * The version of the Ping Web Service
-   * @response.representation.200.mediaType text/plain
-   * @response.representation.200.doc The version of this specific Web Service
-   * @response.representation.200.example 1.0
+	 * 
 	 * @return
 	 */
 	@GET
 	@Path("version")
 	@Operation(summary = "The version of the Ping Web Service", description = "The version of the Ping Web Service")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "Return the version number") })	
+	@ApiResponse(responseCode = "200", description = "Return the version number")
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
@@ -66,15 +62,12 @@ public class Ping {
 	
 	/**
 	 * Return a string
-   * @response.representation.200.mediaType text/plain
-   * @response.representation.200.doc Return a small string
-   * @response.representation.200.example Ping
+	 * 
 	 * @return
 	 */
 	@GET
 	@Operation(summary = "Return a string", description = "Return a string")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "Ping") })	
+	@ApiResponse(responseCode = "200", description = "Ping")
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response ping() {
 		return Response.ok("Ping").build();
@@ -82,18 +75,14 @@ public class Ping {
 	
 	/**
 	 * Return a concatenation of the string as parameter and Ping
-   * @response.representation.doc Send a small string over the connection
-   * @response.representation.200.mediaType text/plain
-   * @response.representation.200.doc Return a small string
-   * @response.representation.200.example Ping hello
+	 * 
    * @param name a name
 	 * @return
 	 */
 	@POST
 	@Path("{name}")
 	@Operation(summary = "Return a concatenation of the string as parameter and Ping", description = "Return a concatenation of the string as parameter and Ping")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "Return a small string") })	
+	@ApiResponse(responseCode = "200", description = "Return a small string")	
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response ping(@PathParam("name") String name) {
 		return Response.ok("Ping " + name).build();

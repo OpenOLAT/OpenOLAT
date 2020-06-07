@@ -60,7 +60,6 @@ import org.springframework.stereotype.Component;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 
 /**
@@ -83,35 +82,30 @@ public class RegistrationWebService {
 	
 	/**
 	 * Register with the specified email
-   * @response.representation.200.doc Registration successful
-   * @response.representation.304.doc Already registered, HTTP-Header location set to redirect
+	 * 
    * @param email The email address
    * @param request The HTTP Request
 	 * @return
 	 */
 	@POST
 	@Operation(summary = "Register with the specified email", description = "Register with the specified email")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "Registration successful"),
-			@ApiResponse(responseCode = "304", description = "Already registered, HTTP-Header location set to redirect") })	
+	@ApiResponse(responseCode = "200", description = "Registration successful")
+	@ApiResponse(responseCode = "304", description = "Already registered, HTTP-Header location set to redirect")
 	public Response registerPost(@FormParam("email") String email, @Context HttpServletRequest request) {
 		return register(email, request);
 	}
 	
 	/**
 	 * Register with the specified email
-   * @response.representation.200.doc Registration successful
-   * @response.representation.304.doc Already registered, HTTP-Header location set to redirect
-   * @response.representation.400.doc Email address not allowed
+	 * 
    * @param email The email address
    * @param request The HTTP Request
 	 * @return
 	 */
 	@PUT
 	@Operation(summary = "Register with the specified email", description = "Register with the specified email")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "Registration successful"),
-			@ApiResponse(responseCode = "304", description = "Already registered, HTTP-Header location set to redirect") })	
+	@ApiResponse(responseCode = "200", description = "Registration successful")
+	@ApiResponse(responseCode = "304", description = "Already registered, HTTP-Header location set to redirect")
 	public Response register(@QueryParam("email") @Parameter(description = "The email address") String email, @Context HttpServletRequest request) {
 		if (!CoreSpringFactory.getImpl(RegistrationModule.class).isSelfRegistrationEnabled()) {
 			return Response.serverError().status(Status.NOT_FOUND).build();

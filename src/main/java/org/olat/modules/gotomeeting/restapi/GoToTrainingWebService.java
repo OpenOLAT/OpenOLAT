@@ -53,7 +53,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * 
@@ -79,23 +78,16 @@ public class GoToTrainingWebService {
 	/**
 	 * returns the list of booking of the resource.
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}goToTrainingVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc This is the list of all training of a resource
-	 * @response.representation.200.example {@link org.olat.modules.gotomeeting.restapi.Examples#SAMPLE_GoToTrainingVO}
 	 * @return The list of trainings
 	 */
 	@GET
 	@Path("trainings")
 	@Operation(summary = "Returns the list of booking of the resource", description = "Returns the list of booking of the resource")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "This is the list of all training of a resource",
-				content = {
-						@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = GoToTrainingVO.class))),
-						@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = GoToTrainingVO.class)))
-					} 
-		)}
-)	
+	@ApiResponse(responseCode = "200", description = "This is the list of all training of a resource",
+			content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = GoToTrainingVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = GoToTrainingVO.class)))
+				})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getTrainings() {
 		try {
@@ -115,23 +107,16 @@ public class GoToTrainingWebService {
 	/**
 	 * Return the created or updated training
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}goToTrainingVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc Created a training
-	 * @response.representation.200.example {@link org.olat.modules.gotomeeting.restapi.Examples#SAMPLE_GoToTrainingVO}
 	 * @return The list of vitero booking
 	 */
 	@PUT
 	@Path("trainings")
 	@Operation(summary = "Return the created or updated training", description = "Return the created or updated training")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "Created a training",
-				content = {
-						@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = GoToTrainingVO.class))),
-						@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = GoToTrainingVO.class)))
-					} 
-		)}
-)	
+	@ApiResponse(responseCode = "200", description = "Created a training",
+			content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = GoToTrainingVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = GoToTrainingVO.class)))
+				})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response createTraining(GoToTrainingVO training) {
@@ -141,23 +126,16 @@ public class GoToTrainingWebService {
 	/**
 	 * Return the created or updated training
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}goToTrainingVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The created booking
-	 * @response.representation.200.example {@link org.olat.modules.gotomeeting.restapi.Examples#SAMPLE_GoToTrainingVO}
 	 * @return The list of vitero booking
 	 */
 	@POST
 	@Path("trainings")
 	@Operation(summary = "Return the created or updated training", description = "Return the created or updated training")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "Created a booking",
-				content = {
-						@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = GoToTrainingVO.class))),
-						@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = GoToTrainingVO.class)))
-					} 
-		)}
-	)	
+	@ApiResponse(responseCode = "200", description = "Created a booking",
+			content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = GoToTrainingVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = GoToTrainingVO.class)))
+				})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updateTraining(GoToTrainingVO training) {
@@ -220,16 +198,12 @@ public class GoToTrainingWebService {
 	/**
 	 * Delete the training
 	 * 
-	 * @response.representation.200.doc The training is deleted
 	 * @return Nothing
 	 */
 	@DELETE
 	@Path("/trainings/{trainingKey}")
 	@Operation(summary = "Delete the training", description = "Delete the training")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "The training is deleted"
-		)}
-	)	
+	@ApiResponse(responseCode = "200", description = "The training is deleted")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response deleteTraining(@PathParam("trainingKey") Long trainingKey) {
 		try {

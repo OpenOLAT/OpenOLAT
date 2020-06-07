@@ -60,7 +60,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -83,9 +82,7 @@ public class CourseDbWebService {
 	
 	/**
 	 * Retrieves the version of the Course DB Web Service.
-	 * @response.representation.200.mediaType text/plain
-	 * @response.representation.200.doc The version of this specific Web Service
-	 * @response.representation.200.example 1.0
+	 * 
 	 * @return
 	 */
 	@GET
@@ -100,10 +97,7 @@ public class CourseDbWebService {
 	
 	/**
 	 * Retrieve all values of the authenticated user
-	 * @response.representation.200.qname {http://www.example.com}keyValuePair
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc All the values in the course
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_KEYVALUEVOes}
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param category The name of the database
 	 * @param request The HTTP request
@@ -113,14 +107,10 @@ public class CourseDbWebService {
 	@Path("values")
 	@Operation(summary = "Retrieve all values of the authenticated user",
 	description = "Retrieve all values of the authenticated user")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "All the values in the course",
-					content = {
-							@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = KeyValuePair.class))),
-							@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = KeyValuePair.class)))
-						} 
-			)}
-		)
+	@ApiResponse(responseCode = "200", description = "All the values in the course",
+			content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = KeyValuePair.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = KeyValuePair.class)))})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getValues(@PathParam("courseId") Long courseId, @PathParam("category") String category, @Context HttpServletRequest request) {
 		ICourse course = loadCourse(courseId);
@@ -139,11 +129,7 @@ public class CourseDbWebService {
 	
 	/**
 	 * Put a new value for an authenticated user.
-	 * @response.representation.qname {http://www.example.com}keyValuePair
-	 * @response.representation.mediaType application/xml, application/json
-	 * @response.representation.doc the key value pair is saved on the db
-	 * @response.representation.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_KEYVALUEVOes}
-	 * @response.representation.200.doc the key value pair is saved on the db
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param category The name of the database
 	 * @param pair The key value pair
@@ -153,15 +139,12 @@ public class CourseDbWebService {
 	@PUT
 	@Path("values")
 	@Operation(summary = "Put a new value for an authenticated user",
-	description = "Put a new value for an authenticated user")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "the key value pair is saved on the db",
-					content = {
-							@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = KeyValuePair.class))),
-							@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = KeyValuePair.class)))
-						} 
-			)}
-		)
+		description = "Put a new value for an authenticated user")
+	@ApiResponse(responseCode = "200", description = "the key value pair is saved on the db",
+			content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = KeyValuePair.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = KeyValuePair.class)))
+				})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putValues(@PathParam("courseId") Long courseId, @PathParam("category") String category, KeyValuePair pair, @Context HttpServletRequest request) {
 		return internPutValues(courseId, category, pair, request);
@@ -169,11 +152,7 @@ public class CourseDbWebService {
 	
 	/**
 	 * Update a value for an authenticated user.
-	 * @response.representation.qname {http://www.example.com}keyValuePair
-	 * @response.representation.mediaType application/xml, application/json
-	 * @response.representation.doc the key value pair is saved on the db
-	 * @response.representation.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_KEYVALUEVOes}
-	 * @response.representation.200.doc the key value pair is saved on the db
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param category The name of the database
 	 * @param pair The key value pair
@@ -183,15 +162,12 @@ public class CourseDbWebService {
 	@POST
 	@Path("values")
 	@Operation(summary = "Update a value for an authenticated user",
-	description = "Update a value for an authenticated user")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "the key value pair is saved on the db",
-					content = {
-							@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = KeyValuePair.class))),
-							@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = KeyValuePair.class)))
-						} 
-			)}
-		)
+		description = "Update a value for an authenticated user")
+	@ApiResponse(responseCode = "200", description = "the key value pair is saved on the db",
+			content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = KeyValuePair.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = KeyValuePair.class)))
+				})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postValues(@PathParam("courseId") Long courseId, @PathParam("category") String category, KeyValuePair pair, @Context HttpServletRequest request) {
 		return internPutValues(courseId, category, pair, request);
@@ -199,11 +175,7 @@ public class CourseDbWebService {
 
 	/**
 	 * Retrieve a value of an authenticated user.
-	 * @response.representation.200.qname {http://www.example.com}keyValuePair
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The value in the course
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_KEYVALUEVO}
-	 * @response.representation.404.doc The entry cannot be found
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param category The name of the database
 	 * @parma name The name of the key value pair
@@ -214,18 +186,12 @@ public class CourseDbWebService {
 	@Path("values/{name}")
 	@Operation(summary = "Retrieve a value of an authenticated user",
 	description = "Retrieve a value of an authenticated user")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "The value in the course",
-					content = {
-							@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = KeyValuePair.class))),
-							@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = KeyValuePair.class)))
-						} 
-			),
-			@ApiResponse(responseCode = "204", description = "The entry cannot be found"
-					
-			)
-			}
-		)
+	@ApiResponse(responseCode = "200", description = "The value in the course",
+			content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = KeyValuePair.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = KeyValuePair.class)))
+				})
+	@ApiResponse(responseCode = "204", description = "The entry cannot be found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getValue(@PathParam("courseId") Long courseId, @PathParam("category") String category, @PathParam("name") String name, @Context HttpServletRequest request) {
 		ICourse course = loadCourse(courseId);
@@ -242,11 +208,7 @@ public class CourseDbWebService {
 
 	/**
 	 * Retrieve a value of an authenticated user.
-	 * @response.representation.200.qname {http://www.example.com}keyValuePair
-	 * @response.representation.200.mediaType text/plain, text/html
-	 * @response.representation.200.doc A value of the course
-	 * @response.representation.200.example Green
-	 * @response.representation.404.doc The entry cannot be found
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param category The name of the database
 	 * @param name The name of the key value pair
@@ -257,18 +219,12 @@ public class CourseDbWebService {
 	@Path("values/{name}")
 	@Operation(summary = "Retrieve a value of an authenticated user",
 	description = "Retrieve a value of an authenticated user")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "The value in the course",
-					content = {
-							@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = KeyValuePair.class))),
-							@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = KeyValuePair.class)))
-						} 
-			),
-			@ApiResponse(responseCode = "404", description = "The entry cannot be found"
-					
-			)
-			}
-		)
+	@ApiResponse(responseCode = "200", description = "The value in the course",
+			content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = KeyValuePair.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = KeyValuePair.class)))
+				})
+	@ApiResponse(responseCode = "404", description = "The entry cannot be found")
 	@Produces({MediaType.TEXT_PLAIN, MediaType.TEXT_HTML})
 	public Response getValuePlain(@PathParam("courseId") Long courseId, @PathParam("category") String category, @PathParam("name") String name,
 			@Context HttpServletRequest request) {
@@ -286,7 +242,7 @@ public class CourseDbWebService {
 
 	/**
 	 * Put a new value for an authenticated user.
-	 * @response.representation.200.doc The value is saved in the course
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param category The name of the database
 	 * @param name The name of the key value pair
@@ -297,11 +253,8 @@ public class CourseDbWebService {
 	@PUT
 	@Path("values/{name}")
 	@Operation(summary = "Put a new value for an authenticated user",
-	description = "Put a new value for an authenticated user")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "The value is saved in the course")
-			}
-		)
+		description = "Put a new value for an authenticated user")
+	@ApiResponse(responseCode = "200", description = "The value is saved in the course")
 	public Response putValue(@PathParam("courseId") Long courseId, @PathParam("category") String category, @PathParam("name") String name,
 			@QueryParam("value")  @Parameter(description = "The value of the key value pair") String value, @Context HttpServletRequest request) {
 		return internPutValue(courseId, category, name, value, request);
@@ -309,7 +262,7 @@ public class CourseDbWebService {
 
 	/**
 	 * Update a value for an authenticated user.
-	 * @response.representation.200.doc The value is saved in the course
+	 *
 	 * @param courseId The course resourceable's id
 	 * @param category The name of the database
 	 * @param name The name of the key value pair
@@ -320,11 +273,8 @@ public class CourseDbWebService {
 	@POST
 	@Path("values/{name}")
 	@Operation(summary = "Update a value for an authenticated user",
-	description = "Update a value for an authenticated user")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "The value is saved in the course")
-			}
-		)
+		description = "Update a value for an authenticated user")
+	@ApiResponse(responseCode = "200", description = "The value is saved in the course")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	public Response formValue(@PathParam("courseId") Long courseId, @PathParam("category") String category, @PathParam("name") String name,
 			@FormParam("val") String value, @Context HttpServletRequest request){
@@ -333,9 +283,7 @@ public class CourseDbWebService {
 	
 	/**
 	 * Delete a value for an authenticated user.
-	 * @response.representation.200.doc the key value pair is remove from the db
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The entry cannot be found
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param category The name of the database
 	 * @param name The name of the key value pair
@@ -345,19 +293,10 @@ public class CourseDbWebService {
 	@DELETE
 	@Path("values/{name}")
 	@Operation(summary = "Delete a value for an authenticated user",
-	description = "Delete a value for an authenticated user")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "the key value pair is remove from the db"
-
-			),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"
-					
-			),
-			@ApiResponse(responseCode = "404", description = "The entry cannot be found"
-			
-					)
-			}
-		)
+		description = "Delete a value for an authenticated user")
+	@ApiResponse(responseCode = "200", description = "the key value pair is remove from the db")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The entry cannot be found")
 	public Response deleteValue(@PathParam("courseId") Long courseId, @PathParam("category") String category, 
 			@PathParam("name") String name, @Context HttpServletRequest request) {
 		UserRequest ureq = RestSecurityHelper.getUserRequest(request);
@@ -376,9 +315,6 @@ public class CourseDbWebService {
 	/**
 	 * Fallback method for the browsers
 	 * 
-	 * @response.representation.200.doc the key value pair is remove from the db
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The entry cannot be found
 	 * @param courseId The course resourceable's id
 	 * @param category The name of the database
 	 * @param name The name of the key value pair
@@ -388,19 +324,10 @@ public class CourseDbWebService {
 	@POST
 	@Path("values/{name}/delete")
 	@Operation(summary = "Fallback method for the browsers",
-	description = "Fallbakc method for the browsers")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "the key value pair is remove from the db"
-
-			),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"
-					
-			),
-			@ApiResponse(responseCode = "404", description = "The entry cannot be found"
-			
-					)
-			}
-		)
+		description = "Fallbakc method for the browsers")
+	@ApiResponse(responseCode = "200", description = "the key value pair is remove from the db")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The entry cannot be found")
 	public Response deleteValuePost(@PathParam("courseId") Long courseId, @PathParam("category") String category,
 			@PathParam("name") String name, @Context HttpServletRequest request) {
 		return deleteValue(courseId, category, name, request);

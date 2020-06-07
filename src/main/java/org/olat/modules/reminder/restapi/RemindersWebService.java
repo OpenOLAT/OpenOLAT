@@ -52,7 +52,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * 
@@ -75,26 +74,18 @@ public class RemindersWebService {
 	
 	/**
 	 * Return the reminders of the specified course or repository entry.
-	 * @response.representation.200.qname {http://www.example.com}reminderVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc An array of lecture blocks
-	 * @response.representation.200.example {@link org.olat.modules.reminder.restapi.Examples#SAMPLE_REMINDERVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The resource not found
+	 * 
 	 * @return The reminders
 	 */
 	@GET
 	@Operation(summary = "Return the reminders", description = "Return the reminders of the specified course or repository entry")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "An array of lecture blocks",
-				content = {
-						@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReminderVO.class))),
-						@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = ReminderVO.class)))
-					} 
-		),
-		@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-		@ApiResponse(responseCode = "404", description = "The resource not found")}
-)	
+	@ApiResponse(responseCode = "200", description = "An array of lecture blocks",
+			content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReminderVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = ReminderVO.class)))
+				})
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The resource not found")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getReminders() {
 		if(!administrator) {
@@ -113,24 +104,17 @@ public class RemindersWebService {
 	/**
 	 * Create or update a reminder.
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}reminderVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The updated reminder
-	 * @response.representation.200.example {@link org.olat.modules.reminder.restapi.Examples#SAMPLE_REMINDERVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or repository entry not found
 	 * @param reminder The reminder
 	 * @param httpRequest The HTTP request
 	 * @return It returns the updated / created reminder.
 	 */
 	@PUT
 	@Operation(summary = "Create or update a reminder", description = "Create or update a reminder")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The updated reminder", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = ReminderVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = ReminderVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or repository entry not found") })
+	@ApiResponse(responseCode = "200", description = "The updated reminder", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = ReminderVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = ReminderVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or repository entry not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putReminder(ReminderVO reminder, @Context HttpServletRequest httpRequest) {
@@ -144,24 +128,17 @@ public class RemindersWebService {
 	/**
 	 * Create or update a reminder.
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}reminderVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The updated reminder
-	 * @response.representation.200.example {@link org.olat.modules.lecture.restapi.Examples#SAMPLE_REMINDERVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or repository entry not found
 	 * @param reminder The reminder
 	 * @param httpRequest The HTTP request
 	 * @return It returns the updated / created reminder.
 	 */
 	@POST
 	@Operation(summary = "Create or update a reminder", description = "Create or update a reminder")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The updated reminder", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = ReminderVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = ReminderVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or repository entry not found") })
+	@ApiResponse(responseCode = "200", description = "The updated reminder", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = ReminderVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = ReminderVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or repository entry not found")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	@Consumes({MediaType.APPLICATION_FORM_URLENCODED, MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postReminder(ReminderVO reminder, @Context HttpServletRequest httpRequest) {
@@ -205,19 +182,16 @@ public class RemindersWebService {
 	
 	/**
 	 * Delete a specific reminder.
-	 * @response.representation.200.doc Reminder deleted
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or repository entry not found
+	 * 
 	 * @param reminderKey The reminder primary key
 	 * @return Nothing
 	 */
 	@DELETE
 	@Path("{reminderKey}")
 	@Operation(summary = "Delete a specific reminder", description = "Delete a specific reminder")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "Reminder deleted"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or repository entry not found") })
+	@ApiResponse(responseCode = "200", description = "Reminder deleted")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or repository entry not found")
 	public Response deleteReminder(@PathParam("reminderKey") Long reminderKey) {
 		if(!administrator) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();

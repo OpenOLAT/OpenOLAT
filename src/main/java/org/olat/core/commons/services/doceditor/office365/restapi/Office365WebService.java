@@ -59,7 +59,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -86,13 +85,12 @@ public class Office365WebService {
 	
 	@GET
 	@Operation(summary = "Get file Info", description = "Get file Info")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The files", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = CheckFileInfoVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = CheckFileInfoVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),			
-			@ApiResponse(responseCode = "403", description = "Forbidden"),
-			@ApiResponse(responseCode = "404", description = "File not found")})
+	@ApiResponse(responseCode = "200", description = "The files", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = CheckFileInfoVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CheckFileInfoVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")		
+	@ApiResponse(responseCode = "403", description = "Forbidden")
+	@ApiResponse(responseCode = "404", description = "File not found")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response checkFileInfo(
 			@PathParam("fileId") String fileId,
@@ -160,11 +158,10 @@ public class Office365WebService {
 	
 	@POST
 	@Operation(summary = "WOPI REST post request for file", description = "WOPI REST post request for file")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "WOPI REST post request for file"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),			
-			@ApiResponse(responseCode = "403", description = "Forbidden"),
-			@ApiResponse(responseCode = "404", description = "File not found")})
+	@ApiResponse(responseCode = "200", description = "WOPI REST post request for file")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")	
+	@ApiResponse(responseCode = "403", description = "Forbidden")
+	@ApiResponse(responseCode = "404", description = "File not found")
 	public Response post(
 			@PathParam("fileId") String fileId,
 			@QueryParam("access_token") String accessToken,
@@ -332,9 +329,8 @@ public class Office365WebService {
 	@GET
 	@Path("/contents")
 	@Operation(summary = "Retrieve content", description = "Retrieve the content")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The contents"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })	
+	@ApiResponse(responseCode = "200", description = "The contents")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	public Response getFile(
 			@PathParam("fileId") String fileId,
 			@QueryParam("access_token") String accessToken,
@@ -381,11 +377,10 @@ public class Office365WebService {
 	@POST
 	@Path("/contents")
 	@Operation(summary = "Post content", description = "Post content to a file")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The contents"),
-			@ApiResponse(responseCode = "401", description = "No access for token"),
-			@ApiResponse(responseCode = "403", description = "Forbidden"),
-			@ApiResponse(responseCode = "404", description = "File not found") })		
+	@ApiResponse(responseCode = "200", description = "The contents")
+	@ApiResponse(responseCode = "401", description = "No access for token")
+	@ApiResponse(responseCode = "403", description = "Forbidden")
+	@ApiResponse(responseCode = "404", description = "File not found")
 	@Consumes(MediaType.APPLICATION_OCTET_STREAM)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response putFile(

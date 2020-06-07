@@ -21,7 +21,6 @@
 package org.olat.modules.fo.restapi;
 
 import javax.ws.rs.GET;
-
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -36,7 +35,6 @@ import org.springframework.stereotype.Component;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -61,16 +59,12 @@ public class ForumImportWebService {
 	
 	/**
 	 * The version of the Forum Web Service
-   * @response.representation.200.mediaType text/plain
-   * @response.representation.200.doc The version of this specific Web Service
-   * @response.representation.200.example 1.0
 	 * @return
 	 */
 	@GET
 	@Path("version")
 	@Operation(summary = "The version of the Forum Web Service", description = "The version of the Forum Web Service")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The version of the Forum Web Service")})	
+	@ApiResponse(responseCode = "200", description = "The version of the Forum Web Service")
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
 		return Response.ok(VERSION).build();

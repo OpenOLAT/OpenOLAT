@@ -88,7 +88,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -119,15 +118,13 @@ public class UserCalendarWebService {
 	@GET
 	@Tag(name = "Calendar")
 	@Operation(summary = "List calendars of a specific user.", description = "Returns list of calendars of a specific user. Will always return the administrator's calendars for administrators.")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "Request was successful.",
-			content = {
-				@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CalendarVO.class))),
-				@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CalendarVO.class)))
-			}, links = {}),
-		@ApiResponse(responseCode = "401", description = "Not authorized."),
-		@ApiResponse(responseCode = "404", description = "Not found.")}
-		)
+	@ApiResponse(responseCode = "200", description = "Request was successful.",
+		content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CalendarVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CalendarVO.class)))
+		}, links = {})
+	@ApiResponse(responseCode = "401", description = "Not authorized.")
+	@ApiResponse(responseCode = "404", description = "Not found.")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCalendars(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest) {
 		UserRequest ureq = getUserRequest(httpRequest);
@@ -176,16 +173,13 @@ public class UserCalendarWebService {
 	@GET
 	@Path("events")
 	@Operation(summary = "List all events from a user.", description = "Returns list of all events in for a specific user.")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "Request was successful.",
-			content = {
-				@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = EventVO.class))),
-				@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = EventVO.class)))
-			} 
-		),
-		@ApiResponse(responseCode = "401", description = "Not authorized."),
-		@ApiResponse(responseCode = "404", description = "Not found.")}
-)	
+	@ApiResponse(responseCode = "200", description = "Request was successful.",
+		content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = EventVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = EventVO.class)))
+		})
+	@ApiResponse(responseCode = "401", description = "Not authorized.")
+	@ApiResponse(responseCode = "404", description = "Not found.")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getEvents(@PathParam("identityKey") Long identityKey,
 			@QueryParam("start")  @Parameter(description = "Set the date for the earliest event.")@DefaultValue("0") Integer start,

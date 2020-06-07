@@ -20,7 +20,6 @@
 package org.olat.modules.vitero.restapi;
 
 import java.util.ArrayList;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -37,13 +36,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityPowerSearchQueries;
 import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.modules.vitero.ViteroModule;
@@ -62,7 +61,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * 
@@ -94,22 +92,15 @@ public class ViteroBookingWebService {
 	/**
 	 * returns the list of booking of the resource.
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}viteroBookingVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc This is the list of all bookings of a resource
-	 * @response.representation.200.example {@link org.olat.modules.vitero.restapi.Examples#SAMPLE_ViteroBookingVO}
 	 * @return The list of vitero booking
 	 */
 	@GET
 	@Operation(summary = "returns the list of booking of the resource", description = "returns the list of booking of the resource")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "This is the list of all bookings of a resource",
-				content = {
-						@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ViteroBookingVO.class))),
-						@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = ViteroBookingVO.class)))
-					} 
-		)}
-)	
+	@ApiResponse(responseCode = "200", description = "This is the list of all bookings of a resource",
+			content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ViteroBookingVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = ViteroBookingVO.class)))
+				})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getRooms() {
 		try {
@@ -129,22 +120,15 @@ public class ViteroBookingWebService {
 	/**
 	 * Return the created or updated booking
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}viteroBookingVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The created booking
-	 * @response.representation.200.example {@link org.olat.modules.vitero.restapi.Examples#SAMPLE_ViteroBookingVO}
 	 * @return The list of vitero booking
 	 */
 	@PUT
 	@Operation(summary = "Return the created or updated booking", description = "Return the created or updated booking")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "The created booking",
-				content = {
-						@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ViteroBookingVO.class))),
-						@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = ViteroBookingVO.class)))
-					} 
-		)}
-)	
+	@ApiResponse(responseCode = "200", description = "The created booking",
+			content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ViteroBookingVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = ViteroBookingVO.class)))
+				})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response createRoom(ViteroBookingVO booking) {
@@ -154,22 +138,15 @@ public class ViteroBookingWebService {
 	/**
 	 * Return the created or updated booking
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}viteroBookingVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The created booking
-	 * @response.representation.200.example {@link org.olat.modules.vitero.restapi.Examples#SAMPLE_ViteroBookingVO}
 	 * @return The list of vitero booking
 	 */
 	@POST
 	@Operation(summary = "Return the created or updated booking", description = "Return the created or updated booking")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "The created booking",
-				content = {
-						@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ViteroBookingVO.class))),
-						@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = ViteroBookingVO.class)))
-					} 
-		)}
-)	
+	@ApiResponse(responseCode = "200", description = "The created booking",
+			content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ViteroBookingVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = ViteroBookingVO.class)))
+				})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updateRoom(ViteroBookingVO booking) {
@@ -214,17 +191,14 @@ public class ViteroBookingWebService {
 	}
 	
 	/**
-	 * Delete the booking
+	 * Delete the booking.
 	 * 
-	 * @response.representation.200.doc The booking is deleted
 	 * @return Nothing
 	 */
 	@DELETE
 	@Path("{bookingId}")
 	@Operation(summary = "Delete the booking", description = "Delete the booking")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "The booking is deleted")}
-)	
+	@ApiResponse(responseCode = "200", description = "The booking is deleted")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response deleteRoom(@PathParam("bookingId") int bookingId) {
 		try {
@@ -245,24 +219,17 @@ public class ViteroBookingWebService {
 	/**
 	 * Returns the list of members of the booking.
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}viteroGroupMemberVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc This is the list of all bookings of a resource
-	 * @response.representation.200.example {@link org.olat.modules.vitero.restapi.Examples#SAMPLE_ViteroGroupMemberVO}
 	 * @param bookingId The id of the booking
 	 * @return The list of members in the specified booking
 	 */
 	@GET
 	@Path("{bookingId}/members")
 	@Operation(summary = "Returns the list of members of the booking", description = "Returns the list of members of the booking")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "This is the list of all bookings of a resource",
-				content = {
-						@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ViteroGroupMemberVO.class))),
-						@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = ViteroGroupMemberVO.class)))
-					} 
-		)}
-)	
+	@ApiResponse(responseCode = "200", description = "This is the list of all bookings of a resource",
+			content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ViteroGroupMemberVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = ViteroGroupMemberVO.class)))
+				})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getMembers(@PathParam("bookingId") int bookingId) {
 		try {
@@ -299,10 +266,6 @@ public class ViteroBookingWebService {
 	 * Update the list of members of the booking, it add and mutates the
 	 * members and delete the missing members.
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}viteroGroupMemberVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc This is the list of all bookings of a resource
-	 * @response.representation.200.example {@link org.olat.modules.vitero.restapi.Examples#SAMPLE_ViteroGroupMemberVO}
 	 * @param bookingId The id of the booking
 	 * @param members The array of members
 	 * @return Nothing
@@ -311,14 +274,11 @@ public class ViteroBookingWebService {
 	@Path("{bookingId}/members")
 	@Operation(summary = "Update the lsit of members", description = "Update the list of members of the booking, it add and mutates the\n" + 
 			"	  members and delete the missing members.")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "This is the list of all bookings of a resource",
-				content = {
-						@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ViteroGroupMemberVO.class))),
-						@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = ViteroGroupMemberVO.class)))
-					} 
-		)}
-)	
+	@ApiResponse(responseCode = "200", description = "This is the list of all bookings of a resource",
+			content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ViteroGroupMemberVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = ViteroGroupMemberVO.class)))
+				})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response addMembers(@PathParam("bookingId") int bookingId, ViteroGroupMemberVO[] members) {

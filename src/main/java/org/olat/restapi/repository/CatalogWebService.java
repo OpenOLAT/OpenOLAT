@@ -82,7 +82,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -114,16 +113,13 @@ public class CatalogWebService {
 	
 	/**
 	 * Retrieves the version of the Catalog Web Service.
-	 * @response.representation.200.mediaType text/plain
-	 * @response.representation.200.doc The version of this specific Web Service
-	 * @response.representation.200.example 1.0
+	 * 
 	 * @return
 	 */
 	@GET
 	@Path("version")
 	@Operation(summary = "Retrieves the version of the Catalog Web Service", description = "Retrieves the version of the Catalog Web Service")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The version of this specific Web Service") })	
+	@ApiResponse(responseCode = "200", description = "The version of this specific Web Service")
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
@@ -131,19 +127,14 @@ public class CatalogWebService {
 	
 	/**
 	 * Returns the list of root catalog entries.
-	 * @response.representation.200.qname {http://www.example.com}catalogEntryVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The list of roots catalog entries
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_CATALOGENTRYVOes}
+	 * 
 	 * @return The response
 	 */
 	@GET
 	@Operation(summary = "Returns the list of root catalog entries", description = "Returns the list of root catalog entries")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "Array of results for the whole the course", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CatalogEntryVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CatalogEntryVO.class))) })
-			})	
+	@ApiResponse(responseCode = "200", description = "Array of results for the whole the course", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CatalogEntryVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CatalogEntryVO.class))) })
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getRoots(@Context HttpServletRequest httpRequest, @Context Request request) {
 		List<CatalogEntry> rootEntries = catalogManager.getRootCatalogEntries();
@@ -160,11 +151,7 @@ public class CatalogWebService {
 	
 	/**
 	 * Returns the metadata of the catalog entry.
-	 * @response.representation.200.qname {http://www.example.com}catalogEntryVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The catalog entry
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_CATALOGENTRYVO}
-	 * @response.representation.401.doc The path could not be resolved to a valid catalog entry
+	 * 
 	 * @param path The path
 	 * @param uriInfo The URI informations
 	 * @param httpRequest The HTTP request
@@ -174,11 +161,9 @@ public class CatalogWebService {
 	@GET
 	@Path("{path:.*}")
 	@Operation(summary = "Returns the metadata of the catalog entry", description = "Returns the metadata of the catalog entry")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The catalog entry", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = CatalogEntryVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = CatalogEntryVO.class)) })
-			})	
+	@ApiResponse(responseCode = "200", description = "The catalog entry", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = CatalogEntryVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CatalogEntryVO.class)) })
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCatalogEntry(@PathParam("path") List<PathSegment> path, @Context UriInfo uriInfo,
 			@Context HttpServletRequest httpRequest, @Context Request request) {
@@ -202,11 +187,7 @@ public class CatalogWebService {
 	
 	/**
 	 * Returns a list of catalog entries.
-	 * @response.representation.200.qname {http://www.example.com}catalogEntryVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The list of catalog entries
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_CATALOGENTRYVOes}
-	 * @response.representation.404.doc The path could not be resolved to a valid catalog entry
+	 * 
 	 * @param path The path
 	 * @param start
 	 * @param limit
@@ -217,12 +198,10 @@ public class CatalogWebService {
 	@GET
 	@Path("{path:.*}/children")
 	@Operation(summary = "Returns a list of catalog entries", description = "Returns a list of catalog entries")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The list of catalog entries", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CatalogEntryVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CatalogEntryVO.class))) }),
-			@ApiResponse(responseCode = "404", description = "The path could not be resolved to a valid catalog entry")
-			})
+	@ApiResponse(responseCode = "200", description = "The list of catalog entries", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CatalogEntryVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CatalogEntryVO.class))) })
+	@ApiResponse(responseCode = "404", description = "The path could not be resolved to a valid catalog entry")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getChildren(@PathParam("path") List<PathSegment> path, @QueryParam("start") @DefaultValue("0") Integer start,
 			@QueryParam("limit") @DefaultValue("25") Integer limit, @Context HttpServletRequest httpRequest, @Context Request request) {
@@ -266,12 +245,7 @@ public class CatalogWebService {
 	
 	/**
 	 * Adds a catalog entry under the path specified in the URL.
-	 * @response.representation.200.qname {http://www.example.com}catalogEntryVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The catalog entry
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_CATALOGENTRYVO}
-	 * @response.representation.401.doc Not authorized
-	 * @response.representation.404.doc The path could not be resolved to a valid catalog entry
+	 * 
 	 * @param path The path
 	 * @param name The name
 	 * @param description The description
@@ -284,13 +258,11 @@ public class CatalogWebService {
 	@PUT
 	@Path("{path:.*}")
 	@Operation(summary = "Add a catalog", description = "Adds a catalog entry under the path specified in the URL")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The catalog entry", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = CatalogEntryVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = CatalogEntryVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "Not authorized"),
-			@ApiResponse(responseCode = "404", description = "The path could not be resolved to a valid catalog entry")
-			})
+	@ApiResponse(responseCode = "200", description = "The catalog entry", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = CatalogEntryVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CatalogEntryVO.class)) })
+	@ApiResponse(responseCode = "401", description = "Not authorized")
+	@ApiResponse(responseCode = "404", description = "The path could not be resolved to a valid catalog entry")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response addCatalogEntry(@PathParam("path") List<PathSegment> path,
@@ -311,16 +283,7 @@ public class CatalogWebService {
 	
 	/**
 	 * Adds a catalog entry under the path specified in the URL.
-	 * @response.representation.qname {http://www.example.com}catalogEntryVO
-	 * @response.representation.mediaType application/xml, application/json
-	 * @response.representation.doc The catalog entry
-	 * @response.representation.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_CATALOGENTRYVO}
-	 * @response.representation.200.qname {http://www.example.com}catalogEntryVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The list of catalog entry
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_CATALOGENTRYVO}
-	 * @response.representation.401.doc Not authorized
-	 * @response.representation.404.doc The path could not be resolved to a valid catalog entry
+	 * 
 	 * @param path The path
 	 * @param entryVo The catalog entry
 	 * @param httpRquest The HTTP request
@@ -330,13 +293,11 @@ public class CatalogWebService {
 	@PUT
 	@Path("{path:.*}")
 	@Operation(summary = "Add a catalog", description = "Adds a catalog entry under the path specified in the URL")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The catalog entry", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = CatalogEntryVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = CatalogEntryVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "Not authorized"),
-			@ApiResponse(responseCode = "404", description = "The path could not be resolved to a valid catalog entry")
-			})
+	@ApiResponse(responseCode = "200", description = "The catalog entry", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = CatalogEntryVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CatalogEntryVO.class)) })
+	@ApiResponse(responseCode = "401", description = "Not authorized")
+	@ApiResponse(responseCode = "404", description = "The path could not be resolved to a valid catalog entry")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response addCatalogEntry(@PathParam("path") List<PathSegment> path, CatalogEntryVO entryVo,
@@ -396,12 +357,7 @@ public class CatalogWebService {
 	
 	/**
 	 * Updates the catalog entry under the path specified in the URL.
-	 * @response.representation.200.qname {http://www.example.com}catalogEntryVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The catalog entry
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_CATALOGENTRYVO}
-	 * @response.representation.401.doc Not authorized
-	 * @response.representation.404.doc The path could not be resolved to a valid catalog entry
+	 * 
 	 * @param path The path
 	 * @param name The name
 	 * @param description The description
@@ -413,13 +369,11 @@ public class CatalogWebService {
 	@POST
 	@Path("{path:.*}")
 	@Operation(summary = "Update a catalog", description = "Updates the catalog entry under the path specified in the URL")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The catalog entry", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = CatalogEntryVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = CatalogEntryVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "Not authorized"),
-			@ApiResponse(responseCode = "404", description = "The path could not be resolved to a valid catalog entry")
-			})
+	@ApiResponse(responseCode = "200", description = "The catalog entry", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = CatalogEntryVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CatalogEntryVO.class)) })
+	@ApiResponse(responseCode = "401", description = "Not authorized")
+	@ApiResponse(responseCode = "404", description = "The path could not be resolved to a valid catalog entry")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updatePostCatalogEntry(@PathParam("path") List<PathSegment> path,
@@ -435,12 +389,7 @@ public class CatalogWebService {
 	
 	/**
 	 * Updates the catalog entry with the path specified in the URL.
-	 * @response.representation.200.qname {http://www.example.com}catalogEntryVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The catalog entry
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_CATALOGENTRYVO}
-	 * @response.representation.401.doc Not authorized
-	 * @response.representation.404.doc The path could not be resolved to a valid catalog entry
+	 * 
 	 * @param path The path
 	 * @param id The id of the catalog entry
 	 * @param name The name
@@ -453,13 +402,11 @@ public class CatalogWebService {
 	@POST
 	@Path("{path:.*}")
 	@Operation(summary = "Update a catalog", description = "Updates the catalog entry with the path specified in the URL")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The catalog entry", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = CatalogEntryVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = CatalogEntryVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "Not authorized"),
-			@ApiResponse(responseCode = "404", description = "The path could not be resolved to a valid catalog entry")
-			})
+	@ApiResponse(responseCode = "200", description = "The catalog entry", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = CatalogEntryVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CatalogEntryVO.class)) })
+	@ApiResponse(responseCode = "401", description = "Not authorized")
+	@ApiResponse(responseCode = "404", description = "The path could not be resolved to a valid catalog entry")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updateCatalogEntry(@PathParam("path") List<PathSegment> path,
 			@QueryParam("name") String name, @QueryParam("description") String description,
@@ -474,12 +421,7 @@ public class CatalogWebService {
 	
 	/**
 	 * Updates the catalog entry with the path specified in the URL.
-	 * @response.representation.200.qname {http://www.example.com}catalogEntryVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The catalog entry
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_CATALOGENTRYVO}
-	 * @response.representation.401.doc Not authorized
-	 * @response.representation.404.doc The path could not be resolved to a valid catalog entry
+	 * 
 	 * @param path The path
 	 * @param entryVo The catalog entry
 	 * @param newParentKey The parent key to move the entry (optional)
@@ -490,13 +432,11 @@ public class CatalogWebService {
 	@POST
 	@Path("{path:.*}")
 	@Operation(summary = "Update a catalog", description = "Updates the catalog entry with the path specified in the URL")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The catalog entry", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = CatalogEntryVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = CatalogEntryVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "Not authorized"),
-			@ApiResponse(responseCode = "404", description = "The path could not be resolved to a valid catalog entry")
-			})
+	@ApiResponse(responseCode = "200", description = "The catalog entry", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = CatalogEntryVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CatalogEntryVO.class)) })
+	@ApiResponse(responseCode = "401", description = "Not authorized")
+	@ApiResponse(responseCode = "404", description = "The path could not be resolved to a valid catalog entry")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updateCatalogEntry(@PathParam("path") List<PathSegment> path,
@@ -564,12 +504,7 @@ public class CatalogWebService {
 	
 	/**
 	 * Deletes the catalog entry with the path specified in the URL.
-	 * @response.representation.200.qname {http://www.example.com}catalogEntryVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The catalog entry
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_CATALOGENTRYVO}
-	 * @response.representation.401.doc Not authorized
-	 * @response.representation.404.doc The path could not be resolved to a valid catalog entry
+	 * 
 	 * @param path The path
 	 * @param httpRquest The HTTP request
 	 * @return The response
@@ -577,11 +512,9 @@ public class CatalogWebService {
 	@DELETE
 	@Path("{path:.*}")
 	@Operation(summary = "Delete a catalog", description = "Deletes the catalog entry with the path specified in the URL")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The catalog entry"),
-			@ApiResponse(responseCode = "401", description = "Not authorized"),
-			@ApiResponse(responseCode = "404", description = "The path could not be resolved to a valid catalog entry")
-			})
+	@ApiResponse(responseCode = "200", description = "The catalog entry")
+	@ApiResponse(responseCode = "401", description = "Not authorized")
+	@ApiResponse(responseCode = "404", description = "The path could not be resolved to a valid catalog entry")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response deleteCatalogEntry(@PathParam("path") List<PathSegment> path, @Context HttpServletRequest httpRequest) {
 		Long key = getCatalogEntryKeyFromPath(path);
@@ -616,12 +549,7 @@ public class CatalogWebService {
 	
 	/**
 	 * Get the owners of the local sub tree
-	 * @response.representation.200.qname {http://www.example.com}userVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The catalog entry
-	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVOes}
-	 * @response.representation.401.doc Not authorized
-	 * @response.representation.404.doc The path could not be resolved to a valid catalog entry
+	 * 
 	 * @param path The path
 	 * @param httpRquest The HTTP request
 	 * @return The response
@@ -629,13 +557,11 @@ public class CatalogWebService {
 	@GET
 	@Path("{path:.*}/owners")
 	@Operation(summary = "Get the owners of the local sub tree", description = "Get the owners of the local sub tree")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The catalog entry", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CatalogEntryVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CatalogEntryVO.class))) }),
-			@ApiResponse(responseCode = "401", description = "Not authorized"),
-			@ApiResponse(responseCode = "404", description = "The path could not be resolved to a valid catalog entry")
-			})
+	@ApiResponse(responseCode = "200", description = "The catalog entry", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CatalogEntryVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CatalogEntryVO.class))) })
+	@ApiResponse(responseCode = "401", description = "Not authorized")
+	@ApiResponse(responseCode = "404", description = "The path could not be resolved to a valid catalog entry")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getOwners(@PathParam("path") List<PathSegment> path, @Context HttpServletRequest httpRequest) {
 		Long key = getCatalogEntryKeyFromPath(path);
@@ -663,12 +589,7 @@ public class CatalogWebService {
 	
 	/**
 	 * Retrieves data of an owner of the local sub tree
-	 * @response.representation.200.qname {http://www.example.com}userVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The catalog entry
-	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVOes}
-	 * @response.representation.401.doc Not authorized
-	 * @response.representation.404.doc The path could not be resolved to a valid catalog entry
+	 * 
 	 * @param path The path
 	 * @Param identityKey The id of the user 
 	 * @param httpRquest The HTTP request
@@ -677,13 +598,11 @@ public class CatalogWebService {
 	@GET
 	@Path("{path:.*}/owners/{identityKey}")
 	@Operation(summary = "Retrieves data of an owner of the local sub tree", description = "Retrieves data of an owner of the local sub tree")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The catalog entry", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CatalogEntryVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CatalogEntryVO.class))) }),
-			@ApiResponse(responseCode = "401", description = "Not authorized"),
-			@ApiResponse(responseCode = "404", description = "The path could not be resolved to a valid catalog entry")
-			})
+	@ApiResponse(responseCode = "200", description = "The catalog entry", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CatalogEntryVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CatalogEntryVO.class))) })
+	@ApiResponse(responseCode = "401", description = "Not authorized")
+	@ApiResponse(responseCode = "404", description = "The path could not be resolved to a valid catalog entry")
 	public Response getOwner(@PathParam("path") List<PathSegment> path, @PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {
 		Long key = getCatalogEntryKeyFromPath(path);
@@ -716,12 +635,7 @@ public class CatalogWebService {
 	
 	/**
 	 * Add an owner of the local sub tree
-	 * @response.representation.200.qname {http://www.example.com}userVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The catalog entry
-	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVOes}
-	 * @response.representation.401.doc Not authorized
-	 * @response.representation.404.doc The path could not be resolved to a valid catalog entry
+	 * 
 	 * @param path The path
 	 * @param identityKey The id of the user
 	 * @param httpRquest The HTTP request
@@ -730,13 +644,11 @@ public class CatalogWebService {
 	@PUT
 	@Path("{path:.*}/owners/{identityKey}")
 	@Operation(summary = "Add an owner of the local sub tree", description = "Add an owner of the local sub tree")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The catalog entry", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CatalogEntryVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CatalogEntryVO.class))) }),
-			@ApiResponse(responseCode = "401", description = "Not authorized"),
-			@ApiResponse(responseCode = "404", description = "The path could not be resolved to a valid catalog entry")
-			})
+	@ApiResponse(responseCode = "200", description = "The catalog entry", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CatalogEntryVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CatalogEntryVO.class))) })
+	@ApiResponse(responseCode = "401", description = "Not authorized")
+	@ApiResponse(responseCode = "404", description = "The path could not be resolved to a valid catalog entry")
 	public Response addOwner(@PathParam("path") List<PathSegment> path, @PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {
 		Long key = getCatalogEntryKeyFromPath(path);
@@ -775,12 +687,7 @@ public class CatalogWebService {
 	
 	/**
 	 * Remove an owner of the local sub tree
-	 * @response.representation.200.qname {http://www.example.com}userVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The catalog entry
-	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVOes}
-	 * @response.representation.401.doc Not authorized
-	 * @response.representation.404.doc The path could not be resolved to a valid catalog entry
+	 * @
 	 * @param path The path
 	 * @param identityKey The id of the user
 	 * @param httpRquest The HTTP request
@@ -789,11 +696,9 @@ public class CatalogWebService {
 	@DELETE
 	@Path("{path:.*}/owners/{identityKey}")
 	@Operation(summary = "Remove an owner of the local sub tree", description = "Remove an owner of the local sub tree")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The catalog entry"),
-			@ApiResponse(responseCode = "401", description = "Not authorized"),
-			@ApiResponse(responseCode = "404", description = "The path could not be resolved to a valid catalog entry")
-			})
+	@ApiResponse(responseCode = "200", description = "The catalog entry")
+	@ApiResponse(responseCode = "401", description = "Not authorized")
+	@ApiResponse(responseCode = "404", description = "The path could not be resolved to a valid catalog entry")
 	public Response removeOwner(@PathParam("path") List<PathSegment> path, @PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {
 		Long key = getCatalogEntryKeyFromPath(path);

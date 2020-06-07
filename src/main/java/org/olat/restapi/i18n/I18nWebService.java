@@ -41,7 +41,6 @@ import org.springframework.stereotype.Component;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * 
@@ -62,16 +61,13 @@ public class I18nWebService {
 	
 	/**
 	 * Retrieves the version of the i18n Web Service.
-   * @response.representation.200.mediaType text/plain
-   * @response.representation.200.doc The version of this specific Web Service
-   * @response.representation.200.example 1.0
+	 * 
 	 * @return
 	 */
 	@GET
 	@Path("version")
 	@Operation(summary = "Retrieves the version of the i18n Web Service", description = "Retrieves the version of the i18n Web Service")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "Return the version number") })	
+	@ApiResponse(responseCode = "200", description = "Return the version number")
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
@@ -80,9 +76,7 @@ public class I18nWebService {
 	/**
 	 * Return the translation of the key. If the "locale" parameter is not specified, the method
 	 * try to use the "locale" of the user and if it hasn't, take the default locale.
-   * @response.representation.200.mediaType text/plain
-   * @response.representation.200.doc The translation of the package + key
-   * @response.representation.200.example OK
+	 * 
 	 * @param packageName The name of the package
 	 * @param key The key to translate
 	 * @param localeKey The locale (optional)
@@ -93,8 +87,7 @@ public class I18nWebService {
 	@Path("{package}/{key}")
 	@Operation(summary = "Return the translation of the key", description = "Return the translation of the key. If the \"locale\" parameter is not specified, the method\n" + 
 			"	  try to use the \"locale\" of the user and if it hasn't, take the default locale")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The translation of the package + key") })
+	@ApiResponse(responseCode = "200", description = "The translation of the package + key")
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getTranslation(@PathParam("package") String packageName, @PathParam("key") String key, @QueryParam("locale") String localeKey, @Context HttpServletRequest request) {
 		I18nManager i18n = CoreSpringFactory.getImpl(I18nManager.class);

@@ -84,7 +84,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -123,16 +122,13 @@ public class CourseResourceFolderWebService {
 
 	/**
 	 * The version of the resources folders Web Service
-	 * @response.representation.200.mediaType text/plain
-	 * @response.representation.200.doc The version of this specific Web Service
-	 * @response.representation.200.example 1.0
+	 * 
 	 * @return
 	 */
 	@GET
 	@Path("version")
 	@Operation(summary = "The version of the resources folders Web Service", description = "The version of the resources folders Web Service")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The version of this specific Web Service") })	
+	@ApiResponse(responseCode = "200", description = "The version of this specific Web Service")
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
@@ -140,9 +136,7 @@ public class CourseResourceFolderWebService {
 
 	/**
 	 * This retrieves the files in the shared folder
-	 * @response.representation.200.doc The list of files
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or the shared folder not found
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param uri The uri infos
 	 * @param httpRequest The HTTP request
@@ -152,12 +146,11 @@ public class CourseResourceFolderWebService {
 	@GET
 	@Path("sharedfolder")
 	@Operation(summary = "This retrieves the files in the shared folder", description = "This retrieves the files in the shared folder")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The list of files", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = LinkVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = LinkVO.class))) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or the shared folder not found") })	
+	@ApiResponse(responseCode = "200", description = "The list of files", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = LinkVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = LinkVO.class))) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or the shared folder not found")	
 	public Response getSharedFiles(@PathParam("courseId") Long courseId, @Context UriInfo uriInfo,
 			@Context HttpServletRequest httpRequest, @Context Request request) {
 		return getFiles(courseId, Collections.<PathSegment>emptyList(), FolderType.SHARED_FOLDER, uriInfo, httpRequest, request);
@@ -165,10 +158,7 @@ public class CourseResourceFolderWebService {
 
 	/**
 	 * This retrieves the files in the shared folder
-	 * @response.representation.200.doc The list of files
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or the file not found
-	 * @response.representation.406.doc The course node is not acceptable to copy a file
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param path The path of the file or directory
 	 * @param uri The uri infos
@@ -179,13 +169,12 @@ public class CourseResourceFolderWebService {
 	@GET
 	@Path("sharedfolder/{path:.*}")
 	@Operation(summary = "This retrieves the files in the shared folder", description = "This retrieves the files in the shared folder")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The list of files", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = LinkVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = LinkVO.class))) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or the shared folder not found"),
-			@ApiResponse(responseCode = "406", description = "The course node is not acceptable to copy a file")})	
+	@ApiResponse(responseCode = "200", description = "The list of files", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = LinkVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = LinkVO.class))) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or the shared folder not found")
+	@ApiResponse(responseCode = "406", description = "The course node is not acceptable to copy a file")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.TEXT_HTML, MediaType.APPLICATION_OCTET_STREAM})
 	public Response getSharedFiles(@PathParam("courseId") Long courseId, @PathParam("path") List<PathSegment> path,
 			@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest, @Context Request request) {
@@ -195,9 +184,7 @@ public class CourseResourceFolderWebService {
 
 	/**
 	 * This retrieves the files in the course folder
-	 * @response.representation.200.doc The list of files
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course not found
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param uri The uri infos
 	 * @param httpRequest The HTTP request
@@ -207,12 +194,11 @@ public class CourseResourceFolderWebService {
 	@GET
 	@Path("coursefolder")
 	@Operation(summary = "This retrieves the files in the course folder", description = "This retrieves the files in the course folder")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The list of files", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = LinkVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = LinkVO.class))) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or the shared folder not found") })
+	@ApiResponse(responseCode = "200", description = "The list of files", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = LinkVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = LinkVO.class))) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or the shared folder not found")
 	public Response getCourseFiles(@PathParam("courseId") Long courseId, @Context UriInfo uriInfo,
 			@Context HttpServletRequest httpRequest, @Context Request request) {
 		return getFiles(courseId, Collections.<PathSegment>emptyList(), FolderType.COURSE_FOLDER, uriInfo, httpRequest, request);
@@ -220,10 +206,7 @@ public class CourseResourceFolderWebService {
 
 	/**
 	 * This retrieves the files in the course folder
-	 * @response.representation.200.doc The list of files
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or the file not found
-	 * @response.representation.406.doc The course node is not acceptable to copy a file
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param path The path of the file or directory
 	 * @param uri The uri infos
@@ -234,13 +217,12 @@ public class CourseResourceFolderWebService {
 	@GET
 	@Path("coursefolder/{path:.*}")
 	@Operation(summary = "This retrieves the files in the course folder", description = "This retrieves the files in the course folder")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The list of files", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = LinkVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = LinkVO.class))) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or the shared folder not found") ,
-			@ApiResponse(responseCode = "406", description = "The course node is not acceptable to copy a file")})
+	@ApiResponse(responseCode = "200", description = "The list of files", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = LinkVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = LinkVO.class))) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or the shared folder not found")
+	@ApiResponse(responseCode = "406", description = "The course node is not acceptable to copy a file")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.TEXT_HTML, MediaType.APPLICATION_OCTET_STREAM})
 	public Response getCourseFiles(@PathParam("courseId") Long courseId, @PathParam("path") List<PathSegment> path,
 			@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest, @Context Request request) {
@@ -249,12 +231,7 @@ public class CourseResourceFolderWebService {
 
 	/**
 	 * This attaches the uploaded file(s) to the supplied folder id.
-	 * @response.representation.mediaType multipart/form-data
-	 * @response.representation.doc The file
-	 * @response.representation.200.doc The file is correctly saved
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or course node not found
-	 * @response.representation.406.doc The course node is not acceptable to copy a file
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param filename The filename
 	 * @param file The file resource to upload
@@ -264,11 +241,10 @@ public class CourseResourceFolderWebService {
 	@POST
 	@Path("coursefolder")
 	@Operation(summary = "This attaches the uploaded file(s) to the supplied folder id", description = "This attaches the uploaded file(s) to the supplied folder id")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The file is correctly saved"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or course node not found") ,
-			@ApiResponse(responseCode = "406", description = "The course node is not acceptable to copy a file")})
+	@ApiResponse(responseCode = "200", description = "The file is correctly saved")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or course node not found")
+	@ApiResponse(responseCode = "406", description = "The course node is not acceptable to copy a file")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response attachFileToFolderPost(@PathParam("courseId") Long courseId,
 			@Context HttpServletRequest request) {
@@ -277,12 +253,7 @@ public class CourseResourceFolderWebService {
 
 	/**
 	 * This attaches the uploaded file(s) to the supplied folder id at the specified path.
-	 * @response.representation.mediaType multipart/form-data
-	 * @response.representation.doc The file
-	 * @response.representation.200.doc The file is correctly saved
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or course node not found
-	 * @response.representation.406.doc The course node is not acceptable to copy a file
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param path The path of the file
 	 * @param filename The filename
@@ -293,11 +264,10 @@ public class CourseResourceFolderWebService {
 	@POST
 	@Path("coursefolder/{path:.*}")
 	@Operation(summary = "Attach the uploaded file(s) to the supplied folder id at the specified path", description = "This attaches the uploaded file(s) to the supplied folder id at the specified path")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The file is correctly saved"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or course node not found") ,
-			@ApiResponse(responseCode = "406", description = "The course node is not acceptable to copy a file")})
+	@ApiResponse(responseCode = "200", description = "The file is correctly saved")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or course node not found")
+	@ApiResponse(responseCode = "406", description = "The course node is not acceptable to copy a file")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response attachFileToFolderPost(@PathParam("courseId") Long courseId, @PathParam("path") List<PathSegment> path,
 			@Context HttpServletRequest request) {
@@ -306,12 +276,7 @@ public class CourseResourceFolderWebService {
 
 	/**
 	 * This attaches the uploaded file(s) to the supplied folder id at the root level
-	 * @response.representation.mediaType multipart/form-data
-	 * @response.representation.doc The file
-	 * @response.representation.200.doc The file is correctly saved
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or course node not found
-	 * @response.representation.406.doc The course node is not acceptable to copy a file
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param nodeId The id for the folder that will contain the file(s)
 	 * @param filename The filename
@@ -322,11 +287,10 @@ public class CourseResourceFolderWebService {
 	@PUT
 	@Path("coursefolder")
 	@Operation(summary = "Attach the uploaded file(s) to the supplied folder id at the root level", description = "This attaches the uploaded file(s) to the supplied folder id at the root level")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The file is correctly saved"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or course node not found") ,
-			@ApiResponse(responseCode = "406", description = "The course node is not acceptable to copy a file")})
+	@ApiResponse(responseCode = "200", description = "The file is correctly saved")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or course node not found")
+	@ApiResponse(responseCode = "406", description = "The course node is not acceptable to copy a file")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response attachFileToFolder(@PathParam("courseId") Long courseId,
 			@Context HttpServletRequest request) {
@@ -335,12 +299,7 @@ public class CourseResourceFolderWebService {
 
 	/**
 	 * This attaches the uploaded file(s) to the supplied folder id at the specified path
-	 * @response.representation.mediaType multipart/form-data
-	 * @response.representation.doc The file
-	 * @response.representation.200.doc The file is correctly saved
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or course node not found
-	 * @response.representation.406.doc The course node is not acceptable to copy a file
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param nodeId The id for the folder that will contain the file(s)
 	 * @param filename The filename
@@ -351,11 +310,10 @@ public class CourseResourceFolderWebService {
 	@PUT
 	@Path("coursefolder/{path:.*}")
 	@Operation(summary = "Attach the uploaded file(s) to the supplied folder id at the specified path", description = "This attaches the uploaded file(s) to the supplied folder id at the specified path")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The file is correctly saved"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The course or course node not found") ,
-			@ApiResponse(responseCode = "406", description = "The course node is not acceptable to copy a file")})
+	@ApiResponse(responseCode = "200", description = "The file is correctly saved")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course or course node not found")
+	@ApiResponse(responseCode = "406", description = "The course node is not acceptable to copy a file")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response attachFileToFolder(@PathParam("courseId") Long courseId, @PathParam("path") List<PathSegment> path,
 			@Context HttpServletRequest request) {

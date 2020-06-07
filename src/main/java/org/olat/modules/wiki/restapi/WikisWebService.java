@@ -49,7 +49,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -94,10 +93,9 @@ public class WikisWebService {
 	 */
 	@GET
 	@Operation(summary = "get list of repo-entry wikis", description = "get list of repo-entry wikis. Group-Wikis are not listed!")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "Retrieve all the wikis", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = WikiVOes.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = WikiVOes.class))) })})
+	@ApiResponse(responseCode = "200", description = "Retrieve all the wikis", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = WikiVOes.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = WikiVOes.class))) })
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public Response getWikis(@Context HttpServletRequest httpRequest) {
 		List<RepositoryEntry> res = getAccessibleWikiRepositoryEntries(httpRequest);

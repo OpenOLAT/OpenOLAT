@@ -38,7 +38,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * 
@@ -48,20 +47,15 @@ public class IndexerWebService {
 	
 	/**
 	 * Return the statistics about the indexer
-	 * @response.representation.200.qname {http://www.example.com}releaseVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc Statistics about the indexer
-	 * @response.representation.200.example {@link org.olat.restapi.system.vo.Examples#SAMPLE_OO_INDEXERSTATSVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * 
 	 * @return The statistics about the indexer
 	 */
 	@GET
 	@Operation(summary = "Return the statistics about the indexer", description = "Return the statistics about the indexer")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "Statistics about the indexer", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = IndexerStatisticsVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = IndexerStatisticsVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })	
+	@ApiResponse(responseCode = "200", description = "Statistics about the indexer", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = IndexerStatisticsVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = IndexerStatisticsVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getStatistics() {
 		IndexerStatisticsVO stats = getIndexerStatistics();
@@ -70,17 +64,14 @@ public class IndexerWebService {
 	
 	/**
 	 * Return the status of the indexer: running, stopped
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The status of the indexer
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * 
 	 * @return The status of the indexer
 	 */
 	@GET
 	@Path("status")
 	@Operation(summary = "Return the status of the indexer", description = "Return the status of the indexer: running, stopped")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "he status of the indexer"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })
+	@ApiResponse(responseCode = "200", description = "he status of the indexer")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getStatus() {
 		String status;
@@ -95,17 +86,14 @@ public class IndexerWebService {
 	
 	/**
 	 * Return the status of the indexer: running, stopped
-	 * @response.representation.200.mediaType text/plain
-	 * @response.representation.200.doc The status of the indexer
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * 
 	 * @return The status of the indexer
 	 */
 	@GET
 	@Path("status")
 	@Operation(summary = "Return the status of the indexer", description = "Return the status of the indexer: running, stopped")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The status of the indexer"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })	
+	@ApiResponse(responseCode = "200", description = "The status of the indexer")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.TEXT_PLAIN})
 	public Response getPlainTextStatus() {
 		String status;
@@ -121,17 +109,15 @@ public class IndexerWebService {
 	/**
 	 * Update the status of the indexer: running, stopped.
 	 * Running start the indexer, stopped, stop it.
-	 * @response.representation.200.doc The status has changed
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * 
 	 * @return The status of the indexer
 	 */
 	@POST
 	@Path("status")
 	@Operation(summary = "Update the status of the indexer", description = "Update the status of the indexer: running, stopped.\n" + 
 			"	  Running start the indexer, stopped, stop it.")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The status has changed"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })
+	@ApiResponse(responseCode = "200", description = "The status has changed")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	public Response setStatus(@FormParam("status") String status) {
 		if(FullIndexerStatus.STATUS_RUNNING.equals(status)) {
 			SearchServiceFactory.getService().startIndexing();

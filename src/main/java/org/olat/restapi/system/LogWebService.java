@@ -40,7 +40,6 @@ import org.olat.core.util.vfs.VFSLeaf;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * Description:<br>
@@ -63,16 +62,12 @@ public class LogWebService {
 	/**
 	 * The version of the Log Web Service
 	 * 
-	 * @response.representation.200.mediaType text/plain
-	 * @response.representation.200.doc The version of this specific Web Service
-	 * @response.representation.200.example 1.0
 	 * @return
 	 */
 	@GET
 	@Path("version")
 	@Operation(summary = "The version of the Log Web Service", description = "The version of the Log Web Service")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "Return the version number") })	
+	@ApiResponse(responseCode = "200", description = "Return the version number")
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
@@ -81,8 +76,7 @@ public class LogWebService {
 	@GET
 	@Path("{date}")
 	@Operation(summary = "Get old version", description = "Get the version from a specific date")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "Return the version number") })	
+	@ApiResponse(responseCode = "200", description = "Return the version number")
 	@Produces({ "text/plain", MediaType.APPLICATION_OCTET_STREAM })
 	public Response getLogFileByDate(@PathParam("date") String dateString) {
 		VFSLeaf logFile;
@@ -115,8 +109,7 @@ public class LogWebService {
 			"	  \n" + 
 			"	  will return null if the given String is not valid or the resulting\n" + 
 			"	  logfile is not found")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "the requested LogFile as VFSLeaf or null") })	
+	@ApiResponse(responseCode = "200", description = "the requested LogFile as VFSLeaf or null")
 	@Produces({ "text/plain", MediaType.APPLICATION_OCTET_STREAM })
 	public Response getCurrentLogFile() {
 		return getLogFileByDate(null);

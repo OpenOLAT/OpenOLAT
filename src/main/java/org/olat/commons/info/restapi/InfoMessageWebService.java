@@ -33,7 +33,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * 
@@ -54,28 +53,20 @@ public class InfoMessageWebService {
 	
 	/**
 	 * Get an new info message by key
-	 * @response.representation.200.qname {http://www.example.com}infoMessageVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The info message
-   * @response.representation.200.example {@link org.olat.commons.info.restapi.Examples#SAMPLE_INFOMESSAGEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * 
    * @param infoMessageKey The key
    * @param request The HTTP request
 	 * @return It returns the newly info message
 	 */
 	@GET
-	@Operation(summary = "Get an new info message by key",
-	description = "Get an new info message by key")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "The info message",
-					content = {
-							@Content(mediaType = "application/json", schema = @Schema(implementation = InfoMessageVO.class)),
-							@Content(mediaType = "application/xml", schema = @Schema(implementation = InfoMessageVO.class))
-						} 
-			),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "Not Found")}
-		)
+	@Operation(summary = "Get an new info message by key", description = "Get an new info message by key")
+	@ApiResponse(responseCode = "200", description = "The info message",
+			content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = InfoMessageVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = InfoMessageVO.class))
+				})
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "Not Found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getMessage(@Context HttpServletRequest request) {
 		InfoMessageVO msgVO = new InfoMessageVO(msg);

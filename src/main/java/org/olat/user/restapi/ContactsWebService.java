@@ -44,13 +44,9 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * 
- * Description:<br>
- * 
- * <P>
  * Initial Date:  21 oct. 2011 <br>
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -61,7 +57,7 @@ public class ContactsWebService {
 	
 	/**
 	 * Retrieve the contacts of the logged in identity.
-	 * @response.representation.200.doc The list of contacts
+	 * 
 	 * @param start
 	 * @param limit
 	 * @param httpRequest The HTTP request
@@ -69,10 +65,9 @@ public class ContactsWebService {
 	 */
 	@GET
 	@Operation(summary = "Retrieve the contacts of the logged in identity", description = "Retrieve the contacts of the logged in identity")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The list of contacts", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ContactVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = ContactVO.class))) }) })	
+	@ApiResponse(responseCode = "200", description = "The list of contacts", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ContactVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = ContactVO.class))) })
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getMyContacts(@QueryParam("start") @DefaultValue("0") Integer start,
 			@QueryParam("limit") @DefaultValue("25") Integer limit,

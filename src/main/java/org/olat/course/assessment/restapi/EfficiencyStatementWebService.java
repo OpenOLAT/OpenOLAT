@@ -52,7 +52,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -76,11 +75,10 @@ public class EfficiencyStatementWebService {
 	@GET
 	@Path("{identityKey}") 
 	@Operation(summary = "Get statement", description = "Get statemenet")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The statement", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = EfficiencyStatementVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = EfficiencyStatementVO.class)) }),
-			@ApiResponse(responseCode = "404", description = "The repository entry cannot be found") })	
+	@ApiResponse(responseCode = "200", description = "The statement", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = EfficiencyStatementVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = EfficiencyStatementVO.class)) })
+	@ApiResponse(responseCode = "404", description = "The repository entry cannot be found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getEfficiencyStatement(@PathParam("identityKey") Long identityKey, @PathParam("resourceKey") Long resourceKey,
 			@Context HttpServletRequest request) {
@@ -104,19 +102,15 @@ public class EfficiencyStatementWebService {
 	/**
 	 * Create a new efficiency statement.
 	 * 
-	 * @response.representation.200.doc If the statement was persisted 
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The identity or the resource cannot be found
 	 * @param identityKey The owner of the certificate
 	 * @param resourceKey The primary key of the resource of the repository entry of the course.
 	 * @return Nothing special
 	 */
 	@PUT
 	@Operation(summary = "Create a new efficiency statement", description = "Create a new efficiency statement")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "If the statement was persisted "),
-			@ApiResponse(responseCode = "401", description = "e roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The identity or the resource cannot be found") })	
+	@ApiResponse(responseCode = "200", description = "If the statement was persisted ")
+	@ApiResponse(responseCode = "401", description = "e roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The identity or the resource cannot be found")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putEfficiencyStatement(@PathParam("resourceKey") Long resourceKey,
@@ -127,9 +121,6 @@ public class EfficiencyStatementWebService {
 	/**
 	 * Create a new efficiency statement.
 	 * 
-	 * @response.representation.200.doc If the statement was persisted 
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The identity or the resource cannot be found
 	 * @param identityKey The owner of the certificate
 	 * @param resourceKey The primary key of the resource of the repository entry of the course.
 	 * @return Nothing special
@@ -137,10 +128,9 @@ public class EfficiencyStatementWebService {
 	@PUT
 	@Path("{identityKey}")
 	@Operation(summary = "Create a new efficiency statement", description = "Create a new efficiency statement")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "If the statement was persisted "),
-		@ApiResponse(responseCode = "401", description = "e roles of the authenticated user are not sufficient"),
-		@ApiResponse(responseCode = "404", description = "The identity or the resource cannot be found") })	
+	@ApiResponse(responseCode = "200", description = "If the statement was persisted ")
+	@ApiResponse(responseCode = "401", description = "e roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The identity or the resource cannot be found")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putEfficiencyStatement(@PathParam("identityKey") Long identityKey, @PathParam("resourceKey") Long resourceKey,

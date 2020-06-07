@@ -49,7 +49,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * The access permission is done by UserWebService.
@@ -76,22 +75,16 @@ public class IdentityToIdentityRelationsWebService {
 	/**
 	 * List of relations from the specified user to others.
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}identityToIdentityRelationVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The list of relation from the specified user
-	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_IDENTITYTOIDENTITYRELATIONVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @param httpRequest The HTTP request
 	 * @return An array of relations
 	 */
 	@GET
 	@Path("source")
 	@Operation(summary = "List of relations from the specified user to others", description = "List of relations from the specified user to others")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The list of relation from the specified user", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = IdentityToIdentityRelationVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = IdentityToIdentityRelationVO.class))) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })	
+	@ApiResponse(responseCode = "200", description = "The list of relation from the specified user", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = IdentityToIdentityRelationVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = IdentityToIdentityRelationVO.class))) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getRelationsAsSource() {
 		List<IdentityToIdentityRelation> relations = identityRelationshipService.getRelationsAsSource(identity);
@@ -102,22 +95,16 @@ public class IdentityToIdentityRelationsWebService {
 	/**
 	 * List of relations to the specified user from others.
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}identityToIdentityRelationVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The list of relation to the specified user
-	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_IDENTITYTOIDENTITYRELATIONVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @param httpRequest The HTTP request
 	 * @return An array of relations
 	 */
 	@GET
 	@Path("target")
 	@Operation(summary = "List of relations to the specified user from others", description = "List of relations to the specified user from others")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The list of relation to the specified user", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = IdentityToIdentityRelationVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = IdentityToIdentityRelationVO.class))) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })	
+	@ApiResponse(responseCode = "200", description = "The list of relation to the specified user", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = IdentityToIdentityRelationVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = IdentityToIdentityRelationVO.class))) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getRelationsAsTarget() {
 		RelationSearchParams searchParams = new RelationSearchParams();
@@ -129,25 +116,16 @@ public class IdentityToIdentityRelationsWebService {
 	/**
 	 * Creates and persists a new relation entity.
 	 * 
-	 * @response.representation.qname {http://www.example.com}identityToIdentityRelationVO
-	 * @response.representation.mediaType application/xml, application/json
-	 * @response.representation.doc The relation to persist
-	 * @response.representation.example {@link org.olat.user.restapi.Examples#SAMPLE_IDENTITYTOIDENTITYRELATIONVO}
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The persisted relation
-	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_IDENTITYTOIDENTITYRELATIONVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @param relationRoleVo The relation to persist
 	 * @param request The HTTP request
 	 * @return The new persisted <code>relation</code>
 	 */
 	@PUT
 	@Operation(summary = "Creates and persists a new relation entity", description = "Creates and persists a new relation entity")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The persisted relation", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = IdentityToIdentityRelationVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = IdentityToIdentityRelationVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })	
+	@ApiResponse(responseCode = "200", description = "The persisted relation", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = IdentityToIdentityRelationVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = IdentityToIdentityRelationVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putRelation(IdentityToIdentityRelationVO relationRoleVo) {
@@ -157,25 +135,16 @@ public class IdentityToIdentityRelationsWebService {
 	/**
 	 * Creates and persists a new relation entity.
 	 * 
-	 * @response.representation.qname {http://www.example.com}identityToIdentityRelationVO
-	 * @response.representation.mediaType application/xml, application/json
-	 * @response.representation.doc The relation to persist
-	 * @response.representation.example {@link org.olat.user.restapi.Examples#SAMPLE_IDENTITYTOIDENTITYRELATIONVO}
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The persisted relation
-	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_IDENTITYTOIDENTITYRELATIONVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @param relationRoleVo The relation to persist
 	 * @param request The HTTP request
 	 * @return The new persisted <code>relation</code>
 	 */
 	@POST
 	@Operation(summary = "Creates and persists a new relation entity", description = "Creates and persists a new relation entity")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The persisted relation", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = IdentityToIdentityRelationVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = IdentityToIdentityRelationVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })	
+	@ApiResponse(responseCode = "200", description = "The persisted relation", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = IdentityToIdentityRelationVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = IdentityToIdentityRelationVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postRelation(IdentityToIdentityRelationVO relationRoleVo) {
@@ -189,17 +158,14 @@ public class IdentityToIdentityRelationsWebService {
 	/**
 	 * Deletes a relation entity.
 	 * 
-	 * @response.representation.200.doc The relation
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @param relationKey The relation to delete
 	 * @return Ok if the relation was deleted
 	 */
 	@DELETE
 	@Path("{relationKey}")
 	@Operation(summary = "Delete a relation entity", description = "Deletes a relation entity")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The relation"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })	
+	@ApiResponse(responseCode = "200", description = "The relation")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	public Response deleteRelation(@PathParam("relationKey") Long relationKey) {
 		IdentityToIdentityRelation relation = identityRelationshipService.getRelation(relationKey);
 		if(relation == null) {

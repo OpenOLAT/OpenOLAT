@@ -97,9 +97,7 @@ public class VFSWebservice {
 	
 	/**
 	 * Retrieves the version of the Folder Course Node Web Service.
-	 * @response.representation.200.mediaType text/plain
-	 * @response.representation.200.doc The version of this specific Web Service
-	 * @response.representation.200.example 1.0
+	 * 
 	 * @return
 	 */
 	@GET
@@ -113,9 +111,8 @@ public class VFSWebservice {
 	}
 	
 	/**
-	 * This retrieves the files or a specific file in the root folder
-	 * @response.representation.200.doc The list of files
-	 * @response.representation.200.qname {http://www.example.com}linkVOes
+	 * This retrieves the files or a specific file in the root folder.
+	 * 
 	 * @param uriInfo The uri infos
 	 * @param request The REST request
 	 * @return 
@@ -133,9 +130,8 @@ public class VFSWebservice {
 	}
 	
 	/**
-	 * This retrieves the files or a specific file in a folder
-	 * @response.representation.200.doc The list of files or the file
-	 * @response.representation.200.qname {http://www.example.com}linkVOes
+	 * This retrieves the files or a specific file in a folder.
+	 * 
 	 * @param path the path to the folder
 	 * @param uriInfo The uri infos
 	 * @param request The REST request
@@ -156,10 +152,9 @@ public class VFSWebservice {
 	
 	/**
 	 * This retrieves some metadata of a specific file in a folder
-	 * The metadata are: filename, size, date of last modification, MIME-type and file href for downloading via REST 
-	 * @response.representation.200.doc The metadata of the file
-	 * @response.representation.200.qname {http://www.example.com}fileMetadataVO
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_FILE_METADATA}
+	 * The metadata are: filename, size, date of last modification,
+	 * MIME-type and file href for downloading via REST.
+	 * 
 	 * @param path the path to the file
 	 * @param uriInfo The uri infos
 	 * @return 
@@ -180,9 +175,8 @@ public class VFSWebservice {
 	
 	/**
 	 * Upload a file to the root folder or create a new folder. One of the two sets
-	 * of parameters must be set: foldername to create
-	 * @response.representation.200.doc The link to the created file
-	 * @response.representation.200.qname {http://www.example.com}linkVO
+	 * of parameters must be set: foldername to create.
+	 * 
 	 * @param foldername The name of the new folder (optional)
 	 * @param filename The name of the file (optional)
 	 * @param file The content of the file (optional)
@@ -205,9 +199,8 @@ public class VFSWebservice {
 	
 	/**
 	 * Upload a file to the root folder or create a new folder. One of the two sets
-	 * of parameters must be set: foldername to create
-	 * @response.representation.200.doc The link to the created file
-	 * @response.representation.200.qname {http://www.example.com}linkVO
+	 * of parameters must be set: foldername to create.
+	 * 
 	 * @param foldername The name of the new folder (optional)
 	 * @param filename The name of the file (optional)
 	 * @param file The content of the file (encoded with Base64)
@@ -237,9 +230,8 @@ public class VFSWebservice {
 	}
 	
 	/**
-	 * Upload a file to the specified folder or create a new folder
-	 * @response.representation.200.doc The link to the created file
-	 * @response.representation.200.qname {http://www.example.com}linkVO
+	 * Upload a file to the specified folder or create a new folder.
+	 * 
 	 * @param foldername The name of the new folder (optional)
 	 * @param filename The name of the file (optional)
 	 * @param file The content of the file (optional)
@@ -263,9 +255,8 @@ public class VFSWebservice {
 	}
 	
 	/**
-	 * Upload a file to the specified folder or create a new folder
-	 * @response.representation.200.doc The link to the created file
-	 * @response.representation.200.qname {http://www.example.com}linkVO
+	 * Upload a file to the specified folder or create a new folder.
+	 * 
 	 * @param foldername The name of the new folder (optional)
 	 * @param filename The name of the file (optional)
 	 * @param file The content of the file (encoded with Base64)
@@ -296,9 +287,8 @@ public class VFSWebservice {
 	}
 	
 	/**
-	 * Upload a file to the root folder or create a new folder
-	 * @response.representation.200.doc The link to the created file
-	 * @response.representation.200.qname {http://www.example.com}linkVO
+	 * Upload a file to the root folder or create a new folder.
+	 * 
 	 * @param foldername The name of the new folder (optional)
 	 * @param filename The name of the file (optional)
 	 * @param file The content of the file (optional)
@@ -319,9 +309,8 @@ public class VFSWebservice {
 	}
 	
 	/**
-	 * Upload a file to the root folder or create a new folder
-	 * @response.representation.200.doc The link to the created file
-	 * @response.representation.200.qname {http://www.example.com}linkVO
+	 * Upload a file to the root folder or create a new folder.
+	 * 
 	 * @param foldername The name of the new folder (optional)
 	 * @param filename The name of the file (optional)
 	 * @param file The content of the file (optional)
@@ -349,9 +338,8 @@ public class VFSWebservice {
 	}
 	
 	/**
-	 * Upload a file to the specified folder or create a new folder
-	 * @response.representation.200.doc The link to the created file
-	 * @response.representation.200.qname {http://www.example.com}linkVO
+	 * Upload a file to the specified folder or create a new folder.
+	 * 
 	 * @param foldername The name of the new folder (optional)
 	 * @param filename The name of the file (optional)
 	 * @param file The content of the file (optional)
@@ -400,9 +388,8 @@ public class VFSWebservice {
 	}
 	
 	/**
-	 * Upload a file to the specified folder or create a new folder
-	 * @response.representation.200.doc The link to the created file
-	 * @response.representation.200.qname {http://www.example.com}linkVO
+	 * Upload a file to the specified folder or create a new folder.
+	 * 
 	 * @param foldername The name of the new folder (optional)
 	 * @param filename The name of the file (optional)
 	 * @param file The content of the file (optional)
@@ -432,9 +419,8 @@ public class VFSWebservice {
 	}
 	
 	/**
-	 * Create folders
-	 * @response.representation.200.doc The link to the created file
-	 * @response.representation.200.qname {http://www.example.com}linkVO
+	 * Create folders.
+	 * 
 	 * @param uriInfo The uri infos
 	 * @param path The path to the folder
 	 * @return The link to the created file

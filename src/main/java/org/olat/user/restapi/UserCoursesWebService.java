@@ -20,7 +20,6 @@
 package org.olat.user.restapi;
 
 import java.util.ArrayList;
-
 import java.util.Collections;
 import java.util.List;
 
@@ -35,9 +34,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -55,7 +54,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * 
@@ -79,11 +77,7 @@ public class UserCoursesWebService {
 	
 	/**
 	 * Retrieves the list of "My entries" but limited to courses.
-	 * @response.representation.200.qname {http://www.example.com}courseVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The courses
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSEVOes}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * 
 	 * @param start The first result
 	 * @param limit Max result
 	 * @param httpRequest The HTTP request
@@ -93,11 +87,10 @@ public class UserCoursesWebService {
 	@GET
 	@Path("my")
 	@Operation(summary = "Retrieves the list of \"My entries\"", description = "Retrieves the list of \"My entries\" but limited to courses")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The courses", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CourseVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CourseVO.class))) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")})	
+	@ApiResponse(responseCode = "200", description = "The courses", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CourseVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CourseVO.class))) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getMyCourses(@QueryParam("start") @DefaultValue("0") Integer start,
 			@QueryParam("limit") @DefaultValue("25") Integer limit, @Context HttpServletRequest httpRequest,
@@ -121,11 +114,7 @@ public class UserCoursesWebService {
 
 	/**
 	 * Retrieves the list of "My supervised courses" but limited to courses.
-	 * @response.representation.200.qname {http://www.example.com}courseVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The courses
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSEVOes}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * 
 	 * @param start The first result
 	 * @param limit Max result
 	 * @param httpRequest The HTTP request
@@ -135,11 +124,10 @@ public class UserCoursesWebService {
 	@GET
 	@Path("teached")
 	@Operation(summary = "Retrieves the list of \"My supervised courses\"", description = "Retrieves the list of \"My supervised courses\" but limited to courses")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The courses", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CourseVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CourseVO.class))) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")})	
+	@ApiResponse(responseCode = "200", description = "The courses", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CourseVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CourseVO.class))) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getTeachedCourses(@QueryParam("start") @DefaultValue("0") Integer start,
 			@QueryParam("limit") @DefaultValue("25") Integer limit, @Context HttpServletRequest httpRequest,
@@ -163,11 +151,7 @@ public class UserCoursesWebService {
 	
 	/**
 	 * Retrieves the list of my favorite courses.
-	 * @response.representation.200.qname {http://www.example.com}courseVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The courses
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSEVOes}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * 
 	 * @param start The first result
 	 * @param limit Max result
 	 * @param httpRequest The HTTP request
@@ -177,11 +161,10 @@ public class UserCoursesWebService {
 	@GET
 	@Path("favorite")
 	@Operation(summary = "Retrieves the list of my favorite courses", description = "Retrieves the list of my favorite courses")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The courses", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CourseVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CourseVO.class))) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")})	
+	@ApiResponse(responseCode = "200", description = "The courses", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CourseVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CourseVO.class))) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getFavoritCourses(@QueryParam("start") @DefaultValue("0") Integer start,
 			@QueryParam("limit") @DefaultValue("25") Integer limit, @Context HttpServletRequest httpRequest,

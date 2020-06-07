@@ -20,7 +20,6 @@
 package org.olat.user.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
-
 import static org.olat.restapi.security.RestSecurityHelper.getLocale;
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
@@ -101,7 +100,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -143,16 +141,13 @@ public class UserWebService {
 	
 	/**
 	 * The version of the User Web Service
-	 * @response.representation.200.mediaType text/plain
- 	 * @response.representation.200.doc The version of this specific Web Service
- 	 * @response.representation.200.example 1.0
+	 * 
 	 * @return The version number
 	 */
 	@GET
 	@Path("version")
 	@Operation(summary = "The version of the User Web Service", description = "The version of the User Web Service")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The version of this specific Web Service")})	
+	@ApiResponse(responseCode = "200", description = "The version of this specific Web Service")
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
@@ -172,11 +167,6 @@ public class UserWebService {
 	 * <br >/ The lookup is possible for authors, usermanagers and system administrators. Normal
 	 * users are not allowed to use the lookup service.
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}userVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The list of all users in the OLAT system
-	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVOes}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @param login The login (search with like)
 	 * @param authProvider An authentication provider (optional)
 	 * @param authUsername An specific username from the authentication provider
@@ -197,11 +187,10 @@ public class UserWebService {
 			"	  users?telMobile=39847592&login=test\n" + 
 			"	  <br >/ The lookup is possible for authors, usermanagers and system administrators. Normal\n" + 
 			"	  users are not allowed to use the lookup service.")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The list of all users in the OLAT system", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")})	
+	@ApiResponse(responseCode = "200", description = "The list of all users in the OLAT system", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getUserListQuery(@QueryParam("login") String login,
 			@QueryParam("authProvider") String authProvider, @QueryParam("authUsername") String authUsername,
@@ -270,11 +259,10 @@ public class UserWebService {
 	@GET
 	@Path("managed")
 	@Operation(summary = "Get managed Users", description = "Get managed Users")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "List of all managed users", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ManagedUserVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = ManagedUserVO.class))) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")})	
+	@ApiResponse(responseCode = "200", description = "List of all managed users", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ManagedUserVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = ManagedUserVO.class))) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getManagedUsers(@Context HttpServletRequest httpRequest) {
 		if(!isUserManager(httpRequest)) {
@@ -294,31 +282,20 @@ public class UserWebService {
 	
 	/**
 	 * Creates and persists a new user entity
-	 * @response.representation.qname {http://www.example.com}userVO
-	 * @response.representation.mediaType application/xml, application/json
-	 * @response.representation.doc The user to persist
-	 * @response.representation.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVO}
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The persisted user
-	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.406.mediaType application/xml, application/json
-	 * @response.representation.406.doc The list of errors
-	 * @response.representation.406.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_ERRORVOes}
+	 * 
 	 * @param user The user to persist
 	 * @param request The HTTP request
 	 * @return the new persisted <code>User</code>
 	 */
 	@PUT
 	@Operation(summary = "Creates and persists a new user entity", description = "Creates and persists a new user entity")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The persisted user", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = UserVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = UserVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "406", description = "The list of errors", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ErrorVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = ErrorVO.class))) })})	
+	@ApiResponse(responseCode = "200", description = "The persisted user", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = UserVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = UserVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "406", description = "The list of errors", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ErrorVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = ErrorVO.class))) })
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response create(UserVO user, @Context HttpServletRequest request) {
@@ -394,11 +371,7 @@ public class UserWebService {
 	
 	/**
 	 * Retrieves the roles of a user given its unique key identifier
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The user
-	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_ROLESVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The identity not found
+	 * 
 	 * @param identityKey The user key identifier of the user being searched
 	 * @param httpRequest The HTTP request
 	 * @return an xml or json representation of a the roles being search.
@@ -427,11 +400,7 @@ public class UserWebService {
 	
 	/**
 	 * Update the roles of a user given its unique key identifier
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The user
-	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_ROLESVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The identity not found
+	 * 
 	 * @param identityKey The user key identifier of the user being searched
 	 * @param roles The updated roles
 	 * @param httpRequest The HTTP request
@@ -440,12 +409,11 @@ public class UserWebService {
 	@POST
 	@Path("{identityKey}/roles")
 	@Operation(summary = "Update the roles", description = "Update the roles of a user given its unique key identifier")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The user", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = RolesVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = RolesVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The identity not found")})
+	@ApiResponse(responseCode = "200", description = "The user", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = RolesVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = RolesVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The identity not found")
 	@Consumes({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	public Response updateRoles(@PathParam("identityKey") Long identityKey, RolesVO roles, @Context HttpServletRequest request) {
@@ -473,12 +441,7 @@ public class UserWebService {
 	
 	/**
 	 * Retrieves the status of a user given its unique key identifier
-	 * @response.representation.qname {http://www.example.com}statusVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The user
-	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_STATUSVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The identity not found
+	 * 
 	 * @param identityKey The user key identifier of the user being searched
 	 * @param httpRequest The HTTP request
 	 * @return an xml or json representation of a the status being search.
@@ -486,12 +449,11 @@ public class UserWebService {
 	@GET
 	@Path("{identityKey}/status")
 	@Operation(summary = "Retrieve the status", description = "Retrieves the status of a user given its unique key identifier")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The user", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = StatusVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = StatusVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The identity not found")})
+	@ApiResponse(responseCode = "200", description = "The user", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = StatusVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = StatusVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The identity not found")
 	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	public Response getStatus(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		boolean isUserManager = isUserManagerOf(identityKey, request);
@@ -517,12 +479,6 @@ public class UserWebService {
 	 *  <li>199: deleted</li> 
 	 * </ul>
 	 * 
-	 * @response.representation.qname {http://www.example.com}statusVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The user
-	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_ROLESVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The identity not found
 	 * @param identityKey The user key identifier of the user being searched
 	 * @param status The status to update
 	 * @param httpRequest The HTTP request
@@ -538,12 +494,11 @@ public class UserWebService {
 			"	   <li>199: deleted</li> \n" + 
 			"	  </ul>\n" + 
 			"	  ")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The user", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = StatusVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = StatusVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The identity not found")})
+	@ApiResponse(responseCode = "200", description = "The user", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = StatusVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = StatusVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The identity not found")
 	@Consumes({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	public Response updateStatus(@PathParam("identityKey") Long identityKey, StatusVO status, @Context HttpServletRequest request) {
@@ -566,11 +521,7 @@ public class UserWebService {
 	
 	/**
 	 * Retrieves the preferences of a user given its unique key identifier
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The preferences
-	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_PREFERENCESVO}
- 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
- 	 * @response.representation.404.doc The identity not found
+	 * 
 	 * @param identityKey The user key identifier of the user being searched
 	 * @param httpRequest The HTTP request
 	 * @return an xml or json representation of a the roles being search.
@@ -578,12 +529,11 @@ public class UserWebService {
 	@GET
 	@Path("{identityKey}/preferences")
 	@Operation(summary = "Retrieve the preferences", description = "Retrieves the preferences of a user given its unique key identifier")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The preferences", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = PreferencesVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = PreferencesVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The identity not found")})
+	@ApiResponse(responseCode = "200", description = "The preferences", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = PreferencesVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = PreferencesVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The identity not found")
 	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	public Response getUserPreferences(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		boolean isUserManager = isUserManagerOf(identityKey, request);
@@ -602,11 +552,7 @@ public class UserWebService {
 	
 	/**
 	 * Update the preferences of a user given its unique key identifier
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The user
-	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_PREFERENCESVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The identity not found
+	 * 
 	 * @param identityKey The user key identifier of the user being searched
 	 * @param preferences The updated preferences
 	 * @param httpRequest The HTTP request
@@ -615,12 +561,11 @@ public class UserWebService {
 	@POST
 	@Path("{identityKey}/preferences")
 	@Operation(summary = "Update the preferences", description = "Update the preferences of a user given its unique key identifier")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The user", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = PreferencesVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = PreferencesVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The identity not found")})
+	@ApiResponse(responseCode = "200", description = "The user", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = PreferencesVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = PreferencesVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The identity not found")
 	@Consumes({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	public Response updatePreferences(@PathParam("identityKey") Long identityKey, PreferencesVO preferences, @Context HttpServletRequest request) {
@@ -654,11 +599,7 @@ public class UserWebService {
 
 	/**
 	 * Retrieves an user given its unique key identifier
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The user
-	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The identity not found
+	 * 
 	 * @param identityKey The user key identifier of the user being searched
 	 * @param withPortrait If true return the portrait as Base64 (default false)
 	 * @param httpRequest The HTTP request
@@ -669,12 +610,11 @@ public class UserWebService {
 	@GET
 	@Path("{identityKey}")
 	@Operation(summary = "Retrieve a user", description = "Retrieves an user given its unique key identifier")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The user", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = UserVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = UserVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The identity not found")})
+	@ApiResponse(responseCode = "200", description = "The user", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = UserVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = UserVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The identity not found")
 	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	public Response findById(@PathParam("identityKey") Long identityKey, @QueryParam("withPortrait") @DefaultValue("false") Boolean withPortrait,
 			@Context HttpServletRequest httpRequest) {
@@ -690,10 +630,9 @@ public class UserWebService {
 	
 	@Path("{identityKey}/folders")
 	@Operation(summary = "Retrieve folders", description = "Retrieves folders from a user given its unique key identifier")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The folders"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The identity not found")})
+	@ApiResponse(responseCode = "200", description = "The folders")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The identity not found")
 	public UserFoldersWebService getFoldersWebService(@PathParam("identityKey") Long identityKey) {
 		Identity identity = securityManager.loadIdentityByKey(identityKey, false);
 		if(identity == null) {
@@ -704,10 +643,9 @@ public class UserWebService {
 	
 	@Path("{identityKey}/courses")
 	@Operation(summary = "Retrieve courses", description = "Retrieves courses from a user given its unique key identifier")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The courses"),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The identity not found")})
+	@ApiResponse(responseCode = "200", description = "The courses")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The identity not found")
 	public UserCoursesWebService getCoursesWebService(@PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {
 		Identity identity = securityManager.loadIdentityByKey(identityKey, false);
@@ -726,18 +664,15 @@ public class UserWebService {
 	
 	/**
 	 * Retrieves the portrait of an user
-	 * @response.representation.200.mediaType application/octet-stream
-	 * @response.representation.200.doc The portrait as image
-	 * @response.representation.404.doc The identity or the portrait not found
+	 *
 	 * @param identityKey The identity key of the user being searched
 	 * @return The image
 	 */
 	@HEAD
 	@Path("{identityKey}/portrait")
 	@Operation(summary = "Retrieves the portrait of an user", description = "Retrieves the portrait of an user")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The portrait as image"),
-			@ApiResponse(responseCode = "404", description = "The identity or the portrait not found")})
+	@ApiResponse(responseCode = "200", description = "The portrait as image")
+	@ApiResponse(responseCode = "404", description = "The identity or the portrait not found")
 	@Produces({"image/jpeg","image/jpg",MediaType.APPLICATION_OCTET_STREAM})
 	public Response getPortraitHead(@PathParam("identityKey") Long identityKey) {
 		IdentityShort identity = securityManager.loadIdentityShortByKey(identityKey);
@@ -756,18 +691,15 @@ public class UserWebService {
 	
 	/**
 	 * Retrieves the portrait of an user
-	 * @response.representation.200.mediaType application/octet-stream
-	 * @response.representation.200.doc The portrait as image
-	 * @response.representation.404.doc The identity or the portrait not found
+	 * 
 	 * @param identityKey The identity key of the user being searched
 	 * @return The image
 	 */
 	@HEAD
 	@Path("{identityKey}/portrait/{size}")
 	@Operation(summary = "Retrieves the portrait of an user", description = "Retrieves the portrait of an user")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The portrait as image"),
-			@ApiResponse(responseCode = "404", description = "The identity or the portrait not found")})
+	@ApiResponse(responseCode = "200", description = "The portrait as image")
+	@ApiResponse(responseCode = "404", description = "The identity or the portrait not found")
 	@Produces({"image/jpeg","image/jpg",MediaType.APPLICATION_OCTET_STREAM})
 	public Response getOriginalPortraitHead(@PathParam("identityKey") Long identityKey, @PathParam("size") String size) {
 		IdentityShort identity = securityManager.loadIdentityShortByKey(identityKey);
@@ -793,9 +725,7 @@ public class UserWebService {
 	
 	/**
 	 * Retrieves the portrait of an user
-	 * @response.representation.200.mediaType application/octet-stream
-	 * @response.representation.200.doc The portrait as image
-	 * @response.representation.404.doc The identity or the portrait not found
+	 * 
 	 * @param identityKey The identity key of the user being searched
 	 * @param request The REST request
 	 * @return The image
@@ -803,9 +733,8 @@ public class UserWebService {
 	@GET
 	@Path("{identityKey}/portrait")
 	@Operation(summary = "Retrieves the portrait of an user", description = "Retrieves the portrait of an user")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The portrait as image"),
-			@ApiResponse(responseCode = "404", description = "The identity or the portrait not found")})
+	@ApiResponse(responseCode = "200", description = "The portrait as image")
+	@ApiResponse(responseCode = "404", description = "The identity or the portrait not found")
 	@Produces({"image/jpeg","image/jpg",MediaType.APPLICATION_OCTET_STREAM})
 	public Response getPortrait(@PathParam("identityKey") Long identityKey, @Context Request request) {
 		IdentityShort identity = securityManager.loadIdentityShortByKey(identityKey);
@@ -828,10 +757,7 @@ public class UserWebService {
 	
 	/**
 	 * Upload the portrait of an user
-	 * @response.representation.200.mediaType application/octet-stream
-	 * @response.representation.200.doc The portrait as image
-	 * @response.representation.401.doc Not authorized
-	 * @response.representation.404.doc The identity or the portrait not found
+	 * 
 	 * @param identityKey The user key identifier of the user being searched
 	 * @param file The image
 	 * @param request The REST request
@@ -840,10 +766,9 @@ public class UserWebService {
 	@POST
 	@Path("{identityKey}/portrait")
 	@Operation(summary = "Upload the portrait of an user", description = "Upload the portrait of an user")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The portrait as image"),
-			@ApiResponse(responseCode = "401", description = "Not authorized"),
-			@ApiResponse(responseCode = "404", description = "The identity or the portrait not found")})
+	@ApiResponse(responseCode = "200", description = "The portrait as image")
+	@ApiResponse(responseCode = "401", description = "Not authorized")
+	@ApiResponse(responseCode = "404", description = "The identity or the portrait not found")
 	@Consumes({MediaType.MULTIPART_FORM_DATA})
 	public Response postPortrait(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		MultipartReader partsReader = null;
@@ -871,8 +796,7 @@ public class UserWebService {
 	
 	/**
 	 * Deletes the portrait of an user
-	 * @response.representation.200.doc The portrait deleted
-	 * @response.representation.401.doc Not authorized
+	 * 
 	 * @param identityKey The identity key identifier of the user being searched
 	 * @param request The REST request
 	 * @return The image
@@ -880,9 +804,8 @@ public class UserWebService {
 	@DELETE
 	@Path("{identityKey}/portrait")
 	@Operation(summary = "Deletes the portrait of an user", description = "Deletes the portrait of an user")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The portrait deleted"),
-			@ApiResponse(responseCode = "401", description = "Not authorized")})
+	@ApiResponse(responseCode = "200", description = "The portrait deleted")
+	@ApiResponse(responseCode = "401", description = "Not authorized")
 	public Response deletePortrait(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		Identity authIdentity = getUserRequest(request).getIdentity();
 		Identity identity = securityManager.loadIdentityByKey(identityKey, false);
@@ -909,20 +832,7 @@ public class UserWebService {
 
 	/**
 	 * Update an user
-	 * @response.representation.qname {http://www.example.com}userVO
-	 * @response.representation.mediaType application/xml, application/json
-	 * @response.representation.doc The user
-	 * @response.representation.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVO}
-	 * @response.representation.200.qname {http://www.example.com}userVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The user
-	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The identity not found
-	 * @response.representation.406.qname {http://www.example.com}errorVO
-	 * @response.representation.406.mediaType application/xml, application/json
-	 * @response.representation.406.doc The list of validation errors
-	 * @response.representation.406.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_ERRORVOes}
+	 * 
 	 * @param identityKey The user key identifier
 	 * @param user The user datas
 	 * @param request The HTTP request
@@ -931,15 +841,14 @@ public class UserWebService {
 	@POST
 	@Path("{identityKey}")
 	@Operation(summary = "Update an user", description = "Update an user")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The user", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = UserVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = UserVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The identity not found"),
-			@ApiResponse(responseCode = "406", description = "The list of validation errors", content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ErrorVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = ErrorVO.class))) })})
+	@ApiResponse(responseCode = "200", description = "The user", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = UserVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = UserVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The identity not found")
+	@ApiResponse(responseCode = "406", description = "The list of validation errors", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ErrorVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = ErrorVO.class))) })
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response update(@PathParam("identityKey") Long identityKey, UserVO user, @Context HttpServletRequest request) {
@@ -1040,10 +949,7 @@ public class UserWebService {
 
 	/**
 	 * Delete an user from the system
-	 * @response.representation.200.doc The user is removed from the group
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The identity not found
-	 * @response.representation.500.doc Unknown problem while deleting, see olat.log
+	 * 
 	 * @param identityKey The user key identifier
 	 * @param request The HTTP request
 	 * @return <code>Response</code> object. The operation status (success or fail)
@@ -1051,11 +957,10 @@ public class UserWebService {
 	@DELETE
 	@Path("{identityKey}")
 	@Operation(summary = "Delete an user from the system", description = "Delete an user from the system")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The user is removed from the group"),
-			@ApiResponse(responseCode = "401", description = "he roles of the authenticated user are not sufficient"),
-			@ApiResponse(responseCode = "404", description = "The identity not found"),
-			@ApiResponse(responseCode = "500", description = "Unknown problem while deleting, see olat.log")})
+	@ApiResponse(responseCode = "200", description = "The user is removed from the group")
+	@ApiResponse(responseCode = "401", description = "he roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The identity not found")
+	@ApiResponse(responseCode = "500", description = "Unknown problem while deleting, see olat.log")
 	public Response delete(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		Identity actingIdentity = getIdentity(request);
 		if(actingIdentity == null || !isUserManagerOf(identityKey, request)) {

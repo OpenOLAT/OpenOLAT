@@ -30,12 +30,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.admin.sysinfo.manager.SessionStatsManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
@@ -54,7 +54,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 
 /**
@@ -74,22 +73,16 @@ public class StatusWebservice {
 	 * Return the statistics about runtime: uptime, classes loaded, memory
 	 * summary, threads count...
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}runtimeVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The version of the instance
-	 * @response.representation.200.example {@link org.olat.restapi.system.vo.Examples#SAMPLE_RUNTIMEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @param request The HTTP request
 	 * @return The informations about runtime, uptime, classes loaded, memory summary...
 	 */
 	@GET
 	@Operation(summary = "Return the statistics about runtime", description = "Return the statistics about runtime: uptime, classes loaded, memory\n" + 
 			"	  summary, threads count...")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The version of the instance", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = StatusVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = StatusVO.class)) }),
-			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })	
+	@ApiResponse(responseCode = "200", description = "The version of the instance", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = StatusVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = StatusVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getSystemSummaryVO() {
 		StatusVO stats = new StatusVO();

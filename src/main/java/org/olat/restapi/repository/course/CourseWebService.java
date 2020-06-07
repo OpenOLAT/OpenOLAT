@@ -265,12 +265,6 @@ public class CourseWebService {
 	/**
 	 * Publish the course.
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}courseVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The metadatas of the created course
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course not found
 	 * @param locale The course locale
 	 * @param request The HTTP request
 	 * @return It returns the metadatas of the published course.
@@ -315,12 +309,6 @@ public class CourseWebService {
 	/**
 	 * Get the access configuration of the course by id.
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}repositoryEntryAccessVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The access configuration of the course
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_REPOACCESS}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course not found
 	 * @param request The HTTP request
 	 * @return It returns the <code>RepositoryEntryAccessVO</code> object representing the access configuration of the course.
 	 */
@@ -343,13 +331,8 @@ public class CourseWebService {
 	}
 
 	/**
-	 * Get the metadatas of the course by id
-	 * @response.representation.200.qname {http://www.example.com}courseVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The metadatas of the created course
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course not found
+	 * Get the metadatas of the course by id.
+	 * 
 	 * @param request The HTTP request
 	 * @return It returns the <code>CourseVO</code> object representing the course.
 	 */
@@ -373,12 +356,6 @@ public class CourseWebService {
 	/**
 	 * Get the OLAT resource of the course specified by its id.
 	 * 
-	 * @response.representation.200.qname {http://www.example.com}olatResourceVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The OLAT resource of the course
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_OLATRESOURCEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course not found
 	 * @param request The HTTP request
 	 * @return It returns the <code>CourseVO</code> object representing the course.
 	 */
@@ -400,11 +377,8 @@ public class CourseWebService {
 	}
 	
 	/**
-	 * Export the course
-	 * @response.representation.200.mediaType application/zip
-	 * @response.representation.200.doc The course as a ZIP file
-	 * @response.representation.401.doc Not authorized to export the course
-	 * @response.representation.404.doc The course not found
+	 * Export the course.
+	 * 
 	 * @param request The HTTP request
 	 * @return It returns the <code>CourseVO</code> object representing the course.
 	 */
@@ -472,9 +446,6 @@ public class CourseWebService {
 	/**
 	 * Delete a course by id.
 	 * 
-	 * @response.representation.200.doc The metadatas of the deleted course
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course not found
 	 * @param request The HTTP request
 	 * @return It returns the XML representation of the <code>Structure</code>
 	 *         object representing the course.
@@ -511,9 +482,6 @@ public class CourseWebService {
 	 * 	<li>restored</li>
 	 * </ul>
 	 * 
-	 * @response.representation.200.doc The metadatas of the deleted course
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course not found
 	 * @param request The HTTP request
 	 * @return It returns the XML representation of the <code>Structure</code>
 	 *         object representing the course.
@@ -565,13 +533,8 @@ public class CourseWebService {
 	}
 	
 	/**
-	 * Get the configuration of the course
-	 * @response.representation.200.qname {http://www.example.com}courseConfigVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The configuration of the course
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSECONFIGVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course not found
+	 * Get the configuration of the course.
+	 * 
 	 * @param request The HTTP request
 	 * @return It returns the XML representation of the <code>Structure</code>
 	 *         object representing the course.
@@ -594,13 +557,8 @@ public class CourseWebService {
 	}
 	
 	/**
-	 * Update the course configuration
-	 * @response.representation.200.qname {http://www.example.com}courseConfigVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The metadatas of the created course
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSECONFIGVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course not found
+	 * Update the course configuration.
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param calendar Enable/disable the calendar (value: true/false) (optional)
 	 * @param chat Enable/disable the chat (value: true/false) (optional)
@@ -661,13 +619,8 @@ public class CourseWebService {
 	}
 	
 	/**
-	 * Update the course configuration
-	 * @response.representation.200.qname {http://www.example.com}courseConfigVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The metadatas of the created course
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSECONFIGVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course not found
+	 * Update the course configuration.
+	 * 
 	 * @param courseId The course resourceable's id
 	 * @param configuration The new configuration (null elements are ignored)
 	 * @param request The HTTP request
@@ -720,11 +673,8 @@ public class CourseWebService {
 	}
 	
 	/**
-	 * Get the runstructure of the course by id
-	 * @response.representation.200.mediaType application/xml
-	 * @response.representation.200.doc The run structure of the course
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course not found
+	 * Get the runstructure of the course by id.
+	 * 
 	 * @param httpRequest The HTTP request
 	 * @param request The REST request
 	 * @return It returns the XML representation of the <code>Structure</code>
@@ -752,11 +702,8 @@ public class CourseWebService {
 	}
 	
 	/**
-	 * Get the editor tree model of the course by id
-	 * @response.representation.200.mediaType application/xml
-	 * @response.representation.200.doc The editor tree model of the course
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course not found
+	 * Get the editor tree model of the course by id.
+	 * 
 	 * @param httpRequest The HTTP request
 	 * @param request The REST request
 	 * @return It returns the XML representation of the <code>Editor model</code>
@@ -851,12 +798,8 @@ public class CourseWebService {
 	}
 	
 	/**
-	 * Get all owners and authors of the course
-	 * @response.representation.200.qname {http://www.example.com}userVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The array of authors
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course not found
+	 * Get all owners and authors of the course.
+	 * 
 	 * @param httpRequest The HTTP request
 	 * @return It returns an array of <code>UserVO</code>
 	 */
@@ -886,12 +829,8 @@ public class CourseWebService {
 	}
 	
 	/**
-	 * Get all coaches of the course (don't follow the groups)
-	 * @response.representation.200.qname {http://www.example.com}userVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The array of coaches
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course not found
+	 * Get all coaches of the course (don't follow the groups).
+	 * 
 	 * @param httpRequest The HTTP request
 	 * @return It returns an array of <code>UserVO</code>
 	 */
@@ -921,12 +860,8 @@ public class CourseWebService {
 	}
 	
 	/**
-	 * Get all participants of the course (don't follow the groups)
-	 * @response.representation.200.qname {http://www.example.com}userVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The array of participants
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course not found
+	 * Get all participants of the course (don't follow the groups).
+	 * 
 	 * @param httpRequest The HTTP request
 	 * @return It returns an array of <code>UserVO</code>
 	 */
@@ -956,12 +891,8 @@ public class CourseWebService {
 	}
 	
 	/**
-	 * Get this specific author and owner of the course
-	 * @response.representation.200.qname {http://www.example.com}userVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The author
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course not found or the user is not an onwer or author of the course
+	 * Get this specific author and owner of the course.
+	 * 
 	 * @param identityKey The user identifier
 	 * @param httpRequest The HTTP request
 	 * @return It returns an <code>UserVO</code>
@@ -992,10 +923,8 @@ public class CourseWebService {
 	}
 	
 	/**
-	 * Add an owner and author to the course
-	 * @response.representation.200.doc The user is an author and owner of the course
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or the user not found
+	 * Add an owner and author to the course.
+	 * 
 	 * @param identityKey The user identifier
 	 * @param httpRequest The HTTP request
 	 * @return It returns 200  if the user is added as owner and author of the course
@@ -1068,10 +997,8 @@ public class CourseWebService {
 	}
 	
 	/**
-	 * Remove an owner and author to the course
-	 * @response.representation.200.doc The user was successfully removed as owner of the course
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or the user not found
+	 * Remove an owner and author to the course.
+	 * 
 	 * @param identityKey The user identifier
 	 * @param httpRequest The HTTP request
 	 * @return It returns 200  if the user is removed as owner of the course
@@ -1103,10 +1030,8 @@ public class CourseWebService {
 	}
 	
 	/**
-	 * Add a coach to the course
-	 * @response.representation.200.doc The user is a coach of the course
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or the user not found
+	 * Add a coach to the course.
+	 * 
 	 * @param identityKey The user identifier
 	 * @param httpRequest The HTTP request
 	 * @return It returns 200  if the user is added as coach of the course
@@ -1163,10 +1088,8 @@ public class CourseWebService {
 	}
 	
 	/**
-	 * Remove a coach from the course
-	 * @response.representation.200.doc The user was successfully removed as coach of the course
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or the user not found
+	 * Remove a coach from the course.
+	 * 
 	 * @param identityKey The user identifier
 	 * @param httpRequest The HTTP request
 	 * @return It returns 200  if the user is removed as coach of the course
@@ -1198,10 +1121,8 @@ public class CourseWebService {
 	}
 	
 	/**
-	 * Add an participant to the course
-	 * @response.representation.200.doc The user is a participant of the course
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or the user not found
+	 * Add an participant to the course.
+	 * 
 	 * @param identityKey The user identifier
 	 * @param httpRequest The HTTP request
 	 * @return It returns 200  if the user is added as owner and author of the course
@@ -1235,10 +1156,8 @@ public class CourseWebService {
 	}
 	
 	/**
-	 * Add an participant to the course
-	 * @response.representation.200.doc The user is a participant of the course
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or the user not found
+	 * Add an participant to the course.
+	 * 
 	 * @param identityKey The user identifier
 	 * @param httpRequest The HTTP request
 	 * @return It returns 200  if the user is added as owner and author of the course
@@ -1268,10 +1187,8 @@ public class CourseWebService {
 	}
 	
 	/**
-	 * Remove a participant from the course
-	 * @response.representation.200.doc The user was successfully removed as participant of the course
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The course or the user not found
+	 * Remove a participant from the course.
+	 * 
 	 * @param identityKey The user identifier
 	 * @param httpRequest The HTTP request
 	 * @return It returns 200  if the user is removed as participant of the course
