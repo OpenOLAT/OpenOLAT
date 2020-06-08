@@ -145,6 +145,9 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		if(searchCmp == null && !ftE.isExtendedSearchExpanded() && !ftE.isNumOfRowsEnabled()
 				&& !ftE.isFilterEnabled() && !ftE.isSortEnabled() && ! ftE.isExportEnabled()
 				&& !ftE.isCustomizeColumns() && ftE.getAvailableRendererTypes().length  <= 1) {
+			if(ftE.getCustomButton() != null) {
+				ftE.getCustomButton().getComponent().setDirty(false);
+			}
 			return;
 		}
 		

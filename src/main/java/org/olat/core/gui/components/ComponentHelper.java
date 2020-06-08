@@ -27,14 +27,10 @@
 package org.olat.core.gui.components;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.render.ValidationResult;
-import org.olat.core.util.component.ComponentTraverser;
-import org.olat.core.util.component.ComponentVisitor;
 
 /**
  * Description: <br>
@@ -119,42 +115,5 @@ public class ComponentHelper {
 		}
 	}
 	
-	/**
-	 * REVIEW:pb: 2008-05-05 -> not referenced from .html or .java
-	 * @param wins
-	 * @param compToFind
-	 * @return
-	 * @deprecated
-	 */
-	protected static Window findWindowWithComponentInIt(Windows wins, final Component compToFind) {
-		Window awin = null;
-		for (Iterator<Window> it_wins = wins.getWindowIterator(); it_wins.hasNext();) {
-			awin = it_wins.next();
 
-			// find the correct component within the window
-			MyVisitor v = new MyVisitor(compToFind);
-			ComponentTraverser ct = new ComponentTraverser(v, awin.getContentPane(), false);
-			ct.visitAll(null);
-			if (v.f != null) return awin;
-
-		}
-		return null;
-	}
-	static class MyVisitor implements ComponentVisitor {
-		private Component compToFind;
-		private Component f = null;
-
-		public MyVisitor(Component compToFind) {
-			this.compToFind = compToFind;
-		}
-
-		@Override
-		public boolean visit(Component comp, UserRequest ureq) {
-			if (comp == compToFind) {
-				f = comp;
-				return false;
-			}
-			return true;
-		}
-	}
 }

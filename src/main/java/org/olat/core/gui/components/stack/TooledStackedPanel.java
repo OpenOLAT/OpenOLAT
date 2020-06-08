@@ -230,8 +230,14 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel {
 	public List<Tool> getTools(Align alignement) {
 		List<Tool> tools = getTools();
 		return tools.stream()
-			.filter(tool -> alignement.equals(tool.getAlign()) && tool.getComponent().isVisible())
+			.filter(tool -> alignement.equals(tool.getAlign()))
 			.collect(Collectors.toList());
+	}
+	
+	public boolean hasVisibleTool(Align alignement) {
+		List<Tool> tools = getTools();
+		return tools.stream()
+			.anyMatch(tool -> alignement.equals(tool.getAlign()) && tool.getComponent().isVisible());
 	}
 	
 	private BreadCrumb getCurrentCrumb() {
