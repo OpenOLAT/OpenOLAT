@@ -258,10 +258,12 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 	
 	private boolean doSendEmails(MailContext context, List<GraderToIdentity> graders, MailTemplate template, MailerResult result) {
 		for(GraderToIdentity grader:graders) {
-			Identity recipient = grader.getIdentity();
-			MailBundle bundle = mailManager.makeMailBundle(context, recipient, template, null, null, result);
-			MailerResult sendResult = mailManager.sendMessage(bundle);
-			result.append(sendResult);
+			if(grader != null && grader.getIdentity() != null) {
+				Identity recipient = grader.getIdentity();
+				MailBundle bundle = mailManager.makeMailBundle(context, recipient, template, null, null, result);
+				MailerResult sendResult = mailManager.sendMessage(bundle);
+				result.append(sendResult);
+			}
 		}
 		return result.isSuccessful();
 	}
@@ -719,6 +721,7 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 	
 	public void sendGraderAsssignmentNotification(GraderToIdentity grader, RepositoryEntry referenceEntry,
 			GradingAssignment assignment, RepositoryEntryGradingConfiguration config) {
+		if(grader == null) return; // nothing to do
 
 		GraderMailTemplate mailTemplate = new GraderMailTemplate(config.getNotificationSubject(), config.getNotificationBody());
 		decorateGraderMailTemplate(referenceEntry, mailTemplate);
@@ -797,7 +800,9 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 		dbInstance.commit();
 		
 		if(config != null && config.getNotificationTypeEnum() == GradingNotificationType.afterTestSubmission) {
-			sendGraderAsssignmentNotification(choosedGrader, referenceEntry, assignment, config);
+			if(choosedGrader != null) {
+				sendGraderAsssignmentNotification(choosedGrader, referenceEntry, assignment, config);
+			}
 			assignment.setAssignmentNotificationDate(new Date());
 			gradingAssignmentDao.updateAssignment(assignment);
 			dbInstance.commit();
