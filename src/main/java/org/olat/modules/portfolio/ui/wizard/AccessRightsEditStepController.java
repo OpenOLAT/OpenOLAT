@@ -69,6 +69,20 @@ public class AccessRightsEditStepController extends StepFormBasicController {
 	}
 
 	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+
+		accessRightsCtrl.getInitialFormItem().clearError();
+		List<AccessRightChange> accessRightChanges = accessRightsCtrl.getChanges();
+		if(accessRightChanges == null || accessRightChanges.isEmpty()) {
+			accessRightsCtrl.getInitialFormItem().setErrorKey("error.missing.permissions", null);
+			allOk &= false;
+		}
+		
+		return allOk;
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		List<AccessRightChange> accessRightChanges = accessRightsCtrl.getChanges();
 		rightsContext.setAccessRightChanges(accessRightChanges);
