@@ -12,17 +12,20 @@
 				<div class="panel-heading">
 					<h4 class="panel-title">
 						$topic.title
+											<span class='o_organizers'>
+							#if($r.isNotEmpty($topic.organizerNames))
+								<span class="small">
+									$r.translate("organizer.with")
+									#foreach($organizer in $topic.organizerNames)
+										<span class="o_organizer">$organizer#if($foreach.index < $topic.organizerNames.size() - 1)$r.translate("organizer.separator")#end</span>
+									#end
+								</span>
+								$r.render($topic.getEmailLinkName())
+							#end
+						</span>
 					</h4>
 				</div>
 				<div class="panel-body">
-					#if($r.isNotEmpty($topic.organizerNames))
-						<div class='o_organizers'>
-							#foreach($organizer in $topic.organizerNames)
-								<span class='o_organizer'><i class='o_icon o_icon-fw o_icon_coach'>&nbsp;</i> $organizer</span>
-							#end
-							$r.render($topic.getEmailLinkName())
-						</div>
-					#end
 					#if($topic.getDate() && $topic.getDate() != "")
 						<div class="o_date">
 							<i class="o_icon o_icon-fw o_icon_calendar">&nbsp;</i>
@@ -84,11 +87,11 @@
 						</div>
 					#end
 					
-					<div class="o_button_group o_button_group_right">
-						#if($r.isNotNull($topic.getOpenLinkName()))
+					#if($r.isNotNull($topic.getOpenLinkName()))
+						<div class="o_button_group o_button_group_right">
 							$r.render($topic.getOpenLinkName())
-						#end
-					</div>
+						</div>
+					#end
 				</div>
 			</div>
 		</div>

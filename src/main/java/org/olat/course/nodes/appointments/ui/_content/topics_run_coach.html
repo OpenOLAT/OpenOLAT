@@ -15,19 +15,21 @@
 			<div class="panel-heading">
 				<h4 class="panel-title">
 					$topic.title
+					<span class='o_organizers'>
+						#if($r.isNotEmpty($topic.organizers))
+							<span class="small">
+								$r.translate("organizer.with")
+								#foreach($organizer in $topic.organizers)
+									<span class="o_organizer">$organizer#if($foreach.index < $topic.organizers.size() - 1)$r.translate("organizer.separator")#end</span>
+								#end
+							</span>
+						#end
+					</span>
 				</h4>
 			</div>
 			<div class="panel-body">
 				<div class="o_topic">
 					<div class="col-sm-6">
-						#if($r.isNotEmpty($topic.organizers))
-							<div class="o_organizers">
-								#foreach($organizer in $topic.organizers)
-									<span class='o_organizer'><i class='o_icon o_icon-fw o_icon_coach'>&nbsp;</i> $organizer</span>
-								#end
-							</div>
-						#end
-						
 						<div class="o_warning">
 							#if($r.isNull($topic.getTotalAppointments()) || $topic.getTotalAppointments() == 0)
 								$r.translate("no.appointments")
