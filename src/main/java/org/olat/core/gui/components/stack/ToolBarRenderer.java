@@ -19,6 +19,7 @@
  */
 package org.olat.core.gui.components.stack;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.components.Component;
@@ -49,11 +50,11 @@ public class ToolBarRenderer extends DefaultComponentRenderer {
 		
 		ToolBar toolBar = (ToolBar)source;
 		TooledStackedPanel panel = toolBar.getPanel();
-		List<Tool> leftTools = panel.getTools(Align.left);
-		List<Tool> rightEdgeTools = panel.getTools(Align.rightEdge);
-		List<Tool> rightTools = panel.getTools(Align.right);
-		List<Tool> segmentsTools = panel.getTools(Align.segment);
-		List<Tool> centerTools = panel.getTools(Align.center);
+		List<Tool> leftTools = getVisibleTools(panel, Align.left);
+		List<Tool> rightEdgeTools = getVisibleTools(panel, Align.rightEdge);
+		List<Tool> rightTools = getVisibleTools(panel, Align.right);
+		List<Tool> segmentsTools = getVisibleTools(panel, Align.segment);
+		List<Tool> centerTools = getVisibleTools(panel, Align.center);
 		
 		if(panel.isToolbarEnabled() || (panel.isToolbarAutoEnabled()
 				&& (!leftTools.isEmpty() || !rightTools.isEmpty() || !centerTools.isEmpty() || !segmentsTools.isEmpty()))) {
@@ -80,6 +81,19 @@ public class ToolBarRenderer extends DefaultComponentRenderer {
 		} else {
 			sb.append("<div id='o_c").append(source.getDispatchID()).append("'></div>");
 		}
+	}
+	
+	private List<Tool> getVisibleTools(TooledStackedPanel panel, Align align) {
+		List<Tool> tools = panel.getTools(align);
+		List<Tool> visibleTools = new ArrayList<>(tools.size());
+		for(Tool tool:tools) {
+			if(tool.getComponent().isVisible()) {
+				visibleTools.add(tool);
+			} else {
+				tool.getComponent().setDirty(false);
+			}
+		}
+		return visibleTools;
 	}
 	
 	private void renderTools(List<Tool> tools, Renderer renderer, ToolsSlot slot, StringOutput sb, Translator translator, String[] args) {

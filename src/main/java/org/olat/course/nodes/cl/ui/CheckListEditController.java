@@ -29,12 +29,15 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.highscore.ui.HighScoreEditController;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CheckListCourseNode;
-import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.cl.CheckboxManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -54,6 +57,9 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 	private CheckListCourseNode courseNode;
 
 	private TabbedPane myTabbedPane;
+	
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 
 	private static final String[] paneKeys = { PANE_TAB_CLCONFIG, PANE_TAB_CHECKBOX };
 
@@ -91,8 +97,9 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 	}
 	
 	private void updateHighscoreTab() {
-		Boolean sf = courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,false);
-		myTabbedPane.setEnabled(4, sf);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		myTabbedPane.setEnabled(myTabbedPane.indexOfTab(highScoreNodeConfigController.getInitialComponent()),
+				Mode.none != assessmentConfig.getScoreMode());
 	}
 	
 	@Override

@@ -56,7 +56,6 @@ public class BreadcrumbBarRenderer extends DefaultComponentRenderer {
 			if(backLink.isVisible() && numOfCrumbs > panel.getInvisibleCrumb()) {
 				sb.append("<li class='o_breadcrumb_back'>");
 				backLink.getHTMLRendererSingleton().render(renderer, sb, backLink, ubu, translator, renderResult, args);
-				backLink.setDirty(false);
 				sb.append("</li>");
 				
 				for(Link crumb:breadCrumbs) {
@@ -65,14 +64,15 @@ public class BreadcrumbBarRenderer extends DefaultComponentRenderer {
 					sb.append("</li>");
 				}
 			}
+			backLink.setDirty(false);
 			
 			Link closeLink = panel.getCloseLink();
 			if (closeLink.isVisible()) {
 				sb.append("<li class='o_breadcrumb_close'>");
 				closeLink.getHTMLRendererSingleton().render(renderer, sb, closeLink, ubu, translator, renderResult, args);
-				closeLink.setDirty(false);
 				sb.append("</li>");				
-			}	
+			}
+			closeLink.setDirty(false);
 			sb.append("</ol>");
 		} else {
 			sb.append("<div id='o_c").append(source.getDispatchID()).append("'>");

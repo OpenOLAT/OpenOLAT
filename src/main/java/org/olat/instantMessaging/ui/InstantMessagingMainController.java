@@ -86,7 +86,9 @@ public class InstantMessagingMainController extends BasicController implements G
 	private IMBuddyListController rosterCtr;
 	private FloatingResizableDialogController rosterPanelCtr;
 	//status changes
-	private final Link available, unavailable, dnd;
+	private final Link dnd;
+	private final Link available;
+	private final Link unavailable;
 	//chat list
 	private JSAndCSSComponent jsc;
 	private ChatManagerController chatMgrCtrl;
@@ -225,6 +227,7 @@ public class InstantMessagingMainController extends BasicController implements G
 	 * or an Assessment starts or ends
 	 * @see org.olat.core.util.event.GenericEventListener#event(org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(Event event) {
 		if(event instanceof InstantMessagingEvent) {
 			processInstantMessageEvent((InstantMessagingEvent)event);
@@ -244,7 +247,10 @@ public class InstantMessagingMainController extends BasicController implements G
 	private void updateBuddyStats() {
 		if(allowToUpdateBuddyStats()) {
 			BuddyStats stats = imService.getBuddyStats(getIdentity());
-			onlineOfflineCount.setCustomDisplayText(translate("im.roster.launch", new String[]{stats.getOnlineBuddies() + "", stats.getOfflineBuddies() + ""}));
+			String text = translate("im.roster.launch", new String[]{ Long.toString(stats.getOnlineBuddies()), Long.toString(stats.getOfflineBuddies()) });
+			if(!text.equals(onlineOfflineCount.getCustomDisplayText())) {
+				onlineOfflineCount.setCustomDisplayText(text);
+			}
 		}
 	}
 	

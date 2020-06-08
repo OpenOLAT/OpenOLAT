@@ -114,6 +114,8 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 				}
 				renderer.render(component, sb, args);
 				sb.append("</li>");
+			} else {
+				component.setDirty(false);
 			}
 		}
 		sb.append("</ul>").append("</div>", dropdown.isEmbbeded());

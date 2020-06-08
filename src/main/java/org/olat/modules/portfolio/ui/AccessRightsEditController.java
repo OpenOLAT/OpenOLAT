@@ -167,7 +167,7 @@ public class AccessRightsEditController extends FormBasicController {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.contextPut("binderRow", binderRow);
-			layoutCont.contextPut("grading", new Boolean(grading));
+			layoutCont.contextPut("grading", Boolean.valueOf(grading));
 		}
 		
 		if(hasButtons) {
