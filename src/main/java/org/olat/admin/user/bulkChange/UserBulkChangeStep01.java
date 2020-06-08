@@ -240,12 +240,14 @@ class UserBulkChangeStep01 extends BasicStep {
 				String[] statusKeys = {
 						Integer.toString(Identity.STATUS_ACTIV),
 						Integer.toString(Identity.STATUS_PERMANENT),
+						Integer.toString(Identity.STATUS_INACTIVE),
 						Integer.toString(Identity.STATUS_LOGIN_DENIED),
 						Integer.toString(Identity.STATUS_PENDING)
 					};
 				String[] statusValues = {
 						translate("rightsForm.status.activ"),
 						translate("rightsForm.status.permanent"),
+						translate("rightsForm.status.inactive"),
 						translate("rightsForm.status.login_denied"),
 						translate("rightsForm.status.pending")
 					};

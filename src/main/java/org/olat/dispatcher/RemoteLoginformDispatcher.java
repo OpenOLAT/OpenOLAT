@@ -27,8 +27,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.Logger;
-import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.AuthHelper;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.Dispatcher;
@@ -93,14 +93,14 @@ public class RemoteLoginformDispatcher implements Dispatcher {
 	private static final String PARAM_CREDENTIAL = "pwd";
 	private static final Logger log = Tracing.createLoggerFor(RemoteLoginformDispatcher.class);
 	
-	private UserDeletionManager userDeletionManager;
+	private BaseSecurity securityManager;
 	
 	/**
 	 * [used by Spring]
-	 * @param userDeletionManager
+	 * @param securityManager Base security
 	 */
-	public void setUserDeletionManager(UserDeletionManager userDeletionManager) {
-		this.userDeletionManager = userDeletionManager;
+	public void setSecurityManager(BaseSecurity securityManager) {
+		this.securityManager = securityManager;
 	}
 	
 	/**
@@ -121,7 +121,7 @@ public class RemoteLoginformDispatcher implements Dispatcher {
 			ureq = new UserRequestImpl(uriPrefix, request, response);
 				
 			if (! request.getMethod().equals(METHOD_POST)) {
-				log.warn("Wrong HTTP method, only POST allowed, but current method::" + request.getMethod());
+				log.warn("Wrong HTTP method, only POST allowed, but current method::{}", request.getMethod());
 				DispatcherModule.redirectToDefaultDispatcher(response); 
 				return;
 			}
@@ -142,7 +142,7 @@ public class RemoteLoginformDispatcher implements Dispatcher {
 			OLATAuthManager olatAuthenticationSpi = CoreSpringFactory.getImpl(OLATAuthManager.class);
 			Identity identity = olatAuthenticationSpi.authenticate(null, userName, pwd);
 			if (identity == null) {
-				log.info("Could not authenticate user '" + userName + "', wrong password or user name");
+				log.info("Could not authenticate user '{}', wrong password or user name", userName);
 				// redirect to OLAT loginscreen, add error parameter so that the loginform can mark itself as errorfull
 				String loginUrl = WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault() + "?" + OLATAuthenticationController.PARAM_LOGINERROR + "=true";
 				DispatcherModule.redirectTo(response, loginUrl); 
@@ -159,7 +159,7 @@ public class RemoteLoginformDispatcher implements Dispatcher {
 				int loginStatus = AuthHelper.doLogin(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq);
 				if (loginStatus == AuthHelper.LOGIN_OK) {
 					// redirect to authenticated environment
-					userDeletionManager.setIdentityAsActiv(identity);
+					securityManager.setIdentityLastLogin(identity);
 					
 					final String origUri = request.getRequestURI();
 					String restPart = origUri.substring(uriPrefix.length());

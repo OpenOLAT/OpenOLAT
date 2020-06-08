@@ -19,12 +19,17 @@
  */
 package org.olat.user.ui.admin;
 
+import java.util.Date;
+
 import org.olat.basesecurity.model.IdentityPropertiesRow;
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataSourceModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
+import org.olat.core.id.Identity;
 import org.olat.modules.lecture.ui.TeacherRollCallController;
+import org.olat.user.UserModule;
 
 /**
  * 
@@ -34,8 +39,14 @@ import org.olat.modules.lecture.ui.TeacherRollCallController;
  */
 public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<IdentityPropertiesRow> {
 	
-	public UserSearchTableModel(FlexiTableDataSourceDelegate<IdentityPropertiesRow> source, FlexiTableColumnModel columnModel) {
+	private final Date now;
+	private final UserModule userModule;
+	
+	public UserSearchTableModel(FlexiTableDataSourceDelegate<IdentityPropertiesRow> source,
+			FlexiTableColumnModel columnModel, UserModule userModule) {
 		super(source, columnModel);
+		this.userModule = userModule;
+		now = CalendarUtils.startOfDay(new Date());
 	}
 
 	@Override
@@ -48,6 +59,9 @@ public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<Ident
 				case creationDate: return userRow.getCreationDate();
 				case lastLogin: return userRow.getLastLogin();
 				case status: return userRow.getStatus();
+				case inactivationDate: return userRow.getInactivationDate();
+				case daysToInactivation: return getDaysToInactivation(userRow);
+				case daysToDeletion: return getDaysToDeletion(userRow);
 				default: return null;
 			}
 		} else if(col < TeacherRollCallController.CHECKBOX_OFFSET) {
@@ -57,9 +71,33 @@ public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<Ident
 		return null;
 	}
 	
+	private Long getDaysToInactivation(IdentityPropertiesRow userRow) {
+		if(userModule.isUserAutomaticDeactivation()
+				&& (userRow.getStatus().equals(Identity.STATUS_ACTIV)
+						|| userRow.getStatus().equals(Identity.STATUS_PENDING)
+						|| userRow.getStatus().equals(Identity.STATUS_LOGIN_DENIED))) {
+			Date lastLogin = userRow.getLastLogin();
+			if(lastLogin == null) {
+				lastLogin = userRow.getCreationDate();
+			}
+			long days = userModule.getNumberOfInactiveDayBeforeDeactivation() - CalendarUtils.numOfDays(now, lastLogin);
+			return days > 0l ? days : 1l;
+		}
+		return null;
+	}
+	
+	private Long getDaysToDeletion(IdentityPropertiesRow userRow) {
+		if(userModule.isUserAutomaticDeletion() && userRow.getInactivationDate() != null) {
+			Date inactivationDate = userRow.getInactivationDate();
+			long days = userModule.getNumberOfInactiveDayBeforeDeletion() - CalendarUtils.numOfDays(now, inactivationDate);
+			return days > 0l ? days : 1l;
+		}
+		return null;
+	}
+	
 	@Override
 	public DefaultFlexiTableDataSourceModel<IdentityPropertiesRow> createCopyWithEmptyList() {
-		return new UserSearchTableModel(null, getTableColumnModel());
+		return new UserSearchTableModel(null, getTableColumnModel(), userModule);
 	}
 	
 	public enum UserCols implements FlexiSortableColumnDef {
@@ -68,7 +106,10 @@ public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<Ident
 		creationDate("table.identity.creationdate"),
 		lastLogin("table.identity.lastlogin"),
 		action("table.header.action"),
-		status("table.identity.status");
+		status("table.identity.status"),
+		inactivationDate("table.identity.inactivation.date"),
+		daysToInactivation("table.identity.days.inactivation"),
+		daysToDeletion("table.identity.days.deletion");
 		
 		private final String i18nKey;
 		
@@ -88,6 +129,9 @@ public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<Ident
 
 		@Override
 		public String sortKey() {
+			if(daysToInactivation == this || daysToDeletion == this) {
+				return lastLogin.name();
+			}
 			return name();
 		}
 	}

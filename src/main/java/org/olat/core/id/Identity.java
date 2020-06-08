@@ -50,6 +50,8 @@ public interface Identity extends CreateInfo, IdentityRef, Persistable {
 	public static final Integer STATUS_LOGIN_DENIED = 101;
 	/** Identity can not login and will not be listed (only on pending list). */
 	public static final Integer STATUS_PENDING = 102;
+	/** Identity can not BE SEARCHED. */
+	public static final Integer STATUS_INACTIVE = 103;
 	/** Identity is deleted and has no access to olat-system and is not visible (except administrators). */
 	public static final Integer STATUS_DELETED   = 199;
 	
@@ -74,10 +76,11 @@ public interface Identity extends CreateInfo, IdentityRef, Persistable {
 	 */
 	public Date getLastLogin();
 
-
 	/**
 	 * @return Current identity status 
 	 */
 	public Integer getStatus();
+	
+	public Date getInactivationDate();
 	
 }

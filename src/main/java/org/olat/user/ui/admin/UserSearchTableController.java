@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.olat.admin.user.ExtendedIdentitiesTableDataModel;
 import org.olat.admin.user.UserAdminController;
 import org.olat.admin.user.UsermanagerUserSearchController;
 import org.olat.admin.user.bulkChange.UserBulkChangeManager;
@@ -75,16 +74,20 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.co.ContactFormController;
 import org.olat.user.UserManager;
+import org.olat.user.UserModule;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.olat.user.ui.admin.UserSearchTableModel.UserCols;
 import org.olat.user.ui.admin.bulk.move.UserBulkMove;
 import org.olat.user.ui.admin.bulk.move.UserBulkMove_1_ChooseRoleStep;
+import org.olat.user.ui.admin.lifecycle.ConfirmDeleteUserController;
+import org.olat.user.ui.admin.lifecycle.IdentityDeletedEvent;
 import org.olat.user.ui.identity.UserInfoSegmentedController;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,13 +100,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class UserSearchTableController extends FormBasicController implements Activateable2 {
 	
-	private static final String USER_PROPS_ID = ExtendedIdentitiesTableDataModel.class.getCanonicalName();
+	public static final String USER_PROPS_ID = "org.olat.admin.user.ExtendedIdentitiesTableDataModel";
 	public static final int USER_PROPS_OFFSET = 500;
 	
 	private Link nextLink;
 	private Link previousLink;
 	private FormLink mailButton;
 	private FormLink bulkMovebutton;
+	private FormLink bulkDeleteButton;
+	private FormLink bulkStatusButton;
 	private FormLink bulkChangesButton;
 	
 	private FlexiTableElement tableEl;
@@ -114,18 +119,20 @@ public class UserSearchTableController extends FormBasicController implements Ac
 	private UserAdminController userAdminCtr;
 	private ContactFormController contactCtr;
 	private UserInfoSegmentedController userInfoCtr;
+	private ChangeStatusController changeStatusController;
 	private StepsMainRunController userBulkMoveController;
 	private StepsMainRunController userBulkChangesController;
+	private ConfirmDeleteUserController confirmDeleteUserController;
 	
 	private final Roles roles;
-	private final boolean vCard;
-	private final boolean bulkMail;
-	private final boolean bulkOrganisationMove;
+	private final UserSearchTableSettings settings;
 	private final boolean isAdministrativeUser;
 	private List<UserPropertyHandler> userPropertyHandlers;
 	
 	private SearchIdentityParams currentSearchParams;
 
+	@Autowired
+	private UserModule userModule;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -138,12 +145,10 @@ public class UserSearchTableController extends FormBasicController implements Ac
 	private UserBulkChangeManager userBulkChangesManager;
 	
 	public UserSearchTableController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			boolean bulkMail, boolean bulkOrganisationMove, boolean vCard) {
+			UserSearchTableSettings settings) {
 		super(ureq, wControl, "search_table");
-		this.vCard = vCard;
-		this.bulkMail = bulkMail;
+		this.settings = settings;
 		this.stackPanel = stackPanel;
-		this.bulkOrganisationMove = bulkOrganisationMove;
 		setTranslator(Util.createPackageTranslator(UsermanagerUserSearchController.class, getLocale(), getTranslator()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
@@ -161,14 +166,6 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		nextLink = LinkFactory.createToolLink("nextelement","", this, "o_icon_next_toolbar");
 		nextLink.setTitle(translate("command.next"));
 		
-		if(bulkMail) {
-			mailButton = uifactory.addFormLink("command.mail", formLayout, Link.BUTTON);
-		}
-		if(roles.isAdministrator() || roles.isUserManager() || roles.isRolesManager()) {
-			bulkChangesButton = uifactory.addFormLink("bulkChange.title", formLayout, Link.BUTTON);
-		}
-		bulkMovebutton = uifactory.addFormLink("command.move.to.organisation", formLayout, Link.BUTTON);
-		bulkMovebutton.setVisible(bulkOrganisationMove);
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if(isAdministrativeUser) {
@@ -191,19 +188,80 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserCols.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, UserCols.lastLogin));
-		
-		if(vCard) {
+
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, UserCols.inactivationDate));
+		if(userModule.isUserAutomaticDeactivation()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, UserCols.daysToInactivation));
+		}
+		if(userModule.isUserAutomaticDeletion()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, UserCols.daysToDeletion));
+		}
+		if(settings.isVCard()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.vcard", translate("table.identity.vcard"), "vcard"));
 		}
 		
-		tableModel = new UserSearchTableModel(new EmptyDataSource(), columnsModel);
+		tableModel = new UserSearchTableModel(new EmptyDataSource(), columnsModel, userModule);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setEmtpyTableMessageKey("error.no.user.found");
 		tableEl.setExportEnabled(true);
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
+		tableEl.setSearchEnabled(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "user_search_table");
+		
+		initBulkActions(formLayout);
+		if(settings.isStatusFilter()) {
+			initTableFilters();
+		}
+	}
+	
+	private void initBulkActions(FormItemContainer formLayout) {
+		if(settings.isBulkMail()) {
+			mailButton = uifactory.addFormLink("command.mail", formLayout, Link.BUTTON);
+			tableEl.addBatchButton(mailButton);
+		}
+		if(roles.isAdministrator() || roles.isUserManager() || roles.isRolesManager()) {
+			bulkChangesButton = uifactory.addFormLink("bulkChange.title", formLayout, Link.BUTTON);
+			tableEl.addBatchButton(bulkChangesButton);
+		}
+		if(roles.isAdministrator() || roles.isRolesManager()) {
+			bulkStatusButton = uifactory.addFormLink("bulkStatus.title", formLayout, Link.BUTTON);
+			tableEl.addBatchButton(bulkStatusButton);
+		}
+		if(roles.isAdministrator() ) {
+			bulkDeleteButton = uifactory.addFormLink("bulkDelete.title", formLayout, Link.BUTTON);
+			tableEl.addBatchButton(bulkDeleteButton);
+		}
+
+		bulkMovebutton = uifactory.addFormLink("command.move.to.organisation", formLayout, Link.BUTTON);
+		bulkMovebutton.setVisible(settings.isBulkOrganisationMove());
+		tableEl.addBatchButton(bulkMovebutton);
+	}
+	
+	private void initTableFilters() {
+		FlexiTableFilter activeFilter = new FlexiTableFilter(translate("rightsForm.status.activ"), Integer.toString(Identity.STATUS_ACTIV));
+		FlexiTableFilter permanentFilter = new FlexiTableFilter(translate("rightsForm.status.permanent"), Integer.toString(Identity.STATUS_PERMANENT));
+		FlexiTableFilter pendingFilter = new FlexiTableFilter(translate("rightsForm.status.pending"), Integer.toString(Identity.STATUS_PENDING));
+		FlexiTableFilter inactiveFilter = new FlexiTableFilter(translate("rightsForm.status.inactive"), Integer.toString(Identity.STATUS_INACTIVE));
+		FlexiTableFilter loginDeniedFilter = new FlexiTableFilter(translate("rightsForm.status.login_denied"), Integer.toString(Identity.STATUS_LOGIN_DENIED));
+		List<FlexiTableFilter> filters = new ArrayList<>();
+		filters.add(activeFilter);
+		filters.add(permanentFilter);
+		filters.add(pendingFilter);
+		filters.add(inactiveFilter);
+		filters.add(loginDeniedFilter);
+		filters.add(FlexiTableFilter.SPACER);
+		filters.add(new FlexiTableFilter(translate("table.showall"), "showAll", true));
+
+		tableEl.setFilters("", filters, true);
+		
+		List<FlexiTableFilter> selectedFilters = new ArrayList<>();
+		selectedFilters.add(activeFilter);
+		selectedFilters.add(permanentFilter);
+		selectedFilters.add(pendingFilter);
+		selectedFilters.add(loginDeniedFilter);
+		tableEl.setSelectedFilters(selectedFilters);
 	}
 	
 	public void loadModel(SearchIdentityParams params) {
@@ -211,7 +269,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		UserSearchDataSource dataSource = new UserSearchDataSource(params, userPropertyHandlers, getLocale());
 		tableModel.setSource(dataSource);
 		tableEl.reset(true, true, true);
-		bulkMovebutton.setVisible(bulkOrganisationMove
+		bulkMovebutton.setVisible(settings.isBulkOrganisationMove()
 				&& currentSearchParams != null
 				&& currentSearchParams.getOrganisations() != null
 				&& currentSearchParams.getOrganisations().size() == 1);
@@ -265,12 +323,23 @@ public class UserSearchTableController extends FormBasicController implements Ac
 				getWindowControl().pop();
 			}
 			if (event == Event.CHANGED_EVENT) {
-				doFinishBulkMove();
+				reloadTable();
 			} else if (event == Event.DONE_EVENT) {
 				showError("bulkChange.failed");
 			}
 			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				cleanUp();
+			}
+		} else if(changeStatusController == source || confirmDeleteUserController == source) {
+			if (event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
+				reloadTable();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(userAdminCtr == source) {
+			if(event instanceof IdentityDeletedEvent) {
+				reloadTable();
+				stackPanel.popController(userAdminCtr);
 			}
 		} else if(contactCtr == source) {
 			cmc.deactivate();
@@ -285,13 +354,17 @@ public class UserSearchTableController extends FormBasicController implements Ac
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(confirmDeleteUserController);
 		removeAsListenerAndDispose(userBulkChangesController);
 		removeAsListenerAndDispose(userBulkMoveController);
+		removeAsListenerAndDispose(changeStatusController);
 		removeAsListenerAndDispose(userInfoCtr);
 		removeAsListenerAndDispose(contactCtr);
 		removeAsListenerAndDispose(cmc);
+		confirmDeleteUserController = null;
 		userBulkChangesController = null;
 		userBulkMoveController = null;
+		changeStatusController = null;
 		userInfoCtr = null;
 		contactCtr = null;
 		cmc = null;
@@ -319,8 +392,12 @@ public class UserSearchTableController extends FormBasicController implements Ac
 			doMail(ureq);
 		} else if(bulkChangesButton == source) {
 			doBulkEdit(ureq);
+		}  else if(bulkDeleteButton == source) {
+			doBulkDelete(ureq);
 		} else if(bulkMovebutton == source) {
 			doBulkMove(ureq);
+		} else if(bulkStatusButton == source) {
+			doBulkStatus(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -423,7 +500,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		listenTo(contactCtr);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", contactCtr.getInitialComponent(),
-				true, translate("command.mail"), false);
+				true, translate("command.mail"), true);
 		listenTo(cmc);
 		cmc.activate(); 
 	}
@@ -506,6 +583,27 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		tableEl.reset(true, true, true);
 	}
 	
+	private void doBulkDelete(UserRequest ureq) {
+		List<Identity> identities = getSelectedIdentitiesWithWarning();
+		if(identities.isEmpty()) {
+			return;
+		}
+		
+		confirmDeleteUserController = new ConfirmDeleteUserController(ureq, getWindowControl(), identities);
+		listenTo(confirmDeleteUserController);
+
+		String title;
+		if(identities.size() == 1) {
+			String fullname = userManager.getUserDisplayName(identities.get(0));
+			title = translate("delete.user.data.title", new String[] { fullname });
+		} else {
+			title = translate("delete.users.data.title", new String[] { Integer.toString(identities.size()) });
+		}
+		cmc = new CloseableModalController(getWindowControl(), "close", confirmDeleteUserController.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate(); 
+	}
+	
 	private List<Identity> getSelectedIdentitiesWithWarning() {
 		Set<Integer> selections = tableEl.getMultiSelectedIndex();
 		if(selections.isEmpty()) {
@@ -521,8 +619,31 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		return securityManager.loadIdentityByKeys(identityKeys);
 	}
 	
+	private void doBulkStatus(UserRequest ureq) {
+		if(guardModalController(changeStatusController)) return;
+		
+		List<Identity> identities = getSelectedIdentitiesWithWarning();
+		if(identities.isEmpty()) {
+			return;
+		}
+		
+		changeStatusController = new ChangeStatusController(ureq, getWindowControl(), identities);
+		listenTo(changeStatusController);
+		
+		String title;
+		if(identities.size() == 1) {
+			String fullName = userManager.getUserDisplayName(identities.get(0));
+			title = translate("bulkStatus.title.single", new String[] { StringHelper.escapeHtml(fullName) });
+		} else {
+			title = translate("bulkStatus.title.plural", new String[] { Integer.toString(identities.size()) });
+		}
+		cmc = new CloseableModalController(getWindowControl(), "close", changeStatusController.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
 	private void doBulkMove(UserRequest ureq) {
-		if(userBulkMoveController != null) return;
+		if(guardModalController(userBulkMoveController)) return;
 		
 		List<Identity> identities = getSelectedIdentitiesWithWarning();
 		if(identities.isEmpty()) {
@@ -558,7 +679,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		getWindowControl().pushAsModalDialog(userBulkMoveController.getInitialComponent());
 	}
 	
-	private void doFinishBulkMove() {
+	private void reloadTable() {
 		tableEl.reset(true, true, true);
 	}
 	

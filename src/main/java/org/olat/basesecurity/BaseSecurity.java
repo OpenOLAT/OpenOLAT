@@ -116,9 +116,10 @@ public interface BaseSecurity {
 	
 	/**
 	 * The list of visible identities with a institutional number like in the
-	 * specified list. Deleted ones are not included.
+	 * specified list. Deleted ones, login denied, pending or inactive are not
+	 * included.
 	 * 
-	 * @param identityNumbers
+	 * @param identityNumbers The list of institutional numbers
 	 * @return A list of identities
 	 */
 	public List<Identity> findIdentitiesByNumber(Collection<String> identityNumbers);
@@ -535,6 +536,15 @@ public interface BaseSecurity {
 	 * @return
 	 */
 	public boolean isIdentityVisible(Identity identity);
+
+	/**
+	 * Check if identity is allowed to log in. Deleted, login-denied or pending users
+	 * are not allowed to login.
+	 * 
+	 * @param identity
+	 * @return true if active, inactive...
+	 */
+	public boolean isIdentityLoginAllowed(Identity identity);
 	
 
 	/**

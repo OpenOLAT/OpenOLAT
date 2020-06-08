@@ -175,6 +175,9 @@ create table if not exists o_bs_identity (
    deleteddate datetime,
    deletedroles varchar(1024),
    deletedby varchar(128),
+   inactivationdate datetime,
+   inactivationemaildate datetime,
+   deletionemaildate datetime,
    primary key (id)
 );
 create table o_bs_relation_role (

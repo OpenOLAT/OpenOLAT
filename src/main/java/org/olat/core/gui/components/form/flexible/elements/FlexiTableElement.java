@@ -283,6 +283,13 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	public void setSelectedFilterKey(String key);
 	
 	/**
+	 * Make sure that the option multi-selection is enabled if you specify several filters.
+	 * 
+	 * @param filters A list of filters
+	 */
+	public void setSelectedFilters(List<FlexiTableFilter> filters);
+	
+	/**
 	 * @return The selected value by the filter, or null if no item is selected
 	 */
 	public String getSelectedFilterValue();

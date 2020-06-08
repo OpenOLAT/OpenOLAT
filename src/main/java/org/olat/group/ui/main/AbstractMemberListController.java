@@ -108,6 +108,7 @@ import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
 import org.olat.user.UserInfoMainController;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.olat.user.ui.admin.IdentityStatusCellRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -299,6 +300,9 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			chatCol.setExportable(false);
 			columnsModel.addFlexiColumnModel(chatCol);
 		}
+
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.identityStatus, new IdentityStatusCellRenderer(getLocale())));
+
 		if(isAdministrativeUser) {
 			FlexiCellRenderer renderer = new StaticFlexiCellRenderer(editAction, new TextFlexiCellRenderer());
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.username.i18n(), Cols.username.ordinal(), editAction,
@@ -329,19 +333,19 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			}
 		}
 
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.firstTime.i18n(), Cols.firstTime.ordinal(), true, Cols.firstTime.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.firstTime));
 		if(isLastVisitVisible) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.lastTime.i18n(), Cols.lastTime.ordinal(), true, Cols.lastTime.name()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.lastTime));
 		}
 		
 		CourseRoleCellRenderer roleRenderer = new CourseRoleCellRenderer(getLocale());
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.role.i18n(), Cols.role.ordinal(), true, Cols.role.name(), roleRenderer));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.role, roleRenderer));
 		if(repoEntry != null) {
 			GroupCellRenderer groupRenderer = new GroupCellRenderer();
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.groups.i18n(), Cols.groups.ordinal(), true, Cols.groups.name(), groupRenderer));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.groups, groupRenderer));
 		}
 		
-		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(Cols.tools.i18n(), Cols.tools.ordinal());
+		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(Cols.tools);
 		toolsCol.setExportable(false);
 		toolsCol.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(toolsCol);

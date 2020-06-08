@@ -88,7 +88,7 @@ public class LifeCycleEntry extends PersistentObject {
 	/**
 	 * @return Returns the resourceTypeId.
 	 */
-	protected Long getPersistentRef() {
+	public Long getPersistentRef() {
 		return persistentRef;
 	}
 

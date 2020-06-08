@@ -35,7 +35,7 @@ import java.util.StringTokenizer;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.olat.admin.user.delete.service.UserDeletionManager;
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
@@ -53,7 +53,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLATSecurityException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.util.StringHelper;
@@ -81,7 +80,6 @@ public class ShibbolethDispatcher implements Dispatcher{
 	private Translator translator;
 	private BaseSecurity securityManager;
 	private ShibbolethModule shibbolethModule;
-	private UserDeletionManager userDeletionManager;
 
 	@Autowired
 	private ShibbolethManager shibbolethManager;
@@ -100,14 +98,6 @@ public class ShibbolethDispatcher implements Dispatcher{
 	 */
 	public void setSecurityManager(BaseSecurity securityManager) {
 		this.securityManager = securityManager;
-	}
-
-	/**
-	 * [used by Spring]
-	 * @param userDeletionManager
-	 */
-	public void setUserDeletionManager(UserDeletionManager userDeletionManager) {
-		this.userDeletionManager = userDeletionManager;
 	}
 
 	/**
@@ -155,7 +145,7 @@ public class ShibbolethDispatcher implements Dispatcher{
 			//showing redscreens for non valid URL is wrong instead
 			//a 404 message must be shown -> e.g. robots correct their links.
 			if(log.isDebugEnabled()){
-				log.debug("Bad Request "+req.getPathInfo());
+				log.debug("Bad Request {}", req.getPathInfo());
 			}
 			DispatcherModule.sendBadRequest(req.getPathInfo(), resp);
 			return;
@@ -182,7 +172,7 @@ public class ShibbolethDispatcher implements Dispatcher{
 		} else {
 			// Successful login
 			Identity authenticationedIdentity = ureq.getIdentity();
-			userDeletionManager.setIdentityAsActiv(authenticationedIdentity);
+			securityManager.setIdentityLastLogin(authenticationedIdentity);
 			shibbolethManager.syncUser(authenticationedIdentity, shibbolethAttriutes);
 			ureq.getUserSession().getIdentityEnvironment().addAttributes(
 					shibbolethModule.getAttributeTranslator().translateAttributesMap(shibbolethAttriutes.toMap()));

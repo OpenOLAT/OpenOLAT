@@ -895,25 +895,6 @@
 					</bean>
 				</entry>
 
-				<entry key="org.olat.admin.user.delete.UserDeleteTableModel">
-					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
-						<property name="propertyHandlers">
-							<list>
-							    <ref bean="userPropertyLastName" />
-								<ref bean="userPropertyFirstName" />
-								<ref bean="userPropertyEmail" />
-							</list>
-						</property>
-						<property name="mandatoryProperties">
-							<set>
-							    <ref bean="userPropertyLastName" />
-								<ref bean="userPropertyFirstName" />
-								<ref bean="userPropertyEmail" />
-							</set>
-						</property>
-					</bean>
-				</entry>
-
 				<entry key="org.olat.admin.user.ExtendedIdentitiesTableDataModel">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="propertyHandlers">

@@ -18,4 +18,5 @@
 		<property name="authenticationHistoryDao" ref="authenticationHistoryDao" />
 		<property name="dbVendor" value="${db.vendor}" />
 	</bean>
+	
 </beans>

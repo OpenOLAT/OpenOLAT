@@ -33,8 +33,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.Logger;
-import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.AuthHelper;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
@@ -84,9 +84,9 @@ public class RESTDispatcher implements Dispatcher {
 	private static final Logger log = Tracing.createLoggerFor(RESTDispatcher.class);
 	
 	private LoginModule loginModule;
+	private BaseSecurity securityManager;
 	private RestSecurityBean restSecurityBean;
 	private UserSessionManager userSessionManager;
-	private UserDeletionManager userDeletionManager;
 	
 	/**
 	 * [used by Spring]
@@ -114,10 +114,10 @@ public class RESTDispatcher implements Dispatcher {
 
 	/**
 	 * [used by Spring]
-	 * @param userDeletionManager
+	 * @param securityManager The base security manager
 	 */
-	public void setUserDeletionManager(UserDeletionManager userDeletionManager) {
-		this.userDeletionManager = userDeletionManager;
+	public void setSecurityManager(BaseSecurity securityManager) {
+		this.securityManager = securityManager;
 	}
 
 	@Override
@@ -215,22 +215,12 @@ public class RESTDispatcher implements Dispatcher {
 					// standard OLAT session
 					int loginStatus = AuthHelper.doLogin(restIdentity, RestSecurityHelper.SEC_TOKEN, ureq);			
 					if (loginStatus == AuthHelper.LOGIN_OK) {
-						userDeletionManager.setIdentityAsActiv(restIdentity);
+						securityManager.setIdentityLastLogin(restIdentity);
 					} else {
 						//error, redirect to login screen
 						DispatcherModule.redirectToDefaultDispatcher(response);
 					}
 				} else if (Windows.getWindows(usess).getChiefController(ureq) == null) {
-					/*
-					// Session is already available, but no main window (Head-less REST
-					// session). Only create the base chief controller and the window
-					ChiefController cc = AuthHelper.createAuthHome(ureq);
-					//the user is authenticated successfully with a security token, we can set the authenticated path
-					cc.getWindow().setUriPrefix(WebappHelper.getServletContextPath() + DispatcherModule.PATH_AUTHENTICATED);
-					Windows ws = Windows.getWindows(ureq);
-					ws.registerWindow(cc);
-					// no need to call setIdentityAsActive as this was already done by RestApiLoginFilter...
-					*/
 					redirectAuthenticatedTo(usess, ureq, businessPath, encodedRestPart);
 					return;
 				}
@@ -251,7 +241,7 @@ public class RESTDispatcher implements Dispatcher {
 				int loginStatus = AuthHelper.doInvitationLogin(invitationAccess, ureq, guestLoc);
 				if ( loginStatus == AuthHelper.LOGIN_OK) {
 					Identity invite = usess.getIdentity();
-					userDeletionManager.setIdentityAsActiv(invite);					
+					securityManager.setIdentityLastLogin(invite);					
 					//logged in as invited user, continue
 					ServletUtil.serveResource(request, response, ureq.getDispatchResult().getResultingMediaResource());
 				} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {

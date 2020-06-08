@@ -21,8 +21,8 @@ package org.olat.login.oauth.ui;
 
 import java.util.List;
 
-import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.AuthHelper;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -64,7 +64,7 @@ public class OAuthDisclaimerController extends FormBasicController implements Ac
 	private DisclaimerController disclaimerController;
 
 	@Autowired
-	private UserDeletionManager userDeletionManager;
+	private BaseSecurity securityManager;
 	@Autowired
 	private RegistrationManager registrationManager;
 	
@@ -140,7 +140,7 @@ public class OAuthDisclaimerController extends FormBasicController implements Ac
 		int loginStatus = AuthHelper.doLogin(authIdentity, null, ureq);
 		if (loginStatus == AuthHelper.LOGIN_OK) {
 			//update last login date and register active user
-			userDeletionManager.setIdentityAsActiv(authIdentity);
+			securityManager.setIdentityLastLogin(authIdentity);
 		} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE){
 			DispatcherModule.redirectToServiceNotAvailable( ureq.getHttpResp() );
 		} else {

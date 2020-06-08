@@ -62,7 +62,6 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.olat.admin.user.UserShortDescription;
-import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -90,6 +89,7 @@ import org.olat.restapi.group.MyGroupWebService;
 import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.vo.ErrorVO;
 import org.olat.user.DisplayPortraitManager;
+import org.olat.user.UserLifecycleManager;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -135,7 +135,7 @@ public class UserWebService {
 	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
-	private UserDeletionManager userDeletionManager;
+	private UserLifecycleManager userLifecycleManager;
 	@Autowired
 	private IdentityPowerSearchQueries identitySearchQueries;
 	
@@ -971,7 +971,7 @@ public class UserWebService {
 		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-		boolean success = userDeletionManager.deleteIdentity(identity, actingIdentity);
+		boolean success = userLifecycleManager.deleteIdentity(identity, actingIdentity);
 		if (success) {
 			return Response.ok().build();			
 		} else {

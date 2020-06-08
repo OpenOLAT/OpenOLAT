@@ -26,7 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.olat.admin.user.delete.service.UserDeletionManager;
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
@@ -41,7 +41,6 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.util.StringHelper;
@@ -75,13 +74,10 @@ public class OAuthDispatcher implements Dispatcher {
 	
 	private static final Logger log = Tracing.createLoggerFor(OAuthDispatcher.class);
 
-	
 	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
-	@Autowired
-	private UserDeletionManager userDeletionManager;
 
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response)
@@ -197,7 +193,7 @@ public class OAuthDispatcher implements Dispatcher {
 					}
 				} else {
 					//update last login date and register active user
-					userDeletionManager.setIdentityAsActiv(identity);
+					securityManager.setIdentityLastLogin(identity);
 					MediaResource mr = ureq.getDispatchResult().getResultingMediaResource();
 					if (mr instanceof RedirectMediaResource) {
 						RedirectMediaResource rmr = (RedirectMediaResource)mr;
@@ -282,7 +278,7 @@ public class OAuthDispatcher implements Dispatcher {
 			request.getSession().setAttribute(OAuthConstants.OAUTH_USER_ATTR, user);
 			response.sendRedirect(WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault() + OAuthConstants.OAUTH_DISCLAIMER_PATH + "/");
 		} catch (IOException e) {
-			log.error("Redirect failed: url=" + WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault(),e);
+			log.error("Redirect failed: url={}{}", WebappHelper.getServletContextPath(), DispatcherModule.getPathDefault(),e);
 		}
 	}
 	

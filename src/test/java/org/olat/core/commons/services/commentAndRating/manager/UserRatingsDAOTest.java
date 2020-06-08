@@ -24,7 +24,6 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.commentAndRating.model.UserRating;
@@ -35,6 +34,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntryStatistics;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.olat.user.UserLifecycleManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -54,7 +54,7 @@ public class UserRatingsDAOTest extends OlatTestCase {
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
-	private UserDeletionManager userDeletionManager;
+	private UserLifecycleManager userLifecycleManager;
 	
 	@Test
 	public void should_service_present() {
@@ -205,7 +205,7 @@ public class UserRatingsDAOTest extends OlatTestCase {
 		Assert.assertEquals(3.0f, courseAverage, 0.001f);
 
 		// delete first user
-		userDeletionManager.deleteIdentity(identToDelete, null);
+		userLifecycleManager.deleteIdentity(identToDelete, null);
 		dbInstance.commitAndCloseSession();
 		
 		//check that rating of the first user are deleted

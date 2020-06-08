@@ -28,7 +28,6 @@ package org.olat.registration;
 import java.io.File;
 import java.util.Locale;
 
-import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -49,6 +48,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.co.ContactFormController;
+import org.olat.user.UserLifecycleManager;
 import org.olat.user.UserModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -94,7 +94,7 @@ public class DisclaimerController extends BasicController {
 	@Autowired
 	private RegistrationModule registrationModule;
 	@Autowired
-	private UserDeletionManager userDeletionManager;
+	private UserLifecycleManager userLifecycleManager;
 	
 	/**
 	 * Display the disclaimer in a read only view to the current user.
@@ -238,7 +238,7 @@ public class DisclaimerController extends BasicController {
 	
 	private void doDeleteData(UserRequest ureq) {
 		if(identity.getLastLogin() == null) {
-			userDeletionManager.deleteIdentity(identity, identity);
+			userLifecycleManager.deleteIdentity(identity, identity);
 			fireEvent(ureq, Event.CANCELLED_EVENT);
 		} else {
 			doOpenContactForm(ureq);

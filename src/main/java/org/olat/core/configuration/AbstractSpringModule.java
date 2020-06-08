@@ -93,7 +93,7 @@ public abstract class AbstractSpringModule implements GenericEventListener, Init
 		Logger logger = Tracing.createLoggerFor(AbstractSpringModule.class);
 		for(Map.Entry<Class<?>, AtomicInteger> entry:starts.entrySet()) {
 			if(entry.getValue().get() > 1) {
-				logger.info(entry.getValue().get() + " :: " + entry.getKey());
+				logger.info("{} :: {}", entry.getValue().get(), entry.getKey());
 			}
 		}
 	}
@@ -192,14 +192,26 @@ public abstract class AbstractSpringModule implements GenericEventListener, Init
 		log.info(Tracing.M_AUDIT, "change system property: {} {}", propertyName, "*********");
 	}
 	/**
-	 * Retrun an int value for a certain propertyName
+	 * Return an int value for a certain property name
 	 * 
-	 * @param propertyName
+	 * @param propertyName The property name
 	 * @return the value from the configuration or the default value or 0
 	 */
 	protected int getIntPropertyValue(String propertyName) {
 		// delegate to new property based config style
 		return moduleConfigProperties.getIntPropertyValue(propertyName);
+	}
+	
+	/**
+	 * Return an int value for a certain property name
+	 * 
+	 * @param propertyName The property name
+	 * @param defaultValue The default value if the property is not set
+	 * @return The value from the configuration or the default value
+	 */
+	protected int getIntPropertyValue(String propertyName, int defaultValue) {
+		// delegate to new property based config style
+		return moduleConfigProperties.getIntPropertyValue(propertyName, defaultValue);
 	}
 	
 	
@@ -217,7 +229,7 @@ public abstract class AbstractSpringModule implements GenericEventListener, Init
 	protected void setIntProperty(String propertyName, int value, boolean saveConfiguration) {
 		// delegate to new property based config style
 		moduleConfigProperties.setIntProperty(propertyName, value, saveConfiguration);
-		log.info(Tracing.M_AUDIT, "change system property: {}", propertyName, Integer.valueOf(value));
+		log.info(Tracing.M_AUDIT, "change system property: {} {}", propertyName, Integer.valueOf(value));
 	}
 	
 	protected void removeProperty(String propertyName, boolean saveConfiguration) {
@@ -249,7 +261,7 @@ public abstract class AbstractSpringModule implements GenericEventListener, Init
 	protected void setBooleanProperty(String propertyName, boolean value, boolean saveConfiguration) {
 		// delegate to new property based config style
 		moduleConfigProperties.setBooleanProperty(propertyName, value, saveConfiguration);
-		log.info(Tracing.M_AUDIT, "change system property: {} {}", propertyName,  Boolean.toString(value));
+		log.info(Tracing.M_AUDIT, "change system property: {} {}", propertyName,  value);
 	}
 	/**
 	 * Save the properties configuration to disk and notify other nodes about

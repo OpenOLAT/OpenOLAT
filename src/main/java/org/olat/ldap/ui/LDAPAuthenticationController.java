@@ -22,6 +22,7 @@ package org.olat.ldap.ui;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.persistence.DB;
@@ -41,7 +42,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.OLATRuntimeException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -290,7 +290,7 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 			int loginStatus = AuthHelper.doLogin(authIdentity, myProvider, ureq);
 			if (loginStatus == AuthHelper.LOGIN_OK) {
 				//update last login date and register active user
-				userDeletionManager.setIdentityAsActiv(authIdentity);
+				securityManager.setIdentityLastLogin(authIdentity);
 			} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE){
 				DispatcherModule.redirectToServiceNotAvailable( ureq.getHttpResp() );
 			} else {

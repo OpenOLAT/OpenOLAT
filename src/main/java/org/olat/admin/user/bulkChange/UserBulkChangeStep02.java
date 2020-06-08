@@ -27,6 +27,7 @@ import java.util.Set;
 
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.context.Context;
+import org.olat.admin.user.SystemRolesAndRightsController;
 import org.olat.admin.user.groups.GroupSearchController;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -113,10 +114,11 @@ class UserBulkChangeStep02 extends BasicStep {
 			super(ureq, control, rootForm, runContext, LAYOUT_VERTICAL, null);
 			// use custom translator with fallback to user properties translator
 			Translator pt1 = userManager.getPropertyHandlerTranslator(getTranslator());
-			Translator pt2 = Util.createPackageTranslator(BusinessGroupFormController.class, ureq.getLocale(), pt1);
-			Translator pt3 = Util.createPackageTranslator(GroupSearchController.class, ureq.getLocale(), pt2);
-			setTranslator(pt3);
-			flc.setTranslator(pt3);
+			Translator pt2 = Util.createPackageTranslator(BusinessGroupFormController.class, getLocale(), pt1);
+			Translator pt3 = Util.createPackageTranslator(GroupSearchController.class, getLocale(), pt2);
+			Translator pt4 = Util.createPackageTranslator(SystemRolesAndRightsController.class, getLocale(), pt3);
+			setTranslator(pt4);
+			flc.setTranslator(pt4);
 			isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 			userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 			
@@ -277,12 +279,30 @@ class UserBulkChangeStep02 extends BasicStep {
 				userDataArray.add(removedRolesString);
 	
 				// add column with status
-				userDataArray.add(userBulkChanges.getStatus() == null ? "" : userBulkChanges.getStatus().toString());
+				userDataArray.add(statusToLabel(userBulkChanges.getStatus()));
 
 				// add each user:
 				mergedDataChanges.add(userDataArray);
 			}
 			return mergedDataChanges;
+		}
+		
+		private String statusToLabel(Integer status) {
+			String label;
+			if(Identity.STATUS_PERMANENT.equals(status)) {
+				label = translate("rightsForm.status.permanent");
+			} else if(Identity.STATUS_LOGIN_DENIED.equals(status)) {
+				label = translate("rightsForm.status.login_denied");
+			} else if(Identity.STATUS_PENDING.equals(status)) {
+				label = translate("rightsForm.status.pending");
+			} else if(Identity.STATUS_INACTIVE.equals(status)) {
+				label = translate("rightsForm.status.inactive");
+			} else if(Identity.STATUS_DELETED.equals(status)) {
+				label = translate("rightsForm.status.deleted");
+			} else {
+				label = "";
+			}
+			return label;
 		}
 
 		/**

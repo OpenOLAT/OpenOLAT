@@ -25,6 +25,7 @@
 
 package org.olat.admin.user;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.admin.user.course.CourseOverviewController;
@@ -81,6 +82,8 @@ import org.olat.user.ProfileFormController;
 import org.olat.user.PropFoundEvent;
 import org.olat.user.UserManager;
 import org.olat.user.UserPropertiesController;
+import org.olat.user.ui.admin.lifecycle.ConfirmDeleteUserController;
+import org.olat.user.ui.admin.lifecycle.IdentityDeletedEvent;
 import org.olat.user.ui.data.UserDataExportController;
 import org.olat.user.ui.identity.UserRelationsController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -130,6 +133,8 @@ public class UserAdminController extends BasicController implements Activateable
 	private final boolean allowedToManage;
 	private int rolesTab;
 
+	private Link deleteLink;
+	
 	// controllers used in tabbed pane
 	private TabbedPane userTabP;
 	private Controller prefsCtr;
@@ -152,6 +157,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private CloseableModalController cmc;
 	private UserDataExportController exportDataCtrl;
 	private IdentityCompetencesController competencesCtrl;
+	private ConfirmDeleteUserController confirmDeleteUserCtlr;
 	private ParticipantLecturesOverviewController lecturesCtrl;
 	private CertificateAndEfficiencyStatementListController efficicencyCtrl;
 
@@ -226,6 +232,11 @@ public class UserAdminController extends BasicController implements Activateable
 			exportDataButton = LinkFactory.createToolLink("exportUserData", translate("export.user.data"), this, "o_icon_download");
 			stackPanel.addTool(exportDataButton, Align.left);
 		}
+		if(stackPanel != null && managerRoles.isAdministrator()) {
+			deleteLink = LinkFactory.createToolLink("delete", translate("delete"), this, "o_icon o_icon_delete_item");
+			deleteLink.setElementCssClass("o_sel_user_delete");
+			stackPanel.addTool(deleteLink, Align.left);
+		}
 	}
 
 	@Override
@@ -266,6 +277,8 @@ public class UserAdminController extends BasicController implements Activateable
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == backLink) {
 			fireEvent(ureq, Event.BACK_EVENT);
+		} else if(deleteLink == source) {
+			doConfirmDelete(ureq);
 		} else if(exportDataButton == source) {
 			doExportData(ureq);
 		} else if (source == userTabP) {
@@ -298,14 +311,22 @@ public class UserAdminController extends BasicController implements Activateable
 		} else if(source == exportDataCtrl) {
 			cmc.deactivate();
 			cleanUp();
+		} else if(source == confirmDeleteUserCtlr) {
+			cmc.deactivate();
+			cleanUp();
+			if(event == Event.DONE_EVENT) {
+				fireEvent(ureq, new IdentityDeletedEvent());
+			}
 		} else if(source == cmc) {
 			cleanUp();
 		}
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(confirmDeleteUserCtlr);
 		removeAsListenerAndDispose(exportDataCtrl);
 		removeAsListenerAndDispose(cmc);
+		confirmDeleteUserCtlr = null;
 		exportDataCtrl = null;
 		cmc = null;
 	}
@@ -319,6 +340,21 @@ public class UserAdminController extends BasicController implements Activateable
 		String fullname = userManager.getUserDisplayName(editedIdentity);
 		String title = translate("export.user.data.title", new String[] { fullname });
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), exportDataCtrl.getInitialComponent(),
+				true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doConfirmDelete(UserRequest ureq) {
+		if(guardModalController(confirmDeleteUserCtlr)) return;
+		
+		confirmDeleteUserCtlr = new ConfirmDeleteUserController(ureq, getWindowControl(),
+				Collections.singletonList(editedIdentity));
+		listenTo(confirmDeleteUserCtlr);
+		
+		String fullname = userManager.getUserDisplayName(editedIdentity);
+		String title = translate("delete.user.data.title", new String[] { fullname });
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteUserCtlr.getInitialComponent(),
 				true, title);
 		listenTo(cmc);
 		cmc.activate();

@@ -98,7 +98,7 @@ public class ReminderRuleEngine {
 		if(allOk) {
 			identities = getIdentities(reminder.getEntry(), reminder, ruleList, resend);
 			
-			if(identities.size() > 0 && ruleList.size() > 0) {
+			if(!identities.isEmpty() && !ruleList.isEmpty()) {
 				filterByRules(reminder.getEntry(),  identities, ruleList);
 			}
 
@@ -195,6 +195,8 @@ public class ReminderRuleEngine {
 			}
 		}
 		
+		//filter inactive identities, login denied...
+		filterIdentitiesByStatus(identities);
 		//filter by user property
 		filterIdentitiesByProperty(identities, ruleList);
 		// deduplicated the list
@@ -226,8 +228,8 @@ public class ReminderRuleEngine {
 	/**
 	 * Remove identities of the list which not match the user properties rules if any.
 	 * 
-	 * @param identities
-	 * @param ruleList
+	 * @param identities A list of identities to reduce
+	 * @param ruleList The list of rules
 	 */
 	protected void filterIdentitiesByProperty(List<Identity> identities, List<ReminderRule> ruleList) {
 		List<ReminderRule> userPropRules = new ArrayList<>(3);
@@ -240,7 +242,7 @@ public class ReminderRuleEngine {
 			}
 		}
 		
-		if(userPropRules.size() > 0) {
+		if(!userPropRules.isEmpty()) {
 			int numOfRules = userPropRules.size();
 			ReminderRule[] ruleArr = userPropRules.toArray(new ReminderRule[numOfRules]);
 
@@ -255,6 +257,22 @@ public class ReminderRuleEngine {
 				if(!accept) {
 					identityIt.remove();
 				}
+			}
+		}
+	}
+	
+	/**
+	 * Remove identities with status pending, inactive, login denied...
+	 * 
+	 * @param identities A list of identities to reduce
+	 */
+	private void filterIdentitiesByStatus(List<Identity> identities) {
+		if(identities == null || identities.isEmpty()) return;
+		
+		for(Iterator<Identity> identityIt=identities.iterator(); identityIt.hasNext(); ) {
+			Identity identity = identityIt.next();
+			if(identity.getStatus().intValue() > Identity.STATUS_VISIBLE_LIMIT) {
+				identityIt.remove();
 			}
 		}
 	}

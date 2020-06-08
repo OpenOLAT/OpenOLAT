@@ -27,7 +27,6 @@ import java.util.UUID;
 
 import javax.persistence.TypedQuery;
 
-import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
@@ -42,6 +41,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.modules.portfolio.model.InvitationImpl;
+import org.olat.user.UserLifecycleManager;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -71,9 +71,9 @@ public class InvitationDAO {
 	@Autowired
 	private OrganisationDAO organisationDao;
 	@Autowired
-	private UserDeletionManager userDeletionManager;
-	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private UserLifecycleManager userLifecycleManager;
 	
 	public Invitation createInvitation() {
 		InvitationImpl invitation = new InvitationImpl();
@@ -338,13 +338,13 @@ public class InvitationDAO {
 			List<Identity> identities = groupDao.getMembers(invitation.getBaseGroup(), GroupRoles.invitee.name());
 			//normally only one identity
 			for(Identity identity:identities) {
-				if(identity.getStatus().compareTo(Identity.STATUS_VISIBLE_LIMIT) >= 0) {
+				if(identity.getStatus().equals(Identity.STATUS_DELETED)) {
 					//already deleted
 				} else if(organisationDao.hasAnyRole(identity, OrganisationRoles.invitee.name())) {
 					//out of scope
 				} else {
 					//delete user
-					userDeletionManager.deleteIdentity(identity, null);
+					userLifecycleManager.deleteIdentity(identity, null);
 				}
 			}
 			Invitation invitationRef = dbInstance.getCurrentEntityManager()

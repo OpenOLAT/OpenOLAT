@@ -21,9 +21,8 @@ package org.olat.shibboleth;
 
 import java.util.List;
 
-import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.AuthHelper;
-import org.olat.core.CoreSpringFactory;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -57,6 +56,8 @@ public class ShibDisclaimerController extends FormBasicController implements Act
 	private CloseableModalController cmc;
 	private DisclaimerController disclaimerController;
 
+	@Autowired
+	private BaseSecurity securityManager;
 	@Autowired
 	private RegistrationManager registrationManager;
 	
@@ -126,7 +127,7 @@ public class ShibDisclaimerController extends FormBasicController implements Act
 		int loginStatus = AuthHelper.doLogin(authIdentity, null, ureq);
 		if (loginStatus == AuthHelper.LOGIN_OK) {
 			//update last login date and register active user
-			CoreSpringFactory.getImpl(UserDeletionManager.class).setIdentityAsActiv(authIdentity);
+			securityManager.setIdentityLastLogin(authIdentity);
 		} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE){
 			DispatcherModule.redirectToServiceNotAvailable( ureq.getHttpResp() );
 		} else {

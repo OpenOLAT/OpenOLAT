@@ -337,6 +337,26 @@
 		</property>
 	</bean>
 	
+	<!-- User life cycle -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="9015" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.user.ui.admin.lifecycle.UserAdminLifecycleConfigurationController"/>
+			</bean>
+		</property>
+		<property name="navigationKey" value="userlifecycle" />
+		<property name="parentTreeNodeIdentifier" value="modulesParent" /> 
+		<property name="i18nActionKey" value="admin.menu.title.lifecycle"/>
+		<property name="i18nDescriptionKey" value="admin.menu.title.lifecycle.alt"/>
+		<property name="translationPackage" value="org.olat.user.ui.admin.lifecycle"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+	</bean>
+	
 	<!-- Delete old user data export job -->
 	<bean id="deleteUserDataExportTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 		<property name="jobDetail" ref="deleteUserDataExportJob.${cluster.singleton.services}" />
@@ -350,6 +370,21 @@
 	
 	<!-- dummy bean -->
 	<bean id="deleteUserDataExportJob.disabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
+		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
+	</bean>
+	
+	<!-- Inactivate / delete user -->
+	<bean id="lifecycleUserTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+    	<property name="jobDetail" ref="lifecycleUserJob.${cluster.singleton.services}" />
+    	<property name="cronExpression" value="0 25 1 * * ?"/>
+    	<property name="startDelay" value="45000" />
+	</bean>
+	
+	<bean id="lifecycleUserJob.enabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
+		<property name="jobClass" value="org.olat.user.manager.lifecycle.UserLifecycleJob" />
+	</bean>
+
+	<bean id="lifecycleUserJob.disabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
 		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
 	</bean>
 </beans>

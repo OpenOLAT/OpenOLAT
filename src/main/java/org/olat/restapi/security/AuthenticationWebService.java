@@ -30,7 +30,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -63,8 +62,6 @@ public class AuthenticationWebService {
 	private BaseSecurity securityManager;
 	@Autowired
 	private RestSecurityBean securityBean;
-	@Autowired
-	private UserDeletionManager userDeletionManager;
 	@Autowired
 	private OLATAuthManager olatAuthenticationSpi;
 	
@@ -164,7 +161,7 @@ public class AuthenticationWebService {
 		
 		int loginStatus = AuthHelper.doHeadlessLogin(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq, true);
 		if (loginStatus == AuthHelper.LOGIN_OK) {
-			userDeletionManager.setIdentityAsActiv(identity);
+			securityManager.setIdentityLastLogin(identity);
 			//Forge a new security token
 			String token = securityBean.generateToken(identity, httpRequest.getSession(true));
 			return Response.ok("<hello identityKey=\"" + identity.getKey() + "\">Hello " + username + "</hello>", MediaType.APPLICATION_XML)

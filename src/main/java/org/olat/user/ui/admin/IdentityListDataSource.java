@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.model.IdentityPropertiesRow;
 import org.olat.core.commons.persistence.DefaultResultInfos;
@@ -31,6 +32,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -40,14 +42,16 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  *
  */
 public class IdentityListDataSource implements FlexiTableDataSourceDelegate<IdentityPropertiesRow> {
-	
-	private final List<IdentityPropertiesRow> userRows;
+
+	private List<IdentityPropertiesRow> userRows;
+	private final List<IdentityPropertiesRow> allUserRows;
 	
 	public IdentityListDataSource(List<Identity> identities, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
-		userRows = new ArrayList<>(identities.size());
+		allUserRows = new ArrayList<>(identities.size());
 		for(Identity identity:identities) {
-			userRows.add(new IdentityPropertiesRow(identity, userPropertyHandlers, locale));
+			allUserRows.add(new IdentityPropertiesRow(identity, userPropertyHandlers, locale));
 		}
+		userRows = allUserRows;
 	}
 
 	@Override
@@ -63,6 +67,50 @@ public class IdentityListDataSource implements FlexiTableDataSourceDelegate<Iden
 	@Override
 	public ResultInfos<IdentityPropertiesRow> getRows(String query, List<FlexiTableFilter> filters,
 			List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
+
+		List<Integer> exactStatusList = getStatusFromFilter(filters);
+		if(StringHelper.containsNonWhitespace(query) || !exactStatusList.isEmpty()) {
+			String loweredQuery = StringHelper.containsNonWhitespace(query) ? query.toLowerCase() : null;
+			userRows = allUserRows.stream()
+					.filter(row -> accept(row, loweredQuery, exactStatusList))
+					.collect(Collectors.toList());
+		} else {
+			userRows = allUserRows;
+		}
 		return new DefaultResultInfos<>(userRows.size(), -1, userRows);
+	}
+	
+	private boolean accept(IdentityPropertiesRow row, String query, List<Integer> status) {
+		if(status != null && status.contains(row.getStatus())) {
+			return true;
+		}
+		if(StringHelper.containsNonWhitespace(query)) {
+			String name = row.getIdentityName();
+			if(name != null && name.toLowerCase().contains(query)) {
+				return true;
+			}
+			
+			String[] values = row.getIdentityProps();
+			if(values != null && values.length > 0) {
+				for(String value:values) {
+					if(value != null && value.toLowerCase().contains(query)) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+	
+	private List<Integer> getStatusFromFilter(List<FlexiTableFilter> filters) {
+		List<Integer> statusList = new ArrayList<>();
+		if(filters != null && !filters.isEmpty()) {
+			for(FlexiTableFilter filter:filters) {
+				if(!filter.isShowAll() && StringHelper.isLong(filter.getFilter())) {
+					statusList.add(Integer.parseInt(filter.getFilter()));
+				}	
+			}
+		}
+		return statusList;
 	}
 }

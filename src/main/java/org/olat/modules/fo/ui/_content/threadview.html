@@ -87,7 +87,8 @@
 					<span class="o_newindicator" title="$r.translateInAttribute("message.unread")"><i class="o_icon o_icon_new" > </i> <span class="o_label">$r.translate("new")</span></span>
 				#end
 			</h4>
-			<div class="o_author">
+			#set($inactiveUser = (103 == $r.getComponent("vc_${message.key}").getUserObject().getStatus()))
+			<div class="o_author #if($r.isTrue($inactiveUser)) o_forum_author_inactive #end">
 				#if($message.pseudonym && !${message.pseudonym.isEmpty()})
 					$r.escapeHtml($message.pseudonym)
 				#elseif($message.guest)
@@ -95,7 +96,7 @@
 				#elseif($r.available("vc_${message.key}"))
 					$r.render("vc_${message.key}")
 				#else
-					$r.escapeHtml($message.creatorFirstname) $r.escapeHtml($message.creatorLastname)
+					$r.escapeHtml($message.creatorFirstname) $r.escapeHtml($message.creatorLastname) hh
 				#end
 			</div>
 			<div class="o_date">
@@ -189,17 +190,13 @@
 #if($mode == "one")
 	$r.render("singleThreadTable")
 	<script>
-	/* <![CDATA[ */
-			o_scrollToElement('#o_top');
-	/* ]]> */
+	o_scrollToElement('#o_top');
 	</script> 
 #end
 #if(${goToMessage.isTrue()})
-	<script>
-	/* <![CDATA[ */
-	    o_scrollToElement('#o_forum_message_$goToMessageId');
-	/* ]]> */
-	</script> 
+<script>
+o_scrollToElement('#o_forum_message_$goToMessageId');
+</script> 
 #end
 
 </div> ## END of o_forum

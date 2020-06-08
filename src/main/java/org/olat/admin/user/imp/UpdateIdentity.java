@@ -119,6 +119,11 @@ public class UpdateIdentity implements Identity {
 	}
 	
 	@Override
+	public Date getInactivationDate() {
+		return identity.getInactivationDate();
+	}
+
+	@Override
 	public int hashCode() {
 		return identity.hashCode();
 	}

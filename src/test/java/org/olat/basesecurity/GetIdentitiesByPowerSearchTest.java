@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.manager.OrganisationDAO;
@@ -43,8 +44,8 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Encoder;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.olat.user.UserManager;
@@ -69,7 +70,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 	private OrganisationService organisationService;
 	
 	@Test
-	public void testGetIdentitiesByPowerSearch() {
+	public void getIdentitiesByPowerSearch() {
 		String suffix = UUID.randomUUID().toString();
 		Identity ident = JunitTestHelper.createAndPersistIdentityAsUser("anIdentity-" + suffix);
 		Identity uniIdent = getOrCreateTestIdentity("extremegroovy-" + suffix);
@@ -119,7 +120,25 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testGetIdentitiesByPowerSearch_institution() {
+	public void getIdentitiesByPowerSearch_byName() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("searchId-1");
+		String testLogin = identity.getName();
+		
+		// test using visibility search
+		List<Identity> userList = baseSecurityManager.getVisibleIdentitiesByPowerSearch(testLogin, null, true, null, null, null, null);
+		Assert.assertEquals(1, userList.size());
+		Assert.assertEquals(identity, userList.get(0));
+		Assert.assertEquals(identity.getName(), userList.get(0).getName());
+		
+		// test using powser search
+		userList = baseSecurityManager.getIdentitiesByPowerSearch(testLogin, null, true, null, null, null, null, null, null, null);
+		Assert.assertEquals(1, userList.size());
+		Assert.assertEquals(identity, userList.get(0));
+		Assert.assertEquals(identity.getName(), userList.get(0).getName());
+	}
+	
+	@Test
+	public void getIdentitiesByPowerSearch_institution() {
 		String suffix = UUID.randomUUID().toString();
 		Identity ident = JunitTestHelper.createAndPersistIdentityAsUser("anIdentity-" + suffix);
 		Identity uniIdent = getOrCreateTestIdentity("extremegroovy-" + suffix);
@@ -213,7 +232,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testGetIdentitiesByPowerSearch_groups() {
+	public void getIdentitiesByPowerSearch_groups() {
 		String suffix = UUID.randomUUID().toString();
 		Identity ident = JunitTestHelper.createAndPersistIdentityAsUser("anIdentity-" + suffix);
 		Identity ident2 = getOrCreateTestIdentity("extremegroovy-" + suffix);
@@ -267,7 +286,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testGetIdentitiesByPowerSearch_authProvider() {
+	public void getIdentitiesByPowerSearch_authProvider() {
 		String suffix = UUID.randomUUID().toString();
 		Identity ident = JunitTestHelper.createAndPersistIdentityAsUser("anIdentity-" + suffix);
 		Identity ident2 = getOrCreateTestIdentity("extremegroovy-" + suffix);
@@ -358,7 +377,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testGetIdentitiesByPowerSearch_authProviders() {
+	public void getIdentitiesByPowerSearch_authProviders() {
 		//authentication provider search		
 		String[] authProviderNone = { null };
 		String[] authProvidersAll = { BaseSecurityModule.getDefaultAuthProviderIdentifier(), "Shib", null };
@@ -436,12 +455,64 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		Assert.assertTrue(results.size() - prevProviderNoneCount == 3);
 	}
 	
+	@Test
+	public void getIdentitiesByPowerSearch_authProvidersVariant() {
+		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("search-id-3");
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("search-id-4");
+		String testLogin = test.getName();
+		dbInstance.commitAndCloseSession();
+		
+		
+		// 1) only auth providers and login
+		String[] authProviders = { BaseSecurityModule.getDefaultAuthProviderIdentifier() };
+		for (int i = 0; i < authProviders.length; i++) {
+			Assert.assertTrue("Provider name.length must be <= 8", authProviders[i].length() <= 8);
+		}
+		List<Identity> userList = baseSecurityManager.getVisibleIdentitiesByPowerSearch(testLogin, null, true, null, authProviders, null, null);
+		Assert.assertEquals(1,userList.size());
+		Identity identity =  userList.get(0);
+		Assert.assertEquals(testLogin,identity.getName());
+		String[] nonAuthProviders = {"NonAuth"};
+		for (int i = 0; i < nonAuthProviders.length; i++) {
+			assertTrue("Provider name.length must be <= 8", nonAuthProviders[i].length() <= 8);
+		}
+		userList = baseSecurityManager.getVisibleIdentitiesByPowerSearch(testLogin, null, true, null, nonAuthProviders, null, null);
+	  	Assert.assertEquals(0,userList.size());
+		
+		// 2) two fields wheras only one matches to one single user
+		Map<String, String> userProperties = new HashMap<>();
+		userProperties.put(UserConstants.FIRSTNAME, id1.getUser().getProperty(UserConstants.FIRSTNAME, null));
+		userProperties.put(UserConstants.LASTNAME, "some nonexisting value");
+		// with AND search (conjunction) no identity is found
+		userList = baseSecurityManager.getIdentitiesByPowerSearch(null, userProperties, true, null, authProviders, null, null, null, null, null);
+		Assert.assertEquals(0, userList.size());
+		// with OR search first identity ist found
+		userList = baseSecurityManager.getIdentitiesByPowerSearch(null, userProperties, false, null, authProviders, null, null, null, null, null);
+		Assert.assertEquals(1, userList.size());
+
+		// 3) two fields wheras only one matches to one single user
+		baseSecurityManager.createAndPersistAuthentication(id1, "mytest_p", id1.getName(), "sdf", Encoder.Algorithm.sha512);
+		String[] myProviders = new String[] {"mytest_p", "non-prov"};
+		for (int i = 0; i < myProviders.length; i++) {
+			Assert.assertTrue("Provider name.length must be <= 8", myProviders[i].length() <= 8);
+		}
+		userProperties = new HashMap<>();
+		userProperties.put(UserConstants.FIRSTNAME, id1.getUser().getProperty(UserConstants.FIRSTNAME, null));
+		userProperties.put(UserConstants.LASTNAME, "some nonexisting value");
+		// with AND search (conjunction) no identity is found
+		userList = baseSecurityManager.getIdentitiesByPowerSearch(null, userProperties, true, null, myProviders, null, null, null, null, null);
+		Assert.assertEquals(0, userList.size());
+		// with OR search identity is found via auth provider and via first name
+		userList = baseSecurityManager.getIdentitiesByPowerSearch(null, userProperties, false, null, myProviders, null, null, null, null, null);
+		Assert.assertEquals(1, userList.size());
+	}
+	
 	// Hint : Properties for testing with HSQL must be lowercaseHSQL DB does not 
 	//     mysql 'like' found results with upper and lowercase
 	//     HSQL  'like' found only results with lowercase
 	//     Our implementation of powersearch convert search-properties to lowercase ! 
 	@Test
-	public void testGetIdentitiesByPowerSearch_userPropertiesAndIntersectionOption() {
+	public void getIdentitiesByPowerSearch_userPropertiesAndIntersectionOption() {
 		// create two test users
 		String one = "one" + UUID.randomUUID().toString().replace("-", "");
 		String oneUsername = "onePropUser-" + UUID.randomUUID();
@@ -523,9 +594,34 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		results = baseSecurityManager.getIdentitiesByPowerSearch(null, userProperties, false, null, null, null, null, null, null, null);
 		Assert.assertEquals("Wrong search result 'empty userProperties and intersection=false'", numberOfAllUsers, results.size());
 	}
+	
+	@Test
+	public void getIdentitiesByPowerSearch_userProperties() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("search-id-1");
+		String testLogin = identity.getName(); 
+		dbInstance.commitAndCloseSession();
+		
+		Map<String, String> userProperties = new HashMap<>();
+		userProperties.put(UserConstants.FIRSTNAME, "first"+ testLogin);
+		userProperties.put(UserConstants.LASTNAME, "last"+ testLogin);
+		
+		// test using visibility search
+		List<Identity> userList = baseSecurityManager.getVisibleIdentitiesByPowerSearch(testLogin, userProperties, true, null, null, null, null);
+		Assert.assertEquals(1,userList.size());
+		Identity foundIdentity = userList.get(0);
+		Assert.assertEquals(identity, foundIdentity);
+		Assert.assertEquals("first" + testLogin, foundIdentity.getUser().getProperty(UserConstants.FIRSTNAME, null));
+		
+		// test using power search
+		userList = baseSecurityManager.getIdentitiesByPowerSearch(testLogin, userProperties, true, null, null, null, null, null, null, null);
+		Assert.assertEquals(1,userList.size());
+		foundIdentity = userList.get(0);
+		Assert.assertEquals(identity, foundIdentity);
+		Assert.assertEquals("first" + testLogin, foundIdentity.getUser().getProperty(UserConstants.FIRSTNAME, null));
+	}
 
 	@Test
-	public void testGetIdentitiesByPowerSearch_multipleUserProperties() {
+	public void getIdentitiesByPowerSearch_multipleUserProperties() {
 		String multi = "multi" + UUID.randomUUID().toString().replace("-", "");
 		String multiInst = "multiinst" + UUID.randomUUID().toString().replace("-", "");
 		String multiUsername = "multiPropUser-" + UUID.randomUUID();
@@ -587,7 +683,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testGetIdentitiesByPowerSearch_withDate() {
+	public void getIdentitiesByPowerSearch_withDate() {
 		Identity ident = JunitTestHelper.createAndPersistIdentityAsUser("anIdentity-" + UUID.randomUUID());
 		Date created = ident.getCreationDate();
 		Calendar cal = Calendar.getInstance();
@@ -646,6 +742,34 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		assertTrue(results.size() == 0);
 		results = baseSecurityManager.getVisibleIdentitiesByPowerSearch(null, null, true, null, null, null, before);
 		assertTrue(results.size() == 0);
+	}
+
+	@Test
+	public void getIdentitiesByPowerSearch_withConjunctionFlag() {
+		Identity s1 = JunitTestHelper.createAndPersistIdentityAsRndUser("search-id-1");
+		Identity s2 = JunitTestHelper.createAndPersistIdentityAsRndUser("search-id-2");
+	
+		// 1) two fields that match to two different users
+		Map<String, String> userProperties = new HashMap<>();
+		userProperties.put(UserConstants.FIRSTNAME, s1.getUser().getProperty(UserConstants.FIRSTNAME, null));
+		userProperties.put(UserConstants.LASTNAME, s2.getUser().getProperty(UserConstants.LASTNAME, null));
+		// with AND search (conjunction) no identity is found
+		List<Identity> userList = baseSecurityManager.getIdentitiesByPowerSearch(null, userProperties, true, null, null, null, null, null, null, null);
+		Assert.assertEquals(0, userList.size());
+		// with OR search both identities are found
+		userList = baseSecurityManager.getIdentitiesByPowerSearch(null, userProperties, false, null, null, null, null, null, null, null);
+		Assert.assertEquals(2, userList.size());
+
+		// 2) two fields wheras only one matches to one single user
+		userProperties = new HashMap<>();
+		userProperties.put(UserConstants.FIRSTNAME, s1.getUser().getProperty(UserConstants.FIRSTNAME, null));
+		userProperties.put(UserConstants.LASTNAME, "some nonexisting value");
+		// with AND search (conjunction) no identity is found
+		userList = baseSecurityManager.getIdentitiesByPowerSearch(null, userProperties, true, null, null, null, null, null, null, null);
+		Assert.assertEquals(0, userList.size());
+		// with OR search first identity ist found
+		userList = baseSecurityManager.getIdentitiesByPowerSearch(null, userProperties, false, null, null, null, null, null, null, null);
+		Assert.assertEquals(1, userList.size());
 	}
 
 	////////////////////

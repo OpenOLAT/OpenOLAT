@@ -110,7 +110,8 @@ public class FlexiTableFilter {
 		}
 		if(obj instanceof FlexiTableFilter) {
 			FlexiTableFilter other = (FlexiTableFilter) obj;
-			return filter != null && filter.equals(other.filter);
+			return showAll == other.showAll
+					&& ((filter == null && other.filter == null) || (filter != null && filter.equals(other.filter)));
 		}
 		return false;
 	}

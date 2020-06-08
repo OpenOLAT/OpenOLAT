@@ -24,7 +24,6 @@ import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.control.Event;
@@ -43,6 +42,7 @@ import org.olat.instantMessaging.model.BuddyStats;
 import org.olat.instantMessaging.model.RosterEntryImpl;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.olat.user.UserLifecycleManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -62,7 +62,7 @@ public class InstantMessageServiceTest extends OlatTestCase {
 	@Autowired
 	private InstantMessagingService imService;
 	@Autowired
-	private UserDeletionManager userDeletionManager;
+	private UserLifecycleManager userLifecycleManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
@@ -175,7 +175,7 @@ public class InstantMessageServiceTest extends OlatTestCase {
 		Assert.assertNotNull(message);
 
 		// delete the user
-		userDeletionManager.deleteIdentity(chatter1, null);
+		userLifecycleManager.deleteIdentity(chatter1, null);
 		dbInstance.commitAndCloseSession();
 		
 		// check preferences are deleted

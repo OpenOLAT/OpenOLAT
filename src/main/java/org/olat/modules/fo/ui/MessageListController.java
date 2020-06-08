@@ -649,6 +649,9 @@ public class MessageListController extends BasicController implements GenericEve
 			if (creator.getStatus().equals(Identity.STATUS_DELETED)) {
 				// keep link to show something, but disable
 				visitingCardLink.setEnabled(false);
+			} else if(creator.getStatus().equals(Identity.STATUS_INACTIVE)) {
+				visitingCardLink.setIconRightCSS("o_icon o_icon_identity_inactive");
+				visitingCardLink.setTitle("creator.inactive");
 			}
 		}
 

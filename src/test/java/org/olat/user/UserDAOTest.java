@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.junit.Test;
-import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
@@ -44,7 +43,7 @@ public class UserDAOTest extends OlatTestCase {
 	@Autowired
 	private UserManager userManager;
 	@Autowired
-	private UserDeletionManager userDeletionManager;
+	private UserLifecycleManager userLifecycleManager;
 	
 	@Autowired
 	private UserDAO sut;
@@ -179,7 +178,7 @@ public class UserDAOTest extends OlatTestCase {
 		User userWithoutEmailDeleted= identityWithoutEmailDeleted.getUser();
 		userWithoutEmailDeleted.setProperty(UserConstants.EMAIL, null);
 		userManager.updateUser(userWithoutEmailDeleted);
-		userDeletionManager.deleteIdentity(identityWithoutEmailDeleted, null);
+		userLifecycleManager.deleteIdentity(identityWithoutEmailDeleted, null);
 		
 		Identity identityWithoutEmail2 = JunitTestHelper.createAndPersistIdentityAsRndUser("userdao");
 		User userWithoutEmail2 = identityWithoutEmail2.getUser();
@@ -213,7 +212,7 @@ public class UserDAOTest extends OlatTestCase {
 		User userEmailDuplicateDeleted = identityEmailDuplicateDeleted.getUser();
 		userEmailDuplicateDeleted.setProperty(UserConstants.EMAIL, emailDuplicate);
 		userManager.updateUser(userEmailDuplicateDeleted);
-		userDeletionManager.deleteIdentity(identityEmailDuplicateDeleted, null);
+		userLifecycleManager.deleteIdentity(identityEmailDuplicateDeleted, null);
 
 		Identity identityEmailDuplicate3 = JunitTestHelper.createAndPersistIdentityAsRndUser("userdao");
 		User userEmailDuplicate3 = identityEmailDuplicate3.getUser();

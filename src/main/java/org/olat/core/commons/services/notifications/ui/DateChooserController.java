@@ -34,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -53,30 +54,24 @@ import org.olat.core.util.StringHelper;
  * 
  * @author gnaegi
  */
- 
 public class DateChooserController extends FormBasicController {
 	private DateChooser dateChooser;
 	private Date initDate;
 	private FormLink link;
 	
 	private SingleSelection typeSelection;
-	private String[] typeKeys;
-	private String[] typeValues;
+	private KeyValues typeKeys;
 
 	public DateChooserController(UserRequest ureq, WindowControl wControl, Date initDate) {
 		super(ureq, wControl);
 		this.initDate = initDate;
 		
-		typeKeys = new String[]{"all"};
-		typeValues = new String[]{translate("news.type.all")};
-		
+		typeKeys = new KeyValues();
+		typeKeys.add(KeyValues.entry("all", translate("news.type.all")));
+
 		initForm(ureq);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		dateChooser = uifactory.addDateChooser("news.since", null, formLayout);
@@ -84,16 +79,12 @@ public class DateChooserController extends FormBasicController {
 		dateChooser.setDate(initDate);
 		dateChooser.addActionListener(FormEvent.ONCHANGE);
 		
-		typeSelection = uifactory.addDropdownSingleselect("news.type", "news.type", formLayout, typeKeys, typeValues, null);
+		typeSelection = uifactory.addDropdownSingleselect("news.type", "news.type", formLayout, typeKeys.keys(), typeKeys.values(), null);
 		typeSelection.addActionListener(FormEvent.ONCHANGE);
 		typeSelection.select("all", true);
-		
-		//link = uifactory.addFormLink("news.since.link", formLayout);
+		typeSelection.setVisible(false);
 	}
-	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
+
 	@Override
 	protected void formOK(UserRequest ureq) {
 		// nothing to do here
@@ -109,11 +100,6 @@ public class DateChooserController extends FormBasicController {
 		return isInputValid;			
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formInnerEvent(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.form.flexible.FormItem,
-	 *      org.olat.core.gui.components.form.flexible.impl.FormEvent)
-	 */
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == link && !dateChooser.hasError()) {
@@ -127,8 +113,9 @@ public class DateChooserController extends FormBasicController {
 	}
 	
 	/**
-	 * Get the date that has been chosen 
-	 * @return
+	 * Get the date that has been chosen.
+	 *  
+	 * @return The selected date
 	 */
 	public Date getChoosenDate() {
 		return dateChooser.getDate();
@@ -139,7 +126,7 @@ public class DateChooserController extends FormBasicController {
 	}
 	
 	public String getType() {
-		if(typeSelection.isSelected(0) || !typeSelection.isOneSelected()) {
+		if(typeSelection.isSelected(0) || typeSelection.getKeys().length <= 1 || !typeSelection.isOneSelected()) {
 			return null;
 		}
 		return typeSelection.getSelectedKey();
@@ -147,7 +134,7 @@ public class DateChooserController extends FormBasicController {
 	
 	public void setType(String type) {
 		if(StringHelper.containsNonWhitespace(type)) {
-			for(String typeKey:typeKeys) {
+			for(String typeKey:typeKeys.keys()) {
 				if(type.equals(typeKey)) {
 					typeSelection.select(type, true);
 					break;
@@ -167,24 +154,19 @@ public class DateChooserController extends FormBasicController {
 			types.add(type);
 		}
 		
-		typeKeys = new String[types.size() + 1];
-		typeValues = new String[types.size() + 1];
-		
-		typeKeys[0] = "all";
-		typeValues[0] = translate("news.type.all");
-		
-		int count = 1;
+		typeKeys = new KeyValues();
+		typeKeys.add(KeyValues.entry("all", translate("news.type.all")));
+
 		for(String type:types) {
 			String typeName = NewControllerFactory.translateResourceableTypeName(type, getLocale());
-			typeKeys[count] = type;
-			typeValues[count++] = typeName;
+			typeKeys.add(KeyValues.entry(type, typeName));
 		}
 		
-		typeSelection.setKeysAndValues(typeKeys, typeValues, null);
+		typeSelection.setKeysAndValues(typeKeys.keys(), typeKeys.values(), null);
 		
 		if(selectedKey != null) {
 			//select the current key but check if it still exists
-			for(String typeKey:typeKeys) {
+			for(String typeKey:typeKeys.keys()) {
 				if(typeKey.equals(selectedKey)) {
 					typeSelection.select(selectedKey, true);
 					break;
@@ -195,14 +177,13 @@ public class DateChooserController extends FormBasicController {
 		if(!typeSelection.isOneSelected()) {
 			typeSelection.select("all", true);
 		}
+		if(typeKeys.size() == 1) {
+			typeSelection.setVisible(false);
+		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
 		// nothing to dispose
 	}
-
 }

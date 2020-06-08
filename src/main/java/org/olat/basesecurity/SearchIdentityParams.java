@@ -38,6 +38,7 @@ import org.olat.modules.curriculum.CurriculumRoles;
 public class SearchIdentityParams {
 	private String idAndExternalIds;
 	private String login;
+	private String searchString;
 	private Map<String, String> userProperties;
 	private boolean userPropertiesAsIntersectionSearch;
 	
@@ -162,6 +163,14 @@ public class SearchIdentityParams {
 		this.login = login;
 	}
 	
+	public String getSearchString() {
+		return searchString;
+	}
+
+	public void setSearchString(String searchString) {
+		this.searchString = searchString;
+	}
+
 	public boolean hasUserProperties() {
 		return userProperties != null && !userProperties.isEmpty();  
 	}

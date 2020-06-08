@@ -19,6 +19,9 @@
  */
 package org.olat.user.ui.admin;
 
+import java.util.Locale;
+
+import org.olat.admin.user.SystemRolesAndRightsController;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.render.Renderer;
@@ -26,6 +29,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.util.Util;
 
 /**
  * 
@@ -40,23 +44,33 @@ public class IdentityStatusCellRenderer implements FlexiCellRenderer {
 	public IdentityStatusCellRenderer(Translator translator) {
 		this.translator = translator;
 	}
+	
+	public IdentityStatusCellRenderer(Locale  locale) {
+		translator = Util.createPackageTranslator(SystemRolesAndRightsController.class, locale);
+	}
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator trans) {
 		if(Identity.STATUS_PERMANENT.equals(cellValue)) {
-			render(target, "o_icon_identity_permanent", "rightsForm.status.permanent");
+			render(renderer, target, "o_icon_identity_permanent", "rightsForm.status.permanent");
 		} else if(Identity.STATUS_LOGIN_DENIED.equals(cellValue)) {
-			render(target, "o_icon_identity_login_denied", "rightsForm.status.login_denied");
+			render(renderer, target, "o_icon_identity_login_denied", "rightsForm.status.login_denied");
 		} else if(Identity.STATUS_PENDING.equals(cellValue)) {
-			render(target, "o_icon_identity_pending", "rightsForm.status.pending");
+			render(renderer, target, "o_icon_identity_pending", "rightsForm.status.pending");
+		} else if(Identity.STATUS_INACTIVE.equals(cellValue)) {
+			render(renderer, target, "o_icon_identity_inactive", "rightsForm.status.inactive");
 		} else if(Identity.STATUS_DELETED.equals(cellValue)) {
-			render(target, "o_icon_identity_deleted", "rightsForm.status.deleted");
+			render(renderer, target, "o_icon_identity_deleted", "rightsForm.status.deleted");
 		}
 	}
 
-	private void render(StringOutput target, String icon, String tooltipKey) {
-		target.append("<span title='").append(translator.translate(tooltipKey))
-		      .append("'><i class='o_icon o_icon-fw ").append(icon).append("'> </i></span>");
+	private void render(Renderer renderer, StringOutput target, String icon, String tooltipKey) {
+		if(renderer == null) {
+			target.append(translator.translate(tooltipKey));
+		} else {
+			target.append("<span title='").append(translator.translate(tooltipKey))
+			      .append("'><i class='o_icon o_icon-fw ").append(icon).append("'> </i></span>");
+		}
 	}
 }

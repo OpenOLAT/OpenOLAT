@@ -19,9 +19,11 @@
  */
 package org.olat.basesecurity.manager;
 
+import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityImpl;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
@@ -58,5 +60,19 @@ public class IdentityDAO {
 		}
 		return identities.get(0);
 	}
+	
+	public void setIdentityLastLogin(IdentityRef identity, Date lastLogin) {
+		dbInstance.getCurrentEntityManager()
+				.createNamedQuery("updateIdentityLastLogin")
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("now", lastLogin)
+				.executeUpdate();
+	}
+	
+	public Identity saveIdentity(Identity identity) {
+		return dbInstance.getCurrentEntityManager().merge(identity);
+	}
+	
+	
 
 }

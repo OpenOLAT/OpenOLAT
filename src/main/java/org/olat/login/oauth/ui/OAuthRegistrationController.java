@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurity;
@@ -88,8 +87,6 @@ public class OAuthRegistrationController extends FormBasicController {
 	private BaseSecurity securityManager;
 	@Autowired
 	private OLATAuthManager olatAuthManager;
-	@Autowired
-	private UserDeletionManager userDeletionManager;
 	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
@@ -254,7 +251,7 @@ public class OAuthRegistrationController extends FormBasicController {
 		int loginStatus = AuthHelper.doLogin(authIdentity, registration.getAuthProvider(), ureq);
 		if (loginStatus == AuthHelper.LOGIN_OK) {
 			//update last login date and register active user
-			userDeletionManager.setIdentityAsActiv(authIdentity);
+			securityManager.setIdentityLastLogin(authIdentity);
 		} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE){
 			DispatcherModule.redirectToServiceNotAvailable( ureq.getHttpResp() );
 		} else {

@@ -38,20 +38,23 @@ public class IdentityPropertiesRow extends UserPropertiesRow {
 	private final Integer status;
 	private final Date lastLogin;
 	private final Date creationDate;
+	private final Date inactivationDate;
 	
 	public IdentityPropertiesRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(identity, userPropertyHandlers, locale);
 		status = identity.getStatus();
 		lastLogin = identity.getLastLogin();
 		creationDate = identity.getCreationDate();
+		inactivationDate = identity.getInactivationDate();
 	}
 	
 	public IdentityPropertiesRow(Long identityKey, String identityName, Date creationDate, Date lastLogin, Integer status,
-			List<UserPropertyHandler> userPropertyHandlers, String[] identityProps, Locale locale) {
+			Date inactivationDate, List<UserPropertyHandler> userPropertyHandlers, String[] identityProps, Locale locale) {
 		super(identityKey, identityName, userPropertyHandlers, identityProps, locale);
 		this.status = status;
 		this.creationDate = creationDate;
 		this.lastLogin = lastLogin;	
+		this.inactivationDate = inactivationDate;
 	}
 	
 	public Integer getStatus() {
@@ -64,5 +67,9 @@ public class IdentityPropertiesRow extends UserPropertiesRow {
 
 	public Date getLastLogin() {
 		return lastLogin;
+	}
+	
+	public Date getInactivationDate() {
+		return inactivationDate;
 	}
 }

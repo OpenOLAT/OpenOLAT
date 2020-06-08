@@ -23,15 +23,21 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.webdav.manager.WebDAVAuthManager;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
@@ -675,6 +681,132 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Assert.assertNull(securityManager.findAuthenticationByAuthusername(email, "OLAT"));
 		Assert.assertNotNull(securityManager.findAuthenticationByAuthusername(identity.getName(), "OLAT"));
 		Assert.assertNotNull(securityManager.findAuthenticationByAuthusername(email, "del-mail"));
+	}
+	
+	@Test
+	public void getAuthentications() {
+		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("auth-0");
+		String testLogin = test.getName();
+		dbInstance.commitAndCloseSession();
+		
+		List<Authentication> authentications = securityManager.getAuthentications(test);
+		Authentication authentication = authentications.get(0);
+		Assert.assertEquals(testLogin, authentication.getAuthusername());
+	}
+
+	@Test
+	public void findAuthenticationByAuthusername() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("auth-0");
+		String testLogin = id.getName();
+		
+		
+		Authentication authentication = securityManager.findAuthenticationByAuthusername(testLogin, BaseSecurityModule.getDefaultAuthProviderIdentifier());
+		Assert.assertEquals(testLogin, authentication.getAuthusername());
+	}
+	
+	@Test
+	public void findAuthenticationByAuthusername_attack() {
+		String testLoginHacked = "*est-logi*";
+		Authentication authentication1 = securityManager.findAuthenticationByAuthusername(testLoginHacked, BaseSecurityModule.getDefaultAuthProviderIdentifier());
+		Assert.assertNull(authentication1);
+		
+		String testLoginHacked2 = "$est-login";
+		Authentication authentication2 = securityManager.findAuthenticationByAuthusername(testLoginHacked2, BaseSecurityModule.getDefaultAuthProviderIdentifier());
+		Assert.assertNull(authentication2);	
+	}
+
+	@Test
+	public void updateLastLogin() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("last-login-0");
+		dbInstance.commitAndCloseSession();
+		
+		securityManager.setIdentityLastLogin(id);
+		dbInstance.commitAndCloseSession();
+
+		id = securityManager.loadIdentityByKey(id.getKey());
+		Date lastLogin = id.getLastLogin();
+		Assert.assertNotNull(lastLogin);
+	}
+
+	@Test
+	public void countUniqueUserLoginsSince() {
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.DAY_OF_YEAR, -100);
+		Long initialUserLogins = securityManager.countUniqueUserLoginsSince(cal.getTime());
+		Assert.assertNotNull(initialUserLogins);
+		Assert.assertTrue(initialUserLogins.longValue() >= 0);
+	}
+
+
+	@Test
+	public void setIdentityAsActiv() throws InterruptedException {
+		Identity ident = JunitTestHelper.createAndPersistIdentityAsUser("anIdentity");
+		
+		final int maxLoop = 2000; // => 2000 x 11ms => 22sec => finished in 120sec
+
+		CountDownLatch latch = new CountDownLatch(4);
+		ActivThread[] threads = new ActivThread[4];
+		for(int i=0; i<threads.length;i++) {
+			threads[i] = new ActivThread(ident, maxLoop, latch);
+		}
+
+		for(int i=0; i<threads.length;i++) {
+			threads[i].start();
+		}
+
+		latch.await(120, TimeUnit.SECONDS);
+
+		List<Exception> exceptionsHolder = new ArrayList<>();
+		for(int i=0; i<threads.length;i++) {
+			exceptionsHolder.addAll(threads[i].exceptionHolder);
+		}
+		
+		// if not -> they are in deadlock and the db did not detect it
+		for (Exception exception : exceptionsHolder) {
+			System.err.println("exception: "+exception.getMessage());
+			exception.printStackTrace();
+		}
+		assertTrue("Exceptions #" + exceptionsHolder.size(), exceptionsHolder.isEmpty());				
+	}
+	
+	private static class ActivThread extends Thread {
+		
+		private final int maxLoop;
+		private final Identity identity;
+		private final CountDownLatch countDown;
+		private final List<Exception> exceptionHolder = new ArrayList<>();
+		private final BaseSecurity securityManager;
+		
+		public ActivThread(Identity identity, int maxLoop, CountDownLatch countDown) {
+			this.identity = identity;
+			this.maxLoop = maxLoop;
+			this.countDown = countDown;
+			securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
+		}
+		
+		@Override
+		public void run() {
+			try {
+				sleep(10);
+				for (int i=0; i<maxLoop; i++) {
+					try {
+						securityManager.setIdentityLastLogin(identity);
+					} catch (Exception e) {
+						exceptionHolder.add(e);
+					} finally {
+						try {
+							DBFactory.getInstance().closeSession();
+						} catch (Exception e) {
+							// ignore
+						}
+					}
+				}
+			} catch (Exception e) {
+				exceptionHolder.add(e);
+			} finally {
+				countDown.countDown();
+			}
+		}
 	}
 	
 }

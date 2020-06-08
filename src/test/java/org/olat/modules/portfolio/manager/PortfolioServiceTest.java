@@ -26,7 +26,6 @@ import java.util.Locale;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.commentAndRating.manager.UserCommentsDAO;
@@ -57,6 +56,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.olat.user.UserLifecycleManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
@@ -85,7 +85,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
-	private UserDeletionManager userDeletionManager;
+	private UserLifecycleManager userLifecycleManager;
 	@Autowired
 	private OrganisationService organisationService;
 	
@@ -1181,7 +1181,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// delete the user
-		userDeletionManager.deleteIdentity(owner, null);
+		userLifecycleManager.deleteIdentity(owner, null);
 		
 		// the template is a learn ressource and will not be deleted
 		Binder reloadedtemplateBinder = portfolioService.getBinderByKey(templateBinder.getKey());

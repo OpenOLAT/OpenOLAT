@@ -38,6 +38,8 @@ import org.olat.instantMessaging.model.Presence;
  */
 public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> implements SortableFlexiTableDataModel<MemberRow> {
 	
+	private static final Cols[] COLS = Cols.values();
+	
 	private final boolean onlineStatusEnabled;
 	private Map<Long,CurriculumMemberInfos> curriculumInfos;
 	
@@ -62,37 +64,15 @@ public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> 
 
 	@Override
 	public Object getValueAt(MemberRow row, int col) {
-		if(col >= 0 && col < Cols.values().length) {
-			switch(Cols.values()[col]) {
+		if(col >= 0 && col < COLS.length) {
+			switch(COLS[col]) {
 				case username: return row.getView().getIdentityName();
+				case identityStatus: return row.getView().getIdentityStatus();
 				case firstTime: return row.getFirstTime();
 				case lastTime: return row.getLastTime();
 				case role: return row.getMembership();
 				case groups: return row;
-				case online: {
-					FormLink chatLink = row.getChatLink();
-					if(chatLink != null) {
-						String onlineStatus = row.getOnlineStatus();
-						if ("me".equals(onlineStatus)) {
-							//no icon
-						} else if (!onlineStatusEnabled) {
-							// don't show the users status when not configured, only an icon to start a chat/message
-							chatLink.setIconLeftCSS("o_icon o_icon_status_chat");
-						}
-						// standard case: available or unavailable (offline or dnd)
-						else if(Presence.available.name().equals(onlineStatus)) {
-							chatLink.setIconLeftCSS("o_icon o_icon_status_available");
-						} else if(Presence.dnd.name().equals(onlineStatus)) {
-							chatLink.setIconLeftCSS("o_icon o_icon_status_dnd");
-						} else {
-							chatLink.setIconLeftCSS("o_icon o_icon_status_unavailable");
-						}
-						if(chatLink.getComponent() != null) {
-							chatLink.getComponent().setDirty(false);
-						}
-					}
-					return chatLink;
-				}
+				case online: return getChatLink(row);
 				case curriculumDisplayName: {
 					CurriculumElementInfos curriculumElementInfos = getCurriculumElementInfos(row);
 					return curriculumElementInfos == null ? null : curriculumElementInfos.getCurriculumDisplayName();
@@ -112,6 +92,31 @@ public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> 
 		
 		int propPos = col - AbstractMemberListController.USER_PROPS_OFFSET;
 		return row.getView().getIdentityProp(propPos);
+	}
+	
+	private FormLink getChatLink(MemberRow row) {
+		FormLink chatLink = row.getChatLink();
+		if(chatLink != null) {
+			String onlineStatus = row.getOnlineStatus();
+			if ("me".equals(onlineStatus)) {
+				//no icon
+			} else if (!onlineStatusEnabled) {
+				// don't show the users status when not configured, only an icon to start a chat/message
+				chatLink.setIconLeftCSS("o_icon o_icon_status_chat");
+			}
+			// standard case: available or unavailable (offline or dnd)
+			else if(Presence.available.name().equals(onlineStatus)) {
+				chatLink.setIconLeftCSS("o_icon o_icon_status_available");
+			} else if(Presence.dnd.name().equals(onlineStatus)) {
+				chatLink.setIconLeftCSS("o_icon o_icon_status_dnd");
+			} else {
+				chatLink.setIconLeftCSS("o_icon o_icon_status_unavailable");
+			}
+			if(chatLink.getComponent() != null) {
+				chatLink.getComponent().setDirty(false);
+			}
+		}
+		return chatLink;
 	}
 	
 	private CurriculumElementInfos getCurriculumElementInfos(MemberRow row) {
@@ -143,7 +148,8 @@ public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> 
 		tools("tools"),
 		curriculumDisplayName("table.header.curriculum"),
 		rootCurriculumElementIdentifier("table.header.curriculum.root.identifier"),
-		rootCurriculumElementDisplayName("table.header.curriculum.root.displayname");
+		rootCurriculumElementDisplayName("table.header.curriculum.root.displayname"),
+		identityStatus("table.header.identity.status");
 		
 		private final String i18n;
 		

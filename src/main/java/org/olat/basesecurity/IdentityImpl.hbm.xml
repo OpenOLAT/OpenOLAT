@@ -20,13 +20,16 @@
  	<property  name="externalId" column="external_id" type="string" />
     <property name="name" column="name" type="string" unique="true" not-null="true" />
     <property name="status" column="status" type="integer" />
+    
     <property name="deletedDate" column="deleteddate" type="timestamp" />
     <property name="deletedRoles" column="deletedroles" type="string" />
-    	<property name="deletedBy" column="deletedby" type="string" />
-
-    <one-to-one name="user" property-ref="identity" class="org.olat.user.UserImpl" cascade="persist"/>
+    <property name="deletedBy" column="deletedby" type="string" />
+    <property name="deletionEmailDate" column="deletionemaildate" type="timestamp" />
     
-
+    <property name="inactivationDate" column="inactivationdate" type="timestamp" />
+    <property name="inactivationEmailDate" column="inactivationemaildate" type="timestamp" />
+    
+    <one-to-one name="user" property-ref="identity" class="org.olat.user.UserImpl" cascade="persist"/>
   </class>
 
 </hibernate-mapping>

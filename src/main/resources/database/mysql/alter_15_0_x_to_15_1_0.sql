@@ -1,3 +1,8 @@
+-- Inactive user
+alter table o_bs_identity add column inactivationdate datetime;
+alter table o_bs_identity add column inactivationemaildate datetime;
+alter table o_bs_identity add column deletionemaildate datetime;
+
 
 -- Appointments
 create table o_ap_topic (

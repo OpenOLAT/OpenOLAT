@@ -27,7 +27,7 @@ package org.olat.login.auth;
 
 import java.util.Locale;
 
-import org.olat.admin.user.delete.service.UserDeletionManager;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -43,7 +43,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public abstract class AuthenticationController extends BasicController {
 	
 	@Autowired
-	protected UserDeletionManager userDeletionManager;
+	protected BaseSecurity securityManager;
 	
 
 	public AuthenticationController(UserRequest ureq, WindowControl wControl) {
@@ -60,7 +60,7 @@ public abstract class AuthenticationController extends BasicController {
 	 * @param identity
 	 */
 	public void authenticated(UserRequest ureq, Identity identity) {
-		identity = userDeletionManager.setIdentityAsActiv(identity);
+		securityManager.setIdentityLastLogin(identity);
 		fireEvent(ureq, new AuthenticationEvent(identity));
 	}
 	

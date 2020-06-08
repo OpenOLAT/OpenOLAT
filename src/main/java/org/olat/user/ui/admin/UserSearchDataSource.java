@@ -19,6 +19,7 @@
  */
 package org.olat.user.ui.admin;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -32,6 +33,7 @@ import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
+import org.olat.core.util.StringHelper;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -46,12 +48,14 @@ public class UserSearchDataSource implements FlexiTableDataSourceDelegate<Identi
 	private final IdentityPowerSearchQueries searchQuery;
 
 	private final Locale locale;
+	private final List<Integer> preselectedStatusList;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	public UserSearchDataSource(SearchIdentityParams searchParams, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		this.locale = locale;
 		this.searchParams = searchParams;
 		this.userPropertyHandlers = userPropertyHandlers;
+		preselectedStatusList = searchParams.getExactStatusList();
 		searchQuery = CoreSpringFactory.getImpl(IdentityPowerSearchQueries.class);
 	}
 
@@ -72,8 +76,32 @@ public class UserSearchDataSource implements FlexiTableDataSourceDelegate<Identi
 		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
 			sortKey = orderBy[0];
 		}
+		
+		if(StringHelper.containsNonWhitespace(query)) {
+			searchParams.setSearchString(query);
+		} else {
+			searchParams.setSearchString(null);
+		}
+		
+		List<Integer> exactStatusList = getStatusFromFilter(filters);
+		if(exactStatusList.isEmpty()) {
+			searchParams.setExactStatusList(preselectedStatusList);
+		} else {
+			searchParams.setExactStatusList(exactStatusList);
+		}
+		
 		List<IdentityPropertiesRow> rows = searchQuery
 				.getIdentitiesByPowerSearch(searchParams, userPropertyHandlers, locale, sortKey, firstResult, maxResults);
 		return new DefaultResultInfos<>(firstResult + rows.size(), -1, rows);
+	}
+	
+	private List<Integer> getStatusFromFilter(List<FlexiTableFilter> filters) {
+		List<Integer> statusList = new ArrayList<>();
+		for(FlexiTableFilter filter:filters) {
+			if(!filter.isShowAll() && StringHelper.isLong(filter.getFilter())) {
+				statusList.add(Integer.parseInt(filter.getFilter()));
+			}	
+		}
+		return statusList;
 	}
 }

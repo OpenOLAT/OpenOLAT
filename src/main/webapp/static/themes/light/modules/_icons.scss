@@ -622,6 +622,7 @@ $fa-css-prefix: "o_icon" !default;
 /* user */
 .o_icon_identity_permanent:before { content: $fa-var-lock; }
 .o_icon_identity_pending:before { content: $fa-var-clock-o; }
+.o_icon_identity_inactive:before { content: $fa-var-pause-circle-o; }
 .o_icon_identity_login_denied:before { content: $fa-var-ban; }
 .o_icon_identity_deleted:before { content: $fa-var-trash; }
 

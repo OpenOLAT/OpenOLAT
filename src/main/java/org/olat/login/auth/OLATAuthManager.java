@@ -156,7 +156,7 @@ public class OLATAuthManager implements AuthenticationSPI {
 				authentication = securityManager.updateCredentials(authentication, password, defAlgorithm);
 			}
 			Identity identity = authentication.getIdentity();
-			if(!securityManager.isIdentityVisible(identity)) {
+			if(!securityManager.isIdentityLoginAllowed(identity)) {
 				return null;
 			}
 			if(identity != null && webDAVAuthManager != null) {

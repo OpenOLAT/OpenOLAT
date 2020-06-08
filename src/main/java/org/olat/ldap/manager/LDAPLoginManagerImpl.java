@@ -49,7 +49,7 @@ import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.olat.admin.user.delete.service.UserDeletionManager;
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -70,7 +70,6 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.RolesByOrganisation;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WorkThreadInformations;
@@ -95,6 +94,7 @@ import org.olat.ldap.model.LDAPGroup;
 import org.olat.ldap.model.LDAPUser;
 import org.olat.ldap.ui.LDAPAuthenticationController;
 import org.olat.login.auth.OLATAuthManager;
+import org.olat.user.UserLifecycleManager;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -136,7 +136,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 	@Autowired
 	private LDAPSyncConfiguration syncConfiguration;
 	@Autowired
-	private UserDeletionManager userDeletionManager;
+	private UserLifecycleManager userLifecycleManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
@@ -443,7 +443,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 				continue;
 			}
 			
-			userDeletionManager.deleteIdentity(identity, doer);
+			userLifecycleManager.deleteIdentity(identity, doer);
 		}
 	}
 

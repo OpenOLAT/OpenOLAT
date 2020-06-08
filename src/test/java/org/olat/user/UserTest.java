@@ -42,7 +42,6 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -75,7 +74,7 @@ public class UserTest extends OlatTestCase {
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
-	private UserDeletionManager userDeletionManager;
+	private UserLifecycleManager userLifecycleManager;
 
 	/**
 	 * @see junit.framework.TestCase#setUp()
@@ -355,7 +354,7 @@ public class UserTest extends OlatTestCase {
 		result = securityManager.getIdentitiesByPowerSearch(null, searchValue, false, null, null, null, null, null, null, null);
 		assertEquals(1, result.size());
 		// delete user now
-		userDeletionManager.deleteIdentity(identity, null);
+		userLifecycleManager.deleteIdentity(identity, null);
 		dbInstance.commitAndCloseSession();
 		
 		// check if deleted successfully

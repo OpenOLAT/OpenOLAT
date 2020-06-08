@@ -73,7 +73,7 @@ public class DeleteUserDataTask implements LowPriorityRunnable {
 		long startTime = System.currentTimeMillis();
 		Identity identity = CoreSpringFactory.getImpl(BaseSecurity.class).loadIdentityByKey(identityKey);
 		deleteAllCoursesUserFilesOf(identity);
-		log.info("Finished UserFileDeletionManager thread for identity=" + identity + " in " + (System.currentTimeMillis() - startTime) + " (ms)");
+		log.info("Finished UserFileDeletionManager thread for identity={} in {} (ms)", identity, (System.currentTimeMillis() - startTime));
 	}
 
 	/**
@@ -113,7 +113,7 @@ public class DeleteUserDataTask implements LowPriorityRunnable {
 				File userDir = new File(nodeDir, identity.getKey().toString());
 				if(userDir.exists()) {
 					FileUtils.deleteDirsAndFiles(userDir, true, true); 
-					log.info(Tracing.M_AUDIT, "User-Deletion: identity=" + identity.getKey() +" : User file data deleted under dir=" + userDir.getAbsolutePath());
+					log.info(Tracing.M_AUDIT, "User-Deletion: identity={} : User file data deleted under dir={}", identity.getKey(), userDir.getAbsolutePath());
 				}
 			}
 		}
@@ -134,7 +134,7 @@ public class DeleteUserDataTask implements LowPriorityRunnable {
 					File userDir = new File(box, "person_" + identity.getKey());
 					if(userDir.exists()) {
 						FileUtils.deleteDirsAndFiles(userDir, true, true); 
-						log.info(Tracing.M_AUDIT, "User-Deletion: identity=" + identity.getKey() +" : User file data deleted under dir=" + userDir.getAbsolutePath());
+						log.info(Tracing.M_AUDIT, "User-Deletion: identity={} : User file data deleted under dir={}", identity.getKey(), userDir.getAbsolutePath());
 					}
 				}
 			}
@@ -149,7 +149,7 @@ public class DeleteUserDataTask implements LowPriorityRunnable {
 				File userDir = new File(nodeDir, "person_" + identity.getKey());
 				if(userDir.exists()) {
 					FileUtils.deleteDirsAndFiles(userDir, true, true); 
-					log.info(Tracing.M_AUDIT, "User-Deletion: identity=" + identity.getKey() +" : User file data deleted under dir=" + userDir.getAbsolutePath());
+					log.info(Tracing.M_AUDIT, "User-Deletion: identity={} : User file data deleted under dir={}", identity.getKey(), userDir.getAbsolutePath());
 				}
 			}
 		}
@@ -183,7 +183,7 @@ public class DeleteUserDataTask implements LowPriorityRunnable {
 							deleteUserDirectory(identity, projectDir);
 						}
 					} else {
-						log.warn("found dropbox or returnbox and node-type is NO Task- or ProjectBroker-Type courseId=" + courseDir.getName() + " nodeId=" + currentNodeId);
+						log.warn("found dropbox or returnbox and node-type is NO Task- or ProjectBroker-Type courseId={} nodeId={}", courseDir.getName(), currentNodeId);
 					}
 				}
 			}
@@ -198,7 +198,7 @@ public class DeleteUserDataTask implements LowPriorityRunnable {
 			if(resource != null) {
 				return CourseFactory.loadCourse(resId);
 			} else {
-				log.warn("course with resid=" + courseDir.getName() + " has a folder but no resource/repository entry");
+				log.warn("course with resid={} has a folder but no resource/repository entry", courseDir.getName());
 			}
 		} catch (Exception e) {
 			log.error("could not load course with resid=" + courseDir.getName(), e);
@@ -220,7 +220,7 @@ public class DeleteUserDataTask implements LowPriorityRunnable {
 		if (userDir.exists()) {
 			// ok found a directory of a user => delete it
 			FileUtils.deleteDirsAndFiles(userDir, true, true); 
-			log.info(Tracing.M_AUDIT, "User-Deletion: identity=" + identity.getKey() +" : User file data deleted under dir=" + userDir.getAbsolutePath());
+			log.info(Tracing.M_AUDIT, "User-Deletion: identity={} : User file data deleted under dir={}", identity.getKey(), userDir.getAbsolutePath());
 		}
 	}
 	

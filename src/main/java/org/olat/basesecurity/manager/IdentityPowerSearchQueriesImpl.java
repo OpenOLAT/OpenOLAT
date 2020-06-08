@@ -39,6 +39,7 @@ import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.basesecurity.model.IdentityPropertiesRow;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
@@ -96,7 +97,8 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		  .append(" ident.name as ident_name,")
 		  .append(" ident.creationDate as ident_cDate,")
 		  .append(" ident.lastLogin as ident_lDate,")
-		  .append(" ident.status as ident_Status,");
+		  .append(" ident.status as ident_Status,")
+		  .append(" ident.inactivationDate as ident_iDate,");
 		writeUserProperties("user", sb, userPropertyHandlers);
 		sb.append(" user.key as ident_user_id")
 		  .append(" from ").append(IdentityImpl.class.getCanonicalName()).append(" as ident ")
@@ -120,13 +122,15 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			Date creationDate = (Date)rawObject[pos++];
 			Date lastLogin = (Date)rawObject[pos++];
 			Integer status = (Integer)rawObject[pos++];
+			Date inactivationDate = (Date)rawObject[pos++];
 
 			String[] userProperties = new String[numOfProperties];
 			for(int i=0; i<numOfProperties; i++) {
 				userProperties[i] = (String)rawObject[pos++];
 			}
 
-			rows.add(new IdentityPropertiesRow(identityKey, identityName, creationDate, lastLogin, status, userPropertyHandlers, userProperties, locale));
+			rows.add(new IdentityPropertiesRow(identityKey, identityName, creationDate, lastLogin, status, inactivationDate,
+					userPropertyHandlers, userProperties, locale));
 		}
 		return rows;
 	}
@@ -142,6 +146,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		if (hasWhereClause(params)) {
 			sb.append(" where ");
 			boolean needsAnd = createUserPropertiesQueryPart(params, sb);
+			needsAnd = createSearchStringQueryPart(params, sb, needsAnd);
 			needsAnd = createQueryPart(params, sb, needsAnd);
 			needsAnd = createAuthenticationProviderQueryPart(params, sb, needsAnd);
 			createDatesQueryPart(params, sb, needsAnd);
@@ -158,7 +163,8 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 	}
 	
 	private boolean hasWhereClause(SearchIdentityParams params) {
-		return params.getLogin() != null || params.hasUserProperties() || params.hasIdentityKeys()
+		return params.getLogin() != null || params.getSearchString() != null
+				|| params.hasUserProperties() || params.hasIdentityKeys()
 				|| params.getCreatedAfter() != null	|| params.getCreatedBefore() != null
 				|| params.getUserLoginAfter() != null || params.getUserLoginBefore() != null
 				|| params.hasAuthProviders() || params.getManaged() != null
@@ -340,6 +346,22 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		return needsAnd;
 	}
 	
+	public boolean createSearchStringQueryPart(SearchIdentityParams params, QueryBuilder sb, boolean needsAnd) {
+		if(params.getSearchString() == null) return needsAnd;
+
+		sb.append(" and ", needsAnd)
+		  .append("(");
+		PersistenceHelper.appendFuzzyLike(sb, "user.firstName", "searchString", dbInstance.getDbVendor());
+		sb.append(" or ");
+		PersistenceHelper.appendFuzzyLike(sb, "user.lastName", "searchString", dbInstance.getDbVendor());
+		sb.append(" or ");
+		PersistenceHelper.appendFuzzyLike(sb, "user.email", "searchString", dbInstance.getDbVendor());
+		sb.append(" or ");
+		PersistenceHelper.appendFuzzyLike(sb, "ident.name", "searchString", dbInstance.getDbVendor());
+		sb.append(" )");
+		return true;
+	}
+	
 	public boolean createUserPropertiesQueryPart(SearchIdentityParams params, QueryBuilder sb) {	
 		boolean needsAnd = false;
 		boolean needsUserPropertiesJoin = false;
@@ -463,6 +485,9 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			case "lastLogin":
 				sb.append(" order by ident.lastLogin ").append(orderBy.isAsc() ? "asc" : "desc");
 				break;
+			case "inactivationDate":
+				sb.append(" order by ident.inactivationDate ").append(orderBy.isAsc() ? "asc" : "desc").append(" nulls last");
+				break;
 			case "name":
 			case "username":
 				sb.append(" order by lower(ident.name) ").append(orderBy.isAsc() ? "asc" : "desc");
@@ -481,6 +506,11 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		if (params.getLogin() != null) {
 			String login = makeFuzzyQueryString(params.getLogin());
 			dbq.setParameter("login", login.toLowerCase());
+		}
+		
+		if (params.getSearchString() != null) {
+			String searchString = makeFuzzyQueryString(params.getSearchString());
+			dbq.setParameter("searchString", searchString.toLowerCase());
 		}
 		
 		if(params.getIdentityKeys() != null && !params.getIdentityKeys().isEmpty()) {

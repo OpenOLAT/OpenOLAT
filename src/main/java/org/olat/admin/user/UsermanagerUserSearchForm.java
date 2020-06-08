@@ -135,11 +135,13 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 				Integer.toString(Identity.STATUS_ACTIV),
 				Integer.toString(Identity.STATUS_PERMANENT),
 				Integer.toString(Identity.STATUS_PENDING),
+				Integer.toString(Identity.STATUS_INACTIVE),
 				Integer.toString(Identity.STATUS_LOGIN_DENIED)
 		};
 		statusValues = new String[] {
 				translate("rightsForm.status.activ"),
 				translate("rightsForm.status.permanent"),
+				translate("rightsForm.status.inactive"),
 				translate("rightsForm.status.pending"),
 				translate("rightsForm.status.login_denied")
 		};
@@ -416,6 +418,7 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 		status.select(statusKeys[1], true);	
 		status.select(statusKeys[2], true);	
 		status.select(statusKeys[3], true);	
+		status.select(statusKeys[4], true);	
 		
 		extraSearch = uifactory.addCheckboxesVertical("extra.search", null, formLayout, extraSearchKeys, extraSearchValues, 2);
 

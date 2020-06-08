@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.olat.admin.user.ExtendedIdentitiesTableDataModel;
 import org.olat.admin.user.UsermanagerUserSearchController;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.OrganisationRoles;
@@ -52,6 +51,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.olat.user.ui.admin.UserSearchTableController;
 import org.olat.user.ui.admin.bulk.move.OverviewMoveTableModel.MoveUserCols;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -63,10 +63,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class OverviewMoveController extends StepFormBasicController {
 
-	private static final String USER_PROPS_ID = ExtendedIdentitiesTableDataModel.class.getCanonicalName();// reuse it
+	private static final String USER_PROPS_ID = UserSearchTableController.USER_PROPS_ID;// reuse it
 	protected static final int USER_PROPS_OFFSET = 500;
 	
-	private FlexiTableElement tableEl;
 	private OverviewMoveTableModel tableModel;
 	
 	private final UserBulkMove userBulkMove;
@@ -119,7 +118,7 @@ public class OverviewMoveController extends StepFormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MoveUserCols.role));
 		
 		tableModel = new OverviewMoveTableModel(columnsModel);
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
+		FlexiTableElement tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setEmtpyTableMessageKey("error.no.user.found");
 		tableEl.setAndLoadPersistedPreferences(ureq, "overview_user_search_table");

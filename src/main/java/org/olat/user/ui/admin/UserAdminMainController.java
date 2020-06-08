@@ -32,13 +32,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.admin.user.DeletedUsersController;
-import org.olat.admin.user.NewUsersNotificationsController;
 import org.olat.admin.user.UserAdminController;
 import org.olat.admin.user.UserCreateController;
 import org.olat.admin.user.UsermanagerUserSearchController;
-import org.olat.admin.user.delete.DirectDeleteController;
-import org.olat.admin.user.delete.TabbedPaneController;
 import org.olat.admin.user.imp.UserImportController;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
@@ -91,6 +87,9 @@ import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.quality.QualityModule;
 import org.olat.user.UserManager;
+import org.olat.user.ui.admin.lifecycle.DeletedUsersController;
+import org.olat.user.ui.admin.lifecycle.NewUsersNotificationsController;
+import org.olat.user.ui.admin.lifecycle.UserLifecycleOverviewController;
 import org.olat.user.ui.role.RelationRolesAndRightsUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -112,14 +111,14 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	
 	private Link createLink;
 	private Link importLink;
-	private Link deleteLink;
-	private Link deleteDirectLink;
+	private Link userLifecycleLink;
 	private MenuTree menuTree;
 	private TooledStackedPanel content;
 	
 	private Controller contentCtr;
 	private UserAdminController editCtrl;
 	private UserCreateController createCtrl;
+	private UserImportController importCtrl;
 	private LayoutMain3ColsController columnLayoutCtr;
 
 	private final Roles identityRoles;
@@ -196,13 +195,9 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		}
 
 		if (identityRoles.isAdministrator() || ((identityRoles.isUserManager() || identityRoles.isRolesManager()) && BaseSecurityModule.USERMANAGER_CAN_DELETE_USER.booleanValue())) {
-			deleteLink = LinkFactory.createToolLink("userdelete", translate("menu.userdelete"), this, "o_icon_delete");
-			deleteLink.setElementCssClass("o_sel_useradmin_delete");
-			content.addTool(deleteLink, Align.right);
-
-			deleteDirectLink = LinkFactory.createToolLink("userdelete_direct", translate("menu.userdelete.direct"), this, "o_icon_delete");
-			deleteDirectLink.setElementCssClass("o_sel_useradmin_direct_delete");
-			content.addTool(deleteDirectLink, Align.right);
+			userLifecycleLink = LinkFactory.createToolLink("userdelete", translate("menu.userdelete"), this, "o_icon_delete");
+			userLifecycleLink.setElementCssClass("o_sel_useradmin_lifecycle");
+			content.addTool(userLifecycleLink, Align.right);
 		}
 	}
 
@@ -228,10 +223,8 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			doCreateUser(ureq);
 		} else if(importLink == source) {
 			doImportUser(ureq);
-		} else if(deleteLink == source) {
-			doUserDelete(ureq);
-		} else if(deleteDirectLink == source) {
-			doUserDirectDelete(ureq);
+		} else if(userLifecycleLink == source) {
+			doUserLifecycle(ureq);
 		}
 	}
 
@@ -239,14 +232,16 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(createCtrl == source) {
 			if(event instanceof SingleIdentityChosenEvent) {
-				SingleIdentityChosenEvent sice = (SingleIdentityChosenEvent)event;
-				doEditCreatedUser(ureq, sice.getChosenIdentity());
+				content.popController(createCtrl);
+				doEditCreatedUser(ureq, ((SingleIdentityChosenEvent)event).getChosenIdentity());
 			}
 		}
 		super.event(ureq, source, event);
 	}
 	
 	private void doCreateUser(UserRequest ureq) {
+		removeAsListenerAndDispose(createCtrl);
+		
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean canCreateOLATPassword = roles.isAdministrator() || roles.isRolesManager() || roles.isUserManager();
 
@@ -257,8 +252,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		Organisation preselectedOrganisation = getPreselectedOrganisation();
 		createCtrl = new UserCreateController(ureq, bwControl, preselectedOrganisation, canCreateOLATPassword);
 		listenTo(createCtrl);
-		content.rootController(translate("menu.ucreate"), createCtrl);
-		menuTree.setSelectedNode(null);
+		content.pushController(translate("menu.ucreate"), createCtrl);
 	}
 	
 	private Organisation getPreselectedOrganisation() {
@@ -283,26 +277,28 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	}
 	
 	private void doEditCreatedUser(UserRequest ureq, Identity newIdentity) {
+		removeAsListenerAndDispose(editCtrl);
+		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Create", 0l);
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		editCtrl = new UserAdminController(ureq, bwControl, content, newIdentity);
 		editCtrl.setBackButtonEnabled(false);
 		editCtrl.setShowTitle(false);
 		listenTo(editCtrl);
-		content.rootController(translate("menu.ucreate"), editCtrl);
-		menuTree.setSelectedNode(null);
+		content.pushController(translate("menu.ucreate"), editCtrl);
 	}
 	
 	private void doImportUser(UserRequest ureq) {
+		removeAsListenerAndDispose(importCtrl);
+		
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean canCreateOLATPassword = roles.isAdministrator() || roles.isRolesManager() || roles.isUserManager();
 
 		Organisation preselectedOrganisation = getPreselectedOrganisation();
-		UserImportController importCtrl = new UserImportController(ureq, getWindowControl(), preselectedOrganisation, canCreateOLATPassword);
+		importCtrl = new UserImportController(ureq, getWindowControl(), preselectedOrganisation, canCreateOLATPassword);
 		addToHistory(ureq, importCtrl);
 		listenTo(importCtrl);
-		content.rootController(translate("menu.usersimport"), importCtrl);
-		menuTree.setSelectedNode(null);
+		content.pushController(translate("menu.usersimport"), importCtrl);
 	}
 	
 	private Controller pushController(UserRequest ureq, TreeNode treeNode) {
@@ -350,43 +346,44 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			case "useradmin": return createUserSearchController(ureq, bwControl);
 			// groups
 			case "groupcoach": return createUserSearchController(ureq, bwControl,
-					SearchIdentityParams.resources(null, true, GroupRoles.coach, null, null, null, Identity.STATUS_VISIBLE_LIMIT), false);
+					SearchIdentityParams.resources(null, true, GroupRoles.coach, null, null, null, Identity.STATUS_VISIBLE_LIMIT), false, true, true);
 			case "groupparticipant": return createUserSearchController(ureq, bwControl,
-					SearchIdentityParams.resources(null, true, GroupRoles.participant, null, null, null, Identity.STATUS_VISIBLE_LIMIT), false);
+					SearchIdentityParams.resources(null, true, GroupRoles.participant, null, null, null, Identity.STATUS_VISIBLE_LIMIT), false, true, true);
 			// resources
 			case "coauthors": return createUserSearchController(ureq, bwControl,
-					SearchIdentityParams.resources(GroupRoles.owner, true, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT), false);
+					SearchIdentityParams.resources(GroupRoles.owner, true, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT), false, true, true);
 			case "courseparticipants": return createUserSearchController(ureq, bwControl,
-					SearchIdentityParams.resources(GroupRoles.participant, true, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT), false);
+					SearchIdentityParams.resources(GroupRoles.participant, true, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT), false, true, true);
 			case "coursecoach": return createUserSearchController(ureq, bwControl,
-					SearchIdentityParams.resources(GroupRoles.coach, true, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT), false);
+					SearchIdentityParams.resources(GroupRoles.coach, true, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT), false, true, true);
 			// status
 			case "pendinggroup": return createUserSearchController(ureq, bwControl, Identity.STATUS_PENDING);
+			case "inactivegroup": return createUserSearchController(ureq, bwControl, Identity.STATUS_INACTIVE);
 			case "logondeniedgroup": return createUserSearchController(ureq, bwControl, Identity.STATUS_LOGIN_DENIED);
 			case "deletedusers": return createDeletedUserController(ureq, bwControl);
 			// predefined queries
 			case "userswithoutgroup":
-				return createUserSearchController(ureq, bwControl, SearchIdentityParams.withBusinesGroups(), false);
+				return createUserSearchController(ureq, bwControl, SearchIdentityParams.withBusinesGroups(), false, true, true);
 			case "userswithoutemail":
 				List<Identity> usersWithoutEmail = userManager.findVisibleIdentitiesWithoutEmail();
-				return new UsermanagerUserSearchController(ureq, bwControl, content, usersWithoutEmail, true, false);
+				return new UsermanagerUserSearchController(ureq, bwControl, content, usersWithoutEmail, true, true, false);
 			case "usersemailduplicates":
 				List<Identity> usersEmailDuplicates = userManager.findVisibleIdentitiesWithEmailDuplicates();
-				return new UsermanagerUserSearchController(ureq, bwControl, content, usersEmailDuplicates, true, false);
+				return new UsermanagerUserSearchController(ureq, bwControl, content, usersEmailDuplicates, true, true, false);
 			case "noauthentication": return createUserSearchController(ureq, bwControl,
-					SearchIdentityParams.authenticationProviders(new String[]{ null }, Identity.STATUS_VISIBLE_LIMIT), false);
+					SearchIdentityParams.authenticationProviders(new String[]{ null }, Identity.STATUS_VISIBLE_LIMIT), false, true, true);
 			// time based predefined queries
 			case "created.lastweek": return createUserSearchControllerAfterDate(ureq, bwControl, Calendar.DAY_OF_MONTH, -7);
 			case "created.lastmonth": return createUserSearchControllerAfterDate(ureq, bwControl, Calendar.MONTH, -1);
 			case "created.sixmonth": return createUserSearchControllerAfterDate(ureq, bwControl, Calendar.MONTH, -6);
-			case "created.newUsersNotification": return new NewUsersNotificationsController(ureq, bwControl, content);
+			case "created.newUsersNotification": return new NewUsersNotificationsController(ureq, bwControl, content, false);
 			default: return null;		
 		}
 	}
 
 	private Controller getController(UserRequest ureq, Organisation organisation) {
 		SearchIdentityParams predefinedQuery = SearchIdentityParams.organisation(organisation, Identity.STATUS_VISIBLE_LIMIT);
-		return createUserSearchController(ureq, getWindowControl(), predefinedQuery, true);
+		return createUserSearchController(ureq, getWindowControl(), predefinedQuery, true, true, true);
 	}
 	
 	private Controller createInfoController(UserRequest ureq, WindowControl bwControl, Presentation template) {
@@ -397,23 +394,23 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		Calendar cal = Calendar.getInstance();
 		cal.add(unit, amount);
 		SearchIdentityParams predefinedQuery = SearchIdentityParams.params(cal.getTime(), null, Identity.STATUS_VISIBLE_LIMIT);
-		return createUserSearchController(ureq, bwControl, predefinedQuery, false);
+		return createUserSearchController(ureq, bwControl, predefinedQuery, false, true, true);
 	}
 	
 	private UsermanagerUserSearchController createUserSearchController(UserRequest ureq, WindowControl bwControl, OrganisationRoles role) {
 		final OrganisationRoles[] roles = { role };
 		SearchIdentityParams predefinedQuery = SearchIdentityParams.params(roles, Identity.STATUS_VISIBLE_LIMIT);
-		return createUserSearchController(ureq, bwControl, predefinedQuery, false);
+		return createUserSearchController(ureq, bwControl, predefinedQuery, false, true, true);
 	}
 	
 	private UsermanagerUserSearchController createUserSearchController(UserRequest ureq, WindowControl bwControl, CurriculumRoles role) {
 		SearchIdentityParams predefinedQuery = SearchIdentityParams.resources(null, true, null, role, null, null, Identity.STATUS_VISIBLE_LIMIT);
-		return createUserSearchController(ureq, bwControl, predefinedQuery, false);
+		return createUserSearchController(ureq, bwControl, predefinedQuery, false, true, true);
 	}
 	
 	private UsermanagerUserSearchController createUserSearchController(UserRequest ureq, WindowControl bwControl, Integer status) {
 		SearchIdentityParams predefinedQuery = SearchIdentityParams.params(null, status);
-		return createUserSearchController(ureq, bwControl, predefinedQuery, false);
+		return createUserSearchController(ureq, bwControl, predefinedQuery, false, true, false);
 	}
 	
 	private UsermanagerUserSearchController createUserSearchController(UserRequest ureq, WindowControl bwControl) {
@@ -421,7 +418,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	}
 	
 	private UsermanagerUserSearchController createUserSearchController(UserRequest ureq, WindowControl bwControl,
-			SearchIdentityParams predefinedQuery, boolean showOrganisationMove) {
+			SearchIdentityParams predefinedQuery, boolean showOrganisationMove, boolean showDelete, boolean statusFilter) {
 		if(manageableOrganisations != null) {
 			List<OrganisationRef> allowedOrganisations = new ArrayList<>(manageableOrganisations);
 			if(predefinedQuery.getOrganisations() != null) {
@@ -429,7 +426,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			}
 			predefinedQuery.setOrganisations(allowedOrganisations);
 		}
-		return new UsermanagerUserSearchController(ureq, bwControl, content, predefinedQuery, true, showOrganisationMove);
+		return new UsermanagerUserSearchController(ureq, bwControl, content, predefinedQuery, true, showOrganisationMove, showDelete, statusFilter);
 	}
 	
 	private UsermanagerUserSearchController createUserSearchController(UserRequest ureq, WindowControl bwControl, IdentityRelation relation) {
@@ -439,7 +436,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		} else {
 			identities = relationshipService.getSources(relation.getRelationRole());
 		}
-		return new UsermanagerUserSearchController(ureq, bwControl, content, identities, true, false);
+		return new UsermanagerUserSearchController(ureq, bwControl, content, identities, true, true, false);
 	}
 	
 	private DeletedUsersController createDeletedUserController(UserRequest ureq, WindowControl bwControl) {
@@ -454,45 +451,36 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	}
 
 	/**
-	 * Creates a DirectDeleteController and acquire a 'delete-user-lock'.
-	 * The lock is for both direct-deletion and workflow with email.
-	 * @param ureq The user request
-	 */
-	private void doUserDirectDelete(UserRequest ureq) {
-		Controller controller = acquireDeleteUserLock(ureq);
-		if (controller == null) {
-			//success -> create new User deletion workflow
-			DirectDeleteController directDeleteCtrl = new DirectDeleteController(ureq, getWindowControl());
-			controller = directDeleteCtrl;
-			listenTo(controller);
-		}
-
-		content.popUpToRootController(ureq);
-		content.rootController(translate("menu.userdelete.direct"), controller);
-	}
-
-	/**
 	 * Creates a TabbedPaneController (delete workflow with email)  and acquire a 'delete-user-lock'.
 	 * The lock is for both direct-deletion and workflow with email.
+	 * 
 	 * @param ureq The user request
 	 */
-	private void doUserDelete(UserRequest ureq) {
+	private void doUserLifecycle(UserRequest ureq) {
 		Controller controller = acquireDeleteUserLock(ureq);
 		if (controller == null) {
 			//success -> create new User deletion workflow
-			TabbedPaneController deleteCtrl = new TabbedPaneController(ureq, getWindowControl());
-			controller = deleteCtrl;
-			listenTo(deleteCtrl);
+			UserLifecycleOverviewController lifecycleCtrl;
+			Organisation preselectedOrganisation = getPreselectedOrganisation();
+			if(preselectedOrganisation == null) {
+				lifecycleCtrl = new UserLifecycleOverviewController(ureq, getWindowControl(), content);
+			} else {
+				lifecycleCtrl = new UserLifecycleOverviewController(ureq, getWindowControl(), content, preselectedOrganisation);
+			}
+			controller = lifecycleCtrl;
+			listenTo(lifecycleCtrl);
 		}
-		content.popUpToRootController(ureq);
-		content.rootController(translate("menu.userdelete"), controller);
+		content.pushController(translate("menu.userdelete"), controller);
 	}
 
 	/**
-   * Acquire lock for whole delete-user workflow
-   */
+	 * Acquire lock for whole delete-user workflow
+	 * 
+	 * @param ureq The user request
+	 * @return An explanation controller if the lock cannot be acquired.
+	 */
 	private Controller acquireDeleteUserLock(UserRequest ureq) {
-		OLATResourceable lockResourceable = OresHelper.createOLATResourceableTypeWithoutCheck(TabbedPaneController.class.getName());
+		OLATResourceable lockResourceable = OresHelper.createOLATResourceableTypeWithoutCheck(UserLifecycleOverviewController.class.getName());
 		lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockResourceable, ureq.getIdentity(), "deleteGroup");
 		if (!lock.isSuccess()) {
 			String fullname = userManager.getUserDisplayName(lock.getOwner());
@@ -691,6 +679,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	
 	private void buildTreeStatusSubMenu(GenericTreeNode accessNode) {
 		appendNode("menu.pendinggroup", "menu.pendinggroup.alt", "pendinggroup", "o_sel_useradmin_pendinggroup", accessNode);
+		appendNode("menu.inactivegroup", "menu.inactivegroup.alt", "inactivegroup", "o_sel_useradmin_inactivegroup", accessNode);
 		appendNode("menu.logondeniedgroup", "menu.logondeniedgroup.alt", "logondeniedgroup", "o_sel_useradmin_logondeniedgroup", accessNode);
 		appendNode("menu.deletedusers", "menu.deletedusers.alt", "deletedusers", "o_sel_useradmin_deletedusers", accessNode);
 	}

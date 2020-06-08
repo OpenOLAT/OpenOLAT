@@ -51,6 +51,8 @@ public class MemberView extends UserPropertiesRow {
 	private Date creationDate;
 	private Date lastModified;
 	
+	private final Integer identityStatus;
+	
 	private boolean managedMembersRepo;
 	private final CourseMembership membership = new CourseMembership();
 	
@@ -62,6 +64,11 @@ public class MemberView extends UserPropertiesRow {
 		super(identity, userPropertyHandlers, locale);
 		this.creationDate = creationDate;
 		this.lastModified = lastModified;
+		identityStatus = identity.getStatus();
+	}
+	
+	public Integer getIdentityStatus() {
+		return identityStatus;
 	}
 
 	public Date getCreationDate() {
@@ -178,7 +185,7 @@ public class MemberView extends UserPropertiesRow {
 
 		@Override
 		public Long getResourceableId() {
-			return key;
+			return getKey();
 		}
 
 		@Override

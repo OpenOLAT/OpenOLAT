@@ -25,7 +25,6 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.commentAndRating.model.UserComment;
 import org.olat.core.id.Identity;
@@ -35,6 +34,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntryStatistics;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.olat.user.UserLifecycleManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -55,7 +55,7 @@ public class UserCommentsDAOTest extends OlatTestCase {
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
-	private UserDeletionManager userDeletionManager;
+	private UserLifecycleManager userLifecycleManager;
 
 	
 	@Test
@@ -163,7 +163,7 @@ public class UserCommentsDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// delete the first user
-		userDeletionManager.deleteIdentity(identToDelete, null);
+		userLifecycleManager.deleteIdentity(identToDelete, null);
 		dbInstance.commitAndCloseSession();
 		
 		// delete comments from first identity, and replace the comment if it has a reply

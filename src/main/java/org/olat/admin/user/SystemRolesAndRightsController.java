@@ -50,6 +50,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -90,8 +91,7 @@ public class SystemRolesAndRightsController extends FormBasicController {
 	private final List<MultipleSelectionElement> rolesEls = new ArrayList<>();
 
 	private int counter = 0;
-	private List<String> statusKeys;
-	private List<String> statusValues;
+	private KeyValues statusKeys;
 	
 	/**
 	 * The roles without inheritance
@@ -144,21 +144,14 @@ public class SystemRolesAndRightsController extends FormBasicController {
 	}
 	
 	private void initStatusKeysAndValues() {
-		statusKeys = new ArrayList<>(4);
-		statusKeys.add(Integer.toString(Identity.STATUS_ACTIV));
-		statusKeys.add(Integer.toString(Identity.STATUS_PERMANENT));
-		statusKeys.add(Integer.toString(Identity.STATUS_PENDING));
-		statusKeys.add(Integer.toString(Identity.STATUS_LOGIN_DENIED));
-
-		statusValues = new ArrayList<>(4);
-		statusValues.add(translate("rightsForm.status.activ"));
-		statusValues.add(translate("rightsForm.status.permanent"));
-		statusValues.add(translate("rightsForm.status.pending"));
-		statusValues.add(translate("rightsForm.status.login_denied"));
-		
+		statusKeys = new KeyValues();
+		statusKeys.add(KeyValues.entry(Integer.toString(Identity.STATUS_ACTIV), translate("rightsForm.status.activ")));
+		statusKeys.add(KeyValues.entry(Integer.toString(Identity.STATUS_PERMANENT), translate("rightsForm.status.permanent")));
+		statusKeys.add(KeyValues.entry(Integer.toString(Identity.STATUS_PENDING), translate("rightsForm.status.pending")));
+		statusKeys.add(KeyValues.entry(Integer.toString(Identity.STATUS_INACTIVE), translate("rightsForm.status.inactive")));
+		statusKeys.add(KeyValues.entry(Integer.toString(Identity.STATUS_LOGIN_DENIED), translate("rightsForm.status.login_denied")));
 		if (editedIdentity.getStatus() != null && editedIdentity.getStatus().equals(Identity.STATUS_DELETED)) {
-			statusKeys.add(Integer.toString(Identity.STATUS_DELETED));
-			statusValues.add(translate("rightsForm.status.deleted"));
+			statusKeys.add(KeyValues.entry(Integer.toString(Identity.STATUS_DELETED), translate("rightsForm.status.deleted")));
 		}
 	}
 
@@ -193,11 +186,7 @@ public class SystemRolesAndRightsController extends FormBasicController {
 		FormLayoutContainer statusCont = FormLayoutContainer.createDefaultFormLayout("statusc", getTranslator());
 		formLayout.add(statusCont);
 		
-		statusEl = uifactory.addRadiosVertical(
-				"status", "rightsForm.status", statusCont,
-				statusKeys.toArray(new String[statusKeys.size()]),
-				statusValues.toArray(new String[statusKeys.size()])
-		);
+		statusEl = uifactory.addRadiosVertical("status", "rightsForm.status", statusCont, statusKeys.keys(), statusKeys.values());
 		statusEl.addActionListener(FormEvent.ONCHANGE);
 		sendLoginDeniedEmailEl = uifactory.addCheckboxesHorizontal("rightsForm.sendLoginDeniedEmail", statusCont, new String[]{"y"}, new String[]{translate("rightsForm.sendLoginDeniedEmail")});
 		sendLoginDeniedEmailEl.setLabel(null, null);
@@ -372,7 +361,7 @@ public class SystemRolesAndRightsController extends FormBasicController {
 	
 	private void setStatus(Integer status) {
 		String statusStr = status.toString();
-		for(String statusKey:statusKeys) {
+		for(String statusKey:statusKeys.keys()) {
 			if(statusStr.equals(statusKey)) {
 				statusEl.select(statusKey, true);
 			}

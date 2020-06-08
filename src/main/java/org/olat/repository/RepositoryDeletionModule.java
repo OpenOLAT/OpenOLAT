@@ -71,13 +71,13 @@ public class RepositoryDeletionModule implements InitializingBean {
 			if (identity != null) {
 				emailResponseTo = identity.getUser().getEmail();
 			} else {
-				log.warn("Could not find:  " + CONF_DELETE_EMAIL_RESPONSE_TO_USER_NAME + " with name: " + emailResponseTo);
+				log.warn("Could not find: {} with name: {}", CONF_DELETE_EMAIL_RESPONSE_TO_USER_NAME, emailResponseTo);
 				emailResponseTo = WebappHelper.getMailConfig("mailFrom");
 			}
 		}
 		
 		if(log.isDebugEnabled()) {
-			log.debug("archiveRootPath=" + archiveRootPath);
+			log.debug("archiveRootPath={}", archiveRootPath);
 		}
 	}
 

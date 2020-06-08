@@ -23,7 +23,6 @@ import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
@@ -55,8 +54,6 @@ public class WebDAVAuthManagerTest extends OlatTestCase {
 	private BaseSecurity securityManager;
 	@Autowired
 	private WebDAVAuthManager webdavAuthManager;
-	@Autowired
-	private UserDeletionManager userDeletionManager;
 	
 	@Test
 	public void updatePassword() {
@@ -152,8 +149,7 @@ public class WebDAVAuthManagerTest extends OlatTestCase {
 			.synchronizeOlatPasswordAndUsername(id2, id2, emailId2, "new-secret");
 		
 		// simulate login error
-		id2 = userDeletionManager.setIdentityAsActiv(id2);
-		Assert.assertNotNull(id2);
+		securityManager.setIdentityLastLogin(id2);
 		dbInstance.commit();
 	}
 	

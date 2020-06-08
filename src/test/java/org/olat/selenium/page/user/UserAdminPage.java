@@ -68,6 +68,38 @@ public class UserAdminPage {
 		return this;
 	}
 	
+	/**
+	 * Click the tool to delete the user.
+	 * 
+	 * @return Itself
+	 */
+	public UserAdminPage deleteUser() {
+		By createBy = By.cssSelector("ul.o_tools a.o_sel_user_delete");
+		OOGraphene.waitElement(createBy, browser);
+		browser.findElement(createBy).click();
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
+		return this;
+	}
+	
+	/**
+	 * Acknowledge and confirm to delete a user.
+	 * 
+	 * @return Itself
+	 */
+	public UserAdminPage confirmDeleteUsers() {
+		By confirmCheckBy = By.cssSelector("div.o_sel_confirm_delete_user input[type='checkbox']");
+		OOGraphene.waitElement(confirmCheckBy, browser);
+		WebElement confirmCheckEl = browser.findElement(confirmCheckBy);
+		OOGraphene.check(confirmCheckEl, Boolean.TRUE);
+		
+		By buttonsBy = By.cssSelector("div.modal-dialog div.modal-body a.btn.o_sel_delete_user");
+		browser.findElement(buttonsBy).click();
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
+		return this;
+	}
+	
 	public UserAdminPage openDirectDeleteUser() {
 		By createBy = By.cssSelector("ul.o_tools a.o_sel_useradmin_direct_delete");
 		OOGraphene.waitElement(createBy, browser);

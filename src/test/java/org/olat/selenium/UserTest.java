@@ -697,9 +697,11 @@ public class UserTest extends Deployments {
 		//admin delete
 		userAdminPage
 			.openSearchUser()
-			.openDirectDeleteUser()
-			.searchUserToDelete(username)
-			.selectAndDeleteUser(lastName);
+			.searchByUsername(username)
+			.selectByUsername(username)
+			.assertOnUserEditView(username)
+			.deleteUser()
+			.confirmDeleteUsers();
 		
 		//user try the login
 		userLoginPage = LoginPage.load(userBrowser, deploymentUrl);

@@ -50,6 +50,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.user.UserManager;
 import org.olat.user.ui.admin.UserSearchTableController;
+import org.olat.user.ui.admin.UserSearchTableSettings;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -73,7 +74,9 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	private UsermanagerUserSearchForm searchFormCtrl;
 	private UserSearchTableController tableCtr;
 
+	private final boolean showDelete;
 	private final boolean showEmailButton;
+	private final boolean showStatusFilters;
 	private final boolean showOrganisationMove;
 	private final boolean isAdministrativeUser;
 	private List<Organisation> manageableOrganisations;
@@ -99,7 +102,9 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		
 		this.stackedPanel = stackedPanel;
 		this.manageableOrganisations = manageableOrganisations;
+		showStatusFilters = true;
 		showEmailButton = true;
+		showDelete = true;
 		showOrganisationMove = false;
 		
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
@@ -126,18 +131,20 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	 * @param searchCreatedBefore
 	 */
 	public UsermanagerUserSearchController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackedPanel,
-			SearchIdentityParams predefinedQuery, boolean showEmailButton, boolean showOrganisationMove) {
+			SearchIdentityParams predefinedQuery, boolean showEmailButton, boolean showOrganisationMove, boolean showDelete, boolean showStatusFilters) {
 		super(ureq, wControl);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		this.showDelete = showDelete;
 		this.stackedPanel = stackedPanel;
 		this.showEmailButton = showEmailButton;
+		this.showStatusFilters = showStatusFilters;
 		this.showOrganisationMove = showOrganisationMove;
 
 		identityQueryParams = predefinedQuery;
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		
 		tableCtr = new UserSearchTableController(ureq, getWindowControl(), stackedPanel,
-				showEmailButton, showOrganisationMove, true);
+				UserSearchTableSettings.withVCard(showEmailButton, showOrganisationMove, showDelete, showStatusFilters));
 		listenTo(tableCtr);
 		tableCtr.loadModel(identityQueryParams);
 		putInitialPanel(tableCtr.getInitialComponent());
@@ -154,16 +161,19 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	 * @param showEmailButton
 	 */
 	public UsermanagerUserSearchController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackedPanel,
-			List<Identity> identitiesList, boolean showEmailButton, boolean showTitle) {
+			List<Identity> identitiesList, boolean showEmailButton, boolean showDelete, boolean showTitle) {
 		super(ureq, wControl);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		this.showDelete = showDelete;
 		this.stackedPanel = stackedPanel;
 		this.showEmailButton = showEmailButton;
+		showStatusFilters = false;
 		showOrganisationMove = false;
 		
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 
-		tableCtr = new UserSearchTableController(ureq, getWindowControl(), stackedPanel, showEmailButton, false, true);
+		tableCtr = new UserSearchTableController(ureq, getWindowControl(), stackedPanel,
+				UserSearchTableSettings.withVCard(showEmailButton, false, showDelete, true));
 		listenTo(tableCtr);
 		tableCtr.loadModel(identitiesList);
 		
@@ -232,7 +242,8 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("table", 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		tableCtr = new UserSearchTableController(ureq, bwControl, stackedPanel, showEmailButton, showOrganisationMove, true);
+		tableCtr = new UserSearchTableController(ureq, bwControl, stackedPanel,
+				UserSearchTableSettings.withVCard(showEmailButton, showOrganisationMove, showDelete, showStatusFilters));
 		listenTo(tableCtr);
 		tableCtr.loadModel(identityQueryParams);
 		stackedPanel.pushController("Results", tableCtr);

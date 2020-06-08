@@ -70,19 +70,19 @@ public class IdentityIndexer extends AbstractHierarchicalIndexer {
 		int counter = 0;
 		BaseSecurity secMgr = BaseSecurityManager.getInstance();
 		List<Long> identityKeys = secMgr.loadVisibleIdentityKeys();
-		if (log.isDebugEnabled()) log.debug("Found " + identityKeys.size() + " active identities to index");
+		if (log.isDebugEnabled()) log.debug("Found {} active identities to index", identityKeys.size());
 		DBFactory.getInstance().commitAndCloseSession();
   	
 		for (Long identityKey : identityKeys) {
 			try {
 				// reload the identity here before indexing it to make sure it has not been deleted in the meantime
 				Identity identity = secMgr.loadIdentityByKey(identityKey);
-				if (identity == null || (identity.getStatus()>=Identity.STATUS_VISIBLE_LIMIT)) {
-					log.info("doIndex: identity was deleted while we were indexing. The deleted identity was: "+identity);
+				if (identity == null || (identity.getStatus().intValue() >=Identity.STATUS_VISIBLE_LIMIT.intValue())) {
+					log.info("doIndex: identity was deleted while we were indexing. The deleted identity was: {}", identity);
 					continue;
 				}
 
-				if (log.isDebugEnabled()) log.debug("Indexing identity::" + identity.getKey() + " and counter::" + counter);  	  	
+				if (log.isDebugEnabled()) log.debug("Indexing identity::{} and counter::{}", identity.getKey(), counter);  	  	
 				// Create a search context for this identity. The search context will open the users visiting card in a new tab
 				SearchResourceContext searchResourceContext = new SearchResourceContext(parentResourceContext);
 				searchResourceContext.setBusinessControlFor(OresHelper.createOLATResourceableInstance(Identity.class, identity.getKey()));
@@ -100,7 +100,7 @@ public class IdentityIndexer extends AbstractHierarchicalIndexer {
 			}
 			DBFactory.getInstance().commitAndCloseSession();
 		}
-		if (log.isDebugEnabled()) log.debug("IdentityIndexer finished with counter::" + counter);
+		if (log.isDebugEnabled()) log.debug("IdentityIndexer finished with counter::{}", counter);
 	}
 	
 	@Override

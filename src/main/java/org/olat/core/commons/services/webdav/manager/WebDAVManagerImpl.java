@@ -34,7 +34,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.logging.log4j.Logger;
-import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.services.webdav.WebDAVManager;
@@ -90,8 +89,6 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 	private WebDAVAuthManager webDAVAuthManager;
 	@Autowired
 	private WebDAVModule webdavModule;
-	@Autowired
-	private UserDeletionManager userDeletionManager;
 
 	@Autowired
 	public WebDAVManagerImpl(CoordinatorManager coordinatorManager) {
@@ -293,7 +290,7 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 
 	protected UserSession handleDigestAuthentication(DigestAuthentication digestAuth, HttpServletRequest request) {
 		Identity identity = webDAVAuthManager.digestAuthentication(request.getMethod(), digestAuth);
-		if(identity != null && securityManager.isIdentityVisible(identity)) {
+		if(identity != null && securityManager.isIdentityLoginAllowed(identity)) {
 			log.info("WebDAV Digest authentication of: {}", identity);
 			return afterAuthorization(identity, request);
 		}
@@ -315,7 +312,7 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 			// In this example, we simply check
 			// that neither field is blank
 			Identity identity = webDAVAuthManager.authenticate(null, userID, password);
-			if (identity != null && securityManager.isIdentityVisible(identity)) {
+			if (identity != null && securityManager.isIdentityLoginAllowed(identity)) {
 				log.debug("WebDAV Basic authentication of: {}", identity);
 				return afterAuthorization(identity, request);
 			}
@@ -333,7 +330,7 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 		
 			sessionManager.signOffAndClear(usess);
 			usess.setIdentity(identity);
-			userDeletionManager.setIdentityAsActiv(identity);
+			securityManager.setIdentityLastLogin(identity);
 			// set the roles (admin, author, guest)
 			Roles roles = securityManager.getRoles(identity);
 			usess.setRoles(roles);

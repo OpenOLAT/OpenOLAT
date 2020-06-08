@@ -38,8 +38,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.logging.log4j.Logger;
-import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.AuthHelper;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
@@ -192,7 +192,7 @@ public class RestApiLoginFilter implements Filter {
 
 						int loginStatus = AuthHelper.doHeadlessLogin(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq, true);
 						if (loginStatus == AuthHelper.LOGIN_OK) {
-							CoreSpringFactory.getImpl(UserDeletionManager.class).setIdentityAsActiv(identity);
+							CoreSpringFactory.getImpl(BaseSecurity.class).setIdentityLastLogin(identity);
 							//Forge a new security token
 							RestSecurityBean securityBean = CoreSpringFactory.getImpl(RestSecurityBean.class);
 							String token = securityBean.generateToken(identity, request.getSession());

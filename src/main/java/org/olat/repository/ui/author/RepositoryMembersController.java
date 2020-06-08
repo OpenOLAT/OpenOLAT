@@ -72,7 +72,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class RepositoryMembersController extends AbstractMemberListController {
 	
 	private final SearchMembersParams params;
-	private FormLink importMemberLink, addMemberLink;
+	private FormLink addMemberLink;
+	private FormLink importMemberLink; 
 	private StepsMainRunController importMembersWizard;
 	
 	@Autowired

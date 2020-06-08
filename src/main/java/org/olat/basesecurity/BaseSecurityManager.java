@@ -47,6 +47,7 @@ import javax.persistence.TypedQuery;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.events.NewIdentityCreatedEvent;
 import org.olat.basesecurity.manager.AuthenticationHistoryDAO;
+import org.olat.basesecurity.manager.IdentityDAO;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
@@ -91,6 +92,8 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private IdentityDAO identityDao;
 	@Autowired
 	private LoginModule loginModule;
 	@Autowired
@@ -1127,12 +1130,17 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		return identityPowerSearchQueries.getIdentitiesByPowerSearch(params, firstResult, maxResults);
 	}
 
-
 	@Override
 	public boolean isIdentityVisible(Identity identity) {
-		if(identity == null) return false;
-		Integer status = identity.getStatus();
-		return (status != null && status.intValue() < Identity.STATUS_VISIBLE_LIMIT);
+		if(identity == null || identity.getStatus() == null) return false;
+		return identity.getStatus().intValue() < Identity.STATUS_VISIBLE_LIMIT.intValue();
+	}
+	
+	@Override
+	public boolean isIdentityLoginAllowed(Identity identity) {
+		if(identity == null || identity.getStatus() == null) return false;
+		int status = identity.getStatus().intValue();
+		return status < Identity.STATUS_VISIBLE_LIMIT.intValue() || status == Identity.STATUS_INACTIVE.intValue();
 	}
 
 	@Override
@@ -1145,8 +1153,15 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 					reloadedIdentity.setDeletedBy(getDeletedByName(doer));
 				}
 				reloadedIdentity.setDeletedDate(new Date());
+			} else if(status.equals(Identity.STATUS_INACTIVE)) {
+				reloadedIdentity.setInactivationDate(new Date());
+			} else if(status.equals(Identity.STATUS_ACTIV)
+					|| status.equals(Identity.STATUS_PERMANENT)
+					|| status.equals(Identity.STATUS_PENDING)
+					|| status.equals(Identity.STATUS_LOGIN_DENIED)) {
+				reloadedIdentity.setInactivationDate(null);
 			}
-			reloadedIdentity = dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
+			reloadedIdentity = (IdentityImpl)identityDao.saveIdentity(reloadedIdentity);
 		}
 		dbInstance.commit();
 		return reloadedIdentity;
@@ -1192,11 +1207,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 
 	@Override
 	public void setIdentityLastLogin(IdentityRef identity) {
-		dbInstance.getCurrentEntityManager()
-				.createNamedQuery("updateIdentityLastLogin")
-				.setParameter("identityKey", identity.getKey())
-				.setParameter("now", new Date())
-				.executeUpdate();
+		identityDao.setIdentityLastLogin(identity, new Date());
 		dbInstance.commit();
 	}
 	

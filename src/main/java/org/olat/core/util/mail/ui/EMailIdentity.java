@@ -83,6 +83,11 @@ public class EMailIdentity implements Identity {
 	public Integer getStatus() {
 		return null;
 	}
+	
+	@Override
+	public Date getInactivationDate() {
+		return null;
+	}
 
 	private class EMailUser implements User, ModifiedInfo {
 

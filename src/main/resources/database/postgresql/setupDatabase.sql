@@ -173,6 +173,9 @@ create table o_bs_identity (
    deleteddate timestamp,
    deletedroles varchar(1024),
    deletedby varchar(128),
+   inactivationdate timestamp,
+   inactivationemaildate timestamp,
+   deletionemaildate timestamp,
    primary key (id)
 );
 create table o_bs_relation_role (

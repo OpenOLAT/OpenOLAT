@@ -60,6 +60,7 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 	private List<Identity> oks;
 	private List<String> notfounds;
 	private boolean isAdministrativeUser;
+	private final List<Identity> anonymousUsers;
 	
 	@Autowired
 	private UserManager userManager;
@@ -72,7 +73,10 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 
 	public ImportMemberOverviewIdentitiesController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
-
+		
+		anonymousUsers = organisationService.getIdentitiesWithRole(OrganisationRoles.guest);
+		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		
 		oks = null;
 		if(containsRunContextKey("logins")) {
 			String logins = (String)runContext.get("logins");
@@ -86,8 +90,6 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 			List<Identity> keys = (List<Identity>)runContext.get("keyIdentities");
 			loadModelByIdentities(keys);
 		}
-
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 
 		initForm (ureq);
 	}
@@ -140,14 +142,10 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 		notfounds = new ArrayList<>();
 		
 		Set<Identity> okSet = new HashSet<>();
-		List<Identity> anonymousUsers = organisationService.getIdentitiesWithRole(OrganisationRoles.guest);
-
 		for (String identityKey : keys) {
 			Identity ident = securityManager.loadIdentityByKey(Long.parseLong(identityKey));
-			if (ident == null) { // not found, add to not-found-list
+			if (!validIdentity(ident)) { // not found, add to not-found-list
 				notfounds.add(identityKey);
-			} else if (anonymousUsers.contains(ident)) {
-				//ignore
 			} else if (!okSet.contains(ident)) {
 				okSet.add(ident);
 			}
@@ -159,10 +157,12 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 		notfounds = new ArrayList<>();
 		
 		Set<Identity> okSet = new HashSet<>();
-		List<Identity> anonymousUsers = organisationService.getIdentitiesWithRole(OrganisationRoles.guest);
 		for (Identity ident : keys) {
-			if (ident == null || anonymousUsers.contains(ident)) {
-				//ignore
+			if (!validIdentity(ident)) {
+				String fullname = userManager.getUserDisplayName(ident);
+				if(fullname != null) {
+					notfounds.add(fullname);
+				}
 			} else if (!okSet.contains(ident)) {
 				okSet.add(ident);
 			}
@@ -175,10 +175,6 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 		notfounds = new ArrayList<>();
 		
 		Set<Identity> okSet = new HashSet<>();
-
-		List<Identity> anonymousUserList = organisationService.getIdentitiesWithRole(OrganisationRoles.guest);
-		Set<Identity> anonymousUsers = new HashSet<>(anonymousUserList);
-
 		List<String> identList = new ArrayList<>();
 		String[] lines = inp.split("\r?\n");
 		for (int i = 0; i < lines.length; i++) {
@@ -191,15 +187,17 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 		//search by institutionalUserIdentifier, case sensitive
 		List<Identity> institutIdentities = securityManager.findIdentitiesByNumber(identList);
 		for(Identity identity:institutIdentities) {
-			String userIdent = identity.getUser().getProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, null);
-			if(userIdent != null) {
-				identList.remove(userIdent);
+			String insitutionalIdentifier = identity.getUser().getProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, null);
+			if(insitutionalIdentifier != null) {
+				identList.remove(insitutionalIdentifier);
 			}
-			if (!okSet.contains(identity) && !anonymousUsers.contains(identity)) {
+			if(!validIdentity(identity)) {
+				notfounds.add(insitutionalIdentifier);
+			} else if(!okSet.contains(identity)) {
 				okSet.add(identity);
 			}
 		}
-		// make a lowercase copy of identList for processing username and email
+		// make a lower case copy of identList for processing username and email
 		List<String> identListLowercase = new ArrayList<>(identList.size());
 		for (String ident:identList) {
 			identListLowercase.add(ident.toLowerCase());
@@ -208,7 +206,9 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 		List<Identity> identities = securityManager.findIdentitiesByNameCaseInsensitive(identListLowercase);
 		for(Identity identity:identities) {
 			identListLowercase.remove(identity.getName().toLowerCase());
-			if (!okSet.contains(identity) && !anonymousUsers.contains(identity)) {
+			if(!validIdentity(identity)) {
+				notfounds.add(identity.getName());
+			} else if (!okSet.contains(identity)) {
 				okSet.add(identity);
 			}
 		}
@@ -231,13 +231,25 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 			if(institutEmail != null) {
 				identListLowercase.remove(institutEmail.toLowerCase());
 			}
-			if (!okSet.contains(identity) && !anonymousUsers.contains(identity)) {
+			if(!validIdentity(identity)) {
+				if(email != null) {
+					notfounds.remove(email);
+				} else if(institutEmail != null) {
+					notfounds.remove(institutEmail);
+				}
+			} else if (!okSet.contains(identity)) {
 				okSet.add(identity);
 			}
 		}
 		
 		notfounds.addAll(identListLowercase);
 		oks = new ArrayList<>(okSet);
+	}
+	
+	private boolean validIdentity(Identity ident) {
+		return ident != null
+				&& ident.getStatus().compareTo(Identity.STATUS_VISIBLE_LIMIT) < 0
+				&& !anonymousUsers.contains(ident);
 	}
 
 	public boolean validate() {
