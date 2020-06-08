@@ -127,12 +127,12 @@ public class GTACoachSelectionController extends BasicController implements Acti
 			
 			groups = gtaManager.filterBusinessGroups(groups, gtaNode);
 			
+			groupListCtrl = new GTACoachedGroupListController(ureq, getWindowControl(), null, coachCourseEnv, gtaNode, groups);
+			listenTo(groupListCtrl);
+			mainVC.put("list", groupListCtrl.getInitialComponent());
+			
 			if(groups.size() == 1) {
 				doSelectBusinessGroup(ureq, groups.get(0));
-			} else {
-				groupListCtrl = new GTACoachedGroupListController(ureq, getWindowControl(), null, coachCourseEnv, gtaNode, groups);
-				listenTo(groupListCtrl);
-				mainVC.put("list", groupListCtrl.getInitialComponent());
 			}	
 		} else {
 			participantListCtrl = new GTACoachedParticipantListController(ureq, getWindowControl(), coachCourseEnv, gtaNode, markedOnly);
