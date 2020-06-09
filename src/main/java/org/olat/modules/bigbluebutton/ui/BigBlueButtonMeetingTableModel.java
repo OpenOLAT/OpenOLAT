@@ -27,7 +27,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 import org.olat.modules.bigbluebutton.BigBlueButtonServer;
@@ -53,7 +52,7 @@ implements SortableFlexiTableDataModel<BigBlueButtonMeeting> {
 	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
-			List<BigBlueButtonMeeting> views = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+			List<BigBlueButtonMeeting> views = new BigBlueButtonMeetingTableSort(orderBy, this, locale).sort();
 			super.setObjects(views);
 		}
 	}
