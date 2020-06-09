@@ -24,18 +24,23 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.id.OLATResourceable;
@@ -71,6 +76,8 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 	private Link joinButton;
 	private FlexiTableElement tableEl;
 	private BigBlueButtonRecordingTableModel recordingTableModel;
+	
+	private DialogBoxController confirmDeleteRecordingDialog;
 
 	@Autowired
 	private BigBlueButtonModule bigBlueButtonModule;
@@ -132,6 +139,9 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BRecordingsCols.start));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BRecordingsCols.end));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BRecordingsCols.open, new RecordingUrlCellRenderer(getTranslator())));
+		if(administrator) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
+		}
 		
 		recordingTableModel = new BigBlueButtonRecordingTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "recordings", recordingTableModel, 24, false, getTranslator(), formLayout);
@@ -229,6 +239,36 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		}
 		super.event(ureq, source, event);
 	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(confirmDeleteRecordingDialog == source) {
+			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+				BigBlueButtonRecording recording = (BigBlueButtonRecording)confirmDeleteRecordingDialog.getUserObject();
+				doDeleteRecording(recording);
+			}
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(confirmDeleteRecordingDialog);
+		confirmDeleteRecordingDialog = null;
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(tableEl == source) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				if("delete".equals(se.getCommand())) {
+					doConfirmDeleteRecording(ureq, recordingTableModel.getObject(se.getIndex()));
+				}
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
@@ -268,5 +308,21 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		} else {
 			showWarning("warning.no.access");
 		}
+	}
+	
+	private void doConfirmDeleteRecording(UserRequest ureq, BigBlueButtonRecording recording) {
+		String confirmDeleteTitle = translate("confirm.delete.recording.title", new String[]{ recording.getName() });
+		String confirmDeleteText = translate("confirm.delete.recording", new String[]{ recording.getName() });
+		confirmDeleteRecordingDialog = activateYesNoDialog(ureq, confirmDeleteTitle, confirmDeleteText, confirmDeleteRecordingDialog);
+		confirmDeleteRecordingDialog.setUserObject(recording);
+	}
+	
+	private void doDeleteRecording(BigBlueButtonRecording recording) {
+		BigBlueButtonErrors errors = new BigBlueButtonErrors();
+		bigBlueButtonManager.deleteRecording(recording, meeting, errors);
+		if(errors.hasErrors()) {
+			getWindowControl().setError(BigBlueButtonErrorHelper.formatErrors(getTranslator(), errors));
+		}
+		loadRecordingsModel();
 	}
 }

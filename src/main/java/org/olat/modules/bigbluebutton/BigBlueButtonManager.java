@@ -127,6 +127,8 @@ public interface BigBlueButtonManager {
 	
 	public List<BigBlueButtonRecording> getRecordings(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors);
 	
+	public void deleteRecording(BigBlueButtonRecording record, BigBlueButtonMeeting meeting, BigBlueButtonErrors errors);
+	
 	public boolean checkConnection(String url, String sharedSecret, BigBlueButtonErrors errors);
 	
 	

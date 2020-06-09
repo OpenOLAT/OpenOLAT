@@ -539,6 +539,11 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		}
 	}
 	
+	@Override
+	public void deleteRecording(BigBlueButtonRecording record, BigBlueButtonMeeting meeting, BigBlueButtonErrors errors) {
+		deleteRecording(record.getRecordId(), meeting.getServer(), errors);
+	}
+
 	private void deleteRecording(String recordId, BigBlueButtonServer server, BigBlueButtonErrors errors) {
 		if(!server.isEnabled()) {
 			log.error("Try deleting a recording of a disabled server: {}", server.getUrl());
@@ -551,7 +556,6 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 			.parameter("recordID", recordId);
 		
 		Document doc = sendRequest(uriBuilder, errors);
-		BigBlueButtonUtils.print(doc);
 		BigBlueButtonUtils.checkSuccess(doc, errors);
 	}
 	
