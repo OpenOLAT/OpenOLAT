@@ -235,6 +235,7 @@ public class CollaborationTools implements Serializable {
 	private static final String KEY_NEWS_ACCESS = "newsAccess";
 	public static final String KEY_CALENDAR_ACCESS = "cal";
 	public static final String KEY_FOLDER_ACCESS = "folder";
+	private static final String KEY_BIGBLUEBUTTON_ACCESS = "folder";
 
 	//o_clusterOK by guido
 	private Hashtable<String, Boolean> cacheToolStates;
@@ -608,7 +609,8 @@ public class CollaborationTools implements Serializable {
 	
 	public Controller createBigBlueButtonController(final UserRequest ureq, WindowControl wControl, final BusinessGroup group, boolean admin) {
 		BigBlueButtonMeetingDefaultConfiguration configuration = new BigBlueButtonMeetingDefaultConfiguration(false);
-		return new BigBlueButtonRunController(ureq, wControl, null, null, group, configuration, admin, admin, false);
+		boolean administrator = admin || "all".equals(getBigBlueButtonAccessProperty());
+		return new BigBlueButtonRunController(ureq, wControl, null, null, group, configuration, administrator, administrator, false);
 	}
 
 	/**
@@ -820,6 +822,35 @@ public class CollaborationTools implements Serializable {
 			npm.updateProperty(property);
 		}
 	}
+	
+	/**
+	 * @return Gets the BigBlueButton access property
+	 */
+	public String getBigBlueButtonAccessProperty() {
+		NarrowedPropertyManager npm = NarrowedPropertyManager.getInstance(ores);
+		Property property = npm.findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_BIGBLUEBUTTON_ACCESS);
+		if (property == null) { // no entry
+			return null;
+		}
+		// read the text value of the existing property
+		return property.getStringValue();
+	}
+	
+	/**
+	 * @param Save BigBlueButton access property.
+	 */
+	public void saveBigBlueButtonAccessProperty(String access) {
+		NarrowedPropertyManager npm = NarrowedPropertyManager.getInstance(ores);
+		Property property = npm.findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_BIGBLUEBUTTON_ACCESS);
+		if (property == null) { // create a new one
+			Property nP = npm.createPropertyInstance(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_BIGBLUEBUTTON_ACCESS, null, null, access, null);
+			npm.saveProperty(nP);
+		} else { // modify the existing one
+			property.setStringValue(access);
+			npm.updateProperty(property);
+		}
+	}
+	
 
 	/**
 	 * @return the news; if there is no news yet: return null;

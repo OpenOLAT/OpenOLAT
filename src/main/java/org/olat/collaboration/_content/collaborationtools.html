@@ -5,6 +5,9 @@ $r.render("choiceOfTools")
 #if ($calendarToolEnabled)
 	$r.render("calendarform")
 #end
+#if ($r.isTrue($bigBlueButtonToolEnabled))
+	$r.render("bigbluebuttonform")
+#end
 #if ($folderToolEnabled)
 	$r.render("folderform")
 	#if ($isOlatAdmin)

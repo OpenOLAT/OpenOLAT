@@ -50,6 +50,7 @@ import org.olat.core.util.vfs.QuotaManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.instantMessaging.InstantMessagingModule;
+import org.olat.modules.bigbluebutton.ui.BigBlueButtonCollaborationSettingsController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -67,6 +68,7 @@ public class CollaborationToolsSettingsController extends BasicController {
 	private NewsFormController newsController;
 	private CalendarToolSettingsController calendarForm;
 	private FolderToolSettingsController folderForm;
+	private BigBlueButtonCollaborationSettingsController bigBlueButtonController;
 
 	private boolean lastCalendarEnabledState;
 	private Controller quotaCtr;
@@ -102,6 +104,12 @@ public class CollaborationToolsSettingsController extends BasicController {
 			addNewsTool(ureq);
 		} else {
 			vc_collabtools.contextPut("newsToolEnabled", Boolean.FALSE);
+		}
+		
+		if (collabTools.isToolEnabled(CollaborationTools.TOOL_BIGBLUEBUTTON)) {
+			addBigBlueButtonTool(ureq);
+		} else {
+			vc_collabtools.contextPut("bigBlueButtonToolEnabled", Boolean.FALSE);
 		}
 		
 		UserSession usess = ureq.getUserSession();
@@ -174,85 +182,37 @@ public class CollaborationToolsSettingsController extends BasicController {
 		vc_collabtools.contextPut("newsToolEnabled", Boolean.TRUE);
 		vc_collabtools.put("newsform", newsController.getInitialComponent());
 	}
+	
+	private void addBigBlueButtonTool(UserRequest ureq) {
+		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
+		String access = collabTools.getBigBlueButtonAccessProperty();
 
+		removeAsListenerAndDispose(bigBlueButtonController);
+
+		bigBlueButtonController = new BigBlueButtonCollaborationSettingsController(ureq, getWindowControl(), access);
+		bigBlueButtonController.setEnabled(!managed);
+		listenTo(bigBlueButtonController);
+		
+		vc_collabtools.contextPut("bigBlueButtonToolEnabled", Boolean.TRUE);
+		vc_collabtools.put("bigbluebuttonform", bigBlueButtonController.getInitialComponent());
+	}
 	
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
 		
 		if (source == cots && event.getCommand().equals("ONCHANGE")) {
-			
-			Collection<String> set = cots.getSelected();
-			for (int i = 0; i < availableTools.length; i++) {
-				// usually one should check which one changed but here
-				// it is okay to set all of them because ctsm has a cache
-				// and writes only when really necessary.
-				collabTools.setToolEnabled(availableTools[i], set.contains(""+i));	
-			}
-			//reload tools after a change
-			collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
-			
-			fireEvent(ureq, Event.CHANGED_EVENT);			
-			
-			// update news form: only show when enabled
-			if (collabTools.isToolEnabled(CollaborationTools.TOOL_NEWS)) {
-				addNewsTool(ureq);
-			} else {
-				vc_collabtools.contextPut("newsToolEnabled", Boolean.FALSE);
-			}
-			
-			// update calendar form: only show when enabled
-			boolean newCalendarEnabledState = collabTools.isToolEnabled(CollaborationTools.TOOL_CALENDAR);
-			if (newCalendarEnabledState != lastCalendarEnabledState) {
-				if (newCalendarEnabledState) {
-					vc_collabtools.contextPut("calendarToolEnabled", Boolean.TRUE);
-					int iCalendarAccess = CollaborationTools.CALENDAR_ACCESS_OWNERS;
-					Long lCalendarAccess = collabTools.lookupCalendarAccess();
-					if (lCalendarAccess != null) iCalendarAccess = lCalendarAccess.intValue();
-					if (calendarForm != null) {
-						this.removeAsListenerAndDispose(calendarForm);
-					}
-					calendarForm = new CalendarToolSettingsController(ureq, getWindowControl(), iCalendarAccess);
-					calendarForm.setEnabled(!managed);
-					listenTo(calendarForm);
-					vc_collabtools.put("calendarform", calendarForm.getInitialComponent());
-
-				} else {
-					
-					vc_collabtools.contextPut("calendarToolEnabled", Boolean.FALSE);
-
-					// notify calendar components to refresh their calendars
-					CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(
-							new CalendarGUIModifiedEvent(), OresHelper.lookupType(CalendarManager.class)
-					);
-				}
-				lastCalendarEnabledState = newCalendarEnabledState;
-			}
-
-			// update quota form: only show when enabled
-			if (collabTools.isToolEnabled(CollaborationTools.TOOL_FOLDER)) {
-				vc_collabtools.contextPut("folderToolEnabled", Boolean.TRUE);
-				if(folderForm != null) {
-					removeAsListenerAndDispose(folderForm);
-				}
-				Long lFolderAccess = collabTools.lookupFolderAccess();
-				int access = lFolderAccess == null ? CollaborationTools.FOLDER_ACCESS_ALL : lFolderAccess.intValue();
-				folderForm = new FolderToolSettingsController(ureq, getWindowControl(), access);
-				folderForm.setEnabled(!managed);
-				listenTo(folderForm);
-				vc_collabtools.put("folderform", folderForm.getInitialComponent());
-				if (ureq.getUserSession().getRoles().isAdministrator()) {
-					vc_collabtools.put("quota", quotaCtr.getInitialComponent());
-				}
-			} else {
-				vc_collabtools.contextPut("folderToolEnabled", Boolean.FALSE);
-			}
+			doToolsChange(ureq, collabTools);
 		} else if (source == newsController) {
 			if (event.equals(Event.DONE_EVENT)) {
 				String access = newsController.getAccessPropertyValue();
 				collabTools.saveNewsAccessProperty(access);
 			}
-			
+		} else if (source == bigBlueButtonController) {
+			if (event.equals(Event.DONE_EVENT)) {
+				String access = bigBlueButtonController.getAccessPropertyValue();
+				collabTools.saveBigBlueButtonAccessProperty(access);
+			}
 		} else if (source == calendarForm) {	
 			collabTools.saveCalendarAccess(Long.valueOf(calendarForm.getCalendarAccess()));
 			// notify calendar components to refresh their calendars
@@ -261,6 +221,82 @@ public class CollaborationToolsSettingsController extends BasicController {
 		} else if (source == folderForm) {
 			collabTools.saveFolderAccess(Long.valueOf(folderForm.getFolderAccess()));
 		}
+	}
+	
+	private void doToolsChange(UserRequest ureq, CollaborationTools collabTools) {
+		Collection<String> set = cots.getSelected();
+		for (int i = 0; i < availableTools.length; i++) {
+			// usually one should check which one changed but here
+			// it is okay to set all of them because ctsm has a cache
+			// and writes only when really necessary.
+			collabTools.setToolEnabled(availableTools[i], set.contains(""+i));	
+		}
+		//reload tools after a change
+		collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
+		
+		fireEvent(ureq, Event.CHANGED_EVENT);			
+		
+		// update news form: only show when enabled
+		if (collabTools.isToolEnabled(CollaborationTools.TOOL_NEWS)) {
+			addNewsTool(ureq);
+		} else {
+			vc_collabtools.contextPut("newsToolEnabled", Boolean.FALSE);
+		}
+		
+		// update BigBlueButton form: only show when enabled
+		if (collabTools.isToolEnabled(CollaborationTools.TOOL_BIGBLUEBUTTON)) {
+			addBigBlueButtonTool(ureq);
+		} else {
+			vc_collabtools.contextPut("bigBlueButtonToolEnabled", Boolean.FALSE);
+		}
+		
+		// update calendar form: only show when enabled
+		boolean newCalendarEnabledState = collabTools.isToolEnabled(CollaborationTools.TOOL_CALENDAR);
+		if (newCalendarEnabledState != lastCalendarEnabledState) {
+			if (newCalendarEnabledState) {
+				vc_collabtools.contextPut("calendarToolEnabled", Boolean.TRUE);
+				int iCalendarAccess = CollaborationTools.CALENDAR_ACCESS_OWNERS;
+				Long lCalendarAccess = collabTools.lookupCalendarAccess();
+				if (lCalendarAccess != null) iCalendarAccess = lCalendarAccess.intValue();
+				if (calendarForm != null) {
+					this.removeAsListenerAndDispose(calendarForm);
+				}
+				calendarForm = new CalendarToolSettingsController(ureq, getWindowControl(), iCalendarAccess);
+				calendarForm.setEnabled(!managed);
+				listenTo(calendarForm);
+				vc_collabtools.put("calendarform", calendarForm.getInitialComponent());
+
+			} else {
+				
+				vc_collabtools.contextPut("calendarToolEnabled", Boolean.FALSE);
+
+				// notify calendar components to refresh their calendars
+				CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(
+						new CalendarGUIModifiedEvent(), OresHelper.lookupType(CalendarManager.class)
+				);
+			}
+			lastCalendarEnabledState = newCalendarEnabledState;
+		}
+
+		// update quota form: only show when enabled
+		if (collabTools.isToolEnabled(CollaborationTools.TOOL_FOLDER)) {
+			vc_collabtools.contextPut("folderToolEnabled", Boolean.TRUE);
+			if(folderForm != null) {
+				removeAsListenerAndDispose(folderForm);
+			}
+			Long lFolderAccess = collabTools.lookupFolderAccess();
+			int access = lFolderAccess == null ? CollaborationTools.FOLDER_ACCESS_ALL : lFolderAccess.intValue();
+			folderForm = new FolderToolSettingsController(ureq, getWindowControl(), access);
+			folderForm.setEnabled(!managed);
+			listenTo(folderForm);
+			vc_collabtools.put("folderform", folderForm.getInitialComponent());
+			if (ureq.getUserSession().getRoles().isAdministrator()) {
+				vc_collabtools.put("quota", quotaCtr.getInitialComponent());
+			}
+		} else {
+			vc_collabtools.contextPut("folderToolEnabled", Boolean.FALSE);
+		}
+		
 	}
 
 
