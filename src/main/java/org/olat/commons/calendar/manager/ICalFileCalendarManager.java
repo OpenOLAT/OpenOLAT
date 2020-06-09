@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.ParseException;
@@ -270,7 +269,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	@Override
 	public Calendar readCalendar(String type, String calendarID) {
 		if(log.isDebugEnabled()) {
-			log.debug("readCalendar from file, type=" + type + "  calendarID=" + calendarID);
+			log.debug("readCalendar from file, type={} calendarID={}", type, calendarID);
 		}
 		
 		File calendarFile = getCalendarFile(type, calendarID);
@@ -527,7 +526,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	}
 	
 	private VEvent getVEvent(KalendarEvent kEvent) {
-		VEvent vEvent = new VEvent();
+		VEvent vEvent;
 		if (!kEvent.isAllDayEvent()) {
 			// regular VEvent
 			DateTime dtBegin = new DateTime(kEvent.getBegin());
@@ -614,8 +613,8 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 						Url url = new Url();
 						url.setValue(link.getURI());
 						urlOnce = url;
-					} catch (URISyntaxException e) {
-						log.error("Invalid URL:" + link.getURI());
+					} catch (Exception e) {
+						log.error("Invalid URL: {}", link.getURI());
 					}
 				}
 			}
@@ -670,7 +669,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 				
 				vEventProperties.add(recurId);
 			} catch (ParseException e) {
-				log.error("cannot create recurrence ID: " + recurenceId, e);
+				log.error("cannot create recurrence ID: {}", recurenceId, e);
 			}
 		}
 		
@@ -682,7 +681,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 				RRule rrule = new RRule(recur);
 				vEventProperties.add(rrule);
 			} catch (ParseException e) {
-				log.error("cannot create recurrence rule: " + recurrence.toString(), e);
+				log.error("cannot create recurrence rule: {}", recurrence, e);
 			}
 		}
 		
@@ -1538,7 +1537,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 				RRule rrule = new RRule(recur);
 				return rrule.getValue();
 			} catch (ParseException e) {
-				log.error("cannot create recurrence rule: " + recurrence.toString(), e);
+				log.error("cannot create recurrence rule: {}", recurrence, e);
 			}
 		}
 		

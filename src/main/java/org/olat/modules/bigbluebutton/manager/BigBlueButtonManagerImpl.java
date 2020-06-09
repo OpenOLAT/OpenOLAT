@@ -42,6 +42,7 @@ import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -590,6 +591,14 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 					event.setBegin(meeting.getStartDate());
 					event.setEnd(meeting.getEndDate());
 					event.setManagedFlags(managedFlags);
+					if(event.getKalendarEventLinks() == null || event.getKalendarEventLinks().isEmpty()) {
+						KalendarEventLink eventLink = generateEventLink(meeting);
+						if(eventLink != null) {
+							List<KalendarEventLink> kalendarEventLinks = new ArrayList<>();
+							kalendarEventLinks.add(eventLink);
+							event.setKalendarEventLinks(kalendarEventLinks);
+						}
+					}
 					calendarManager.updateEventFrom(calendar, event);
 				}
 				return;
@@ -602,12 +611,40 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 			newEvent.setDescription(meeting.getDescription());
 			newEvent.setManagedFlags(managedFlags);
 			newEvent.setExternalId(externalId);
+			KalendarEventLink eventLink = generateEventLink(meeting);
+			if(eventLink != null) {
+				List<KalendarEventLink> kalendarEventLinks = new ArrayList<>();
+				kalendarEventLinks.add(eventLink);
+				newEvent.setKalendarEventLinks(kalendarEventLinks);
+			}
 			calendarManager.addEventTo(calendar, newEvent);
 		}
 	}
 	
 	private String generateEventExternalId(BigBlueButtonMeeting meeting) {
 		return "bigbluebutton-".concat(meeting.getMeetingId());
+	}
+	
+	private KalendarEventLink generateEventLink(BigBlueButtonMeeting meeting) {
+		String id = meeting.getKey().toString();
+		String displayName = meeting.getName();
+		if(meeting.getEntry() != null) {
+			StringBuilder businessPath = new StringBuilder(128);
+			businessPath.append("[RepositoryEntry:").append(meeting.getEntry().getKey()).append("]");
+			if(StringHelper.containsNonWhitespace(meeting.getSubIdent())) {
+				businessPath.append("[CourseNode:").append(meeting.getSubIdent()).append("]");
+			}
+			businessPath.append("[Meeting:").append(meeting.getKey()).append("]");
+			String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath.toString());
+			return new KalendarEventLink("bigbluebutton", id, displayName, url, "o_CourseModule_icon");
+		} else if(meeting.getBusinessGroup() != null) {
+			StringBuilder businessPath = new StringBuilder(128);
+			businessPath.append("[BusinessGroup:").append(meeting.getBusinessGroup().getKey())
+				.append("][toolbigbluebutton:0][Meeting:").append(meeting.getKey()).append("]");
+			String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath.toString());
+			return new KalendarEventLink("bigbluebutton", id, displayName, url, "o_icon_group");
+		}
+		return null;
 	}
 	
 	private Kalendar getCalendar(BigBlueButtonMeeting meeting) {

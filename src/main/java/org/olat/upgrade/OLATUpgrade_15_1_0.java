@@ -28,6 +28,9 @@ import org.olat.commons.lifecycle.LifeCycleEntry;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.modules.bigbluebutton.BigBlueButtonManager;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.manager.BigBlueButtonMeetingDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -42,11 +45,16 @@ public class OLATUpgrade_15_1_0 extends OLATUpgrade {
 
 	private static final String VERSION = "OLAT_15.1.0";
 	private static final String MIGRATE_USER_LIFECYCLE = "MIGRATE USER LIFECYCLE";
+	private static final String ADD_BIG_BLUE_BUTTON_URL_TO_CALENDAR = "ADD BIG BLUE BUTTON URL TO CALENDAR";
 	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private BigBlueButtonManager bigBlueButtonManager;
+	@Autowired
+	private BigBlueButtonMeetingDAO bigBlueButtonMeetingDao;
 
 	public OLATUpgrade_15_1_0() {
 		super();
@@ -69,6 +77,7 @@ public class OLATUpgrade_15_1_0 extends OLATUpgrade {
 		
 		boolean allOk = true;
 		allOk &= migrateUsersLifecycle(upgradeManager, uhd);
+		allOk &= updateBigBlueButtonCalendars(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -78,6 +87,37 @@ public class OLATUpgrade_15_1_0 extends OLATUpgrade {
 			log.info(Tracing.M_AUDIT, "OLATUpgrade_15_1_0 not finished, try to restart OpenOlat!");
 		}
 		return allOk;
+	}
+	
+	private boolean updateBigBlueButtonCalendars(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(ADD_BIG_BLUE_BUTTON_URL_TO_CALENDAR)) {
+			List<Long> meetingKeys = getMeetingKeys();
+			int count = 0;
+			for(Long meetingKey:meetingKeys) {
+				updateBigBlueButtonMeeting(meetingKey);
+				if(++count % 25 == 0) {
+					dbInstance.commitAndCloseSession();
+					log.info("Updates calendar event of BigBlueButton meetings: {}", count);
+				}
+			}
+			log.info("Updates calendar event of BigBlueButton meetings: {}", meetingKeys.size());
+			uhd.setBooleanDataValue(ADD_BIG_BLUE_BUTTON_URL_TO_CALENDAR, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	private void updateBigBlueButtonMeeting(Long meetingKey) {
+		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.loadByKey(meetingKey);
+		bigBlueButtonManager.updateMeeting(meeting);
+	}
+	
+	private List<Long> getMeetingKeys() {
+		String query = "select meeting.key from bigbluebuttonmeeting as meeting";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, Long.class)
+				.getResultList();
 	}
 	
 	private boolean migrateUsersLifecycle(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {

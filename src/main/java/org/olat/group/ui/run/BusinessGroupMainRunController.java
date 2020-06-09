@@ -86,6 +86,7 @@ import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.modules.adobeconnect.AdobeConnectModule;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
+import org.olat.modules.bigbluebutton.ui.BigBlueButtonRunController;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.olat.modules.portfolio.PortfolioV2Module;
@@ -817,7 +818,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		mainPanel.setContent(collabToolCtr.getInitialComponent());
 	}
 	
-	private void doBigBlueButton(UserRequest ureq) {
+	private BigBlueButtonRunController doBigBlueButton(UserRequest ureq) {
 		addLoggingResourceable(LoggingResourceable.wrap(ORES_TOOLBIGBLUEBUTTON, OlatResourceableType.bigbluebutton));
 		
 		ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(ORES_TOOLBIGBLUEBUTTON);
@@ -826,9 +827,11 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		addToHistory(ureq, bwControl);
 		
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
-		collabToolCtr = collabTools.createBigBlueButtonController(ureq, bwControl, businessGroup, isAdmin);
+		BigBlueButtonRunController bigBlueButtonToolCtrl = collabTools.createBigBlueButtonController(ureq, bwControl, businessGroup, isAdmin);
+		collabToolCtr = bigBlueButtonToolCtrl;
 		listenTo(collabToolCtr);
 		mainPanel.setContent(collabToolCtr.getInitialComponent());
+		return bigBlueButtonToolCtrl;
 	}
 
 	private Activateable2 doAdministration(UserRequest ureq) {
@@ -995,7 +998,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			}
 		} else if (OresHelper.equals(ores, ORES_TOOLBIGBLUEBUTTON)) {
 			if (nodeBigBlueButton != null) {
-				doBigBlueButton(ureq);
+				doBigBlueButton(ureq).activate(ureq, entries, ce.getTransientState());
 				bgTree.setSelectedNode(nodeBigBlueButton);
 			} else if(mainPanel != null) { // not enabled
 				String text = translate("warn.portfolionotavailable");

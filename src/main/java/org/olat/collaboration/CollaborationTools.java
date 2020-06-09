@@ -607,7 +607,7 @@ public class CollaborationTools implements Serializable {
 		return new AdobeConnectRunController(ureq, wControl, null, null, group, configuration, admin, admin, false);
 	}
 	
-	public Controller createBigBlueButtonController(final UserRequest ureq, WindowControl wControl, final BusinessGroup group, boolean admin) {
+	public BigBlueButtonRunController createBigBlueButtonController(final UserRequest ureq, WindowControl wControl, final BusinessGroup group, boolean admin) {
 		BigBlueButtonMeetingDefaultConfiguration configuration = new BigBlueButtonMeetingDefaultConfiguration(false);
 		boolean administrator = admin || "all".equals(getBigBlueButtonAccessProperty());
 		return new BigBlueButtonRunController(ureq, wControl, null, null, group, configuration, administrator, administrator, false);
