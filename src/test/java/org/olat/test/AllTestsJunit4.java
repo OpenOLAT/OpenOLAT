@@ -178,7 +178,7 @@ import org.junit.runners.Suite;
 	org.olat.course.disclaimer.CourseDisclaimerManagerTest.class,
 	org.olat.course.highscore.HighScoreManagerTest.class,
 	org.olat.course.learningpath.LearningPathServiceTest.class,
-	org.olat.course.nodes.appointments.AppointmentsService.class,
+	org.olat.course.nodes.appointments.AppointmentsServiceTest.class,
 	org.olat.course.nodes.appointments.manager.AppointmentDAOTest.class,
 	org.olat.course.nodes.appointments.manager.OrganizerDAOTest.class,
 	org.olat.course.nodes.appointments.manager.ParticipationDAOTest.class,
