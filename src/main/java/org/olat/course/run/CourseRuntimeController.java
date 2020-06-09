@@ -291,6 +291,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		
 		RunMainController runMainController = getRunMainController();
 		if(runMainController != null) {
+			runMainController.reloadGroupMemberships(reSecurity);
 			runMainController.updateCurrentCourseNode(ureq);
 		}
 	}
