@@ -1267,6 +1267,7 @@ create table o_bbb_meeting (
    b_name varchar(128) not null,
    b_description varchar(2000) default null,
    b_welcome CLOB,
+   b_layout varchar2(16) default 'standard',
    b_permanent number default 0 not null,
    b_start_date timestamp default null,
    b_leadtime number(20) default 0 not null,

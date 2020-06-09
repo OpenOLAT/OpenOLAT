@@ -33,6 +33,7 @@ import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeetingLayoutEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 import org.olat.modules.bigbluebutton.BigBlueButtonServer;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingImpl;
@@ -62,6 +63,7 @@ public class BigBlueButtonMeetingDAO {
 		meeting.setMeetingId(UUID.randomUUID().toString());
 		meeting.setAttendeePassword(UUID.randomUUID().toString());
 		meeting.setModeratorPassword(UUID.randomUUID().toString());
+		meeting.setMeetingLayout(BigBlueButtonMeetingLayoutEnum.standard);
 		
 		meeting.setEntry(entry);
 		meeting.setSubIdent(subIdent);

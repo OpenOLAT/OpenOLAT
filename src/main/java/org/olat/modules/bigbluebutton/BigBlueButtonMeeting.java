@@ -54,6 +54,10 @@ public interface BigBlueButtonMeeting extends ModifiedInfo, CreateInfo {
 	
 	public void setWelcome(String welcome);
 	
+	public BigBlueButtonMeetingLayoutEnum getMeetingLayout();
+	
+	public void setMeetingLayout(BigBlueButtonMeetingLayoutEnum layout);
+	
 	public boolean isPermanent();
 	
 	public void setPermanent(boolean permanent);

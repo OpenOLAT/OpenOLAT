@@ -60,6 +60,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.DeletableGroupData;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeetingLayoutEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecording;
@@ -735,12 +736,21 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		}
 
 		BigBlueButtonUriBuilder uriBuilder = getUriBuilder(server);
-		return uriBuilder
+		uriBuilder
 			.operation("join")
 			.parameter("meetingID", meeting.getMeetingId())
 			.parameter("fullName", getFullName(identity))
 			.parameter("password", password)
-			.optionalParameter("userID", userId)
+			.optionalParameter("userID", userId);
+		
+		if(BigBlueButtonMeetingLayoutEnum.webcam.equals(meeting.getMeetingLayout())) {
+			uriBuilder
+				.optionalParameter("userdata-bbb_auto_swap_layout", "true")
+				.optionalParameter("userdata-bbb_auto_share_webcam", "true")
+				.optionalParameter("userdata-bbb_show_participants_on_login", "false");
+		}
+		
+		return uriBuilder
 			.build()
 			.toString();
 	}

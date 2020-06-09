@@ -37,6 +37,7 @@ import org.olat.core.id.Persistable;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeetingLayoutEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 import org.olat.modules.bigbluebutton.BigBlueButtonServer;
 import org.olat.repository.RepositoryEntry;
@@ -90,6 +91,9 @@ public class BigBlueButtonMeetingImpl implements Persistable, BigBlueButtonMeeti
 	
 	@Column(name="b_permanent", nullable=false, insertable=true, updatable=true)
 	private boolean permanent;
+	
+	@Column(name="b_layout", nullable=false, insertable=true, updatable=true)
+	private String layout;
 
 	@Column(name="b_meeting_id", nullable=false, insertable=true, updatable=false)
 	private String meetingId;
@@ -199,6 +203,30 @@ public class BigBlueButtonMeetingImpl implements Persistable, BigBlueButtonMeeti
 	@Override
 	public void setWelcome(String welcome) {
 		this.welcome = welcome;
+	}
+	
+	
+
+	public String getLayout() {
+		return layout;
+	}
+
+	public void setLayout(String layout) {
+		this.layout = layout;
+	}
+
+	@Override
+	public BigBlueButtonMeetingLayoutEnum getMeetingLayout() {
+		return BigBlueButtonMeetingLayoutEnum.secureValueOf(layout);
+	}
+
+	@Override
+	public void setMeetingLayout(BigBlueButtonMeetingLayoutEnum meetingLayout) {
+		if(meetingLayout == null) {
+			layout = BigBlueButtonMeetingLayoutEnum.standard.name();
+		} else {
+			layout = meetingLayout.name();
+		}
 	}
 
 	@Override

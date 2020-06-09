@@ -42,6 +42,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeetingLayoutEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
@@ -65,6 +66,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	private DateChooser startDateEl;
 	private DateChooser endDateEl;
 	private SingleSelection templateEl;
+	private SingleSelection layoutEl;
 
 	private final Mode mode;
 	private final String subIdent;
@@ -171,7 +173,27 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		if(!templateSelected && templatesKeys.length > 0) {
 			templateEl.select(templatesKeys[0], true);
 		}
-		
+
+		KeyValues layoutKeyValues = new KeyValues();
+		layoutKeyValues.add(KeyValues.entry(BigBlueButtonMeetingLayoutEnum.standard.name(), translate("layout.standard")));
+		if(isWebcamLayoutAvailable()) {
+			layoutKeyValues.add(KeyValues.entry(BigBlueButtonMeetingLayoutEnum.webcam.name(), translate("layout.webcam")));
+		}
+		layoutEl = uifactory.addDropdownSingleselect("meeting.layout", "meeting.layout", formLayout,
+				layoutKeyValues.keys(), layoutKeyValues.values());
+		boolean layoutSelected = false;
+		String selectedLayout = meeting == null ? BigBlueButtonMeetingLayoutEnum.standard.name() : meeting.getMeetingLayout().name();
+		for(String layoutKey:layoutKeyValues.keys()) {
+			if(layoutKey.equals(selectedLayout)) {
+				layoutEl.select(layoutKey, true);
+				layoutSelected = true;
+			}
+		}
+		if(!layoutSelected) {
+			layoutEl.select(BigBlueButtonMeetingLayoutEnum.standard.name(), true);
+		}
+		layoutEl.setVisible(layoutEl.getKeys().length > 1);
+	
 		openCalLink = uifactory.addFormLink("calendar.open", formLayout);
 		openCalLink.setIconLeftCSS("o_icon o_icon-fw o_icon_calendar");
 		updateTemplateInformations();
@@ -217,6 +239,14 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		}
 	}
 	
+	private boolean isWebcamLayoutAvailable() {
+		if(!templateEl.isOneSelected()) {
+			return true;
+		}
+		BigBlueButtonMeetingTemplate template = getSelectedTemplate();
+		return template != null && (template.getWebcamsOnlyForModerator() == null || !template.getWebcamsOnlyForModerator().booleanValue());
+	}
+	
 	private void updateTemplateInformations() {
 		templateEl.setExampleKey(null, null);
 		if(templateEl.isOneSelected()) {
@@ -232,6 +262,24 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 				}
 			}
 		}
+	}
+	
+	private void updateLayoutSelection() {
+		boolean webcamAvailable = isWebcamLayoutAvailable();
+		if(webcamAvailable && layoutEl.getKeys().length == 1) {
+			KeyValues layoutKeyValues = new KeyValues();
+			layoutKeyValues.add(KeyValues.entry(BigBlueButtonMeetingLayoutEnum.standard.name(), translate("layout.standard")));
+			layoutKeyValues.add(KeyValues.entry(BigBlueButtonMeetingLayoutEnum.webcam.name(), translate("layout.webcam")));
+			layoutEl.setKeysAndValues(layoutKeyValues.keys(), layoutKeyValues.values(), null);
+		} else if(!webcamAvailable && layoutEl.getKeys().length > 1) {
+			layoutEl.select(BigBlueButtonMeetingLayoutEnum.standard.name(), true);
+			
+			KeyValues layoutKeyValues = new KeyValues();
+			layoutKeyValues.add(KeyValues.entry(BigBlueButtonMeetingLayoutEnum.standard.name(), translate("layout.standard")));
+			layoutEl.setKeysAndValues(layoutKeyValues.keys(), layoutKeyValues.values(), null);
+		}
+		
+		layoutEl.setVisible(layoutEl.getKeys().length > 1);
 	}
 	
 	private void doOpenCalendar(UserRequest ureq) {
@@ -428,6 +476,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(templateEl == source) {
 			updateTemplateInformations();
+			updateLayoutSelection();
 		} else if (openCalLink == source) {
 			doOpenCalendar(ureq);
 		}
@@ -463,6 +512,13 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			meeting.setLeadTime(leadTime);
 			long followupTime = getFollowupTime();
 			meeting.setFollowupTime(followupTime);
+		}
+		
+		if(layoutEl.isVisible() && layoutEl.isOneSelected()) {
+			BigBlueButtonMeetingLayoutEnum layout = BigBlueButtonMeetingLayoutEnum.secureValueOf(layoutEl.getSelectedKey());
+			meeting.setMeetingLayout(layout);
+		} else {
+			meeting.setMeetingLayout(BigBlueButtonMeetingLayoutEnum.standard);
 		}
 		
 		bigBlueButtonManager.updateMeeting(meeting);

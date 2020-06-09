@@ -4,6 +4,10 @@ alter table o_bs_identity add column inactivationemaildate datetime;
 alter table o_bs_identity add column deletionemaildate datetime;
 
 
+-- BigBlueButton
+alter table o_bbb_meeting add column b_layout varchar(16) default 'standard';
+
+
 -- Appointments
 create table o_ap_topic (
    id bigint not null auto_increment,
