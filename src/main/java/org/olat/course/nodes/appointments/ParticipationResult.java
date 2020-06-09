@@ -19,8 +19,8 @@
  */
 package org.olat.course.nodes.appointments;
 
-import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import org.olat.course.nodes.appointments.model.ParticipationResultImpl;
 
@@ -41,7 +41,7 @@ public interface ParticipationResult {
 		return of(Collections.singletonList(participation));
 	}
 	
-	static ParticipationResult of(Collection<Participation> participations) {
+	static ParticipationResult of(List<Participation> participations) {
 		return new ParticipationResultImpl(Status.ok, participations);
 	}
 	
@@ -59,6 +59,6 @@ public interface ParticipationResult {
 	 *
 	 * @return the participations if status == ok.
 	 */
-	public Collection<Participation> getParticipations();
+	public List<Participation> getParticipations();
 
 }

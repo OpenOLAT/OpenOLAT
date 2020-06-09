@@ -184,8 +184,11 @@ public class TopicsRunCoachController extends BasicController {
 		Integer totalAppointments = Integer.valueOf(appointments.size());
 		wrapper.setTotalAppointments(totalAppointments);
 		
-		Integer selectedParticipations = Integer.valueOf(participations.size());
-		wrapper.setSelectedParticipations(selectedParticipations);
+		long numParticipants = participations.stream()
+				.map(participation -> participation.getIdentity().getKey())
+				.distinct()
+				.count();
+		wrapper.setNumParticipants(Long.valueOf(numParticipants));
 		
 		long confirmableAppointmentsCount = appointments.stream()
 				.filter(a -> isConfirmable(a, appointmentKeyToParticipations))
@@ -339,7 +342,7 @@ public class TopicsRunCoachController extends BasicController {
 
 		private final Topic topic;
 		private List<String> organizers;
-		private Integer selectedParticipations;
+		private Long numParticipants;
 		private Integer totalAppointments;
 		private Long confirmableAppointments;
 		
@@ -377,12 +380,12 @@ public class TopicsRunCoachController extends BasicController {
 			this.organizers = organizers;
 		}
 
-		public Integer getSelectedParticipations() {
-			return selectedParticipations;
+		public Long getNumParticipants() {
+			return numParticipants;
 		}
 
-		public void setSelectedParticipations(Integer selectedParticipations) {
-			this.selectedParticipations = selectedParticipations;
+		public void setNumParticipants(Long numParticipants) {
+			this.numParticipants = numParticipants;
 		}
 
 		public Integer getTotalAppointments() {

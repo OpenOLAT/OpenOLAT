@@ -19,7 +19,7 @@
  */
 package org.olat.course.nodes.appointments.model;
 
-import java.util.Collection;
+import java.util.List;
 
 import org.olat.course.nodes.appointments.Participation;
 import org.olat.course.nodes.appointments.ParticipationResult;
@@ -33,13 +33,13 @@ import org.olat.course.nodes.appointments.ParticipationResult;
 public class ParticipationResultImpl implements ParticipationResult {
 
 	private final Status status;
-	private final Collection<Participation> participations;
+	private final List<Participation> participations;
 	
 	public ParticipationResultImpl(Status status) {
 		this(status, null);
 	}
 	
-	public ParticipationResultImpl(Status status, Collection<Participation> participations) {
+	public ParticipationResultImpl(Status status, List<Participation> participations) {
 		this.status = status;
 		this.participations = participations;
 	}
@@ -50,7 +50,7 @@ public class ParticipationResultImpl implements ParticipationResult {
 	}
 
 	@Override
-	public Collection<Participation> getParticipations() {
+	public List<Participation> getParticipations() {
 		return participations;
 	}
 

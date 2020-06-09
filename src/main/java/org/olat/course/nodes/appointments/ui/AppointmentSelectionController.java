@@ -268,13 +268,8 @@ public class AppointmentSelectionController extends BasicController {
 	}
 
 	private void doCreateParticipation(Appointment appointment) {
-		appointmentWrappers.stream()
-				.map(AppointmentWrapper::getParticipation)
-				.filter(p -> p != null)
-				.forEach(p -> appointmentsService.deleteParticipation(p));
-		
 		ParticipationResult participationResult = appointmentsService.createParticipation(appointment, getIdentity(),
-				!config.isConfirmation());
+				config.isMultiParticipations(), !config.isConfirmation());
 		if (ParticipationResult.Status.ok != participationResult.getStatus()) {
 			showWarning("participation.not.created");
 		}

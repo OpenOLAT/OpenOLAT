@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -195,8 +196,18 @@ public class TopicsRunController extends BasicController implements Activateable
 	private void wrapParticpations(TopicWrapper wrapper, Topic topic, List<Participation> participations,
 			List<Appointment> appointments, Map<Long, List<Participation>> appointmentKeyToParticipation,
 			Map<Long, List<Participation>> appointmentKeyToAllParticipations) {
-		if (participations.size() == 1) {
-			Appointment appointment = participations.get(0).getAppointment();
+		if (!participations.isEmpty()) {
+			Date now = new Date();
+			Optional<Appointment> nextAppointment = appointments.stream()
+					.filter(a1 -> now.before(a1.getEnd()))
+					.sorted((a1, a2) -> a1.getStart().compareTo(a2.getStart()))
+					.findFirst();
+			Appointment appointment = nextAppointment.isPresent()
+					? nextAppointment.get() // Next appointment ...
+					: appointments.stream()
+						.sorted((a1, a2) -> a2.getStart().compareTo(a1.getStart()))
+						.findFirst().get(); // ... or the most recent one.
+			wrapper.setFuture(Boolean.valueOf(appointment.getStart().after(now)));
 			
 			Locale locale = getLocale();
 			Date begin = appointment.getStart();
@@ -245,10 +256,17 @@ public class TopicsRunController extends BasicController implements Activateable
 					.collect(Collectors.toList());
 			wrapper.setParticipants(participants);
 			
-			if (Appointment.Status.planned == appointment.getStatus()) {
+			if (participations.size() >= 2) {
+				wrapper.setSelectedAppointments(Integer.valueOf(participations.size()));
+			}
+			
+			boolean canChange = config.isMultiParticipations()
+					? true
+					: Appointment.Status.planned == appointment.getStatus();
+			if (canChange) {
 				wrapOpenLink(wrapper, topic, "appointments.change");
 			}
-		} else if (participations.size() == 0) {
+		} else {
 			long freeAppointments = appointments.stream()
 					.filter(a -> Appointment.Status.planned == a.getStatus())
 					.filter(a -> hasFreeParticipations(a, appointmentKeyToParticipation))
@@ -257,9 +275,6 @@ public class TopicsRunController extends BasicController implements Activateable
 			if (freeAppointments > 0) {
 				wrapOpenLink(wrapper, topic, "appointments.select");
 			}
-		} else {
-			wrapper.setSelectedAppointments(Integer.valueOf(participations.size()));
-			wrapOpenLink(wrapper, topic, "appointments.select");
 		}
 	}
 
@@ -351,6 +366,7 @@ public class TopicsRunController extends BasicController implements Activateable
 		private List<String> organizerNames;
 		private String emailLinkName;
 		private List<String> participants;
+		private Boolean future;
 		private String date;
 		private String date2;
 		private String time;
@@ -408,6 +424,14 @@ public class TopicsRunController extends BasicController implements Activateable
 
 		public void setParticipants(List<String> participants) {
 			this.participants = participants;
+		}
+
+		public Boolean getFuture() {
+			return future;
+		}
+
+		public void setFuture(Boolean future) {
+			this.future = future;
 		}
 
 		public String getDate() {

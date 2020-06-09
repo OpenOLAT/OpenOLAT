@@ -71,6 +71,7 @@ public class AppointmentsCourseNode extends AbstractAccessableCourseNode {
 	// configuration
 	private static final int CURRENT_VERSION = 1;
 	public static final String CONFIG_CONFIRMATION = "appointment.confirmation";
+	public static final String CONFIG_MULTI_PARTICIPATIONS = "multi.participations";
 	public static final String CONFIG_COACH_EDIT_TOPIC = "coach.edit.topic";
 	public static final String CONFIG_COACH_EDIT_APPOINTMENT = "coach.edit.appointment";
 
@@ -114,6 +115,7 @@ public class AppointmentsCourseNode extends AbstractAccessableCourseNode {
 					.create(getModuleConfiguration(), userCourseEnv);
 			Configuration config = new Configuration();
 			config.setConfirmation(getModuleConfiguration().getBooleanSafe(CONFIG_CONFIRMATION));
+			config.setMultiParticipations(getModuleConfiguration().getBooleanSafe(CONFIG_MULTI_PARTICIPATIONS));
 			RepositoryEntry entry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			controller = new AppointmentsRunController(ureq, wControl, entry, getIdent(), secCallback, config);
 		}
@@ -152,6 +154,7 @@ public class AppointmentsCourseNode extends AbstractAccessableCourseNode {
 		
 		if (isNewNode) {
 			config.setBooleanEntry(CONFIG_CONFIRMATION, true);
+			config.setBooleanEntry(CONFIG_MULTI_PARTICIPATIONS, true);
 			config.setBooleanEntry(CONFIG_COACH_EDIT_TOPIC, true);
 			config.setBooleanEntry(CONFIG_COACH_EDIT_APPOINTMENT, true);
 		}

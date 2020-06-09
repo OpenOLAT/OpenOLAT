@@ -12,7 +12,7 @@
 				<div class="panel-heading">
 					<h4 class="panel-title">
 						$topic.title
-											<span class='o_organizers'>
+						<span class='o_organizers'>
 							#if($r.isNotEmpty($topic.organizerNames))
 								<span class="small">
 									$r.translate("organizer.with")
@@ -26,6 +26,9 @@
 					</h4>
 				</div>
 				<div class="panel-body">
+					#if($r.isNotNull($topic.getFuture()))
+						<h5>#if($topic.getFuture())$r.translate("appointment.next")#else$r.translate("appointment.last")#end</h5>
+					#end
 					#if($topic.getDate() && $topic.getDate() != "")
 						<div class="o_date">
 							<i class="o_icon o_icon-fw o_icon_calendar">&nbsp;</i>
@@ -78,7 +81,7 @@
 					#end
 					
 					#if($r.isNotNull($topic.getSelectedAppointments()))
-						<div class="o_warning">
+						<div class="o_warning o_selected_msg">
 							#if($topic.getFreeAppointments() == 1)
 								$r.translate("appointments.selected.one")
 							#else

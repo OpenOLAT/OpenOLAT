@@ -28,6 +28,7 @@ package org.olat.course.nodes.appointments.ui;
 public class Configuration {
 	
 	private boolean confirmation;
+	private boolean multiParticipations;
 
 	public boolean isConfirmation() {
 		return confirmation;
@@ -35,6 +36,14 @@ public class Configuration {
 
 	public void setConfirmation(boolean confirmation) {
 		this.confirmation = confirmation;
+	}
+
+	public boolean isMultiParticipations() {
+		return multiParticipations;
+	}
+
+	public void setMultiParticipations(boolean multiParticipations) {
+		this.multiParticipations = multiParticipations;
 	}
 
 }

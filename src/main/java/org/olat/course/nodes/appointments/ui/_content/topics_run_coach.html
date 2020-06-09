@@ -34,7 +34,7 @@
 							#if($r.isNull($topic.getTotalAppointments()) || $topic.getTotalAppointments() == 0)
 								$r.translate("no.appointments")
 							#else
-								$r.translate("participations.selected", $topic.getSelectedParticipations().toString(), $topic.getTotalAppointments().toString())
+								$r.translate("participations.selected", $topic.getNumParticipants().toString(), $topic.getTotalAppointments().toString())
 							#end
 							
 							#if($r.isNotNull($topic.getConfirmableAppointments()))

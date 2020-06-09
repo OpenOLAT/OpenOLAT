@@ -47,6 +47,7 @@ public class AppointmentsConfigController extends FormBasicController {
 	private static final String[] EDIT_TOPIC_KEYS = new String[] { KEY_COACH };
 	private static final String[] EDIT_APPOINTMENT_KEYS = new String[] { KEY_COACH };
 
+	private MultipleSelectionElement multiParticipationEl;
 	private MultipleSelectionElement confirmationEl;
 	private MultipleSelectionElement editTopicEl;
 	private MultipleSelectionElement editAppointmentEl;
@@ -64,6 +65,11 @@ public class AppointmentsConfigController extends FormBasicController {
 		FormLayoutContainer generalCont = FormLayoutContainer.createDefaultFormLayout("general", getTranslator());
 		formLayout.add(generalCont);
 		generalCont.setFormTitle(translate("general"));
+		
+		multiParticipationEl = uifactory.addCheckboxesVertical("config.multi.participation", generalCont, ON_KEYS,
+				translateAll(getTranslator(), ON_KEYS), 1);
+		multiParticipationEl.select(multiParticipationEl.getKey(0), config.getBooleanSafe(AppointmentsCourseNode.CONFIG_MULTI_PARTICIPATIONS));
+		multiParticipationEl.addActionListener(FormEvent.ONCHANGE);
 		
 		confirmationEl = uifactory.addCheckboxesVertical("config.confirmation", generalCont, ON_KEYS,
 				translateAll(getTranslator(), ON_KEYS), 1);
@@ -88,7 +94,9 @@ public class AppointmentsConfigController extends FormBasicController {
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == confirmationEl) {
+		if (source == multiParticipationEl) {
+			doConfirmation(ureq);
+		} else if (source == confirmationEl) {
 			doConfirmation(ureq);
 		} else if (source == editTopicEl) {
 			doUserRights(ureq);
@@ -99,6 +107,7 @@ public class AppointmentsConfigController extends FormBasicController {
 	}
 	
 	private void doConfirmation(UserRequest ureq) {
+		config.setBooleanEntry(AppointmentsCourseNode.CONFIG_MULTI_PARTICIPATIONS, multiParticipationEl.isAtLeastSelected(1));
 		config.setBooleanEntry(AppointmentsCourseNode.CONFIG_CONFIRMATION, confirmationEl.isAtLeastSelected(1));
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 	}

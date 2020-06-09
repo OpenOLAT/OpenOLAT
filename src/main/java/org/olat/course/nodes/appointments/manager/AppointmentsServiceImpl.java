@@ -258,7 +258,7 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 
 	@Override
 	public ParticipationResult createParticipation(Appointment appointment, Identity identity,
-			boolean autoConfirmation) {
+			boolean multiParticipations, boolean autoConfirmation) {
 		AppointmentSearchParams appointmentParams = new AppointmentSearchParams();
 		appointmentParams.setAppointment(appointment);
 		appointmentParams.setFetchTopic(true);
@@ -279,6 +279,14 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 			if (count.longValue() >= reloadedAppointment.getMaxParticipations().intValue()) {
 				return ParticipationResult.APPOINTMENT_FULL;
 			}
+		}
+		
+		if (!multiParticipations) {
+			ParticipationSearchParams currentParticipationParams = new ParticipationSearchParams();
+			currentParticipationParams.setTopic(reloadedAppointment.getTopic());
+			currentParticipationParams.setIdentity(identity);
+			List<Participation> loadParticipations = participationDao.loadParticipations(currentParticipationParams);
+			loadParticipations.forEach(currentParticipation -> deleteParticipation(currentParticipation));
 		}
 		
 		Participation participation = participationDao.createParticipation(reloadedAppointment, identity);
@@ -304,11 +312,11 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 		}
 		Appointment toAppointment = appointments.get(0);
 		
+		ParticipationSearchParams participationParams = new ParticipationSearchParams();
+		participationParams.setAppointments(singletonList(toAppointment));
+		List<Participation> currentParticipations = participationDao.loadParticipations(participationParams);
 		if (toAppointment.getMaxParticipations() != null) {
-			ParticipationSearchParams participationParams = new ParticipationSearchParams();
-			participationParams.setAppointments(singletonList(toAppointment));
-			Long count = participationDao.loadParticipationCount(participationParams);
-			if ((count.longValue() + participationRefs.size()) > toAppointment.getMaxParticipations().intValue()) {
+			if ((currentParticipations.size() + participationRefs.size()) > toAppointment.getMaxParticipations().intValue()) {
 				return ParticipationResult.APPOINTMENT_FULL;
 			}
 		}
@@ -323,10 +331,12 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 		
 		List<Participation> participations = new ArrayList<>(fromParticipations.size());
 		for (Participation fromParticipation : fromParticipations) {
-			Identity identity = fromParticipation.getIdentity();
-			Participation participation = participationDao.createParticipation(toAppointment, identity);
-			participations.add(participation);
-			calendarSyncher.syncCalendar(toAppointment, identity);
+			if (!hasParticipation(currentParticipations, fromParticipation) ) {
+				Identity identity = fromParticipation.getIdentity();
+				Participation participation = participationDao.createParticipation(toAppointment, identity);
+				participations.add(participation);
+				calendarSyncher.syncCalendar(toAppointment, identity);
+			}
 		}
 		markNews(toAppointment.getTopic());
 		appointmentsMailing.sendRebook(toAppointment, fromParticipations);
@@ -339,6 +349,16 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 		fromParticipations.forEach(this::deleteParticipation);
 		
 		return ParticipationResult.of(participations);
+	}
+
+	private boolean hasParticipation(List<Participation> currentParticipations, Participation fromParticipation) {
+		Long identityKey = fromParticipation.getIdentity().getKey();
+		for (Participation participation : currentParticipations) {
+			if (participation.getIdentity().getKey().equals(identityKey)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
