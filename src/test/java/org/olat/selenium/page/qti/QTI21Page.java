@@ -117,6 +117,21 @@ public class QTI21Page {
 		return this;
 	}
 	
+	public QTI21Page passE4() {
+		start()
+			.answerSingleChoiceWithParagraph("Correct answer")
+			.saveAnswer()
+			.answerMultipleChoice("Correct answer", "The answer is correct")
+			.saveAnswer()
+			.answerCorrectKPrim("This answer", "Plus answer")
+			.answerIncorrectKPrim("Not answer", "Minus answer")
+			.saveAnswer()
+			.answerGapText("not", "qtiworks_response_oofibc4c14bfe94a41861fe19c70091182_5_1_RESPONSE_1")
+			.saveAnswer()
+			.endTest();
+		return this;
+	}
+	
 	/**
 	 * Check the answer of a single choice.
 	 * @param answer The answer
@@ -807,7 +822,7 @@ public class QTI21Page {
 	
 	public QTI21Page closeTest() {
 		By closeBy = By.cssSelector("a.o_sel_close_test");
-		OOGraphene.waitElement(closeBy, 5, browser);
+		OOGraphene.waitElement(closeBy, browser);
 		browser.findElement(closeBy).click();
 		OOGraphene.waitBusy(browser);
 		confirm();

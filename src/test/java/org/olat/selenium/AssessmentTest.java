@@ -34,7 +34,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.olat.course.learningpath.FullyAssessedTrigger;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.model.SingleRoleRepositoryEntrySecurity.Role;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
@@ -55,6 +55,8 @@ import org.olat.selenium.page.course.MembersPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.group.GroupPage;
 import org.olat.selenium.page.qti.QTI12Page;
+import org.olat.selenium.page.qti.QTI21Page;
+import org.olat.selenium.page.repository.RepositoryEditDescriptionPage;
 import org.olat.selenium.page.repository.ScormPage;
 import org.olat.selenium.page.repository.UserAccess;
 import org.olat.selenium.page.user.UserToolsPage;
@@ -806,6 +808,154 @@ public class AssessmentTest extends Deployments {
 			.selectStatement(courseTitle)
 			.selectStatementSegment()
 			.assertOnCourseDetails(testNodeTitle, true);
+	}
+
+	/**
+	 * This tests a course with cascading rules and expert rules
+	 * to calculate if the course is passed and generate a
+	 * certificate. 
+	 * 
+	 * @param loginPage
+	 */
+	@Test
+	@RunAsClient
+	public void certificatesGeneratedWithCascadingRules()
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		UserVO participant1 = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		UserVO participant2 = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		URL zipUrl = JunitTestHelper.class.getResource("file_resources/course_certificates_exrules.zip");
+		File zipFile = new File(zipUrl.toURI());
+		//go the authoring environment to import our course
+		String zipTitle = "Certif - " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.uploadResource(zipTitle, zipFile);
+		
+		// publish the course
+		new RepositoryEditDescriptionPage(browser)
+			.clickToolbarBack();
+		CoursePageFragment course = CoursePageFragment.getCourse(browser)
+				.edit()
+				.autoPublish();
+		
+		// add a participant
+		MembersPage members = course
+			.members();
+		members
+			.importMembers()
+			.setMembers(participant1, participant2)
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
+			.finish();
+		members
+			.clickToolbarBack();
+		
+		course
+			.settings()
+			.accessConfiguration()
+			.setUserAccess(UserAccess.registred)
+			.save()
+			.clickToolbarBack();
+		
+		course
+			.changeStatus(RepositoryEntryStatusEnum.published);
+	
+		//log out
+		new UserToolsPage(browser)
+			.logout();
+		
+		// participant log in and go directly to the first test
+		LoginPage participantLoginPage = LoginPage.load(browser, deploymentUrl);
+		
+		participantLoginPage
+			.loginAs(participant1.getLogin(), participant1.getPassword())
+			.resume();
+		
+		//open the course
+		NavigationPage participantNavBar = NavigationPage.load(browser);
+		participantNavBar
+			.openMyCourses()
+			.select(zipTitle);
+		
+		//go to the test
+		CoursePageFragment certificationCourse = new CoursePageFragment(browser);
+		certificationCourse
+			.clickTree()
+			.assertWithTitleSelected("Test 1");
+		//pass the test
+		QTI21Page.getQTI21Page(browser)
+			.passE4()
+			.assertOnCourseAssessmentTestScore(4);
+		
+		OOGraphene.waitingALittleLonger();
+		
+		//open the efficiency statements
+		String certificateTitle = "Certificates" + zipTitle;
+		UserToolsPage participantUserTools = new UserToolsPage(browser);
+		participantUserTools
+			.openUserToolsMenu()
+			.openMyEfficiencyStatement()
+			.assertOnEfficiencyStatmentPage()
+			.assertOnCertificateAndStatements(certificateTitle)
+			.selectStatement(certificateTitle)
+			.selectStatementSegment()
+			.assertOnCourseDetails("CertificatesCert", true)
+			.assertOnCourseDetails("Struktur 1", true)
+			.assertOnCourseDetails("Test 1", true);
+		
+		//log out
+		new UserToolsPage(browser)
+			.logout();
+		
+		
+		// participant 2 log in and go directly to the second test
+		LoginPage participant2LoginPage = LoginPage.load(browser, deploymentUrl);
+		
+		participant2LoginPage
+			.loginAs(participant2.getLogin(), participant2.getPassword())
+			.resume();
+		
+		//open the course
+		NavigationPage participant2NavBar = NavigationPage.load(browser);
+		participant2NavBar
+			.openMyCourses()
+			.select(zipTitle);
+		
+		//go to the test
+		CoursePageFragment certification2Course = new CoursePageFragment(browser);
+		certification2Course
+			.clickTree()
+			.selectWithTitle("Struktur 3")
+			.assertWithTitleSelected("Struktur 3")
+			.assertWithTitle("Test 3")
+			.selectWithTitle("Test 3");
+		//pass the test
+		QTI21Page.getQTI21Page(browser)
+			.passE4()
+			.assertOnCourseAssessmentTestScore(4);
+		
+		OOGraphene.waitingALittleLonger();
+		
+		//open the efficiency statements
+		UserToolsPage participant2UserTools = new UserToolsPage(browser);
+		participant2UserTools
+			.openUserToolsMenu()
+			.openMyEfficiencyStatement()
+			.assertOnEfficiencyStatmentPage()
+			.assertOnCertificateAndStatements(certificateTitle)
+			.selectStatement(certificateTitle)
+			.selectStatementSegment()
+			.assertOnCourseDetails("CertificatesCert", true)
+			.assertOnCourseDetails("Struktur 3", true)
+			.assertOnCourseDetails("Test 3", true);
 	}
 	
 	/**
@@ -2113,108 +2263,5 @@ public class AssessmentTest extends Deployments {
 			.assertPassed()
 			.openSolutions()
 			.assertSolution("solution_1.txt");
-	}
-	
-	/**
-	 * This is a degenerated form of task but the case exists.
-	 * An author creates a course (learn path) with a task course
-	 * element. The task is configured to only show the solution,
-	 * and the course element to be passed if the task is done. In
-	 * this case, the participant only need to see the solution to
-	 * get the node done.
-	 * 
-	 * @param participantBrowser Browser of the participant
-	 * @throws IOException
-	 * @throws URISyntaxException
-	 */
-	@Test
-	@RunAsClient
-	public void taskLearnPathSolutionsOnly(@Drone @User WebDriver participantBrowser)
-	throws IOException, URISyntaxException {
-		
-		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
-		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("kanu");
-		
-		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
-		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
-		
-		//create a course
-		String courseTitle = "Course-with-auto-task-" + UUID.randomUUID();
-		NavigationPage navBar = NavigationPage.load(browser);
-		navBar
-			.openAuthoringEnvironment()
-			.createCourse(courseTitle, true)
-			.clickToolbarBack();
-
-		//create a course element of type Test with the test that we create above
-		String gtaNodeTitle = "Solution 1";
-		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
-			.edit();
-		courseEditor
-			.createNode("ita")
-			.nodeTitle(gtaNodeTitle);
-		
-		courseEditor
-			.selectTabLearnPath()
-			.setCompletionCriterion(FullyAssessedTrigger.statusDone)
-			.save();
-		
-		GroupTaskConfigurationPage gtaConfig = new GroupTaskConfigurationPage(browser);
-		gtaConfig
-			.selectWorkflow()
-			.enableAssignment(false)
-			.enableSubmission(false)
-			.enableReview(false)
-			.enableGrading(false)
-			.saveWorkflow();
-		
-		URL solutionUrl = JunitTestHelper.class.getResource("file_resources/solution_1.txt");
-		File solutionFile = new File(solutionUrl.toURI());
-		gtaConfig
-			.selectSolution()
-			.uploadSolution("A possible solution", solutionFile);
-		
-		courseEditor
-			.publish()
-			.quickPublish(UserAccess.membersOnly);
-		
-
-		MembersPage membersPage = courseEditor
-			.clickToolbarBack()
-			.members();
-		
-		membersPage
-			.importMembers()
-			.setMembers(participant)
-			.nextUsers()
-			.nextOverview()
-			.nextPermissions()
-			.finish();
-		
-		//Participant log in
-		LoginPage participantLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
-		participantLoginPage
-			.loginAs(participant)
-			.resume();
-		
-		//open the course
-		NavigationPage participantNavBar = NavigationPage.load(participantBrowser);
-		participantNavBar
-			.openMyCourses()
-			.select(courseTitle);
-		
-		//go to the group task
-		CoursePageFragment participantCourse = new CoursePageFragment(participantBrowser);
-		participantCourse
-			.clickTree()
-			.selectWithTitle(gtaNodeTitle);
-		
-		GroupTaskPage participantTask = new GroupTaskPage(participantBrowser);
-		participantTask
-			.openSolutions()
-			.assertSolution("solution_1.txt");
-		// seeing the solution got the job done
-		participantCourse
-			.assertOnLearnPathNodeDone(gtaNodeTitle);
 	}
 }

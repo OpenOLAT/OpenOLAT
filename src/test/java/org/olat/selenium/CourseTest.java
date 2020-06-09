@@ -1738,4 +1738,5 @@ public class CourseTest extends Deployments {
 			.uploadResource(zipTitle, zipFile)
 			.assertOnResourceType();
 	}
+	
 }

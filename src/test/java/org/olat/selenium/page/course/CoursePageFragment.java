@@ -93,8 +93,33 @@ public class CoursePageFragment {
 	}
 	
 	public CoursePageFragment assertOnLearnPathNodeDone(String nodeTitle) {
-		By nodeDoneBy = By.xpath("//div[contains(@class,'o_lp_tree')]//span[contains(@class,'o_tree_l1')]/a[i[contains(@class,'o_lp_done')]][span[text()[contains(.,'" + nodeTitle + "')]]]");
+		return assertOnLearnPathNodeStatus(nodeTitle, "o_lp_done");
+	}
+	
+	public CoursePageFragment assertOnLearnPathNodeReady(String nodeTitle) {
+		return assertOnLearnPathNodeStatus(nodeTitle, "o_lp_ready");
+	}
+	
+	public CoursePageFragment assertOnLearnPathNodeInProgress(String nodeTitle) {
+		return assertOnLearnPathNodeStatus(nodeTitle, "o_lp_in_progress");
+	}
+	
+	public CoursePageFragment assertOnLearnPathNodeNotAccessible(String nodeTitle) {
+		return assertOnLearnPathNodeStatus(nodeTitle, "o_lp_not_accessible");
+	}
+	
+	private CoursePageFragment assertOnLearnPathNodeStatus(String nodeTitle, String statusCssClass) {
+		if(nodeTitle.length() > 20) {
+			nodeTitle = nodeTitle.substring(0, 20);
+		}
+		By nodeDoneBy = By.xpath("//div[contains(@class,'o_lp_tree')]//span[contains(@class,'o_tree_l')]/a[i[contains(@class,'" + statusCssClass + "')]][span[text()[contains(.,'" + nodeTitle + "')]]]");
 		OOGraphene.waitElement(nodeDoneBy, browser);
+		return this;
+	}
+	
+	public CoursePageFragment assertOnLearnPathPercent(int percent) {
+		By percentageBy = By.xpath("//span[contains(@class,'o_progress')]//span[contains(@class,'percentage')]//span[text()[contains(.,'" + percent + "%')]]");
+		OOGraphene.waitElement(percentageBy, browser);
 		return this;
 	}
 	
@@ -146,6 +171,21 @@ public class CoursePageFragment {
 		OOGraphene.waitElement(MenuTreePageFragment.treeBy, browser);
 		MenuTreePageFragment menuTree = new MenuTreePageFragment(browser);
 		return menuTree.selectRoot();
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public CoursePageFragment confirmNode() {
+		By confirmationBy = By.cssSelector("div.o_course_pagination div.o_confirm a.btn");
+		OOGraphene.waitElement(confirmationBy, browser);
+		browser.findElement(confirmationBy).click();
+		OOGraphene.waitBusy(browser);
+
+		By confirmedBy = By.cssSelector("div.o_course_pagination div.o_confirm a.btn.o_course_pagination_status_done");
+		OOGraphene.waitElement(confirmedBy, browser);
+		return this;
 	}
 	
 	/**
@@ -276,6 +316,11 @@ public class CoursePageFragment {
 		return new BookingPage(browser);
 	}
 	
+	/**
+	 * Set the course status to published.
+	 * 
+	 * @return Itself
+	 */
 	public CoursePageFragment publish() {
 		return changeStatus(RepositoryEntryStatusEnum.published);
 	}
