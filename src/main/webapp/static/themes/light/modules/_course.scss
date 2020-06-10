@@ -691,8 +691,84 @@ div.o_correction_navigation {
 	}
 }
 
+.o_appointments.o_selection_run2 {
+	margin-top: 20px;
+
+	.o_date,
+	.o_time {
+		font-weight: bold;
+	}
+	
+	@media all and (min-width: 700px) {
+		.o_date.o_short {
+			display: none;
+		}
+	}
+	@media all and (max-width: 700px) {
+		.o_date.o_long {
+			display: none;
+		}
+	}
+	
+	.o_ap_selected {
+		.o_buttons {
+			font-weight: bold;
+			background-color: $brand-success;
+		}
+		
+		.panel {
+			border-color: $o-ap-selected-color;
+			border-width: 2px;
+			box-shadow: 0px 0px 20px 5px rgba(0,0,0,0.2); 
+		}
+	}
+
+	.panel {
+		margin-bottom: 10px;
+	}
+	.panel-body {
+		padding-bottom: 8px;
+		display: flex;
+		flex-flow: nowrap;
+	}
+	.o_datecomp {
+		margin-top: 4px;
+	}
+	// Fills up the remaining space
+	.o_space {
+		flex: 1;
+	}
+	.o_buttons {
+		background-color: $btn-primary-bg;
+		border-top-right-radius: 2px;
+		border-bottom-right-radius: 2px;
+		width: 50px;
+		min-width: 50px;
+		max-width: 50px;
+		display: flex;
+		margin: -15px -15px -8px -15px;
+		
+		a {
+			flex: auto;
+			color: $btn-primary-color;
+			text-decoration: none;
+			text-align: center;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			i:before {
+				font-size: 1.35em;
+			}
+			span {
+				display: none;
+			}
+		}
+	}
+}
+
 .o_appointments.o_selection_run {
 	margin-top: 20px;
+	
 	
 	.o_button_group {
 		margin: 0px;
@@ -701,6 +777,7 @@ div.o_correction_navigation {
 			margin-bottom: 0px;
 		}
 	}
+	
 	
 	.o_ap_selected {
 		.o_date,

@@ -63,6 +63,16 @@ public class DateUtils {
 		return Instant.ofEpochMilli(date.getTime()).atZone(ZoneId.systemDefault()).toLocalDateTime();
 	}
 	
+	public static boolean isSameTime(Date date1, Date date2) {
+		Calendar cal1 = Calendar.getInstance();
+		cal1.setTime(date1);
+		Calendar cal2 = Calendar.getInstance();
+		cal2.setTime(date2);
+		return (cal1.get(Calendar.SECOND) == cal2.get(Calendar.SECOND) &&
+				cal1.get(Calendar.MINUTE) == cal2.get(Calendar.MINUTE) &&
+				cal1.get(Calendar.HOUR) == cal2.get(Calendar.HOUR));
+	}
+	
 	public static Date setTime(Date date, int hour, int minutes, int seconds) {
 		Calendar calendar = new GregorianCalendar();
 		calendar.setTime(date);

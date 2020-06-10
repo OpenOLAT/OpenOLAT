@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang.time.DateUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.date.DateComponentFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -83,7 +84,7 @@ public class AppointmentSelectionController extends BasicController {
 		this.topic = topic;
 		this.config = config;
 		
-		mainVC = createVelocityContainer("appointment_selection");
+		mainVC = createVelocityContainer("appointment_selection2");
 		refresh();
 		putInitialPanel(mainVC);
 	}
@@ -142,6 +143,7 @@ public class AppointmentSelectionController extends BasicController {
 		String time = null;
 
 		boolean sameDay = DateUtils.isSameDay(begin, end);
+		boolean sameTime = org.olat.core.util.DateUtils.isSameTime(begin, end);
 		String startDate = StringHelper.formatLocaleDateFull(begin.getTime(), locale);
 		String startTime = StringHelper.formatLocaleTime(begin.getTime(), locale);
 		String endDate = StringHelper.formatLocaleDateFull(end.getTime(), locale);
@@ -151,9 +153,13 @@ public class AppointmentSelectionController extends BasicController {
 			dateSb.append(startDate);
 			date = dateSb.toString();
 			StringBuilder timeSb = new StringBuilder();
-			timeSb.append(startTime);
-			timeSb.append(" - ");
-			timeSb.append(endTime);
+			if (sameTime) {
+				timeSb.append(translate("full.day"));
+			} else {
+				timeSb.append(startTime);
+				timeSb.append(" - ");
+				timeSb.append(endTime);
+			}
 			time = timeSb.toString();
 		} else {
 			StringBuilder dateSbLong = new StringBuilder();
@@ -177,7 +183,8 @@ public class AppointmentSelectionController extends BasicController {
 			dateSbShort2.append(endTime);
 			dateShort2 = dateSbShort2.toString();
 		}
-
+		
+		wrapDay(wrapper, appointment.getStart());
 		wrapper.setDate(date);
 		wrapper.setDateLong(dateLong);
 		wrapper.setDateShort1(dateShort1);
@@ -185,6 +192,11 @@ public class AppointmentSelectionController extends BasicController {
 		wrapper.setTime(time);
 		wrapper.setLocation(appointment.getLocation());
 		wrapper.setDetails(appointment.getDetails());
+	
+		if (selected) {
+			wrapper.setTranslatedStatus(translate("appointment.status." + appointment.getStatus().name()));
+			wrapper.setStatusCSS("o_ap_status_" + appointment.getStatus().name());
+		}
 		
 		List<String> participants = participations.stream()
 				.map(p -> userManager.getUserDisplayName(p.getIdentity().getKey()))
@@ -205,20 +217,26 @@ public class AppointmentSelectionController extends BasicController {
 					|| freeParticipations.intValue() > 0;
 		}
 		
-		if (selected || selectable) {
-			wrapSelectLink(wrapper, selected, selectable);
+		boolean unselectable = selected && Appointment.Status.planned == appointment.getStatus();
+		boolean enabled = selectable || unselectable;
+		if (selected || enabled) {
+			wrapSelectLink(wrapper, selected, enabled);
 		}
 		
 		return wrapper;
+	}
+
+	private void wrapDay(AppointmentWrapper wrapper, Date date) {
+		String dayElName = "day_" + counter++;
+		DateComponentFactory.createDateComponentWithYear(dayElName, date, mainVC);
+		wrapper.setDayElName(dayElName);
 	}
 
 	private void wrapSelectLink(AppointmentWrapper wrapper, boolean selected, boolean enabled) {
 		String i18n = selected? "appointment.selected": "appointment.select";
 		Link selectLink = LinkFactory.createCustomLink("select" + counter++, CMD_SELECT, i18n, Link.LINK, mainVC, this);
 		selectLink.setUserObject(wrapper);
-		if (selected) {
-			selectLink.setIconLeftCSS("o_icon o_icon_lg o_icon_accepted");
-		}
+		selectLink.setIconLeftCSS("o_icon o_icon_lg o_icon_check");
 		selectLink.setEnabled(enabled);
 		wrapper.setSelectLinkName(selectLink.getComponentName());
 	}
@@ -292,8 +310,11 @@ public class AppointmentSelectionController extends BasicController {
 		private String time;
 		private String location;
 		private String details;
+		private String translatedStatus;
+		private String statusCSS;
 		private Integer freeParticipations;
 		private Integer maxParticipations;
+		private String dayElName;
 		private String selectLinkName;
 
 		public AppointmentWrapper(Appointment appointment) {
@@ -380,6 +401,22 @@ public class AppointmentSelectionController extends BasicController {
 			this.details = details;
 		}
 
+		public String getTranslatedStatus() {
+			return translatedStatus;
+		}
+
+		public void setTranslatedStatus(String translatedStatus) {
+			this.translatedStatus = translatedStatus;
+		}
+
+		public String getStatusCSS() {
+			return statusCSS;
+		}
+
+		public void setStatusCSS(String statusCSS) {
+			this.statusCSS = statusCSS;
+		}
+
 		public Integer getFreeParticipations() {
 			return freeParticipations;
 		}
@@ -394,6 +431,14 @@ public class AppointmentSelectionController extends BasicController {
 
 		public void setMaxParticipations(Integer maxParticipations) {
 			this.maxParticipations = maxParticipations;
+		}
+
+		public String getDayElName() {
+			return dayElName;
+		}
+
+		public void setDayElName(String dayElName) {
+			this.dayElName = dayElName;
 		}
 
 		public String getSelectLinkName() {

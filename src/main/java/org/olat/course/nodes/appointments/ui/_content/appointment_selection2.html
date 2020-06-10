@@ -1,0 +1,92 @@
+<div class="o_appointments o_selection_run2">
+#if($r.isNotEmpty($appointments))
+	<div class="row">
+	#foreach($appointment in $appointments)
+		<div class="col-sm-12 #if($appointment.selected) o_ap_selected #end">
+			<div class="panel panel-default">
+				<div class="panel-body">
+					#if($r.isNotNull($appointment.getDayElName()))
+						$r.render($appointment.getDayElName())
+					#end
+					<div class="o_main">
+						#if($appointment.getDateLong() && $appointment.getDateLong() != "")
+							<div class="o_date o_long">
+								<i class="o_icon o_icon-fw o_icon_calendar">&nbsp;</i>
+								$appointment.getDateLong()
+								#if($r.isNotNull($appointment.getTranslatedStatus()))
+									&nbsp;<span class='o_labeled_light $appointment.getStatusCSS()'>$appointment.getTranslatedStatus()</span>
+								#end
+							</div>
+						#end
+						#if($appointment.getDateShort1() && $appointment.getDateShort1() != "")
+							<div class="o_date o_short">
+								<i class="o_icon o_icon-fw o_icon_calendar">&nbsp;</i>
+								$appointment.getDateShort1()
+								#if($r.isNotNull($appointment.getTranslatedStatus()))
+									&nbsp;<span class='o_labeled_light $appointment.getStatusCSS()'>$appointment.getTranslatedStatus()</span>
+								#end
+							</div>
+						#end
+						#if($appointment.getDateShort2() && $appointment.getDateShort2() != "")
+							<div class="o_date o_short">
+								<i class="o_icon o_icon-fw">&nbsp;</i>
+								$appointment.getDateShort2()
+							</div>
+						#end
+						#if($appointment.getTime() && $appointment.getTime() != "")
+							<div class="o_time">
+								<i class="o_icon o_icon-fw o_icon_time">&nbsp;</i>
+								$appointment.getTime()
+								#if($r.isNotNull($appointment.getTranslatedStatus()))
+									&nbsp;<span class='o_labeled_light $appointment.getStatusCSS()'>$appointment.getTranslatedStatus()</span>
+								#end
+							</div>
+						#end
+						#if($appointment.getLocation() && $appointment.getLocation() != "")
+							<div>
+								<i class="o_icon o_icon-fw o_icon_home">&nbsp;</i>
+								$r.escapeHtml($appointment.getLocation())
+							</div>
+						#end
+						#if($appointment.getDetails() && $appointment.getDetails() != "")
+							<div>
+								<i class="o_icon o_icon-fw o_icon_info_ap">&nbsp;</i>
+								$r.escapeHtml($appointment.getDetails())
+							</div>
+						#end
+						#if($r.isNotEmpty($appointment.participants))
+							<div class="text-muted">
+								#foreach($participant in $appointment.participants)
+									<span class='o_participant'><i class='o_icon o_icon_user'>&nbsp;</i>$participant &nbsp;</span>
+								#end
+							</div>
+						#end
+						#if($r.isNotNull($appointment.getFreeParticipations()))
+							<div>
+								#if($appointment.getFreeAppointments() == 1)
+									$r.translate("participations.free.one")
+								#else
+									$r.translate("participations.free", $appointment.getFreeParticipations().toString())
+								#end
+							</div>
+						#end
+					</div>
+					
+					<div class="o_space"></div>
+					<div class="o_buttons">
+						#if($r.isNotNull($appointment.getSelectLinkName()))
+							$r.render($appointment.getSelectLinkName())
+						#end
+					</div>
+				</div>
+			</div>
+		</div>
+	#end
+	</div>
+#else
+	<div class="o_info">
+		$r.translate("no.appointments")
+	</div>
+#end
+</div>
+
