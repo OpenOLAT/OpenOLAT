@@ -342,3 +342,9 @@
 .mejs__time-marker {
 	background-color: $o-video-time-marker-default-bg-color;
 }
+
+
+/* make button better readable on white background */
+.mejs__overlay-button {
+	filter: drop-shadow(1px 1px 5px rgba(0, 0, 0, .5));
+}
