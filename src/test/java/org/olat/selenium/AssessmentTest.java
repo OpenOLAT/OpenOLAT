@@ -495,7 +495,7 @@ public class AssessmentTest extends Deployments {
 		
 		//upload a test
 		String qtiTestTitle = "QTI-Test-1.2-" + UUID.randomUUID();
-		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/e4_test.zip");
+		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/e4_test_qti21.zip");
 		File qtiTestFile = new File(qtiTestUrl.toURI());
 		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
@@ -503,14 +503,14 @@ public class AssessmentTest extends Deployments {
 			.uploadResource(qtiTestTitle, qtiTestFile);
 		
 		//create a course
-		String courseTitle = "Course-With-QTI-Test-1.2-" + UUID.randomUUID();
+		String courseTitle = "Course-With-QTI-Test-2.1-" + UUID.randomUUID();
 		navBar
 			.openAuthoringEnvironment()
 			.createCourse(courseTitle)
 			.clickToolbarBack();
 
-		//create a course element of type CP with the CP that we create above
-		String testNodeTitle = "Test-QTI-1.2";
+		//create a course element of type test with the QTI 2.1 test that we upload above
+		String testNodeTitle = "Test-QTI-2.1";
 		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
 			.edit();
 		courseEditor
@@ -572,9 +572,11 @@ public class AssessmentTest extends Deployments {
 			.clickTree()
 			.selectWithTitle(testNodeTitle);
 		//pass the test
-		QTI12Page.getQTI12Page(ryomouBrowser).passE4(ryomou);
+		QTI21Page.getQTI21Page(ryomouBrowser)
+			.passE4()
+			.assertOnCourseAssessmentTestScore(4);
 
-		
+	
 		//Kanu makes the test
 		AssessmentModePage kanuAssessment = new AssessmentModePage(kanuBrowser)
 			.startAssessment(true);
@@ -584,7 +586,9 @@ public class AssessmentTest extends Deployments {
 			.clickTree()
 			.selectWithTitle(testNodeTitle);
 		//pass the test
-		QTI12Page.getQTI12Page(kanuBrowser).passE4(kanu);
+		QTI21Page.getQTI21Page(kanuBrowser)
+			.passE4()
+			.assertOnCourseAssessmentTestScore(4);
 
 		
 		//Author ends the test
@@ -697,7 +701,6 @@ public class AssessmentTest extends Deployments {
 			.assertOnEfficiencyStatmentPage()
 			.assertOnCertificate(courseTitle);
 	}
-	
 	/**
 	 * An author create a course, set up the root node to make efficiency statement,
 	 * add a test, publish it and add a participant. It set the certificate.<br>
@@ -719,7 +722,7 @@ public class AssessmentTest extends Deployments {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
 		//deploy the test
-		URL testUrl = ArquillianDeployments.class.getResource("file_resources/e4_test.zip");
+		URL testUrl = ArquillianDeployments.class.getResource("file_resources/qti21/e4_test_qti21.zip");
 		String testTitle = "E4Test-" + UUID.randomUUID();
 		new RepositoryRestClient(deploymentUrl, author).deployResource(new File(testUrl.toURI()), "-", testTitle);
 
@@ -733,8 +736,8 @@ public class AssessmentTest extends Deployments {
 			.createCourse(courseTitle)
 			.clickToolbarBack();
 
-		//create a course element of type CP with the CP that we create above
-		String testNodeTitle = "Test-QTI-1.2";
+		//create a course element of type test with the QTI 2.1 test that we upload above
+		String testNodeTitle = "Test-QTI-2.1";
 		CoursePageFragment courseRuntime = CoursePageFragment.getCourse(browser);
 		courseRuntime
 			.edit()
@@ -796,7 +799,9 @@ public class AssessmentTest extends Deployments {
 			.clickTree()
 			.selectWithTitle(testNodeTitle);
 		//pass the test
-		QTI12Page.getQTI12Page(reiBrowser).passE4(rei);
+		QTI21Page.getQTI21Page(reiBrowser)
+			.passE4()
+			.assertOnCourseAssessmentTestScore(4);
 				
 		//open the efficiency statements
 		UserToolsPage reiUserTools = new UserToolsPage(reiBrowser);
