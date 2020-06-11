@@ -39,6 +39,7 @@ public class SearchRepositoryEntryParameters {
 	private String displayName;
 	private String author;
 	private String desc;
+	private String idRefsAndTitle;
 	private List<String> resourceTypes;
 	private Identity identity;
 	private Roles roles;
@@ -77,6 +78,14 @@ public class SearchRepositoryEntryParameters {
 		this.roles = roles;
 	}
 	
+	public String getIdRefsAndTitle() {
+		return idRefsAndTitle;
+	}
+
+	public void setIdRefsAndTitle(String idRefsAndTitle) {
+		this.idRefsAndTitle = idRefsAndTitle;
+	}
+
 	public String getDisplayName() {
 		return displayName;
 	}
