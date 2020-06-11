@@ -34,7 +34,7 @@
 		</property>
 	</bean>
 	
-	<!-- The Module parent node -->
+	<!-- The login parent node -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension"  init-method="initExtensionPoints">
 		<property name="order" value="7300" />
 		<property name="navigationKey" value="loginandsecurity" />
@@ -49,7 +49,7 @@
 		</property>
 	</bean>
 	
-	<!--  the "systemconfig" parent node -->
+	<!-- The core configuration parent node -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension"  init-method="initExtensionPoints">
 		<property name="order" value="7200" />
 		<property name="actionController">	
@@ -92,6 +92,21 @@
 		<property name="translationPackage" value="org.olat.admin" />
 		<property name="i18nActionKey" value="menu.payments" />
 		<property name="i18nDescriptionKey" value="menu.payments.alt" />
+		<property name="extensionPoints">
+			<list>
+				<value>org.olat.admin.SystemAdminMainController</value>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- The reports parent node -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension"  init-method="initExtensionPoints">
+		<property name="order" value="7400" />
+		<property name="navigationKey" value="reports" />
+		<property name="nodeIdentifierIfParent" value="reportsParent" />
+		<property name="translationPackage" value="org.olat.admin" />
+		<property name="i18nActionKey" value="menu.reports" />
+		<property name="i18nDescriptionKey" value="menu.reports.alt" />
 		<property name="extensionPoints">
 			<list>
 				<value>org.olat.admin.SystemAdminMainController</value>

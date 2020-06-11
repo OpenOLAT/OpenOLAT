@@ -123,6 +123,28 @@ public class RepositoryEntryQueries {
 			query.append(" and ");
 			PersistenceHelper.appendFuzzyLike(query, "v.description", "desc", dbInstance.getDbVendor());
 		}
+		
+		//quick search
+		Long quickId = null;
+		String quickRefs = null;
+		String quickText = null;
+		if(StringHelper.containsNonWhitespace(params.getIdRefsAndTitle())) {
+			quickRefs = params.getIdRefsAndTitle();
+			query.append(" and (v.externalId=:quickRef or ");
+			PersistenceHelper.appendFuzzyLike(query, "v.externalRef", "quickText", dbInstance.getDbVendor());
+			query.append(" or v.softkey=:quickRef or ");
+			quickText = PersistenceHelper.makeFuzzyQueryString(quickRefs);
+			PersistenceHelper.appendFuzzyLike(query, "v.displayname", "quickText", dbInstance.getDbVendor());
+			if(StringHelper.isLong(quickRefs)) {
+				try {
+					quickId = Long.parseLong(quickRefs);
+					query.append(" or v.key=:quickVKey or res.resId=:quickVKey");
+				} catch (NumberFormatException e) {
+					//
+				}
+			}
+			query.append(")");	
+		}
 
 		if (resourceTypes != null && !resourceTypes.isEmpty()) {
 			query.append(" and res.resName in (:resourcetypes)");
@@ -165,6 +187,15 @@ public class RepositoryEntryQueries {
 		}
 		if (StringHelper.containsNonWhitespace(desc)) {
 			dbQuery.setParameter("desc", desc);
+		}
+		if(quickId != null) {
+			dbQuery.setParameter("quickVKey", quickId);
+		}
+		if(quickRefs != null) {
+			dbQuery.setParameter("quickRef", quickRefs);
+		}
+		if(quickText != null) {
+			dbQuery.setParameter("quickText", quickText);
 		}
 		if (resourceTypes != null && !resourceTypes.isEmpty()) {
 			dbQuery.setParameter("resourcetypes", resourceTypes);
