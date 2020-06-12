@@ -76,6 +76,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
@@ -956,6 +957,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		String identifier = metadata.getOpenOLATMetadataIdentifier();
 		metadata.setOpenOLATMetadataMasterIdentifier(identifier);
 		metadata.setOpenOLATMetadataIdentifier(UUID.randomUUID().toString());
+		metadata.setOpenOLATMetadataCreator(getCreator());
 		doSaveManifest();
 
 		// reselect the node (--force)
@@ -964,6 +966,20 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		menuTree.setSelectedNode(newItemNode);
 		menuTree.open(newItemNode);
 		return doReloadItem(ureq);
+	}
+	
+	private String getCreator() {
+		StringBuilder sb = new StringBuilder();
+		String firstName = getIdentity().getUser().getFirstName();
+		if(StringHelper.containsNonWhitespace(firstName)) {
+			sb.append(firstName);
+		}
+		String lastName = getIdentity().getUser().getFirstName();
+		if(StringHelper.containsNonWhitespace(lastName)) {
+			if(StringHelper.containsNonWhitespace(firstName)) sb.append(" ");
+			sb.append(lastName);
+		}
+		return sb.toString();
 	}
 	
 	private TreeNode doReloadItem(UserRequest ureq) {
