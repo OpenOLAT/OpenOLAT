@@ -277,24 +277,19 @@ public class QuestionOriginMediaResource extends OpenXMLWorkbookResource {
 
 	private QuestionInformations loadQuestionMetadata(AssessmentItemRef itemRef, TestHolder testHolder) {
 		QuestionInformations infos = null;
+		AssessmentItem assessmentItem = testHolder.getAssessmentItem(itemRef);
 		ManifestMetadataBuilder metadata = testHolder.getManifestMetadataBuilder(itemRef);
 		if(metadata == null) {
-			AssessmentItem assessmentItem = testHolder.getAssessmentItem(itemRef);
 			if(assessmentItem != null) {
 				infos = new QuestionInformations(assessmentItem);
 			}
 		} else if(!StringHelper.containsNonWhitespace(metadata.getOpenOLATMetadataIdentifier())) {
-			AssessmentItem assessmentItem = testHolder.getAssessmentItem(itemRef);
-			if(assessmentItem != null) {
-				infos = new QuestionInformations(assessmentItem, metadata);
-			} else {
-				infos = new QuestionInformations(metadata);
-			}
+			infos = new QuestionInformations(assessmentItem, metadata);
 		} else {
 			String identifier = metadata.getOpenOLATMetadataIdentifier();
 			List<QuestionItem> items = qpoolService.loadItemByIdentifier(identifier);
 			if(items.isEmpty()) {
-				infos = new QuestionInformations(metadata);
+				infos = new QuestionInformations(assessmentItem, metadata);
 			} else {
 				QuestionItem item = items.get(0);
 				String authors = getAuthors(item);
@@ -312,7 +307,6 @@ public class QuestionOriginMediaResource extends OpenXMLWorkbookResource {
 				}
 			}
 		}
-		
 		return infos;
 	}
 
@@ -434,31 +428,23 @@ public class QuestionOriginMediaResource extends OpenXMLWorkbookResource {
 			masterIdentifier = item.getMasterIdentifier();
 		}
 		
-		public QuestionInformations(ManifestMetadataBuilder metadata) {
-			identifier = metadata.getOpenOLATMetadataIdentifier();
-			title = metadata.getTitle();
-			author = null;
-			keywords = metadata.getGeneralKeywords();
-			taxonomyPath = metadata.getClassificationTaxonomy();
-			topic = metadata.getOpenOLATMetadataTopic();
-			context = metadata.getEducationContext();
-			type = metadata.getOpenOLATMetadataQuestionType();
-			masterIdentifier = metadata.getOpenOLATMetadataMasterIdentifier();
-		}
-		
-		public QuestionInformations(AssessmentItem item, ManifestMetadataBuilder metadata) {
+		public QuestionInformations(AssessmentItem assessmentItem, ManifestMetadataBuilder metadata) {
 			identifier = metadata.getOpenOLATMetadataIdentifier();
 			if(StringHelper.containsNonWhitespace(metadata.getTitle())) {
 				title = metadata.getTitle();
 			} else {
-				title = item.getTitle();
+				title = assessmentItem.getTitle();
 			}
-			author = null;
+			author = metadata.getOpenOLATMetadataCreator();
 			keywords = metadata.getGeneralKeywords();
 			taxonomyPath = metadata.getClassificationTaxonomy();
 			topic = metadata.getOpenOLATMetadataTopic();
 			context = metadata.getEducationContext();
-			type = metadata.getOpenOLATMetadataQuestionType();
+			if(StringHelper.containsNonWhitespace(metadata.getOpenOLATMetadataQuestionType())) {
+				type = metadata.getOpenOLATMetadataQuestionType();
+			} else {
+				type = QTI21QuestionType.getType(assessmentItem).name();
+			}
 			masterIdentifier = metadata.getOpenOLATMetadataMasterIdentifier();
 		}
 		
