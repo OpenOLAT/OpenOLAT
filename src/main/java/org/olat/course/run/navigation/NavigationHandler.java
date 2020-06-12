@@ -446,6 +446,7 @@ public class NavigationHandler implements Disposable {
 				}
 				if (evaluateTree) {
 					treeModel = createTreeModel();
+					reattachExternalTreeModels(treeModel);
 				}
 				
 				if((TreeEvent.COMMAND_TREENODE_OPEN.equals(nodeSubCmd) || TreeEvent.COMMAND_TREENODE_CLOSE.equals(nodeSubCmd)) &&
