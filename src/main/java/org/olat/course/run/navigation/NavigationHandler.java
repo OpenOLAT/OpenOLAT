@@ -446,6 +446,7 @@ public class NavigationHandler implements Disposable {
 				}
 				if (evaluateTree) {
 					treeModel = createTreeModel();
+					reattachExternalTreeModels(treeModel);
 				}
 				
 				if((TreeEvent.COMMAND_TREENODE_OPEN.equals(nodeSubCmd) || TreeEvent.COMMAND_TREENODE_CLOSE.equals(nodeSubCmd)) &&
@@ -566,10 +567,6 @@ public class NavigationHandler implements Disposable {
 			}
 			// always insert before already existing course building block children
 			parent.insert(chdc, 0);
-		}
-		
-		if (parent instanceof GenericTreeNode) {
-			((GenericTreeNode)parent).setIdent(root.getIdent());
 		}
 	}
 	

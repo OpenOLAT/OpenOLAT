@@ -117,7 +117,7 @@ public class WikiRunController extends BasicController implements Activateable2 
 			callback = new WikiSecurityCallbackImpl(courseEditRight, isAdmininstrator, isGuestOnly, false,
 					isResourceOwner, subsContext);
 			assessmentProvider = userCourseEnv.isParticipant()
-					? PersistingAssessmentProvider.create(wikiEntry, getIdentity())
+					? PersistingAssessmentProvider.create(wikiEntry, getIdentity(), true)
 					: DryRunAssessmentProvider.create();
 		}
 		
