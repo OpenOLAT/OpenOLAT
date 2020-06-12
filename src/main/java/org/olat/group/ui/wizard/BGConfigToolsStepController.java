@@ -82,10 +82,6 @@ public class BGConfigToolsStepController extends StepFormBasicController {
 		
 		String[] availableTools = CollaborationToolsFactory.getInstance().getAvailableTools().clone();
 		for (String k : availableTools) {
-			if (k.equals(CollaborationTools.TOOL_CHAT) || k.equals(CollaborationTools.TOOL_NEWS)) {
-				continue;
-			}
-			
 			String[] keys = new String[]{ "on" };
 			String[] values = new String[]{ translate("collabtools.named." + k) };
 			
