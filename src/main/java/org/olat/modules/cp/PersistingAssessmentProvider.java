@@ -39,22 +39,30 @@ public class PersistingAssessmentProvider implements CPAssessmentProvider {
 
 	private final Identity identity;
 	private final RepositoryEntry cpEntry;
+	private final boolean learningPathCSS;
 	
 	private Map<String, AssessmentEntryStatus> identifierToStatus;
 	
 	private AssessmentService assessmentService;
 	
-	public static final CPAssessmentProvider create(RepositoryEntry cpEntry, Identity identity) {
-		return new PersistingAssessmentProvider(cpEntry, identity);
+	public static final CPAssessmentProvider create(RepositoryEntry cpEntry, Identity identity,
+			boolean learningPathCSS) {
+		return new PersistingAssessmentProvider(cpEntry, identity, learningPathCSS);
 	}
 	
-	private PersistingAssessmentProvider(RepositoryEntry cpEntry, Identity identity) {
+	private PersistingAssessmentProvider(RepositoryEntry cpEntry, Identity identity, boolean learningPathCSS) {
 		this.identity = identity;
 		this.cpEntry = cpEntry;
+		this.learningPathCSS = learningPathCSS;
 		this.assessmentService = CoreSpringFactory.getImpl(AssessmentService.class);
 		this.identifierToStatus = assessmentService.loadAssessmentEntriesByAssessedIdentity(identity, cpEntry).stream()
 				.filter(ae -> ae.getSubIdent() != null && ae.getAssessmentStatus() != null)
 				.collect(Collectors.toMap(AssessmentEntry::getSubIdent, AssessmentEntry::getAssessmentStatus));
+	}
+
+	@Override
+	public boolean isLearningPathCSS() {
+		return learningPathCSS;
 	}
 
 	@Override

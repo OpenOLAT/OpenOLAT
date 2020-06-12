@@ -498,8 +498,10 @@ public class CPDisplayController extends BasicController implements Activateable
 		UserObject userObject = (UserObject)treeNode.getUserObject();
 		String identifier = userObject.getIdentifier();
 		AssessmentEntryStatus status = cpAssessmentProvider.onPageVisited(identifier);
-		String cssClass = CPManifestTreeModel.getItemCssClass(status);
-		((GenericTreeNode)treeNode).setCssClass(cssClass);
+		if (cpAssessmentProvider.isLearningPathCSS()) {
+			String cssClass = CPManifestTreeModel.getItemCssClass(status);
+			((GenericTreeNode)treeNode).setCssClass(cssClass);
+		}
 	}
 
 	@Override
