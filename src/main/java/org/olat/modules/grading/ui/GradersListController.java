@@ -142,6 +142,7 @@ public class GradersListController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		addGraderButton = uifactory.addFormLink("add.grader", formLayout, Link.BUTTON);
 		addGraderButton.setIconLeftCSS("o_icon o_icon_add_item");
+		addGraderButton.setElementCssClass("o_sel_repo_grading_add_graders");
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if(isAdministrativeUser) {

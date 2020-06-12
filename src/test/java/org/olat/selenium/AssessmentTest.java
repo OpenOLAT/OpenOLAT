@@ -701,6 +701,7 @@ public class AssessmentTest extends Deployments {
 			.assertOnEfficiencyStatmentPage()
 			.assertOnCertificate(courseTitle);
 	}
+	
 	/**
 	 * An author create a course, set up the root node to make efficiency statement,
 	 * add a test, publish it and add a participant. It set the certificate.<br>

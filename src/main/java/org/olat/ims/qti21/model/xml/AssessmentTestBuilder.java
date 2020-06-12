@@ -59,7 +59,8 @@ public class AssessmentTestBuilder {
 	private Double maxScore;
 	private Long maximumTimeLimits;
 	private OutcomeRule testScoreRule;
-	private OutcomeCondition cutValueRule, minScoreRule;
+	private OutcomeCondition cutValueRule;
+	private OutcomeCondition minScoreRule;
 	
 	private TestFeedbackBuilder passedFeedback;
 	private TestFeedbackBuilder failedFeedback;
@@ -321,7 +322,7 @@ public class AssessmentTestBuilder {
 			}
 			
 			boolean updated = false;
-			if(cutValueRule != null && cutValueRule.getOutcomeIf().getExpressions().size() > 0) {
+			if(cutValueRule != null && !cutValueRule.getOutcomeIf().getExpressions().isEmpty()) {
 				Expression gte = cutValueRule.getOutcomeIf().getExpressions().get(0);
 				if(gte.getExpressions().size() > 1) {
 					Expression baseValue = gte.getExpressions().get(1);
@@ -339,6 +340,10 @@ public class AssessmentTestBuilder {
 				assessmentTest.getOutcomeProcessing().getOutcomeRules().add(cutValueRule);
 			}
 		} else if(cutValueRule != null) {
+			OutcomeDeclaration passDeclaration = assessmentTest.getOutcomeDeclaration(QTI21Constants.PASS_IDENTIFIER);
+			if(passDeclaration != null) {
+				assessmentTest.getOutcomeDeclarations().remove(passDeclaration);
+			}
 			assessmentTest.getOutcomeProcessing().getOutcomeRules().remove(cutValueRule);
 		}
 	}

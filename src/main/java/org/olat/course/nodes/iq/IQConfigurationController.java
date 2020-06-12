@@ -55,6 +55,7 @@ import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.QTICourseNode;
+import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.ims.qti.QTIModule;
 import org.olat.ims.qti.QTIResult;
@@ -69,11 +70,14 @@ import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.QTI21DeliveryOptions.PassedType;
 import org.olat.ims.qti21.model.InMemoryOutcomeListener;
+import org.olat.ims.qti21.model.xml.AssessmentTestBuilder;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.QTI21OverrideOptions;
 import org.olat.ims.qti21.ui.event.RestartEvent;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.grading.GradingService;
 import org.olat.modules.iq.IQManager;
 import org.olat.modules.iq.IQPreviewSecurityCallback;
 import org.olat.repository.RepositoryEntry;
@@ -82,6 +86,9 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 
 /**
  * 
@@ -127,6 +134,8 @@ public class IQConfigurationController extends BasicController {
 	private QTIModule qtiModule;
 	@Autowired
 	private QTI21Service qti21service;
+	@Autowired
+	private GradingService gradingService;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
@@ -215,11 +224,17 @@ public class IQConfigurationController extends BasicController {
 				logError("Test cannot be read: " + re, e);
 				showError("error.resource.corrupted");
 			}
+			QTI21DeliveryOptions deliveryOptions = qti21service.getDeliveryOptions(re);
 			if(replacedTest) {// set some default settings in case the user don't save the next panel
-				moduleConfiguration.setStringValue(IQEditController.CONFIG_CORRECTION_MODE, needManualCorrection ? "manual" : "auto");
+				if(gradingService.isGradingEnabled(re, null)) {
+					moduleConfiguration.setStringValue(IQEditController.CONFIG_CORRECTION_MODE, IQEditController.CORRECTION_GRADING);
+				} else if(needManualCorrection || getPassedType(re, deliveryOptions) == PassedType.manually) {
+					moduleConfiguration.setStringValue(IQEditController.CONFIG_CORRECTION_MODE, IQEditController.CORRECTION_MANUAL);
+				} else {
+					moduleConfiguration.setStringValue(IQEditController.CONFIG_CORRECTION_MODE, IQEditController.CORRECTION_AUTO);
+				}
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
-			QTI21DeliveryOptions deliveryOptions =  qti21service.getDeliveryOptions(re);
 			mod21ConfigForm = new QTI21EditForm(ureq, getWindowControl(), moduleConfiguration,
 					NodeAccessType.of(course), deliveryOptions, needManualCorrection);
 			mod21ConfigForm.update(re);
@@ -571,6 +586,21 @@ public class IQConfigurationController extends BasicController {
 	
 	private boolean needManualCorrectionQTI21(RepositoryEntry re) {
 		return qti21service.needManualCorrection(re);
+	}
+	
+	private PassedType getPassedType(RepositoryEntry re, QTI21DeliveryOptions deliveryOptions) {
+		if(deliveryOptions == null) return PassedType.none;
+	
+		FileResourceManager frm = FileResourceManager.getInstance();
+		File unzippedDirRoot = frm.unzipFileResource(re.getOlatResource());
+		ResolvedAssessmentTest resolvedAssessmentTest = qti21service.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
+		AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
+		
+		Double cutValue = null;
+		if(assessmentTest != null) {
+			cutValue = new AssessmentTestBuilder(assessmentTest).getCutValue();
+		}
+		return deliveryOptions.getPassedType(cutValue);
 	}
 	
 	private boolean needManualCorrectionQTI12(RepositoryEntry re) {

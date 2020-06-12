@@ -115,6 +115,7 @@ public class GradingRepositoryEntryConfigurationController extends FormBasicCont
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_repo_grading_settings_form");
 
 		String[] onValues = new String[] { translate("on") };
 		enableEl = uifactory.addCheckboxesHorizontal("grading.repo.enabled", formLayout, onKeys, onValues);
@@ -129,6 +130,7 @@ public class GradingRepositoryEntryConfigurationController extends FormBasicCont
 			};
 		identityVisibilityEl = uifactory.addRadiosHorizontal("anonymous", "configuration.assessed.identity.visibility", formLayout,
 				visibilityKeys, visibilityValues);
+		identityVisibilityEl.setElementCssClass("o_sel_repo_grading_visibility");
 		identityVisibilityEl.select(configuration.getIdentityVisibilityEnum().name(), true);
 		
 		String[] notificationTypeValues = new String[] {
@@ -136,20 +138,23 @@ public class GradingRepositoryEntryConfigurationController extends FormBasicCont
 			};
 		notificationTypeEl = uifactory.addRadiosHorizontal("notificationType", "configuration.notification.type", formLayout,
 				notificationTypeKeys, notificationTypeValues);
+		notificationTypeEl.setElementCssClass("o_sel_repo_grading_notification_type");
 		notificationTypeEl.select(configuration.getNotificationTypeEnum().name(), true);
 		
 		String period = configuration.getGradingPeriod() == null ? null : configuration.getGradingPeriod().toString();
 		gradingPeriodEl = uifactory.addTextElement("configuration.grading.period", 6, period, formLayout);
-		initWorkingDays(gradingPeriodEl);
+		initWorkingDays(gradingPeriodEl, "o_sel_repo_grading_period");
 		
 		notificationSubjectEl = uifactory.addTextElement("configuration.notification.subject", 255, configuration.getNotificationSubject(), formLayout);
+		notificationSubjectEl.setElementCssClass("o_sel_repo_grading_notification_subject");
 		notificationBodyEl = uifactory.addTextAreaElement("configuration.notification.body", 4, 60, configuration.getNotificationBody(), formLayout);
-
+		notificationBodyEl.setElementCssClass("o_sel_repo_grading_notification_body");
+		
 		spacerNotificationsEl = uifactory.addSpacerElement("spacer-notification", formLayout, false);
 		
 		String firstReminder = configuration.getFirstReminder() == null ? null : configuration.getFirstReminder().toString();
 		firstReminderPeriodEl = uifactory.addTextElement("configuration.first.reminder.period", 6, firstReminder, formLayout);
-		initWorkingDays(firstReminderPeriodEl);
+		initWorkingDays(firstReminderPeriodEl, "o_sel_repo_grading_first_reminder_period");
 		firstReminderSubjectEl = uifactory.addTextElement("configuration.first.reminder.subject", 255, configuration.getFirstReminderSubject(), formLayout);
 		firstReminderBodyEl = uifactory.addTextAreaElement("configuration.first.reminder.body", 4, 60, configuration.getFirstReminderBody(), formLayout);
 
@@ -157,7 +162,9 @@ public class GradingRepositoryEntryConfigurationController extends FormBasicCont
 		
 		String secondReminder = configuration.getSecondReminder() == null ? null : configuration.getSecondReminder().toString();
 		secondReminderPeriodEl = uifactory.addTextElement("configuration.second.reminder.period", 6, secondReminder, formLayout);
-		initWorkingDays(secondReminderPeriodEl);
+		secondReminderPeriodEl.setElementCssClass("");
+		
+		initWorkingDays(secondReminderPeriodEl, "o_sel_repo_grading_second_reminder_period");
 		secondReminderSubjectEl = uifactory.addTextElement("configuration.second.reminder.subject", 255, configuration.getSecondReminderSubject(), formLayout);
 		secondReminderBodyEl = uifactory.addTextAreaElement("configuration.second.reminder.body", 4, 60, configuration.getSecondReminderBody(), formLayout);
 
@@ -167,6 +174,7 @@ public class GradingRepositoryEntryConfigurationController extends FormBasicCont
 		uifactory.addFormSubmitButton("save", buttonsCont);
 		
 		templatesDropdownEl = uifactory.addDropdownMenu("choose.template.language", null, buttonsCont, getTranslator());
+		templatesDropdownEl.setElementCssClass("o_sel_repo_grading_templates");
 		templatesDropdownEl.setOrientation(DropdownOrientation.right);
 		templatesDropdownEl.setEmbbeded(true);
 		
@@ -186,10 +194,10 @@ public class GradingRepositoryEntryConfigurationController extends FormBasicCont
 		}
 	}
 	
-	private void initWorkingDays(TextElement textEl) {
+	private void initWorkingDays(TextElement textEl, String elementCss) {
 		textEl.setDisplaySize(6);
 		textEl.setMaxLength(6);
-		textEl.setElementCssClass("form-inline");
+		textEl.setElementCssClass("form-inline ".concat(elementCss));
 		textEl.setTextAddOn("working.days");
 	}
 
