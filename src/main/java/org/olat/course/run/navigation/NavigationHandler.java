@@ -567,10 +567,6 @@ public class NavigationHandler implements Disposable {
 			// always insert before already existing course building block children
 			parent.insert(chdc, 0);
 		}
-		
-		if (parent instanceof GenericTreeNode) {
-			((GenericTreeNode)parent).setIdent(root.getIdent());
-		}
 	}
 	
 	private static class SubTree {
