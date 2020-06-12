@@ -21,8 +21,10 @@ package org.olat.course.nodes.appointments.ui;
 
 import java.util.List;
 
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.course.nodes.appointments.Appointment;
+import org.olat.course.nodes.appointments.Participation;
 import org.olat.course.nodes.appointments.ui.ParticipationsRenderer.ParticipantsWrapper;
 
 /**
@@ -34,6 +36,7 @@ import org.olat.course.nodes.appointments.ui.ParticipationsRenderer.Participants
 public class AppointmentRow {
 	
 	private final Appointment appointment;
+	private Participation participation;
 	private List<String> participants;
 	private String date;
 	private String dateLong;
@@ -44,8 +47,11 @@ public class AppointmentRow {
 	private String details;
 	private String translatedStatus;
 	private String statusCSS;
+	private Integer numberOfParticipations;
 	private Integer freeParticipations;
-	private Integer maxParticipations;
+	private FormItem dayEl;
+	private String selectionCSS;
+	private FormLink selectLink;
 	private FormLink rebookLink;
 	private FormLink confirmLink;
 	private FormLink deleteLink;
@@ -61,6 +67,14 @@ public class AppointmentRow {
 	
 	public Long getKey() {
 		return appointment.getKey();
+	}
+
+	public Participation getParticipation() {
+		return participation;
+	}
+
+	public void setParticipation(Participation participation) {
+		this.participation = participation;
 	}
 
 	public List<String> getParticipants() {
@@ -147,6 +161,14 @@ public class AppointmentRow {
 		this.statusCSS = statusCSS;
 	}
 
+	public Integer getNumberOfParticipations() {
+		return numberOfParticipations;
+	}
+
+	public void setNumberOfParticipations(Integer numberOfParticipations) {
+		this.numberOfParticipations = numberOfParticipations;
+	}
+
 	public Integer getFreeParticipations() {
 		return freeParticipations;
 	}
@@ -155,12 +177,36 @@ public class AppointmentRow {
 		this.freeParticipations = freeParticipations;
 	}
 
-	public Integer getMaxParticipations() {
-		return maxParticipations;
+	public FormItem getDayEl() {
+		return dayEl;
 	}
 
-	public void setMaxParticipations(Integer maxParticipations) {
-		this.maxParticipations = maxParticipations;
+	public String getDayElName() {
+		return dayEl != null? dayEl.getName(): null;
+	}
+
+	public void setDayEl(FormItem dayEl) {
+		this.dayEl = dayEl;
+	}
+
+	public String getSelectionCSS() {
+		return selectionCSS != null? selectionCSS: "";
+	}
+
+	public void setSelectionCSS(String selectionCSS) {
+		this.selectionCSS = selectionCSS;
+	}
+
+	public FormLink getSelectLink() {
+		return selectLink;
+	}
+
+	public String getSelectLinkName() {
+		return selectLink != null? selectLink.getName(): null;
+	}
+
+	public void setSelectLink(FormLink selectLink) {
+		this.selectLink = selectLink;
 	}
 
 	public FormLink getRebookLink() {
@@ -169,6 +215,10 @@ public class AppointmentRow {
 
 	public String getRebookLinkName() {
 		return rebookLink != null? rebookLink.getName(): null;
+	}
+
+	public void setRebookLink(FormLink rebookLink) {
+		this.rebookLink = rebookLink;
 	}
 	
 	public FormLink getConfirmLink() {
@@ -181,10 +231,6 @@ public class AppointmentRow {
 
 	public void setConfirmLink(FormLink confirmLink) {
 		this.confirmLink = confirmLink;
-	}
-
-	public void setRebookLink(FormLink rebookLink) {
-		this.rebookLink = rebookLink;
 	}
 
 	public FormLink getDeleteLink() {

@@ -1,0 +1,96 @@
+<div class="panel panel-default $row.getSelectionCSS()">
+	<div class="panel-body">
+		#if($row.dayElName)
+			$r.render($row.dayElName)
+		#end
+		<div class="o_main_cont">
+			<div class="o_main">
+				#if($row.getDateLong() && $row.getDateLong() != "")
+					<div class="o_date o_long">
+						<i class="o_icon o_icon-fw o_icon_calendar">&nbsp;</i>
+						$row.getDateLong()
+						#if($r.isNotNull($row.getTranslatedStatus()))
+							&nbsp;<span class='o_labeled $row.getStatusCSS()'>$row.getTranslatedStatus()</span>
+						#end
+					</div>
+				#end
+				#if($row.getDateShort1() && $row.getDateShort1() != "")
+					<div class="o_date o_short">
+						<i class="o_icon o_icon-fw o_icon_calendar">&nbsp;</i>
+						$row.getDateShort1()
+						#if($r.isNotNull($row.getTranslatedStatus()))
+							&nbsp;<span class='o_labeled $row.getStatusCSS()'>$row.getTranslatedStatus()</span>
+						#end
+					</div>
+				#end
+				#if($row.getDateShort2() && $row.getDateShort2() != "")
+					<div class="o_date o_short">
+						<i class="o_icon o_icon-fw">&nbsp;</i>
+						$row.getDateShort2()
+					</div>
+				#end
+				#if($row.getTime() && $row.getTime() != "")
+					<div class="o_time">
+						<i class="o_icon o_icon-fw o_icon_time">&nbsp;</i>
+						$row.getTime()
+						#if($r.isNotNull($row.getTranslatedStatus()))
+							&nbsp;<span class='o_labeled $row.getStatusCSS()'>$row.getTranslatedStatus()</span>
+						#end
+					</div>
+				#end
+				#if($row.getLocation() && $row.getLocation() != "")
+					<div>
+						<i class="o_icon o_icon-fw o_icon_home">&nbsp;</i>
+						$r.escapeHtml($row.getLocation())
+					</div>
+				#end
+				#if($row.getDetails() && $row.getDetails() != "")
+					<div>
+						<i class="o_icon o_icon-fw o_icon_info_ap">&nbsp;</i>
+						$r.escapeHtml($row.getDetails())
+					</div>
+				#end
+				#if($r.isNotEmpty($row.participants))
+					<div class="text-muted">
+						#foreach($participant in $row.participants)
+							<span class='o_participant'><i class='o_icon o_icon_user'>&nbsp;</i>$participant &nbsp;</span>
+						#end
+					</div>
+				#end
+				#if($r.isNotNull($row.getFreeParticipations()))
+					<div>
+						#if($row.getFreeAppointments() == 1)
+							$r.translate("participations.free.one")
+						#else
+							$r.translate("participations.free", $row.getFreeParticipations().toString())
+						#end
+					</div>
+				#end
+			</div>
+			
+			<div class="o_buttons">
+				<div class="o_button_group o_button_group_right">
+					#if($row.rebookLinkName)
+						$r.render($row.rebookLinkName)
+					#end
+					#if($row.confirmLinkName)
+						$r.render($row.confirmLinkName)
+					#end
+					#if($row.deleteLinkName)
+						$r.render($row.deleteLinkName)
+					#end
+					#if($row.editLinkName)
+						$r.render($row.editLinkName)
+					#end
+				</div>
+			</div>
+		</div>
+		
+		<div class="o_space"></div>
+		<div class="o_select_button">
+			#if($row.selectLinkName)
+				$r.render($row.selectLinkName)
+			#end
+		</div>
+	</div>
+</div>

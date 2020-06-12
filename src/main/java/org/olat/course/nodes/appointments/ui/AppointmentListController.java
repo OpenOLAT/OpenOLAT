@@ -19,18 +19,16 @@
  */
 package org.olat.course.nodes.appointments.ui;
 
-import static java.util.Collections.emptyList;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang.time.DateUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.date.DateComponentFactory;
+import org.olat.core.gui.components.date.DateElement;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -54,12 +52,10 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.appointments.Appointment;
 import org.olat.course.nodes.appointments.Appointment.Status;
-import org.olat.course.nodes.appointments.AppointmentSearchParams;
 import org.olat.course.nodes.appointments.AppointmentsSecurityCallback;
 import org.olat.course.nodes.appointments.AppointmentsService;
 import org.olat.course.nodes.appointments.Organizer;
-import org.olat.course.nodes.appointments.Participation;
-import org.olat.course.nodes.appointments.ParticipationSearchParams;
+import org.olat.course.nodes.appointments.ParticipationResult;
 import org.olat.course.nodes.appointments.Topic;
 import org.olat.course.nodes.appointments.ui.AppointmentDataModel.AppointmentCols;
 import org.olat.user.UserManager;
@@ -71,8 +67,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class TopicRunCoachController extends FormBasicController implements FlexiTableComponentDelegate {
+public abstract class AppointmentListController extends FormBasicController implements FlexiTableComponentDelegate {
 	
+	private static final String CMD_SELECT = "select";
 	private static final String CMD_REBOOK = "rebook";
 	private static final String CMD_CONFIRM = "confirm";
 	private static final String CMD_DELETE = "delete";
@@ -90,23 +87,24 @@ public class TopicRunCoachController extends FormBasicController implements Flex
 	private TopicHeaderController headerCtrl;
 	private TopicEditController topicEditCtrl;
 	private OrganizersEditController organizersEditCtrl;
+	private DialogBoxController confirmParticipationCrtl;
 	private AppointmentEditController appointmentEditCtrl;
 	private RebookController rebookCtrl;
 	private DialogBoxController confirmDeleteTopicCrtl;
 	private AppointmentDeleteController appointmentDeleteCtrl;
 
-	private Topic topic;
-	private final AppointmentsSecurityCallback secCallback;
-	private final Configuration config;
+	protected Topic topic;
+	protected final AppointmentsSecurityCallback secCallback;
+	protected final Configuration config;
 	
 	@Autowired
-	private AppointmentsService appointmentsService;
+	protected AppointmentsService appointmentsService;
 	@Autowired
-	private UserManager userManager;
+	protected UserManager userManager;
 	
-	public TopicRunCoachController(UserRequest ureq, WindowControl wControl, Topic topic,
+	protected AppointmentListController(UserRequest ureq, WindowControl wControl, Topic topic,
 			AppointmentsSecurityCallback secCallback, Configuration config) {
-		super(ureq, wControl, "topic_run_coach");
+		super(ureq, wControl, "appointments_list");
 		this.topic = topic;
 		this.secCallback = secCallback;
 		this.config = config;
@@ -114,30 +112,47 @@ public class TopicRunCoachController extends FormBasicController implements Flex
 		initForm(ureq);
 		updateModel();
 	}
-
+	
+	protected abstract boolean canSelect();
+	
+	protected abstract boolean canEdit();
+	
+	protected abstract String getTableCssClass();
+	
+	protected abstract String getPersistedPreferencesId();
+	
+	protected abstract List<AppointmentRow> loadModel();
+	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// Buttons
-		FormLayoutContainer topButtons = FormLayoutContainer.createButtonLayout("topButtons", getTranslator());
-		topButtons.setRootForm(mainForm);
-		formLayout.add("topButtons", topButtons);
-		topButtons.setElementCssClass("o_button_group o_button_group_right");
+		FormLayoutContainer backButtons = FormLayoutContainer.createButtonLayout("backButtons", getTranslator());
+		backButtons.setRootForm(mainForm);
+		formLayout.add("backButtons", backButtons);
+		backButtons.setElementCssClass("o_button_group o_button_group_left");
 		
-		backLink = uifactory.addFormLink("backLink", "back", "back", "", topButtons, Link.LINK_BACK);
+		backLink = uifactory.addFormLink("backLink", "back", "back", "", backButtons, Link.LINK_BACK);
 		backLink.setElementCssClass("o_back");
 		
-		List<Organizer> organizers = appointmentsService.getOrganizers(topic);
-		if (secCallback.canEditTopic(organizers)) {
-			deleteTopicLink = uifactory.addFormLink("delete.topic", topButtons, Link.BUTTON);
-			deleteTopicLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete");
-			editTopicLink = uifactory.addFormLink("edit.topic", topButtons, Link.BUTTON);
-			editTopicLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
-			editOrganizerLink = uifactory.addFormLink("edit.organizer", topButtons, Link.BUTTON);
-			editOrganizerLink.setIconLeftCSS("o_icon o_icon-lg o_icon_coach");
-		}
-		if (secCallback.canEditAppointment(organizers)) {
-			addAppointmentLink = uifactory.addFormLink("add.appointment", topButtons, Link.BUTTON);
-			addAppointmentLink.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
+		if (canEdit()) {
+			FormLayoutContainer topButtons = FormLayoutContainer.createButtonLayout("topButtons", getTranslator());
+			topButtons.setRootForm(mainForm);
+			formLayout.add("topButtons", topButtons);
+			topButtons.setElementCssClass("o_button_group o_button_group_right");
+			
+			List<Organizer> organizers = appointmentsService.getOrganizers(topic);
+			if (secCallback.canEditTopic(organizers)) {
+				deleteTopicLink = uifactory.addFormLink("delete.topic", topButtons, Link.BUTTON);
+				deleteTopicLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete");
+				editTopicLink = uifactory.addFormLink("edit.topic", topButtons, Link.BUTTON);
+				editTopicLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
+				editOrganizerLink = uifactory.addFormLink("edit.organizer", topButtons, Link.BUTTON);
+				editOrganizerLink.setIconLeftCSS("o_icon o_icon-lg o_icon_coach");
+			}
+			if (secCallback.canEditAppointment(organizers)) {
+				addAppointmentLink = uifactory.addFormLink("add.appointment", topButtons, Link.BUTTON);
+				addAppointmentLink.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
+			}
 		}
 		
 		// Header
@@ -163,65 +178,53 @@ public class TopicRunCoachController extends FormBasicController implements Flex
 		columnsModel.addFlexiColumnModel(detailsModel);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AppointmentCols.maxParticipations));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AppointmentCols.freeParticipations));
+		DefaultFlexiColumnModel numberOfParticipationsModel = new DefaultFlexiColumnModel(AppointmentCols.numberOfParticipations);
+		numberOfParticipationsModel.setDefaultVisible(false);
+		columnsModel.addFlexiColumnModel(numberOfParticipationsModel);
 		DefaultFlexiColumnModel participantsModel = new DefaultFlexiColumnModel(AppointmentCols.participants);
 		participantsModel.setCellRenderer(new ParticipationsRenderer());
 		participantsModel.setDefaultVisible(false);
 		columnsModel.addFlexiColumnModel(participantsModel);
-		DefaultFlexiColumnModel rebookModel = new DefaultFlexiColumnModel(AppointmentCols.rebook);
-		rebookModel.setExportable(false);
-		columnsModel.addFlexiColumnModel(rebookModel);
-		DefaultFlexiColumnModel confirmModel = new DefaultFlexiColumnModel(AppointmentCols.confirm);
-		confirmModel.setExportable(false);
-		columnsModel.addFlexiColumnModel(confirmModel);
-		DefaultFlexiColumnModel deleteModel = new DefaultFlexiColumnModel(AppointmentCols.delete);
-		deleteModel.setExportable(false);
-		columnsModel.addFlexiColumnModel(deleteModel);
-		DefaultFlexiColumnModel editModel = new DefaultFlexiColumnModel(AppointmentCols.edit);
-		editModel.setExportable(false);
-		columnsModel.addFlexiColumnModel(editModel);
+		if (canSelect()) {
+			DefaultFlexiColumnModel selectModel = new DefaultFlexiColumnModel(AppointmentCols.select);
+			selectModel.setExportable(false);
+			columnsModel.addFlexiColumnModel(selectModel);
+		}
+		if (canEdit()) {
+			DefaultFlexiColumnModel rebookModel = new DefaultFlexiColumnModel(AppointmentCols.rebook);
+			rebookModel.setExportable(false);
+			columnsModel.addFlexiColumnModel(rebookModel);
+			DefaultFlexiColumnModel confirmModel = new DefaultFlexiColumnModel(AppointmentCols.confirm);
+			confirmModel.setExportable(false);
+			columnsModel.addFlexiColumnModel(confirmModel);
+			DefaultFlexiColumnModel deleteModel = new DefaultFlexiColumnModel(AppointmentCols.delete);
+			deleteModel.setExportable(false);
+			columnsModel.addFlexiColumnModel(deleteModel);
+			DefaultFlexiColumnModel editModel = new DefaultFlexiColumnModel(AppointmentCols.edit);
+			editModel.setExportable(false);
+			columnsModel.addFlexiColumnModel(editModel);
+		}
 		
 		dataModel = new AppointmentDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
-		tableEl.setAndLoadPersistedPreferences(ureq, "appointments");
+		tableEl.setAndLoadPersistedPreferences(ureq, getPersistedPreferencesId());
 		tableEl.setEmtpyTableMessageKey("table.empty.appointments");
 
-		tableEl.setElementCssClass("o_appointments o_selection_run o_coach");
+		tableEl.setElementCssClass("o_appointments o_list " + getTableCssClass());
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
 		tableEl.setRendererType(FlexiTableRendererType.custom);
-		VelocityContainer rowVC = createVelocityContainer("appointment_row_coach");
+		VelocityContainer rowVC = createVelocityContainer("appointment_row");
 		rowVC.setDomReplacementWrapperRequired(false);
 		tableEl.setRowRenderer(rowVC, this);
 	}
 
 	private void updateModel() {
-		AppointmentSearchParams searchParams = new AppointmentSearchParams();
-		searchParams.setTopic(topic);
-		searchParams.setFetchTopic(true);
-		List<Appointment> appointments = appointmentsService.getAppointments(searchParams);
-		ParticipationSearchParams pParams = new ParticipationSearchParams();
-		pParams.setAppointments(appointments);
-		Map<Long, List<Participation>> appointmentKeyToParticipations = appointmentsService
-				.getParticipations(pParams).stream()
-				.collect(Collectors.groupingBy(p -> p.getAppointment().getKey()));
-		
-		appointments.sort((a1, a2) -> a1.getStart().compareTo(a2.getStart()));
-		
-		List<AppointmentRow> rows = new ArrayList<>(appointments.size());
-		for (Appointment appointment : appointments) {
-			List<Participation> participations = appointmentKeyToParticipations.getOrDefault(appointment.getKey(), emptyList());
-			AppointmentRow row = createRow(appointment, participations);
-			if (row != null) {
-				rows.add(row);
-			}
-		}
-		
+		List<AppointmentRow> rows = loadModel();
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
-	
-	private AppointmentRow createRow(Appointment appointment, List<Participation> participations) {
-		AppointmentRow row = new AppointmentRow(appointment);
 
+	protected void forgeAppointmentView(AppointmentRow row, Appointment appointment) {
 		Locale locale = getLocale();
 		Date begin = appointment.getStart();
 		Date end = appointment.getEnd();
@@ -232,6 +235,7 @@ public class TopicRunCoachController extends FormBasicController implements Flex
 		String time = null;
 
 		boolean sameDay = DateUtils.isSameDay(begin, end);
+		boolean sameTime = org.olat.core.util.DateUtils.isSameTime(begin, end);
 		String startDate = StringHelper.formatLocaleDateFull(begin.getTime(), locale);
 		String startTime = StringHelper.formatLocaleTime(begin.getTime(), locale);
 		String endDate = StringHelper.formatLocaleDateFull(end.getTime(), locale);
@@ -241,9 +245,13 @@ public class TopicRunCoachController extends FormBasicController implements Flex
 			dateSb.append(startDate);
 			date = dateSb.toString();
 			StringBuilder timeSb = new StringBuilder();
-			timeSb.append(startTime);
-			timeSb.append(" - ");
-			timeSb.append(endTime);
+			if (sameTime) {
+				timeSb.append(translate("full.day"));
+			} else {
+				timeSb.append(startTime);
+				timeSb.append(" - ");
+				timeSb.append(endTime);
+			}
 			time = timeSb.toString();
 		} else {
 			StringBuilder dateSbLong = new StringBuilder();
@@ -275,61 +283,60 @@ public class TopicRunCoachController extends FormBasicController implements Flex
 		row.setTime(time);
 		row.setLocation(appointment.getLocation());
 		row.setDetails(appointment.getDetails());
+		forgeDayElement(row, appointment.getStart());
+	}
+	
+	protected void forgeDayElement(AppointmentRow row, Date date) {
+		DateElement dayEl = DateComponentFactory.createDateElementWithYear("day_" + row.getKey(), date);
+		row.setDayEl(dayEl);
+	}
+	
+	protected void forgeSelectLink(AppointmentRow row, boolean selected, boolean selectable, boolean unselectable) {
+		String selectionCSS;
+		if (selected && unselectable) {
+			selectionCSS = "o_ap_planned";
+		} else if (selected) {
+			selectionCSS = "o_ap_confirmed";
+		} else {
+			selectionCSS = "o_ap_selectable";
+		}
+		row.setSelectionCSS(selectionCSS);
 		
-		List<String> participants = participations.stream()
-				.map(p -> userManager.getUserDisplayName(p.getIdentity().getKey()))
-				.sorted(String.CASE_INSENSITIVE_ORDER)
-				.collect(Collectors.toList());
-		row.setParticipants(participants);
-
-		if (Appointment.Status.planned == appointment.getStatus()) {
-			Integer maxParticipations = appointment.getMaxParticipations();
-			Integer freeParticipations = maxParticipations != null ? maxParticipations.intValue() - participations.size()
-					: null;
-			row.setMaxParticipations(maxParticipations);
-			row.setFreeParticipations(freeParticipations);
+		boolean enabled = selectable || unselectable;
+		boolean visible = selectable || unselectable || selected;
+		String i18n = selected? "appointment.selected": "appointment.select";
+		FormLink link = uifactory.addFormLink("delete_" + row.getKey(), CMD_SELECT, i18n, null, null, Link.LINK);
+		link.setUserObject(row);
+		if (selected) {
+			link.setIconLeftCSS("o_icon o_icon_lg o_icon_selected");
+		} else {
+			link.setIconLeftCSS("o_icon o_icon_lg o_icon_unselected");
 		}
-		
-		row.setTranslatedStatus(translate("appointment.status." + appointment.getStatus().name()));
-		row.setStatusCSS("o_ap_status_" + appointment.getStatus().name());
-
-		if (participations.size() > 0) {
-			forgeRebookLink(row);
-		}
-		if (config.isConfirmation()) {
-			boolean confirmable = Appointment.Status.planned == appointment.getStatus()
-					&& participations.size() > 0;
-			boolean unconfirmable = Appointment.Status.confirmed == appointment.getStatus();
-			if (confirmable || unconfirmable) {
-				forgeConfirmLink(row, confirmable);
-			}
-		}
-		forgeDeleteLink(row);
-		forgeEditLink(row);
-
-		return row;
+		link.setEnabled(enabled);
+		link.setVisible(visible);
+		row.setSelectLink(link);
 	}
 
-	private void forgeRebookLink(AppointmentRow row) {
+	protected void forgeRebookLink(AppointmentRow row) {
 		FormLink link = uifactory.addFormLink("rebook_" + row.getKey(), CMD_REBOOK, "rebook", null, null, Link.LINK);
 		link.setUserObject(row);
 		row.setRebookLink(link);
 	}
 	
-	private void forgeConfirmLink(AppointmentRow row, boolean confirmable) {
+	protected void forgeConfirmLink(AppointmentRow row, boolean confirmable) {
 		String i18nKey = confirmable? "confirm": "unconfirm";
 		FormLink link = uifactory.addFormLink("confirm_" + row.getKey(), CMD_CONFIRM, i18nKey, null, null, Link.LINK);
 		link.setUserObject(row);
 		row.setConfirmLink(link);
 	}
 	
-	private void forgeDeleteLink(AppointmentRow row) {
+	protected void forgeDeleteLink(AppointmentRow row) {
 		FormLink link = uifactory.addFormLink("delete_" + row.getKey(), CMD_DELETE, "delete", null, null, Link.LINK);
 		link.setUserObject(row);
 		row.setDeleteLink(link);
 	}
 	
-	private void forgeEditLink(AppointmentRow row) {
+	protected void forgeEditLink(AppointmentRow row) {
 		FormLink link = uifactory.addFormLink("edit_" + row.getKey(), CMD_EDIT, "edit", null, null, Link.LINK);
 		link.setUserObject(row);
 		row.setEditLink(link);
@@ -350,7 +357,10 @@ public class TopicRunCoachController extends FormBasicController implements Flex
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
-			if (CMD_EDIT.equals(cmd)) {
+			if (CMD_SELECT.equals(cmd)) {
+				AppointmentRow row = (AppointmentRow)link.getUserObject();
+				doToggleParticipation(ureq, row);
+			} else if (CMD_EDIT.equals(cmd)) {
 				AppointmentRow row = (AppointmentRow)link.getUserObject();
 				doEditAppointment(ureq, row.getAppointment());
 			} else if (CMD_DELETE.equals(cmd)) {
@@ -382,6 +392,12 @@ public class TopicRunCoachController extends FormBasicController implements Flex
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else  if (source == confirmParticipationCrtl) {
+			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+				Appointment appointment = (Appointment)confirmParticipationCrtl.getUserObject();
+				doCreateParticipation(appointment);
+				updateModel();
+			}
 		} else if (appointmentEditCtrl == source) {
 			if (event == Event.DONE_EVENT) {
 				updateModel();
@@ -456,6 +472,34 @@ public class TopicRunCoachController extends FormBasicController implements Flex
 		listenTo(cmc);
 		cmc.activate();
 	}
+	
+	private void doToggleParticipation(UserRequest ureq, AppointmentRow row) {
+		if (row.getParticipation() == null) {
+			if (config.isConfirmation()) {
+				doCreateParticipation(row.getAppointment());
+			} else {
+				doSelfConfirmParticipation(ureq, row.getAppointment());
+			}
+		} else {
+			appointmentsService.deleteParticipation(row.getParticipation());
+		}
+		updateModel();
+	}
+
+	private void doSelfConfirmParticipation(UserRequest ureq, Appointment appointment) {
+		String title = translate("confirm.participation.self.title");
+		String text = translate("confirm.participation.self");
+		confirmParticipationCrtl = activateYesNoDialog(ureq, title, text, confirmParticipationCrtl);
+		confirmParticipationCrtl.setUserObject(appointment);
+	}
+
+	private void doCreateParticipation(Appointment appointment) {
+		ParticipationResult participationResult = appointmentsService.createParticipation(appointment, getIdentity(),
+				config.isMultiParticipations(), !config.isConfirmation());
+		if (ParticipationResult.Status.ok != participationResult.getStatus()) {
+			showWarning("participation.not.created");
+		}
+	}
 
 	private void doAddAppointment(UserRequest ureq) {
 		appointmentEditCtrl = new AppointmentEditController(ureq, getWindowControl(), topic);
@@ -513,7 +557,14 @@ public class TopicRunCoachController extends FormBasicController implements Flex
 
 	@Override
 	public Iterable<Component> getComponents(int row, Object rowObject) {
-		return null;
+		List<Component> cmps = new ArrayList<>(1);
+		if (rowObject instanceof AppointmentRow) {
+			AppointmentRow appointmentRow = (AppointmentRow)rowObject;
+			if (appointmentRow.getDayEl() != null) {
+				cmps.add(appointmentRow.getDayEl().getComponent());
+			}
+		}
+		return cmps;
 	}
 
 }

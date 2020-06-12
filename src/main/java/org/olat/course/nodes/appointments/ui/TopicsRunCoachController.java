@@ -74,7 +74,7 @@ public class TopicsRunCoachController extends BasicController {
 	private final BreadcrumbedStackedPanel stackPanel;
 	private CloseableModalController cmc;
 	private TopicCreateController topicCreateCtrl;
-	private TopicRunCoachController topicRunCtrl;
+	private AppointmentListEditController topicRunCtrl;
 	private ContextualSubscriptionController subscriptionCtrl;
 	
 	private final RepositoryEntry entry;
@@ -325,7 +325,7 @@ public class TopicsRunCoachController extends BasicController {
 	private void doOpenTopic(UserRequest ureq, Topic topic) {
 		removeAsListenerAndDispose(topicRunCtrl);
 		
-		topicRunCtrl = new TopicRunCoachController(ureq, getWindowControl(), topic, secCallback, config);
+		topicRunCtrl = new AppointmentListEditController(ureq, getWindowControl(), topic, secCallback, config);
 		listenTo(topicRunCtrl);
 		
 		String title = topic.getTitle();

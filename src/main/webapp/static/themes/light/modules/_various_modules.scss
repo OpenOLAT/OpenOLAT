@@ -316,6 +316,7 @@ The "important!" avoids hiding the image by bootstrap.
 	position: relative; 
 	width: $line-height-computed * 2; 
 	min-width: $line-height-computed * 2; 
+	max-width: $line-height-computed * 2; 
 	height: $line-height-computed + floor($line-height-computed * 1.5) + 2px; 
 	border: 1px solid $o-datecomp-border; 
 	margin-right: $padding-base-horizontal; 

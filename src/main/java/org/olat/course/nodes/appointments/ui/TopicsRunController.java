@@ -50,6 +50,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.appointments.Appointment;
 import org.olat.course.nodes.appointments.AppointmentSearchParams;
+import org.olat.course.nodes.appointments.AppointmentsSecurityCallback;
 import org.olat.course.nodes.appointments.AppointmentsService;
 import org.olat.course.nodes.appointments.Organizer;
 import org.olat.course.nodes.appointments.Participation;
@@ -74,11 +75,12 @@ public class TopicsRunController extends BasicController implements Activateable
 
 	private final BreadcrumbedStackedPanel stackPanel;
 	private CloseableModalController cmc;
-	private TopicRunController topicRunCtrl;
+	private AppointmentListSelectionController topicRunCtrl;
 	private OrganizerMailController mailCtrl;
 	
 	private final RepositoryEntry entry;
 	private final String subIdent;
+	private final AppointmentsSecurityCallback secCallback;
 	private final Configuration config;
 
 	private List<TopicWrapper> topics;
@@ -90,11 +92,12 @@ public class TopicsRunController extends BasicController implements Activateable
 	private UserManager userManager;
 
 	public TopicsRunController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
-			RepositoryEntry entry, String subIdent, Configuration config) {
+			RepositoryEntry entry, String subIdent, AppointmentsSecurityCallback secCallback, Configuration config) {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
 		this.entry = entry;
 		this.subIdent = subIdent;
+		this.secCallback = secCallback;
 		this.config = config;
 		
 		mainVC = createVelocityContainer("topics_run");
@@ -336,7 +339,7 @@ public class TopicsRunController extends BasicController implements Activateable
 	private void doOpenTopic(UserRequest ureq, Topic topic) {
 		removeAsListenerAndDispose(topicRunCtrl);
 		
-		topicRunCtrl = new TopicRunController(ureq, getWindowControl(), topic, config);
+		topicRunCtrl = new AppointmentListSelectionController(ureq, getWindowControl(), topic, secCallback, config);
 		listenTo(topicRunCtrl);
 		
 		String title = topic.getTitle();

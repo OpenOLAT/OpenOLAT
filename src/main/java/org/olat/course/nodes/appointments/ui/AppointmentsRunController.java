@@ -53,7 +53,7 @@ public class AppointmentsRunController extends BasicController {
 		stackPanel.setInvisibleCrumb(3);
 		
 		if (secCallback.canSelectAppointments()) {
-			topicsCtrl = new TopicsRunController(ureq, wControl, stackPanel, entry, subIdent, config);
+			topicsCtrl = new TopicsRunController(ureq, wControl, stackPanel, entry, subIdent, secCallback, config);
 		} else {
 			topicsCtrl = new TopicsRunCoachController(ureq, wControl, stackPanel, entry, subIdent, secCallback, config);
 		}
