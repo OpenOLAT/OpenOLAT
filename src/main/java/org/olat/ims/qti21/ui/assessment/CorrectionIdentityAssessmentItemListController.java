@@ -204,10 +204,12 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "corr-identity-assessment-item-list");
+		tableEl.setElementCssClass("o_sel_correction_assessment_items_list");
 		
 		backLink = uifactory.addFormLink("back", formLayout, Link.LINK_BACK);
 		if(saveEnabled && !readOnly) {
 			saveButton = uifactory.addFormLink("save.tests", formLayout, Link.BUTTON);
+			saveButton.setElementCssClass("o_sel_correction_save_test");
 		} else {
 			backOverviewButton = uifactory.addFormLink("back.overview", formLayout, Link.BUTTON);
 		}

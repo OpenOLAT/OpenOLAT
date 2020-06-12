@@ -17,9 +17,12 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.ui.report;
+package org.olat.selenium.page.coaching;
 
-import org.olat.core.gui.control.Event;
+import org.olat.selenium.page.graphene.OOGraphene;
+import org.olat.selenium.page.qti.QTI21CorrectionPage;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
 
 /**
  * 
@@ -27,27 +30,26 @@ import org.olat.core.gui.control.Event;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SearchEvent extends Event {
-
-	private static final long serialVersionUID = -6345403305741867680L;
-
-	public static final String SEARCH_EVENT = "search-question-test";
+public class CoachingPage {
 	
-	private final String author;
-	private final String searchString;
+	private final WebDriver browser;
 	
-	public SearchEvent(String searchString, String author) {
-		super(SEARCH_EVENT);
-		this.author = author;
-		this.searchString = searchString;
+	public CoachingPage(WebDriver browser) {
+		this.browser = browser;
 	}
 	
-	public String getAuthor() {
-		return author;
+	public CoachingPage assertOnGrading() {
+		By gradingBy = By.cssSelector("fieldset.o_sel_grading_assignments");
+		OOGraphene.waitElement(gradingBy, browser);
+		return this;
 	}
 	
-	public String getSearchString() {
-		return searchString;
+	public QTI21CorrectionPage startGrading(String nodeTitle) {
+		By gradingBy = By.xpath("//fieldset[@class='o_sel_grading_assignments']//table//tr[td/a[text()[contains(.,'" + nodeTitle + "')]]]/td/a[contains(@onclick,'grade')]");
+		OOGraphene.waitElement(gradingBy, browser);
+		browser.findElement(gradingBy).click();
+		OOGraphene.waitBusy(browser);
+		return new QTI21CorrectionPage(browser);
 	}
 
 }

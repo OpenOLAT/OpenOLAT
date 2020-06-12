@@ -84,6 +84,20 @@ public class QTI21ConfigurationCEPage {
 		return this;
 	}
 	
+	/**
+	 * Set the correction mode.
+	 * 
+	 * @param mode The mode defined by IQEditController.CORRECTION_AUTO,
+	 * 		IQEditController.CORRECTION_MANUAL or IQEditController.CORRECTION_GRADING
+	 * @return Itself
+	 */
+	public QTI21ConfigurationCEPage setCorrectionMode(String mode) {
+		By correctionBy = By.xpath("//fieldset[contains(@class,'o_qti_21_correction')]//div[@id='o_cocorrection_mode']//input[@value='" + mode + "'][@name='correction.mode'][@type='radio']");
+		OOGraphene.waitElement(correctionBy, browser);
+		browser.findElement(correctionBy).click();
+		return this;
+	}
+	
 	public QTI21ConfigurationCEPage saveConfiguration() {
 		By saveBy = By.cssSelector(".o_qti_21_configuration button");
 		browser.findElement(saveBy).click();

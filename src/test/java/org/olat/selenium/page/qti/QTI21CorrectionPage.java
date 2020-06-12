@@ -58,8 +58,28 @@ public class QTI21CorrectionPage {
 		return this;
 	}
 	
+	/**
+	 * The assessment items list after selecting an identity in the list.
+	 * 
+	 * @param questionTitle The question title
+	 * @param numberOfErrors The number of errors
+	 * @return
+	 */
 	public QTI21CorrectionPage assertOnAssessmentItemError(String questionTitle, int numberOfErrors) {
 		By questionBy = By.xpath("//div[contains(@class,'o_sel_correction_assessment_items_list')]//tr[td/a[text()[contains(.,'" + questionTitle + "')]]]/td/a[text()[contains(.,'" + numberOfErrors + "')]]/i[contains(@class,'o_icon_error')]");
+		OOGraphene.waitElement(questionBy, browser);
+		return this;
+	}
+	
+	/**
+	 * Assert an assessment item which is not corrected.
+	 * 
+	 * @param questionTitle The question title
+	 * @param numberOfErrors
+	 * @return
+	 */
+	public QTI21CorrectionPage assertOnAssessmentItemNotCorrected(String questionTitle, int numberOfPoints) {
+		By questionBy = By.xpath("//div[contains(@class,'o_sel_correction_assessment_items_list')]//tr[td/a[text()[contains(.,'" + questionTitle + "')]]][td[text()[contains(.,'" + numberOfPoints + "')]]]/td/a/i[contains(@class,'o_icon_error')]");
 		OOGraphene.waitElement(questionBy, browser);
 		return this;
 	}
@@ -91,8 +111,25 @@ public class QTI21CorrectionPage {
 		return this;
 	}
 	
+	/**
+	 * 
+	 * @return Itself
+	 */
 	public QTI21CorrectionPage publishAll() {
 		By saveBy = By.cssSelector("a.o_sel_correction_save_tests");
+		OOGraphene.waitElement(saveBy, browser);
+		browser.findElement(saveBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	/**
+	 * Publish the results of a single test (grader).
+	 * 
+	 * @return Itself
+	 */
+	public QTI21CorrectionPage publish() {
+		By saveBy = By.cssSelector("a.o_sel_correction_save_test");
 		OOGraphene.waitElement(saveBy, browser);
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);

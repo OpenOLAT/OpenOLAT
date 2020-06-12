@@ -895,49 +895,55 @@ public class QTI21Page {
 	
 	public QTI21Page assertOnCourseAssessmentTestScore(int score) {
 		By resultsBy = By.xpath("//div[contains(@class,'o_personal')]//tr[contains(@class,'o_score')]/td[contains(text(),'" + score + "')]");
-		OOGraphene.waitElement(resultsBy, 5, browser);
+		OOGraphene.waitElement(resultsBy, browser);
 		return this;
 	}
 	
 	public QTI21Page assertOnCourseAssessmentTestWaitingCorrection() {
 		By resultsBy = By.xpath("//div[contains(@class,'o_personal')]//tr[contains(@class,'o_score')]/td/span[@id='o_score_in_review']");
-		OOGraphene.waitElement(resultsBy, 5, browser);
+		OOGraphene.waitElement(resultsBy, browser);
+		return this;
+	}
+	
+	public QTI21Page assertOnCourseAssessmentTestPassed() {
+		By passedBy = By.xpath("//div[contains(@class,'o_personal')]//tr[contains(@class,'o_state')][contains(@class,'o_passed')]/td/i[contains(@class,'o_icon_passed')]");
+		OOGraphene.waitElement(passedBy, browser);
 		return this;
 	}
 	
 	public QTI21Page assertOnAssessmentTestScore(int score) {
 		By resultsBy = By.xpath("//div[contains(@class,'o_sel_results_details')]//tr[contains(@class,'o_sel_assessmenttest_scores')]/td/div/span[contains(@class,'o_sel_assessmenttest_score')][contains(text(),'" + score + "')]");
-		OOGraphene.waitElement(resultsBy, 5, browser);
+		OOGraphene.waitElement(resultsBy, browser);
 		return this;
 	}
 	
 	public QTI21Page assertOnAssessmentItemScore(String title, int score) {
 		By resultsBy = By.xpath("//div[contains(@class,'o_qti_item')][div/h4[text()[contains(.,'" + title + "')]]]//tr[contains(@class,'o_sel_assessmentitem_score')]//span[@class='o_sel_assessmentitem_score'][contains(text(),'" + score + "')]");
-		OOGraphene.waitElement(resultsBy, 5, browser);
+		OOGraphene.waitElement(resultsBy, browser);
 		return this;
 	}
 	
 	public QTI21Page assertOnAssessmentTestScore(String score) {
 		By resultsBy = By.xpath("//div[contains(@class,'o_sel_results_details')]//tr[contains(@class,'o_sel_assessmenttest_scores')]/td/div/span[contains(@class,'o_sel_assessmenttest_score')][contains(text(),'" + score + "')]");
-		OOGraphene.waitElement(resultsBy, 5, browser);
+		OOGraphene.waitElement(resultsBy, browser);
 		return this;
 	}
 	
 	public QTI21Page assertOnAssessmentTestPassed() {
-		By notPassedBy = By.cssSelector("div.o_sel_results_details tr.o_qti_stateinfo.o_passed");
-		OOGraphene.waitElement(notPassedBy, 5, browser);
+		By passedBy = By.cssSelector("div.o_sel_results_details tr.o_qti_stateinfo.o_passed");
+		OOGraphene.waitElement(passedBy, browser);
 		return this;
 	}
 	
 	public QTI21Page assertOnAssessmentTestNotPassed() {
 		By notPassedBy = By.cssSelector("div.o_sel_results_details tr.o_qti_stateinfo.o_failed");
-		OOGraphene.waitElement(notPassedBy, 5, browser);
+		OOGraphene.waitElement(notPassedBy, browser);
 		return this;
 	}
 	
 	public QTI21Page assertOnAssessmentTestMaxScore(int score) {
 		By resultsBy = By.xpath("//div[contains(@class,'o_sel_results_details')]//tr[contains(@class,'o_sel_assessmenttest_scores')]/td/div/span[contains(@class,'o_sel_assessmenttest_maxscore')][contains(text(),'" + score + "')]");
-		OOGraphene.waitElement(resultsBy, 5, browser);
+		OOGraphene.waitElement(resultsBy, browser);
 		return this;
 	}
 	
@@ -1021,17 +1027,32 @@ public class QTI21Page {
 	}
 	
 	public QTI21SettingsPage settings() {
-		By toolsLinkBy = By.cssSelector("ul.o_tools li.o_tool_dropdown a.o_sel_repository_tools");
-		OOGraphene.waitElement(toolsLinkBy, browser);
-		if(!browser.findElement(toolsMenu).isDisplayed()) {
-			openToolsMenu();
-		}
+		openAdministrationMenu();
 		
 		By optionsBy = By.cssSelector("ul.o_sel_repository_tools a.o_sel_repo_settings");
 		OOGraphene.waitElement(optionsBy, browser);
 		browser.findElement(optionsBy).click();
 		OOGraphene.waitBusy(browser);
 		return new QTI21SettingsPage(browser);
+	}
+	
+	public QTI21GradingPage grading() {
+		openAdministrationMenu();
+		
+		By optionsBy = By.cssSelector("ul.o_sel_repository_tools a.o_sel_grading");
+		OOGraphene.waitElement(optionsBy, browser);
+		browser.findElement(optionsBy).click();
+		OOGraphene.waitBusy(browser);
+		return new QTI21GradingPage(browser);
+	}
+	
+	private QTI21Page openAdministrationMenu() {
+		By toolsLinkBy = By.cssSelector("ul.o_tools li.o_tool_dropdown a.o_sel_repository_tools");
+		OOGraphene.waitElement(toolsLinkBy, browser);
+		if(!browser.findElement(toolsMenu).isDisplayed()) {
+			openToolsMenu();
+		}
+		return this;
 	}
 	
 	/**

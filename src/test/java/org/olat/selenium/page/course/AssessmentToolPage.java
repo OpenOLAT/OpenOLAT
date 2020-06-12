@@ -141,7 +141,32 @@ public class AssessmentToolPage {
 		By scoreBy = By.cssSelector(".o_sel_assessment_form_score input[type='text']");
 		browser.findElement(scoreBy).sendKeys(Float.toString(score));
 		
+		return closeAssessment();
+	}
+	
+	public AssessmentToolPage setAssessmentPassed(Boolean passed) {
+		String val = passed == null ? "undefined" : passed.toString();
+		By passedBy = By.cssSelector(".o_sel_assessment_form_passed input[type='radio'][value='" + val + "']");
+		browser.findElement(passedBy).click();
+		return this;
+	}
+	
+	public AssessmentToolPage setAssessmentVisibility(boolean visible) {
+		String val = visible ? "visible" : "hidden";
+		By visibleBy = By.cssSelector(".o_sel_assessment_form_visibility input[type='radio'][value='" + val + "']");
+		browser.findElement(visibleBy).click();
+		return this;
+	}
+	
+	public AssessmentToolPage closeAssessment() {
 		By saveBy = By.cssSelector("button.btn.o_sel_assessment_form_save_and_close");
+		browser.findElement(saveBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public AssessmentToolPage reopenAssessment() {
+		By saveBy = By.cssSelector("a.o_sel_assessment_form_reopen");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;

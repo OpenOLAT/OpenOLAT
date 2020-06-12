@@ -605,6 +605,7 @@ public class AssessmentForm extends FormBasicController {
 		
 		String[] userVisibilityValues = new String[]{ translate("user.visibility.visible"), translate("user.visibility.hidden") };
 		userVisibility = uifactory.addRadiosHorizontal("user.visibility", "user.visibility", formLayout, userVisibilityKeys, userVisibilityValues);
+		userVisibility.setElementCssClass("o_sel_assessment_form_visibility");
 		if(scoreEval.getUserVisible() == null || scoreEval.getUserVisible().booleanValue()) {
 			userVisibility.select(userVisibilityKeys[0], true);
 		} else {

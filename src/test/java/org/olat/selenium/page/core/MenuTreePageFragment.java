@@ -55,6 +55,8 @@ public class MenuTreePageFragment {
 		OOGraphene.waitElement(rootNodeBy, browser);
 		browser.findElement(rootNodeBy).click();
 		OOGraphene.waitBusy(browser);
+		By rootNodeActiveBy = By.xpath("//div[contains(@class,'o_tree')]//span[contains(@class,'o_tree_link')][contains(@class,'o_tree_l0')][contains(@class,'active')]/a");
+		OOGraphene.waitElement(rootNodeActiveBy, browser);
 		return this;
 	}
 	
