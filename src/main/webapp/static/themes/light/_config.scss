@@ -889,9 +889,10 @@ $o-email-btn-border-color				: $btn-primary-border !default;
 $o-email-btn-border-radius				: 4px !default;
 
 /* Appointments */
-$o-ap-selected-color				: $brand-success !default;
-$o-ap-planned-color					: #4a6785;  /* blue */
-$o-ap-confirmed-color				: #14892c;	/* green */
+$o-ap-select-icon-color				: #fcfcfc !default;
+$o-ap-selectable-color				: $panel-default-border !default;
+$o-ap-planned-color					: $brand-warning !default;
+$o-ap-confirmed-color				: $brand-success !default;
 
 /* other configurations */
 $o-portrait-radius				: 50% !default;

@@ -2,7 +2,7 @@
 #if($r.isNotEmpty($appointments))
 	<div class="row">
 	#foreach($appointment in $appointments)
-		<div class="col-sm-12 #if($appointment.selected) o_ap_selected #end">
+		<div class="col-sm-12 $appointment.getSelectionCSS()">
 			<div class="panel panel-default">
 				<div class="panel-body">
 					#if($r.isNotNull($appointment.getDayElName()))
@@ -14,7 +14,7 @@
 								<i class="o_icon o_icon-fw o_icon_calendar">&nbsp;</i>
 								$appointment.getDateLong()
 								#if($r.isNotNull($appointment.getTranslatedStatus()))
-									&nbsp;<span class='o_labeled_light $appointment.getStatusCSS()'>$appointment.getTranslatedStatus()</span>
+									&nbsp;<span class='o_labeled $appointment.getStatusCSS()'>$appointment.getTranslatedStatus()</span>
 								#end
 							</div>
 						#end
@@ -23,7 +23,7 @@
 								<i class="o_icon o_icon-fw o_icon_calendar">&nbsp;</i>
 								$appointment.getDateShort1()
 								#if($r.isNotNull($appointment.getTranslatedStatus()))
-									&nbsp;<span class='o_labeled_light $appointment.getStatusCSS()'>$appointment.getTranslatedStatus()</span>
+									&nbsp;<span class='o_labeled $appointment.getStatusCSS()'>$appointment.getTranslatedStatus()</span>
 								#end
 							</div>
 						#end
@@ -38,7 +38,7 @@
 								<i class="o_icon o_icon-fw o_icon_time">&nbsp;</i>
 								$appointment.getTime()
 								#if($r.isNotNull($appointment.getTranslatedStatus()))
-									&nbsp;<span class='o_labeled_light $appointment.getStatusCSS()'>$appointment.getTranslatedStatus()</span>
+									&nbsp;<span class='o_labeled $appointment.getStatusCSS()'>$appointment.getTranslatedStatus()</span>
 								#end
 							</div>
 						#end

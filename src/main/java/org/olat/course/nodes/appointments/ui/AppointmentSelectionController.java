@@ -66,7 +66,6 @@ public class AppointmentSelectionController extends BasicController {
 
 	private final VelocityContainer mainVC;
 
-
 	private DialogBoxController confirmParticipationCrtl;
 
 	private final Topic topic;
@@ -218,10 +217,8 @@ public class AppointmentSelectionController extends BasicController {
 		}
 		
 		boolean unselectable = selected && Appointment.Status.planned == appointment.getStatus();
-		boolean enabled = selectable || unselectable;
-		if (selected || enabled) {
-			wrapSelectLink(wrapper, selected, enabled);
-		}
+		
+		wrapSelect(wrapper, selected, selectable, unselectable);
 		
 		return wrapper;
 	}
@@ -232,12 +229,29 @@ public class AppointmentSelectionController extends BasicController {
 		wrapper.setDayElName(dayElName);
 	}
 
-	private void wrapSelectLink(AppointmentWrapper wrapper, boolean selected, boolean enabled) {
+	private void wrapSelect(AppointmentWrapper wrapper, boolean selected, boolean selectable, boolean unselectable) {
+		String selectionCSS;
+		if (selected && unselectable) {
+			selectionCSS = "o_ap_planned";
+		} else if (selected) {
+			selectionCSS = "o_ap_confirmed";
+		} else {
+			selectionCSS = "o_ap_selectable";
+		}
+		wrapper.setSelectionCSS(selectionCSS);
+		
+		boolean enabled = selectable || unselectable;
+		boolean visible = selectable || unselectable || selected;
 		String i18n = selected? "appointment.selected": "appointment.select";
 		Link selectLink = LinkFactory.createCustomLink("select" + counter++, CMD_SELECT, i18n, Link.LINK, mainVC, this);
 		selectLink.setUserObject(wrapper);
-		selectLink.setIconLeftCSS("o_icon o_icon_lg o_icon_check");
+		if (selected) {
+			selectLink.setIconLeftCSS("o_icon o_icon_lg o_icon_selected");
+		} else {
+			selectLink.setIconLeftCSS("o_icon o_icon_lg o_icon_unselected");
+		}
 		selectLink.setEnabled(enabled);
+		selectLink.setVisible(visible);
 		wrapper.setSelectLinkName(selectLink.getComponentName());
 	}
 
@@ -315,6 +329,7 @@ public class AppointmentSelectionController extends BasicController {
 		private Integer freeParticipations;
 		private Integer maxParticipations;
 		private String dayElName;
+		private String selectionCSS;
 		private String selectLinkName;
 
 		public AppointmentWrapper(Appointment appointment) {
@@ -400,7 +415,7 @@ public class AppointmentSelectionController extends BasicController {
 		public void setDetails(String details) {
 			this.details = details;
 		}
-
+		
 		public String getTranslatedStatus() {
 			return translatedStatus;
 		}
@@ -439,6 +454,14 @@ public class AppointmentSelectionController extends BasicController {
 
 		public void setDayElName(String dayElName) {
 			this.dayElName = dayElName;
+		}
+
+		public String getSelectionCSS() {
+			return selectionCSS;
+		}
+
+		public void setSelectionCSS(String selectionCSS) {
+			this.selectionCSS = selectionCSS;
 		}
 
 		public String getSelectLinkName() {
