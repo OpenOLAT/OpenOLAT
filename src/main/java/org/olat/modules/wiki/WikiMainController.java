@@ -465,14 +465,19 @@ public class WikiMainController extends BasicController implements CloneableCont
 	}
 
 	private String getNodeCssClass(AssessmentEntryStatus status) {
-		if (AssessmentEntryStatus.done.equals(status)) {
-			return getNodeDoneCssClass();
+		if (assessmentProvider.isLearningPathCSS()) {
+			if (AssessmentEntryStatus.done.equals(status)) {
+				return getNodeDoneCssClass();
+			}
+			return "o_lp_ready o_lp_not_in_sequence o_lp_contains_no_sequence";
 		}
-		return "o_lp_ready o_lp_not_in_sequence o_lp_contains_no_sequence";
+		return "";
 	}
 	
 	private String getNodeDoneCssClass() {
-		return "o_lp_done o_lp_not_in_sequence o_lp_contains_no_sequence";
+		return assessmentProvider.isLearningPathCSS()
+				? "o_lp_done o_lp_not_in_sequence o_lp_contains_no_sequence"
+				: "";
 	}
 
 	@Override

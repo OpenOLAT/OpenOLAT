@@ -28,6 +28,8 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
  *
  */
 public interface WikiAssessmentProvider {
+	
+	boolean isLearningPathCSS();
 
 	void setStatusDone(String pageId);
 	
