@@ -210,6 +210,9 @@ public class QuestionOriginMediaResource extends OpenXMLWorkbookResource {
 	
 	private TestHolder loadQuestionMetadata(RepositoryEntry testEntry) {
 		TestHolder testHolder = new TestHolder(testEntry);
+		String owners = getOwners(testEntry);
+		testHolder.setOwners(owners);
+		
 		List<QuestionInformations> questionList = new ArrayList<>(32);
 		if(testHolder.isOk()) {
 			AssessmentTest assessmentTest = testHolder.getAssessmentTest();
@@ -222,10 +225,6 @@ public class QuestionOriginMediaResource extends OpenXMLWorkbookResource {
 			}
 		}
 		testHolder.setQuestionList(questionList);
-		
-		String owners = getOwners(testEntry);
-		testHolder.setOwners(owners);
-		
 		return testHolder;
 	}
 	
@@ -277,31 +276,27 @@ public class QuestionOriginMediaResource extends OpenXMLWorkbookResource {
 
 	private QuestionInformations loadQuestionMetadata(AssessmentItemRef itemRef, TestHolder testHolder) {
 		QuestionInformations infos = null;
+		AssessmentItem assessmentItem = testHolder.getAssessmentItem(itemRef);
 		ManifestMetadataBuilder metadata = testHolder.getManifestMetadataBuilder(itemRef);
 		if(metadata == null) {
-			AssessmentItem assessmentItem = testHolder.getAssessmentItem(itemRef);
 			if(assessmentItem != null) {
 				infos = new QuestionInformations(assessmentItem);
 			}
 		} else if(!StringHelper.containsNonWhitespace(metadata.getOpenOLATMetadataIdentifier())) {
-			AssessmentItem assessmentItem = testHolder.getAssessmentItem(itemRef);
-			if(assessmentItem != null) {
-				infos = new QuestionInformations(assessmentItem, metadata);
-			} else {
-				infos = new QuestionInformations(metadata);
-			}
+			infos = new QuestionInformations(assessmentItem, metadata, testHolder.getOwners());
 		} else {
 			String identifier = metadata.getOpenOLATMetadataIdentifier();
+			String masterIdentifier = metadata.getOpenOLATMetadataMasterIdentifier();
+			
 			List<QuestionItem> items = qpoolService.loadItemByIdentifier(identifier);
 			if(items.isEmpty()) {
-				infos = new QuestionInformations(metadata);
+				infos = new QuestionInformations(assessmentItem, metadata, testHolder.getOwners());
 			} else {
 				QuestionItem item = items.get(0);
 				String authors = getAuthors(item);
 				infos = new QuestionInformations(authors, item);
 			}
 
-			String masterIdentifier = metadata.getOpenOLATMetadataMasterIdentifier();
 			if(StringHelper.containsNonWhitespace(masterIdentifier)) {
 				List<QuestionItem> masterItems = qpoolService.loadItemByIdentifier(masterIdentifier);
 				if(!masterItems.isEmpty()) {
@@ -312,7 +307,6 @@ public class QuestionOriginMediaResource extends OpenXMLWorkbookResource {
 				}
 			}
 		}
-		
 		return infos;
 	}
 
@@ -434,31 +428,30 @@ public class QuestionOriginMediaResource extends OpenXMLWorkbookResource {
 			masterIdentifier = item.getMasterIdentifier();
 		}
 		
-		public QuestionInformations(ManifestMetadataBuilder metadata) {
-			identifier = metadata.getOpenOLATMetadataIdentifier();
-			title = metadata.getTitle();
-			author = null;
-			keywords = metadata.getGeneralKeywords();
-			taxonomyPath = metadata.getClassificationTaxonomy();
-			topic = metadata.getOpenOLATMetadataTopic();
-			context = metadata.getEducationContext();
-			type = metadata.getOpenOLATMetadataQuestionType();
-			masterIdentifier = metadata.getOpenOLATMetadataMasterIdentifier();
-		}
-		
-		public QuestionInformations(AssessmentItem item, ManifestMetadataBuilder metadata) {
+		public QuestionInformations(AssessmentItem assessmentItem, ManifestMetadataBuilder metadata, String testOwners) {
 			identifier = metadata.getOpenOLATMetadataIdentifier();
 			if(StringHelper.containsNonWhitespace(metadata.getTitle())) {
 				title = metadata.getTitle();
 			} else {
-				title = item.getTitle();
+				title = assessmentItem.getTitle();
 			}
-			author = null;
+			if(StringHelper.containsNonWhitespace(metadata.getOpenOLATMetadataCreator())) {
+				author = metadata.getOpenOLATMetadataCreator();
+			} else if(StringHelper.containsNonWhitespace(testOwners)) {
+				author = testOwners;
+			} else {
+				author = null;
+			}
+
 			keywords = metadata.getGeneralKeywords();
 			taxonomyPath = metadata.getClassificationTaxonomy();
 			topic = metadata.getOpenOLATMetadataTopic();
 			context = metadata.getEducationContext();
-			type = metadata.getOpenOLATMetadataQuestionType();
+			if(StringHelper.containsNonWhitespace(metadata.getOpenOLATMetadataQuestionType())) {
+				type = metadata.getOpenOLATMetadataQuestionType();
+			} else {
+				type = QTI21QuestionType.getType(assessmentItem).name();
+			}
 			masterIdentifier = metadata.getOpenOLATMetadataMasterIdentifier();
 		}
 		
