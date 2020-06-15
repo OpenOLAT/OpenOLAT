@@ -22,6 +22,7 @@ package org.olat.course.nodes.appointments.ui;
 import static java.util.Collections.emptyList;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -61,6 +62,16 @@ public class AppointmentListEditController extends AppointmentListController {
 	@Override
 	protected String getTableCssClass() {
 		return "o_edit";
+	}
+
+	@Override
+	protected List<String> getFilters() {
+		return Collections.singletonList(AppointmentDataModel.FILTER_FUTURE);
+	}
+
+	@Override
+	protected List<String> getDefaultFilters() {
+		return Collections.singletonList(AppointmentDataModel.FILTER_ALL);
 	}
 
 	@Override

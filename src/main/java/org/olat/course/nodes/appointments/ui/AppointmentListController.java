@@ -24,7 +24,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.commons.lang.time.DateUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.date.DateComponentFactory;
@@ -32,6 +31,7 @@ import org.olat.core.gui.components.date.DateElement;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -49,6 +49,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.appointments.Appointment;
 import org.olat.course.nodes.appointments.Appointment.Status;
@@ -114,6 +115,10 @@ public abstract class AppointmentListController extends FormBasicController impl
 	protected abstract boolean canEdit();
 	
 	protected abstract String getTableCssClass();
+	
+	protected abstract List<String> getFilters();
+	
+	protected abstract List<String>  getDefaultFilters();
 	
 	protected abstract String getPersistedPreferencesId();
 	
@@ -210,6 +215,39 @@ public abstract class AppointmentListController extends FormBasicController impl
 		VelocityContainer rowVC = createVelocityContainer("appointment_row");
 		rowVC.setDomReplacementWrapperRequired(false);
 		tableEl.setRowRenderer(rowVC, this);
+		
+		initFilters();
+	}
+
+	protected void initFilters() {
+		List<String> filters = getFilters();
+		if (filters != null && !filters.isEmpty()) {
+			List<FlexiTableFilter> tableFilters = new ArrayList<>(3);
+			List<String> defaultFilters = getDefaultFilters();
+			List<FlexiTableFilter> selectedFilters = new ArrayList<>(defaultFilters.size());
+			if (filters.contains(AppointmentDataModel.FILTER_PARTICIPATED)) {
+				FlexiTableFilter filter = new FlexiTableFilter(translate("filter.participated"), AppointmentDataModel.FILTER_PARTICIPATED, false);
+				tableFilters.add(filter);
+				if (defaultFilters.contains(AppointmentDataModel.FILTER_PARTICIPATED)) {
+					selectedFilters.add(filter);
+				}
+			}
+			if (filters.contains(AppointmentDataModel.FILTER_FUTURE)) {
+				FlexiTableFilter filter = new FlexiTableFilter(translate("filter.future"), AppointmentDataModel.FILTER_FUTURE, false);
+				tableFilters.add(filter);
+				if (defaultFilters.contains(AppointmentDataModel.FILTER_FUTURE)) {
+					selectedFilters.add(filter);
+				}
+			}
+			tableFilters.add(FlexiTableFilter.SPACER);
+			FlexiTableFilter filter = new FlexiTableFilter(translate("filter.all"), AppointmentDataModel.FILTER_ALL, true);
+			tableFilters.add(filter);
+			if (defaultFilters.contains(AppointmentDataModel.FILTER_ALL)) {
+				selectedFilters.add(filter);
+			}
+			tableEl.setFilters("Filters", tableFilters, true);
+			tableEl.setSelectedFilters(selectedFilters);
+		}
 	}
 
 	private void updateModel() {
@@ -229,7 +267,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 		String time = null;
 
 		boolean sameDay = DateUtils.isSameDay(begin, end);
-		boolean sameTime = org.olat.core.util.DateUtils.isSameTime(begin, end);
+		boolean sameTime = DateUtils.isSameTime(begin, end);
 		String startDate = StringHelper.formatLocaleDateFull(begin.getTime(), locale);
 		String startTime = StringHelper.formatLocaleTime(begin.getTime(), locale);
 		String endDate = StringHelper.formatLocaleDateFull(end.getTime(), locale);

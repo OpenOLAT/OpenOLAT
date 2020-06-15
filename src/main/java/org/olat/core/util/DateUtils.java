@@ -63,11 +63,41 @@ public class DateUtils {
 		return Instant.ofEpochMilli(date.getTime()).atZone(ZoneId.systemDefault()).toLocalDateTime();
 	}
 	
+	public static boolean isSameDate(Date date1, Date date2) {
+		Calendar cal1 = Calendar.getInstance();
+		cal1.setTime(date1);
+		Calendar cal2 = Calendar.getInstance();
+		cal2.setTime(date2);
+		return isSameDate(cal1, cal2);
+	}
+
+	protected static boolean isSameDate(Calendar cal1, Calendar cal2) {
+		return isSameDay(cal1, cal2) && isSameTime(cal1, cal2);
+	}
+	
+	public static boolean isSameDay(Date date1, Date date2) {
+		Calendar cal1 = Calendar.getInstance();
+		cal1.setTime(date1);
+		Calendar cal2 = Calendar.getInstance();
+		cal2.setTime(date2);
+		return isSameDay(cal1, cal2);
+	}
+
+	public static boolean isSameDay(Calendar cal1, Calendar cal2) {
+		return (cal1.get(Calendar.ERA) == cal2.get(Calendar.ERA) &&
+				cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
+				cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR));
+	}
+	
 	public static boolean isSameTime(Date date1, Date date2) {
 		Calendar cal1 = Calendar.getInstance();
 		cal1.setTime(date1);
 		Calendar cal2 = Calendar.getInstance();
 		cal2.setTime(date2);
+		return isSameTime(cal1, cal2);
+	}
+
+	public static boolean isSameTime(Calendar cal1, Calendar cal2) {
 		return (cal1.get(Calendar.SECOND) == cal2.get(Calendar.SECOND) &&
 				cal1.get(Calendar.MINUTE) == cal2.get(Calendar.MINUTE) &&
 				cal1.get(Calendar.HOUR) == cal2.get(Calendar.HOUR));

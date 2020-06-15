@@ -22,6 +22,7 @@ package org.olat.course.nodes.appointments.ui;
 import static java.util.Collections.emptyList;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -63,6 +64,16 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 	@Override
 	protected String getTableCssClass() {
 		return "o_selection";
+	}
+
+	@Override
+	protected List<String> getFilters() {
+		return Arrays.asList(AppointmentDataModel.FILTER_PARTICIPATED, AppointmentDataModel.FILTER_FUTURE);
+	}
+
+	@Override
+	protected List<String> getDefaultFilters() {
+		return Arrays.asList(AppointmentDataModel.FILTER_PARTICIPATED, AppointmentDataModel.FILTER_FUTURE);
 	}
 
 	@Override

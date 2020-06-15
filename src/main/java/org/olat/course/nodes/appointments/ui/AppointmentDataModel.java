@@ -19,15 +19,20 @@
  */
 package org.olat.course.nodes.appointments.ui;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.core.util.DateUtils;
 
 /**
  * 
@@ -36,9 +41,14 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  *
  */
 public class AppointmentDataModel extends DefaultFlexiTableDataModel<AppointmentRow>
-implements SortableFlexiTableDataModel<AppointmentRow> {
+implements SortableFlexiTableDataModel<AppointmentRow>, FilterableFlexiTableModel {
+	
+	public static final String FILTER_ALL = "all";
+	public static final String FILTER_PARTICIPATED = "participated";
+	public static final String FILTER_FUTURE = "future";
 	
 	private final Locale locale;
+	private List<AppointmentRow> backups;
 	
 	public AppointmentDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
@@ -49,6 +59,42 @@ implements SortableFlexiTableDataModel<AppointmentRow> {
 	public void sort(SortKey orderBy) {
 		List<AppointmentRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
 		super.setObjects(rows);
+	}
+	
+	@Override
+	public void setObjects(List<AppointmentRow> objects) {
+		super.setObjects(objects);
+		backups = objects;
+	}
+	
+	@Override
+	public void filter(String searchString, List<FlexiTableFilter> filters) {
+		if (filters == null || filters.isEmpty() || FILTER_ALL.equals(filters.get(0).getFilter())) {
+			super.setObjects(backups);
+		} else {
+			List<String> filterKeys = filters.stream().map(FlexiTableFilter::getFilter).collect(Collectors.toList());
+			Date now = new Date();
+			List<AppointmentRow> filteredRows = backups.stream()
+					.filter(r -> apply(filterKeys, r, now))
+					.collect(Collectors.toList());
+			super.setObjects(filteredRows);
+		}
+	}
+	
+	private boolean apply(List<String> filterKeys, AppointmentRow row, Date date) {
+		if (filterKeys.contains(FILTER_PARTICIPATED) && row.getParticipation() != null) {
+			return true;
+		}
+		if (filterKeys.contains(FILTER_FUTURE)) {
+			Date end = row.getAppointment().getEnd();
+			end = DateUtils.isSameDate(end, row.getAppointment().getStart())
+					? DateUtils.setTime(end, 23, 59, 59)
+					: end;
+			if (date.before(end)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
