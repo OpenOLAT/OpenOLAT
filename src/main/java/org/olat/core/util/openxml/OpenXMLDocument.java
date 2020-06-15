@@ -1018,6 +1018,11 @@ public class OpenXMLDocument {
 	public List<Node> convertLaTeX(String latex) {
 		List<Node> mathEls = new ArrayList<>();
 		try {
+			// place the latex marker if needed
+			if(!latex.startsWith("\\(") && !latex.startsWith("\\[") && !latex.startsWith("$")) {
+				latex = "$" + latex + "$";
+			}
+			
 			//convert latex -> mathml
 			String mathml = ConvertFromLatexToMathML.convertToMathML(latex);
 
