@@ -109,7 +109,9 @@ public class TopicsRunController extends BasicController implements Activateable
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if (topics.size() == 1 && topics.get(0).getSelectedAppointments().intValue() == 0) {
+		if (topics.size() == 1
+				&& (topics.get(0).getSelectedAppointments() == null
+					|| topics.get(0).getSelectedAppointments().intValue() == 0)) {
 			doOpenTopic(ureq, topics.get(0).getTopic());
 		}
 	}
