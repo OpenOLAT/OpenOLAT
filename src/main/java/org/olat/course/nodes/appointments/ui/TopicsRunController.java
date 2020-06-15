@@ -32,9 +32,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang.time.DateUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.date.DateComponentFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
@@ -47,6 +47,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.appointments.Appointment;
 import org.olat.course.nodes.appointments.AppointmentSearchParams;
@@ -108,11 +109,8 @@ public class TopicsRunController extends BasicController implements Activateable
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if (topics.size() == 1) {
-			TopicWrapper topicWrapper = topics.get(0);
-			if (topicWrapper.getDate() == null) {
-				doOpenTopic(ureq, topicWrapper.getTopic());
-			}
+		if (topics.size() == 1 && topics.get(0).getSelectedAppointments().intValue() == 0) {
+			doOpenTopic(ureq, topics.get(0).getTopic());
 		}
 	}
 	
@@ -212,42 +210,7 @@ public class TopicsRunController extends BasicController implements Activateable
 						.findFirst().get(); // ... or the most recent one.
 			wrapper.setFuture(Boolean.valueOf(appointment.getStart().after(now)));
 			
-			Locale locale = getLocale();
-			Date begin = appointment.getStart();
-			Date end = appointment.getEnd();
-			String date = null;
-			String date2 = null;
-			String time = null;
-			
-			boolean sameDay = DateUtils.isSameDay(begin, end);
-			if (sameDay) {
-				StringBuilder dateSb = new StringBuilder();
-				dateSb.append(StringHelper.formatLocaleDateFull(begin.getTime(), locale));
-				date = dateSb.toString();
-				StringBuilder timeSb = new StringBuilder();
-				timeSb.append(StringHelper.formatLocaleTime(begin.getTime(), locale));
-				timeSb.append(" - ");
-				timeSb.append(StringHelper.formatLocaleTime(end.getTime(), locale));
-				time = timeSb.toString();
-			} else {
-				StringBuilder dateSb = new StringBuilder();
-				dateSb.append(StringHelper.formatLocaleDateFull(begin.getTime(), locale));
-				dateSb.append(" ");
-				dateSb.append(StringHelper.formatLocaleTime(begin.getTime(), locale));
-				dateSb.append(" - ");
-				date = dateSb.toString();
-				StringBuilder dateSb2 = new StringBuilder();
-				dateSb2.append(StringHelper.formatLocaleDateFull(end.getTime(), locale));
-				dateSb2.append(" ");
-				dateSb2.append(StringHelper.formatLocaleTime(end.getTime(), locale));
-				date2 = dateSb2.toString();
-			}
-			
-			wrapper.setDate(date);
-			wrapper.setDate2(date2);
-			wrapper.setTime(time);
-			wrapper.setLocation(appointment.getLocation());
-			wrapper.setDetails(appointment.getDetails());
+			forgeAppointmentView(wrapper, appointment);
 			
 			wrapper.setTranslatedStatus(translate("appointment.status." + appointment.getStatus().name()));
 			wrapper.setStatusCSS("o_ap_status_" + appointment.getStatus().name());
@@ -280,7 +243,56 @@ public class TopicsRunController extends BasicController implements Activateable
 			}
 		}
 	}
-
+	
+	private void forgeAppointmentView(TopicWrapper wrapper, Appointment appointment) {
+		Locale locale = getLocale();
+		Date begin = appointment.getStart();
+		Date end = appointment.getEnd();
+		String date = null;
+		String date2 = null;
+		String time = null;
+		
+		boolean sameDay = DateUtils.isSameDay(begin, end);
+		boolean sameTime = DateUtils.isSameTime(begin, end);
+		String startDate = StringHelper.formatLocaleDateFull(begin.getTime(), locale);
+		String startTime = StringHelper.formatLocaleTime(begin.getTime(), locale);
+		String endDate = StringHelper.formatLocaleDateFull(end.getTime(), locale);
+		String endTime = StringHelper.formatLocaleTime(end.getTime(), locale);
+		if (sameDay) {
+			StringBuilder timeSb = new StringBuilder();
+			if (sameTime) {
+				timeSb.append(translate("full.day"));
+			} else {
+				timeSb.append(startTime);
+				timeSb.append(" - ");
+				timeSb.append(endTime);
+			}
+			time = timeSb.toString();
+		} else {
+			StringBuilder dateSbShort1 = new StringBuilder();
+			dateSbShort1.append(startDate);
+			dateSbShort1.append(" ");
+			dateSbShort1.append(startTime);
+			dateSbShort1.append(" -");
+			date = dateSbShort1.toString();
+			StringBuilder dateSb2 = new StringBuilder();
+			dateSb2.append(endDate);
+			dateSb2.append(" ");
+			dateSb2.append(endTime);
+			date2 = dateSb2.toString();
+		}
+		
+		wrapper.setDate(date);
+		wrapper.setDate2(date2);
+		wrapper.setTime(time);
+		wrapper.setLocation(appointment.getLocation());
+		wrapper.setDetails(appointment.getDetails());
+		
+		String dayName = "day_" + counter++;
+		DateComponentFactory.createDateComponentWithYear(dayName, appointment.getStart(), mainVC);
+		wrapper.setDayName(dayName);
+	}
+	
 	private void wrapOpenLink(TopicWrapper wrapper, Topic topic, String i18n) {
 		Link openLink = LinkFactory.createCustomLink("open" + counter++, CMD_OPEN, i18n, Link.LINK, mainVC, this);
 		openLink.setIconRightCSS("o_icon o_icon_start");
@@ -370,6 +382,7 @@ public class TopicsRunController extends BasicController implements Activateable
 		private String emailLinkName;
 		private List<String> participants;
 		private Boolean future;
+		private String dayName;
 		private String date;
 		private String date2;
 		private String time;
@@ -435,6 +448,14 @@ public class TopicsRunController extends BasicController implements Activateable
 
 		public void setFuture(Boolean future) {
 			this.future = future;
+		}
+		
+		public String getDayName() {
+			return dayName;
+		}
+
+		public void setDayName(String dayName) {
+			this.dayName = dayName;
 		}
 
 		public String getDate() {

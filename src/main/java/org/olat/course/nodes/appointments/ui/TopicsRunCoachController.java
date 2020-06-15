@@ -30,12 +30,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang.time.DateUtils;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.date.DateComponentFactory;
 import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.dropdown.Dropdown.ButtonSize;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
@@ -50,6 +50,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.appointments.Appointment;
 import org.olat.course.nodes.appointments.AppointmentSearchParams;
@@ -214,42 +215,9 @@ public class TopicsRunCoachController extends BasicController {
 		if (nextAppointment.isPresent()) {
 			Appointment appointment = nextAppointment.get();
 			
-			Locale locale = getLocale();
-			Date begin = appointment.getStart();
-			Date end = appointment.getEnd();
-			String date = null;
-			String date2 = null;
-			String time = null;
-			
-			boolean sameDay = DateUtils.isSameDay(begin, end);
-			if (sameDay) {
-				StringBuilder dateSb = new StringBuilder();
-				dateSb.append(StringHelper.formatLocaleDateFull(begin.getTime(), locale));
-				date = dateSb.toString();
-				StringBuilder timeSb = new StringBuilder();
-				timeSb.append(StringHelper.formatLocaleTime(begin.getTime(), locale));
-				timeSb.append(" - ");
-				timeSb.append(StringHelper.formatLocaleTime(end.getTime(), locale));
-				time = timeSb.toString();
-			} else {
-				StringBuilder dateSb = new StringBuilder();
-				dateSb.append(StringHelper.formatLocaleDateFull(begin.getTime(), locale));
-				dateSb.append(" ");
-				dateSb.append(StringHelper.formatLocaleTime(begin.getTime(), locale));
-				dateSb.append(" - ");
-				date = dateSb.toString();
-				StringBuilder dateSb2 = new StringBuilder();
-				dateSb2.append(StringHelper.formatLocaleDateFull(end.getTime(), locale));
-				dateSb2.append(" ");
-				dateSb2.append(StringHelper.formatLocaleTime(end.getTime(), locale));
-				date2 = dateSb2.toString();
-			}
-			
-			wrapper.setDate(date);
-			wrapper.setDate2(date2);
-			wrapper.setTime(time);
-			wrapper.setLocation(appointment.getLocation());
-			wrapper.setDetails(appointment.getDetails());
+			forgeAppointmentView(wrapper, appointment);
+			wrapper.setTranslatedStatus(translate("appointment.status." + appointment.getStatus().name()));
+			wrapper.setStatusCSS("o_ap_status_" + appointment.getStatus().name());
 			
 			List<String> participants = appointmentKeyToParticipations
 					.getOrDefault(appointment.getKey(), Collections.emptyList()).stream()
@@ -268,6 +236,55 @@ public class TopicsRunCoachController extends BasicController {
 					&& appointmentKeyToParticipations.containsKey(appointment.getKey())
 				? true
 				: false;
+	}
+	
+	private void forgeAppointmentView(TopicWrapper wrapper, Appointment appointment) {
+		Locale locale = getLocale();
+		Date begin = appointment.getStart();
+		Date end = appointment.getEnd();
+		String date = null;
+		String date2 = null;
+		String time = null;
+		
+		boolean sameDay = DateUtils.isSameDay(begin, end);
+		boolean sameTime = DateUtils.isSameTime(begin, end);
+		String startDate = StringHelper.formatLocaleDateFull(begin.getTime(), locale);
+		String startTime = StringHelper.formatLocaleTime(begin.getTime(), locale);
+		String endDate = StringHelper.formatLocaleDateFull(end.getTime(), locale);
+		String endTime = StringHelper.formatLocaleTime(end.getTime(), locale);
+		if (sameDay) {
+			StringBuilder timeSb = new StringBuilder();
+			if (sameTime) {
+				timeSb.append(translate("full.day"));
+			} else {
+				timeSb.append(startTime);
+				timeSb.append(" - ");
+				timeSb.append(endTime);
+			}
+			time = timeSb.toString();
+		} else {
+			StringBuilder dateSbShort1 = new StringBuilder();
+			dateSbShort1.append(startDate);
+			dateSbShort1.append(" ");
+			dateSbShort1.append(startTime);
+			dateSbShort1.append(" -");
+			date = dateSbShort1.toString();
+			StringBuilder dateSb2 = new StringBuilder();
+			dateSb2.append(endDate);
+			dateSb2.append(" ");
+			dateSb2.append(endTime);
+			date2 = dateSb2.toString();
+		}
+		
+		wrapper.setDate(date);
+		wrapper.setDate2(date2);
+		wrapper.setTime(time);
+		wrapper.setLocation(appointment.getLocation());
+		wrapper.setDetails(appointment.getDetails());
+		
+		String dayName = "day_" + counter++;
+		DateComponentFactory.createDateComponentWithYear(dayName, appointment.getStart(), mainVC);
+		wrapper.setDayName(dayName);
 	}
 
 	private void wrapOpenLink(TopicWrapper wrapper) {
@@ -419,11 +436,14 @@ public class TopicsRunCoachController extends BasicController {
 		
 		//next appointment
 		private List<String> participants;
+		private String dayName;
 		private String date;
 		private String date2;
 		private String time;
 		private String location;
 		private String details;
+		private String translatedStatus;
+		private String statusCSS;
 		
 		private String openLinkName;
 		private String toolsName;
@@ -484,6 +504,14 @@ public class TopicsRunCoachController extends BasicController {
 			this.participants = participants;
 		}
 
+		public String getDayName() {
+			return dayName;
+		}
+
+		public void setDayName(String dayName) {
+			this.dayName = dayName;
+		}
+
 		public String getDate() {
 			return date;
 		}
@@ -522,6 +550,22 @@ public class TopicsRunCoachController extends BasicController {
 
 		public void setDetails(String details) {
 			this.details = details;
+		}
+
+		public String getTranslatedStatus() {
+			return translatedStatus;
+		}
+
+		public void setTranslatedStatus(String translatedStatus) {
+			this.translatedStatus = translatedStatus;
+		}
+
+		public String getStatusCSS() {
+			return statusCSS;
+		}
+
+		public void setStatusCSS(String statusCSS) {
+			this.statusCSS = statusCSS;
 		}
 
 		public String getOpenLinkName() {

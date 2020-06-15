@@ -656,6 +656,14 @@ div.o_correction_navigation {
 }
 
 .o_appointments.o_topics_run {
+	.o_main_cont {
+		margin-top: 26px;
+		display: flex;
+		.o_main {
+			margin-top: -3px;
+		}
+	}
+	
 	.o_date,
 	.o_time {
 		font-weight: bold;
@@ -703,6 +711,14 @@ div.o_correction_navigation {
 	.o_warning {
 		margin-top: 10px;
 		margin-bottom: 10px;
+	}
+	
+	.o_main_cont {
+		margin-top: 26px;
+		display: flex;
+		.o_main {
+			margin-top: -3px;
+		}
 	}
 }
 
@@ -832,96 +848,6 @@ div.o_correction_navigation {
 		}
 	}
 }
-
-.o_appointments.o_selection_run2 {
-	margin-top: 20px;
-
-	.o_date,
-	.o_time {
-		font-weight: bold;
-	}
-	
-	@media all and (min-width: 700px) {
-		.o_date.o_short {
-			display: none;
-		}
-	}
-	@media all and (max-width: 700px) {
-		.o_date.o_long {
-			display: none;
-		}
-	}
-
-	.panel {
-		margin-bottom: 10px;
-	}
-	.panel-body {
-		padding-bottom: 8px;
-		display: flex;
-		flex-flow: nowrap;
-	}
-	.o_datecomp {
-		margin-top: 4px;
-	}
-	// Fills up the remaining space
-	.o_space {
-		flex: 1;
-	}
-	
-	.o_select_button {
-		background-color: $o-ap-selectable-color;
-		border-top-right-radius: 2px;
-		border-bottom-right-radius: 2px;
-		width: 50px;
-		min-width: 50px;
-		max-width: 50px;
-		display: flex;
-		margin: -15px -15px -8px -15px;
-		
-		a {
-			flex: auto;
-			color: $o-ap-select-icon-color !important;
-			text-decoration: none;
-			text-align: center;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			i:before {
-				font-size: 1.35em;
-			}
-			span {
-				display: none;
-			}
-		}
-	}
-	
-	.o_ap_planned {
-		.o_select_button {
-			font-weight: bold;
-			background-color: $o-ap-planned-color;
-		}
-		
-		.panel {
-			border-color: $o-ap-planned-color;
-			border-width: 2px;
-			box-shadow: 0px 0px 20px 5px rgba(0,0,0,0.2); 
-		}
-	}
-	
-	.o_ap_confirmed {
-		.o_select_button {
-			font-weight: bold;
-			background-color: $o-ap-confirmed-color;
-		}
-		
-		.panel {
-			border-color: $o-ap-confirmed-color;
-			border-width: 2px;
-			box-shadow: 0px 0px 20px 5px rgba(0,0,0,0.2); 
-		}
-	}
-}
-
 
 .o_appointments_create {
 	.o_appointment {
