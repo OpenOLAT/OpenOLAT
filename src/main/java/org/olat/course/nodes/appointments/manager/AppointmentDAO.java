@@ -22,8 +22,13 @@ package org.olat.course.nodes.appointments.manager;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import javax.persistence.Query;
+import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
@@ -159,10 +164,58 @@ class AppointmentDAO {
 				.getResultList();
 		return appointments.isEmpty() ? null : appointments.get(0);
 	}
+	
+	Map<Long, Long> loadTopicKeyToAppointmentCount(AppointmentSearchParams params, boolean freeOnly) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select appointment.topic.key as topicKey");
+		sb.append("     , appointment.key as key");
+		sb.append("     , appointment.maxParticipations as maxParticipations");
+		sb.append("     , ( select count(*)");
+		sb.append("           from appointmentparticipation participation");
+		sb.append("          where participation.appointment.key = appointment.key");
+		sb.append("       ) as count");
+		appendQuery(sb, params);
+		
+		TypedQuery<Tuple> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Tuple.class);
+		addParameters(query, params);
+		
+		List<Tuple> results = query.getResultList();
+		return results.stream()
+				.filter(filterFreeOnly(freeOnly))
+				.map(t -> (Long)t.get(0))
+				.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+	}
+
+	private Predicate<? super Tuple> filterFreeOnly(boolean freeOnly) {
+		return t -> freeOnly? t.get(2) == null || ((Integer)t.get(2)).intValue() < ((Long)t.get(3)).intValue(): true;
+	}
+	
+	Long loadAppointmentCount(AppointmentSearchParams params) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select count(appointment)");
+		appendQuery(sb, params);
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class);
+		addParameters(query, params);
+		
+		return query.getSingleResult();
+	}
 
 	List<Appointment> loadAppointments(AppointmentSearchParams params) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select appointment");
+		appendQuery(sb, params);
+		
+		TypedQuery<Appointment> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Appointment.class);
+		addParameters(query, params);
+		
+		return query.getResultList();
+	}
+
+	private void appendQuery(QueryBuilder sb, AppointmentSearchParams params) {
 		sb.append("  from appointment appointment");
 		sb.append("      join").append(" fetch", params.isFetchTopic()).append(" appointment.topic topic");
 		if (params.getAppointmentKey() != null) {
@@ -183,9 +236,9 @@ class AppointmentDAO {
 		if (params.getStatus() != null) {
 			sb.and().append("appointment.status = :status");
 		}
-		
-		TypedQuery<Appointment> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Appointment.class);
+	}
+
+	private void addParameters(TypedQuery<?> query, AppointmentSearchParams params) {
 		if (params.getAppointmentKey() != null) {
 			query.setParameter("appointmentKey", params.getAppointmentKey());
 		}
@@ -204,8 +257,6 @@ class AppointmentDAO {
 		if (params.getStatus() != null) {
 			query.setParameter("status", params.getStatus());
 		}
-		
-		return query.getResultList();
 	}
 
 }

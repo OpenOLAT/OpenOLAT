@@ -23,13 +23,11 @@ import static java.util.Collections.emptyList;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
@@ -117,21 +115,9 @@ public class TopicsRunController extends BasicController implements Activateable
 	}
 	
 	private void refresh() {
-		removeButtons();
+		mainVC.clear();
 		topics = loadTopicWrappers();
 		mainVC.contextPut("topics", topics);
-	}
-
-	private void removeButtons() {
-		List<String> componentNames = new ArrayList<>();
-		for (Component component : mainVC.getComponents()) {
-			if (!"infoSubscription".equals(component.getComponentName())) {
-				componentNames.add(component.getComponentName());
-			}
-		}
-		for (String componentName : componentNames) {
-			mainVC.remove(componentName);
-		}
 	}
 
 	private List<TopicWrapper> loadTopicWrappers() {
@@ -143,37 +129,24 @@ public class TopicsRunController extends BasicController implements Activateable
 		AppointmentSearchParams aParams = new AppointmentSearchParams();
 		aParams.setEntry(entry);
 		aParams.setSubIdent(subIdent);
-		Map<Long, List<Appointment>> topicKeyToAppointments = appointmentsService
-				.getAppointments(aParams).stream()
-				.collect(Collectors.groupingBy(a -> a.getTopic().getKey()));
+		Map<Long, Long> topicKeyToAppointmentCount = appointmentsService.getTopicKeyToAppointmentCount(aParams, true);
 		
 		ParticipationSearchParams myParticipationsParams = new ParticipationSearchParams();
 		myParticipationsParams.setEntry(entry);
 		myParticipationsParams.setSubIdent(subIdent);
 		myParticipationsParams.setIdentity(getIdentity());
 		myParticipationsParams.setFetchAppointments(true);
-		List<Participation> myParticipations = appointmentsService.getParticipations(myParticipationsParams);
-		Map<Long, List<Participation>> topicKeyToMyParticipation = myParticipations.stream()
+		Map<Long, List<Participation>> topicKeyToMyParticipation = appointmentsService
+				.getParticipations(myParticipationsParams).stream()
 				.collect(Collectors.groupingBy(p -> p.getAppointment().getTopic().getKey()));
-		Map<Long, List<Participation>> appointmentsToMyParticipation = myParticipations.stream()
-				.collect(Collectors.groupingBy(p -> p.getAppointment().getKey()));
-		
-		Set<Long> myAppointmentKeys = appointmentsToMyParticipation.keySet();
-		ParticipationSearchParams allParticipationParams = new ParticipationSearchParams();
-		allParticipationParams.setAppointmentKeys(myAppointmentKeys);
-		Map<Long, List<Participation>> appointmentKeyToAllParticipations = appointmentsService
-				.getParticipations(allParticipationParams).stream()
-				.collect(Collectors.groupingBy(p -> p.getAppointment().getKey()));
 		
 		List<TopicWrapper> wrappers = new ArrayList<>(topics.size());
 		for (Topic topic : topics) {
 			TopicWrapper wrapper = new TopicWrapper(topic);
 			List<Organizer> organizers = topicKeyToOrganizer.getOrDefault(topic.getKey(), emptyList());
 			wrapOrganizers(wrapper, organizers);
-			List<Appointment> appointments = topicKeyToAppointments.getOrDefault(topic.getKey(), emptyList());
-			List<Participation> topicParticipations = topicKeyToMyParticipation.getOrDefault(topic.getKey(), emptyList());
-			wrapParticpations(wrapper, topic, topicParticipations, appointments, appointmentsToMyParticipation,
-					appointmentKeyToAllParticipations);
+			List<Participation> myTopicParticipations = topicKeyToMyParticipation.getOrDefault(topic.getKey(), emptyList());
+			wrapParticpations(wrapper, topic, myTopicParticipations, topicKeyToAppointmentCount);
 			wrappers.add(wrapper);
 		}
 		return wrappers;
@@ -196,18 +169,19 @@ public class TopicsRunController extends BasicController implements Activateable
 		}
 	}
 
-	private void wrapParticpations(TopicWrapper wrapper, Topic topic, List<Participation> participations,
-			List<Appointment> appointments, Map<Long, List<Participation>> appointmentKeyToParticipation,
-			Map<Long, List<Participation>> appointmentKeyToAllParticipations) {
-		if (!participations.isEmpty()) {
+	private void wrapParticpations(TopicWrapper wrapper, Topic topic, List<Participation> myTopicParticipations,
+			Map<Long, Long> topicKeyToAppointmentCount) {
+		if (!myTopicParticipations.isEmpty()) {
 			Date now = new Date();
-			Optional<Appointment> nextAppointment = appointments.stream()
+			Optional<Appointment> nextAppointment = myTopicParticipations.stream()
+					.map(Participation::getAppointment)
 					.filter(a1 -> now.before(a1.getEnd()))
 					.sorted((a1, a2) -> a1.getStart().compareTo(a2.getStart()))
 					.findFirst();
 			Appointment appointment = nextAppointment.isPresent()
 					? nextAppointment.get() // Next appointment ...
-					: appointments.stream()
+					: myTopicParticipations.stream()
+						.map(Participation::getAppointment)
 						.sorted((a1, a2) -> a2.getStart().compareTo(a1.getStart()))
 						.findFirst().get(); // ... or the most recent one.
 			wrapper.setFuture(Boolean.valueOf(appointment.getStart().after(now)));
@@ -217,16 +191,17 @@ public class TopicsRunController extends BasicController implements Activateable
 			wrapper.setTranslatedStatus(translate("appointment.status." + appointment.getStatus().name()));
 			wrapper.setStatusCSS("o_ap_status_" + appointment.getStatus().name());
 			
-			List<String> participants = appointmentKeyToAllParticipations
-					.getOrDefault(appointment.getKey(), Collections.emptyList()).stream()
+			ParticipationSearchParams allParticipationParams = new ParticipationSearchParams();
+			allParticipationParams.setAppointment(appointment);
+			List<Participation> appointmentParticipations = appointmentsService.getParticipations(allParticipationParams);
+
+			List<String> participants = appointmentParticipations.stream()
 					.map(p -> userManager.getUserDisplayName(p.getIdentity().getKey()))
 					.sorted(String.CASE_INSENSITIVE_ORDER)
 					.collect(Collectors.toList());
 			wrapper.setParticipants(participants);
 			
-			if (participations.size() >= 2) {
-				wrapper.setSelectedAppointments(Integer.valueOf(participations.size()));
-			}
+			wrapper.setSelectedAppointments(Integer.valueOf(myTopicParticipations.size()));
 			
 			boolean canChange = config.isMultiParticipations()
 					? true
@@ -235,12 +210,9 @@ public class TopicsRunController extends BasicController implements Activateable
 				wrapOpenLink(wrapper, topic, "appointments.change");
 			}
 		} else {
-			long freeAppointments = appointments.stream()
-					.filter(a -> Appointment.Status.planned == a.getStatus())
-					.filter(a -> hasFreeParticipations(a, appointmentKeyToParticipation))
-					.count();
-			wrapper.setFreeAppointments(Long.valueOf(freeAppointments));
-			if (freeAppointments > 0) {
+			Long freeAppointments = topicKeyToAppointmentCount.getOrDefault(topic.getKey(), Long.valueOf(0));
+			wrapper.setFreeAppointments(freeAppointments);
+			if (freeAppointments.longValue() > 0) {
 				wrapOpenLink(wrapper, topic, "appointments.select");
 			}
 		}
@@ -300,13 +272,6 @@ public class TopicsRunController extends BasicController implements Activateable
 		openLink.setIconRightCSS("o_icon o_icon_start");
 		openLink.setUserObject(topic);
 		wrapper.setOpenLinkName(openLink.getComponentName());
-	}
-
-	private boolean hasFreeParticipations(Appointment appointment, Map<Long, List<Participation>> appointmentKeyToParticipation) {
-		if (appointment.getMaxParticipations() == null) return true;
-		
-		List<Participation> participations = appointmentKeyToParticipation.getOrDefault(appointment.getKey(), emptyList());
-		return appointment.getMaxParticipations().intValue() > participations.size();
 	}
 	
 	@Override

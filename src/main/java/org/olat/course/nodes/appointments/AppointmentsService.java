@@ -21,6 +21,7 @@ package org.olat.course.nodes.appointments;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
@@ -65,7 +66,18 @@ public interface AppointmentsService {
 	public void unconfirmAppointment(Appointment appointment);
 
 	public void deleteAppointment(Appointment appointment);
+	
+	/**
+	 * Gets the key of the topic and the according count of appointments.
+	 *
+	 * @param params
+	 * @param freeOnly counts only appointments with free participations
+	 * @return the count may be null (instead of 0) if no appointments available.
+	 */
+	public Map<Long, Long> getTopicKeyToAppointmentCount(AppointmentSearchParams params, boolean freeOnly);
 
+	public Long getAppointmentCount(AppointmentSearchParams params);
+	
 	public List<Appointment> getAppointments(AppointmentSearchParams params);
 
 	public ParticipationResult createParticipation(Appointment appointment, Identity identity,

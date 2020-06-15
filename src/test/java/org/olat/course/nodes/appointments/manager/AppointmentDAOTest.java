@@ -27,10 +27,12 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Map;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
 import org.olat.course.nodes.appointments.Appointment;
 import org.olat.course.nodes.appointments.Appointment.Status;
@@ -53,6 +55,8 @@ public class AppointmentDAOTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private TopicDAO topicDao;
+	@Autowired
+	private ParticipationDAO participationDao;
 	
 	@Autowired
 	private AppointmentDAO sut;
@@ -237,6 +241,79 @@ public class AppointmentDAOTest extends OlatTestCase {
 		Appointment reloadedAppointment = sut.loadByKey(appointment.getKey());
 		
 		assertThat(reloadedAppointment).isEqualTo(appointment);
+	}
+	
+	@Test
+	public void shouldLoadTopicKeyToAppointmentCount() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser(random());
+		String subIdent = JunitTestHelper.random();
+		Topic topic1 = topicDao.createTopic(entry, subIdent);
+		Topic topic2 = topicDao.createTopic(entry, subIdent);
+		Appointment appointment11 = sut.createAppointment(topic1);
+		sut.createAppointment(topic1);
+		Appointment appointment21 = sut.createAppointment(topic2);
+		appointment21.setMaxParticipations(1);
+		sut.saveAppointment(appointment21);
+		participationDao.createParticipation(appointment11, identity);
+		participationDao.createParticipation(appointment11, identity);
+		participationDao.createParticipation(appointment21, identity);
+		dbInstance.commitAndCloseSession();
+		
+		AppointmentSearchParams params = new AppointmentSearchParams();
+		params.setEntry(entry);
+		params.setSubIdent(subIdent);
+		Map<Long, Long> appointmentCountByTopic = sut.loadTopicKeyToAppointmentCount(params, false);
+		
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(appointmentCountByTopic.get(topic1.getKey())).isEqualTo(2);
+		softly.assertThat(appointmentCountByTopic.get(topic2.getKey())).isEqualTo(1);
+		softly.assertAll();
+	}
+	
+	@Test
+	public void shouldLoadTopicKeyToAppointmentCountOnlyFree() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser(random());
+		String subIdent = JunitTestHelper.random();
+		Topic topic1 = topicDao.createTopic(entry, subIdent);
+		Topic topic2 = topicDao.createTopic(entry, subIdent);
+		Appointment appointment11 = sut.createAppointment(topic1);
+		sut.createAppointment(topic1);
+		Appointment appointment21 = sut.createAppointment(topic2);
+		appointment21.setMaxParticipations(1);
+		sut.saveAppointment(appointment21);
+		participationDao.createParticipation(appointment11, identity);
+		participationDao.createParticipation(appointment11, identity);
+		participationDao.createParticipation(appointment21, identity);
+		dbInstance.commitAndCloseSession();
+		
+		AppointmentSearchParams params = new AppointmentSearchParams();
+		params.setEntry(entry);
+		params.setSubIdent(subIdent);
+		Map<Long, Long> appointmentCountByTopic = sut.loadTopicKeyToAppointmentCount(params, true);
+		
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(appointmentCountByTopic.get(topic1.getKey())).isEqualTo(2);
+		softly.assertThat(appointmentCountByTopic.get(topic2.getKey())).isNull();
+		softly.assertAll();
+	}
+	
+	@Test
+	public void shouldLoadCount() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Topic topic = topicDao.createTopic(entry, random());
+		Topic topicOther = topicDao.createTopic(entry, random());
+		sut.createAppointment(topic);
+		sut.createAppointment(topic);
+		sut.createAppointment(topicOther);
+		dbInstance.commitAndCloseSession();
+		
+		AppointmentSearchParams params = new AppointmentSearchParams();
+		params.setTopic(topic);
+		Long count = sut.loadAppointmentCount(params);
+		
+		assertThat(count).isEqualTo(2);
 	}
 	
 	@Test

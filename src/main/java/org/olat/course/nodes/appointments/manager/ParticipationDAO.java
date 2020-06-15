@@ -145,7 +145,7 @@ class ParticipationDAO {
 		
 		return query.getSingleResult();
 	}
-
+	
 	List<Participation> loadParticipations(ParticipationSearchParams params) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select participation");

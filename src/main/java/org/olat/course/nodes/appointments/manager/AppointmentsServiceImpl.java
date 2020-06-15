@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurityManager;
@@ -249,6 +250,16 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 		calendarSyncher.unsyncCalendars(appointment.getTopic(), singletonList(appointment));
 		appointmentsMailing.sendAppointmentDeleted(singletonList(appointment));
 		appointmentDao.delete(appointment);
+	}
+	
+	@Override
+	public Map<Long, Long> getTopicKeyToAppointmentCount(AppointmentSearchParams params, boolean freeOnly) {
+		return appointmentDao.loadTopicKeyToAppointmentCount(params, freeOnly);
+	}
+	
+	@Override
+	public Long getAppointmentCount(AppointmentSearchParams params) {
+		return appointmentDao.loadAppointmentCount(params);
 	}
 
 	@Override
