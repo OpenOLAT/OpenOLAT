@@ -77,8 +77,6 @@ public abstract class AppointmentListController extends FormBasicController impl
 	private static final String CMD_EDIT = "edit";
 	
 	private FormLink backLink;
-	private FormLink deleteTopicLink;
-	private FormLink editTopicLink;
 	private FormLink addAppointmentLink;
 	private FlexiTableElement tableEl;
 	private AppointmentDataModel dataModel;
@@ -126,7 +124,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		// Buttons
+		// Back
 		FormLayoutContainer backButtons = FormLayoutContainer.createButtonLayout("backButtons", getTranslator());
 		backButtons.setRootForm(mainForm);
 		formLayout.add("backButtons", backButtons);
@@ -135,6 +133,12 @@ public abstract class AppointmentListController extends FormBasicController impl
 		backLink = uifactory.addFormLink("backLink", "back", "back", "", backButtons, Link.LINK_BACK);
 		backLink.setElementCssClass("o_back");
 		
+		// Header
+		headerCtrl = new TopicHeaderController(ureq, getWindowControl(), topic, false);
+		listenTo(headerCtrl);
+		flc.put("header", headerCtrl.getInitialComponent());
+		
+		// Buttons
 		if (canEdit()) {
 			FormLayoutContainer topButtons = FormLayoutContainer.createButtonLayout("topButtons", getTranslator());
 			topButtons.setRootForm(mainForm);
@@ -142,23 +146,11 @@ public abstract class AppointmentListController extends FormBasicController impl
 			topButtons.setElementCssClass("o_button_group o_button_group_right");
 			
 			List<Organizer> organizers = appointmentsService.getOrganizers(topic);
-			if (secCallback.canEditTopic(organizers)) {
-				deleteTopicLink = uifactory.addFormLink("delete.topic", topButtons, Link.BUTTON);
-				deleteTopicLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete");
-				editTopicLink = uifactory.addFormLink("edit.topic", topButtons, Link.BUTTON);
-				editTopicLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
-			}
 			if (secCallback.canEditAppointment(organizers)) {
 				addAppointmentLink = uifactory.addFormLink("add.appointment", topButtons, Link.BUTTON);
 				addAppointmentLink.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
 			}
 		}
-		
-		// Header
-		headerCtrl = new TopicHeaderController(ureq, getWindowControl(), topic, false);
-		listenTo(headerCtrl);
-		
-		flc.put("header", headerCtrl.getInitialComponent());
 		
 		// Table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
