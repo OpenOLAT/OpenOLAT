@@ -674,6 +674,12 @@ div.o_correction_navigation {
 }
 
 .o_appointments.o_topics_coach_run {
+	.panel-title {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+	
 	@media all and (min-width: $screen-sm-min) {
 		.o_topic {
 			display: flex;
@@ -862,7 +868,6 @@ div.o_correction_navigation {
 		flex: 1;
 	}
 	
-
 	.o_select_button {
 		background-color: $o-ap-selectable-color;
 		border-top-right-radius: 2px;

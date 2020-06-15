@@ -14,17 +14,22 @@
 		<div class="panel panel-default">
 			<div class="panel-heading">
 				<h4 class="panel-title">
-					$topic.title
-					<span class='o_organizers'>
-						#if($r.isNotEmpty($topic.organizers))
-							<span class="small">
-								$r.translate("organizer.with")
-								#foreach($organizer in $topic.organizers)
-									<span class="o_organizer">$organizer#if($foreach.index < $topic.organizers.size() - 1)$r.translate("organizer.separator")#end</span>
-								#end
-							</span>
-						#end
-					</span>
+					<div>
+						$topic.title
+						<span class='o_organizers'>
+							#if($r.isNotEmpty($topic.organizers))
+								<span class="small">
+									$r.translate("organizer.with")
+									#foreach($organizer in $topic.organizers)
+										<span class="o_organizer">$organizer#if($foreach.index < $topic.organizers.size() - 1)$r.translate("organizer.separator")#end</span>
+									#end
+								</span>
+							#end
+						</span>
+					</div>
+					<div>
+						$r.render($topic.getToolsName())
+					</div>
 				</h4>
 			</div>
 			<div class="panel-body">

@@ -36,6 +36,9 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.dropdown.Dropdown.ButtonSize;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
@@ -45,6 +48,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.appointments.Appointment;
 import org.olat.course.nodes.appointments.AppointmentSearchParams;
@@ -67,6 +72,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class TopicsRunCoachController extends BasicController {
 
 	private static final String CMD_OPEN = "open";
+	private static final String CMD_EDIT = "edit";
+	private static final String CMD_DELETE = "delete";
 
 	private final VelocityContainer mainVC;
 	private Link createButton;
@@ -74,6 +81,8 @@ public class TopicsRunCoachController extends BasicController {
 	private final BreadcrumbedStackedPanel stackPanel;
 	private CloseableModalController cmc;
 	private TopicCreateController topicCreateCtrl;
+	private TopicEditController topicEditCtrl;
+	private DialogBoxController confirmDeleteTopicCrtl;
 	private AppointmentListEditController topicRunCtrl;
 	private ContextualSubscriptionController subscriptionCtrl;
 	
@@ -163,7 +172,7 @@ public class TopicsRunCoachController extends BasicController {
 				wrapOrganizers(wrapper, organizers);
 				List<Appointment> appointments = topicKeyToAppointments.getOrDefault(topic.getKey(), emptyList());
 				List<Participation> topicParticipations = topicKeyToParticipations.getOrDefault(topic.getKey(), emptyList());
-				wrapParticpations(wrapper, topic, topicParticipations, appointments, appointmentKeyToParticipations);
+				wrapParticpations(wrapper, topicParticipations, appointments, appointmentKeyToParticipations);
 				wrappers.add(wrapper);
 			}
 		}
@@ -179,8 +188,8 @@ public class TopicsRunCoachController extends BasicController {
 		wrapper.setOrganizers(organizerNames);
 	}
 
-	private void wrapParticpations(TopicWrapper wrapper, Topic topic, List<Participation> participations,
-			List<Appointment> appointments, Map<Long, List<Participation>> appointmentKeyToParticipations) {
+	private void wrapParticpations(TopicWrapper wrapper, List<Participation> participations, List<Appointment> appointments,
+			Map<Long, List<Participation>> appointmentKeyToParticipations) {
 		Integer totalAppointments = Integer.valueOf(appointments.size());
 		wrapper.setTotalAppointments(totalAppointments);
 		
@@ -250,7 +259,8 @@ public class TopicsRunCoachController extends BasicController {
 			wrapper.setParticipants(participants);
 		}
 		
-		wrapOpenLink(wrapper, topic, "appointments.open");
+		wrapOpenLink(wrapper);
+		wrapTools(wrapper);
 	}
 
 	private boolean isConfirmable(Appointment appointment, Map<Long, List<Participation>> appointmentKeyToParticipations) {
@@ -260,11 +270,33 @@ public class TopicsRunCoachController extends BasicController {
 				: false;
 	}
 
-	private void wrapOpenLink(TopicWrapper wrapper, Topic topic, String i18n) {
-		Link openLink = LinkFactory.createCustomLink("open" + counter++, CMD_OPEN, i18n, Link.LINK, mainVC, this);
+	private void wrapOpenLink(TopicWrapper wrapper) {
+		Link openLink = LinkFactory.createCustomLink("open" + counter++, CMD_OPEN, "appointments.open", Link.LINK, mainVC, this);
 		openLink.setIconRightCSS("o_icon o_icon_start");
-		openLink.setUserObject(topic);
+		openLink.setUserObject(wrapper.getTopic());
 		wrapper.setOpenLinkName(openLink.getComponentName());
+	}
+	
+	private void wrapTools(TopicWrapper wrapper) {
+		String toolsName = "tools_" + counter++;
+		Dropdown dropdown =  new Dropdown(toolsName, null, false, getTranslator());
+		dropdown.setEmbbeded(true);
+		dropdown.setCarretIconCSS("o_icon o_icon_tool");
+		dropdown.setButton(true);
+		dropdown.setButtonSize(ButtonSize.small);
+		dropdown.setOrientation(DropdownOrientation.right);
+		mainVC.put(toolsName, dropdown);
+		wrapper.setToolsName(toolsName);
+		
+		Link editorLink = LinkFactory.createCustomLink("edit_" + counter++, CMD_EDIT, "edit.topic", Link.LINK, mainVC, this);
+		editorLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
+		editorLink.setUserObject(wrapper.getTopic());
+		dropdown.addComponent(editorLink);
+		
+		Link deleteLink = LinkFactory.createCustomLink("delete_" + counter++, CMD_DELETE, "delete.topic", Link.LINK, mainVC, this);
+		deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete");
+		deleteLink.setUserObject(wrapper.getTopic());
+		dropdown.addComponent(deleteLink);
 	}
 	
 	@Override
@@ -278,6 +310,17 @@ public class TopicsRunCoachController extends BasicController {
 			} else {
 				cmc.deactivate();
 				cleanUp();
+			}
+		} else if (topicEditCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				refresh();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (source == confirmDeleteTopicCrtl) {
+			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+				Topic topic = (Topic)confirmDeleteTopicCrtl.getUserObject();
+				doDeleteTopic(topic);
 			}
 		} else if (source == topicRunCtrl) {
 			if (event == Event.DONE_EVENT) {
@@ -308,6 +351,12 @@ public class TopicsRunCoachController extends BasicController {
 			if (CMD_OPEN.equals(cmd)) {
 				Topic topic = (Topic)link.getUserObject();
 				doOpenTopic(ureq, topic);
+			} else if (CMD_EDIT.equals(cmd)) {
+				Topic topic = (Topic)link.getUserObject();
+				doEditTopic(ureq, topic);
+			} else if (CMD_DELETE.equals(cmd)) {
+				Topic topic = (Topic)link.getUserObject();
+				doConfirmDeleteTopic(ureq, topic);
 			}
 		}
 	}
@@ -318,6 +367,28 @@ public class TopicsRunCoachController extends BasicController {
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", topicCreateCtrl.getInitialComponent(), true,
 				translate("add.topic.title"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doConfirmDeleteTopic(UserRequest ureq, Topic topic) {
+		String title = translate("confirm.topic.delete.title");
+		String text = translate("confirm.topic.delete");
+		confirmDeleteTopicCrtl = activateYesNoDialog(ureq, title, text, confirmDeleteTopicCrtl);
+		confirmDeleteTopicCrtl.setUserObject(topic);
+	}
+
+	private void doDeleteTopic(Topic topic) {
+		appointmentsService.deleteTopic(topic);
+		refresh();
+	}
+
+	private void doEditTopic(UserRequest ureq, Topic topic) {
+		topicEditCtrl = new TopicEditController(ureq, getWindowControl(), topic, secCallback);
+		listenTo(topicEditCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), "close", topicEditCtrl.getInitialComponent(), true,
+				translate("edit.topic"));
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -355,6 +426,7 @@ public class TopicsRunCoachController extends BasicController {
 		private String details;
 		
 		private String openLinkName;
+		private String toolsName;
 
 		public TopicWrapper(Topic topic) {
 			this.topic = topic;
@@ -458,6 +530,14 @@ public class TopicsRunCoachController extends BasicController {
 
 		public void setOpenLinkName(String openLinkName) {
 			this.openLinkName = openLinkName;
+		}
+
+		public String getToolsName() {
+			return toolsName;
+		}
+
+		public void setToolsName(String toolsName) {
+			this.toolsName = toolsName;
 		}
 		
 	}

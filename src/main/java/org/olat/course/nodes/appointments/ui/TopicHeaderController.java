@@ -72,6 +72,7 @@ public class TopicHeaderController extends BasicController {
 		
 		mainVC = createVelocityContainer("topic_header");
 		setTopic(ureq, topic);
+		reloadOrganizers();
 		
 		putInitialPanel(mainVC);
 	}
@@ -79,7 +80,6 @@ public class TopicHeaderController extends BasicController {
 	public void setTopic(UserRequest ureq, Topic topic) {
 		this.topic = topic;
 		putTopicToVC(ureq);
-		reloadOrganizers();
 	}
 
 	public void reloadOrganizers() {

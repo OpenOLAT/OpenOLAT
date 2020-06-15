@@ -78,19 +78,15 @@ public abstract class AppointmentListController extends FormBasicController impl
 	private FormLink backLink;
 	private FormLink deleteTopicLink;
 	private FormLink editTopicLink;
-	private FormLink editOrganizerLink;
 	private FormLink addAppointmentLink;
 	private FlexiTableElement tableEl;
 	private AppointmentDataModel dataModel;
 	
 	private CloseableModalController cmc;
 	private TopicHeaderController headerCtrl;
-	private TopicEditController topicEditCtrl;
-	private OrganizersEditController organizersEditCtrl;
 	private DialogBoxController confirmParticipationCrtl;
 	private AppointmentEditController appointmentEditCtrl;
 	private RebookController rebookCtrl;
-	private DialogBoxController confirmDeleteTopicCrtl;
 	private AppointmentDeleteController appointmentDeleteCtrl;
 
 	protected Topic topic;
@@ -146,8 +142,6 @@ public abstract class AppointmentListController extends FormBasicController impl
 				deleteTopicLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete");
 				editTopicLink = uifactory.addFormLink("edit.topic", topButtons, Link.BUTTON);
 				editTopicLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
-				editOrganizerLink = uifactory.addFormLink("edit.organizer", topButtons, Link.BUTTON);
-				editOrganizerLink.setIconLeftCSS("o_icon o_icon-lg o_icon_coach");
 			}
 			if (secCallback.canEditAppointment(organizers)) {
 				addAppointmentLink = uifactory.addFormLink("add.appointment", topButtons, Link.BUTTON);
@@ -348,12 +342,6 @@ public abstract class AppointmentListController extends FormBasicController impl
 			fireEvent(ureq, Event.DONE_EVENT);
 		} else if (source == addAppointmentLink) {
 			doAddAppointment(ureq);
-		} else if (source == deleteTopicLink) {
-			doConfirmDeleteTopic(ureq);
-		} else if (source == editTopicLink) {
-			doEditTopic(ureq);
-		} else if (source == editOrganizerLink) {
-			doEditOrganizer(ureq);
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
@@ -379,20 +367,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (topicEditCtrl == source) {
-			if (event == Event.DONE_EVENT) {
-				topic = topicEditCtrl.getTopic();
-				headerCtrl.setTopic(ureq, topic);
-			}
-			cmc.deactivate();
-			cleanUp();
-		} else if (organizersEditCtrl == source) {
-			if (event == Event.DONE_EVENT) {
-				headerCtrl.reloadOrganizers();
-			}
-			cmc.deactivate();
-			cleanUp();
-		} else  if (source == confirmParticipationCrtl) {
+		if (source == confirmParticipationCrtl) {
 			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
 				Appointment appointment = (Appointment)confirmParticipationCrtl.getUserObject();
 				doCreateParticipation(appointment);
@@ -416,10 +391,6 @@ public abstract class AppointmentListController extends FormBasicController impl
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if (source == confirmDeleteTopicCrtl) {
-			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
-				doDeleteTopic(ureq);
-			}
 		} else if (cmc == source) {
 			cleanUp();
 		}
@@ -440,37 +411,6 @@ public abstract class AppointmentListController extends FormBasicController impl
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
-	}
-
-	private void doConfirmDeleteTopic(UserRequest ureq) {
-		String title = translate("confirm.topic.delete.title");
-		String text = translate("confirm.topic.delete");
-		confirmDeleteTopicCrtl = activateYesNoDialog(ureq, title, text, confirmDeleteTopicCrtl);
-	}
-
-	private void doDeleteTopic(UserRequest ureq) {
-		appointmentsService.deleteTopic(topic);
-		fireEvent(ureq, Event.BACK_EVENT);
-	}
-
-	private void doEditTopic(UserRequest ureq) {
-		topicEditCtrl = new TopicEditController(ureq, getWindowControl(), topic, secCallback);
-		listenTo(topicEditCtrl);
-		
-		cmc = new CloseableModalController(getWindowControl(), "close", topicEditCtrl.getInitialComponent(), true,
-				translate("edit.topic"));
-		listenTo(cmc);
-		cmc.activate();
-	}
-
-	private void doEditOrganizer(UserRequest ureq) {
-		organizersEditCtrl = new OrganizersEditController(ureq, getWindowControl(), topic);
-		listenTo(organizersEditCtrl);
-		
-		cmc = new CloseableModalController(getWindowControl(), "close", organizersEditCtrl.getInitialComponent(), true,
-				translate("edit.organizer"));
-		listenTo(cmc);
-		cmc.activate();
 	}
 	
 	private void doToggleParticipation(UserRequest ureq, AppointmentRow row) {

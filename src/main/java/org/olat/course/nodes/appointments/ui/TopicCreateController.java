@@ -122,7 +122,7 @@ public class TopicCreateController extends FormBasicController {
 		titleEl = uifactory.addTextElement("topic.title", "topic.title", 128, null, formLayout);
 		titleEl.setMandatory(true);
 		
-		descriptionEl = uifactory.addTextAreaElement("topic.description", "topic.description", 2000, 4, 72, false,
+		descriptionEl = uifactory.addTextAreaElement("topic.description", "topic.description", 2000, 3, 72, false,
 				false, null, formLayout);
 		
 		// Organizer
@@ -131,7 +131,7 @@ public class TopicCreateController extends FormBasicController {
 			coachesKV.add(entry(coach.getKey().toString(), userManager.getUserDisplayName(coach.getKey())));
 		}
 		coachesKV.sort(VALUE_ASC);
-		organizerEl = uifactory.addCheckboxesVertical("coaches", formLayout, coachesKV.keys(), coachesKV.values(), 2);
+		organizerEl = uifactory.addCheckboxesDropdown("organizer", "organizer", formLayout, coachesKV.keys(), coachesKV.values());
 		for (Organizer organizer : organizers) {
 			Long organizerKey = organizer.getIdentity().getKey();
 			if (coaches.stream().anyMatch(coach -> organizerKey.equals(coach.getKey()))) {
@@ -142,8 +142,10 @@ public class TopicCreateController extends FormBasicController {
 		
 		// Appointments
 		locationEl = uifactory.addTextElement("appointment.location", 128, null, formLayout);
+		locationEl.setHelpText("appointment.init.value");
 		
 		maxParticipationsEl = uifactory.addTextElement("appointment.max.participations", 5, null, formLayout);
+		maxParticipationsEl.setHelpText("appointment.init.value");
 		
 		recurringEl = uifactory.addCheckboxesHorizontal("appointments.recurring", formLayout,
 				new String[] { "xx" }, new String[] { null });
