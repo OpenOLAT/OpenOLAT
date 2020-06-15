@@ -834,9 +834,18 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 	}
 	
 	@Override
-	public List<Identity> getSubscriberIdentities(Publisher publisher) {
+	public List<Identity> getSubscriberIdentities(Publisher publisher, boolean enabledOnly) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select ident from notisub sub")
+		  .append(" inner join sub.identity as ident")
+		  .append(" inner join ident.user as identUser")
+		  .append(" where sub.publisher=:publisher");
+		if(enabledOnly) {
+			sb.append(" and sub.enabled=true");
+		}
+		
 		return dbInstance.getCurrentEntityManager()
-				.createNamedQuery("identitySubscribersByPublisher", Identity.class)
+				.createQuery(sb.toString(), Identity.class)
 				.setParameter("publisher", publisher)
 				.getResultList();
 	}
