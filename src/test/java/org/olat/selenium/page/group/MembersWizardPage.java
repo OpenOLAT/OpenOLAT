@@ -75,11 +75,49 @@ public class MembersWizardPage {
 	}
 	
 	/**
-	 * Search member and select them
-	 * @param user
-	 * @return
+	 * Search member and select them, flow to select several
+	 * identities at once.
+	 * 
+	 * @param user The user to search for
+	 * @param admin If administrator search with user name
+	 * @return Itself
 	 */
 	public MembersWizardPage searchMember(UserVO user, boolean admin) {
+		searchMemberForm(user, admin);
+
+		// select all
+		By selectAll = By.xpath("//div[contains(@class,'modal')]//div[contains(@class,'o_table_checkall')]/a[i[contains(@class,'o_icon_check_on')]]");
+		OOGraphene.waitElement(selectAll, browser);
+		if(browser instanceof FirefoxDriver) {
+			OOGraphene.waitingALittleLonger();// link is obscured by the scroll bar
+		}
+		browser.findElement(selectAll).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	/**
+	 * Search and select a member, flow to select a single identity.
+	 * 
+	 * @param user The user to search for
+	 * @param admin If administrator search with user name
+	 * @return Itself
+	 */
+	public MembersWizardPage searchOneMember(UserVO user, boolean admin) {
+		searchMemberForm(user, admin);
+
+		// select the identity
+		By selectAll = By.xpath("//div[contains(@class,'modal')]//div[contains(@class,'o_table_flexi')]/table//tr[td[text()[contains(.,'" + user.getFirstName() + "')]]]/td/a[contains(@onclick,'select')]");
+		OOGraphene.waitElement(selectAll, browser);
+		if(browser instanceof FirefoxDriver) {
+			OOGraphene.waitingALittleLonger();// link is obscured by the scroll bar
+		}
+		browser.findElement(selectAll).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	private MembersWizardPage searchMemberForm(UserVO user, boolean admin) {
 		//Search by username
 		By usernameBy = By.cssSelector(".o_sel_usersearch_searchform input[type='text']");
 		OOGraphene.waitElement(usernameBy, browser);
@@ -96,17 +134,9 @@ public class MembersWizardPage {
 			OOGraphene.takeScreenshot("Search member", browser);
 			throw e;
 		}
-
-		// select all
-		By selectAll = By.xpath("//div[contains(@class,'modal')]//div[contains(@class,'o_table_checkall')]/a[i[contains(@class,'o_icon_check_on')]]");
-		OOGraphene.waitElement(selectAll, browser);
-		if(browser instanceof FirefoxDriver) {
-			OOGraphene.waitingALittleLonger();// link is obscured by the scroll bar
-		}
-		browser.findElement(selectAll).click();
-		OOGraphene.waitBusy(browser);
 		return this;
 	}
+	
 	
 	public MembersWizardPage setMembers(UserVO... users) {
 		StringBuilder sb = new StringBuilder();

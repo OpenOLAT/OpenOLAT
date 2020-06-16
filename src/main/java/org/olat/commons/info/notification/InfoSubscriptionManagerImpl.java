@@ -73,7 +73,7 @@ public class InfoSubscriptionManagerImpl implements InfoSubscriptionManager {
 			return Collections.emptyList();
 		}
 		
-		return notificationsManager.getSubscriberIdentities(publisher);
+		return notificationsManager.getSubscriberIdentities(publisher, true);
 	}
 
 	@Override

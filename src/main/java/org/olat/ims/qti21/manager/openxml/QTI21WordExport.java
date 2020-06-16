@@ -545,6 +545,11 @@ public class QTI21WordExport implements MediaResource {
 		}
 		
 		private void endSimpleChoice() {
+			if(hasTextToFlush()) {
+				flushText();
+				currentParagraph = addContent(currentParagraph);
+			}
+			
 			Element checkboxCell = factory.createTableCell(null, 369, Unit.pct);
 			Node checkboxNode = getCurrentTable().addCellEl(checkboxCell, 1);
 			

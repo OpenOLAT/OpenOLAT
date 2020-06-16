@@ -61,7 +61,6 @@ import org.olat.core.id.Persistable;
 @Table(name="o_noti_sub")
 @NamedQuery(name="subscribersByPublisher", query="select sub from notisub sub where sub.publisher=:publisher")
 @NamedQuery(name="subscribersByPublisherAndIdentity", query="select sub from notisub as sub where sub.publisher.key=:publisherKey and sub.identity.key=:identityKey")
-@NamedQuery(name="identitySubscribersByPublisher", query="select sub.identity from notisub sub where sub.publisher=:publisher")
 public class SubscriberImpl implements Subscriber, CreateInfo, Persistable  {
 	private static final long serialVersionUID = 6165097156137862263L;
 	

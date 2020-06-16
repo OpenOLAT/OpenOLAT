@@ -27,54 +27,48 @@ import org.openqa.selenium.WebDriver;
 
 /**
  * 
- * Initial date: 11 juin 2020<br>
+ * Initial date: 12 juin 2020<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI21GradingGradersPage {
+public class QTI21GradingAssignmentsPage {
 	
 	private final WebDriver browser;
 	
-	public QTI21GradingGradersPage(WebDriver browser) {
+	public QTI21GradingAssignmentsPage(WebDriver browser) {
 		this.browser = browser;
 	}
 	
-	public QTI21GradingGradersPage addGrader(UserVO user) {
-		By addGraderBy = By.cssSelector("div.o_button_group a.o_sel_repo_grading_add_graders");
-		OOGraphene.waitElement(addGraderBy, browser);
-		browser.findElement(addGraderBy).click();
+	public QTI21GradingAssignmentsPage assertAssignmentUnassigned(String testNodeTitle) {
+		By graderBy = By.xpath("//div[contains(@class,'o_sel_grading_assignments_list')]//table//tr[td/span/i[contains(@class,'o_grad_assignment_unassigned')]]/td/a[text()[contains(.,'" + testNodeTitle + "')]]");
+		OOGraphene.waitElement(graderBy, browser);
+		return this;
+	}
+	
+	public QTI21GradingAssignmentsPage openAssignmentUnassignedTool(String testNodeTitle) {
+		By toolBy = By.xpath("//div[contains(@class,'o_sel_grading_assignments_list')]//table//tr[td/span/i[contains(@class,'o_grad_assignment_unassigned')]][td/a[text()[contains(.,'" + testNodeTitle + "')]]]/td/a[i[contains(@class,'o_icon_actions')]]");
+		OOGraphene.waitElement(toolBy, browser);
+		OOGraphene.scrollTo(toolBy, browser);
+		browser.findElement(toolBy).click();
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitCallout(browser);
+		return this;
+	}
+	
+	public QTI21GradingAssignmentsPage addGrader(UserVO user) {
+		By graderBy = By.xpath("//ul[contains(@class,'o_dropdown')]/li/a[contains(@onclick,'assign_grader')]");
+		OOGraphene.waitElement(graderBy, browser);
+		browser.findElement(graderBy).click();
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalWizard(browser);
 		
 		MembersWizardPage wizard = new MembersWizardPage(browser)
-			.searchMember(user, true);
+			.searchOneMember(user, true);
 		
-		OOGraphene.nextStep(browser);
-		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_grader_import_overview"), browser);
-
 		OOGraphene.nextStep(browser);
 		wizard.finish();
 		return this;
 	}
 	
-	public QTI21GradingGradersPage assertGrader(UserVO user) {
-		By graderBy = By.xpath("//div[@class='o_sel_graders_list']//table//tr/td/a[text()[contains(.,'" + user.getFirstName() + "')]]");
-		OOGraphene.waitElement(graderBy, browser);
-		return this;
-	}
-	
-	/**
-	 * The method is not precise.
-	 * 
-	 * @param user The grader
-	 * @param assignments A number
-	 * 
-	 * @return Itself
-	 */
-	public QTI21GradingGradersPage assertGraderAssignmentsDone(UserVO user, int assignments) {
-		By graderBy = By.xpath("//div[@class='o_sel_graders_list']//table//tr[td/a[contains(@onclick,'done')][text()[contains(.,'" + assignments + "')]]]/td/a[text()[contains(.,'" + user.getFirstName() + "')]]");
-		OOGraphene.waitElement(graderBy, browser);
-		return this;
-	}
 
 }

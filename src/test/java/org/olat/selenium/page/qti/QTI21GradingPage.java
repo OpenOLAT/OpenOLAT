@@ -47,6 +47,11 @@ public class QTI21GradingPage {
 		return new QTI21GradingGradersPage(browser);
 	}
 	
+	public QTI21GradingAssignmentsPage assignments() {
+		selectSegment("repository.assignments");
+		return new QTI21GradingAssignmentsPage(browser);
+	}
+	
 	private void selectSegment(String action) {
 		By segmentBy = By.xpath("//div[contains(@class,'o_segments')]/a[contains(@onclick,'" + action + "')]");
 		OOGraphene.waitElement(segmentBy, browser);
