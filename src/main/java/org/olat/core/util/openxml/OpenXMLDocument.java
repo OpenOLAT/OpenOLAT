@@ -1026,9 +1026,14 @@ public class OpenXMLDocument {
 		return createParagraphEl(null, Collections.singletonList(runEl));
 	}
 	
-	public List<Node> convertLaTeX(String latex) {
+	public List<Node> convertLaTeX(String latex, boolean paragraph) {
 		List<Node> mathEls = new ArrayList<>();
 		try {
+			// place the latex marker if needed
+			if(!latex.startsWith("\\(") && !latex.startsWith("\\[") && !latex.startsWith("$")) {
+				latex = "$" + latex + "$";
+			}
+			
 			//convert latex -> mathml
 			String mathml = ConvertFromLatexToMathML.convertToMathML(latex);
 
@@ -1054,11 +1059,8 @@ public class OpenXMLDocument {
 					
 					NodeList bodyList = doc.getElementsByTagName("w:body");
 					if(bodyList.getLength() == 1) {
-						Node body = bodyList.item(0);
-						for(Node node=body.getFirstChild(); node!=null; node=node.getNextSibling()) {
-							Node importedNode = document.importNode(node, true);
-							mathEls.add(importedNode);
-						}
+						List<Node> mathNodes = collectMathParagraph(bodyList.item(0), paragraph);
+						mathEls.addAll(mathNodes);
 					}
 				}
 				entry = zip.getNextEntry();
@@ -1066,6 +1068,34 @@ public class OpenXMLDocument {
 		} catch (Exception e) {
 			log.error("", e);
 		}
+		return mathEls;
+	}
+	
+	private List<Node> collectMathParagraph(Node parent, boolean paragraph) {
+		List<Node> mathEls = new ArrayList<>();
+		if(paragraph) {
+			for(Node node=parent.getFirstChild(); node!=null; node=node.getNextSibling()) {
+				String nodeName = node.getNodeName();
+				if("w:p".equalsIgnoreCase(nodeName)) {
+					Node importedNode = document.importNode(node, true);
+					mathEls.add(importedNode);
+				}
+			}
+		} else {
+			NodeList mathList = ((Element)parent).getElementsByTagName("m:oMath");
+			for(int i=0; i<mathList.getLength(); i++) {
+				Node importedNode = document.importNode(mathList.item(i), true);
+				mathEls.add(importedNode);
+			}
+		}
+		
+		if(mathEls.isEmpty()) {
+			for(Node node=parent.getFirstChild(); node!=null; node=node.getNextSibling()) {
+				Node importedNode = document.importNode(node, true);
+				mathEls.add(importedNode);
+			}
+		}
+		
 		return mathEls;
 	}
 	

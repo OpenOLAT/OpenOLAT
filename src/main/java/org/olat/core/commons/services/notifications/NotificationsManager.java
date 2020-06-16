@@ -154,9 +154,10 @@ public interface NotificationsManager {
 	 * Return identities of all enabled subscribers of the publisher.
 	 * 
 	 * @param publisher The publisher
+	 * @param enabledOnly true to exclude disabled subscriptions
 	 * @return A list of identities
 	 */
-	public List<Identity> getSubscriberIdentities(Publisher publisher);
+	public List<Identity> getSubscriberIdentities(Publisher publisher, boolean enabledOnly);
 
 	/**
 	 * sets the latest visited date of the subscription to 'now' .assumes the

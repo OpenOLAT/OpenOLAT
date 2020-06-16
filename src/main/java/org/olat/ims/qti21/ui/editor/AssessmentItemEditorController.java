@@ -216,9 +216,11 @@ public class AssessmentItemEditorController extends BasicController implements A
 				tabbedPane.addTab(translate("form.pool"), poolEditor);
 			}
 			
-			metadataCtrl = new MetadataController(ureq, getWindowControl(), metadataBuilder, readOnly);
-			listenTo(metadataCtrl);
-			tabbedPane.addTab(translate("form.metadata"), metadataCtrl);
+			if(metadataBuilder != null) {
+				metadataCtrl = new MetadataController(ureq, getWindowControl(), metadataBuilder, readOnly);
+				listenTo(metadataCtrl);
+				tabbedPane.addTab(translate("form.metadata"), metadataCtrl);
+			}
 		}
 
 		putInitialPanel(mainVC);

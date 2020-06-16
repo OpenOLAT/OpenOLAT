@@ -324,8 +324,9 @@ public class NotificationsManagerTest extends OlatTestCase {
 	
 	@Test
 	public void testGetSubscriberIdentities() {
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("valid1b-" + UUID.randomUUID().toString());
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("valid1b-" + UUID.randomUUID().toString());
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("valid1b1-");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("valid1b2-");
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("disabled1b-");
 		//create a publisher
 		String identifier = UUID.randomUUID().toString().replace("-", "");
 		SubscriptionContext context = new SubscriptionContext("Subscribers", Long.valueOf(123), identifier);
@@ -335,14 +336,26 @@ public class NotificationsManagerTest extends OlatTestCase {
 		//add subscribers
 		notificationManager.subscribe(id1, context, publisherData);
 		notificationManager.subscribe(id2, context, publisherData);
+		notificationManager.subscribe(id3, context, publisherData);
 		dbInstance.commitAndCloseSession();
 		
-		//get identities
-		List<Identity> identities = notificationManager.getSubscriberIdentities(publisher);
+		notificationManager.unsubscribe(id3, context);
+		dbInstance.commitAndCloseSession();
+		
+		//get identities with enabled subscribers
+		List<Identity> identities = notificationManager.getSubscriberIdentities(publisher, true);
 		Assert.assertNotNull(identities);
 		Assert.assertEquals(2, identities.size());
 		Assert.assertTrue(identities.contains(id1));
 		Assert.assertTrue(identities.contains(id2));
+		
+		//get identities with enabled subscribers
+		List<Identity> allIdentities = notificationManager.getSubscriberIdentities(publisher, false);
+		Assert.assertNotNull(allIdentities);
+		Assert.assertEquals(3, allIdentities.size());
+		Assert.assertTrue(allIdentities.contains(id1));
+		Assert.assertTrue(allIdentities.contains(id2));
+		Assert.assertTrue(allIdentities.contains(id3));
 	}
 	
 	@Test
@@ -405,9 +418,9 @@ public class NotificationsManagerTest extends OlatTestCase {
 
 	@Test
 	public void testSubscriptions() {
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("fi1-" + UUID.randomUUID().toString());
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("fi2-" + UUID.randomUUID().toString());
-		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("fi3-" + UUID.randomUUID().toString());
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fi1-");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("fi2-");
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("fi3-");
 
 		SubscriptionContext sc = new SubscriptionContext("Course", Long.valueOf(123), UUID.randomUUID().toString());
 		PublisherData pd = new PublisherData("Forum", "e.g. forumdata=keyofforum", null);
