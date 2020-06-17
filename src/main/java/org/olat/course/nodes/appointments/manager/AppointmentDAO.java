@@ -186,9 +186,20 @@ class AppointmentDAO {
 				.map(t -> (Long)t.get(0))
 				.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 	}
-
-	private Predicate<? super Tuple> filterFreeOnly(boolean freeOnly) {
-		return t -> freeOnly? t.get(2) == null || ((Integer)t.get(2)).intValue() < ((Long)t.get(3)).intValue(): true;
+	
+	private Predicate<Tuple> filterFreeOnly(boolean freeOnly) {
+		return t -> { 
+			if (freeOnly) {
+				// no max participants
+				if (t.get(2) == null) {
+					return true;
+				}
+				Integer maxParticipants = (Integer)t.get(2);
+				Long count = (Long)t.get(3);
+				return count.intValue() < maxParticipants.intValue();
+			}
+			return true; 
+		};
 	}
 	
 	Long loadAppointmentCount(AppointmentSearchParams params) {

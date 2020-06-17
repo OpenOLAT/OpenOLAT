@@ -276,16 +276,30 @@ public class AppointmentDAOTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser(random());
 		String subIdent = JunitTestHelper.random();
-		Topic topic1 = topicDao.createTopic(entry, subIdent);
-		Topic topic2 = topicDao.createTopic(entry, subIdent);
-		Appointment appointment11 = sut.createAppointment(topic1);
-		sut.createAppointment(topic1);
-		Appointment appointment21 = sut.createAppointment(topic2);
-		appointment21.setMaxParticipations(1);
-		sut.saveAppointment(appointment21);
-		participationDao.createParticipation(appointment11, identity);
-		participationDao.createParticipation(appointment11, identity);
-		participationDao.createParticipation(appointment21, identity);
+		Topic topic = topicDao.createTopic(entry, subIdent);
+
+		Appointment noLimitNoParticipations = sut.createAppointment(topic);
+		Appointment noLimitWithParticipations = sut.createAppointment(topic);
+		Appointment limitNoParticipations = sut.createAppointment(topic);
+		Appointment limitFull = sut.createAppointment(topic);
+		Appointment limitNotFull = sut.createAppointment(topic);
+		noLimitNoParticipations.setDetails("noLimitNoParticipations");
+		sut.saveAppointment(noLimitNoParticipations);
+		noLimitWithParticipations.setDetails("noLimitWithParticipations");
+		sut.saveAppointment(noLimitWithParticipations);
+		limitNoParticipations.setDetails("limitNoParticipations");
+		limitNoParticipations.setMaxParticipations(2);
+		sut.saveAppointment(limitNoParticipations);
+		limitFull.setDetails("limitFull");
+		limitFull.setMaxParticipations(1);
+		sut.saveAppointment(limitFull);
+		limitNotFull.setDetails("limitNotFull");
+		limitNotFull.setMaxParticipations(3);
+		sut.saveAppointment(limitNotFull);
+		participationDao.createParticipation(noLimitWithParticipations, identity);
+		participationDao.createParticipation(noLimitWithParticipations, identity);
+		participationDao.createParticipation(limitFull, identity);
+		participationDao.createParticipation(limitNotFull, identity);
 		dbInstance.commitAndCloseSession();
 		
 		AppointmentSearchParams params = new AppointmentSearchParams();
@@ -293,10 +307,7 @@ public class AppointmentDAOTest extends OlatTestCase {
 		params.setSubIdent(subIdent);
 		Map<Long, Long> appointmentCountByTopic = sut.loadTopicKeyToAppointmentCount(params, true);
 		
-		SoftAssertions softly = new SoftAssertions();
-		softly.assertThat(appointmentCountByTopic.get(topic1.getKey())).isEqualTo(2);
-		softly.assertThat(appointmentCountByTopic.get(topic2.getKey())).isNull();
-		softly.assertAll();
+		assertThat(appointmentCountByTopic.get(topic.getKey())).isEqualTo(4);
 	}
 	
 	@Test
