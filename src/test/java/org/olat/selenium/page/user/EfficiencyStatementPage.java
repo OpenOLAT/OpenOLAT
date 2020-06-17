@@ -73,7 +73,7 @@ public class EfficiencyStatementPage {
 		if(courseTitle.length() > 25) {
 			courseTitle = courseTitle.substring(0, 25);
 		}
-		By courseCertificateBy = By.xpath("//div[contains(@class,'o_sel_certificates_table')]//table//tr[td[contains(text(),'" + courseTitle + "')]]/td//a/i[contains(@class,'o_filetype_pdf')]");
+		By courseCertificateBy = By.xpath("//div[contains(@class,'o_sel_certificates_table')]//table//tr[td[contains(text(),'" + courseTitle + "')]]/td/a/i[contains(@class,'o_filetype_pdf')]");
 		OOGraphene.waitElementSlowly(courseCertificateBy, 30, browser);
 		return this;
 	}

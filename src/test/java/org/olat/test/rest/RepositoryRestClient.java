@@ -109,6 +109,7 @@ public class RepositoryRestClient {
 		assertNotNull(vo);
 		assertNotNull(vo.getDisplayname());
 		assertNotNull(vo.getKey());
+		conn.shutdown();
 		return vo;
 	}
 	
@@ -139,6 +140,7 @@ public class RepositoryRestClient {
 		assertNotNull(vo);
 		assertNotNull(vo.getRepoEntryKey());
 		assertNotNull(vo.getKey());
+		conn.shutdown();
 		return vo;
 	}
 }

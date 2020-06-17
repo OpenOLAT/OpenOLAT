@@ -58,7 +58,6 @@ public class OOGraphene {
 	
 	private static final Logger log = Tracing.createLoggerFor(OOGraphene.class);
 
-	private static final Duration poolingDuration = Duration.ofMillis(100);//ms
 	private static final Duration waitTinyDuration = Duration.ofSeconds(50);//seconds
 	private static final long driverTimeout = 60;//seconds
 	private static final long movePause = 400;//milliseconds
@@ -122,16 +121,17 @@ public class OOGraphene {
 	
 	public static void waitCallout(WebDriver browser) {
 		By calloutBy = By.cssSelector("div.popover-content div.o_callout_content");
-		waitElement(calloutBy, 5, browser);
+		waitElement(calloutBy, browser);
 	}
 	
 	public static void waitBusy(WebDriver browser) {
-		waitBusy(browser, timeout.getSeconds());
+		waitBusy(browser, timeout);
 	}
 	
-	public static void waitBusy(WebDriver browser, long timeoutInSeconds) {
+	public static void waitBusy(WebDriver browser, Duration timeoutDuration) {
 		new WebDriverWait(browser, driverTimeout)
-			.withTimeout(Duration.ofSeconds(timeoutInSeconds)).pollingEvery(poolingDuration)
+			.withTimeout(timeoutDuration)
+			.pollingEvery(polling)
 			.until(new BusyPredicate());
 	}
 	
@@ -141,12 +141,13 @@ public class OOGraphene {
 	 * @param browser
 	 */
 	public static void waitElement(By element, WebDriver browser) {
-		waitElement(element, timeout.getSeconds(), browser);
+		waitElement(element, timeout, polling, browser);
 	}
 	
 	public static void waitElementClickable(By element, WebDriver browser) {
 		new WebDriverWait(browser, driverTimeout)
-			.withTimeout(timeout).pollingEvery(polling)
+			.withTimeout(timeout)
+			.pollingEvery(polling)
 			.until(ExpectedConditions.elementToBeClickable(element));
 	}
 
@@ -158,7 +159,7 @@ public class OOGraphene {
 	 * @param browser The web driver
 	 */
 	public static void waitElement(By element, long timeoutInSeconds, WebDriver browser) {
-		waitElement(element, timeoutInSeconds, polling.getSeconds(), browser);
+		waitElement(element, Duration.ofSeconds(timeoutInSeconds), polling, browser);
 	}
 	
 	/**
@@ -170,7 +171,7 @@ public class OOGraphene {
 	 * @param browser The web driver
 	 */
 	public static void waitElementSlowly(By element, long timeoutInSeconds, WebDriver browser) {
-		waitElement(element, timeoutInSeconds, poolingSlower.getSeconds(), browser);
+		waitElement(element, Duration.ofSeconds(timeoutInSeconds), poolingSlower, browser);
 	}
 	
 	/**
@@ -180,9 +181,9 @@ public class OOGraphene {
 	 * @param timeoutInSeconds The timeout in seconds
 	 * @param browser The web driver
 	 */
-	public static void waitElement(By element, long timeoutInSeconds, long pollingInSeconds, WebDriver browser) {
+	public static void waitElement(By element, Duration timeoutDuration, Duration pollingDuration, WebDriver browser) {
 		new WebDriverWait(browser, driverTimeout)
-			.withTimeout(Duration.ofSeconds(timeoutInSeconds)).pollingEvery(Duration.ofSeconds(pollingInSeconds))
+			.withTimeout(timeoutDuration).pollingEvery(pollingDuration)
 			.until(ExpectedConditions.visibilityOfElementLocated(element));
 	}
 	
@@ -208,7 +209,7 @@ public class OOGraphene {
 	 */
 	public static void waitElementDisappears(By element, int timeoutInSeconds, WebDriver browser) {
 		new WebDriverWait(browser, driverTimeout)
-			.withTimeout(Duration.ofSeconds(timeoutInSeconds)).pollingEvery(poolingDuration)
+			.withTimeout(Duration.ofSeconds(timeoutInSeconds)).pollingEvery(polling)
 			.until(ExpectedConditions.invisibilityOfElementLocated(element));
 	}
 	
@@ -354,7 +355,7 @@ public class OOGraphene {
 	
 	public static final void waitTinymce(WebDriver browser) {
 		new WebDriverWait(browser, driverTimeout).withTimeout(waitTinyDuration)
-			.pollingEvery(poolingDuration)
+			.pollingEvery(polling)
 			.until(new TinyMCELoadedPredicate());
 	}
 	
@@ -377,7 +378,7 @@ public class OOGraphene {
 		String tinyId = tinyIdEl.getAttribute("id").replace("_diw", "");
 
 		new WebDriverWait(browser, driverTimeout).withTimeout(waitTinyDuration)
-			.pollingEvery(poolingDuration)
+			.pollingEvery(polling)
 			.until(new TinyMCELoadedByIdPredicate(tinyId));
 		((JavascriptExecutor)browser).executeScript("top.tinymce.editors['" + tinyId + "'].setContent('" + content + "')");
 	}
@@ -396,7 +397,7 @@ public class OOGraphene {
 		String tinyId = tinyIdEl.getAttribute("id").replace("_diw", "");
 
 		new WebDriverWait(browser, driverTimeout).withTimeout(waitTinyDuration)
-			.pollingEvery(poolingDuration)
+			.pollingEvery(polling)
 			.until(new TinyMCELoadedByIdPredicate(tinyId));
 		((JavascriptExecutor)browser).executeScript("top.tinymce.editors['" + tinyId + "'].insertContent('" + content + "')");
 	}
@@ -529,7 +530,7 @@ public class OOGraphene {
 	 */
 	public static final void waitingTransition(WebDriver browser) {
 		new WebDriverWait(browser, driverTimeout)
-			.pollingEvery(poolingDuration)
+			.pollingEvery(polling)
 			.until(new TransitionPredicate());
 		waitingALittleBit();
 	}
@@ -577,7 +578,7 @@ public class OOGraphene {
 	public static final void waitBusyAndScrollTop(WebDriver browser) {
 		try {
 			new WebDriverWait(browser, driverTimeout)
-				.pollingEvery(poolingDuration)
+				.pollingEvery(polling)
 				.withTimeout(timeout)
 				.until(new BusyScrollToPredicate());
 		} catch (Exception e) {
@@ -634,7 +635,7 @@ public class OOGraphene {
 	public static final void waitAndCloseBlueMessageWindow(WebDriver browser) {
 		try {
 			new WebDriverWait(browser, driverTimeout)
-				.withTimeout(timeout).pollingEvery(poolingDuration)
+				.withTimeout(timeout).pollingEvery(polling)
 				.until(ExpectedConditions.visibilityOfElementLocated(closeBlueBoxButtonBy));
 		} catch (Exception e) {
 			//e.printStackTrace();
@@ -669,7 +670,7 @@ public class OOGraphene {
 	private static final void clickCloseButton(WebDriver browser, WebElement closeButton) {
 		closeButton.click();
 		new WebDriverWait(browser, driverTimeout)
-			.withTimeout(Duration.ofMillis(1000)).pollingEvery(poolingDuration)
+			.withTimeout(Duration.ofMillis(1000)).pollingEvery(polling)
 			.until(new CloseAlertInfoPredicate());
 	}
 	
@@ -719,7 +720,7 @@ public class OOGraphene {
 	
 	public static final void waitNavBarTransition(WebDriver browser) {
 		try {
-			new WebDriverWait(browser, driverTimeout).pollingEvery(poolingDuration)
+			new WebDriverWait(browser, driverTimeout).pollingEvery(polling)
 					.until(new NavBarTransitionPredicate());
 			waitingALittleBit();
 		} catch (Exception e) {
