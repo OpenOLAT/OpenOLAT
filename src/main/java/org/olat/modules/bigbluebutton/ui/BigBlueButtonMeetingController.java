@@ -34,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.link.ExternalLink;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.control.Controller;
@@ -43,6 +44,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.RedirectMediaResource;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -70,10 +72,12 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 	private final boolean administrator;
 	private BigBlueButtonMeeting meeting;
 	
+	private final boolean guest;
 	private final boolean moderatorStartMeeting;
 	private final OLATResourceable meetingOres;
 
 	private Link joinButton;
+	private ExternalLink guestJoinButton;
 	private FlexiTableElement tableEl;
 	private BigBlueButtonRecordingTableModel recordingTableModel;
 	
@@ -92,6 +96,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		this.readOnly = readOnly;
 		this.moderator = moderator;
 		this.administrator = administrator;
+		guest = ureq.getUserSession().getRoles().isGuestOnly();
 		meetingOres = OresHelper.createOLATResourceableInstance(BigBlueButtonMeeting.class.getSimpleName(), meeting.getKey());
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), meetingOres);
 		moderatorStartMeeting = configuration.isModeratorStartMeeting();
@@ -128,8 +133,16 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		joinButton = LinkFactory.createButtonLarge("meeting.join.button", flc.getFormItemComponent(), this);
 		joinButton.setElementCssClass("o_sel_bbb_join");
 		joinButton.setTarget("_blank");
-		joinButton.setVisible(!ended);
+		joinButton.setVisible(!ended && !guest);
 		joinButton.setTextReasonForDisabling(translate("warning.no.access"));
+		
+		String url = Settings.createServerURI() + "/bigbluebutton/" + meeting.getIdentifier();
+		guestJoinButton = LinkFactory.createExternalLink("meeting.guest.join.button", "meeting.guest.join.button", url);
+		guestJoinButton.setElementCssClass("btn btn-lg btn-default o_sel_bbb_guest_join");
+		guestJoinButton.setName(translate("meeting.guest.join.button"));
+		guestJoinButton.setTarget("_blank");
+		guestJoinButton.setVisible(!ended && guest);
+		flc.getFormItemComponent().put("meeting.guest.join.button", guestJoinButton);
 	}
 	
 	private void initRecordings(FormItemContainer formLayout) {
@@ -177,6 +190,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 	private void reloadButtonsAndStatus() {
 		meeting = bigBlueButtonManager.getMeeting(meeting);
 		updateButtonsAndStatus();
+		flc.setDirty(true);
 	}
 	
 	private boolean isDisabled() {
@@ -192,9 +206,14 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		flc.contextPut("notStarted", Boolean.TRUE);
 		// only change from invisible to visible
 		if(!joinButton.isVisible()) {
-			joinButton.setVisible(accessible && !disabled);
+			joinButton.setVisible(accessible && !disabled && !guest);
 		}
-		joinButton.setEnabled(!readOnly && accessible && !disabled);
+		joinButton.setEnabled(!readOnly && accessible && !disabled && !guest);
+		
+		if(!guestJoinButton.isVisible()) {
+			guestJoinButton.setVisible(accessible && !disabled && guest);
+		}
+		guestJoinButton.setEnabled(!readOnly && accessible && !disabled && guest);
 			
 		if(accessible && !disabled) {
 			boolean running = bigBlueButtonManager.isMeetingRunning(meeting);
@@ -208,9 +227,11 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 			} else if(!running && moderatorStartMeeting) {
 				flc.contextPut("notStarted", Boolean.TRUE);
 				joinButton.setEnabled(false);
+				guestJoinButton.setEnabled(false);
 			} else {
 				flc.contextPut("notStarted", Boolean.FALSE);
-				joinButton.setEnabled(!readOnly);
+				joinButton.setEnabled(!readOnly && !guest);
+				guestJoinButton.setEnabled(!readOnly && guest);
 			}
 		} else if(isEnded) {
 			flc.contextPut("notStarted", Boolean.FALSE);
@@ -286,15 +307,13 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		String meetingUrl = null;
 		BigBlueButtonErrors errors = new BigBlueButtonErrors();
 		if(moderator || administrator) {
-			meetingUrl = bigBlueButtonManager.join(meeting, getIdentity(), (administrator || moderator), false, null, errors);
+			meetingUrl = bigBlueButtonManager.join(meeting, getIdentity(), null, (administrator || moderator), false, null, errors);
 			BigBlueButtonEvent openEvent = new BigBlueButtonEvent(meeting.getKey(), getIdentity().getKey());
-			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(openEvent, meetingOres);
+        	CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(openEvent, meetingOres);
 		} else if(!moderatorStartMeeting) {
-			boolean guest = ureq.getUserSession().getRoles().isGuestOnly();
-			meetingUrl = bigBlueButtonManager.join(meeting, getIdentity(), false, guest, null, errors);
+			meetingUrl = bigBlueButtonManager.join(meeting, getIdentity(), null, false, guest, null, errors);
 		} else if(bigBlueButtonManager.isMeetingRunning(meeting)) {
-			boolean guest = ureq.getUserSession().getRoles().isGuestOnly();
-			meetingUrl = bigBlueButtonManager.join(meeting, getIdentity(), false, guest, Boolean.TRUE, errors);
+			meetingUrl = bigBlueButtonManager.join(meeting, getIdentity(), null, false, guest, Boolean.TRUE, errors);
 		}
 		redirectTo(ureq, meetingUrl, errors);
 	}

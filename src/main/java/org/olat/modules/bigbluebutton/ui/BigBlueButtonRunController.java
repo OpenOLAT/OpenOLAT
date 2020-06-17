@@ -88,12 +88,7 @@ public class BigBlueButtonRunController extends BasicController implements Activ
 		this.administrator = admin;
 		this.moderator = moderator;
 		
-		canView = !ureq.getUserSession().getRoles().isGuestOnly();
-		
-		if(!canView) {
-			//no accessible to guests
-			mainVC = createVelocityContainer("run");
-		} else if(administrator && hasAtLeastOneTemplate(ureq)) {
+		if(administrator && hasAtLeastOneTemplate(ureq)) {
 			mainVC = createVelocityContainer("run_admin");
 			
 			segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);

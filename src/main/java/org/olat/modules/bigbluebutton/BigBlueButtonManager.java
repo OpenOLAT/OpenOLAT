@@ -80,6 +80,8 @@ public interface BigBlueButtonManager {
 
 	public BigBlueButtonMeeting getMeeting(BigBlueButtonMeeting meeting);
 	
+	public BigBlueButtonMeeting getMeeting(String identifier);
+	
 	public BigBlueButtonMeeting updateMeeting(BigBlueButtonMeeting meeting);
 	
 	public boolean deleteMeeting(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors);
@@ -107,7 +109,7 @@ public interface BigBlueButtonManager {
 	
 	public boolean isTemplateInUse(BigBlueButtonMeetingTemplate template);
 	
-	public List<BigBlueButtonMeeting> getMeetings(RepositoryEntryRef entry, String subIdent, BusinessGroup businessGroup);
+	public List<BigBlueButtonMeeting> getMeetings(RepositoryEntryRef entry, String subIdent, BusinessGroup businessGroup, boolean guestOnly);
 	
 	/**
 	 * Return the list of upcoming meetings, without any permanent one.
@@ -120,7 +122,7 @@ public interface BigBlueButtonManager {
 	
 	public List<BigBlueButtonMeeting> getAllMeetings();
 	
-	public String join(BigBlueButtonMeeting meeting, Identity identity, boolean moderator, boolean guest,
+	public String join(BigBlueButtonMeeting meeting, Identity identity, String pseudo, boolean moderator, boolean guest,
 			Boolean isRunning, BigBlueButtonErrors errors);
 	
 	public boolean isMeetingRunning(BigBlueButtonMeeting meeting);

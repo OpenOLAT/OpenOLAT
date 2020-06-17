@@ -25,6 +25,10 @@
 #if($r.available("meeting.join.button") && $r.visible("meeting.join.button"))
 	$r.render("meeting.join.button")
 #end
+
+#if($r.available("meeting.guest.join.button") && $r.visible("meeting.guest.join.button"))
+	$r.render("meeting.guest.join.button")
+#end
 </div>
 
 #if($r.isTrue($ended) || $r.isTrue($hasRecordings))

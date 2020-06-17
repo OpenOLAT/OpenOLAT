@@ -123,6 +123,30 @@ public class BigBlueButtonMeetingDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void loadByIdentifier() {
+		String name = "BigBlueButton - 8";
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB 8 group", "bbb-desc", -1, -1, false, false, false, false, false);
+		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting(name, null, null, group);
+		dbInstance.commitAndCloseSession();
+		
+		BigBlueButtonMeeting loadedMeeting = bigBlueButtonMeetingDao.loadByIdentifier(meeting.getIdentifier());
+		Assert.assertNotNull(loadedMeeting);
+		Assert.assertEquals(meeting, loadedMeeting);
+	}
+	
+	@Test
+	public void loadByKey() {
+		String name = "BigBlueButton - 9";
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB 9 group", "bbb-desc", -1, -1, false, false, false, false, false);
+		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting(name, null, null, group);
+		dbInstance.commitAndCloseSession();
+		
+		BigBlueButtonMeeting loadedMeeting = bigBlueButtonMeetingDao.loadByKey(meeting.getKey());
+		Assert.assertNotNull(loadedMeeting);
+		Assert.assertEquals(meeting, loadedMeeting);
+	}
+	
+	@Test
 	public void loadForUpdate() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String name = "BigBlueButton - 2";
@@ -146,10 +170,29 @@ public class BigBlueButtonMeetingDAOTest extends OlatTestCase {
 		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting(name, entry, subIdent, null);
 		dbInstance.commit();
 		
-		List<BigBlueButtonMeeting> meetings = bigBlueButtonMeetingDao.getMeetings(entry, subIdent, null);
+		List<BigBlueButtonMeeting> meetings = bigBlueButtonMeetingDao.getMeetings(entry, subIdent, null, false);
 		Assert.assertNotNull(meetings);
 		Assert.assertEquals(1, meetings.size());
 		Assert.assertTrue(meetings.contains(meeting));
+	}
+	
+	@Test
+	public void getMeetingsByRepositoryEntry_guestOnly() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String subIdent = UUID.randomUUID().toString();
+		
+		BigBlueButtonMeeting meetingMember = bigBlueButtonMeetingDao.createAndPersistMeeting("BigBlueButton - 10", entry, subIdent, null);
+		BigBlueButtonMeeting meetingGuest = bigBlueButtonMeetingDao.createAndPersistMeeting("BigBlueButton - 11", entry, subIdent, null);
+		dbInstance.commit();
+		meetingGuest.setGuest(true);
+		meetingGuest = bigBlueButtonMeetingDao.updateMeeting(meetingGuest);
+		dbInstance.commitAndCloseSession();
+		
+		List<BigBlueButtonMeeting> meetings = bigBlueButtonMeetingDao.getMeetings(entry, subIdent, null, true);
+		Assert.assertNotNull(meetings);
+		Assert.assertEquals(1, meetings.size());
+		Assert.assertTrue(meetings.contains(meetingGuest));
+		Assert.assertFalse(meetings.contains(meetingMember));
 	}
 	
 	@Test

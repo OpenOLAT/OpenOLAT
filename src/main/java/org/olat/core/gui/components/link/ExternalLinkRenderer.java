@@ -49,7 +49,10 @@ public class ExternalLinkRenderer extends DefaultComponentRenderer {
 		if(StringHelper.containsNonWhitespace(link.getElementCssClass())) {
 			sb.append(" ").append(link.getElementCssClass());
 		}
-		sb.append("\" href=\"").append(link.getUrl()).append("\"");
+		sb.append("\" ");
+		if(link.isEnabled())  {
+			sb.append(" href=\"").append(link.getUrl()).append("\"");
+		}
 		if(StringHelper.containsNonWhitespace(link.getTarget())) {
 			sb.append(" target=\"").append(link.getTarget()).append("\"");
 		}

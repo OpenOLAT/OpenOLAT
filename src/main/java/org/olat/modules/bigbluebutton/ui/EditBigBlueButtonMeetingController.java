@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -56,6 +57,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class EditBigBlueButtonMeetingController extends FormBasicController {
+	
+	private static final String[] onKeys = new String[] { "on" };
 
 	private FormLink openCalLink;
 	private TextElement nameEl;
@@ -67,6 +70,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	private DateChooser endDateEl;
 	private SingleSelection templateEl;
 	private SingleSelection layoutEl;
+	private MultipleSelectionElement guestEl;
 
 	private final Mode mode;
 	private final String subIdent;
@@ -193,6 +197,10 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			layoutEl.select(BigBlueButtonMeetingLayoutEnum.standard.name(), true);
 		}
 		layoutEl.setVisible(layoutEl.getKeys().length > 1);
+		
+		String[] guestValues = new String[] { translate("meeting.guest.on") };
+		guestEl = uifactory.addCheckboxesHorizontal("meeting.guest", formLayout, onKeys, guestValues);
+		guestEl.setVisible(entry != null && entry.isGuests());
 	
 		openCalLink = uifactory.addFormLink("calendar.open", formLayout);
 		openCalLink.setIconLeftCSS("o_icon o_icon-fw o_icon_calendar");
@@ -514,6 +522,9 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			meeting.setFollowupTime(followupTime);
 		}
 		
+		boolean guests = guestEl.isVisible() && guestEl.isAtLeastSelected(1);
+		meeting.setGuest(guests);
+
 		if(layoutEl.isVisible() && layoutEl.isOneSelected()) {
 			BigBlueButtonMeetingLayoutEnum layout = BigBlueButtonMeetingLayoutEnum.secureValueOf(layoutEl.getSelectedKey());
 			meeting.setMeetingLayout(layout);

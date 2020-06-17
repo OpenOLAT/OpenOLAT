@@ -92,6 +92,13 @@ public class BigBlueButtonMeetingImpl implements Persistable, BigBlueButtonMeeti
 	@Column(name="b_permanent", nullable=false, insertable=true, updatable=true)
 	private boolean permanent;
 	
+	@Column(name="b_guest", nullable=false, insertable=true, updatable=true)
+	private boolean guest;
+	@Column(name="b_identifier", nullable=true, insertable=true, updatable=true)
+	private String identifier;
+	@Column(name="b_read_identifier", nullable=true, insertable=true, updatable=true)
+	private String readableIdentifier;
+
 	@Column(name="b_layout", nullable=false, insertable=true, updatable=true)
 	private String layout;
 
@@ -237,6 +244,35 @@ public class BigBlueButtonMeetingImpl implements Persistable, BigBlueButtonMeeti
 	@Override
 	public void setPermanent(boolean permanent) {
 		this.permanent = permanent;
+	}
+
+	@Override
+	public boolean isGuest() {
+		return guest;
+	}
+
+	@Override
+	public void setGuest(boolean guest) {
+		this.guest = guest;
+	}
+
+	@Override
+	public String getIdentifier() {
+		return identifier;
+	}
+
+	public void setIdentifier(String identifier) {
+		this.identifier = identifier;
+	}
+
+	@Override
+	public String getReadableIdentifier() {
+		return readableIdentifier;
+	}
+
+	@Override
+	public void setReadableIdentifier(String readableIdentifier) {
+		this.readableIdentifier = readableIdentifier;
 	}
 
 	@Override

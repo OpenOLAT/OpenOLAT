@@ -62,6 +62,16 @@ public interface BigBlueButtonMeeting extends ModifiedInfo, CreateInfo {
 	
 	public void setPermanent(boolean permanent);
 	
+	public boolean isGuest();
+	
+	public void setGuest(boolean guest);
+	
+	public String getIdentifier();
+
+	public String getReadableIdentifier();
+
+	public void setReadableIdentifier(String readableIdentifier);
+	
 	public Date getStartDate();
 	
 	public void setStartDate(Date start);

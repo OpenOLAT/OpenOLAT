@@ -59,6 +59,7 @@ public class BigBlueButtonMeetingsController extends FormBasicController {
 	private BigBlueButtonMeetingTableModel pastTableModel;
 	private BigBlueButtonMeetingTableModel upcomingTableModel;
 	
+	private final boolean guest;
 	private final RepositoryEntry entry;
 	private final String subIdent;
 	private final BusinessGroup businessGroup;
@@ -75,6 +76,7 @@ public class BigBlueButtonMeetingsController extends FormBasicController {
 		this.entry = entry;
 		this.subIdent = subIdent;
 		this.businessGroup = businessGroup;
+		guest = ureq.getUserSession().getRoles().isGuestOnly();
 		showPermanentCol = (administrator || moderator) && bigBlueButtonModule.isPermanentMeetingEnabled();
 		
 		initForm(ureq);
@@ -129,7 +131,7 @@ public class BigBlueButtonMeetingsController extends FormBasicController {
 	}
 	
 	public void updateModel() {
-		List<BigBlueButtonMeeting> meetings = bigBlueButtonManager.getMeetings(entry, subIdent, businessGroup);
+		List<BigBlueButtonMeeting> meetings = bigBlueButtonManager.getMeetings(entry, subIdent, businessGroup, guest);
 		
 		Date now = new Date();
 		List<BigBlueButtonMeeting> pastMeetings = new ArrayList<>();

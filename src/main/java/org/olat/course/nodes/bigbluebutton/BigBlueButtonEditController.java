@@ -54,12 +54,6 @@ public class BigBlueButtonEditController extends ActivateableTabbableDefaultCont
 	public BigBlueButtonEditController(UserRequest ureq, WindowControl wControl, BigBlueButtonCourseNode courseNode) {
 		super(ureq, wControl);
 		config = courseNode.getModuleConfiguration();	
-		
-		String providerId = config.getStringValue("vc_provider_id");
-		if("wimba".equals(providerId)) {
-			showWarning("wimba.not.supported.message");
-		}
-		
 		configCtrl = new BigBlueButtonConfigForm(ureq, getWindowControl(), config);
 		listenTo(configCtrl);
 	}

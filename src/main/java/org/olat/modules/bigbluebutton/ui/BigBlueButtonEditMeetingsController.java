@@ -175,7 +175,7 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 	}
 	
 	public void updateModel() {
-		List<BigBlueButtonMeeting> meetings = bigBlueButtonManager.getMeetings(entry, subIdent, businessGroup);
+		List<BigBlueButtonMeeting> meetings = bigBlueButtonManager.getMeetings(entry, subIdent, businessGroup, false);
 		tableModel.setObjects(meetings);
 		tableEl.reset(true, true, true);	
 	}

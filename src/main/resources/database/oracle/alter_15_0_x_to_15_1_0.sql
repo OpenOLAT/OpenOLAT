@@ -6,6 +6,9 @@ alter table o_bs_identity add deletionemaildate date;
 
 -- BigBlueButton
 alter table o_bbb_meeting add b_layout varchar2(16) default 'standard';
+alter table o_bbb_meeting add b_guest number default 0 not null;
+alter table o_bbb_meeting add b_identifier varchar2(64);
+alter table o_bbb_meeting add b_read_identifier varchar2(64);
 
 
 -- Appointments

@@ -26,10 +26,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
-import org.olat.core.gui.translator.Translator;
-import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
@@ -37,7 +34,6 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.bigbluebutton.BigBlueButtonEditController;
 import org.olat.course.nodes.bigbluebutton.BigBlueButtonPeekViewController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
@@ -64,8 +60,6 @@ public class BigBlueButtonCourseNode extends AbstractAccessableCourseNode {
 
 	// configuration
 	public static final String CONF_VC_CONFIGURATION = "vc_configuration";
-
-	private transient CourseGroupManager groupMgr;
 	
 	public BigBlueButtonCourseNode() {
 		this(null);
@@ -102,27 +96,18 @@ public class BigBlueButtonCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
+		// check if user is admin. / moderator of the virtual classroom
+		boolean admin = userCourseEnv.isAdmin() || userCourseEnv.isCoach();
+		boolean moderator = userCourseEnv.isAdmin() || userCourseEnv.isCoach();
+		// create run controller
+		RepositoryEntry entry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 
-		Controller controller;
-		Roles roles = ureq.getUserSession().getRoles();
-		if(roles.isGuestOnly()) {
-			Translator trans = Util.createPackageTranslator(AdobeConnectCourseNode.class, ureq.getLocale());
-			String title = trans.translate("guestnoaccess.title");
-			String message = trans.translate("guestnoaccess.message");
-			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
-		} else {
-			// check if user is admin. / moderator of the virtual classroom
-			boolean admin = userCourseEnv.isAdmin() || userCourseEnv.isCoach();
-			boolean moderator = userCourseEnv.isAdmin() || userCourseEnv.isCoach();
-			// create run controller
-			RepositoryEntry entry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		ModuleConfiguration config = getModuleConfiguration();
+		boolean moderatorStart = config.getBooleanSafe(BigBlueButtonEditController.MODERATOR_START_MEETING, true);
+		BigBlueButtonMeetingDefaultConfiguration configuration = new BigBlueButtonMeetingDefaultConfiguration(moderatorStart);
+		Controller controller = new BigBlueButtonRunController(ureq, wControl, entry, getIdent(), null, configuration,
+				admin, moderator, userCourseEnv.isCourseReadOnly());
 
-			ModuleConfiguration config = getModuleConfiguration();
-			boolean moderatorStart = config.getBooleanSafe(BigBlueButtonEditController.MODERATOR_START_MEETING, true);
-			BigBlueButtonMeetingDefaultConfiguration configuration = new BigBlueButtonMeetingDefaultConfiguration(moderatorStart);
-			controller = new BigBlueButtonRunController(ureq, wControl, entry, getIdent(), null, configuration,
-					admin, moderator, userCourseEnv.isCourseReadOnly());
-		}
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_vc_icon");
 		return new NodeRunConstructionResult(ctrl);
 	}
@@ -137,19 +122,12 @@ public class BigBlueButtonCourseNode extends AbstractAccessableCourseNode {
 	public StatusDescription isConfigValid() {
 		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
 		
-		StatusDescription sd = StatusDescription.NOERROR;
-		if(groupMgr != null) {
-			//
-		}
-		return sd;
+		return StatusDescription.NOERROR;
 	}
 
 	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		String translatorStr = Util.getPackageName(ConditionEditController.class);
-		if (groupMgr == null) {
-			groupMgr = cev.getCourseGroupManager();
-		}
 		List<StatusDescription> statusDescs = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
 		return StatusDescriptionHelper.sort(statusDescs);
 	}
@@ -168,7 +146,7 @@ public class BigBlueButtonCourseNode extends AbstractAccessableCourseNode {
 	public void cleanupOnDelete(ICourse course) {
 		BigBlueButtonManager bigBlueButtonManager = CoreSpringFactory.getImpl(BigBlueButtonManager.class);
 		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		List<BigBlueButtonMeeting> meetings = bigBlueButtonManager.getMeetings(courseEntry, getIdent(), null);
+		List<BigBlueButtonMeeting> meetings = bigBlueButtonManager.getMeetings(courseEntry, getIdent(), null, false);
 		BigBlueButtonErrors errors = new BigBlueButtonErrors();
 		for(BigBlueButtonMeeting meeting:meetings) {
 			CoreSpringFactory.getImpl(BigBlueButtonManager.class).deleteMeeting(meeting, errors);

@@ -226,7 +226,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 
 	@Override
 	public boolean deleteGroupDataFor(BusinessGroup group) {
-		List<BigBlueButtonMeeting> meetings = bigBlueButtonMeetingDao.getMeetings(null, null, group);
+		List<BigBlueButtonMeeting> meetings = bigBlueButtonMeetingDao.getMeetings(null, null, group, false);
 		BigBlueButtonErrors errors = new BigBlueButtonErrors();
 		for(BigBlueButtonMeeting meeting:meetings) {
 			deleteMeeting(meeting, errors);
@@ -236,7 +236,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	
 	@Override
 	public boolean deleteRepositoryEntryData(RepositoryEntry re) {
-		List<BigBlueButtonMeeting> meetings = bigBlueButtonMeetingDao.getMeetings(re, null, null);
+		List<BigBlueButtonMeeting> meetings = bigBlueButtonMeetingDao.getMeetings(re, null, null, false);
 		BigBlueButtonErrors errors = new BigBlueButtonErrors();
 		for(BigBlueButtonMeeting meeting:meetings) {
 			deleteMeeting(meeting, errors);
@@ -329,6 +329,14 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	}
 
 	@Override
+	public BigBlueButtonMeeting getMeeting(String identifier) {
+		if(StringHelper.containsNonWhitespace(identifier)) {
+			return bigBlueButtonMeetingDao.loadByIdentifier(identifier);
+		}
+		return null;
+	}
+
+	@Override
 	public BigBlueButtonMeeting updateMeeting(BigBlueButtonMeeting meeting) {
 		updateCalendarEvent(meeting);
 		return bigBlueButtonMeetingDao.updateMeeting(meeting);
@@ -378,8 +386,8 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	}
 
 	@Override
-	public List<BigBlueButtonMeeting> getMeetings(RepositoryEntryRef entry, String subIdent, BusinessGroup businessGroup) {
-		return bigBlueButtonMeetingDao.getMeetings(entry, subIdent, businessGroup);
+	public List<BigBlueButtonMeeting> getMeetings(RepositoryEntryRef entry, String subIdent, BusinessGroup businessGroup, boolean guestOnly) {
+		return bigBlueButtonMeetingDao.getMeetings(entry, subIdent, businessGroup, guestOnly);
 	}
 	
 	@Override
@@ -714,24 +722,24 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	}
 
 	@Override
-	public String join(BigBlueButtonMeeting meeting, Identity identity, boolean moderator, boolean guest, Boolean isRunning, BigBlueButtonErrors errors) {
+	public String join(BigBlueButtonMeeting meeting, Identity identity, String pseudo, boolean moderator, boolean guest, Boolean isRunning, BigBlueButtonErrors errors) {
 		String joinUrl = null;
 		if(isRunning != null && isRunning.booleanValue() && meeting.getServer() != null) {
-			joinUrl = buildJoinUrl(meeting, meeting.getServer(), identity, moderator, guest);
+			joinUrl = buildJoinUrl(meeting, meeting.getServer(), identity, pseudo, moderator, guest);
 		} else {
 			meeting = getMeetingWithServer(meeting);
 			if(createBigBlueButtonMeeting(meeting, errors)) {
-				joinUrl = buildJoinUrl(meeting, meeting.getServer(), identity, moderator, guest);
+				joinUrl = buildJoinUrl(meeting, meeting.getServer(), identity, pseudo, moderator, guest);
 			}
 		}
 		return joinUrl;
 	}
 	
-	private String buildJoinUrl(BigBlueButtonMeeting meeting, BigBlueButtonServer server, Identity identity, boolean moderator, boolean guest) {
+	private String buildJoinUrl(BigBlueButtonMeeting meeting, BigBlueButtonServer server, Identity identity, String pseudo, boolean moderator, boolean guest) {
 		String password = moderator ? meeting.getModeratorPassword() : meeting.getAttendeePassword();
 		
 		String userId = null;
-		if(!guest) {
+		if(!guest && identity != null) {
 			userId = WebappHelper.getInstanceId() + "-" + identity.getKey();
 		}
 
@@ -739,7 +747,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		uriBuilder
 			.operation("join")
 			.parameter("meetingID", meeting.getMeetingId())
-			.parameter("fullName", getFullName(identity))
+			.parameter("fullName", getFullName(identity, pseudo))
 			.parameter("password", password)
 			.optionalParameter("userID", userId);
 		
@@ -755,15 +763,19 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 			.toString();
 	}
 	
-	private String getFullName(Identity identity) {
+	private String getFullName(Identity identity, String pseudo) {
 		StringBuilder sb = new StringBuilder(32);
-		User user = identity.getUser();
-		if(StringHelper.containsNonWhitespace(user.getFirstName())) {
-			sb.append(user.getFirstName());
-		}
-		if(StringHelper.containsNonWhitespace(user.getLastName())) {
-			if(sb.length() > 0) sb.append(" ");
-			sb.append(user.getLastName());
+		if(StringHelper.containsNonWhitespace(pseudo)) {
+			sb.append(pseudo).append(" (guest)");
+		} else {
+			User user = identity.getUser();
+			if(StringHelper.containsNonWhitespace(user.getFirstName())) {
+				sb.append(user.getFirstName());
+			}
+			if(StringHelper.containsNonWhitespace(user.getLastName())) {
+				if(sb.length() > 0) sb.append(" ");
+				sb.append(user.getLastName());
+			}
 		}
 		return sb.length() == 0 ? "John Smith" : sb.toString();
 	}
