@@ -39,7 +39,6 @@ import org.olat.course.learningpath.LearningPathNodeHandler;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentEntry;
-import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryImpl;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
@@ -92,7 +91,7 @@ public class LearningPathNodeAccessProviderTest {
 		sut.onNodeVisited(courseNodeMock, participantCourseEnv);
 
 		verify(courseAssessmentService).updateFullyAssessed(courseNodeMock, participantCourseEnv, Boolean.TRUE,
-				AssessmentEntryStatus.done, Role.user);
+				AssessmentEntryStatus.done);
 	}
 	
 	@Test
@@ -106,7 +105,7 @@ public class LearningPathNodeAccessProviderTest {
 		sut.onNodeVisited(courseNodeMock, participantCourseEnv);
 
 		verify(courseAssessmentService, never()).updateFullyAssessed(courseNodeMock, participantCourseEnv, Boolean.TRUE,
-				AssessmentEntryStatus.done, Role.user);
+				AssessmentEntryStatus.done);
 	}
 	
 	@Test
@@ -120,7 +119,7 @@ public class LearningPathNodeAccessProviderTest {
 		sut.onNodeVisited(courseNodeMock, coachCourseEnv);
 
 		verify(courseAssessmentService, never()).updateFullyAssessed(courseNodeMock, participantCourseEnv, Boolean.TRUE,
-				AssessmentEntryStatus.done, Role.user);
+				AssessmentEntryStatus.done);
 	}
 	
 	@Test
@@ -166,49 +165,49 @@ public class LearningPathNodeAccessProviderTest {
 	public void shouldNotSetFullyAssessedIfNotEnabled() {
 		FullyAssessedResult result = fullyAssessed(false, true, true);
 		
-		sut.updateFullyAssessed(courseNodeMock, participantCourseEnv, Role.auto, result);
+		sut.updateFullyAssessed(courseNodeMock, participantCourseEnv, result);
 
 		verify(courseAssessmentService, never()).updateFullyAssessed(courseNodeMock, participantCourseEnv, Boolean.TRUE,
-				AssessmentEntryStatus.done, Role.auto);
+				AssessmentEntryStatus.done);
 	}
 	
 	@Test
 	public void shouldNotSetFullyAssessedIfNotParticipant() {
 		FullyAssessedResult result = fullyAssessed(false, true, true);
 		
-		sut.updateFullyAssessed(courseNodeMock, participantCourseEnv, Role.auto, result);
+		sut.updateFullyAssessed(courseNodeMock, participantCourseEnv, result);
 
 		verify(courseAssessmentService, never()).updateFullyAssessed(courseNodeMock, coachCourseEnv, Boolean.TRUE,
-				AssessmentEntryStatus.done, Role.auto);
+				AssessmentEntryStatus.done);
 	}
 	
 	@Test
 	public void shouldSetFullyAssessedToTrue() {
 		FullyAssessedResult result = fullyAssessed(true, true, true);
 		
-		sut.updateFullyAssessed(courseNodeMock, participantCourseEnv, Role.auto, result);
+		sut.updateFullyAssessed(courseNodeMock, participantCourseEnv, result);
 
 		verify(courseAssessmentService).updateFullyAssessed(courseNodeMock, participantCourseEnv, Boolean.TRUE,
-				AssessmentEntryStatus.done, Role.auto);
+				AssessmentEntryStatus.done);
 	}
 	@Test
 	public void shouldSetFullyAssessedToFalse() {
 		FullyAssessedResult result = fullyAssessed(true, false, true);
 		
-		sut.updateFullyAssessed(courseNodeMock, participantCourseEnv, Role.auto, result);
+		sut.updateFullyAssessed(courseNodeMock, participantCourseEnv, result);
 
 		verify(courseAssessmentService).updateFullyAssessed(courseNodeMock, participantCourseEnv, Boolean.FALSE,
-				AssessmentEntryStatus.notStarted, Role.auto);
+				AssessmentEntryStatus.notStarted);
 	}
 	
 	@Test
 	public void shouldSetStatusDone() {
 		FullyAssessedResult result = fullyAssessed(true, true, true);
 		
-		sut.updateFullyAssessed(courseNodeMock, participantCourseEnv, Role.auto, result);
+		sut.updateFullyAssessed(courseNodeMock, participantCourseEnv, result);
 
 		verify(courseAssessmentService).updateFullyAssessed(courseNodeMock, participantCourseEnv, Boolean.TRUE,
-				AssessmentEntryStatus.done, Role.auto);
+				AssessmentEntryStatus.done);
 	}
 
 	@Test
@@ -219,10 +218,10 @@ public class LearningPathNodeAccessProviderTest {
 				.thenReturn(assessmentEntry);
 		FullyAssessedResult result = fullyAssessed(true, true, false);
 		
-		sut.updateFullyAssessed(courseNodeMock, participantCourseEnv, Role.auto, result);
+		sut.updateFullyAssessed(courseNodeMock, participantCourseEnv, result);
 
 		verify(courseAssessmentService).updateFullyAssessed(courseNodeMock, participantCourseEnv, Boolean.TRUE,
-				AssessmentEntryStatus.inReview, Role.auto);
+				AssessmentEntryStatus.inReview);
 	}
 	
 	@Test
@@ -234,21 +233,21 @@ public class LearningPathNodeAccessProviderTest {
 	
 	@Test
 	public void shouldInvokeScoreConfig() {
-		sut.onScoreUpdated(courseNodeMock, coachCourseEnv, null, null, null);
+		sut.onScoreUpdated(courseNodeMock, coachCourseEnv, null, null);
 
 		verify(configMock).isFullyAssessedOnScore(any(), any());
 	}
 	
 	@Test
 	public void shouldInvokePassedConfig() {
-		sut.onPassedUpdated(courseNodeMock, coachCourseEnv, null, null, null);
+		sut.onPassedUpdated(courseNodeMock, coachCourseEnv, null, null);
 
 		verify(configMock).isFullyAssessedOnPassed(any(), any());
 	}
 	
 	@Test
 	public void onStatusUpdated() {
-		sut.onStatusUpdated(courseNodeMock, coachCourseEnv, null, null);
+		sut.onStatusUpdated(courseNodeMock, coachCourseEnv, null);
 
 		verify(configMock).isFullyAssessedOnStatus(any());
 	}

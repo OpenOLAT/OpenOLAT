@@ -38,7 +38,6 @@ import org.olat.course.run.navigation.NodeVisitedListener;
 import org.olat.course.run.userview.CourseTreeModelBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
-import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -138,23 +137,23 @@ public class NodeAccessServiceImpl implements NodeAccessService, NodeVisitedList
 
 	@Override
 	public void onScoreUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv, Float score,
-			Boolean userVisibility, Role by) {
+			Boolean userVisibility) {
 		NodeAccessType type = NodeAccessType.of(userCourseEnv);
-		getNodeAccessProvider(type).onScoreUpdated(courseNode, userCourseEnv, score, userVisibility, by);
+		getNodeAccessProvider(type).onScoreUpdated(courseNode, userCourseEnv, score, userVisibility);
 	}
 
 	@Override
 	public void onPassedUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv, Boolean passed,
-			Boolean userVisibility, Role by) {
+			Boolean userVisibility) {
 		NodeAccessType type = NodeAccessType.of(userCourseEnv);
-		getNodeAccessProvider(type).onPassedUpdated(courseNode, userCourseEnv, passed, userVisibility, by);
+		getNodeAccessProvider(type).onPassedUpdated(courseNode, userCourseEnv, passed, userVisibility);
 	}
 
 	@Override
 	public void onStatusUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv,
-			AssessmentEntryStatus status, Role by) {
+			AssessmentEntryStatus status) {
 		NodeAccessType type = NodeAccessType.of(userCourseEnv);
-		getNodeAccessProvider(type).onStatusUpdated(courseNode, userCourseEnv, status, by);
+		getNodeAccessProvider(type).onStatusUpdated(courseNode, userCourseEnv, status);
 	}
 
 	@Override
