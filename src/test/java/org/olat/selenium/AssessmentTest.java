@@ -803,6 +803,8 @@ public class AssessmentTest extends Deployments {
 		QTI21Page.getQTI21Page(reiBrowser)
 			.passE4()
 			.assertOnCourseAssessmentTestScore(4);
+		
+		OOGraphene.waitingALittleLonger();
 				
 		//open the efficiency statements
 		UserToolsPage reiUserTools = new UserToolsPage(reiBrowser);

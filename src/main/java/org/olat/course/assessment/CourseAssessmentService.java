@@ -130,7 +130,7 @@ public interface CourseAssessmentService {
 			Double completion, AssessmentEntryStatus status, Role by);
 	
 	public void updateFullyAssessed(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
-			Boolean fullyAssessed, AssessmentEntryStatus status, Role by);
+			Boolean fullyAssessed, AssessmentEntryStatus status);
 	
 	/**
 	 * @param courseNode

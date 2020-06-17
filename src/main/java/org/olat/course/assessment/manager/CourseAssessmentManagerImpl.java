@@ -440,7 +440,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		assessmentService.updateAssessmentEntry(nodeAssessment);
 		DBFactory.getInstance().commit();
 		
-		nodeAccessService.onStatusUpdated(courseNode, userCourseEnvironment, status, by);
+		nodeAccessService.onStatusUpdated(courseNode, userCourseEnvironment, status);
 		DBFactory.getInstance().commit();
 		
 		ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
@@ -450,7 +450,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 
 	@Override
 	public void updateFullyAssessed(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, Boolean fullyAssessed,
-			AssessmentEntryStatus status, Role by) {
+			AssessmentEntryStatus status) {
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
 		Boolean entryRoot = isEntryRoot(course, courseNode);
@@ -460,11 +460,6 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			return;
 		}
 		
-		if (by == Role.coach) {
-			nodeAssessment.setLastCoachModified(new Date());
-		} else if (by == Role.user) {
-			nodeAssessment.setLastUserModified(new Date());
-		}
 		nodeAssessment.setAssessmentStatus(status);
 		nodeAssessment.setFullyAssessed(fullyAssessed);
 		
@@ -533,9 +528,9 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		assessmentEntry = assessmentService.updateAssessmentEntry(assessmentEntry);
 		DBFactory.getInstance().commit();
 		
-		nodeAccessService.onScoreUpdated(courseNode, userCourseEnv, score, assessmentEntry.getUserVisibility(), by);
-		nodeAccessService.onPassedUpdated(courseNode, userCourseEnv, passed, assessmentEntry.getUserVisibility(), by);
-		nodeAccessService.onStatusUpdated(courseNode, userCourseEnv, assessmentEntry.getAssessmentStatus(), by);
+		nodeAccessService.onScoreUpdated(courseNode, userCourseEnv, score, assessmentEntry.getUserVisibility());
+		nodeAccessService.onPassedUpdated(courseNode, userCourseEnv, passed, assessmentEntry.getUserVisibility());
+		nodeAccessService.onStatusUpdated(courseNode, userCourseEnv, assessmentEntry.getAssessmentStatus());
 		DBFactory.getInstance().commit();
 		
 		//reevalute the tree
@@ -608,7 +603,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		assessmentEntry = assessmentService.updateAssessmentEntry(assessmentEntry);
 		DBFactory.getInstance().commit();
 		
-		nodeAccessService.onPassedUpdated(rootNode, userCourseEnvironment, passed, Boolean.TRUE, Role.coach);
+		nodeAccessService.onPassedUpdated(rootNode, userCourseEnvironment, passed, Boolean.TRUE);
 		DBFactory.getInstance().commit();
 		
 		ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
@@ -646,7 +641,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		DBFactory.getInstance().commit();
 		
 		Boolean passed = assessmentEntry.getPassed();
-		nodeAccessService.onPassedUpdated(rootNode, userCourseEnvironment, passed, Boolean.TRUE, Role.coach);
+		nodeAccessService.onPassedUpdated(rootNode, userCourseEnvironment, passed, Boolean.TRUE);
 		DBFactory.getInstance().commit();
 		
 		ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();

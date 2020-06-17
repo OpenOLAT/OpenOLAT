@@ -28,7 +28,6 @@ import org.olat.course.run.CoursePaginationController;
 import org.olat.course.run.userview.CourseTreeModelBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
-import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
@@ -63,12 +62,12 @@ public interface NodeAccessProvider extends NodeAccessProviderIdentifier {
 	public void onAssessmentConfirmed(CourseNode courseNode, UserCourseEnvironment userCourseEnv, boolean confirmed);
 	
 	public void onScoreUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv, Float score,
-			Boolean userVisibility, Role by);
+			Boolean userVisibility);
 
-	public void onPassedUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv, Boolean passed, Boolean userVisibility, Role by);
+	public void onPassedUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv, Boolean passed, Boolean userVisibility);
 
 	public void onStatusUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv,
-			AssessmentEntryStatus status, Role by);
+			AssessmentEntryStatus status);
 
 	public void onCoursePublished(ICourse course);
 

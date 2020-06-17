@@ -19,6 +19,7 @@
  */
 package org.olat.selenium.page.repository;
 
+import java.time.Duration;
 import java.util.List;
 
 import org.junit.Assert;
@@ -117,7 +118,7 @@ public class FeedPage {
 		//save the settings
 		By saveButton = By.xpath("//div[contains(@class,'modal-body')]//form//button[contains(@class,'btn-primary')]");
 		browser.findElement(saveButton).click();
-		OOGraphene.waitBusy(browser, 20);
+		OOGraphene.waitBusy(browser, Duration.ofSeconds(20));
 		return this;
 	}
 	

@@ -112,10 +112,9 @@ public interface AssessmentManager {
 	 * @param userCourseEnvironment
 	 * @param fullyAssessed
 	 * @param status 
-	 * @param by
 	 */
 	public void updateFullyAssessed(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
-			Boolean fullyAssessed, AssessmentEntryStatus status, Role by);
+			Boolean fullyAssessed, AssessmentEntryStatus status);
 	
 	/**
 	 * Save an assessment comment for this node for a user. If there is already a comment property available, 

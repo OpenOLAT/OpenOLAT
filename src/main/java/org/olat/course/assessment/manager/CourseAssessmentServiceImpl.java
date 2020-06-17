@@ -196,11 +196,11 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	
 	@Override
 	public void updateFullyAssessed(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
-			Boolean fullyAssessed, AssessmentEntryStatus status, Role by) {
+			Boolean fullyAssessed, AssessmentEntryStatus status) {
 		if (!userCourseEnvironment.isParticipant()) return;
 		
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		am.updateFullyAssessed(courseNode, userCourseEnvironment, fullyAssessed, status, by);
+		am.updateFullyAssessed(courseNode, userCourseEnvironment, fullyAssessed, status);
 	}
 
 	@Override

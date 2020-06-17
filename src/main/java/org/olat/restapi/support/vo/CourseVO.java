@@ -239,4 +239,21 @@ public class CourseVO {
 	public void setLifecycle(RepositoryEntryLifecycleVO lifecycle) {
 		this.lifecycle = lifecycle;
 	}
+	
+	@Override
+	public int hashCode() {
+		return key == null ? 24348 : key.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == this) {
+			return true;
+		}
+		if(obj instanceof CourseVO) {
+			CourseVO course = (CourseVO)obj;
+			return key != null && key.equals(course.getKey());
+		}
+		return super.equals(obj);
+	}
 }

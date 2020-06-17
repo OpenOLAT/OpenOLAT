@@ -31,7 +31,6 @@ import org.olat.course.run.CoursePaginationController;
 import org.olat.course.run.userview.CourseTreeModelBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
-import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
@@ -126,10 +125,9 @@ public interface NodeAccessService {
 	 * @param userCourseEnv
 	 * @param score
 	 * @param userVisibility
-	 * @param by
 	 */
 	public void onScoreUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv, Float score,
-			Boolean userVisibility, Role by);
+			Boolean userVisibility);
 	
 	/**
 	 * Hook after the update of the passed value of an assessment changed.
@@ -138,10 +136,9 @@ public interface NodeAccessService {
 	 * @param userCourseEnv
 	 * @param passed 
 	 * @param userVisibility 
-	 * @param by
 	 */
 	public void onPassedUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv, Boolean passed,
-			Boolean userVisibility, Role by);
+			Boolean userVisibility);
 
 	/**
 	 * Hook after the assessment status is updated.
@@ -149,10 +146,9 @@ public interface NodeAccessService {
 	 * @param courseNode
 	 * @param userCourseEnv
 	 * @param status
-	 * @param by
 	 */
 	public void onStatusUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv,
-			AssessmentEntryStatus status, Role by);
+			AssessmentEntryStatus status);
 
 	/**
 	 * Hook after a course was published.

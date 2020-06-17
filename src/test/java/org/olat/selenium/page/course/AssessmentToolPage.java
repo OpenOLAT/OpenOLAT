@@ -19,6 +19,7 @@
  */
 package org.olat.selenium.page.course;
 
+import java.time.Duration;
 import java.util.List;
 
 import org.junit.Assert;
@@ -189,7 +190,7 @@ public class AssessmentToolPage {
 	 */
 	public AssessmentToolPage assertProgress(UserVO user, int progress) {
 		By progressBy = By.xpath("//div[contains(@class,'o_table_wrapper')]/table//tr[td/a[contains(.,'" + user.getFirstName() + "')]]/td/div[@class='progress'][div[@title='" + progress + "%']]");
-		OOGraphene.waitElement(progressBy, 15, 1, browser);
+		OOGraphene.waitElement(progressBy, Duration.ofSeconds(15), Duration.ofSeconds(1), browser);
 		return this;
 	}
 	
