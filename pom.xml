@@ -72,7 +72,7 @@
 		<io.undertow>2.1.3.Final</io.undertow>
 		<jackson.version>2.11.0</jackson.version>
 		<org.mysql.version>5.1.46</org.mysql.version>
-		<org.postgresql.version>42.2.13</org.postgresql.version>
+		<org.postgresql.version>42.2.14</org.postgresql.version>
 		<org.infinispan.version>10.1.8.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>3.141.59</version.selenium>
@@ -424,7 +424,7 @@
 				<dependency>
 				    <groupId>org.webjars</groupId>
 				    <artifactId>swagger-ui</artifactId>
-				    <version>3.26.0</version>
+				    <version>3.26.1</version>
 				</dependency>
 				<dependency>
 				    <groupId>jakarta.xml.ws</groupId>
@@ -1938,7 +1938,7 @@
 		<dependency>
 			<groupId>com.googlecode.owasp-java-html-sanitizer</groupId>
 			<artifactId>owasp-java-html-sanitizer</artifactId>
-			<version>20191001.1</version>
+			<version>20200615.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.w3c.css</groupId>
@@ -2351,7 +2351,7 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>28.2-jre</version>
+			<version>29.0-jre</version>
 		</dependency>
 		<!--  selenium first -->
 		<dependency>
