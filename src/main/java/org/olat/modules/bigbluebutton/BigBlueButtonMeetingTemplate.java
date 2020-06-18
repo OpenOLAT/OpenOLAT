@@ -50,6 +50,10 @@ public interface BigBlueButtonMeetingTemplate extends ModifiedInfo, CreateInfo {
 
 	public void setDescription(String description);
 	
+	public boolean isExternalUsersAllowed();
+	
+	public void setExternalUsersAllowed(boolean external);
+	
 	public Integer getMaxConcurrentMeetings();
 
 	public void setMaxConcurrentMeetings(Integer maxConcurrentMeetings);

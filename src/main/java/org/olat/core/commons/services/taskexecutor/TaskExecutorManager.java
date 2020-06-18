@@ -27,6 +27,7 @@ package org.olat.core.commons.services.taskexecutor;
 
 import java.util.Date;
 import java.util.List;
+import java.util.TimerTask;
 import java.util.concurrent.Executor;
 
 import org.olat.core.id.Identity;
@@ -101,5 +102,16 @@ public interface TaskExecutorManager extends Executor {
 	 * @param resSubPath The sub path (cannot be null)
 	 */
 	public void delete(OLATResource resource, String resSubPath);
+	
+	/**
+	 * This is a light weight, not clustered way to delay a task
+	 * a few seconds. Don't abuse of it, only delay of a few seconds
+	 * is acceptable because the tasks are serialized and the task is
+	 * hold in memory. 
+	 * 
+	 * @param task
+	 * @param delay
+	 */
+	public void schedule(TimerTask task, long delay);
 
 }

@@ -89,6 +89,7 @@ public class BigBlueButtonAdminTemplatesController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BTemplatesCols.maxDuration,
 				new TemplateMinuteCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BTemplatesCols.webcamsOnlyForModerator));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BTemplatesCols.externalUsers));
 		if(readOnly) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("view", translate("view"), "view"));
 		} else {

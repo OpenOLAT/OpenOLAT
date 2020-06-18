@@ -58,9 +58,9 @@ public class BigBlueButtonDispatcher implements Dispatcher {
 
 	private static final Logger log = Tracing.createLoggerFor(BigBlueButtonDispatcher.class);
 	
-	private static final String BIGBLUEBUTTON_PATH = "survey";
+	private static final String BIGBLUEBUTTON_PATH = "bigbluebutton";
 	
-	public static final String getExecutionUrl(String identifier) {
+	public static final String getMeetingUrl(String identifier) {
 		return new StringBuilder()
 				.append(Settings.getServerContextPathURI())
 				.append("/")
@@ -72,8 +72,6 @@ public class BigBlueButtonDispatcher implements Dispatcher {
 	
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		
-		
 		UserRequest ureq = null;
 		final String pathInfo = request.getPathInfo();
 		String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);

@@ -59,6 +59,7 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 	
 	private MultipleSelectionElement enableEl;
 	private MultipleSelectionElement rolesEl;
+	private MultipleSelectionElement externalEl;
 	
 	private TextElement maxConcurrentMeetingsEl;
 	private TextElement maxParticipantsEl;
@@ -140,6 +141,10 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 
 		String maxConcurrentMeetings = template == null || template.getMaxConcurrentMeetings() == null ? "" : template.getMaxConcurrentMeetings().toString();
 		maxConcurrentMeetingsEl = uifactory.addTextElement("template.max.concurrent.meetings", "template.max.concurrent.meetings", 8, maxConcurrentMeetings, formLayout);
+		
+		boolean external = template != null && template.isExternalUsersAllowed();
+		externalEl = uifactory.addCheckboxesHorizontal("template.external.enabled", "template.external.enabled", formLayout, onKeys, new String[] { "" });
+		externalEl.select(onKeys[0], external);
 		
 		KeyValues rolesKeyValues = new KeyValues();
 		for(BigBlueButtonTemplatePermissions role:BigBlueButtonTemplatePermissions.values()) {
@@ -353,6 +358,7 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 		}
 		template.setDescription(descriptionEl.getValue());
 		template.setEnabled(enableEl.isAtLeastSelected(1));
+		template.setExternalUsersAllowed(externalEl.isAtLeastSelected(1));
 		
 		List<BigBlueButtonTemplatePermissions> roles = rolesEl.getSelectedKeys().stream()
 				.map(BigBlueButtonTemplatePermissions::valueOf).collect(Collectors.toList());

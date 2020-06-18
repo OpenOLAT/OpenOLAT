@@ -124,14 +124,32 @@ public class BigBlueButtonMeetingDAOTest extends OlatTestCase {
 	
 	@Test
 	public void loadByIdentifier() {
-		String name = "BigBlueButton - 8";
 		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB 8 group", "bbb-desc", -1, -1, false, false, false, false, false);
-		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting(name, null, null, group);
+		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting("BigBlueButton - 8", null, null, group);
 		dbInstance.commitAndCloseSession();
 		
 		BigBlueButtonMeeting loadedMeeting = bigBlueButtonMeetingDao.loadByIdentifier(meeting.getIdentifier());
 		Assert.assertNotNull(loadedMeeting);
 		Assert.assertEquals(meeting, loadedMeeting);
+	}
+	
+	@Test
+	public void isIdentifierInUse() {
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB 12 group", "bbb-desc", -1, -1, false, false, false, false, false);
+		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting("BigBlueButton - 12", null, null, group);
+		BigBlueButtonMeeting meetingOther = bigBlueButtonMeetingDao.createAndPersistMeeting("BigBlueButton - 13", null, null, group);
+		dbInstance.commit();
+		String identifier = UUID.randomUUID().toString();
+		meeting.setReadableIdentifier(identifier);
+		meeting = bigBlueButtonMeetingDao.updateMeeting(meeting);
+		dbInstance.commitAndCloseSession();
+
+		boolean inUseItself = bigBlueButtonMeetingDao.isIdentifierInUse(identifier, meeting);
+		Assert.assertFalse(inUseItself);
+		boolean inUseAll = bigBlueButtonMeetingDao.isIdentifierInUse(identifier, null);
+		Assert.assertTrue(inUseAll);
+		boolean inUseOther = bigBlueButtonMeetingDao.isIdentifierInUse(identifier, meetingOther);
+		Assert.assertTrue(inUseOther);
 	}
 	
 	@Test

@@ -99,13 +99,34 @@ public class BigBlueButtonMeetingDAO {
 		  .append(" left join fetch meeting.businessGroup as businessGroup")
 		  .append(" left join fetch meeting.template as template")
 		  .append(" left join fetch meeting.server as server")
-		  .append(" where meeting.identifier=:identifier");
+		  .append(" where meeting.identifier=:identifier or meeting.readableIdentifier=:identifier");
 		
 		List<BigBlueButtonMeeting> meetings = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), BigBlueButtonMeeting.class)
 				.setParameter("identifier", identifier)
 				.getResultList();
 		return meetings == null || meetings.isEmpty() ? null : meetings.get(0);
+	}
+	
+	public boolean isIdentifierInUse(String identifier, BigBlueButtonMeeting reference) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select meeting.key from bigbluebuttonmeeting as meeting")
+		  .append(" where (meeting.identifier=:identifier or meeting.readableIdentifier=:identifier)");
+		if(reference != null) {
+			sb.append(" and meeting.key<>:referenceKey");
+		}
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("identifier", identifier)
+				.setFirstResult(0)
+				.setMaxResults(1);
+		if(reference != null) {
+			query.setParameter("referenceKey", reference.getKey());
+		}
+		
+		List<Long> otherKeys = query.getResultList();
+		return otherKeys != null && !otherKeys.isEmpty() && otherKeys.get(0) != null && otherKeys.get(0).intValue() > 0;
 	}
 	
 	public List<String> getMeetingsIds(Date from, Date to ) {

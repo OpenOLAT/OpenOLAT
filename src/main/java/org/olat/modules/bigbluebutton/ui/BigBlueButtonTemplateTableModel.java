@@ -72,6 +72,7 @@ implements SortableFlexiTableDataModel<BigBlueButtonMeetingTemplate> {
 			case maxParticipants: return row.getMaxParticipants();
 			case maxDuration: return row.getMaxDuration();
 			case webcamsOnlyForModerator: return row.getWebcamsOnlyForModerator();
+			case externalUsers: return row.isExternalUsersAllowed();
 			default: return "ERROR";
 		}
 	}
@@ -89,7 +90,8 @@ implements SortableFlexiTableDataModel<BigBlueButtonMeetingTemplate> {
 		maxConcurrentMeetings("table.header.max.concurrent.meetings"),
 		maxParticipants("table.header.max.participants"),
 		maxDuration("table.header.max.duration"),
-		webcamsOnlyForModerator("table.header.webcams.only.moderator");
+		webcamsOnlyForModerator("table.header.webcams.only.moderator"),
+		externalUsers("table.header.external.users");
 		
 		private final String i18nHeaderKey;
 		

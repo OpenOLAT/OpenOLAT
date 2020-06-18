@@ -75,6 +75,9 @@ public class BigBlueButtonMeetingTemplateImpl implements Persistable, BigBlueBut
 	
 	@Column(name="b_max_concurrent_meetings", nullable=true, insertable=true, updatable=true)
 	private Integer maxConcurrentMeetings;
+
+	@Column(name="b_external_users", nullable=false, insertable=true, updatable=true)
+	private boolean externalAllowed;
 	
 	@Column(name="b_max_participants", nullable=true, insertable=true, updatable=true)
 	private Integer maxParticipants;
@@ -198,6 +201,16 @@ public class BigBlueButtonMeetingTemplateImpl implements Persistable, BigBlueBut
 
 	public void setExternalId(String externalId) {
 		this.externalId = externalId;
+	}
+
+	@Override
+	public boolean isExternalUsersAllowed() {
+		return externalAllowed;
+	}
+
+	@Override
+	public void setExternalUsersAllowed(boolean externalAllowed) {
+		this.externalAllowed = externalAllowed;
 	}
 
 	@Override

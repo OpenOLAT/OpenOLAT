@@ -28,14 +28,16 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.RedirectMediaResource;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.Roles;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -57,6 +59,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -77,7 +80,7 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 	private boolean moderatorStartMeeting;
 	private final boolean allowedToMeet;
 	private BigBlueButtonMeeting meeting;
-	private final OLATResourceable meetingOres;
+	private OLATResourceable meetingOres;
 	
 	@Autowired
 	private NodeAccessService nodeAccessService;
@@ -98,21 +101,42 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 		initForm(ureq);
 		updateButtonsAndStatus();
 
-		meetingOres = OresHelper.createOLATResourceableInstance(BigBlueButtonMeeting.class.getSimpleName(), meeting.getKey());
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), meetingOres);
+		if(meeting != null) {
+			meetingOres = OresHelper.createOLATResourceableInstance(BigBlueButtonMeeting.class.getSimpleName(), meeting.getKey());
+			CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), meetingOres);
+		}
 	}
 
 	@Override
 	protected void doDispose() {
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, meetingOres);
+		if(meetingOres != null) {
+			CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, meetingOres);
+		}
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		boolean end = isEnded();
+
+		if(formLayout instanceof FormLayoutContainer && meeting != null
+				&& !Boolean.TRUE.equals(ureq.getUserSession().getEntry("meeting-" + meeting.getKey()))) {
+			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+			layoutCont.contextPut("title", meeting.getName());
+			if(StringHelper.containsNonWhitespace(meeting.getDescription())) {
+				layoutCont.contextPut("description", meeting.getDescription());
+			}
+			if(meeting.getStartDate() != null) {
+				String start = Formatter.getInstance(getLocale()).formatDateAndTime(meeting.getStartDate());
+				layoutCont.contextPut("start", start);
+			}
+			if(meeting.getEndDate() != null) {
+				String end = Formatter.getInstance(getLocale()).formatDateAndTime(meeting.getEndDate());
+				layoutCont.contextPut("end", end);
+			}
+		}
 		
 		nameEl = uifactory.addTextElement("meeting.guest.pseudo", 128, "", formLayout);
 		
+		boolean end = isEnded();
 		joinButton = uifactory.addFormLink("meeting.join.button", formLayout, Link.BUTTON_LARGE);
 		joinButton.setElementCssClass("o_sel_bbb_guest_join");
 		joinButton.setVisible(!end);
@@ -156,16 +180,23 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 	private boolean isAllowedToMeet(UserRequest ureq) {
 		if(meeting == null) return false;
 
-		if(meeting.getEntry() != null) {
-			UserSession usess = ureq.getUserSession();
-			Roles roles = usess.getRoles();
-			RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(getIdentity(), roles, meeting.getEntry());
+		UserSession usess = ureq.getUserSession();
+		IdentityEnvironment identEnv = usess.getIdentityEnvironment();
+		if(identEnv.getRoles() == null && identEnv.getIdentity() == null) {
+			boolean externalUsersAllowed = StringHelper.containsNonWhitespace(meeting.getReadableIdentifier());
+			if(meeting.getEntry() != null) {
+				RepositoryEntry re = meeting.getEntry();
+				externalUsersAllowed &= re.getEntryStatus() == RepositoryEntryStatusEnum.published;
+			}
+			return externalUsersAllowed;
+		} else if(meeting.getEntry() != null) {
+			RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(getIdentity(), identEnv.getRoles(), meeting.getEntry());
 			if(reSecurity.canLaunch()) {
 				readOnly = reSecurity.isReadOnly();
 				if(StringHelper.containsNonWhitespace(meeting.getSubIdent())) {
 					RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(meeting.getEntry().getKey());
 					ICourse course = CourseFactory.loadCourse(entry);
-					UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(usess.getIdentityEnvironment(), course.getCourseEnvironment());
+					UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(identEnv, course.getCourseEnvironment());
 					CourseTreeNode courseTreeNode = (CourseTreeNode)nodeAccessService.getCourseTreeModelBuilder(uce)
 							.withFilter(AccessibleFilter.create())
 							.build()
@@ -181,6 +212,7 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 	}
 	
 	private boolean isModeratorStartMeeting() {
+		if(meeting == null) return true;
 		if(meeting.getEntry() != null) {
 			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(meeting.getEntry().getKey());
 			ICourse course = CourseFactory.loadCourse(entry);

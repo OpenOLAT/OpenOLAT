@@ -19,6 +19,7 @@
  */
 package org.olat.modules.bigbluebutton.ui;
 
+import java.net.URI;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -41,6 +42,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.bigbluebutton.BigBlueButtonDispatcher;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingLayoutEnum;
@@ -71,6 +73,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	private SingleSelection templateEl;
 	private SingleSelection layoutEl;
 	private MultipleSelectionElement guestEl;
+	private TextElement externalLinkEl;
 
 	private final Mode mode;
 	private final String subIdent;
@@ -201,7 +204,10 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		String[] guestValues = new String[] { translate("meeting.guest.on") };
 		guestEl = uifactory.addCheckboxesHorizontal("meeting.guest", formLayout, onKeys, guestValues);
 		guestEl.setVisible(entry != null && entry.isGuests());
-	
+		
+		String externalLink = meeting == null ? null : meeting.getReadableIdentifier();
+		externalLinkEl = uifactory.addTextElement("meeting.external.users", 64, externalLink, formLayout);
+		
 		openCalLink = uifactory.addFormLink("calendar.open", formLayout);
 		openCalLink.setIconLeftCSS("o_icon o_icon-fw o_icon_calendar");
 		updateTemplateInformations();
@@ -269,6 +275,9 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 					templateEl.setExampleKey("template.explain.max.participants", args);
 				}
 			}
+			externalLinkEl.setVisible(template != null && template.isExternalUsersAllowed());
+		} else {
+			externalLinkEl.setVisible(false);
 		}
 	}
 	
@@ -312,6 +321,8 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	@Override
 	public boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
+		
+		allOk &= validateReadableIdentifier();
 
 		if(mode == Mode.dates) {
 			startDateEl.clearError();
@@ -368,6 +379,32 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			nameEl.setErrorKey("form.invalidchar.noamp", null);
 			allOk &= false;
 		}
+		return allOk;
+	}
+	
+	private boolean validateReadableIdentifier() {
+		boolean allOk = true;
+		
+		externalLinkEl.clearError();
+		if(externalLinkEl.isVisible() && StringHelper.containsNonWhitespace(externalLinkEl.getValue())) {
+			String identifier = externalLinkEl.getValue();
+			if(identifier.length() > 64) {
+				externalLinkEl.setErrorKey("form.error.toolong", new String[] { "64" });
+				allOk &= false;
+			} else if(bigBlueButtonManager.isIdentifierInUse(identifier, meeting)) {
+				externalLinkEl.setErrorKey("error.identifier.in.use", null);
+				allOk &= false;
+			} else {
+				try {
+					URI uri = new URI(BigBlueButtonDispatcher.getMeetingUrl(identifier));
+					uri.normalize();
+				} catch(Exception e) {
+					externalLinkEl.setErrorKey("error.identifier.url.not.valid", new String[] { e.getMessage() });
+					allOk &= false;
+				}
+			}
+		}
+
 		return allOk;
 	}
 	
@@ -504,6 +541,13 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		meeting.setWelcome(welcomeEl.getValue());
 		BigBlueButtonMeetingTemplate template = getSelectedTemplate();
 		meeting.setTemplate(template);
+		
+		if(template != null && template.isExternalUsersAllowed()
+				&& externalLinkEl.isVisible() && StringHelper.containsNonWhitespace(externalLinkEl.getValue())) {
+			meeting.setReadableIdentifier(externalLinkEl.getValue());
+		} else {
+			meeting.setReadableIdentifier(null);
+		}
 		
 		meeting.setPermanent(mode == Mode.permanent);
 		if(mode == Mode.permanent) {

@@ -28,10 +28,13 @@ package org.olat.core.commons.services.taskexecutor.manager;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.taskexecutor.LongRunnable;
 import org.olat.core.commons.services.taskexecutor.LowPriorityRunnable;
@@ -45,7 +48,6 @@ import org.olat.core.commons.services.taskexecutor.model.PersistentTask;
 import org.olat.core.commons.services.taskexecutor.model.PersistentTaskRunnable;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.resource.OLATResource;
 import org.quartz.JobKey;
@@ -73,6 +75,8 @@ public class TaskExecutorManagerImpl implements TaskExecutorManager {
 	private DB dbInstance;
 	private Scheduler scheduler;
 	private PersistentTaskDAO persistentTaskDao;
+	
+	private Timer timer = new Timer();
 
 	/**
 	 * [used by spring]
@@ -237,6 +241,11 @@ public class TaskExecutorManagerImpl implements TaskExecutorManager {
 	@Override
 	public void delete(OLATResource resource, String resSubPath) {
 		persistentTaskDao.delete(resource, resSubPath);
+	}
+
+	@Override
+	public void schedule(TimerTask task, long delay) {
+		timer.schedule(task, delay);
 	}
 	
 	public enum Queue {

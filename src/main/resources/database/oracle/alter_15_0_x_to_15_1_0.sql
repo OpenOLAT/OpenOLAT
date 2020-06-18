@@ -10,6 +10,8 @@ alter table o_bbb_meeting add b_guest number default 0 not null;
 alter table o_bbb_meeting add b_identifier varchar2(64);
 alter table o_bbb_meeting add b_read_identifier varchar2(64);
 
+alter table o_bbb_template add b_external_users number default 0 not null;
+
 
 -- Appointments
 create table o_ap_topic (

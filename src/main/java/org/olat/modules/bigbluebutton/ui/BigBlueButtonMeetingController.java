@@ -21,7 +21,9 @@ package org.olat.modules.bigbluebutton.ui;
 
 import java.util.Date;
 import java.util.List;
+import java.util.TimerTask;
 
+import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -48,9 +50,11 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.bigbluebutton.BigBlueButtonDispatcher;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
@@ -84,6 +88,8 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 	private DialogBoxController confirmDeleteRecordingDialog;
 
 	@Autowired
+	private TaskExecutorManager taskExecutorManager;
+	@Autowired
 	private BigBlueButtonModule bigBlueButtonModule;
 	@Autowired
 	private BigBlueButtonManager bigBlueButtonManager;
@@ -96,7 +102,8 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		this.readOnly = readOnly;
 		this.moderator = moderator;
 		this.administrator = administrator;
-		guest = ureq.getUserSession().getRoles().isGuestOnly();
+		UserSession usess = ureq.getUserSession();
+		guest = usess.getRoles().isGuestOnly();
 		meetingOres = OresHelper.createOLATResourceableInstance(BigBlueButtonMeeting.class.getSimpleName(), meeting.getKey());
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), meetingOres);
 		moderatorStartMeeting = configuration.isModeratorStartMeeting();
@@ -104,6 +111,10 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		initForm(ureq);
 		updateButtonsAndStatus();
 		loadRecordingsModel();
+		
+		if(guest) {
+			usess.putEntryInNonClearedStore("meeting-" + meeting.getKey(), Boolean.TRUE);
+		}
 	}
 	
 	@Override
@@ -127,6 +138,11 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 			if(meeting.getEndDate() != null) {
 				String end = Formatter.getInstance(getLocale()).formatDateAndTime(meeting.getEndDate());
 				layoutCont.contextPut("end", end);
+			}
+			
+			if((administrator || moderator) && StringHelper.containsNonWhitespace(meeting.getReadableIdentifier())) {
+				String url = BigBlueButtonDispatcher.getMeetingUrl(meeting.getReadableIdentifier());
+				layoutCont.contextPut("externalUrl", url);
 			}
 		}
 		
@@ -308,8 +324,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		BigBlueButtonErrors errors = new BigBlueButtonErrors();
 		if(moderator || administrator) {
 			meetingUrl = bigBlueButtonManager.join(meeting, getIdentity(), null, (administrator || moderator), false, null, errors);
-			BigBlueButtonEvent openEvent = new BigBlueButtonEvent(meeting.getKey(), getIdentity().getKey());
-        	CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(openEvent, meetingOres);
+			delayEvent(new BigBlueButtonEvent(meeting.getKey(), getIdentity().getKey()));
 		} else if(!moderatorStartMeeting) {
 			meetingUrl = bigBlueButtonManager.join(meeting, getIdentity(), null, false, guest, null, errors);
 		} else if(bigBlueButtonManager.isMeetingRunning(meeting)) {
@@ -343,5 +358,26 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 			getWindowControl().setError(BigBlueButtonErrorHelper.formatErrors(getTranslator(), errors));
 		}
 		loadRecordingsModel();
+	}
+	
+	private void delayEvent(BigBlueButtonEvent openEvent) {
+		final EventTask task = new EventTask(openEvent, meetingOres);
+		taskExecutorManager.schedule(task , 10000);
+	}
+	
+	private static class EventTask extends TimerTask {
+		
+		private final BigBlueButtonEvent event;
+		private final OLATResourceable ores;
+		
+		public EventTask(BigBlueButtonEvent event, OLATResourceable ores) {
+			this.event = event;
+			this.ores = OresHelper.clone(ores);
+		}
+
+		@Override
+		public void run() {
+        	CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(event, ores);
+		}
 	}
 }

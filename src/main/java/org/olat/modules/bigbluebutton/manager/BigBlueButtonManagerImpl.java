@@ -337,6 +337,14 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	}
 
 	@Override
+	public boolean isIdentifierInUse(String identifier, BigBlueButtonMeeting reference) {
+		if(StringHelper.containsNonWhitespace(identifier)) {
+			return bigBlueButtonMeetingDao.isIdentifierInUse(identifier, reference);
+		}
+		return false;
+	}
+
+	@Override
 	public BigBlueButtonMeeting updateMeeting(BigBlueButtonMeeting meeting) {
 		updateCalendarEvent(meeting);
 		return bigBlueButtonMeetingDao.updateMeeting(meeting);

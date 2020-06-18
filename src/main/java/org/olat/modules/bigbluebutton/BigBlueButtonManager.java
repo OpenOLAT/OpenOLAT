@@ -80,6 +80,13 @@ public interface BigBlueButtonManager {
 
 	public BigBlueButtonMeeting getMeeting(BigBlueButtonMeeting meeting);
 	
+	/**
+	 * Return the first meeting which matches the specified identifier
+	 * as the meeting's identifier or readable identifier.
+	 * 
+	 * @param identifier The identifier
+	 * @return A meeting
+	 */
 	public BigBlueButtonMeeting getMeeting(String identifier);
 	
 	public BigBlueButtonMeeting updateMeeting(BigBlueButtonMeeting meeting);
@@ -87,6 +94,8 @@ public interface BigBlueButtonManager {
 	public boolean deleteMeeting(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors);
 	
 	public BigBlueButtonMeetingTemplate createAndPersistTemplate(String name);
+	
+	public boolean isIdentifierInUse(String identifier, BigBlueButtonMeeting reference);
 
 	public List<BigBlueButtonMeetingTemplate> getTemplates();
 	
