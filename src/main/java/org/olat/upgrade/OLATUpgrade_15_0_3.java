@@ -49,8 +49,13 @@ public class OLATUpgrade_15_0_3 extends OLATUpgrade {
 
 	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_15_0_3.class);
 	
+	private static final int BATCH_SIZE = 50000;
+	
 	private static final String VERSION = "OLAT_15.0.3";
 	private static final String ASSESSMENT_LAST_ATTEMPTS = "ASSESSMENT LAST ATTEMPTS";
+	
+	private final AtomicInteger migrationLogCounter = new AtomicInteger(0);
+	private final AtomicInteger migrationEntryCounter = new AtomicInteger(0);
 	
 	@Autowired
 	private DB dbInstance;
@@ -97,10 +102,35 @@ public class OLATUpgrade_15_0_3 extends OLATUpgrade {
 		boolean allOk = true;
 		if (!uhd.getBooleanDataValue(ASSESSMENT_LAST_ATTEMPTS)) {
 			try {
-				List<LoggingObject> loggedLaunches = getLoggedLastAttempts();
-				migrateLoggedAttempts(loggedLaunches);
-				List<AssessmentEntry> entries = getEmptyLastAttempts();
-				migrateEmptyLastAttempts(entries);
+				int counter = 0;
+				List<LoggingObject> loggedLaunches;
+				do {
+					loggedLaunches = getLoggedLastAttempts(counter, BATCH_SIZE);
+					migrateLoggedAttempts(loggedLaunches);
+					counter += loggedLaunches.size();
+					log.info(Tracing.M_AUDIT, "Log launch processed: {}, total processed ({})", loggedLaunches.size(), counter);
+					dbInstance.commitAndCloseSession();
+				} while(loggedLaunches.size() == BATCH_SIZE);
+
+				log.info(Tracing.M_AUDIT, "Log launch processing successful, total processed: {}", migrationLogCounter);
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			
+			try {
+				
+				int counter = 0;
+				List<AssessmentEntry> entries;
+				do {
+					entries = getEmptyLastAttempts(counter, BATCH_SIZE);
+					migrateEmptyLastAttempts(entries);
+					counter += entries.size();
+					log.info(Tracing.M_AUDIT, "Empty last attempts processed: {}, total processed ({})", entries.size(), counter);
+					dbInstance.commitAndCloseSession();
+				} while(entries.size() == BATCH_SIZE);
+				
+				log.info("Assessment entry last attemps processing successful, total processed: {}", migrationEntryCounter);
 				log.info("Assessment last modified migrated.");
 			} catch (Exception e) {
 				log.error("", e);
@@ -112,7 +142,7 @@ public class OLATUpgrade_15_0_3 extends OLATUpgrade {
 		return allOk;
 	}
 
-	private List<LoggingObject> getLoggedLastAttempts() {
+	private List<LoggingObject> getLoggedLastAttempts(int firstResult, int maxResults) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select log");
 		sb.append("  from loggingobject log");
@@ -121,29 +151,29 @@ public class OLATUpgrade_15_0_3 extends OLATUpgrade {
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), LoggingObject.class)
+				.setFirstResult(firstResult)
+				.setMaxResults(maxResults)
 				.getResultList();
 	}
 	
 	private void migrateLoggedAttempts(List<LoggingObject> loggedAttempts) {
-		log.info("Migraton of {} assessment last attemps (log table) started.", loggedAttempts.size());
-		
 		Map<Long, Identity> identityCache = new HashMap<>();
 		Map<Long, RepositoryEntry> entryCache = new HashMap<>();
-		AtomicInteger migrationCounter = new AtomicInteger(0);
+		
 		for (LoggingObject loggingObject : loggedAttempts) {
 			try {
 				migrateLastAttempt(loggingObject, identityCache, entryCache);
-				migrationCounter.incrementAndGet();
+				migrationLogCounter.incrementAndGet();
 			} catch (Exception e) {
 				log.warn("Assessment last attempt (log table) not migrated. Id={}", loggingObject.getKey());
 			}
-			if(migrationCounter.get() % 25 == 0) {
+			if(migrationLogCounter.get() % 25 == 0) {
 				dbInstance.commitAndCloseSession();
 			} else {
 				dbInstance.commit();
 			}
-			if(migrationCounter.get() % 100 == 0) {
-				log.info("Assessment: num. of last attempts (log table): {}", migrationCounter);
+			if(migrationLogCounter.get() % 100 == 0) {
+				log.info("Assessment: num. of last attempts (log table): {}", migrationLogCounter);
 			}
 		}
 	}
@@ -196,20 +226,20 @@ public class OLATUpgrade_15_0_3 extends OLATUpgrade {
 		}
 	}
 	
-	private List<AssessmentEntry> getEmptyLastAttempts() {
+	private List<AssessmentEntry> getEmptyLastAttempts(int firstResult, int maxResults) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select data from assessmententry data");
 		sb.append(" where data.attempts > 0 and lastAttempt is null");
-
+		sb.append(" order by data.key asc");
+		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AssessmentEntry.class)
+				.setFirstResult(firstResult)
+				.setMaxResults(maxResults)
 				.getResultList();
 	}
 
 	private void migrateEmptyLastAttempts(List<AssessmentEntry> entries) {
-		log.info("Migraton of {} assessment last attemps (empty) started.", entries.size());
-		
-		AtomicInteger migrationCounter = new AtomicInteger(0);
 		for (AssessmentEntry assessmentEntry: entries) {
 			try {
 				if (assessmentEntry.getAttempts() != null && assessmentEntry.getAttempts().intValue() > 0 && assessmentEntry.getLastAttempt() == null) {
@@ -219,17 +249,17 @@ public class OLATUpgrade_15_0_3 extends OLATUpgrade {
 					assessmentEntry.setLastAttempt(lastAttemps);
 					assessmentService.updateAssessmentEntry(assessmentEntry);
 				}
-				migrationCounter.incrementAndGet();
+				migrationEntryCounter.incrementAndGet();
 			} catch (Exception e) {
 				log.warn("Assessment last attempt (empty) not migrated. Id={}", assessmentEntry.getKey());
 			}
-			if(migrationCounter.get() % 25 == 0) {
+			if(migrationEntryCounter.get() % 25 == 0) {
 				dbInstance.commitAndCloseSession();
 			} else {
 				dbInstance.commit();
 			}
-			if(migrationCounter.get() % 100 == 0) {
-				log.info("Assessment: num. of last attempts (empty): {}", migrationCounter);
+			if(migrationEntryCounter.get() % 100 == 0) {
+				log.info("Assessment: num. of last attempts (empty): {}", migrationEntryCounter);
 			}
 		}	
 	}
