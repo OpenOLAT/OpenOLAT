@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.nodes.appointments.Appointment;
+import org.olat.course.nodes.appointments.Topic.Type;
 
 /**
  * 
@@ -44,9 +45,8 @@ public class AppointmentDeleteController extends AbstractRebookController {
 	
 	private SingleSelection changeEl;
 
-	public AppointmentDeleteController(UserRequest ureq, WindowControl wControl, Appointment appointment,
-			Configuration config) {
-		super(ureq, wControl, appointment, config);
+	public AppointmentDeleteController(UserRequest ureq, WindowControl wControl, Appointment appointment) {
+		super(ureq, wControl, appointment);
 	}
 	
 	@Override
@@ -76,7 +76,7 @@ public class AppointmentDeleteController extends AbstractRebookController {
 	
 	@Override
 	protected void initFormTop(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if (getNumParticipations() > 0) {
+		if (Type.finding != getCurrentAppointment().getTopic().getType() && getNumParticipations() > 0) {
 			setFormDescription("appointment.delete.participations", new String[] { String.valueOf(getNumParticipations()) } );
 		
 			changeEl = uifactory.addRadiosHorizontal("appointment.delete.rebook", formLayout, PARTICIPATIONS,

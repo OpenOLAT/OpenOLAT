@@ -3120,6 +3120,9 @@ create table o_ap_topic (
    lastmodified date not null,
    a_title varchar2(256),
    a_description varchar2(4000),
+   a_type varchar2(64) not null,
+   a_multi_participation number default 1 not null,
+   a_auto_confirmation number default 0 not null,
    fk_entry_id number(20) not null,
    a_sub_ident varchar2(64) not null,
    primary key (id)

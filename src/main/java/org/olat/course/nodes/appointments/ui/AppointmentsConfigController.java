@@ -42,13 +42,10 @@ import org.olat.modules.ModuleConfiguration;
  */
 public class AppointmentsConfigController extends FormBasicController {
 	
-	private static final String[] ON_KEYS = new String[] { "on" };
 	private static final String KEY_COACH = "role.coach";
 	private static final String[] EDIT_TOPIC_KEYS = new String[] { KEY_COACH };
 	private static final String[] EDIT_APPOINTMENT_KEYS = new String[] { KEY_COACH };
 
-	private MultipleSelectionElement multiParticipationEl;
-	private MultipleSelectionElement confirmationEl;
 	private MultipleSelectionElement editTopicEl;
 	private MultipleSelectionElement editAppointmentEl;
 	
@@ -62,20 +59,6 @@ public class AppointmentsConfigController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer generalCont = FormLayoutContainer.createDefaultFormLayout("general", getTranslator());
-		formLayout.add(generalCont);
-		generalCont.setFormTitle(translate("general"));
-		
-		multiParticipationEl = uifactory.addCheckboxesVertical("config.multi.participation", generalCont, ON_KEYS,
-				translateAll(getTranslator(), ON_KEYS), 1);
-		multiParticipationEl.select(multiParticipationEl.getKey(0), config.getBooleanSafe(AppointmentsCourseNode.CONFIG_MULTI_PARTICIPATIONS));
-		multiParticipationEl.addActionListener(FormEvent.ONCHANGE);
-		
-		confirmationEl = uifactory.addCheckboxesVertical("config.confirmation", generalCont, ON_KEYS,
-				translateAll(getTranslator(), ON_KEYS), 1);
-		confirmationEl.select(confirmationEl.getKey(0), config.getBooleanSafe(AppointmentsCourseNode.CONFIG_CONFIRMATION));
-		confirmationEl.addActionListener(FormEvent.ONCHANGE);
-		
 		FormLayoutContainer rightsCont = FormLayoutContainer.createDefaultFormLayout("rights", getTranslator());
 		formLayout.add(rightsCont);
 		rightsCont.setFormTitle(translate("user.rights"));
@@ -94,22 +77,12 @@ public class AppointmentsConfigController extends FormBasicController {
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == multiParticipationEl) {
-			doConfirmation(ureq);
-		} else if (source == confirmationEl) {
-			doConfirmation(ureq);
-		} else if (source == editTopicEl) {
+		if (source == editTopicEl) {
 			doUserRights(ureq);
 		} else if (source == editAppointmentEl) {
 			doUserRights(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
-	}
-	
-	private void doConfirmation(UserRequest ureq) {
-		config.setBooleanEntry(AppointmentsCourseNode.CONFIG_MULTI_PARTICIPATIONS, multiParticipationEl.isAtLeastSelected(1));
-		config.setBooleanEntry(AppointmentsCourseNode.CONFIG_CONFIRMATION, confirmationEl.isAtLeastSelected(1));
-		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 	}
 
 	private void doUserRights(UserRequest ureq) {

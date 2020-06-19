@@ -48,6 +48,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.appointments.Appointment;
+import org.olat.course.nodes.appointments.Appointment.Status;
 import org.olat.course.nodes.appointments.AppointmentSearchParams;
 import org.olat.course.nodes.appointments.AppointmentsSecurityCallback;
 import org.olat.course.nodes.appointments.AppointmentsService;
@@ -55,6 +56,8 @@ import org.olat.course.nodes.appointments.Organizer;
 import org.olat.course.nodes.appointments.Participation;
 import org.olat.course.nodes.appointments.ParticipationSearchParams;
 import org.olat.course.nodes.appointments.Topic;
+import org.olat.course.nodes.appointments.Topic.Type;
+import org.olat.course.nodes.appointments.TopicRef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,7 +83,6 @@ public class TopicsRunController extends BasicController implements Activateable
 	private final RepositoryEntry entry;
 	private final String subIdent;
 	private final AppointmentsSecurityCallback secCallback;
-	private final Configuration config;
 
 	private List<TopicWrapper> topics;
 	private int counter;
@@ -91,13 +93,12 @@ public class TopicsRunController extends BasicController implements Activateable
 	private UserManager userManager;
 
 	public TopicsRunController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
-			RepositoryEntry entry, String subIdent, AppointmentsSecurityCallback secCallback, Configuration config) {
+			RepositoryEntry entry, String subIdent, AppointmentsSecurityCallback secCallback) {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
 		this.entry = entry;
 		this.subIdent = subIdent;
 		this.secCallback = secCallback;
-		this.config = config;
 		
 		mainVC = createVelocityContainer("topics_run");
 		
@@ -126,27 +127,37 @@ public class TopicsRunController extends BasicController implements Activateable
 				.getOrganizers(entry, subIdent).stream()
 				.collect(Collectors.groupingBy(o -> o.getTopic().getKey()));
 		
-		AppointmentSearchParams aParams = new AppointmentSearchParams();
-		aParams.setEntry(entry);
-		aParams.setSubIdent(subIdent);
-		Map<Long, Long> topicKeyToAppointmentCount = appointmentsService.getTopicKeyToAppointmentCount(aParams, true);
+		AppointmentSearchParams freeAppointmentsParams = new AppointmentSearchParams();
+		freeAppointmentsParams.setEntry(entry);
+		freeAppointmentsParams.setSubIdent(subIdent);
+		Map<Long, Long> topicKeyToAppointmentCount = appointmentsService.getTopicKeyToAppointmentCount(freeAppointmentsParams, true);
 		
 		ParticipationSearchParams myParticipationsParams = new ParticipationSearchParams();
 		myParticipationsParams.setEntry(entry);
 		myParticipationsParams.setSubIdent(subIdent);
 		myParticipationsParams.setIdentity(getIdentity());
 		myParticipationsParams.setFetchAppointments(true);
-		Map<Long, List<Participation>> topicKeyToMyParticipation = appointmentsService
+		Map<Long, List<Participation>> topicKeyToMyEnrollmentParticipation = appointmentsService
 				.getParticipations(myParticipationsParams).stream()
 				.collect(Collectors.groupingBy(p -> p.getAppointment().getTopic().getKey()));
+		
+		List<Topic> topicsFinding = topics.stream()
+				.filter(topic -> Type.finding == topic.getType())
+				.collect(Collectors.toList());
+		
+		AppointmentSearchParams confirmedFindingsParams = new AppointmentSearchParams();
+		confirmedFindingsParams.setTopics(topicsFinding);
+		confirmedFindingsParams.setStatus(Status.confirmed);
+		Map<Long, List<Appointment>> topicKeyToFindingConfirmed = appointmentsService
+				.getAppointments(confirmedFindingsParams).stream()
+				.collect(Collectors.groupingBy(a -> a.getTopic().getKey()));
 		
 		List<TopicWrapper> wrappers = new ArrayList<>(topics.size());
 		for (Topic topic : topics) {
 			TopicWrapper wrapper = new TopicWrapper(topic);
 			List<Organizer> organizers = topicKeyToOrganizer.getOrDefault(topic.getKey(), emptyList());
 			wrapOrganizers(wrapper, organizers);
-			List<Participation> myTopicParticipations = topicKeyToMyParticipation.getOrDefault(topic.getKey(), emptyList());
-			wrapParticpations(wrapper, topic, myTopicParticipations, topicKeyToAppointmentCount);
+			wrapAppointment(wrapper, topicKeyToAppointmentCount, topicKeyToFindingConfirmed, topicKeyToMyEnrollmentParticipation);
 			wrappers.add(wrapper);
 		}
 		return wrappers;
@@ -169,8 +180,43 @@ public class TopicsRunController extends BasicController implements Activateable
 		}
 	}
 
-	private void wrapParticpations(TopicWrapper wrapper, Topic topic, List<Participation> myTopicParticipations,
-			Map<Long, Long> topicKeyToAppointmentCount) {
+	private void wrapAppointment(TopicWrapper wrapper, Map<Long, Long> topicKeyToAppointmentCount,
+			Map<Long, List<Appointment>> topicKeyToFindingConfirmed,
+			Map<Long, List<Participation>> topicKeyToMyEnrollmentParticipation) {
+		
+		Topic topic = wrapper.getTopic();
+		Long freeAppointments = topicKeyToAppointmentCount.getOrDefault(topic.getKey(), Long.valueOf(0));
+		wrapper.setFreeAppointments(freeAppointments);
+		
+		List<Participation> myTopicParticipations = topicKeyToMyEnrollmentParticipation.getOrDefault(topic.getKey(), emptyList());
+		wrapper.setSelectedAppointments(Integer.valueOf(myTopicParticipations.size()));
+		
+		if (Type.finding == topic.getType()) {
+			wrapFindindAppointment(wrapper, topicKeyToFindingConfirmed);
+		} else {
+			wrapEnrollmentAppointment(wrapper, myTopicParticipations);
+		}
+		
+		if (topic.isMultiParticipation()) {
+			wrapOpenLink(wrapper, topic, "appointments.select");
+		} else if (Type.finding == topic.getType()) {
+			wrapOpenLink(wrapper, topic, "appointment.select");
+		} else if (wrapper.getStatus() == null || wrapper.getStatus() == Status.planned) {
+			wrapOpenLink(wrapper, topic, "appointment.select");
+		}
+		
+		wrapMessage(wrapper);
+	}
+
+	private void wrapFindindAppointment(TopicWrapper wrapper, Map<Long, List<Appointment>> topicKeyToFindingConfirmed) {
+		List<Appointment> appointments = topicKeyToFindingConfirmed.getOrDefault(wrapper.getTopic().getKey(), emptyList());
+		if (!appointments.isEmpty()) {
+			Appointment appointment = appointments.get(0);
+			wrapAppointmentView(wrapper, appointment);
+		}
+	}
+
+	private void wrapEnrollmentAppointment(TopicWrapper wrapper, List<Participation> myTopicParticipations) {
 		if (!myTopicParticipations.isEmpty()) {
 			Date now = new Date();
 			Optional<Appointment> nextAppointment = myTopicParticipations.stream()
@@ -186,10 +232,7 @@ public class TopicsRunController extends BasicController implements Activateable
 						.findFirst().get(); // ... or the most recent one.
 			wrapper.setFuture(Boolean.valueOf(appointment.getStart().after(now)));
 			
-			forgeAppointmentView(wrapper, appointment);
-			
-			wrapper.setTranslatedStatus(translate("appointment.status." + appointment.getStatus().name()));
-			wrapper.setStatusCSS("o_ap_status_" + appointment.getStatus().name());
+			wrapAppointmentView(wrapper, appointment);
 			
 			ParticipationSearchParams allParticipationParams = new ParticipationSearchParams();
 			allParticipationParams.setAppointment(appointment);
@@ -200,25 +243,10 @@ public class TopicsRunController extends BasicController implements Activateable
 					.sorted(String.CASE_INSENSITIVE_ORDER)
 					.collect(Collectors.toList());
 			wrapper.setParticipants(participants);
-			
-			wrapper.setSelectedAppointments(Integer.valueOf(myTopicParticipations.size()));
-			
-			boolean canChange = config.isMultiParticipations()
-					? true
-					: Appointment.Status.planned == appointment.getStatus();
-			if (canChange) {
-				wrapOpenLink(wrapper, topic, "appointments.change");
-			}
-		} else {
-			Long freeAppointments = topicKeyToAppointmentCount.getOrDefault(topic.getKey(), Long.valueOf(0));
-			wrapper.setFreeAppointments(freeAppointments);
-			if (freeAppointments.longValue() > 0) {
-				wrapOpenLink(wrapper, topic, "appointments.select");
-			}
 		}
 	}
-	
-	private void forgeAppointmentView(TopicWrapper wrapper, Appointment appointment) {
+
+	private void wrapAppointmentView(TopicWrapper wrapper, Appointment appointment) {
 		Locale locale = getLocale();
 		Date begin = appointment.getStart();
 		Date end = appointment.getEnd();
@@ -265,13 +293,65 @@ public class TopicsRunController extends BasicController implements Activateable
 		String dayName = "day_" + counter++;
 		DateComponentFactory.createDateComponentWithYear(dayName, appointment.getStart(), mainVC);
 		wrapper.setDayName(dayName);
+		
+		wrapper.setStatus(appointment.getStatus());
+		wrapper.setTranslatedStatus(translate("appointment.status." + appointment.getStatus().name()));
+		wrapper.setStatusCSS("o_ap_status_" + appointment.getStatus().name());
 	}
-	
-	private void wrapOpenLink(TopicWrapper wrapper, Topic topic, String i18n) {
+
+	private void wrapOpenLink(TopicWrapper wrapper, TopicRef topic, String i18n) {
 		Link openLink = LinkFactory.createCustomLink("open" + counter++, CMD_OPEN, i18n, Link.LINK, mainVC, this);
 		openLink.setIconRightCSS("o_icon o_icon_start");
 		openLink.setUserObject(topic);
 		wrapper.setOpenLinkName(openLink.getComponentName());
+	}
+	
+	private void wrapMessage(TopicWrapper wrapper) {
+		Topic topic = wrapper.getTopic();
+		int selectedAppointments = wrapper.getSelectedAppointments() != null
+				? wrapper.getSelectedAppointments().intValue()
+				: 0;
+		Long freeAppointments = wrapper.getFreeAppointments();
+		Status status = wrapper.getStatus();
+		
+		List<String> messages = new ArrayList<>(2);
+		
+		if (selectedAppointments == 0) {
+			if (Type.finding != topic.getType()) {
+				if (freeAppointments != null) {
+					if (freeAppointments == 1) {
+						messages.add(translate("appointments.free.one"));
+					} else if (freeAppointments > 1) {
+						messages.add(translate("appointments.free", new String[] { freeAppointments.toString() }));
+					}
+				}
+			}
+			
+			if (freeAppointments != null && freeAppointments.longValue() == 0) {
+				messages.add(translate("appointments.free.no"));
+			} else if (topic.isMultiParticipation()) {
+				messages.add(translate("appointments.select.multi.message"));
+			} else {
+				messages.add(translate("appointments.select.one.message"));
+			}
+		} 
+		
+		if (selectedAppointments > 0) {
+			if (Type.finding == topic.getType()) {
+				if (status == null) {
+					messages.add(translate("appointments.selected.not.confirmed"));
+				}
+			} else {
+				if (topic.isMultiParticipation()) {
+					if (selectedAppointments > 1) {
+						messages.add(translate("appointments.selected", new String[] { String.valueOf(selectedAppointments) }));
+					}
+				}
+			}
+		}
+		
+		String message = messages.isEmpty()? null: messages.stream().collect(Collectors.joining("<br>"));
+		wrapper.setMessage(message);
 	}
 	
 	@Override
@@ -318,7 +398,7 @@ public class TopicsRunController extends BasicController implements Activateable
 	private void doOpenTopic(UserRequest ureq, Topic topic) {
 		removeAsListenerAndDispose(topicRunCtrl);
 		
-		topicRunCtrl = new AppointmentListSelectionController(ureq, getWindowControl(), topic, secCallback, config);
+		topicRunCtrl = new AppointmentListSelectionController(ureq, getWindowControl(), topic, secCallback);
 		listenTo(topicRunCtrl);
 		
 		String title = topic.getTitle();
@@ -355,8 +435,10 @@ public class TopicsRunController extends BasicController implements Activateable
 		private String time;
 		private String location;
 		private String details;
+		private Appointment.Status status;
 		private String translatedStatus;
 		private String statusCSS;
+		private String message;
 		private Long freeAppointments;
 		private Integer selectedAppointments;
 		private String openLinkName;
@@ -465,6 +547,14 @@ public class TopicsRunController extends BasicController implements Activateable
 			this.details = details;
 		}
 
+		public Appointment.Status getStatus() {
+			return status;
+		}
+
+		public void setStatus(Appointment.Status status) {
+			this.status = status;
+		}
+
 		public String getTranslatedStatus() {
 			return translatedStatus;
 		}
@@ -479,6 +569,14 @@ public class TopicsRunController extends BasicController implements Activateable
 
 		public void setStatusCSS(String statusCSS) {
 			this.statusCSS = statusCSS;
+		}
+
+		public String getMessage() {
+			return message;
+		}
+
+		public void setMessage(String message) {
+			this.message = message;
 		}
 
 		public Long getFreeAppointments() {

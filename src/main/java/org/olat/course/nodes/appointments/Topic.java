@@ -29,9 +29,9 @@ import org.olat.repository.RepositoryEntry;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface Topic extends ModifiedInfo, CreateInfo {
+public interface Topic extends TopicRef, ModifiedInfo, CreateInfo {
 	
-	public Long getKey();
+	public enum Type { enrollment, finding }
 	
 	public String getTitle();
 	
@@ -40,6 +40,18 @@ public interface Topic extends ModifiedInfo, CreateInfo {
 	public String getDescription();
 	
 	public void setDescription(String description);
+	
+	public Type getType();
+	
+	public void setType(Type type);
+	
+	public boolean isMultiParticipation();
+	
+	public void setMultiParticipation(boolean multiParticipation);
+	
+	public boolean isAutoConfirmation();
+	
+	public void setAutoConfirmation(boolean autoConfirmation);
 	
 	public RepositoryEntry getEntry();
 	

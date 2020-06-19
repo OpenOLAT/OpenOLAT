@@ -19,7 +19,10 @@
  */
 package org.olat.course.nodes.appointments;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.stream.Collectors;
 
 import org.olat.repository.RepositoryEntry;
 
@@ -32,7 +35,7 @@ import org.olat.repository.RepositoryEntry;
 public class AppointmentSearchParams {
 	
 	private Long appointmentKey;
-	private Topic topic;
+	private Collection<Long> topicKeys;
 	private RepositoryEntry entry;
 	private String subIdent;
 	private Date startAfter;
@@ -47,12 +50,18 @@ public class AppointmentSearchParams {
 		this.appointmentKey = appointment.getKey();
 	}
 
-	public Topic getTopic() {
-		return topic;
+	public Collection<Long> getTopicKeys() {
+		return topicKeys;
 	}
 	
-	public void setTopic(Topic topic) {
-		this.topic = topic;
+	public void setTopic(TopicRef topicRef) {
+		this.topicKeys = Collections.singleton(topicRef.getKey());
+	}
+	
+	public void setTopics(Collection<? extends TopicRef> topics) {
+		this.topicKeys = topics.stream()
+				.map(TopicRef::getKey)
+				.collect(Collectors.toSet());
 	}
 	
 	public RepositoryEntry getEntry() {

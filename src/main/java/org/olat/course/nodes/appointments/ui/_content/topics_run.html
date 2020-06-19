@@ -80,25 +80,9 @@
 						</div>
 					#end
 					
-					#if($r.isNotNull($topic.getFreeAppointments()))
+					#if($r.isNotNull($topic.getMessage()))
 						<div class="o_warning">
-							#if($topic.getFreeAppointments() == 0)
-								$r.translate("all.appointments.allocated")
-							#elseif($topic.getFreeAppointments() == 1)
-								$r.translate("appointments.free.one")
-							#else
-								$r.translate("appointments.free", $topic.getFreeAppointments().toString())
-							#end
-						</div>
-					#end
-					
-					#if($r.isNotNull($topic.getSelectedAppointments()))
-						<div class="o_warning o_selected_msg">
-							#if($topic.getFreeAppointments() == 1)
-								$r.translate("appointments.selected.one")
-							#else
-								$r.translate("appointments.selected", $topic.getSelectedAppointments().toString())
-							#end
+							$topic.getMessage()
 						</div>
 					#end
 					

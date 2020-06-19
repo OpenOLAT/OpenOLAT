@@ -20,9 +20,9 @@
 package org.olat.course.nodes.appointments.ui;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -30,11 +30,13 @@ import java.util.stream.Collectors;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.nodes.appointments.Appointment;
+import org.olat.course.nodes.appointments.Appointment.Status;
 import org.olat.course.nodes.appointments.AppointmentSearchParams;
 import org.olat.course.nodes.appointments.AppointmentsSecurityCallback;
 import org.olat.course.nodes.appointments.Participation;
 import org.olat.course.nodes.appointments.ParticipationSearchParams;
 import org.olat.course.nodes.appointments.Topic;
+import org.olat.course.nodes.appointments.Topic.Type;
 
 /**
  * 
@@ -43,10 +45,13 @@ import org.olat.course.nodes.appointments.Topic;
  *
  */
 public class AppointmentListEditController extends AppointmentListController {
+	
+	private final static List<String> FILTERS = singletonList(AppointmentDataModel.FILTER_FUTURE);
+	private final static List<String> FILTERS_DEFAULT = singletonList(AppointmentDataModel.FILTER_ALL);
 
 	protected AppointmentListEditController(UserRequest ureq, WindowControl wControl, Topic topic,
-			AppointmentsSecurityCallback secCallback, Configuration config) {
-		super(ureq, wControl, topic, secCallback, config);
+			AppointmentsSecurityCallback secCallback) {
+		super(ureq, wControl, topic, secCallback);
 	}
 
 	@Override
@@ -66,12 +71,12 @@ public class AppointmentListEditController extends AppointmentListController {
 
 	@Override
 	protected List<String> getFilters() {
-		return Collections.singletonList(AppointmentDataModel.FILTER_FUTURE);
+		return FILTERS;
 	}
 
 	@Override
 	protected List<String> getDefaultFilters() {
-		return Collections.singletonList(AppointmentDataModel.FILTER_ALL);
+		return FILTERS_DEFAULT;
 	}
 
 	@Override
@@ -84,6 +89,7 @@ public class AppointmentListEditController extends AppointmentListController {
 		AppointmentSearchParams searchParams = new AppointmentSearchParams();
 		searchParams.setTopic(topic);
 		searchParams.setFetchTopic(true);
+		
 		List<Appointment> appointments = appointmentsService.getAppointments(searchParams);
 		ParticipationSearchParams pParams = new ParticipationSearchParams();
 		pParams.setAppointments(appointments);
@@ -91,12 +97,13 @@ public class AppointmentListEditController extends AppointmentListController {
 				.getParticipations(pParams).stream()
 				.collect(Collectors.groupingBy(p -> p.getAppointment().getKey()));
 		
-		appointments.sort((a1, a2) -> a1.getStart().compareTo(a2.getStart()));
+		boolean anyConfirmed = appointments.stream()
+				.anyMatch(a -> Status.confirmed == a.getStatus());
 		
 		List<AppointmentRow> rows = new ArrayList<>(appointments.size());
 		for (Appointment appointment : appointments) {
 			List<Participation> participations = appointmentKeyToParticipations.getOrDefault(appointment.getKey(), emptyList());
-			AppointmentRow row = createRow(appointment, participations);
+			AppointmentRow row = createRow(appointment, participations, !anyConfirmed);
 			if (row != null) {
 				rows.add(row);
 			}
@@ -104,7 +111,7 @@ public class AppointmentListEditController extends AppointmentListController {
 		return rows;
 	}
 	
-	private AppointmentRow createRow(Appointment appointment, List<Participation> participations) {
+	private AppointmentRow createRow(Appointment appointment, List<Participation> participations, boolean noAppointmentConfirmed) {
 		AppointmentRow row = new AppointmentRow(appointment);
 		
 		forgeAppointmentView(row, appointment);
@@ -123,17 +130,31 @@ public class AppointmentListEditController extends AppointmentListController {
 				: null;
 		row.setFreeParticipations(freeParticipations);
 		
-		if (participations.size() > 0) {
+		boolean showStatus = Type.finding == topic.getType()
+				? Status.confirmed == appointment.getStatus()
+				: participations.size() > 0;
+		if (showStatus) {
 			row.setTranslatedStatus(translate("appointment.status." + appointment.getStatus().name()));
 			row.setStatusCSS("o_ap_status_" + appointment.getStatus().name());
 		}
-
-		if (participations.size() > 0) {
+		
+		boolean rebookable = Type.finding == topic.getType()
+				? false
+				: participations.size() > 0;
+		if (rebookable) {
 			forgeRebookLink(row);
 		}
-		if (config.isConfirmation()) {
-			boolean confirmable = Appointment.Status.planned == appointment.getStatus()
-					&& participations.size() > 0;
+		
+		if (Type.finding == topic.getType()) {
+			if (noAppointmentConfirmed) {
+				forgeConfirmLink(row, true);
+			} else if (Appointment.Status.confirmed == appointment.getStatus()) {
+				forgeConfirmLink(row, false);
+			}
+		} else if (!topic.isAutoConfirmation()) {
+			boolean confirmable = Type.finding == topic.getType()
+					? Appointment.Status.planned == appointment.getStatus()
+					: Appointment.Status.planned == appointment.getStatus() && participations.size() > 0;
 			boolean unconfirmable = Appointment.Status.confirmed == appointment.getStatus();
 			if (confirmable || unconfirmable) {
 				forgeConfirmLink(row, confirmable);

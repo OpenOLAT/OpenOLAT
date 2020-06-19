@@ -70,7 +70,6 @@ public abstract class AbstractRebookController extends FormBasicController {
 	private final DateFormat dateFormat;
 	private final Appointment currentAppointment;
 	private final List<Participation> participations;
-	private final Configuration config;
 	private String selectedAppointmentKey;
 	
 	@Autowired
@@ -78,11 +77,9 @@ public abstract class AbstractRebookController extends FormBasicController {
 	@Autowired
 	private UserManager userManager;
 
-	public AbstractRebookController(UserRequest ureq, WindowControl wControl, Appointment appointment,
-			Configuration config) {
+	public AbstractRebookController(UserRequest ureq, WindowControl wControl, Appointment appointment) {
 		super(ureq, wControl);
 		this.currentAppointment = appointment;
-		this.config = config;
 		
 		dateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, getLocale());
 		
@@ -276,7 +273,7 @@ public abstract class AbstractRebookController extends FormBasicController {
 					.collect(Collectors.toList());
 			Long appointmentKey = Long.valueOf(appointmentsEl.getSelectedKey());
 			appointmentsService.rebookParticipations(AppointmentRef.of(appointmentKey), participationRefs,
-					!config.isConfirmation());
+					currentAppointment.getTopic().isAutoConfirmation());
 		}
 		
 		onAfterRebooking();

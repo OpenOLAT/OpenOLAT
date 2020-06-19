@@ -3040,6 +3040,9 @@ create table o_ap_topic (
    lastmodified datetime not null,
    a_title varchar(256),
    a_description varchar(4000),
+   a_type varchar(64) not null,
+   a_multi_participation bool default true not null,
+   a_auto_confirmation bool default false not null,
    fk_entry_id bigint not null,
    a_sub_ident varchar(64) not null,
    primary key (id)

@@ -21,6 +21,7 @@ package org.olat.course.nodes.appointments.ui;
 
 import static org.olat.core.gui.components.util.KeyValues.VALUE_ASC;
 import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.util.ArrayHelper.emptyStrings;
 
 import java.time.DayOfWeek;
 import java.time.format.TextStyle;
@@ -38,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -55,6 +57,7 @@ import org.olat.course.nodes.appointments.AppointmentsSecurityCallback;
 import org.olat.course.nodes.appointments.AppointmentsService;
 import org.olat.course.nodes.appointments.Organizer;
 import org.olat.course.nodes.appointments.Topic;
+import org.olat.course.nodes.appointments.Topic.Type;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
@@ -69,11 +72,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TopicCreateController extends FormBasicController {
 	
+	private static final String KEY_MULTI_PARTICIPATION = "multi.participation";
+	private static final String KEY_COACH_CONFIRMATION = "coach.confirmation";
 	private static final String CMD_REMOVE = "remove";
 	private static final String CMD_ADD = "add";
 	
 	private TextElement titleEl;
 	private TextElement descriptionEl;
+	private SingleSelection typeEl;
+	private MultipleSelectionElement configurationEl;
 	private MultipleSelectionElement organizerEl;
 	private TextElement locationEl;
 	private TextElement maxParticipationsEl;
@@ -124,6 +131,17 @@ public class TopicCreateController extends FormBasicController {
 		
 		descriptionEl = uifactory.addTextAreaElement("topic.description", "topic.description", 2000, 3, 72, false,
 				false, null, formLayout);
+		
+		// Configs
+		KeyValues typeKV = new KeyValues();
+		typeKV.add(entry(Topic.Type.enrollment.name(), translate("topic.type.enrollment")));
+		typeKV.add(entry(Topic.Type.finding.name(), translate("topic.type.finding")));
+		typeEl = uifactory.addRadiosHorizontal("topic.type", formLayout, typeKV.keys(), typeKV.values());
+		typeEl.select(Topic.Type.enrollment.name(), true);
+		typeEl.addActionListener(FormEvent.ONCHANGE);
+		
+		configurationEl = uifactory.addCheckboxesVertical("topic.configuration", formLayout, emptyStrings(),
+				emptyStrings(), 1);
 		
 		// Organizer
 		KeyValues coachesKV = new KeyValues();
@@ -191,6 +209,19 @@ public class TopicCreateController extends FormBasicController {
 	}
 
 	private void updateUI() {
+		boolean enrollment = typeEl.isOneSelected() && Type.valueOf(typeEl.getSelectedKey()) != Type.finding;
+		
+		KeyValues configKV = new KeyValues();
+		configKV.add(entry(KEY_MULTI_PARTICIPATION, translate("topic.multi.participation")));
+		if (enrollment) {
+			configKV.add(entry(KEY_COACH_CONFIRMATION, translate("topic.coach.confirmation")));
+		}
+		configurationEl.setKeysAndValues(configKV.keys(), configKV.values());
+		configurationEl.select(KEY_MULTI_PARTICIPATION, true);
+		configurationEl.select(KEY_COACH_CONFIRMATION, true);
+
+		maxParticipationsEl.setVisible(enrollment);
+		
 		boolean recurring = recurringEl.isAtLeastSelected(1);
 		singleCont.setVisible(!recurring);
 		recurringFirstEl.setVisible(recurring);
@@ -200,7 +231,9 @@ public class TopicCreateController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == recurringEl) {
+		if (source == typeEl) {
+			updateUI();
+		} else if (source == recurringEl) {
 			updateUI();
 		} else if (source instanceof DateChooser) {
 			DateChooser dateChooser = (DateChooser)source;
@@ -232,7 +265,7 @@ public class TopicCreateController extends FormBasicController {
 		
 		maxParticipationsEl.clearError();
 		String maxParticipationsValue = maxParticipationsEl.getValue();
-		if (StringHelper.containsNonWhitespace(maxParticipationsValue)) {
+		if (maxParticipationsEl.isVisible() && StringHelper.containsNonWhitespace(maxParticipationsValue)) {
 			try {
 				int value = Integer.parseInt(maxParticipationsValue);
 				if (value < 1) {
@@ -339,6 +372,18 @@ public class TopicCreateController extends FormBasicController {
 		
 		String description = descriptionEl.getValue();
 		topic.setDescription(description);
+
+		Type type = typeEl.isOneSelected() ? Type.valueOf(typeEl.getSelectedKey()) : Type.enrollment;
+		topic.setType(type);
+		
+		Collection<String> configKeys = configurationEl.getSelectedKeys();
+		boolean multiParticipation = configKeys.contains(KEY_MULTI_PARTICIPATION);
+		topic.setMultiParticipation(multiParticipation);
+		
+		boolean autoConfirmation = Type.finding == type
+				? false
+				: !configKeys.contains(KEY_COACH_CONFIRMATION);
+		topic.setAutoConfirmation(autoConfirmation);
 		
 		topic = appointmentsService.updateTopic(topic);
 	}
@@ -378,11 +423,13 @@ public class TopicCreateController extends FormBasicController {
 				String location = locationEl.getValue();
 				appointment.setLocation(location);
 				
-				String maxParticipationsValue = maxParticipationsEl.getValue();
-				Integer maxParticipations = StringHelper.containsNonWhitespace(maxParticipationsValue)
-						? Integer.valueOf(maxParticipationsValue)
-						: null;
-				appointment.setMaxParticipations(maxParticipations);
+				if (maxParticipationsEl.isVisible()) {
+					String maxParticipationsValue = maxParticipationsEl.getValue();
+					Integer maxParticipations = StringHelper.containsNonWhitespace(maxParticipationsValue)
+							? Integer.valueOf(maxParticipationsValue)
+							: null;
+					appointment.setMaxParticipations(maxParticipations);
+				}
 				
 				appointmentsService.saveAppointment(appointment);
 			}
@@ -411,11 +458,13 @@ public class TopicCreateController extends FormBasicController {
 			String location = locationEl.getValue();
 			appointment.setLocation(location);
 			
-			String maxParticipationsValue = maxParticipationsEl.getValue();
-			Integer maxParticipations = StringHelper.containsNonWhitespace(maxParticipationsValue)
-					? Integer.valueOf(maxParticipationsValue)
-					: null;
-			appointment.setMaxParticipations(maxParticipations);
+			if (maxParticipationsEl.isVisible()) {
+				String maxParticipationsValue = maxParticipationsEl.getValue();
+				Integer maxParticipations = StringHelper.containsNonWhitespace(maxParticipationsValue)
+						? Integer.valueOf(maxParticipationsValue)
+						: null;
+				appointment.setMaxParticipations(maxParticipations);
+			}
 			
 			appointmentsService.saveAppointment(appointment);
 		}

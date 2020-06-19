@@ -43,15 +43,15 @@ public interface AppointmentsService {
 	
 	public void deleteTopics(RepositoryEntry entry, String subIdent);
 	
-	public void deleteTopic(Topic topic);
+	public void deleteTopic(TopicRef topic);
 	
 	public List<Topic> getTopics(RepositoryEntryRef entryRef, String subIdent);
 	
 	public Organizer createOrganizer(Topic topic, Identity identity);
 
-	public void deleteOrganizers(Topic topic, Collection<Organizer> organizers);
+	public void deleteOrganizers(TopicRef topic, Collection<Organizer> organizers);
 
-	public List<Organizer> getOrganizers(Topic topic);
+	public List<Organizer> getOrganizers(TopicRef topic);
 
 	public List<Organizer> getOrganizers(RepositoryEntry entry, String subIdent);
 	

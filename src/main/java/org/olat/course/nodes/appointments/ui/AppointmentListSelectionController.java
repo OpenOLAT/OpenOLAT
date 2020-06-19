@@ -23,6 +23,7 @@ import static java.util.Collections.emptyList;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -37,6 +38,7 @@ import org.olat.course.nodes.appointments.AppointmentsSecurityCallback;
 import org.olat.course.nodes.appointments.Participation;
 import org.olat.course.nodes.appointments.ParticipationSearchParams;
 import org.olat.course.nodes.appointments.Topic;
+import org.olat.course.nodes.appointments.Topic.Type;
 
 /**
  * 
@@ -45,10 +47,16 @@ import org.olat.course.nodes.appointments.Topic;
  *
  */
 public class AppointmentListSelectionController extends AppointmentListController {
+	
+	private final static List<String> FILTERS = Arrays.asList(
+			AppointmentDataModel.FILTER_PARTICIPATED,
+			AppointmentDataModel.FILTER_FUTURE);
+	private final static List<String> FILTERS_FINDING_DEFAULT = Collections.emptyList();
+	private final static List<String> FILTERS_ENROLLMENT_DEFAULT = FILTERS;
 
 	protected AppointmentListSelectionController(UserRequest ureq, WindowControl wControl, Topic topic,
-			AppointmentsSecurityCallback secCallback, Configuration config) {
-		super(ureq, wControl, topic, secCallback, config);
+			AppointmentsSecurityCallback secCallback) {
+		super(ureq, wControl, topic, secCallback);
 	}
 
 	@Override
@@ -68,12 +76,12 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 
 	@Override
 	protected List<String> getFilters() {
-		return Arrays.asList(AppointmentDataModel.FILTER_PARTICIPATED, AppointmentDataModel.FILTER_FUTURE);
+		return FILTERS;
 	}
 
 	@Override
 	protected List<String> getDefaultFilters() {
-		return Arrays.asList(AppointmentDataModel.FILTER_PARTICIPATED, AppointmentDataModel.FILTER_FUTURE);
+		return Type.finding == topic.getType()? FILTERS_FINDING_DEFAULT: FILTERS_ENROLLMENT_DEFAULT;
 	}
 
 	@Override
@@ -93,11 +101,18 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 				.getParticipations(pParams).stream()
 				.collect(Collectors.groupingBy(p -> p.getAppointment().getKey()));
 		
-		appointments.sort((a1, a2) -> a1.getStart().compareTo(a2.getStart()));
+		boolean noConfirmedAppointments = false;
+		if (Type.finding == topic.getType()) {
+			AppointmentSearchParams confirmedFindingsParams = new AppointmentSearchParams();
+			confirmedFindingsParams.setTopic(topic);
+			confirmedFindingsParams.setStatus(Status.confirmed);
+			noConfirmedAppointments = appointmentsService.getAppointmentCount(confirmedFindingsParams) == 0;
+		}
+		
 		List<AppointmentRow> rows = new ArrayList<>(appointments.size());
 		for (Appointment appointment : appointments) {
 			List<Participation> participations = appointmentKeyToParticipation.getOrDefault(appointment.getKey(), emptyList());
-			AppointmentRow row = getWrappedAppointment(appointment, participations);
+			AppointmentRow row = getWrappedAppointment(topic, appointment, participations, noConfirmedAppointments);
 			if (row != null) {
 				rows.add(row);
 			}
@@ -105,13 +120,14 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 		return rows;
 	}
 
-	private AppointmentRow getWrappedAppointment(Appointment appointment, List<Participation> participations) {
+	private AppointmentRow getWrappedAppointment(Topic topic, Appointment appointment,
+			List<Participation> participations, boolean noConfirmedAppointments) {
 		Optional<Participation> myParticipation = participations.stream()
 				.filter(p -> p.getIdentity().getKey().equals(getIdentity().getKey()))
 				.findFirst();
 		boolean selected = myParticipation.isPresent();
 		boolean confirmed = Status.confirmed == appointment.getStatus();
-		if (confirmed && !selected) {
+		if (Type.finding != topic.getType() && confirmed && !selected) {
 			return null;
 		}
 		
@@ -121,7 +137,7 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 		}
 		forgeAppointmentView(row, appointment);
 	
-		if (selected) {
+		if (selected || confirmed) {
 			row.setTranslatedStatus(translate("appointment.status." + appointment.getStatus().name()));
 			row.setStatusCSS("o_ap_status_" + appointment.getStatus().name());
 		}
@@ -132,23 +148,43 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 				.collect(Collectors.toList());
 		row.setParticipants(participants);
 		
-		Integer numberOfParticipations = Integer.valueOf(participations.size());
-		row.setNumberOfParticipations(numberOfParticipations);
-		Integer maxParticipations = appointment.getMaxParticipations();
-		Integer freeParticipations = maxParticipations != null
-				? maxParticipations.intValue() - participations.size()
-				: null;
-		row.setFreeParticipations(freeParticipations);
-
-		boolean selectable = false;
-		if (Appointment.Status.planned == appointment.getStatus()) {
-			selectable = freeParticipations == null // no limit
-					|| freeParticipations.intValue() > 0;
+		if (Type.finding == topic.getType()) {
+			if (noConfirmedAppointments || selected) {
+				forgeSelectionLink(row, selected, noConfirmedAppointments);
+			}
+		} else {
+			Integer numberOfParticipations = Integer.valueOf(participations.size());
+			row.setNumberOfParticipations(numberOfParticipations);
+			Integer maxParticipations = appointment.getMaxParticipations();
+			Integer freeParticipations = maxParticipations != null
+					? maxParticipations.intValue() - participations.size()
+					: null;
+			row.setFreeParticipations(freeParticipations);
+			
+			boolean selectable = Appointment.Status.confirmed == appointment.getStatus()
+					? false
+					: freeParticipations == null // no limit
+						|| freeParticipations.intValue() > 0;
+			
+			boolean unselectable = selected && Appointment.Status.planned == appointment.getStatus();
+			boolean enabled = selectable || unselectable;
+			if (enabled || selected) {
+				forgeSelectionLink(row, selected, enabled);
+			}
 		}
 		
-		boolean unselectable = selected && Appointment.Status.planned == appointment.getStatus();
-		
-		forgeSelectLink(row, selected, selectable, unselectable);
+		String selectionCSS = "";
+		if (selected) {
+			if (Appointment.Status.planned == appointment.getStatus()) {
+				selectionCSS = "o_ap_planned";
+			} else {
+				selectionCSS = "o_ap_confirmed";
+			}
+		}
+		if (Type.finding == topic.getType() && Appointment.Status.confirmed == appointment.getStatus()) {
+			selectionCSS = "o_ap_confirmed";
+		}
+		row.setSelectionCSS(selectionCSS);
 		
 		return row;
 	}

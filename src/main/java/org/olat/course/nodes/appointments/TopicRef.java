@@ -17,33 +17,16 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.appointments.ui;
+package org.olat.course.nodes.appointments;
 
 /**
  * 
- * Initial date: 13 May 2020<br>
+ * Initial date: 19 Jun 2020<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class Configuration {
-	
-	private boolean confirmation;
-	private boolean multiParticipations;
+public interface TopicRef {
 
-	public boolean isConfirmation() {
-		return confirmation;
-	}
-
-	public void setConfirmation(boolean confirmation) {
-		this.confirmation = confirmation;
-	}
-
-	public boolean isMultiParticipations() {
-		return multiParticipations;
-	}
-
-	public void setMultiParticipations(boolean multiParticipations) {
-		this.multiParticipations = multiParticipations;
-	}
+	Long getKey();
 
 }

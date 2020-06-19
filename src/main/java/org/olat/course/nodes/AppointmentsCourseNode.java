@@ -20,7 +20,6 @@
 package org.olat.course.nodes;
 
 import java.util.List;
-import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
@@ -30,7 +29,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
@@ -38,14 +36,12 @@ import org.olat.course.ICourse;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
-import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodes.appointments.AppointmentsSecurityCallback;
 import org.olat.course.nodes.appointments.AppointmentsSecurityCallbackFactory;
 import org.olat.course.nodes.appointments.AppointmentsService;
 import org.olat.course.nodes.appointments.ui.AppointmentsEditController;
 import org.olat.course.nodes.appointments.ui.AppointmentsRunController;
-import org.olat.course.nodes.appointments.ui.Configuration;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -70,8 +66,6 @@ public class AppointmentsCourseNode extends AbstractAccessableCourseNode {
 	
 	// configuration
 	private static final int CURRENT_VERSION = 1;
-	public static final String CONFIG_CONFIRMATION = "appointment.confirmation";
-	public static final String CONFIG_MULTI_PARTICIPATIONS = "multi.participations";
 	public static final String CONFIG_COACH_EDIT_TOPIC = "coach.edit.topic";
 	public static final String CONFIG_COACH_EDIT_APPOINTMENT = "coach.edit.appointment";
 
@@ -113,11 +107,8 @@ public class AppointmentsCourseNode extends AbstractAccessableCourseNode {
 		} else {
 			AppointmentsSecurityCallback secCallback = AppointmentsSecurityCallbackFactory
 					.create(getModuleConfiguration(), userCourseEnv);
-			Configuration config = new Configuration();
-			config.setConfirmation(getModuleConfiguration().getBooleanSafe(CONFIG_CONFIRMATION));
-			config.setMultiParticipations(getModuleConfiguration().getBooleanSafe(CONFIG_MULTI_PARTICIPATIONS));
 			RepositoryEntry entry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-			controller = new AppointmentsRunController(ureq, wControl, entry, getIdent(), secCallback, config);
+			controller = new AppointmentsRunController(ureq, wControl, entry, getIdent(), secCallback);
 		}
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, ICON_CSS);
 		return new NodeRunConstructionResult(ctrl);
@@ -153,23 +144,11 @@ public class AppointmentsCourseNode extends AbstractAccessableCourseNode {
 		ModuleConfiguration config = getModuleConfiguration();
 		
 		if (isNewNode) {
-			config.setBooleanEntry(CONFIG_CONFIRMATION, true);
-			config.setBooleanEntry(CONFIG_MULTI_PARTICIPATIONS, true);
 			config.setBooleanEntry(CONFIG_COACH_EDIT_TOPIC, true);
 			config.setBooleanEntry(CONFIG_COACH_EDIT_APPOINTMENT, true);
 		}
 		
 		config.setConfigurationVersion(CURRENT_VERSION);
-	}
-
-	@Override
-	public void updateOnPublish(Locale locale, ICourse course, Identity publisher, PublishEvents publishEvents) {
-		boolean autoConfirmation = !getModuleConfiguration().getBooleanSafe(CONFIG_CONFIRMATION);
-		if (autoConfirmation) {
-			RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-			CoreSpringFactory.getImpl(AppointmentsService.class).confirmAppointments(re, getIdent());
-		}
-		super.updateOnPublish(locale, course, publisher, publishEvents);
 	}
 
 	@Override

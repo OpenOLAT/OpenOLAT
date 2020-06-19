@@ -36,27 +36,16 @@
 				<div class="o_topic">
 					<div class="col-sm-6">
 						<div class="o_warning">
-							#if($r.isNull($topic.getTotalAppointments()) || $topic.getTotalAppointments() == 0)
-								$r.translate("no.appointments")
-							#else
-								$r.translate("participations.selected", $topic.getNumParticipants().toString(), $topic.getTotalAppointments().toString())
-							#end
-							
-							#if($r.isNotNull($topic.getConfirmableAppointments()))
-								<br>
-								#if($topic.getConfirmableAppointments() == 1) 
-									$r.translate("appointments.confirmable.one", $topic.getConfirmableAppointments().toString())
-								#else
-									$r.translate("appointments.confirmable", $topic.getConfirmableAppointments().toString())
-								#end
-							#end
+							$topic.getMessage()
 						</div>
 					</div>
 					
 					<div class="col-sm-6">
 						<div class="o_next_appointment">
 							#if($topic.getDayName())
-								<h5>$r.translate("appointment.next")</h5>
+								#if($r.isNotNull($topic.getFuture()))
+									<h5>#if($topic.getFuture())$r.translate("appointment.next")#else$r.translate("appointment.last")#end</h5>
+								#end
 								<div class="o_main_cont">
 									<div>
 										$r.render($topic.getDayName())

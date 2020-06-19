@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.date.DateComponentFactory;
@@ -32,6 +33,8 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -58,6 +61,7 @@ import org.olat.course.nodes.appointments.AppointmentsService;
 import org.olat.course.nodes.appointments.Organizer;
 import org.olat.course.nodes.appointments.ParticipationResult;
 import org.olat.course.nodes.appointments.Topic;
+import org.olat.course.nodes.appointments.Topic.Type;
 import org.olat.course.nodes.appointments.ui.AppointmentDataModel.AppointmentCols;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,7 +94,6 @@ public abstract class AppointmentListController extends FormBasicController impl
 
 	protected Topic topic;
 	protected final AppointmentsSecurityCallback secCallback;
-	protected final Configuration config;
 	
 	@Autowired
 	protected AppointmentsService appointmentsService;
@@ -98,11 +101,10 @@ public abstract class AppointmentListController extends FormBasicController impl
 	protected UserManager userManager;
 	
 	protected AppointmentListController(UserRequest ureq, WindowControl wControl, Topic topic,
-			AppointmentsSecurityCallback secCallback, Configuration config) {
+			AppointmentsSecurityCallback secCallback) {
 		super(ureq, wControl, "appointments_list");
 		this.topic = topic;
 		this.secCallback = secCallback;
-		this.config = config;
 
 		initForm(ureq);
 		updateModel();
@@ -167,8 +169,10 @@ public abstract class AppointmentListController extends FormBasicController impl
 		DefaultFlexiColumnModel detailsModel = new DefaultFlexiColumnModel(AppointmentCols.details);
 		detailsModel.setDefaultVisible(false);
 		columnsModel.addFlexiColumnModel(detailsModel);
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AppointmentCols.maxParticipations));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AppointmentCols.freeParticipations));
+		if (Type.finding != topic.getType()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AppointmentCols.maxParticipations));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AppointmentCols.freeParticipations));
+		}
 		DefaultFlexiColumnModel numberOfParticipationsModel = new DefaultFlexiColumnModel(AppointmentCols.numberOfParticipations);
 		numberOfParticipationsModel.setDefaultVisible(false);
 		columnsModel.addFlexiColumnModel(numberOfParticipationsModel);
@@ -182,9 +186,11 @@ public abstract class AppointmentListController extends FormBasicController impl
 			columnsModel.addFlexiColumnModel(selectModel);
 		}
 		if (canEdit()) {
-			DefaultFlexiColumnModel rebookModel = new DefaultFlexiColumnModel(AppointmentCols.rebook);
-			rebookModel.setExportable(false);
-			columnsModel.addFlexiColumnModel(rebookModel);
+			if (Type.finding != topic.getType()) {
+				DefaultFlexiColumnModel rebookModel = new DefaultFlexiColumnModel(AppointmentCols.rebook);
+				rebookModel.setExportable(false);
+				columnsModel.addFlexiColumnModel(rebookModel);
+			}
 			DefaultFlexiColumnModel confirmModel = new DefaultFlexiColumnModel(AppointmentCols.confirm);
 			confirmModel.setExportable(false);
 			columnsModel.addFlexiColumnModel(confirmModel);
@@ -209,6 +215,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 		tableEl.setRowRenderer(rowVC, this);
 		
 		initFilters();
+		initSorters();
 	}
 
 	protected void initFilters() {
@@ -240,6 +247,15 @@ public abstract class AppointmentListController extends FormBasicController impl
 			tableEl.setFilters("Filters", tableFilters, true);
 			tableEl.setSelectedFilters(selectedFilters);
 		}
+	}
+	
+	private void initSorters() {
+		List<FlexiTableSort> sorters = new ArrayList<>(8);
+		sorters.add(new FlexiTableSort(translate(AppointmentCols.start.i18nHeaderKey()), AppointmentCols.start.name()));
+		sorters.add(new FlexiTableSort(translate(AppointmentCols.numberOfParticipations.i18nHeaderKey()), AppointmentCols.numberOfParticipations.name()));
+		FlexiTableSortOptions options = new FlexiTableSortOptions(sorters);
+		options.setDefaultOrderBy(new SortKey(AppointmentCols.start.name(), true));
+		tableEl.setSortSettings(options);
 	}
 
 	private void updateModel() {
@@ -315,21 +331,9 @@ public abstract class AppointmentListController extends FormBasicController impl
 		row.setDayEl(dayEl);
 	}
 	
-	protected void forgeSelectLink(AppointmentRow row, boolean selected, boolean selectable, boolean unselectable) {
-		String selectionCSS;
-		if (selected && unselectable) {
-			selectionCSS = "o_ap_planned";
-		} else if (selected) {
-			selectionCSS = "o_ap_confirmed";
-		} else {
-			selectionCSS = "o_ap_selectable";
-		}
-		row.setSelectionCSS(selectionCSS);
-		
-		boolean enabled = selectable || unselectable;
-		boolean visible = selectable || unselectable || selected;
+	protected void forgeSelectionLink(AppointmentRow row, boolean selected, boolean enabled) {
 		String i18n = selected? "appointment.selected": "appointment.select";
-		FormLink link = uifactory.addFormLink("delete_" + row.getKey(), CMD_SELECT, i18n, null, null, Link.LINK);
+		FormLink link = uifactory.addFormLink("select_" + row.getKey(), CMD_SELECT, i18n, null, null, Link.LINK);
 		link.setUserObject(row);
 		if (selected) {
 			link.setIconLeftCSS("o_icon o_icon_lg o_icon_selected");
@@ -337,7 +341,6 @@ public abstract class AppointmentListController extends FormBasicController impl
 			link.setIconLeftCSS("o_icon o_icon_lg o_icon_unselected");
 		}
 		link.setEnabled(enabled);
-		link.setVisible(visible);
 		row.setSelectLink(link);
 	}
 
@@ -445,10 +448,10 @@ public abstract class AppointmentListController extends FormBasicController impl
 	
 	private void doToggleParticipation(UserRequest ureq, AppointmentRow row) {
 		if (row.getParticipation() == null) {
-			if (config.isConfirmation()) {
-				doCreateParticipation(row.getAppointment());
-			} else {
+			if (topic.isAutoConfirmation()) {
 				doSelfConfirmParticipation(ureq, row.getAppointment());
+			} else {
+				doCreateParticipation(row.getAppointment());
 			}
 		} else {
 			appointmentsService.deleteParticipation(row.getParticipation());
@@ -465,7 +468,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 
 	private void doCreateParticipation(Appointment appointment) {
 		ParticipationResult participationResult = appointmentsService.createParticipation(appointment, getIdentity(),
-				config.isMultiParticipations(), !config.isConfirmation());
+				topic.isMultiParticipation(), topic.isAutoConfirmation());
 		if (ParticipationResult.Status.ok != participationResult.getStatus()) {
 			showWarning("participation.not.created");
 		}
@@ -492,7 +495,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 	}
 	
 	private void doConfirmDeletion(UserRequest ureq, Appointment appointment) {
-		appointmentDeleteCtrl = new AppointmentDeleteController(ureq, getWindowControl(), appointment, config);
+		appointmentDeleteCtrl = new AppointmentDeleteController(ureq, getWindowControl(), appointment);
 		listenTo(appointmentDeleteCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), "close", appointmentDeleteCtrl.getInitialComponent(),
@@ -511,7 +514,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 	}
 	
 	private void doRebook(UserRequest ureq, Appointment appointment) {
-		rebookCtrl = new RebookController(ureq, getWindowControl(), appointment, config);
+		rebookCtrl = new RebookController(ureq, getWindowControl(), appointment);
 		listenTo(rebookCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), "close", rebookCtrl.getInitialComponent(),

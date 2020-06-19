@@ -44,7 +44,7 @@ public class AppointmentsRunController extends BasicController {
 	private final Controller topicsCtrl;
 
 	public AppointmentsRunController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, String subIdent,
-			AppointmentsSecurityCallback secCallback, Configuration config) {
+			AppointmentsSecurityCallback secCallback) {
 		super(ureq, wControl);
 		
 		VelocityContainer mainVC = createVelocityContainer("run");
@@ -53,9 +53,9 @@ public class AppointmentsRunController extends BasicController {
 		stackPanel.setInvisibleCrumb(3);
 		
 		if (secCallback.canSelectAppointments()) {
-			topicsCtrl = new TopicsRunController(ureq, wControl, stackPanel, entry, subIdent, secCallback, config);
+			topicsCtrl = new TopicsRunController(ureq, wControl, stackPanel, entry, subIdent, secCallback);
 		} else {
-			topicsCtrl = new TopicsRunCoachController(ureq, wControl, stackPanel, entry, subIdent, secCallback, config);
+			topicsCtrl = new TopicsRunCoachController(ureq, wControl, stackPanel, entry, subIdent, secCallback);
 		}
 		listenTo(topicsCtrl);
 		stackPanel.pushController("topics", topicsCtrl);

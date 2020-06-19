@@ -38,6 +38,7 @@ import org.olat.course.nodes.appointments.Appointment;
 import org.olat.course.nodes.appointments.AppointmentsService;
 import org.olat.course.nodes.appointments.ParticipationSearchParams;
 import org.olat.course.nodes.appointments.Topic;
+import org.olat.course.nodes.appointments.Topic.Type;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -70,6 +71,7 @@ public class AppointmentEditController extends FormBasicController {
 
 	public AppointmentEditController(UserRequest ureq, WindowControl wControl, Appointment appointment) {
 		super(ureq, wControl);
+		this.topic = appointment.getTopic();
 		this.appointment = appointment;
 		
 		ParticipationSearchParams params = new ParticipationSearchParams();
@@ -102,6 +104,7 @@ public class AppointmentEditController extends FormBasicController {
 				: null;
 		maxParticipationsEl = uifactory.addTextElement("appointment.max.participations", 5, maxParticipations,
 				formLayout);
+		maxParticipationsEl.setVisible(Type.finding != topic.getType());
 		
 		String details = appointment == null ? "" : appointment.getDetails();
 		detailsEl = uifactory.addTextAreaElement("appointment.details", "appointment.details", 2000, 4, 72, false,

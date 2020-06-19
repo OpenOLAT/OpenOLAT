@@ -35,7 +35,7 @@ import org.olat.repository.RepositoryEntry;
  */
 public class ParticipationSearchParams {
 	
-	private Topic topic;
+	private Collection<Long> topicKeys;
 	private RepositoryEntry entry;
 	private String subIdent;
 	private Identity identity;
@@ -51,12 +51,18 @@ public class ParticipationSearchParams {
 	private boolean fetchIdentities;
 	private boolean fetchUser;
 	
-	public Topic getTopic() {
-		return topic;
+	public Collection<Long> getTopicKeys() {
+		return topicKeys;
 	}
 	
-	public void setTopic(Topic topic) {
-		this.topic = topic;
+	public void setTopic(TopicRef topicRef) {
+		this.topicKeys = Collections.singleton(topicRef.getKey());
+	}
+	
+	public void setTopics(Collection<? extends TopicRef> topics) {
+		this.topicKeys = topics.stream()
+				.map(TopicRef::getKey)
+				.collect(Collectors.toSet());
 	}
 	
 	public RepositoryEntry getEntry() {

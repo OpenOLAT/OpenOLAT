@@ -38,6 +38,7 @@ import org.olat.course.nodes.appointments.Appointment;
 import org.olat.course.nodes.appointments.Appointment.Status;
 import org.olat.course.nodes.appointments.AppointmentSearchParams;
 import org.olat.course.nodes.appointments.Topic;
+import org.olat.course.nodes.appointments.TopicRef;
 import org.olat.course.nodes.appointments.model.AppointmentImpl;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -120,7 +121,7 @@ class AppointmentDAO {
 				.executeUpdate();	
 	}
 	
-	void delete(Topic topic) {
+	void delete(TopicRef topic) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("delete from appointment appointment");
 		sb.and().append(" appointment.topic.key = :topicKey");
@@ -238,8 +239,8 @@ class AppointmentDAO {
 		if (StringHelper.containsNonWhitespace(params.getSubIdent())) {
 			sb.and().append("topic.subIdent = :subIdent");
 		}
-		if (params.getTopic() != null) {
-			sb.and().append("appointment.topic.key = :topicKey");
+		if (params.getTopicKeys() != null && !params.getTopicKeys().isEmpty()) {
+			sb.and().append("appointment.topic.key in (:topicKeys)");
 		}
 		if (params.getStartAfter() != null) {
 			sb.and().append("appointment.start >= :startAfter");
@@ -259,8 +260,8 @@ class AppointmentDAO {
 		if (StringHelper.containsNonWhitespace(params.getSubIdent())) {
 			query.setParameter("subIdent", params.getSubIdent());
 		}
-		if (params.getTopic() != null) {
-			query.setParameter("topicKey", params.getTopic().getKey());
+		if (params.getTopicKeys() != null && !params.getTopicKeys().isEmpty()) {
+			query.setParameter("topicKeys", params.getTopicKeys());
 		}
 		if (params.getStartAfter() != null) {
 			query.setParameter("startAfter", params.getStartAfter());

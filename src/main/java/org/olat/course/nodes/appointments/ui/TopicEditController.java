@@ -22,7 +22,6 @@ package org.olat.course.nodes.appointments.ui;
 import static org.olat.core.gui.components.util.KeyValues.VALUE_ASC;
 import static org.olat.core.gui.components.util.KeyValues.entry;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -32,6 +31,7 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -41,11 +41,12 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
-import org.olat.course.nodes.appointments.AppointmentsSecurityCallback;
 import org.olat.course.nodes.appointments.AppointmentsService;
 import org.olat.course.nodes.appointments.Organizer;
+import org.olat.course.nodes.appointments.ParticipationSearchParams;
 import org.olat.course.nodes.appointments.Topic;
-import org.olat.repository.RepositoryEntry;
+import org.olat.course.nodes.appointments.Topic.Type;
+import org.olat.course.nodes.appointments.TopicRef;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
@@ -59,13 +60,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TopicEditController extends FormBasicController {
 	
+	private static final String KEY_MULTI_PARTICIPATION = "multi.participation";
+	private static final String KEY_COACH_CONFIRMATION = "coach.confirmation";
+	
 	private TextElement titleEl;
 	private TextElement descriptionEl;
+	private SingleSelection typeEl;
+	private MultipleSelectionElement configurationEl;
 	private MultipleSelectionElement organizerEl;
 	
-	private RepositoryEntry entry;
-	private String subIdent;
-	private AppointmentsSecurityCallback secCallback;
 	private Topic topic;
 	private List<Organizer> organizers;
 	private List<Identity> coaches;
@@ -77,32 +80,18 @@ public class TopicEditController extends FormBasicController {
 	@Autowired
 	private UserManager userManager;
 
-	public TopicEditController(UserRequest ureq, WindowControl wControl, AppointmentsSecurityCallback secCallback,
-			RepositoryEntry entry, String subIdent) {
+	public TopicEditController(UserRequest ureq, WindowControl wControl, Topic topic) {
 		super(ureq, wControl);
-		this.secCallback = secCallback;
-		this.entry = entry;
-		this.subIdent = subIdent;
-		organizers = new ArrayList<>();
-		coaches = repositoryService.getMembers(topic.getEntry(), RepositoryEntryRelationType.all,
-				GroupRoles.coach.name());
-
-		initForm(ureq);
-	}
-	
-	public TopicEditController(UserRequest ureq, WindowControl wControl, Topic topic,
-			AppointmentsSecurityCallback secCallback) {
-		super(ureq, wControl);
-		this.secCallback = secCallback;
 		this.topic = topic;
 		organizers = appointmentsService.getOrganizers(topic);
 		coaches = repositoryService.getMembers(topic.getEntry(), RepositoryEntryRelationType.all,
 				GroupRoles.coach.name());
 		
 		initForm(ureq);
+		updateUI();
 	}
 	
-	public Topic getTopic() {
+	public TopicRef getTopic() {
 		return topic;
 	}
 
@@ -119,6 +108,21 @@ public class TopicEditController extends FormBasicController {
 		String description = topic == null ? "" : topic.getDescription();
 		descriptionEl = uifactory.addTextAreaElement("topic.description", "topic.description", 2000, 4, 72, false,
 				false, description, formLayout);
+		
+		// Configs
+		KeyValues typeKV = new KeyValues();
+		typeKV.add(entry(Topic.Type.enrollment.name(), translate("topic.type.enrollment")));
+		typeKV.add(entry(Topic.Type.finding.name(), translate("topic.type.finding")));
+		typeEl = uifactory.addRadiosHorizontal("topic.type", formLayout, typeKV.keys(), typeKV.values());
+		typeEl.select(topic.getType().name(), true);
+		
+		KeyValues configKV = new KeyValues();
+		configKV.add(entry(KEY_MULTI_PARTICIPATION, translate("topic.multi.participation")));
+		configKV.add(entry(KEY_COACH_CONFIRMATION, translate("topic.coach.confirmation")));
+		configurationEl = uifactory.addCheckboxesVertical("topic.configuration", formLayout, configKV.keys(),
+				configKV.values(), 1);
+		configurationEl.select(KEY_MULTI_PARTICIPATION, topic.isMultiParticipation());
+		configurationEl.select(KEY_COACH_CONFIRMATION, !topic.isAutoConfirmation());
 		
 		// Organizers
 		KeyValues coachesKV = new KeyValues();
@@ -141,6 +145,15 @@ public class TopicEditController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 
+	private void updateUI() {
+		updateUI(isConfigChangeable());
+	}
+
+	private void updateUI(boolean configChangeable) {
+		typeEl.setEnabled(configChangeable);
+		configurationEl.setEnabled(configChangeable);
+	}
+	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
@@ -150,6 +163,14 @@ public class TopicEditController extends FormBasicController {
 			titleEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
+		
+		if (isConfigChanged() && !isConfigChangeable()) {
+				typeEl.select(topic.getType().name(), true);
+				configurationEl.select(KEY_MULTI_PARTICIPATION, topic.isMultiParticipation());
+				configurationEl.select(KEY_COACH_CONFIRMATION, !topic.isAutoConfirmation());
+				updateUI(false);
+				showWarning("error.config.not.changeable");
+			}
 		
 		return allOk;
 	}
@@ -167,20 +188,24 @@ public class TopicEditController extends FormBasicController {
 	}
 	
 	private void doSaveTopic() {
-		if (topic == null) {
-			topic = appointmentsService.createTopic(entry, subIdent);
-			Identity organizer = secCallback.getDefaultOrganizer();
-			if (organizer != null) {
-				appointmentsService.createOrganizer(topic, organizer);
-			}
-		}
-		
 		String title = titleEl.getValue();
 		topic.setTitle(title);
 		
 		String description = descriptionEl.getValue();
 		topic.setDescription(description);
 		
+		Type type = typeEl.isOneSelected() ? Type.valueOf(typeEl.getSelectedKey()) : Type.enrollment;
+		topic.setType(type);
+		
+		Collection<String> configKeys = configurationEl.getSelectedKeys();
+		boolean multiParticipation = configKeys.contains(KEY_MULTI_PARTICIPATION);
+		topic.setMultiParticipation(multiParticipation);
+		
+		boolean autoConfirmation = Type.finding == type
+				? false
+				: !configKeys.contains(KEY_COACH_CONFIRMATION);
+		topic.setAutoConfirmation(autoConfirmation);
+
 		topic = appointmentsService.updateTopic(topic);
 	}
 	
@@ -201,6 +226,26 @@ public class TopicEditController extends FormBasicController {
 		coaches.stream()
 				.filter(coach -> selectedOrganizerKeys.contains(coach.getKey().toString()))
 				.forEach(coach -> appointmentsService.createOrganizer(topic, coach));
+	}
+	
+	private boolean isConfigChanged() {
+		Type type = typeEl.isOneSelected() ? Type.valueOf(typeEl.getSelectedKey()) : Type.enrollment;
+		Collection<String> configKeys = configurationEl.getSelectedKeys();
+		boolean multiParticipation = configKeys.contains(KEY_MULTI_PARTICIPATION);
+		boolean autoConfirmation = Type.finding == type
+				? false
+				: !configKeys.contains(KEY_COACH_CONFIRMATION);
+		
+		return type != topic.getType()
+				|| multiParticipation != topic.isMultiParticipation()
+				|| autoConfirmation != topic.isAutoConfirmation();
+	}
+
+	private boolean isConfigChangeable() {
+		ParticipationSearchParams params = new ParticipationSearchParams();
+		params.setTopic(topic);
+		Long participationCount = appointmentsService.getParticipationCount(params);
+		return participationCount.longValue() == 0;
 	}
 
 	@Override

@@ -41,6 +41,7 @@ import org.olat.course.nodes.appointments.Organizer;
 import org.olat.course.nodes.appointments.Participation;
 import org.olat.course.nodes.appointments.ParticipationSearchParams;
 import org.olat.course.nodes.appointments.Topic;
+import org.olat.course.nodes.appointments.TopicRef;
 import org.olat.course.nodes.appointments.ui.AppointmentsRunController;
 import org.olat.repository.RepositoryManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,7 +73,7 @@ public class CalendarSyncher {
 	 * @param topic
 	 * @param appointments
 	 */
-	void syncCalendars(Topic topic, Collection<Appointment> appointments) {
+	void syncCalendars(TopicRef topic, Collection<Appointment> appointments) {
 		organizerDao.loadOrganizers(topic).stream()
 				.map(Organizer::getIdentity)
 				.forEach(identity -> syncCalendar(appointments, identity));
@@ -121,7 +122,7 @@ public class CalendarSyncher {
 	 * @param topic
 	 * @param appointments
 	 */
-	void unsyncCalendars(Topic topic, Collection<Appointment> appointments) {
+	void unsyncCalendars(TopicRef topic, Collection<Appointment> appointments) {
 		organizerDao.loadOrganizers(topic).stream()
 				.map(Organizer::getIdentity)
 				.forEach(identity -> unsyncCalendar(appointments, identity));

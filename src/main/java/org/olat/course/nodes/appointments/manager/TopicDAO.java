@@ -29,6 +29,8 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.appointments.Topic;
+import org.olat.course.nodes.appointments.Topic.Type;
+import org.olat.course.nodes.appointments.TopicRef;
 import org.olat.course.nodes.appointments.model.TopicImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -51,6 +53,9 @@ class TopicDAO {
 		TopicImpl topic = new TopicImpl();
 		topic.setCreationDate(new Date());
 		topic.setLastModified(topic.getCreationDate());
+		topic.setType(Type.enrollment);
+		topic.setMultiParticipation(true);
+		topic.setAutoConfirmation(false);
 		topic.setEntry(entry);
 		topic.setSubIdent(subIdent);
 		
@@ -80,7 +85,7 @@ class TopicDAO {
 		return topic;
 	}
 	
-	void delete(Topic topic) {
+	void delete(TopicRef topic) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("delete");
 		sb.append("  from appointmenttopic topic");

@@ -32,7 +32,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.appointments.Appointment;
 import org.olat.course.nodes.appointments.Participation;
 import org.olat.course.nodes.appointments.ParticipationSearchParams;
-import org.olat.course.nodes.appointments.Topic;
+import org.olat.course.nodes.appointments.TopicRef;
 import org.olat.course.nodes.appointments.model.ParticipationImpl;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,7 +82,7 @@ class ParticipationDAO {
 				.executeUpdate();
 	}
 	
-	public void delete(Topic topic) {
+	public void delete(TopicRef topic) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("delete");
 		sb.append("  from appointmentparticipation participation");
@@ -182,8 +182,8 @@ class ParticipationDAO {
 		if (StringHelper.containsNonWhitespace(params.getSubIdent())) {
 			sb.and().append("topic.subIdent = :subIdent");
 		}
-		if (params.getTopic() != null) {
-			sb.and().append("appointment.topic.key = :topicKey");
+		if (params.getTopicKeys() != null && !params.getTopicKeys().isEmpty()) {
+			sb.and().append("appointment.topic.key in (:topicKeys)");
 		}
 		if (params.getIdentity() != null ) {
 			sb.and().append("participation.identity.key = :identityKey");
@@ -218,8 +218,8 @@ class ParticipationDAO {
 		if (StringHelper.containsNonWhitespace(params.getSubIdent())) {
 			query.setParameter("subIdent", params.getSubIdent());
 		}
-		if (params.getTopic() != null) {
-				query.setParameter("topicKey", params.getTopic().getKey());
+		if (params.getTopicKeys() != null && !params.getTopicKeys().isEmpty()) {
+				query.setParameter("topicKeys", params.getTopicKeys());
 		}
 		if (params.getIdentity() != null) {
 			query.setParameter("identityKey", params.getIdentity().getKey());
@@ -257,7 +257,7 @@ class ParticipationDAO {
 
 	private boolean isJoinAppointments(ParticipationSearchParams params) {
 		return params.isFetchAppointments()
-				|| params.getTopic() != null
+				|| (params.getTopicKeys() != null && !params.getTopicKeys().isEmpty())
 				|| params.getStartAfter() != null
 				|| params.getStatus() != null
 				|| params.getStatusModifiedAfter() != null

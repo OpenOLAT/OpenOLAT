@@ -28,6 +28,8 @@ import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.course.nodes.appointments.Topic;
+import org.olat.course.nodes.appointments.Topic.Type;
+import org.olat.course.nodes.appointments.TopicRef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -59,6 +61,9 @@ public class TopicDAOTest extends OlatTestCase {
 		softly.assertThat(topic.getKey()).isNotNull();
 		softly.assertThat(topic.getCreationDate()).isNotNull();
 		softly.assertThat(topic.getLastModified()).isNotNull();
+		softly.assertThat(topic.getType()).isEqualTo(Topic.Type.enrollment);
+		softly.assertThat(topic.isMultiParticipation()).isTrue();
+		softly.assertThat(topic.isAutoConfirmation()).isFalse();
 		softly.assertThat(topic.getEntry()).isEqualTo(entry);
 		softly.assertThat(topic.getSubIdent()).isEqualTo(subIdent);
 		softly.assertAll();
@@ -106,7 +111,7 @@ public class TopicDAOTest extends OlatTestCase {
 	public void shouldLoadByKey() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = random();
-		Topic topic = sut.createTopic(entry, subIdent);
+		TopicRef topic = sut.createTopic(entry, subIdent);
 		dbInstance.commitAndCloseSession();
 		
 		Topic reloadedTopic = sut.loadByKey(topic.getKey());
@@ -125,6 +130,9 @@ public class TopicDAOTest extends OlatTestCase {
 		topic.setTitle(title);
 		String description = random();
 		topic.setDescription(description);
+		topic.setType(Type.finding);
+		topic.setAutoConfirmation(true);
+		topic.setMultiParticipation(false);
 		sut.updateTopic(topic);
 		dbInstance.commitAndCloseSession();
 		
@@ -133,6 +141,9 @@ public class TopicDAOTest extends OlatTestCase {
 		SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(topic.getTitle()).isEqualTo(title);
 		softly.assertThat(topic.getDescription()).isEqualTo(description);
+		softly.assertThat(topic.getType()).isEqualByComparingTo(Type.finding);
+		softly.assertThat(topic.isAutoConfirmation()).isTrue();
+		softly.assertThat(topic.isMultiParticipation()).isFalse();
 		softly.assertAll();
 	}
 	
@@ -153,6 +164,5 @@ public class TopicDAOTest extends OlatTestCase {
 				.containsExactlyInAnyOrder(topic1, topic2)
 				.doesNotContain(topicOtherEntry, topicOtherSubident);
 	}
-
 
 }

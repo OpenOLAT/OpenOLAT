@@ -33,6 +33,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.appointments.Organizer;
 import org.olat.course.nodes.appointments.Topic;
+import org.olat.course.nodes.appointments.TopicRef;
 import org.olat.course.nodes.appointments.model.OrganizerImpl;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,7 +75,7 @@ class OrganizerDAO {
 				.executeUpdate();
 	}
 	
-	void delete(Topic topic) {
+	void delete(TopicRef topic) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("delete");
 		sb.append("  from appointmentorganizer organizer");
@@ -121,7 +122,7 @@ class OrganizerDAO {
 		return organizers.isEmpty() ? null : organizers.get(0);
 	}
 
-	List<Organizer> loadOrganizers(Topic topic) {
+	List<Organizer> loadOrganizers(TopicRef topic) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select organizer");
 		sb.append("  from appointmentorganizer organizer");

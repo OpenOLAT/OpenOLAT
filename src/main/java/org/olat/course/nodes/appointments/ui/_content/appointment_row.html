@@ -86,11 +86,11 @@
 			</div>
 		</div>
 		
-		<div class="o_space"></div>
-		<div class="o_select_button">
-			#if($row.selectLinkName)
+		#if($row.selectLinkName)
+			<div class="o_space"></div>
+			<div class="o_select_button">
 				$r.render($row.selectLinkName)
-			#end
-		</div>
+			</div>
+		#end
 	</div>
 </div>

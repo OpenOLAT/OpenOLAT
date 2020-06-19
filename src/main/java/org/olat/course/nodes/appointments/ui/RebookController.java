@@ -33,8 +33,8 @@ import org.olat.course.nodes.appointments.Appointment;
  */
 public class RebookController extends AbstractRebookController {
 
-	public RebookController(UserRequest ureq, WindowControl wControl, Appointment appointment, Configuration config) {
-		super(ureq, wControl, appointment, config);
+	public RebookController(UserRequest ureq, WindowControl wControl, Appointment appointment) {
+		super(ureq, wControl, appointment);
 	}
 
 	@Override

@@ -23,6 +23,8 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -65,6 +67,13 @@ public class TopicImpl implements Persistable, Topic {
 	private String title;
 	@Column(name="a_description", nullable=true, insertable=true, updatable=true)
 	private String description;
+	@Enumerated(EnumType.STRING)
+	@Column(name="a_type", nullable=false, insertable=true, updatable=true)
+	private Type type;
+	@Column(name="a_multi_participation", nullable=false, insertable=true, updatable=true)
+	private boolean multiParticipation;
+	@Column(name="a_auto_confirmation", nullable=false, insertable=true, updatable=true)
+	private boolean autoConfirmation;
 	
 	@ManyToOne(targetEntity=RepositoryEntry.class, fetch=FetchType.LAZY, optional=true)
 	@JoinColumn(name="fk_entry_id", nullable=false, insertable=true, updatable=false)
@@ -119,6 +128,36 @@ public class TopicImpl implements Persistable, Topic {
 	@Override
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	@Override
+	public Type getType() {
+		return type;
+	}
+
+	@Override
+	public void setType(Type type) {
+		this.type = type;
+	}
+
+	@Override
+	public boolean isMultiParticipation() {
+		return multiParticipation;
+	}
+
+	@Override
+	public void setMultiParticipation(boolean multiParticipation) {
+		this.multiParticipation = multiParticipation;
+	}
+
+	@Override
+	public boolean isAutoConfirmation() {
+		return autoConfirmation;
+	}
+
+	@Override
+	public void setAutoConfirmation(boolean autoConfirmation) {
+		this.autoConfirmation = autoConfirmation;
 	}
 
 	@Override

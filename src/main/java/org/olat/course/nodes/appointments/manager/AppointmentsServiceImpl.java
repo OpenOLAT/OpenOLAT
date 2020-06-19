@@ -47,6 +47,7 @@ import org.olat.course.nodes.appointments.ParticipationRef;
 import org.olat.course.nodes.appointments.ParticipationResult;
 import org.olat.course.nodes.appointments.ParticipationSearchParams;
 import org.olat.course.nodes.appointments.Topic;
+import org.olat.course.nodes.appointments.TopicRef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -126,7 +127,7 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 	}
 	
 	@Override
-	public void deleteTopic(Topic topic) {
+	public void deleteTopic(TopicRef topic) {
 		AppointmentSearchParams params = new AppointmentSearchParams();
 		params.setTopic(topic);
 		params.setStartAfter(new Date());
@@ -159,7 +160,7 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 	}
 
 	@Override
-	public void deleteOrganizers(Topic topic, Collection<Organizer> organizers) {
+	public void deleteOrganizers(TopicRef topic, Collection<Organizer> organizers) {
 		AppointmentSearchParams params = new AppointmentSearchParams();
 		params.setTopic(topic);
 		params.setStatus(Status.confirmed);
@@ -175,7 +176,7 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 	}
 
 	@Override
-	public List<Organizer> getOrganizers(Topic topic) {
+	public List<Organizer> getOrganizers(TopicRef topic) {
 		return organizerDao.loadOrganizers(topic);
 	}
 
