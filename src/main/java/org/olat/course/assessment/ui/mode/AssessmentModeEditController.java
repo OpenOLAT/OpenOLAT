@@ -360,7 +360,8 @@ public class AssessmentModeEditController extends FormBasicController {
 		ipsEl.addActionListener(FormEvent.ONCHANGE);
 		ipsEl.setEnabled(status != Status.end);
 		String ipList = assessmentMode.getIpList();
-		ipListEl = uifactory.addTextAreaElement("mode.ips.list", "mode.ips.list", 4096, 4, 60, false, false, ipList, formLayout);
+		ipListEl = uifactory.addTextAreaElement("mode.ips.list", "mode.ips.list", 16000, 4, 60, false, false, ipList, formLayout);
+		ipListEl.setMaxLength(16000);
 		ipListEl.setVisible(assessmentMode.isRestrictAccessIps());
 		ipListEl.setEnabled(status != Status.end);
 		
@@ -369,7 +370,8 @@ public class AssessmentModeEditController extends FormBasicController {
 		safeExamBrowserEl.addActionListener(FormEvent.ONCHANGE);
 		safeExamBrowserEl.setEnabled(status != Status.end);
 		String key = assessmentMode.getSafeExamBrowserKey();
-		safeExamBrowserKeyEl = uifactory.addTextAreaElement("safeexamkey", "mode.safeexambrowser.key", 4096, 6, 60, false, false, key, formLayout);
+		safeExamBrowserKeyEl = uifactory.addTextAreaElement("safeexamkey", "mode.safeexambrowser.key", 16000, 6, 60, false, false, key, formLayout);
+		safeExamBrowserKeyEl.setMaxLength(16000);
 		safeExamBrowserKeyEl.setVisible(assessmentMode.isSafeExamBrowser());
 		safeExamBrowserKeyEl.setEnabled(status != Status.end);
 		String hint = assessmentMode.getSafeExamBrowserHint();
@@ -547,6 +549,9 @@ public class AssessmentModeEditController extends FormBasicController {
 			if(!StringHelper.containsNonWhitespace(value)) {
 				safeExamBrowserKeyEl.setErrorKey("form.legende.mandatory", null);
 				allOk &= false;
+			} else if(value.length() > safeExamBrowserKeyEl.getMaxLength()) {
+				safeExamBrowserKeyEl.setErrorKey("form.error.toolong", new String[] { Integer.toString(safeExamBrowserKeyEl.getMaxLength()) } );
+				allOk &= false;
 			}
 		}
 		
@@ -555,6 +560,9 @@ public class AssessmentModeEditController extends FormBasicController {
 			String value = ipListEl.getValue();
 			if(!StringHelper.containsNonWhitespace(value)) {
 				ipListEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			} else if(value.length() > ipListEl.getMaxLength()) {
+				ipListEl.setErrorKey("form.error.toolong", new String[] { Integer.toString(ipListEl.getMaxLength()) } );
 				allOk &= false;
 			}
 		}
