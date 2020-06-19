@@ -62,7 +62,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>1.8</targetJdk>
-		<org.springframework.version>5.2.2.RELEASE</org.springframework.version>
+		<org.springframework.version>5.2.7.RELEASE</org.springframework.version>
 		<org.hibernate.version>5.4.10.Final</org.hibernate.version>
 		<apache.cxf>3.3.4</apache.cxf>
 		<apache.pdfbox>2.0.18</apache.pdfbox>
