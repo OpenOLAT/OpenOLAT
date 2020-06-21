@@ -1,91 +1,72 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <infinispan
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="urn:infinispan:config:10.1 https://infinispan.org/schemas/infinispan-config-10.1.xsd"
-        xmlns="urn:infinispan:config:10.1">
+        xsi:schemaLocation="urn:infinispan:config:11.0 https://infinispan.org/schemas/infinispan-config-11.0.xsd"
+        xmlns="urn:infinispan:config:11.0">
 
 	<cache-container name="NonTransactionalCacheManager" default-cache="default">
-		<jmx duplicate-domains="true" />
 		<local-cache name="default" />
 
 		<local-cache name="MapperService@mapper" simple-cache="true" statistics="true" statistics-available="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<memory>
-				<object size="10000" strategy="REMOVE"/>
-			</memory>
+			<memory max-count="10000" when-full="REMOVE" />
 			<expiration max-idle="300000" interval="5000" />
 		</local-cache>
 
 		<local-cache name="OpenMeetingsManager@session" simple-cache="true" statistics="true" statistics-available="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<memory>
-				<object size="10000"  strategy="REMOVE" />
-			</memory>
+			<memory max-count="10000" when-full="REMOVE" />
 			<expiration max-idle="300000" interval="5000" />
 		</local-cache>
 		
 		<local-cache name="UserSessionManager@usersession" simple-cache="true" statistics="true" statistics-available="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<memory>
-				<object strategy="NONE" />
-			</memory>
+			<memory when-full="NONE" />
 			<expiration max-idle="-1" interval="5000" />
 		</local-cache>
 		
 		<local-cache name="VFSLockManager@lock-nulls" simple-cache="true" statistics="true" statistics-available="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<memory>
-				<object size="50000"  strategy="REMOVE" />
-			</memory>
+			<memory max-count="50000" when-full="REMOVE" />
 			<expiration max-idle="21600000" interval="5000" />
 		</local-cache>
 		
 		<local-cache name="VFSLockManager@file-locks" simple-cache="true" statistics="true" statistics-available="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<memory>
-				<object size="50000"  strategy="REMOVE" />
-			</memory>
+			<memory max-count="50000" when-full="REMOVE" />
 			<expiration max-idle="21600000" interval="5000" />
 		</local-cache>
 		
 		<local-cache name="CalendarManager@calendar" simple-cache="true" statistics="true" statistics-available="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<memory>
-				<object size="500"  strategy="REMOVE"/>
-			</memory>
+			<memory max-count="500" when-full="REMOVE" />
 			<expiration max-idle="900000" interval="5000" />
 		</local-cache>
 		
 		<local-cache name="AssessmentManager@newpersisting" simple-cache="true" statistics="true" statistics-available="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<memory>
-				<object size="20000" strategy="REMOVE" />
-			</memory>
+			<memory max-count="20000" when-full="REMOVE" />
 			<expiration max-idle="900000" interval="5000" />
 		</local-cache>
 		
 		<local-cache name="QTIHelper@QTI_xml_Documents" simple-cache="true" statistics="true" statistics-available="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<memory>
-				<object size="200" strategy="REMOVE" />
-			</memory>
+			<memory max-count="200" when-full="REMOVE" />
 			<expiration max-idle="180000" interval="15000" />
 		</local-cache>
 		
 		<local-cache name="WebDAVManager@webdav" simple-cache="true" statistics="true" statistics-available="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<memory>
-				<object size="2013" strategy="REMOVE" />
-			</memory>
+			<memory max-count="2013" when-full="REMOVE" />
 			<expiration max-idle="300000" interval="5000" />
 			<!-- max-idle same as session time out for WebDAV session in UserSessionManager -->
 		</local-cache>
@@ -93,117 +74,91 @@
 		<local-cache name="UserManager@username" simple-cache="true" statistics="true" statistics-available="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<memory>
-				<object size="20000" strategy="REMOVE" />
-			</memory>
+			<memory max-count="20000" when-full="REMOVE" />
 			<expiration max-idle="2700000" interval="15000" />
 		</local-cache>
 		
 		<local-cache name="UserManager@userfullname" simple-cache="true" statistics="true" statistics-available="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<memory>
-				<object size="20000" strategy="REMOVE" />
-			</memory>
+			<memory max-count="20000" when-full="REMOVE" />
 			<expiration max-idle="2700000" interval="15000" />
 		</local-cache>
 		
 		<local-cache name="Velocity@templates" simple-cache="true" statistics="true" statistics-available="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<memory>
-				<object size="7700" strategy="REMOVE" />
-			</memory>
+			<memory max-count="7700" when-full="NONE" />
 			<expiration max-idle="-1" lifespan="-1" interval="-1" />
 		</local-cache>
 		
 		<local-cache name="LoginModule@blockafterfailedattempts" simple-cache="true" statistics="true" statistics-available="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<memory>
-				<object size="10000" strategy="REMOVE" />
-			</memory>
+			<memory max-count="10000" when-full="REMOVE" />
 			<expiration max-idle="300000" lifespan="300000" interval="5000" />
 		</local-cache>
 		
 		<local-cache name="NotificationHelper@userPropertiesCache" simple-cache="true" statistics="true" statistics-available="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<memory>
-				<object size="2000" strategy="REMOVE" />
-			</memory>
+			<memory max-count="2000" when-full="REMOVE" />
 			<expiration max-idle="120000" interval="15000" />
 		</local-cache>
 		
 		<local-cache name="GlossaryItemManager@glossary" simple-cache="true" statistics="true" statistics-available="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<memory>
-				<object size="500" strategy="REMOVE" />
-			</memory>
+			<memory max-count="500" when-full="REMOVE" />
 			<expiration max-idle="3600000" interval="15000" />
 		</local-cache>
 		
 		<local-cache name="WikiManager@wiki" simple-cache="true" statistics="true" statistics-available="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<memory>
-				<object size="500" strategy="REMOVE" />
-			</memory>
+			<memory max-count="500" when-full="REMOVE" />
 			<expiration max-idle="3600000" interval="15000" />
 		</local-cache>
 		
 		<local-cache name="CollaborationToolsFactory@tools" simple-cache="true" statistics="true" statistics-available="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<memory>
-				<object size="5000" strategy="REMOVE" />
-			</memory>
+			<memory max-count="5000" when-full="REMOVE" />
 			<expiration max-idle="1800000" interval="15000" />
 		</local-cache>
 		
 		<local-cache name="CourseFactory@courses" simple-cache="true" statistics="true" statistics-available="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<memory>
-				<object size="1000" strategy="REMOVE" />
-			</memory>
+			<memory max-count="1500" when-full="REMOVE" />
 			<expiration max-idle="3600000" interval="15000" />
 		</local-cache>
 		
 		<local-cache name="ProjectBrokerManager@pb" simple-cache="true" statistics="true" statistics-available="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<memory>
-				<object size="100" strategy="REMOVE" />
-			</memory>
+			<memory max-count="100" when-full="REMOVE" />
 			<expiration max-idle="3600000" interval="15000" />
 		</local-cache>
 		
 		<local-cache name="Path@feed" simple-cache="true" statistics="true" statistics-available="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<memory>
-				<object size="5000" strategy="REMOVE" />
-			</memory>
+			<memory max-count="5000" when-full="REMOVE" />
 			<expiration max-idle="900000" interval="15000" />
 		</local-cache>
 		
 		<local-cache name="PdfService@delivery" simple-cache="true" statistics="true" statistics-available="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<memory>
-				<object size="50000" strategy="REMOVE" />
-			</memory>
+			<memory max-count="50000" when-full="REMOVE" />
 			<expiration max-idle="900000" interval="15000" />
 		</local-cache>
 		
 		<local-cache name="GradingService@courseElementsTitle" simple-cache="true" statistics="true" statistics-available="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<memory>
-				<object size="5000" strategy="REMOVE" />
-			</memory>
+			<memory max-count="5000" when-full="REMOVE" />
 			<expiration max-idle="3600000" interval="15000" />
 		</local-cache>
 		

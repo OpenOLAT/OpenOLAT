@@ -30,7 +30,6 @@ import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.eviction.EvictionStrategy;
-import org.infinispan.eviction.EvictionType;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.transaction.TransactionMode;
 import org.infinispan.util.concurrent.IsolationLevel;
@@ -74,13 +73,12 @@ public class InfinispanCacher implements Cacher {
 		if(conf == null) {
 			long maxEntries = 10000;
 			long maxIdle = 900000l;
-			
+	
 			ConfigurationBuilder builder = new ConfigurationBuilder();
 			builder.memory()
-				.evictionStrategy(EvictionStrategy.REMOVE)
-				.evictionType(EvictionType.COUNT)
-				.storageType(StorageType.OBJECT)
-				.size(maxEntries);
+				.whenFull(EvictionStrategy.REMOVE)
+				.storage(StorageType.HEAP)
+				.maxCount(maxEntries);
 			builder.expiration()
 				.maxIdle(maxIdle);
 			builder.transaction()
@@ -90,8 +88,9 @@ public class InfinispanCacher implements Cacher {
 				.useLockStriping(false)
 				.lockAcquisitionTimeout(15000)
 				.isolationLevel(IsolationLevel.READ_COMMITTED);
-			builder.jmxStatistics()
+			builder.statistics()
 				.enable();
+
 			Configuration configurationOverride = builder.build();
 			cacheManager.defineConfiguration(cacheName, configurationOverride);
 		}

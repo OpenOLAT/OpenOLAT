@@ -26,12 +26,11 @@
 package org.olat.admin.cache;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
-import org.apache.logging.log4j.Logger;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.StorageType;
@@ -40,23 +39,26 @@ import org.infinispan.stats.Stats;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBImpl;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.table.DefaultColumnDescriptor;
-import org.olat.core.gui.components.table.StaticColumnDescriptor;
-import org.olat.core.gui.components.table.Table;
-import org.olat.core.gui.components.table.TableController;
-import org.olat.core.gui.components.table.TableDataModel;
-import org.olat.core.gui.components.table.TableEvent;
-import org.olat.core.gui.components.table.TableGuiConfiguration;
-import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.Cacher;
 import org.olat.core.util.coordinate.CoordinatorManager;
 
@@ -69,14 +71,12 @@ import org.olat.core.util.coordinate.CoordinatorManager;
  *
  * @author Felix Jost 
  */
-public class AllCachesController extends BasicController {
-	
-	private static final Logger log = Tracing.createLoggerFor(AllCachesController.class);
-	
-	private VelocityContainer myContent;
-	private TableController tableCtr;
-	private TableDataModel<CacheInfos> tdm;
+public class AllCachesController extends FormBasicController {
+
 	private DialogBoxController dc;
+	
+	private CachesDataModel tableModel;
+	private FlexiTableElement tableEl;
 	
 	/**
 	 * @param ureq
@@ -84,71 +84,38 @@ public class AllCachesController extends BasicController {
 	 * 
 	 */
 	public AllCachesController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
-		//create page
-		myContent = createVelocityContainer("index");
+		super(ureq, wControl, "index");
 		
-		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setDownloadOffered(true);
-		tableConfig.setResultsPerPage(200);
-		
-		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());		
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.name", 0, null, getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.disk", 1, null, getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.hitcnt", 2, null, getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.mcexp", 3, null, getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.quickcount", 5, null, getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.tti", 6, null, getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.ttl", 7, null, getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.maxElements", 8, null, getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.clustered", 9, null, getLocale()));
-		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("empty", "cache.empty", translate("action.choose")));
-		listenTo(tableCtr);
-		myContent.contextPut("title", translate("caches.title"));
-		myContent.put("cachetable", tableCtr.getInitialComponent());
+		initForm(ureq);
 		loadModel();
-				
-		//returned panel is not needed here, because this controller only shows content with the index.html velocity page
-		putInitialPanel(myContent);
 	}
 	
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CacheCols.name));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CacheCols.offHeap));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CacheCols.hit));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CacheCols.miss));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CacheCols.size));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CacheCols.maxIdle));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CacheCols.lifespan));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CacheCols.maxEntries));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CacheCols.cacheMode));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("cache.empty", translate("action.choose"), "empty"));
+		
+		tableModel = new CachesDataModel(columnsModel, getLocale());
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 250, false, getTranslator(), formLayout);
+		tableEl.setAndLoadPersistedPreferences(ureq, "all-caches");
+		tableEl.setExportEnabled(true);
+		tableEl.setPageSize(250);
+	}
 
 	@Override
 	protected void doDispose() {
 		//
 	}
 	
-	@Override
-	public void event(UserRequest ureq, Component source, Event event) {
-		// 
-	}
-
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == tableCtr) {
-			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
-				TableEvent te = (TableEvent) event;
-				String actionid = te.getActionId();
-				if (actionid.equals("empty")) {
-					Object cacheInfos = tableCtr.getTableDataModel().getObject(te.getRowId());
-					dc = activateYesNoDialog(ureq, null, translate("confirm.emptycache"), dc);
-					dc.setUserObject(cacheInfos);
-				}
-			}
-		} else if (source == dc) {
-			if (DialogBoxUIFactory.isYesEvent(event)) {
-				String cacheName = null;
-				try {
-					CacheInfos cacheInfos = (CacheInfos)dc.getUserObject();
-					cacheInfos.clear();
-					loadModel();
-				} catch (IllegalStateException e) {
-					log.error("Cannot remove Cache:"+cacheName, e);
-				}	
-			}
-		}
-	}
-
 	private void loadModel() {
 		Set<String> names = new HashSet<>();
 		List<CacheInfos> infos = new ArrayList<>();
@@ -159,17 +126,17 @@ public class AllCachesController extends BasicController {
 			Cacher cacher = coordinator.getCoordinator().getCacher();
 			loadModel(infos, names, cacher.getCacheContainer());
 		} catch (Exception e) {
-			log.error("", e);
+			logError("", e);
 		}
 		
 		try {
 			loadModel(infos, names, ((DBImpl)DBFactory.getInstance()).getCacheContainer());
 		} catch (Exception e) {
-			log.error("", e);
+			logError("", e);
 		}
 
-		tdm = new AllCachesTableDataModel(infos);
-		tableCtr.setTableDataModel(tdm);
+		tableModel.setObjects(infos);
+		tableEl.reset(true, true, true);
 	}
 	
 	private void loadModel(List<CacheInfos> infos, Set<String> names, EmbeddedCacheManager cm) {
@@ -183,10 +150,48 @@ public class AllCachesController extends BasicController {
 		}
 		names.addAll(cacheNameSet);
 	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == dc) {
+			if (DialogBoxUIFactory.isYesEvent(event)) {
+				doClearCache((CacheInfos)dc.getUserObject());
+			}
+		}
+	}
+	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == tableEl) {
+			if (event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent) event;
+				if ("empty".equals(se.getCommand())) {
+					CacheInfos cacheInfos = tableModel.getObject(se.getIndex());
+					dc = activateYesNoDialog(ureq, null, translate("confirm.emptycache"), dc);
+					dc.setUserObject(cacheInfos);
+				}
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
+	}
+	
+	private void doClearCache(CacheInfos cacheInfos) {
+		try {
+			cacheInfos.clear();
+			loadModel();
+		} catch (IllegalStateException e) {
+			logError("Cannot clear cache", e);
+		}
+	}
 	
 	private static class CacheInfos {
 		private final String cname;
-		private final boolean binary;
+		private final boolean offHeap;
 		private final long hits;
 		private final long misses;
 		private final long size;
@@ -199,19 +204,19 @@ public class AllCachesController extends BasicController {
 
 		public CacheInfos(String cname, Cache<?,?> cache) {
 			this.cache = cache;
-			Stats stats = cache.getAdvancedCache().getStats();
-			
 			this.cname = cname;
+			
+			Stats stats = cache.getAdvancedCache().getStats();
 			
 			Configuration configuration = cache.getCacheConfiguration();
 			
-			binary = configuration.memory().storageType() == StorageType.BINARY;
+			offHeap = configuration.memory().storage() == StorageType.OFF_HEAP;
 			hits = stats.getHits();
 			misses = stats.getMisses();
 			size = cache.getAdvancedCache().size();
 			maxIdle = cache.getCacheConfiguration().expiration().maxIdle();
 			lifespan = cache.getCacheConfiguration().expiration().lifespan();
-			maxEntries = configuration.memory().size();
+			maxEntries = configuration.memory().maxCount();
 			cacheMode = cache.getCacheConfiguration().clustering().cacheModeString();
 		}
 		
@@ -219,8 +224,8 @@ public class AllCachesController extends BasicController {
 			return cname;
 		}
 		
-		public boolean isBinary() {
-			return binary;
+		public boolean isOffHeap() {
+			return offHeap;
 		}
 		
 		public long getHits() {
@@ -255,51 +260,83 @@ public class AllCachesController extends BasicController {
 			cache.clear();
 		}
 	}
-
-	private static class AllCachesTableDataModel implements TableDataModel<CacheInfos> {
-		private List<CacheInfos> cacheInfos;
-	  
-		protected AllCachesTableDataModel(List<CacheInfos> cacheInfos) {
-			this.cacheInfos = cacheInfos;
-		}
+	
+	private static class CachesDataModel extends DefaultFlexiTableDataModel<CacheInfos>
+	implements SortableFlexiTableDataModel<CacheInfos> {
+		private static final CacheCols[] COLS = CacheCols.values();
+		private final Locale locale;
 		
+		public CachesDataModel(FlexiTableColumnModel columnModel, Locale locale) {
+			super(columnModel);
+			this.locale = locale;
+		}	
+
 		@Override
-		public CacheInfos getObject(int row) {
-			return cacheInfos.get(row);
-		}
-	
-		@Override
-		public void setObjects(List<CacheInfos> objects) {
-			this.cacheInfos = objects;
-		}
-	
-		@Override
-		public AllCachesTableDataModel createCopyWithEmptyList() {
-			return new AllCachesTableDataModel(Collections.<CacheInfos>emptyList());
-		}
-	
-		public int getColumnCount() {
-			return 9;
-		}
-	
-		public int getRowCount() {
-			return cacheInfos.size();
-		}
-	
-		public Object getValueAt(int row, int col) {
-			CacheInfos c = getObject(row);
-			switch(col) {
-				case 0: return c.getCname();
-				case 1: return c.isBinary();
-				case 2: return c.getHits();
-				case 3: return c.getMisses();
-				case 5: return c.getSize();
-				case 6: return c.getMaxIdle();
-				case 7: return c.getLifespan();
-				case 8: return c.getMaxEntries();
-				case 9: return c.getCacheMode();
-				default: return "";
+		public void sort(SortKey orderBy) {
+			if(orderBy != null) {
+				List<CacheInfos> views = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+				super.setObjects(views);
 			}
+		}
+
+		@Override
+		public Object getValueAt(int row, int col) {
+			CacheInfos infos = getObject(row);
+			return getValueAt(infos, col);
+		}
+
+		@Override
+		public Object getValueAt(CacheInfos c, int col) {
+			switch(COLS[col]) {
+				case name: return c.getCname();
+				case offHeap: return c.isOffHeap();
+				case hit: return c.getHits();
+				case miss: return c.getMisses();
+				case size: return c.getSize();
+				case maxIdle: return c.getMaxIdle();
+				case lifespan: return c.getLifespan();
+				case maxEntries: return c.getMaxEntries();
+				case cacheMode: return c.getCacheMode();
+				default: return "ERROR";
+			}
+		}
+
+		@Override
+		public DefaultFlexiTableDataModel<CacheInfos> createCopyWithEmptyList() {
+			return new CachesDataModel(getTableColumnModel(), locale);
+		}
+	}
+
+	public enum CacheCols implements FlexiSortableColumnDef {
+		name("cache.name"),
+		offHeap("cache.off.heap"),
+		hit("cache.hitcnt"),
+		miss("cache.mcexp"),
+		size("cache.quickcount"),
+		maxIdle("cache.tti"),
+		lifespan("cache.ttl"),
+		maxEntries("cache.maxElements"),
+		cacheMode("cache.clustered");
+		
+		private final String i18nKey;
+		
+		private CacheCols(String i18nKey) {
+			this.i18nKey = i18nKey;
+		}
+
+		@Override
+		public String i18nHeaderKey() {
+			return i18nKey;
+		}
+
+		@Override
+		public boolean sortable() {
+			return true;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
 		}
 	}
 }
