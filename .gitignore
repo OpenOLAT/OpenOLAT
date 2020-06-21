@@ -38,3 +38,17 @@ src/test/java/org/olat/selenium/SeleniumTest.java
 
 **/*/.sass-cache
 
+### Maven ###
+target/
+
+# https://github.com/takari/maven-wrapper#usage-without-binary-jar
+.mvn/wrapper/maven-wrapper.jar
+
+### IntelliJ ###
+# include Intelij artifacts
+# according to https://stackoverflow.com/questions/5533050/gitignore-exclude-folder-but-include-specific-subfolder
+!.idea/
+.idea/*
+!.idea/runConfigurations/
+
+*.iml
