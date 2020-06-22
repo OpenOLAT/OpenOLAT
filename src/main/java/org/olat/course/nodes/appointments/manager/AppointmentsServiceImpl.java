@@ -24,11 +24,14 @@ import static java.util.Collections.singletonList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.Group;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
@@ -48,6 +51,7 @@ import org.olat.course.nodes.appointments.ParticipationResult;
 import org.olat.course.nodes.appointments.ParticipationSearchParams;
 import org.olat.course.nodes.appointments.Topic;
 import org.olat.course.nodes.appointments.TopicRef;
+import org.olat.course.nodes.appointments.TopicToGroup;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,6 +70,8 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 	private TopicDAO topicDao;
 	@Autowired
 	private OrganizerDAO organizerDao;
+	@Autowired
+	private TopicToGroupDAO topicToGroupDao;
 	@Autowired
 	private AppointmentDAO appointmentDao;
 	@Autowired
@@ -103,6 +109,11 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 	public List<Topic> getTopics(RepositoryEntryRef entryRef, String subIdent) {
 		return topicDao.loadTopics(entryRef, subIdent);
 	}
+	
+	@Override
+	public List<Topic> getRestictedTopic(RepositoryEntryRef entry, String subIdent, IdentityRef identity) {
+		return topicToGroupDao.loadRestrictedTopics(entry, subIdent, identity);
+	}
 
 	@Override
 	public void deleteTopics(RepositoryEntry entry, String subIdent) {
@@ -122,6 +133,7 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 		
 		participationDao.delete(entry, subIdent);
 		appointmentDao.delete(entry, subIdent);
+		topicToGroupDao.delete(entry, subIdent);
 		organizerDao.delete(entry, subIdent);
 		topicDao.delete(entry, subIdent);
 	}
@@ -141,6 +153,7 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 		
 		participationDao.delete(topic);
 		appointmentDao.delete(topic);
+		topicToGroupDao.delete(topic);
 		organizerDao.delete(topic);
 		topicDao.delete(topic);
 	}
@@ -183,6 +196,37 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 	@Override
 	public List<Organizer> getOrganizers(RepositoryEntry entry, String subIdent) {
 		return organizerDao.loadOrganizers(entry, subIdent);
+	}
+
+	@Override
+	public void restrictTopic(Topic topic, List<Group> groups) {
+		List<TopicToGroup> topicToGroups = topicToGroupDao.load(topic);
+		for (Group group : groups) {
+			boolean found = false;
+			for (TopicToGroup topicToGroup : topicToGroups) {
+				if (topicToGroup.getGroup().equals(group)) {
+					found = true;
+					break;
+				}
+			}
+			
+			if (!found) {
+				TopicToGroup topicToGroup = topicToGroupDao.create(topic, group);
+				topicToGroups.add(topicToGroup);
+			}
+		}
+		
+		for (Iterator<TopicToGroup> lectureToGroupIt = topicToGroups.iterator(); lectureToGroupIt.hasNext(); ) {
+			TopicToGroup topicToGroup= lectureToGroupIt.next();
+			if (!groups.contains(topicToGroup.getGroup())) {
+				topicToGroupDao.delete(topicToGroup);
+			}
+		}
+	}
+	
+	@Override
+	public List<Group> getGroupRestrictions(TopicRef topic) {
+		return topicToGroupDao.loadGroups(topic);
 	}
 
 	@Override

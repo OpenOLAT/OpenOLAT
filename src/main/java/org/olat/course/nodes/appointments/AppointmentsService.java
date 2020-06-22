@@ -23,6 +23,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.basesecurity.Group;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
@@ -46,6 +48,16 @@ public interface AppointmentsService {
 	public void deleteTopic(TopicRef topic);
 	
 	public List<Topic> getTopics(RepositoryEntryRef entryRef, String subIdent);
+
+	/**
+	 * Get the topics to which the identity has access.
+	 *
+	 * @param entry
+	 * @param subIdent
+	 * @param identity
+	 * @return
+	 */
+	public List<Topic> getRestictedTopic(RepositoryEntryRef entry, String subIdent, IdentityRef identity);
 	
 	public Organizer createOrganizer(Topic topic, Identity identity);
 
@@ -54,6 +66,10 @@ public interface AppointmentsService {
 	public List<Organizer> getOrganizers(TopicRef topic);
 
 	public List<Organizer> getOrganizers(RepositoryEntry entry, String subIdent);
+	
+	public void restrictTopic(Topic topic, List<Group> groups);
+	
+	public List<Group> getGroupRestrictions(TopicRef topic);
 	
 	public Appointment createUnsavedAppointment(Topic topic);
 

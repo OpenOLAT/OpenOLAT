@@ -99,6 +99,7 @@
 		<class>org.olat.course.nodes.appointments.model.OrganizerImpl</class>
 		<class>org.olat.course.nodes.appointments.model.ParticipationImpl</class>
 		<class>org.olat.course.nodes.appointments.model.TopicImpl</class>
+		<class>org.olat.course.nodes.appointments.model.TopicToGroupImpl</class>
 		<class>org.olat.course.nodes.cl.model.DBCheckbox</class>
 		<class>org.olat.course.nodes.cl.model.DBCheck</class>
 		<class>org.olat.course.nodes.dialog.model.DialogElementImpl</class>

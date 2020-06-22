@@ -3079,6 +3079,14 @@ create table o_ap_organizer (
    primary key (id)
 );
 
+create table o_ap_topic_to_group (
+   id bigserial,
+   creationdate timestamp not null,
+   fk_topic_id int8 not null,
+   fk_group_id int8 not null,
+   primary key (id)
+);
+
 create table o_ap_appointment (
    id bigserial,
    creationdate timestamp not null,
@@ -4214,6 +4222,10 @@ alter table o_ap_organizer add constraint ap_organizer_topic_idx foreign key (fk
 create index idx_ap_organizer_topic_idx on o_ap_organizer(fk_topic_id);
 alter table o_ap_organizer add constraint ap_organizer_identity_idx foreign key (fk_identity_id) references o_bs_identity (id);
 create index idx_ap_organizer_identitiy_idx on o_ap_organizer(fk_identity_id);
+alter table o_ap_topic_to_group add constraint ap_tg_topic_idx foreign key (fk_topic_id) references o_ap_topic (id);
+create index idx_ap_tg_topic_idx on o_ap_topic_to_group(fk_topic_id);
+alter table o_ap_topic_to_group add constraint ap_tg_group_idx foreign key (fk_group_id) references o_bs_group (id);
+create index idx_ap_tg_group_idx on o_ap_topic_to_group(fk_group_id);
 alter table o_ap_appointment add constraint ap_appointment_topic_idx foreign key (fk_topic_id) references o_ap_topic (id);
 create index idx_ap_appointment_topic_idx on o_ap_appointment(fk_topic_id);
 alter table o_ap_participation add constraint ap_part_appointment_idx foreign key (fk_appointment_id) references o_ap_appointment (id);

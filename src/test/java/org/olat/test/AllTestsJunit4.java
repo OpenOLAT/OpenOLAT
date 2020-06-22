@@ -183,6 +183,7 @@ import org.junit.runners.Suite;
 	org.olat.course.nodes.appointments.manager.OrganizerDAOTest.class,
 	org.olat.course.nodes.appointments.manager.ParticipationDAOTest.class,
 	org.olat.course.nodes.appointments.manager.TopicDAOTest.class,
+	org.olat.course.nodes.appointments.manager.TopicToGroupDAOTest.class,
 	org.olat.course.nodes.dialog.manager.DialogElementsManagerTest.class,
 	org.olat.course.nodes.en.EnrollmentManagerSerialTest.class,
 	org.olat.course.nodes.en.EnrollmentManagerConcurrentTest.class,

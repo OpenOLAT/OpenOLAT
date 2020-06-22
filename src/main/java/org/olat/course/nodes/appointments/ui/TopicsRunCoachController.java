@@ -77,6 +77,7 @@ public class TopicsRunCoachController extends BasicController {
 	private static final String CMD_OPEN = "open";
 	private static final String CMD_EDIT = "edit";
 	private static final String CMD_DELETE = "delete";
+	private static final String CMD_GROUPS = "group";
 
 	private final VelocityContainer mainVC;
 	private Link createButton;
@@ -85,6 +86,7 @@ public class TopicsRunCoachController extends BasicController {
 	private CloseableModalController cmc;
 	private TopicCreateController topicCreateCtrl;
 	private TopicEditController topicEditCtrl;
+	private GroupsEditController groupsEditCtrl;
 	private DialogBoxController confirmDeleteTopicCrtl;
 	private AppointmentListEditController topicRunCtrl;
 	private ContextualSubscriptionController subscriptionCtrl;
@@ -168,6 +170,7 @@ public class TopicsRunCoachController extends BasicController {
 		Map<Long, List<Participation>> appointmentKeyToParticipations = participations.stream()
 				.collect(Collectors.groupingBy(p -> p.getAppointment().getKey()));
 		
+		topics.sort((t1, t2) -> t1.getTitle().toLowerCase().compareTo(t2.getTitle().toLowerCase()));
 		List<TopicWrapper> wrappers = new ArrayList<>(topics.size());
 		for (Topic topic : topics) {
 			TopicWrapper wrapper = new TopicWrapper(topic);
@@ -353,6 +356,11 @@ public class TopicsRunCoachController extends BasicController {
 		editorLink.setUserObject(wrapper.getTopic());
 		dropdown.addComponent(editorLink);
 		
+		Link groupLink = LinkFactory.createCustomLink("group_" + counter++, CMD_GROUPS, "edit.groups", Link.LINK, mainVC, this);
+		groupLink.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
+		groupLink.setUserObject(wrapper.getTopic());
+		dropdown.addComponent(groupLink);
+		
 		Link deleteLink = LinkFactory.createCustomLink("delete_" + counter++, CMD_DELETE, "delete.topic", Link.LINK, mainVC, this);
 		deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete");
 		deleteLink.setUserObject(wrapper.getTopic());
@@ -377,6 +385,9 @@ public class TopicsRunCoachController extends BasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if (groupsEditCtrl == source) {
+			cmc.deactivate();
+			cleanUp();
 		} else if (source == confirmDeleteTopicCrtl) {
 			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
 				TopicRef topic = (TopicRef)confirmDeleteTopicCrtl.getUserObject();
@@ -394,9 +405,11 @@ public class TopicsRunCoachController extends BasicController {
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(topicCreateCtrl);
+		removeAsListenerAndDispose(groupsEditCtrl);
 		removeAsListenerAndDispose(topicRunCtrl);
 		removeAsListenerAndDispose(cmc);
 		topicCreateCtrl = null;
+		groupsEditCtrl = null;
 		topicRunCtrl = null;
 		cmc = null;
 	}
@@ -414,6 +427,9 @@ public class TopicsRunCoachController extends BasicController {
 			} else if (CMD_EDIT.equals(cmd)) {
 				Topic topic = (Topic)link.getUserObject();
 				doEditTopic(ureq, topic);
+			} else if (CMD_GROUPS.equals(cmd)) {
+				Topic topic = (Topic)link.getUserObject();
+				doEditGroups(ureq, topic);
 			} else if (CMD_DELETE.equals(cmd)) {
 				TopicRef topic = (TopicRef)link.getUserObject();
 				doConfirmDeleteTopic(ureq, topic);
@@ -449,6 +465,16 @@ public class TopicsRunCoachController extends BasicController {
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", topicEditCtrl.getInitialComponent(), true,
 				translate("edit.topic"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doEditGroups(UserRequest ureq, Topic topic) {
+		groupsEditCtrl = new GroupsEditController(ureq, getWindowControl(), topic);
+		listenTo(groupsEditCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), "close", groupsEditCtrl.getInitialComponent(), true,
+				translate("edit.groups"));
 		listenTo(cmc);
 		cmc.activate();
 	}

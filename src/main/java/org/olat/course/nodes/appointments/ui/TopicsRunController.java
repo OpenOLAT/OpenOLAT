@@ -122,24 +122,24 @@ public class TopicsRunController extends BasicController implements Activateable
 	}
 
 	private List<TopicWrapper> loadTopicWrappers() {
-		List<Topic> topics = appointmentsService.getTopics(entry, subIdent);
-		Map<Long, List<Organizer>> topicKeyToOrganizer = appointmentsService
-				.getOrganizers(entry, subIdent).stream()
-				.collect(Collectors.groupingBy(o -> o.getTopic().getKey()));
-		
-		AppointmentSearchParams freeAppointmentsParams = new AppointmentSearchParams();
-		freeAppointmentsParams.setEntry(entry);
-		freeAppointmentsParams.setSubIdent(subIdent);
-		Map<Long, Long> topicKeyToAppointmentCount = appointmentsService.getTopicKeyToAppointmentCount(freeAppointmentsParams, true);
+		List<Topic> topics = appointmentsService.getRestictedTopic(entry, subIdent, getIdentity());
 		
 		ParticipationSearchParams myParticipationsParams = new ParticipationSearchParams();
 		myParticipationsParams.setEntry(entry);
 		myParticipationsParams.setSubIdent(subIdent);
 		myParticipationsParams.setIdentity(getIdentity());
 		myParticipationsParams.setFetchAppointments(true);
-		Map<Long, List<Participation>> topicKeyToMyEnrollmentParticipation = appointmentsService
-				.getParticipations(myParticipationsParams).stream()
+		myParticipationsParams.setFetchTopics(true);
+		List<Participation> participations = appointmentsService.getParticipations(myParticipationsParams);
+		Map<Long, List<Participation>> topicKeyToMyEnrollmentParticipation = participations.stream()
 				.collect(Collectors.groupingBy(p -> p.getAppointment().getTopic().getKey()));
+		
+		// Add topics with participations even if participant has no access anymore.
+		participations.stream()
+				.map(p -> p.getAppointment().getTopic())
+				.distinct()
+				.filter(topic -> !topics.contains(topic))
+				.forEach(topic -> topics.add(topic));
 		
 		List<Topic> topicsFinding = topics.stream()
 				.filter(topic -> Type.finding == topic.getType())
@@ -152,6 +152,15 @@ public class TopicsRunController extends BasicController implements Activateable
 				.getAppointments(confirmedFindingsParams).stream()
 				.collect(Collectors.groupingBy(a -> a.getTopic().getKey()));
 		
+		AppointmentSearchParams freeAppointmentsParams = new AppointmentSearchParams();
+		freeAppointmentsParams.setTopics(topics);
+		Map<Long, Long> topicKeyToAppointmentCount = appointmentsService.getTopicKeyToAppointmentCount(freeAppointmentsParams, true);
+		
+		Map<Long, List<Organizer>> topicKeyToOrganizer = appointmentsService
+				.getOrganizers(entry, subIdent).stream()
+				.collect(Collectors.groupingBy(o -> o.getTopic().getKey()));
+
+		topics.sort((t1, t2) -> t1.getTitle().toLowerCase().compareTo(t2.getTitle().toLowerCase()));
 		List<TopicWrapper> wrappers = new ArrayList<>(topics.size());
 		for (Topic topic : topics) {
 			TopicWrapper wrapper = new TopicWrapper(topic);
