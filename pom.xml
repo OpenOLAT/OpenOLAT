@@ -1343,6 +1343,7 @@
 							<goal>run</goal>
 						</goals>
 						<configuration>
+							<skip>${skipSeleniumTests}</skip>
 							<target>
 								<mkdir dir="${project.build.directory}/downloads" />
 								<get src="https://nexus.openolat.org/nexus/content/repositories/openolat/org/apache/tomcat/apache-tomcat-arq/8.5.45/apache-tomcat-arq-8.5.45.zip" dest="${project.build.directory}/downloads" verbose="true" skipexisting="true" />
