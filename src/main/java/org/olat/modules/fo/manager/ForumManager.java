@@ -111,7 +111,7 @@ public class ForumManager {
 	}
 
 	/**
-	 * @param msgid msg id of the topthread
+	 * @param msgid The message id of the top thread
 	 * @return List messages
 	 */
 	public List<Message> getThread(Long msgid) {
@@ -140,24 +140,24 @@ public class ForumManager {
 
 	/**
 	 * 
-	 * @param forum_id
-	 * @return
+	 * @param forumId The forum ID
+	 * @return The number of messages in the specified forum
 	 */
-	public int countThreadsByForumID(Long forum_id) {
-		return countMessagesByForumID(forum_id, true);
+	public int countThreadsByForumID(Long forumId) {
+		return countMessagesByForumID(forumId, true);
 	}
 	
 	/**
 	 * 
-	 * @param forum_id
+	 * @param forumId
 	 * @param start
 	 * @param limit
 	 * @param orderBy
 	 * @param asc
 	 * @return
 	 */
-	public List<Message> getThreadsByForumID(Long forum_id, int firstResult, int maxResults, Message.OrderBy orderBy, boolean asc) {
-		return getMessagesByForumID(forum_id, firstResult, maxResults, true, orderBy, asc);
+	public List<Message> getThreadsByForumID(Long forumId, int firstResult, int maxResults, Message.OrderBy orderBy, boolean asc) {
+		return getMessagesByForumID(forumId, firstResult, maxResults, true, orderBy, asc);
 	}
 	
 	/**
@@ -166,7 +166,7 @@ public class ForumManager {
 	 * @return
 	 */
 	public List<Message> getMessagesByForum(Forum forum){
-		if (forum == null) return new ArrayList<>(0); // fxdiff: while indexing it can somehow occur, that forum is null!
+		if (forum == null) return new ArrayList<>(0); //while indexing it can somehow occur, that forum is null!
 		return getMessagesByForumID(forum.getKey(),  0, -1, false, null, true);
 	}
 	
@@ -905,9 +905,7 @@ public class ForumManager {
 			markingService.getMarkManager().deleteMarks(ores, m.getKey().toString());
 		}
 		
-		if(log.isDebugEnabled()){
-			log.debug("Deleting message: " + m.getKey());
-		}
+		log.debug("Deleting message: {}", m.getKey());
 	}
 
 	/**
@@ -920,7 +918,7 @@ public class ForumManager {
 				.createQuery(q, Number.class)
 				.setParameter("parentKey", m.getKey())
 				.getResultList();
-		return count == null || count.isEmpty() || count.get(0) == null ? false : count.get(0).longValue() > 0;
+		return count != null && !count.isEmpty() && count.get(0) != null && count.get(0).longValue() > 0;
 	}
 	
 	public int countMessageChildren(Long messageKey ) {
@@ -965,7 +963,7 @@ public class ForumManager {
 		} else if(messageContainer instanceof VFSContainer) {
 			return (VFSContainer)messageContainer;
 		}
-		log.error("The following message container is not a directory: " + messageContainer);
+		log.error("The following message container is not a directory: {}", messageContainer);
 		return null;
 	}
 	

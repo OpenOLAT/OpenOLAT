@@ -27,12 +27,14 @@ import java.util.Comparator;
 import java.util.List;
 
 import javax.persistence.PersistenceException;
+import javax.servlet.http.HttpServletRequest;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -50,8 +52,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.AssertException;
 import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.CodeHelper;
@@ -59,12 +63,16 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.filters.VFSItemMetaFilter;
+import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.core.util.vfs.filters.VFSItemFilter;
+import org.olat.core.util.vfs.filters.VFSLeafButSystemFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumCallback;
 import org.olat.modules.fo.ForumChangedEvent;
@@ -100,25 +108,26 @@ public class MessageEditController extends FormBasicController {
 	private static final String[] enableKeys = new String[]{ "on" };
 	
 	private RichTextElement bodyEl;
-	private TextElement titleEl, pseudonymEl, passwordEl;
+	private TextElement titleEl;
+	private TextElement pseudonymEl;
+	private TextElement passwordEl;
 	private MultipleSelectionElement usePseudonymEl;
 	private FileElement fileUpload;
 
-	
 	private DisplayPortraitController portraitCtr;
 	private DialogBoxController confirmDeleteAttachmentCtrl;
 	
 	private VFSContainer tempUploadFolder;
 	private boolean userIsMsgCreator;
 	private boolean msgHasChildren;
-	private VFSItemMetaFilter exclFilter;
 
 	private final Forum forum;
 	private final EditMode editMode;
 	private final boolean guestOnly;
 	private String proposedPseudonym;
 	private final ForumCallback foCallback;
-	private Message message, parentMessage;
+	private Message message;
+	private Message parentMessage;
 
 	@Autowired
 	private ForumManager fm;
@@ -154,15 +163,10 @@ public class MessageEditController extends FormBasicController {
 		this.guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 
 		tempUploadFolder = new LocalFolderImpl(new File(WebappHelper.getTmpDir(), CodeHelper.getUniqueID()));
-		exclFilter = new VFSItemMetaFilter();
-		
+
 		initForm(ureq);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_forum_message_form");
@@ -171,7 +175,15 @@ public class MessageEditController extends FormBasicController {
 		titleEl.setElementCssClass("o_sel_forum_message_title");
 		titleEl.setMandatory(true);
 		titleEl.setNotEmptyCheck("error.field.not.empty");
-		bodyEl = uifactory.addRichTextElementForStringData("msgBody", "msg.body", message.getBody(), 15, -1, true, null, null,
+		
+		VFSContainer msgContainer;
+		if(message.getKey() != null) {
+			msgContainer = fm.getMessageContainer(forum.getKey(), message.getKey());
+		} else {
+			msgContainer = tempUploadFolder;
+		}
+		msgContainer = VFSManager.getOrCreateContainer(msgContainer, "media");
+		bodyEl = uifactory.addRichTextElementForStringData("msgBody", "msg.body", message.getBody(), 15, -1, true, msgContainer, "media", null,
 				formLayout, ureq.getUserSession(), getWindowControl());
 		bodyEl.setElementCssClass("o_sel_forum_message_body");
 		bodyEl.setMandatory(true);
@@ -181,6 +193,8 @@ public class MessageEditController extends FormBasicController {
 		bodyEl.getEditorConfiguration().enableCharCount();
 		bodyEl.getEditorConfiguration().setRelativeUrls(false);
 		bodyEl.getEditorConfiguration().setRemoveScriptHost(false);
+		bodyEl.getEditorConfiguration().disableMedia();
+		bodyEl.getEditorConfiguration().disableTinyMedia();
 		
 		setEditPermissions(message);
 		// list existing attachments. init attachment layout now, to place it in
@@ -188,7 +202,7 @@ public class MessageEditController extends FormBasicController {
 		createOrUpdateAttachmentListLayout(formLayout);
 
 		// provide upload field
-		if (foCallback.mayEditMessageAsModerator() || ((userIsMsgCreator) && (msgHasChildren == false))) {
+		if (foCallback.mayEditMessageAsModerator() || (userIsMsgCreator && !msgHasChildren)) {
 			fileUpload = uifactory.addFileElement(getWindowControl(), "msg.upload", formLayout);
 			fileUpload.addActionListener(FormEvent.ONCHANGE);
 			fileUpload.setMaxUploadSizeKB((int) FolderConfig.getLimitULKB(), "attachments.too.big", new String[] { ((Long) (FolderConfig
@@ -248,27 +262,41 @@ public class MessageEditController extends FormBasicController {
 		// save and cancel buttons
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonLayout);
-		uifactory.addFormSubmitButton("msg.save", buttonLayout);
 		uifactory.addFormCancelButton("msg.cancel", buttonLayout, ureq, getWindowControl());
+		uifactory.addFormSubmitButton("msg.save", buttonLayout);
 
 		// show message replying to, if in reply modus
 		if (editMode == EditMode.reply) {
-			String previewPage = Util.getPackageVelocityRoot(this.getClass()) + "/msg-preview.html";
-			FormLayoutContainer replyMsgLayout = FormLayoutContainer.createCustomFormLayout("replyMsg", getTranslator(), previewPage);
-			uifactory.addSpacerElement("spacer1", formLayout, false);
-			formLayout.add(replyMsgLayout);
-			
-			replyMsgLayout.setLabel("label.replytomsg", new String[] { StringHelper.escapeHtml(parentMessage.getTitle()) });
-			replyMsgLayout.contextPut("messageBody", parentMessage.getBody());
-			replyMsgLayout.contextPut("message", parentMessage);
-			replyMsgLayout.contextPut("guestOnly", new Boolean(guestOnly));
+			initReply(formLayout, ureq);
+		}
+	}
+	
+	private void initReply(FormItemContainer formLayout, UserRequest ureq) {
+		String previewPage = Util.getPackageVelocityRoot(this.getClass()) + "/msg-preview.html";
+		FormLayoutContainer replyMsgLayout = FormLayoutContainer.createCustomFormLayout("replyMsg", getTranslator(), previewPage);
+		uifactory.addSpacerElement("spacer1", formLayout, false);
+		formLayout.add(replyMsgLayout);
+		
+		replyMsgLayout.setLabel("label.replytomsg", new String[] { StringHelper.escapeHtml(parentMessage.getTitle()) });
+		String body = parentMessage.getBody();
+		
+		VFSContainer parentMessageContainer = fm.getMessageContainer(forum.getKey(), parentMessage.getKey());
+		VFSItem parentMediaItem = parentMessageContainer.resolve("media");
+		if(parentMediaItem instanceof VFSContainer) {
+			String mapper = registerCacheableMapper(ureq, "fo_reply_" + parentMessage.getKey(),
+					new BodyMediaMapper((VFSContainer)parentMediaItem));
+			String messageMapperUri = mapper + "/" + parentMessage.getKey() + "/";
+			body = FilterFactory.getBaseURLToMediaRelativeURLFilter(messageMapperUri).filter(body);
+		}
+		replyMsgLayout.contextPut("messageBody", body);
+		replyMsgLayout.contextPut("message", parentMessage);
+		replyMsgLayout.contextPut("guestOnly", Boolean.valueOf(guestOnly));
 
-			Identity creator = parentMessage.getCreator();
-			if(creator != null) {
-				replyMsgLayout.contextPut("identity", creator);
-				portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), creator, true, true);
-				replyMsgLayout.put("portrait", portraitCtr.getInitialComponent());
-			}
+		Identity creator = parentMessage.getCreator();
+		if(creator != null) {
+			replyMsgLayout.contextPut("identity", creator);
+			portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), creator, true, true);
+			replyMsgLayout.put("portrait", portraitCtr.getInitialComponent());
 		}
 	}
 
@@ -296,10 +324,10 @@ public class MessageEditController extends FormBasicController {
 		// add already existing attachments:
 		if (message.getKey() != null) {
 			VFSContainer msgContainer = fm.getMessageContainer(message.getForum().getKey(), message.getKey());
-			attachments.addAll(msgContainer.getItems(exclFilter));
+			attachments.addAll(msgContainer.getItems(new VFSLeafButSystemFilter()));
 		}
 		// add files from TempFolder
-		attachments.addAll(getTempFolderFileList());
+		attachments.addAll(getTempFolderFileList(new VFSLeafButSystemFilter()));
 		
 		Collections.sort(attachments, new Comparator<VFSItem>(){
 			final Collator c = Collator.getInstance(getLocale());
@@ -321,7 +349,7 @@ public class MessageEditController extends FormBasicController {
 		int attNr = 1;
 		for (VFSItem tmpFile : attachments) {
 			FormLink tmpLink = uifactory.addFormLink(CMD_DELETE_ATTACHMENT + attNr, tmpLayout, Link.BUTTON_XSMALL);
-			if (!(foCallback.mayEditMessageAsModerator() || ((userIsMsgCreator) && (msgHasChildren == false)))) {
+			if (!(foCallback.mayEditMessageAsModerator() || (userIsMsgCreator && !msgHasChildren))) {
 				tmpLink.setEnabled(false);  
 				tmpLink.setVisible(false);
 			}
@@ -331,9 +359,6 @@ public class MessageEditController extends FormBasicController {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
 		removeTempUploadedFiles();
@@ -349,7 +374,7 @@ public class MessageEditController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		if(usePseudonymEl != null) {
 			pseudonymEl.clearError();
 			passwordEl.clearError();
@@ -368,7 +393,7 @@ public class MessageEditController extends FormBasicController {
 				}
 			}
 		}
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	private boolean validatePseudonym(String value) {
@@ -408,7 +433,7 @@ public class MessageEditController extends FormBasicController {
 		
 		if(StringHelper.containsNonWhitespace(password)) {
 			List<Pseudonym> pseudonyms = fm.getPseudonyms(value);
-			if(pseudonyms.size() > 0) {
+			if(!pseudonyms.isEmpty()) {
 				boolean authenticated = false;
 				for(Pseudonym pseudonym:pseudonyms) {
 					if(fm.authenticatePseudonym(pseudonym, password)) {
@@ -455,11 +480,28 @@ public class MessageEditController extends FormBasicController {
 		}
 
 		// set values from form to message
+		commitBody();
+		commitPseudonym(ureq);
+
+		if(editMode == EditMode.newThread) {
+			commitNewThreadMode();
+		} else if(editMode == EditMode.edit) { 
+			commitEditMode();
+		} else if(editMode == EditMode.reply) { 
+			commitReplyMode();
+		}
+	}
+	
+	private void commitBody() {
 		message.setTitle(titleEl.getValue());
 		String body = bodyEl.getValue();
 		body = body.replace("<p>&nbsp;", "<p>");
-
+		String editorMapperUri = Settings.createServerURI() + bodyEl.getEditorConfiguration().getMapperURI();
+		body = body.replace(editorMapperUri, "media/");
 		message.setBody(body.trim());
+	}
+
+	private void commitPseudonym(UserRequest ureq) {
 		if(usePseudonymEl != null && (usePseudonymEl.isAtLeastSelected(1) || guestOnly)) {
 			String password = passwordEl.getValue();
 			String pseudonym = pseudonymEl.getValue();
@@ -492,56 +534,59 @@ public class MessageEditController extends FormBasicController {
 		} else if(message.getCreator() != null && message.getCreator().equals(getIdentity())) {
 			message.setPseudonym(null);
 		}
-
-		if(editMode == EditMode.newThread) {
-			if(foCallback.mayOpenNewThread()) {
-				// save a new thread
-				message = fm.addTopMessage(message);
-				fm.markNewMessageAsRead(getIdentity(), forum, message);
-				persistTempUploadedFiles(message);
-				// if notification is enabled -> notify the publisher about news
-				notifiySubscription();
-				addLoggingResourceable(LoggingResourceable.wrap(message));
-				//commit before sending events
-				DBFactory.getInstance().commit();
-				ForumChangedEvent event = new ForumChangedEvent(ForumChangedEvent.NEW_MESSAGE, message.getKey(), message.getKey(), getIdentity());
-				CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(event, forum);	
-				ThreadLocalUserActivityLogger.log(ForumLoggingAction.FORUM_MESSAGE_CREATE, getClass());
-			} else {
-				showWarning("may.not.save.msg.as.author");
-			}
-
-		} else if(editMode == EditMode.edit) { 
-			boolean children = fm.countMessageChildren(message.getKey()) > 0;
-			if (foCallback.mayEditMessageAsModerator() || (userIsMsgCreator && !children)) {
-				message.setModifier(getIdentity());	
-				message = fm.updateMessage(message, true);
-				persistTempUploadedFiles(message);
-				notifiySubscription();
-				//commit before sending events
-				DBFactory.getInstance().commit();
-				Long threadTopKey = message.getThreadtop() == null ? null : message.getThreadtop().getKey();
-				ForumChangedEvent event = new ForumChangedEvent(ForumChangedEvent.CHANGED_MESSAGE, threadTopKey, message.getKey(), getIdentity());
-				CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(event, forum);
-				ThreadLocalUserActivityLogger.log(ForumLoggingAction.FORUM_MESSAGE_EDIT, getClass(),
-						LoggingResourceable.wrap(message));
-			} else {
-				showWarning("may.not.save.msg.as.author");
-			}
-		} else if(editMode == EditMode.reply) { 
-			message = fm.replyToMessage(message, parentMessage);
+	}
+	
+	private void commitNewThreadMode() {
+		if(foCallback.mayOpenNewThread()) {
+			// save a new thread
+			message = fm.addTopMessage(message);
 			fm.markNewMessageAsRead(getIdentity(), forum, message);
 			persistTempUploadedFiles(message);
+			// if notification is enabled -> notify the publisher about news
 			notifiySubscription();
-			Long threadTopKey = message.getThreadtop() == null ? null : message.getThreadtop().getKey();
-
+			addLoggingResourceable(LoggingResourceable.wrap(message));
 			//commit before sending events
 			DBFactory.getInstance().commit();
-			ForumChangedEvent event = new ForumChangedEvent(ForumChangedEvent.NEW_MESSAGE, threadTopKey, message.getKey(), getIdentity());
+			ForumChangedEvent event = new ForumChangedEvent(ForumChangedEvent.NEW_MESSAGE, message.getKey(), message.getKey(), getIdentity());
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(event, forum);	
-			ThreadLocalUserActivityLogger.log(ForumLoggingAction.FORUM_REPLY_MESSAGE_CREATE, getClass(),
-					LoggingResourceable.wrap(message));
+			ThreadLocalUserActivityLogger.log(ForumLoggingAction.FORUM_MESSAGE_CREATE, getClass());
+		} else {
+			showWarning("may.not.save.msg.as.author");
 		}
+	}
+	
+	private void commitEditMode() {
+		boolean children = fm.countMessageChildren(message.getKey()) > 0;
+		if (foCallback.mayEditMessageAsModerator() || (userIsMsgCreator && !children)) {
+			message.setModifier(getIdentity());	
+			message = fm.updateMessage(message, true);
+			persistTempUploadedFiles(message);
+			notifiySubscription();
+			//commit before sending events
+			DBFactory.getInstance().commit();
+			Long threadTopKey = message.getThreadtop() == null ? null : message.getThreadtop().getKey();
+			ForumChangedEvent event = new ForumChangedEvent(ForumChangedEvent.CHANGED_MESSAGE, threadTopKey, message.getKey(), getIdentity());
+			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(event, forum);
+			ThreadLocalUserActivityLogger.log(ForumLoggingAction.FORUM_MESSAGE_EDIT, getClass(),
+					LoggingResourceable.wrap(message));
+		} else {
+			showWarning("may.not.save.msg.as.author");
+		}
+	}
+	
+	private void commitReplyMode() {
+		message = fm.replyToMessage(message, parentMessage);
+		fm.markNewMessageAsRead(getIdentity(), forum, message);
+		persistTempUploadedFiles(message);
+		notifiySubscription();
+		Long threadTopKey = message.getThreadtop() == null ? null : message.getThreadtop().getKey();
+
+		//commit before sending events
+		DBFactory.getInstance().commit();
+		ForumChangedEvent event = new ForumChangedEvent(ForumChangedEvent.NEW_MESSAGE, threadTopKey, message.getKey(), getIdentity());
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(event, forum);	
+		ThreadLocalUserActivityLogger.log(ForumLoggingAction.FORUM_REPLY_MESSAGE_CREATE, getClass(),
+				LoggingResourceable.wrap(message));
 	}
 	
 	private void notifiySubscription() {
@@ -570,7 +615,7 @@ public class MessageEditController extends FormBasicController {
 
 					// checking tmp-folder and msg-container for filename
 					boolean fileExists = false;
-					if (getTempFolderFileList().contains(fileName)) {
+					if (getTempFolderFilenameList(new VFSSystemItemFilter()).contains(fileName)) {
 						fileExists = true;
 					}
 					if (message.getKey() != null) {
@@ -612,7 +657,7 @@ public class MessageEditController extends FormBasicController {
 						confirmDeleteAttachmentCtrl = activateYesNoDialog(ureq, null, translate("reallydeleteAtt"), confirmDeleteAttachmentCtrl);
 						confirmDeleteAttachmentCtrl.setUserObject(file);
 					} else {
-						if ((userIsMsgCreator) && (msgHasChildren == true)) {
+						if (userIsMsgCreator && msgHasChildren) {
 							// user is author of the current message but it has already at
 							// least one child
 							showWarning("may.not.delete.att.as.author");
@@ -626,22 +671,27 @@ public class MessageEditController extends FormBasicController {
 		}
 	}
 
-	private List<VFSItem> getTempFolderFileList() {
+	private List<VFSItem> getTempFolderFileList(VFSItemFilter filter) {
 		if (tempUploadFolder == null) {
 			tempUploadFolder = VFSManager.olatRootContainer(File.separator + "tmp/" + CodeHelper.getGlobalForeverUniqueID() + "/", null);
 		}		
-		return tempUploadFolder.getItems(exclFilter);
+		return tempUploadFolder.getItems(filter);
+	}
+	
+	private List<String>getTempFolderFilenameList(VFSItemFilter filter) {
+		List<VFSItem> items = getTempFolderFileList(filter);
+		List<String> filenames = new ArrayList<>(items.size());
+		for(VFSItem item:items) {
+			filenames.add(item.getName());
+		}
+		return filenames;
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		super.event(ureq, source, event);
 		if (source == confirmDeleteAttachmentCtrl) {
-			if (DialogBoxUIFactory.isYesEvent(event)) { // ok to really delete this																					// attachment
+			if (DialogBoxUIFactory.isYesEvent(event)) { // ok to really delete this attachment
 				Object userObj = confirmDeleteAttachmentCtrl.getUserObject();
 				if (userObj instanceof VFSLeaf) {
 					((VFSLeaf)userObj).delete();
@@ -680,28 +730,71 @@ public class MessageEditController extends FormBasicController {
 	 * @param tmpMessage
 	 */
 	public void persistTempUploadedFiles(Message tmpMessage) {
-		if (tmpMessage == null) throw new AssertException("Message may not be null to persist temp files");
+		if (tmpMessage == null) return;
+		
 		VFSContainer msgContainer = fm.getMessageContainer(forum.getKey(), message.getKey());
 		if (msgContainer != null) {
-			List<VFSItem> tmpFList = getTempFolderFileList();
+			List<VFSItem> tmpFList = getTempFolderFileList(new VFSSystemItemFilter());
 			for (VFSItem file : tmpFList) {
-				VFSLeaf leaf = (VFSLeaf) file;
-				try {
-					VFSLeaf targetFile = msgContainer.createChildLeaf(leaf.getName());
-					VFSManager.copyContent(leaf, targetFile, false);
-				} catch (Exception e) {
-					removeTempUploadedFiles();
-					throw new RuntimeException ("I/O error saving uploaded file:" + msgContainer + "/" + leaf.getName());
+				if(file instanceof VFSLeaf) {
+					copyTempContent((VFSLeaf) file, msgContainer);
+				} else if(file instanceof VFSContainer && "media".equals(file.getName())) {
+					copyTempMediaContent((VFSContainer)file, msgContainer);	
 				}
 			}
 		}
 		removeTempUploadedFiles();
+	}
+	
+	private void copyTempMediaContent(VFSContainer tempContainer, VFSContainer msgContainer) {
+		List<VFSItem> tempEmbededFList = tempContainer.getItems(new VFSSystemItemFilter());
+		VFSContainer mediaContainer = VFSManager.getOrCreateContainer(msgContainer, "media");
+		for(VFSItem file:tempEmbededFList) {
+			if(file instanceof VFSLeaf) {
+				copyTempContent((VFSLeaf) file, mediaContainer);
+			}
+		}
+	}
+	
+	private void copyTempContent(VFSLeaf leaf, VFSContainer msgContainer) {
+		try {
+			VFSLeaf targetFile = msgContainer.createChildLeaf(leaf.getName());
+			VFSManager.copyContent(leaf, targetFile, false);
+		} catch (Exception e) {
+			logError("Cannot move files", e);
+		}
 	}
 
 	private void removeTempUploadedFiles() {
 		if (tempUploadFolder != null) {
 			tempUploadFolder.delete();
 			tempUploadFolder = null;
+		}
+	}
+	
+	private class BodyMediaMapper implements Mapper {
+		
+		private final VFSContainer mediaContainer;
+		
+		public BodyMediaMapper(VFSContainer mediaContainer) {
+			this.mediaContainer = mediaContainer;
+		}
+		
+		@Override
+		public MediaResource handle(String relPath, HttpServletRequest request) {
+			String[] query = relPath.split("/"); // expected path looks like this /messageId/attachmentUUID/filename	
+			MediaResource resource = null;
+			if (query.length == 4) {
+				VFSItem item = mediaContainer.resolve(query[3]);
+				if(item instanceof VFSLeaf) {
+					resource = new VFSMediaResource((VFSLeaf)item);
+				}	
+			}
+			// In any error case, send not found
+			if(resource == null) {
+				resource = new NotFoundMediaResource();
+			}
+			return resource;
 		}
 	}
 }

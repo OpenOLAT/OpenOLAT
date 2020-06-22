@@ -47,6 +47,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
@@ -315,7 +316,7 @@ public class RichTextConfiguration implements Disposable {
 	 * @param customLinkTreeModel
 	 */
 	public void setConfigProfileFormEditor(boolean fullProfile, UserSession usess, Theme guiTheme,
-			VFSContainer baseContainer, CustomLinkTreeModel customLinkTreeModel) {
+			VFSContainer baseContainer, String relFilePath, CustomLinkTreeModel customLinkTreeModel) {
 		setConfigBasics(guiTheme);
 
 		TinyMCECustomPluginFactory customPluginFactory = CoreSpringFactory.getImpl(TinyMCECustomPluginFactory.class);
@@ -339,7 +340,7 @@ public class RichTextConfiguration implements Disposable {
 			tinyConfig = tinyConfig.enableImageAndMedia();
 			setFileBrowserCallback(baseContainer, customLinkTreeModel, IMAGE_SUFFIXES_VALUES, MEDIA_SUFFIXES_VALUES, FLASH_PLAYER_SUFFIXES_VALUES);
 			// since in form editor mode and not in file mode we use null as relFilePath
-			setDocumentMediaBase(baseContainer, null, usess);			
+			setDocumentMediaBase(baseContainer, relFilePath, usess);			
 		}
 	}
 
@@ -809,12 +810,15 @@ public class RichTextConfiguration implements Disposable {
 	private void setDocumentMediaBase(final VFSContainer documentBaseContainer, String relFilePath, UserSession usess) {
 		linkBrowserRelativeFilePath = relFilePath;
 		// get a usersession-local mapper for the file storage (and tinymce's references to images and such)
-		Mapper contentMapper = new VFSContainerMapper(documentBaseContainer);
+		Mapper contentMapper;
+		if(StringHelper.containsNonWhitespace(relFilePath)) {
+			contentMapper = new RichTextContainerMapper(documentBaseContainer, relFilePath);
+		} else {
+			contentMapper = new VFSContainerMapper(documentBaseContainer);
+		}
+		
 		// Register mapper for this user. This mapper is cleaned up in the
 		// dispose method (RichTextElementImpl will clean it up)
-
-		
-		
 		// Register mapper as cacheable
 		String mapperID = VFSManager.getRealPath(documentBaseContainer);
 		if (mapperID == null) {
@@ -829,7 +833,7 @@ public class RichTextConfiguration implements Disposable {
 		
 		if (relFilePath != null) {
 			// remove filename, path must end with slash
-			int lastSlash = relFilePath.lastIndexOf("/");
+			int lastSlash = relFilePath.lastIndexOf('/');
 			if (lastSlash == -1) {
 				relFilePath = "";
 			} else if (lastSlash + 1 < relFilePath.length()) {
@@ -841,7 +845,7 @@ public class RichTextConfiguration implements Disposable {
 					LocalFolderImpl folder = (LocalFolderImpl) documentBaseContainer;
 					containerPath = folder.getBasefile().getAbsolutePath();
 				}
-				log.warn("Could not parse relative file path::" + relFilePath + " in container::" + containerPath);
+				log.warn("Could not parse relative file path::{} in container::{}", relFilePath, containerPath);
 			}
 		} else {
 			relFilePath = "";

@@ -25,6 +25,7 @@
 
 package org.olat.course.nodes;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -79,8 +80,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumCallback;
 import org.olat.modules.fo.ForumModule;
-import org.olat.modules.fo.archiver.ForumArchiveManager;
-import org.olat.modules.fo.archiver.formatters.ForumStreamedRTFFormatter;
+import org.olat.modules.fo.archiver.ForumArchive;
 import org.olat.modules.fo.manager.ForumManager;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
@@ -457,8 +457,14 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 		String forumName = "forum_" + Formatter.makeStringFilesystemSave(getShortTitle()) + "_"
 				+ Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));
 		forumName = ZipUtil.concat(archivePath, forumName);
-		ForumStreamedRTFFormatter rtff = new ForumStreamedRTFFormatter(exportStream, forumName, false, locale);
-		CoreSpringFactory.getImpl(ForumArchiveManager.class).applyFormatter(rtff, forumKey, null);
+
+		try {
+			Forum forum = loadOrCreateForum(course.getCourseEnvironment());
+			ForumArchive archiver = new ForumArchive(forum, null, locale, null);
+			archiver.export(forumName + ".docx", exportStream);
+		} catch (IOException e) {
+			log.error("", e);
+		}
 		return true;
 	}
 

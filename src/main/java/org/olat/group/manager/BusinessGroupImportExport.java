@@ -70,7 +70,7 @@ public class BusinessGroupImportExport {
 		this.groupModule = groupModule;
 	}
 	
-	public void exportGroups(List<BusinessGroup> groups, List<BGArea> areas, File fExportFile, boolean runtimeDatas) {
+	public void exportGroups(List<BusinessGroup> groups, List<BGArea> areas, File fExportFile) {
 		if (groups == null || groups.isEmpty()) {
 			return; // nothing to do... says Florian.
 		}
@@ -92,13 +92,13 @@ public class BusinessGroupImportExport {
 		root.getGroups().setGroups(new ArrayList<Group>());
 		for (BusinessGroup group : groups) {
 			String groupName = null;
-			Group newGroup = exportGroup(fExportFile, group, groupName, runtimeDatas);
+			Group newGroup = exportGroup(fExportFile, group, groupName);
 			root.getGroups().getGroups().add(newGroup);
 		}
 		saveGroupConfiguration(fExportFile, root);
 	}
 	
-	private Group exportGroup(File fExportFile, BusinessGroup group, String groupName, boolean runtimeDatas) {
+	private Group exportGroup(File fExportFile, BusinessGroup group, String groupName) {
 		Group newGroup = new Group();
 		newGroup.setKey(group.getKey());
 		newGroup.setName(StringHelper.containsNonWhitespace(groupName) ? groupName : group.getName());
@@ -147,10 +147,8 @@ public class BusinessGroupImportExport {
 			newGroup.setInfo(info.trim());
 		}
 
-		log.debug("fExportFile.getParent()=" + fExportFile.getParent());
-		if(runtimeDatas) {
-			ct.archive(fExportFile.getParent());
-		}
+		log.debug("fExportFile.getParent()={}", fExportFile.getParent());
+
 		// export membership
 		List<BGArea> bgAreas = areaManager.findBGAreasOfBusinessGroup(group);
 		newGroup.setAreaRelations(new ArrayList<String>());

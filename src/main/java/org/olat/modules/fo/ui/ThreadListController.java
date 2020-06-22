@@ -48,7 +48,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
-import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumCallback;
 import org.olat.modules.fo.Message;
@@ -260,8 +259,7 @@ public class ThreadListController extends FormBasicController {
 	}
 	
 	private void doArchiveForum(UserRequest ureq) {
-		VFSContainer forumContainer = forumManager.getForumContainer(forum.getKey());
-		ForumDownloadResource download = new ForumDownloadResource("Forum", forum, foCallback, null, forumContainer, getLocale());
+		ForumDownloadResource download = new ForumDownloadResource("Forum", forum, foCallback, null, getLocale());
 		ureq.getDispatchResult().setResultingMediaResource(download);
 	}
 	

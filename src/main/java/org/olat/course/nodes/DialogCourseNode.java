@@ -26,11 +26,13 @@
 package org.olat.course.nodes;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
@@ -39,6 +41,7 @@ import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
@@ -68,10 +71,8 @@ import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.fo.archiver.ForumArchiveManager;
-import org.olat.modules.fo.archiver.formatters.ForumFormatter;
-import org.olat.modules.fo.archiver.formatters.ForumRTFFormatter;
-import org.olat.modules.fo.archiver.formatters.ForumStreamedRTFFormatter;
+import org.olat.modules.fo.Forum;
+import org.olat.modules.fo.archiver.ForumArchive;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -81,6 +82,7 @@ import org.olat.repository.RepositoryEntry;
  */
 public class DialogCourseNode extends AbstractAccessableCourseNode {
 
+	private static final Logger log = Tracing.createLoggerFor(DialogCourseNode.class);
 	public static final String TYPE = "dialog";
 	
 	@SuppressWarnings("deprecation")
@@ -266,10 +268,13 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 		// don't check quota
 		diaNodeElemExportContainer.setLocalSecurityCallback(new FullAccessCallback());
 		diaNodeElemExportContainer.copyFrom(dialogFile);
-
-		ForumArchiveManager fam = CoreSpringFactory.getImpl(ForumArchiveManager.class);
-		ForumFormatter ff = new ForumRTFFormatter(diaNodeElemExportContainer, false, locale);
-		fam.applyFormatter(ff, element.getForum().getKey(), null);
+		
+		try {
+			ForumArchive archiver = new ForumArchive(element.getForum(), null, locale, null);
+			archiver.export("Forum.docx", diaNodeElemExportContainer);
+		} catch (IOException e) {
+			log.error("", e);
+		}
 	}
 	
 	@Override
@@ -304,10 +309,14 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 		for(VFSItem item: forumContainer.getItems(new VFSLeafFilter())) {
 			ZipUtil.addToZip(item, exportDirName, exportStream);
 		}
-
-		ForumArchiveManager fam = CoreSpringFactory.getImpl(ForumArchiveManager.class);
-		ForumFormatter ff = new ForumStreamedRTFFormatter(exportStream, exportDirName, false, locale);
-		fam.applyFormatter(ff, element.getForum().getKey(), null);
+		
+		try {
+			Forum forum = element.getForum();
+			ForumArchive archiver = new ForumArchive(forum, null, locale, null);
+			archiver.export("Dialogs.docx", exportDirName, exportStream);
+		} catch (IOException e) {
+			log.error("", e);
+		}
 	}
 
 	@Override

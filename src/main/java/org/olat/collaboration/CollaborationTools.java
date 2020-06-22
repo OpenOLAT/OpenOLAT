@@ -25,8 +25,6 @@
 
 package org.olat.collaboration;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,20 +57,15 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
-import org.olat.core.util.ZipUtil;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.coordinate.SyncerExecutor;
-import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.ContactMessage;
-import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.course.CorruptedCourseException;
@@ -94,9 +87,6 @@ import org.olat.modules.co.ContactFormController;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumCallback;
 import org.olat.modules.fo.ForumUIFactory;
-import org.olat.modules.fo.archiver.ForumArchiveManager;
-import org.olat.modules.fo.archiver.formatters.ForumFormatter;
-import org.olat.modules.fo.archiver.formatters.ForumRTFFormatter;
 import org.olat.modules.fo.manager.ForumManager;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.olat.modules.openmeetings.manager.OpenMeetingsException;
@@ -117,7 +107,6 @@ import org.olat.modules.wiki.DryRunAssessmentProvider;
 import org.olat.modules.wiki.WikiManager;
 import org.olat.modules.wiki.WikiSecurityCallback;
 import org.olat.modules.wiki.WikiSecurityCallbackImpl;
-import org.olat.modules.wiki.WikiToZipUtils;
 import org.olat.properties.NarrowedPropertyManager;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
@@ -1019,61 +1008,6 @@ public class CollaborationTools implements Serializable {
 		@Override
 		public SubscriptionContext getSubscriptionContext() {
 			return subsContext;
-		}
-	}
-
-	/**
-	 * It is assumed that this is only called by an administrator
-	 * (e.g. at deleteGroup) 
-	 * @param archivFilePath
-	 */
-	public void archive(String archivFilePath) {
-		if (isToolEnabled(CollaborationTools.TOOL_FORUM)) {
-			archiveForum(archivFilePath);
-		}
-		if (isToolEnabled(CollaborationTools.TOOL_WIKI)) {
-			archiveWiki(archivFilePath);
-		}
-		if (isToolEnabled(CollaborationTools.TOOL_FOLDER)) {
-			archiveFolder(archivFilePath);
-		}
-	}
-
-	private void archiveForum(String archivFilePath) {
-		Property forumKeyProperty = NarrowedPropertyManager.getInstance(ores).findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_FORUM);
-		if (forumKeyProperty != null) {
-			VFSContainer archiveContainer = new LocalFolderImpl(new File(archivFilePath));
-			String archiveForumName = "del_forum_" + forumKeyProperty.getLongValue();
-			VFSContainer archiveForumContainer = archiveContainer.createChildContainer(archiveForumName);
-			ForumFormatter ff = new ForumRTFFormatter(archiveForumContainer, false, I18nModule.getDefaultLocale());
-			CoreSpringFactory.getImpl(ForumArchiveManager.class).applyFormatter(ff, forumKeyProperty.getLongValue(), null);
-		}
-	}
-
-	private void archiveWiki(String archivFilePath) { 
-		VFSContainer wikiContainer = WikiManager.getInstance().getWikiRootContainer(ores);
-		VFSLeaf wikiZip = WikiToZipUtils.getWikiAsZip(wikiContainer);
-		String exportFileName = "del_wiki_" + ores.getResourceableId() + ".zip";
-		File archiveDir = new File(archivFilePath);
-		if (!archiveDir.exists()) {
-			archiveDir.mkdir();
-		}
-		String fullFilePath = archivFilePath + File.separator + exportFileName;
-		
-		try {
-			FileUtils.bcopy(wikiZip.getInputStream(), new File(fullFilePath), "archive wiki");
-		} catch (IOException ioe) {
-			log.warn("Can not archive wiki repoEntry={}", ores.getResourceableId());
-		}		
-	}
-
-	private void archiveFolder(String archiveFilePath) {
-		LocalFolderImpl folderContainer = VFSManager.olatRootContainer(getFolderRelPath(), null);
-		File fFolderRoot = folderContainer.getBasefile();
-		if (fFolderRoot.exists()) {
-			String zipFileName = "del_folder_" + ores.getResourceableId() + ".zip";
-			String fullZipFilePath = archiveFilePath + File.separator + zipFileName;
-			ZipUtil.zipAll(fFolderRoot, new File(fullZipFilePath), true);
 		}
 	}
 

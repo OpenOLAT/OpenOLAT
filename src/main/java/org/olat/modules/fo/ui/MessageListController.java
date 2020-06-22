@@ -78,13 +78,14 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
-import org.olat.core.util.vfs.filters.VFSItemMetaFilter;
+import org.olat.core.util.vfs.filters.VFSLeafButSystemFilter;
 import org.olat.course.nodes.FOCourseNode;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumCallback;
@@ -99,6 +100,7 @@ import org.olat.modules.fo.export.FinishCallback;
 import org.olat.modules.fo.export.SendMailStepForm;
 import org.olat.modules.fo.export.Step_1_SelectCourse;
 import org.olat.modules.fo.manager.ForumManager;
+import org.olat.modules.fo.manager.QuoterFilter;
 import org.olat.modules.fo.portfolio.ForumMediaHandler;
 import org.olat.modules.fo.ui.MessageEditController.EditMode;
 import org.olat.modules.fo.ui.events.DeleteMessageEvent;
@@ -440,8 +442,11 @@ public class MessageListController extends BasicController implements GenericEve
 		for(MarkResourceStat stat:statList) {
 			stats.put(stat.getSubPath(), stat);
 		}
-
-		MessageView view = new MessageView(message, userPropertyHandlers, getLocale());
+		
+		String body = message.getBody();
+		String messageMapperUri = thumbnailMapper + "/" + message.getKey() + "/";
+		body = FilterFactory.getBaseURLToMediaRelativeURLFilter(messageMapperUri).filter(body);
+		MessageView view = new MessageView(message, body, userPropertyHandlers, getLocale());
 		view.setNumOfChildren(0);
 		addMessageToCurrentMessagesAndVC(ureq, message, view, marks, stats, rms);
 		return view;
@@ -475,7 +480,10 @@ public class MessageListController extends BasicController implements GenericEve
 		List<MessageView> views = new ArrayList<>(messages.size());
 		Map<Long,MessageView> keyToViews = new HashMap<>();
 		for(MessageLight msg:messages) {
-			MessageView view = new MessageView(msg, userPropertyHandlers, getLocale());
+			String body = msg.getBody();
+			String messageMapperUri = thumbnailMapper + "/" + msg.getKey() + "/";
+			body = FilterFactory.getBaseURLToMediaRelativeURLFilter(messageMapperUri).filter(body);
+			MessageView view = new MessageView(msg, body, userPropertyHandlers, getLocale());
 			view.setNumOfChildren(0);
 			views.add(view);
 			keyToViews.put(msg.getKey(), view);
@@ -610,7 +618,13 @@ public class MessageListController extends BasicController implements GenericEve
 		VFSContainer msgContainer = forumManager.getMessageContainer(forum.getKey(), m.getKey());
 		if(msgContainer != null) {
 			messageView.setMessageContainer(msgContainer);
-			List<VFSItem> attachments = new ArrayList<>(msgContainer.getItems(new VFSItemMetaFilter()));				
+			List<VFSItem> attachmentsItem = msgContainer.getItems(new VFSLeafButSystemFilter());
+			List<VFSLeaf> attachments = new ArrayList<>(attachmentsItem.size());
+			for(VFSItem attachmentItem:attachmentsItem) {
+				if(attachmentItem instanceof VFSLeaf) {
+					attachments.add((VFSLeaf)attachmentItem);
+				}
+			}
 			messageView.setAttachments(attachments);
 		} else {
 			messageView.setAttachments(new ArrayList<>());
@@ -806,11 +820,11 @@ public class MessageListController extends BasicController implements GenericEve
 			String messageKey = cmd.substring(index + 1);
 			
 			int position = Integer.parseInt(attachmentPosition);
-			Long key = new Long(messageKey);
+			Long key = Long.valueOf(messageKey);
 			for(MessageView view:backupViews) {
 				if(view.getKey().equals(key)) {
-					List<VFSItem> attachments = view.getAttachments();
-					VFSLeaf attachment = (VFSLeaf)attachments.get(position - 1);//velocity counter start with 1
+					List<VFSLeaf> attachments = view.getAttachments();
+					VFSLeaf attachment = attachments.get(position - 1);//velocity counter start with 1
 					VFSMediaResource fileResource = new VFSMediaResource(attachment);
 					fileResource.setDownloadable(true); // prevent XSS attack
 					res = fileResource;
@@ -949,26 +963,8 @@ public class MessageListController extends BasicController implements GenericEve
 			}			
 			newMessage.setTitle(reString + parentMessage.getTitle());
 			if (quote) {
-				// load message to form as quotation				
-				StringBuilder quoteSb = new StringBuilder();
-				quoteSb.append("<p></p><div class=\"o_quote_wrapper\"><div class=\"o_quote_author mceNonEditable\">");
-				String date = formatter.formatDateAndTime(parentMessage.getCreationDate());
-				String creatorName;
-				if(StringHelper.containsNonWhitespace(parentMessage.getPseudonym())) {
-					creatorName = parentMessage.getPseudonym();
-				} else if(parentMessage.isGuest()) {
-					creatorName = translate("guest");
-				} else {
-					User creator = parentMessage.getCreator().getUser();
-					creatorName = creator.getProperty(UserConstants.FIRSTNAME, getLocale()) + " " + creator.getProperty(UserConstants.LASTNAME, getLocale());
-				}
-				
-				quoteSb.append(translate("msg.quote.intro", new String[]{ date, creatorName}))
-				     .append("</div><blockquote class=\"o_quote\">")
-				     .append(parentMessage.getBody())
-				     .append("</blockquote></div>")
-				     .append("<p></p>");
-				newMessage.setBody(quoteSb.toString());
+				String quoted = buildReplyWithQuote(parentMessage);
+				newMessage.setBody(quoted);
 			}
 
 			replyMessageCtrl = new MessageEditController(ureq, getWindowControl(), forum, foCallback, newMessage, parentMessage, EditMode.reply);
@@ -981,6 +977,31 @@ public class MessageListController extends BasicController implements GenericEve
 		} else {
 			showInfo("may.not.reply.msg");
 		}
+	}
+	
+	private String buildReplyWithQuote(Message parentMessage) {
+		// load message to form as quotation				
+		StringBuilder quoteSb = new StringBuilder();
+		quoteSb.append("<p></p><div class=\"o_quote_wrapper\"><div class=\"o_quote_author mceNonEditable\">");
+		String date = formatter.formatDateAndTime(parentMessage.getCreationDate());
+		String creatorName;
+		if(StringHelper.containsNonWhitespace(parentMessage.getPseudonym())) {
+			creatorName = parentMessage.getPseudonym();
+		} else if(parentMessage.isGuest()) {
+			creatorName = translate("guest");
+		} else {
+			User creator = parentMessage.getCreator().getUser();
+			creatorName = creator.getProperty(UserConstants.FIRSTNAME, getLocale()) + " " + creator.getProperty(UserConstants.LASTNAME, getLocale());
+		}
+		
+		String originalBody = parentMessage.getBody();
+		String filteredBody = new QuoterFilter().filter(originalBody);
+		quoteSb.append(translate("msg.quote.intro", new String[]{ date, creatorName}))
+		     .append("</div><blockquote class=\"o_quote\">")
+		     .append(filteredBody)
+		     .append("</blockquote></div>")
+		     .append("<p></p>");
+		return quoteSb.toString();
 	}
 	
 	private void doConfirmDeleteMessage(UserRequest ureq, MessageView message) {
@@ -1114,9 +1135,7 @@ public class MessageListController extends BasicController implements GenericEve
 	private void doArchiveThread(UserRequest ureq, Message currMsg) {
 		Message m = currMsg.getThreadtop();
 		Long topMessageId = (m == null) ? currMsg.getKey() : m.getKey();
-		
-		VFSContainer forumContainer = forumManager.getForumContainer(forum.getKey());
-		ForumDownloadResource download = new ForumDownloadResource("Forum", forum, foCallback, topMessageId, forumContainer, getLocale());
+		ForumDownloadResource download = new ForumDownloadResource("Forum", forum, foCallback, topMessageId, getLocale());
 		ureq.getDispatchResult().setResultingMediaResource(download);
 	}
 	
@@ -1490,37 +1509,70 @@ public class MessageListController extends BasicController implements GenericEve
 		@Override
 		public MediaResource handle(String relPath, HttpServletRequest request) {
 			String[] query = relPath.split("/"); // expected path looks like this /messageId/attachmentUUID/filename
+			
+			MediaResource resource = null;
 			if (query.length == 4) {
-				try {
-					Long mId = Long.valueOf(Long.parseLong(query[1]));
-					MessageView view = null;
-					for (MessageView m : backupViews) {
-						// search for message in current message map
-						if (m.getKey().equals(mId)) {
-							view = m;
-							break;
-						}
+				MessageView view = getView(query[1]);
+				if (view != null) {
+					if("media".equals(query[2])) {
+						resource = getMedia(view, query[3]);
+					} else {
+						resource = getThumbnail(view, query[2]);
 					}
-					if (view != null) {
-						List<VFSItem> attachments = view.getAttachments();
-						for (VFSItem vfsItem : attachments) {
-							VFSMetadata meta = vfsItem.getMetaInfo();
-							if (meta instanceof VFSLeaf && meta.getUuid().equals(query[2])) {
-								VFSLeaf thumb = vfsRepositoryService.getThumbnail((VFSLeaf)vfsItem, meta, 200, 200, false);
-								if(thumb != null) {
-									// Positive lookup, send as response
-									return new VFSMediaResource(thumb);
-								}
-								break;
-							}
-						}
-					}
-				} catch (NumberFormatException e) {
-					//
 				}
 			}
 			// In any error case, send not found
-			return new NotFoundMediaResource();
+			if(resource == null) {
+				resource = new NotFoundMediaResource();
+			}
+			return resource;
+		}
+		 
+		private MessageView getView(String queryParam) {
+			MessageView view = null;
+			try {
+				Long mId = Long.valueOf(Long.parseLong(queryParam ));
+				for (MessageView m : backupViews) {
+					// search for message in current message map
+					if (m.getKey().equals(mId)) {
+						view = m;
+						break;
+					}
+				}
+			} catch (NumberFormatException e) {
+				//
+			}
+			return view;
+		}
+		
+		private MediaResource getMedia(MessageView view, String queryParam) {
+			VFSContainer messageContainer = view.getMessageContainer();
+			if(messageContainer == null) return null;
+			VFSItem mediaItem = messageContainer.resolve("media");
+			if(mediaItem instanceof VFSContainer) {
+				VFSContainer mediaContainer = (VFSContainer)mediaItem;
+				VFSItem media = mediaContainer.resolve(queryParam);
+				if(media instanceof VFSLeaf) {
+					return new VFSMediaResource((VFSLeaf)media);
+				}
+			}
+			return null;
+		}
+		
+		private MediaResource getThumbnail(MessageView view, String queryParam) {
+			List<VFSLeaf> attachments = view.getAttachments();
+			for (VFSLeaf attachment : attachments) {
+				VFSMetadata meta = attachment.getMetaInfo();
+				if (meta.getUuid().equals(queryParam)) {
+					VFSLeaf thumb = vfsRepositoryService.getThumbnail(attachment, meta, 200, 200, false);
+					if(thumb != null) {
+						// Positive lookup, send as response
+						return new VFSMediaResource(thumb);
+					}
+					break;
+				}
+			}
+			return null;
 		}
 	}
 }

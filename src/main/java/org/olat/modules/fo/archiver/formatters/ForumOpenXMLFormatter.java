@@ -28,19 +28,24 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.openxml.DocReference;
 import org.olat.core.util.openxml.OpenXMLDocument;
 import org.olat.core.util.openxml.OpenXMLDocument.Spacing;
 import org.olat.core.util.openxml.OpenXMLDocument.Style;
+import org.olat.core.util.tree.Visitor;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
-import org.olat.core.util.vfs.filters.VFSItemMetaFilter;
+import org.olat.core.util.vfs.filters.VFSLeafButSystemFilter;
+import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.archiver.MessageNode;
 
 /**
@@ -49,11 +54,12 @@ import org.olat.modules.fo.archiver.MessageNode;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ForumOpenXMLFormatter extends ForumFormatter {
-	
-	private final VFSItemMetaFilter filter = new VFSItemMetaFilter();
+public class ForumOpenXMLFormatter implements Visitor {
 
 	private boolean firstThread = true;
+	private boolean isTopThread = false;
+	
+	private final Translator translator;
 	
 	private final Formatter formatter;
 	private final VFSContainer forumContainer;
@@ -63,7 +69,7 @@ public class ForumOpenXMLFormatter extends ForumFormatter {
 	private final Map<File,DocReference> fileToAttachmentsMap = new HashMap<>();
 
 	public ForumOpenXMLFormatter(VFSContainer forumContainer, Locale locale) {
-		super(locale);
+		translator = Util.createPackageTranslator(Forum.class, locale);
 		document.setMediaContainer(forumContainer);
 		this.forumContainer = forumContainer;
 		formatter = Formatter.getInstance(locale);
@@ -76,20 +82,18 @@ public class ForumOpenXMLFormatter extends ForumFormatter {
 	public Map<File,DocReference> getAttachments() {
 		return fileToAttachmentsMap;
 	}
-
-	@Override
+	
 	public void openForum() {
 		//
 	}
 
-	@Override
 	public void openThread() {
 		if(firstThread) {
 			firstThread = false;
 		} else {
 			document.appendPageBreak();
 		}
-		super.openThread();
+		isTopThread = true;
 	}
 
 	@Override
@@ -151,6 +155,9 @@ public class ForumOpenXMLFormatter extends ForumFormatter {
 		if(body != null) {
 			body = body.replace("<p>&nbsp;", "<p>");
 		}
+		
+		String mapperPath = m.getKey().toString();
+		body = FilterFactory.getBaseURLToMediaRelativeURLFilter(mapperPath).filter(body);
 		document.appendHtmlText(body, new Spacing(180, 0));
 		
 		// message attachments
@@ -161,15 +168,14 @@ public class ForumOpenXMLFormatter extends ForumFormatter {
 	}
 	
 	private void processAttachments(VFSContainer attachmentsContainer) {
-		List<VFSItem> attachments = new ArrayList<>(attachmentsContainer.getItems(filter));
+		List<VFSItem> attachments = new ArrayList<>(attachmentsContainer.getItems(new VFSLeafButSystemFilter()));
 		for(VFSItem attachment:attachments) {
 			if(attachment instanceof LocalFileImpl) {
 				//add the text
 				document.appendText(translator.translate("attachments"), true, Style.bold);
 			}
 		}
-		
-		
+
 		for(VFSItem attachment:attachments) {
 			if(attachment instanceof LocalFileImpl) {
 				File file = ((LocalFileImpl)attachment).getBasefile();
@@ -196,12 +202,6 @@ public class ForumOpenXMLFormatter extends ForumFormatter {
 		}
 	}
 
-	@Override
-	public StringBuilder closeThread() {
-		return super.closeThread();
-	}
-
-	@Override
 	public StringBuilder closeForum() {
 		return new StringBuilder();
 	}

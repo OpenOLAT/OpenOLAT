@@ -375,7 +375,7 @@ public class PersistingCourseGroupManager implements CourseGroupManager {
 		BusinessGroupEnvironment bgEnv = new BusinessGroupEnvironment();
 		bgEnv.getGroups().addAll(courseEnv.getGroups());
 		bgEnv.getAreas().addAll(courseEnv.getAreas());
-		businessGroupService.exportGroups(groups, areas, fExportFile, false);
+		businessGroupService.exportGroups(groups, areas, fExportFile);
 	}
 	
 	/**

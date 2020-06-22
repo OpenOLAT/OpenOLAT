@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.fo.MessageLight;
 import org.olat.user.DisplayPortraitController;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -54,14 +54,14 @@ public class MessageView extends MessageLightView {
 	private boolean closed;
 	private boolean moved;
 	
-	private List<VFSItem> attachments;
+	private List<VFSLeaf> attachments;
 	private VFSContainer messageContainer;
 	
 	private DisplayPortraitController portrait;
 	
-	public MessageView(MessageLight message, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+	public MessageView(MessageLight message, String body, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(message, userPropertyHandlers, locale);
-		body = message.getBody();
+		this.body = body;
 	}
 
 	public String getBody() {
@@ -165,16 +165,16 @@ public class MessageView extends MessageLightView {
 		this.closed = closed;
 	}
 
-	public List<VFSItem> getAttachments() {
+	public List<VFSLeaf> getAttachments() {
 		return attachments;
 	}
 
-	public void setAttachments(List<VFSItem> attachments) {
+	public void setAttachments(List<VFSLeaf> attachments) {
 		this.attachments = attachments;
 	}
 	
 	public boolean hasAttachments() {
-		return attachments != null && attachments.size() > 0;
+		return attachments != null && !attachments.isEmpty();
 	}
 
 	public VFSContainer getMessageContainer() {

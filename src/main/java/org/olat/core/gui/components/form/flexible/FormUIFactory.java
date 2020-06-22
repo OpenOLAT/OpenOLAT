@@ -775,12 +775,18 @@ public class FormUIFactory {
 	 *          text element
 	 * @param usess The user session that dispatches the images
 	 * @param wControl the current window controller
-	 * @param wControl
-	 *            the current window controller
+
 	 * @return The rich text element instance
 	 */
 	public RichTextElement addRichTextElementForStringData(String name, String i18nLabel, String initialHTMLValue, int rows,
 			int cols, boolean fullProfile, VFSContainer baseContainer, CustomLinkTreeModel customLinkTreeModel,
+			FormItemContainer formLayout, UserSession usess, WindowControl wControl) {
+		return addRichTextElementForStringData(name, i18nLabel, initialHTMLValue, rows, cols,
+				fullProfile, baseContainer, null, customLinkTreeModel, formLayout, usess, wControl);
+	}
+	
+	public RichTextElement addRichTextElementForStringData(String name, String i18nLabel, String initialHTMLValue, int rows,
+			int cols, boolean fullProfile, VFSContainer baseContainer, String relFilePath, CustomLinkTreeModel customLinkTreeModel,
 			FormItemContainer formLayout, UserSession usess, WindowControl wControl) {
 		// Create richt text element with bare bone configuration
 		WindowBackOffice backoffice = wControl.getWindowBackOffice();
@@ -788,7 +794,7 @@ public class FormUIFactory {
 		setLabelIfNotNull(i18nLabel, rte);
 		// Now configure editor
 		Theme theme = backoffice.getWindow().getGuiTheme();
-		rte.getEditorConfiguration().setConfigProfileFormEditor(fullProfile, usess, theme, baseContainer, customLinkTreeModel);			
+		rte.getEditorConfiguration().setConfigProfileFormEditor(fullProfile, usess, theme, baseContainer, relFilePath, customLinkTreeModel);
 		// Add to form and finish
 		formLayout.add(rte);
 		return rte;
