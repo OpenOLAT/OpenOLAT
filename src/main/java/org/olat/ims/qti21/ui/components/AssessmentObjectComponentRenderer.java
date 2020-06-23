@@ -519,7 +519,6 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				renderTable(renderer, sb, component, resolvedAssessmentItem, itemSessionState, (Table)block, ubu, translator);
 				break;
 			case Object.QTI_CLASS_NAME:
-				System.out.println("1");
 				break;
 			default: {
 				renderStartHtmlTag(sb, component, resolvedAssessmentItem, block, null);

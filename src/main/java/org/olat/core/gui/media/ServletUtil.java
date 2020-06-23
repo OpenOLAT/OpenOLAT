@@ -259,7 +259,6 @@ public class ServletUtil {
 		try(InputStream istream = (resourceInputStream instanceof BufferedInputStream)
 				? resourceInputStream : new BufferedInputStream(resourceInputStream, bufferSize)) {
 			stats.incrementConcurrentStreamCounter();
-			Thread.sleep(5000);
 			exception = copyRange(istream, ostream, range.start, range.end, bufferSize);
 		} catch(IOException e) {
 			handleIOException("Deliver range of data", e);

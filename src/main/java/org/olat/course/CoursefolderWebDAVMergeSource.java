@@ -104,11 +104,6 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 		//add bookmarked courses
 		if(webDAVModule.isEnableLearnersBookmarksCourse()) {
 			List<RepositoryEntry> bookmarkedEntries = repositoryManager.getLearningResourcesAsBookmarkedMember(getIdentity(), identityEnv.getRoles(), "CourseModule", 0, -1);
-			for(RepositoryEntry bookmarkedEntry:bookmarkedEntries) {
-				System.out.println(bookmarkedEntry.getDisplayname());
-			}
-			
-			
 			appendCourses(bookmarkedEntries, containers, terms, noTermContainer, namingAndGrouping, false);
 		}
 
