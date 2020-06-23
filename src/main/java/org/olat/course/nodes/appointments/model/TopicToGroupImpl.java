@@ -63,8 +63,8 @@ public class TopicToGroupImpl implements Persistable, TopicToGroup {
 	@ManyToOne(targetEntity=TopicImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_topic_id", nullable=false, insertable=true, updatable=false)
 	private Topic topic;
-	@ManyToOne(targetEntity=GroupImpl.class,fetch=FetchType.LAZY,optional=false)
-	@JoinColumn(name="fk_group_id", nullable=false, insertable=true, updatable=false)
+	@ManyToOne(targetEntity=GroupImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_group_id", nullable=true, insertable=true, updatable=true)
 	private Group group;
 	
 	@Override

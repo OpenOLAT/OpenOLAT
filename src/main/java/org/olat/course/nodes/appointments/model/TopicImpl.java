@@ -35,6 +35,8 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.olat.basesecurity.Group;
+import org.olat.basesecurity.model.GroupImpl;
 import org.olat.core.id.Persistable;
 import org.olat.course.nodes.appointments.Topic;
 import org.olat.repository.RepositoryEntry;
@@ -74,6 +76,10 @@ public class TopicImpl implements Persistable, Topic {
 	private boolean multiParticipation;
 	@Column(name="a_auto_confirmation", nullable=false, insertable=true, updatable=true)
 	private boolean autoConfirmation;
+	
+	@ManyToOne(targetEntity=GroupImpl.class, fetch=FetchType.LAZY, optional=true)
+	@JoinColumn(name="fk_group_id", nullable=true, insertable=true, updatable=true)
+	private Group group;
 	
 	@ManyToOne(targetEntity=RepositoryEntry.class, fetch=FetchType.LAZY, optional=true)
 	@JoinColumn(name="fk_entry_id", nullable=false, insertable=true, updatable=false)
@@ -158,6 +164,15 @@ public class TopicImpl implements Persistable, Topic {
 	@Override
 	public void setAutoConfirmation(boolean autoConfirmation) {
 		this.autoConfirmation = autoConfirmation;
+	}
+
+	@Override
+	public Group getGroup() {
+		return group;
+	}
+
+	public void setGroup(Group group) {
+		this.group = group;
 	}
 
 	@Override

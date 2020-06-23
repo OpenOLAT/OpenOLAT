@@ -1095,10 +1095,10 @@
 						</property>
 					</bean>
 				</entry>
-				
-				<entry key="org.olat.user.ui.identity.UserRelationsController">
+
+				<entry key="org.olat.course.assessment.EfficiencyStatementController">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
-					<property name="description" value="Relations user to user" />
+					<property name="description" value="Efficiency-Statements" />
 						<property name="propertyHandlers">
 							<list>
 								<ref bean="userPropertyFirstName" />
@@ -1108,6 +1108,28 @@
 								<ref bean="userPropertyInstitutionalUserIdentifier" />
 								<ref bean="userPropertyInstitutionalEmail" />
 							</list>
+						</property>
+					</bean>
+				</entry>
+				
+				<entry key="org.olat.course.nodes.appointments.ui.UserRestrictionTableModel">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+					<property name="description" value="Participation restrictions in appointments" />
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyEmail" />
+								<ref bean="userPropertyInstitutionalName" />
+								<ref bean="userPropertyInstitutionalUserIdentifier" />
+								<ref bean="userPropertyInstitutionalEmail" />
+							</list>
+						</property>
+						<property name="mandatoryProperties">
+							<set>
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyFirstName" />
+							</set>
 						</property>
 					</bean>
 				</entry>

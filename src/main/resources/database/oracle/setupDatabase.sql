@@ -3124,6 +3124,7 @@ create table o_ap_topic (
    a_multi_participation number default 1 not null,
    a_auto_confirmation number default 0 not null,
    fk_entry_id number(20) not null,
+   fk_group_id number(20),
    a_sub_ident varchar2(64) not null,
    primary key (id)
 );
@@ -3141,7 +3142,7 @@ create table o_ap_topic_to_group (
    id number(20) generated always as identity,
    creationdate date not null,
    fk_topic_id number(20) not null,
-   fk_group_id number(20) not null,
+   fk_group_id number(20),
    primary key (id)
 );
 
@@ -4332,7 +4333,6 @@ alter table o_ap_organizer add constraint ap_organizer_identity_idx foreign key 
 create index idx_ap_organizer_identitiy_idx on o_ap_organizer(fk_identity_id);
 alter table o_ap_topic_to_group add constraint ap_tg_topic_idx foreign key (fk_topic_id) references o_ap_topic (id);
 create index idx_ap_tg_topic_idx on o_ap_topic_to_group(fk_topic_id);
-alter table o_ap_topic_to_group add constraint ap_tg_group_idx foreign key (fk_group_id) references o_bs_group (id);
 create index idx_ap_tg_group_idx on o_ap_topic_to_group(fk_group_id);
 alter table o_ap_appointment add constraint ap_appointment_topic_idx foreign key (fk_topic_id) references o_ap_topic (id);
 create index idx_ap_appointment_topic_idx on o_ap_appointment(fk_topic_id);

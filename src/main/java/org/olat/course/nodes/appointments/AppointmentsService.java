@@ -68,8 +68,14 @@ public interface AppointmentsService {
 	public List<Organizer> getOrganizers(RepositoryEntry entry, String subIdent);
 	
 	public void restrictTopic(Topic topic, List<Group> groups);
+
+	public void addTopicRestriction(Topic topic, Identity identity);
+	
+	public void removeTopicRestriction(Topic topic, IdentityRef identity);
 	
 	public List<Group> getGroupRestrictions(TopicRef topic);
+
+	public List<Identity> getUserRestrictions(Topic topic);
 	
 	public Appointment createUnsavedAppointment(Topic topic);
 

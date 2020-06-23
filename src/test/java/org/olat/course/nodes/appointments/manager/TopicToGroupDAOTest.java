@@ -110,6 +110,28 @@ public class TopicToGroupDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldDeleteByGroup() {
+		RepositoryEntry entry1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		Topic topic1 = appointmentsService.createTopic(entry1, random());
+		Topic topic2 = appointmentsService.createTopic(entry1, random());
+		Group group11 = groupDAO.createGroup();
+		Group group12 = groupDAO.createGroup();
+		Group group21 = groupDAO.createGroup();
+		TopicToGroup topicToGroup11 = sut.create(topic1, group11);
+		TopicToGroup topicToGroup12 = sut.create(topic1, group12);
+		TopicToGroup topicToGroup21 = sut.create(topic2, group21);
+		dbInstance.commitAndCloseSession();
+		
+		sut.delete(group12);
+		
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(sut.loadByKey(topicToGroup11.getKey())).isNotNull();
+		softly.assertThat(sut.loadByKey(topicToGroup12.getKey())).isNull();
+		softly.assertThat(sut.loadByKey(topicToGroup21.getKey())).isNotNull();
+		softly.assertAll();
+	}
+	
+	@Test
 	public void shouldDeleteByRepositoryEntry() {
 		RepositoryEntry entry1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry entry2 = JunitTestHelper.createAndPersistRepositoryEntry();

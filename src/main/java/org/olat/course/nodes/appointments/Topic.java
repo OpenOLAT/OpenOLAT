@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.appointments;
 
+import org.olat.basesecurity.Group;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.repository.RepositoryEntry;
@@ -56,5 +57,7 @@ public interface Topic extends TopicRef, ModifiedInfo, CreateInfo {
 	public RepositoryEntry getEntry();
 	
 	public String getSubIdent();
+	
+	public Group getGroup();
 
 }

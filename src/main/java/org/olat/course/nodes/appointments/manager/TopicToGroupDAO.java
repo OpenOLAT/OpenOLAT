@@ -84,6 +84,18 @@ public class TopicToGroupDAO {
 				.setParameter("topicKey", topic.getKey())
 				.executeUpdate();
 	}
+
+	public void delete(Group group) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("delete");
+		sb.append("  from appointmenttopictogroup topictogroup");
+		sb.and().append(" topictogroup.group.key = :groupKey");
+		
+		dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("groupKey", group.getKey())
+				.executeUpdate();
+	}
 	
 	void delete(RepositoryEntry entry, String subIdent) {
 		QueryBuilder sb = new QueryBuilder();

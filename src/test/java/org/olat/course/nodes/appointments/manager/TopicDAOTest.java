@@ -26,6 +26,8 @@ import java.util.List;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
+import org.olat.basesecurity.Group;
+import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.course.nodes.appointments.Topic;
 import org.olat.course.nodes.appointments.Topic.Type;
@@ -48,6 +50,8 @@ public class TopicDAOTest extends OlatTestCase {
 	
 	@Autowired
 	private TopicDAO sut;
+	@Autowired
+	private GroupDAO groupDao;
 	
 	@Test
 	public void shouldCreateTopic() {
@@ -145,6 +149,18 @@ public class TopicDAOTest extends OlatTestCase {
 		softly.assertThat(topic.isAutoConfirmation()).isTrue();
 		softly.assertThat(topic.isMultiParticipation()).isFalse();
 		softly.assertAll();
+	}
+	
+	@Test
+	public void shouldSetGroup() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Topic topic = sut.createTopic(entry, random());
+		dbInstance.commitAndCloseSession();
+		
+		Group group = groupDao.createGroup();
+		topic = sut.setGroup(topic, group);
+		
+		assertThat(topic.getGroup()).isEqualTo(group);
 	}
 	
 	@Test

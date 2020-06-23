@@ -25,6 +25,7 @@ import java.util.List;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.Group;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.util.StringHelper;
@@ -82,6 +83,15 @@ class TopicDAO {
 			impl.setLastModified(new Date());
 		}
 		dbInstance.getCurrentEntityManager().merge(topic);
+		return topic;
+	}
+	
+	Topic setGroup(Topic topic, Group group) {
+		if (topic instanceof TopicImpl) {
+			TopicImpl topicImpl = (TopicImpl) topic;
+			topicImpl.setGroup(group);
+			return updateTopic(topicImpl);
+		}
 		return topic;
 	}
 	

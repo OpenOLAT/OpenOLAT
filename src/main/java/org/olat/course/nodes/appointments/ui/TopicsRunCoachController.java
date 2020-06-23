@@ -86,7 +86,7 @@ public class TopicsRunCoachController extends BasicController {
 	private CloseableModalController cmc;
 	private TopicCreateController topicCreateCtrl;
 	private TopicEditController topicEditCtrl;
-	private GroupsEditController groupsEditCtrl;
+	private TopicGroupsController topicGroupsCtrl;
 	private DialogBoxController confirmDeleteTopicCrtl;
 	private AppointmentListEditController topicRunCtrl;
 	private ContextualSubscriptionController subscriptionCtrl;
@@ -385,8 +385,8 @@ public class TopicsRunCoachController extends BasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if (groupsEditCtrl == source) {
-			cmc.deactivate();
+		} else if (topicGroupsCtrl == source) {
+			stackPanel.popUpToRootController(ureq);
 			cleanUp();
 		} else if (source == confirmDeleteTopicCrtl) {
 			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
@@ -405,11 +405,11 @@ public class TopicsRunCoachController extends BasicController {
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(topicCreateCtrl);
-		removeAsListenerAndDispose(groupsEditCtrl);
+		removeAsListenerAndDispose(topicGroupsCtrl);
 		removeAsListenerAndDispose(topicRunCtrl);
 		removeAsListenerAndDispose(cmc);
 		topicCreateCtrl = null;
-		groupsEditCtrl = null;
+		topicGroupsCtrl = null;
 		topicRunCtrl = null;
 		cmc = null;
 	}
@@ -470,13 +470,12 @@ public class TopicsRunCoachController extends BasicController {
 	}
 
 	private void doEditGroups(UserRequest ureq, Topic topic) {
-		groupsEditCtrl = new GroupsEditController(ureq, getWindowControl(), topic);
-		listenTo(groupsEditCtrl);
+		removeAsListenerAndDispose(topicGroupsCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", groupsEditCtrl.getInitialComponent(), true,
-				translate("edit.groups"));
-		listenTo(cmc);
-		cmc.activate();
+		topicGroupsCtrl = new TopicGroupsController(ureq, getWindowControl(), topic);
+		listenTo(topicGroupsCtrl);
+		
+		stackPanel.pushController(topic.getTitle(), topicGroupsCtrl);
 	}
 
 	private void doOpenTopic(UserRequest ureq, Topic topic) {

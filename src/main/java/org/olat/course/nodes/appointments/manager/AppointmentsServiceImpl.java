@@ -23,6 +23,7 @@ import static java.util.Collections.singletonList;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -31,7 +32,9 @@ import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
@@ -66,12 +69,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class AppointmentsServiceImpl implements AppointmentsService {
 	
+	private static final String TOPIC_USER_RESTRICTION_ROLE = GroupRoles.participant.name();
+	
 	@Autowired
 	private TopicDAO topicDao;
 	@Autowired
 	private OrganizerDAO organizerDao;
 	@Autowired
 	private TopicToGroupDAO topicToGroupDao;
+	@Autowired
+	private GroupDAO groupDao;
 	@Autowired
 	private AppointmentDAO appointmentDao;
 	@Autowired
@@ -131,6 +138,10 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 		List<Organizer> organizers = organizerDao.loadOrganizers(entry, subIdent);
 		appointmentsMailing.sendAppointmentsDeleted(appointments, organizers);
 		
+		List<Topic> topics = topicDao.loadTopics(entry, subIdent);
+		for (Topic topic : topics) {
+			deleteTopicGroup(topic);
+		}
 		participationDao.delete(entry, subIdent);
 		appointmentDao.delete(entry, subIdent);
 		topicToGroupDao.delete(entry, subIdent);
@@ -139,23 +150,33 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 	}
 	
 	@Override
-	public void deleteTopic(TopicRef topic) {
+	public void deleteTopic(TopicRef topicRef) {
 		AppointmentSearchParams params = new AppointmentSearchParams();
-		params.setTopic(topic);
+		params.setTopic(topicRef);
 		params.setStartAfter(new Date());
 		params.setStatus(Status.confirmed);
 		params.setFetchTopic(true);
 		List<Appointment> appointments = appointmentDao.loadAppointments(params);
 		appointmentsMailing.sendAppointmentDeleted(appointments);
 		
-		List<Organizer> organizers = organizerDao.loadOrganizers(topic);
+		List<Organizer> organizers = organizerDao.loadOrganizers(topicRef);
 		appointmentsMailing.sendAppointmentsDeleted(appointments, organizers);
 		
-		participationDao.delete(topic);
-		appointmentDao.delete(topic);
-		topicToGroupDao.delete(topic);
-		organizerDao.delete(topic);
-		topicDao.delete(topic);
+		Topic topic = topicDao.loadByKey(topicRef.getKey());
+		deleteTopicGroup(topic);
+		topicToGroupDao.delete(topicRef);
+		participationDao.delete(topicRef);
+		appointmentDao.delete(topicRef);
+		organizerDao.delete(topicRef);
+		topicDao.delete(topicRef);
+	}
+
+	private void deleteTopicGroup(Topic topic) {
+		Group group = topic.getGroup();
+		if (group != null) {
+			groupDao.removeMemberships(group);
+			groupDao.removeGroup(group);
+		}
 	}
 
 	@Override
@@ -227,6 +248,38 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 	@Override
 	public List<Group> getGroupRestrictions(TopicRef topic) {
 		return topicToGroupDao.loadGroups(topic);
+	}
+	
+	@Override
+	public void addTopicRestriction(Topic topic, Identity identity) {
+		Group group = topic.getGroup();
+		if (group == null) {
+			group = groupDao.createGroup();
+			topicDao.setGroup(topic, group);
+		}
+		groupDao.addMembershipOneWay(group, identity, TOPIC_USER_RESTRICTION_ROLE);
+	}
+
+	@Override
+	public void removeTopicRestriction(Topic topic, IdentityRef identity) {
+		Group group = topic.getGroup();
+		if (group != null) {
+			groupDao.removeMembership(group, identity, TOPIC_USER_RESTRICTION_ROLE);
+			if (groupDao.countMembers(group) == 0) {
+				topicToGroupDao.delete(group);
+				groupDao.removeGroup(group);
+				topicDao.setGroup(topic, null);
+			}
+		}
+	}
+	
+	@Override
+	public List<Identity> getUserRestrictions(Topic topic) {
+		Group group = topic.getGroup();
+		if (group != null) {
+			return groupDao.getMembers(group, TOPIC_USER_RESTRICTION_ROLE);
+		}
+		return Collections.emptyList();
 	}
 
 	@Override
