@@ -472,7 +472,7 @@ public class NGramProfile {
         f = new File(profilename + "." + FILE_EXTENSION);
         FileOutputStream fos = new FileOutputStream(f);
         newProfile.save(fos);
-        System.out.println("new profile " + profilename + "." + FILE_EXTENSION + " was created.");
+        //System.out.println("new profile " + profilename + "." + FILE_EXTENSION + " was created.");
         break;
 
       case SIMILARITY:
@@ -486,7 +486,7 @@ public class NGramProfile {
         fis = new FileInputStream(f);
         NGramProfile newProfile2 = NGramProfile.create(filename2, fis, encoding);
         newProfile2.normalize();
-        System.out.println("Similarity is " + newProfile.getSimilarity(newProfile2));
+        //System.out.println("Similarity is " + newProfile.getSimilarity(newProfile2));
         break;
 
       case SCORE:
@@ -500,7 +500,7 @@ public class NGramProfile {
                                                 DEFAULT_MIN_NGRAM_LENGTH,
                                                 DEFAULT_MAX_NGRAM_LENGTH);
         compare.load(fis);
-        System.out.println("Score is " + compare.getSimilarity(newProfile));
+        //System.out.println("Score is " + compare.getSimilarity(newProfile));
         break;
 
       }

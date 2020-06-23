@@ -228,10 +228,6 @@ public class CheckboxManagerImpl implements CheckboxManager {
 				}
 			}
 		}
-		
-		for(DBCheckbox dbCheckbox:uuids.values()) {
-			System.out.println("Remove them??? " + dbCheckbox.getCheckboxId());
-		}
 	}
 	
 	@Override

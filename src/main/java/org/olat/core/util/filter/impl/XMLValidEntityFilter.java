@@ -80,7 +80,6 @@ public class XMLValidEntityFilter implements Filter {
 								writer.append('&').append(entityContent).append(';');
 							} else if (entityValue < 0x20) {
 								//skip them
-								System.out.println();
 							} else {
 								writer.append('&').append(entityContent).append(';');
 							}
