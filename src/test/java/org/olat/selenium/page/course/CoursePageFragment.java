@@ -64,8 +64,13 @@ public class CoursePageFragment {
 	}
 	
 	public static CoursePageFragment getCourse(WebDriver browser, URL deploymentUrl, CourseVO course) {
-		browser.navigate().to(deploymentUrl.toExternalForm() + "url/RepositoryEntry/" + course.getRepoEntryKey());
-		OOGraphene.waitElement(courseRun, browser);
+		browser.get(deploymentUrl.toExternalForm() + "url/RepositoryEntry/" + course.getRepoEntryKey());
+		try {
+			OOGraphene.waitElementSlowly(courseRun, 10, browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("GetcourseByGet", browser);
+			throw e;
+		}
 		return new CoursePageFragment(browser);
 	}
 	
