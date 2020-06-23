@@ -330,6 +330,14 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	}
 
 	@Override
+	public void touchCachedResolveAssessmentTest(File resourceDirectory) {
+		URI assessmentObjectSystemId = createAssessmentTestUri(resourceDirectory);
+		if(assessmentObjectSystemId != null) {
+			assessmentTestsCache.get(resourceDirectory);
+        }
+	}
+
+	@Override
 	public ResolvedAssessmentTest loadAndResolveAssessmentTest(File resourceDirectory, boolean replace, boolean debugInfo) {
         URI assessmentObjectSystemId = createAssessmentTestUri(resourceDirectory);
         if(assessmentObjectSystemId == null) {
@@ -416,7 +424,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	public URI createAssessmentTestUri(final File resourceDirectory) {
 		final String key = resourceDirectory.getAbsolutePath();
 		try {
-			return resourceToTestURI.computeIfAbsent(key, (directoryAbsolutPath) -> {
+			return resourceToTestURI.computeIfAbsent(key, directoryAbsolutPath -> {
 				File manifestPath = new File(resourceDirectory, "imsmanifest.xml");
 				QTI21ContentPackage	cp = new QTI21ContentPackage(manifestPath.toPath());
 				try {

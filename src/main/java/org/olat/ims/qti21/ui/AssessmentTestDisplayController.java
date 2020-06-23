@@ -178,6 +178,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private DialogBoxController confirmSuspendDialog;
 	
 	private CandidateEvent lastEvent;
+	private Date touchTimestamp;
 	private Date currentRequestTimestamp;
 	private AssessmentTestSession candidateSession;
 	private ResolvedAssessmentTest resolvedAssessmentTest;
@@ -255,6 +256,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		FileResourceManager frm = FileResourceManager.getInstance();
 		fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
 		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
+		touchTimestamp = ureq.getRequestTimestamp();
 		if(resolvedAssessmentTest == null || resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful() == null) {
 			mainVC = createVelocityContainer("error");
 		} else {
@@ -630,6 +632,28 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		return sessionDeleted;
 	}
 	
+	/**
+	 * This method maintains the assessment test in cache during
+	 * a test session. This controller doesn't need the cache, the
+	 * test is strong referenced but at the end of the test, score
+	 * evaluation of the course, rendering of the assessment result
+	 * can need the cache again. For very large tests, it can be a
+	 * performance issue.
+	 * 
+	 * @param ureq The user request
+	 */
+	private void touchResolvedAssessmentTest(UserRequest ureq) {
+		try {
+			Date timestamp = ureq.getRequestTimestamp();
+			if(touchTimestamp == null || (timestamp.getTime() > touchTimestamp.getTime() + 300000l)) {
+				touchTimestamp = timestamp;
+				qtiService.touchCachedResolveAssessmentTest(fUnzippedDirRoot);
+			}
+		} catch (Exception e) {
+			logError("", e);
+		}
+	}
+	
 	private boolean timeLimitBarrier(UserRequest ureq) {
 		Long assessmentTestMaxTimeLimits = getAssessmentTestMaxTimeLimit();
 		if(assessmentTestMaxTimeLimits != null) {
@@ -796,6 +820,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				restartTest(ureq);
 				break;
 		}
+		
+		touchResolvedAssessmentTest(ureq);
 	}
 	
 	private void restartTest(UserRequest ureq) {
