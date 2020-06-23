@@ -238,14 +238,14 @@ public class RubricEditorController extends FormBasicController implements PageE
 		String insufficientLowerBound = rubric.getLowerBoundInsufficient() != null
 				? String.valueOf(rubric.getLowerBoundInsufficient())
 				: null;
-		lowerBoundInsufficientEl = uifactory.addTextElement("rubric.lower.bound.insufficient", 4,
+		lowerBoundInsufficientEl = uifactory.addTextElement("rubric.lower.bound.insufficient", null, 4,
 				insufficientLowerBound, insufficientCont);
 		lowerBoundInsufficientEl.setDomReplacementWrapperRequired(false);
 		lowerBoundInsufficientEl.setDisplaySize(4);
 		String insufficientUpperBound = rubric.getUpperBoundInsufficient() != null
 				? String.valueOf(rubric.getUpperBoundInsufficient())
 				: null;
-		upperBoundInsufficientEl = uifactory.addTextElement("rubric.upper.bound.insufficient", 4,
+		upperBoundInsufficientEl = uifactory.addTextElement("rubric.upper.bound.insufficient", null, 4,
 				insufficientUpperBound, insufficientCont);
 		upperBoundInsufficientEl.setDomReplacementWrapperRequired(false);
 		upperBoundInsufficientEl.setDisplaySize(4);
@@ -260,12 +260,12 @@ public class RubricEditorController extends FormBasicController implements PageE
 		neutralCont.setHelpTextKey("rubric.rating.help", new String[] { translate("rubric.neutral")} );
 		String neutralLowerBound = rubric.getLowerBoundNeutral() != null ? String.valueOf(rubric.getLowerBoundNeutral())
 				: null;
-		lowerBoundNeutralEl = uifactory.addTextElement("rubric.lower.bound.neutral", 4, neutralLowerBound, neutralCont);
+		lowerBoundNeutralEl = uifactory.addTextElement("rubric.lower.bound.neutral", null, 4, neutralLowerBound, neutralCont);
 		lowerBoundNeutralEl.setDomReplacementWrapperRequired(false);
 		lowerBoundNeutralEl.setDisplaySize(4);
 		String neutralUpperBound = rubric.getUpperBoundNeutral() != null ? String.valueOf(rubric.getUpperBoundNeutral())
 				: null;
-		upperBoundNeutralEl = uifactory.addTextElement("rubric.upper.bound.neutral", 4, neutralUpperBound, neutralCont);
+		upperBoundNeutralEl = uifactory.addTextElement("rubric.upper.bound.neutral", null, 4, neutralUpperBound, neutralCont);
 		upperBoundNeutralEl.setDomReplacementWrapperRequired(false);
 		upperBoundNeutralEl.setDisplaySize(4);
 
@@ -280,14 +280,14 @@ public class RubricEditorController extends FormBasicController implements PageE
 		String sufficientLowerBound = rubric.getLowerBoundSufficient() != null
 				? String.valueOf(rubric.getLowerBoundSufficient())
 				: null;
-		lowerBoundSufficientEl = uifactory.addTextElement("rubric.lower.bound.sufficient", 4, sufficientLowerBound,
+		lowerBoundSufficientEl = uifactory.addTextElement("rubric.lower.bound.sufficient", null, 4, sufficientLowerBound,
 				sufficientCont);
 		lowerBoundSufficientEl.setDomReplacementWrapperRequired(false);
 		lowerBoundSufficientEl.setDisplaySize(4);
 		String sufficientUpperBound = rubric.getUpperBoundSufficient() != null
 				? String.valueOf(rubric.getUpperBoundSufficient())
 				: null;
-		upperBoundSufficientEl = uifactory.addTextElement("rubric.upper.bound.sufficient", 4, sufficientUpperBound,
+		upperBoundSufficientEl = uifactory.addTextElement("rubric.upper.bound.sufficient", null, 4, sufficientUpperBound,
 				sufficientCont);
 		upperBoundSufficientEl.setDomReplacementWrapperRequired(false);
 		upperBoundSufficientEl.setDisplaySize(4);
@@ -490,7 +490,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 		
 		// weight
 		String weight = slider.getWeight() != null? slider.getWeight().toString(): "";
-		TextElement weightEl = uifactory.addTextElement("weight" + count.incrementAndGet(), 4, weight, flc);
+		TextElement weightEl = uifactory.addTextElement("weight" + count.incrementAndGet(), null, 4, weight, flc);
 		weightEl.setElementCssClass("o_slider_weight");
 		weightEl.setExampleKey("slider.weight", null);
 		weightEl.setEnabled(!restrictedEditWeight);

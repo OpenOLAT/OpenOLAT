@@ -107,7 +107,7 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 
 	@Override
 	public List<Link> getOptionLinks() {
-		List<Link> links = new ArrayList<>(2);
+		List<Link> links = new ArrayList<>(5);
 		links.add(column4Link);
 		links.add(column3Link);
 		links.add(column2Link);

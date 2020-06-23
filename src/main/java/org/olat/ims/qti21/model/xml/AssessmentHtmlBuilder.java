@@ -68,6 +68,7 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.xslt.XsltSerializationOptions;
 public class AssessmentHtmlBuilder {
 	
 	private static final Logger log = Tracing.createLoggerFor(AssessmentHtmlBuilder.class);
+	private static final String SPACE = " ";
 	
 	private final QtiSerializer qtiSerializer;
 	
@@ -373,6 +374,8 @@ public class AssessmentHtmlBuilder {
 			attributes.addAttribute("data-oo-movie", ooData);
 
 			super.startElement("", "object", "object", attributes);
+			// ensure the tag is written <object> </object> and <object />
+			super.characters(SPACE.toCharArray(), 0, SPACE.length());
 			super.endElement("", "object", "object");
 		}
 	}
