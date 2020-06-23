@@ -20,6 +20,7 @@
 package org.olat.course.member.wizard;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -198,7 +199,7 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 			}
 		}
 		// make a lower case copy of identList for processing username and email
-		List<String> identListLowercase = new ArrayList<>(identList.size());
+		Collection<String> identListLowercase = new HashSet<>(identList.size());
 		for (String ident:identList) {
 			identListLowercase.add(ident.toLowerCase());
 		}

@@ -129,7 +129,6 @@ class DocumentPoolWebDAVMergeSource extends WebDAVMergeSource {
 		VFSContainer documents = taxonomyService.getDocumentsLibrary(taxonomy);
 		SubscriptionContext subscriptionCtx = notificationsHandler.getTaxonomyDocumentsLibrarySubscriptionContext();
 		TaxonomyVFSSecurityCallback secCallback = new TaxonomyVFSSecurityCallback(taxonomyNode, subscriptionCtx);
-		System.out.println(taxonomyNode.isCanWrite());
 		documents.setLocalSecurityCallback(secCallback);
 		return new NamedContainerImpl(taxonomyNode.getTitle(), documents);
 	}

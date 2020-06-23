@@ -386,7 +386,6 @@ public class RegistrationController extends BasicController implements Activatea
 			if(!htmlBody) {
 				body += SEPARATOR + translate("reg.wherefrom", whereFromAttrs);
 			}
-			System.out.println(body);
 			
 			if(sendMessage(email, translate("reg.subject"), body)) {
 				showInfo("email.sent");
