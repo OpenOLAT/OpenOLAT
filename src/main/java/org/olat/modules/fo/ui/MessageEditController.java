@@ -497,6 +497,7 @@ public class MessageEditController extends FormBasicController {
 		String body = bodyEl.getValue();
 		body = body.replace("<p>&nbsp;", "<p>");
 		String editorMapperUri = Settings.createServerURI() + bodyEl.getEditorConfiguration().getMapperURI();
+		body = body.replace(editorMapperUri + "media/", "media/");
 		body = body.replace(editorMapperUri, "media/");
 		message.setBody(body.trim());
 	}
