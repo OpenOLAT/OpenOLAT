@@ -26,7 +26,6 @@ import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.image.ImageComponent;
-import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -104,8 +103,7 @@ public class ImageRunController extends BasicController implements PageRunElemen
 		}
 		
 		mainVC.setDomReplacementWrapperRequired(false);
-		StackedPanel mainPanel = putInitialPanel(mainVC);
-		mainPanel.setDomReplaceable(false);
+		putInitialPanel(mainVC);
 	}
 	
 	public void updateImageSettings(ImageSettings settings, DublinCoreMetadata meta) {
