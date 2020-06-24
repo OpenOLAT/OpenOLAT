@@ -47,7 +47,7 @@
 				#if($row.getDetails() && $row.getDetails() != "")
 					<div>
 						<i class="o_icon o_icon-fw o_icon_info_ap">&nbsp;</i>
-						$r.escapeHtml($row.getDetails())
+						$row.getDetails()
 					</div>
 				#end
 				#if($r.isNotEmpty($row.participants))
@@ -70,6 +70,9 @@
 			
 			<div class="o_buttons">
 				<div class="o_button_group o_button_group_right">
+					#if($row.addUserLinkName)
+						$r.render($row.addUserLinkName)
+					#end
 					#if($row.rebookLinkName)
 						$r.render($row.rebookLinkName)
 					#end

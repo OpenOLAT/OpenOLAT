@@ -31,6 +31,8 @@ import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.appointments.Appointment;
 import org.olat.course.nodes.appointments.Appointment.Status;
 import org.olat.course.nodes.appointments.AppointmentSearchParams;
@@ -136,6 +138,20 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 			row.setParticipation(myParticipation.get());
 		}
 		forgeAppointmentView(row, appointment);
+		if (row.getParticipation() != null) {
+			Participation participation = row.getParticipation();
+			Identity identity = participation.getIdentity();
+			Identity createdBy = participation.getCreatedBy();
+			if (!identity.getKey().equals(createdBy.getKey())) {
+				String createdByName = userManager.getUserDisplayName(createdBy.getKey());
+				String createdByText = translate("participation.created.by", createdByName);
+				createdByText = StringHelper.unescapeHtml(createdByText);
+				String details = StringHelper.containsNonWhitespace(row.getDetails())
+						? row.getDetails() + " " + createdByText
+						: createdByText;
+				row.setDetails(details);
+			}
+		}
 	
 		if (selected || confirmed) {
 			row.setTranslatedStatus(translate("appointment.status." + appointment.getStatus().name()));

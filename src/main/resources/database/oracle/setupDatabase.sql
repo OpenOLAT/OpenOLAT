@@ -3167,6 +3167,7 @@ create table o_ap_participation (
    lastmodified date not null,
    fk_appointment_id number(20) not null,
    fk_identity_id number(20) not null,
+   fk_identity_created_by number(20) not null,
    primary key (id)
 );
 

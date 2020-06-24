@@ -27,6 +27,7 @@ import static org.olat.test.JunitTestHelper.random;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
@@ -54,16 +55,18 @@ public class AppointmentsServiceTest extends OlatTestCase {
 	
 	@Test
 	public void createParticipationShouldCreateParticiption() {
-		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
 		Appointment appointment = createRandomAppointment();
 		dbInstance.commitAndCloseSession();
 		
-		ParticipationResult result = sut.createParticipation(appointment, participant, true, false);
+		ParticipationResult result = sut.createParticipations(appointment, asList(participant1, participant2), participant1, true, false);
 		
 		SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(result.getStatus()).isEqualTo(Status.ok);
-		softly.assertThat(result.getParticipations()).isNotNull().isNotEmpty();
-		softly.assertThat(result.getParticipations().get(0).getIdentity()).isEqualTo(participant);
+		softly.assertThat(result.getParticipations()).hasSize(2);
+		List<Identity> identities = result.getParticipations().stream().map(Participation::getIdentity).collect(Collectors.toList());
+		softly.assertThat(identities).containsExactly(participant1, participant2);
 		softly.assertAll();
 	}
 
@@ -75,7 +78,7 @@ public class AppointmentsServiceTest extends OlatTestCase {
 		sut.deleteAppointment(appointment);
 		dbInstance.commitAndCloseSession();
 		
-		ParticipationResult result = sut.createParticipation(appointment, participant, true, false);
+		ParticipationResult result = sut.createParticipations(appointment, singletonList(participant), participant, true, false);
 		
 		SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(result.getStatus()).isEqualTo(Status.appointmentDeleted);
@@ -91,7 +94,7 @@ public class AppointmentsServiceTest extends OlatTestCase {
 		sut.confirmAppointment(appointment);
 		dbInstance.commitAndCloseSession();
 		
-		ParticipationResult result = sut.createParticipation(appointment, participant, true, false);
+		ParticipationResult result = sut.createParticipations(appointment, singletonList(participant), participant, true, false);
 		
 		SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(result.getStatus()).isEqualTo(Status.appointmentConfirmed);
@@ -101,22 +104,47 @@ public class AppointmentsServiceTest extends OlatTestCase {
 	
 	@Test
 	public void createParticipationShouldNotCreateParticipationIfNoFreePlaces() {
-		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
+		Identity participantA = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
+		Identity participantB = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
 		Appointment appointment = createRandomAppointment();
-		appointment.setMaxParticipations(2);
+		appointment.setMaxParticipations(3);
 		sut.saveAppointment(appointment);
 		dbInstance.commitAndCloseSession();
-		Identity participantA = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
-		sut.createParticipation(appointment, participantA, true, false);
-		Identity participantB = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
-		sut.createParticipation(appointment, participantB, true, false);
+		sut.createParticipations(appointment, singletonList(participantA), participant1, true, false);
+		sut.createParticipations(appointment, singletonList(participantB), participant2, true, false);
 		dbInstance.commitAndCloseSession();
 		
-		ParticipationResult result = sut.createParticipation(appointment, participant, true, false);
+		ParticipationResult result = sut.createParticipations(appointment, asList(participant1, participant2), participant1, true, false);
 		
 		SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(result.getStatus()).isEqualTo(Status.appointmentFull);
 		softly.assertThat(result.getParticipations()).isNull();
+		softly.assertAll();
+	}
+	
+	@Test
+	public void createParticipationShouldNotCreateParticipationIfExisting() {
+		Identity participantTwice = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
+		Appointment appointment = createRandomAppointment();
+		appointment.setMaxParticipations(3);
+		sut.saveAppointment(appointment);
+		dbInstance.commitAndCloseSession();
+		sut.createParticipations(appointment, singletonList(participantTwice), participantTwice, true, false);
+		sut.createParticipations(appointment, singletonList(participant1), participant1, true, false);
+		dbInstance.commitAndCloseSession();
+		
+		ParticipationResult result = sut.createParticipations(appointment, asList(participant2, participantTwice), participantTwice, true, false);
+		
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(result.getStatus()).isEqualTo(Status.ok);
+		softly.assertThat(result.getParticipations()).hasSize(1);
+		if (!result.getParticipations().isEmpty()) {
+			softly.assertThat(result.getParticipations().get(0).getIdentity()).isEqualTo(participant2);
+		}
 		softly.assertAll();
 	}
 
@@ -126,7 +154,7 @@ public class AppointmentsServiceTest extends OlatTestCase {
 		Appointment appointment = createRandomAppointment();
 		dbInstance.commitAndCloseSession();
 		
-		sut.createParticipation(appointment, participant, true, true);
+		sut.createParticipations(appointment, singletonList(participant), participant, true, true);
 		dbInstance.commitAndCloseSession();
 		
 		AppointmentSearchParams params = new AppointmentSearchParams();
@@ -144,9 +172,9 @@ public class AppointmentsServiceTest extends OlatTestCase {
 		Appointment appointment2 = createRandomAppointment(topic);
 		dbInstance.commitAndCloseSession();
 		
-		sut.createParticipation(appointment1, participant, false, false);
+		sut.createParticipations(appointment1, singletonList(participant), participant, false, false);
 		dbInstance.commitAndCloseSession();
-		sut.createParticipation(appointment2, participant, false, false);
+		sut.createParticipations(appointment2, singletonList(participant), participant, false, false);
 		dbInstance.commitAndCloseSession();
 		
 		ParticipationSearchParams params = new ParticipationSearchParams();
@@ -165,9 +193,9 @@ public class AppointmentsServiceTest extends OlatTestCase {
 		Appointment appointment2 = createRandomAppointment(topic);
 		dbInstance.commitAndCloseSession();
 		
-		sut.createParticipation(appointment1, participant, true, true);
+		sut.createParticipations(appointment1, singletonList(participant), participant, true, true);
 		dbInstance.commitAndCloseSession();
-		sut.createParticipation(appointment2, participant, true, true);
+		sut.createParticipations(appointment2, singletonList(participant), participant, true, true);
 		dbInstance.commitAndCloseSession();
 		
 		ParticipationSearchParams params = new ParticipationSearchParams();
@@ -184,15 +212,15 @@ public class AppointmentsServiceTest extends OlatTestCase {
 		Identity participant3 = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
 		Appointment currentAppointment = createRandomAppointment();
 		Appointment rebookAppointment = createRandomAppointment();
-		ParticipationResult participationResult1 = sut.createParticipation(currentAppointment, participant1, true, false);
+		ParticipationResult participationResult1 = sut.createParticipations(currentAppointment, singletonList(participant1), participant1, true, false);
 		Participation participation1 = participationResult1.getParticipations().get(0);
-		ParticipationResult participationResult2 = sut.createParticipation(currentAppointment, participant2, true, false);
+		ParticipationResult participationResult2 = sut.createParticipations(currentAppointment, singletonList(participant2), participant2, true, false);
 		Participation participation2 = participationResult2.getParticipations().get(0);
-		ParticipationResult participationResult3 = sut.createParticipation(currentAppointment, participant3, true, false);
+		ParticipationResult participationResult3 = sut.createParticipations(currentAppointment, singletonList(participant3), participant3, true, false);
 		Participation participation3 = participationResult3.getParticipations().get(0);
 		dbInstance.commitAndCloseSession();
 		
-		ParticipationResult rebooked = sut.rebookParticipations(rebookAppointment, asList(participation1, participation2), false);
+		ParticipationResult rebooked = sut.rebookParticipations(rebookAppointment, asList(participation1, participation2), participant1, false);
 		dbInstance.commitAndCloseSession();
 		
 		SoftAssertions softly = new SoftAssertions();
@@ -215,13 +243,13 @@ public class AppointmentsServiceTest extends OlatTestCase {
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
 		Appointment currentAppointment = createRandomAppointment();
 		Appointment rebookAppointment = createRandomAppointment();
-		ParticipationResult participationResult = sut.createParticipation(currentAppointment, participant, true, false);
+		ParticipationResult participationResult = sut.createParticipations(currentAppointment, singletonList(participant), participant, true, false);
 		Participation participation = participationResult.getParticipations().get(0);
 		dbInstance.commitAndCloseSession();
 		sut.deleteAppointment(rebookAppointment);
 		dbInstance.commitAndCloseSession();
 		
-		ParticipationResult rebooked = sut.rebookParticipations(rebookAppointment, singletonList(participation), false);
+		ParticipationResult rebooked = sut.rebookParticipations(rebookAppointment, singletonList(participation), participant, false);
 		dbInstance.commitAndCloseSession();
 		
 		SoftAssertions softly = new SoftAssertions();
@@ -241,13 +269,13 @@ public class AppointmentsServiceTest extends OlatTestCase {
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
 		Appointment currentAppointment = createRandomAppointment();
 		Appointment rebookAppointment = createRandomAppointment();
-		ParticipationResult participationResult = sut.createParticipation(currentAppointment, participant, true, false);
+		ParticipationResult participationResult = sut.createParticipations(currentAppointment, singletonList(participant), participant, true, false);
 		Participation participation = participationResult.getParticipations().get(0);
 		dbInstance.commitAndCloseSession();
 		sut.deleteParticipation(participation);
 		dbInstance.commitAndCloseSession();
 		
-		ParticipationResult rebooked = sut.rebookParticipations(rebookAppointment, singletonList(participation), false);
+		ParticipationResult rebooked = sut.rebookParticipations(rebookAppointment, singletonList(participation), participant, false);
 		dbInstance.commitAndCloseSession();
 		
 		SoftAssertions softly = new SoftAssertions();
@@ -259,21 +287,21 @@ public class AppointmentsServiceTest extends OlatTestCase {
 	@Test
 	public void rebookParticipationShouldNotCreateParticipationIfNoFreePlaces() {
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
+		Identity participantA = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
+		Identity participantB = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
 		Appointment currentAppointment = createRandomAppointment();
 		Appointment rebookAppointment = createRandomAppointment();
-		ParticipationResult participationResult = sut.createParticipation(currentAppointment, participant, true, false);
+		ParticipationResult participationResult = sut.createParticipations(currentAppointment, singletonList(participant), participant, true, false);
 		Participation participation = participationResult.getParticipations().get(0);
 		dbInstance.commitAndCloseSession();
 		rebookAppointment.setMaxParticipations(2);
 		sut.saveAppointment(rebookAppointment);
 		dbInstance.commitAndCloseSession();
-		Identity participantA = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
-		sut.createParticipation(rebookAppointment, participantA, true, false);
-		Identity participantB = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
-		sut.createParticipation(rebookAppointment, participantB, true, false);
+		sut.createParticipations(rebookAppointment, singletonList(participantA), participant, true, false);
+		sut.createParticipations(rebookAppointment, singletonList(participantB), participant, true, false);
 		dbInstance.commitAndCloseSession();
 		
-		ParticipationResult rebooked = sut.rebookParticipations(rebookAppointment, singletonList(participation), false);
+		ParticipationResult rebooked = sut.rebookParticipations(rebookAppointment, singletonList(participation), participant, false);
 		dbInstance.commitAndCloseSession();
 		
 		SoftAssertions softly = new SoftAssertions();
@@ -288,17 +316,49 @@ public class AppointmentsServiceTest extends OlatTestCase {
 		softly.assertAll();
 	}
 	
-
+	@Test
+	public void rebookParticipationShouldNotCreateParticipationIfExisting() {
+		Identity participantTwice = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
+		Identity participantA = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
+		Identity participantB = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
+		Appointment currentAppointment = createRandomAppointment();
+		ParticipationResult participationResult = sut.createParticipations(currentAppointment, asList(participantA, participantTwice), participantTwice, true, false);
+		List<Participation> toRebook = participationResult.getParticipations();
+		sut.createParticipations(currentAppointment, singletonList(participantB), participantTwice, true, false);
+		dbInstance.commitAndCloseSession();
+		Appointment rebookAppointment = createRandomAppointment();
+		rebookAppointment.setMaxParticipations(2);
+		sut.saveAppointment(rebookAppointment);
+		sut.createParticipations(rebookAppointment, singletonList(participantTwice), participantTwice, true, false);
+		dbInstance.commitAndCloseSession();
+		
+		ParticipationResult rebooked = sut.rebookParticipations(rebookAppointment, toRebook, participantTwice, false);
+		dbInstance.commitAndCloseSession();
+		
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(rebooked.getStatus()).isEqualTo(Status.ok);
+		softly.assertThat(rebooked.getParticipations()).hasSize(1);
+		softly.assertThat(rebooked.getParticipations()).extracting(Participation::getIdentity)
+				.containsExactlyInAnyOrder(participantA);
+		
+		ParticipationSearchParams params = new ParticipationSearchParams();
+		params.setAppointment(currentAppointment);
+		params.setIdentity(participantB);
+		assertThat(sut.getParticipations(params).get(0).getIdentity()).isEqualTo(participantB);
+		
+		softly.assertAll();
+	}
+	
 	@Test
 	public void rebookParticipationShouldAutoconfirm() {
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
 		Appointment currentAppointment = createRandomAppointment();
 		Appointment rebookAppointment = createRandomAppointment();
-		ParticipationResult participationResult = sut.createParticipation(currentAppointment, participant, true, false);
+		ParticipationResult participationResult = sut.createParticipations(currentAppointment, singletonList(participant), participant, true, false);
 		Participation participation = participationResult.getParticipations().get(0);
 		dbInstance.commitAndCloseSession();
 		
-		sut.rebookParticipations(rebookAppointment, singletonList(participation), true);
+		sut.rebookParticipations(rebookAppointment, singletonList(participation), participant, true);
 		dbInstance.commitAndCloseSession();
 		
 		AppointmentSearchParams params = new AppointmentSearchParams();
@@ -313,13 +373,13 @@ public class AppointmentsServiceTest extends OlatTestCase {
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
 		Appointment currentAppointment = createRandomAppointment();
 		Appointment rebookAppointment = createRandomAppointment();
-		ParticipationResult participationResult1 = sut.createParticipation(currentAppointment, participant, true, false);
+		ParticipationResult participationResult1 = sut.createParticipations(currentAppointment, singletonList(participant), participant, true, false);
 		Participation participation1 = participationResult1.getParticipations().get(0);
 		dbInstance.commitAndCloseSession();
-		sut.createParticipation(rebookAppointment, participant, true, false);
+		sut.createParticipations(rebookAppointment, singletonList(participant), participant, true, false);
 		dbInstance.commitAndCloseSession();
 		
-		ParticipationResult rebooked = sut.rebookParticipations(rebookAppointment, asList(participation1), false);
+		ParticipationResult rebooked = sut.rebookParticipations(rebookAppointment, asList(participation1), participant, false);
 		dbInstance.commitAndCloseSession();
 		
 		SoftAssertions softly = new SoftAssertions();

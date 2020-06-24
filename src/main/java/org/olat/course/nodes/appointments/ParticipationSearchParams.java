@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.stream.Collectors;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.repository.RepositoryEntry;
 
@@ -38,7 +39,7 @@ public class ParticipationSearchParams {
 	private Collection<Long> topicKeys;
 	private RepositoryEntry entry;
 	private String subIdent;
-	private Identity identity;
+	private Collection<Long> identityKeys;
 	private Date createdAfter;
 	private Collection<Long> participationKeys;
 	private Collection<Long> appointmentKeys;
@@ -81,12 +82,22 @@ public class ParticipationSearchParams {
 		this.subIdent = subIdent;
 	}
 
-	public Identity getIdentity() {
-		return identity;
+	public Collection<Long> getIdentityKeys() {
+		return identityKeys;
 	}
 
-	public void setIdentity(Identity identity) {
-		this.identity = identity;
+	public void setIdentityKeys(Collection<Long> identityKeys) {
+		this.identityKeys = identityKeys;
+	}
+	
+	public void setIdentities(Collection<? extends IdentityRef> identities) {
+		this.identityKeys = identities.stream()
+				.map(IdentityRef::getKey)
+				.collect(Collectors.toSet());
+	}
+
+	public void setIdentity(IdentityRef identity) {
+		this.identityKeys = Collections.singletonList(identity.getKey());
 	}
 	
 	public Date getCreatedAfter() {

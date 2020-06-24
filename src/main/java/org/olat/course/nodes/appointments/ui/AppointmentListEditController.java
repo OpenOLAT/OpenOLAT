@@ -160,6 +160,9 @@ public class AppointmentListEditController extends AppointmentListController {
 				forgeConfirmLink(row, confirmable);
 			}
 		}
+		if (freeParticipations == null || freeParticipations.intValue() > 0) {
+			forgeAddUserLink(row);
+		}
 		forgeDeleteLink(row);
 		forgeEditLink(row);
 		

@@ -69,6 +69,9 @@ public class ParticipationImpl implements Persistable, Participation {
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_identity_id", nullable=false, insertable=true, updatable=false)
 	private Identity identity;
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=false)
+	@JoinColumn(name="fk_identity_created_by", nullable=false, insertable=true, updatable=true)
+	private Identity createdBy;
 
 	@Override
 	public Long getKey() {
@@ -114,6 +117,16 @@ public class ParticipationImpl implements Persistable, Participation {
 
 	public void setIdentity(Identity identity) {
 		this.identity = identity;
+	}
+
+	@Override
+	public Identity getCreatedBy() {
+		return createdBy;
+	}
+
+	@Override
+	public void setCreatedBy(Identity createdBy) {
+		this.createdBy = createdBy;
 	}
 
 	@Override

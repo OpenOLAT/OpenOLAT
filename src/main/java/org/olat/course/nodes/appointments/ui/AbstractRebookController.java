@@ -273,7 +273,7 @@ public abstract class AbstractRebookController extends FormBasicController {
 					.collect(Collectors.toList());
 			Long appointmentKey = Long.valueOf(appointmentsEl.getSelectedKey());
 			appointmentsService.rebookParticipations(AppointmentRef.of(appointmentKey), participationRefs,
-					currentAppointment.getTopic().isAutoConfirmation());
+					getIdentity(), currentAppointment.getTopic().isAutoConfirmation());
 		}
 		
 		onAfterRebooking();

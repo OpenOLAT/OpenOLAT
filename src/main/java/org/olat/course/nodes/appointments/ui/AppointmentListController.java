@@ -19,11 +19,17 @@
  */
 package org.olat.course.nodes.appointments.ui;
 
+import static java.util.Collections.singletonList;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.admin.user.UserSearchController;
+import org.olat.basesecurity.events.MultiIdentityChosenEvent;
+import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -52,6 +58,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.appointments.Appointment;
@@ -75,6 +82,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public abstract class AppointmentListController extends FormBasicController implements FlexiTableComponentDelegate {
 	
 	private static final String CMD_SELECT = "select";
+	private static final String CMD_ADD_USER = "add";
 	private static final String CMD_REBOOK = "rebook";
 	private static final String CMD_CONFIRM = "confirm";
 	private static final String CMD_DELETE = "delete";
@@ -89,6 +97,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 	private TopicHeaderController headerCtrl;
 	private DialogBoxController confirmParticipationCrtl;
 	private AppointmentEditController appointmentEditCtrl;
+	private UserSearchController userSearchCtrl;
 	private RebookController rebookCtrl;
 	private AppointmentDeleteController appointmentDeleteCtrl;
 
@@ -186,6 +195,9 @@ public abstract class AppointmentListController extends FormBasicController impl
 			columnsModel.addFlexiColumnModel(selectModel);
 		}
 		if (canEdit()) {
+			DefaultFlexiColumnModel addUserModel = new DefaultFlexiColumnModel(AppointmentCols.addUser);
+			addUserModel.setExportable(false);
+			columnsModel.addFlexiColumnModel(addUserModel);
 			if (Type.finding != topic.getType()) {
 				DefaultFlexiColumnModel rebookModel = new DefaultFlexiColumnModel(AppointmentCols.rebook);
 				rebookModel.setExportable(false);
@@ -344,6 +356,12 @@ public abstract class AppointmentListController extends FormBasicController impl
 		row.setSelectLink(link);
 	}
 
+	protected void forgeAddUserLink(AppointmentRow row) {
+		FormLink link = uifactory.addFormLink("add_" + row.getKey(), CMD_ADD_USER, "add.user", null, null, Link.LINK);
+		link.setUserObject(row);
+		row.setAddUserLink(link);
+	}
+
 	protected void forgeRebookLink(AppointmentRow row) {
 		FormLink link = uifactory.addFormLink("rebook_" + row.getKey(), CMD_REBOOK, "rebook", null, null, Link.LINK);
 		link.setUserObject(row);
@@ -390,6 +408,9 @@ public abstract class AppointmentListController extends FormBasicController impl
 			} else if (CMD_CONFIRM.equals(cmd)) {
 				AppointmentRow row = (AppointmentRow)link.getUserObject();
 				doConfirm(row.getAppointment());
+			} else if (CMD_ADD_USER.equals(cmd)) {
+				AppointmentRow row = (AppointmentRow)link.getUserObject();
+				doSelectUser(ureq, row.getAppointment());
 			} else if (CMD_REBOOK.equals(cmd)) {
 				AppointmentRow row = (AppointmentRow)link.getUserObject();
 				doRebook(ureq, row.getAppointment());
@@ -398,6 +419,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 		super.formInnerEvent(ureq, source, event);
 	}
 	
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == confirmParticipationCrtl) {
@@ -418,7 +440,24 @@ public abstract class AppointmentListController extends FormBasicController impl
 			}
 			cmc.deactivate();
 			cleanUp();
-		}  else if (rebookCtrl == source) {
+		} else if (userSearchCtrl == source) {
+			Appointment appointment = (Appointment)userSearchCtrl.getUserObject();
+			if (event instanceof SingleIdentityChosenEvent) {
+				SingleIdentityChosenEvent singleEvent = (SingleIdentityChosenEvent)event;
+				Identity choosenIdentity = singleEvent.getChosenIdentity();
+				if (choosenIdentity != null) {
+					List<Identity> toAdd = Collections.singletonList(choosenIdentity);
+					doAddUser(appointment, toAdd);
+				}
+			} else if (event instanceof MultiIdentityChosenEvent) {
+				MultiIdentityChosenEvent multiEvent = (MultiIdentityChosenEvent)event;
+				if(!multiEvent.getChosenIdentities().isEmpty()) {
+					doAddUser(appointment, multiEvent.getChosenIdentities());
+				}
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (rebookCtrl == source) {
 			if (event == Event.DONE_EVENT) {
 				updateModel();
 			}
@@ -433,10 +472,12 @@ public abstract class AppointmentListController extends FormBasicController impl
 	private void cleanUp() {
 		removeAsListenerAndDispose(appointmentDeleteCtrl);
 		removeAsListenerAndDispose(appointmentEditCtrl);
+		removeAsListenerAndDispose(userSearchCtrl);
 		removeAsListenerAndDispose(rebookCtrl);
 		removeAsListenerAndDispose(cmc);
 		appointmentDeleteCtrl = null;
 		appointmentEditCtrl = null;
+		userSearchCtrl = null;
 		rebookCtrl = null;
 		cmc = null;
 	}
@@ -467,8 +508,8 @@ public abstract class AppointmentListController extends FormBasicController impl
 	}
 
 	private void doCreateParticipation(Appointment appointment) {
-		ParticipationResult participationResult = appointmentsService.createParticipation(appointment, getIdentity(),
-				topic.isMultiParticipation(), topic.isAutoConfirmation());
+		ParticipationResult participationResult = appointmentsService.createParticipations(appointment,
+				singletonList(getIdentity()), getIdentity(), topic.isMultiParticipation(), topic.isAutoConfirmation());
 		if (ParticipationResult.Status.ok != participationResult.getStatus()) {
 			showWarning("participation.not.created");
 		}
@@ -509,6 +550,28 @@ public abstract class AppointmentListController extends FormBasicController impl
 			appointmentsService.confirmAppointment(appointment);
 		} else {
 			appointmentsService.unconfirmAppointment(appointment);
+		}
+		updateModel();
+	}
+
+	private void doSelectUser(UserRequest ureq, Appointment appointment) {
+		userSearchCtrl = new UserSearchController(ureq, getWindowControl(), true, true, false);
+		userSearchCtrl.setUserObject(appointment);
+		listenTo(userSearchCtrl);
+		
+		String title = translate("add.user.title");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), userSearchCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doAddUser(Appointment appointment, List<Identity> identities) {
+		ParticipationResult result = appointmentsService.createParticipations(appointment, identities, getIdentity(),
+				topic.isMultiParticipation(), topic.isAutoConfirmation());
+		if (ParticipationResult.Status.appointmentFull == result.getStatus()) {
+			showWarning("error.not.as.many.participations.left");
+		} else if (ParticipationResult.Status.ok != result.getStatus()) {
+			showWarning("participations.not.created");
 		}
 		updateModel();
 	}
