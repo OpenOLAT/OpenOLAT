@@ -152,7 +152,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		joinButton.setVisible(!ended && !guest);
 		joinButton.setTextReasonForDisabling(translate("warning.no.access"));
 		
-		String url = Settings.createServerURI() + "/bigbluebutton/" + meeting.getIdentifier();
+		String url = Settings.getServerContextPathURI() + "/bigbluebutton/" + meeting.getIdentifier();
 		guestJoinButton = LinkFactory.createExternalLink("meeting.guest.join.button", "meeting.guest.join.button", url);
 		guestJoinButton.setElementCssClass("btn btn-lg btn-default o_sel_bbb_guest_join");
 		guestJoinButton.setName(translate("meeting.guest.join.button"));
