@@ -96,6 +96,17 @@ public interface QTI21Service {
 	public URI createAssessmentTestUri(File resourceDirectory);
 	
 	/**
+	 * Ensure the assessment test is cached and not expired by
+	 * the max. idle configuration. The goal is to maintain the
+	 * object in cache despite it to be strong reference by the
+	 * run controller.
+	 * 
+	 * @param resourceDirectory The directory where is the package
+	 */
+	public void touchCachedResolveAssessmentTest(File resourceDirectory);
+	
+	
+	/**
 	 * Load the assessmentTest based on the imsmanifest.xml found in the resource
 	 * directory. Return null if the imsmanifest.xml is not found. The assessmentTest
 	 * is cached.
