@@ -389,6 +389,11 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		moduleConfiguration.set(CONFIG_KEY_REPOSITORY_SOFTKEY, re.getSoftkey());
 	}
 	
+	public static boolean matchIQReference(RepositoryEntry re, ModuleConfiguration moduleConfiguration) {
+		String repoSoftkey = (String)moduleConfiguration.get(CONFIG_KEY_REPOSITORY_SOFTKEY);
+		return repoSoftkey != null && re != null && repoSoftkey.equals(re.getSoftkey());
+	}
+	
 	/**
 	 * Remove the reference to the repository entry.
 	 * 

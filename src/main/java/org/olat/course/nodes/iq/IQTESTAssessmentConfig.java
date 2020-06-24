@@ -78,7 +78,7 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 				|| IQEditController.CONFIG_VALUE_QTI1.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI))) {
 			maxScore = (Float) config.get(IQEditController.CONFIG_KEY_MAXSCORE);
 		} else {
-			RepositoryEntry testEntry = courseNode.getReferencedRepositoryEntry();
+			RepositoryEntry testEntry = courseNode.getCachedReferencedRepositoryEntry();
 			if (testEntry != null) {
 				if(QTIResourceTypeModule.isQtiWorks(testEntry.getOlatResource())) {
 					AssessmentTest assessmentTest = courseNode.loadAssessmentTest(testEntry);
@@ -107,7 +107,7 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 				|| IQEditController.CONFIG_VALUE_QTI1.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI))) {
 			minScore = (Float) config.get(IQEditController.CONFIG_KEY_MINSCORE);
 		} else {
-			RepositoryEntry testEntry = courseNode.getReferencedRepositoryEntry();
+			RepositoryEntry testEntry = courseNode.getCachedReferencedRepositoryEntry();
 			if (testEntry != null) {
 				if(QTIResourceTypeModule.isQtiWorks(testEntry.getOlatResource())) {
 					AssessmentTest assessmentTest = courseNode.loadAssessmentTest(testEntry);
@@ -135,7 +135,7 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 				|| IQEditController.CONFIG_VALUE_QTI1.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI))) {
 			mode = Mode.setByNode;
 		} else {
-			RepositoryEntry testEntry = courseNode.getReferencedRepositoryEntry();
+			RepositoryEntry testEntry = courseNode.getCachedReferencedRepositoryEntry();
 			if (testEntry != null) {
 				if(QTIResourceTypeModule.isQtiWorks(testEntry.getOlatResource())) {
 					AssessmentTest assessmentTest = courseNode.loadAssessmentTest(testEntry);
@@ -168,7 +168,7 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 				|| IQEditController.CONFIG_VALUE_QTI1.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI))) {
 			cutValue = (Float) config.get(IQEditController.CONFIG_KEY_CUTVALUE);
 		} else {
-			RepositoryEntry testEntry = courseNode.getReferencedRepositoryEntry();
+			RepositoryEntry testEntry = courseNode.getCachedReferencedRepositoryEntry();
 			if (testEntry != null) {
 				if(QTIResourceTypeModule.isQtiWorks(testEntry.getOlatResource())) {
 					AssessmentTest assessmentTest = courseNode.loadAssessmentTest(testEntry);

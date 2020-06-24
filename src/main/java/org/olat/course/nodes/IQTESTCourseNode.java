@@ -140,6 +140,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 
 	private static final int CURRENT_CONFIG_VERSION = 2;
 
+	private transient RepositoryEntry cachedReferenceRepositoryEntry;
+
 	public IQTESTCourseNode() {
 		this(null);
 	}
@@ -424,12 +426,27 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		sd.setActivateableViewIdentifier(pane);
 		status.add(sd);
 	}
+	
+	/**
+	 * @return A cached instance of the reference repository entry. May be not suitable
+	 * 		to insert an assessment entry.
+	 */
+	public RepositoryEntry getCachedReferencedRepositoryEntry() {
+		RepositoryEntry cachedEntry = cachedReferenceRepositoryEntry;
+		if(IQEditController.matchIQReference(cachedEntry, getModuleConfiguration())) {
+			return cachedEntry;
+		}
+		// The method updates the cache
+		return getReferencedRepositoryEntry();
+	}
 
 	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
 		// ",false" because we do not want to be strict, but just indicate whether
 		// the reference still exists or not
-		return IQEditController.getIQReference(getModuleConfiguration(), false);
+		RepositoryEntry entry = IQEditController.getIQReference(getModuleConfiguration(), false);
+		cachedReferenceRepositoryEntry = entry;
+		return entry;
 	}
 
 	@Override

@@ -63,6 +63,7 @@ import org.olat.modules.ceditor.ui.event.MoveDownElementEvent;
 import org.olat.modules.ceditor.ui.event.MoveUpElementEvent;
 import org.olat.modules.ceditor.ui.event.OpenAddElementEvent;
 import org.olat.modules.ceditor.ui.event.PositionEnum;
+import org.olat.modules.ceditor.ui.event.SaveElementEvent;
 
 /**
  * 
@@ -215,6 +216,8 @@ public class PageEditorV2Controller extends BasicController {
 			doDrop(ureq, (DropToEditorEvent)event);
 		} else if(event instanceof DropToPageElementEvent) {
 			doDrop(ureq, (DropToPageElementEvent)event);
+		} else if(event instanceof SaveElementEvent) {
+			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
 	}
 	
@@ -228,6 +231,8 @@ public class PageEditorV2Controller extends BasicController {
 			}
 			return true;
 		}, editorCmp, false).visitAll(ureq);
+
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
 	private void doCloseEditionEvent(UserRequest ureq, String elementId) {

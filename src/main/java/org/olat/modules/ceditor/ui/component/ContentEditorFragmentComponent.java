@@ -46,6 +46,7 @@ import org.olat.modules.ceditor.ui.event.MoveDownElementEvent;
 import org.olat.modules.ceditor.ui.event.MoveUpElementEvent;
 import org.olat.modules.ceditor.ui.event.OpenAddElementEvent;
 import org.olat.modules.ceditor.ui.event.PositionEnum;
+import org.olat.modules.ceditor.ui.event.SaveElementEvent;
 
 /**
  * 
@@ -147,6 +148,7 @@ public class ContentEditorFragmentComponent extends FormBaseComponentImpl implem
 					break;
 				case "save_element":
 					doCloseEditFragment();
+					fireEvent(ureq, new SaveElementEvent(this));
 					break;
 				case "delete_element":
 					fireEvent(ureq, new DeleteElementEvent(this));
@@ -209,6 +211,7 @@ public class ContentEditorFragmentComponent extends FormBaseComponentImpl implem
 			((PageElementEditorController)editorPart).setEditMode(false);
 		}
 		setDirty(true);
+		
 	}
 
 	@Override
