@@ -630,7 +630,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		boolean isVisible = scoreEval != null;
 		
 		if (isVisible) {
-			if (scoreEval.getPassed()) {
+			if (scoreEval.getPassed() && scoreEval.getPassed().booleanValue()) {
 				isVisible &= isResultVisible(passedStartDate, passedEndDate);
 			} else {
 				isVisible &= isResultVisible(failedStartDate, failedEndDate);
