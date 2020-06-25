@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.basesecurity.GroupRoles;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -73,6 +74,8 @@ public class QTI21RetrieveTestsController extends FormBasicController {
 	private List<Identity> identities;
 	private List<AssessmentTestSession> sessions;
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -149,7 +152,7 @@ public class QTI21RetrieveTestsController extends FormBasicController {
 		}
 		
 		String msg;
-		if(sessionsToRetrieve.size() == 0) {
+		if(sessionsToRetrieve.isEmpty()) {
 			msg = translate("retrievetest.nothing.todo");
 		} else if(sessionsToRetrieve.size() == 1) {
 			msg = translate("retrievetest.confirm.text", new String[]{ fullnames.toString() });
@@ -193,6 +196,7 @@ public class QTI21RetrieveTestsController extends FormBasicController {
 					.createAndInitUserCourseEnvironment(session.getIdentity(), courseEnv);
 			courseNode.pullAssessmentTestSession(session, assessedUserCourseEnv, getIdentity(), Role.coach);
 		}
+		dbInstance.commitAndCloseSession();
 	}
 	
 	private DigitalSignatureOptions getSignatureOptions(AssessmentTestSession session) {
@@ -202,13 +206,10 @@ public class QTI21RetrieveTestsController extends FormBasicController {
 		RepositoryEntry courseEntry = session.getRepositoryEntry();
 		QTI21DeliveryOptions deliveryOptions = qtiService.getDeliveryOptions(testEntry);
 		
-		boolean digitalSignature = deliveryOptions.isDigitalSignature();
-		boolean sendMail = deliveryOptions.isDigitalSignatureMail();
-
 		ModuleConfiguration config = courseNode.getModuleConfiguration();
-		digitalSignature = config.getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE,
+		boolean digitalSignature = config.getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE,
 			deliveryOptions.isDigitalSignature());
-		sendMail = config.getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE_SEND_MAIL,
+		boolean sendMail = config.getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE_SEND_MAIL,
 			deliveryOptions.isDigitalSignatureMail());
 
 		DigitalSignatureOptions options = new DigitalSignatureOptions(digitalSignature, sendMail, courseEntry, testEntry);
