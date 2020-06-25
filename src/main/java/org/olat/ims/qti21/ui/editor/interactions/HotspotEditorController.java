@@ -375,9 +375,7 @@ public class HotspotEditorController extends FormBasicController {
 			updateHotspots(ureq);
 			updateHotspotsPosition(backgroundSize);
 		} else if(correctHotspotsEl == source) {
-			MultipleSelectionElement correctEl = (MultipleSelectionElement)source;
-			Collection<String> correctResponseIds = correctEl.getSelectedKeys();
-			doCorrectAnswers(correctResponseIds);
+			doCorrectAnswers(correctHotspotsEl.getSelectedKeys());
 			flc.setDirty(true);
 		} else if(layoutEl == source) {
 			updateLayoutCssClass();
@@ -439,6 +437,7 @@ public class HotspotEditorController extends FormBasicController {
 	
 	private void doCorrectAnswers(Collection<String> correctResponseIds) {
 		List<HotspotChoice> choices = itemBuilder.getHotspotChoices();
+		itemBuilder.clearCorrectAnswers();
 		for(int i=0; i<choices.size(); i++) {
 			HotspotChoice choice = choices.get(i);
 			boolean correct = correctResponseIds.contains(choice.getIdentifier().toString());
@@ -513,6 +512,8 @@ public class HotspotEditorController extends FormBasicController {
 		} else if(initialBackgroundImage != null) {
 			objectImg = initialBackgroundImage;
 		}
+		
+		doCorrectAnswers(correctHotspotsEl.getSelectedKeys());
 		
 		if(cardinalityEl.isOneSelected()) {
 			String selectedCardinality = cardinalityEl.getSelectedKey();
