@@ -73,9 +73,23 @@ public interface AppointmentsService {
 	
 	public void removeTopicRestriction(Topic topic, IdentityRef identity);
 	
+	public boolean hasGroupRestrictions(TopicRef topic);
+	
 	public List<Group> getGroupRestrictions(TopicRef topic);
 
+	/**
+	 *
+	 * @param topic
+	 * @return the identities of the topic group.
+	 */
 	public List<Identity> getUserRestrictions(Topic topic);
+	
+	/**
+	 *
+	 * @param topic
+	 * @return the identities of the all restriction groups.
+	 */
+	public List<Identity> getRestrictionMembers(TopicRef topic);
 	
 	public Appointment createUnsavedAppointment(Topic topic);
 

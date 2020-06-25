@@ -233,7 +233,7 @@ public class TopicGroupsController extends FormBasicController {
 		
 		usersTableModel = new UserRestrictionTableModel(columnsModel, getLocale()); 
 		usersTableEl = uifactory.addTableElement(getWindowControl(), "users", usersTableModel, 20, false, getTranslator(), usersLayout);
-		usersTableEl.setAndLoadPersistedPreferences(ureq, "");
+		usersTableEl.setAndLoadPersistedPreferences(ureq, "topic.groups.users");
 		usersTableEl.setEmtpyTableMessageKey("groups.users.empty.table");
 		usersTableEl.setSelectAllEnable(true);
 		usersTableEl.setMultiSelect(true);

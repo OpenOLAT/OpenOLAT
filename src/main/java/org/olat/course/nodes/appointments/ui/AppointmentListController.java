@@ -96,6 +96,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 	private CloseableModalController cmc;
 	private TopicHeaderController headerCtrl;
 	private DialogBoxController confirmParticipationCrtl;
+	private FindingConfirmationController findingConfirmationCtrl;
 	private AppointmentEditController appointmentEditCtrl;
 	private UserSearchController userSearchCtrl;
 	private ParticipationRemoveController removeCtrl;
@@ -362,7 +363,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 		row.setAddUserLink(link);
 	}
 
-	protected void forgeRemoveLink(AppointmentRow row) {
+	protected void forgeRemoveUserLink(AppointmentRow row) {
 		FormLink link = uifactory.addFormLink("remove_" + row.getKey(), CMD_REMOVE, "remove.user", null, null, Link.LINK);
 		link.setUserObject(row);
 		row.setRemoveLink(link);
@@ -407,7 +408,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 				doConfirmDeletion(ureq, row.getAppointment());
 			} else if (CMD_CONFIRM.equals(cmd)) {
 				AppointmentRow row = (AppointmentRow)link.getUserObject();
-				doConfirm(row.getAppointment());
+				doConfirm(ureq, row.getAppointment());
 			} else if (CMD_ADD_USER.equals(cmd)) {
 				AppointmentRow row = (AppointmentRow)link.getUserObject();
 				doSelectUser(ureq, row.getAppointment());
@@ -428,6 +429,12 @@ public abstract class AppointmentListController extends FormBasicController impl
 				doCreateParticipation(appointment);
 				updateModel();
 			}
+		} else if (findingConfirmationCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				updateModel();
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if (appointmentEditCtrl == source) {
 			if (event == Event.DONE_EVENT) {
 				updateModel();
@@ -470,11 +477,13 @@ public abstract class AppointmentListController extends FormBasicController impl
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(findingConfirmationCtrl);
 		removeAsListenerAndDispose(appointmentDeleteCtrl);
 		removeAsListenerAndDispose(appointmentEditCtrl);
 		removeAsListenerAndDispose(userSearchCtrl);
 		removeAsListenerAndDispose(removeCtrl);
 		removeAsListenerAndDispose(cmc);
+		findingConfirmationCtrl = null;
 		appointmentDeleteCtrl = null;
 		appointmentEditCtrl = null;
 		userSearchCtrl = null;
@@ -545,13 +554,27 @@ public abstract class AppointmentListController extends FormBasicController impl
 		cmc.activate();
 	}
 
-	private void doConfirm(Appointment appointment) {
+	private void doConfirm(UserRequest ureq, Appointment appointment) {
 		if (Status.planned == appointment.getStatus()) {
-			appointmentsService.confirmAppointment(appointment);
+			if (Type.finding == topic.getType()) {
+				doConfirmFinding(ureq, appointment);
+			} else {
+				appointmentsService.confirmAppointment(appointment);
+			}
 		} else {
 			appointmentsService.unconfirmAppointment(appointment);
 		}
 		updateModel();
+	}
+
+	private void doConfirmFinding(UserRequest ureq, Appointment appointment) {
+		findingConfirmationCtrl = new FindingConfirmationController(ureq, getWindowControl(), appointment);
+		listenTo(findingConfirmationCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), "close", findingConfirmationCtrl.getInitialComponent(), true,
+				translate("edit.appointment.title"));
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	private void doSelectUser(UserRequest ureq, Appointment appointment) {

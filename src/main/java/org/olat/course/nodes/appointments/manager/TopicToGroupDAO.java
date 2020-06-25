@@ -144,6 +144,18 @@ public class TopicToGroupDAO {
 				.setParameter("topicToGroupKey", topic.getKey())
 				.getResultList();
 	}
+	
+	Long loadGroupCount(TopicRef topic) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select count (distinct topictogroup.group.id)");
+		sb.append("  from appointmenttopictogroup topictogroup");
+		sb.and().append(" topictogroup.topic.key = :topicToGroupKey");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("topicToGroupKey", topic.getKey())
+				.getSingleResult();
+	}
 
 	List<Group> loadGroups(TopicRef topic) {
 		QueryBuilder sb = new QueryBuilder();

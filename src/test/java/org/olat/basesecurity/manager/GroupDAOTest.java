@@ -19,6 +19,8 @@
  */
 package org.olat.basesecurity.manager;
 
+import static java.util.Arrays.asList;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -169,6 +171,26 @@ public class GroupDAOTest extends OlatTestCase {
 		List<Identity> members = groupDao.getMembers(group, "author");
 		Assert.assertNotNull(members);
 		Assert.assertEquals(1, members.size());
+	}
+	
+	@Test
+	public void getMembersOfGroupCollection() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-3a-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-3a-2");
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-3a-3");
+		Identity id4 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-3a-4");
+		Group group1 = groupDao.createGroup();
+		Group group2 = groupDao.createGroup();
+		groupDao.addMembershipTwoWay(group1, id1, "author");
+		groupDao.addMembershipTwoWay(group1, id2, "author");
+		groupDao.addMembershipTwoWay(group2, id1, "author");
+		groupDao.addMembershipTwoWay(group2, id3, "author");
+		groupDao.addMembershipTwoWay(group2, id4, "participant");
+		dbInstance.commitAndCloseSession();
+		
+		List<Identity> members = groupDao.getMembers(asList(group1, group2), "author");
+		Assert.assertNotNull(members);
+		Assert.assertEquals(3, members.size());
 	}
 	
 	@Test

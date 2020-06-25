@@ -19,11 +19,13 @@
  */
 package org.olat.basesecurity.manager;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 
@@ -215,6 +217,15 @@ public class GroupDAO {
 		return dbInstance.getCurrentEntityManager()
 			.createNamedQuery("membersByGroupAndRole", Identity.class)
 			.setParameter("groupKey", group.getKey())
+			.setParameter("role", role)
+			.getResultList();
+	}
+	
+	public List<Identity> getMembers(Collection<Group> group, String role) {
+		List<Long> groupKeys = group.stream().map(Group::getKey).collect(Collectors.toList());
+		return dbInstance.getCurrentEntityManager()
+			.createNamedQuery("membersByGroupsAndRole", Identity.class)
+			.setParameter("groupKeys", groupKeys)
 			.setParameter("role", role)
 			.getResultList();
 	}

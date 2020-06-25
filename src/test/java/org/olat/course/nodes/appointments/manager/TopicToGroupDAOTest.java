@@ -188,6 +188,24 @@ public class TopicToGroupDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldLoadGroupCountByTopic() {
+		RepositoryEntry entry1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		Topic topic1 = appointmentsService.createTopic(entry1, random());
+		Topic topic2 = appointmentsService.createTopic(entry1, random());
+		Group group11 = groupDAO.createGroup();
+		Group group12 = groupDAO.createGroup();
+		Group group21 = groupDAO.createGroup();
+		sut.create(topic1, group11);
+		sut.create(topic1, group12);
+		sut.create(topic2, group21);
+		dbInstance.commitAndCloseSession();
+		
+		Long count = sut.loadGroupCount(topic1);
+		
+		assertThat(count).isEqualTo(2);
+	}
+	
+	@Test
 	public void shouldLoadGroupsByTopic() {
 		RepositoryEntry entry1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		Topic topic1 = appointmentsService.createTopic(entry1, random());

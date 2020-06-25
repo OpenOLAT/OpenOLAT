@@ -246,6 +246,11 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 	}
 	
 	@Override
+	public boolean hasGroupRestrictions(TopicRef topic) {
+		return topicToGroupDao.loadGroupCount(topic).longValue() > 0;
+	}
+	
+	@Override
 	public List<Group> getGroupRestrictions(TopicRef topic) {
 		return topicToGroupDao.loadGroups(topic);
 	}
@@ -278,6 +283,15 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 		Group group = topic.getGroup();
 		if (group != null) {
 			return groupDao.getMembers(group, TOPIC_USER_RESTRICTION_ROLE);
+		}
+		return Collections.emptyList();
+	}
+	
+	@Override
+	public List<Identity> getRestrictionMembers(TopicRef topic) {
+		List<Group> groups = topicToGroupDao.loadGroups(topic);
+		if (!groups.isEmpty()) {
+			return groupDao.getMembers(groups, TOPIC_USER_RESTRICTION_ROLE);
 		}
 		return Collections.emptyList();
 	}

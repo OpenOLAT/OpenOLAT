@@ -138,11 +138,11 @@ public class AppointmentListEditController extends AppointmentListController {
 			row.setStatusCSS("o_ap_status_" + appointment.getStatus().name());
 		}
 		
-		boolean rebookable = Type.finding == topic.getType()
-				? false
+		boolean removeUser = Type.finding == topic.getType()
+				? participations.size() > 0 && Status.confirmed == appointment.getStatus()
 				: participations.size() > 0;
-		if (rebookable) {
-			forgeRemoveLink(row);
+		if (removeUser) {
+			forgeRemoveUserLink(row);
 		}
 		
 		if (Type.finding == topic.getType()) {
