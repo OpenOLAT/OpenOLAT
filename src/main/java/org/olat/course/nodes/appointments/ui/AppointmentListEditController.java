@@ -142,7 +142,7 @@ public class AppointmentListEditController extends AppointmentListController {
 				? false
 				: participations.size() > 0;
 		if (rebookable) {
-			forgeRebookLink(row);
+			forgeRemoveLink(row);
 		}
 		
 		if (Type.finding == topic.getType()) {

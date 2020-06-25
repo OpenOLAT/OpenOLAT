@@ -83,7 +83,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 	
 	private static final String CMD_SELECT = "select";
 	private static final String CMD_ADD_USER = "add";
-	private static final String CMD_REBOOK = "rebook";
+	private static final String CMD_REMOVE = "remove";
 	private static final String CMD_CONFIRM = "confirm";
 	private static final String CMD_DELETE = "delete";
 	private static final String CMD_EDIT = "edit";
@@ -98,7 +98,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 	private DialogBoxController confirmParticipationCrtl;
 	private AppointmentEditController appointmentEditCtrl;
 	private UserSearchController userSearchCtrl;
-	private RebookController rebookCtrl;
+	private ParticipationRemoveController removeCtrl;
 	private AppointmentDeleteController appointmentDeleteCtrl;
 
 	protected Topic topic;
@@ -199,9 +199,9 @@ public abstract class AppointmentListController extends FormBasicController impl
 			addUserModel.setExportable(false);
 			columnsModel.addFlexiColumnModel(addUserModel);
 			if (Type.finding != topic.getType()) {
-				DefaultFlexiColumnModel rebookModel = new DefaultFlexiColumnModel(AppointmentCols.rebook);
-				rebookModel.setExportable(false);
-				columnsModel.addFlexiColumnModel(rebookModel);
+				DefaultFlexiColumnModel removeModel = new DefaultFlexiColumnModel(AppointmentCols.removeUser);
+				removeModel.setExportable(false);
+				columnsModel.addFlexiColumnModel(removeModel);
 			}
 			DefaultFlexiColumnModel confirmModel = new DefaultFlexiColumnModel(AppointmentCols.confirm);
 			confirmModel.setExportable(false);
@@ -362,10 +362,10 @@ public abstract class AppointmentListController extends FormBasicController impl
 		row.setAddUserLink(link);
 	}
 
-	protected void forgeRebookLink(AppointmentRow row) {
-		FormLink link = uifactory.addFormLink("rebook_" + row.getKey(), CMD_REBOOK, "rebook", null, null, Link.LINK);
+	protected void forgeRemoveLink(AppointmentRow row) {
+		FormLink link = uifactory.addFormLink("remove_" + row.getKey(), CMD_REMOVE, "remove.user", null, null, Link.LINK);
 		link.setUserObject(row);
-		row.setRebookLink(link);
+		row.setRemoveLink(link);
 	}
 	
 	protected void forgeConfirmLink(AppointmentRow row, boolean confirmable) {
@@ -411,9 +411,9 @@ public abstract class AppointmentListController extends FormBasicController impl
 			} else if (CMD_ADD_USER.equals(cmd)) {
 				AppointmentRow row = (AppointmentRow)link.getUserObject();
 				doSelectUser(ureq, row.getAppointment());
-			} else if (CMD_REBOOK.equals(cmd)) {
+			} else if (CMD_REMOVE.equals(cmd)) {
 				AppointmentRow row = (AppointmentRow)link.getUserObject();
-				doRebook(ureq, row.getAppointment());
+				doRemove(ureq, row.getAppointment());
 			} 
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -457,7 +457,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if (rebookCtrl == source) {
+		} else if (removeCtrl == source) {
 			if (event == Event.DONE_EVENT) {
 				updateModel();
 			}
@@ -473,12 +473,12 @@ public abstract class AppointmentListController extends FormBasicController impl
 		removeAsListenerAndDispose(appointmentDeleteCtrl);
 		removeAsListenerAndDispose(appointmentEditCtrl);
 		removeAsListenerAndDispose(userSearchCtrl);
-		removeAsListenerAndDispose(rebookCtrl);
+		removeAsListenerAndDispose(removeCtrl);
 		removeAsListenerAndDispose(cmc);
 		appointmentDeleteCtrl = null;
 		appointmentEditCtrl = null;
 		userSearchCtrl = null;
-		rebookCtrl = null;
+		removeCtrl = null;
 		cmc = null;
 	}
 
@@ -576,12 +576,12 @@ public abstract class AppointmentListController extends FormBasicController impl
 		updateModel();
 	}
 	
-	private void doRebook(UserRequest ureq, Appointment appointment) {
-		rebookCtrl = new RebookController(ureq, getWindowControl(), appointment);
-		listenTo(rebookCtrl);
+	private void doRemove(UserRequest ureq, Appointment appointment) {
+		removeCtrl = new ParticipationRemoveController(ureq, getWindowControl(), appointment);
+		listenTo(removeCtrl);
 
-		cmc = new CloseableModalController(getWindowControl(), "close", rebookCtrl.getInitialComponent(),
-				true, translate("rebook.title"));
+		cmc = new CloseableModalController(getWindowControl(), "close", removeCtrl.getInitialComponent(),
+				true, translate("remove.user.title"));
 		listenTo(cmc);
 		cmc.activate();
 	}

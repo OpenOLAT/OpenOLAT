@@ -118,7 +118,7 @@ implements SortableFlexiTableDataModel<AppointmentRow>, FilterableFlexiTableMode
 			case participants: return row.getParticipantsWrapper();
 			case select: return row.getSelectLink();
 			case addUser: return row.getAddUserLink();
-			case rebook: return row.getRebookLink();
+			case removeUser: return row.getRemoveLink();
 			case confirm: return row.getConfirmLink();
 			case delete: return row.getDeleteLink();
 			case edit: return row.getEditLink();
@@ -144,7 +144,7 @@ implements SortableFlexiTableDataModel<AppointmentRow>, FilterableFlexiTableMode
 		participants("participants"),
 		select("select"),
 		addUser("add.user"),
-		rebook("rebook"),
+		removeUser("remove.user"),
 		confirm("confirm"),
 		edit("edit"),
 		delete("delete");

@@ -21,6 +21,7 @@ package org.olat.course.nodes.appointments.ui;
 
 import static java.util.Collections.emptyList;
 import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 
 import java.text.DateFormat;
 import java.util.Arrays;
@@ -39,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -49,6 +51,8 @@ import org.olat.course.nodes.appointments.AppointmentSearchParams;
 import org.olat.course.nodes.appointments.AppointmentsService;
 import org.olat.course.nodes.appointments.Participation;
 import org.olat.course.nodes.appointments.ParticipationRef;
+import org.olat.course.nodes.appointments.ParticipationResult;
+import org.olat.course.nodes.appointments.ParticipationResult.Status;
 import org.olat.course.nodes.appointments.ParticipationSearchParams;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,13 +63,18 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public abstract class AbstractRebookController extends FormBasicController {
+public abstract class AbstractParticipationRemoveController extends FormBasicController {
 	
 	private static final String[] EMPTY = new String[0];
+	private static final String DELETE = "remove.user.delete";
+	private static final String CHANGE = "remove.user.rebook";
+	private static final String[] PARTICIPATIONS = { DELETE, CHANGE };
 
+	private SingleSelection changeEl;
 	private MultipleSelectionElement participationsEl;
 	private SingleSelection appointmentsEl;
 	private StaticTextElement noAppointmentsEl;
+	private FormSubmit submitButton;
 	
 	private final DateFormat dateFormat;
 	private final Appointment currentAppointment;
@@ -77,7 +86,7 @@ public abstract class AbstractRebookController extends FormBasicController {
 	@Autowired
 	private UserManager userManager;
 
-	public AbstractRebookController(UserRequest ureq, WindowControl wControl, Appointment appointment) {
+	public AbstractParticipationRemoveController(UserRequest ureq, WindowControl wControl, Appointment appointment) {
 		super(ureq, wControl);
 		this.currentAppointment = appointment;
 		
@@ -96,13 +105,11 @@ public abstract class AbstractRebookController extends FormBasicController {
 	
 	abstract boolean isAllParticipationsSelected();
 	
-	abstract boolean isShowAppointments();
-	
 	abstract String getSubmitI18nKey();
 	
 	abstract void initFormTop(FormItemContainer formLayout, Controller listener, UserRequest ureq);
 	
-	abstract void onAfterRebooking();
+	abstract void onAfterRemoving();
 	
 	AppointmentsService getAppointmentsService() {
 		return appointmentsService;
@@ -116,22 +123,31 @@ public abstract class AbstractRebookController extends FormBasicController {
 		return participations.size();
 	}
 	
+	boolean isRebook() {
+		return changeEl != null && changeEl.isOneSelected() && CHANGE.equals(changeEl.getSelectedKey());
+	}
+	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		initFormTop(formLayout, listener, ureq);
 		
-		participationsEl = uifactory.addCheckboxesVertical("rebook.participation", formLayout,  EMPTY, EMPTY, 2);
+		changeEl = uifactory.addRadiosHorizontal("remove.user.change", formLayout, PARTICIPATIONS,
+				translateAll(getTranslator(), PARTICIPATIONS));
+		changeEl.addActionListener(FormEvent.ONCHANGE);
+		changeEl.select(DELETE, true);
+		
+		participationsEl = uifactory.addCheckboxesVertical("remove.user.participation", formLayout,  EMPTY, EMPTY, 2);
 		participationsEl.addActionListener(FormEvent.ONCHANGE);
 				
-		appointmentsEl = uifactory.addRadiosVertical("rebook.appointments", "rebook.appointments", formLayout, EMPTY, EMPTY);
+		appointmentsEl = uifactory.addRadiosVertical("remove.user.appointments", "remove.user.appointments", formLayout, EMPTY, EMPTY);
 		
-		noAppointmentsEl = uifactory.addStaticTextElement("rebook.no.appointments",
-				translate("rebook.no.appointments.text"), formLayout);
+		noAppointmentsEl = uifactory.addStaticTextElement("remove.user.no.appointments",
+				translate("remove.user.no.appointments.text"), formLayout);
 		
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonCont.setRootForm(mainForm);
 		formLayout.add(buttonCont);
-		uifactory.addFormSubmitButton(getSubmitI18nKey(), buttonCont);
+		submitButton = uifactory.addFormSubmitButton(getSubmitI18nKey(), buttonCont);
 		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
 		
 		updateUI();
@@ -139,6 +155,7 @@ public abstract class AbstractRebookController extends FormBasicController {
 	
 	void updateUI(){
 		if (participations.isEmpty()) {
+			changeEl.setVisible(false);
 			participationsEl.setVisible(false);
 			appointmentsEl.setVisible(false);
 			noAppointmentsEl.setVisible(false);
@@ -171,7 +188,8 @@ public abstract class AbstractRebookController extends FormBasicController {
 	}
 
 	private void updateAppointmentsUI() {
-		if (isShowAppointments()) {
+		boolean showAppointments = isRebook();
+		if (showAppointments) {
 			selectedAppointmentKey = appointmentsEl.isOneSelected()
 					? appointmentsEl.getSelectedKey()
 					: selectedAppointmentKey;
@@ -209,6 +227,8 @@ public abstract class AbstractRebookController extends FormBasicController {
 			appointmentsEl.setVisible(false);
 			noAppointmentsEl.setVisible(false);
 		}
+		
+		submitButton.setI18nKey(getSubmitI18nKey());
 	}
 	
 	private boolean hasFreeParticipations(Appointment appointment,
@@ -230,7 +250,9 @@ public abstract class AbstractRebookController extends FormBasicController {
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == participationsEl) {
+		if (source == changeEl) {
+			updateAppointmentsUI();
+		} else if (source == participationsEl) {
 			updateAppointmentsUI();
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -266,17 +288,23 @@ public abstract class AbstractRebookController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if (appointmentsEl.isVisible()) {
-			Collection<ParticipationRef> participationRefs = participationsEl.getSelectedKeys().stream()
-					.map(Long::valueOf)
-					.map(ParticipationRef::of)
-					.collect(Collectors.toList());
+		Collection<ParticipationRef> participationRefs = participationsEl.getSelectedKeys().stream()
+				.map(Long::valueOf)
+				.map(ParticipationRef::of)
+				.collect(Collectors.toList());
+		if (isRebook()) {
 			Long appointmentKey = Long.valueOf(appointmentsEl.getSelectedKey());
-			appointmentsService.rebookParticipations(AppointmentRef.of(appointmentKey), participationRefs,
+			ParticipationResult result = appointmentsService.rebookParticipations(AppointmentRef.of(appointmentKey), participationRefs,
 					getIdentity(), currentAppointment.getTopic().isAutoConfirmation());
+			if (result.getStatus() != Status.ok) {
+				showWarning("error.rebook");
+				return;
+			}
+		} else {
+			appointmentsService.deleteParticipations(participationRefs);
 		}
 		
-		onAfterRebooking();
+		onAfterRemoving();
 		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

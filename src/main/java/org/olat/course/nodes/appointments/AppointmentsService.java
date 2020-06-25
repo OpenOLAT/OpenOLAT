@@ -109,6 +109,8 @@ public interface AppointmentsService {
 			Collection<? extends ParticipationRef> participationRefs, Identity rebookedBy, boolean autoConfirmation);
 
 	public void deleteParticipation(Participation participation);
+	
+	public void deleteParticipations(Collection<? extends ParticipationRef> participationRefs);
 
 	public Long getParticipationCount(ParticipationSearchParams params);
 

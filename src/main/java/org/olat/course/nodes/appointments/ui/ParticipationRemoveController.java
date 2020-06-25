@@ -31,9 +31,9 @@ import org.olat.course.nodes.appointments.Appointment;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class RebookController extends AbstractRebookController {
+public class ParticipationRemoveController extends AbstractParticipationRemoveController {
 
-	public RebookController(UserRequest ureq, WindowControl wControl, Appointment appointment) {
+	public ParticipationRemoveController(UserRequest ureq, WindowControl wControl, Appointment appointment) {
 		super(ureq, wControl, appointment);
 	}
 
@@ -48,18 +48,13 @@ public class RebookController extends AbstractRebookController {
 	}
 
 	@Override
-	boolean isShowAppointments() {
-		return true;
-	}
-
-	@Override
 	boolean isAllParticipationsSelected() {
 		return false;
 	}
 
 	@Override
 	String getSubmitI18nKey() {
-		return "rebook";
+		return isRebook()? "rebook": "delete";
 	}
 
 	@Override
@@ -68,7 +63,7 @@ public class RebookController extends AbstractRebookController {
 	}
 
 	@Override
-	void onAfterRebooking() {
+	void onAfterRemoving() {
 		//
 	}
 

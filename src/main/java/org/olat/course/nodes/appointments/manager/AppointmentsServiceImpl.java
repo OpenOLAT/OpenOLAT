@@ -406,6 +406,8 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 				ParticipationSearchParams currentParticipationParams = new ParticipationSearchParams();
 				currentParticipationParams.setTopic(reloadedAppointment.getTopic());
 				currentParticipationParams.setIdentity(identity);
+				currentParticipationParams.setFetchAppointments(true);
+				currentParticipationParams.setFetchIdentities(true);
 				List<Participation> loadParticipations = participationDao.loadParticipations(currentParticipationParams);
 				loadParticipations.forEach(currentParticipation -> deleteParticipation(currentParticipation));
 			}
@@ -439,6 +441,7 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 		ParticipationSearchParams pParams = new ParticipationSearchParams();
 		pParams.setParticipations(participationRefs);
 		pParams.setFetchIdentities(true);
+		pParams.setFetchAppointments(true);
 		List<Participation> fromParticipations = participationDao.loadParticipations(pParams);
 		if (fromParticipations.isEmpty()) {
 			return ParticipationResult.NO_PARTICIPATIONS;
@@ -486,6 +489,16 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 		markNews(toAppointment.getTopic());
 		
 		return ParticipationResult.of(participations);
+	}
+	
+	@Override
+	public void deleteParticipations(Collection<? extends ParticipationRef> participationRefs) {
+		ParticipationSearchParams participationParams = new ParticipationSearchParams();
+		participationParams.setParticipations(participationRefs);
+		participationParams.setFetchAppointments(true);
+		participationParams.setFetchIdentities(true);
+		List<Participation> loadParticipations = participationDao.loadParticipations(participationParams);
+		loadParticipations.forEach(participation -> deleteParticipation(participation));
 	}
 
 	@Override

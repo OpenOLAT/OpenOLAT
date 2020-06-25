@@ -59,6 +59,11 @@ public class FormSubmit extends FormButton implements Submit{
 		this.action = FormEvent.ONCLICK;
 	}
 
+	public void setI18nKey(String i18nKey) {
+		this.i18nKey = i18nKey;
+		getComponent().setDirty(true);
+	}
+
 	@Override
 	protected void rootFormAvailable(){
 		String formItemId = getFormItemId();

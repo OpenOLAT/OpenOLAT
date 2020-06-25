@@ -53,7 +53,7 @@ public class AppointmentRow {
 	private String selectionCSS;
 	private FormLink selectLink;
 	private FormLink addUserLink;
-	private FormLink rebookLink;
+	private FormLink removeLink;
 	private FormLink confirmLink;
 	private FormLink deleteLink;
 	private FormLink editLink;
@@ -222,16 +222,16 @@ public class AppointmentRow {
 		this.addUserLink = addUserLink;
 	}
 	
-	public FormLink getRebookLink() {
-		return rebookLink;
+	public FormLink getRemoveLink() {
+		return removeLink;
 	}
 
-	public String getRebookLinkName() {
-		return rebookLink != null? rebookLink.getName(): null;
+	public String getRemoveLinkName() {
+		return removeLink != null? removeLink.getName(): null;
 	}
 
-	public void setRebookLink(FormLink rebookLink) {
-		this.rebookLink = rebookLink;
+	public void setRemoveLink(FormLink removeLink) {
+		this.removeLink = removeLink;
 	}
 	
 	public FormLink getConfirmLink() {

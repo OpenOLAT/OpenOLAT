@@ -19,13 +19,8 @@
  */
 package org.olat.course.nodes.appointments.ui;
 
-import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
-
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.nodes.appointments.Appointment;
@@ -37,13 +32,7 @@ import org.olat.course.nodes.appointments.Topic.Type;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class AppointmentDeleteController extends AbstractRebookController {
-	
-	private static final String DELETE = "appointment.delete.no";
-	private static final String CHANGE = "appointment.delete.yes";
-	private static final String[] PARTICIPATIONS = { DELETE, CHANGE };
-	
-	private SingleSelection changeEl;
+public class AppointmentDeleteController extends AbstractParticipationRemoveController {
 
 	public AppointmentDeleteController(UserRequest ureq, WindowControl wControl, Appointment appointment) {
 		super(ureq, wControl, appointment);
@@ -65,11 +54,6 @@ public class AppointmentDeleteController extends AbstractRebookController {
 	}
 
 	@Override
-	boolean isShowAppointments() {
-		return changeEl != null && changeEl.isOneSelected() && CHANGE.equals(changeEl.getSelectedKey());
-	}
-
-	@Override
 	String getSubmitI18nKey() {
 		return "delete";
 	}
@@ -78,26 +62,13 @@ public class AppointmentDeleteController extends AbstractRebookController {
 	protected void initFormTop(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if (Type.finding != getCurrentAppointment().getTopic().getType() && getNumParticipations() > 0) {
 			setFormDescription("appointment.delete.participations", new String[] { String.valueOf(getNumParticipations()) } );
-		
-			changeEl = uifactory.addRadiosHorizontal("appointment.delete.rebook", formLayout, PARTICIPATIONS,
-					translateAll(getTranslator(), PARTICIPATIONS));
-			changeEl.addActionListener(FormEvent.ONCHANGE);
-			changeEl.select(DELETE, true);
 		} else {
 			setFormDescription("confirm.appointment.delete");
 		}
 	}
 
 	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == changeEl) {
-			super.updateUI();
-		}
-		super.formInnerEvent(ureq, source, event);
-	}
-
-	@Override
-	void onAfterRebooking() {
+	void onAfterRemoving() {
 		getAppointmentsService().deleteAppointment(getCurrentAppointment());
 	}
 	
