@@ -50,12 +50,13 @@ class ParticipationDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	Participation createParticipation(Appointment appointment, Identity identity) {
+	Participation createParticipation(Appointment appointment, Identity identity, Identity createdBy) {
 		ParticipationImpl participation = new ParticipationImpl();
 		participation.setCreationDate(new Date());
 		participation.setLastModified(participation.getCreationDate());
 		participation.setAppointment(appointment);
 		participation.setIdentity(identity);
+		participation.setCreatedBy(createdBy);
 		
 		dbInstance.getCurrentEntityManager().persist(participation);
 		return participation;
@@ -185,8 +186,8 @@ class ParticipationDAO {
 		if (params.getTopicKeys() != null && !params.getTopicKeys().isEmpty()) {
 			sb.and().append("appointment.topic.key in (:topicKeys)");
 		}
-		if (params.getIdentity() != null ) {
-			sb.and().append("participation.identity.key = :identityKey");
+		if (params.getIdentityKeys() != null && !params.getIdentityKeys().isEmpty()) {
+			sb.and().append("participation.identity.key in (:identityKeys)");
 		}
 		if (params.getCreatedAfter() != null) {
 			sb.and().append("participation.creationDate >= :createdAfter");
@@ -221,8 +222,8 @@ class ParticipationDAO {
 		if (params.getTopicKeys() != null && !params.getTopicKeys().isEmpty()) {
 				query.setParameter("topicKeys", params.getTopicKeys());
 		}
-		if (params.getIdentity() != null) {
-			query.setParameter("identityKey", params.getIdentity().getKey());
+		if (params.getIdentityKeys() != null && !params.getIdentityKeys().isEmpty()) {
+			query.setParameter("identityKeys", params.getIdentityKeys());
 		}
 		if (params.getCreatedAfter() != null) {
 			query.setParameter("createdAfter", params.getCreatedAfter());

@@ -366,8 +366,8 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 	}
 
 	@Override
-	public ParticipationResult createParticipation(Appointment appointment, Identity identity,
-			boolean multiParticipations, boolean autoConfirmation) {
+	public ParticipationResult createParticipations(Appointment appointment, Collection<Identity> identities,
+			Identity createdBy, boolean multiParticipations, boolean autoConfirmation) {
 		AppointmentSearchParams appointmentParams = new AppointmentSearchParams();
 		appointmentParams.setAppointment(appointment);
 		appointmentParams.setFetchTopic(true);
@@ -381,37 +381,52 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 			return ParticipationResult.APPOINTMENT_CONFIRMED;
 		}
 		
+		ParticipationSearchParams params = new ParticipationSearchParams();
+		params.setAppointment(reloadedAppointment);
+		params.setIdentities(identities);
+		List<Participation> loadParticipations12 = participationDao.loadParticipations(params);
+		List<Long> existingParticipationIdentityKeys = loadParticipations12.stream()
+				.map(p -> p.getIdentity().getKey())
+				.collect(Collectors.toList());
+		List<Identity> identitesWithoutParticipation = new ArrayList<>(identities);
+		identitesWithoutParticipation.removeIf(i -> existingParticipationIdentityKeys.contains(i.getKey()));
+		
 		if (reloadedAppointment.getMaxParticipations() != null) {
 			ParticipationSearchParams participationParams = new ParticipationSearchParams();
 			participationParams.setAppointmentKeys(singletonList(reloadedAppointment.getKey()));
 			Long count = participationDao.loadParticipationCount(participationParams);
-			if (count.longValue() >= reloadedAppointment.getMaxParticipations().intValue()) {
+			if ((count + identitesWithoutParticipation.size()) > reloadedAppointment.getMaxParticipations().intValue()) {
 				return ParticipationResult.APPOINTMENT_FULL;
 			}
 		}
 		
-		if (!multiParticipations) {
-			ParticipationSearchParams currentParticipationParams = new ParticipationSearchParams();
-			currentParticipationParams.setTopic(reloadedAppointment.getTopic());
-			currentParticipationParams.setIdentity(identity);
-			List<Participation> loadParticipations = participationDao.loadParticipations(currentParticipationParams);
-			loadParticipations.forEach(currentParticipation -> deleteParticipation(currentParticipation));
+		List<Participation> participations = new ArrayList<>(identitesWithoutParticipation.size());
+		for (Identity identity: identitesWithoutParticipation) {
+			if (!multiParticipations) {
+				ParticipationSearchParams currentParticipationParams = new ParticipationSearchParams();
+				currentParticipationParams.setTopic(reloadedAppointment.getTopic());
+				currentParticipationParams.setIdentity(identity);
+				List<Participation> loadParticipations = participationDao.loadParticipations(currentParticipationParams);
+				loadParticipations.forEach(currentParticipation -> deleteParticipation(currentParticipation));
+			}
+			
+			Participation participation = participationDao.createParticipation(reloadedAppointment, identity, createdBy);
+			participations.add(participation);
+			calendarSyncher.syncCalendar(reloadedAppointment, identity);
 		}
-		
-		Participation participation = participationDao.createParticipation(reloadedAppointment, identity);
-		calendarSyncher.syncCalendar(reloadedAppointment, identity);
-		markNews(reloadedAppointment.getTopic());
 		
 		if (autoConfirmation) {
 			confirmReloadedAppointment(reloadedAppointment, false);
 		}
 		
-		return ParticipationResult.of(participation);
+		markNews(reloadedAppointment.getTopic());
+		
+		return ParticipationResult.of(participations);
 	}
 
 	@Override
 	public ParticipationResult rebookParticipations(AppointmentRef toAppointmentRef,
-			Collection<? extends ParticipationRef> participationRefs, boolean autoConfirmation) {
+			Collection<? extends ParticipationRef> participationRefs, Identity rebookedBy, boolean autoConfirmation) {
 		AppointmentSearchParams aParams = new AppointmentSearchParams();
 		aParams.setAppointment(toAppointmentRef);
 		aParams.setFetchTopic(true);
@@ -421,15 +436,6 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 		}
 		Appointment toAppointment = appointments.get(0);
 		
-		ParticipationSearchParams participationParams = new ParticipationSearchParams();
-		participationParams.setAppointments(singletonList(toAppointment));
-		List<Participation> currentParticipations = participationDao.loadParticipations(participationParams);
-		if (toAppointment.getMaxParticipations() != null) {
-			if ((currentParticipations.size() + participationRefs.size()) > toAppointment.getMaxParticipations().intValue()) {
-				return ParticipationResult.APPOINTMENT_FULL;
-			}
-		}
-		
 		ParticipationSearchParams pParams = new ParticipationSearchParams();
 		pParams.setParticipations(participationRefs);
 		pParams.setFetchIdentities(true);
@@ -437,17 +443,37 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 		if (fromParticipations.isEmpty()) {
 			return ParticipationResult.NO_PARTICIPATIONS;
 		}
+
+		List<Identity> fromIdentities = fromParticipations.stream()
+				.map(Participation::getIdentity)
+				.collect(Collectors.toList());
 		
-		List<Participation> participations = new ArrayList<>(fromParticipations.size());
-		for (Participation fromParticipation : fromParticipations) {
-			if (!hasParticipation(currentParticipations, fromParticipation) ) {
-				Identity identity = fromParticipation.getIdentity();
-				Participation participation = participationDao.createParticipation(toAppointment, identity);
-				participations.add(participation);
-				calendarSyncher.syncCalendar(toAppointment, identity);
+		ParticipationSearchParams params = new ParticipationSearchParams();
+		params.setAppointment(toAppointment);
+		params.setIdentities(fromIdentities);
+		List<Participation> loadParticipations12 = participationDao.loadParticipations(params);
+		List<Long> existingParticipationIdentityKeys = loadParticipations12.stream()
+				.map(p -> p.getIdentity().getKey())
+				.collect(Collectors.toList());
+		List<Participation> fromWithoutParticipation = new ArrayList<>(fromParticipations);
+		fromWithoutParticipation.removeIf(p -> existingParticipationIdentityKeys.contains(p.getIdentity().getKey()));
+		
+		if (toAppointment.getMaxParticipations() != null) {
+			ParticipationSearchParams participationParams = new ParticipationSearchParams();
+			participationParams.setAppointment(toAppointment);
+			Long count = participationDao.loadParticipationCount(participationParams);
+			if ((count + fromWithoutParticipation.size()) > toAppointment.getMaxParticipations().intValue()) {
+				return ParticipationResult.APPOINTMENT_FULL;
 			}
 		}
-		markNews(toAppointment.getTopic());
+		
+		List<Participation> participations = new ArrayList<>(fromWithoutParticipation.size());
+		for (Participation fromParticipation : fromWithoutParticipation) {
+			Identity identity = fromParticipation.getIdentity();
+			Participation participation = participationDao.createParticipation(toAppointment, identity, rebookedBy);
+			participations.add(participation);
+			calendarSyncher.syncCalendar(toAppointment, identity);
+		}
 		appointmentsMailing.sendRebook(toAppointment, fromParticipations);
 
 		if (autoConfirmation) {
@@ -456,18 +482,10 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 		
 		// Delete after send email to have the from participations informations in the email
 		fromParticipations.forEach(this::deleteParticipation);
+
+		markNews(toAppointment.getTopic());
 		
 		return ParticipationResult.of(participations);
-	}
-
-	private boolean hasParticipation(List<Participation> currentParticipations, Participation fromParticipation) {
-		Long identityKey = fromParticipation.getIdentity().getKey();
-		for (Participation participation : currentParticipations) {
-			if (participation.getIdentity().getKey().equals(identityKey)) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	@Override

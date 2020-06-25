@@ -52,6 +52,7 @@ public class AppointmentRow {
 	private FormItem dayEl;
 	private String selectionCSS;
 	private FormLink selectLink;
+	private FormLink addUserLink;
 	private FormLink rebookLink;
 	private FormLink confirmLink;
 	private FormLink deleteLink;
@@ -208,7 +209,19 @@ public class AppointmentRow {
 	public void setSelectLink(FormLink selectLink) {
 		this.selectLink = selectLink;
 	}
+	
+	public FormLink getAddUserLink() {
+		return addUserLink;
+	}
 
+	public String getAddUserLinkName() {
+		return addUserLink != null? addUserLink.getName(): null;
+	}
+
+	public void setAddUserLink(FormLink addUserLink) {
+		this.addUserLink = addUserLink;
+	}
+	
 	public FormLink getRebookLink() {
 		return rebookLink;
 	}

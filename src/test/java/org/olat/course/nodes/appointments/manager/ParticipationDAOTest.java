@@ -69,10 +69,11 @@ public class ParticipationDAOTest extends OlatTestCase {
 	public void shouldCreateParticipation() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser(random());
+		Identity caoch = JunitTestHelper.createAndPersistIdentityAsUser(random());
 		Topic topic = topicDao.createTopic(entry, JunitTestHelper.random());
 		Appointment appointment = appointmentDao.createAppointment(topic);
 		appointment = appointmentDao.loadByKey(appointment.getKey());
-		Participation participation = sut.createParticipation(appointment, identity);
+		Participation participation = sut.createParticipation(appointment, identity, caoch);
 		dbInstance.commitAndCloseSession();
 		
 		SoftAssertions softly = new SoftAssertions();
@@ -82,6 +83,7 @@ public class ParticipationDAOTest extends OlatTestCase {
 		softly.assertThat(participation.getLastModified()).isNotNull();
 		softly.assertThat(participation.getAppointment()).isEqualTo(appointment);
 		softly.assertThat(participation.getIdentity()).isEqualTo(identity);
+		softly.assertThat(participation.getCreatedBy()).isEqualTo(caoch);
 		softly.assertAll();
 	}
 
@@ -91,7 +93,7 @@ public class ParticipationDAOTest extends OlatTestCase {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser(random());
 		Topic topic = topicDao.createTopic(entry, JunitTestHelper.random());
 		Appointment appointment = appointmentDao.createAppointment(topic);
-		Participation participation = sut.createParticipation(appointment, identity);
+		Participation participation = sut.createParticipation(appointment, identity, identity);
 		dbInstance.commitAndCloseSession();
 		
 		sut.updateParticipation(participation);
@@ -110,7 +112,7 @@ public class ParticipationDAOTest extends OlatTestCase {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser(random());
 		Topic topic = topicDao.createTopic(entry, JunitTestHelper.random());
 		Appointment appointment = appointmentDao.createAppointment(topic);
-		Participation participation = sut.createParticipation(appointment, identity);
+		Participation participation = sut.createParticipation(appointment, identity, identity);
 		dbInstance.commitAndCloseSession();
 		
 		sut.delete(participation);
@@ -129,9 +131,9 @@ public class ParticipationDAOTest extends OlatTestCase {
 		Topic topic2 = topicDao.createTopic(entry, subIdent);
 		Appointment appointment1 = appointmentDao.createAppointment(topic1);
 		Appointment appointment2 = appointmentDao.createAppointment(topic2);
-		Participation participation11 = sut.createParticipation(appointment1, identity);
-		Participation participation12 = sut.createParticipation(appointment1, identity);
-		Participation participation21 = sut.createParticipation(appointment2, identity);
+		Participation participation11 = sut.createParticipation(appointment1, identity, identity);
+		Participation participation12 = sut.createParticipation(appointment1, identity, identity);
+		Participation participation21 = sut.createParticipation(appointment2, identity, identity);
 		dbInstance.commitAndCloseSession();
 		
 		sut.delete(topic1);
@@ -158,9 +160,9 @@ public class ParticipationDAOTest extends OlatTestCase {
 		Appointment appointment1 = appointmentDao.createAppointment(topic1);
 		Appointment appointment2 = appointmentDao.createAppointment(topic2);
 		Appointment appointment3 = appointmentDao.createAppointment(topic3);
-		Participation participation1 = sut.createParticipation(appointment1, identity);
-		Participation participation2 = sut.createParticipation(appointment2, identity);
-		Participation participation3 = sut.createParticipation(appointment3, identity);
+		Participation participation1 = sut.createParticipation(appointment1, identity, identity);
+		Participation participation2 = sut.createParticipation(appointment2, identity, identity);
+		Participation participation3 = sut.createParticipation(appointment3, identity, identity);
 		dbInstance.commitAndCloseSession();
 		
 		sut.delete(entry1, subIdent);
@@ -180,7 +182,7 @@ public class ParticipationDAOTest extends OlatTestCase {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser(random());
 		Topic topic = topicDao.createTopic(entry, JunitTestHelper.random());
 		Appointment appointment = appointmentDao.createAppointment(topic);
-		Participation participation = sut.createParticipation(appointment, identity);
+		Participation participation = sut.createParticipation(appointment, identity, identity);
 		dbInstance.commitAndCloseSession();
 		
 		Participation reloadedParticipation = sut.loadByKey(participation.getKey());
@@ -206,12 +208,12 @@ public class ParticipationDAOTest extends OlatTestCase {
 		appointmentDao.updateStatus(appointmentA2, Status.confirmed);
 		appointmentDao.updateStatus(appointmentB1, Status.confirmed);
 		appointmentDao.updateStatus(appointmentD1, Status.planned);
-		sut.createParticipation(appointmentA1, identity1);
-		sut.createParticipation(appointmentA1, identity2);
-		sut.createParticipation(appointmentA2, identity1);
-		sut.createParticipation(appointmentB1, identity1);
-		sut.createParticipation(appointmentB1, identity2);
-		sut.createParticipation(appointmentD1 , identity1);
+		sut.createParticipation(appointmentA1, identity1, identity1);
+		sut.createParticipation(appointmentA1, identity2, identity2);
+		sut.createParticipation(appointmentA2, identity1, identity1);
+		sut.createParticipation(appointmentB1, identity1, identity1);
+		sut.createParticipation(appointmentB1, identity2, identity2);
+		sut.createParticipation(appointmentD1 , identity1, identity1);
 		dbInstance.commitAndCloseSession();
 		
 		Collection<AppointmentRef> appointments = Arrays.asList(appointmentA1, appointmentA2, appointmentB1,
@@ -234,10 +236,10 @@ public class ParticipationDAOTest extends OlatTestCase {
 		Appointment appointment11 = appointmentDao.createAppointment(topic1);
 		Appointment appointment12 = appointmentDao.createAppointment(topic1);
 		Appointment appointment21 = appointmentDao.createAppointment(topic2);
-		Participation participation11 = sut.createParticipation(appointment11, identity1);
-		Participation participation12 = sut.createParticipation(appointment12, identity1);
-		Participation participationOtherIdentity = sut.createParticipation(appointment11, identity2);
-		Participation participationOtherTopic = sut.createParticipation(appointment21, identity1);
+		Participation participation11 = sut.createParticipation(appointment11, identity1, identity1);
+		Participation participation12 = sut.createParticipation(appointment12, identity1, identity1);
+		Participation participationOtherIdentity = sut.createParticipation(appointment11, identity2, identity2);
+		Participation participationOtherTopic = sut.createParticipation(appointment21, identity1, identity1);
 		dbInstance.commitAndCloseSession();
 		
 		ParticipationSearchParams params = new ParticipationSearchParams();
@@ -267,12 +269,12 @@ public class ParticipationDAOTest extends OlatTestCase {
 		Appointment appointment21 = appointmentDao.createAppointment(topic2);
 		Appointment appointmentOtherEntry = appointmentDao.createAppointment(topicOtherEntry);
 		Appointment appointmentOtherSubIdent = appointmentDao.createAppointment(topicOtherSubIdent);
-		Participation participation11 = sut.createParticipation(appointment11, identity1);
-		Participation participation12 = sut.createParticipation(appointment12, identity1);
-		Participation participation21 = sut.createParticipation(appointment21, identity1);
-		Participation participationOtherEntry = sut.createParticipation(appointmentOtherEntry, identity1);
-		Participation participationOtherSubIdent = sut.createParticipation(appointmentOtherSubIdent, identity1);
-		Participation participationOtherIdentity = sut.createParticipation(appointment11, identity2);
+		Participation participation11 = sut.createParticipation(appointment11, identity1, identity1);
+		Participation participation12 = sut.createParticipation(appointment12, identity1, identity1);
+		Participation participation21 = sut.createParticipation(appointment21, identity1, identity1);
+		Participation participationOtherEntry = sut.createParticipation(appointmentOtherEntry, identity1, identity1);
+		Participation participationOtherSubIdent = sut.createParticipation(appointmentOtherSubIdent, identity1, identity1);
+		Participation participationOtherIdentity = sut.createParticipation(appointment11, identity2, identity2);
 		dbInstance.commitAndCloseSession();
 		
 		ParticipationSearchParams params = new ParticipationSearchParams();
@@ -299,7 +301,7 @@ public class ParticipationDAOTest extends OlatTestCase {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser(random());
 		Topic topicA = topicDao.createTopic(entry, subIdent);
 		Appointment appointment = appointmentDao.createAppointment(topicA);
-		Participation participation = sut.createParticipation(appointment, identity);
+		Participation participation = sut.createParticipation(appointment, identity, identity);
 		dbInstance.commitAndCloseSession();
 		
 		//Is just a syntax check. The appointment key is the limiting clause.
@@ -321,10 +323,10 @@ public class ParticipationDAOTest extends OlatTestCase {
 		Appointment appointment11 = appointmentDao.createAppointment(topic1);
 		Appointment appointment12 = appointmentDao.createAppointment(topic1);
 		Appointment appointment21 = appointmentDao.createAppointment(topic2);
-		Participation participation111 = sut.createParticipation(appointment11, identity1);
-		Participation participation121 = sut.createParticipation(appointment12, identity1);
-		Participation participation112 = sut.createParticipation(appointment11, identity2);
-		Participation participation211 = sut.createParticipation(appointment21, identity1);
+		Participation participation111 = sut.createParticipation(appointment11, identity1, identity1);
+		Participation participation121 = sut.createParticipation(appointment12, identity1, identity1);
+		Participation participation112 = sut.createParticipation(appointment11, identity2, identity2);
+		Participation participation211 = sut.createParticipation(appointment21, identity1, identity1);
 		dbInstance.commitAndCloseSession();
 		
 		ParticipationSearchParams params = new ParticipationSearchParams();
@@ -354,14 +356,14 @@ public class ParticipationDAOTest extends OlatTestCase {
 		Appointment appointmentB1 = appointmentDao.createAppointment(topicB);
 		Appointment appointmentC1 = appointmentDao.createAppointment(topicC);
 		Appointment appointmentD1 = appointmentDao.createAppointment(topicD);
-		Participation participationA11 = sut.createParticipation(appointmentA1, identity1);
-		Participation participationA12 = sut.createParticipation(appointmentA1, identity2);
-		Participation participationA21 = sut.createParticipation(appointmentA2, identity1);
-		Participation participationB11 = sut.createParticipation(appointmentB1, identity1);
-		Participation participationB12 = sut.createParticipation(appointmentB1, identity2);
-		Participation participationC11 = sut.createParticipation(appointmentC1, identity1);
-		Participation participationC12 = sut.createParticipation(appointmentC1, identity2);
-		Participation participationD11 = sut.createParticipation(appointmentD1 , identity1);
+		Participation participationA11 = sut.createParticipation(appointmentA1, identity1, identity1);
+		Participation participationA12 = sut.createParticipation(appointmentA1, identity2, identity2);
+		Participation participationA21 = sut.createParticipation(appointmentA2, identity1, identity1);
+		Participation participationB11 = sut.createParticipation(appointmentB1, identity1, identity1);
+		Participation participationB12 = sut.createParticipation(appointmentB1, identity2, identity2);
+		Participation participationC11 = sut.createParticipation(appointmentC1, identity1, identity1);
+		Participation participationC12 = sut.createParticipation(appointmentC1, identity2, identity2);
+		Participation participationD11 = sut.createParticipation(appointmentD1 , identity1, identity1);
 		dbInstance.commitAndCloseSession();
 		
 		Collection<Appointment> appointments = Arrays.asList(appointmentA1, appointmentA2, appointmentC1);
@@ -405,12 +407,12 @@ public class ParticipationDAOTest extends OlatTestCase {
 		appointmentA2 = appointmentDao.saveAppointment(appointmentA2);
 		appointmentB1 = appointmentDao.saveAppointment(appointmentB1);
 		appointmentD1 = appointmentDao.saveAppointment(appointmentD1);
-		Participation participationA11 = sut.createParticipation(appointmentA1, identity1);
-		Participation participationA12 = sut.createParticipation(appointmentA1, identity2);
-		Participation participationA21 = sut.createParticipation(appointmentA2, identity1);
-		Participation participationB11 = sut.createParticipation(appointmentB1, identity1);
-		Participation participationB12 = sut.createParticipation(appointmentB1, identity2);
-		Participation participationD11 = sut.createParticipation(appointmentD1 , identity1);
+		Participation participationA11 = sut.createParticipation(appointmentA1, identity1, identity1);
+		Participation participationA12 = sut.createParticipation(appointmentA1, identity2, identity2);
+		Participation participationA21 = sut.createParticipation(appointmentA2, identity1, identity1);
+		Participation participationB11 = sut.createParticipation(appointmentB1, identity1, identity1);
+		Participation participationB12 = sut.createParticipation(appointmentB1, identity2, identity2);
+		Participation participationD11 = sut.createParticipation(appointmentD1 , identity1, identity1);
 		dbInstance.commitAndCloseSession();
 		
 		Collection<Appointment> appointments = Arrays.asList(appointmentA1, appointmentA2, appointmentB1,
@@ -451,12 +453,12 @@ public class ParticipationDAOTest extends OlatTestCase {
 		appointmentDao.updateStatus(appointmentA2, Status.confirmed);
 		appointmentDao.updateStatus(appointmentB1, Status.confirmed);
 		appointmentDao.updateStatus(appointmentD1, Status.planned);
-		Participation participationA11 = sut.createParticipation(appointmentA1, identity1);
-		Participation participationA12 = sut.createParticipation(appointmentA1, identity2);
-		Participation participationA21 = sut.createParticipation(appointmentA2, identity1);
-		Participation participationB11 = sut.createParticipation(appointmentB1, identity1);
-		Participation participationB12 = sut.createParticipation(appointmentB1, identity2);
-		Participation participationD11 = sut.createParticipation(appointmentD1 , identity1);
+		Participation participationA11 = sut.createParticipation(appointmentA1, identity1, identity1);
+		Participation participationA12 = sut.createParticipation(appointmentA1, identity2, identity2);
+		Participation participationA21 = sut.createParticipation(appointmentA2, identity1, identity1);
+		Participation participationB11 = sut.createParticipation(appointmentB1, identity1, identity1);
+		Participation participationB12 = sut.createParticipation(appointmentB1, identity2, identity2);
+		Participation participationD11 = sut.createParticipation(appointmentD1 , identity1, identity1);
 		dbInstance.commitAndCloseSession();
 		
 		Collection<Appointment> appointments = Arrays.asList(appointmentA1, appointmentA2, appointmentB1,
@@ -495,10 +497,10 @@ public class ParticipationDAOTest extends OlatTestCase {
 		appointmentDao.saveAppointment(setStatusModified(appointmentA2, 2020, 3, 1, 10, 0, 0));
 		appointmentDao.saveAppointment(setStatusModified(appointmentB1, 2020, 3, 1, 15, 0, 0));
 		appointmentDao.saveAppointment(setStatusModified(appointmentD1, 2021, 2, 2, 10, 0, 0));
-		Participation participationA11 = sut.createParticipation(appointmentA1, identity);
-		Participation participationA21 = sut.createParticipation(appointmentA2, identity);
-		Participation participationB11 = sut.createParticipation(appointmentB1, identity);
-		Participation participationD11 = sut.createParticipation(appointmentD1 , identity);
+		Participation participationA11 = sut.createParticipation(appointmentA1, identity, identity);
+		Participation participationA21 = sut.createParticipation(appointmentA2, identity, identity);
+		Participation participationB11 = sut.createParticipation(appointmentB1, identity, identity);
+		Participation participationD11 = sut.createParticipation(appointmentD1 , identity, identity);
 		dbInstance.commitAndCloseSession();
 		
 		Collection<Appointment> appointments = Arrays.asList(appointmentA1, appointmentA2, appointmentB1, appointmentD1);
@@ -540,10 +542,10 @@ public class ParticipationDAOTest extends OlatTestCase {
 		Appointment appointmentA1 = appointmentDao.createAppointment(topicA);
 		Appointment appointmentA2 = appointmentDao.createAppointment(topicA);
 		Appointment appointmentB1 = appointmentDao.createAppointment(topicB);
-		Participation participationA12 = sut.createParticipation(appointmentA1, identity2);
-		Participation participationA21 = sut.createParticipation(appointmentA2, identity1);
-		Participation participationB11 = sut.createParticipation(appointmentB1, identity1);
-		Participation participationB12 = sut.createParticipation(appointmentB1, identity2);
+		Participation participationA12 = sut.createParticipation(appointmentA1, identity2, identity2);
+		Participation participationA21 = sut.createParticipation(appointmentA2, identity1, identity1);
+		Participation participationB11 = sut.createParticipation(appointmentB1, identity1, identity1);
+		Participation participationB12 = sut.createParticipation(appointmentB1, identity2, identity2);
 		dbInstance.commitAndCloseSession();
 		
 		ParticipationSearchParams params = new ParticipationSearchParams();
@@ -568,7 +570,7 @@ public class ParticipationDAOTest extends OlatTestCase {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser(random());
 		Topic topic = topicDao.createTopic(entry, subIdent);
 		Appointment appointment = appointmentDao.createAppointment(topic);
-		sut.createParticipation(appointment, identity);
+		sut.createParticipation(appointment, identity, identity);
 		dbInstance.commitAndCloseSession();
 		
 		ParticipationSearchParams params = new ParticipationSearchParams();

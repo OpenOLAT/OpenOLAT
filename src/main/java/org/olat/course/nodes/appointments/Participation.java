@@ -35,5 +35,8 @@ public interface Participation extends ParticipationRef, ModifiedInfo, CreateInf
 	
 	public Identity getIdentity();
 	
+	public Identity getCreatedBy();
+	
+	public void setCreatedBy(Identity createdBy);
 
 }

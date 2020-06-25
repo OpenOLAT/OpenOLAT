@@ -255,9 +255,9 @@ public class AppointmentDAOTest extends OlatTestCase {
 		Appointment appointment21 = sut.createAppointment(topic2);
 		appointment21.setMaxParticipations(1);
 		sut.saveAppointment(appointment21);
-		participationDao.createParticipation(appointment11, identity);
-		participationDao.createParticipation(appointment11, identity);
-		participationDao.createParticipation(appointment21, identity);
+		participationDao.createParticipation(appointment11, identity, identity);
+		participationDao.createParticipation(appointment11, identity, identity);
+		participationDao.createParticipation(appointment21, identity, identity);
 		dbInstance.commitAndCloseSession();
 		
 		AppointmentSearchParams params = new AppointmentSearchParams();
@@ -296,10 +296,10 @@ public class AppointmentDAOTest extends OlatTestCase {
 		limitNotFull.setDetails("limitNotFull");
 		limitNotFull.setMaxParticipations(3);
 		sut.saveAppointment(limitNotFull);
-		participationDao.createParticipation(noLimitWithParticipations, identity);
-		participationDao.createParticipation(noLimitWithParticipations, identity);
-		participationDao.createParticipation(limitFull, identity);
-		participationDao.createParticipation(limitNotFull, identity);
+		participationDao.createParticipation(noLimitWithParticipations, identity, identity);
+		participationDao.createParticipation(noLimitWithParticipations, identity, identity);
+		participationDao.createParticipation(limitFull, identity, identity);
+		participationDao.createParticipation(limitNotFull, identity, identity);
 		dbInstance.commitAndCloseSession();
 		
 		AppointmentSearchParams params = new AppointmentSearchParams();
