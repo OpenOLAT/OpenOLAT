@@ -518,7 +518,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 
 	private void doCreateParticipation(Appointment appointment) {
 		ParticipationResult participationResult = appointmentsService.createParticipations(appointment,
-				singletonList(getIdentity()), getIdentity(), topic.isMultiParticipation(), topic.isAutoConfirmation());
+				singletonList(getIdentity()), getIdentity(), topic.isMultiParticipation(), topic.isAutoConfirmation(), true);
 		if (ParticipationResult.Status.ok != participationResult.getStatus()) {
 			showWarning("participation.not.created");
 		}
@@ -590,7 +590,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 	
 	private void doAddUser(Appointment appointment, List<Identity> identities) {
 		ParticipationResult result = appointmentsService.createParticipations(appointment, identities, getIdentity(),
-				topic.isMultiParticipation(), topic.isAutoConfirmation());
+				topic.isMultiParticipation(), topic.isAutoConfirmation(), false);
 		if (ParticipationResult.Status.appointmentFull == result.getStatus()) {
 			showWarning("error.not.as.many.participations.left");
 		} else if (ParticipationResult.Status.ok != result.getStatus()) {

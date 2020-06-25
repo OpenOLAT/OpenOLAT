@@ -381,7 +381,7 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 
 	@Override
 	public ParticipationResult createParticipations(Appointment appointment, Collection<Identity> identities,
-			Identity createdBy, boolean multiParticipations, boolean autoConfirmation) {
+			Identity createdBy, boolean multiParticipations, boolean autoConfirmation, boolean rejectIfConfirmed) {
 		AppointmentSearchParams appointmentParams = new AppointmentSearchParams();
 		appointmentParams.setAppointment(appointment);
 		appointmentParams.setFetchTopic(true);
@@ -391,7 +391,7 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 		}
 		
 		Appointment reloadedAppointment = appointments.get(0);
-		if (!autoConfirmation && Status.confirmed == reloadedAppointment.getStatus()) {
+		if (!autoConfirmation && rejectIfConfirmed && Status.confirmed == reloadedAppointment.getStatus()) {
 			return ParticipationResult.APPOINTMENT_CONFIRMED;
 		}
 		

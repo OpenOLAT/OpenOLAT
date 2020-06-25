@@ -117,7 +117,7 @@ public interface AppointmentsService {
 	public List<Appointment> getAppointments(AppointmentSearchParams params);
 	
 	public ParticipationResult createParticipations(Appointment appointment, Collection<Identity> identities,
-			Identity createdBy, boolean multiParticipations, boolean autoConfirmation);
+			Identity createdBy, boolean multiParticipations, boolean autoConfirmation, boolean rejectIfConfirmed);
 	
 	public ParticipationResult rebookParticipations(AppointmentRef toAppointmenRef,
 			Collection<? extends ParticipationRef> participationRefs, Identity rebookedBy, boolean autoConfirmation);
