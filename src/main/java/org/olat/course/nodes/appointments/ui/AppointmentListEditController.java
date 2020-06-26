@@ -138,9 +138,15 @@ public class AppointmentListEditController extends AppointmentListController {
 			row.setStatusCSS("o_ap_status_" + appointment.getStatus().name());
 		}
 		
-		boolean removeUser = Type.finding == topic.getType()
-				? participations.size() > 0 && Status.confirmed == appointment.getStatus()
-				: participations.size() > 0;
+		boolean addUser = freeParticipations == null || freeParticipations.intValue() > 0;
+		boolean removeUser = participations.size() > 0;
+		if (Type.finding == topic.getType() && !noAppointmentConfirmed && Appointment.Status.confirmed != appointment.getStatus()) {
+			addUser = false;
+			removeUser = false;
+		}
+		if (addUser) {
+			forgeAddUserLink(row);
+		}
 		if (removeUser) {
 			forgeRemoveUserLink(row);
 		}
@@ -160,9 +166,7 @@ public class AppointmentListEditController extends AppointmentListController {
 				forgeConfirmLink(row, confirmable);
 			}
 		}
-		if (freeParticipations == null || freeParticipations.intValue() > 0) {
-			forgeAddUserLink(row);
-		}
+		
 		forgeDeleteLink(row);
 		forgeEditLink(row);
 		
