@@ -1314,18 +1314,17 @@ function o_XHRSubmit(formNam) {
 	var form = jQuery('#' + formNam);
 	var enctype = form.attr('enctype');
 	if(enctype && enctype.indexOf("multipart") == 0) {
-		if (window.FormData && ("upload" in (jQuery.ajaxSettings.xhr()))) {
+		if (window.FormData && ("upload" in (jQuery.ajaxSettings.xhr())) && !('ActiveXObject' in window)) {
 			if(typeof top.tinymce !== 'undefined') {
 				top.tinymce.triggerSave(true,true);
 			}
 	
 			// Send files via XHR and show upload progress
 			var formData = new FormData(form[0]);	
-			console.log(formData.keys());
 			var targetUrl = form.attr("action");
 			jQuery.ajax(targetUrl,{
 				xhr: function() {
-					var xhr = new window.XMLHttpRequest();
+					var xhr = new window.XMLHttpRequest();						
 					xhr.upload.addEventListener("loadstart", o_XHRLoadstart, false);
 					xhr.upload.addEventListener("progress", o_XHRProgress, false);
 					xhr.upload.addEventListener("loadend", o_XHRLoadend, false);
@@ -1740,7 +1739,7 @@ function destroyRunningVideos(videos) {
 						this.player.pause();
 						this.player.remove();
 					} else {
-						console.log('Not found');
+						if(window.console) console.log('Not found');
 					} 
 				} catch(e) {
 					if(window.console) console.log(e);
