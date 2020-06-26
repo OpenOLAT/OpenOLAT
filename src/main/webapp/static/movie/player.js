@@ -199,7 +199,8 @@ var BPlayer = {
 				var containerWidth =  jQuery(parentContainer).width();
 				var originalWidth = config.width;
 				var originalHeight = config.height;
-				if(containerWidth < originalWidth) {
+				// If container width is available and smaller, resize to fit container 
+				if(containerWidth && containerWidth < originalWidth) {
 					var ratio = originalHeight / originalWidth;
 					var tw = containerWidth;
 					var th = ((containerWidth * ratio)|0);
@@ -210,7 +211,7 @@ var BPlayer = {
 				jQuery(window).resize(function() {
 					var container = jQuery('#' + domId).parent("p , div");
 					var cWidth =  jQuery(container).width();
-					if(cWidth < originalWidth) {
+					if(cWidth && cWidth < originalWidth) {
 						var ratio = originalHeight / originalWidth;
 						var tw = cWidth;
 						var th = ((cWidth * ratio)|0);
