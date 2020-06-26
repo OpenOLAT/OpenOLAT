@@ -396,6 +396,8 @@ public class EditLectureBlockController extends FormBasicController {
 		}
 		lectureBlock.setStartDate(dateEl.getDate());
 		lectureBlock.setEndDate(dateEl.getSecondDate());
+		System.out.println(dateEl.getDate());
+		System.out.println(dateEl.getSecondDate());
 		
 		int plannedLectures = Integer.parseInt(plannedLecturesEl.getSelectedKey());
 		lectureBlock.setPlannedLecturesNumber(plannedLectures);

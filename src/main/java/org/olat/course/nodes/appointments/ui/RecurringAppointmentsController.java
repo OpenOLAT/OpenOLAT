@@ -169,6 +169,10 @@ public class RecurringAppointmentsController extends FormBasicController {
 	private void doSaveReccuringAppointments() {
 		Date firstStart = recurringFirstEl.getDate();
 		Date firstEnd = recurringFirstEl.getSecondDate();
+
+		System.out.println(firstStart);
+		System.out.println(firstEnd);
+		
 		Date last = recurringLastEl.getDate();
 		last = DateUtils.setTime(last, 23, 59, 59);
 		
@@ -184,6 +188,9 @@ public class RecurringAppointmentsController extends FormBasicController {
 			
 			Date end = DateUtils.copyTime(start, firstEnd);
 			appointment.setEnd(end);
+			
+			System.out.println(start);
+			System.out.println(end);
 			
 			String location = locationEl.getValue();
 			appointment.setLocation(location);

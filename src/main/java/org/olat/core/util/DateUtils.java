@@ -120,16 +120,10 @@ public class DateUtils {
 	 * @return
 	 */
 	public static Date copyTime(Date date, Date from) {
-		Calendar fromCalendar = new GregorianCalendar();
-		fromCalendar.setTime(from);
-		
-		Calendar toCalendar = new GregorianCalendar();
-		toCalendar.setTime(date);
-		toCalendar.set(Calendar.HOUR, fromCalendar.get(Calendar.HOUR));
-		toCalendar.set(Calendar.MINUTE, fromCalendar.get(Calendar.MINUTE));
-		toCalendar.set(Calendar.SECOND, fromCalendar.get(Calendar.SECOND));
-		
-		return toCalendar.getTime();
+		LocalDateTime ldtDate = toLocalDateTime(date);
+		LocalDateTime ldtfrom = toLocalDateTime(from);
+		LocalDateTime localDateTime = LocalDateTime.of(ldtDate.toLocalDate(), ldtfrom.toLocalTime());
+		return toDate(localDateTime);
 	}
 	
 	public static Date addDays(Date date, int days) {

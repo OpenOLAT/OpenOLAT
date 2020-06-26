@@ -29,6 +29,7 @@ import java.util.EnumSet;
 import java.util.GregorianCalendar;
 import java.util.List;
 
+import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
 
 /**
@@ -50,12 +51,19 @@ public class DateUtilsTest {
 
 	@Test
 	public void shouldCopyTime() {
-		Date date = new GregorianCalendar(2020, 5, 1, 10, 0, 0).getTime();
-		Date from = new GregorianCalendar(2020, 8, 20, 8, 3, 2).getTime();
+		SoftAssertions softly = new SoftAssertions();
 		
-		date = DateUtils.copyTime(date, from);
+		softly.assertThat(DateUtils.copyTime(
+				new GregorianCalendar(2020, 5, 1, 10, 0, 0).getTime(),
+				new GregorianCalendar(2020, 8, 20, 8, 3, 2).getTime())
+			).isEqualTo(new GregorianCalendar(2020, 5, 1, 8, 3, 2).getTime());
 		
-		assertThat(date).isEqualTo(new GregorianCalendar(2020, 5, 1, 8, 3, 2).getTime());
+		softly.assertThat(DateUtils.copyTime(
+				new GregorianCalendar(2020, 5, 1, 10, 0, 0).getTime(),
+				new GregorianCalendar(2020, 5, 1, 10, 0, 0).getTime())
+			).isEqualTo(new GregorianCalendar(2020, 5, 1, 10, 0, 0).getTime());
+		
+		softly.assertAll();
 	}
 	
 	@Test
