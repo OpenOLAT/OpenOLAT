@@ -108,6 +108,11 @@ public class AppointmentListEditController extends AppointmentListController {
 				rows.add(row);
 			}
 		}
+		
+		if (Type.finding == topic.getType()) {
+			setAddAppointmentVisible(!anyConfirmed);
+		}
+		
 		return rows;
 	}
 	

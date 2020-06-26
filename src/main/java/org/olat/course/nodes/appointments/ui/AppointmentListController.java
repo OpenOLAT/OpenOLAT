@@ -134,6 +134,12 @@ public abstract class AppointmentListController extends FormBasicController impl
 	
 	protected abstract List<AppointmentRow> loadModel();
 	
+	protected void setAddAppointmentVisible(boolean visible) {
+		if (addAppointmentLink != null) {
+			addAppointmentLink.setVisible(visible);
+		}
+	}
+	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// Back
@@ -274,7 +280,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
-
+	
 	protected void forgeAppointmentView(AppointmentRow row, Appointment appointment) {
 		Locale locale = getLocale();
 		Date begin = appointment.getStart();
