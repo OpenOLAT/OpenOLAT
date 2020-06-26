@@ -32,6 +32,7 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.model.IdentityRefImpl;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -156,6 +157,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private ConfirmUserVisibilityController changeUserVisibilityCtrl;
 	private ContactFormController contactCtrl;
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -931,6 +934,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 					scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 			courseAssessmentService.updateScoreEvaluation(courseNode, doneEval, assessedUserCourseEnv, getIdentity(),
 					false, Role.coach);
+			dbInstance.commitAndCloseSession();
 		}
 		loadModel(ureq);
 	}
@@ -952,6 +956,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			for(AssessedIdentityElementRow row:rows) {
 				Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
 				doSetDone(assessedIdentity, courseNode, course);
+				dbInstance.commitAndCloseSession();
 			}
 			loadModel(ureq);
 		}

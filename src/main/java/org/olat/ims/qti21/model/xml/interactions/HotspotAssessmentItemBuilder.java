@@ -282,6 +282,12 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder implemen
 		return correctAnswers.contains(choice.getIdentifier());
 	}
 	
+	public void clearCorrectAnswers() {
+		if(correctAnswers != null) {
+			correctAnswers.clear();
+		}
+	}
+	
 	public void setCorrect(HotspotChoice choice, boolean correct) {
 		if(correctAnswers == null) {
 			correctAnswers = new ArrayList<>();
@@ -424,6 +430,7 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder implemen
 
 		//add question
 		getHtmlHelper().appendHtml(assessmentItem.getItemBody(), question);
+		
 		
 		//add interaction
 		if(correctAnswers.size() == 1 && cardinality == Cardinality.SINGLE) {

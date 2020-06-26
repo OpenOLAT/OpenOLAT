@@ -476,11 +476,8 @@ public class QTI21ArchiveFormat {
 				AssessmentItemSession itemSession = response.getAssessmentItemSession();
 				sessionResponses.addResponse(itemSession, response);
 			}
-			writeDataRow(i + 1, sessionResponses, exportSheet, workbook);
-			
-			if(i % 25 == 0) {
-				DBFactory.getInstance().commitAndCloseSession();
-			}
+			writeDataRow(i + 1, sessionResponses, exportSheet, workbook);	
+			DBFactory.getInstance().commitAndCloseSession();
 		}
 	}
 	
