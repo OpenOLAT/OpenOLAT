@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
@@ -148,9 +149,10 @@ public class TopicsRunController extends BasicController implements Activateable
 		AppointmentSearchParams confirmedFindingsParams = new AppointmentSearchParams();
 		confirmedFindingsParams.setTopics(topicsFinding);
 		confirmedFindingsParams.setStatus(Status.confirmed);
-		Map<Long, List<Appointment>> topicKeyToFindingConfirmed = appointmentsService
+		Set<Long> findingConfirmedKeys = appointmentsService
 				.getAppointments(confirmedFindingsParams).stream()
-				.collect(Collectors.groupingBy(a -> a.getTopic().getKey()));
+				.map(a -> a.getTopic().getKey())
+				.collect(Collectors.toSet());
 		
 		AppointmentSearchParams freeAppointmentsParams = new AppointmentSearchParams();
 		freeAppointmentsParams.setTopics(topics);
@@ -166,7 +168,7 @@ public class TopicsRunController extends BasicController implements Activateable
 			TopicWrapper wrapper = new TopicWrapper(topic);
 			List<Organizer> organizers = topicKeyToOrganizer.getOrDefault(topic.getKey(), emptyList());
 			wrapOrganizers(wrapper, organizers);
-			wrapAppointment(wrapper, topicKeyToAppointmentCount, topicKeyToFindingConfirmed, topicKeyToMyEnrollmentParticipation);
+			wrapAppointment(wrapper, topicKeyToAppointmentCount, findingConfirmedKeys, topicKeyToMyEnrollmentParticipation);
 			wrappers.add(wrapper);
 		}
 		return wrappers;
@@ -190,7 +192,7 @@ public class TopicsRunController extends BasicController implements Activateable
 	}
 
 	private void wrapAppointment(TopicWrapper wrapper, Map<Long, Long> topicKeyToAppointmentCount,
-			Map<Long, List<Appointment>> topicKeyToFindingConfirmed,
+			Set<Long> findingConfirmedKeys,
 			Map<Long, List<Participation>> topicKeyToMyEnrollmentParticipation) {
 		
 		Topic topic = wrapper.getTopic();
@@ -201,7 +203,7 @@ public class TopicsRunController extends BasicController implements Activateable
 		wrapper.setSelectedAppointments(Integer.valueOf(myTopicParticipations.size()));
 		
 		if (Type.finding == topic.getType()) {
-			wrapFindindAppointment(wrapper, topicKeyToFindingConfirmed);
+			wrapFindindAppointment(wrapper, myTopicParticipations);
 		} else {
 			wrapEnrollmentAppointment(wrapper, myTopicParticipations);
 		}
@@ -214,13 +216,16 @@ public class TopicsRunController extends BasicController implements Activateable
 			wrapOpenLink(wrapper, topic, "appointment.select");
 		}
 		
-		wrapMessage(wrapper);
+		wrapMessage(wrapper, findingConfirmedKeys);
 	}
 
-	private void wrapFindindAppointment(TopicWrapper wrapper, Map<Long, List<Appointment>> topicKeyToFindingConfirmed) {
-		List<Appointment> appointments = topicKeyToFindingConfirmed.getOrDefault(wrapper.getTopic().getKey(), emptyList());
-		if (!appointments.isEmpty()) {
-			Appointment appointment = appointments.get(0);
+	private void wrapFindindAppointment(TopicWrapper wrapper, List<Participation> myTopicParticipations) {
+		Optional<Appointment> firstAppointment = myTopicParticipations.stream()
+				.map(Participation::getAppointment)
+				.filter(a -> a.getStatus() == Status.confirmed)
+				.findFirst();
+		if (firstAppointment.isPresent()) {
+			Appointment appointment = firstAppointment.get();
 			wrapAppointmentView(wrapper, appointment);
 		}
 	}
@@ -315,7 +320,7 @@ public class TopicsRunController extends BasicController implements Activateable
 		wrapper.setOpenLinkName(openLink.getComponentName());
 	}
 	
-	private void wrapMessage(TopicWrapper wrapper) {
+	private void wrapMessage(TopicWrapper wrapper, Set<Long> findingConfirmedKeys) {
 		Topic topic = wrapper.getTopic();
 		int selectedAppointments = wrapper.getSelectedAppointments() != null
 				? wrapper.getSelectedAppointments().intValue()
@@ -336,7 +341,9 @@ public class TopicsRunController extends BasicController implements Activateable
 				}
 			}
 			
-			if (freeAppointments != null && freeAppointments.longValue() == 0) {
+			if (Type.finding == topic.getType() && findingConfirmedKeys.contains(topic.getKey())) {
+				messages.add(translate("appointments.finding.confirmed"));
+			} else if (freeAppointments != null && freeAppointments.longValue() == 0) {
 				messages.add(translate("appointments.free.no"));
 			} else if (topic.isMultiParticipation()) {
 				messages.add(translate("appointments.select.multi.message"));
