@@ -31,6 +31,7 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.model.IdentityRefImpl;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -131,9 +132,11 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	protected final AssessmentToolSecurityCallback assessmentCallback;
 	
-	private Link nextLink, previousLink;
+	private Link nextLink;
+	private Link previousLink;
 	protected FlexiTableElement tableEl;
-	private FormLink bulkDoneButton, bulkVisibleButton;
+	private FormLink bulkDoneButton;
+	private FormLink bulkVisibleButton;
 	protected final TooledStackedPanel stackPanel;
 	private final AssessmentToolContainer toolContainer;
 	protected IdentityListCourseNodeTableModel usersTableModel;
@@ -145,6 +148,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private ConfirmUserVisibilityController changeUserVisibilityCtrl;
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -848,6 +853,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 					scoreEval.getAssessmentStatus(), visibility, scoreEval.getFullyAssessed(),
 					scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 			assessableCourseNode.updateUserScoreEvaluation(doneEval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
+			dbInstance.commitAndCloseSession();
 		}
 		loadModel(ureq);
 	}
@@ -870,6 +876,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			for(AssessedIdentityElementRow row:rows) {
 				Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
 				doSetDone(assessedIdentity, assessableCourseNode, course);
+				dbInstance.commitAndCloseSession();
 			}
 			loadModel(ureq);
 		}
