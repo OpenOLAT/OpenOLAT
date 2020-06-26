@@ -301,7 +301,7 @@ public abstract class AbstractParticipationRemoveController extends FormBasicCon
 				return;
 			}
 		} else {
-			appointmentsService.deleteParticipations(participationRefs);
+			appointmentsService.deleteParticipations(participationRefs, true);
 		}
 		
 		onAfterRemoving();

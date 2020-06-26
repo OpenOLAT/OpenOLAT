@@ -199,11 +199,9 @@ public abstract class AppointmentListController extends FormBasicController impl
 			DefaultFlexiColumnModel addUserModel = new DefaultFlexiColumnModel(AppointmentCols.addUser);
 			addUserModel.setExportable(false);
 			columnsModel.addFlexiColumnModel(addUserModel);
-			if (Type.finding != topic.getType()) {
-				DefaultFlexiColumnModel removeModel = new DefaultFlexiColumnModel(AppointmentCols.removeUser);
-				removeModel.setExportable(false);
-				columnsModel.addFlexiColumnModel(removeModel);
-			}
+			DefaultFlexiColumnModel removeModel = new DefaultFlexiColumnModel(AppointmentCols.removeUser);
+			removeModel.setExportable(false);
+			columnsModel.addFlexiColumnModel(removeModel);
 			DefaultFlexiColumnModel confirmModel = new DefaultFlexiColumnModel(AppointmentCols.confirm);
 			confirmModel.setExportable(false);
 			columnsModel.addFlexiColumnModel(confirmModel);

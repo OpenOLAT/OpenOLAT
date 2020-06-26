@@ -112,6 +112,10 @@ public class ParticipationSearchParams {
 		return participationKeys;
 	}
 	
+	public void setParticipation(Participation participation) {
+		this.participationKeys = Collections.singletonList(participation.getKey());
+	}
+	
 	public void setParticipations(Collection<? extends ParticipationRef> participations) {
 		this.participationKeys = participations.stream()
 				.map(ParticipationRef::getKey)

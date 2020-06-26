@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurityManager;
@@ -53,6 +54,7 @@ import org.olat.course.nodes.appointments.ParticipationRef;
 import org.olat.course.nodes.appointments.ParticipationResult;
 import org.olat.course.nodes.appointments.ParticipationSearchParams;
 import org.olat.course.nodes.appointments.Topic;
+import org.olat.course.nodes.appointments.Topic.Type;
 import org.olat.course.nodes.appointments.TopicRef;
 import org.olat.course.nodes.appointments.TopicToGroup;
 import org.olat.repository.RepositoryEntry;
@@ -101,8 +103,10 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 	public Topic updateTopic(Topic topic) {
 		AppointmentSearchParams params = new AppointmentSearchParams();
 		params.setTopic(topic);
-		params.setStatus(Status.confirmed);
 		params.setFetchTopic(true);
+		if (Type.finding == topic.getType()) {
+			params.setStatus(Status.confirmed);
+		}
 		List<Appointment> appointments = appointmentDao.loadAppointments(params);
 		
 		if (!appointments.isEmpty()) {
@@ -130,13 +134,23 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 			params.setSubIdent(subIdent);
 		}
 		params.setStartAfter(new Date());
-		params.setStatus(Status.confirmed);
 		params.setFetchTopic(true);
 		List<Appointment> appointments = appointmentDao.loadAppointments(params);
-		appointmentsMailing.sendAppointmentDeleted(appointments);
 		
-		List<Organizer> organizers = organizerDao.loadOrganizers(entry, subIdent);
-		appointmentsMailing.sendAppointmentsDeleted(appointments, organizers);
+		if (!appointments.isEmpty()) {
+			Map<Topic, List<Appointment>> topicToAppointments = appointments.stream()
+					.collect(Collectors.groupingBy(a -> a.getTopic()));
+			for (Entry<Topic, List<Appointment>> topicAppointments : topicToAppointments.entrySet()) {
+				calendarSyncher.unsyncCalendars(topicAppointments.getKey(), topicAppointments.getValue());
+			}	
+			
+			List<Appointment> confimredAppointments = appointments.stream()
+					.filter(a -> a.getStatus() == Status.confirmed)
+					.collect(Collectors.toList());
+			appointmentsMailing.sendAppointmentDeleted(confimredAppointments);
+			List<Organizer> organizers = organizerDao.loadOrganizers(entry, subIdent);
+			appointmentsMailing.sendAppointmentsDeleted(confimredAppointments, organizers);
+		}
 		
 		List<Topic> topics = topicDao.loadTopics(entry, subIdent);
 		for (Topic topic : topics) {
@@ -154,13 +168,19 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 		AppointmentSearchParams params = new AppointmentSearchParams();
 		params.setTopic(topicRef);
 		params.setStartAfter(new Date());
-		params.setStatus(Status.confirmed);
 		params.setFetchTopic(true);
 		List<Appointment> appointments = appointmentDao.loadAppointments(params);
-		appointmentsMailing.sendAppointmentDeleted(appointments);
 		
-		List<Organizer> organizers = organizerDao.loadOrganizers(topicRef);
-		appointmentsMailing.sendAppointmentsDeleted(appointments, organizers);
+		if (!appointments.isEmpty()) {
+			List<Appointment> confimredAppointments = appointments.stream()
+					.filter(a -> a.getStatus() == Status.confirmed)
+					.collect(Collectors.toList());
+			appointmentsMailing.sendAppointmentDeleted(confimredAppointments);
+			List<Organizer> organizers = organizerDao.loadOrganizers(topicRef);
+			appointmentsMailing.sendAppointmentsDeleted(confimredAppointments, organizers);
+			
+			calendarSyncher.unsyncCalendars(appointments.get(0).getTopic(), appointments);
+		}
 		
 		Topic topic = topicDao.loadByKey(topicRef.getKey());
 		deleteTopicGroup(topic);
@@ -185,8 +205,10 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 		
 		AppointmentSearchParams params = new AppointmentSearchParams();
 		params.setTopic(topic);
-		params.setStatus(Status.confirmed);
 		params.setFetchTopic(true);
+		if (Type.finding == topic.getType()) {
+			params.setStatus(Status.confirmed);
+		}
 		List<Appointment> appointments = appointmentDao.loadAppointments(params);
 		calendarSyncher.syncCalendar(appointments, identity);
 		
@@ -304,7 +326,9 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 	@Override
 	public Appointment saveAppointment(Appointment appointment) {
 		Appointment saveAppointment = appointmentDao.saveAppointment(appointment);
-		calendarSyncher.syncCalendars(appointment.getTopic(), singletonList(appointment));
+		if (Status.confirmed == appointment.getStatus() || Type.finding != appointment.getTopic().getType()) {
+			calendarSyncher.syncCalendars(appointment.getTopic(), singletonList(appointment));
+		}
 		return saveAppointment;
 	}
 
@@ -351,7 +375,11 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 			Appointment reloaded = appointments.get(0);
 			if (Status.confirmed == reloaded.getStatus()) {
 				appointmentDao.updateStatus(reloaded, Status.planned);
-				calendarSyncher.syncCalendars(reloaded.getTopic(), singletonList(reloaded));
+				if (Type.finding == reloaded.getTopic().getType()) {
+					calendarSyncher.unsyncCalendars(reloaded.getTopic(), singletonList(reloaded));
+				} else {
+					calendarSyncher.syncCalendars(reloaded.getTopic(), singletonList(reloaded));
+				}
 				appointmentsMailing.sendAppointmentUnconfirmed(reloaded);
 			}
 		}
@@ -360,7 +388,9 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 	@Override
 	public void deleteAppointment(Appointment appointment) {
 		calendarSyncher.unsyncCalendars(appointment.getTopic(), singletonList(appointment));
-		appointmentsMailing.sendAppointmentDeleted(singletonList(appointment));
+		if (Status.confirmed == appointment.getStatus() || Type.finding != appointment.getTopic().getType()) {
+			appointmentsMailing.sendAppointmentDeleted(singletonList(appointment));
+		}
 		appointmentDao.delete(appointment);
 	}
 	
@@ -428,7 +458,12 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 			
 			Participation participation = participationDao.createParticipation(reloadedAppointment, identity, createdBy);
 			participations.add(participation);
-			calendarSyncher.syncCalendar(reloadedAppointment, identity);
+			if (Status.confirmed == appointment.getStatus() || Type.finding != appointment.getTopic().getType()) {
+				calendarSyncher.syncCalendar(reloadedAppointment, identity);
+			}
+			if (Status.confirmed == appointment.getStatus()) {
+				appointmentsMailing.sendParticipationCreated(participation);
+			}
 		}
 		
 		if (autoConfirmation) {
@@ -489,7 +524,10 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 			Identity identity = fromParticipation.getIdentity();
 			Participation participation = participationDao.createParticipation(toAppointment, identity, rebookedBy);
 			participations.add(participation);
-			calendarSyncher.syncCalendar(toAppointment, identity);
+
+			if (Status.confirmed == toAppointment.getStatus() || Type.finding != toAppointment.getTopic().getType()) {
+				calendarSyncher.syncCalendar(toAppointment, identity);
+			}
 		}
 		appointmentsMailing.sendRebook(toAppointment, fromParticipations);
 
@@ -506,19 +544,28 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 	}
 	
 	@Override
-	public void deleteParticipations(Collection<? extends ParticipationRef> participationRefs) {
+	public void deleteParticipations(Collection<? extends ParticipationRef> participationRefs, boolean sendEmail) {
 		ParticipationSearchParams participationParams = new ParticipationSearchParams();
 		participationParams.setParticipations(participationRefs);
 		participationParams.setFetchAppointments(true);
 		participationParams.setFetchIdentities(true);
 		List<Participation> loadParticipations = participationDao.loadParticipations(participationParams);
-		loadParticipations.forEach(participation -> deleteParticipation(participation));
+		loadParticipations.forEach(participation -> deleteParticipation(participation, sendEmail));
 	}
 
 	@Override
 	public void deleteParticipation(Participation participation) {
-		calendarSyncher.unsyncCalendar(participation.getAppointment(), participation.getIdentity());
+		deleteParticipation(participation, false);
+	}
+	
+	public void deleteParticipation(Participation participation, boolean sendEmail) {
+		Appointment appointment = participation.getAppointment();
+		calendarSyncher.unsyncCalendar(appointment, participation.getIdentity());
+		if (sendEmail && Status.confirmed == appointment.getStatus()) {
+			appointmentsMailing.sendParticipationDeleted(participation);
+		}
 		participationDao.delete(participation);
+		
 	}
 
 	@Override

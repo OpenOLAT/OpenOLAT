@@ -23,6 +23,7 @@ import static java.util.Collections.singletonList;
 
 import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -31,6 +32,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
@@ -161,6 +163,78 @@ public class AppointmentsMailing {
 		}
 	}
 	
+	void sendParticipationCreated(Participation participation) {
+		ParticipationSearchParams participationParams = new ParticipationSearchParams();
+		participationParams.setParticipation(participation);
+		participationParams.setFetchAppointments(true);
+		participationParams.setFetchTopics(true);
+		participationParams.setFetchIdentities(true);
+		participationParams.setFetchUser(true);
+		List<Participation> reloadedParticipations = participationDao.loadParticipations(participationParams);
+		if (reloadedParticipations.isEmpty()) return;
+		
+		Participation reloadedParticipation = reloadedParticipations.get(0);
+		Appointment appointment = reloadedParticipation.getAppointment();
+		Identity identity = reloadedParticipation.getIdentity();
+		Locale locale = I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage());
+		Translator translator = Util.createPackageTranslator(AppointmentsRunController.class, locale);
+				
+		String subject = translator.translate("mail.participation.created.subject", 
+				new String[] {appointment.getTopic().getTitle() });
+		String body = translator.translate("mail.participation.created.body", new String[] {
+				userManager.getUserDisplayName(identity.getKey()),
+				createFormatedAppointments(Collections.singletonList(appointment), translator)
+		});
+		
+		MailerResult result = new MailerResult();
+		MailBundle bundle = new MailBundle();
+		bundle.setToId(identity);
+		bundle.setContent(subject, body);
+		bundle.setContext(getMailContext(appointment.getTopic()));
+		
+		result = mailManager.sendMessage(bundle);
+		if (!result.isSuccessful()) {
+			log.warn(MessageFormat.format("Sending participation created [keys={0}] to {1} failed: {2}",
+					reloadedParticipation.getKey(), identity, result.getErrorMessage()));
+		}
+	}
+	
+	void sendParticipationDeleted(Participation participation) {
+		ParticipationSearchParams participationParams = new ParticipationSearchParams();
+		participationParams.setParticipation(participation);
+		participationParams.setFetchAppointments(true);
+		participationParams.setFetchTopics(true);
+		participationParams.setFetchIdentities(true);
+		participationParams.setFetchUser(true);
+		List<Participation> reloadedParticipations = participationDao.loadParticipations(participationParams);
+		if (reloadedParticipations.isEmpty()) return;
+		
+		Participation reloadedParticipation = reloadedParticipations.get(0);
+		Appointment appointment = reloadedParticipation.getAppointment();
+		Identity identity = reloadedParticipation.getIdentity();
+		Locale locale = I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage());
+		Translator translator = Util.createPackageTranslator(AppointmentsRunController.class, locale);
+				
+		String subject = translator.translate("mail.participation.deleted.subject", 
+				new String[] {appointment.getTopic().getTitle() });
+		String body = translator.translate("mail.participation.deleted.body", new String[] {
+				userManager.getUserDisplayName(identity.getKey()),
+				createFormatedAppointments(Collections.singletonList(appointment), translator)
+		});
+		
+		MailerResult result = new MailerResult();
+		MailBundle bundle = new MailBundle();
+		bundle.setToId(identity);
+		bundle.setContent(subject, body);
+		bundle.setContext(getMailContext(appointment.getTopic()));
+		
+		result = mailManager.sendMessage(bundle);
+		if (!result.isSuccessful()) {
+			log.warn(MessageFormat.format("Sending participation deleted [keys={0}] to {1} failed: {2}",
+					reloadedParticipation.getKey(), identity, result.getErrorMessage()));
+		}
+	}
+	
 	void sendRebook(Appointment toAppointment, List<Participation> fromParticipations) {
 		if (toAppointment == null || fromParticipations == null || fromParticipations.isEmpty()) return;
 		
@@ -213,13 +287,19 @@ public class AppointmentsMailing {
 	}
 
 	private void appendFormatedAppointment(StringBuilder sb, Appointment appointment, Translator translator) {
-		DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, translator.getLocale());
 		sb.append(translator.translate("mail.topic", new String[] { appointment.getTopic().getTitle() }));
 		sb.append("<br>");
-		sb.append(translator.translate("mail.start", new String[] { dateFormat.format(appointment.getStart()) }));
-		sb.append("<br>");
-		sb.append(translator.translate("mail.end", new String[] { dateFormat.format(appointment.getEnd()) }));
-		sb.append("<br>");
+		if (DateUtils.isSameDate(appointment.getStart(), appointment.getEnd())) {
+			DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT, translator.getLocale());
+			sb.append(translator.translate("mail.day", new String[] { dateFormat.format(appointment.getStart()) }));
+			sb.append("<br>");
+		} else {
+			DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, translator.getLocale());
+			sb.append(translator.translate("mail.start", new String[] { dateFormat.format(appointment.getStart()) }));
+			sb.append("<br>");
+			sb.append(translator.translate("mail.end", new String[] { dateFormat.format(appointment.getEnd()) }));
+			sb.append("<br>");
+		}
 		if (StringHelper.containsNonWhitespace(appointment.getLocation())) {
 			sb.append(translator.translate("mail.location", new String[] { appointment.getLocation() }));
 			sb.append("<br>");

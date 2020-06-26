@@ -206,7 +206,7 @@ public class FindingConfirmationController extends FormBasicController {
 				unselectedParticipations.add(participation);
 			}
 		}
-		appointmentsService.deleteParticipations(unselectedParticipations);
+		appointmentsService.deleteParticipations(unselectedParticipations, false);
 		
 		appointmentsService.confirmAppointment(appointment);
 		
