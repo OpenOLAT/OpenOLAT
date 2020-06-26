@@ -95,6 +95,7 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 	protected List<AppointmentRow> loadModel() {
 		AppointmentSearchParams aParams = new AppointmentSearchParams();
 		aParams.setTopic(topic);
+		aParams.setFetchTopic(true);
 		List<Appointment> appointments = appointmentsService.getAppointments(aParams);
 		
 		ParticipationSearchParams pParams = new ParticipationSearchParams();
