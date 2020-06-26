@@ -160,10 +160,10 @@ public class TopicCreateController extends FormBasicController {
 		
 		// Appointments
 		locationEl = uifactory.addTextElement("appointment.location", 128, null, formLayout);
-		locationEl.setHelpText("appointment.init.value");
+		locationEl.setHelpTextKey("appointment.init.value", null);
 		
 		maxParticipationsEl = uifactory.addTextElement("appointment.max.participations", 5, null, formLayout);
-		maxParticipationsEl.setHelpText("appointment.init.value");
+		maxParticipationsEl.setHelpTextKey("appointment.init.value", null);
 		
 		recurringEl = uifactory.addCheckboxesHorizontal("appointments.recurring", formLayout,
 				new String[] { "xx" }, new String[] { null });

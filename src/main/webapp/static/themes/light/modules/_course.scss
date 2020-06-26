@@ -771,10 +771,9 @@ div.o_correction_navigation {
 		}
 		
 		.o_buttons {
-			flex: 1 0 0;
 			display: flex;
-			justify-content: right;
-			align-items: end;
+			flex-flow: column-reverse;
+			margin-left: auto;
 			
 			.o_button_group {
 				display: flex;
