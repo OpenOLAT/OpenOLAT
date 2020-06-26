@@ -698,7 +698,7 @@ public class AssessmentTestSessionDAO {
 				sb.append(" and membership.role='").append(GroupRoles.participant.name()).append("'");
 			}
 			sb.append(" )");
-		} else if(searchParams.getLimitToIdentities() != null) {
+		} else if(searchParams.getLimitToIdentities() != null && !searchParams.getLimitToIdentities().isEmpty()) {
 			sb.append(" testSession.identity.key in (select membership.identity.key from  bgroupmember as membership, repoentrytogroup as rel")
 			  .append("   where rel.entry.key=:repoEntryKey and rel.group.key=membership.group.key and membership.identity.key in (:limitIdentityKeys)")
 			  .append("   and membership.role='").append(GroupRoles.participant.name()).append("'")
