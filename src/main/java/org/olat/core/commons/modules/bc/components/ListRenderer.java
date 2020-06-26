@@ -161,27 +161,28 @@ public class ListRenderer {
 		  .append("<thead><tr><th><a class='o_orderby ").append(sortCss,FolderComponent.SORT_NAME.equals(sortOrder)).append("' ");
 		ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_SORTID, FolderComponent.SORT_NAME))
 		   .append(">").append(translator.translate("header.Name")).append("</a>").append("</th>");
+		
 		sb.append("<th><a class='o_orderby ").append(sortCss,FolderComponent.SORT_SIZE.equals(sortOrder)).append("' ");
 		ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_SORTID, FolderComponent.SORT_SIZE))
 		   .append(">").append(translator.translate("header.Size")).append("</a>")
 		   .append("</th><th><a class='o_orderby ").append(sortCss,FolderComponent.SORT_DATE.equals(sortOrder)).append("' ");	
 		ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_SORTID, FolderComponent.SORT_DATE))
-		   .append(">").append(translator.translate("header.Modified")).append("</a>");
+		   .append(">").append(translator.translate("header.Modified")).append("</a></th>");
 		if (licensesEnabled) {
 			sb.append("<th>").append(translator.translate("header.license")).append("</th>");
 		}
 		if(canVersion) {
-			sb.append("</th><th><a class='o_orderby ").append(sortCss,FolderComponent.SORT_REV.equals(sortOrder)).append("' ");		
+			sb.append("<th><a class='o_orderby ").append(sortCss,FolderComponent.SORT_REV.equals(sortOrder)).append("' ");		
 			ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_SORTID, FolderComponent.SORT_REV))																																					// file size column
 			   .append("><i class=\"o_icon o_icon_version  o_icon-lg\" title=\"")
-			   .append(translator.translate("versions")).append("\"></i></a>");
+			   .append(translator.translate("versions")).append("\"></i></a></th>");
 		}
 
 		// lock
-		sb.append("</th><th><a class='o_orderby ").append(sortCss,FolderComponent.SORT_LOCK.equals(sortOrder)).append("' ");
+		sb.append("<th><a class='o_orderby ").append(sortCss,FolderComponent.SORT_LOCK.equals(sortOrder)).append("' ");
 		ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_SORTID, FolderComponent.SORT_LOCK));
 		sb.append("><i class=\"o_icon o_icon_locked  o_icon-lg\" title=\"");
-		sb.append(translator.translate("lock.title")).append("\"></i></a>");
+		sb.append(translator.translate("lock.title")).append("\"></i></a></th>");
 		
 		// open
 		sb.append("<th>");
@@ -191,7 +192,7 @@ public class ListRenderer {
 		sb.append("</th>");
 		
 		// meta data column
-		sb.append("</th><th><i class=\"o_icon o_icon_edit_metadata o_icon-lg\" title=\"")
+		sb.append("<th><i class=\"o_icon o_icon_edit_metadata o_icon-lg\" title=\"")
 		  .append(translator.translate("mf.edit")).append("\"></i></th></tr></thead>");
 				
 		// render directory contents
