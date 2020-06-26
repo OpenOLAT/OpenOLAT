@@ -183,19 +183,19 @@ class ParticipationDAO {
 		if (StringHelper.containsNonWhitespace(params.getSubIdent())) {
 			sb.and().append("topic.subIdent = :subIdent");
 		}
-		if (params.getTopicKeys() != null && !params.getTopicKeys().isEmpty()) {
+		if (params.getTopicKeys() != null) {
 			sb.and().append("appointment.topic.key in (:topicKeys)");
 		}
-		if (params.getIdentityKeys() != null && !params.getIdentityKeys().isEmpty()) {
+		if (params.getIdentityKeys() != null) {
 			sb.and().append("participation.identity.key in (:identityKeys)");
 		}
 		if (params.getCreatedAfter() != null) {
 			sb.and().append("participation.creationDate >= :createdAfter");
 		}
-		if (params.getParticipationKeys() != null && !params.getParticipationKeys().isEmpty()) {
+		if (params.getParticipationKeys() != null) {
 			sb.and().append("participation.key in (:participationKeys)");
 		}
-		if (params.getAppointmentKeys() != null && !params.getAppointmentKeys().isEmpty()) {
+		if (params.getAppointmentKeys() != null) {
 			sb.and().append("participation.appointment.key in (:appointmentKeys)");
 		}
 		if (params.getStartAfter() != null) {
@@ -219,19 +219,19 @@ class ParticipationDAO {
 		if (StringHelper.containsNonWhitespace(params.getSubIdent())) {
 			query.setParameter("subIdent", params.getSubIdent());
 		}
-		if (params.getTopicKeys() != null && !params.getTopicKeys().isEmpty()) {
+		if (params.getTopicKeys() != null) {
 				query.setParameter("topicKeys", params.getTopicKeys());
 		}
-		if (params.getIdentityKeys() != null && !params.getIdentityKeys().isEmpty()) {
+		if (params.getIdentityKeys() != null) {
 			query.setParameter("identityKeys", params.getIdentityKeys());
 		}
 		if (params.getCreatedAfter() != null) {
 			query.setParameter("createdAfter", params.getCreatedAfter());
 		}
-		if (params.getParticipationKeys() != null && !params.getParticipationKeys().isEmpty()) {
+		if (params.getParticipationKeys() != null) {
 			query.setParameter("participationKeys", params.getParticipationKeys());
 		}
-		if (params.getAppointmentKeys() != null && !params.getAppointmentKeys().isEmpty()) {
+		if (params.getAppointmentKeys() != null) {
 			query.setParameter("appointmentKeys", params.getAppointmentKeys());
 		}
 		if (params.getStartAfter() != null) {

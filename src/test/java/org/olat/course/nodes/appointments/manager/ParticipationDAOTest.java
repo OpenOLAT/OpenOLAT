@@ -25,6 +25,7 @@ import static org.olat.test.JunitTestHelper.random;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -253,6 +254,22 @@ public class ParticipationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldLoadByEmptyTopics() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser(random());
+		Topic topic = topicDao.createTopic(entry, JunitTestHelper.random());
+		Appointment appointment = appointmentDao.createAppointment(topic);
+		sut.createParticipation(appointment, identity, identity);
+		dbInstance.commitAndCloseSession();
+		
+		ParticipationSearchParams params = new ParticipationSearchParams();
+		params.setTopics(Collections.emptyList());
+		List<Participation> participations = sut.loadParticipations(params);
+		
+		assertThat(participations).isEmpty();
+	}
+	
+	@Test
 	public void shouldLoadByRepositoryAndIdentity() {
 		RepositoryEntry entry1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry entry2 = JunitTestHelper.createAndPersistRepositoryEntry();
@@ -314,7 +331,7 @@ public class ParticipationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldLoadKeys() {
+	public void shouldLoadByParticipations() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsUser(random());
 		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsUser(random());
@@ -337,6 +354,31 @@ public class ParticipationDAOTest extends OlatTestCase {
 		assertThat(participations)
 				.containsExactlyInAnyOrder(participation112, participation211)
 				.doesNotContain(participation111, participation121);
+	}
+	
+	@Test
+	public void shouldLoadByEmptyParticipations() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser(random());
+		Topic topic = topicDao.createTopic(entry, JunitTestHelper.random());
+		Appointment appointment = appointmentDao.createAppointment(topic);
+		Participation participation = sut.createParticipation(appointment, identity, identity);
+		dbInstance.commitAndCloseSession();
+		
+		ParticipationSearchParams params = new ParticipationSearchParams();
+		Collection<Participation> participationList = Collections.singletonList(participation);
+		params.setParticipations(participationList);
+		List<Participation> participations = sut.loadParticipations(params);
+		
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(participations).hasSize(1);
+		
+		ParticipationSearchParams paramsEmpty = new ParticipationSearchParams();
+		paramsEmpty.setParticipations(Collections.emptyList());
+		List<Participation> participationsEmpty = sut.loadParticipations(paramsEmpty);
+		softly.assertThat(participationsEmpty).isEmpty();
+		
+		softly.assertAll();
 	}
 	
 	@Test

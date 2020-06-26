@@ -239,7 +239,7 @@ class AppointmentDAO {
 		if (StringHelper.containsNonWhitespace(params.getSubIdent())) {
 			sb.and().append("topic.subIdent = :subIdent");
 		}
-		if (params.getTopicKeys() != null && !params.getTopicKeys().isEmpty()) {
+		if (params.getTopicKeys() != null) {
 			sb.and().append("appointment.topic.key in (:topicKeys)");
 		}
 		if (params.getStartAfter() != null) {
@@ -260,7 +260,7 @@ class AppointmentDAO {
 		if (StringHelper.containsNonWhitespace(params.getSubIdent())) {
 			query.setParameter("subIdent", params.getSubIdent());
 		}
-		if (params.getTopicKeys() != null && !params.getTopicKeys().isEmpty()) {
+		if (params.getTopicKeys() != null) {
 			query.setParameter("topicKeys", params.getTopicKeys());
 		}
 		if (params.getStartAfter() != null) {
