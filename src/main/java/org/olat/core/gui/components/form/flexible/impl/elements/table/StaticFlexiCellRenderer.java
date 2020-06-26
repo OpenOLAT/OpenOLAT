@@ -51,6 +51,7 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 	private String iconRightCSS;
 	private String linkCSS;
 	private String linkTitle;
+	private boolean push = false;
 	private boolean newWindow = false;
 	private boolean dirtyCheck = true;
 	private FlexiCellRenderer labelDelegate;
@@ -129,6 +130,14 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 		this.action = action;
 	}
 	
+	public boolean isPush() {
+		return push;
+	}
+
+	public void setPush(boolean push) {
+		this.push = push;
+	}
+
 	@Override
 	public List<String> getActions() {
 		if(StringHelper.containsNonWhitespace(action)) {
@@ -190,7 +199,7 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 				if(!StringHelper.containsNonWhitespace(href)) {
 					href = "javascript:;";
 				}
-				String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, dirtyCheck, true, false, pair);
+				String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, dirtyCheck, true, push, pair);
 				target.append("<a href=\"").append(href).append("\" onclick=\"").append(jsCode).append("; return false;\"");
 			}
 			

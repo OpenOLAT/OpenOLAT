@@ -182,10 +182,12 @@ public abstract class AbstractCertificate implements Certificate, Persistable {
 		this.last = last;
 	}
 
+	@Override
 	public Date getNextRecertificationDate() {
 		return nextRecertificationDate;
 	}
 
+	@Override
 	public void setNextRecertificationDate(Date nextRecertificationDate) {
 		this.nextRecertificationDate = nextRecertificationDate;
 	}

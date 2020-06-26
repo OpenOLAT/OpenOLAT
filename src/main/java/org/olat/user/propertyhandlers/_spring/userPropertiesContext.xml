@@ -1698,6 +1698,22 @@
 					</bean>
 				</entry>
 				
+				<!-- User properties for certificates report -->
+				<entry key="org.olat.course.certificate.ui.report.CertificatesReportMediaResource">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Properties for the certificates report" />
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyGenericText" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyEmail" />
+								<ref bean="userPropertyCountry" />
+							</list>
+						</property>
+					</bean>
+				</entry>
+				
 
 				<!--
 					Default configuration in case nothing else matches.

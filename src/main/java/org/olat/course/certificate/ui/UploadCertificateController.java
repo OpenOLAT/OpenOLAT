@@ -30,7 +30,6 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
@@ -210,9 +209,9 @@ public class UploadCertificateController extends FormBasicController {
 	private boolean validatePdf(File template) {
 		boolean allOk = true;
 		
-		PDDocument document = null;
-		try (InputStream in = Files.newInputStream(template.toPath())) {		
-			document = PDDocument.load(in);
+		try (InputStream in = Files.newInputStream(template.toPath());
+				PDDocument document = PDDocument.load(in)) {		
+			
 			if (document.isEncrypted()) {
 				fileEl.setErrorKey("upload.error.encrypted", null);
 				allOk &= false;
@@ -221,7 +220,6 @@ public class UploadCertificateController extends FormBasicController {
 				PDDocumentCatalog docCatalog = document.getDocumentCatalog();
 				PDAcroForm acroForm = docCatalog.getAcroForm();
 				if (acroForm != null) {
-					@SuppressWarnings("unchecked")
 					List<PDField> fields = acroForm.getFields();
 					for(PDField field:fields) {
 						field.setValue("test");
@@ -241,8 +239,6 @@ public class UploadCertificateController extends FormBasicController {
 			logError("", ex);
 			fileEl.setErrorKey("upload.unkown.error", null);
 			allOk &= false;
-		} finally {
-			IOUtils.closeQuietly(document);
 		}
 		
 		return allOk;
