@@ -33,6 +33,7 @@ import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
@@ -161,6 +162,7 @@ public class CalendarSyncher {
 		KalendarEvent event = new KalendarEvent(eventId, null, subject, appointement.getStart(), appointement.getEnd());
 		event.setExternalId(generateExternalId(appointement));
 		event.setLocation(appointement.getLocation());
+		updateDates(appointement, event);
 		updateEventDescription(appointement, event);
 		addKalendarEventLinks(appointement.getTopic(), event);
 		event.setManagedFlags(CAL_MANAGED_FLAGS);
@@ -169,12 +171,23 @@ public class CalendarSyncher {
 	
 	private void updateEvent(Appointment appointement, KalendarEvent event, Identity identity) {
 		event.setSubject(getSubject(appointement, identity));
-		event.setBegin(appointement.getStart());
-		event.setEnd(appointement.getEnd());
 		event.setLocation(appointement.getLocation());
+		updateDates(appointement, event);
 		updateEventDescription(appointement, event);
 		addKalendarEventLinks(appointement.getTopic(), event);
 		event.setManagedFlags(CAL_MANAGED_FLAGS);
+	}
+
+	private void updateDates(Appointment appointement, KalendarEvent event) {
+		if (DateUtils.isSameDate(appointement.getStart(), appointement.getEnd())) {
+			event.setAllDayEvent(true);
+			event.setBegin(DateUtils.setTime(appointement.getStart(), 0, 0, 0));
+			event.setEnd(DateUtils.setTime(appointement.getEnd(), 23,59,59));
+		} else {
+			event.setAllDayEvent(false);
+			event.setBegin(appointement.getStart());
+			event.setEnd(appointement.getEnd());
+		}
 	}
 	
 	private String getSubject(Appointment appointment, Identity identity) {
