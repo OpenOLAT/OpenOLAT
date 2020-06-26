@@ -145,13 +145,12 @@ public class BigBlueButtonAdminController extends BasicController implements Act
 	}
 	
 	private void doOpenConfiguration(UserRequest ureq) {
-		if(configCtrl == null) {
-			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Configuration", 0l), null);
-			configCtrl = new BigBlueButtonConfigurationController(ureq, bwControl);
-			listenTo(configCtrl);
-		} else {
-			addToHistory(ureq, configCtrl);
-		}
+		removeAsListenerAndDispose(configCtrl);
+
+		WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Configuration", 0l), null);
+		configCtrl = new BigBlueButtonConfigurationController(ureq, bwControl);
+		listenTo(configCtrl);
+
 		mainVC.put("segmentCmp", configCtrl.getInitialComponent());
 	}
 	
