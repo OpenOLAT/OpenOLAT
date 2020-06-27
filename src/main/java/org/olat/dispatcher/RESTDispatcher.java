@@ -221,16 +221,8 @@ public class RESTDispatcher implements Dispatcher {
 						DispatcherModule.redirectToDefaultDispatcher(response);
 					}
 				} else if (Windows.getWindows(usess).getChiefController(ureq) == null) {
-					/*
 					// Session is already available, but no main window (Head-less REST
 					// session). Only create the base chief controller and the window
-					ChiefController cc = AuthHelper.createAuthHome(ureq);
-					//the user is authenticated successfully with a security token, we can set the authenticated path
-					cc.getWindow().setUriPrefix(WebappHelper.getServletContextPath() + DispatcherModule.PATH_AUTHENTICATED);
-					Windows ws = Windows.getWindows(ureq);
-					ws.registerWindow(cc);
-					// no need to call setIdentityAsActive as this was already done by RestApiLoginFilter...
-					*/
 					redirectAuthenticatedTo(usess, ureq, businessPath, encodedRestPart);
 					return;
 				}
@@ -290,7 +282,13 @@ public class RESTDispatcher implements Dispatcher {
 			// session). Only create the base chief controller and the window
 			setBusinessPathInUserSession(usess, businessPath, ureq.getParameter(WINDOW_SETTINGS));
 			ChiefController cc = AuthHelper.createAuthHome(ureq);
+			
+			Window currentWindow = cc.getWindow();
+			currentWindow.setUriPrefix(WebappHelper.getServletContextPath() + DispatcherModule.PATH_AUTHENTICATED);
+			Windows.getWindows(ureq).registerWindow(cc);
+			ureq.overrideWindowComponentID(currentWindow.getDispatchID());
 			url = getRedirectToURL(cc);
+
 			if(usess != null && !ureq.getHttpReq().isRequestedSessionIdFromCookie()) {
 				url += ";jsessionid=" + usess.getSessionInfo().getSession().getId();
 			}
