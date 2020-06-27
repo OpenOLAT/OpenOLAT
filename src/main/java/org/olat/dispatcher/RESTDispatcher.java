@@ -280,7 +280,13 @@ public class RESTDispatcher implements Dispatcher {
 			// session). Only create the base chief controller and the window
 			setBusinessPathInUserSession(usess, businessPath, ureq.getParameter(WINDOW_SETTINGS));
 			ChiefController cc = AuthHelper.createAuthHome(ureq);
+			
+			Window currentWindow = cc.getWindow();
+			currentWindow.setUriPrefix(WebappHelper.getServletContextPath() + DispatcherModule.PATH_AUTHENTICATED);
+			Windows.getWindows(ureq).registerWindow(cc);
+			ureq.overrideWindowComponentID(currentWindow.getDispatchID());
 			url = getRedirectToURL(cc);
+
 			if(usess != null && !ureq.getHttpReq().isRequestedSessionIdFromCookie()) {
 				url += ";jsessionid=" + usess.getSessionInfo().getSession().getId();
 			}
