@@ -46,7 +46,12 @@ public class UserProfilePage {
 	 */
 	public UserProfilePage assertOnProfile() {
 		By profileSegmentBy = By.cssSelector("div.o_segments a.btn.o_sel_usersettings_profile");
-		OOGraphene.waitElement(profileSegmentBy, 5, browser);
+		try {
+			OOGraphene.waitElement(profileSegmentBy, browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Assertonprofile", browser);
+			throw e;
+		}
 		WebElement profileSegmentEl = browser.findElement(profileSegmentBy);
 		Assert.assertTrue(profileSegmentEl.isDisplayed());
 		return this;
