@@ -22,9 +22,6 @@ package org.olat.login.validation;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.login.validation.ValidationRule;
-import org.olat.login.validation.ValidationRulesProvider;
-
 
 /**
  * 
