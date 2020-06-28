@@ -262,8 +262,9 @@ public class AuthenticatedDispatcher implements Dispatcher {
 		ws.disposeClosedWindows(ureq);
 		Window window = ws.getWindow(ureq);
 		if (window == null) {
-			//probably a 
-			if(usess.isSavedSession() && !usess.getHistoryStack().isEmpty()) {
+			if(request.getPathInfo() != null && request.getPathInfo().contains("close-window")) {
+				DispatcherModule.setNotContent(request.getPathInfo(), response);
+			} else if(usess.isSavedSession() && !usess.getHistoryStack().isEmpty()) {
 				redirectToDefaultDispatcher(request, response);
 			} else {
 				DispatcherModule.sendNotFound(request.getRequestURI(), response);
