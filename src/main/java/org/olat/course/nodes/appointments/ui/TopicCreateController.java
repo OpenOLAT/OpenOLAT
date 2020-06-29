@@ -97,6 +97,8 @@ public class TopicCreateController extends FormBasicController {
 	private List<Organizer> organizers;
 	private List<Identity> coaches;
 	private List<AppointmentWrapper> appointmentWrappers;
+	private boolean multiParticipationsSelected = true;
+	private boolean coachConfirmationSelected = true;
 	private int counter = 0;
 	
 	@Autowired
@@ -142,6 +144,7 @@ public class TopicCreateController extends FormBasicController {
 		
 		configurationEl = uifactory.addCheckboxesVertical("topic.configuration", formLayout, emptyStrings(),
 				emptyStrings(), 1);
+		configurationEl.addActionListener(FormEvent.ONCHANGE);
 		
 		// Organizer
 		KeyValues coachesKV = new KeyValues();
@@ -217,8 +220,8 @@ public class TopicCreateController extends FormBasicController {
 			configKV.add(entry(KEY_COACH_CONFIRMATION, translate("topic.coach.confirmation")));
 		}
 		configurationEl.setKeysAndValues(configKV.keys(), configKV.values());
-		configurationEl.select(KEY_MULTI_PARTICIPATION, true);
-		configurationEl.select(KEY_COACH_CONFIRMATION, true);
+		configurationEl.select(KEY_MULTI_PARTICIPATION, multiParticipationsSelected);
+		configurationEl.select(KEY_COACH_CONFIRMATION, coachConfirmationSelected);
 
 		maxParticipationsEl.setVisible(enrollment);
 		
@@ -233,6 +236,10 @@ public class TopicCreateController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == typeEl) {
 			updateUI();
+		} else if (source == configurationEl) {
+			Collection<String> configKeys = configurationEl.getSelectedKeys();
+			multiParticipationsSelected = configKeys.contains(KEY_MULTI_PARTICIPATION);
+			coachConfirmationSelected = configKeys.contains(KEY_COACH_CONFIRMATION);
 		} else if (source == recurringEl) {
 			updateUI();
 		} else if (source instanceof DateChooser) {

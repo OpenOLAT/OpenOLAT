@@ -21,6 +21,7 @@ package org.olat.course.nodes.appointments.ui;
 
 import static org.olat.core.gui.components.util.KeyValues.VALUE_ASC;
 import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.util.ArrayHelper.emptyStrings;
 
 import java.util.Collection;
 import java.util.List;
@@ -29,11 +30,13 @@ import java.util.stream.Collectors;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
@@ -72,6 +75,8 @@ public class TopicEditController extends FormBasicController {
 	private Topic topic;
 	private List<Organizer> organizers;
 	private List<Identity> coaches;
+	private boolean multiParticipationsSelected;
+	private boolean coachConfirmationSelected;
 	
 	@Autowired
 	private AppointmentsService appointmentsService;
@@ -86,6 +91,9 @@ public class TopicEditController extends FormBasicController {
 		organizers = appointmentsService.getOrganizers(topic);
 		coaches = repositoryService.getMembers(topic.getEntry(), RepositoryEntryRelationType.all,
 				GroupRoles.coach.name());
+		
+		multiParticipationsSelected = topic.isMultiParticipation();
+		coachConfirmationSelected = !topic.isAutoConfirmation();
 		
 		initForm(ureq);
 		updateUI();
@@ -115,14 +123,11 @@ public class TopicEditController extends FormBasicController {
 		typeKV.add(entry(Topic.Type.finding.name(), translate("topic.type.finding")));
 		typeEl = uifactory.addRadiosHorizontal("topic.type", formLayout, typeKV.keys(), typeKV.values());
 		typeEl.select(topic.getType().name(), true);
+		typeEl.addActionListener(FormEvent.ONCHANGE);
 		
-		KeyValues configKV = new KeyValues();
-		configKV.add(entry(KEY_MULTI_PARTICIPATION, translate("topic.multi.participation")));
-		configKV.add(entry(KEY_COACH_CONFIRMATION, translate("topic.coach.confirmation")));
-		configurationEl = uifactory.addCheckboxesVertical("topic.configuration", formLayout, configKV.keys(),
-				configKV.values(), 1);
-		configurationEl.select(KEY_MULTI_PARTICIPATION, topic.isMultiParticipation());
-		configurationEl.select(KEY_COACH_CONFIRMATION, !topic.isAutoConfirmation());
+		configurationEl = uifactory.addCheckboxesVertical("topic.configuration", formLayout, emptyStrings(),
+				emptyStrings(), 1);
+		configurationEl.addActionListener(FormEvent.ONCHANGE);
 		
 		// Organizers
 		KeyValues coachesKV = new KeyValues();
@@ -143,6 +148,8 @@ public class TopicEditController extends FormBasicController {
 		buttonsCont.setRootForm(mainForm);
 		uifactory.addFormSubmitButton("save", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		
+		updateUI();
 	}
 
 	private void updateUI() {
@@ -152,6 +159,29 @@ public class TopicEditController extends FormBasicController {
 	private void updateUI(boolean configChangeable) {
 		typeEl.setEnabled(configChangeable);
 		configurationEl.setEnabled(configChangeable);
+		
+		boolean enrollment = typeEl.isOneSelected() && Type.valueOf(typeEl.getSelectedKey()) != Type.finding;
+		
+		KeyValues configKV = new KeyValues();
+		configKV.add(entry(KEY_MULTI_PARTICIPATION, translate("topic.multi.participation")));
+		if (enrollment) {
+			configKV.add(entry(KEY_COACH_CONFIRMATION, translate("topic.coach.confirmation")));
+		}
+		configurationEl.setKeysAndValues(configKV.keys(), configKV.values());
+		configurationEl.select(KEY_MULTI_PARTICIPATION, multiParticipationsSelected);
+		configurationEl.select(KEY_COACH_CONFIRMATION, coachConfirmationSelected);
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == typeEl) {
+			updateUI();
+		} else if (source == configurationEl) {
+			Collection<String> configKeys = configurationEl.getSelectedKeys();
+			multiParticipationsSelected = configKeys.contains(KEY_MULTI_PARTICIPATION);
+			coachConfirmationSelected = configKeys.contains(KEY_COACH_CONFIRMATION);
+		}
+		super.formInnerEvent(ureq, source, event);
 	}
 	
 	@Override
