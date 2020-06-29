@@ -25,6 +25,8 @@ import org.olat.core.id.Identity;
 import org.olat.course.nodes.AppointmentsCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.appointments.AppointmentsSecurityCallback;
+import org.olat.modules.appointments.Organizer;
 
 /**
  * 

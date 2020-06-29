@@ -37,15 +37,15 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
-import org.olat.course.nodes.appointments.AppointmentsSecurityCallback;
 import org.olat.course.nodes.appointments.AppointmentsSecurityCallbackFactory;
-import org.olat.course.nodes.appointments.AppointmentsService;
 import org.olat.course.nodes.appointments.ui.AppointmentsEditController;
 import org.olat.course.nodes.appointments.ui.AppointmentsRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.appointments.AppointmentsSecurityCallback;
+import org.olat.modules.appointments.AppointmentsService;
 import org.olat.repository.RepositoryEntry;
 
 /**

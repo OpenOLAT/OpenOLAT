@@ -21,14 +21,12 @@ package org.olat.course.nodes.appointments.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.course.nodes.appointments.AppointmentsSecurityCallback;
+import org.olat.modules.appointments.AppointmentsSecurityCallback;
+import org.olat.modules.appointments.ui.AppointmentsMainController;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -39,33 +37,14 @@ import org.olat.repository.RepositoryEntry;
  */
 public class AppointmentsRunController extends BasicController {
 
-	private final BreadcrumbedStackedPanel stackPanel;
-	
-	private final Controller topicsCtrl;
+	private Controller appointmentsMainCtrl;
 
 	public AppointmentsRunController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, String subIdent,
 			AppointmentsSecurityCallback secCallback) {
 		super(ureq, wControl);
 		
-		VelocityContainer mainVC = createVelocityContainer("run");
-		
-		stackPanel = new BreadcrumbedStackedPanel("app", getTranslator(), this);
-		stackPanel.setInvisibleCrumb(3);
-		
-		if (secCallback.canSelectAppointments()) {
-			topicsCtrl = new TopicsRunController(ureq, wControl, stackPanel, entry, subIdent, secCallback);
-		} else {
-			topicsCtrl = new TopicsRunCoachController(ureq, wControl, stackPanel, entry, subIdent, secCallback);
-		}
-		listenTo(topicsCtrl);
-		stackPanel.pushController("topics", topicsCtrl);
-		if (topicsCtrl instanceof Activateable2) {
-			((Activateable2)topicsCtrl).activate(ureq, null, null);
-		}
-			
-		mainVC.put("topics", stackPanel);
-		
-		putInitialPanel(mainVC);
+		appointmentsMainCtrl = new AppointmentsMainController(ureq, wControl, entry, subIdent, secCallback);
+		putInitialPanel(appointmentsMainCtrl.getInitialComponent());
 	}
 
 	@Override

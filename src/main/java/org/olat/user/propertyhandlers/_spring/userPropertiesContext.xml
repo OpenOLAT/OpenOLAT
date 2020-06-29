@@ -1112,7 +1112,7 @@
 					</bean>
 				</entry>
 				
-				<entry key="org.olat.course.nodes.appointments.ui.UserRestrictionTableModel">
+				<entry key="org.olat.modules.appointments.ui.UserRestrictionTableModel">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 					<property name="description" value="Participation restrictions in appointments" />
 						<property name="propertyHandlers">

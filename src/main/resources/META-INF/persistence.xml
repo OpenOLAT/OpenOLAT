@@ -95,11 +95,6 @@
 		<class>org.olat.course.assessment.model.UserEfficiencyStatementStandalone</class>
 		<class>org.olat.course.assessment.model.UserEfficiencyStatementForCoaching</class>
 		<class>org.olat.course.disclaimer.model.CourseDisclaimerConsentImpl</class>
-		<class>org.olat.course.nodes.appointments.model.AppointmentImpl</class>
-		<class>org.olat.course.nodes.appointments.model.OrganizerImpl</class>
-		<class>org.olat.course.nodes.appointments.model.ParticipationImpl</class>
-		<class>org.olat.course.nodes.appointments.model.TopicImpl</class>
-		<class>org.olat.course.nodes.appointments.model.TopicToGroupImpl</class>
 		<class>org.olat.course.nodes.cl.model.DBCheckbox</class>
 		<class>org.olat.course.nodes.cl.model.DBCheck</class>
 		<class>org.olat.course.nodes.dialog.model.DialogElementImpl</class>
@@ -167,6 +162,11 @@
 		<class>org.olat.ims.qti21.model.jpa.AssessmentTestMarksImpl</class>
 		<class>org.olat.modules.adobeconnect.model.AdobeConnectUserImpl</class>
 		<class>org.olat.modules.adobeconnect.model.AdobeConnectMeetingImpl</class>
+		<class>org.olat.modules.appointments.model.AppointmentImpl</class>
+		<class>org.olat.modules.appointments.model.OrganizerImpl</class>
+		<class>org.olat.modules.appointments.model.ParticipationImpl</class>
+		<class>org.olat.modules.appointments.model.TopicImpl</class>
+		<class>org.olat.modules.appointments.model.TopicToGroupImpl</class>
 		<class>org.olat.modules.assessment.model.AssessmentEntryImpl</class>
 		<class>org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingImpl</class>
 		<class>org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingTemplateImpl</class>
