@@ -100,9 +100,14 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 		
 		ParticipationSearchParams pParams = new ParticipationSearchParams();
 		pParams.setTopic(topic);
-		Map<Long, List<Participation>> appointmentKeyToParticipation = appointmentsService
-				.getParticipations(pParams).stream()
+		pParams.setFetchAppointments(true);
+		List<Participation> allPrticipations = appointmentsService.getParticipations(pParams);
+		Map<Long, List<Participation>> appointmentKeyToParticipation = allPrticipations.stream()
 				.collect(Collectors.groupingBy(p -> p.getAppointment().getKey()));
+		boolean userHasNoParticipation = !allPrticipations.stream()
+				.filter(p -> p.getIdentity().getKey().equals(getIdentity().getKey()))
+				.findFirst()
+				.isPresent();
 		
 		boolean noConfirmedAppointments = false;
 		if (Type.finding == topic.getType()) {
@@ -115,7 +120,7 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 		List<AppointmentRow> rows = new ArrayList<>(appointments.size());
 		for (Appointment appointment : appointments) {
 			List<Participation> participations = appointmentKeyToParticipation.getOrDefault(appointment.getKey(), emptyList());
-			AppointmentRow row = getWrappedAppointment(topic, appointment, participations, noConfirmedAppointments);
+			AppointmentRow row = getWrappedAppointment(topic, appointment, participations, userHasNoParticipation, noConfirmedAppointments);
 			if (row != null) {
 				rows.add(row);
 			}
@@ -124,7 +129,7 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 	}
 
 	private AppointmentRow getWrappedAppointment(Topic topic, Appointment appointment,
-			List<Participation> participations, boolean noConfirmedAppointments) {
+			List<Participation> participations, boolean userHasNoParticipation, boolean noConfirmedAppointments) {
 		Optional<Participation> myParticipation = participations.stream()
 				.filter(p -> p.getIdentity().getKey().equals(getIdentity().getKey()))
 				.findFirst();
@@ -169,7 +174,7 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 			if (noConfirmedAppointments || selected) {
 				forgeSelectionLink(row, selected, noConfirmedAppointments);
 			}
-		} else {
+		} else if (topic.isMultiParticipation() || userHasNoParticipation) {
 			Integer numberOfParticipations = Integer.valueOf(participations.size());
 			row.setNumberOfParticipations(numberOfParticipations);
 			Integer maxParticipations = appointment.getMaxParticipations();

@@ -522,7 +522,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 	private void doToggleParticipation(UserRequest ureq, AppointmentRow row) {
 		if (row.getParticipation() == null) {
 			if (topic.isAutoConfirmation()) {
-				doSelfConfirmParticipation(ureq, row.getAppointment());
+				doSelfConfirmParticipation(ureq, row);
 			} else {
 				doCreateParticipation(row.getAppointment());
 			}
@@ -532,11 +532,22 @@ public abstract class AppointmentListController extends FormBasicController impl
 		updateModel();
 	}
 
-	private void doSelfConfirmParticipation(UserRequest ureq, Appointment appointment) {
+	private void doSelfConfirmParticipation(UserRequest ureq, AppointmentRow row) {
+		String formatedDate;
+		if (StringHelper.containsNonWhitespace(row.getTime())) {
+			formatedDate = row.getDate() + ", " + row.getTime();
+		} else if (StringHelper.containsNonWhitespace(row.getDateLong())) {
+			formatedDate = row.getDateLong();
+		} else {
+			formatedDate = row.getDate() + ", " + translate("full.day.lower");
+		}
+		
 		String title = translate("confirm.participation.self.title");
-		String text = translate("confirm.participation.self");
+		String text = topic.isMultiParticipation()
+				? translate("confirm.participation.self.multi", new String[] { formatedDate })
+				: translate("confirm.participation.self", new String[] { formatedDate });
 		confirmParticipationCrtl = activateYesNoDialog(ureq, title, text, confirmParticipationCrtl);
-		confirmParticipationCrtl.setUserObject(appointment);
+		confirmParticipationCrtl.setUserObject(row);
 	}
 
 	private void doCreateParticipation(Appointment appointment) {
