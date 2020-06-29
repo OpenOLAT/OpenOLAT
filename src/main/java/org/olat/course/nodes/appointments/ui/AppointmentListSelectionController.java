@@ -70,12 +70,7 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 	protected boolean canEdit() {
 		return false;
 	}
-
-	@Override
-	protected String getTableCssClass() {
-		return "o_selection";
-	}
-
+	
 	@Override
 	protected List<String> getFilters() {
 		return FILTERS;

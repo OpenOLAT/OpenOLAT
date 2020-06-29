@@ -128,8 +128,6 @@ public abstract class AppointmentListController extends FormBasicController impl
 	
 	protected abstract boolean canEdit();
 	
-	protected abstract String getTableCssClass();
-	
 	protected abstract List<String> getFilters();
 	
 	protected abstract List<String>  getDefaultFilters();
@@ -217,15 +215,15 @@ public abstract class AppointmentListController extends FormBasicController impl
 			DefaultFlexiColumnModel removeModel = new DefaultFlexiColumnModel(AppointmentCols.removeUser);
 			removeModel.setExportable(false);
 			columnsModel.addFlexiColumnModel(removeModel);
-			DefaultFlexiColumnModel confirmModel = new DefaultFlexiColumnModel(AppointmentCols.confirm);
-			confirmModel.setExportable(false);
-			columnsModel.addFlexiColumnModel(confirmModel);
 			DefaultFlexiColumnModel deleteModel = new DefaultFlexiColumnModel(AppointmentCols.delete);
 			deleteModel.setExportable(false);
 			columnsModel.addFlexiColumnModel(deleteModel);
 			DefaultFlexiColumnModel editModel = new DefaultFlexiColumnModel(AppointmentCols.edit);
 			editModel.setExportable(false);
 			columnsModel.addFlexiColumnModel(editModel);
+			DefaultFlexiColumnModel confirmModel = new DefaultFlexiColumnModel(AppointmentCols.confirm);
+			confirmModel.setExportable(false);
+			columnsModel.addFlexiColumnModel(confirmModel);
 		}
 		
 		dataModel = new AppointmentDataModel(columnsModel, getLocale());
@@ -233,7 +231,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 		tableEl.setAndLoadPersistedPreferences(ureq, getPersistedPreferencesId());
 		tableEl.setEmtpyTableMessageKey("table.empty.appointments");
 
-		tableEl.setElementCssClass("o_appointments o_list " + getTableCssClass());
+		tableEl.setElementCssClass("o_appointments o_list");
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
 		tableEl.setRendererType(FlexiTableRendererType.custom);
 		VelocityContainer rowVC = createVelocityContainer("appointment_row");
@@ -369,6 +367,18 @@ public abstract class AppointmentListController extends FormBasicController impl
 		link.setEnabled(enabled);
 		row.setSelectLink(link);
 	}
+	
+	protected void forgeConfirmLink(AppointmentRow row, boolean confirmable) {
+		String i18nKey = confirmable? "confirm": "unconfirm";
+		FormLink link = uifactory.addFormLink("confirm_" + row.getKey(), CMD_CONFIRM, i18nKey, null, null, Link.LINK);
+		link.setUserObject(row);
+		if (!confirmable) {
+			link.setIconLeftCSS("o_icon o_icon_lg o_icon_selected");
+		} else {
+			link.setIconLeftCSS("o_icon o_icon_lg o_icon_unselected");
+		}
+		row.setConfirmLink(link);
+	}
 
 	protected void forgeAddUserLink(AppointmentRow row) {
 		FormLink link = uifactory.addFormLink("add_" + row.getKey(), CMD_ADD_USER, "add.user", null, null, Link.LINK);
@@ -380,13 +390,6 @@ public abstract class AppointmentListController extends FormBasicController impl
 		FormLink link = uifactory.addFormLink("remove_" + row.getKey(), CMD_REMOVE, "remove.user", null, null, Link.LINK);
 		link.setUserObject(row);
 		row.setRemoveLink(link);
-	}
-	
-	protected void forgeConfirmLink(AppointmentRow row, boolean confirmable) {
-		String i18nKey = confirmable? "confirm": "unconfirm";
-		FormLink link = uifactory.addFormLink("confirm_" + row.getKey(), CMD_CONFIRM, i18nKey, null, null, Link.LINK);
-		link.setUserObject(row);
-		row.setConfirmLink(link);
 	}
 	
 	protected void forgeDeleteLink(AppointmentRow row) {
@@ -547,7 +550,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 				? translate("confirm.participation.self.multi", new String[] { formatedDate })
 				: translate("confirm.participation.self", new String[] { formatedDate });
 		confirmParticipationCrtl = activateYesNoDialog(ureq, title, text, confirmParticipationCrtl);
-		confirmParticipationCrtl.setUserObject(row);
+		confirmParticipationCrtl.setUserObject(row.getAppointment());
 	}
 
 	private void doCreateParticipation(Appointment appointment) {

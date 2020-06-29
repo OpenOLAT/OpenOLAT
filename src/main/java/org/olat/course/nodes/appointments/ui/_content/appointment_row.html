@@ -50,6 +50,16 @@
 						$row.getDetails()
 					</div>
 				#end
+				#if($row.getNumberOfParticipations() && $row.getNumberOfParticipations() != "")
+					<div  class="o_no_participants">
+						<i class="o_icon o_icon-fw o_icon_user">&nbsp;</i>
+						#if($row.getNumberOfParticipations() == 1)
+							$r.translate("participations.number.of.one", $row.getNumberOfParticipations().toString())
+						#else
+							$r.translate("participations.number.of", $row.getNumberOfParticipations().toString())
+						#end
+					</div>
+				#end
 				#if($r.isNotEmpty($row.participants))
 					<div class="text-muted">
 						#foreach($participant in $row.participants)
@@ -76,9 +86,6 @@
 					#if($row.removeLinkName)
 						&nbsp;$r.render($row.removeLinkName)
 					#end
-					#if($row.confirmLinkName)
-						&nbsp;$r.render($row.confirmLinkName)
-					#end
 					#if($row.deleteLinkName)
 						&nbsp;$r.render($row.deleteLinkName)
 					#end
@@ -90,9 +97,13 @@
 		</div>
 		
 		#if($row.selectLinkName)
-			<div class="o_space"></div>
 			<div class="o_select_button">
 				$r.render($row.selectLinkName)
+			</div>
+		#end
+		#if($row.confirmLinkName)
+			<div class="o_select_button">
+				$r.render($row.confirmLinkName)
 			</div>
 		#end
 	</div>

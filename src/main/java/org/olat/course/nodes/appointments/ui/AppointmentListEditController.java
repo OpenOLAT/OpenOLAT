@@ -65,11 +65,6 @@ public class AppointmentListEditController extends AppointmentListController {
 	}
 
 	@Override
-	protected String getTableCssClass() {
-		return "o_edit";
-	}
-
-	@Override
 	protected List<String> getFilters() {
 		return FILTERS;
 	}
@@ -128,20 +123,33 @@ public class AppointmentListEditController extends AppointmentListController {
 		row.setParticipants(participants);
 
 		Integer numberOfParticipations = Integer.valueOf(participations.size());
-		row.setNumberOfParticipations(numberOfParticipations);
+		if (Type.finding == topic.getType()) {
+			row.setNumberOfParticipations(numberOfParticipations);
+		}
 		Integer maxParticipations = appointment.getMaxParticipations();
 		Integer freeParticipations = maxParticipations != null
 				? maxParticipations.intValue() - participations.size()
 				: null;
 		row.setFreeParticipations(freeParticipations);
 		
+		String selectionCSS = "";
 		boolean showStatus = Type.finding == topic.getType()
 				? Status.confirmed == appointment.getStatus()
 				: participations.size() > 0;
 		if (showStatus) {
 			row.setTranslatedStatus(translate("appointment.status." + appointment.getStatus().name()));
 			row.setStatusCSS("o_ap_status_" + appointment.getStatus().name());
+			
+			if (Appointment.Status.planned == appointment.getStatus()) {
+				selectionCSS = "o_ap_planned";
+			} else {
+				selectionCSS = "o_ap_confirmed";
+			}
 		}
+		if (Type.finding == topic.getType()) {
+			selectionCSS = selectionCSS + " o_time_normal";
+		}
+		row.setSelectionCSS(selectionCSS);
 		
 		boolean addUser = freeParticipations == null || freeParticipations.intValue() > 0;
 		boolean removeUser = participations.size() > 0;
