@@ -24,7 +24,6 @@
 */
 package org.olat.dispatcher;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Locale;
@@ -40,11 +39,7 @@ import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.UserRequestImpl;
 import org.olat.core.gui.Windows;
-import org.olat.core.gui.components.Window;
-import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.media.ServletUtil;
-import org.olat.core.gui.render.StringOutput;
-import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -221,7 +216,7 @@ public class RESTDispatcher implements Dispatcher {
 						DispatcherModule.redirectToDefaultDispatcher(response);
 					}
 				} else if (Windows.getWindows(usess).getChiefController(ureq) == null) {
-					redirectAuthenticatedTo(usess, ureq, businessPath, encodedRestPart);
+					redirectAuthenticatedTo(usess, ureq, encodedRestPart);
 					return;
 				}
 			}
@@ -229,14 +224,14 @@ public class RESTDispatcher implements Dispatcher {
 		
 		boolean auth = usess.isAuthenticated();
 		if (auth) {
-			redirectAuthenticatedTo(usess, ureq, businessPath, encodedRestPart);
+			redirectAuthenticatedTo(usess, ureq, encodedRestPart);
 		} else {
 			//prepare for redirect
 			setBusinessPathInUserSession(usess, businessPath, ureq.getParameter(WINDOW_SETTINGS));
 			String invitationAccess = ureq.getParameter(AuthenticatedDispatcher.INVITATION);
 			if (invitationAccess != null && loginModule.isInvitationEnabled()) {
 			// try to log in as anonymous
-				// use the language from the lang paramter if available, otherwhise use the system default locale
+				// use the language from the lang parameter if available, otherwise use the system default locale
 				Locale guestLoc = getLang(ureq);
 				int loginStatus = AuthHelper.doInvitationLogin(invitationAccess, ureq, guestLoc);
 				if ( loginStatus == AuthHelper.LOGIN_OK) {
@@ -256,7 +251,7 @@ public class RESTDispatcher implements Dispatcher {
 					DispatcherModule.redirectToDefaultDispatcher(response);
 				} else if (guestAccess.equals(AuthenticatedDispatcher.TRUE)) {
 					// try to log in as anonymous
-					// use the language from the lang paramter if available, otherwhise use the system default locale
+					// use the language from the lang parameter if available, otherwise use the system default locale
 					Locale guestLoc = getLang(ureq);
 					int loginStatus = AuthHelper.doAnonymousLogin(ureq, guestLoc);
 					if ( loginStatus == AuthHelper.LOGIN_OK) {
@@ -273,26 +268,10 @@ public class RESTDispatcher implements Dispatcher {
 		}
 	}
 	
-	private void redirectAuthenticatedTo(UserSession usess, UserRequest ureq, String businessPath, String encodedRestPart) {
-		String url;
-		if (Windows.getWindows(usess).getChiefController(ureq) == null) {
-			// Session is already available, but no main window (Head-less REST
-			// session). Only create the base chief controller and the window
-			setBusinessPathInUserSession(usess, businessPath, ureq.getParameter(WINDOW_SETTINGS));
-			ChiefController cc = AuthHelper.createAuthHome(ureq);
-			
-			Window currentWindow = cc.getWindow();
-			currentWindow.setUriPrefix(WebappHelper.getServletContextPath() + DispatcherModule.PATH_AUTHENTICATED);
-			Windows.getWindows(ureq).registerWindow(cc);
-			ureq.overrideWindowComponentID(currentWindow.getDispatchID());
-			url = getRedirectToURL(cc);
-
-			if(usess != null && !ureq.getHttpReq().isRequestedSessionIdFromCookie()) {
-				url += ";jsessionid=" + usess.getSessionInfo().getSession().getId();
-			}
-		} else {
-			//redirect to the authenticated dispatcher which support REST url
-			url = WebappHelper.getServletContextPath() + DispatcherModule.PATH_AUTHENTICATED + encodedRestPart;
+	private void redirectAuthenticatedTo(UserSession usess, UserRequest ureq, String encodedRestPart) {
+		String url = WebappHelper.getServletContextPath() + DispatcherModule.PATH_AUTHENTICATED + encodedRestPart;
+		if(usess != null && !ureq.getHttpReq().isRequestedSessionIdFromCookie()) {
+			url += ";jsessionid=" + usess.getSessionInfo().getSession().getId();
 		}
 		DispatcherModule.redirectTo(ureq.getHttpResp(), url);
 	}
@@ -331,17 +310,5 @@ public class RESTDispatcher implements Dispatcher {
 			guestLoc = I18nManager.getInstance().getLocaleOrDefault(guestLang);
 		}
 		return guestLoc;
-	}
-	
-	private String getRedirectToURL(ChiefController cc) {
-		Window w = cc.getWindow();
-		URLBuilder ubu = new URLBuilder(WebappHelper.getServletContextPath() + DispatcherModule.PATH_AUTHENTICATED, w.getInstanceId(), w.getTimestamp(), w.getCsrfToken());
-		try(StringOutput sout = new StringOutput(30)) {
-			ubu.buildURI(sout, null, null);
-			return sout.toString();
-		} catch(IOException e) {
-			log.error("", e);
-			return "";
-		}
 	}
 }
