@@ -205,7 +205,11 @@ public class TopicsRunCoachController extends BasicController {
 		long confirmableAppointmentsCount = appointments.stream()
 				.filter(a -> isConfirmable(a, appointmentKeyToParticipations))
 				.count();
-		wrapMessage(wrapper, appointments.size(), numParticipants, confirmableAppointmentsCount);
+		long numAppointmentsWithParticipations = participations.stream()
+				.map(p -> p.getAppointment().getKey())
+				.distinct()
+				.count();
+		wrapMessage(wrapper, appointments.size(), numParticipants, numAppointmentsWithParticipations, confirmableAppointmentsCount);
 		
 		Date now = new Date();
 		Optional<Appointment> nextAppointment;
@@ -252,24 +256,30 @@ public class TopicsRunCoachController extends BasicController {
 				: false;
 	}
 	
-	private void wrapMessage(TopicWrapper wrapper, int totalAppointments, long numParticipants, long confirmableAppointmentsCount) {
+	private void wrapMessage(TopicWrapper wrapper, int totalAppointments, long numParticipants,
+			long numAppointmentsWithParticipations, long confirmableAppointmentsCount) {
 		List<String> messages = new ArrayList<>(2);
 		if (totalAppointments == 0) {
 			messages.add(translate("no.appointments"));
 		} else {
-			if (numParticipants == 1 && totalAppointments == 1) {
+			if (totalAppointments == 1) {
+				messages.add(translate("appointments.total.one"));
+			} else {
+				messages.add(translate("appointments.total", new String[] { String.valueOf(totalAppointments) }));
+			}
+			if (numParticipants == 1 && numAppointmentsWithParticipations == 1) {
 				messages.add(translate("participations.selected.one.one"));
-			} else if (numParticipants == 1 && totalAppointments > 1) {
-				messages.add(translate("participations.selected.one.many", new String[] { String.valueOf(totalAppointments) }));
-			} else if (numParticipants > 1 && totalAppointments == 1) {
+			} else if (numParticipants == 1 && numAppointmentsWithParticipations > 1) {
+				messages.add(translate("participations.selected.one.many", new String[] { String.valueOf(numAppointmentsWithParticipations) }));
+			} else if (numParticipants > 1 && numAppointmentsWithParticipations == 1) {
 				messages.add(translate("participations.selected.many.one", new String[] { String.valueOf(numParticipants) }));
-			} else if (numParticipants > 1 && totalAppointments > 1) {
-				messages.add(translate("participations.selected.many.many", new String[] { String.valueOf(numParticipants), String.valueOf(numParticipants) }));
+			} else if (numParticipants > 1 && numAppointmentsWithParticipations > 1) {
+				messages.add(translate("participations.selected.many.many", new String[] { String.valueOf(numParticipants), String.valueOf(numAppointmentsWithParticipations) }));
 			} else {
 				messages.add(translate("participations.selected.many.many", new String[] { String.valueOf(0), String.valueOf(0) }));
 			}
 			
-			if (Type.finding != wrapper.getTopic().getType()) {
+			if (!wrapper.getTopic().isAutoConfirmation() && numAppointmentsWithParticipations > 0) {
 				if (confirmableAppointmentsCount == 1) {
 					messages.add(translate("appointments.confirmable.one"));
 				} else if (confirmableAppointmentsCount > 1) {
