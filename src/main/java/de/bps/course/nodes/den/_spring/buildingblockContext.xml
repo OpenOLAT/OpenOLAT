@@ -9,6 +9,12 @@
 	<bean id="den" class="de.bps.course.nodes.den.DENCourseNodeConfiguration" scope="prototype">
 		<property name="enabled" value="${course.node.dateenrollment.enabled}" />
 		<property name="order"   value="230" />
+		<property name="deprecated"   value="true" />
+		<property name="alternativeCourseNodes">
+			<list>
+				<value>appointments</value>
+			</list>
+		</property>
 	</bean>
 	
 </beans>
