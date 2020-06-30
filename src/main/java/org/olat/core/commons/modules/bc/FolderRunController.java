@@ -565,6 +565,13 @@ public class FolderRunController extends BasicController implements Activateable
 			}
 		}
 	}
+	
+	public String getCurrentContainerPath() {
+		if(folderComponent != null) {
+			return folderComponent.getCurrentContainerPath();
+		}
+		return null;
+	}
 
 	public void activatePath(UserRequest ureq, String path) {
 		if(folderCommandController != null) {

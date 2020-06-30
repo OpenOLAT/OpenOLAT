@@ -54,7 +54,8 @@ public class PFRunController extends BasicController {
 	private PFCoachController coachController;
 	private PFParticipantController participantController;
 	
-	private Link coachLink, participantLink;
+	private Link coachLink;
+	private Link participantLink;
 	
 	private VelocityContainer mainVC;
 	private SegmentViewComponent segmentView;
@@ -119,10 +120,12 @@ public class PFRunController extends BasicController {
 
 	@Override
 	protected void doDispose() {
-
+		//
 	}
 	
 	private void doOpenCoachView(UserRequest ureq) {
+		removeAsListenerAndDispose(coachController);
+		
 		coachController = new PFCoachController(ureq, getWindowControl(), pfNode, userCourseEnv, pfView);
 		listenTo(coachController);
 		mainVC.put("segmentCmp", coachController.getInitialComponent());
@@ -133,6 +136,8 @@ public class PFRunController extends BasicController {
 	}
 	
 	private void doOpenParticipantsView(UserRequest ureq, Identity identity, PFView view) {
+		removeAsListenerAndDispose(participantController);
+		
 		participantController = new PFParticipantController(ureq, getWindowControl(), pfNode, 
 				userCourseEnv, identity, view, false, false);
 		listenTo(participantController);
