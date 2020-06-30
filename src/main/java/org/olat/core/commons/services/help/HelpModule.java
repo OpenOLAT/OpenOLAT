@@ -78,10 +78,7 @@ public class HelpModule extends AbstractSpringModule {
 
 	public final static String DEFAULT_ICON = "o_icon_help";
 
-	private List<String> helpPluginList;
-	private List<HelpLinkSPI> userToolHelpPlugins;
-	private List<HelpLinkSPI> authorSiteHelpPlugins;
-	private List<HelpLinkSPI> dmzHelpPlugins;
+	private ListWrapper listWrapper;
 
 	// General help settings
 	@Value("${help.enabled:true}")
@@ -299,12 +296,13 @@ public class HelpModule extends AbstractSpringModule {
 		}
 		
 		// Remove help plugin
+		List<String> helpPluginList = new ArrayList<>(Arrays.asList(helpPlugins.split(DELIMITER)));
 		helpPluginList.remove(plugin);
 		helpPlugins = helpPluginList.stream().collect(Collectors.joining(DELIMITER));
 		setStringProperty("help.plugin", helpPlugins, true);
 		
 		// Adapt positions
-		for (String helpPlugin : helpPluginList) {
+		for (String helpPlugin : Arrays.asList(helpPlugins.split(DELIMITER))) {
 			switch (helpPlugin) {
 			case ACADEMY_KEY:
 				if (academyPos > removalPosition) {
@@ -353,7 +351,7 @@ public class HelpModule extends AbstractSpringModule {
 			}
 		}
 		
-		loadLists();
+		loadListWrapper(true);
 	}
 
 	public void saveHelpPlugin(String plugin, String icon, String input,
@@ -410,7 +408,7 @@ public class HelpModule extends AbstractSpringModule {
 			break;
 		}
 
-		loadLists();
+		loadListWrapper(true);
 	}
 
 	// Getters and setters
@@ -423,7 +421,7 @@ public class HelpModule extends AbstractSpringModule {
 	 * @return boolean
 	 */
 	public boolean isManualEnabled() {
-		return isHelpEnabled() && helpPluginList.contains(CONFLUENCE_KEY);
+		return isHelpEnabled() && helpPlugins.contains(CONFLUENCE_KEY);
 	}
 
 	public void setHelpEnabled(boolean helpEnabled) {
@@ -466,37 +464,34 @@ public class HelpModule extends AbstractSpringModule {
 			break;
 		}
 		
-		loadLists();
+		loadListWrapper(true);
 	}
 
 	public List<String> getHelpPluginList() {
-		if (helpPluginList == null) {
-			loadLists();
-		}
-		
-		return helpPluginList;
+		return new ArrayList<>(loadListWrapper(false).getHelpPluginList());
 	}
 
 	public List<HelpLinkSPI> getDMZHelpPlugins() {
-		if (dmzHelpPlugins == null) {
-			loadLists();
-		}
-
-		return dmzHelpPlugins;
+		return new ArrayList<>(loadListWrapper(false).getDmzHelpPlugins());
 	}
+	
 	public List<HelpLinkSPI> getAuthorSiteHelpPlugins() {
-		if (authorSiteHelpPlugins == null) {
-			loadLists();
-		}
-
-		return authorSiteHelpPlugins;
+		return new ArrayList<>(loadListWrapper(false).getAuthorSiteHelpPlugins());
 	}
+	
 	public List<HelpLinkSPI> getUserToolHelpPlugins() {
-		if (userToolHelpPlugins == null) {
-			loadLists();
+		return new ArrayList<>(loadListWrapper(false).getUserToolHelpPlugins());
+	}
+	
+	private ListWrapper loadListWrapper(boolean forceReload) {
+		ListWrapper listWrapperLocal = listWrapper;
+		
+		if (listWrapperLocal == null || forceReload) {
+			listWrapperLocal = loadLists();
+			listWrapper = listWrapperLocal;
 		}
-
-		return userToolHelpPlugins;
+		
+		return listWrapperLocal;
 	}
 
 	public String getAcademyLink() {
@@ -590,6 +585,8 @@ public class HelpModule extends AbstractSpringModule {
 	public String getCustom3Icon() {
 		return custom3Icon;
 	}
+	
+	
 
 	/**
 	 * Returns the not yet configured help plugins
@@ -598,19 +595,19 @@ public class HelpModule extends AbstractSpringModule {
 	public String[] getRemainingPlugins() {
 		List<String> remainingPlugins = new ArrayList<>();
 
-		if (!helpPluginList.contains(HelpModule.ACADEMY_KEY)) {
+		if (!helpPlugins.contains(HelpModule.ACADEMY_KEY)) {
 			remainingPlugins.add(ACADEMY);
-		} if (!helpPluginList.contains(HelpModule.CONFLUENCE_KEY)) {
+		} if (!helpPlugins.contains(HelpModule.CONFLUENCE_KEY)) {
 			remainingPlugins.add(CONFLUENCE);
-		} if (!helpPluginList.contains(HelpModule.SUPPORT_KEY)) {
+		} if (!helpPlugins.contains(HelpModule.SUPPORT_KEY)) {
 			remainingPlugins.add(SUPPORT);
-		} if (!helpPluginList.contains(HelpModule.COURSE_KEY)) {
+		} if (!helpPlugins.contains(HelpModule.COURSE_KEY)) {
 			remainingPlugins.add(COURSE);
-		} if (!helpPluginList.contains(HelpModule.CUSTOM_1_KEY)) {
+		} if (!helpPlugins.contains(HelpModule.CUSTOM_1_KEY)) {
 			remainingPlugins.add(CUSTOM_1);
-		} if (!helpPluginList.contains(HelpModule.CUSTOM_2_KEY)) {
+		} if (!helpPlugins.contains(HelpModule.CUSTOM_2_KEY)) {
 			remainingPlugins.add(CUSTOM_2);
-		} if (!helpPluginList.contains(HelpModule.CUSTOM_3_KEY)) {
+		} if (!helpPlugins.contains(HelpModule.CUSTOM_3_KEY)) {
 			remainingPlugins.add(CUSTOM_3);
 		}
 
@@ -621,15 +618,132 @@ public class HelpModule extends AbstractSpringModule {
 	/**
 	 * Reloads all lists containing the help plugins for different locations
 	 */
-	private void loadLists() {
-		helpPluginList = new ArrayList<>(Arrays.asList(helpPlugins.split(DELIMITER)));
+	private ListWrapper loadLists() {
+		List<String> helpPluginList = new ArrayList<>(Arrays.asList(helpPlugins.split(DELIMITER)));
 		helpPluginList.removeAll(Arrays.asList("",null));
+		helpPluginList = sortHelpPluginList(helpPluginList);
 		
-		userToolHelpPlugins = new ArrayList<>();
-		authorSiteHelpPlugins = new ArrayList<>();
-		dmzHelpPlugins = new ArrayList<>();
+		List<HelpLinkSPI> userToolHelpPlugins = new ArrayList<>();
+		List<HelpLinkSPI> authorSiteHelpPlugins = new ArrayList<>();
+		List<HelpLinkSPI> dmzHelpPlugins = new ArrayList<>();
+
+		for (String helpPlugin : helpPluginList) {
+			switch (helpPlugin) {
+			case ACADEMY_KEY:
+				AcademyLinkSPI academyHelpLinkSPI = (AcademyLinkSPI) CoreSpringFactory.getBean(helpPlugin);
+				if (academyEnabled.contains(USERTOOL)) {
+					userToolHelpPlugins.add(academyHelpLinkSPI);
+				} 
+				if (academyEnabled.contains(AUTHORSITE)) {
+					authorSiteHelpPlugins.add(academyHelpLinkSPI);
+				} 
+				if (academyEnabled.contains(DMZ)) {
+					dmzHelpPlugins.add(academyHelpLinkSPI);
+				}
+				break;
+			case CONFLUENCE_KEY:
+				ConfluenceLinkSPI confluenceHelpLinkSPI = (ConfluenceLinkSPI) CoreSpringFactory.getBean(helpPlugin);
+				if (confluenceEnabled.contains(USERTOOL)) {
+					userToolHelpPlugins.add(confluenceHelpLinkSPI);
+				} 
+				if (confluenceEnabled.contains(AUTHORSITE)) {
+					authorSiteHelpPlugins.add(confluenceHelpLinkSPI);
+				} 
+				if (confluenceEnabled.contains(DMZ)) {
+					dmzHelpPlugins.add(confluenceHelpLinkSPI);
+				}
+				break;
+			case COURSE_KEY:
+				CourseHelpSPI courseHelpLinkSPI = (CourseHelpSPI) CoreSpringFactory.getBean(helpPlugin);
+				if (courseEnabled.contains(USERTOOL)) {
+					userToolHelpPlugins.add(courseHelpLinkSPI);
+				} 
+				if (courseEnabled.contains(AUTHORSITE)) {
+					authorSiteHelpPlugins.add(courseHelpLinkSPI);
+				} 
+				if (courseEnabled.contains(DMZ)) {
+					dmzHelpPlugins.add(courseHelpLinkSPI);
+				}
+				break;
+			case SUPPORT_KEY:
+				SupportMailSPI supportMailHelpSPI = (SupportMailSPI) CoreSpringFactory.getBean(helpPlugin);
+				if (supportEnabled.contains(USERTOOL)) {
+					userToolHelpPlugins.add(supportMailHelpSPI);
+				} 
+				if (supportEnabled.contains(AUTHORSITE)) {
+					authorSiteHelpPlugins.add(supportMailHelpSPI);
+				} 
+				if (supportEnabled.contains(DMZ)) {
+					dmzHelpPlugins.add(supportMailHelpSPI);
+				}
+				break;
+			case CUSTOM_1_KEY:
+				CustomLink1SPI customLink1SPI = (CustomLink1SPI) CoreSpringFactory.getBean(helpPlugin);
+				if (custom1Enabled.contains(USERTOOL)) {
+					userToolHelpPlugins.add(customLink1SPI);
+				} 
+				if (custom1Enabled.contains(AUTHORSITE)) {
+					authorSiteHelpPlugins.add(customLink1SPI);
+				} 
+				if (custom1Enabled.contains(DMZ)) {
+					dmzHelpPlugins.add(customLink1SPI);
+				}
+				break;
+			case CUSTOM_2_KEY:
+				CustomLink2SPI customLink2SPI = (CustomLink2SPI) CoreSpringFactory.getBean(helpPlugin);
+				if (custom2Enabled.contains(USERTOOL)) {
+					userToolHelpPlugins.add(customLink2SPI);
+				} if (custom2Enabled.contains(AUTHORSITE)) {
+					authorSiteHelpPlugins.add(customLink2SPI);
+				} if (custom2Enabled.contains(DMZ)) {
+					dmzHelpPlugins.add(customLink2SPI);
+				}
+				break;
+			case CUSTOM_3_KEY:
+				CustomLink3SPI customLink3SPI = (CustomLink3SPI) CoreSpringFactory.getBean(helpPlugin);
+				if (custom3Enabled.contains(USERTOOL)) {
+					userToolHelpPlugins.add(customLink3SPI);
+				} 
+				if (custom3Enabled.contains(AUTHORSITE)) {
+					authorSiteHelpPlugins.add(customLink3SPI);
+				} 
+				if (custom3Enabled.contains(DMZ)) {
+					dmzHelpPlugins.add(customLink3SPI);
+				}
+				break;
+
+			default:
+				break;
+			}
+		}
 		
-		for (String helpPlugin : Arrays.asList(helpPlugins.split(DELIMITER))) {
+		return new ListWrapper(helpPluginList, userToolHelpPlugins, authorSiteHelpPlugins, dmzHelpPlugins);
+	}
+	
+	/**
+	 * Returns a string with locations where the help plugin should be displayed
+	 * 
+	 * @param usertool
+	 * @param authorsite
+	 * @param login
+	 * @return
+	 */
+	private String generateEnabledString(boolean usertool, boolean authorsite, boolean login) {
+		String enabled = usertool ? USERTOOL : "";
+		enabled += authorsite ? DELIMITER + AUTHORSITE : "";
+		enabled += login ? DELIMITER + DMZ : "";
+
+		return enabled;
+	}
+	
+	/**
+	 * Returns an ordered list of helpPlugins
+	 * 
+	 * @param helpPluginList
+	 * @return
+	 */
+	private List<String> sortHelpPluginList(List<String> helpPluginList) {
+		for (String helpPlugin : helpPluginList) {
 			switch (helpPlugin) {
 			case ACADEMY_KEY:
 				if (helpPluginList.indexOf(helpPlugin) != academyPos) {
@@ -671,100 +785,8 @@ public class HelpModule extends AbstractSpringModule {
 				break;
 			}
 		}
-
-		for (String helpPlugin : helpPluginList) {
-			switch (helpPlugin) {
-			case ACADEMY_KEY:
-				AcademyLinkSPI academyHelpLinkSPI = (AcademyLinkSPI) CoreSpringFactory.getBean(helpPlugin);
-				if (academyEnabled.contains(USERTOOL)) {
-					userToolHelpPlugins.add(academyHelpLinkSPI);
-				} if (academyEnabled.contains(AUTHORSITE)) {
-					authorSiteHelpPlugins.add(academyHelpLinkSPI);
-				} if (academyEnabled.contains(DMZ)) {
-					dmzHelpPlugins.add(academyHelpLinkSPI);
-				}
-				break;
-			case CONFLUENCE_KEY:
-				ConfluenceLinkSPI confluenceHelpLinkSPI = (ConfluenceLinkSPI) CoreSpringFactory.getBean(helpPlugin);
-				if (confluenceEnabled.contains(USERTOOL)) {
-					userToolHelpPlugins.add(confluenceHelpLinkSPI);
-				} if (confluenceEnabled.contains(AUTHORSITE)) {
-					authorSiteHelpPlugins.add(confluenceHelpLinkSPI);
-				} if (confluenceEnabled.contains(DMZ)) {
-					dmzHelpPlugins.add(confluenceHelpLinkSPI);
-				}
-				break;
-			case COURSE_KEY:
-				CourseHelpSPI courseHelpLinkSPI = (CourseHelpSPI) CoreSpringFactory.getBean(helpPlugin);
-				if (courseEnabled.contains(USERTOOL)) {
-					userToolHelpPlugins.add(courseHelpLinkSPI);
-				} if (courseEnabled.contains(AUTHORSITE)) {
-					authorSiteHelpPlugins.add(courseHelpLinkSPI);
-				} if (courseEnabled.contains(DMZ)) {
-					dmzHelpPlugins.add(courseHelpLinkSPI);
-				}
-				break;
-			case SUPPORT_KEY:
-				SupportMailSPI supportMailHelpSPI = (SupportMailSPI) CoreSpringFactory.getBean(helpPlugin);
-				if (supportEnabled.contains(USERTOOL)) {
-					userToolHelpPlugins.add(supportMailHelpSPI);
-				} if (supportEnabled.contains(AUTHORSITE)) {
-					authorSiteHelpPlugins.add(supportMailHelpSPI);
-				} if (supportEnabled.contains(DMZ)) {
-					dmzHelpPlugins.add(supportMailHelpSPI);
-				}
-				break;
-			case CUSTOM_1_KEY:
-				CustomLink1SPI customLink1SPI = (CustomLink1SPI) CoreSpringFactory.getBean(helpPlugin);
-				if (custom1Enabled.contains(USERTOOL)) {
-					userToolHelpPlugins.add(customLink1SPI);
-				} if (custom1Enabled.contains(AUTHORSITE)) {
-					authorSiteHelpPlugins.add(customLink1SPI);
-				} if (custom1Enabled.contains(DMZ)) {
-					dmzHelpPlugins.add(customLink1SPI);
-				}
-				break;
-			case CUSTOM_2_KEY:
-				CustomLink2SPI customLink2SPI = (CustomLink2SPI) CoreSpringFactory.getBean(helpPlugin);
-				if (custom2Enabled.contains(USERTOOL)) {
-					userToolHelpPlugins.add(customLink2SPI);
-				} if (custom2Enabled.contains(AUTHORSITE)) {
-					authorSiteHelpPlugins.add(customLink2SPI);
-				} if (custom2Enabled.contains(DMZ)) {
-					dmzHelpPlugins.add(customLink2SPI);
-				}
-				break;
-			case CUSTOM_3_KEY:
-				CustomLink3SPI customLink3SPI = (CustomLink3SPI) CoreSpringFactory.getBean(helpPlugin);
-				if (custom3Enabled.contains(USERTOOL)) {
-					userToolHelpPlugins.add(customLink3SPI);
-				} if (custom3Enabled.contains(AUTHORSITE)) {
-					authorSiteHelpPlugins.add(customLink3SPI);
-				} if (custom3Enabled.contains(DMZ)) {
-					dmzHelpPlugins.add(customLink3SPI);
-				}
-				break;
-
-			default:
-				break;
-			}
-		}
-	}
-	
-	/**
-	 * Returns a string with locations where the help plugin should be displayed
-	 * 
-	 * @param usertool
-	 * @param authorsite
-	 * @param login
-	 * @return
-	 */
-	private String generateEnabledString(boolean usertool, boolean authorsite, boolean login) {
-		String enabled = usertool ? USERTOOL : "";
-		enabled += authorsite ? "," + AUTHORSITE : "";
-		enabled += login ? "," + DMZ : "";
-
-		return enabled;
+		
+		return helpPluginList;
 	}
 
 	/**
@@ -773,11 +795,39 @@ public class HelpModule extends AbstractSpringModule {
 	 * @param plugin
 	 */
 	private void addToHelpPlugins(String plugin) {
-		if (!helpPluginList.contains(plugin)) {
-			helpPluginList.add(plugin);
+		if (!helpPlugins.contains(plugin)) {
+			helpPlugins += DELIMITER + plugin;
+			setStringProperty("help.plugin", helpPlugins, true);
+		}
+	}
+	
+	private static class ListWrapper {
+		private final List<String> helpPluginList;
+		private final List<HelpLinkSPI> userToolHelpPlugins;
+		private final List<HelpLinkSPI> authorSiteHelpPlugins;
+		private final List<HelpLinkSPI> dmzHelpPlugins;
+		
+		public ListWrapper(List<String> helpPluginList, List<HelpLinkSPI> userToolHelpPlugins, List<HelpLinkSPI> authorSiteHelpPlugins, List<HelpLinkSPI> dmzHelpPlugins) {
+			this.helpPluginList = helpPluginList;
+			this.userToolHelpPlugins = userToolHelpPlugins;
+			this.authorSiteHelpPlugins = authorSiteHelpPlugins;
+			this.dmzHelpPlugins = dmzHelpPlugins;
 		}
 
-		helpPlugins = helpPluginList.stream().collect(Collectors.joining(DELIMITER));
-		setStringProperty("help.plugin", helpPlugins, true);
+		public List<String> getHelpPluginList() {
+			return helpPluginList;
+		}
+		
+		public List<HelpLinkSPI> getUserToolHelpPlugins() {
+			return userToolHelpPlugins;
+		}
+
+		public List<HelpLinkSPI> getAuthorSiteHelpPlugins() {
+			return authorSiteHelpPlugins;
+		}
+
+		public List<HelpLinkSPI> getDmzHelpPlugins() {
+			return dmzHelpPlugins;
+		}		
 	}
 }
