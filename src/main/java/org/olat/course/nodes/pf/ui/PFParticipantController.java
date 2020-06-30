@@ -26,6 +26,7 @@ import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionCon
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -50,16 +51,27 @@ public class PFParticipantController extends BasicController {
 	private FolderRunController folderRunController;
 	private ContextualSubscriptionController contextualSubscriptionCtr;
 	
+	private final PFView pfView;
+	private final boolean isCoach;
+	private final boolean readOnly;
+	private final PFCourseNode pfNode;
+	private final CourseEnvironment courseEnv;
+	private final Identity assessedIdentity;
+
 	@Autowired
 	private PFManager pfManager;
 
-	@SuppressWarnings("incomplete-switch")
 	public PFParticipantController(UserRequest ureq, WindowControl wControl, PFCourseNode pfNode,
-			UserCourseEnvironment userCourseEnv, Identity identity, boolean isCoach, boolean readOnly) {
+			UserCourseEnvironment userCourseEnv, Identity assessedIdentity, boolean isCoach, boolean readOnly) {
+
 		super(ureq, wControl);	
 		mainVC = createVelocityContainer("participant");
 		
-		CourseEnvironment courseEnv = userCourseEnv.getCourseEnvironment();
+		this.pfNode = pfNode;
+		this.isCoach = isCoach;
+		this.assessedIdentity = assessedIdentity;
+		courseEnv = userCourseEnv.getCourseEnvironment();
+		this.readOnly = readOnly || userCourseEnv.isCourseReadOnly();
 		
 		if (pfNode.hasLimitCountConfigured()){
 			mainVC.contextPut("limit", pfNode.getLimitCount());			
@@ -77,39 +89,59 @@ public class PFParticipantController extends BasicController {
 			mainVC.put("contextualSubscription", contextualSubscriptionCtr.getInitialComponent());			
 		}
 		//CourseFreeze
-		readOnly = readOnly ? true : userCourseEnv.isCourseReadOnly();
+
+		pfView = pfManager.providePFView(pfNode);
+		String path = null;
+		switch(pfView) {
+			case displayDrop:
+				path = translate("drop.box");
+				break;
+			case displayReturn:
+				path = translate("return.box");
+				break;
+			default:
+				path = translate("drop.box");
+				break;
+		}
+		initFolderController(ureq, path);
 		
-		PFView pfView = pfManager.providePFView(pfNode);
-		VFSContainer frc = pfManager.provideParticipantFolder(pfNode, pfView, getTranslator(),courseEnv,
-				identity, isCoach, readOnly);
-		folderRunController = new FolderRunController(frc, false, false, false, false, ureq, wControl, null, null, null);
+		putInitialPanel(mainVC);	
+	}
+	
+	private void initFolderController(UserRequest ureq, String path) {
+		removeAsListenerAndDispose(folderRunController);
+
+		VFSContainer frc = pfManager.provideParticipantFolder(pfNode, pfView, getTranslator(), courseEnv,
+				assessedIdentity, isCoach, readOnly);
+		folderRunController = new FolderRunController(frc, false, false, false, false, ureq, getWindowControl(), null, null, null);
+
 		folderRunController.disableSubscriptionController();
 		listenTo(folderRunController);
 		mainVC.put("folder", folderRunController.getInitialComponent());
-		
-		switch (pfView) {
-		case displayDrop:
-			folderRunController.activatePath(ureq, translate("drop.box"));
-			break;
-		case displayReturn:
-			folderRunController.activatePath(ureq, translate("return.box"));
-			break;
-		}
-		
-		putInitialPanel(mainVC);
-		
+		folderRunController.activatePath(ureq, path);
 	}
 
 	@Override
 	protected void doDispose() {
-		
+		//
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		
+		//
 	}
 	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(folderRunController == source) {
+			recalculatSecurityCallback(ureq);
+		}
+	}
+	
+	private void recalculatSecurityCallback(UserRequest ureq) {
+		String path = folderRunController.getCurrentContainerPath();
+		initFolderController(ureq, path);
+	}
 
 	/**
 	 * Remove the subscription panel but let the subscription context active
@@ -118,7 +150,5 @@ public class PFParticipantController extends BasicController {
 		if (contextualSubscriptionCtr != null) {
 			mainVC.remove(contextualSubscriptionCtr.getInitialComponent());
 		}
-	}
-	
-		
+	}	
 }

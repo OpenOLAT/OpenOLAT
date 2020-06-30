@@ -26,18 +26,13 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.course.nodes.PFCourseNode;
-import org.olat.course.nodes.pf.manager.PFManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.springframework.beans.factory.annotation.Autowired;
 /**
 *
 * @author Fabian Kiefer, fabian.kiefer@frentix.com, http://www.frentix.com
 *
 */
 public class PFPreviewController extends BasicController {
-	
-	@Autowired
-	private PFManager pfManager;
 
 	public PFPreviewController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -67,12 +62,12 @@ public class PFPreviewController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-
+		//
 	}
 
 	@Override
 	protected void doDispose() {
-
+		//
 	}
 
 }
