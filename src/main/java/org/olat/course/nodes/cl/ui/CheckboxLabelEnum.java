@@ -36,7 +36,8 @@ public enum CheckboxLabelEnum {
 	present("label.present"),
 	presented("label.presented"),
 	read("label.read"),
-	viewed("label.viewed");
+	viewed("label.viewed"),
+	confirmed("label.confirmed");
 	
 	private final String i18nKey;
 	
