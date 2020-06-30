@@ -453,6 +453,12 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	}
 
 	@Override
+	public void deleteAssessmentModeToGroup(AssessmentModeToGroup modeToGroup) {
+		dbInstance.getCurrentEntityManager().remove(modeToGroup);
+	}
+
+
+	@Override
 	public AssessmentModeToArea createAssessmentModeToArea(AssessmentMode mode, BGArea area) {
 		AssessmentModeToAreaImpl modeToArea = new AssessmentModeToAreaImpl();
 		modeToArea.setAssessmentMode(mode);
@@ -462,12 +468,22 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	}
 
 	@Override
+	public void deleteAssessmentModeToArea(AssessmentModeToArea modeToArea) {
+		dbInstance.getCurrentEntityManager().remove(modeToArea);
+	}
+
+	@Override
 	public AssessmentModeToCurriculumElement createAssessmentModeToCurriculumElement(AssessmentMode mode, CurriculumElement curriculumElement) {
 		AssessmentModeToCurriculumElementImpl modeToElement = new AssessmentModeToCurriculumElementImpl();
 		modeToElement.setAssessmentMode(mode);
 		modeToElement.setCurriculumElement(curriculumElement);
 		dbInstance.getCurrentEntityManager().persist(modeToElement);
 		return modeToElement;
+	}
+	
+	@Override
+	public void deleteAssessmentModeToCurriculumElement(AssessmentModeToCurriculumElement modeToCurriculumElement) {
+		dbInstance.getCurrentEntityManager().remove(modeToCurriculumElement);
 	}
 
 	@Override

@@ -22,7 +22,6 @@ package org.olat.course.assessment.ui.mode;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -693,10 +692,12 @@ public class AssessmentModeEditController extends FormBasicController {
 			}
 		} else {
 			Set<Long> currentKeys = new HashSet<>();
-			for(Iterator<AssessmentModeToGroup> modeToGroupIt=assessmentMode.getGroups().iterator(); modeToGroupIt.hasNext(); ) {
-				Long currentKey = modeToGroupIt.next().getBusinessGroup().getKey();
+			List<AssessmentModeToGroup> currentGroups = new ArrayList<>(assessmentMode.getGroups());
+			for(AssessmentModeToGroup modeToGroup:currentGroups) {
+				Long currentKey = modeToGroup.getBusinessGroup().getKey();
 				if(!groupKeys.contains(currentKey)) {
-					modeToGroupIt.remove();
+					assessmentMode.getGroups().remove(modeToGroup);
+					assessmentModeMgr.deleteAssessmentModeToGroup(modeToGroup);
 				} else {
 					currentKeys.add(currentKey);
 				}
@@ -718,10 +719,12 @@ public class AssessmentModeEditController extends FormBasicController {
 			}
 		} else {
 			Set<Long> currentKeys = new HashSet<>();
-			for(Iterator<AssessmentModeToArea> modeToAreaIt=assessmentMode.getAreas().iterator(); modeToAreaIt.hasNext(); ) {
-				Long currentKey = modeToAreaIt.next().getArea().getKey();
+			List<AssessmentModeToArea> currentAreas = new ArrayList<>(assessmentMode.getAreas());
+			for(AssessmentModeToArea modeToArea:currentAreas) {
+				Long currentKey = modeToArea.getArea().getKey();
 				if(!areaKeys.contains(currentKey)) {
-					modeToAreaIt.remove();
+					assessmentMode.getAreas().remove(modeToArea);
+					assessmentModeMgr.deleteAssessmentModeToArea(modeToArea);
 				} else {
 					currentKeys.add(currentKey);
 				}
@@ -743,10 +746,12 @@ public class AssessmentModeEditController extends FormBasicController {
 			}
 		} else {
 			Set<Long> currentKeys = new HashSet<>();
-			for(Iterator<AssessmentModeToCurriculumElement> modeToElementIt=assessmentMode.getCurriculumElements().iterator(); modeToElementIt.hasNext(); ) {
-				Long currentKey = modeToElementIt.next().getCurriculumElement().getKey();
+			List<AssessmentModeToCurriculumElement> currentElements = new ArrayList<>(assessmentMode.getCurriculumElements());
+			for(AssessmentModeToCurriculumElement modeToElement:currentElements) {
+				Long currentKey = modeToElement.getCurriculumElement().getKey();
 				if(!curriculumElementKeys.contains(currentKey)) {
-					modeToElementIt.remove();
+					assessmentMode.getCurriculumElements().remove(modeToElement);
+					assessmentModeMgr.deleteAssessmentModeToCurriculumElement(modeToElement);
 				} else {
 					currentKeys.add(currentKey);
 				}

@@ -64,6 +64,8 @@ public interface AssessmentModeManager {
 	 */
 	public AssessmentModeToGroup createAssessmentModeToGroup(AssessmentMode mode, BusinessGroup group);
 	
+	public void deleteAssessmentModeToGroup(AssessmentModeToGroup mode);
+	
 	/**
 	 * Create and persist a relation between the specified assessment mode
 	 * and an area.
@@ -73,6 +75,8 @@ public interface AssessmentModeManager {
 	 * @return A relation assessment mode to area
 	 */
 	public AssessmentModeToArea createAssessmentModeToArea(AssessmentMode mode, BGArea area);
+	
+	public void deleteAssessmentModeToArea(AssessmentModeToArea modeToArea);
 	
 	/**
 	 * Create and persist a relation between the specified assessment mode
@@ -84,7 +88,9 @@ public interface AssessmentModeManager {
 	 */
 	public AssessmentModeToCurriculumElement createAssessmentModeToCurriculumElement(AssessmentMode mode, CurriculumElement curriculumElement);
 	
-
+	public void deleteAssessmentModeToCurriculumElement(AssessmentModeToCurriculumElement modeToCurriculumElement);
+	
+	
 	public AssessmentMode persist(AssessmentMode assessmentMode);
 	
 	/**
