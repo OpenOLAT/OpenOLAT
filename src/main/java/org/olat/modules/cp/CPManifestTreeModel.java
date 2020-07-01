@@ -36,7 +36,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -59,13 +58,14 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
 public class CPManifestTreeModel extends GenericTreeModel {
 
 	private static final long serialVersionUID = 9216107936843069562L;
+	private static final Logger log = Tracing.createLoggerFor(CPManifestTreeModel.class);
+	
 	private Element rootElement;
 	private final Map<String,String>	nsuris = new HashMap<>(2);
 	private final Map<String,TreeNode> hrefToTreeNode = new HashMap<>();
 	private Map<String,String> resources; // keys: resource att 'identifier'; values: resource att 'href'
 	private final List<TreeNode> treeNodes = new ArrayList<>();
 	private final String identPrefix;
-	private final Logger log = Tracing.createLoggerFor(this.getClass());
 	private final CPAssessmentProvider cpAssessmentProvider;
 
 	/**
@@ -103,7 +103,6 @@ public class CPManifestTreeModel extends GenericTreeModel {
 		Element elResources = (Element) metares.selectSingleNode(rootElement);
 		if (elResources == null) throw new AssertException("could not find element resources");
 		
-		@SuppressWarnings("unchecked")
 		List<Element> resourcesList = elResources.elements("resource");
 		resources = new HashMap<>(resourcesList.size());
 		for (Iterator<Element> iter = resourcesList.iterator(); iter.hasNext();) {
@@ -183,12 +182,10 @@ public class CPManifestTreeModel extends GenericTreeModel {
 			gtn.setAccessible(false);
 
 			// Special case check: CP with only one page: hide the page and show it directly under the organization element
-			@SuppressWarnings("unchecked")
 			List<Element> chds = item.elements("item");
 			if (chds.size() == 1) {
 				// check 1: only one child
 				Element childitem = chds.get(0);
-				@SuppressWarnings("unchecked")
 				List<Element> grandChds = childitem.elements("item");
 				if (grandChds.size() == 0) {
 					// check 2: no grand children
@@ -236,7 +233,6 @@ public class CPManifestTreeModel extends GenericTreeModel {
 			}
 		}
 		
-		@SuppressWarnings("unchecked")
 		List<Element> chds = item.elements("item");
 		int childcnt = chds.size();
 		for (int i = 0; i < childcnt; i++) {
@@ -278,39 +274,27 @@ public class CPManifestTreeModel extends GenericTreeModel {
 	}
 
 	private Document loadDocument(VFSLeaf documentF) throws IOException {
-		InputStream in = null;
 		Document doc = null;
-		try {
-			in = documentF.getInputStream();
+		try(InputStream in = documentF.getInputStream();) {
 			XMLParser xmlParser = new XMLParser(new IMSEntityResolver());
 			doc = xmlParser.parse(in, false);
-			in.close();
 		} catch (IOException e) {
 			throw e;
 		} catch(Exception e) {
 			throw new IOException("could not read and parse from file " + documentF, e);
 		}
-		finally {
-			IOUtils.closeQuietly(in);
-		}
 		return doc;
 	}
 	
 	private Document loadDocument(String documentStr) throws IOException {
-		InputStream in = null;
 		Document doc = null;
-		try {
-			in = new ByteArrayInputStream(documentStr.getBytes());
+		try(InputStream in = new ByteArrayInputStream(documentStr.getBytes());) {
 			XMLParser xmlParser = new XMLParser(new IMSEntityResolver());
 			doc = xmlParser.parse(in, false);
-			in.close();
 		} catch (IOException e) {
 			throw e;
 		} catch(Exception e) {
 			throw new IOException("could not read and parse from string " + documentStr, e);
-		}
-		finally {
-			IOUtils.closeQuietly(in);
 		}
 		return doc;
 	}

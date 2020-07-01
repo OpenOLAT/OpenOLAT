@@ -555,10 +555,16 @@ public class NavigationHandler implements Disposable {
 	private void addSubTreeModel(TreeNode parent, TreeModel modelToAppend) {
 		// ignore root and directly add children.
 		// need to clone children so that are not detached from their original
-		parent.removeAllChildren();
+		int pChdCnt = parent.getChildCount();
+		for (int i = pChdCnt; i > 0; i--) {
+			INode node = parent.getChildAt(i-1);
+			if(!(node instanceof CourseTreeNode)) {
+				parent.remove(node);
+			}
+		}
+		
 		TreeNode root = modelToAppend.getRootNode();
 		int chdCnt = root.getChildCount();
-		
 		for (int i = chdCnt; i > 0; i--) {
 			INode chd = root.getChildAt(i-1);
 			INode chdc = (INode) XStreamHelper.xstreamClone(chd);

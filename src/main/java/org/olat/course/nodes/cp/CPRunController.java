@@ -130,15 +130,15 @@ public class CPRunController extends BasicController implements ControllerEventL
 		BusinessControl bc = getWindowControl().getBusinessControl();
 		ContextEntry ce = bc.popLauncherContextEntry();
 		if ( ce != null ) { // a context path is left for me
-			if(log.isDebugEnabled()) log.debug("businesscontrol (for further jumps) would be:"+bc);
+			log.debug("businesscontrol (for further jumps) would be:{}", bc);
 			OLATResourceable popOres = ce.getOLATResourceable();
-			if(log.isDebugEnabled()) log.debug("OLATResourceable=" + popOres);
+			log.debug("OLATResourceable={}", popOres);
 			String typeName = popOres.getResourceableTypeName();
 			// typeName format: 'path=/test1/test2/readme.txt'
 			// First remove prefix 'path='
 			String path = typeName.substring("path=".length());
 			if  (path.length() > 0) {
-			  if(log.isDebugEnabled()) log.debug("direct navigation to container-path=" + path);
+			  log.debug("direct navigation to container-path={}", path);
 			  this.nodecmd = path;
 			}
 		}
@@ -259,7 +259,9 @@ public class CPRunController extends BasicController implements ControllerEventL
 		if (isExternalMenuConfigured()) {
 			// integrate it into the olat menu
 			Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), this, cpNode, "o_cp_icon");
-			if(StringHelper.containsNonWhitespace(selectedNodeId) && treeModel.getNodeById(selectedNodeId) != null) {
+			if(treeModel.getFlattedTree().size() == 1) {
+				selNodeId = cpNode.getIdent();
+			} else if(StringHelper.containsNonWhitespace(selectedNodeId) && treeModel.getNodeById(selectedNodeId) != null) {
 				selNodeId = selectedNodeId;
 			}
 			ncr = new NodeRunConstructionResult(ctrl, treeModel, selNodeId, treeNodeClickListener);
