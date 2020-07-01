@@ -91,7 +91,7 @@ public class PFParticipantController extends BasicController {
 		//CourseFreeze
 
 		pfView = pfManager.providePFView(pfNode);
-		String path = null;
+		String path;
 		switch(pfView) {
 			case displayDrop:
 				path = translate("drop.box");
@@ -100,7 +100,7 @@ public class PFParticipantController extends BasicController {
 				path = translate("return.box");
 				break;
 			default:
-				path = translate("drop.box");
+				path = null;
 				break;
 		}
 		initFolderController(ureq, path);
