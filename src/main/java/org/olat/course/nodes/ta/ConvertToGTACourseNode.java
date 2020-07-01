@@ -392,7 +392,7 @@ public class ConvertToGTACourseNode {
 				}
 				
 				if(metaTarget != null) {
-					metaTarget.copyValues(metaSource);
+					metaTarget.copyValues(metaSource, true);
 					CoreSpringFactory.getImpl(VFSRepositoryService.class).updateMetadata(metaTarget);
 				}	
 			}	

@@ -22,13 +22,15 @@ package org.olat.core.util.vfs;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.UUID;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
-import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.services.vfs.manager.VFSMetadataDAO;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.test.OlatTestCase;
@@ -47,6 +49,8 @@ public class VFSTest extends OlatTestCase {
 	
 	private static final String VFS_TEST_DIR = "/vfstest";
 	
+	@Autowired
+	private VFSMetadataDAO vfsMetadaDao;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 	
@@ -105,6 +109,46 @@ public class VFSTest extends OlatTestCase {
 		VFSMetadata renamedMetaInfo = renamedLeaf.getMetaInfo();
 		Assert.assertEquals("my old comment", renamedMetaInfo.getComment());
 		Assert.assertEquals("Always Me", renamedMetaInfo.getCreator());
+	}
+	
+	@Test
+	public void renameSameName() {
+		// The first file
+		String filename = "samename.txt";
+		VFSContainer testContainer = VFSManager.olatRootContainer(VFS_TEST_DIR, null);
+		testContainer = VFSManager.getOrCreateContainer(testContainer, UUID.randomUUID().toString());
+		
+		VFSLeaf firstLeaf = testContainer.createChildLeaf(filename);
+		Assert.assertEquals(VFSConstants.YES, firstLeaf.canMeta());
+		prepareFile(firstLeaf);
+		
+		VFSMetadata metaInfo = firstLeaf.getMetaInfo();
+		metaInfo.setComment("my old comment");
+		metaInfo.setCreator("Always Me");
+		Assert.assertNotNull(vfsRepositoryService.updateMetadata(metaInfo));
+		
+		// A second file
+		String newName = UUID.randomUUID() + ".txt";
+		VFSLeaf secondLeaf = testContainer.createChildLeaf(newName);
+		Assert.assertEquals(VFSConstants.YES, secondLeaf.canMeta());
+		prepareFile(secondLeaf);
+		
+		// Rename the second file to the first one
+		VFSStatus renamedStatus = firstLeaf.rename(filename);
+		Assert.assertEquals(VFSConstants.YES, renamedStatus);
+		
+		VFSItem renamedItem = testContainer.resolve(filename);
+		Assert.assertTrue(renamedItem instanceof VFSLeaf);
+		VFSLeaf renamedLeaf = (VFSLeaf)renamedItem;
+		
+		VFSMetadata renamedMetaInfo = renamedLeaf.getMetaInfo();
+		Assert.assertEquals("my old comment", renamedMetaInfo.getComment());
+		Assert.assertEquals("Always Me", renamedMetaInfo.getCreator());
+		
+		
+		List<VFSMetadata> metadata = vfsMetadaDao.getMetadatas(metaInfo.getRelativePath());
+		Assert.assertNotNull(metadata);
+		Assert.assertEquals(1, metadata.size());
 	}
 	
 	private void prepareFile(VFSLeaf file) {

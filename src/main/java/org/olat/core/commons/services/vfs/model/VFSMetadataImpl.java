@@ -40,6 +40,7 @@ import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -531,22 +532,46 @@ public class VFSMetadataImpl implements Persistable, VFSMetadata {
 	}
 
 	@Override
-	public void copyValues(VFSMetadata fromMeta) {
-		setAuthor(fromMeta.getAuthor());
-		setComment(fromMeta.getComment());
-		setCity(fromMeta.getCity());
-		setCreator(fromMeta.getCreator());
-		setLanguage(fromMeta.getLanguage());
-		setPages(fromMeta.getPages());
-		setPublicationDate(fromMeta.getPublicationDate()[1], fromMeta.getPublicationDate()[0]);
-		setPublisher(fromMeta.getPublisher());
-		setSource(fromMeta.getSource());
-		setTitle(fromMeta.getTitle());
-		setUrl(fromMeta.getUrl());
-		setLicenseType(fromMeta.getLicenseType());
-		setLicenseTypeName(fromMeta.getLicenseTypeName());
-		setLicensor(fromMeta.getLicensor());
-		setLicenseText(fromMeta.getLicenseText());
+	public void copyValues(VFSMetadata fromMeta, boolean override) {
+		if(override || getAuthor() == null) {
+			setAuthor(fromMeta.getAuthor());
+		}
+		if(override || !StringHelper.containsNonWhitespace(getComment())) {
+			setComment(fromMeta.getComment());
+		}
+		if(override || !StringHelper.containsNonWhitespace(getCity())) {
+			setCity(fromMeta.getCity());
+		}
+		if(override || !StringHelper.containsNonWhitespace(getCreator())) {
+			setCreator(fromMeta.getCreator());
+		}
+		if(override || !StringHelper.containsNonWhitespace(getLanguage())) {
+			setLanguage(fromMeta.getLanguage());
+		}
+		if(override || !StringHelper.containsNonWhitespace(getPages())) {
+			setPages(fromMeta.getPages());
+		}
+		if(override || getPublicationDate() == null) {
+			setPublicationDate(fromMeta.getPublicationDate()[1], fromMeta.getPublicationDate()[0]);
+		}
+		if(override || !StringHelper.containsNonWhitespace(getPublisher())) {
+			setPublisher(fromMeta.getPublisher());
+		}
+		if(override || !StringHelper.containsNonWhitespace(getSource())) {
+			setSource(fromMeta.getSource());
+		}
+		if(override || !StringHelper.containsNonWhitespace(getTitle())) {
+			setTitle(fromMeta.getTitle());
+		}
+		if(override || !StringHelper.containsNonWhitespace(getUrl())) {
+			setUrl(fromMeta.getUrl());
+		}
+		if(override || getLicenseType() == null) {
+			setLicenseType(fromMeta.getLicenseType());
+			setLicenseTypeName(fromMeta.getLicenseTypeName());
+			setLicensor(fromMeta.getLicensor());
+			setLicenseText(fromMeta.getLicenseText());
+		}
 	}
 	
 	public void copyValues(VFSRevisionImpl fromMeta) {

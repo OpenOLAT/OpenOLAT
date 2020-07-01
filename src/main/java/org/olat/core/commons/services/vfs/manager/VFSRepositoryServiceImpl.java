@@ -552,7 +552,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 					targetMetadata = metadataDao.createMetadata(UUID.randomUUID().toString(), relativePath, targetFile.getName(),
 							new Date(), targetFile.length(), false, targetFile.toURI().toString(), "file", parentMetadata);
 				}
-				targetMetadata.copyValues(sourceMetadata);
+				targetMetadata.copyValues(sourceMetadata, true);
 				if(source.canVersion() == VFSConstants.YES || target.canVersion() == VFSConstants.YES) {
 					targetMetadata.setRevisionComment(sourceMetadata.getRevisionComment());
 					targetMetadata.setRevisionNr(sourceMetadata.getRevisionNr());
@@ -582,9 +582,16 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	@Override
 	public VFSMetadata rename(VFSItem item, String newName) {
 		VFSMetadata metadata = getMetadataFor(item);
-
-		((VFSMetadataImpl)metadata).setFilename(newName);
+		
+		// Is there already a metadata from an other file with the same name
+		VFSMetadata currentMetadata = metadataDao.getMetadata(metadata.getRelativePath(), newName, (item instanceof VFSContainer));
+		if(currentMetadata != null && !currentMetadata.equals(metadata)) {
+			metadata.copyValues(currentMetadata, false);
+			metadataDao.removeMetadata(currentMetadata);
+		}
+		
 		Path newFile = Paths.get(folderModule.getCanonicalRoot(), metadata.getRelativePath(), newName);
+		((VFSMetadataImpl)metadata).setFilename(newName);
 		String uri = newFile.toFile().toURI().toString();
 		((VFSMetadataImpl)metadata).setUri(uri);
 			

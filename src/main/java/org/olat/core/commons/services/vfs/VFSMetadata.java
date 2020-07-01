@@ -176,6 +176,6 @@ public interface VFSMetadata extends VFSMetadataRef, ModifiedInfo, CreateInfo {
 	
 	public String getMigrated();
 	
-	public void copyValues(VFSMetadata metadata);
+	public void copyValues(VFSMetadata metadata, boolean override);
 
 }
