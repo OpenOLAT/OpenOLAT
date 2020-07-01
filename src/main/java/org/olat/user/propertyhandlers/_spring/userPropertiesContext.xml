@@ -1133,6 +1133,22 @@
 						</property>
 					</bean>
 				</entry>
+				
+				<entry key="org.olat.user.ui.identity.UserRelationsController">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+					<property name="description" value="Relations user to user" />
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyEmail" />
+								<ref bean="userPropertyInstitutionalName" />
+								<ref bean="userPropertyInstitutionalUserIdentifier" />
+								<ref bean="userPropertyInstitutionalEmail" />
+							</list>
+						</property>
+					</bean>
+				</entry>
 
 				<entry key="org.olat.group.BusinessGroupArchiver">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
