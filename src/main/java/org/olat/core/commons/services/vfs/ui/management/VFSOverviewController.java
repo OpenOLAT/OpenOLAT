@@ -156,6 +156,9 @@ public class VFSOverviewController extends FormBasicController {
 		trashLink = uifactory.addFormLink("vfs.overview.trashlink", formLayout);
 		versionsLink = uifactory.addFormLink("vfs.overview.versionslink", formLayout);
 		thumbnailLink = uifactory.addFormLink("vfs.overview.thumbnaillink", formLayout); 
+		
+		uifactory.addStaticTextElement("vfs.overview.files.note", null, translate("vfs.overview.files.note"), overviewLayout);
+		
 	}
 
 	@Override
