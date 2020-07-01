@@ -422,7 +422,7 @@ public class VFSMetadataDAO {
 			query.setParameter("revisionCount", revisionCount);
 		}
 		if(size > 0) {
-			query.setParameter("size", new Long(size));
+			query.setParameter("size", Long.valueOf(size));
 		}
 
 		return query.setFirstResult(0)

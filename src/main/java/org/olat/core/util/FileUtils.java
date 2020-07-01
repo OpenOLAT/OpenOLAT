@@ -545,7 +545,8 @@ public class FileUtils {
 	}
 	
 	/**
-	 * Delete a file (not a filled directory)
+	 * Delete a file (not a filled directory) and the metadata.
+	 * 
 	 * @param file The file
 	 * @return true if successfully deleted
 	 */

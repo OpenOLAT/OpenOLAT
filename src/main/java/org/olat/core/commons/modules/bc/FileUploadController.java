@@ -575,7 +575,7 @@ public class FileUploadController extends FormBasicController {
 		// check for available space
 		if (remainingQuotKB != -1 && (fileEl.getUploadFile().length() / 1024 > remainingQuotKB)) {
 			fileEl.setErrorKey("QuotaExceeded", null);
-			fileEl.getUploadFile().delete();
+			FileUtils.deleteFile(fileEl.getUploadFile());
 			return;			
 		}
 		

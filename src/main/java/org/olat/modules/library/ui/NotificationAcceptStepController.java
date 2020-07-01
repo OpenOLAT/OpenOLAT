@@ -145,7 +145,7 @@ public class NotificationAcceptStepController extends StepFormBasicController {
 				}
 				
 				VFSMetadata metaInfo = targetFile.getMetaInfo();
-				metaInfo.copyValues((VFSMetadata)getFromRunContext(MetadataAcceptStepController.STEPS_RUN_CONTEXT_METADATA_KEY));
+				metaInfo.copyValues((VFSMetadata)getFromRunContext(MetadataAcceptStepController.STEPS_RUN_CONTEXT_METADATA_KEY), true);
 				metaInfo = vfsRepositoryService.updateMetadata(metaInfo);
 				if (metaInfo == null) {
 					logError("Error writing metadata for " + relativeDestinationDirectoryName + "/" + relativeSourceFileName, null);
