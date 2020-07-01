@@ -20,11 +20,11 @@
 package org.olat.modules.vitero.ui;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -32,13 +32,15 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.course.editor.NodeEditController;
@@ -69,13 +71,14 @@ public class ViteroBookingsEditController extends FormBasicController {
 	private ViteroBookingEditController bookingController;
 	private ViteroRoomsOverviewController roomsOverviewController;
 	private ViteroUserToGroupController usersController;
-	private VelocityContainer viteroGroupVC;
-	
+
+	private int count = 0;
 	private final boolean readOnly;
 	private final String resourceName;
 	private final BusinessGroup group;
 	private final OLATResourceable ores;
 	private final String subIdentifier;
+	
 	@Autowired
 	private ViteroManager viteroManager;
 
@@ -112,21 +115,45 @@ public class ViteroBookingsEditController extends FormBasicController {
 		try {
 			bookingDisplays.clear(); 
 			List<ViteroBooking> bookings = viteroManager.getBookings(group, ores, subIdentifier);
-			int i=0;
 			for(ViteroBooking booking:bookings) {
-				BookingDisplay display = new BookingDisplay(booking);
-				if(!readOnly) {
-					display.setDeleteButton(uifactory.addFormLink("delete_" + i++, "delete", "delete", flc, Link.BUTTON));
-					display.setEditButton(uifactory.addFormLink("edit_" + i++, "edit", "edit", flc, Link.BUTTON));
-				}
-				display.setUsersButton(uifactory.addFormLink("users_" + i++, "users", "users", flc, Link.BUTTON));
-				display.setGroupButton(uifactory.addFormLink("group_" + i++, "group.open", "group.open", flc, Link.BUTTON));
+				BookingDisplay display = forgeDisplay(booking);
 				bookingDisplays.add(display);
 			}
 			flc.contextPut("bookingDisplays", bookingDisplays);
 		} catch (VmsNotAvailableException e) {
 			showError(VmsNotAvailableException.I18N_KEY);
 		}
+	}
+	
+	private BookingDisplay forgeDisplay(ViteroBooking booking) {
+		BookingDisplay display = new BookingDisplay(booking);
+		if(!readOnly) {
+			display.setDeleteButton(uifactory.addFormLink("delete_" + count++, "delete", "delete", flc, Link.BUTTON));
+			display.setEditButton(uifactory.addFormLink("edit_" + count++, "edit", "edit", flc, Link.BUTTON));
+		}
+		display.setUsersButton(uifactory.addFormLink("users_" + count++, "users", "users", flc, Link.BUTTON));
+		
+		FormLink groupButton = uifactory.addFormLink("group_" + count++, "group.open", "group.open", flc, Link.BUTTON);
+		groupButton.getComponent().setTarget("_blank");
+		
+		String linkId = "group_" + count++;
+		Link groupLink = LinkFactory.createLink(linkId, linkId, "group.open", "group.open", getTranslator(), flc.getFormItemComponent(), this, Link.BUTTON);
+		groupLink.setTarget("_blank");
+		groupLink.setUserObject(display);
+		display.setGroupButton(groupLink);
+		return display;
+	}
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(source instanceof Link) {
+			Link link = (Link)source;
+			if("group.open".equals(link.getCommand()) && link.getUserObject() instanceof BookingDisplay) {
+				BookingDisplay bookingDisplay = (BookingDisplay)link.getUserObject();
+				openGroup(ureq, bookingDisplay.getMeeting());
+			}
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override
@@ -152,10 +179,6 @@ public class ViteroBookingsEditController extends FormBasicController {
 				} else if(display.getUsersButton() == source) {
 					ViteroBooking viteroBooking = display.getMeeting();
 					usersBooking(ureq, viteroBooking);
-					break;
-				} else if(display.getGroupButton() == source) {
-					ViteroBooking viteroBooking = display.getMeeting();
-					openGroup(ureq, viteroBooking);
 					break;
 				}
 			}
@@ -195,18 +218,12 @@ public class ViteroBookingsEditController extends FormBasicController {
 				if(url == null) {
 					showError("error.sessionCodeNull");
 				} else {
-					viteroGroupVC = createVelocityContainer("opengroup");
-					viteroGroupVC.contextPut("groupUrl", url);
-					removeAsListenerAndDispose(cmc);
-					cmc = new CloseableModalController(getWindowControl(), translate("close"), viteroGroupVC);
-					listenTo(cmc);
-					cmc.activate();
+					MediaResource redirect = new RedirectMediaResource(url);
+					ureq.getDispatchResult().setResultingMediaResource(redirect);
 				}
 			} else {
-				String title = translate("booking.group");
-				String text = translate("booking.group.warning");
-				List<String> buttonLabels = Collections.singletonList(translate("ok"));
-				warningGroupCtr = activateGenericDialog(ureq, title, text, buttonLabels, warningGroupCtr);
+				showWarning("booking.group.warning");
+
 			}
 		} catch (VmsNotAvailableException e) {
 			showError(VmsNotAvailableException.I18N_KEY);
@@ -214,7 +231,7 @@ public class ViteroBookingsEditController extends FormBasicController {
 	}
 	
 	protected void occupiedRooms(UserRequest ureq) {
-		removeAsListenerAndDispose(bookingController);
+		removeAsListenerAndDispose(roomsOverviewController);
 
 		try {
 			roomsOverviewController = new ViteroRoomsOverviewController(ureq, getWindowControl());			
@@ -288,7 +305,7 @@ public class ViteroBookingsEditController extends FormBasicController {
 		private FormLink deleteButton;
 		private FormLink editButton;
 		private FormLink usersButton;
-		private FormLink groupButton;
+		private Link groupButton;
 		
 		public BookingDisplay(ViteroBooking meeting) {
 			this.meeting = meeting;
@@ -338,11 +355,11 @@ public class ViteroBookingsEditController extends FormBasicController {
 			this.usersButton = usersButton;
 		}
 
-		public FormLink getGroupButton() {
+		public Link getGroupButton() {
 			return groupButton;
 		}
 
-		public void setGroupButton(FormLink groupButton) {
+		public void setGroupButton(Link groupButton) {
 			this.groupButton = groupButton;
 		}
 	}

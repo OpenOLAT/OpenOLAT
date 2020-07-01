@@ -5,10 +5,10 @@
 	<table class="table">
 		<thead>
 			<tr>
-				<th>$r.translate("group.name")</th>
-				<th>$r.translate("booking.begin")</th>
-				<th>$r.translate("booking.end")</th>
-				<th colspan="4"></th>
+				<th scope="col">$r.translate("group.name")</th>
+				<th scope="col">$r.translate("booking.begin")</th>
+				<th scope="col">$r.translate("booking.end")</th>
+				<th scope="col" colspan="4"></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -19,7 +19,7 @@
 				<td>$r.formatDateAndTime($bookingDisplay.end)</td>
 				<td>$r.render($bookingDisplay.editButton.component.componentName)</td>
 				<td>$r.render($bookingDisplay.usersButton.component.componentName)</td>
-				<td>$r.render($bookingDisplay.groupButton.component.componentName)</td>
+				<td>$r.render($bookingDisplay.groupButton.componentName)</td>
 				<td>$r.render($bookingDisplay.deleteButton.component.componentName)</td>
 			</tr>
 		#end
