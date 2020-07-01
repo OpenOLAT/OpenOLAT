@@ -69,7 +69,6 @@ public class BigBlueButtonRunController extends BasicController implements Activ
 	private final RepositoryEntry entry;
 	private final BigBlueButtonMeetingDefaultConfiguration configuration;
 	
-	private boolean canView;
 	private boolean readOnly;
 	private boolean moderator;
 	private boolean administrator;
@@ -134,11 +133,9 @@ public class BigBlueButtonRunController extends BasicController implements Activ
 		
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("Meetings".equalsIgnoreCase(type)) {
-			if(canView) {
-				doOpenMeetings(ureq);
-				if(segmentView != null) {
-					segmentView.select(meetingsLink);
-				}
+			doOpenMeetings(ureq);
+			if(segmentView != null) {
+				segmentView.select(meetingsLink);
 			}
 		} else if("Administration".equalsIgnoreCase(type)) {
 			if(administrator) {
@@ -148,15 +145,13 @@ public class BigBlueButtonRunController extends BasicController implements Activ
 				}
 			}
 		} else if("Meeting".equalsIgnoreCase(type)) {
-			if(canView) {
-				doOpenMeetings(ureq);
-				if(segmentView != null) {
-					segmentView.select(meetingsLink);
-				}
-				Long meetingKey = entries.get(0).getOLATResourceable().getResourceableId();
-				if(meetingsCtrl.hasMeetingByKey(meetingKey)) {
-					doSelectMeeting(ureq, meetingsCtrl.getMeetingByKey(meetingKey));
-				}
+			doOpenMeetings(ureq);
+			if(segmentView != null) {
+				segmentView.select(meetingsLink);
+			}
+			Long meetingKey = entries.get(0).getOLATResourceable().getResourceableId();
+			if(meetingsCtrl.hasMeetingByKey(meetingKey)) {
+				doSelectMeeting(ureq, meetingsCtrl.getMeetingByKey(meetingKey));
 			}
 		}
 	}
