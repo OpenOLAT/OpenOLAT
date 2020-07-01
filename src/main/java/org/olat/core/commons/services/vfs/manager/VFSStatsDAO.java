@@ -44,7 +44,7 @@ public class VFSStatsDAO {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select new org.olat.core.commons.services.vfs.model.VFSFileStatistics(");
 		sb.append(" sum(case when metadata.deleted = false then 1 else 0 end) as filesAmount,");
-		sb.append(" sum(metadata.fileSize) as filesSize,");
+		sb.append(" sum(case when metadata.deleted = false then metadata.fileSize else 0 end) as filesSize,");
 		sb.append(" sum(case when metadata.deleted = true then 1 else 0 end) as trashAmount,");
 		sb.append(" sum(case when metadata.deleted = true then metadata.fileSize else 0 end) as trashSize");
 		sb.append(")");
