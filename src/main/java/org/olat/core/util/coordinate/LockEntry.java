@@ -39,18 +39,20 @@ public class LockEntry implements Serializable {
 	private static final long serialVersionUID = -319510836505419325L;
 	
 	private long lockAquiredTime;
-	private Identity owner;
+	private final Identity owner;
 	private final String key;
+	private final String windowId;
 
 	/**
 	 * @param key
 	 * @param lockAquiredTime
 	 * @param owner
 	 */
-	public LockEntry(String key, long lockAquiredTime, Identity owner) {
+	public LockEntry(String key, long lockAquiredTime, Identity owner, String windowId) {
 		this.key = key;
 		this.lockAquiredTime = lockAquiredTime;
 		this.owner = owner;
+		this.windowId = windowId;
 	}
 
 	/**
@@ -69,6 +71,10 @@ public class LockEntry implements Serializable {
 
 	public String getKey() {
 		return key;
+	}
+	
+	public String getWindowId() {
+		return windowId;
 	}
 
 	@Override
@@ -92,13 +98,15 @@ public class LockEntry implements Serializable {
 		if (key == null) {
 			if (other.key != null)
 				return false;
-		} else if (!key.equals(other.key))
+		} else if (!key.equals(other.key)) {
 			return false;
+		}
 		if (owner == null) {
 			if (other.owner != null)
 				return false;
-		} else if (!owner.equals(other.owner))
+		} else if (!owner.equals(other.owner)) {
 			return false;
+		}
 		return true;
 	}
 	

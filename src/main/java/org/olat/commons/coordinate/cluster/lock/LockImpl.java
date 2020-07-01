@@ -43,6 +43,7 @@ public class LockImpl extends PersistentObject {
 	private Identity owner;
 	private String asset;
 	private String nodeId;
+	private String windowId;
 
 	/**
 	* Constructor needed for Hibernate.
@@ -51,12 +52,13 @@ public class LockImpl extends PersistentObject {
 		// singleton
 	}
 
-	LockImpl(String asset, Identity owner) {
+	LockImpl(String asset, Identity owner, String windowId) {
 		if (asset.length() > 120) {
 			throw new AssertException("asset may not exceed 120 bytes in length: asset="+asset);
 		}
 		this.asset = asset;
 		this.owner = owner;
+		this.windowId = windowId;
 	}
 
 	@Override
@@ -82,6 +84,14 @@ public class LockImpl extends PersistentObject {
 
 	public void setOwner(Identity owner) {
 		this.owner = owner;
+	}
+
+	public String getWindowId() {
+		return windowId;
+	}
+
+	public void setWindowId(String windowId) {
+		this.windowId = windowId;
 	}
 
 	String getNodeId() {

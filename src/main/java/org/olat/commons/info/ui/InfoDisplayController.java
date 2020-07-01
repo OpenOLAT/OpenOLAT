@@ -61,8 +61,6 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.User;
-import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
@@ -406,7 +404,7 @@ public class InfoDisplayController extends FormBasicController {
 	
 	protected void popupDelete(UserRequest ureq, InfoMessage msg) {
 		OLATResourceable mres = OresHelper.createOLATResourceableInstance(InfoMessage.class, msg.getKey());
-		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(mres, ureq.getIdentity(), "");
+		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(mres, ureq.getIdentity(), "", getWindow());
 		if(lockEntry.isSuccess()) {
 			//locked -> reload the message
 			msg = infoMessageManager.loadInfoMessage(msg.getKey());
@@ -422,15 +420,13 @@ public class InfoDisplayController extends FormBasicController {
 				confirmDelete.setUserObject(msg);
 			}
 		} else {
-			User user = lockEntry.getOwner().getUser();
-			String name = user.getProperty(UserConstants.FIRSTNAME, null) + " " + user.getProperty(UserConstants.LASTNAME, null);
-			showWarning("already.edited", name);
+			showLockError();
 		}
 	}
 	
 	protected void popupEdit(UserRequest ureq, InfoMessage msg) {
 		OLATResourceable mres = OresHelper.createOLATResourceableInstance(InfoMessage.class, msg.getKey());
-		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(mres, ureq.getIdentity(), "");
+		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(mres, ureq.getIdentity(), "", getWindow());
 		if(lockEntry.isSuccess()) {
 			msg = infoMessageManager.loadInfoMessage(msg.getKey());
 			if(msg == null) {
@@ -449,8 +445,15 @@ public class InfoDisplayController extends FormBasicController {
 				listenTo(editDialogBox);
 			}
 		} else {
-			User user = lockEntry.getOwner().getUser();
-			String name = user.getProperty(UserConstants.FIRSTNAME, null) + " " + user.getProperty(UserConstants.LASTNAME, null);
+			showLockError();
+		}
+	}
+	
+	private void showLockError() {
+		String name = userManager.getUserDisplayName(lockEntry.getOwner());
+		if(lockEntry.isDifferentWindows()) {
+			showWarning("already.edited.same.user", name);
+		} else {
 			showWarning("already.edited", name);
 		}
 	}

@@ -35,7 +35,6 @@ import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.tabbedpane.TabbedPaneChangedEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -74,7 +73,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * @author patrick, srosse
  */
-public class BusinessGroupEditController extends BasicController implements ControllerEventListener, GenericEventListener, Activateable2 {
+public class BusinessGroupEditController extends BasicController implements GenericEventListener, Activateable2 {
 
 	private boolean hasResources;
 	private BusinessGroup currBusinessGroup;
@@ -123,7 +122,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 
 		// try to acquire edit lock on business group
 		String locksubkey = "groupEdit";
-		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(businessGroup, ureq.getIdentity(), locksubkey);
+		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(businessGroup, ureq.getIdentity(), locksubkey, getWindow());
 		if (lockEntry.isSuccess()) {
 			// reload group to minimize stale object exception and update last usage timestamp
 			currBusinessGroup = businessGroupService.setLastUsageFor(getIdentity(), businessGroup);
@@ -150,6 +149,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 			}
 		} else {
 			//lock was not successful !
+			String i18nMsg = lockEntry.isDifferentWindows() ? "error.message.locked" : "error.message.locked.same.user";
 			alreadyLockedDialogController = DialogBoxUIFactory.createResourceLockedMessage(ureq, wControl, lockEntry, "error.message.locked", getTranslator());
 			listenTo(alreadyLockedDialogController);
 			alreadyLockedDialogController.activate();

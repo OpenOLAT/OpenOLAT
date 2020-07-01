@@ -394,7 +394,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 		// lock on item, need to check the lock on identity / test
 		String lockSubKey = "item-" + reloadItemSession.getKey();
 		OLATResourceable testOres = OresHelper.clone(model.getTestEntry().getOlatResource());
-		lockResult = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(testOres, getIdentity(), lockSubKey);
+		lockResult = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(testOres, getIdentity(), lockSubKey, getWindow());
 		if(lockResult.isSuccess() || readOnly) {
 			if(nodes.size() == 1) {
 				TestPlanNode itemNode = nodes.get(0);
@@ -415,7 +415,8 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 			}
 		} else {
 			String lockOwnerName = userManager.getUserDisplayName(lockResult.getOwner());
-			showWarning("warning.assessment.item.locked", new String[] { lockOwnerName });
+			String msg = lockResult.isDifferentWindows() ? "warning.assessment.item.locked.same.user" : "warning.assessment.item.locked";
+			showWarning(msg, new String[] { lockOwnerName });
 		}
 	}
 	

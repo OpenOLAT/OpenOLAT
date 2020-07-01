@@ -55,20 +55,25 @@ public class CourseSite extends AbstractSiteInstance {
 	private NavElement origNavElem;
 	private NavElement curNavElem;
 
-	private final String repositorySoftKey;
+	private final Long repoEntryKey;
 	private boolean showToolController;
 	private SiteSecurityCallback siteSecCallback;
 
 	/**
-	 * @param loc
-	 * @param alternativeControllerIfNotLaunchable
-	 * @param titleKeyPrefix
+	 * 
+	 * @param siteDef The site definitionn
+	 * @param repoEntryKey The primary key of the repository entry of the course
+	 * @param showToolController true if the tools are shown
+	 * @param siteSecCallback The security callback
+	 * @param titleKeyPrefix Prefix for the title
+	 * @param navIconCssClass An CSS class for icon
 	 */
-	public CourseSite(SiteDefinition siteDef, String repositorySoftKey, boolean showToolController,
+	public CourseSite(SiteDefinition siteDef, Long repoEntryKey, boolean showToolController,
 			SiteSecurityCallback siteSecCallback, String titleKeyPrefix, String navIconCssClass) {
 		super(siteDef);
-		this.repositorySoftKey = repositorySoftKey;
-		origNavElem = new DefaultNavElement(titleKeyPrefix, titleKeyPrefix, navIconCssClass);
+		this.repoEntryKey = repoEntryKey;
+		String businessPath = "[RepositoryEntry:" + repoEntryKey + "]";
+		origNavElem = new DefaultNavElement(businessPath, titleKeyPrefix, titleKeyPrefix, navIconCssClass);
 		curNavElem = new DefaultNavElement(origNavElem);
 		this.showToolController = showToolController;
 		this.siteSecCallback = siteSecCallback;
@@ -82,8 +87,7 @@ public class CourseSite extends AbstractSiteInstance {
 	@Override
 	protected MainLayoutController createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		RepositoryManager rm = CoreSpringFactory.getImpl(RepositoryManager.class);
-		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
-		RepositoryEntry entry = rm.lookupRepositoryEntryBySoftkey(repositorySoftKey, false);
+		RepositoryEntry entry = rm.lookupRepositoryEntry(repoEntryKey, false);
 		if(entry == null) {
 			return getAlternativeController(ureq, wControl, config);
 		}
@@ -117,6 +121,7 @@ public class CourseSite extends AbstractSiteInstance {
 		
 		// load course (admins always see content) or alternative controller if course is not launchable
 		if (hasAccess || reSecurity.isEntryAdmin()) {
+			RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
 			rs.incrementLaunchCounter(entry); 
 			// build up the context path for linked course
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, entry, new StateSite(this), wControl, true);	

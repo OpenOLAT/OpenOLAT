@@ -213,7 +213,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		addLoggingResourceable(LoggingResourceable.wrap(course));
 		
 		// try to acquire edit lock for this course.			
-		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(ores, ureq.getIdentity(), CourseFactory.COURSE_EDITOR_LOCK);
+		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker()
+				.acquireLock(ores, getIdentity(), CourseFactory.COURSE_EDITOR_LOCK, getWindow());
 
 		if(CourseFactory.isCourseEditSessionOpen(ores.getResourceableId())) {
 			MainPanel empty = new MainPanel("empty");

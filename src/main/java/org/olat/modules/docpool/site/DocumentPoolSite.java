@@ -47,6 +47,9 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class DocumentPoolSite extends AbstractSiteInstance {
 	
+	private static final OLATResourceable documentPoolOres = OresHelper.createOLATResourceableInstance(DocumentPoolSite.class, 0l);
+	private static final String documentPoolBusinessPath = OresHelper.toBusinessPath(documentPoolOres);
+	
 	private final NavElement origNavElem;
 	private NavElement curNavElem;
 	
@@ -56,7 +59,8 @@ public class DocumentPoolSite extends AbstractSiteInstance {
 	public DocumentPoolSite(SiteDefinition siteDef, Locale locale) {
 		super(siteDef);
 		Translator trans = Util.createPackageTranslator(DocumentPoolMainController.class, locale);
-		origNavElem = new DefaultNavElement(trans.translate("site.title"), trans.translate("site.title.alt"), "o_site_taxonomy");
+		origNavElem = new DefaultNavElement(documentPoolBusinessPath, trans.translate("site.title"),
+				trans.translate("site.title.alt"), "o_site_taxonomy");
 		curNavElem = new DefaultNavElement(origNavElem);
 	}
 
@@ -67,9 +71,8 @@ public class DocumentPoolSite extends AbstractSiteInstance {
 
 	@Override
 	protected MainLayoutController createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(DocumentPoolSite.class, 0l);
-		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(documentPoolOres));
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, documentPoolOres, new StateSite(this), wControl, true);
 		return new DocumentPoolMainController(ureq, bwControl);
 	}
 

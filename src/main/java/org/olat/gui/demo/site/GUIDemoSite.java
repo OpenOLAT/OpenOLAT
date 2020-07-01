@@ -49,7 +49,7 @@ public class GUIDemoSite extends AbstractSiteInstance {
 
 	public GUIDemoSite(SiteDefinition siteDef) {
 		super(siteDef);
-		origNavElem = new DefaultNavElement("gui_demo", "gui demo", "o_site_guidemo");
+		origNavElem = new DefaultNavElement(null, "gui_demo", "gui demo", "o_site_guidemo");
 		curNavElem = new DefaultNavElement(origNavElem);
 	}
 

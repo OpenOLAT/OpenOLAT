@@ -679,6 +679,9 @@ public class RepositoryEntryListController extends FormBasicController
 		if(row.isClosed()) {
 			selectLink.setIconLeftCSS("o_icon o_CourseModule_icon_closed");
 		}
+		String businessPath = "[RepositoryEntry:" + row.getKey() + "]";
+		String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath);
+		//selectLink.getComponent().setUrl(url);
 		selectLink.setUserObject(row);
 		row.setSelectLink(selectLink);
 	}

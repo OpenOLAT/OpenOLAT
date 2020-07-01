@@ -21,7 +21,6 @@ package org.olat.modules.library.site;
 
 import java.util.Locale;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
@@ -36,9 +35,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.StateSite;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.modules.library.LibraryManager;
 import org.olat.modules.library.ui.LibraryMainController;
-import org.olat.repository.RepositoryEntry;
 
 /**
  * This site represents the library (Bibliothek) tab.
@@ -49,6 +46,9 @@ import org.olat.repository.RepositoryEntry;
  * @author gwassmann
  */
 public class LibrarySite extends AbstractSiteInstance {
+	
+	private static final OLATResourceable libraryOres = OresHelper.createOLATResourceableInstance(LibrarySite.class, 0l);
+	private static final String libraryBusinessPath = OresHelper.toBusinessPath(libraryOres);
 
 	private NavElement origNavElem;
 	private NavElement curNavElem;
@@ -59,19 +59,14 @@ public class LibrarySite extends AbstractSiteInstance {
 	public LibrarySite(SiteDefinition siteDef, Locale loc) {
 		super(siteDef);
 		Translator trans = Util.createPackageTranslator(LibraryMainController.class, loc);
-		origNavElem = new DefaultNavElement(trans.translate("site.title"), trans.translate("site.title.alt"), "f_site_library");
+		origNavElem = new DefaultNavElement(libraryBusinessPath, trans.translate("site.title"),
+				trans.translate("site.title.alt"), "f_site_library");
 		curNavElem = new DefaultNavElement(origNavElem);
 	}
 
 	@Override
-	protected MainLayoutController createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {	
-		RepositoryEntry catalogEntry = CoreSpringFactory.getImpl(LibraryManager.class).getCatalogRepoEntry();
-		WindowControl bwControl = wControl;
-		if(catalogEntry != null) {
-			Long resId = catalogEntry.getOlatResource().getResourceableId();
-			OLATResourceable libraryOres = OresHelper.createOLATResourceableInstance(LibrarySite.class, resId);
-			bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, libraryOres, new StateSite(this), wControl, true);
-		}
+	protected MainLayoutController createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, libraryOres, new StateSite(this), wControl, true);
 		return new LibraryMainController(ureq, bwControl);
 	}
 
@@ -79,12 +74,6 @@ public class LibrarySite extends AbstractSiteInstance {
 	public NavElement getNavElement() {
 		return curNavElem;
 	}
-
-	@Override
-	public boolean isKeepState() {
-		return true;
-	}
-
 
 	@Override
 	public void reset() {

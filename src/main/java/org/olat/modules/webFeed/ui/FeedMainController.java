@@ -218,7 +218,8 @@ public class FeedMainController extends BasicController implements Activateable2
 				activateModalDialog(feedFormCtr, uiFactory.getTranslator().translate("feed.edit"));
 			} else {
 				String fullName = userManager.getUserDisplayName(lock.getOwner());
-				showInfo("feed.is.being.edited.by", fullName);
+				String i18nMsg = lock.isDifferentWindows() ? "feed.is.being.edited.by.same.user" : "feed.is.being.edited.by";
+				showInfo(i18nMsg, fullName);
 			}
 		}
 	}

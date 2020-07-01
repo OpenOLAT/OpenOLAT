@@ -46,8 +46,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -268,18 +266,6 @@ public class QuestionPoolServiceImpl implements QPoolService {
 			keys.add(item.getKey());
 		}
 		lifeIndexer.indexDocument(QItemDocument.TYPE, keys);
-	}
-	
-	@Override
-	public void releaseLock(LockResult lock) {
-		if (lock != null) {
-			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lock);
-		}
-	}
-
-	@Override
-	public LockResult acquireLock(QuestionItemShort item, Identity identity) {
-		return CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(item, identity, null);
 	}
 
 	@Override

@@ -74,7 +74,7 @@ public class CPEditMainController extends BasicController implements ToolbarAwar
 		OLATResourceable ores = cpEntry.getOlatResource();
 
 		// acquire lock for resource
-		lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(ores, ureq.getIdentity(), null);
+		lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(ores, ureq.getIdentity(), null, getWindow());
 		cp = cpManager.load(cpContainer, ores);
 		
 		CPPackageConfig packageConfig = cpManager.getCPPackageConfig(ores);
@@ -106,7 +106,11 @@ public class CPEditMainController extends BasicController implements ToolbarAwar
 					showWarning("maincontroller.cp.created.with.third.party.editor");
 				}
 			} else {
-				showInfo("contentcontroller.no.lock");
+				if(lock.isDifferentWindows()) {
+					showWarning("contentcontroller.no.lock.same.user");
+				} else {
+					showWarning("contentcontroller.no.lock");
+				}
 				
 				CPAssessmentProvider cpAssessmentProvider = PersistingAssessmentProvider.create(cpEntry, getIdentity(), false);
 				Controller cpCtr = CPUIFactory.getInstance()

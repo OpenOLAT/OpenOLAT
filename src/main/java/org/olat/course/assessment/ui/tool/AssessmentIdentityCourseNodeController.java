@@ -112,7 +112,7 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 
 		//acquire lock and show dialog box on failure.
 		String lockSubKey = "AssessmentLock-NID::" + courseNode.getIdent() + "-IID::" + assessedIdentity.getKey();
-		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(course, ureq.getIdentity(), lockSubKey);
+		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(course, ureq.getIdentity(), lockSubKey, getWindow());
 		if(!lockEntry.isSuccess()) {
 			alreadyLockedDialogController = DialogBoxUIFactory.createResourceLockedMessage(ureq, wControl, lockEntry, "assessmentLock", getTranslator());
 			listenTo(alreadyLockedDialogController);

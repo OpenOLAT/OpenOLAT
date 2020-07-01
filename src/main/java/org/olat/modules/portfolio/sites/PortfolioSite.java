@@ -48,6 +48,9 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class PortfolioSite extends AbstractSiteInstance {
 	
+	private static final OLATResourceable portfolioOres = OresHelper.createOLATResourceableInstance(PortfolioSite.class, 0l);
+	private static final String portfolioBusinessPath = OresHelper.toBusinessPath(portfolioOres);
+	
 	private final NavElement origNavElem;
 	private NavElement curNavElem;
 	
@@ -57,7 +60,8 @@ public class PortfolioSite extends AbstractSiteInstance {
 	public PortfolioSite(SiteDefinition siteDef, Locale locale) {
 		super(siteDef);
 		Translator trans = Util.createPackageTranslator(PortfolioHomeController.class, locale);
-		origNavElem = new DefaultNavElement(trans.translate("site.title"), trans.translate("site.title.alt"), "o_site_portfolio");
+		origNavElem = new DefaultNavElement(portfolioBusinessPath, trans.translate("site.title"),
+				trans.translate("site.title.alt"), "o_site_portfolio");
 		curNavElem = new DefaultNavElement(origNavElem);
 	}
 
@@ -68,11 +72,9 @@ public class PortfolioSite extends AbstractSiteInstance {
 
 	@Override
 	protected Controller createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(PortfolioSite.class, 0l);
-		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
-		PortfolioPersonalToolController mainController = new PortfolioPersonalToolController(ureq, bwControl);
-		return mainController;
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(portfolioOres));
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, portfolioOres, new StateSite(this), wControl, true);
+		return new PortfolioPersonalToolController(ureq, bwControl);
 	}
 
 	@Override

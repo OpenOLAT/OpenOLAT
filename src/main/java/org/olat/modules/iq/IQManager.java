@@ -99,6 +99,7 @@ public class IQManager implements UserDataDeletable {
 
 	private DB dbInstance;
 	private UserManager userManager;
+	private DBPersistentLockManager persistentLockManager;
 
 	public void setDbInstance(DB dbInstance) {
 		this.dbInstance = dbInstance;
@@ -110,6 +111,30 @@ public class IQManager implements UserDataDeletable {
 	 */
 	public void setUserManager(UserManager userManager) {
 		this.userManager = userManager;
+	}
+	
+	/**
+	 * [user by Spring]
+	 * @param userManager
+	 */
+	public void setPersistentLockManager(DBPersistentLockManager persistentLockManager) {
+		this.persistentLockManager = persistentLockManager;
+	}
+	
+
+	public LockResult aquirePersistentLock(final OLATResourceable ores, final Identity ident, final String locksubkey) {
+		return CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, () -> 
+			persistentLockManager.aquirePersistentLock(ores, ident, locksubkey));
+	}
+
+	public void releasePersistentLock(LockResult lockResult) {
+		// cluster_ok: since a certain LockResult can only be from one user/session that previously acquired the lock
+		// if the lock has not been acquired, do nothing
+		if (!lockResult.isSuccess())
+			return;
+
+		// delegate to the concrete implementation
+		persistentLockManager.releasePersistentLock(lockResult);
 	}
 
 	/**
@@ -127,7 +152,7 @@ public class IQManager implements UserDataDeletable {
 		String repositorySoftkey = (String) moduleConfiguration.get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
 		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftkey, false);
 		if(re == null) {
-			log.error("The test repository entry with this soft key could not be found: " + repositorySoftkey);
+			log.error("The test repository entry with this soft key could not be found: {}", repositorySoftkey);
 			Translator translator = Util.createPackageTranslator(this.getClass(), ureq.getLocale());
 			String title = translator.translate("error.test.deleted.title");
 			String msg = translator.translate("error.test.deleted.msg");
@@ -135,7 +160,7 @@ public class IQManager implements UserDataDeletable {
 		} else if (CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(re.getOlatResource(), null)){
 			Translator translator = Util.createPackageTranslator(this.getClass(), ureq.getLocale());
 			//so this resource is locked, let's find out who locked it
-			LockResult lockResult = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(re.getOlatResource(), ureq.getIdentity(), null);
+			LockResult lockResult = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(re.getOlatResource(), ureq.getIdentity(), null, null);
 			String fullName = userManager.getUserDisplayName(lockResult.getOwner());
 			return MessageUIFactory.createInfoMessage(ureq, wControl, translator.translate("status.currently.locked.title"), 
 					translator.translate("status.currently.locked", new String[] { fullName }));
@@ -183,16 +208,13 @@ public class IQManager implements UserDataDeletable {
 		// -- VERY RARE CASE -- 1) qti is open in an editor session right now on the screen (or session on the way to timeout)
 		// -- 99% of cases   -- 2) qti is ready to be run as test/survey
 		if (CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(res, null)){
-			LockResult lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().aquirePersistentLock(res, ureq.getIdentity(), null);
+			LockResult lockEntry = aquirePersistentLock(res, ureq.getIdentity(), null);
 			String fullName = userManager.getUserDisplayName(lockEntry.getOwner());
-			GenericMainController glc = createLockedMessageController(ureq, wControl, fullName);
-			return glc;
-		}else{
-			Controller controller = new IQDisplayController(resolver, type, secCallback, ureq, wControl);
-			//fxdiff BAKS-7 Resume function
-			OLATResourceableListeningWrapperController dwc = new OLATResourceableListeningWrapperController(ureq, wControl, res, controller, null, ureq.getIdentity());
-			return dwc;
+			return createLockedMessageController(ureq, wControl, fullName);
 		}
+		
+		Controller controller = new IQDisplayController(resolver, type, secCallback, ureq, wControl);
+		return new OLATResourceableListeningWrapperController(ureq, wControl, res, controller, null, ureq.getIdentity());
 	}
 
 	private GenericMainController createLockedMessageController(UserRequest ureq, WindowControl wControl, String fullName) {

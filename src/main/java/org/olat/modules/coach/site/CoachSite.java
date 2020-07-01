@@ -56,6 +56,9 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class CoachSite extends AbstractSiteInstance {
 	
+	private static final OLATResourceable coachOres = OresHelper.createOLATResourceableInstance(CoachSite.class, 0l);
+	private static final String coachBusinessPath = OresHelper.toBusinessPath(coachOres);
+	
 	private final NavElement origNavElem;
 	private NavElement curNavElem;
 	
@@ -70,7 +73,8 @@ public class CoachSite extends AbstractSiteInstance {
 		this.gradingSec = gradingSec;
 		this.coachingSec = coachingSec;
 		Translator trans = Util.createPackageTranslator(CoachMainController.class, locale);
-		origNavElem = new DefaultNavElement(trans.translate("site.title"), trans.translate("site.title.alt"), "o_site_coaching");
+		origNavElem = new DefaultNavElement(coachBusinessPath, trans.translate("site.title"),
+				trans.translate("site.title.alt"), "o_site_coaching");
 		curNavElem = new DefaultNavElement(origNavElem);
 	}
 
@@ -81,9 +85,9 @@ public class CoachSite extends AbstractSiteInstance {
 
 	@Override
 	protected MainLayoutController createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(CoachSite.class, 0l);
-		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
+		
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(coachOres));
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, coachOres, new StateSite(this), wControl, true);
 		if(coachingSec == null) {
 			coachingSec = CoreSpringFactory.getImpl(CoachingService.class).isCoach(ureq.getIdentity());
 		}

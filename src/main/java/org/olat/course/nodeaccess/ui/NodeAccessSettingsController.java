@@ -84,7 +84,6 @@ public class NodeAccessSettingsController extends FormBasicController {
 	private DurationConfirmationController durationConfirmationCtrl;
 	
 	private final RepositoryEntry courseEntry;
-	private final ICourse course;
 	private final CourseConfig courseConfig;
 
 	@Autowired
@@ -95,7 +94,7 @@ public class NodeAccessSettingsController extends FormBasicController {
 	public NodeAccessSettingsController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry) {
 		super(ureq, wControl);
 		this.courseEntry = courseEntry;
-		this.course = CourseFactory.loadCourse(courseEntry);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		this.courseConfig = course.getCourseConfig();
 		initForm(ureq);
 	}
@@ -173,6 +172,7 @@ public class NodeAccessSettingsController extends FormBasicController {
 	}
 	
 	private void doMigrate(UserRequest ureq) {
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		List<CourseNode> unsupportedCourseNodes = learningPathService.getUnsupportedCourseNodes(course);
 		if (!unsupportedCourseNodes.isEmpty()) {
 			showUnsupportedMessage(ureq, unsupportedCourseNodes);
@@ -209,7 +209,6 @@ public class NodeAccessSettingsController extends FormBasicController {
 			return;
 		}
 		
-		CourseFactory.openCourseEditSession(courseOres.getResourceableId());
 		if (changedToDurationType) {
 			doConfirmCompletionTypeDuration(ureq);
 		} else {
@@ -228,7 +227,13 @@ public class NodeAccessSettingsController extends FormBasicController {
 	}
 	
 	private void doSetCompletionTypeDuration(Integer duration) {
-		ICourse course = CourseFactory.loadCourse(courseEntry);
+		Long resourceId = courseEntry.getOlatResource().getResourceableId();
+		if(CourseFactory.isCourseEditSessionOpen(resourceId)) {
+			showWarning("error.editoralreadylocked", new String[] { "???" });
+			return;
+		}
+		
+		ICourse course = CourseFactory.openCourseEditSession(resourceId);
 		
 		CollectingVisitor editorVisitor = CollectingVisitor.applying(new MissingDurationFunction());
 		TreeNode editorRootNode = course.getEditorTreeModel().getRootNode();
@@ -239,6 +244,7 @@ public class NodeAccessSettingsController extends FormBasicController {
 		doInitDuration(visitor, runRootNode, duration);
 		
 		CourseFactory.saveCourse(courseEntry.getOlatResource().getResourceableId());
+		CourseFactory.closeCourseEditSession(resourceId, false);
 		
 		saveCompletionTypeAndCloseEditSession(CompletionType.duration);
 		
@@ -256,13 +262,20 @@ public class NodeAccessSettingsController extends FormBasicController {
 	}
 
 	private void saveCompletionTypeAndCloseEditSession(CompletionType completionType) {
+		Long resourceId = courseEntry.getOlatResource().getResourceableId();
+		if(CourseFactory.isCourseEditSessionOpen(resourceId)) {
+			showWarning("error.editoralreadylocked", new String[] { "???" });
+			return;
+		}
+		
+		CourseFactory.openCourseEditSession(resourceId);
 		boolean changed = !completionType.equals(courseConfig.getCompletionType());
 		if (changed) {
 			courseConfig.setCompletionType(completionType);
 			logActivity(completionType);
 		}
-		CourseFactory.setCourseConfig(courseEntry.getOlatResource().getResourceableId(), courseConfig);
-		CourseFactory.closeCourseEditSession(courseEntry.getOlatResource().getResourceableId(), false);
+		CourseFactory.setCourseConfig(resourceId, courseConfig);
+		CourseFactory.closeCourseEditSession(resourceId, false);
 	}
 
 	private void logActivity(CompletionType completionType) {

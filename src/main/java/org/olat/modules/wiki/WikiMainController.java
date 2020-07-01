@@ -1227,7 +1227,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 	 */
 	private void tryToSetEditLock(WikiPage page, UserRequest ureq, OLATResourceable wikiOres) {
 		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(wikiOres, ureq.getIdentity(),
-				page.getPageName());
+				page.getPageName(), getWindow());
 		editContent.contextPut("lockEntry", lockEntry);
 	}
 

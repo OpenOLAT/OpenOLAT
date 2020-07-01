@@ -845,7 +845,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			String node = ureq.getParameter("node");
 			if(StringHelper.isLong(node)) {
 				try {
-					Long categoryNodeKey = new Long(node);
+					Long categoryNodeKey = Long.valueOf(node);
 					CatalogEntry entry = catalogManager.getCatalogNodeByKey(categoryNodeKey);
 					selectCatalogEntry(ureq, entry);
 				} catch (NumberFormatException e) {
@@ -945,7 +945,6 @@ public class CatalogNodeManagerController extends FormBasicController implements
 				CatalogEntryRow row = (CatalogEntryRow)dialogDeleteLink.getUserObject();
 				catalogManager.deleteCatalogEntry(row, catalogEntry);
 				loadResources(ureq);
-//				toolbarPanel.popController(this);
 				fireEvent(ureq, Event.BACK_EVENT);
 			}
 		} else if(entryResourceMoveCtrl == source) {
@@ -1025,7 +1024,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 	}
 	
 	private void doActivateOrdering(UserRequest ureq) {
-		catModificationLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, getIdentity(), LOCK_TOKEN);
+		catModificationLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, getIdentity(), LOCK_TOKEN, getWindow());
 		if (catModificationLock.isSuccess() && !isOrdering) {	
 			boolean activateOrdering = false;
 			activateOrdering |= nodeEntriesModel.getObjects().size() > 1;
@@ -1043,7 +1042,15 @@ public class CatalogNodeManagerController extends FormBasicController implements
 				showWarning("catalog.position.deactivated");
 			}
 		} else {
-			String ownerName = userManager.getUserDisplayName(catModificationLock.getOwner());
+			showLockError();
+		}
+	}
+	
+	private void showLockError() {
+		String ownerName = userManager.getUserDisplayName(catModificationLock.getOwner());
+		if(catModificationLock.isDifferentWindows()) {
+			showError("catalog.locked.by.same.user", ownerName);
+		} else {
 			showError("catalog.locked.by", ownerName);
 		}
 	}
@@ -1051,7 +1058,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 	private void doMoveCatalogEntry(Long key, String command, UserRequest ureq) {
 		if(catalogManager.reorderCatalogEntry(catalogEntry.getKey(), key, command.equals(CMD_UP) ? true : false) != 0) {
 			getWindowControl().setWarning("Catalog has been modified, please try again!");
-		};
+		}
 		
 		loadNodesChildren();
 		loadResources(ureq);
@@ -1061,7 +1068,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		removeAsListenerAndDispose(positionCalloutCtrl);
 		removeAsListenerAndDispose(positionCtrl);
 		
-		catModificationLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, getIdentity(), LOCK_TOKEN);
+		catModificationLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, getIdentity(), LOCK_TOKEN, getWindow());
 		if (catModificationLock.isSuccess()) {
 			Object rowObject = link.getUserObject();
 			
@@ -1084,8 +1091,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			positionCalloutCtrl.activate();
 			
 		} else {
-			String ownerName = userManager.getUserDisplayName(catModificationLock.getOwner());
-			showError("catalog.locked.by", ownerName);
+			showLockError();
 		}
 	}
 	
@@ -1093,7 +1099,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		removeAsListenerAndDispose(entrySearchCtrl);
 		removeAsListenerAndDispose(cmc);
 
-		catModificationLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, getIdentity(), LOCK_TOKEN);
+		catModificationLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, getIdentity(), LOCK_TOKEN, getWindow());
 		if (catModificationLock.isSuccess()) {
 			entrySearchCtrl = new RepositorySearchController(translate("choose"), ureq, getWindowControl(), true, false, new String[0], false, null);
 			listenTo(entrySearchCtrl);
@@ -1111,8 +1117,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			listenTo(cmc);
 			cmc.activate();	
 		} else {
-			String ownerName = userManager.getUserDisplayName(catModificationLock.getOwner());
-			showError("catalog.locked.by", ownerName);
+			showLockError();
 		}
 	}
 	
@@ -1130,7 +1135,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		removeAsListenerAndDispose(addEntryCtrl);
 		removeAsListenerAndDispose(cmc);
 		
-		catModificationLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, getIdentity(), LOCK_TOKEN);
+		catModificationLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, getIdentity(), LOCK_TOKEN, getWindow());
 		if (catModificationLock.isSuccess()) {
 			CatalogEntry ce = catalogManager.createCatalogEntry();
 			addEntryCtrl = new CatalogEntryEditController(ureq, getWindowControl(), ce, catalogEntry);
@@ -1141,8 +1146,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			listenTo(cmc);
 			cmc.activate();	
 		} else {
-			String ownerName = userManager.getUserDisplayName(catModificationLock.getOwner());
-			showError("catalog.locked.by", ownerName);
+			showLockError();
 		}
 	}
 	
@@ -1150,7 +1154,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		removeAsListenerAndDispose(editEntryCtrl);
 		removeAsListenerAndDispose(cmc);
 		
-		catModificationLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, getIdentity(), LOCK_TOKEN);
+		catModificationLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, getIdentity(), LOCK_TOKEN, getWindow());
 		if ( catModificationLock.isSuccess()) {
 			editEntryCtrl = new CatalogEntryEditController(ureq, getWindowControl(), catalogEntry);
 			editEntryCtrl.setElementCssClass("o_sel_catalog_edit_category_popup");
@@ -1162,8 +1166,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			
 			cmc.activate();	
 		} else {
-			String ownerName = userManager.getUserDisplayName(catModificationLock.getOwner());
-			showError("catalog.locked.by", ownerName);
+			showLockError();
 		}
 	}
 	
@@ -1171,7 +1174,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(categoryMoveCtrl);
 		
-		catModificationLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, getIdentity(), LOCK_TOKEN);
+		catModificationLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, getIdentity(), LOCK_TOKEN, getWindow());
 		if (catModificationLock.isSuccess()) {
 			categoryMoveCtrl= new CatalogEntryMoveController(getWindowControl(), ureq, catalogEntry, getTranslator());					
 			listenTo(categoryMoveCtrl);
@@ -1180,8 +1183,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			listenTo(cmc);
 			cmc.activate();
 		} else {
-			String ownerName = userManager.getUserDisplayName(catModificationLock.getOwner());
-			showError("catalog.locked.by", ownerName);
+			showLockError();
 		}
 	}
 	
@@ -1200,13 +1202,12 @@ public class CatalogNodeManagerController extends FormBasicController implements
 	}
 	
 	private void doConfirmDelete(UserRequest ureq) {
-		catModificationLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, getIdentity(), LOCK_TOKEN);
+		catModificationLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, getIdentity(), LOCK_TOKEN, getWindow());
 		if ( catModificationLock.isSuccess()) {
 			String[] trnslP = { catalogEntry.getName() };
 			dialogDeleteSubtree = activateYesNoDialog(ureq, null, translate("dialog.modal.subtree.delete.text", trnslP), dialogDeleteSubtree);
 		} else {
-			String ownerName = userManager.getUserDisplayName(catModificationLock.getOwner());
-			showError("catalog.locked.by", ownerName);
+			showLockError();
 		}
 	}
 	

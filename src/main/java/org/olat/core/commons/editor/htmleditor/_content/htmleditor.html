@@ -9,13 +9,10 @@
 #end
 
 #if($locked)
-	<p class="o_warning">
-		$r.translate("error.pageeditedby", $lockOwner)
-	</p>
+	<p class="o_warning">$r.translate("error.pageeditedby", $lockOwner) #if($r.isTrue($lockOwnerSameUser))$r.translate("lock.same.user.different.window")#end</p>
 #else
 #if ($r.available("rtfElement"))
-	<script language="JavaScript">
-	/* <![CDATA[ */ 
+	<script>
 	function b_resizetofit_htmleditor() {
 		var height = o_viewportHeight() / 3 * 2;
 		var edi = jQuery("#$f.getItemId("rtfElement")_ifr");
@@ -78,7 +75,6 @@
 			}
 		}		
 	});
-	/* ]]> */
 	</script>
 	
 	## script block must be before editor loads

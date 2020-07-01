@@ -27,6 +27,7 @@ package org.olat.core.util.coordinate;
 
 import java.util.List;
 
+import org.olat.core.gui.components.Window;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 
@@ -49,10 +50,10 @@ public interface Locker {
 	 * @param locksubkey null or any string to lock finer upon the resource (e.g. "authors", or "write", ...)  
 	 * @return lock result
 	 */
-	public LockResult acquireLock(OLATResourceable ores, Identity identity, String locksubkey);
+	public LockResult acquireLock(OLATResourceable ores, Identity identity, String locksubkey, Window window);
 	
 	/**
-	 * releases the lock. can also be called if the lock was not sucessfully
+	 * releases the lock. can also be called if the lock was not successfully
 	 * acquired
 	 * 
 	 * @param le the LockResult received when locking
@@ -85,7 +86,7 @@ public interface Locker {
 	 * @param locksubkey may not be longer than 30 chars
 	 * @return the LockResult of this lock trial.
 	 */
-	public LockResult aquirePersistentLock(OLATResourceable ores, Identity ident, String locksubkey);
+	//public LockResult aquirePersistentLock(OLATResourceable ores, Identity ident, String locksubkey);
 	
 	
 	/**
@@ -93,22 +94,13 @@ public interface Locker {
 	 * 
 	 * @param le the LockResult which stems from the lock acquired previously
 	 */
-	public void releasePersistentLock(LockResult le);
+	//public void releasePersistentLock(LockResult le);
 
 	/**
 	 * for admin purposes only.
 	 * @return a list of lockentries.
 	 */
 	public List<LockEntry> adminOnlyGetLockEntries();
-	
-	
-	/**
-	 * [spring]
-	 * object is not ready on startup due to circular reference so access is done via method lookup
-	 * where spring is creating an instance and also an implementation for this abstract method
-	 * @return
-	 */
-	public PersistentLockManager getPersistentLockManager();
 
 	/**
 	 * for admin purposes only. Release a lockentry.

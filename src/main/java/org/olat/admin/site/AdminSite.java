@@ -55,13 +55,17 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author Felix Jost
  */
 public class AdminSite extends AbstractSiteInstance {
+	
+	private static final OLATResourceable adminOres = OresHelper.createOLATResourceableInstance(AdminSite.class, 0l);
+	private static final String adminBusinessPath = OresHelper.toBusinessPath(adminOres);
+	
 	private NavElement origNavElem;
 	private NavElement curNavElem;
 
 	public AdminSite(SiteDefinition siteDef, Locale loc) {
 		super(siteDef);
 		Translator trans = Util.createPackageTranslator(BaseChiefController.class, loc);
-		origNavElem = new DefaultNavElement(trans.translate("topnav.admin"), trans.translate("topnav.admin.alt"), "o_site_admin");
+		origNavElem = new DefaultNavElement(adminBusinessPath, trans.translate("topnav.admin"), trans.translate("topnav.admin.alt"), "o_site_admin");
 		curNavElem = new DefaultNavElement(origNavElem);
 	}
 
@@ -72,9 +76,9 @@ public class AdminSite extends AbstractSiteInstance {
 
 	@Override
 	protected MainLayoutController createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(AdminSite.class, 0l);
-		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
+		
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(adminOres));
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, adminOres, new StateSite(this), wControl, true);
 		return new SystemAdminMainController(ureq, bwControl);
 	}
 

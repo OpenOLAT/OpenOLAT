@@ -25,12 +25,12 @@ import java.util.List;
 import org.olat.core.commons.services.license.License;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryLight;
 import org.olat.repository.RepositoryEntryManagedFlag;
-import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.ui.PriceMethod;
@@ -41,7 +41,7 @@ import org.olat.repository.ui.PriceMethod;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AuthoringEntryRow implements RepositoryEntryRef, RepositoryEntryLight {
+public class AuthoringEntryRow implements RepositoryEntryLight {
 	private boolean marked;
 	private boolean selected;
 	
@@ -84,6 +84,8 @@ public class AuthoringEntryRow implements RepositoryEntryRef, RepositoryEntryLig
 	
 	private License license;
 	
+	private final String url;
+	
 	private FormLink markLink;
 	private FormLink toolsLink;
 	private FormLink referencesLink;
@@ -95,6 +97,9 @@ public class AuthoringEntryRow implements RepositoryEntryRef, RepositoryEntryLig
 		authors = view.getAuthors();
 		location = view.getLocation();
 		shortenedDescription = StringHelper.truncateText(view.getDescription());
+		
+		String path = "[RepositoryEntry:" + key + "]";
+		url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(path);
 
 		lastUsage = view.getLastUsage();
 		creationDate = view.getCreationDate();
@@ -140,6 +145,10 @@ public class AuthoringEntryRow implements RepositoryEntryRef, RepositoryEntryLig
 	
 	public Date getCreationDate() {
 		return creationDate;
+	}
+	
+	public String getUrl() {
+		return url;
 	}
 	
 	@Override

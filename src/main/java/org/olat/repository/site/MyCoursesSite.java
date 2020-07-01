@@ -47,6 +47,9 @@ import org.olat.util.logging.activity.LoggingResourceable;
  *
  */
 public class MyCoursesSite extends AbstractSiteInstance {
+	
+	private static final OLATResourceable myCoursesOres = OresHelper.createOLATResourceableInstance(MyCoursesSite.class, 0l);
+	private static final String myCoursesBusinessPath = OresHelper.toBusinessPath(myCoursesOres);
 
 	private NavElement origNavElem;
 	private NavElement curNavElem;
@@ -54,33 +57,25 @@ public class MyCoursesSite extends AbstractSiteInstance {
 	public MyCoursesSite(SiteDefinition siteDef, Locale loc) {
 		super(siteDef);
 		Translator trans = Util.createPackageTranslator(BaseChiefController.class, loc);
-		origNavElem = new DefaultNavElement(trans.translate("topnav.mycourses"), trans.translate("topnav.mycourses.alt"), "o_site_repository");		
+		origNavElem = new DefaultNavElement(myCoursesBusinessPath, trans.translate("topnav.mycourses"),
+				trans.translate("topnav.mycourses.alt"), "o_site_repository");		
 		origNavElem.setAccessKey("r".charAt(0));
 		curNavElem = new DefaultNavElement(origNavElem);
 	}
 
-	/**
-	 * @see org.olat.navigation.SiteInstance#getNavElement()
-	 */
+	@Override
 	public NavElement getNavElement() {
 		return curNavElem;
 	}
 
 	@Override
 	protected Controller createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(MyCoursesSite.class, 0l);
-		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(myCoursesOres));
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, myCoursesOres, new StateSite(this), wControl, true);
 		return new OverviewRepositoryListController(ureq, bwControl);
 	}
 
-	/**
-	 * @see org.olat.navigation.SiteInstance#isKeepState()
-	 */
-	public boolean isKeepState() {
-		return true;
-	}
-	
+	@Override
 	public void reset() {
 		curNavElem = new DefaultNavElement(origNavElem);
 	}

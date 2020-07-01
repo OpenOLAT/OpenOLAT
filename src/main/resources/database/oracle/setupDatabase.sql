@@ -657,6 +657,7 @@ CREATE TABLE oc_lock (
   creationdate date,
   identity_fk number(20) NOT NULL,
   asset varchar2(120 char) NOT NULL,
+  windowid varchar2(32) default null,
   CONSTRAINT u_oc_lock UNIQUE (asset),
   PRIMARY KEY (lock_id)
 );

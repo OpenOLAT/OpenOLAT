@@ -55,13 +55,18 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author Felix Jost
  */
 public class RepositorySite extends AbstractSiteInstance {
+	
+	private static final OLATResourceable repositoryOres = OresHelper.createOLATResourceableInstance(RepositorySite.class, 0l);
+	private static final String repositoryBusinessPath = OresHelper.toBusinessPath(repositoryOres);
+	
 	private NavElement origNavElem;
 	private NavElement curNavElem;
 
 	public RepositorySite(SiteDefinition siteDef, Locale loc) {
 		super(siteDef);
 		Translator trans = Util.createPackageTranslator(BaseChiefController.class, loc);
-		origNavElem = new DefaultNavElement(trans.translate("topnav.dr"), trans.translate("topnav.dr.alt"), "o_site_author_env");		
+		origNavElem = new DefaultNavElement(repositoryBusinessPath, trans.translate("topnav.dr"),
+				trans.translate("topnav.dr.alt"), "o_site_author_env");		
 		origNavElem.setAccessKey("a".charAt(0));
 		curNavElem = new DefaultNavElement(origNavElem);
 	}
@@ -73,9 +78,8 @@ public class RepositorySite extends AbstractSiteInstance {
 
 	@Override
 	protected Controller createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(RepositorySite.class, 0l);
-		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(repositoryOres));
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, repositoryOres, new StateSite(this), wControl, true);
 		return new OverviewAuthoringController(ureq, bwControl);
 	}
 

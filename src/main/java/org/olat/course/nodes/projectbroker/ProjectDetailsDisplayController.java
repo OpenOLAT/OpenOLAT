@@ -224,9 +224,6 @@ public class ProjectDetailsDisplayController extends BasicController {
 
 	}
 	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if ( projectBrokerManager.existsProject(project.getKey()) ) {
@@ -234,13 +231,14 @@ public class ProjectDetailsDisplayController extends BasicController {
 				fireEvent(ureq, new Event("switchToEditMode"));
 			} else if (source == deleteProjectButton) {
 				OLATResourceable projectOres = OresHelper.createOLATResourceableInstance(Project.class, project.getKey());
-				this.lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(projectOres, ureq.getIdentity(), null);
+				lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(projectOres, ureq.getIdentity(), null, getWindow());
 				if (lock.isSuccess()) {
 					deleteConfirmController = activateOkCancelDialog(ureq, null, translate("delete.confirm",project.getTitle()), deleteConfirmController);
+				} else if(lock.isDifferentWindows()) {
+					showWarning("info.project.already.edit.same.user", project.getTitle());
 				} else {
-					this.showInfo("info.project.already.edit", project.getTitle());
+					showWarning("info.project.already.edit", project.getTitle());
 				}
-				return;
 			} else if (event.getCommand().equals(CMD_OPEN_PROJECT_LEADER_DETAIL)){
 				if (source instanceof Link) {
 					Link projectLeaderLink = (Link)source;

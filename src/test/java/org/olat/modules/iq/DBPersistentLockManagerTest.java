@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.util.coordinate;
+package org.olat.modules.iq;
 
 import java.util.UUID;
 
@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;

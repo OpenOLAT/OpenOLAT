@@ -950,7 +950,7 @@ public class FeedManagerImpl extends FeedManager {
 
 	@Override
 	public LockResult acquireLock(OLATResourceable feed, Identity identity) {
-		return coordinator.getLocker().acquireLock(feed, identity, null);
+		return coordinator.getLocker().acquireLock(feed, identity, null, null);
 	}
 
 	@Override
@@ -960,7 +960,7 @@ public class FeedManagerImpl extends FeedManager {
 			key = Encoder.md5hash(key);
 		}
 		OLATResourceable itemResource = OresHelper.createOLATResourceableType(key);
-		return coordinator.getLocker().acquireLock(itemResource, identity, key);
+		return coordinator.getLocker().acquireLock(itemResource, identity, key, null);
 	}
 
 	@Override

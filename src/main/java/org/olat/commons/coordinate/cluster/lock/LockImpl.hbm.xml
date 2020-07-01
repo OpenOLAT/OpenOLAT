@@ -26,7 +26,10 @@
  	
 	<property name="asset" type="string" >
 		<column name="asset" not-null="true" length="120" unique="true" index="ocl_asset_idx"/>
-	</property>    	
+	</property>
+	<property name="windowId" type="string" >
+		<column name="windowid" not-null="false" length="32" unique="false" />
+	</property> 	
 
   </class>
 </hibernate-mapping>

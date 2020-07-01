@@ -5,9 +5,11 @@
   http://www.springframework.org/schema/beans 
   http://www.springframework.org/schema/beans/spring-beans.xsd">
   
+  	<bean id="persistentLockManager" class="org.olat.modules.iq.DBPersistentLockManager"/>  
 
 	<bean id="iQManager" class="org.olat.modules.iq.IQManager">
 		<property name="dbInstance" ref="database" />
 		<property name="userManager" ref="userManager" />
+		<property name="persistentLockManager" ref="persistentLockManager" />
 	</bean>
 </beans>

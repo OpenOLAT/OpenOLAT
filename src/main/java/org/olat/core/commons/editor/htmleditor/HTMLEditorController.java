@@ -202,16 +202,20 @@ public class HTMLEditorController extends FormBasicController {
 			// is already locked by someone else. Since the lock token must be smaller than 50 characters we us an 
 			// MD5 hash of the absolute file path which will always be 32 characters long and virtually unique.
 			String lockToken = createLockToken(bContainer, relFilePath);
-			lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockResourceable, getIdentity(), lockToken);
+			lock = CoordinatorManager.getInstance().getCoordinator().getLocker()
+					.acquireLock(lockResourceable, getIdentity(), lockToken, getWindow());
 			VelocityContainer vc = (VelocityContainer) flc.getComponent();
 			if (!lock.isSuccess()) {
 				vc.contextPut("locked", Boolean.TRUE);
 				String fullname = userManager.getUserDisplayName(lock.getOwner());
 				vc.contextPut("lockOwner", fullname);
+				vc.contextPut("lockOwnerSameUser", Boolean.valueOf(lock.isDifferentWindows()));
 				editable = false;
 				return;
 			} else {
-				vc.contextPut("locked", Boolean.FALSE);				
+				vc.contextPut("locked", Boolean.FALSE);
+				vc.contextRemove("lockOwner");	
+				vc.contextRemove("lockOwnerSameUser");	
 			}
 		}
 		// Parse the content of the page

@@ -35,6 +35,9 @@ package org.olat.core.gui.control.navigation;
 public interface NavElement {
 	
 	
+	public String getBusinessPath();
+	
+	
 	/**[used by velocity]
 	 * @return
 	 */

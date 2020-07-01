@@ -49,13 +49,18 @@ import org.olat.util.logging.activity.LoggingResourceable;
  *
  */
 public class VideoSite extends AbstractSiteInstance {
+	
+	private static final OLATResourceable videoOres = OresHelper.createOLATResourceableInstance(VideoSite.class, 0l);
+	private static final String videoBusinessPath = OresHelper.toBusinessPath(videoOres);
+	
 	private NavElement origNavElem;
 	private NavElement curNavElem;
 	
 	public VideoSite(SiteDefinition siteDef, Locale locale) {
 		super(siteDef);
 		Translator trans = Util.createPackageTranslator(VideoDisplayController.class, locale);
-		origNavElem = new DefaultNavElement(trans.translate("topnav.video"), trans.translate("topnav.video.alt"), "o_site_video");		
+		origNavElem = new DefaultNavElement(videoBusinessPath, trans.translate("topnav.video"),
+				trans.translate("topnav.video.alt"), "o_site_video");		
 		curNavElem = new DefaultNavElement(origNavElem);
 	}
 	
@@ -66,11 +71,9 @@ public class VideoSite extends AbstractSiteInstance {
 	
 	@Override
 	protected Controller createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(VideoSite.class, 0l);
-		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
-		Controller videoSiteCtr = new VideoSiteController(ureq, bwControl);
-		return videoSiteCtr;
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(videoOres));
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, videoOres, new StateSite(this), wControl, true);
+		return new VideoSiteController(ureq, bwControl);
 	}
 	
 	@Override

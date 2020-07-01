@@ -55,13 +55,13 @@ public class LockEntryTest {
 		Identity identity100 = new TestIdentity();
 		
 		//the first lock entry instance
-		leOne = new LockEntry("1234@subkey", System.currentTimeMillis(), identity100);
+		leOne = new LockEntry("1234@subkey", System.currentTimeMillis(), identity100, null);
 		
 		//a second lock entry instance, which must be equal to the first one.
-		sameAsLeOne = new LockEntry("1234@subkey", System.currentTimeMillis(), identity100);
+		sameAsLeOne = new LockEntry("1234@subkey", System.currentTimeMillis(), identity100, null);
 		
 		//a third lock entry instance, which is not equal to the other ones.
-		leThree = new LockEntry("another@subkey", System.currentTimeMillis(), identity100);
+		leThree = new LockEntry("another@subkey", System.currentTimeMillis(), identity100, null);
 	}
 
 	/**

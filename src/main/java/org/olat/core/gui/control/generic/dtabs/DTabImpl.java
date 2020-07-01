@@ -28,7 +28,6 @@ package org.olat.core.gui.control.generic.dtabs;
 
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.guistack.GuiStack;
@@ -37,6 +36,7 @@ import org.olat.core.gui.control.navigation.NavElement;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.StackedBusinessControl;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.ui.RepositoyUIFactory;
 
 /**
@@ -44,7 +44,7 @@ import org.olat.repository.ui.RepositoyUIFactory;
  * 
  * @author Felix Jost
  */
-public class DTabImpl implements Disposable, DTab {
+public class DTabImpl implements DTab {
 	
 	private final OLATResourceable ores;
 	private final OLATResourceable initialOres;
@@ -71,7 +71,7 @@ public class DTabImpl implements Disposable, DTab {
 		wControl = BusinessControlFactory.getInstance().createBusinessWindowControl(businessControl, wOrigControl);
 
 		String iconCSSClass = RepositoyUIFactory.getIconCssClass(ores.getResourceableTypeName());
-		navElement = new DefaultNavElement(title, title, iconCSSClass);
+		navElement = new DefaultNavElement(OresHelper.toBusinessPath(ores), title, title, iconCSSClass);
 	}
 
 	/**
@@ -130,9 +130,6 @@ public class DTabImpl implements Disposable, DTab {
 		return initialOres;
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.Disposable#dispose(boolean)
-	 */
 	@Override
 	public void dispose() {
 		if(controller != null) {
@@ -140,32 +137,23 @@ public class DTabImpl implements Disposable, DTab {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.dtabs.DTab#getWindowControl()
-	 */
 	@Override
 	public WindowControl getWindowControl() {
 		return wControl;
 	}
-	
-	/**
-	 * @see java.lang.Object#toString()
-	 */
+
 	@Override
 	public String toString() {
 		return "ores: "+ores.getResourceableTypeName()+","+ores.getResourceableId()+", title: "+title;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.htmlheader.jscss.CustomCSSProvider#getCustomCSS()
-	 */
 	@Override
 	public CustomCSS getCustomCSS() {
 		// delegate to content controller if of type main layout controller
 		if (controller != null && controller instanceof MainLayoutController) {
-				MainLayoutController layoutController = (MainLayoutController) controller;
-				return layoutController.getCustomCSS();
-			}
+			MainLayoutController layoutController = (MainLayoutController) controller;
+			return layoutController.getCustomCSS();
+		}
 		return null;
 	}
 }

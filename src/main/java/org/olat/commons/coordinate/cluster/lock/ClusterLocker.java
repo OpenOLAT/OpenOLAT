@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.gui.components.Window;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -40,9 +41,7 @@ import org.olat.core.util.coordinate.LockEntry;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.coordinate.LockResultImpl;
 import org.olat.core.util.coordinate.Locker;
-import org.olat.core.util.coordinate.PersistentLockManager;
 import org.olat.core.util.coordinate.Syncer;
-import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
@@ -64,7 +63,6 @@ public class ClusterLocker implements Locker, GenericEventListener {
 	private Syncer syncer;
 	private EventBus eventBus;
 	private ClusterLockManager clusterLockManager;
-	private PersistentLockManager persistentLockManager;
 	/**
 	 * [used by spring]
 	 *
@@ -84,44 +82,34 @@ public class ClusterLocker implements Locker, GenericEventListener {
 				OresHelper.createOLATResourceableType(UserSession.class));
 	}
 
-	
-	//cluster:::::: on init of olat system, clear all locks?? but only the one from node in question?
 	@Override
-	public PersistentLockManager getPersistentLockManager() {
-		return persistentLockManager;
-	}
-
-	public void setPersistentLockManager(PersistentLockManager persistentLockManager) {
-		this.persistentLockManager = persistentLockManager;
-	}
-
-	@Override
-	public LockResult acquireLock(final OLATResourceable ores, final Identity requestor, final String locksubkey) {
+	public LockResult acquireLock(final OLATResourceable ores, final Identity requestor, final String locksubkey, final Window window) {
 		final String asset = OresHelper.createStringRepresenting(ores, locksubkey);
 		
-		return syncer.doInSync(ores, new SyncerCallback<LockResult>(){
-			@Override
-			public LockResult execute() {
-				LockResultImpl lres;
-				LockImpl li = clusterLockManager.findLock(asset);
-				if (li == null) { // fine, we can lock it
-					li = clusterLockManager.createLockImpl(asset, requestor);
-					clusterLockManager.saveLock(li);
-					LockEntry le = new LockEntry(li.getAsset(), li.getCreationDate().getTime(), li.getOwner());
-					lres = new LockResultImpl(true, le);
+		return syncer.doInSync(ores, () -> {
+			LockResultImpl lres;
+			LockImpl li = clusterLockManager.findLock(asset);
+			if (li == null) { // fine, we can lock it
+				li = clusterLockManager.createLockImpl(asset, requestor, window);
+				clusterLockManager.saveLock(li);
+				LockEntry le = new LockEntry(li.getAsset(), li.getCreationDate().getTime(), li.getOwner(), li.getWindowId());
+				lres = new LockResultImpl(true, false, le);
+			} else {
+				// already locked by a user.
+				// if that user is us, we can reacquire it
+				LockEntry le = new LockEntry(li.getAsset(), li.getCreationDate().getTime(), li.getOwner(), li.getWindowId());
+				boolean owner = requestor.getKey().equals(li.getOwner().getKey());
+				boolean sameWindow = (window == null && li.getWindowId() == null)
+						|| (window != null && window.getInstanceId() != null && window.getInstanceId().equals(li.getWindowId()));
+				if (owner && sameWindow) {
+					// that's us -> success (asset, owner is the same, and we leave creationdate to when the lock was originally acquired, not when it was reacquired.
+					lres = new LockResultImpl(true, false, le);				
 				} else {
-					// already locked by a user.
-					// if that user is us, we can reacquire it
-					LockEntry le = new LockEntry(li.getAsset(), li.getCreationDate().getTime(), li.getOwner());
-					if (requestor.getKey().equals(li.getOwner().getKey())) {
-						// that's us -> success (asset, owner is the same, and we leave creationdate to when the lock was originally acquired, not when it was reacquired.
-						lres = new LockResultImpl(true, le);				
-					} else {
-						lres = new LockResultImpl(false, le);
-					}
-				}		
-				return lres;
-			}});
+					lres = new LockResultImpl(false, owner && !sameWindow, le);
+				}
+			}		
+			return lres;
+		});
 	}
 	
 	/**
@@ -144,15 +132,15 @@ public class ClusterLocker implements Locker, GenericEventListener {
 				clusterLockManager.releaseAllLocksFor(identKey);
 				DBFactory.getInstance().commit();
 			} catch (DBRuntimeException dbEx) {
-				log.warn("releaseAllLocksFor failed, close session and try it again for identName=" + identKey);
+				log.warn("releaseAllLocksFor failed, close session and try it again for identName={}", identKey);
 				// Transactions [eglis]: OLAT-4318: this rollback has possibly unwanted
 				// side effects, as it rolls back any changes with this transaction during this
 				// event handling. Nicer would be to be done in the outmost-possible place, e.g. dofire()
 				DBFactory.getInstance().rollbackAndCloseSession();
 				// try again with new db-session
-				log.info("try again to release all locks for identName=" + identKey);
+				log.info("try again to release all locks for identName={}", identKey);
 				clusterLockManager.releaseAllLocksFor(identKey);
-				log.info("Done, released all locks for identName=" + identKey);
+				log.info("Done, released all locks for identName={}", identKey);
 			}
 		}
 	}
@@ -197,29 +185,9 @@ public class ClusterLocker implements Locker, GenericEventListener {
 		List<LockImpl> li = clusterLockManager.getAllLocks();
 		List<LockEntry> res = new ArrayList<>(li.size());
 		for (LockImpl impl : li) {
-			res.add(new LockEntry(impl.getAsset(), impl.getCreationDate().getTime(), impl.getOwner()));
+			res.add(new LockEntry(impl.getAsset(), impl.getCreationDate().getTime(), impl.getOwner(), impl.getWindowId()));
 		}
 		return res;
-	}
-
-	@Override
-	public LockResult aquirePersistentLock(final OLATResourceable ores, final Identity ident, final String locksubkey) {
-		return syncer.doInSync(ores, new SyncerCallback<LockResult>(){
-			@Override
-			public LockResult execute() {
-				return getPersistentLockManager().aquirePersistentLock(ores, ident, locksubkey);
-			}
-		});
-	}
-
-	public void releasePersistentLock(LockResult lockResult) {
-		// cluster_ok: since a certain LockResult can only be from one user/session that previously acquired the lock
-		// if the lock has not been acquired, do nothing
-		if (!lockResult.isSuccess())
-			return;
-
-		// delegate to the concrete implementation
-		getPersistentLockManager().releasePersistentLock(lockResult);
 	}
 
 	/**

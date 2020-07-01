@@ -49,6 +49,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
 public class PortalSite extends AbstractSiteInstance {
 	
 	private static final OLATResourceable ORES = OresHelper.createOLATResourceableInstance("Portal", 0l);
+	private static final String portalBusinessPath = OresHelper.toBusinessPath(ORES);
 
 	// refer to the definitions in org.olat
 	private NavElement origNavElem;
@@ -57,7 +58,8 @@ public class PortalSite extends AbstractSiteInstance {
 	public PortalSite(SiteDefinition siteDef, Locale loc) {
 		super(siteDef);
 		Translator trans = Util.createPackageTranslator(BaseChiefController.class, loc);
-		origNavElem = new DefaultNavElement(trans.translate("topnav.portal"), trans.translate("topnav.portal.alt"), "o_site_portal");
+		origNavElem = new DefaultNavElement(portalBusinessPath, trans.translate("topnav.portal"),
+				trans.translate("topnav.portal.alt"), "o_site_portal");
 		origNavElem.setAccessKey("g".charAt(0));
 		curNavElem = new DefaultNavElement(origNavElem);
 	}

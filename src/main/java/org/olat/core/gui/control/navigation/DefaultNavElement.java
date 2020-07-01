@@ -32,15 +32,22 @@ package org.olat.core.gui.control.navigation;
  * @author Felix Jost
  */
 public class DefaultNavElement implements NavElement {
-	private String title, description, iconCSSClass;
+	
+	private String title;
+	private String description;
+	private String businessPath;
+	private String iconCSSClass;
 	private Character accessKey;
 	
 	/**
-	 * @param title
-	 * @param description
-	 * @param iconCSSClass
+	 * 
+	 * @param url The url
+	 * @param title The title
+	 * @param description The description
+	 * @param iconCSSClass A CSS class
 	 */
-	public DefaultNavElement(String title, String description, String iconCSSClass) {
+	public DefaultNavElement(String businessPath, String title, String description, String iconCSSClass) {
+		this.businessPath = businessPath;
 		this.title = title;
 		this.description = description;
 		this.iconCSSClass = iconCSSClass;
@@ -51,12 +58,19 @@ public class DefaultNavElement implements NavElement {
 	 * @param orig
 	 */
 	public DefaultNavElement(NavElement orig) {
+		this.businessPath = orig.getBusinessPath();
 		this.title = orig.getTitle();
 		this.description = orig.getDescription();
 		this.iconCSSClass = orig.getIconCSSClass();
 		this.accessKey = orig.getAccessKey();
 	}
 
+	@Override
+	public String getBusinessPath() {
+		return businessPath;
+	}
+
+	@Override
 	public String getDescription() {
 		return description;
 	}
@@ -64,7 +78,8 @@ public class DefaultNavElement implements NavElement {
 	public void setDescription(String description) {
 		this.description = description;
 	}
-	
+
+	@Override
 	public String getIconCSSClass() {
 		return iconCSSClass;
 	}
@@ -72,19 +87,23 @@ public class DefaultNavElement implements NavElement {
 	public void setIconCSSClass(String iconCSSClass) {
 		this.iconCSSClass = iconCSSClass;
 	}
-	
+
+	@Override
 	public String getTitle() {
 		return title;
 	}
-	
+
+	@Override
 	public void setTitle(String title) {
 		this.title = title;
 	}
 
+	@Override
 	public void setAccessKey(Character accessKey) {
 		this.accessKey = accessKey;
 	}
 
+	@Override
 	public Character getAccessKey() {
 		return accessKey;
 	}

@@ -48,6 +48,9 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class LecturesManagementSite extends AbstractSiteInstance {
 	
+	private static final OLATResourceable lecturesOres = OresHelper.createOLATResourceableInstance(LecturesManagementSite.class, 0l);
+	private static final String lecturesBusinessPath = OresHelper.toBusinessPath(lecturesOres);
+	
 	private final NavElement origNavElem;
 	private NavElement curNavElem;
 	
@@ -57,7 +60,7 @@ public class LecturesManagementSite extends AbstractSiteInstance {
 	public LecturesManagementSite(SiteDefinition siteDef, Locale locale) {
 		super(siteDef);
 		Translator trans = Util.createPackageTranslator(LectureRepositoryAdminController.class, locale);
-		origNavElem = new DefaultNavElement(trans.translate("site.title"), trans.translate("site.title.alt"), "o_site_lectures");
+		origNavElem = new DefaultNavElement(lecturesBusinessPath, trans.translate("site.title"), trans.translate("site.title.alt"), "o_site_lectures");
 		curNavElem = new DefaultNavElement(origNavElem);
 	}
 
@@ -68,9 +71,8 @@ public class LecturesManagementSite extends AbstractSiteInstance {
 
 	@Override
 	protected MainLayoutController createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(LecturesManagementSite.class, 0l);
-		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(lecturesOres));
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, lecturesOres, new StateSite(this), wControl, true);
 		return new LecturesMainController(ureq, bwControl);
 	}
 

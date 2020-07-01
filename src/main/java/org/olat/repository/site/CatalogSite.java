@@ -46,13 +46,18 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class CatalogSite extends AbstractSiteInstance {
+	
+	private static final OLATResourceable catalogOres = OresHelper.createOLATResourceableInstance("Catalog", 0l);
+	private static final String catalogBusinessPath = OresHelper.toBusinessPath(catalogOres);
+	
 	private NavElement origNavElem;
 	private NavElement curNavElem;
 
 	public CatalogSite(SiteDefinition siteDef, Locale loc) {
 		super(siteDef);
 		Translator trans = Util.createPackageTranslator(BaseChiefController.class, loc);
-		origNavElem = new DefaultNavElement(trans.translate("topnav.catalog"), trans.translate("topnav.catalog.alt"), "o_site_catalog");		
+		origNavElem = new DefaultNavElement(catalogBusinessPath, trans.translate("topnav.catalog"),
+				trans.translate("topnav.catalog.alt"), "o_site_catalog");		
 		origNavElem.setAccessKey("c".charAt(0));
 		curNavElem = new DefaultNavElement(origNavElem);
 	}
@@ -68,9 +73,9 @@ public class CatalogSite extends AbstractSiteInstance {
 	@Override
 	protected Controller createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		// for existing controller which are part of the main olat -> use the controllerfactory
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Catalog", 0l);
-		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
+		
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(catalogOres));
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, catalogOres, new StateSite(this), wControl, true);
 		return new CatalogSiteMainController(ureq, bwControl);
 	}
 

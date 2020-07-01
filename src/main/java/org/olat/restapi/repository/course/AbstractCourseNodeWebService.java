@@ -64,7 +64,7 @@ public abstract class AbstractCourseNodeWebService {
 	private static final String CONDITION_ID_VISIBILITY = "visibility";
 	
 	private CourseEditSession openEditSession(ICourse course, Identity identity) {
-		LockResult lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(course, identity, CourseFactory.COURSE_EDITOR_LOCK);
+		LockResult lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(course, identity, CourseFactory.COURSE_EDITOR_LOCK, null);
 		if(lock.isSuccess()) {
 			course = CourseFactory.openCourseEditSession(course.getResourceableId());
 		}

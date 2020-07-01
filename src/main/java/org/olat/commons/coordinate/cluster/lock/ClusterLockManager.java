@@ -29,6 +29,7 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.gui.components.Window;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,53 +53,53 @@ public class ClusterLockManager {
 	private DB dbInstance;
 	
 	LockImpl findLock(String asset) {
-		log.info("findLock: "+asset+" START");
-		StringBuilder sb = new StringBuilder();
-		sb.append("select alock from org.olat.commons.coordinate.cluster.lock.LockImpl as alock inner join fetch alock.owner where alock.asset=:asset");
+		log.info("findLock: {} START", asset);
+		String sb = "select alock from org.olat.commons.coordinate.cluster.lock.LockImpl as alock inner join fetch alock.owner where alock.asset=:asset";
 
-		List<LockImpl> res = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), LockImpl.class)
+		List<LockImpl> res = dbInstance.getCurrentEntityManager().createQuery(sb, LockImpl.class)
 				.setParameter("asset", asset).getResultList();
-		if (res.size() == 0) {
+		if (res.isEmpty()) {
 			log.info("findLock: null END");
 			return null; 
-		} else {
-			log.info("findLock: "+res.get(0)+" END");
-			return res.get(0);
 		}
+		LockImpl lock = res.get(0);
+		log.info("findLock: {} END", lock);
+		return lock;
 	}
 	
 	boolean isLocked(String asset) {
 		String sb = "select alock.key from org.olat.commons.coordinate.cluster.lock.LockImpl as alock where alock.asset=:asset";
 
 		List<Long> res = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Long.class)
+				.createQuery(sb, Long.class)
 				.setParameter("asset", asset)
 				.setFirstResult(0)
 				.setMaxResults(1)
 				.getResultList();
-		return res != null && res.size() > 0 && res.get(0) != null && res.get(0).longValue() > 0;
+		return res != null && !res.isEmpty() && res.get(0) != null && res.get(0).longValue() > 0;
 	}
 		
-	LockImpl createLockImpl(String asset, Identity owner) {
-		log.info("createLockImpl: "+asset+" by "+ owner);
-		return new LockImpl(asset, owner);
+	LockImpl createLockImpl(String asset, Identity owner, Window window) {
+		String windowId = window == null ? null : window.getInstanceId();
+		log.info("createLockImpl: {} by {} on window: {}", asset, owner, windowId);
+		return new LockImpl(asset, owner, windowId);
 	}
 	
 	void saveLock(LockImpl alock) {
-		log.info("saveLock: "+alock+" START");
+		log.info("saveLock: {} START", alock);
 		dbInstance.getCurrentEntityManager().persist(alock);
-		log.info("saveLock: "+alock+" END");
+		log.info("saveLock: {} END", alock);
 	}
 	
 	int deleteLock(String asset, IdentityRef owner) {
-		log.info("deleteLock: "+ asset + " owner: " + owner +" START");
+		log.info("deleteLock: {} owner: {} START", asset, owner);
 		String sb = "delete from org.olat.commons.coordinate.cluster.lock.LockImpl alock where alock.owner.key=:ownerKey and alock.asset=:asset";
 		int locks = dbInstance.getCurrentEntityManager()
 			.createQuery(sb)
 			.setParameter("ownerKey", owner.getKey())
 			.setParameter("asset", asset)
 			.executeUpdate();
-		log.info("deleteLock: "+ asset + " owner: " + owner +" END");
+		log.info("deleteLock: {} owner: {} END", asset, owner);
 		if(locks > 0) {
 			dbInstance.commit();
 		}
@@ -109,9 +110,9 @@ public class ClusterLockManager {
 		log.info("getAllLocks START");
 		String sb = "select alock from org.olat.commons.coordinate.cluster.lock.LockImpl as alock inner join fetch alock.owner";
 		List<LockImpl> res = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), LockImpl.class)
+				.createQuery(sb, LockImpl.class)
 				.getResultList();
-		log.info("getAllLocks END. res.length:"+ (res==null ? "null" : res.size()));
+		log.info("getAllLocks END. res.length: {}", (res==null ? "null" : res.size()));
 		return res;
 	}
 
@@ -119,14 +120,14 @@ public class ClusterLockManager {
 	 * @param identName the name of the identity to release all locks for (only the non-persistent locks in cluster mode, -not- the persistent locks!)
 	 */
 	public void releaseAllLocksFor(Long identityKey) {
-		log.info("releaseAllLocksFor: " + identityKey + " START");	
+		log.info("releaseAllLocksFor: {} START", identityKey);	
 		String sb = "delete from org.olat.commons.coordinate.cluster.lock.LockImpl alock where alock.owner.key=:ownerKey";
-		int locks = dbInstance.getCurrentEntityManager().createQuery(sb.toString())
+		int locks = dbInstance.getCurrentEntityManager().createQuery(sb)
 			.setParameter("ownerKey", identityKey)
 			.executeUpdate();
 		// cluster:: can we save a query (and is it appropriate considering encapsulation) 
 		// here by saying: alock.owner as owner where owner.name = ? (using identName parameter)
-		log.info("releaseAllLocksFor: "+identityKey+" END (" + locks + " locks deleted)");
+		log.info("releaseAllLocksFor: {} END ({} locks deleted)", identityKey, locks);
 	}
 
 }

@@ -62,7 +62,7 @@ import org.junit.runners.Suite;
 	org.olat.core.util.filter.impl.XMLValidEntityFilterTest.class,
 	org.olat.core.helpers.SettingsTest.class,
 	org.olat.core.util.coordinate.LockEntryTest.class,
-	org.olat.core.util.coordinate.DBPersistentLockManagerTest.class,
+	org.olat.modules.iq.DBPersistentLockManagerTest.class,
 	org.olat.core.util.StringHelperTest.class,
 	org.olat.core.util.FileUtilsTest.class,
 	org.olat.core.util.FileNameSuffixFilterTest.class,

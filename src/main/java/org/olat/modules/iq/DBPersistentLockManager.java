@@ -22,7 +22,7 @@
 * This file has been modified by the OpenOLAT community. Changes are licensed
 * under the Apache 2.0 license as the original file.
 */
-package org.olat.core.util.coordinate;
+package org.olat.modules.iq;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -31,6 +31,9 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.coordinate.LockEntry;
+import org.olat.core.util.coordinate.LockResult;
+import org.olat.core.util.coordinate.LockResultImpl;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
@@ -42,20 +45,14 @@ import org.olat.user.UserDataDeletable;
  * 
  * @author patrickb
  */
-public class DBPersistentLockManager implements PersistentLockManager, UserDataDeletable {
+public class DBPersistentLockManager implements UserDataDeletable {
 	
 	private static final Logger log = Tracing.createLoggerFor(DBPersistentLockManager.class);
 	private static final String CATEGORY_PERSISTENTLOCK = "o_lock";
 	
 
-	/**
-	 * @see org.olat.core.util.locks.PersistentLockManager#aquirePersistentLock(org.olat.core.id.OLATResourceable,
-	 *      org.olat.core.id.Identity, java.lang.String)
-	 */
-	@Override
 	public LockResult aquirePersistentLock(OLATResourceable ores, Identity ident, String locksubkey) {
 		//synchronisation is solved in the LockManager
-		LockResult lres;
 		PropertyManager pm = PropertyManager.getInstance();
 		String derivedLockString = OresHelper.createStringRepresenting(ores, locksubkey);
 		long aqTime;
@@ -85,21 +82,14 @@ public class DBPersistentLockManager implements PersistentLockManager, UserDataD
 				// already locked by an other person
 				success = false;
 			}
-			// FIXME:fj:c find a better way to retrieve information about the
 			// lock-holder
 			lockOwner = BaseSecurityManager.getInstance().loadIdentityByKey(lockOwnerKey);
 		}
 		
-		LockEntry le = new LockEntry(derivedLockString, aqTime, lockOwner);
-		lres = new LockResultImpl(success, le);
-		return lres;
-		
+		LockEntry le = new LockEntry(derivedLockString, aqTime, lockOwner, null);
+		return new LockResultImpl(success, false, le);
 	}
 
-	/**
-	 * @see org.olat.core.util.locks.PersistentLockManager#releasePersistentLock(org.olat.core.util.locks.LockEntry)
-	 */
-	@Override
 	public void releasePersistentLock(LockResult le) {
 		//synchronisation is solved in the LockManager
 		String derivedLockString = ((LockResultImpl)le).getLockEntry().getKey();
@@ -126,7 +116,7 @@ public class DBPersistentLockManager implements PersistentLockManager, UserDataD
 			.setParameter("category", CATEGORY_PERSISTENTLOCK)
 			.setParameter("val", identity.getKey())
 			.executeUpdate();
-		log.debug("All db-persisting-locks deleted for identity=" + identity);
+		log.debug("All db-persisting-locks deleted for identity={}", identity);
 	}
 
 }

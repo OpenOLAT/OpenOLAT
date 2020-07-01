@@ -216,24 +216,26 @@ public class CourseDisclaimerController extends FormBasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (revokeConfirmController == source) {
-			if (event.equals(FormEvent.DONE_EVENT)) {
+			if (event.equals(Event.DONE_EVENT)) {
 				revokeConsents();
 				cmc.deactivate();
 				getWindowControl().setInfo(translate("disclaimer.update.revoke"));
-			} else if (event.equals(FormEvent.CANCELLED_EVENT)) {
+			} else if (event.equals(Event.CANCELLED_EVENT)) {
 				cmc.deactivate();
 				getWindowControl().setInfo(translate("disclaimer.update.no.revoke"));
 			}
 			cleanUp();
 		} else if (removeConfirmController == source) {
-			if (event.equals(FormEvent.DONE_EVENT)) {
+			if (event.equals(Event.DONE_EVENT)) {
 				removeConsents();
 				cmc.deactivate();
 				getWindowControl().setInfo(translate("disclaimer.update.remove"));
-			} else if (event.equals(FormEvent.CANCELLED_EVENT)) {
+			} else if (event.equals(Event.CANCELLED_EVENT)) {
 				cmc.deactivate();
 				getWindowControl().setInfo(translate("disclaimer.update.no.remove"));
 			}
+			cleanUp();
+		} else if(cmc == source) {
 			cleanUp();
 		}
 	}
@@ -243,6 +245,7 @@ public class CourseDisclaimerController extends FormBasicController {
 		listenTo(removeConfirmController);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), removeConfirmController.getInitialComponent(), true, translate("disclaimer.update.confirm.title"), true);
+		listenTo(cmc);
 		cmc.activate();
 	}
 	
@@ -251,6 +254,7 @@ public class CourseDisclaimerController extends FormBasicController {
 		listenTo(revokeConfirmController);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), revokeConfirmController.getInitialComponent(), true, translate("disclaimer.update.confirm.title"), true);
+		listenTo(cmc);
 		cmc.activate();
 	}
 
@@ -308,21 +312,27 @@ public class CourseDisclaimerController extends FormBasicController {
 
 		if (StringHelper.containsNonWhitespace(courseConfig.getDisclaimerTitel(1))) {
 			disclaimer1TitleEl.setValue(courseConfig.getDisclaimerTitel(1));
-		} if (StringHelper.containsNonWhitespace(courseConfig.getDisclaimerTerms(1))) {
+		}
+		if (StringHelper.containsNonWhitespace(courseConfig.getDisclaimerTerms(1))) {
 			disclaimer1TermsEl.setValue(courseConfig.getDisclaimerTerms(1));
-		} if (StringHelper.containsNonWhitespace(courseConfig.getDisclaimerLabel(1, 1))) {
+		}
+		if (StringHelper.containsNonWhitespace(courseConfig.getDisclaimerLabel(1, 1))) {
 			disclaimer1Label1El.setValue(courseConfig.getDisclaimerLabel(1, 1));
-		} if (StringHelper.containsNonWhitespace(courseConfig.getDisclaimerLabel(1, 2))) {
+		}
+		if (StringHelper.containsNonWhitespace(courseConfig.getDisclaimerLabel(1, 2))) {
 			disclaimer1Label2El.setValue(courseConfig.getDisclaimerLabel(1, 2));
 		}
 
 		if (StringHelper.containsNonWhitespace(courseConfig.getDisclaimerTitel(2))) {
 			disclaimer2TitleEl.setValue(courseConfig.getDisclaimerTitel(2));
-		} if (StringHelper.containsNonWhitespace(courseConfig.getDisclaimerTerms(2))) {
+		}
+		if (StringHelper.containsNonWhitespace(courseConfig.getDisclaimerTerms(2))) {
 			disclaimer2TermsEl.setValue(courseConfig.getDisclaimerTerms(2));
-		} if (StringHelper.containsNonWhitespace(courseConfig.getDisclaimerLabel(1, 1))) {
+		}
+		if (StringHelper.containsNonWhitespace(courseConfig.getDisclaimerLabel(1, 1))) {
 			disclaimer2Label1El.setValue(courseConfig.getDisclaimerLabel(1, 1));
-		} if (StringHelper.containsNonWhitespace(courseConfig.getDisclaimerLabel(2, 1))) {
+		}
+		if (StringHelper.containsNonWhitespace(courseConfig.getDisclaimerLabel(2, 1))) {
 			disclaimer2Label2El.setValue(courseConfig.getDisclaimerLabel(2, 2));
 		}
 	}

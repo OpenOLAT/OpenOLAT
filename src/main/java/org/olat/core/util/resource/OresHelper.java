@@ -56,7 +56,7 @@ public class OresHelper {
 	}
 
 	public static OLATResourceable createOLATResourceableType(final String type) {
-		return createOLATResourceableInstance(type, new Long(0));
+		return createOLATResourceableInstance(type, Long.valueOf(0));
 	}
 	
 	public static OLATResourceable createOLATResourceableType(Class<?> clazz) {
@@ -228,11 +228,17 @@ public class OresHelper {
 	}
 
 	public static OLATResourceable createOLATResourceableTypeWithoutCheck(String type) {
-		return createOLATResourceableInstanceWithoutCheck(type, new Long(0));
+		return createOLATResourceableInstanceWithoutCheck(type, Long.valueOf(0));
 	}
 
 	public static OLATResourceable createOLATResourceableInstanceWithoutCheck(final String type,final Long key) {
 		if (key == null) throw new AssertException("key may not be null; type = "+type);
 		return new Resourceable(type,key);
+	}
+	
+	public static String toBusinessPath(OLATResourceable ores) {
+		StringBuilder sb = new StringBuilder(32);
+		sb.append("[").append(ores.getResourceableTypeName()).append(":").append(ores.getResourceableId()).append("]");
+		return sb.toString();
 	}
 }

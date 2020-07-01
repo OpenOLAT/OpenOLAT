@@ -36,6 +36,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.panel.SimpleStackedPanel;
 import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -135,7 +136,7 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	}
 	
 	protected void overrideWindowControl(WindowControl wControl) {
-		this.newWControl = wControl; //new LocalWindowControl(wControl, this);
+		this.newWControl = wControl;
 	}
 		
 	/**
@@ -147,6 +148,13 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 			throw new AssertException("no windowcontrol set!");
 		}
 		return newWControl;
+	}
+	
+	protected Window getWindow() {
+		if (newWControl == null) {
+			return null;
+		}
+		return newWControl.getWindowBackOffice().getWindow();
 	}
 
 	@Override

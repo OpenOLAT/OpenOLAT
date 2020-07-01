@@ -172,7 +172,7 @@ public class PageRunController extends BasicController implements TooledControll
 		userSession = ureq.getUserSession();
 		
 		if(openEditMode && page.isEditable()) {
-			lockEntry = coordinator.getCoordinator().getLocker().acquireLock(lockOres, getIdentity(), "");
+			lockEntry = coordinator.getCoordinator().getLocker().acquireLock(lockOres, getIdentity(), "", getWindow());
 		}
 		this.openInEditMode = openEditMode && page.isEditable() && (lockEntry != null && lockEntry.isSuccess());
 		coordinator.getCoordinator().getEventBus().registerFor(this, getIdentity(), lockOres);
@@ -653,7 +653,7 @@ public class PageRunController extends BasicController implements TooledControll
 				mainVC.put("comments", commentsCtrl.getInitialComponent());
 			}
 		} else {
-			lockEntry = coordinator.getCoordinator().getLocker().acquireLock(lockOres, getIdentity(), "");
+			lockEntry = coordinator.getCoordinator().getLocker().acquireLock(lockOres, getIdentity(), "", getWindow());
 			if(lockEntry.isSuccess()) {
 				pageEditCtrl = new PageEditorV2Controller(ureq, getWindowControl(),
 						new PortfolioPageEditorProvider(ureq.getUserSession().getRoles()),
@@ -668,7 +668,8 @@ public class PageRunController extends BasicController implements TooledControll
 				}
 			} else {
 				removeAsListenerAndDispose(alreadyLockedDialogController);
-				alreadyLockedDialogController = DialogBoxUIFactory.createResourceLockedMessage(ureq, getWindowControl(), lockEntry, "warning.page.locked", getTranslator());
+				String i18nMsg = lockEntry.isDifferentWindows() ? "warning.page.locked.same.user" : "warning.page.locked";
+				alreadyLockedDialogController = DialogBoxUIFactory.createResourceLockedMessage(ureq, getWindowControl(), lockEntry, i18nMsg, getTranslator());
 				listenTo(alreadyLockedDialogController);
 				alreadyLockedDialogController.activate();
 			}

@@ -53,6 +53,9 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author Felix Jost
  */
 public class GroupsSite extends AbstractSiteInstance {
+	
+	private static final OLATResourceable groupsOres = OresHelper.createOLATResourceableInstance(GroupsSite.class, 0l);
+	private static final String groupsBusinessPath = OresHelper.toBusinessPath(groupsOres);
 
 	// refer to the definitions in org.olat
 	private NavElement origNavElem;
@@ -61,34 +64,26 @@ public class GroupsSite extends AbstractSiteInstance {
 	public GroupsSite(SiteDefinition siteDef, Locale loc) {
 		super(siteDef);
 		Translator trans = Util.createPackageTranslator(BaseChiefController.class, loc);
-		origNavElem = new DefaultNavElement(trans.translate("topnav.buddygroups"), trans.translate("topnav.buddygroups.alt"), "o_site_groups");
+		origNavElem = new DefaultNavElement(groupsBusinessPath, trans.translate("topnav.buddygroups"),
+				trans.translate("topnav.buddygroups.alt"), "o_site_groups");
 		origNavElem.setAccessKey("g".charAt(0));
 		curNavElem = new DefaultNavElement(origNavElem);
 	}
 
-	/**
-	 * @see org.olat.navigation.SiteInstance#getNavElement()
-	 */
+	@Override
 	public NavElement getNavElement() {
 		return curNavElem;
 	}
 
 	@Override
 	protected Controller createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(GroupsSite.class, 0l);
-		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(groupsOres));
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, groupsOres, new StateSite(this), wControl, true);
 		return new OverviewBusinessGroupListController(ureq, bwControl);
-	}
-
-	@Override
-	public boolean isKeepState() {
-		return true;
 	}
 
 	@Override
 	public void reset() {
 		curNavElem = new DefaultNavElement(origNavElem);
 	}
-
 }

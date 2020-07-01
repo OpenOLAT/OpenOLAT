@@ -126,7 +126,7 @@ public class GlossaryMainController extends BasicController implements Activatea
 		if (!registerEnabled) {
 			filterIndex = "all";
 		}
-		glistVC.contextPut("userAllowToEditEnabled", new Boolean(glossarySecCallback.isUserAllowToEditEnabled()));
+		glistVC.contextPut("userAllowToEditEnabled", Boolean.valueOf(glossarySecCallback.isUserAllowToEditEnabled()));
 		
 		addButton = LinkFactory.createButtonSmall("cmd.add", glistVC, this);
 		addButton.setIconLeftCSS("o_icon o_icon_add o_icon-fw");
@@ -371,10 +371,15 @@ public class GlossaryMainController extends BasicController implements Activatea
 		glistVC.contextPut("editModeEnabled", editModeEnabled);
 		if (allowGlossaryEditing) {
 			// try to get lock for this glossary
-			lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(resourceable, ureq.getIdentity(), "GlossaryEdit");
+			lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker()
+					.acquireLock(resourceable, getIdentity(), "GlossaryEdit", getWindow());
 			if (!lockEntry.isSuccess()) {
 				String fullName = userManager.getUserDisplayName(lockEntry.getOwner());
-				showInfo("glossary.locked", StringHelper.escapeHtml(fullName));
+				if(lockEntry.isDifferentWindows()) {
+					showWarning("glossary.locked.same.user", StringHelper.escapeHtml(fullName));
+				} else {
+					showWarning("glossary.locked", StringHelper.escapeHtml(fullName));
+				}
 				glistVC.contextPut("editModeEnabled", Boolean.FALSE);
 			}
 		}

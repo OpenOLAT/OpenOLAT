@@ -597,6 +597,7 @@ create table if not exists oc_lock (
 	creationdate datetime,
 	identity_fk bigint not null,
 	asset varchar(120) not null unique,
+	windowid varchar(32) default null,
 	primary key (lock_id)
 );
 

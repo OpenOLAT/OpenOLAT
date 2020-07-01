@@ -19,7 +19,9 @@
  */
 package org.olat.repository.ui.list;
 
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataSourceModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusinessPathModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 
 /**
@@ -28,7 +30,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-class RepositoryEntryDataModel extends DefaultFlexiTableDataSourceModel<RepositoryEntryRow> {
+class RepositoryEntryDataModel extends DefaultFlexiTableDataSourceModel<RepositoryEntryRow> implements FlexiBusinessPathModel {
+	
+	private static final Cols[] COLS = Cols.values();
 	
 	public RepositoryEntryDataModel(DefaultRepositoryEntryDataSource source, FlexiTableColumnModel columnModel) {
 		super(source, columnModel);
@@ -51,13 +55,19 @@ class RepositoryEntryDataModel extends DefaultFlexiTableDataSourceModel<Reposito
 	}
 
 	@Override
+	public String getUrl(Component source, Object object, String action) {
+		
+		return null;
+	}
+
+	@Override
 	public Object getValueAt(int row, int col) {
 		RepositoryEntryRow item = getObject(row);
 		if(item == null) {
 			return null;//don't break here
 		}
 		
-		switch(Cols.values()[col]) {
+		switch(COLS[col]) {
 			case key: return item.getKey();
 			case displayName: return item.getDisplayName();
 			case externalId: return item.getExternalId();

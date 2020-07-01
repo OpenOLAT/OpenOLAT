@@ -67,7 +67,6 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
-import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Roles;
@@ -192,15 +191,12 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private ResolvedAssessmentTest resolvedAssessmentTest;
 	private AssessmentTestBuilder assessmentTestBuilder;
 	
-	private final boolean survey = false;
 	private final boolean restrictedEdit;
 	
 	private boolean assessmentChanged = false;
 	private boolean deleteAuthorSesssion = false;
 	
 	private LockResult lockEntry;
-	private LockResult activeSessionLock;
-	private CountDownLatch exportLatch;
 	
 	@Autowired
 	private QTI21Service qtiService;
@@ -221,14 +217,11 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		unzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
 		unzippedContRoot = frm.unzipContainerResource(testEntry.getOlatResource());
 		
-		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().aquirePersistentLock(testEntry.getOlatResource(), getIdentity(), null);
-		if (lockEntry.isSuccess()) {
-			// acquired a lock for the duration of the session only
-			//fileResource has the RepositoryEntre.getOlatResource within, which is used in qtiPackage
-			activeSessionLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(testEntry.getOlatResource(), getIdentity(), null);
-		} else {
+		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(testEntry.getOlatResource(), getIdentity(), null, getWindow());
+		if (!lockEntry.isSuccess()) {
 			String fullName = userManager.getUserDisplayName(lockEntry.getOwner());
-			String msg = translate("error.lock", new String[] { fullName, Formatter.formatDatetime(new Date(lockEntry.getLockAquiredTime())) });
+			String i18nMsg = lockEntry.isDifferentWindows() ? "error.lock.same.user" : "error.lock";
+			String msg = translate(i18nMsg, new String[] { fullName, Formatter.formatDatetime(new Date(lockEntry.getLockAquiredTime())) });
 			wControl.setWarning(msg);
 			MessageController contentCtr = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), translate("error.lock.title"), msg);
 			listenTo(contentCtr);
@@ -418,13 +411,10 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	protected void doDispose() {
 		if (lockEntry != null && lockEntry.isSuccess()) {
 			try {
-				CoordinatorManager.getInstance().getCoordinator().getLocker().releasePersistentLock(lockEntry);
+				CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockEntry);
 			} catch (AssertException e) {
 				logWarn("Lock was already released", e);
 			}
-		}
-		if (activeSessionLock != null && activeSessionLock.isSuccess()) {
-			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(activeSessionLock);			
 		}
 	}
 	
@@ -787,7 +777,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	}
 	
 	private void doExportDocx(UserRequest ureq) {
-		exportLatch = new CountDownLatch(1);
+		CountDownLatch exportLatch = new CountDownLatch(1);
 		MediaResource mr = new QTI21WordExport(resolvedAssessmentTest, unzippedContRoot, unzippedDirRoot, getLocale(), "UTF-8", exportLatch);
 		ureq.getDispatchResult().setResultingMediaResource(mr);
 	}
@@ -797,14 +787,11 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 
 		final AssessmentItemsPackage importPackage = new AssessmentItemsPackage();
 		final ImportOptions options = new ImportOptions();
-		options.setShuffle(!survey);
+		options.setShuffle(true);
 		Step start = new QImport_1_InputStep(ureq, importPackage, options, null);
-		StepRunnerCallback finish = new StepRunnerCallback() {
-			@Override
-			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
-				runContext.put("importPackage", importPackage);
-				return StepsMainRunController.DONE_MODIFIED;
-			}
+		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
+			runContext.put("importPackage", importPackage);
+			return StepsMainRunController.DONE_MODIFIED;
 		};
 		
 		importTableWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,

@@ -38,14 +38,13 @@ public class CourseSiteDef2 extends CourseSiteDef {
 	@Override
 	protected CourseSiteConfiguration getCourseSiteconfiguration() {
 		SiteDefinitions siteModule = CoreSpringFactory.getImpl(SiteDefinitions.class);
-		CourseSiteConfiguration config = siteModule.getConfigurationCourseSite2();
-		return config;
+		return siteModule.getConfigurationCourseSite2();
 	}
 
 	@Override
 	protected CourseSite createCourseSiteInstance(LanguageConfiguration langConfig,
 			boolean showToolController, SiteSecurityCallback siteSecCallback, String icon) {
-		return new CourseSite2(this, langConfig.getRepoSoftKey(), showToolController,
-				siteSecCallback, langConfig.getTitle(), icon);
+		return new CourseSite2(this, toRepositoryEntryKey(langConfig.getRepoSoftKey()),
+				showToolController, siteSecCallback, langConfig.getTitle(), icon);
 	}
 }

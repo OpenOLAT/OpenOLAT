@@ -47,6 +47,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.group.BusinessGroup;
@@ -156,7 +157,8 @@ public class QuestionItemDetailsController extends BasicController implements To
 		this.itemIndex = itemIndex;
 		this.numberOfItems = numberOfItems;
 		this.itemSource = itemSource;
-		lock = qpoolService.acquireLock(item, getIdentity());
+		lock = CoordinatorManager.getInstance().getCoordinator().getLocker()
+				.acquireLock(item, getIdentity(), null, getWindow());
 		
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		showMetadatas = (Boolean) guiPrefs.get(QuestionItemDetailsController.class, GUIPREF_KEY_SHOW_METADATAS);
@@ -195,7 +197,8 @@ public class QuestionItemDetailsController extends BasicController implements To
 			if (lock.getOwner() != null) {
 				displayName = userManager.getUserDisplayName(lock.getOwner());
 			}
-			showWarning("locked.readonly", new String[] {displayName});
+			String i18nMsg = lock.isDifferentWindows() ? "locked.readonly.same.user" : "locked.readonly";
+			showWarning(i18nMsg, new String[] {displayName});
 		}
 		
 		
@@ -412,7 +415,9 @@ public class QuestionItemDetailsController extends BasicController implements To
 			stackPanel.removeListener(this);
 		}
 		finishQuestionEdition();
-		qpoolService.releaseLock(lock);
+		if (lock != null && lock.isSuccess()) {
+			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lock);
+		}
 		lock = null;
 	}
 

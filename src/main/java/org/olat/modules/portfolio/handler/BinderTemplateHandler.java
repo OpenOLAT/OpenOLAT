@@ -281,7 +281,7 @@ public class BinderTemplateHandler implements RepositoryHandler {
 
 	@Override
 	public LockResult acquireLock(OLATResourceable ores, Identity identity) {
-		return CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(ores, identity, "subkey");
+		return CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(ores, identity, "subkey", null);
 	}
 
 	@Override

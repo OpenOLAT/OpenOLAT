@@ -107,7 +107,7 @@ public class LockTest extends OlatTestCase {
 		// ------------------ test the clusterlockmanager ----------------------
 		// create a lock
 		String asset = OresHelper.createStringRepresenting(ores, "locktest");
-		LockImpl li = clusterLockManager.createLockImpl(asset, ident);
+		LockImpl li = clusterLockManager.createLockImpl(asset, ident, null);
 		clusterLockManager.saveLock(li);
 		dbInstance.closeSession();
 		
@@ -131,24 +131,24 @@ public class LockTest extends OlatTestCase {
 		Locker cl = clusterCoordinator.getLocker();
 		
 		// acquire
-		LockResult res1 = cl.acquireLock(ores, ident, "abc");
+		LockResult res1 = cl.acquireLock(ores, ident, "abc", null);
 		assertTrue(res1.isSuccess());
 		dbInstance.closeSession();
 		
 		// reacquire same identity (get from db)
-		LockResult res11 = cl.acquireLock(ores, ident, "abc");
+		LockResult res11 = cl.acquireLock(ores, ident, "abc", null);
 		long lock1Ac = res11.getLockAquiredTime();
 		assertTrue(res11.isSuccess());
 		assertTrue(lock1Ac > 0);
 		dbInstance.closeSession();
 
 		// acquire by another identity must fail
-		LockResult res2 = cl.acquireLock(ores, ident2, "abc");
+		LockResult res2 = cl.acquireLock(ores, ident2, "abc", null);
 		assertFalse(res2.isSuccess());
 		dbInstance.closeSession();
 
 		// reacquire same identity
-		LockResult res3 = cl.acquireLock(ores, ident, "abc");
+		LockResult res3 = cl.acquireLock(ores, ident, "abc", null);
 		assertTrue(res3.isSuccess());
 		dbInstance.closeSession();
 		

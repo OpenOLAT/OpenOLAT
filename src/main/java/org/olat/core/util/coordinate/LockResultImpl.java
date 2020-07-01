@@ -38,24 +38,35 @@ import org.olat.core.id.Identity;
 public class LockResultImpl implements LockResult {
 	private LockEntry lockEntry;
 	private final boolean success;
+	private final boolean differentWindows;
 	
-	public LockResultImpl(boolean success, LockEntry lockEntry) {
+	public LockResultImpl(boolean success, boolean differentWindows, LockEntry lockEntry) {
 		this.success = success;
 		this.lockEntry = lockEntry;
+		this.differentWindows = differentWindows;
 	}
 	
+	@Override
 	public long getLockAquiredTime() {
 		return lockEntry.getLockAquiredTime();
 	}
 
+	@Override
 	public Identity getOwner() {
 		return lockEntry.getOwner();
 	}
 
+	@Override
 	public boolean isSuccess() {
 		return success;
 	}
-	
+
+	@Override
+	public boolean isDifferentWindows() {
+		return differentWindows;
+	}
+
+	@Override
 	public LockEntry getLockEntry() {
 		return lockEntry;
 	}

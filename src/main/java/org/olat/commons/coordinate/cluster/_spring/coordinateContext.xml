@@ -10,8 +10,6 @@
 
 	<context:component-scan base-package="org.olat.commons.coordinate.cluster.lock" />
   
-	<bean id="persistentLockManager" class="org.olat.core.util.coordinate.DBPersistentLockManager"/>  
-
 	<bean id="org.olat.commons.coordinate.cluster.ClusterConfig" class="org.olat.core.util.cluster.ClusterConfig">
 		<!-- nodeId must be a cluster-wide unique integer between 1 and 63 -->
 		<property name="nodeId" value="${node.id}" />
@@ -32,7 +30,6 @@
 
 	<bean id="clusterLocker" class="org.olat.commons.coordinate.cluster.lock.ClusterLocker" init-method="init">
 		<constructor-arg index="0" ref="clusterLockManager" />
-		<property name="persistentLockManager" ref="persistentLockManager"/>
 		<property name="syncer" ref="org.olat.commons.coordinate.cluster.ClusterSyncer" />
 		<property name="eventBus" ref="org.olat.commons.coordinate.cluster.jms.ClusterEventBus" />
 	</bean>

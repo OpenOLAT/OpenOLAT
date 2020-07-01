@@ -154,7 +154,10 @@ public class CourseFactory {
 	private static ConcurrentMap<Long, ModifyCourseEvent> modifyCourseEvents = new ConcurrentHashMap<>();
 
 	public static final String COURSE_EDITOR_LOCK = "courseEditLock";
-  //this is the lock that must be aquired at course editing, copy course, export course, configure course.
+	/**
+	 * This is the lock that must be acquired at course editing, copy course, export course, configure course. It must
+	 * be very short life: acquire, do something, release.
+	 */
 	private static Map<Long,PersistingCourseImpl> courseEditSessionMap = new ConcurrentHashMap<>();
 	private static final Logger log = Tracing.createLoggerFor(CourseFactory.class);
 	private static ReferenceManager referenceManager;
@@ -191,7 +194,11 @@ public class CourseFactory {
 
 			Translator translator = Util.createPackageTranslator(RunMainController.class, ureq.getLocale());
 			String lockerName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(emc.getLockEntry().getOwner());
-			wControl.setWarning(translator.translate("error.editoralreadylocked", new String[] { lockerName }));
+			if(emc.getLockEntry().isDifferentWindows()) {
+				wControl.setWarning(translator.translate("error.editoralreadylocked.same.user", new String[] { lockerName }));
+			} else {
+				wControl.setWarning(translator.translate("error.editoralreadylocked", new String[] { lockerName }));
+			}
 			return null;
 		}
 		//set the logger if editor is started
@@ -240,6 +247,14 @@ public class CourseFactory {
 		return newCourse;
 	}
 
+	/**
+	 * Set the type of the course.
+	 * 
+	 * @param addedEntry The course repository entry
+	 * @param type The type of the course
+	 * @param identity The user which do the initialization
+	 * @return
+	 */
 	public static ICourse initNodeAccessType(RepositoryEntry addedEntry, NodeAccessType type) {
 		OLATResourceable courseOres = addedEntry.getOlatResource();
 		if (CourseFactory.isCourseEditSessionOpen(courseOres.getResourceableId())) {
@@ -608,7 +623,7 @@ public class CourseFactory {
 			 //publish not possible when there are errors
 			 for(int i = 0; i < status.length; i++) {
 				 if(status[i].isError()) {
-					 log.error("Status error by publish: " + status[i].getLongDescription(locale));
+					 log.error("Status error by publish: {}", status[i].getLongDescription(locale));
 					 return;
 				 }
 			 }
@@ -672,7 +687,9 @@ public class CourseFactory {
 			if (entry == null) {
 				try {
 					entry = rm.lookupRepositoryEntry(Long.valueOf(helpCourseKey), false);
-				} catch (Exception e) {}
+				} catch (Exception e) {
+					//
+				}
 			}
 		}
 		
@@ -969,18 +986,18 @@ public class CourseFactory {
 	 * The courseEditSession object should live between acquire course lock and release course lock.
 	 * 
 	 * @param resourceableId The resource id
-	 * @return
+	 * @return The course
 	 */
 	public static PersistingCourseImpl openCourseEditSession(Long resourceableId) {
 		PersistingCourseImpl course = courseEditSessionMap.get(resourceableId);
 		if(course != null) {
 			throw new AssertException("There is already an edit session open for this course: " + resourceableId);
-		} else {
-			course = (PersistingCourseImpl)loadCourse(resourceableId);
-			course.setReadAndWrite(true);
-			courseEditSessionMap.put(resourceableId, course);
-			log.debug("getCourseEditSession - put course in courseEditSessionMap: {}", resourceableId);
 		}
+		
+		course = (PersistingCourseImpl)loadCourse(resourceableId);
+		course.setReadAndWrite(true);
+		courseEditSessionMap.put(resourceableId, course);
+		log.debug("getCourseEditSession - put course in courseEditSessionMap: {}", resourceableId);
 		return course;
 	}
 
@@ -998,7 +1015,7 @@ public class CourseFactory {
 	 */
 	public static PersistingCourseImpl getCourseEditSession(Long resourceableId) {
 		PersistingCourseImpl course = courseEditSessionMap.get(resourceableId);
-		if(course==null) {
+		if(course == null) {
 			throw new AssertException("No edit session open for this course: " + resourceableId + " - Open a session first!");
 		}
 		return course;
@@ -1006,12 +1023,13 @@ public class CourseFactory {
 
 	public static void closeCourseEditSession(Long resourceableId, boolean checkIfAnyAvailable) {
 		PersistingCourseImpl course = courseEditSessionMap.get(resourceableId);
-		if(course==null && checkIfAnyAvailable) {
+		if(course == null && checkIfAnyAvailable) {
 			throw new AssertException("No edit session open for this course: " + resourceableId + " - There is nothing to be closed!");
-		}	else if (course!=null) {
-		  course.setReadAndWrite(false);
-		  courseEditSessionMap.remove(resourceableId);
-		  log.debug("removeCourseEditSession for course: {}", resourceableId);
+		}
+		if(course != null) {
+			course.setReadAndWrite(false);
+			courseEditSessionMap.remove(resourceableId);
+			log.debug("removeCourseEditSession for course: {}", resourceableId);
 		}
 	}
 

@@ -31,7 +31,6 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.group.BusinessGroup;
@@ -115,11 +114,6 @@ public interface QPoolService {
 	public void addAuthors(List<Identity> authors, List<QuestionItemShort> items);
 	
 	public void removeAuthors(List<Identity> authors, List<QuestionItemShort> items);
-	
-	// locking
-	public LockResult acquireLock(QuestionItemShort item, Identity identity);
-	
-	public void releaseLock(LockResult lock);
 	
 	//import / export
 	public MediaResource export(List<QuestionItemShort> items, ExportFormatOptions format, Locale locale);

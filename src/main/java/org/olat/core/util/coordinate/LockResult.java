@@ -42,6 +42,12 @@ public interface LockResult {
 	 * @return true when the lock could be acquired, false when the lock was already acquired by another person
 	 */
 	public boolean isSuccess();
+	
+	/**
+	 * @return true if the same user lock the same resource but in different window
+	 */
+	public boolean isDifferentWindows();
+	
 	/**
 	 * 
 	 * @return the owner of the lock.

@@ -24,7 +24,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.navigation.AbstractSiteDefinition;
 import org.olat.core.gui.control.navigation.SiteConfiguration;
-import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteDefinitions;
 import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.gui.control.navigation.SiteSecurityCallback;
@@ -32,11 +31,13 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.course.site.model.CourseSiteConfiguration;
 import org.olat.course.site.model.LanguageConfiguration;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 
 /**
  * 
  * Description:<br>
- * Receives settings by Spring and creates a site depending on config.
+ * Receives settings by Spring and creates a site depending on configuration.
  * 
  * <P>
  * Initial Date:  12.07.2005 <br>
@@ -44,8 +45,10 @@ import org.olat.course.site.model.LanguageConfiguration;
  * @author Felix Jost
  * @author Roman Haag, roman.haag@frentix.com, www.frentix.com
  */
-public class CourseSiteDef extends AbstractSiteDefinition implements SiteDefinition {
-
+public class CourseSiteDef extends AbstractSiteDefinition {
+	
+	private RepositoryEntryKeyCache cachedKeys;
+	
 	public CourseSiteDef() {
 		//
 	}
@@ -110,11 +113,34 @@ public class CourseSiteDef extends AbstractSiteDefinition implements SiteDefinit
 	 */
 	protected CourseSite createCourseSiteInstance(LanguageConfiguration langConfig,
 			boolean showToolController, SiteSecurityCallback siteSecCallback, String icon) {
-		return new CourseSite(this, langConfig.getRepoSoftKey(), showToolController,
-				siteSecCallback, langConfig.getTitle(), icon);
+		return new CourseSite(this, toRepositoryEntryKey(langConfig.getRepoSoftKey()),
+				showToolController, siteSecCallback, langConfig.getTitle(), icon);
 	}
 	
-	protected LanguageConfiguration getLanguageConfiguration(UserRequest ureq, CourseSiteConfiguration config) {
+	protected final Long toRepositoryEntryKey(String repoSoftKey) {
+		if(repoSoftKey == null) return null;
+		
+		RepositoryEntryKeyCache keys = cachedKeys;
+		if(keys != null && keys.getRepositoryEntrySoftKey().equals(repoSoftKey)) {
+			return keys.getRepositoryEntryKey();
+		} 
+		keys = getCachedValue(repoSoftKey);
+		if(keys != null) {
+			cachedKeys = keys;
+		}
+		return keys == null ? null : keys.getRepositoryEntryKey();
+	}
+	
+	private RepositoryEntryKeyCache getCachedValue(String repoSoftKey) {
+		RepositoryManager rm = CoreSpringFactory.getImpl(RepositoryManager.class);
+		RepositoryEntry entry = rm.lookupRepositoryEntryBySoftkey(repoSoftKey, false);
+		if(entry == null) {
+			return null;
+		}
+		return new RepositoryEntryKeyCache(repoSoftKey, entry.getKey());
+	}
+	
+	protected final LanguageConfiguration getLanguageConfiguration(UserRequest ureq, CourseSiteConfiguration config) {
 		if(config == null || config.getConfigurations() == null) return null;
 		String language = ureq.getUserSession().getLocale().getLanguage();
 		
@@ -138,5 +164,24 @@ public class CourseSiteDef extends AbstractSiteDefinition implements SiteDefinit
 		}
 		
 		return myLangConfig;
+	}
+	
+	private static class RepositoryEntryKeyCache {
+		
+		private final Long repositoryEntryKey;
+		private final String repositoryEntrySoftKey;
+		
+		public RepositoryEntryKeyCache(String repositoryEntrySoftKey, Long repositoryEntryKey) {
+			this.repositoryEntrySoftKey = repositoryEntrySoftKey;
+			this.repositoryEntryKey = repositoryEntryKey;
+		}
+
+		public Long getRepositoryEntryKey() {
+			return repositoryEntryKey;
+		}
+
+		public String getRepositoryEntrySoftKey() {
+			return repositoryEntrySoftKey;
+		}
 	}
 }

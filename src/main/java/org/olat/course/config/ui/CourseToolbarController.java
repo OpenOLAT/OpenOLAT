@@ -131,7 +131,7 @@ public class CourseToolbarController extends FormBasicController {
 		}
 		
 		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker()
-				.acquireLock(entry.getOlatResource(), getIdentity(), CourseFactory.COURSE_EDITOR_LOCK);
+				.acquireLock(entry.getOlatResource(), getIdentity(), CourseFactory.COURSE_EDITOR_LOCK, getWindow());
 		editable = (lockEntry != null && lockEntry.isSuccess());
 		
 		initForm(ureq);
@@ -141,7 +141,11 @@ public class CourseToolbarController extends FormBasicController {
 			if(lockEntry.getOwner() != null) {
 				lockerName = userManager.getUserDisplayName(lockEntry.getOwner());
 			}
-			showWarning("error.editoralreadylocked", new String[] { lockerName });
+			if(lockEntry.isDifferentWindows()) {
+				showWarning("error.editoralreadylocked.same.user", new String[] { lockerName });
+			} else {
+				showWarning("error.editoralreadylocked", new String[] { lockerName });
+			}
 		}
 	}
 

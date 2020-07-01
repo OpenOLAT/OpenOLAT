@@ -330,7 +330,7 @@ public class CatalogWebService {
 		}
 		
 		Identity id = getUserRequest(httpRequest).getIdentity();
-		LockResult lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, id, LOCK_TOKEN);
+		LockResult lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, id, LOCK_TOKEN, null);
 		if (!lock.isSuccess()) {
 			return getLockedResponse(lock, httpRequest);
 		}
@@ -467,7 +467,7 @@ public class CatalogWebService {
 		}
 		
 		Identity id = getUserRequest(httpRequest).getIdentity();
-		LockResult lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, id, LOCK_TOKEN);
+		LockResult lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, id, LOCK_TOKEN, null);
 		if (!lock.isSuccess()) {
 			return getLockedResponse(lock, httpRequest);
 		}
@@ -532,7 +532,7 @@ public class CatalogWebService {
 		}
 		
 		Identity id = getUserRequest(httpRequest).getIdentity();
-		LockResult lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, id, LOCK_TOKEN);
+		LockResult lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, id, LOCK_TOKEN, null);
 		if (!lock.isSuccess()) {
 			return getLockedResponse(lock, httpRequest);
 		}
@@ -670,7 +670,7 @@ public class CatalogWebService {
 		}
 		
 		Identity id = getUserRequest(httpRequest).getIdentity();
-		LockResult lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, id, LOCK_TOKEN);
+		LockResult lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, id, LOCK_TOKEN, null);
 		if (!lock.isSuccess()) {
 			return getLockedResponse(lock, httpRequest);
 		}
@@ -721,7 +721,7 @@ public class CatalogWebService {
 		}
 		
 		Identity id = getUserRequest(httpRequest).getIdentity();
-		LockResult lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, id, LOCK_TOKEN);
+		LockResult lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, id, LOCK_TOKEN, null);
 		if (!lock.isSuccess()) {
 			return getLockedResponse(lock, httpRequest);
 		}

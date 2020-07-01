@@ -497,6 +497,11 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 					link.setCustomDisplayText(StringHelper.xssScan(navEl.getTitle()));
 					link.setTitle(navEl.getDescription());
 					link.setUserObject(si);
+					if(StringHelper.containsNonWhitespace(navEl.getBusinessPath())) {
+						String navUrl = BusinessControlFactory.getInstance()
+								.getRelativeURLFromBusinessPathString(navEl.getBusinessPath());
+						link.setUrl(navUrl);
+					}
 					Character accessKey = navEl.getAccessKey();
 					if (accessKey != null && StringHelper.containsNonWhitespace(accessKey.toString())) {
 						link.setAccessKey(accessKey.toString());					

@@ -62,7 +62,7 @@ public class CourseAssessmentSettingsController extends BasicController {
 		setTranslator(Util.createPackageTranslator(RunMainController.class, getLocale(), getTranslator()));
 		
 		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker()
-				.acquireLock(entry.getOlatResource(), getIdentity(), CourseFactory.COURSE_EDITOR_LOCK);
+				.acquireLock(entry.getOlatResource(), getIdentity(), CourseFactory.COURSE_EDITOR_LOCK, getWindow());
 		boolean editableAndLocked = (lockEntry != null && lockEntry.isSuccess()) && editable;
 		
 		if (lockEntry != null && !lockEntry.isSuccess()) {
@@ -70,7 +70,11 @@ public class CourseAssessmentSettingsController extends BasicController {
 			if(lockEntry.getOwner() != null) {
 				lockerName = userManager.getUserDisplayName(lockEntry.getOwner());
 			}
-			showWarning("error.editoralreadylocked", new String[] { lockerName });
+			if(lockEntry.isDifferentWindows()) {
+				showWarning("error.editoralreadylocked.same.user", new String[] { lockerName });
+			} else {
+				showWarning("error.editoralreadylocked", new String[] { lockerName });
+			}
 		}
 		
 		VelocityContainer mainVC = createVelocityContainer("assessment_settings");

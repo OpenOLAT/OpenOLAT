@@ -134,7 +134,7 @@ public class CourseOptionsController extends FormBasicController {
 		this.entry = entry;
 		
 		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker()
-				.acquireLock(entry.getOlatResource(), getIdentity(), CourseFactory.COURSE_EDITOR_LOCK);
+				.acquireLock(entry.getOlatResource(), getIdentity(), CourseFactory.COURSE_EDITOR_LOCK, getWindow());
 		editable = (lockEntry != null && lockEntry.isSuccess()) && canEdit;
 
 		initForm(ureq);
@@ -188,7 +188,11 @@ public class CourseOptionsController extends FormBasicController {
 			if(lockEntry.getOwner() != null) {
 				lockerName = userManager.getUserDisplayName(lockEntry.getOwner());
 			}
-			showWarning("error.editoralreadylocked", new String[] { lockerName });
+			if(lockEntry.isDifferentWindows()) {
+				showWarning("error.editoralreadylocked.same.user", new String[] { lockerName });
+			} else {
+				showWarning("error.editoralreadylocked", new String[] { lockerName });
+			}
 		}
 	}
 	
@@ -397,6 +401,11 @@ public class CourseOptionsController extends FormBasicController {
 	
 	private void doChangeConfig(UserRequest ureq) {
 		OLATResourceable courseOres = entry.getOlatResource();
+		if(CourseFactory.isCourseEditSessionOpen(courseOres.getResourceableId())) {
+			showWarning("error.editoralreadylocked", new String[] { "???" });
+			return;
+		}
+		
 		ICourse course = CourseFactory.openCourseEditSession(courseOres.getResourceableId());
 		courseConfig = course.getCourseEnvironment().getCourseConfig();
 		

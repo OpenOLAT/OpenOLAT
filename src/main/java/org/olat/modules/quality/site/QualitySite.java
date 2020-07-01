@@ -46,6 +46,9 @@ import org.olat.util.logging.activity.LoggingResourceable;
  *
  */
 public class QualitySite extends AbstractSiteInstance {
+	
+	private static final OLATResourceable qualityOres = OresHelper.createOLATResourceableInstance(QualitySite.class, 0l);
+	private static final String qualityBusinessPath = OresHelper.toBusinessPath(qualityOres);
 
 	private final NavElement origNavElem;
 	private NavElement curNavElem;
@@ -53,7 +56,8 @@ public class QualitySite extends AbstractSiteInstance {
 	public QualitySite(SiteDefinition siteDef, Locale locale) {
 		super(siteDef);
 		Translator trans = Util.createPackageTranslator(QualityMainController.class, locale);
-		origNavElem = new DefaultNavElement(trans.translate("site.title"), trans.translate("site.title.alt"), "o_site_quality");
+		origNavElem = new DefaultNavElement(qualityBusinessPath, trans.translate("site.title"),
+				trans.translate("site.title.alt"), "o_site_quality");
 		curNavElem = new DefaultNavElement(origNavElem);
 	}
 
@@ -64,9 +68,8 @@ public class QualitySite extends AbstractSiteInstance {
 
 	@Override
 	protected MainLayoutController createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(QualitySite.class, 0l);
-		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(qualityOres));
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, qualityOres, new StateSite(this), wControl, true);
 		return new QualityMainController(ureq, bwControl);
 	}
 

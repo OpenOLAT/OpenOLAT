@@ -46,13 +46,18 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class QuestionPoolSite extends AbstractSiteInstance {
+	
+	private static final OLATResourceable questionPoolOres = OresHelper.createOLATResourceableInstance("QPool", 0l);
+	private static final String questionPoolBusinessPath = OresHelper.toBusinessPath(questionPoolOres);
+	
 	private NavElement origNavElem;
 	private NavElement curNavElem;
 	
 	public QuestionPoolSite(SiteDefinition siteDef, Locale locale) {
 		super(siteDef);
 		Translator trans = Util.createPackageTranslator(QuestionPoolMainEditorController.class, locale);
-		origNavElem = new DefaultNavElement(trans.translate("topnav.qpool"), trans.translate("topnav.qpool.alt"), "o_site_qpool");		
+		origNavElem = new DefaultNavElement(questionPoolBusinessPath, trans.translate("topnav.qpool"),
+				trans.translate("topnav.qpool.alt"), "o_site_qpool");		
 		origNavElem.setAccessKey("p".charAt(0));
 		curNavElem = new DefaultNavElement(origNavElem);
 	}
@@ -64,9 +69,8 @@ public class QuestionPoolSite extends AbstractSiteInstance {
 	
 	@Override
 	protected MainLayoutController createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("QPool", 0l);
-		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(questionPoolOres));
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, questionPoolOres, new StateSite(this), wControl, true);
 		return new QuestionPoolSiteMainController(ureq, bwControl);
 	}
 	

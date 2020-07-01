@@ -592,6 +592,7 @@ create table oc_lock (
 	creationdate timestamp,
 	identity_fk int8 not null,
 	asset varchar(120) not null unique,
+	windowid varchar(32) default null,
 	primary key (lock_id)
 );
 alter table oc_lock add constraint FK9E30F4B66115906D foreign key (identity_fk) references o_bs_identity;

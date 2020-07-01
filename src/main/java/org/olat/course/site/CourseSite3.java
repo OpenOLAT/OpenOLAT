@@ -32,8 +32,8 @@ import org.olat.core.gui.control.navigation.SiteSecurityCallback;
  */
 public class CourseSite3 extends CourseSite {
 	
-	public CourseSite3(SiteDefinition siteDef, String repositorySoftKey, boolean showToolController, SiteSecurityCallback secCallback, String title, String navIconCssClass) {
-		super(siteDef, repositorySoftKey, showToolController, secCallback, title, navIconCssClass);
+	public CourseSite3(SiteDefinition siteDef, Long repoEntryKey, boolean showToolController,
+			SiteSecurityCallback secCallback, String title, String navIconCssClass) {
+		super(siteDef, repoEntryKey, showToolController, secCallback, title, navIconCssClass);
 	}
-
 }

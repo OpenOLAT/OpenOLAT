@@ -481,7 +481,8 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	 */
 	private Controller acquireDeleteUserLock(UserRequest ureq) {
 		OLATResourceable lockResourceable = OresHelper.createOLATResourceableTypeWithoutCheck(UserLifecycleOverviewController.class.getName());
-		lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockResourceable, ureq.getIdentity(), "deleteGroup");
+		lock = CoordinatorManager.getInstance().getCoordinator().getLocker()
+				.acquireLock(lockResourceable, ureq.getIdentity(), "deleteGroup", getWindow());
 		if (!lock.isSuccess()) {
 			String fullname = userManager.getUserDisplayName(lock.getOwner());
 			String text = getTranslator().translate("error.deleteworkflow.locked.by", new String[]{ fullname });

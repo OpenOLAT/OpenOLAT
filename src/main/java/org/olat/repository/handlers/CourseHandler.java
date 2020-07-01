@@ -383,7 +383,7 @@ public class CourseHandler implements RepositoryHandler {
 		RepositoryEntryImportExport importExport = gm.getRepositoryImportExport(course.getCourseExportDataDir().getBasefile());
 		GlossaryResource resource = gm.createGlossary();
 		if (resource == null) {
-			log.error("Error adding glossary directry during repository reference import: " + importExport.getDisplayName());
+			log.error("Error adding glossary directry during repository reference import: {}", importExport.getDisplayName());
 			return;
 		}
 
@@ -657,13 +657,13 @@ public class CourseHandler implements RepositoryHandler {
 
 	@Override
 	public LockResult acquireLock(OLATResourceable ores, Identity identity) {
-		return CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(ores, identity, CourseFactory.COURSE_EDITOR_LOCK);
+		return CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(ores, identity, CourseFactory.COURSE_EDITOR_LOCK, null);
 	}
 
 	@Override
 	public void releaseLock(LockResult lockResult) {
 		if(lockResult!=null) {
-		  CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockResult);
+			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockResult);
 		}
 	}
 

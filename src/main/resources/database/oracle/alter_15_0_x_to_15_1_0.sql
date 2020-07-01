@@ -13,6 +13,10 @@ alter table o_bbb_meeting add b_read_identifier varchar2(64);
 alter table o_bbb_template add b_external_users number default 0 not null;
 
 
+-- Lock
+alter table oc_lock add windowid varchar2(32) default null;
+
+
 -- Appointments
 create table o_ap_topic (
    id number(20) generated always as identity,

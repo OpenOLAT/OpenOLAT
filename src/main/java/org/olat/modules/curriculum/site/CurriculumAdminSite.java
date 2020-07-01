@@ -47,13 +47,18 @@ import org.olat.util.logging.activity.LoggingResourceable;
  *
  */
 public class CurriculumAdminSite extends AbstractSiteInstance {
+	
+	private static final OLATResourceable curriculumAdminOres = OresHelper.createOLATResourceableInstance("CurriculumAdmin", 0l);
+	private static final String curriculumAdminString = OresHelper.toBusinessPath(curriculumAdminOres);
+	
 	private NavElement origNavElem;
 	private NavElement curNavElem;
 
 	public CurriculumAdminSite(SiteDefinition siteDef, Locale loc) {
 		super(siteDef);
 		Translator trans = Util.createPackageTranslator(BaseChiefController.class, loc);
-		origNavElem = new DefaultNavElement(trans.translate("topnav.curriculum.admin"), trans.translate("topnav.curriculum.admin.alt"), "o_site_curriculum_admin");		
+		origNavElem = new DefaultNavElement(curriculumAdminString, trans.translate("topnav.curriculum.admin"),
+				trans.translate("topnav.curriculum.admin.alt"), "o_site_curriculum_admin");		
 		origNavElem.setAccessKey("c".charAt(0));
 		curNavElem = new DefaultNavElement(origNavElem);
 	}
@@ -69,9 +74,8 @@ public class CurriculumAdminSite extends AbstractSiteInstance {
 	@Override
 	protected Controller createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		// for existing controller which are part of the main olat -> use the controllerfactory
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("CurriculumAdmin", 0l);
-		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(curriculumAdminOres));
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, curriculumAdminOres, new StateSite(this), wControl, true);
 		return new CurriculumManagerController(ureq, bwControl);
 	}
 
