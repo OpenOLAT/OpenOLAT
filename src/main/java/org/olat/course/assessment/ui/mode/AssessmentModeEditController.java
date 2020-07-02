@@ -639,7 +639,8 @@ public class AssessmentModeEditController extends FormBasicController {
 		}
 		
 		String targetKey = targetEl.getSelectedKey();
-		assessmentMode.setTargetAudience(AssessmentMode.Target.valueOf(targetKey));
+		Target target = AssessmentMode.Target.valueOf(targetKey);
+		assessmentMode.setTargetAudience(target);
 
 		boolean elementRestrictions = courseElementsRestrictionEl.isAtLeastSelected(1);
 		assessmentMode.setRestrictAccessElements(elementRestrictions);
@@ -684,64 +685,22 @@ public class AssessmentModeEditController extends FormBasicController {
 		if(assessmentMode.getKey() == null) {
 			assessmentMode = assessmentModeMgr.persist(assessmentMode);
 		}
+		
+		updateBusinessGroupRelations(target);
+		updateAreaRelations(target);
+		updateCurriculumElementsRelations(target);
 
-		//update groups
-		if(groupKeys.isEmpty()) {
-			if(!assessmentMode.getGroups().isEmpty()) {
-				assessmentMode.getGroups().clear();
-			}
-		} else {
-			Set<Long> currentKeys = new HashSet<>();
-			List<AssessmentModeToGroup> currentGroups = new ArrayList<>(assessmentMode.getGroups());
-			for(AssessmentModeToGroup modeToGroup:currentGroups) {
-				Long currentKey = modeToGroup.getBusinessGroup().getKey();
-				if(!groupKeys.contains(currentKey)) {
-					assessmentMode.getGroups().remove(modeToGroup);
-					assessmentModeMgr.deleteAssessmentModeToGroup(modeToGroup);
-				} else {
-					currentKeys.add(currentKey);
-				}
-			}
-			
-			for(Long groupKey:groupKeys) {
-				if(!currentKeys.contains(groupKey)) {
-					BusinessGroup group = businessGroupService.loadBusinessGroup(groupKey);
-					AssessmentModeToGroup modeToGroup = assessmentModeMgr.createAssessmentModeToGroup(assessmentMode, group);
-					assessmentMode.getGroups().add(modeToGroup);
-				}
-			}
-		}
-		
-		//update areas
-		if(areaKeys.isEmpty()) {
-			if(!assessmentMode.getAreas().isEmpty()) {
-				assessmentMode.getAreas().clear();
-			}
-		} else {
-			Set<Long> currentKeys = new HashSet<>();
-			List<AssessmentModeToArea> currentAreas = new ArrayList<>(assessmentMode.getAreas());
-			for(AssessmentModeToArea modeToArea:currentAreas) {
-				Long currentKey = modeToArea.getArea().getKey();
-				if(!areaKeys.contains(currentKey)) {
-					assessmentMode.getAreas().remove(modeToArea);
-					assessmentModeMgr.deleteAssessmentModeToArea(modeToArea);
-				} else {
-					currentKeys.add(currentKey);
-				}
-			}
-			
-			for(Long areaKey:areaKeys) {
-				if(!currentKeys.contains(areaKey)) {
-					BGArea area = areaMgr.loadArea(areaKey);
-					AssessmentModeToArea modeToArea = assessmentModeMgr.createAssessmentModeToArea(assessmentMode, area);
-					assessmentMode.getAreas().add(modeToArea);
-				}
-			}
-		}
-		
-		//update areas
-		if(curriculumElementKeys.isEmpty()) {
+		assessmentMode = assessmentModeMgr.merge(assessmentMode, forceStatus);
+		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
+	private void updateCurriculumElementsRelations(Target target) {
+		if(curriculumElementKeys.isEmpty() || target == Target.course || target == Target.groups) {
 			if(!assessmentMode.getCurriculumElements().isEmpty()) {
+				List<AssessmentModeToCurriculumElement> currentElements = new ArrayList<>(assessmentMode.getCurriculumElements());
+				for(AssessmentModeToCurriculumElement modeToElement:currentElements) {
+					assessmentModeMgr.deleteAssessmentModeToCurriculumElement(modeToElement);
+				}
 				assessmentMode.getCurriculumElements().clear();
 			}
 		} else {
@@ -765,9 +724,72 @@ public class AssessmentModeEditController extends FormBasicController {
 				}
 			}
 		}
-
-		assessmentMode = assessmentModeMgr.merge(assessmentMode, forceStatus);
-		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
+	private void updateAreaRelations(Target target) {
+		//update areas
+		if(areaKeys.isEmpty() || target == Target.course || target == Target.curriculumEls) {
+			if(!assessmentMode.getAreas().isEmpty()) {
+				List<AssessmentModeToArea> currentAreas = new ArrayList<>(assessmentMode.getAreas());
+				for(AssessmentModeToArea modeToArea:currentAreas) {
+					assessmentModeMgr.deleteAssessmentModeToArea(modeToArea);
+				}
+				assessmentMode.getAreas().clear();
+			}
+		} else {
+			Set<Long> currentKeys = new HashSet<>();
+			List<AssessmentModeToArea> currentAreas = new ArrayList<>(assessmentMode.getAreas());
+			for(AssessmentModeToArea modeToArea:currentAreas) {
+				Long currentKey = modeToArea.getArea().getKey();
+				if(!areaKeys.contains(currentKey)) {
+					assessmentMode.getAreas().remove(modeToArea);
+					assessmentModeMgr.deleteAssessmentModeToArea(modeToArea);
+				} else {
+					currentKeys.add(currentKey);
+				}
+			}
+			
+			for(Long areaKey:areaKeys) {
+				if(!currentKeys.contains(areaKey)) {
+					BGArea area = areaMgr.loadArea(areaKey);
+					AssessmentModeToArea modeToArea = assessmentModeMgr.createAssessmentModeToArea(assessmentMode, area);
+					assessmentMode.getAreas().add(modeToArea);
+				}
+			}
+		}
+	}
+	
+	private void updateBusinessGroupRelations(Target target) {
+		//update groups
+		if(groupKeys.isEmpty() || target == Target.course || target == Target.curriculumEls) {
+			if(!assessmentMode.getGroups().isEmpty()) {
+				List<AssessmentModeToGroup> currentGroups = new ArrayList<>(assessmentMode.getGroups());
+				for(AssessmentModeToGroup modeToGroup:currentGroups) {
+					assessmentModeMgr.deleteAssessmentModeToGroup(modeToGroup);
+				}
+				assessmentMode.getGroups().clear();
+			}
+		} else {
+			Set<Long> currentKeys = new HashSet<>();
+			List<AssessmentModeToGroup> currentGroups = new ArrayList<>(assessmentMode.getGroups());
+			for(AssessmentModeToGroup modeToGroup:currentGroups) {
+				Long currentKey = modeToGroup.getBusinessGroup().getKey();
+				if(!groupKeys.contains(currentKey)) {
+					assessmentMode.getGroups().remove(modeToGroup);
+					assessmentModeMgr.deleteAssessmentModeToGroup(modeToGroup);
+				} else {
+					currentKeys.add(currentKey);
+				}
+			}
+			
+			for(Long groupKey:groupKeys) {
+				if(!currentKeys.contains(groupKey)) {
+					BusinessGroup group = businessGroupService.loadBusinessGroup(groupKey);
+					AssessmentModeToGroup modeToGroup = assessmentModeMgr.createAssessmentModeToGroup(assessmentMode, group);
+					assessmentMode.getGroups().add(modeToGroup);
+				}
+			}
+		}
 	}
 
 	@Override

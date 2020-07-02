@@ -1433,9 +1433,6 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			return;
 		}
 		
-		String instanceId = getWindow().getInstanceId();
-		System.out.println(instanceId + " " + event.getCommand());
-		
 		String cmd = event.getCommand();
 		switch(cmd) {
 			case AssessmentModeNotificationEvent.STOP_WARNING:
@@ -1491,7 +1488,8 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		this.lockResource = resource;
 		lockGUI();
 	}
-	
+
+	@Override
 	public void hardLockResource(LockResourceInfos lockInfos) {
 		if(lockInfos == null) return;
 		
