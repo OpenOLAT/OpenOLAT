@@ -56,6 +56,7 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.resource.WindowedResourceableList;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseModule;
 import org.olat.course.DisposedCourseRestartController;
@@ -138,6 +139,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private final QTI21OverrideOptions overrideOptions;
 	// The test is really assessment not a self test or a survey
 	private final boolean assessmentType = true;
+	private final WindowedResourceableList resourceList;
 	private AtomicBoolean incrementAttempts = new AtomicBoolean(true);
 	
 	private AssessmentResultController resultCtrl;
@@ -171,6 +173,12 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		singleUserEventCenter = userSession.getSingleUserEventCenter();
 		mainVC = createVelocityContainer("assessment_run");
 		mainVC.setDomReplaceable(false); // DOM ID set in velocity
+		
+		resourceList = userSession.getResourceList();
+		if(!resourceList.registerResourceable(userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+				courseNode.getIdent(), getWindow())) {
+			showWarning("warning.multi.window");
+		}
 		
 		disclaimerVC = createVelocityContainer("assessment_disclaimer");
 		disclaimerVC.setDomReplacementWrapperRequired(false);
@@ -651,6 +659,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				singleUserEventCenter.fireEventToListenersOf(assessmentStoppedEvent, assessmentEventOres);
 			}
 		}
+		
+		resourceList.deregisterResourceable(userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+				courseNode.getIdent(), getWindow());
 	}
 	
 	@Override

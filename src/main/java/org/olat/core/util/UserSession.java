@@ -60,6 +60,7 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.prefs.PreferencesFactory;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.resource.WindowedResourceableList;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.course.assessment.model.TransientAssessmentMode;
 
@@ -82,6 +83,8 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	private OLATResourceable lockResource;
 	private TransientAssessmentMode lockMode;
 	private List<TransientAssessmentMode> assessmentModes;
+	
+	private transient final WindowedResourceableList resourceList = new WindowedResourceableList();
 	
 	private transient Map<String,Object> store;
 	/**
@@ -452,11 +455,15 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 			}
 		}
 	}
+	
+	public WindowedResourceableList getResourceList() {
+		return resourceList;
+	}
 
 	@Override
 	public void valueBound(HttpSessionBindingEvent be) {
 		if (log.isDebugEnabled()) {
-			log.debug("Opened UserSession:" + toString());
+			log.debug("Opened UserSession: {}", this);
 		}
 	}
 
@@ -472,9 +479,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 			// (no user was authenticated yet but a tomcat session was created)
 			Identity ident = identityEnvironment.getIdentity();
 			CoreSpringFactory.getImpl(UserSessionManager.class).signOffAndClear(this);
-			if (log.isDebugEnabled()) {
-				log.debug("Closed UserSession: identity = " + (ident == null ? "n/a" : ident.getKey()));
-			}
+			log.debug("Closed UserSession: identity = {}", (ident == null ? "n/a" : ident.getKey()));
 			//we do not have a request in the null case (app. server triggered) and user not yet logged in
 			//-> in this case we use the special empty activity logger
 			if (ident == null) {
@@ -495,15 +500,11 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	 */
 	@Override
 	public void event(Event event) {
-		//fxdiff FXOLAT-231: event on GUI Preferences extern changes
 		if("preferences.changed".equals(event.getCommand())) {
 			reloadPreferences();
 		}
 	}
 
-	/**
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return "Session of " + identityEnvironment + ", " + super.toString();

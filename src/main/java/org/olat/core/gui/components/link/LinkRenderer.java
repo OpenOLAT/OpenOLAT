@@ -189,7 +189,8 @@ public class LinkRenderer extends DefaultComponentRenderer {
 					  .append(";\" ")
 					  .append("onclick=\"return o2cl_dirtyCheckOnly();\" ");
 				} else {
-					sb.append("href=\"javascript:;\" onclick=\"")
+					String href = StringHelper.containsNonWhitespace(link.getUrl()) ? link.getUrl() : "javascript:;";
+					sb.append("href=\"").append(href).append("\" onclick=\"")
 					  .append(FormJSHelper.getJSFnCallFor(flexiLink.getRootForm(), elementId, 1))
 					  .append(";");
 					sb.append("\" ");

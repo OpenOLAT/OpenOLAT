@@ -60,6 +60,7 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	private int presentation = Link.LINK;
 	private String i18n;
 	private String cmd;
+	private String url;
 	private boolean hasCustomEnabledCss = false;
 	private boolean hasCustomDisabledCss = false;
 	private boolean domReplacementWrapperRequired = false;
@@ -226,6 +227,7 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 		component.setForceFlexiDirtyFormWarning(ownDirtyFormWarning);
 		component.setPopup(popup);
 		component.setNewWindow(newWindow);
+		component.setUrl(url);
 		if(textReasonForDisabling != null) {
 			component.setTextReasonForDisabling(textReasonForDisabling);
 		}
@@ -264,6 +266,14 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	@Override
 	public String getCmd() {
 		return cmd;
+	}
+	
+	@Override
+	public void setUrl(String url) {
+		this.url = url;
+		if(component != null) {
+			component.setUrl(url);
+		}
 	}
 
 	@Override

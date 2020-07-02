@@ -68,6 +68,7 @@ import org.olat.core.util.UserSession;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.resource.WindowedResourceableList;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
@@ -188,6 +189,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private RepositoryEntry testEntry;
 	private RepositoryEntry entry;
 	private String subIdent;
+	private final boolean authorMode;
 	
 	private final boolean anonym;
 	private final Identity assessedIdentity;
@@ -201,6 +203,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private final boolean showCloseResults;
 	private OutcomesListener outcomesListener;
 	private AssessmentSessionAuditLogger candidateAuditLogger;
+	private final WindowedResourceableList resourcesList;
 
 	@Autowired
 	private QTI21Module qtiModule;
@@ -235,6 +238,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		this.deliveryOptions = deliveryOptions;
 		this.overrideOptions = overrideOptions;
 		this.showCloseResults = showCloseResults;
+		this.authorMode = authorMode;
 		
 		UserSession usess = ureq.getUserSession();
 		if(usess.getRoles().isGuestOnly() || anonym) {
@@ -251,6 +255,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			// Limit to the case where the test is launched as resource,
 			// within course is this task delegated to the QTI21AssessmentRunController
 			addLoggingResourceable(LoggingResourceable.wrapTest(entry));
+		}
+
+		resourcesList = usess.getResourceList();
+		if(subIdent == null && !authorMode && !resourcesList.registerResourceable(entry, subIdent, getWindow())) {
+			showWarning("warning.multi.window");
 		}
 		
 		FileResourceManager frm = FileResourceManager.getInstance();
@@ -402,6 +411,10 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	
 	@Override
 	protected void doDispose() {
+		if(subIdent == null && !authorMode) {
+			resourcesList.deregisterResourceable(entry, subIdent, getWindow());
+		}
+		
 		suspendAssessmentTest(new Date());
 		if(candidateSession != null) {
 			OLATResourceable sessionOres = OresHelper

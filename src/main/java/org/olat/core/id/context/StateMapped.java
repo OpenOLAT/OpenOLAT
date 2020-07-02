@@ -52,6 +52,11 @@ public class StateMapped implements StateEntry{
 	}
 	
 	@Override
+	public int hashCode() {
+		return delegate == null ? 721567 : delegate.hashCode();
+	}
+	
+	@Override
 	public String toString() {
 		return delegate == null ? "{empty}" : delegate.toString();
 	}

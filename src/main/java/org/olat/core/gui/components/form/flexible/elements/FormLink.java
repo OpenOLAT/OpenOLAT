@@ -117,6 +117,8 @@ public interface FormLink extends FormItem {
 	
 	public String getLinkTitleText();
 	
+	public void setUrl(String url);
+	
 	/**
 	 * 
 	 * @return The title of the link if disabled.

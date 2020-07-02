@@ -69,6 +69,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class OverviewRepositoryListController extends BasicController implements Activateable2, GenericEventListener {
 
+	private static final String OVERVIEW_PATH = "[MyCoursesSite:0]";
+	
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
 	private final Link myCourseLink;
@@ -123,31 +125,43 @@ public class OverviewRepositoryListController extends BasicController implements
 		if(!isGuestOnly) {
 			favoriteLink = LinkFactory.createLink("search.mark", mainVC, this);
 			favoriteLink.setElementCssClass("o_sel_mycourses_fav");
+			favoriteLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathStrings(OVERVIEW_PATH, "[Favorits:0]"));
 			segmentView.addSegment(favoriteLink, false);
 		}
 		
 		myCourseLink = LinkFactory.createLink("search.mycourses.student", mainVC, this);
+		myCourseLink.setUrl(BusinessControlFactory.getInstance()
+				.getAuthenticatedURLFromBusinessPathStrings(OVERVIEW_PATH, "[My:0]"));
 		myCourseLink.setElementCssClass("o_sel_mycourses_my");
 		segmentView.addSegment(myCourseLink, false);
 		
 		withCurriculums = withCurriculumTab();
 		if(withCurriculums) {
 			curriculumLink = LinkFactory.createLink("search.curriculums", mainVC, this);
+			curriculumLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathStrings(OVERVIEW_PATH, "[Curriculum:0]"));
 			curriculumLink.setElementCssClass("o_sel_mycurriculums");
 			segmentView.addSegment(curriculumLink, false);
 		}
 		
 		closedCourseLink = LinkFactory.createLink("search.courses.closed", mainVC, this);
+		closedCourseLink.setUrl(BusinessControlFactory.getInstance()
+				.getAuthenticatedURLFromBusinessPathStrings(OVERVIEW_PATH, "[Closed:0]"));
 		closedCourseLink.setElementCssClass("o_sel_mycourses_closed");
 		segmentView.addSegment(closedCourseLink, false);
 
 		if(repositoryModule.isCatalogEnabled() && repositoryModule.isCatalogBrowsingEnabled()) {
 			catalogLink = LinkFactory.createLink("search.catalog", mainVC, this);
+			catalogLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathStrings(OVERVIEW_PATH, "[Catalog:0]"));
 			catalogLink.setElementCssClass("o_sel_mycourses_catlog");
 			segmentView.addSegment(catalogLink, false);
 		}
 		if(repositoryModule.isMyCoursesSearchEnabled()) {
 			searchCourseLink = LinkFactory.createLink("search.courses.student", mainVC, this);
+			searchCourseLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathStrings(OVERVIEW_PATH, "[Search:0]"));
 			searchCourseLink.setElementCssClass("o_sel_mycourses_search");
 			segmentView.addSegment(searchCourseLink, false);
 		}
