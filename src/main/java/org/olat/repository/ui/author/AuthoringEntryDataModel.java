@@ -89,11 +89,20 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 		super.clear();
 		getSourceDelegate().resetCount();
 	}
-
+	
 	@Override
 	public String getUrl(Component source, Object object, String action) {
-		if("select".equals(action) && object instanceof AuthoringEntryRow) {
-			return ((AuthoringEntryRow)object).getUrl();
+		if(action == null) return null;
+		
+		AuthoringEntryRow row = (AuthoringEntryRow)object;
+		if("select".equals(action)) {
+			return row.getUrl();
+		}
+		if("details".equals(action)) {
+			return row.getUrl().concat("/Infos/0");
+		}
+		if("edit".equals(action)) {
+			return row.getUrl().concat("/Editor/0");
 		}
 		return null;
 	}

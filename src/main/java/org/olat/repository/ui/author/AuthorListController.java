@@ -87,6 +87,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -1188,7 +1189,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 	
 	private void launchCatalog(UserRequest ureq, RepositoryEntryRef ref) {
-		String businessPath = "[RepositoryEntry:" + ref.getKey() + "][Catalog:0]";
+		String businessPath = "[RepositoryEntry:" + ref.getKey() + "][Settings:0][Catalog:0]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 
@@ -1296,6 +1297,11 @@ public class AuthorListController extends FormBasicController implements Activat
 				refLink.setCustomDisplayText(StringHelper.escapeHtml(ref.getDisplayname()));
 				refLink.setUserObject(ref);
 				refLink.setIconLeftCSS("o_icon o_icon-fw " + RepositoyUIFactory.getIconCssClass(ref));
+				
+				String businessPath = "[RepositoryEntry:" + ref.getKey() + "]";
+				String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath);
+				refLink.setUrl(url);
+				
 				refLinks.add(name);
 			}
 			mainVC.contextPut("referenceLinks", refLinks);
@@ -1360,11 +1366,11 @@ public class AuthorListController extends FormBasicController implements Activat
 			List<String> links = new ArrayList<>();
 
 			if(isOwner) {
-				addLink("tools.edit.description", "description", "o_icon o_icon-fw o_icon_details", links);
+				addLink("tools.edit.description", "description", "o_icon o_icon-fw o_icon_details", "/Settings/0/Info/0", links);
 				if(repositoryModule.isCatalogEnabled()) {
-					addLink("tools.edit.catalog", "catalog", "o_icon o_icon-fw o_icon_catalog", links);
+					addLink("tools.edit.catalog", "catalog", "o_icon o_icon-fw o_icon_catalog", "/Settings/0/Catalog/0", links);
 				}
-				addLink("details.members", "members", "o_icon o_icon-fw o_icon_membersmanagement", links);
+				addLink("details.members", "members", "o_icon o_icon-fw o_icon_membersmanagement", "/MembersMgmt/0", links);
 			}
 			
 			boolean copyManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.copy);
@@ -1394,13 +1400,13 @@ public class AuthorListController extends FormBasicController implements Activat
 			if(canCopy || canDownload) {
 				links.add("-");
 				if (canCopy) {
-					addLink("details.copy", "copy", "o_icon o_icon-fw o_icon_copy", links);
+					addLink("details.copy", "copy", "o_icon o_icon-fw o_icon_copy", "/Infos/0", links);
 				}
 				if (canConvertLearningPath) {
-					addLink("details.convert.learning.path", "convertLearningPath", "o_icon o_icon-fw o_icon_learning_path", links);
+					addLink("details.convert.learning.path", "convertLearningPath", "o_icon o_icon-fw o_icon_learning_path", null, links);
 				}
 				if(canDownload) {
-					addLink("details.download", "download", "o_icon o_icon-fw o_icon_download", links);
+					addLink("details.download", "download", "o_icon o_icon-fw o_icon_download", null, links);
 				}
 			}
 			
@@ -1416,12 +1422,12 @@ public class AuthorListController extends FormBasicController implements Activat
 				
 				boolean closed = entry.getEntryStatus() == RepositoryEntryStatusEnum.closed;
 				if(closed && "CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
-					addLink("details.override.close", "override-close", "o_icon o_icon-fw o_icon_close_resource", links);
+					addLink("details.override.close", "override-close", "o_icon o_icon-fw o_icon_close_resource", null, links);
 				} else if(canClose) {
-					addLink("details.close.ressoure", "close", "o_icon o_icon-fw o_icon_close_resource", links);
+					addLink("details.close.ressoure", "close", "o_icon o_icon-fw o_icon_close_resource", null, links);
 				}
 				if(!deleteManaged) {
-					addLink("details.delete", "delete", "o_icon o_icon-fw o_icon_delete_item", links);
+					addLink("details.delete", "delete", "o_icon o_icon-fw o_icon_delete_item", null, links);
 				}
 			}
 
@@ -1429,10 +1435,14 @@ public class AuthorListController extends FormBasicController implements Activat
 			putInitialPanel(mainVC);
 		}
 		
-		private void addLink(String name, String cmd, String iconCSS, List<String> links) {
+		private void addLink(String name, String cmd, String iconCSS, String path, List<String> links) {
 			Link link = LinkFactory.createLink(name, cmd, getTranslator(), mainVC, this, Link.LINK);
 			if(iconCSS != null) {
 				link.setIconLeftCSS(iconCSS);
+			}
+			if(path != null) {
+				String url = row.getUrl().concat(path);
+				link.setUrl(url);
 			}
 			mainVC.put(name, link);
 			links.add(name);

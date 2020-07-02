@@ -43,6 +43,8 @@ import org.olat.group.BusinessGroupMembership;
 public class BusinessGroupListFlexiTableModel extends DefaultFlexiTableDataModel<BGTableItem>
 	implements SortableFlexiTableDataModel<BGTableItem>, FlexiBusinessPathModel {
 	
+	private static final Cols[] COLS = Cols.values();
+	
 	private final Locale locale;
 
 	/**
@@ -69,7 +71,7 @@ public class BusinessGroupListFlexiTableModel extends DefaultFlexiTableDataModel
 		
 	@Override
 	public Object getValueAt(BGTableItem wrapped, int col) {
-		switch (Cols.values()[col]) {
+		switch (COLS[col]) {
 			case createionDate:
 				return wrapped.getCreationDate();
 			case name:
