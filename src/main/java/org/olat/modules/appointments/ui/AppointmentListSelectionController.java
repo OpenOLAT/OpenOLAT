@@ -99,8 +99,9 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 		List<Participation> allPrticipations = appointmentsService.getParticipations(pParams);
 		Map<Long, List<Participation>> appointmentKeyToParticipation = allPrticipations.stream()
 				.collect(Collectors.groupingBy(p -> p.getAppointment().getKey()));
-		boolean userHasNoParticipation = !allPrticipations.stream()
+		boolean userHasNoConfirmedParticipation = !allPrticipations.stream()
 				.filter(p -> p.getIdentity().getKey().equals(getIdentity().getKey()))
+				.filter(p -> Appointment.Status.confirmed == p.getAppointment().getStatus())
 				.findFirst()
 				.isPresent();
 		
@@ -115,7 +116,7 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 		List<AppointmentRow> rows = new ArrayList<>(appointments.size());
 		for (Appointment appointment : appointments) {
 			List<Participation> participations = appointmentKeyToParticipation.getOrDefault(appointment.getKey(), emptyList());
-			AppointmentRow row = getWrappedAppointment(topic, appointment, participations, userHasNoParticipation, noConfirmedAppointments);
+			AppointmentRow row = getWrappedAppointment(topic, appointment, participations, userHasNoConfirmedParticipation, noConfirmedAppointments);
 			if (row != null) {
 				rows.add(row);
 			}
@@ -124,7 +125,8 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 	}
 
 	private AppointmentRow getWrappedAppointment(Topic topic, Appointment appointment,
-			List<Participation> participations, boolean userHasNoParticipation, boolean noConfirmedAppointments) {
+			List<Participation> participations, boolean userHasNoConfirmedParticipation,
+			boolean noConfirmedAppointments) {
 		Optional<Participation> myParticipation = participations.stream()
 				.filter(p -> p.getIdentity().getKey().equals(getIdentity().getKey()))
 				.findFirst();
@@ -169,7 +171,7 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 			if (noConfirmedAppointments || selected) {
 				forgeSelectionLink(row, selected, noConfirmedAppointments);
 			}
-		} else if (topic.isMultiParticipation() || userHasNoParticipation) {
+		} else if (topic.isMultiParticipation() || userHasNoConfirmedParticipation) {
 			Integer numberOfParticipations = Integer.valueOf(participations.size());
 			row.setNumberOfParticipations(numberOfParticipations);
 			Integer maxParticipations = appointment.getMaxParticipations();
