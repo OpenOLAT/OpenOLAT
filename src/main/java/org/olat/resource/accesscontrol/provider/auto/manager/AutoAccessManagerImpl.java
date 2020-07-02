@@ -166,7 +166,7 @@ public class AutoAccessManagerImpl implements AutoAccessManager, UserDataDeletab
 			for (RepositoryEntry entry: entries) {
 				grantAccessIfHasNoAccess(advanceOrder, entry);
 			}
-			advanceOrderDAO.accomplishAndSave(advanceOrder);
+			advanceOrderDAO.accomplishAndSave(advanceOrder, acModule.isAutoMultiBooking());
 		}
 	}
 

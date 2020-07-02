@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
@@ -132,7 +133,7 @@ public class AdvanceOrderDAOTest extends OlatTestCase {
 		AdvanceOrder advanceOrderWithOtherIdentity = sut.create(otherIdentity, IDENTIFIER_KEY, IDENTIFIER_VALUE, freeMethod);
 		sut.save(advanceOrderWithOtherIdentity);
 		AdvanceOrder doneAdvanceOrder = sut.create(identity, IDENTIFIER_KEY, IDENTIFIER_VALUE, freeMethod);
-		sut.accomplishAndSave(doneAdvanceOrder);
+		sut.accomplishAndSave(doneAdvanceOrder, false);
 		dbInstance.commitAndCloseSession();
 
 		Collection<AdvanceOrder> pendingAdvanceOrders = sut.loadPendingAdvanceOrders(identity);
@@ -204,7 +205,7 @@ public class AdvanceOrderDAOTest extends OlatTestCase {
 		sut.save(aoPending);
 		AdvanceOrder aoDone = sut.create(identity, IdentifierKey.externalId, IDENTIFIER_VALUE, freeMethod);
 		sut.save(aoDone);
-		sut.accomplishAndSave(aoDone);
+		sut.accomplishAndSave(aoDone, false);
 		Identity otherIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("otheruser");
 		AdvanceOrder aoOtherIdentity = sut.create(otherIdentity, IdentifierKey.internalId, "not matching", freeMethod);
 		sut.save(aoOtherIdentity);
@@ -234,13 +235,23 @@ public class AdvanceOrderDAOTest extends OlatTestCase {
 	}
 
 	@Test
-	public void shouldMarkAsDoneWhenAccomplished() {
+	public void shouldMarkAsDoneWhenAccomplishedAndSingleOrder() {
 		AdvanceOrder advanceOrder = sut.create(identity, IDENTIFIER_KEY, IDENTIFIER_VALUE, freeMethod);
 		advanceOrder = sut.save(advanceOrder);
 
-		AdvanceOrder accomplishedAdvanceOrder = sut.accomplishAndSave(advanceOrder);
+		AdvanceOrder accomplishedAdvanceOrder = sut.accomplishAndSave(advanceOrder, false);
 
 		assertThat(accomplishedAdvanceOrder.getStatus()).isEqualTo(Status.DONE);
+	}
+
+	@Test
+	public void shouldMarkAsDoneWhenAccomplishedAndMultoOrder() {
+		AdvanceOrder advanceOrder = sut.create(identity, IDENTIFIER_KEY, IDENTIFIER_VALUE, freeMethod);
+		advanceOrder = sut.save(advanceOrder);
+
+		AdvanceOrder accomplishedAdvanceOrder = sut.accomplishAndSave(advanceOrder, true);
+
+		assertThat(accomplishedAdvanceOrder.getStatus()).isEqualTo(Status.PENDING);
 	}
 
 	@Test
@@ -248,7 +259,7 @@ public class AdvanceOrderDAOTest extends OlatTestCase {
 		AdvanceOrder advanceOrder = sut.create(identity, IDENTIFIER_KEY, IDENTIFIER_VALUE, freeMethod);
 		advanceOrder = sut.save(advanceOrder);
 
-		AdvanceOrder accomplishedAdvanceOrder = sut.accomplishAndSave(advanceOrder);
+		AdvanceOrder accomplishedAdvanceOrder = sut.accomplishAndSave(advanceOrder, false);
 
 		assertThat(accomplishedAdvanceOrder.getStatus()).isEqualTo(advanceOrder.getStatus());
 	}
@@ -309,4 +320,27 @@ public class AdvanceOrderDAOTest extends OlatTestCase {
 
 		assertThat(exists).isFalse();
 	}
+	
+	@Test
+	public void shouldUpdateAllStatus() {
+		AdvanceOrder advanceOrder = sut.create(identity, IDENTIFIER_KEY, IDENTIFIER_VALUE, freeMethod);
+		advanceOrder.setStatus(AdvanceOrder.Status.DONE);
+		sut.save(advanceOrder);
+		AdvanceOrder advanceOrder2 = sut.create(identity, IDENTIFIER_KEY, IDENTIFIER_VALUE, freeMethod);
+		advanceOrder2.setStatus(AdvanceOrder.Status.DONE);
+		sut.save(advanceOrder2);
+		dbInstance.commitAndCloseSession();
+		
+		Collection<AdvanceOrder> pending = sut.loadPendingAdvanceOrders(identity);
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(pending).hasSize(0);
+		
+		sut.updateAllStatus(AdvanceOrder.Status.PENDING);
+		dbInstance.commitAndCloseSession();
+		
+		pending = sut.loadPendingAdvanceOrders(identity);
+		softly.assertThat(pending).hasSize(2);
+		softly.assertAll();
+	}
+
 }

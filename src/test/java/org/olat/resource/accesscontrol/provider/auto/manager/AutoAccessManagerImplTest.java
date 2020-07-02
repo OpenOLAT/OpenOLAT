@@ -270,7 +270,7 @@ public class AutoAccessManagerImplTest {
 
 		sut.grantAccess(getPendingAdvanceOrders());
 
-		verify(advanceOrderDaoMock, times(2)).accomplishAndSave(any(AdvanceOrder.class));
+		verify(advanceOrderDaoMock, times(2)).accomplishAndSave(any(AdvanceOrder.class), false);
 	}
 
 	@Test

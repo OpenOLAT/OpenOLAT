@@ -35,6 +35,8 @@ import org.olat.resource.accesscontrol.manager.ACMethodDAO;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.FreeAccessMethod;
 import org.olat.resource.accesscontrol.model.TokenAccessMethod;
+import org.olat.resource.accesscontrol.provider.auto.AdvanceOrder;
+import org.olat.resource.accesscontrol.provider.auto.manager.AdvanceOrderDAO;
 import org.olat.resource.accesscontrol.provider.paypal.model.PaypalAccessMethod;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.model.PaypalCheckoutAccessMethod;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,6 +69,8 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 	private static final String PAYPAL_CHECKOUT_ENABLED = "method.paypal.checkout.enabled";
 	private static final String AUTO_ENABLED = "method.auto.enabled";
 	private static final String AUTO_EXTERNAL_REF_DELIMITER = "method.auto.external.ref.delimiter";
+	private static final String AUTO_MULTI_BOOKING = "method.auto.multi.booking";
+	private static final String AUTO_RESET_TO_PENDING = "method.auto.reset.to.pending";
 
 	@Value("${resource.accesscontrol.enabled:true}")
 	private boolean enabled;
@@ -78,6 +82,10 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 	private boolean autoEnabled;
 	@Value("${method.auto.externalRef.delimiter}")
 	private String autoExternalRefDelimiter;
+	@Value("${method.auto.multi.booking}")
+	private boolean autoMultiBooking;
+	@Value("${method.auto.reset.to.pending}")
+	private boolean autoResetToPending;
 	@Value("${method.token.enabled:true}")
 	private boolean tokenEnabled;
 	@Value("${method.paypal.enabled:false}")
@@ -95,6 +103,8 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 	private DB dbInstance;
 	private final ACMethodDAO acMethodManager;
 	@Autowired
+	private AdvanceOrderDAO advanceOrderDao;
+	@Autowired
 	private List<AccessMethodHandler> methodHandlers;
 
 	@Autowired
@@ -108,6 +118,7 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 		//module enabled/disabled
 		updateProperties();
 		updateAccessMethods();
+		resetResetAutoStatusToPending();
 		log.info("Access control module is enabled: " + Boolean.toString(enabled));
 	}
 
@@ -152,6 +163,16 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 			autoExternalRefDelimiter = autoExternalRefDelimiterObj;
 		}
 
+		String autoMultiBookingObj = getStringPropertyValue(AUTO_MULTI_BOOKING, true);
+		if(StringHelper.containsNonWhitespace(autoMultiBookingObj)) {
+			autoMultiBooking = "true".equals(autoMultiBookingObj);
+		}
+
+		String autoResetToPendingObj = getStringPropertyValue(AUTO_RESET_TO_PENDING, true);
+		if(StringHelper.containsNonWhitespace(autoResetToPendingObj)) {
+			autoResetToPending = "true".equals(autoResetToPendingObj);
+		}
+		
 		String homeEnabledObj = getStringPropertyValue(AC_HOME_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(homeEnabledObj)) {
 			homeOverviewEnabled = "true".equals(homeEnabledObj);
@@ -184,6 +205,13 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 		acMethodManager.enableMethod(PaypalCheckoutAccessMethod.class, isPaypalCheckoutEnabled());
 		acMethodManager.enableAutoMethods(isAutoEnabled());
 		dbInstance.commitAndCloseSession();
+	}
+
+	private void resetResetAutoStatusToPending() {
+		if (autoResetToPending) {
+			advanceOrderDao.updateAllStatus(AdvanceOrder.Status.PENDING);
+			dbInstance.commitAndCloseSession();
+		}
 	}
 
 	@Override
@@ -235,6 +263,15 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 	public void setAutoExternalRefDelimiter(String autoExternalRefDelimiter) {
 		this.autoExternalRefDelimiter = autoExternalRefDelimiter;
 		setStringProperty(AUTO_EXTERNAL_REF_DELIMITER, autoExternalRefDelimiter, true);
+	}
+
+	public boolean isAutoMultiBooking() {
+		return autoMultiBooking;
+	}
+
+	public void setAutoMultiBooking(boolean autoMultiBooking) {
+		this.autoMultiBooking = autoMultiBooking;
+		setStringProperty(AUTO_MULTI_BOOKING, Boolean.toString(autoMultiBooking), true);
 	}
 
 	public boolean isPaypalEnabled() {

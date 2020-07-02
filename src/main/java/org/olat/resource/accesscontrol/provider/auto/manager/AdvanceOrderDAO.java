@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.model.AccessMethod;
@@ -45,7 +46,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-class AdvanceOrderDAO {
+public class AdvanceOrderDAO {
 
 	@Autowired
 	private DB dbInstance;
@@ -151,15 +152,32 @@ class AdvanceOrderDAO {
 		return advanceOrder;
 	}
 
-	AdvanceOrder accomplishAndSave(AdvanceOrder advanceOrder) {
+	AdvanceOrder accomplishAndSave(AdvanceOrder advanceOrder, boolean multiOrder) {
 		if (advanceOrder == null) return advanceOrder;
 
-		advanceOrder.setStatus(Status.DONE);
+		if (!multiOrder) {
+			advanceOrder.setStatus(Status.DONE);
+		}
 		advanceOrder.setStatusModified(new Date());
 		advanceOrder = save(advanceOrder);
 
 		return advanceOrder;
 	}
+
+	public void updateAllStatus(Status status) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("update advanceOrder advanceOrder");
+		sb.append("   set advanceOrder.status = :status");
+		sb.append("     , advanceOrder.lastModified = :lastModified");
+		sb.and().append(" advanceOrder.status <> :status");
+		
+		dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("status", status)
+				.setParameter("lastModified", new Date())
+				.executeUpdate();
+	}
+
 	
 	static final class IdentifierKeyValue {
 		
