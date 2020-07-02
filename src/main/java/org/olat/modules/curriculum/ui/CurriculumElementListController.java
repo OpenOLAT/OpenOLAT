@@ -384,6 +384,9 @@ public class CurriculumElementListController extends FormBasicController impleme
 
 		if(startLink != null) {
 			startLink.setUserObject(row);
+			String businessPath = "[RepositoryEntry:" + row.getRepositoryEntryKey() + "]";
+			startLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathString(businessPath));
 			row.setStartLink(startLink);
 		}
 
@@ -406,6 +409,12 @@ public class CurriculumElementListController extends FormBasicController impleme
 		FormLink detailsLink = uifactory.addFormLink("details_" + (++counter), "details", "details", null, null, Link.LINK);
 		detailsLink.setCustomEnabledLinkCSS("o_details");
 		detailsLink.setUserObject(row);
+		Long repoEntryKey = row.getRepositoryEntryKey();
+		if(repoEntryKey != null) {
+			String businessPath = "[RepositoryEntry:" + repoEntryKey + "][Infos:0]";
+			detailsLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathString(businessPath));
+		}
 		row.setDetailsLink(detailsLink);
 	}
 	
@@ -426,6 +435,12 @@ public class CurriculumElementListController extends FormBasicController impleme
 		FormLink selectLink = uifactory.addFormLink("select_" + (++counter), "select", displayName, null, null, Link.NONTRANSLATED);
 		if(row.isClosed()) {
 			selectLink.setIconLeftCSS("o_icon o_CourseModule_icon_closed");
+		}
+		Long repoEntryKey = row.getRepositoryEntryKey();
+		if(repoEntryKey != null) {
+			String businessPath = "[RepositoryEntry:" + repoEntryKey + "]";
+			selectLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathString(businessPath));
 		}
 		selectLink.setUserObject(row);
 		row.setSelectLink(selectLink);

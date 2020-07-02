@@ -19,9 +19,7 @@
  */
 package org.olat.repository.ui.list;
 
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataSourceModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusinessPathModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 
 /**
@@ -30,7 +28,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-class RepositoryEntryDataModel extends DefaultFlexiTableDataSourceModel<RepositoryEntryRow> implements FlexiBusinessPathModel {
+class RepositoryEntryDataModel extends DefaultFlexiTableDataSourceModel<RepositoryEntryRow> {
 	
 	private static final Cols[] COLS = Cols.values();
 	
@@ -52,12 +50,6 @@ class RepositoryEntryDataModel extends DefaultFlexiTableDataSourceModel<Reposito
 	@Override
 	public DefaultRepositoryEntryDataSource getSourceDelegate() {
 		return (DefaultRepositoryEntryDataSource)super.getSourceDelegate();
-	}
-
-	@Override
-	public String getUrl(Component source, Object object, String action) {
-		
-		return null;
 	}
 
 	@Override

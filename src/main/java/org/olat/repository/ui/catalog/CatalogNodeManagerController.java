@@ -168,7 +168,6 @@ public class CatalogNodeManagerController extends FormBasicController implements
 	
 	private static final String CMD_UP = "leaf_up";
 	private static final String CMD_DOWN = "leaf_down";
-	private static final String CMD_SET_POSITION = "set_position";
 	
 	private LockResult catModificationLock;
 	private final MapperKey mapperThumbnailKey;

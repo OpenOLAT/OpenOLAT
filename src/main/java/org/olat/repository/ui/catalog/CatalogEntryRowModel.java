@@ -22,9 +22,12 @@ package org.olat.repository.ui.catalog;
 import java.util.List;
 
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusinessPathModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.id.context.BusinessControlFactory;
 
 /**
  * 
@@ -33,7 +36,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  *
  */
 public class CatalogEntryRowModel extends DefaultFlexiTableDataModel<CatalogEntryRow>
-	implements SortableFlexiTableDataModel<CatalogEntryRow> {
+	implements SortableFlexiTableDataModel<CatalogEntryRow>, FlexiBusinessPathModel {
+	
+	private static final Cols[] COLS = Cols.values();
 	
 	public CatalogEntryRowModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
@@ -43,11 +48,28 @@ public class CatalogEntryRowModel extends DefaultFlexiTableDataModel<CatalogEntr
 	public DefaultFlexiTableDataModel<CatalogEntryRow> createCopyWithEmptyList() {
 		return new CatalogEntryRowModel(getTableColumnModel());
 	}
+	
+	@Override
+	public String getUrl(Component source, Object object, String action) {
+		String url = null;
+		if(action != null && object instanceof CatalogEntryRow) {
+			if(action.endsWith("select")) {
+				CatalogEntryRow row = (CatalogEntryRow)object;
+				url = BusinessControlFactory.getInstance()
+						.getAuthenticatedURLFromBusinessPathString("[RepositoryEntry:" + row.getKey() + "]");
+			} else if(action.endsWith("details")) {
+				CatalogEntryRow row = (CatalogEntryRow)object;
+				url = BusinessControlFactory.getInstance()
+						.getAuthenticatedURLFromBusinessPathString("[RepositoryEntry:" + row.getKey() + "][Infos:0]");
+			}
+		}
+		return url;
+	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
 		CatalogEntryRow item = getObject(row);
-		switch (Cols.values()[col]) {
+		switch (COLS[col]) {
 		case up:
 			return row == 0 ? Boolean.FALSE : Boolean.TRUE;
 		case down:
@@ -59,7 +81,7 @@ public class CatalogEntryRowModel extends DefaultFlexiTableDataModel<CatalogEntr
 	
 	@Override
 	public Object getValueAt(CatalogEntryRow item, int col) {
-		switch(Cols.values()[col]) {
+		switch(COLS[col]) {
 			case key: return item.getKey();
 			case ac: return item;
 			case type: return item;
@@ -77,8 +99,8 @@ public class CatalogEntryRowModel extends DefaultFlexiTableDataModel<CatalogEntr
 			case move: return item;
 			case delete: return item;
 			case position: return item.getPositionLink();
+			default: return "";
 		}
-		return null;
 	}
 
 	@Override

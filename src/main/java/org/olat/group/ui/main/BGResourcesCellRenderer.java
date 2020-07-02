@@ -33,6 +33,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntryShort;
 
@@ -79,6 +80,8 @@ public class BGResourcesCellRenderer implements FlexiCellRenderer {
 						if(allResourcesLink == null) {
 							allResourcesLink = uifactory.addFormLink("repo_entry_" + counter.incrementAndGet(), "allresources", "...",
 								null, formLayout, Link.NONTRANSLATED);
+							allResourcesLink.setUrl(BusinessControlFactory.getInstance()
+									.getAuthenticatedURLFromBusinessPathString("[BusinessGroup:" + item.getBusinessGroupKey() + "][toolresources:0]"));
 						}
 						allResourcesLink.setUserObject(item);
 						Component allResourcesCmp = allResourcesLink.getComponent();
@@ -94,6 +97,8 @@ public class BGResourcesCellRenderer implements FlexiCellRenderer {
 						if(markLink == null) {
 							String resourceName = StringHelper.escapeHtml(relation.getDisplayname());
 							markLink = uifactory.addFormLink("repo_entry_" + relation.getKey(), "resource", resourceName, null, formLayout, Link.NONTRANSLATED);
+							markLink.setUrl(BusinessControlFactory.getInstance()
+									.getAuthenticatedURLFromBusinessPathString("[Repository:" + relation.getKey() + "]"));
 							markLink.setIconLeftCSS("o_icon o_CourseModule_icon");
 							markLink.setUserObject(relation);
 							formLayout.add(name, markLink);

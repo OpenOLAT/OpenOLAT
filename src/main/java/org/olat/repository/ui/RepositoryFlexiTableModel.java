@@ -30,13 +30,16 @@ import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusinessPathModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
@@ -55,7 +58,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class RepositoryFlexiTableModel extends DefaultFlexiTableDataModel<RepositoryEntry>
-implements SortableFlexiTableDataModel<RepositoryEntry>, FilterableFlexiTableModel {
+implements SortableFlexiTableDataModel<RepositoryEntry>, FilterableFlexiTableModel, FlexiBusinessPathModel {
+	
+	private static final RepoCols[] COLS = RepoCols.values();
 	
 	private final Translator translator;
 	private List<RepositoryEntry> backups;
@@ -110,6 +115,15 @@ implements SortableFlexiTableDataModel<RepositoryEntry>, FilterableFlexiTableMod
 	}
 
 	@Override
+	public String getUrl(Component source, Object object, String action) {
+		if("select".equals(action) && object instanceof RepositoryEntry) {
+			String businessPath = "[RepositoryEntry:" + ((RepositoryEntry)object).getKey() + "]";
+			return BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath);
+		}
+		return null;
+	}
+
+	@Override
 	public Object getValueAt(int row, int col) {
 		RepositoryEntry entry = getObject(row);
 		return getValueAt(entry, col);
@@ -117,7 +131,7 @@ implements SortableFlexiTableDataModel<RepositoryEntry>, FilterableFlexiTableMod
 
 	@Override
 	public Object getValueAt(RepositoryEntry re, int col) {
-		switch (RepoCols.values()[col]) {
+		switch (COLS[col]) {
 			case ac: return getAccessControl(re);
 			case repoEntry: return re; 
 			case displayname: return re.getDisplayname();
