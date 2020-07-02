@@ -337,15 +337,19 @@ public abstract class FormItemImpl implements InlineElement {
 	 */
 	@Override
 	public void setExampleKey(String exampleKey, String[] params) {
-		hasExample = true;
-		this.exampleKey = exampleKey;
-		this.exampleParams = params;
-		if (getTranslator() != null) {
-			exampleC = new SimpleExampleText(exampleKey, translate(exampleKey, params));
-			examplePanel.setContent(exampleC);
-		} else if(exampleKey == null) {
+		if(exampleKey == null) {
+			// reset
 			exampleC = null;
 			examplePanel.setContent(exampleC);
+			hasExample = false;
+		} else {
+			hasExample = true;
+			this.exampleKey = exampleKey;
+			this.exampleParams = params;
+			if (getTranslator() != null) {
+				exampleC = new SimpleExampleText(exampleKey, translate(exampleKey, params));
+				examplePanel.setContent(exampleC);
+			} 
 		}
 	}
 	

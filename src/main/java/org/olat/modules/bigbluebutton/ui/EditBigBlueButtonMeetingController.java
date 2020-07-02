@@ -40,6 +40,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.bigbluebutton.BigBlueButtonDispatcher;
@@ -206,8 +207,14 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		guestEl.setVisible(entry != null && entry.isGuests());
 		guestEl.select(onKeys[0], meeting != null && meeting.isGuest());
 		
-		String externalLink = meeting == null ? null : meeting.getReadableIdentifier();
+		String externalLink = meeting == null ? CodeHelper.getForeverUniqueID() + "" : meeting.getReadableIdentifier();
 		externalLinkEl = uifactory.addTextElement("meeting.external.users", 64, externalLink, formLayout);
+		externalLinkEl.setPlaceholderKey("meeting.external.users.empty", null);
+		externalLinkEl.setHelpTextKey("meeting.external.users.help", null);
+		externalLinkEl.addActionListener(FormEvent.ONCHANGE);
+		if (externalLink != null) {
+			externalLinkEl.setExampleKey("noTransOnlyParam", new String[] {BigBlueButtonDispatcher.getMeetingUrl(externalLink)});			
+		}
 		
 		openCalLink = uifactory.addFormLink("calendar.open", formLayout);
 		openCalLink.setIconLeftCSS("o_icon o_icon-fw o_icon_calendar");
@@ -387,22 +394,27 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		boolean allOk = true;
 		
 		externalLinkEl.clearError();
-		if(externalLinkEl.isVisible() && StringHelper.containsNonWhitespace(externalLinkEl.getValue())) {
+		if(externalLinkEl.isVisible()) {
 			String identifier = externalLinkEl.getValue();
-			if(identifier.length() > 64) {
-				externalLinkEl.setErrorKey("form.error.toolong", new String[] { "64" });
-				allOk &= false;
-			} else if(bigBlueButtonManager.isIdentifierInUse(identifier, meeting)) {
-				externalLinkEl.setErrorKey("error.identifier.in.use", null);
-				allOk &= false;
-			} else {
-				try {
-					URI uri = new URI(BigBlueButtonDispatcher.getMeetingUrl(identifier));
-					uri.normalize();
-				} catch(Exception e) {
-					externalLinkEl.setErrorKey("error.identifier.url.not.valid", new String[] { e.getMessage() });
+			if (StringHelper.containsNonWhitespace(externalLinkEl.getValue())) {
+				if(identifier.length() > 64) {
+					externalLinkEl.setErrorKey("form.error.toolong", new String[] { "64" });
 					allOk &= false;
+				} else if(bigBlueButtonManager.isIdentifierInUse(identifier, meeting)) {
+					externalLinkEl.setErrorKey("error.identifier.in.use", null);
+					allOk &= false;
+				} else {
+					try {
+						URI uri = new URI(BigBlueButtonDispatcher.getMeetingUrl(identifier));
+						uri.normalize();
+					} catch(Exception e) {
+						externalLinkEl.setErrorKey("error.identifier.url.not.valid", new String[] { e.getMessage() });
+						allOk &= false;
+					}
 				}
+				externalLinkEl.setExampleKey("noTransOnlyParam", new String[] {BigBlueButtonDispatcher.getMeetingUrl(identifier)});			
+			} else {
+				externalLinkEl.setExampleKey(null, null);			
 			}
 		}
 
@@ -525,6 +537,8 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			updateLayoutSelection();
 		} else if (openCalLink == source) {
 			doOpenCalendar(ureq);
+		} else if (externalLinkEl == source) {
+			validateReadableIdentifier();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
