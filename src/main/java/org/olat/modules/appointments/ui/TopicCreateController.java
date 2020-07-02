@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.GroupRoles;
@@ -55,7 +54,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.appointments.Appointment;
 import org.olat.modules.appointments.AppointmentsSecurityCallback;
 import org.olat.modules.appointments.AppointmentsService;
-import org.olat.modules.appointments.Organizer;
 import org.olat.modules.appointments.Topic;
 import org.olat.modules.appointments.Topic.Type;
 import org.olat.repository.RepositoryEntry;
@@ -94,7 +92,6 @@ public class TopicCreateController extends FormBasicController {
 	private String subIdent;
 	private AppointmentsSecurityCallback secCallback;
 	private Topic topic;
-	private List<Organizer> organizers;
 	private List<Identity> coaches;
 	private List<AppointmentWrapper> appointmentWrappers;
 	private boolean multiParticipationsSelected = true;
@@ -115,7 +112,6 @@ public class TopicCreateController extends FormBasicController {
 		this.entry = entry;
 		this.subIdent = subIdent;
 		
-		organizers = new ArrayList<>(0);
 		coaches = repositoryService.getMembers(entry, RepositoryEntryRelationType.all, GroupRoles.coach.name());
 		
 		initForm(ureq);
@@ -153,13 +149,14 @@ public class TopicCreateController extends FormBasicController {
 		}
 		coachesKV.sort(VALUE_ASC);
 		organizerEl = uifactory.addCheckboxesDropdown("organizer", "organizer", formLayout, coachesKV.keys(), coachesKV.values());
-		for (Organizer organizer : organizers) {
-			Long organizerKey = organizer.getIdentity().getKey();
-			if (coaches.stream().anyMatch(coach -> organizerKey.equals(coach.getKey()))) {
-				organizerEl.select(organizerKey.toString(), true);
+		organizerEl.setVisible(!coaches.isEmpty());
+		
+		if (organizerEl.isVisible()) {
+			String defaultOrganizerKey = getIdentity().getKey().toString();
+			if (organizerEl.getKeys().contains(defaultOrganizerKey)) {
+					organizerEl.select(defaultOrganizerKey, true);
 			}
 		}
-		organizerEl.setVisible(!coaches.isEmpty());
 		
 		// Appointments
 		locationEl = uifactory.addTextElement("appointment.location", 128, null, formLayout);
@@ -369,10 +366,6 @@ public class TopicCreateController extends FormBasicController {
 
 	private void doSaveTopic() {
 		topic = appointmentsService.createTopic(entry, subIdent);
-		Identity organizer = secCallback.getDefaultOrganizer();
-		if (organizer != null) {
-			appointmentsService.createOrganizer(topic, organizer);
-		}
 		
 		String title = titleEl.getValue();
 		topic.setTitle(title);
@@ -397,21 +390,10 @@ public class TopicCreateController extends FormBasicController {
 
 	private void doSaveOrganizers() {
 		Collection<String> selectedOrganizerKeys = organizerEl.getSelectedKeys();
-		
-		// delete unselected
-		List<Organizer> organizersToDelete = organizers.stream()
-				.filter(organizer -> !selectedOrganizerKeys.contains(organizer.getIdentity().getKey().toString()))
+		List<Identity> selectedOrganizers = coaches.stream()
+				.filter(i -> selectedOrganizerKeys.contains(i.getKey().toString()))
 				.collect(Collectors.toList());
-		appointmentsService.deleteOrganizers(topic, organizersToDelete);
-		
-		// create newly selected
-		Set<String> currentOrganizerKeys = organizers.stream()
-				.map(o -> o.getIdentity().getKey().toString())
-				.collect(Collectors.toSet());
-		selectedOrganizerKeys.removeAll(currentOrganizerKeys);
-		coaches.stream()
-				.filter(coach -> selectedOrganizerKeys.contains(coach.getKey().toString()))
-				.forEach(coach -> appointmentsService.createOrganizer(topic, coach));
+		appointmentsService.updateOrganizers(topic, selectedOrganizers);
 	}
 
 	private void doSaveSingleAppointments() {

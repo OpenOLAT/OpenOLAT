@@ -59,9 +59,7 @@ public interface AppointmentsService {
 	 */
 	public List<Topic> getRestictedTopic(RepositoryEntryRef entry, String subIdent, IdentityRef identity);
 	
-	public Organizer createOrganizer(Topic topic, Identity identity);
-
-	public void deleteOrganizers(TopicRef topic, Collection<Organizer> organizers);
+	public void updateOrganizers(Topic topic, Collection<Identity> identities);
 
 	public List<Organizer> getOrganizers(TopicRef topic);
 

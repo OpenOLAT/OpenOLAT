@@ -54,6 +54,29 @@ public class AppointmentsServiceTest extends OlatTestCase {
 	private AppointmentsService sut;
 	
 	@Test
+	public void shouldUpdateOrganizers() {
+		Identity organizerDelete = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
+		Identity organizerKeep = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
+		Identity organizerNew1 = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
+		Identity organizerNew2 = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
+		Topic topic = createRandomTopic();
+		sut.updateOrganizers(topic, asList(organizerDelete, organizerKeep));
+		dbInstance.commitAndCloseSession();
+		
+		sut.updateOrganizers(topic, asList(organizerKeep, organizerNew1, organizerNew2));
+		dbInstance.commitAndCloseSession();
+		
+		List<Organizer> organizers = sut.getOrganizers(topic);
+		assertThat(organizers).extracting(Organizer::getIdentity)
+				.containsExactlyInAnyOrder(
+						organizerKeep,
+						organizerNew1,
+						organizerNew2)
+				.doesNotContain(
+						organizerDelete);
+	}
+	
+	@Test
 	public void createParticipationShouldCreateParticiption() {
 		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
 		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
