@@ -37,13 +37,13 @@ import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
-import org.olat.course.nodes.appointments.ui.AppointmentsRunController;
 import org.olat.modules.appointments.Appointment;
 import org.olat.modules.appointments.Organizer;
 import org.olat.modules.appointments.Participation;
 import org.olat.modules.appointments.ParticipationSearchParams;
 import org.olat.modules.appointments.Topic;
 import org.olat.modules.appointments.TopicRef;
+import org.olat.modules.appointments.ui.AppointmentsMainController;
 import org.olat.repository.RepositoryManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -195,7 +195,7 @@ public class CalendarSyncher {
 		sb.append(appointment.getTopic().getTitle());
 		if (Appointment.Status.planned == appointment.getStatus()) {
 			Locale locale = I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage());
-			Translator translator = Util.createPackageTranslator(AppointmentsRunController.class, locale);
+			Translator translator = Util.createPackageTranslator(AppointmentsMainController.class, locale);
 			sb.append(" (");
 			sb.append(translator.translate("unconfirmed"));
 			sb.append(")");

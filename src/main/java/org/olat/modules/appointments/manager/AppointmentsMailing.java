@@ -40,12 +40,12 @@ import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.course.nodes.appointments.ui.AppointmentsRunController;
 import org.olat.modules.appointments.Appointment;
 import org.olat.modules.appointments.Organizer;
 import org.olat.modules.appointments.Participation;
 import org.olat.modules.appointments.ParticipationSearchParams;
 import org.olat.modules.appointments.Topic;
+import org.olat.modules.appointments.ui.AppointmentsMainController;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -106,7 +106,7 @@ public class AppointmentsMailing {
 	
 	private void sendStatusEmail(Appointment appointment, Identity identity, String i18nSubject, String i18nBody) {
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage());
-		Translator translator = Util.createPackageTranslator(AppointmentsRunController.class, locale);
+		Translator translator = Util.createPackageTranslator(AppointmentsMainController.class, locale);
 				
 		Topic topic = appointment.getTopic();
 		String subject = translator.translate(i18nSubject, new String[] {
@@ -141,7 +141,7 @@ public class AppointmentsMailing {
 		
 		Identity identity = organizer.getIdentity();
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage());
-		Translator translator = Util.createPackageTranslator(AppointmentsRunController.class, locale);
+		Translator translator = Util.createPackageTranslator(AppointmentsMainController.class, locale);
 				
 		String subject = translator.translate("mail.appointments.deleted.subject");
 		String body = translator.translate("mail.appointments.deleted.body", new String[] {
@@ -177,7 +177,7 @@ public class AppointmentsMailing {
 		Appointment appointment = reloadedParticipation.getAppointment();
 		Identity identity = reloadedParticipation.getIdentity();
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage());
-		Translator translator = Util.createPackageTranslator(AppointmentsRunController.class, locale);
+		Translator translator = Util.createPackageTranslator(AppointmentsMainController.class, locale);
 				
 		String subject = translator.translate("mail.participation.created.subject", 
 				new String[] {appointment.getTopic().getTitle() });
@@ -213,7 +213,7 @@ public class AppointmentsMailing {
 		Appointment appointment = reloadedParticipation.getAppointment();
 		Identity identity = reloadedParticipation.getIdentity();
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage());
-		Translator translator = Util.createPackageTranslator(AppointmentsRunController.class, locale);
+		Translator translator = Util.createPackageTranslator(AppointmentsMainController.class, locale);
 				
 		String subject = translator.translate("mail.participation.deleted.subject", 
 				new String[] {appointment.getTopic().getTitle() });
@@ -251,7 +251,7 @@ public class AppointmentsMailing {
 	void sendRebook(Appointment toAppointment, Participation fromParticipation) {
 		Identity identity = fromParticipation.getIdentity();
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage());
-		Translator translator = Util.createPackageTranslator(AppointmentsRunController.class, locale);
+		Translator translator = Util.createPackageTranslator(AppointmentsMainController.class, locale);
 				
 		String subject = translator.translate("mail.rebooked.subject");
 		String body = translator.translate("mail.rebooked.body", new String[] {

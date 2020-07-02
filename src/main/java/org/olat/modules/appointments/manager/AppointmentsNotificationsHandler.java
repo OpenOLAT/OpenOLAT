@@ -40,10 +40,10 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.AppointmentsCourseNode;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.appointments.ui.AppointmentsRunController;
 import org.olat.modules.appointments.AppointmentsService;
 import org.olat.modules.appointments.Participation;
 import org.olat.modules.appointments.ParticipationSearchParams;
+import org.olat.modules.appointments.ui.AppointmentsMainController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.user.UserManager;
@@ -91,7 +91,7 @@ public class AppointmentsNotificationsHandler implements NotificationsHandler {
 					return notificationsManager.getNoSubscriptionInfo();
 				}
 				
-				Translator translator = Util.createPackageTranslator(AppointmentsRunController.class, locale);
+				Translator translator = Util.createPackageTranslator(AppointmentsMainController.class, locale);
 				List<SubscriptionListItem> items = new ArrayList<>();
 				
 				RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
@@ -154,7 +154,7 @@ public class AppointmentsNotificationsHandler implements NotificationsHandler {
 		try {
 			Long resId = subscriber.getPublisher().getResId();
 			String displayName = repositoryManager.lookupDisplayNameByOLATResourceableId(resId);
-			Translator trans = Util.createPackageTranslator(AppointmentsRunController.class, locale);
+			Translator trans = Util.createPackageTranslator(AppointmentsMainController.class, locale);
 			title = trans.translate("notifications.title", new String[]{ displayName });
 		} catch (Exception e) {
 			log.error("Error while creating appointments notifications for subscriber: " + subscriber.getKey(), e);
