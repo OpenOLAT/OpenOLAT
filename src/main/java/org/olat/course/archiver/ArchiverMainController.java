@@ -25,6 +25,7 @@
 
 package org.olat.course.archiver;
 
+import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -44,7 +45,10 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ActionType;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -67,7 +71,7 @@ import org.olat.course.nodes.WikiCourseNode;
  * @author gnaegi
  * 
  */
-public class ArchiverMainController extends MainLayoutBasicController {
+public class ArchiverMainController extends MainLayoutBasicController implements Activateable2 {
 
 	private static final String CMD_INDEX = "index";
 	private static final String CMD_QTISURVRESULTS = "qtisurvresults";
@@ -130,6 +134,11 @@ public class ArchiverMainController extends MainLayoutBasicController {
 		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, main, "course" + ores.getResourceableId());
 		listenTo(columnLayoutCtr); // cleanup on dispose
 		putInitialPanel(columnLayoutCtr.getInitialComponent());
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		//
 	}
 
 	@Override

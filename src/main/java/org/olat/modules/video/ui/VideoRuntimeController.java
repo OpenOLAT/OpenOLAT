@@ -34,6 +34,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
@@ -68,6 +69,8 @@ public class VideoRuntimeController extends RepositoryEntryRuntimeController {
 			toolsDropdown.addComponent(new Spacer("video-editor"));
 			
 			editorLink = LinkFactory.createToolLink("metaDataConfig", translate("tab.video.settings"), this);
+			editorLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[Editor:0][metadata:0]"));
 			editorLink.setIconLeftCSS("o_icon o_icon-fw o_icon_quota o_icon_settings");
 			toolsDropdown.addComponent(editorLink);
 			

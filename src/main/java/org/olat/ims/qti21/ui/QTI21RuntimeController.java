@@ -33,6 +33,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -92,16 +93,22 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 	protected void initToolsMenuRuntime(Dropdown toolsDropdown) {
 		if (reSecurity.isEntryAdmin() || reSecurity.isCoach()) {
 			assessmentLink = LinkFactory.createToolLink("assessment", translate("command.openassessment"), this, "o_icon_assessment_tool");
+			assessmentLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[AssessmentTool:0]"));
 			assessmentLink.setElementCssClass("o_sel_course_assessment_tool");
 			toolsDropdown.addComponent(assessmentLink);
 		}
 		if (reSecurity.isEntryAdmin()) {
 			gradingLink = LinkFactory.createToolLink("grading", translate("command.grading"), this, "o_icon_assessment_tool");
+			gradingLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[Grading:0]"));
 			gradingLink.setElementCssClass("o_sel_grading");
 			toolsDropdown.addComponent(gradingLink);
 		}
 		if (reSecurity.isEntryAdmin() || reSecurity.isCoach()) {
 			testStatisticLink = LinkFactory.createToolLink("qtistatistic", translate("command.openteststatistic"), this, "o_icon_statistics_tool");
+			testStatisticLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[TestStatistics:0]"));
 			toolsDropdown.addComponent(testStatisticLink);
 		}
 		

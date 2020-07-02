@@ -33,7 +33,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.assessment.ui.AssessableResource;
@@ -69,6 +71,8 @@ public class BinderRuntimeController extends RepositoryEntryRuntimeController {
 			toolsDropdown.addComponent(new Spacer(""));
 			
 			assessmentLink = LinkFactory.createToolLink("assessment", translate("command.openassessment"), this, "o_icon_assessment_tool");
+			assessmentLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[AssessmentTool:0]]"));
 			assessmentLink.setElementCssClass("o_sel_course_assessment_tool");
 			toolsDropdown.addComponent(assessmentLink);
 		}
@@ -76,6 +80,8 @@ public class BinderRuntimeController extends RepositoryEntryRuntimeController {
 		if (reSecurity.isEntryAdmin()) {
 			RepositoryEntry re = getRepositoryEntry();
 			ordersLink = LinkFactory.createToolLink("bookings", translate("details.orders"), this, "o_sel_repo_booking");
+			ordersLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[Booking:0]]"));
 			ordersLink.setIconLeftCSS("o_icon o_icon-fw o_icon_booking");
 			boolean booking = acService.isResourceAccessControled(re.getOlatResource(), null);
 			ordersLink.setEnabled(booking);
@@ -86,6 +92,18 @@ public class BinderRuntimeController extends RepositoryEntryRuntimeController {
 		if(runner instanceof BinderController) {
 			((BinderController)runner).setSegmentButtonsVisible(true);
 		}
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		entries = removeRepositoryEntry(entries);
+		if(entries != null && !entries.isEmpty()) {
+			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+			if("AssessmentTool".equalsIgnoreCase(type) && assessmentLink != null && assessmentLink.isVisible()) {
+				activateSubEntries(ureq, doAssessmentTool(ureq), entries);
+			}
+		}
+		super.activate(ureq, entries, state);
 	}
 
 	@Override
@@ -103,7 +121,7 @@ public class BinderRuntimeController extends RepositoryEntryRuntimeController {
 	}
 
 	private Activateable2 doAssessmentTool(UserRequest ureq) {
-		OLATResourceable ores = OresHelper.createOLATResourceableType("TestStatistics");
+		OLATResourceable ores = OresHelper.createOLATResourceableType("AssessmentTool");
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl swControl = addToHistory(ureq, ores, null);
 		

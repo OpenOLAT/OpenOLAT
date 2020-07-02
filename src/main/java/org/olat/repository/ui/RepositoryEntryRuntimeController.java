@@ -160,6 +160,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected boolean corrupted;
 	protected boolean settingsChanged;
 	protected boolean overrideReadOnly = false;
+	protected final String businessPathEntry;
 	private RepositoryEntry re;
 	private List<OrganisationRef> organisations;
 	private LockResult lockResult;
@@ -206,6 +207,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		//! check corrupted
 		corrupted = isCorrupted(re);
 		
+		businessPathEntry = "[RepositoryEntry:" + re.getKey() + "]";
 
 		UserSession session = ureq.getUserSession();
 		Object wcard = session.removeEntry("override_readonly_" + re.getKey());
@@ -449,11 +451,15 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected void initToolsMenuSettings(Dropdown toolsDropdown) {
 		if (reSecurity.isEntryAdmin()) {
 			settingsLink = LinkFactory.createToolLink("settings", translate("details.settings"), this, "o_sel_repo_settings");
+			settingsLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[Settings:0][Info:0]"));
 			settingsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_settings");
 			settingsLink.setElementCssClass("o_sel_repo_settings");
 			toolsDropdown.addComponent(settingsLink);
 			
 			membersLink = LinkFactory.createToolLink("members", translate("details.members"), this, "o_sel_repo_members");
+			membersLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[MembersMgmt:0]]"));
 			membersLink.setIconLeftCSS("o_icon o_icon-fw o_icon_membersmanagement");
 			toolsDropdown.addComponent(membersLink);
 		}
@@ -465,6 +471,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			
 			boolean managed = RepositoryEntryManagedFlag.isManaged(getRepositoryEntry(), RepositoryEntryManagedFlag.editcontent);
 			editLink = LinkFactory.createToolLink("edit.cmd", translate("details.openeditor"), this, "o_sel_repository_editor");
+			editLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[Editor:0]]"));
 			editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
 			editLink.setEnabled(!managed);
 			toolsDropdown.addComponent(editLink);
@@ -474,6 +482,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected void initToolsMenuRuntime(Dropdown toolsDropdown) {
 		if (reSecurity.isEntryAdmin()) {
 			ordersLink = LinkFactory.createToolLink("bookings", translate("details.orders"), this, "o_sel_repo_booking");
+			ordersLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[Booking:0]]"));
 			ordersLink.setIconLeftCSS("o_icon o_icon-fw o_icon_booking");
 			boolean booking = acService.isResourceAccessControled(re.getOlatResource(), null);
 			ordersLink.setEnabled(booking);
@@ -567,6 +577,16 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 
 		if(runtimeController instanceof Activateable2) {
 			((Activateable2)runtimeController).activate(ureq, entries, state);
+		}
+	}
+	
+	protected void activateSubEntries(UserRequest ureq, Activateable2 ctrl, List<ContextEntry> entries) {
+		if(ctrl == null || entries == null) return;
+		try {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			ctrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+		} catch (OLATSecurityException e) {
+			//the wrong link to the wrong person
 		}
 	}
 	

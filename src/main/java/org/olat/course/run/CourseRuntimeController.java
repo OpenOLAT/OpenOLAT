@@ -517,11 +517,15 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				settingsLink = LinkFactory.createToolLink("settings", translate("details.settings"), this, "o_sel_repo_settings");
 				settingsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_settings");
 				settingsLink.setElementCssClass("o_sel_course_settings");
+				settingsLink.setUrl(BusinessControlFactory.getInstance()
+						.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[Settings:0]"));
 				tools.addComponent(settingsLink);
 			}
 			
 			if (reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach() || hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || hasCourseRight(CourseRights.RIGHT_MEMBERMANAGEMENT)) {
 				membersLink = LinkFactory.createToolLink("unifiedusermngt", translate("command.opensimplegroupmngt"), this, "o_icon_membersmanagement");
+				membersLink.setUrl(BusinessControlFactory.getInstance()
+						.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[MembersMgmt:0][Members:0][All:0]"));
 				membersLink.setElementCssClass("o_sel_course_members");
 				tools.addComponent(membersLink);
 			}
@@ -536,6 +540,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			boolean managed = RepositoryEntryManagedFlag.isManaged(getRepositoryEntry(), RepositoryEntryManagedFlag.editcontent);
 			boolean readOnly = uce.isCourseReadOnly();
 			editLink = LinkFactory.createToolLink("edit.cmd", translate("command.openeditor"), this, "o_icon_courseeditor");
+			editLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[Editor:0]]"));
 			editLink.setElementCssClass("o_sel_course_editor");
 			editLink.setEnabled(!corrupted && !managed);
 			editLink.setVisible(!readOnly);
@@ -544,6 +550,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			
 		if (reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
 			folderLink = LinkFactory.createToolLink("cfd", translate("command.coursefolder"), this, "o_icon_coursefolder");
+			folderLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[Coursefolder:0]]"));
 			folderLink.setElementCssClass("o_sel_course_folder");
 			tools.addComponent(folderLink);
 			tools.addComponent(new Spacer(""));
@@ -560,18 +568,24 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			
 			if (reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach() || reSecurity.isCoach() || hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
 				assessmentLink = LinkFactory.createToolLink("assessment", translate("command.openassessment"), this, "o_icon_assessment_tool");
+				assessmentLink.setUrl(BusinessControlFactory.getInstance()
+						.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[assessmentToolv2:0]"));
 				assessmentLink.setElementCssClass("o_sel_course_assessment_tool");
 				tools.addComponent(assessmentLink);
 			}
 			
 			if(lectureModule.isEnabled() && (courseAuthorRight || reSecurity.isPrincipal() || reSecurity.isMasterCoach()) && isLectureEnabled()) {
 				lecturesAdminLink = LinkFactory.createToolLink("lectures.admin.cmd", translate("command.options.lectures.admin"), this, "o_icon_lecture");
+				lecturesAdminLink.setUrl(BusinessControlFactory.getInstance()
+						.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[LecturesAdmin:0][LectureBlocks:0]"));
 				lecturesAdminLink.setElementCssClass("o_sel_course_lectures_admin");
 				tools.addComponent(lecturesAdminLink);
 			}
 			
 			if(reminderModule.isEnabled() && courseAuthorRight) {
 				reminderLink = LinkFactory.createToolLink("reminders.cmd", translate("command.options.reminders"), this, "o_icon_reminder");
+				reminderLink.setUrl(BusinessControlFactory.getInstance()
+						.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[Reminders:0]"));
 				reminderLink.setElementCssClass("o_sel_course_reminders");
 				reminderLink.setVisible(!uce.isCourseReadOnly());
 				tools.addComponent(reminderLink);
@@ -581,6 +595,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				//course author right or the assessment mode access right 
 				boolean managed = RepositoryEntryManagedFlag.isManaged(getRepositoryEntry(), RepositoryEntryManagedFlag.editcontent);
 				assessmentModeLink = LinkFactory.createToolLink("assessment.mode.cmd", translate("command.assessment.mode"), this, "o_icon_assessment_mode");
+				assessmentModeLink.setUrl(BusinessControlFactory.getInstance()
+						.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[AssessmentMode:0]"));
 				assessmentModeLink.setElementCssClass("o_sel_course_assessment_mode");
 				assessmentModeLink.setEnabled(!managed);
 				assessmentModeLink.setVisible(assessmentModule.isAssessmentModeEnabled() && !uce.isCourseReadOnly());
@@ -589,12 +605,15 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
 				areaLink = LinkFactory.createToolLink("careas", translate("command.courseareas"), this, "o_icon_courseareas");
+				areaLink.setUrl(BusinessControlFactory.getInstance()
+						.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[CourseAreas:0]"));
 				areaLink.setElementCssClass("o_sel_course_areas");
 				tools.addComponent(areaLink);
 			}
 			
 			if (courseDBManager.isEnabled() && (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_DB))) {
 				dbLink = LinkFactory.createToolLink("customDb",translate("command.opendb"), this, "o_icon_coursedb");
+				//TODO url
 				tools.addComponent(dbLink);
 			}
 		}
@@ -613,6 +632,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			
 			if (reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach() || hasCourseRight(CourseRights.RIGHT_STATISTICS)) {
 				courseStatisticLink = LinkFactory.createToolLink("statistic",translate("command.openstatistic"), this, "o_icon_statistics_tool");
+				courseStatisticLink.setUrl(BusinessControlFactory.getInstance()
+						.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[CourseStatistics:0]"));
 				tools.addComponent(courseStatisticLink);
 			}
 			
@@ -628,17 +649,23 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				}, course.getRunStructure().getRootNode(), true).visitAll();
 				if(testNodes.intValue() > 0) {
 					testStatisticLink = LinkFactory.createToolLink("qtistatistic", translate("command.openteststatistic"), this, "o_icon_statistics_tool");
+					testStatisticLink.setUrl(BusinessControlFactory.getInstance()
+							.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[TestStatistics:0]"));
 					tools.addComponent(testStatisticLink);
 				}
 				
 				if(surveyNodes.intValue() > 0) {
 					surveyStatisticLink = LinkFactory.createToolLink("qtistatistic", translate("command.opensurveystatistic"), this, "o_icon_statistics_tool");
+					surveyStatisticLink.setUrl(BusinessControlFactory.getInstance()
+							.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[SurveyStatistics:0]"));
 					tools.addComponent(surveyStatisticLink);
 				}
 			}
 
 			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_ARCHIVING)) {
 				archiverLink = LinkFactory.createToolLink("archiver", translate("command.openarchiver"), this, "o_icon_archive_tool");
+				archiverLink.setUrl(BusinessControlFactory.getInstance()
+						.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[Archives:0]"));
 				tools.addComponent(archiverLink);
 			}
 			
@@ -821,12 +848,16 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		CourseConfig cc = course.getCourseConfig();
 		if (!assessmentLock && showDetails) {
 			detailsLink = LinkFactory.createToolLink("courseconfig",translate("command.courseconfig"), this, "o_icon_details");
+			detailsLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[Infos:0]"));
 			toolbarPanel.addTool(detailsLink);
 		}
 		
 		if (!assessmentLock && !isGuestOnly
 				&& LearningPathNodeAccessProvider.TYPE.equals(cc.getNodeAccessType().getType())) {
-			learningPathLink = LinkFactory.createToolLink("learningPath", translate("command.learning.path"), this, "o_icon_learning_path");
+			learningPathLink = LinkFactory.createToolLink("learningPath", translate("command.learning.path") + "-LP", this, "o_icon_learning_path");
+			learningPathLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[LearningPath:0]"));
 			toolbarPanel.addTool(learningPathLink);
 		}
 		if (learningPathLink != null) {
@@ -836,6 +867,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if (!assessmentLock && !isGuestOnly
 				&& LearningPathNodeAccessProvider.TYPE.equals(cc.getNodeAccessType().getType())) {
 			learningPathsLink = LinkFactory.createToolLink("learningPaths", translate("command.learning.paths"), this, "o_icon_learning_path");
+			learningPathsLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[LearningPaths:0]"));
 			toolbarPanel.addTool(learningPathsLink);
 		}
 		if (learningPathsLink != null) {
@@ -853,47 +886,63 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		
 		if(!assessmentLock && isLecturesLinkEnabled()) {
 			lecturesLink = LinkFactory.createToolLink("command.lectures", translate("command.lectures"), this, "o_icon_lecture");
+			lecturesLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[Lectures:0]"));
 			toolbarPanel.addTool(lecturesLink);
 		}
 		
 		if(!assessmentLock && !isGuestOnly && userCourseEnv != null) {
 			participantListLink = LinkFactory.createToolLink("participantlist", translate("command.participant.list"), this, "o_cmembers_icon");
+			participantListLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[ParticipantList:0]"));
 			participantListLink.setVisible(cc.isParticipantListEnabled());
 			toolbarPanel.addTool(participantListLink);
 		}
 		
 		if(!assessmentLock && userCourseEnv != null) {
 			participantInfoLink = LinkFactory.createToolLink("participantinfo", translate("command.participant.info"), this, "o_infomsg_icon");
+			participantInfoLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[ParticipantInfos:0]"));
 			participantInfoLink.setVisible(cc.isParticipantInfoEnabled());
 			toolbarPanel.addTool(participantInfoLink);
 		}
 		
 		if(!assessmentLock && !isGuestOnly && userCourseEnv != null && !userCourseEnv.isCourseReadOnly()) {
 			emailLink = LinkFactory.createToolLink("email", translate("command.email"), this, "o_co_icon");
+			emailLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[email:0]"));
 			emailLink.setVisible(cc.isEmailEnabled());
 			toolbarPanel.addTool(emailLink);
 		}
 		
 		if(!assessmentLock && userCourseEnv != null) {
 			blogLink = LinkFactory.createToolLink("blog", translate("command.blog"), this, "o_blog_icon");
+			blogLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[blog:0]"));
 			blogLink.setVisible(cc.isBlogEnabled());
 			toolbarPanel.addTool(blogLink);
 		}
 		
 		if(!assessmentLock && userCourseEnv != null) {
 			wikiLink = LinkFactory.createToolLink("wiki", translate("command.wiki"), this, "o_wiki_icon");
+			wikiLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[wiki:0]"));
 			wikiLink.setVisible(cc.isWikiEnabled());
 			toolbarPanel.addTool(wikiLink);
 		}
 		
 		if(!assessmentLock && userCourseEnv != null) {
 			forumLink = LinkFactory.createToolLink("forum", translate("command.forum"), this, "o_fo_icon");
+			forumLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[forum:0]"));
 			forumLink.setVisible(cc.isForumEnabled());
 			toolbarPanel.addTool(forumLink);
 		}
 		
 		if(!assessmentLock && userCourseEnv != null) {
 			documentsLink = LinkFactory.createToolLink("documents", translate("command.documents"), this, "o_bc_icon");
+			documentsLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[documents:0]"));
 			documentsLink.setVisible(cc.isDocumentsEnabled());
 			toolbarPanel.addTool(documentsLink);
 		}
@@ -1226,11 +1275,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				}
 			} else if("LearningPaths".equalsIgnoreCase(type)) {
 				if (learningPathsLink != null && learningPathsLink.isVisible()) {
-					Activateable2 leanringPaths = doLearningPaths(ureq);
-					if (leanringPaths != null) {
-						List<ContextEntry> subEntries = entries.subList(1, entries.size());
-						leanringPaths.activate(ureq, subEntries, entries.get(0).getTransientState());
-					}
+					activateSubEntries(ureq, doLearningPaths(ureq), entries);
 				}
 			} else if("Settings".equalsIgnoreCase(type) || "EditDescription".equalsIgnoreCase(type)) {
 				List<ContextEntry> subEntries = entries.subList(1, entries.size());
@@ -1249,19 +1294,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				}
 			} else if("Blog".equalsIgnoreCase(type)) {
 				if (blogLink != null && blogLink.isVisible()) {
-					Activateable2 blog = doBlog(ureq);
-					if (blog != null) {
-						List<ContextEntry> subEntries = entries.subList(1, entries.size());
-						blog.activate(ureq, subEntries, entries.get(0).getTransientState());
-					}
+					activateSubEntries(ureq, doBlog(ureq), entries);
 				}
 			} else if("Wiki".equalsIgnoreCase(type)) {
 				if (wikiLink != null && wikiLink.isVisible()) {
-					Activateable2 wiki = doWiki(ureq);
-					if (wiki != null) {
-						List<ContextEntry> subEntries = entries.subList(1, entries.size());
-						wiki.activate(ureq, subEntries, entries.get(0).getTransientState());
-					}
+					activateSubEntries(ureq, doWiki(ureq), entries);
 				}
 			} else if("Forum".equalsIgnoreCase(type)) {
 				if (forumLink != null && forumLink.isVisible()) {
@@ -1269,11 +1306,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				}
 			} else if("Documents".equalsIgnoreCase(type)) {
 				if (documentsLink != null && documentsLink.isVisible()) {
-					Activateable2 documents = doDocuments(ureq);
-					if (documents != null) {
-						List<ContextEntry> subEntries = entries.subList(1, entries.size());
-						documents.activate(ureq, subEntries, entries.get(0).getTransientState());
-					}
+					activateSubEntries(ureq, doDocuments(ureq), entries);
 				}
 			} else if("Certification".equalsIgnoreCase(type)) {
 				if (efficiencyStatementsLink != null && efficiencyStatementsLink.isVisible()) {
@@ -1282,32 +1315,26 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			} else if("Reminders".equalsIgnoreCase(type) || "RemindersLogs".equalsIgnoreCase(type)) {
 				doReminders(ureq);
 			} else if("Lectures".equalsIgnoreCase(type)) {
-				Activateable2 lectures = doLectures(ureq);
-				if(lectures != null) {
-					List<ContextEntry> subEntries = entries.subList(1, entries.size());
-					lectures.activate(ureq, subEntries, entries.get(0).getTransientState());
-				}
+				activateSubEntries(ureq, doLectures(ureq), entries);
 			} else if("LectureBlock".equalsIgnoreCase(type)) {
 				Activateable2 lectures = doLectures(ureq);
 				if(lectures != null) {
 					lectures.activate(ureq, entries, state);
 				}
 			} else if("LecturesAdmin".equalsIgnoreCase(type)) {
-				Activateable2 lecturesAdmin = doLecturesAdmin(ureq);
-				if(lecturesAdmin != null) {
-					List<ContextEntry> subEntries = entries.subList(1, entries.size());
-					lecturesAdmin.activate(ureq, subEntries, entries.get(0).getTransientState());
-				}
+				activateSubEntries(ureq, doLecturesAdmin(ureq), entries);
+			} else if("CourseFolder".equalsIgnoreCase(type)) {
+				doCourseFolder(ureq);
+			} else if("AssessmentMode".equalsIgnoreCase(type)) {
+				doAssessmentMode(ureq);
+			} else if("CourseAreas".equalsIgnoreCase(type)) {
+				doCourseAreas(ureq);
+			} else if("CourseStatistics".equalsIgnoreCase(type)) {
+				activateSubEntries(ureq, doCourseStatistics(ureq), entries);
+			} else if("Archives".equalsIgnoreCase(type)) {
+				activateSubEntries(ureq, doArchive(ureq), entries);
 			} else if("MembersMgmt".equalsIgnoreCase(type)) {
-				Activateable2 members = doMembers(ureq);
-				if(members != null) {
-					try {
-						List<ContextEntry> subEntries = entries.subList(1, entries.size());
-						members.activate(ureq, subEntries, entries.get(0).getTransientState());
-					} catch (OLATSecurityException e) {
-						//the wrong link to the wrong person
-					}
-				}	
+				activateSubEntries(ureq, doMembers(ureq), entries);	
 			} else if ("assessmentTool".equalsIgnoreCase(type) || "assessmentToolv2".equalsIgnoreCase(type)) {
 				//check the security before, the link is perhaps in the wrong hands
 				if(reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach() || reSecurity.isCoach() || hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
@@ -1495,7 +1522,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				
 				boolean canManage = reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) || hasCourseRight(CourseRights.RIGHT_ASSESSMENT_MODE);
 				AssessmentModeSecurityCallback secCallback = AssessmentModeSecurityCallbackFactory.getSecurityCallback(canManage);
-				AssessmentModeListController ctrl = new AssessmentModeListController(ureq, getWindowControl(),
+
+				WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("AssessmentMode", 0l), null);
+				AssessmentModeListController ctrl = new AssessmentModeListController(ureq, swControl,
 						toolbarPanel, getRepositoryEntry(), secCallback);
 				assessmentModeCtrl = pushController(ureq, translate("command.assessment.mode"), ctrl);
 				setActiveTool(assessmentModeLink);
@@ -1565,20 +1594,23 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 	}
 	
-	private void doArchive(UserRequest ureq) {
+	private ArchiverMainController doArchive(UserRequest ureq) {
 		if(delayedClose == Delayed.archive || requestForClose(ureq)) {
 			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_ARCHIVING)) {
 				removeCustomCSS();
 				ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
-				ArchiverMainController ctrl = new ArchiverMainController(ureq, getWindowControl(), course, new FullAccessArchiverCallback());
+				WindowControl swControl = this.addToHistory(ureq, OresHelper.createOLATResourceableInstance("Archives", 0l), null);
+				ArchiverMainController ctrl = new ArchiverMainController(ureq, swControl, course, new FullAccessArchiverCallback());
 				listenTo(ctrl);
 				archiverCtrl = pushController(ureq, translate("command.openarchiver"), ctrl);
 				currentToolCtr = archiverCtrl;
 				setActiveTool(archiverLink);
+				return ctrl;
 			}
 		} else {
 			delayedClose = Delayed.archive;
 		}
+		return null;
 	}
 	
 	private FolderRunController doCourseFolder(UserRequest ureq) {
@@ -1595,7 +1627,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			VFSContainer namedCourseFolder = new NamedContainerImpl(translate("command.coursefolder"), courseContainer);
 			CustomLinkTreeModel customLinkTreeModel = new CourseInternalLinkTreeModel(course.getEditorTreeModel());
 
-			FolderRunController ctrl = new FolderRunController(namedCourseFolder, true, true, true, true, ureq, getWindowControl(), null, customLinkTreeModel, null);
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("CourseFolder", 0l), null);
+			FolderRunController ctrl = new FolderRunController(namedCourseFolder, true, true, true, true, ureq, swControl, null, customLinkTreeModel, null);
 			ctrl.addLoggingResourceable(LoggingResourceable.wrap(course));
 			courseFolderCtrl = pushController(ureq, translate("command.coursefolder"), ctrl);
 			setActiveTool(folderLink);
@@ -1610,7 +1643,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(delayedClose == Delayed.courseAreas || requestForClose(ureq)) {
 			removeCustomCSS();
 			ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
-			CourseAreasController ctrl = new CourseAreasController(ureq, getWindowControl(),
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("CourseAreas", 0l), null);
+			CourseAreasController ctrl = new CourseAreasController(ureq, swControl,
 					getRepositoryEntry().getOlatResource(), getUserCourseEnvironment().isCourseReadOnly());
 			ctrl.addLoggingResourceable(LoggingResourceable.wrap(course));
 			areasCtrl = pushController(ureq, translate("command.courseareas"), ctrl);
@@ -1638,13 +1672,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 	}
 	
-	private void doCourseStatistics(UserRequest ureq) {
+	private StatisticMainController doCourseStatistics(UserRequest ureq) {
 		if(delayedClose == Delayed.courseStatistics || requestForClose(ureq)) {
 			if (reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach()
 					|| hasCourseRight(CourseRights.RIGHT_STATISTICS)) {
 				removeCustomCSS();
 				ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
-				StatisticMainController ctrl = new StatisticMainController(ureq, getWindowControl(), course);
+				WindowControl swControl = this.addToHistory(ureq, OresHelper.createOLATResourceableInstance("CourseStatistics", 0l), null);
+				StatisticMainController ctrl = new StatisticMainController(ureq, swControl, course);
 				listenTo(ctrl);
 				statisticsCtrl = pushController(ureq, translate("command.openstatistic"), ctrl);
 				setActiveTool(courseStatisticLink);
@@ -1653,6 +1688,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		} else {
 			delayedClose = Delayed.courseStatistics;
 		}
+		return statisticsCtrl;
 	}
 	
 	private Activateable2 doAssessmentTestStatistics(UserRequest ureq) {

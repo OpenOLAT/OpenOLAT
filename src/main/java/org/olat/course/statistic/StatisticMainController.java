@@ -25,18 +25,23 @@
 
 package org.olat.course.statistic;
 
+import java.util.List;
+
 import org.olat.core.extensions.action.ActionExtension;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.layout.GenericMainController;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.course.ICourse;
 
 /**
  * Initial Date:  03.12.2009 <br>
  * @author bja
  */
-public class StatisticMainController extends GenericMainController {
+public class StatisticMainController extends GenericMainController implements Activateable2 {
 
 	private ICourse course;
 
@@ -45,6 +50,11 @@ public class StatisticMainController extends GenericMainController {
 		this.course = course;
 		init(ureq);
 		getMenuTree().setRootVisible(false);
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		super.activate(ureq, entries, state);
 	}
 
 	@Override
