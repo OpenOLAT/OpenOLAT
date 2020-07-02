@@ -752,6 +752,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		return conditionalQueries;
 	}
 	
+	@Override
 	public SortKey[] getOrderBy() {
 		return orderBy;
 	}
@@ -1239,6 +1240,11 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			currentPage = 0;
 			doUnSelectAll();
 			((FilterableFlexiTableModel)dataModel).filter(getQuickSearchString(), selectedFilters);
+			if(dataModel instanceof SortableFlexiTableDataModel) {
+				if(orderBy != null && orderBy.length > 0) {
+					((SortableFlexiTableDataModel<?>)dataModel).sort(orderBy[0]);
+				}
+			}
 		} else if(dataSource != null) {
 			rowCount = -1;
 			currentPage = 0;
