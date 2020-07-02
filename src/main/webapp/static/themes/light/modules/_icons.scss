@@ -400,7 +400,7 @@ $fa-css-prefix: "o_icon" !default;
 /* Repository status icon */
 .o_icon_repo_status_preparation:before { content: $fa-var-pencil;}
 .o_icon_repo_status_review:before { content: $fa-var-star-o;}
-.o_icon_repo_status_coachpublished:before { content: $fa-var-check;}
+.o_icon_repo_status_coachpublished:before { content: $fa-var-graduation-cap;}
 .o_icon_repo_status_published:before { content: $fa-var-check;}
 .o_icon_repo_status_closed:before { content: $fa-var-ban; }
 .o_icon_repo_status_trash:before { content: $fa-var-trash-o;}
