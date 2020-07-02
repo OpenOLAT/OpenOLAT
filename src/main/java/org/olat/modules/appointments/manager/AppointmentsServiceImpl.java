@@ -198,10 +198,48 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 			groupDao.removeGroup(group);
 		}
 	}
-
+	
 	@Override
-	public Organizer createOrganizer(Topic topic, Identity identity) {
-		Organizer createOrganizer = organizerDao.createOrganizer(topic, identity);
+	public void updateOrganizers(Topic topic, Collection<Identity> identities) {
+		List<Organizer> organizers = organizerDao.loadOrganizers(topic);
+		List<Identity> organizersToCreate = new ArrayList<>(identities.size());
+		for (Identity identity : identities) {
+			boolean found = false;
+			for (Organizer organizer : organizers) {
+				if (organizer.getIdentity().equals(identity)) {
+					found = true;
+					break;
+				}
+			}
+			
+			if (!found) {
+				organizersToCreate.add(identity);
+			}
+		}
+		
+		if (!organizersToCreate.isEmpty()) {
+			List<Organizer> createdOrganizers = createOrganizers(topic, organizersToCreate);
+			organizers.addAll(createdOrganizers);
+		}
+		
+		ArrayList<Organizer> organizersToDelete = new ArrayList<>(organizers.size());
+		for (Iterator<Organizer> organizersIt = organizers.iterator(); organizersIt.hasNext(); ) {
+			Organizer organizer = organizersIt.next();
+			if (!identities.contains(organizer.getIdentity())) {
+				organizersToDelete.add(organizer);
+			}
+		}
+		if (!organizersToDelete.isEmpty()) {
+			deleteOrganizers(topic, organizersToDelete);
+		}
+	}
+
+	private List<Organizer> createOrganizers(Topic topic, Collection<Identity> identities) {
+		List<Organizer> organizers = new ArrayList<>(identities.size());
+		for (Identity identity : identities) {
+			Organizer organizer = organizerDao.createOrganizer(topic, identity);
+			organizers.add(organizer);
+		}
 		
 		AppointmentSearchParams params = new AppointmentSearchParams();
 		params.setTopic(topic);
@@ -210,13 +248,15 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 			params.setStatus(Status.confirmed);
 		}
 		List<Appointment> appointments = appointmentDao.loadAppointments(params);
-		calendarSyncher.syncCalendar(appointments, identity);
 		
-		return createOrganizer;
+		for (Organizer organizer : organizers) {
+			calendarSyncher.syncCalendar(appointments, organizer.getIdentity());
+		}
+		
+		return organizers;
 	}
 
-	@Override
-	public void deleteOrganizers(TopicRef topic, Collection<Organizer> organizers) {
+	private void deleteOrganizers(TopicRef topic, Collection<Organizer> organizers) {
 		AppointmentSearchParams params = new AppointmentSearchParams();
 		params.setTopic(topic);
 		params.setStatus(Status.confirmed);

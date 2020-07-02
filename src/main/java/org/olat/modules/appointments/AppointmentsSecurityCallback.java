@@ -21,8 +21,6 @@ package org.olat.modules.appointments;
 
 import java.util.List;
 
-import org.olat.core.id.Identity;
-
 /**
  * 
  * Initial date: 13 Apr 2020<br>
@@ -35,8 +33,6 @@ public interface AppointmentsSecurityCallback {
 	
 	public boolean canCreateTopic();
 	
-	public Identity getDefaultOrganizer();
-
 	public boolean canEditTopic(List<Organizer> organizers);
 	
 	public boolean canViewAppointment(List<Organizer> organizers);

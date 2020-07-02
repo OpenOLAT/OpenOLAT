@@ -448,7 +448,7 @@ public class TopicsRunCoachController extends BasicController {
 	}
 	
 	private void doAddTopic(UserRequest ureq) {
-		topicCreateCtrl = new TopicCreateController(ureq, getWindowControl(), secCallback, entry, subIdent);
+		topicCreateCtrl = new TopicCreateController(ureq, getWindowControl(), entry, subIdent);
 		listenTo(topicCreateCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", topicCreateCtrl.getInitialComponent(), true,

@@ -75,11 +75,6 @@ public class AppointmentsSecurityCallbackFactory {
 		}
 
 		@Override
-		public Identity getDefaultOrganizer() {
-			return coachCanEditTopic? identity: null;
-		}
-
-		@Override
 		public boolean canEditTopic(List<Organizer> organizers) {
 			if (readOnly) return false;
 			

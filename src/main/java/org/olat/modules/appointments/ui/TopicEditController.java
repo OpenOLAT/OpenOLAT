@@ -25,7 +25,6 @@ import static org.olat.core.util.ArrayHelper.emptyStrings;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.GroupRoles;
@@ -241,21 +240,10 @@ public class TopicEditController extends FormBasicController {
 	
 	private void doSaveOrgianzers() {
 		Collection<String> selectedOrganizerKeys = organizerEl.getSelectedKeys();
-		
-		// delete unselected
-		List<Organizer> organizersToDelete = organizers.stream()
-				.filter(organizer -> !selectedOrganizerKeys.contains(organizer.getIdentity().getKey().toString()))
+		List<Identity> selectedOrganizers = coaches.stream()
+				.filter(i -> selectedOrganizerKeys.contains(i.getKey().toString()))
 				.collect(Collectors.toList());
-		appointmentsService.deleteOrganizers(topic, organizersToDelete);
-		
-		// create newly selected
-		Set<String> currentOrganizerKeys = organizers.stream()
-				.map(o -> o.getIdentity().getKey().toString())
-				.collect(Collectors.toSet());
-		selectedOrganizerKeys.removeAll(currentOrganizerKeys);
-		coaches.stream()
-				.filter(coach -> selectedOrganizerKeys.contains(coach.getKey().toString()))
-				.forEach(coach -> appointmentsService.createOrganizer(topic, coach));
+		appointmentsService.updateOrganizers(topic, selectedOrganizers);
 	}
 	
 	private boolean isConfigChanged() {
