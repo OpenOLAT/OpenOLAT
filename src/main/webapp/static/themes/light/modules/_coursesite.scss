@@ -270,6 +270,15 @@
 
 /* the course catalog */
 .o_catalog {
+	.o_title {
+		a {
+			display: block;
+			white-space: nowrap; 
+			overflow: hidden;	
+			text-overflow: ellipsis;			
+		}
+	}
+
 	.o_level {
 		position: relative;
 		margin-bottom: $o-coursesite-catalog-space / 2;
@@ -287,9 +296,6 @@
 			min-height: $o-coursesite-rowelem-width-md;	
 			height: $o-coursesite-rowelem-width-md;	
 
-			overflow: hidden;
-			/* overflow via JS OPOL.Ellipsis */
-		
 			margin: 0 0 0 $o-coursesite-rowelem-width-md;
 			padding: 1em 0.5em 0.5em 2em;
 
@@ -297,8 +303,6 @@
 				margin: 0; /* box moves down otherwhise, replaced with padding */
 				a {
 					@extend %o_undecorated;
-					display: block;
-					
 					color: $o-coursesite-meta-title-color;
 					&:hover {
 					    color: darken($o-coursesite-meta-title-color, 10%);

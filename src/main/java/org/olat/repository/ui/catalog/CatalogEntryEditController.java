@@ -119,7 +119,7 @@ public class CatalogEntryEditController extends FormBasicController {
 		nameEl.setNotEmptyCheck("form.legende.mandatory");
 		
 		String shortTitle = catalogEntry == null ? "" : catalogEntry.getShortTitle() != null ? catalogEntry.getShortTitle() : "";
-		shortTitleEl = uifactory.addTextElement("shortTitle", "entry.shorttitle", 255, shortTitle, formLayout);
+		shortTitleEl = uifactory.addTextElement("shortTitle", "entry.shorttitle", 20, shortTitle, formLayout);
 		shortTitleEl.setElementCssClass("o_sel_cat_short_title");
 		shortTitleEl.setMandatory(true);
 		shortTitleEl.setNotEmptyCheck("form.legende.mandatory");
@@ -179,7 +179,7 @@ public class CatalogEntryEditController extends FormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		allOk &= validateTextInput(nameEl, 100);
-		allOk &= validateTextInput(shortTitleEl, 16);
+		allOk &= validateTextInput(shortTitleEl, 20);
 		
 		styleEl.clearError();
 		if(!styleEl.isOneSelected()) {
