@@ -52,7 +52,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.appointments.Appointment;
-import org.olat.modules.appointments.AppointmentsSecurityCallback;
 import org.olat.modules.appointments.AppointmentsService;
 import org.olat.modules.appointments.Topic;
 import org.olat.modules.appointments.Topic.Type;
@@ -90,7 +89,6 @@ public class TopicCreateController extends FormBasicController {
 	
 	private RepositoryEntry entry;
 	private String subIdent;
-	private AppointmentsSecurityCallback secCallback;
 	private Topic topic;
 	private List<Identity> coaches;
 	private List<AppointmentWrapper> appointmentWrappers;
@@ -105,10 +103,9 @@ public class TopicCreateController extends FormBasicController {
 	@Autowired
 	private UserManager userManager;
 
-	public TopicCreateController(UserRequest ureq, WindowControl wControl, AppointmentsSecurityCallback secCallback,
-			RepositoryEntry entry, String subIdent) {
+	public TopicCreateController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
+			String subIdent) {
 		super(ureq, wControl);
-		this.secCallback = secCallback;
 		this.entry = entry;
 		this.subIdent = subIdent;
 		
