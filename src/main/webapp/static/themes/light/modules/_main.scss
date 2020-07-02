@@ -1,6 +1,7 @@
 
 #o_main_wrapper {
 	background: $o-main-outer-bg;
+	position: relative;
 	z-index: 3;
 
 	#o_main_container {
