@@ -175,6 +175,9 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 		} else if(isEnded) {
 			flc.contextPut("notStarted", Boolean.FALSE);
 		}
+		// update button style to indicate that the user must now press to start
+		joinButton.setPrimary(joinButton.isEnabled());
+
 	}
 	
 	private boolean isAllowedToMeet(UserRequest ureq) {

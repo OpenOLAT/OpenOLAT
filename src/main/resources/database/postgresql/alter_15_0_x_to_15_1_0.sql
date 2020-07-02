@@ -10,7 +10,7 @@ alter table o_bbb_meeting add column b_guest bool default false not null;
 alter table o_bbb_meeting add column b_identifier varchar(64);
 alter table o_bbb_meeting add column b_read_identifier varchar(64);
 
-alter table o_bbb_template add column b_external_users bool default false not null;
+alter table o_bbb_template add column b_external_users bool default true not null;
 
 
 -- Lock
