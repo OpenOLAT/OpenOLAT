@@ -274,6 +274,9 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 					sendEvent(AssessmentModeNotificationEvent.END, mode,
 							assessmentModeManager.getAssessedIdentityKeys(mode));
 				}
+			} else if(mode.getStatus() == Status.assessment) {
+				sendEvent(AssessmentModeNotificationEvent.START_ASSESSMENT, mode,
+						assessmentModeManager.getAssessedIdentityKeys(mode));
 			}
 		} else {
 			if(mode.getBegin().compareTo(now) <= 0 && mode.getEnd().compareTo(now) > 0) {

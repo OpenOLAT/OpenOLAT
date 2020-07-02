@@ -38,7 +38,9 @@ import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
+import org.olat.core.commons.fullWebApp.LockResourceInfos;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
@@ -313,8 +315,9 @@ public class AuthenticatedDispatcher implements Dispatcher {
 			}
 			return;
 		}
-
-		ChiefController chiefController = Windows.getWindows(usess).getChiefController(ureq);
+		
+		Windows windows = Windows.getWindows(usess);
+		ChiefController chiefController = windows.getChiefController(ureq);
 		if(chiefController == null && !usess.isAuthenticated()) {
 			redirectToDefaultDispatcher(ureq.getHttpReq(), ureq.getHttpResp());
 			return;
@@ -342,6 +345,10 @@ public class AuthenticatedDispatcher implements Dispatcher {
 				chiefController = (ChiefController)pbw;
 			} else {
 				chiefController = AuthHelper.createAuthHome(ureq);
+				LockResourceInfos lockInfos = windows.getLockResourceInfos();
+				if(lockInfos != null) {
+					((BaseFullWebappController)chiefController).hardLockResource(lockInfos);
+				}
 			}
 			Window window = chiefController.getWindow();
 			window.setUriPrefix(ureq.getUriPrefix());

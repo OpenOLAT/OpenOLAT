@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.olat.core.commons.fullWebApp.LockResourceInfos;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentHelper;
 import org.olat.core.gui.components.Window;
@@ -270,6 +271,24 @@ public class Windows implements Disposable, Serializable {
 			ws.add(chiefController.getWindow());
 		}
 		return ws.iterator();
+	}
+	
+	/**
+	 * Search all the windows to find the first locked chief controller
+	 * and returns informations about the locked resource.
+	 * 
+	 * @return Informations about the current locked resource, or null if the
+	 * 		user has not a chief controller locked.
+	 */
+	public LockResourceInfos getLockResourceInfos() {
+		List<ChiefController> chiefControllers = windows.values();
+		for(ChiefController chiefController:chiefControllers) {
+			LockResourceInfos lockInfos = chiefController.getLockResourceInfos();
+			if(lockInfos != null) {
+				return lockInfos;
+			}
+		}
+		return null;
 	}
 
 	/**

@@ -1433,6 +1433,9 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			return;
 		}
 		
+		String instanceId = getWindow().getInstanceId();
+		System.out.println(instanceId + " " + event.getCommand());
+		
 		String cmd = event.getCommand();
 		switch(cmd) {
 			case AssessmentModeNotificationEvent.STOP_WARNING:
@@ -1478,13 +1481,23 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	}
 	
 	@Override
-	public OLATResourceable getLockResource() {
-		return lockResource;
+	public LockResourceInfos getLockResourceInfos() {
+		if(lockResource == null) return null;
+		return new LockResourceInfos(lockStatus, lockResource, lockMode);
 	}
 
 	@Override
 	public void lockResource(OLATResourceable resource) {
 		this.lockResource = resource;
+		lockGUI();
+	}
+	
+	public void hardLockResource(LockResourceInfos lockInfos) {
+		if(lockInfos == null) return;
+		
+		lockResource = lockInfos.getLockResource();
+		lockMode = lockInfos.getLockMode();
+		lockStatus = lockInfos.getLockStatus();
 		lockGUI();
 	}
 	
@@ -1758,7 +1771,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		}
 	}
 	
-	private enum LockStatus {
+	protected enum LockStatus {
 		need,
 		popup,
 		locked

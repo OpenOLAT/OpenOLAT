@@ -26,6 +26,7 @@
 
 package org.olat.core.gui.control;
 
+import org.olat.core.commons.fullWebApp.LockResourceInfos;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Window;
@@ -86,12 +87,17 @@ public abstract class DefaultChiefController extends DefaultController implement
 	}
 	
 	@Override
-	public OLATResourceable getLockResource() {
+	public final LockResourceInfos getLockResourceInfos() {
 		return null;
 	}
 
 	@Override
-	public void lockResource(OLATResourceable resource) {
+	public final void lockResource(OLATResourceable resource) {
+		//
+	}
+
+	@Override
+	public final void hardLockResource(LockResourceInfos lockInfos) {
 		//
 	}
 

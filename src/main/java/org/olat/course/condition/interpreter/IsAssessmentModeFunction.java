@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.fullWebApp.LockResourceInfos;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
@@ -83,7 +84,8 @@ public class IsAssessmentModeFunction extends AbstractFunction {
 		if(chiefController == null) {
 			return ConditionInterpreter.INT_FALSE;
 		}
-		OLATResourceable lockedResource = chiefController.getLockResource();
+		LockResourceInfos lockInfos = chiefController.getLockResourceInfos();
+		OLATResourceable lockedResource = lockInfos == null ? null : lockInfos.getLockResource();
 
 		boolean open = false;
 		if(inStack != null && inStack.length == 2) {

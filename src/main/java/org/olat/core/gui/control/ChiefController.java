@@ -26,6 +26,7 @@
 
 package org.olat.core.gui.control;
 
+import org.olat.core.commons.fullWebApp.LockResourceInfos;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
@@ -74,12 +75,23 @@ public interface ChiefController extends Controller {
 	public void resetReload();
 	
 	/**
+	 * Lock softly the chief after interaction with the user.
 	 * 
-	 * @param resource
+	 * @param resource The resource to lock
 	 */
 	public void lockResource(OLATResourceable resource);
 	
-	public OLATResourceable getLockResource();
+	/**
+	 * Hard locking the chief controller after a copy/paste URL or
+	 * such a thing. If the informations are null, the call is ignored.
+	 * 
+	 * @param lockInfos The lock informations
+	 */
+	public void hardLockResource(LockResourceInfos lockInfos);
+	
+	public LockResourceInfos getLockResourceInfos();
+	
+	
 	
 	/**
 	 * Set a class to the &lt;body&gt;
