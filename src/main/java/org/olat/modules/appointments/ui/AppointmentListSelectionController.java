@@ -131,8 +131,13 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 				.filter(p -> p.getIdentity().getKey().equals(getIdentity().getKey()))
 				.findFirst();
 		boolean selected = myParticipation.isPresent();
-		boolean confirmed = Status.confirmed == appointment.getStatus();
-		if (Type.finding != topic.getType() && confirmed && !selected) {
+		boolean confirmedByCoach = !topic.isAutoConfirmation() && Status.confirmed == appointment.getStatus();
+		Integer maxParticipations = appointment.getMaxParticipations();
+		Integer freeParticipations = maxParticipations != null
+				? maxParticipations.intValue() - participations.size()
+				: null;
+		boolean noFreePlace = freeParticipations != null && freeParticipations < 1;
+		if (Type.finding != topic.getType() && !selected && (confirmedByCoach || noFreePlace)) {
 			return null;
 		}
 		
@@ -156,7 +161,7 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 			}
 		}
 	
-		if (selected || confirmed) {
+		if (selected || confirmedByCoach) {
 			row.setTranslatedStatus(translate("appointment.status." + appointment.getStatus().name()));
 			row.setStatusCSS("o_ap_status_" + appointment.getStatus().name());
 		}
@@ -172,15 +177,9 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 				forgeSelectionLink(row, selected, noConfirmedAppointments);
 			}
 		} else if (topic.isMultiParticipation() || userHasNoConfirmedParticipation) {
-			Integer numberOfParticipations = Integer.valueOf(participations.size());
-			row.setNumberOfParticipations(numberOfParticipations);
-			Integer maxParticipations = appointment.getMaxParticipations();
-			Integer freeParticipations = maxParticipations != null
-					? maxParticipations.intValue() - participations.size()
-					: null;
 			row.setFreeParticipations(freeParticipations);
 			
-			boolean selectable = Appointment.Status.confirmed == appointment.getStatus()
+			boolean selectable = confirmedByCoach
 					? false
 					: freeParticipations == null // no limit
 						|| freeParticipations.intValue() > 0;

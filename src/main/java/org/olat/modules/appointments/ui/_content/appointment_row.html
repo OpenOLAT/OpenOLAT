@@ -69,7 +69,7 @@
 				#end
 				#if($r.isNotNull($row.getFreeParticipations()))
 					<div>
-						#if($row.getFreeAppointments() == 1)
+						#if($row.getFreeParticipations() == 1)
 							$r.translate("participations.free.one")
 						#else
 							$r.translate("participations.free", $row.getFreeParticipations().toString())

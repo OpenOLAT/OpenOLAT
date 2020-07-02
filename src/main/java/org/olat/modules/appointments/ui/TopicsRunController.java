@@ -333,9 +333,9 @@ public class TopicsRunController extends BasicController implements Activateable
 		if (selectedAppointments == 0) {
 			if (Type.finding != topic.getType()) {
 				if (freeAppointments != null) {
-					if (freeAppointments == 1) {
+					if (freeAppointments.longValue() == 1) {
 						messages.add(translate("appointments.free.one"));
-					} else if (freeAppointments > 1) {
+					} else if (freeAppointments.longValue() > 1) {
 						messages.add(translate("appointments.free", new String[] { freeAppointments.toString() }));
 					}
 				}
