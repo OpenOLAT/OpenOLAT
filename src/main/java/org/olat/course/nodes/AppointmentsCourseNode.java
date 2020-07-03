@@ -39,6 +39,7 @@ import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodes.appointments.AppointmentsSecurityCallbackFactory;
 import org.olat.course.nodes.appointments.ui.AppointmentsEditController;
+import org.olat.course.nodes.appointments.ui.AppointmentsPeekViewController;
 import org.olat.course.nodes.appointments.ui.AppointmentsRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
@@ -112,6 +113,12 @@ public class AppointmentsCourseNode extends AbstractAccessableCourseNode {
 		}
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, ICON_CSS);
 		return new NodeRunConstructionResult(ctrl);
+	}
+	
+	@Override
+	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
+			CourseNodeSecurityCallback nodeSecCallback) {
+		return new AppointmentsPeekViewController(ureq, wControl, userCourseEnv, this);
 	}
 
 	@Override

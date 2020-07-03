@@ -1,0 +1,69 @@
+#if($r.isNotNull($appointment))
+<div class="o_appointments o_peek">
+	<h5>
+		$appointment.title
+		<span class='o_organizers'>
+			#if($r.isNotEmpty($appointment.organizerNames))
+				<span class="small">
+					$r.translate("organizer.with")
+					#foreach($organizer in $appointment.organizerNames)
+						<span class="o_organizer">$organizer#if($foreach.index < $appointment.organizerNames.size() - 1)$r.translate("organizer.separator")#end</span>
+					#end
+				</span>
+			#end
+		</span>
+	</h5>
+	<div class="o_main_cont">
+		<div>
+			$r.render("day")
+		</div>
+		<div class="o_main">
+			#if($appointment.getDate() && $appointment.getDate() != "")
+				<div class="o_date">
+					<i class="o_icon o_icon-fw o_icon_calendar">&nbsp;</i>
+					$appointment.getDate()
+					&nbsp;<span class='o_labeled $appointment.getStatusCSS()'>$appointment.getTranslatedStatus()</span>
+				</div>
+			#end
+			#if($appointment.getDate2() && $appointment.getDate2() != "")
+				<div class="o_date">
+					<i class="o_icon o_icon-fw">&nbsp;</i>
+					$appointment.getDate2()
+				</div>
+			#end
+			#if($appointment.getTime() && $appointment.getTime() != "")
+				<div class="o_time">
+					<i class="o_icon o_icon-fw o_icon_time">&nbsp;</i>
+					$appointment.getTime()
+					#if($r.isNull($appointment.getDate())) 
+						&nbsp;<span class='o_labeled $appointment.getStatusCSS()'>$appointment.getTranslatedStatus()</span>
+					#end
+				</div>
+			#end
+			#if($appointment.getLocation() && $appointment.getLocation() != "")
+				<div>
+					<i class="o_icon o_icon-fw o_icon_home">&nbsp;</i>
+					$r.escapeHtml($appointment.getLocation())
+				</div>
+			#end
+			#if($appointment.getDetails() && $appointment.getDetails() != "")
+				<div>
+					<i class="o_icon o_icon-fw o_icon_info_ap">&nbsp;</i>
+					$r.escapeHtml($appointment.getDetails())
+				</div>
+			#end
+			#if($r.isNotEmpty($appointment.participants))
+				<div class="text-muted">
+					#foreach($participant in $appointment.participants)
+						<span class='o_participant'><i class='o_icon o_icon_user'>&nbsp;</i>$participant &nbsp;</span>
+					#end
+				</div>
+			#end
+		</div>	
+	</div>
+</div>
+#else
+	<div class="o_info">
+		$r.translate("no.outstanding.appointments")
+	</div>
+#end

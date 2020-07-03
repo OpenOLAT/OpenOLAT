@@ -56,6 +56,8 @@ public class AppointmentDAOTest extends OlatTestCase {
 	@Autowired
 	private TopicDAO topicDao;
 	@Autowired
+	private OrganizerDAO organizerDao;
+	@Autowired
 	private ParticipationDAO participationDao;
 	
 	@Autowired
@@ -386,6 +388,34 @@ public class AppointmentDAOTest extends OlatTestCase {
 		assertThat(appointments)
 				.containsExactlyInAnyOrder(appointment1, appointment2, appointment3)
 				.doesNotContain(appointmentOtherEntry, appointmentOtherSubIdent);
+	}
+	
+	@Test
+	public void shouldLoadByOrganizer() {
+		Identity organizer = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
+		Identity organizerOther = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Topic topic1 = topicDao.createTopic(entry, random());
+		Topic topic2 = topicDao.createTopic(entry, random());
+		Topic topicNoOrganizer = topicDao.createTopic(entry, random());
+		Topic topicOtherOrganizer = topicDao.createTopic(entry, random());
+		organizerDao.createOrganizer(topic1, organizer);
+		organizerDao.createOrganizer(topic2, organizer);
+		organizerDao.createOrganizer(topicOtherOrganizer, organizerOther);
+		Appointment appointment11 = sut.createAppointment(topic1);
+		Appointment appointment12 = sut.createAppointment(topic1);
+		Appointment appointment21 = sut.createAppointment(topic2);
+		Appointment appointmentNoOrganizer = sut.createAppointment(topicNoOrganizer);
+		Appointment appointmentOtherOrganizer = sut.createAppointment(topicOtherOrganizer);
+		dbInstance.closeSession();
+		
+		AppointmentSearchParams params = new AppointmentSearchParams();
+		params.setOrganizer(organizer);
+		List<Appointment> appointments = sut.loadAppointments(params);
+		
+		assertThat(appointments)
+				.containsExactlyInAnyOrder(appointment11, appointment12, appointment21)
+				.doesNotContain(appointmentNoOrganizer, appointmentOtherOrganizer);
 	}
 	
 	@Test

@@ -48,6 +48,21 @@
 	}
 }
 
+.o_appointments.o_peek {
+	.o_main_cont {
+		margin-top: 26px;
+		display: flex;
+		.o_main {
+			margin-top: -3px;
+		}
+	}
+	
+	.o_date,
+	.o_time {
+		font-weight: bold;
+	}
+}
+
 .o_appointments.o_topics_run {
 	.o_main_cont {
 		margin-top: 26px;

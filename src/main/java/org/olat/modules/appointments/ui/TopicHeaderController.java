@@ -103,12 +103,13 @@ public class TopicHeaderController extends BasicController {
 	}
 	
 	private void putOrganizersToVC(List<Organizer> organizers) {
-		List<String> organizerLinks = new ArrayList<>(organizers.size());
+		List<String> organizerNames = new ArrayList<>(organizers.size());
 		for(Organizer organizer: organizers) {
 			String name = userManager.getUserDisplayName(organizer.getIdentity().getKey());
-			organizerLinks.add(name);
+			organizerNames.add(name);
 		}
-		mainVC.contextPut("organizers", organizerLinks);
+		organizerNames.sort(String.CASE_INSENSITIVE_ORDER);
+		mainVC.contextPut("organizers", organizerNames);
 		
 		if (email && !organizers.isEmpty()) {
 			emailLink = LinkFactory.createCustomLink("email", CMD_EMAIL, null, Link.NONTRANSLATED, mainVC, this);

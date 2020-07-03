@@ -180,6 +180,7 @@ public class TopicsRunController extends BasicController implements Activateable
 			String name = userManager.getUserDisplayName(organizer.getIdentity().getKey());
 			organizerNames.add(name);
 		}
+		organizerNames.sort(String.CASE_INSENSITIVE_ORDER);
 		wrapper.setOrganizerNames(organizerNames);
 		wrapper.setOrganizers(organizers);
 		if (!organizers.isEmpty()) {

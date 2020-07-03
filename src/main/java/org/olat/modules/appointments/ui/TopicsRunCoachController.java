@@ -192,6 +192,7 @@ public class TopicsRunCoachController extends BasicController {
 			String name = userManager.getUserDisplayName(organizer.getIdentity().getKey());
 			organizerNames.add(name);
 		}
+		organizerNames.sort(String.CASE_INSENSITIVE_ORDER);
 		wrapper.setOrganizers(organizerNames);
 	}
 

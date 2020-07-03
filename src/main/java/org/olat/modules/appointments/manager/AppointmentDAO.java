@@ -230,6 +230,10 @@ class AppointmentDAO {
 	private void appendQuery(QueryBuilder sb, AppointmentSearchParams params) {
 		sb.append("  from appointment appointment");
 		sb.append("      join").append(" fetch", params.isFetchTopic()).append(" appointment.topic topic");
+		if (params.getOrganizer() != null) {
+			sb.append("  join appointmentorganizer organizer");
+			sb.append("    on organizer.topic.key = topic.key");
+		}
 		if (params.getAppointmentKey() != null) {
 			sb.and().append("appointment.key = :appointmentKey");
 		}
@@ -241,6 +245,9 @@ class AppointmentDAO {
 		}
 		if (params.getTopicKeys() != null) {
 			sb.and().append("appointment.topic.key in (:topicKeys)");
+		}
+		if (params.getOrganizer() != null) {
+			sb.and().append("organizer.identity.key = :organizerKey");
 		}
 		if (params.getStartAfter() != null) {
 			sb.and().append("appointment.start >= :startAfter");
@@ -262,6 +269,9 @@ class AppointmentDAO {
 		}
 		if (params.getTopicKeys() != null) {
 			query.setParameter("topicKeys", params.getTopicKeys());
+		}
+		if (params.getOrganizer() != null) {
+			query.setParameter("organizerKey", params.getOrganizer().getKey());
 		}
 		if (params.getStartAfter() != null) {
 			query.setParameter("startAfter", params.getStartAfter());

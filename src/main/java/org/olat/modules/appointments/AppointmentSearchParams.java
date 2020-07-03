@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.stream.Collectors;
 
+import org.olat.core.id.Identity;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -38,6 +39,7 @@ public class AppointmentSearchParams {
 	private Collection<Long> topicKeys;
 	private RepositoryEntry entry;
 	private String subIdent;
+	private Identity organizer;
 	private Date startAfter;
 	private Appointment.Status status;
 	private boolean fetchTopic;
@@ -80,6 +82,14 @@ public class AppointmentSearchParams {
 		this.subIdent = subIdent;
 	}
 	
+	public Identity getOrganizer() {
+		return organizer;
+	}
+
+	public void setOrganizer(Identity organizer) {
+		this.organizer = organizer;
+	}
+
 	public Date getStartAfter() {
 		return startAfter;
 	}
