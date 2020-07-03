@@ -20,6 +20,7 @@
 package org.olat.resource.accesscontrol.provider.auto.manager;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -270,7 +271,7 @@ public class AutoAccessManagerImplTest {
 
 		sut.grantAccess(getPendingAdvanceOrders());
 
-		verify(advanceOrderDaoMock, times(2)).accomplishAndSave(any(AdvanceOrder.class), false);
+		verify(advanceOrderDaoMock, times(2)).accomplishAndSave(any(AdvanceOrder.class), anyBoolean());
 	}
 
 	@Test
