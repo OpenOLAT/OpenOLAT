@@ -20,6 +20,7 @@
 package org.olat.modules.appointments;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -100,6 +101,16 @@ public interface AppointmentsService {
 	public void unconfirmAppointment(Appointment appointment);
 
 	public void deleteAppointment(Appointment appointment);
+	
+	/**
+	 * Checks whether the end of the appointment is after the due date.
+	 * It respects full day events.
+	 *
+	 * @param appointment
+	 * @param dueDate
+	 * @return
+	 */
+	public boolean isEndAfter(Appointment appointment, Date dueDate);
 	
 	/**
 	 * Gets the key of the topic and the according count of appointments.

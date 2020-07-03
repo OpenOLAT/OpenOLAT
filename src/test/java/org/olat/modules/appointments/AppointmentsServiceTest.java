@@ -77,6 +77,25 @@ public class AppointmentsServiceTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldCheckEndAfterDueDate() {
+		Appointment appointment = sut.createUnsavedAppointment(null);
+		appointment.setStart(new GregorianCalendar(2020, 2, 3, 10, 0, 0).getTime());
+		appointment.setEnd(new GregorianCalendar(2020, 2, 3, 11, 0, 0).getTime());
+		assertThat(sut.isEndAfter(appointment, new GregorianCalendar(2020, 2, 3, 12, 0, 0).getTime())).isFalse();
+		
+		appointment = sut.createUnsavedAppointment(null);
+		appointment.setStart(new GregorianCalendar(2020, 2, 3, 10, 0, 0).getTime());
+		appointment.setEnd(new GregorianCalendar(2020, 2, 3, 14, 0, 0).getTime());
+		assertThat(sut.isEndAfter(appointment, new GregorianCalendar(2020, 2, 3, 12, 0, 0).getTime())).isTrue();
+		
+		// full day
+		appointment = sut.createUnsavedAppointment(null);
+		appointment.setStart(new GregorianCalendar(2020, 2, 3, 10, 0, 0).getTime());
+		appointment.setEnd(new GregorianCalendar(2020, 2, 3, 10, 0, 0).getTime());
+		assertThat(sut.isEndAfter(appointment, new GregorianCalendar(2020, 2, 3, 12, 0, 0).getTime())).isTrue();
+	}
+	
+	@Test
 	public void createParticipationShouldCreateParticiption() {
 		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
 		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");

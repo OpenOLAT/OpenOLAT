@@ -221,7 +221,7 @@ public class TopicsRunCoachController extends BasicController {
 		} else {
 			nextAppointment = appointments.stream()
 					.filter(a -> Appointment.Status.confirmed == a.getStatus())
-					.filter(a1 -> now.before(a1.getEnd()))
+					.filter(a -> appointmentsService.isEndAfter(a, now))
 					.sorted((a1, a2) -> a1.getStart().compareTo(a2.getStart()))
 					.findFirst();
 		}

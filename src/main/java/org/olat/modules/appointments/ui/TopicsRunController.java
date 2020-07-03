@@ -236,7 +236,7 @@ public class TopicsRunController extends BasicController implements Activateable
 			Date now = new Date();
 			Optional<Appointment> nextAppointment = myTopicParticipations.stream()
 					.map(Participation::getAppointment)
-					.filter(a1 -> now.before(a1.getEnd()))
+					.filter(a -> appointmentsService.isEndAfter(a, now))
 					.sorted((a1, a2) -> a1.getStart().compareTo(a2.getStart()))
 					.findFirst();
 			Appointment appointment = nextAppointment.isPresent()
