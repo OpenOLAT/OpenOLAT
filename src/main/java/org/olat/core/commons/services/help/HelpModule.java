@@ -103,7 +103,7 @@ public class HelpModule extends AbstractSpringModule {
 	private String ooTeachLink;
 	@Value("${help.ooteach.enabled:authorsite}")
 	private String ooTeachEnabled;
-	@Value("${help.ooteach.icon:o_icon_video}")
+	@Value("${help.ooteach.icon:o_icon_coach}")
 	private String ooTeachIcon;
 	private int ooTeachPos;
 
