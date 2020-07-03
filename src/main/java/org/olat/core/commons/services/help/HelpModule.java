@@ -27,6 +27,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.admin.help.ui.HelpAdminController;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.help.spi.AcademyLinkSPI;
@@ -38,6 +39,7 @@ import org.olat.core.commons.services.help.spi.CustomLink3SPI;
 import org.olat.core.commons.services.help.spi.OOTeachLinkSPI;
 import org.olat.core.commons.services.help.spi.SupportMailSPI;
 import org.olat.core.configuration.AbstractSpringModule;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.i18n.I18nItem;
 import org.olat.core.util.i18n.I18nManager;
@@ -55,6 +57,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class HelpModule extends AbstractSpringModule {
+	
+	private static final Logger log = Tracing.createLoggerFor(HelpModule.class);
 
 	private final static String DELIMITER = ",";
 
@@ -482,6 +486,7 @@ public class HelpModule extends AbstractSpringModule {
 		case OOTEACH:
 			ooTeachPos = position;
 			setIntProperty("help.ooteach.pos", position, true);
+			break;
 		case CONFLUENCE:
 			confluencePos = position;
 			setIntProperty("help.confluence.pos", position, true);
@@ -688,6 +693,7 @@ public class HelpModule extends AbstractSpringModule {
 	private ListWrapper loadLists() {
 		List<String> helpPluginList = new ArrayList<>(Arrays.asList(helpPlugins.split(DELIMITER)));
 		helpPluginList.removeAll(Arrays.asList("",null));
+		
 		helpPluginList = sortHelpPluginList(helpPluginList);
 		
 		List<HelpLinkSPI> userToolHelpPlugins = new ArrayList<>();
@@ -772,9 +778,11 @@ public class HelpModule extends AbstractSpringModule {
 				CustomLink2SPI customLink2SPI = (CustomLink2SPI) CoreSpringFactory.getBean(helpPlugin);
 				if (custom2Enabled.contains(USERTOOL)) {
 					userToolHelpPlugins.add(customLink2SPI);
-				} if (custom2Enabled.contains(AUTHORSITE)) {
+				}
+				if (custom2Enabled.contains(AUTHORSITE)) {
 					authorSiteHelpPlugins.add(customLink2SPI);
-				} if (custom2Enabled.contains(DMZ)) {
+				}
+				if (custom2Enabled.contains(DMZ)) {
 					dmzHelpPlugins.add(customLink2SPI);
 				}
 				break;
@@ -822,51 +830,56 @@ public class HelpModule extends AbstractSpringModule {
 	 * @return
 	 */
 	private List<String> sortHelpPluginList(List<String> helpPluginList) {
-		for (String helpPlugin : helpPluginList) {
-			switch (helpPlugin) {
-			case ACADEMY_KEY:
-				if (helpPluginList.indexOf(helpPlugin) != academyPos) {
-					Collections.swap(helpPluginList, academyPos, helpPluginList.indexOf(helpPlugin));
-				}
-				break;
-			case OOTEACH_KEY:
-				if (helpPluginList.indexOf(helpPlugin) != ooTeachPos) {
-					Collections.swap(helpPluginList, ooTeachPos, helpPluginList.indexOf(helpPlugin));
-				}
-			case CONFLUENCE_KEY:
-				if (helpPluginList.indexOf(helpPlugin) != confluencePos) {
-					Collections.swap(helpPluginList, confluencePos, helpPluginList.indexOf(helpPlugin));
-				}
-				break;
-			case COURSE_KEY:
-				if (helpPluginList.indexOf(helpPlugin) != coursePos) {
-					Collections.swap(helpPluginList, coursePos, helpPluginList.indexOf(helpPlugin));
-				}
-				break;
-			case SUPPORT_KEY:
-				if (helpPluginList.indexOf(helpPlugin) != supportPos) {
-					Collections.swap(helpPluginList, supportPos, helpPluginList.indexOf(helpPlugin));
-				}
-				break;
-			case CUSTOM_1_KEY:
-				if (helpPluginList.indexOf(helpPlugin) != custom1Pos) {
-					Collections.swap(helpPluginList, custom1Pos, helpPluginList.indexOf(helpPlugin));
-				}
-				break;
-			case CUSTOM_2_KEY:
-				if (helpPluginList.indexOf(helpPlugin) != custom2Pos) {
-					Collections.swap(helpPluginList, custom2Pos, helpPluginList.indexOf(helpPlugin));
-				}
-				break;
-			case CUSTOM_3_KEY:
-				if (helpPluginList.indexOf(helpPlugin) != custom3Pos) {
-					Collections.swap(helpPluginList, custom3Pos, helpPluginList.indexOf(helpPlugin));
-				}
-				break;
+		try {
+			for (String helpPlugin : helpPluginList) {
+				switch (helpPlugin) {
+				case ACADEMY_KEY:
+					if (helpPluginList.indexOf(helpPlugin) != academyPos) {
+						Collections.swap(helpPluginList, academyPos, helpPluginList.indexOf(helpPlugin));
+					}
+					break;
+				case OOTEACH_KEY:
+					if (helpPluginList.indexOf(helpPlugin) != ooTeachPos) {
+						Collections.swap(helpPluginList, ooTeachPos, helpPluginList.indexOf(helpPlugin));
+					}
+					break;
+				case CONFLUENCE_KEY:
+					if (helpPluginList.indexOf(helpPlugin) != confluencePos) {
+						Collections.swap(helpPluginList, confluencePos, helpPluginList.indexOf(helpPlugin));
+					}
+					break;
+				case COURSE_KEY:
+					if (helpPluginList.indexOf(helpPlugin) != coursePos) {
+						Collections.swap(helpPluginList, coursePos, helpPluginList.indexOf(helpPlugin));
+					}
+					break;
+				case SUPPORT_KEY:
+					if (helpPluginList.indexOf(helpPlugin) != supportPos) {
+						Collections.swap(helpPluginList, supportPos, helpPluginList.indexOf(helpPlugin));
+					}
+					break;
+				case CUSTOM_1_KEY:
+					if (helpPluginList.indexOf(helpPlugin) != custom1Pos) {
+						Collections.swap(helpPluginList, custom1Pos, helpPluginList.indexOf(helpPlugin));
+					}
+					break;
+				case CUSTOM_2_KEY:
+					if (helpPluginList.indexOf(helpPlugin) != custom2Pos) {
+						Collections.swap(helpPluginList, custom2Pos, helpPluginList.indexOf(helpPlugin));
+					}
+					break;
+				case CUSTOM_3_KEY:
+					if (helpPluginList.indexOf(helpPlugin) != custom3Pos) {
+						Collections.swap(helpPluginList, custom3Pos, helpPluginList.indexOf(helpPlugin));
+					}
+					break;
 
-			default:
-				break;
+				default:
+					break;
+				}
 			}
+		} catch (Exception e) {
+			log.error("", e);
 		}
 		
 		return helpPluginList;
