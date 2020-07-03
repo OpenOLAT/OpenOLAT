@@ -40,6 +40,7 @@ import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -432,6 +433,17 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 			appointmentsMailing.sendAppointmentDeleted(singletonList(appointment));
 		}
 		appointmentDao.delete(appointment);
+	}
+	
+	@Override
+	public boolean isEndAfter(Appointment appointment, Date dueDate) {
+		Date begin = appointment.getStart();
+		Date end = appointment.getEnd();
+		Date ajustedEnd = new Date(end.getTime());
+		if (DateUtils.isSameDate(begin, end) && DateUtils.isSameTime(begin, end)) {
+			ajustedEnd = DateUtils.setTime(ajustedEnd, 23, 59, 59);
+		}
+		return ajustedEnd.after(dueDate);
 	}
 	
 	@Override

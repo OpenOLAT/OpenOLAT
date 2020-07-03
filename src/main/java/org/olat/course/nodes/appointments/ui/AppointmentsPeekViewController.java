@@ -119,21 +119,10 @@ public class AppointmentsPeekViewController extends BasicController {
 		return null;
 	}
 
-	private Optional<Appointment> getNextAppointment(List<Appointment> loadedAppointments) {
-		List<Appointment> appointments = new ArrayList<>(loadedAppointments.size());
+	private Optional<Appointment> getNextAppointment(List<Appointment> appointments) {
 		Date now = new Date();
-		for (Appointment appointment: loadedAppointments) {
-			Date begin = appointment.getStart();
-			Date end = appointment.getEnd();
-			Date ajustedEnd = new Date(end.getTime());
-			if (DateUtils.isSameDate(begin, end) && DateUtils.isSameTime(begin, end)) {
-				ajustedEnd = DateUtils.setTime(ajustedEnd, 23, 59, 59);
-			}
-			if (now.before(ajustedEnd)) {
-				appointments.add(appointment);
-			}
-		}
 		Optional<Appointment> appointment = appointments.stream()
+				.filter(a -> appointmentsService.isEndAfter(a, now))
 				.sorted((a1, a2) -> a1.getStart().compareTo(a2.getStart()))
 				.limit(1)
 				.findFirst();
