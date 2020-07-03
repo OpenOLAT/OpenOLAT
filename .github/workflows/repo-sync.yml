@@ -1,0 +1,16 @@
+name: Repository Sync
+on:
+  schedule:
+    - cron:  "*/5 * * * *"
+jobs:
+  repo-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: repo-sync
+        uses: wei/git-sync@v2
+        with:
+          source_repo: "git@github.com:OpenOLAT/OpenOLAT.git"
+          source_branch: "refs/tags/*"
+          destination_repo: "git@github.com:myolat/OpenOLAT.git"
+          destination_branch: "refs/tags/*"
+          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
