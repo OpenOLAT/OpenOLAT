@@ -113,13 +113,14 @@ public class CatalogEntryEditController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormStyle("o_catalog");
 		String name = catalogEntry == null ? "" : catalogEntry.getName();
-		nameEl = uifactory.addTextElement("name", "entry.category", 255, name, formLayout);
+		nameEl = uifactory.addTextElement("name", "entry.category", 200, name, formLayout);
 		nameEl.setElementCssClass("o_sel_cat_name");
 		nameEl.setMandatory(true);
 		nameEl.setNotEmptyCheck("form.legende.mandatory");
 		
 		String shortTitle = catalogEntry == null ? "" : catalogEntry.getShortTitle() != null ? catalogEntry.getShortTitle() : "";
-		shortTitleEl = uifactory.addTextElement("shortTitle", "entry.shorttitle", 20, shortTitle, formLayout);
+		// max longer than actual max because html input maxsize does not normalize (ü count as 2 characters)
+		shortTitleEl = uifactory.addTextElement("shortTitle", "entry.shorttitle", 40, shortTitle, formLayout); 
 		shortTitleEl.setElementCssClass("o_sel_cat_short_title");
 		shortTitleEl.setMandatory(true);
 		shortTitleEl.setNotEmptyCheck("form.legende.mandatory");
@@ -194,7 +195,7 @@ public class CatalogEntryEditController extends FormBasicController {
 		textElement.clearError();
 		if(StringHelper.containsNonWhitespace(nameEl.getValue())) {
 			if(textElement.getValue().length() > lenght) {
-				textElement.setErrorKey("input.toolong", new String[]{ String.valueOf(lenght) });
+				textElement.setErrorKey("input.toolong", new String[]{ String.valueOf(lenght)});
 				return false;
 			}
 		} else {
