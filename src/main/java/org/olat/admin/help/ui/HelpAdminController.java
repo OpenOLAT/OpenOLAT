@@ -67,6 +67,7 @@ public class HelpAdminController extends FormBasicController {
 
 	private DropdownItem addHelpDropDown;
 	private FormLink addAcademy;
+	private FormLink addOOTeach;
 	private FormLink addConfluence;
 	private FormLink addCourse;
 	private FormLink addSupport;
@@ -100,6 +101,7 @@ public class HelpAdminController extends FormBasicController {
 		addHelpDropDown.setVisible(helpModule.getRemainingPlugins().length > 0 );
 
 		addAcademy = uifactory.addFormLink("help.admin.academy", formLayout);
+		addOOTeach = uifactory.addFormLink("help.admin.ooTeach", formLayout);
 		addConfluence = uifactory.addFormLink("help.admin.confluence", formLayout);
 		addCourse = uifactory.addFormLink("help.admin.course", formLayout);
 		addSupport = uifactory.addFormLink("help.admin.support", formLayout);
@@ -145,6 +147,9 @@ public class HelpAdminController extends FormBasicController {
 			case HelpModule.ACADEMY:
 				addHelpDropDown.addElement(addAcademy);
 				break;
+			case HelpModule.OOTEACH:
+				addHelpDropDown.addElement(addOOTeach);
+				break;
 			case HelpModule.CONFLUENCE:
 				addHelpDropDown.addElement(addConfluence);
 				break;
@@ -185,6 +190,14 @@ public class HelpAdminController extends FormBasicController {
 						helpModule.getAcademyEnabled().contains(HelpModule.USERTOOL), 
 						helpModule.getAcademyEnabled().contains(HelpModule.AUTHORSITE), 
 						helpModule.getAcademyEnabled().contains(HelpModule.DMZ));
+				break;
+			case HelpModule.OOTEACH_KEY:
+				tableRow = new HelpAdminTableContentRow(
+						HelpModule.OOTEACH, 
+						helpModule.getOOTeachIcon(), 
+						helpModule.getOOTeachEnabled().contains(HelpModule.USERTOOL), 
+						helpModule.getOOTeachEnabled().contains(HelpModule.AUTHORSITE), 
+						helpModule.getOOTeachEnabled().contains(HelpModule.DMZ));
 				break;
 			case HelpModule.CONFLUENCE_KEY:
 				tableRow = new HelpAdminTableContentRow(
@@ -280,6 +293,8 @@ public class HelpAdminController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {	
 		if (source == addAcademy) {
 			doOpenAddHelpDialog(ureq, HelpModule.ACADEMY);
+		} else if (source == addOOTeach) {
+			doOpenAddHelpDialog(ureq, HelpModule.OOTEACH);
 		} else if (source == addConfluence) {
 			doOpenAddHelpDialog(ureq, HelpModule.CONFLUENCE);
 		} else if (source == addCourse) {

@@ -35,6 +35,7 @@ import org.olat.core.commons.services.help.spi.CourseHelpSPI;
 import org.olat.core.commons.services.help.spi.CustomLink1SPI;
 import org.olat.core.commons.services.help.spi.CustomLink2SPI;
 import org.olat.core.commons.services.help.spi.CustomLink3SPI;
+import org.olat.core.commons.services.help.spi.OOTeachLinkSPI;
 import org.olat.core.commons.services.help.spi.SupportMailSPI;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -61,6 +62,8 @@ public class HelpModule extends AbstractSpringModule {
 	public final static String ACADEMY_KEY = "ooAcademyLinkHelp";
 	public final static String CONFLUENCE = "confluence";
 	public final static String CONFLUENCE_KEY = "ooConfluenceLinkHelp";
+	public final static String OOTEACH_KEY = "ooTeachLinkHelp";
+	public final static String OOTEACH = "ooTeach";
 	public final static String SUPPORT = "support";
 	public final static String SUPPORT_KEY = "supportMailHelp";
 	public final static String COURSE = "course";
@@ -87,13 +90,22 @@ public class HelpModule extends AbstractSpringModule {
 	private String helpPlugins;
 
 	// Academy settings
-	@Value("${help.academy.link:https://www.openolat.org/academy}")
+	@Value("${help.academy.link:https://www.openolat.com/openolat-academy/}")
 	private String academyLink;
 	@Value("${help.academy.enabled:usertool,authorsite}")
 	private String academyEnabled;
 	@Value("${help.academy.icon:o_icon_video}")
 	private String academyIcon;
 	private int academyPos;
+	
+	// OOTeach settings
+	@Value("${help.ooteach.link:https://www.openolat.com/openolat-teach/}")
+	private String ooTeachLink;
+	@Value("${help.ooteach.enabled:authorsite}")
+	private String ooTeachEnabled;
+	@Value("${help.ooteach.icon:o_icon_video}")
+	private String ooTeachIcon;
+	private int ooTeachPos;
 
 	// Confluence settings
 	@Value("${help.confluence.enabled:usertool,authorsite}")
@@ -107,6 +119,7 @@ public class HelpModule extends AbstractSpringModule {
 	private String supportEmail;
 	@Value("${help.support.enabled:}")
 	private String supportEnabled;
+	@Value("&{help.support.icon:o_icon_mail}")
 	private String supportIcon;
 	private int supportPos;
 
@@ -115,6 +128,7 @@ public class HelpModule extends AbstractSpringModule {
 	private String courseSoftkey;
 	@Value("${help.course.enabled:}")
 	private String courseEnabled;
+	@Value("&{help.support.icon:o_icon_help}")
 	private String courseIcon;
 	private int coursePos;
 
@@ -125,6 +139,7 @@ public class HelpModule extends AbstractSpringModule {
 	private boolean custom1NewWindow;
 	@Value("${help.custom1.enabled:}")
 	private String custom1Enabled;
+	@Value("&{help.custom1.icon:o_icon_help}")
 	private String custom1Icon;
 	private int custom1Pos;
 
@@ -135,6 +150,7 @@ public class HelpModule extends AbstractSpringModule {
 	private boolean custom2NewWindow;
 	@Value("${help.custom2.enabled:}")
 	private String custom2Enabled;
+	@Value("&{help.custom2.icon:o_icon_help}")
 	private String custom2Icon;
 	private int custom2Pos;
 
@@ -145,6 +161,7 @@ public class HelpModule extends AbstractSpringModule {
 	private boolean custom3NewWindow;
 	@Value("${help.custom3.enabled:}")
 	private String custom3Enabled;
+	@Value("&{help.custom3.icon:o_icon_help}")
 	private String custom3Icon;
 	private int custom3Pos;
 	
@@ -176,6 +193,12 @@ public class HelpModule extends AbstractSpringModule {
 		academyEnabled = getStringPropertyValue("help.academy.enabled", academyEnabled);
 		academyIcon = getStringPropertyValue("help.academy.icon", academyIcon);
 		academyPos = getIntPropertyValue("help.academy.pos");
+		
+		// OOTeach Settings
+		ooTeachLink = getStringPropertyValue("help.ooteach.link", ooTeachLink);
+		ooTeachEnabled = getStringPropertyValue("help.ooteach.enabled", ooTeachEnabled);
+		ooTeachIcon = getStringPropertyValue("help.ooteach.icon", ooTeachIcon);
+		ooTeachPos = getIntPropertyValue("help.ooteach.pos");
 
 		// Confluence settings
 		confluenceEnabled = getStringPropertyValue("help.confluence.enabled", confluenceEnabled);
@@ -185,32 +208,32 @@ public class HelpModule extends AbstractSpringModule {
 		// Support settings
 		supportEmail = getStringPropertyValue("help.support.email", supportEmail);
 		supportEnabled = getStringPropertyValue("help.support.enabled", supportEnabled);
-		supportIcon = getStringPropertyValue("help.support.icon", DEFAULT_ICON);
+		supportIcon = getStringPropertyValue("help.support.icon", supportIcon);
 		supportPos = getIntPropertyValue("help.support.pos");
 
 		// Course settings
 		courseSoftkey = getStringPropertyValue("help.course.softkey", courseSoftkey);
 		courseEnabled = getStringPropertyValue("help.course.enabled", courseEnabled);
-		courseIcon = getStringPropertyValue("help.course.icon", DEFAULT_ICON);
+		courseIcon = getStringPropertyValue("help.course.icon", courseIcon);
 		coursePos = getIntPropertyValue("help.course.pos");
 
 		// Custom link 1 settings
 		custom1Link = getStringPropertyValue("help.custom1.link", custom1Link);
 		custom1Enabled = getStringPropertyValue("help.custom1.enabled", custom1Enabled);
 		custom1NewWindow = getBooleanPropertyValue("help.custom1.new.window");
-		custom1Icon = getStringPropertyValue("help.custom1.icon", DEFAULT_ICON);
+		custom1Icon = getStringPropertyValue("help.custom1.icon", custom1Icon);
 
 		// Custom link 2 settings
 		custom2Link = getStringPropertyValue("help.custom2.link", custom2Link);
 		custom2Enabled = getStringPropertyValue("help.custom2.enabled", custom2Enabled);
 		custom2NewWindow = getBooleanPropertyValue("help.custom2.new.window");
-		custom2Icon = getStringPropertyValue("help.custom2.icon", DEFAULT_ICON);
+		custom2Icon = getStringPropertyValue("help.custom2.icon", custom2Icon);
 
 		// Custom link 2 settings
 		custom3Link = getStringPropertyValue("help.custom3.link", custom3Link);
 		custom3Enabled = getStringPropertyValue("help.custom3.enabled", custom3Enabled);
 		custom3NewWindow = getBooleanPropertyValue("help.custom3.new.window");
-		custom3Icon = getStringPropertyValue("help.custom3.icon", DEFAULT_ICON);
+		custom3Icon = getStringPropertyValue("help.custom3.icon", custom3Icon);
 	}
 
 	// CRUD operations
@@ -240,6 +263,14 @@ public class HelpModule extends AbstractSpringModule {
 			removeProperty("help.academy.icon", true);
 			removeProperty("help.academy.enabled", true);
 			removeProperty("help.academy.pos", true);
+			break;
+		case OOTEACH:
+			plugin = OOTEACH_KEY;
+			removalPosition = ooTeachPos;
+			removeProperty("help.ooteach.link", true);
+			removeProperty("help.ooteach.icon", true);
+			removeProperty("help.ooteach.enabled", true);
+			removeProperty("help.ooteach.pos", true);
 			break;
 		case CONFLUENCE:
 			plugin = CONFLUENCE_KEY;
@@ -310,6 +341,12 @@ public class HelpModule extends AbstractSpringModule {
 					setIntProperty("help.academy.pos", academyPos, true);
 				}
 				break;
+			case OOTEACH_KEY:
+				if (ooTeachPos > removalPosition) {
+					ooTeachPos -= 1;
+					setIntProperty("help.ooteach.pos", ooTeachPos, true);
+				}
+				break;				
 			case CONFLUENCE_KEY:
 				if (confluencePos > removalPosition) {
 					confluencePos -= 1;
@@ -362,6 +399,12 @@ public class HelpModule extends AbstractSpringModule {
 			academyIcon = setStringProperty("help.academy.icon", icon, true);
 			academyEnabled = setStringProperty("help.academy.enabled", generateEnabledString(usertool, authorsite, login), true);
 			addToHelpPlugins(ACADEMY_KEY);
+			break;
+		case OOTEACH:
+			ooTeachLink = setStringProperty("help.ooteach.link", input, true);
+			ooTeachIcon = setStringProperty("help.ooteach.icon", icon, true);
+			ooTeachEnabled = setStringProperty("help.ooteach.enabled", generateEnabledString(usertool, authorsite, login), true);
+			addToHelpPlugins(OOTEACH_KEY);
 			break;
 		case CONFLUENCE:
 			confluenceEnabled = setStringProperty("help.confluence.enabled", generateEnabledString(usertool, authorsite, login), true);
@@ -436,6 +479,9 @@ public class HelpModule extends AbstractSpringModule {
 			academyPos = position;
 			setIntProperty("help.academy.pos", position, true);
 			break;
+		case OOTEACH:
+			ooTeachPos = position;
+			setIntProperty("help.ooteach.pos", position, true);
 		case CONFLUENCE:
 			confluencePos = position;
 			setIntProperty("help.confluence.pos", position, true);
@@ -504,6 +550,18 @@ public class HelpModule extends AbstractSpringModule {
 
 	public String getAcademyIcon() {
 		return academyIcon;
+	}
+	
+	public String getOOTeachLink() {
+		return ooTeachLink;
+	}
+	
+	public String getOOTeachEnabled() {
+		return ooTeachEnabled;
+	}
+	
+	public String getOOTeachIcon() {
+		return ooTeachIcon;
 	}
 
 	public String getConfluenceEnabled() {
@@ -597,17 +655,26 @@ public class HelpModule extends AbstractSpringModule {
 
 		if (!helpPlugins.contains(HelpModule.ACADEMY_KEY)) {
 			remainingPlugins.add(ACADEMY);
-		} if (!helpPlugins.contains(HelpModule.CONFLUENCE_KEY)) {
+		} 
+		if (!helpPlugins.contains(HelpModule.OOTEACH_KEY)) {
+			remainingPlugins.add(OOTEACH);
+		}
+		if (!helpPlugins.contains(HelpModule.CONFLUENCE_KEY)) {
 			remainingPlugins.add(CONFLUENCE);
-		} if (!helpPlugins.contains(HelpModule.SUPPORT_KEY)) {
+		} 
+		if (!helpPlugins.contains(HelpModule.SUPPORT_KEY)) {
 			remainingPlugins.add(SUPPORT);
-		} if (!helpPlugins.contains(HelpModule.COURSE_KEY)) {
+		} 
+		if (!helpPlugins.contains(HelpModule.COURSE_KEY)) {
 			remainingPlugins.add(COURSE);
-		} if (!helpPlugins.contains(HelpModule.CUSTOM_1_KEY)) {
+		} 
+		if (!helpPlugins.contains(HelpModule.CUSTOM_1_KEY)) {
 			remainingPlugins.add(CUSTOM_1);
-		} if (!helpPlugins.contains(HelpModule.CUSTOM_2_KEY)) {
+		} 
+		if (!helpPlugins.contains(HelpModule.CUSTOM_2_KEY)) {
 			remainingPlugins.add(CUSTOM_2);
-		} if (!helpPlugins.contains(HelpModule.CUSTOM_3_KEY)) {
+		} 
+		if (!helpPlugins.contains(HelpModule.CUSTOM_3_KEY)) {
 			remainingPlugins.add(CUSTOM_3);
 		}
 
@@ -639,6 +706,18 @@ public class HelpModule extends AbstractSpringModule {
 				} 
 				if (academyEnabled.contains(DMZ)) {
 					dmzHelpPlugins.add(academyHelpLinkSPI);
+				}
+				break;
+			case OOTEACH_KEY:
+				OOTeachLinkSPI ooTeachLinkSPI = (OOTeachLinkSPI) CoreSpringFactory.getBean(helpPlugin);
+				if (ooTeachEnabled.contains(USERTOOL)) {
+					userToolHelpPlugins.add(ooTeachLinkSPI);
+				} 
+				if (ooTeachEnabled.contains(AUTHORSITE)) {
+					authorSiteHelpPlugins.add(ooTeachLinkSPI);
+				} 
+				if (ooTeachEnabled.contains(DMZ)) {
+					dmzHelpPlugins.add(ooTeachLinkSPI);
 				}
 				break;
 			case CONFLUENCE_KEY:
@@ -750,6 +829,10 @@ public class HelpModule extends AbstractSpringModule {
 					Collections.swap(helpPluginList, academyPos, helpPluginList.indexOf(helpPlugin));
 				}
 				break;
+			case OOTEACH_KEY:
+				if (helpPluginList.indexOf(helpPlugin) != ooTeachPos) {
+					Collections.swap(helpPluginList, ooTeachPos, helpPluginList.indexOf(helpPlugin));
+				}
 			case CONFLUENCE_KEY:
 				if (helpPluginList.indexOf(helpPlugin) != confluencePos) {
 					Collections.swap(helpPluginList, confluencePos, helpPluginList.indexOf(helpPlugin));

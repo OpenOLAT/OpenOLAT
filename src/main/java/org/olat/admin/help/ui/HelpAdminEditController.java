@@ -125,6 +125,12 @@ public class HelpAdminEditController extends FormBasicController {
 			iconEl.setValue("o_icon_video");
 			setElementVisible(inputEl, true, true, true);
 			break;
+		case HelpModule.OOTEACH:
+			inputEl.setLabel("help.admin.input.ooTeach", null);
+			inputEl.setValue(helpModule.getOOTeachLink());
+			iconEl.setValue("o_icon_video");
+			setElementVisible(inputEl, true, true, true);
+			break;
 		case HelpModule.CONFLUENCE:
 			String[] confluenceKeys = new String[displayKeys.length + 1];
 			System.arraycopy(displayKeys, 0, confluenceKeys, 1, displayKeys.length);
@@ -321,6 +327,8 @@ public class HelpAdminEditController extends FormBasicController {
 			if (event.wasTriggerdBy(FormEvent.ONCHANGE)) {
 				if (typEl.getValue().contains(HelpModule.ACADEMY)) {
 					helpPlugin = HelpModule.ACADEMY;
+				} else if (typEl.getValue().contains(HelpModule.OOTEACH)) {
+					helpPlugin = HelpModule.OOTEACH;
 				} else if (typEl.getValue().contains(HelpModule.CONFLUENCE)) {
 					helpPlugin = HelpModule.CONFLUENCE;
 				} else if (typEl.getValue().contains(HelpModule.COURSE)) {
