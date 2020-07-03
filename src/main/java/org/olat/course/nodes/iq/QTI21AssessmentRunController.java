@@ -471,10 +471,10 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 
 					if(startDate != null && currentDate.before(startDate)) {
 						Formatter formatter = Formatter.getInstance(getLocale());
-						String visibilityStartDate = formatter.formatDate(startDate);
+						String visibilityStartDate = formatter.formatDateAndTime(startDate);
 						String visibilityEndDate = "-";
 						if(endDate != null && currentDate.before(endDate)) {
-							visibilityEndDate = formatter.formatDate(endDate);
+							visibilityEndDate = formatter.formatDateAndTime(endDate);
 						} else if(endDate != null && currentDate.after(endDate)) {
 							String visibilityPeriod = translate("showResults.visibility.past");
 							mainVC.contextPut("visibilityPeriod", visibilityPeriod);
@@ -490,10 +490,10 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 
 					if(startDate != null && currentDate.before(startDate)) {
 						Formatter formatter = Formatter.getInstance(getLocale());
-						String visibilityStartDate = formatter.formatDate(startDate);
+						String visibilityStartDate = formatter.formatDateAndTime(startDate);
 						String visibilityEndDate = "-";
 						if(endDate != null && currentDate.before(endDate)) {
-							visibilityEndDate = formatter.formatDate(endDate);
+							visibilityEndDate = formatter.formatDateAndTime(endDate);
 						} else if(endDate != null && currentDate.after(endDate)) {
 							String visibilityPeriod = translate("showResults.visibility.past");
 							mainVC.contextPut("visibilityPeriod", visibilityPeriod);
@@ -513,10 +513,10 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 
 					if(startDate != null && currentDate.before(startDate)) {
 						Formatter formatter = Formatter.getInstance(getLocale());
-						String visibilityStartDate = formatter.formatDate(startDate);
+						String visibilityStartDate = formatter.formatDateAndTime(startDate);
 						String visibilityEndDate = "-";
 						if(endDate != null && currentDate.before(endDate)) {
-							visibilityEndDate = formatter.formatDate(endDate);
+							visibilityEndDate = formatter.formatDateAndTime(endDate);
 						} else if(endDate != null && currentDate.after(endDate)) {
 							String visibilityPeriod = translate("showResults.visibility.past");
 							mainVC.contextPut("visibilityPeriod", visibilityPeriod);
@@ -538,10 +538,10 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 
 				if(startDate != null && currentDate.before(startDate)) {
 					Formatter formatter = Formatter.getInstance(getLocale());
-					String visibilityStartDate = formatter.formatDate(startDate);
+					String visibilityStartDate = formatter.formatDateAndTime(startDate);
 					String visibilityEndDate = "-";
 					if(endDate != null && currentDate.before(endDate)) {
-						visibilityEndDate = formatter.formatDate(endDate);
+						visibilityEndDate = formatter.formatDateAndTime(endDate);
 					} else if(endDate != null && currentDate.after(endDate)) {
 						String visibilityPeriod = translate("showResults.visibility.past");
 						mainVC.contextPut("visibilityPeriod", visibilityPeriod);
