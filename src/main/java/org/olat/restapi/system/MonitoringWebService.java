@@ -51,6 +51,7 @@ public class MonitoringWebService {
 	private static final ThreadsWebService threadsWebService = new ThreadsWebService();
 	private static final OpenOLATStatisticsWebService ooStatsWebService = new OpenOLATStatisticsWebService();
 	private static final VFSStatsWebService vfsStatsWebService = new VFSStatsWebService();
+	private static final BigBlueButtonWebService bigBlueButtonWebService = new BigBlueButtonWebService();
 	
 	public MonitoringWebService() {
 		//make Spring happy
@@ -89,6 +90,11 @@ public class MonitoringWebService {
 	@Path("revisionsSize")
 	public VFSStatsWebService getRevisionsSizeWS() {
 		return vfsStatsWebService;
+	}
+	
+	@Path("bigbluebutton")
+	public BigBlueButtonWebService getBigBlueButtonStatistics() {
+		return bigBlueButtonWebService;
 	}
 	
 	

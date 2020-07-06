@@ -38,3 +38,4 @@ src/test/java/org/olat/selenium/SeleniumTest.java
 
 **/*/.sass-cache
 
+/.sts4-cache
