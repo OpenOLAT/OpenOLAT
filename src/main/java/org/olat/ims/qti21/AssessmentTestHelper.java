@@ -66,7 +66,9 @@ public class AssessmentTestHelper {
 					.getItemRefsBySystemIdMap().get(currentItem.getItemSystemId());
 			
 			AssessmentItemRef itemRef = null;
-			if(itemRefs.size() == 1) {
+			if(itemRefs == null) {
+				// itemRef stay null
+			} else if(itemRefs.size() == 1) {
 				itemRef = itemRefs.get(0);
 			} else {
 				Identifier itemId = itemKey.getIdentifier();

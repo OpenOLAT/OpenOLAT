@@ -62,13 +62,14 @@ public class CorrectionIdentityAssessmentItemNavigationController extends BasicC
 	public CorrectionIdentityAssessmentItemNavigationController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry testEntry, ResolvedAssessmentTest resolvedAssessmentTest,
 			AssessmentItemCorrection itemCorrection, AssessmentItemListEntry assessmentEntry,
-			List<? extends AssessmentItemListEntry> assessmentEntryList, CorrectionOverviewModel model) {
+			List<? extends AssessmentItemListEntry> assessmentEntryList, CorrectionOverviewModel model,
+			boolean pageIdentity) {
 		super(ureq, wControl);
 		
 		mainVC = createVelocityContainer("corrections_navigation");
 		
 		itemCtrl = new CorrectionIdentityAssessmentItemController(ureq, wControl,
-				testEntry, resolvedAssessmentTest, itemCorrection, assessmentEntry, assessmentEntryList, model);
+				testEntry, resolvedAssessmentTest, itemCorrection, assessmentEntry, assessmentEntryList, model, pageIdentity);
 		listenTo(itemCtrl);
 		mainVC.put("items", itemCtrl.getInitialComponent());
 		

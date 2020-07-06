@@ -378,7 +378,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 				AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
 				identityItemCtrl = new CorrectionIdentityAssessmentItemNavigationController(ureq, getWindowControl(),
 						model.getTestEntry(), model.getResolvedAssessmentTest(), itemCorrection, row,
-						tableModel.getObjects(), model);
+						tableModel.getObjects(), model, false);
 				listenTo(identityItemCtrl);
 				stackPanel.pushController(assessmentItem.getTitle(), identityItemCtrl);
 				updatePreviousNext();

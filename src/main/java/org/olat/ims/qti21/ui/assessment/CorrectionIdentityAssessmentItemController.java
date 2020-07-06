@@ -80,6 +80,7 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 	private final URI assessmentObjectUri;
 	private final ResourcesMapper resourcesMapper;
 	
+	private final boolean pageIdentity;
 	private CorrectionOverviewModel model;
 	private final RepositoryEntry testEntry;
 	private AssessmentItemCorrection itemCorrection;
@@ -96,7 +97,8 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 	public CorrectionIdentityAssessmentItemController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry testEntry, ResolvedAssessmentTest resolvedAssessmentTest,
 			AssessmentItemCorrection itemCorrection, AssessmentItemListEntry assessmentEntry,
-			List<? extends AssessmentItemListEntry> assessmentEntryList, CorrectionOverviewModel model) {
+			List<? extends AssessmentItemListEntry> assessmentEntryList, CorrectionOverviewModel model,
+			boolean pageIdentity) {
 		super(ureq, wControl, "correction_identity_assessment_item");
 
 		FileResourceManager frm = FileResourceManager.getInstance();
@@ -105,6 +107,7 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 		
 		this.model = model;
 		this.testEntry = testEntry;
+		this.pageIdentity = pageIdentity;
 		this.itemCorrection = itemCorrection;
 		this.assessmentEntry = assessmentEntry;
 		this.assessmentEntryList = assessmentEntryList;
@@ -146,7 +149,8 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 		
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("save", formLayout);
-		saveNextQuestionButton = uifactory.addFormLink("save.next", formLayout, Link.BUTTON);
+		String saveNextI18n = pageIdentity ? "save.next.identity" : "save.next";
+		saveNextQuestionButton = uifactory.addFormLink("save.next", saveNextI18n, null, formLayout, Link.BUTTON);
 		saveBackOverviewButton = uifactory.addFormLink("save.back", formLayout, Link.BUTTON);
 	}
 	

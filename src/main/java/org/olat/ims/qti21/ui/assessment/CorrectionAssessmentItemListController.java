@@ -92,7 +92,7 @@ import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
 
 /**
  * A table with the list of assessment items of the test
- * with statistics about the users wo answered (or not answered)
+ * with statistics about the users who answered (or not answered)
  * every assessment item.
  * 
  * 
@@ -471,7 +471,7 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 
 				identityItemCtrl = new CorrectionIdentityAssessmentItemNavigationController(ureq, getWindowControl(),
 						model.getTestEntry(), model.getResolvedAssessmentTest(), itemCorrection, listEntry,
-						selectedItemSessions, model);
+						selectedItemSessions, model, true);
 				listenTo(identityItemCtrl);
 				updatePreviousNext();
 				
