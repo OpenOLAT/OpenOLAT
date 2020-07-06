@@ -89,7 +89,7 @@ public class MessageVO {
 		body = message.getBody();
 		
 		Status messageStatus = Status.getStatus(message.getStatusCode());
-		sticky = new Boolean(messageStatus.isSticky());
+		sticky = Boolean.valueOf(messageStatus.isSticky());
 	}
 
 	public Long getKey() {

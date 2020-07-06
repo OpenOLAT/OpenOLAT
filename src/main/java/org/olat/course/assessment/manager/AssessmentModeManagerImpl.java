@@ -380,12 +380,8 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 			assessedKeys.addAll(courseMemberKeys);
 		}
 		
-		if(targetAudience == Target.curriculumEls || targetAudience == Target.courseAndGroups) {
-			List<Long> courseMemberKeys = assessmentMode.isApplySettingsForCoach()
-					? repositoryEntryRelationDao.getMemberKeys(re, RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.coach.name(), GroupRoles.participant.name())
-					: repositoryEntryRelationDao.getMemberKeys(re, RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.participant.name());
-			assessedKeys.addAll(courseMemberKeys);
-			
+		// For courseAndGroups, the curriculums are retrieved by the relation type.
+		if(targetAudience == Target.curriculumEls) {
 			List<CurriculumElementRef> curriculumElements = new ArrayList<>();
 			Set<AssessmentModeToCurriculumElement> modeTocurriculumElements  = assessmentMode.getCurriculumElements();
 			for(AssessmentModeToCurriculumElement modeTocurriculumElement:modeTocurriculumElements) {

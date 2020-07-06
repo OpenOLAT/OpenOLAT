@@ -31,6 +31,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
 
 /**
@@ -55,30 +56,34 @@ public class GradingAdminTemplatesController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// new grader
-		initForm("mail.to.grader.subject", "mail.grader.to.entry.subject", formLayout);
-		initForm("mail.to.grader.body", "mail.grader.to.entry.body", formLayout);
+		initForm("mail.to.grader.subject", "mail.grader.to.entry.subject", false, formLayout);
+		initForm("mail.to.grader.body", "mail.grader.to.entry.body", true, formLayout);
 		uifactory.addSpacerElement("spacer-new-grader", formLayout, false);
 		
 		// notifications
-		initForm("notification.subject", "mail.notification.subject", formLayout);
-		initForm("notification.body", "mail.notification.body", formLayout);
+		initForm("notification.subject", "mail.notification.subject", false, formLayout);
+		initForm("notification.body", "mail.notification.body", true, formLayout);
 		uifactory.addSpacerElement("spacer-notification", formLayout, false);
 		
 		// reminder 1
-		initForm("reminder.1.subject", "mail.reminder1.subject", formLayout);
-		initForm("reminder.1.body", "mail.reminder1.body", formLayout);
+		initForm("reminder.1.subject", "mail.reminder1.subject", false, formLayout);
+		initForm("reminder.1.body", "mail.reminder1.body", true, formLayout);
 		uifactory.addSpacerElement("spacer-1-reminder", formLayout, false);
 		
 		// reminder 2
-		initForm("reminder.2.subject", "mail.reminder2.subject", formLayout);
-		initForm("reminder.2.body", "mail.reminder2.body", formLayout);
+		initForm("reminder.2.subject", "mail.reminder2.subject", false, formLayout);
+		initForm("reminder.2.body", "mail.reminder2.body", true, formLayout);
 	}
 
-	private void initForm(String labelI18nKey, String textI18nKey, FormItemContainer formLayout) {
+	private void initForm(String labelI18nKey, String textI18nKey, boolean multiLines, FormItemContainer formLayout) {
 		String text = translate(textI18nKey);
+		if(multiLines) {
+			text = Formatter.escWithBR(text).toString();
+		}
+		
 		StaticTextElement viewEl = uifactory.addStaticTextElement("view." + counter++, labelI18nKey, text, formLayout);
 		FormLink translationLink = uifactory.addFormLink("translate." + counter++, "translate", null, formLayout, Link.LINK);
-		translationLink.setUserObject(new TranslationBundle(textI18nKey, labelI18nKey, viewEl));
+		translationLink.setUserObject(new TranslationBundle(textI18nKey, labelI18nKey, multiLines, viewEl));
 	}
 
 	@Override
@@ -124,7 +129,7 @@ public class GradingAdminTemplatesController extends FormBasicController {
 		if(guardModalController(translatorCtrl)) return;
 		
 		translatorCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), bundle.getI18nKey(),
-				GradingAdminTemplatesController.class);
+				GradingAdminTemplatesController.class, bundle.isMultiLines());
 		translatorCtrl.setUserObject(bundle);
 		listenTo(translatorCtrl);
 
@@ -135,18 +140,24 @@ public class GradingAdminTemplatesController extends FormBasicController {
 	}
 	
 	private void doUpdate(TranslationBundle bundle) {
-		bundle.getViewEl().setValue(translate(bundle.getI18nKey()));
+		String text = translate(bundle.getI18nKey());
+		if(bundle.isMultiLines()) {
+			text = Formatter.escWithBR(text).toString();
+		}
+		bundle.getViewEl().setValue(text);
 	}
 	
 	private static class TranslationBundle {
 		
 		private final String i18nKey;
+		private final boolean multiLines;
 		private final String labelI18nKey;
 		private final StaticTextElement viewEl;
 		
-		public TranslationBundle(String i18nKey, String labelI18nKey, StaticTextElement viewEl) {
+		public TranslationBundle(String i18nKey, String labelI18nKey, boolean multiLines, StaticTextElement viewEl) {
 			this.i18nKey = i18nKey;
 			this.viewEl = viewEl;
+			this.multiLines = multiLines;
 			this.labelI18nKey = labelI18nKey;
 		}
 
@@ -160,6 +171,10 @@ public class GradingAdminTemplatesController extends FormBasicController {
 		
 		public String getLabelI18nKey() {
 			return labelI18nKey;
+		}
+
+		public boolean isMultiLines() {
+			return multiLines;
 		}
 	}
 }
