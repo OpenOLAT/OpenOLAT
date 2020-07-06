@@ -66,7 +66,11 @@ public class MessageNode extends GenericNode implements Serializable {
 		creator = message.getCreator();
 		creationDate = message.getCreationDate();
 		modifier = message.getModifier();
-		modifiedDate = message.getLastModified();
+		if(message.getModificationDate() != null) {
+			modifiedDate = message.getModificationDate();
+		} else {
+			modifiedDate = message.getLastModified();
+		}
 		guest = message.isGuest();
 		pseudonym = message.getPseudonym();
 		if(message.getParent()==null) {

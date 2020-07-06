@@ -24,6 +24,7 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.PersistenceException;
@@ -559,7 +560,8 @@ public class MessageEditController extends FormBasicController {
 	private void commitEditMode() {
 		boolean children = fm.countMessageChildren(message.getKey()) > 0;
 		if (foCallback.mayEditMessageAsModerator() || (userIsMsgCreator && !children)) {
-			message.setModifier(getIdentity());	
+			message.setModifier(getIdentity());
+			message.setModificationDate(new Date());
 			message = fm.updateMessage(message, true);
 			persistTempUploadedFiles(message);
 			notifiySubscription();

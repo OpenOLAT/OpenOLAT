@@ -90,6 +90,9 @@ public class MessageImpl implements CreateInfo, Persistable, Message {
 	@Column(name="numofwords", nullable=true, insertable=true, updatable=true)
 	private Integer numOfWords;
 	
+	@Column(name="modification_date", nullable=true, insertable=true, updatable=true)
+	private Date modificationDate;
+	
 	@ManyToOne(targetEntity=MessageImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="parent_id", nullable=true, insertable=true, updatable=true)
 	private Message parent;
@@ -130,18 +133,12 @@ public class MessageImpl implements CreateInfo, Persistable, Message {
 		this.creationDate = creationDate;
 	}
 
-
-	/**
-	 * @return
-	 */
+	@Override
 	public String getBody() {
 		return body;
 	}
 
-
-	/**
-	 * @return
-	 */
+	@Override
 	public Identity getCreator() {
 		return creator;
 	}
@@ -153,14 +150,17 @@ public class MessageImpl implements CreateInfo, Persistable, Message {
 		creator = identity;
 	}
 
+	@Override
 	public String getPseudonym() {
 		return pseudonym;
 	}
 
+	@Override
 	public void setPseudonym(String pseudonym) {
 		this.pseudonym = pseudonym;
 	}
 
+	@Override
 	public boolean isGuest() {
 		return guest;
 	}
@@ -169,9 +169,7 @@ public class MessageImpl implements CreateInfo, Persistable, Message {
 		this.guest = guest;
 	}
 
-	/**
-	 * @return
-	 */
+	@Override
 	public Forum getForum() {
 		return forum;
 	}
@@ -180,16 +178,12 @@ public class MessageImpl implements CreateInfo, Persistable, Message {
 		this.forum = forum;
 	}
 
-	/**
-	 * @return
-	 */
+	@Override
 	public Identity getModifier() {
 		return modifier;
 	}
 
-	/**
-	 * @return
-	 */
+	@Override
 	public Message getParent() {
 		return parent;
 	}
@@ -199,90 +193,86 @@ public class MessageImpl implements CreateInfo, Persistable, Message {
 		return parent == null ? null : parent.getKey();
 	}
 
-	/**
-	 * @return
-	 */
+	@Override
 	public Message getThreadtop() {
 		return threadtop;
 	}
 
-	/**
-	 * @return
-	 */
+	@Override
 	public String getTitle() {
 		return title;
 	}
 
-	/**
-	 * @param string
-	 */
+	@Override
 	public void setBody(String string) {
 		body = string;
 	}
 
-	/**
-	 * @param identity
-	 */
+	@Override
 	public void setModifier(Identity identity) {
 		modifier = identity;
 	}
 
-	/**
-	 * @param message
-	 */
+	@Override
 	public void setParent(Message message) {
 		parent = message;
 	}
 
-	/**
-	 * @param message
-	 */
+	@Override
 	public void setThreadtop(Message message) {
 		threadtop = message;
 	}
 
-	/**
-	 * @param string
-	 */
+	@Override
 	public void setTitle(String string) {
 		title = string;
 	}
-	
+
+	@Override
 	public int getStatusCode() {
 		return statusCode;
 	}
+	
+	@Override
 	public void setStatusCode(int statusCode) {
 		this.statusCode = statusCode;
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.id.ModifiedInfo#getLastModified()
-	 */
+	@Override
 	public Date getLastModified() {
 		return lastModified;
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.id.ModifiedInfo#setLastModified(java.util.Date)
-	 */
+	@Override
 	public void setLastModified(Date date) {
 		this.lastModified = date;
 	}
 
+	@Override
+	public Date getModificationDate() {
+		return modificationDate;
+	}
+
+	public void setModificationDate(Date modificationDate) {
+		this.modificationDate = modificationDate;
+	}
+
+	@Override
 	public Integer getNumOfCharacters() {
 		return numOfCharacters;
 	}
 
+	@Override
 	public void setNumOfCharacters(Integer numOfCharacters) {
 		this.numOfCharacters = numOfCharacters;
 	}
 
+	@Override
 	public Integer getNumOfWords() {
 		return numOfWords;
 	}
 
+	@Override
 	public void setNumOfWords(Integer numOfWords) {
 		this.numOfWords = numOfWords;
 	}
