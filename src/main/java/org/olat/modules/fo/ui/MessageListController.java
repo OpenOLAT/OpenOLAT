@@ -605,6 +605,12 @@ public class MessageListController extends BasicController implements GenericEve
 				messageView.setModifierFirstName(modifier.getUser().getProperty(UserConstants.FIRSTNAME, getLocale()));
 				messageView.setModifierLastName(modifier.getUser().getProperty(UserConstants.LASTNAME, getLocale()));
 			}
+			
+			if(m.getModificationDate() != null) {
+				messageView.setFormattedModificationDate(formatter.formatDateAndTime(m.getModificationDate()));
+			} else {
+				messageView.setFormattedModificationDate(messageView.getFormattedLastModified());
+			}	
 		} else {
 			messageView.setModified(false);
 		}

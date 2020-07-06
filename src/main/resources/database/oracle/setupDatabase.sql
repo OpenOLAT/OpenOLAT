@@ -438,6 +438,7 @@ CREATE TABLE o_message (
   topthread_id number(20),
   creator_id number(20),
   modifier_id number(20),
+  modification_date date,
   forum_fk number(20),
   statuscode number(11),
   numofwords number(11),

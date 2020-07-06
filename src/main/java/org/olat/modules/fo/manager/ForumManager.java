@@ -1218,6 +1218,7 @@ public class ForumManager {
 		((MessageImpl)message).setCreationDate(oldMessage.getCreationDate());
 		message.setLastModified(oldMessage.getLastModified());
 		message.setModifier(oldMessage.getModifier());
+		message.setModificationDate(oldMessage.getModificationDate());
 		message.setTitle(oldMessage.getTitle());
 		message.setBody(oldMessage.getBody());
 		message.setPseudonym(oldMessage.getPseudonym());

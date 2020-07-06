@@ -82,6 +82,9 @@ public class MessageLightImpl implements MessageLight, CreateInfo, Persistable, 
 	private String title;
 	@Column(name="body", nullable=false, insertable=false, updatable=false)
 	private String body;
+	
+	@Column(name="modification_date", nullable=true, insertable=true, updatable=true)
+	private Date modificationDate;
 
 	@Column(name="parent_id", nullable=true, insertable=false, updatable=false)
 	private Long parentKey;
@@ -112,27 +115,33 @@ public class MessageLightImpl implements MessageLight, CreateInfo, Persistable, 
 	public Date getCreationDate() {
 		return creationDate;
 	}
-	
+
+	@Override
 	public int getStatusCode() {
 		return statusCode;
 	}
-	
+
+	@Override
 	public String getTitle() {
 		return title;
 	}
 
+	@Override
 	public String getBody() {
 		return body;
 	}
 
+	@Override
 	public Identity getCreator() {
 		return creator;
 	}
 
+	@Override
 	public String getPseudonym() {
 		return pseudonym;
 	}
 
+	@Override
 	public boolean isGuest() {
 		return guest;
 	}
@@ -141,20 +150,29 @@ public class MessageLightImpl implements MessageLight, CreateInfo, Persistable, 
 		return forumKey;
 	}
 
+	@Override
 	public Identity getModifier() {
 		return modifier;
 	}
 
+	@Override
 	public Long getParentKey() {
 		return parentKey;
 	}
 
+	@Override
 	public MessageRef getThreadtop() {
 		return threadtop;
 	}
 
+	@Override
 	public Date getLastModified() {
 		return lastModified;
+	}
+	
+	@Override
+	public Date getModificationDate() {
+		return modificationDate;
 	}
 
 	@Override

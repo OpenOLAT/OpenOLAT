@@ -46,6 +46,7 @@ public class MessageView extends MessageLightView {
 	private String modifierFirstName;
 	private String modifierLastName;
 	private String modifierPseudonym;
+	private String formattedModificationDate;
 	
 	private String creatorFirstname;
 	private String creatorLastname;
@@ -142,6 +143,14 @@ public class MessageView extends MessageLightView {
 		this.modifierPseudonym = modifierPseudonym;
 	}
 
+	public String getFormattedModificationDate() {
+		return formattedModificationDate;
+	}
+
+	public void setFormattedModificationDate(String formattedModificationDate) {
+		this.formattedModificationDate = formattedModificationDate;
+	}
+
 	public boolean isAuthor() {
 		return author;
 	}
@@ -176,7 +185,7 @@ public class MessageView extends MessageLightView {
 	}
 	
 	public boolean hasAttachments() {
-		return attachments != null && attachments.size() > 0;
+		return attachments != null && !attachments.isEmpty();
 	}
 
 	public VFSContainer getMessageContainer() {
@@ -202,11 +211,4 @@ public class MessageView extends MessageLightView {
 	public void setArtefact(Controller artefact) {
 		this.artefact = artefact;
 	}
-	
-	
-
-
-	
-	
-
 }

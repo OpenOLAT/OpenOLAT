@@ -25,6 +25,8 @@
 
 package org.olat.modules.fo;
 
+import java.util.Date;
+
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
@@ -56,6 +58,13 @@ public interface Message extends MessageLight, CreateInfo, ModifiedInfo,  Persis
 	public Identity getModifier();
 	
 	public void setModifier(Identity identity);
+	
+	/**
+	 * @return The date the modifier makes a change
+	 */
+	public Date getModificationDate();
+	
+	public void setModificationDate(Date date);
 	
 	public Message getParent();
 	
