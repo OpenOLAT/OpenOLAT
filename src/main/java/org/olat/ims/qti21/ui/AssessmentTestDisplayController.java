@@ -361,7 +361,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 						initNewAssessmentTestSession(ureq, assessmentEntry, authorMode);
 					}
 				} catch(Exception e) {
-					logError("Cannot resume session as author", e);
+					logWarn("Cannot resume session as author", e);
 					initNewAssessmentTestSession(ureq, assessmentEntry, authorMode);
 				}
 			} else {
@@ -403,11 +403,15 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	
 	@Override
 	protected void doDispose() {
-		suspendAssessmentTest(new Date());
-		if(candidateSession != null) {
-			OLATResourceable sessionOres = OresHelper
-					.createOLATResourceableInstance(AssessmentTestSession.class, candidateSession.getKey());
-			CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, sessionOres);
+		try {
+			suspendAssessmentTest(new Date());
+			if(candidateSession != null) {
+				OLATResourceable sessionOres = OresHelper
+						.createOLATResourceableInstance(AssessmentTestSession.class, candidateSession.getKey());
+				CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, sessionOres);
+			}
+		} catch (Exception e) {
+			logError("", e);
 		}
 	}
 	
