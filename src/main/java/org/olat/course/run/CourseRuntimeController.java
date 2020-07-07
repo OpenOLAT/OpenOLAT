@@ -117,6 +117,7 @@ import org.olat.course.nodes.info.InfoRunController;
 import org.olat.course.nodes.members.MembersToolRunController;
 import org.olat.course.nodes.wiki._content.WikiToolController;
 import org.olat.course.reminder.ui.CourseRemindersController;
+import org.olat.course.run.OpenToolEvent.Tool;
 import org.olat.course.run.calendar.CourseCalendarController;
 import org.olat.course.run.glossary.CourseGlossaryFactory;
 import org.olat.course.run.glossary.CourseGlossaryToolLinkController;
@@ -1138,6 +1139,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(getRunMainController() == source) {
 			if(event instanceof BusinessGroupModifiedEvent) {
 				processBusinessGroupModifiedEvent(ureq, (BusinessGroupModifiedEvent)event);
+			} else if (event instanceof OpenToolEvent) {
+				Tool tool = ((OpenToolEvent)event).getTool();
+				doOpenTool(ureq, tool);
 			}
 		} else if (lifeCycleChangeCtr == source) {
 			if (event == RepositoryEntryLifeCycleChangeController.deletedEvent) {
@@ -1206,7 +1210,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		
 		super.event(ureq, source, event);
 	}
-	
+
 	@Override
 	protected void cleanUp() {
 		removeAsListenerAndDispose(unsupportedCourseNodesCtrl);
@@ -1390,6 +1394,88 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(rmc != null) {
 			rmc.activate(ureq, entries, state);
 		}
+	}
+	
+	private void doOpenTool(UserRequest ureq, Tool tool) {
+		switch (tool) {
+		case blog: {
+			if (blogLink != null && blogLink.isVisible()) {
+				doBlog(ureq);
+			} else {
+				getWindowControl().setWarning(translate("msg.tool.not.available", new String[] { translate("command.blog") } ));
+			}
+		}
+		break;
+		case documents: {
+			if (documentsLink != null && documentsLink.isVisible()) {
+				doDocuments(ureq);
+			} else {
+				getWindowControl().setWarning(translate("msg.tool.not.available", new String[] { translate("command.documents") } ));
+			}
+		}
+		break;
+		case email: {
+			if (emailLink != null && emailLink.isVisible()) {
+				doEmail(ureq);
+			} else {
+				getWindowControl().setWarning(translate("msg.tool.not.available", new String[] { translate("command.email") } ));
+			}
+		}
+		break;
+		case forum: {
+			if (forumLink != null && forumLink.isVisible()) {
+				doForum(ureq);
+			} else {
+				getWindowControl().setWarning(translate("msg.tool.not.available", new String[] { translate("command.forum") } ));
+			}
+		}
+		break;
+		case glosary: {
+			if (openGlossaryLink != null && openGlossaryLink.isVisible()) {
+				launchGlossary(ureq);
+			} else {
+				getWindowControl().setWarning(translate("msg.tool.not.available", new String[] { translate("command.glossary.open") } ));
+			}
+		}
+		break;
+		case learningpath: {
+			if (learningPathLink != null && learningPathLink.isVisible()) {
+				doLearningPath(ureq);
+			} else if (learningPathsLink != null && learningPathsLink.isVisible()) {
+				doLearningPaths(ureq);
+			} else {
+				getWindowControl().setWarning(translate("msg.tool.not.available", new String[] { translate("command.learning.path") } ));
+			}
+		}
+		break;
+		case participantlist: {
+			if (participantListLink != null && participantListLink.isVisible()) {
+				doParticipantList(ureq);
+			} else {
+				getWindowControl().setWarning(translate("msg.tool.not.available", new String[] { translate("command.participant.list") } ));
+			}
+		}
+		break;
+		case participantinfos: {
+			if (participantInfoLink != null && participantInfoLink.isVisible()) {
+				doParticipantInfo(ureq);
+			} else {
+				getWindowControl().setWarning(translate("msg.tool.not.available", new String[] { translate("command.participant.info") } ));
+			}
+		}
+		break;
+		case wiki: {
+			if (wikiLink != null && wikiLink.isVisible()) {
+				doWiki(ureq);
+			} else {
+				getWindowControl().setWarning(translate("msg.tool.not.available", new String[] { translate("command.wiki") } ));
+			}
+		}
+		break;
+		default:
+			getWindowControl().setWarning(translate("msg.tool.not.available", new String[] { tool.name() } ));
+		}
+		
 	}
 
 	@Override

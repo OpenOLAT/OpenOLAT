@@ -642,6 +642,17 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 						getWindowControl().setWarning(translate("msg.nodenotavailableanymore"));
 					}
 				}
+			} else if ("activateCourseTool".equals(event.getCommand())) {
+				String toolname = ureq.getParameter("toolname");
+				if (toolname != null) {
+					try {
+						toolname = toolname.toLowerCase();
+						OpenToolEvent.Tool tool = OpenToolEvent.Tool.valueOf(toolname);
+						fireEvent(ureq, new OpenToolEvent(tool));
+					} catch (Exception e) {
+						getWindowControl().setWarning(translate("msg.tool.not.available", new String[] { toolname } ));
+					}
+				}
 			}
 		}
 	}

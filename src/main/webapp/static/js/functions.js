@@ -926,6 +926,21 @@ function gotonode(nodeid) {
 	}
 }
 
+function gototool(toolname) {
+	try {
+		// check if o_activateCourseNode method is available in this window
+		if (typeof o_activateCourseTool != 'undefined') {
+			o_activateCourseTool(tool);
+		} else {
+			if (opener && typeof opener.o_activateCourseTool != 'undefined') {
+			  opener.o_activateCourseTool(toolname);
+			}		
+		}
+	} catch (e) {
+		alert('Goto tool error:' + e);
+	}
+}
+
 function o_viewportHeight() {
 	// based on prototype library
 	var prototypeViewPortHeight = jQuery(document).height()
