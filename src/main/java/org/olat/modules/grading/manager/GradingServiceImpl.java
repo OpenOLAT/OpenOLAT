@@ -182,7 +182,7 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 		boolean grader = enabled && gradedToIdentityDao.isGrader(identity);
 		boolean resourcesManager = enabled && (roles.isAdministrator() || roles.isLearnResourceManager()
 				|| gradedToIdentityDao.isGradingManager(identity, ImsQTI21Resource.TYPE_NAME));
-		return new GradingSecurity(grader, resourcesManager);
+		return new GradingSecurity(grader, resourcesManager, roles);
 	}
 
 	@Override

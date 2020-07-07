@@ -58,6 +58,7 @@ import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.grading.GraderStatus;
+import org.olat.modules.grading.GradingSecurityCallback;
 import org.olat.modules.grading.GradingService;
 import org.olat.modules.grading.RepositoryEntryGradingConfiguration;
 import org.olat.modules.grading.model.GraderWithStatistics;
@@ -98,6 +99,8 @@ public class GradersListController extends FormBasicController {
 	private final boolean isAdministrativeUser;
 	private List<UserPropertyHandler> userPropertyHandlers;
 	
+	private final GradingSecurityCallback secCallback;
+	
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
 	private GradersSearchController searchCtrl;
@@ -117,17 +120,19 @@ public class GradersListController extends FormBasicController {
 	@Autowired
 	private BaseSecurityModule securityModule;
 	
-	public GradersListController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, null);
+	public GradersListController(UserRequest ureq, WindowControl wControl, GradingSecurityCallback secCallback) {
+		this(ureq, wControl, null, secCallback);
 
 		searchCtrl = new GradersSearchController(ureq, getWindowControl(), mainForm);
 		listenTo(searchCtrl);
 		flc.add("search", searchCtrl.getInitialFormItem());
 	}
 	
-	public GradersListController(UserRequest ureq, WindowControl wControl, RepositoryEntry referenceEntry) {
+	public GradersListController(UserRequest ureq, WindowControl wControl,
+			RepositoryEntry referenceEntry, GradingSecurityCallback secCallback) {
 		super(ureq, wControl, "graders_list");
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		this.secCallback = secCallback;
 		this.referenceEntry = referenceEntry;
 		
 		Roles roles = ureq.getUserSession().getRoles();
@@ -168,7 +173,9 @@ public class GradersListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradersCol.overdue, "overdue"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradersCol.oldestOpenAssignment));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradersCol.recordedMetadataTime));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradersCol.recordedTime));
+		if(secCallback.canViewRecordedRealMinutes()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradersCol.recordedTime));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradersCol.absence, new GraderAbsenceLeaveCellRenderer(getTranslator())));
 		
 		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(GradersCol.tools);

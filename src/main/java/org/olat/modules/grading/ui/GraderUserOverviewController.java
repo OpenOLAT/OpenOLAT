@@ -138,7 +138,8 @@ public class GraderUserOverviewController extends BasicController implements Act
 	private GradingAssignmentsListController doOpenAssignedAssignments(UserRequest ureq) {
 		if(assignmentsCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Assignments"), null);
-			GradingSecurityCallback secCallback = GradingSecurityCallbackFactory.getManagerCalllback(getIdentity());
+			GradingSecurityCallback secCallback = GradingSecurityCallbackFactory
+					.getManagerCalllback(getIdentity(), ureq.getUserSession().getRoles());
 			assignmentsCtrl = new GradingAssignmentsListController(ureq, swControl, grader, secCallback);
 			listenTo(assignmentsCtrl);
 			assignmentsCtrl.setBreadcrumbPanel(stackPanel);

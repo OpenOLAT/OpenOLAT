@@ -34,5 +34,12 @@ public interface GradingSecurityCallback {
 	public boolean canGrade(GradingAssignment assignment);
 	
 	public boolean canReport();
+	
+	/**
+	 * Can view the correction time recorded in real minutes.
+	 * 
+	 * @return true if the user can view them
+	 */
+	public boolean canViewRecordedRealMinutes();
 
 }

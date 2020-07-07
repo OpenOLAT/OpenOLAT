@@ -158,7 +158,8 @@ public class GradingRepositoryOverviewController extends BasicController impleme
 	private GradingAssignmentsListController doOpenAssignments(UserRequest ureq) {
 		if(assignmentsCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Assignments"), null);
-			GradingSecurityCallback secCallback = GradingSecurityCallbackFactory.getManagerCalllback(getIdentity());
+			GradingSecurityCallback secCallback = GradingSecurityCallbackFactory
+					.getManagerCalllback(getIdentity(), ureq.getUserSession().getRoles());
 			assignmentsCtrl = new GradingAssignmentsListController(ureq, swControl, entry, secCallback);
 			listenTo(assignmentsCtrl);
 			assignmentsCtrl.setBreadcrumbPanel(stackPanel);
@@ -171,7 +172,9 @@ public class GradingRepositoryOverviewController extends BasicController impleme
 	private GradersListController doOpenGraderList(UserRequest ureq) {
 		if(gradersCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Graders"), null);
-			gradersCtrl = new GradersListController(ureq, swControl, entry);
+			GradingSecurityCallback secCallback = GradingSecurityCallbackFactory
+					.getManagerCalllback(getIdentity(), ureq.getUserSession().getRoles());
+			gradersCtrl = new GradersListController(ureq, swControl, entry, secCallback);
 			listenTo(gradersCtrl);
 		}
 		mainVC.put("segmentCmp", gradersCtrl.getInitialComponent());

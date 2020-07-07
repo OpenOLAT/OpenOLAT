@@ -299,7 +299,9 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GAssignmentsCol.courseElement, "open_course"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, GAssignmentsCol.assessmentDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, GAssignmentsCol.correctionMetadataMinutes));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, GAssignmentsCol.correctionMinutes));
+		if(secCallback.canViewRecordedRealMinutes()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, GAssignmentsCol.correctionMinutes));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, GAssignmentsCol.assignmentDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, GAssignmentsCol.doneDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, GAssignmentsCol.score, new ScoreCellRenderer()));
