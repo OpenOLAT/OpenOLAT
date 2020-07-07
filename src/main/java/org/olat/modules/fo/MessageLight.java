@@ -43,6 +43,11 @@ public interface MessageLight extends MessageRef {
 	
 	public Identity getModifier();
 	
+	/**
+	 * @return The date the modifier makes a change
+	 */
+	public Date getModificationDate();
+	
 	public Date getCreationDate();
 	
 	public Date getLastModified();

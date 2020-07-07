@@ -64,12 +64,12 @@ public class CorrectionIdentityAssessmentItemNavigationController extends BasicC
 			RepositoryEntry testEntry, ResolvedAssessmentTest resolvedAssessmentTest,
 			AssessmentItemCorrection itemCorrection, AssessmentItemListEntry assessmentEntry,
 			List<? extends AssessmentItemListEntry> assessmentEntryList, CorrectionOverviewModel model,
-			GradingTimeRecordRef gradingTimeRecord, boolean readOnly) {
+			GradingTimeRecordRef gradingTimeRecord, boolean readOnly, boolean pageIdentity) {
 		super(ureq, wControl);
 		mainVC = createVelocityContainer("corrections_navigation");
 		
 		itemCtrl = new CorrectionIdentityAssessmentItemController(ureq, wControl, testEntry, resolvedAssessmentTest,
-				itemCorrection, assessmentEntry, assessmentEntryList, model, gradingTimeRecord, readOnly);
+				itemCorrection, assessmentEntry, assessmentEntryList, model, gradingTimeRecord, readOnly, pageIdentity);
 		listenTo(itemCtrl);
 		mainVC.put("items", itemCtrl.getInitialComponent());
 		

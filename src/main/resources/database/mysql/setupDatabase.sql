@@ -418,6 +418,7 @@ create table if not exists o_message (
    topthread_id bigint,
    creator_id bigint,
    modifier_id bigint,
+   modification_date datetime,
    forum_fk bigint,
    statuscode integer,
    numofwords integer,

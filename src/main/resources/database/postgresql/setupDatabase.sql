@@ -416,6 +416,7 @@ create table o_message (
    topthread_id int8,
    creator_id int8,
    modifier_id int8,
+   modification_date timestamp,
    forum_fk int8,
    statuscode int4,
    numofwords int4,
