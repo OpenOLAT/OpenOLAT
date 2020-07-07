@@ -83,6 +83,29 @@ public class GraderMailTemplate extends MailTemplate {
 		return template;
 	}
 	
+	/**
+	 * Make a template to notify the participant after the correction is done.
+	 * 
+	 * @param translator The translator in the right language
+	 * @param entry The course entry
+	 * @param courseNode The course node
+	 * @param referenceEntry The reference / test entry
+	 * @return Can return null if the body is not specified
+	 */
+	public static final GraderMailTemplate notificationParticipant(Translator translator, RepositoryEntry entry, CourseNode courseNode,
+			RepositoryEntry referenceEntry) {
+		
+		String templateName = translator.translate("template.participant");
+		GraderMailTemplate template = new GraderMailTemplate(templateName, entry, courseNode, referenceEntry);
+		template.setSubjectTemplate(translator.translate("mail.notification.participant.subject"));
+		String body = translator.translate("mail.notification.participant.body");
+		template.setBodyTemplate(body);
+		if(body.equals("mail.notification.participant.body")) {
+			return null;
+		}
+		return template;
+	}
+	
 	public static final GraderMailTemplate notification(Translator translator, RepositoryEntry entry, CourseNode courseNode,
 			RepositoryEntry referenceEntry, RepositoryEntryGradingConfiguration configuration) {
 		

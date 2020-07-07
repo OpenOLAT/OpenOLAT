@@ -628,6 +628,8 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		assessment = gradingService.loadFullAssessmentEntry(assessment);
 
 		RepositoryEntry entry = assessment.getRepositoryEntry();
+		
+		Boolean userVisible = null;
 		if(StringHelper.containsNonWhitespace(assessment.getSubIdent())) {
 			ICourse course = CourseFactory.loadCourse(entry);
 			CourseNode courseNode = course.getRunStructure().getNode(assessment.getSubIdent());
@@ -648,7 +650,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 				passed = Boolean.valueOf(calculated);
 			}
 			AssessmentEntryStatus finalStatus = status == null ? scoreEval.getAssessmentStatus() : status;
-			Boolean userVisible = scoreEval.getUserVisible();
+			userVisible = scoreEval.getUserVisible();
 			if(finalStatus == AssessmentEntryStatus.done && courseNode instanceof IQTESTCourseNode) {
 				userVisible = Boolean.valueOf(((IQTESTCourseNode)courseNode).isScoreVisibleAfterCorrection());
 			}
@@ -662,7 +664,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		
 		if(status == AssessmentEntryStatus.done) {
 			Long metadataTime = qtiService.getMetadataCorrectionTimeInSeconds(assignment.getReferenceEntry(), testSessionsToComplete);
-			gradingService.assignmentDone(assignment, metadataTime);
+			gradingService.assignmentDone(assignment, metadataTime, userVisible);
 		}
 		
 		dbInstance.commit();// commit all

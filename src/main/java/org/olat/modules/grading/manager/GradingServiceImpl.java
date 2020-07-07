@@ -952,7 +952,7 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 	}
 
 	@Override
-	public GradingAssignment assignmentDone(GradingAssignment assignment, Long metadataTime) {
+	public GradingAssignment assignmentDone(GradingAssignment assignment, Long metadataTime, Boolean resultsVisibleToUser) {
 		assignment = gradingAssignmentDao.loadByKey(assignment.getKey());
 		assignment.setAssignmentStatus(GradingAssignmentStatus.done);
 		assignment.setClosingDate(new Date());
@@ -963,7 +963,38 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 			gradingTimeRecordDao.updateTimeRecord(timeRecord);
 		}
 		log.info(Tracing.M_AUDIT, "Assignment done {}", assignment.getKey());
+		dbInstance.commit();
+		
+		if(resultsVisibleToUser != null && resultsVisibleToUser.booleanValue()) {
+			sendParticipantNotification(assignment);
+		}
 		return assignment;
+	}
+	
+	private void sendParticipantNotification(GradingAssignment assignment) {
+		RepositoryEntry referenceEntry = assignment.getReferenceEntry();
+		RepositoryEntry entry = assignment.getAssessmentEntry().getRepositoryEntry();
+		Identity assessedIdentity = assignment.getAssessmentEntry().getIdentity();
+		String language = assessedIdentity.getUser().getPreferences().getLanguage();
+		Locale locale = I18nManager.getInstance().getLocaleOrDefault(language);
+		Translator translator = Util.createPackageTranslator(GradingAssignmentsListController.class, locale);
+
+		GraderMailTemplate template = GraderMailTemplate.notificationParticipant(translator, entry, null, referenceEntry);
+		if(template == null) {
+			return;
+		}
+		
+		MailContext context = new MailContextImpl("[CoachSite:0][Grading:0]");
+		decorateGraderMailTemplate(assignment, template);
+
+		MailerResult result = new MailerResult();
+		MailBundle bundle = mailManager.makeMailBundle(context, assessedIdentity, template, null, null, result);
+		MailerResult sendResult = mailManager.sendMessage(bundle);
+		result.append(sendResult);
+		
+		if(result.getReturnCode() != MailerResult.OK) {
+			log.warn(Tracing.M_AUDIT, "Cannot send notification mail to {} for assignment: {}", assessedIdentity, assignment);
+		}
 	}
 	
 	@Override

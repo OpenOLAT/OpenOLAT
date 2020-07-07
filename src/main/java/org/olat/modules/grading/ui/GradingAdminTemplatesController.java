@@ -73,6 +73,11 @@ public class GradingAdminTemplatesController extends FormBasicController {
 		// reminder 2
 		initForm("reminder.2.subject", "mail.reminder2.subject", false, formLayout);
 		initForm("reminder.2.body", "mail.reminder2.body", true, formLayout);
+		uifactory.addSpacerElement("spacer-2-reminder", formLayout, false);
+		
+		// notifications participant
+		initForm("notification.participant.subject", "mail.notification.participant.subject", false, formLayout);
+		initForm("notification.participant.body", "mail.notification.participant.body", true, formLayout);
 	}
 
 	private void initForm(String labelI18nKey, String textI18nKey, boolean multiLines, FormItemContainer formLayout) {

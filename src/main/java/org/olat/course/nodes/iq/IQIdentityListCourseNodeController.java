@@ -481,7 +481,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 				GradingAssignment assignment = gradingService.getGradingAssignment(testEntry, assessmentEntry);
 				if(assignment != null) {
 					Long metadataTime = qtiService.getMetadataCorrectionTimeInSeconds(testEntry, testSession);
-					gradingService.assignmentDone(assignment, metadataTime);
+					gradingService.assignmentDone(assignment, metadataTime, userVisible);
 				}
 			}
 		}
