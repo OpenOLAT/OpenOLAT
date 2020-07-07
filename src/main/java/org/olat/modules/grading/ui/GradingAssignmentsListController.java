@@ -299,7 +299,9 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GAssignmentsCol.courseElement, "open_course"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, GAssignmentsCol.assessmentDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, GAssignmentsCol.correctionMetadataMinutes));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, GAssignmentsCol.correctionMinutes));
+		if(secCallback.canViewRecordedRealMinutes()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, GAssignmentsCol.correctionMinutes));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, GAssignmentsCol.assignmentDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, GAssignmentsCol.doneDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, GAssignmentsCol.score, new ScoreCellRenderer()));
@@ -626,6 +628,8 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		assessment = gradingService.loadFullAssessmentEntry(assessment);
 
 		RepositoryEntry entry = assessment.getRepositoryEntry();
+		
+		Boolean userVisible = null;
 		if(StringHelper.containsNonWhitespace(assessment.getSubIdent())) {
 			ICourse course = CourseFactory.loadCourse(entry);
 			CourseNode courseNode = course.getRunStructure().getNode(assessment.getSubIdent());
@@ -646,8 +650,12 @@ public class GradingAssignmentsListController extends FormBasicController implem
 				passed = Boolean.valueOf(calculated);
 			}
 			AssessmentEntryStatus finalStatus = status == null ? scoreEval.getAssessmentStatus() : status;
+			userVisible = scoreEval.getUserVisible();
+			if(finalStatus == AssessmentEntryStatus.done && courseNode instanceof IQTESTCourseNode) {
+				userVisible = Boolean.valueOf(((IQTESTCourseNode)courseNode).isScoreVisibleAfterCorrection());
+			}
 			ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, passed,
-					finalStatus, scoreEval.getUserVisible(), scoreEval.getCurrentRunCompletion(),
+					finalStatus, userVisible, scoreEval.getCurrentRunCompletion(),
 					scoreEval.getCurrentRunStatus(), testSessionsToComplete.getKey());
 			courseAssessmentService.updateScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,
 					getIdentity(), false, Role.coach);
@@ -656,7 +664,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		
 		if(status == AssessmentEntryStatus.done) {
 			Long metadataTime = qtiService.getMetadataCorrectionTimeInSeconds(assignment.getReferenceEntry(), testSessionsToComplete);
-			gradingService.assignmentDone(assignment, metadataTime);
+			gradingService.assignmentDone(assignment, metadataTime, userVisible);
 		}
 		
 		dbInstance.commit();// commit all

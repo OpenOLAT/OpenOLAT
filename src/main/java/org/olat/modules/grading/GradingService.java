@@ -167,7 +167,7 @@ public interface GradingService {
 	 * @param metadatatime The time use based on metadata (of QTI 2.1 questions)
 	 * @return The merged assignment
 	 */
-	public GradingAssignment assignmentDone(GradingAssignment assignment, Long metadatatime);
+	public GradingAssignment assignmentDone(GradingAssignment assignment, Long metadatatime, Boolean visibleToUser);
 	
 	public GradingAssignment reopenAssignment(GradingAssignment assignment);
 	

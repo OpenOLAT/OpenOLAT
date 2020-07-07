@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -57,11 +58,13 @@ public class QTI21AdminController extends FormBasicController {
 
 	private static final String[] onKeys = new String[]{ "on" };
 	private static final String[] onValues = new String[]{ "" };
+	private static final String[] visibilityKeys = new String[] { "visible", "not-visible" };
 	
 	private FormLink validationButton;
 	private MultipleSelectionElement mathExtensionEl;
 	private MultipleSelectionElement digitalSignatureEl;
 	private MultipleSelectionElement anonymCorrectionWorkflowEl;
+	private SingleSelection resultsVisibilityAfterCorrectionEl;
 	private FileElement certificateEl;
 	private TextElement certificatePasswordEl;
 	
@@ -111,7 +114,18 @@ public class QTI21AdminController extends FormBasicController {
 		if(qti21Module.getCorrectionWorkflow() == CorrectionWorkflow.anonymous) {
 			anonymCorrectionWorkflowEl.select(onKeys[0], true);
 		}
-
+		
+		String[] visibilityValues = new String[] {
+				translate("results.visibility.correction.visible"), translate("results.visibility.correction.not.visible")
+		};
+		resultsVisibilityAfterCorrectionEl = uifactory.addRadiosVertical("results.visibility.correction", "results.visibility.correction", formLayout,
+				visibilityKeys, visibilityValues);
+		if(qti21Module.isResultsVisibleAfterCorrectionWorkflow()) {
+			resultsVisibilityAfterCorrectionEl.select(visibilityKeys[0], true);
+		} else {
+			resultsVisibilityAfterCorrectionEl.select(visibilityKeys[1], true);
+		}
+		
 		mathExtensionEl = uifactory.addCheckboxesHorizontal("math.extension", "math.extension", formLayout,
 				onKeys, onValues);
 		if(qti21Module.isMathAssessExtensionEnabled()) {
@@ -150,6 +164,13 @@ public class QTI21AdminController extends FormBasicController {
 				allOk &= validateCertificatePassword(certificateEl.getInitialFile());
 			}
 		}
+		
+		resultsVisibilityAfterCorrectionEl.clearError();
+		if(!resultsVisibilityAfterCorrectionEl.isOneSelected()) {
+			resultsVisibilityAfterCorrectionEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
 		return allOk;
 	}
 	
@@ -210,6 +231,7 @@ public class QTI21AdminController extends FormBasicController {
 		CorrectionWorkflow correctionWf = anonymCorrectionWorkflowEl.isAtLeastSelected(1)
 				? CorrectionWorkflow.anonymous : CorrectionWorkflow.named;
 		qti21Module.setCorrectionWorkflow(correctionWf);
+		qti21Module.setResultsVisibleAfterCorrectionWorkflow(resultsVisibilityAfterCorrectionEl.isSelected(0));
 		qti21Module.setMathAssessExtensionEnabled(mathExtensionEl.isSelected(0));
 		qti21Module.setDigitalSignatureEnabled(digitalSignatureEl.isSelected(0));
 		if(digitalSignatureEl.isSelected(0)) {

@@ -145,7 +145,7 @@ public class GradingCoachingOverviewController extends BasicController implement
 	private void doOpenGraders(UserRequest ureq) {
 		if(gradersCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Graders"), null);
-			gradersCtrl = new GradersListController(ureq, swControl);
+			gradersCtrl = new GradersListController(ureq, swControl, secCallback);
 			listenTo(gradersCtrl);
 		} else {
 			gradersCtrl.updateModel();

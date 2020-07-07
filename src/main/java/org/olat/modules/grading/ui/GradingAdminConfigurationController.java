@@ -19,6 +19,11 @@
  */
 package org.olat.modules.grading.ui;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -26,9 +31,11 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.grading.GradingModule;
+import org.olat.modules.grading.GradingRoles;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -42,6 +49,7 @@ public class GradingAdminConfigurationController extends FormBasicController {
 	private static final String[] onKeys = new String[] { "on" };
 
 	private MultipleSelectionElement enableEl;
+	private MultipleSelectionElement realCorrectionTimevisibilityEl;
 	
 	@Autowired
 	private GradingModule gradingModule;
@@ -50,6 +58,7 @@ public class GradingAdminConfigurationController extends FormBasicController {
 		super(ureq, wControl);
 
 		initForm(ureq);
+		updateUI();
 	}
 
 	@Override
@@ -58,13 +67,33 @@ public class GradingAdminConfigurationController extends FormBasicController {
 
 		String[] onValues = new String[]{ translate("on") };
 		enableEl = uifactory.addCheckboxesHorizontal("grading.enabled", "grading.enabled", formLayout, onKeys, onValues);
+		enableEl.addActionListener(FormEvent.ONCHANGE);
 		enableEl.select(onKeys[0], gradingModule.isEnabled());
+
+		KeyValues rolesKeyValues = new KeyValues();
+		rolesKeyValues.add(KeyValues.entry(OrganisationRoles.administrator.name(), translate("grading.real.correction.time.administrator")));
+		rolesKeyValues.add(KeyValues.entry(OrganisationRoles.learnresourcemanager.name(), translate("grading.real.correction.time.learnresourcemanager")));
+		rolesKeyValues.add(KeyValues.entry(OrganisationRoles.author.name(), translate("grading.real.correction.time.author")));
+		rolesKeyValues.add(KeyValues.entry(GradingRoles.grader.name(), translate("grading.real.correction.time.grader")));
+		realCorrectionTimevisibilityEl = uifactory.addCheckboxesVertical("grading.real.correction.time.visibility", "grading.real.correction.time.visibility",
+				formLayout, rolesKeyValues.keys(), rolesKeyValues.values(), 1);
+		List<String> roles = gradingModule.getCorrectionRealMinutesVisibility();
+		for(String role:roles) {
+			if(rolesKeyValues.containsKey(role)) {
+				realCorrectionTimevisibilityEl.select(role, true);
+			}
+		}
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
 		buttonsCont.setRootForm(mainForm);
 		
 		uifactory.addFormSubmitButton("save", buttonsCont);
+	}
+	
+	private void updateUI() {
+		boolean enabled = enableEl.isAtLeastSelected(1);
+		realCorrectionTimevisibilityEl.setVisible(enabled);
 	}
 
 	@Override
@@ -74,12 +103,19 @@ public class GradingAdminConfigurationController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(enableEl == source) {
+			updateUI();
+		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		gradingModule.setEnabled(enableEl.isAtLeastSelected(1));
+		boolean enabled = enableEl.isAtLeastSelected(1);
+		gradingModule.setEnabled(enabled);
+		if(enabled) {
+			Collection<String> roles = realCorrectionTimevisibilityEl.getSelectedKeys();
+			gradingModule.setCorrectionRealMinutesVisibility(new ArrayList<>(roles));
+		}
 	}
-	
 }

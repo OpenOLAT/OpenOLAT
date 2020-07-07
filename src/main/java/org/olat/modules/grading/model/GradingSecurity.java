@@ -19,6 +19,8 @@
  */
 package org.olat.modules.grading.model;
 
+import org.olat.core.id.Roles;
+
 /**
  * 
  * Initial date: 28 janv. 2020<br>
@@ -27,10 +29,12 @@ package org.olat.modules.grading.model;
  */
 public class GradingSecurity {
 	
+	private final Roles roles;
 	private final boolean grader;
 	private final boolean gradedResourcesManager;
 	
-	public GradingSecurity(boolean grader, boolean gradedResourcesManager) {
+	public GradingSecurity(boolean grader, boolean gradedResourcesManager, Roles roles) {
+		this.roles = roles;
 		this.grader = grader;
 		this.gradedResourcesManager = gradedResourcesManager;
 	}
@@ -41,5 +45,9 @@ public class GradingSecurity {
 
 	public boolean isGradedResourcesManager() {
 		return gradedResourcesManager;
+	}
+	
+	public Roles getRoles() {
+		return roles;
 	}
 }

@@ -19,7 +19,12 @@
  */
 package org.olat.modules.grading;
 
+import java.util.List;
+
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.modules.grading.model.GradingSecurity;
 
 /**
@@ -30,12 +35,13 @@ import org.olat.modules.grading.model.GradingSecurity;
  */
 public class GradingSecurityCallbackFactory {
 	
-	public static final GradingSecurityCallback getManagerCalllback(Identity identity) {
-		return new GradingSecurityCallbackImpl(identity, false, true);
+	public static final GradingSecurityCallback getManagerCalllback(Identity identity, Roles roles) {
+		return new GradingSecurityCallbackImpl(identity, false, true, roles);
 	}
 	
 	public static final GradingSecurityCallback getSecurityCalllback(Identity identity, GradingSecurity gradingSec) {
-		return new GradingSecurityCallbackImpl(identity, gradingSec.isGrader(), gradingSec.isGradedResourcesManager());
+		return new GradingSecurityCallbackImpl(identity, gradingSec.isGrader(),
+				gradingSec.isGradedResourcesManager(), gradingSec.getRoles());
 	}
 	
 	public static final GradingSecurityCallback mySecurityCalllback(GradingSecurityCallback secCallback) {
@@ -69,18 +75,28 @@ public class GradingSecurityCallbackFactory {
 		public boolean canReport() {
 			return false;
 		}
+
+		@Override
+		public boolean canViewRecordedRealMinutes() {
+			return delegate.canViewRecordedRealMinutes();
+		}
 	}
 	
 	private static class GradingSecurityCallbackImpl implements GradingSecurityCallback {
 		
 		private final boolean grader;
 		private final boolean manager;
+		private final Roles roles;
 		private final Identity identity;
 		
-		public GradingSecurityCallbackImpl(Identity identity, boolean grader, boolean manager) {
+		private final GradingModule gradingModule;
+		
+		public GradingSecurityCallbackImpl(Identity identity, boolean grader, boolean manager, Roles roles) {
+			this.roles = roles;
 			this.grader = grader;
 			this.manager = manager;
 			this.identity = identity;
+			gradingModule = CoreSpringFactory.getImpl(GradingModule.class);
 		}
 
 		@Override
@@ -105,5 +121,14 @@ public class GradingSecurityCallbackFactory {
 			return (assignment.getAssignmentStatus() == GradingAssignmentStatus.assigned || assignment.getAssignmentStatus() == GradingAssignmentStatus.inProcess)
 					&& (assignment.getGrader().getIdentity() != null && identity.equals(assignment.getGrader().getIdentity()));
 		}
+
+		@Override
+		public boolean canViewRecordedRealMinutes() {
+			List<String> permissions = gradingModule.getCorrectionRealMinutesVisibility();
+			return (roles.isAdministrator() && permissions.contains(OrganisationRoles.administrator.name()))
+					|| (roles.isLearnResourceManager() && permissions.contains(OrganisationRoles.learnresourcemanager.name()))
+					|| (roles.isAuthor() && permissions.contains(OrganisationRoles.author.name()))
+					|| (grader && permissions.contains(GradingRoles.grader.name()));
+		}	
 	}
 }
