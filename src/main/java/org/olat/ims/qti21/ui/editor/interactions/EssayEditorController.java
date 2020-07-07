@@ -146,7 +146,7 @@ public class EssayEditorController extends FormBasicController {
 	public Integer getValue(TextElement integerEl) {
 		String val = integerEl.getValue();
 		Integer integer = null;
-		if(StringHelper.isLong(val)) {
+		if(isInteger(val)) {
 			return Integer.parseInt(val);
 		}
 		return integer;
@@ -154,7 +154,7 @@ public class EssayEditorController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 
 		titleEl.clearError();
 		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
@@ -166,7 +166,7 @@ public class EssayEditorController extends FormBasicController {
 		allOk &= validateInteger(heightEl);
 		allOk &= validateInteger(minWordsEl);
 		allOk &= validateInteger(maxWordsEl);
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	private boolean validateInteger(TextElement integerEl) {
@@ -177,10 +177,25 @@ public class EssayEditorController extends FormBasicController {
 			if(!StringHelper.isLong(integerEl.getValue())) {
 				integerEl.setErrorKey("form.error.nointeger", null);
 				allOk &= false;
+			} else if(!isInteger(integerEl.getValue())) {
+				integerEl.setErrorKey("error.integer.positive", null);
+				allOk &= false;
 			}
 		}
 		
 		return allOk;
+	}
+	
+	private boolean isInteger(String val) {
+		if(StringHelper.isLong(val)) {
+			try {
+				int num = Integer.parseInt(val);
+				return num >= 0;
+			} catch(NumberFormatException e) {
+				return false;
+			}
+		}
+		return false;
 	}
 
 	@Override
