@@ -819,7 +819,10 @@ public class HelpModule extends AbstractSpringModule {
 		String enabled = usertool ? USERTOOL : "";
 		enabled += authorsite ? DELIMITER + AUTHORSITE : "";
 		enabled += login ? DELIMITER + DMZ : "";
-
+		// remove trailing delimiter
+		if (enabled.startsWith(DELIMITER)) {
+			enabled = enabled.substring(DELIMITER.length());
+		}
 		return enabled;
 	}
 	
@@ -892,7 +895,10 @@ public class HelpModule extends AbstractSpringModule {
 	 */
 	private void addToHelpPlugins(String plugin) {
 		if (!helpPlugins.contains(plugin)) {
-			helpPlugins += DELIMITER + plugin;
+			if (helpPlugins.length() > 0) {
+				helpPlugins += DELIMITER;				
+			}
+			helpPlugins += plugin;
 			setStringProperty("help.plugin", helpPlugins, true);
 		}
 	}
