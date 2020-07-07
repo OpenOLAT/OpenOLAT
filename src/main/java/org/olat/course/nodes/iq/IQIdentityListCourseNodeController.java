@@ -450,6 +450,8 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		CourseEnvironment courseEnv = getCourseEnvironment();
 		RepositoryEntry testEntry = getReferencedRepositoryEntry();
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		
+		boolean userVisibleAfter = ((IQTESTCourseNode)courseNode).isScoreVisibleAfterCorrection();
 
 		for(AssessmentTestSession testSession:testSessionsToComplete) {
 			UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
@@ -464,8 +466,12 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 				passed = Boolean.valueOf(calculated);
 			}
 			AssessmentEntryStatus finalStatus = status == null ? scoreEval.getAssessmentStatus() : status;
+			Boolean userVisible = scoreEval.getUserVisible();
+			if(finalStatus == AssessmentEntryStatus.done) {
+				userVisible = Boolean.valueOf(userVisibleAfter);
+			}
 			ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, passed,
-					finalStatus, scoreEval.getUserVisible(), scoreEval.getCurrentRunCompletion(),
+					finalStatus, userVisible, scoreEval.getCurrentRunCompletion(),
 					scoreEval.getCurrentRunStatus(), testSession.getKey());
 			courseAssessmentService.updateScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,
 					getIdentity(), false, Role.coach);

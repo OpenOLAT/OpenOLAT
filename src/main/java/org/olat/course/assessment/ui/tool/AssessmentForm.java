@@ -89,12 +89,15 @@ public class AssessmentForm extends FormBasicController {
 	private TextElement score;
 	private IntegerElement attempts;
 	private StaticTextElement cutVal;
-	private SingleSelection passed, userVisibility;
-	private TextElement userComment, coachComment;
+	private SingleSelection passed;
+	private SingleSelection userVisibility;
+	private TextElement userComment;
+	private TextElement coachComment;
 	private FormLayoutContainer docsLayoutCont;
 	private FileElement uploadDocsEl;
 	private FormSubmit submitButton;
-	private FormLink saveAndDoneLink, reopenLink;
+	private FormLink reopenLink;
+	private FormLink saveAndDoneLink;
 	private List<DocumentWrapper> assessmentDocuments;
 	
 	private DialogBoxController confirmDeleteDocCtrl;
@@ -443,6 +446,12 @@ public class AssessmentForm extends FormBasicController {
 		if(hasComment) {
 			userCommentValue = courseAssessmentService.getUserComment(courseNode, assessedUserCourseEnv);
 			userComment.setValue(userCommentValue);
+		}
+		
+		if(scoreEval.getUserVisible() == null || scoreEval.getUserVisible().booleanValue()) {
+			userVisibility.select(userVisibilityKeys[0], true);
+		} else {
+			userVisibility.select(userVisibilityKeys[1], true);
 		}
 		
 		reloadAssessmentDocs();

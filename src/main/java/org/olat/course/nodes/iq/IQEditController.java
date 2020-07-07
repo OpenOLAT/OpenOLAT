@@ -129,6 +129,10 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	public static final String CONFIG_FULLWINDOW = "fullwindow";
 	/** Enable manual correction */
 	public static final String CONFIG_CORRECTION_MODE = "correctionMode";
+	/** Set score visibility after correction */
+	public static final String CONFIG_KEY_SCORE_VISIBILITY_AFTER_CORRECTION = "scoreVisibilityAfterCorrection";
+	public static final String CONFIG_VALUE_SCORE_VISIBLE_AFTER_CORRECTION = "visible";
+	public static final String CONFIG_VALUE_SCORE_NOT_VISIBLE_AFTER_CORRECTION = "notvisible";
 	/** Test in full window mode*/
 	public static final String CONFIG_ALLOW_ANONYM = "allowAnonym";
 	/** Digitally signed the assessment results */

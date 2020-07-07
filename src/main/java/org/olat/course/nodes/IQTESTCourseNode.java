@@ -102,6 +102,7 @@ import org.olat.ims.qti.statistics.QTIStatisticResourceResult;
 import org.olat.ims.qti.statistics.QTIStatisticSearchParams;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
+import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
@@ -267,6 +268,13 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			}
 		}
 		return timeLimit;
+	}
+	
+	public boolean isScoreVisibleAfterCorrection() {
+		String defVisibility = CoreSpringFactory.getImpl(QTI21Module.class).isResultsVisibleAfterCorrectionWorkflow()
+				? IQEditController.CONFIG_VALUE_SCORE_VISIBLE_AFTER_CORRECTION : IQEditController.CONFIG_VALUE_SCORE_NOT_VISIBLE_AFTER_CORRECTION;
+		String visibility = getModuleConfiguration().getStringValue(IQEditController.CONFIG_KEY_SCORE_VISIBILITY_AFTER_CORRECTION, defVisibility);
+		return IQEditController.CONFIG_VALUE_SCORE_VISIBLE_AFTER_CORRECTION.equals(visibility);
 	}
 	
 	public AssessmentTest loadAssessmentTest(RepositoryEntry testEntry) {

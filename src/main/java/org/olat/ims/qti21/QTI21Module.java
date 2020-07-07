@@ -62,6 +62,8 @@ public class QTI21Module extends AbstractSpringModule {
 	private String digitalSignatureCertificatePassword;
 	@Value("${qti21.correction.workflow:anonymous}")
 	private String correctionWorkflow;
+	@Value("${qti21.results.visible.after.correction:true}")
+	private String resultsVisibleAfterCorrectionWorkflow;
 	@Value("${qti21.import.encoding.fallback:}")
 	private String importEncodingFallback;
 	
@@ -91,6 +93,8 @@ public class QTI21Module extends AbstractSpringModule {
 		if(StringHelper.containsNonWhitespace(correctionWorkflowObj)) {
 			correctionWorkflow = CorrectionWorkflow.valueOf(correctionWorkflowObj).name();
 		}
+		
+		resultsVisibleAfterCorrectionWorkflow = getStringPropertyValue("qti21.results.visible.after.correction", resultsVisibleAfterCorrectionWorkflow);
 		
 		String digitalSignatureObj = getStringPropertyValue("digital.signature", true);
 		if(StringHelper.containsNonWhitespace(digitalSignatureObj)) {
@@ -125,6 +129,15 @@ public class QTI21Module extends AbstractSpringModule {
 	public void setCorrectionWorkflow(CorrectionWorkflow correctionWorkflow) {
 		this.correctionWorkflow = correctionWorkflow.name();
 		setStringProperty("qti21.correction.workflow", correctionWorkflow.name(), true);
+	}
+	
+	public boolean isResultsVisibleAfterCorrectionWorkflow() {
+		return "true".equals(resultsVisibleAfterCorrectionWorkflow);
+	}
+	
+	public void setResultsVisibleAfterCorrectionWorkflow(boolean visible) {
+		resultsVisibleAfterCorrectionWorkflow = visible ? "true" : "false";
+		setStringProperty("qti21.results.visible.after.correction", resultsVisibleAfterCorrectionWorkflow, true);
 	}
 
 	public boolean isDigitalSignatureEnabled() {

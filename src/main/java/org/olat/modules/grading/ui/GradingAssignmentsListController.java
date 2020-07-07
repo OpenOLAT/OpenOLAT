@@ -646,8 +646,12 @@ public class GradingAssignmentsListController extends FormBasicController implem
 				passed = Boolean.valueOf(calculated);
 			}
 			AssessmentEntryStatus finalStatus = status == null ? scoreEval.getAssessmentStatus() : status;
+			Boolean userVisible = scoreEval.getUserVisible();
+			if(finalStatus == AssessmentEntryStatus.done && courseNode instanceof IQTESTCourseNode) {
+				userVisible = Boolean.valueOf(((IQTESTCourseNode)courseNode).isScoreVisibleAfterCorrection());
+			}
 			ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, passed,
-					finalStatus, scoreEval.getUserVisible(), scoreEval.getCurrentRunCompletion(),
+					finalStatus, userVisible, scoreEval.getCurrentRunCompletion(),
 					scoreEval.getCurrentRunStatus(), testSessionsToComplete.getKey());
 			courseAssessmentService.updateScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,
 					getIdentity(), false, Role.coach);

@@ -46,6 +46,7 @@ import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21DeliveryOptions.PassedType;
+import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.AssessmentTestBuilder;
 import org.olat.modules.ModuleConfiguration;
@@ -84,6 +85,7 @@ public class QTI21EditForm extends FormBasicController {
 	private final String[] dateValues = new String[dateKeys.length];
 
 	private SingleSelection correctionModeEl;
+	private SingleSelection scoreVisibilityAfterCorrectionEl;
 	private SingleSelection showResultsDateDependentEl;
 	private MultipleSelectionElement scoreInfo;
 	private DateChooser generalEndDateElement;
@@ -111,6 +113,8 @@ public class QTI21EditForm extends FormBasicController {
 	
 	private DialogBoxController confirmTestDateCtrl;
 
+	@Autowired
+	private QTI21Module qtiModule;
 	@Autowired
 	private QTI21Service qtiService;
 	@Autowired
@@ -212,6 +216,19 @@ public class QTI21EditForm extends FormBasicController {
 				correctionModeEl.select(correctionModeKeys[0], true);
 			}
 		}
+		
+		KeyValues visibilityKeyValues = new KeyValues();
+		visibilityKeyValues.add(KeyValues.entry(IQEditController.CONFIG_VALUE_SCORE_VISIBLE_AFTER_CORRECTION, translate("results.visibility.after.correction.visible")));
+		visibilityKeyValues.add(KeyValues.entry(IQEditController.CONFIG_VALUE_SCORE_NOT_VISIBLE_AFTER_CORRECTION, translate("results.visibility.after.correction.not.visible")));
+		scoreVisibilityAfterCorrectionEl = uifactory.addRadiosVertical("results.visibility.after.correction", "results.visibility.after.correction", formLayout,
+				visibilityKeyValues.keys(), visibilityKeyValues.values());
+		String defVisibility = qtiModule.isResultsVisibleAfterCorrectionWorkflow()
+				? IQEditController.CONFIG_VALUE_SCORE_VISIBLE_AFTER_CORRECTION : IQEditController.CONFIG_VALUE_SCORE_NOT_VISIBLE_AFTER_CORRECTION;
+		String visibility = modConfig.getStringValue(IQEditController.CONFIG_KEY_SCORE_VISIBILITY_AFTER_CORRECTION, defVisibility);
+		if(visibilityKeyValues.containsKey(visibility)) {
+			scoreVisibilityAfterCorrectionEl.select(visibility, true);
+		}
+		updateScoreVisibility();
 	}
 
 	protected void initFormReport(FormItemContainer formLayout) {
@@ -387,8 +404,15 @@ public class QTI21EditForm extends FormBasicController {
 			} else {
 				update();
 			}
+		} else if(correctionModeEl == source) {
+			updateScoreVisibility();
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void updateScoreVisibility() {
+		String correctionMode = correctionModeEl.getSelectedKey();
+		scoreVisibilityAfterCorrectionEl.setVisible(correctionMode.equals(IQEditController.CORRECTION_MANUAL) ||  correctionMode.equals(IQEditController.CORRECTION_GRADING));
 	}
 	
 	private void update() {
@@ -552,6 +576,11 @@ public class QTI21EditForm extends FormBasicController {
 		
 		if(correctionModeEl.isOneSelected()) {
 			modConfig.setStringValue(IQEditController.CONFIG_CORRECTION_MODE, correctionModeEl.getSelectedKey());
+		}
+		if(scoreVisibilityAfterCorrectionEl.isOneSelected() && scoreVisibilityAfterCorrectionEl.isVisible()) {
+			modConfig.setStringValue(IQEditController.CONFIG_KEY_SCORE_VISIBILITY_AFTER_CORRECTION, scoreVisibilityAfterCorrectionEl.getSelectedKey());
+		} else {
+			modConfig.remove(IQEditController.CONFIG_KEY_SCORE_VISIBILITY_AFTER_CORRECTION);
 		}
 
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_ENABLESCOREINFO, scoreInfo.isSelected(0));

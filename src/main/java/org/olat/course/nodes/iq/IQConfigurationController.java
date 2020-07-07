@@ -69,8 +69,9 @@ import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
-import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.QTI21DeliveryOptions.PassedType;
+import org.olat.ims.qti21.QTI21Module;
+import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.InMemoryOutcomeListener;
 import org.olat.ims.qti21.model.xml.AssessmentTestBuilder;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
@@ -132,6 +133,8 @@ public class IQConfigurationController extends BasicController {
 	private IQManager iqManager;
 	@Autowired
 	private QTIModule qtiModule;
+	@Autowired
+	private QTI21Module qti21Module;
 	@Autowired
 	private QTI21Service qti21service;
 	@Autowired
@@ -226,12 +229,21 @@ public class IQConfigurationController extends BasicController {
 			}
 			QTI21DeliveryOptions deliveryOptions = qti21service.getDeliveryOptions(re);
 			if(replacedTest) {// set some default settings in case the user don't save the next panel
+				String correctionMode;
 				if(gradingService.isGradingEnabled(re, null)) {
-					moduleConfiguration.setStringValue(IQEditController.CONFIG_CORRECTION_MODE, IQEditController.CORRECTION_GRADING);
+					correctionMode = IQEditController.CORRECTION_GRADING;
 				} else if(needManualCorrection || getPassedType(re, deliveryOptions) == PassedType.manually) {
-					moduleConfiguration.setStringValue(IQEditController.CONFIG_CORRECTION_MODE, IQEditController.CORRECTION_MANUAL);
+					correctionMode = IQEditController.CORRECTION_MANUAL;
 				} else {
-					moduleConfiguration.setStringValue(IQEditController.CONFIG_CORRECTION_MODE, IQEditController.CORRECTION_AUTO);
+					correctionMode = IQEditController.CORRECTION_AUTO;
+				}
+				moduleConfiguration.setStringValue(IQEditController.CONFIG_CORRECTION_MODE, correctionMode);
+				if(IQEditController.CORRECTION_GRADING.equals(correctionMode) ||  IQEditController.CORRECTION_MANUAL.equals(correctionMode)) {
+					String userVisible = qti21Module.isResultsVisibleAfterCorrectionWorkflow()
+							? IQEditController.CONFIG_VALUE_SCORE_VISIBLE_AFTER_CORRECTION : IQEditController.CONFIG_VALUE_SCORE_NOT_VISIBLE_AFTER_CORRECTION;
+					moduleConfiguration.setStringValue(IQEditController.CONFIG_KEY_SCORE_VISIBILITY_AFTER_CORRECTION, userVisible);
+				} else {
+					moduleConfiguration.remove(IQEditController.CONFIG_KEY_SCORE_VISIBILITY_AFTER_CORRECTION);
 				}
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
