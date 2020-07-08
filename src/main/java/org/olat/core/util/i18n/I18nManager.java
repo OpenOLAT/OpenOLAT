@@ -1039,7 +1039,7 @@ public class I18nManager {
 	 */
 	public void deleteProperties(Locale locale, String bundleName) {
 		String key = calcPropertiesFileKey(locale, bundleName);
-		if (log.isDebugEnabled()) log.debug("deleteProperties for key::" + key);
+		if (log.isDebugEnabled()) log.debug("deleteProperties for key::{}", key);
 
 		if (locale != null) { // metadata files are not in cache
 			// 1) Remove from cache first
@@ -1053,8 +1053,7 @@ public class I18nManager {
 		// 2) Remove from filesystem
 		File baseDir = i18nModule.getPropertyFilesBaseDir(locale, bundleName);
 		if (baseDir == null) {
-			if (baseDir == null) { throw new AssertException("Can not delete properties file for bundle::" + bundleName + " and language::"
-					+ locale.toString() + " - no base directory found, probably loaded from jar!"); }
+			return;// nothing to do
 		}
 		File f = getPropertiesFile(locale, bundleName, baseDir);
 		if (f.exists()) f.delete();

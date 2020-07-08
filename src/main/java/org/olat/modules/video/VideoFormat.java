@@ -39,6 +39,7 @@ public enum VideoFormat {
 	 * Local mp4 encoded with h264
 	 */
 	mp4("video/mp4"),
+	m3u8("application/x-mpegURL"),
 	youtube("video/youtube"),
 	vimeo("video/vimeo"),
 	panopto("video/mp4");
@@ -89,6 +90,8 @@ public enum VideoFormat {
 					return VideoFormat.panopto;
 				} else if(url.endsWith(".mp4")) {
 					return VideoFormat.mp4;
+				} else if(url.endsWith(".m3u8")) {
+					return VideoFormat.m3u8;
 				}
 			} catch (MalformedURLException e) {
 				log.warn("Cannot read url: " + url, e);

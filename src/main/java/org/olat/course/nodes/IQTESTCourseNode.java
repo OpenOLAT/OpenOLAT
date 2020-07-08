@@ -139,7 +139,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 	private static final String TRANSLATOR_PACKAGE = Util.getPackageName(IQEditController.class);
 	public static final String TYPE = "iqtest";
 
-	private static final int CURRENT_CONFIG_VERSION = 2;
+	private static final int CURRENT_CONFIG_VERSION = 3;
 
 	private transient RepositoryEntry cachedReferenceRepositoryEntry;
 
@@ -634,13 +634,16 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			if (version < CURRENT_CONFIG_VERSION) {
 				// Loaded config is older than current config version => migrate
 				if (version == 1) {
-					// migrate V1 => V2, new parameter 'enableScoreInfo'
-					version = 2;
 					config.set(IQEditController.CONFIG_KEY_ENABLESCOREINFO, Boolean.TRUE);
+				} else if (version <= 2) {
+					if (config.get(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS) instanceof Boolean) {
+						config.setStringValue(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS, String.valueOf(config.getBooleanEntry(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS)));
+					}
 				}
-				config.setConfigurationVersion(CURRENT_CONFIG_VERSION);
 			}
 		}
+		
+		config.setConfigurationVersion(CURRENT_CONFIG_VERSION);
 	}
 
 	@Override

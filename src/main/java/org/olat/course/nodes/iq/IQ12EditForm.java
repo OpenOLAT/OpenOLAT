@@ -160,7 +160,7 @@ public class IQ12EditForm extends FormBasicController {
 		// Only tests and selftests have summaries and score progress
 		if (!isSurvey) {
 			modConfig.set(IQEditController.CONFIG_KEY_SUMMARY, getSummary());
-			modConfig.set(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS, new Boolean(isShowResultsDateDependent()));
+			modConfig.set(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS, String.valueOf(isShowResultsDateDependent()));
 			modConfig.set(IQEditController.CONFIG_KEY_RESULTS_START_DATE, getShowResultsStartDate()); 
 			modConfig.set(IQEditController.CONFIG_KEY_RESULTS_END_DATE, getShowResultsEndDate());
 			modConfig.set(IQEditController.CONFIG_KEY_RESULT_ON_FINISH, isShowResultsAfterFinishTest());
@@ -223,7 +223,7 @@ public class IQ12EditForm extends FormBasicController {
 		showResultsOnHomePage.addActionListener(FormEvent.ONCLICK);
 		showResultsOnHomePage.setVisible(!isSurvey);
 		
-		Boolean showResultsActive = modConfig.getBooleanEntry(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS);
+		Boolean showResultsActive = Boolean.valueOf(modConfig.getStringValue(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS));
 		boolean showResultsDateDependent = false; // default false
 		if (showResultsActive != null) {
 			showResultsDateDependent = showResultsActive.booleanValue();
