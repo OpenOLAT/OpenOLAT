@@ -30,6 +30,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.model.IdentityRefImpl;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
@@ -70,6 +71,8 @@ public class CourseMembershipProcessor implements GenericEventListener {
 
 	private static final Logger log = Tracing.createLoggerFor(CourseMembershipProcessor.class);
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -235,6 +238,7 @@ public class CourseMembershipProcessor implements GenericEventListener {
 		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, courseEnv);
 		userCourseEnv.getScoreAccounting().evaluateAll(true);
 		log.debug("Evaluated all assessment entries of {} in {}", identity, courseEntry);
+		dbInstance.commitAndCloseSession();
 	}
 	
 }
