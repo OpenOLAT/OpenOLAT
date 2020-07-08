@@ -2,16 +2,22 @@ package org.olat.restapi.system.vo;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "bigBlueButtonStatisticsVO")
 public class BigBlueButtonStatisticsVO {
 	
+	@XmlAttribute(name="attendeeCount", required=false)
 	private long attendeeCount;
+	@XmlAttribute(name="meetingCount", required=false)
 	private long meetingCount;
+	@XmlAttribute(name="recordingCount", required=false)
 	private long recordingCount;
+	@XmlAttribute(name="videoCount", required=false)
 	private long videoCount;
+	@XmlAttribute(name="maximalUserCount", required=false)
 	private long maximalUserCount;
 	
 	
