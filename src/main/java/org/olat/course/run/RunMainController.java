@@ -98,6 +98,8 @@ import org.olat.course.run.glossary.CourseGlossaryToolLinkController;
 import org.olat.course.run.navigation.NavigationHandler;
 import org.olat.course.run.navigation.NodeClickedRef;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.tools.OpenCourseToolEvent;
+import org.olat.course.run.tools.CourseTool;
 import org.olat.course.run.userview.AssessmentModeTreeFilter;
 import org.olat.course.run.userview.InvisibleTreeFilter;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
@@ -647,8 +649,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				if (toolname != null) {
 					try {
 						toolname = toolname.toLowerCase();
-						OpenToolEvent.Tool tool = OpenToolEvent.Tool.valueOf(toolname);
-						fireEvent(ureq, new OpenToolEvent(tool));
+						CourseTool tool = CourseTool.valueOf(toolname);
+						fireEvent(ureq, new OpenCourseToolEvent(tool));
 					} catch (Exception e) {
 						getWindowControl().setWarning(translate("msg.tool.not.available", new String[] { toolname } ));
 					}

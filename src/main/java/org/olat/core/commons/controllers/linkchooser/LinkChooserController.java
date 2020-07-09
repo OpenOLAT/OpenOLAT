@@ -37,6 +37,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.course.run.tools.CourseToolLinkTreeModel;
 
 /**
  * Offer tabbed pane with certain type of link chooser.
@@ -53,6 +54,7 @@ public class LinkChooserController extends BasicController {
 	private TabbedPane linkChooserTabbedPane;
 	private FileLinkChooserController fileLinkChooserController;
 	private CustomLinkChooserController courseLinkChooserController;
+	private CustomLinkChooserController courseToolLinkChooserController;
 	private CustomMediaChooserController customMediaChooserCtr;
 
 	/**
@@ -88,6 +90,13 @@ public class LinkChooserController extends BasicController {
 			courseLinkChooserController = new CustomLinkChooserController(ureq, wControl, customLinkTreeModel);
 			listenTo(courseLinkChooserController);
 			linkChooserTabbedPane.addTab(translate("linkchooser.tabbedpane.label.internallinkchooser"), courseLinkChooserController.getInitialComponent());
+			
+			// customLinkTreeModel is always the course node tree model. Instead of transfer a second model through all
+			// controller and factories, we just create the tool link model here, because if a goto course node can be chosen
+			// a goto course tool can be chosen as well.
+			courseToolLinkChooserController = new CustomLinkChooserController(ureq, wControl, new CourseToolLinkTreeModel(getLocale()));
+			listenTo(courseToolLinkChooserController);
+			linkChooserTabbedPane.addTab(translate("linkchooser.tabbedpane.label.internaltoolchooser"), courseToolLinkChooserController.getInitialComponent());
 		}
 		
 		// try to add custom media chooser from spring configuration. 
@@ -103,18 +112,12 @@ public class LinkChooserController extends BasicController {
 		mainPanel = putInitialPanel(tabbedPaneViewVC);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
+		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {		
 		if (event instanceof URLChoosenEvent) {
 			// send choosen URL to parent window via JavaScript and close the window
@@ -122,7 +125,7 @@ public class LinkChooserController extends BasicController {
 			closeVC = createVelocityContainer("close");
 			String url = urlChoosenEvent.getURL();
 			closeVC.contextPut("isJsUrl", Boolean.FALSE);
-			if (url.contains("gotonode")) {
+			if (url.contains("gotonode") || url.contains("gototool")) {
 				closeVC.contextPut("isJsUrl", Boolean.TRUE);
 			}
 			closeVC.contextPut("imagepath", url);
@@ -137,6 +140,7 @@ public class LinkChooserController extends BasicController {
 		} else if (event == Event.CANCELLED_EVENT) {
 			removeAsListenerAndDispose(fileLinkChooserController);
 			removeAsListenerAndDispose(courseLinkChooserController);
+			removeAsListenerAndDispose(courseToolLinkChooserController);
 			removeAsListenerAndDispose(customMediaChooserCtr);
 			
 			// Close the window, no URL selected
@@ -146,9 +150,7 @@ public class LinkChooserController extends BasicController {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		// controllers disposed by basic controller
 	}

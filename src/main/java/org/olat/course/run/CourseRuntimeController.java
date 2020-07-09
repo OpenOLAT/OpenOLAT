@@ -117,10 +117,11 @@ import org.olat.course.nodes.info.InfoRunController;
 import org.olat.course.nodes.members.MembersToolRunController;
 import org.olat.course.nodes.wiki._content.WikiToolController;
 import org.olat.course.reminder.ui.CourseRemindersController;
-import org.olat.course.run.OpenToolEvent.Tool;
 import org.olat.course.run.calendar.CourseCalendarController;
 import org.olat.course.run.glossary.CourseGlossaryFactory;
 import org.olat.course.run.glossary.CourseGlossaryToolLinkController;
+import org.olat.course.run.tools.CourseTool;
+import org.olat.course.run.tools.OpenCourseToolEvent;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.statistic.StatisticCourseNodesController;
@@ -741,7 +742,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if ((cc.isEfficencyStatementEnabled() || cc.isCertificateEnabled()) && !isGuestOnly && !assessmentLock
 				&& userCourseEnv != null && userCourseEnv.isParticipant()) {
 			efficiencyStatementsLink = LinkFactory.createToolLink("efficiencystatement",
-					translate("command.efficiencystatement"), this, "o_icon_certificate");
+					translate(CourseTool.efficiencystatement.getI18nKey()), this,
+					CourseTool.efficiencystatement.getIconCss());
 			myCourse.addComponent(efficiencyStatementsLink);
 		}
 		
@@ -856,7 +858,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		
 		if (!assessmentLock && !isGuestOnly
 				&& LearningPathNodeAccessProvider.TYPE.equals(cc.getNodeAccessType().getType())) {
-			learningPathLink = LinkFactory.createToolLink("learningPath", translate("command.learning.path") + "-LP", this, "o_icon_learning_path");
+			learningPathLink = LinkFactory.createToolLink("learningPath", translate("command.learning.path") + "-LP", this, CourseTool.learningpath.getIconCss());
 			learningPathLink.setUrl(BusinessControlFactory.getInstance()
 					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[LearningPath:0]"));
 			toolbarPanel.addTool(learningPathLink);
@@ -867,7 +869,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		
 		if (!assessmentLock && !isGuestOnly
 				&& LearningPathNodeAccessProvider.TYPE.equals(cc.getNodeAccessType().getType())) {
-			learningPathsLink = LinkFactory.createToolLink("learningPaths", translate("command.learning.paths"), this, "o_icon_learning_path");
+			learningPathsLink = LinkFactory.createToolLink("learningPaths", translate("command.learning.paths"), this, CourseTool.learningpath.getIconCss());
 			learningPathsLink.setUrl(BusinessControlFactory.getInstance()
 					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[LearningPaths:0]"));
 			toolbarPanel.addTool(learningPathsLink);
@@ -893,7 +895,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 		
 		if(!assessmentLock && !isGuestOnly && userCourseEnv != null) {
-			participantListLink = LinkFactory.createToolLink("participantlist", translate("command.participant.list"), this, "o_cmembers_icon");
+			participantListLink = LinkFactory.createToolLink("participantlist",
+					translate(CourseTool.participantlist.getI18nKey()), this,
+					CourseTool.participantlist.getIconCss());
 			participantListLink.setUrl(BusinessControlFactory.getInstance()
 					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[ParticipantList:0]"));
 			participantListLink.setVisible(cc.isParticipantListEnabled());
@@ -901,7 +905,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 		
 		if(!assessmentLock && userCourseEnv != null) {
-			participantInfoLink = LinkFactory.createToolLink("participantinfo", translate("command.participant.info"), this, "o_infomsg_icon");
+			participantInfoLink = LinkFactory.createToolLink("participantinfo",
+					translate(CourseTool.participantinfos.getI18nKey()), this,
+					CourseTool.participantinfos.getIconCss());
 			participantInfoLink.setUrl(BusinessControlFactory.getInstance()
 					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[ParticipantInfos:0]"));
 			participantInfoLink.setVisible(cc.isParticipantInfoEnabled());
@@ -909,7 +915,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 		
 		if(!assessmentLock && !isGuestOnly && userCourseEnv != null && !userCourseEnv.isCourseReadOnly()) {
-			emailLink = LinkFactory.createToolLink("email", translate("command.email"), this, "o_co_icon");
+			emailLink = LinkFactory.createToolLink("email", translate(CourseTool.email.getI18nKey()), this, CourseTool.email.getIconCss());
 			emailLink.setUrl(BusinessControlFactory.getInstance()
 					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[email:0]"));
 			emailLink.setVisible(cc.isEmailEnabled());
@@ -917,7 +923,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 		
 		if(!assessmentLock && userCourseEnv != null) {
-			blogLink = LinkFactory.createToolLink("blog", translate("command.blog"), this, "o_blog_icon");
+			blogLink = LinkFactory.createToolLink("blog", translate(CourseTool.blog.getI18nKey()), this, CourseTool.blog.getIconCss());
 			blogLink.setUrl(BusinessControlFactory.getInstance()
 					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[blog:0]"));
 			blogLink.setVisible(cc.isBlogEnabled());
@@ -925,7 +931,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 		
 		if(!assessmentLock && userCourseEnv != null) {
-			wikiLink = LinkFactory.createToolLink("wiki", translate("command.wiki"), this, "o_wiki_icon");
+			wikiLink = LinkFactory.createToolLink("wiki", translate(CourseTool.wiki.getI18nKey()), this, CourseTool.wiki.getIconCss());
 			wikiLink.setUrl(BusinessControlFactory.getInstance()
 					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[wiki:0]"));
 			wikiLink.setVisible(cc.isWikiEnabled());
@@ -933,7 +939,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 		
 		if(!assessmentLock && userCourseEnv != null) {
-			forumLink = LinkFactory.createToolLink("forum", translate("command.forum"), this, "o_fo_icon");
+			forumLink = LinkFactory.createToolLink("forum", translate(CourseTool.forum.getI18nKey()), this, CourseTool.forum.getIconCss());
 			forumLink.setUrl(BusinessControlFactory.getInstance()
 					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[forum:0]"));
 			forumLink.setVisible(cc.isForumEnabled());
@@ -941,7 +947,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 		
 		if(!assessmentLock && userCourseEnv != null) {
-			documentsLink = LinkFactory.createToolLink("documents", translate("command.documents"), this, "o_bc_icon");
+			documentsLink = LinkFactory.createToolLink("documents", translate(CourseTool.documents.getI18nKey()), this, CourseTool.documents.getIconCss());
 			documentsLink.setUrl(BusinessControlFactory.getInstance()
 					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[documents:0]"));
 			documentsLink.setVisible(cc.isDocumentsEnabled());
@@ -1139,8 +1145,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(getRunMainController() == source) {
 			if(event instanceof BusinessGroupModifiedEvent) {
 				processBusinessGroupModifiedEvent(ureq, (BusinessGroupModifiedEvent)event);
-			} else if (event instanceof OpenToolEvent) {
-				Tool tool = ((OpenToolEvent)event).getTool();
+			} else if (event instanceof OpenCourseToolEvent) {
+				CourseTool tool = ((OpenCourseToolEvent)event).getTool();
 				doOpenTool(ureq, tool);
 			}
 		} else if (lifeCycleChangeCtr == source) {
@@ -1396,13 +1402,13 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 	}
 	
-	private void doOpenTool(UserRequest ureq, Tool tool) {
+	private void doOpenTool(UserRequest ureq, CourseTool tool) {
 		switch (tool) {
 		case blog: {
 			if (blogLink != null && blogLink.isVisible()) {
 				doBlog(ureq);
 			} else {
-				getWindowControl().setWarning(translate("msg.tool.not.available", new String[] { translate("command.blog") } ));
+				doShowToolNotAvailable(CourseTool.blog);
 			}
 		}
 		break;
@@ -1410,7 +1416,15 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			if (documentsLink != null && documentsLink.isVisible()) {
 				doDocuments(ureq);
 			} else {
-				getWindowControl().setWarning(translate("msg.tool.not.available", new String[] { translate("command.documents") } ));
+				doShowToolNotAvailable(CourseTool.documents);
+			}
+		}
+		break;
+		case efficiencystatement: {
+			if (efficiencyStatementsLink != null && efficiencyStatementsLink.isVisible()) {
+				doEmail(ureq);
+			} else {
+				doShowToolNotAvailable(CourseTool.efficiencystatement);
 			}
 		}
 		break;
@@ -1418,7 +1432,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			if (emailLink != null && emailLink.isVisible()) {
 				doEmail(ureq);
 			} else {
-				getWindowControl().setWarning(translate("msg.tool.not.available", new String[] { translate("command.email") } ));
+				doShowToolNotAvailable(CourseTool.email);
 			}
 		}
 		break;
@@ -1426,15 +1440,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			if (forumLink != null && forumLink.isVisible()) {
 				doForum(ureq);
 			} else {
-				getWindowControl().setWarning(translate("msg.tool.not.available", new String[] { translate("command.forum") } ));
-			}
-		}
-		break;
-		case glosary: {
-			if (openGlossaryLink != null && openGlossaryLink.isVisible()) {
-				launchGlossary(ureq);
-			} else {
-				getWindowControl().setWarning(translate("msg.tool.not.available", new String[] { translate("command.glossary.open") } ));
+				doShowToolNotAvailable(CourseTool.forum);
 			}
 		}
 		break;
@@ -1444,7 +1450,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			} else if (learningPathsLink != null && learningPathsLink.isVisible()) {
 				doLearningPaths(ureq);
 			} else {
-				getWindowControl().setWarning(translate("msg.tool.not.available", new String[] { translate("command.learning.path") } ));
+				doShowToolNotAvailable(CourseTool.learningpath);
 			}
 		}
 		break;
@@ -1452,7 +1458,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			if (participantListLink != null && participantListLink.isVisible()) {
 				doParticipantList(ureq);
 			} else {
-				getWindowControl().setWarning(translate("msg.tool.not.available", new String[] { translate("command.participant.list") } ));
+				doShowToolNotAvailable(CourseTool.participantlist);
 			}
 		}
 		break;
@@ -1460,7 +1466,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			if (participantInfoLink != null && participantInfoLink.isVisible()) {
 				doParticipantInfo(ureq);
 			} else {
-				getWindowControl().setWarning(translate("msg.tool.not.available", new String[] { translate("command.participant.info") } ));
+				doShowToolNotAvailable(CourseTool.participantinfos);
 			}
 		}
 		break;
@@ -1468,7 +1474,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			if (wikiLink != null && wikiLink.isVisible()) {
 				doWiki(ureq);
 			} else {
-				getWindowControl().setWarning(translate("msg.tool.not.available", new String[] { translate("command.wiki") } ));
+				doShowToolNotAvailable(CourseTool.wiki);
 			}
 		}
 		break;
@@ -1476,6 +1482,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			getWindowControl().setWarning(translate("msg.tool.not.available", new String[] { tool.name() } ));
 		}
 		
+	}
+	
+	private void doShowToolNotAvailable(CourseTool tool) {
+		getWindowControl().setWarning(translate("msg.tool.not.available", new String[] { translate(tool.getI18nKey()) } ));
+
 	}
 
 	@Override

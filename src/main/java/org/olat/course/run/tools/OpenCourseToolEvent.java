@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.run;
+package org.olat.course.run.tools;
 
 import org.olat.core.gui.control.Event;
 
@@ -27,31 +27,18 @@ import org.olat.core.gui.control.Event;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class OpenToolEvent extends Event {
+public class OpenCourseToolEvent extends Event {
 
 	private static final long serialVersionUID = 5241755319021602264L;
 	
-	// All lower case to get better matching with manually written tool names by authors.
-	public enum Tool {
-		blog,
-		documents,
-		email,
-		forum,
-		glosary,
-		participantlist,
-		participantinfos,
-		learningpath,
-		wiki
-	}
+	private final CourseTool tool;
 
-	private final Tool tool;
-
-	public OpenToolEvent(Tool tool) {
+	public OpenCourseToolEvent(CourseTool tool) {
 		super("open-course-tool");
 		this.tool = tool;
 	}
 
-	public Tool getTool() {
+	public CourseTool getTool() {
 		return tool;
 	}
 
