@@ -156,9 +156,7 @@ public class OpenXMLDocumentWriter {
 			try(FileInputStream in = new FileInputStream(img.getFile())) {
 				ZipEntry wordDocument = new ZipEntry("word/media/" + img.getFilename());
 				out.putNextEntry(wordDocument);
-	
 				IOUtils.copy(in, out);
-				OpenXMLUtils.writeTo(document.getDocument(), out, false);
 				out.closeEntry();
 			} catch(Exception e) {
 				log.error("", e);
