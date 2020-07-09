@@ -123,12 +123,11 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private FormLink resetButton;
 	private FlexiTableElement tableEl;
 	private final TooledStackedPanel stackPanel;
+	private DefaultFlexiColumnModel correctionCol;
 	private QTI21AssessmentTestSessionTableModel tableModel;
 	
 	private RepositoryEntry entry;
-	private RepositoryEntry testEntry;
 	private final String subIdent;
-	private final boolean manualCorrections;
 	private final Identity assessedIdentity;
 	
 	private int count = 0;
@@ -178,10 +177,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		subIdent = courseNode.getIdent();
 		readOnly = coachCourseEnv.isCourseReadOnly();
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
-		testEntry = courseNode.getReferencedRepositoryEntry();
 		assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
-		manualCorrections = qtiService.needManualCorrection(testEntry)
-				|| IQEditController.CORRECTION_MANUAL.equals(courseNode.getModuleConfiguration().getStringValue(IQEditController.CONFIG_CORRECTION_MODE));
 		
 		RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		reSecurity = repositoryManager.isAllowed(ureq, courseEntry);
@@ -202,14 +198,12 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			RepositoryEntry assessableEntry, Identity assessedIdentity) {
 		super(ureq, wControl, "assessment_details");
 		entry = assessableEntry;
-		testEntry = assessableEntry;
 		subIdent = null;
 		readOnly = false;
 		courseNode = null;
 		assessedUserCourseEnv = null;
 		this.stackPanel = stackPanel;
 		this.assessedIdentity = assessedIdentity;
-		manualCorrections = qtiService.needManualCorrection(assessableEntry);
 		reSecurity = repositoryManager.isAllowed(ureq, assessableEntry);
 
 		initForm(ureq);
@@ -236,9 +230,10 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("results.report"), "open"),
 							new StaticFlexiCellRenderer(translate("pull"), "open"))));
 		}
-		if(manualCorrections && !readOnly) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.correction.i18nHeaderKey(), TSCols.correction.ordinal(), "correction",
-					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("correction"), "correction"), null)));
+		if(!readOnly) {
+			correctionCol = new DefaultFlexiColumnModel(TSCols.correction.i18nHeaderKey(), TSCols.correction.ordinal(), "correction",
+					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("correction"), "correction"), null));
+			columnsModel.addFlexiColumnModel(correctionCol);
 		}
 		if(pdfModule.isEnabled()) {
 			DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(TSCols.tools);
@@ -265,16 +260,28 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	}
 	
 	protected void updateModel() {
+		boolean manualCorrections = false;
+		if(courseNode != null) {
+			manualCorrections = IQEditController.CORRECTION_MANUAL.equals(courseNode.getModuleConfiguration().getStringValue(IQEditController.CONFIG_CORRECTION_MODE));
+		}
+		
 		List<AssessmentTestSessionStatistics> sessionsStatistics = qtiService.getAssessmentTestSessionsStatistics(entry, subIdent, assessedIdentity);
 		List<QTI21AssessmentTestSessionDetails> infos = new ArrayList<>();
+		final Map<RepositoryEntry,Boolean> manualCorrectionsMap = new HashMap<>();
 		for(AssessmentTestSessionStatistics sessionStatistics:sessionsStatistics) {
+			RepositoryEntry testEntry = sessionStatistics.getTestSession().getTestEntry();
+			manualCorrections = manualCorrections || manualCorrectionsMap
+					.computeIfAbsent(testEntry, re -> qtiService.needManualCorrection(re))
+					.booleanValue();
 			infos.add(forgeDetailsRow(sessionStatistics));
 		}
+		correctionCol.setAlwaysVisible(manualCorrections);
+		correctionCol.setDefaultVisible(manualCorrections);
+		tableEl.setColumnModelVisible(correctionCol, manualCorrections);
 		
 		Collections.sort(infos, new AssessmentTestSessionDetailsComparator());
 		tableModel.setObjects(infos);
-		tableEl.reloadData();
-		tableEl.reset();
+		tableEl.reset(true, true, true);
 		
 		if(resetButton != null) {
 			resetButton.setVisible(!sessionsStatistics.isEmpty());
@@ -420,6 +427,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	}
 
 	private void doCorrection(UserRequest ureq, AssessmentTestSession session) {
+		RepositoryEntry testEntry = session.getTestEntry();
 		File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
 		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
 		ManifestBuilder manifestBuilder = ManifestBuilder.read(new File(unzippedDirRoot, "imsmanifest.xml"));
@@ -438,7 +446,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			listenTo(correctionCtrl);
 			stackPanel.pushController(translate("correction"), correctionCtrl);
 		} catch(Exception e) {
-			logError("Cannot red results", e);
+			logError("Cannot read results", e);
 			showError("error.assessment.test.session");
 		}
 	}
@@ -507,8 +515,8 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	}
 	
 	private DigitalSignatureOptions getSignatureOptions(AssessmentTestSession session) {
-		RepositoryEntry sessionTestEntry = session.getTestEntry();
-		QTI21DeliveryOptions deliveryOptions = qtiService.getDeliveryOptions(sessionTestEntry);
+		RepositoryEntry testEntry = session.getTestEntry();
+		QTI21DeliveryOptions deliveryOptions = qtiService.getDeliveryOptions(testEntry);
 		
 		boolean digitalSignature = deliveryOptions.isDigitalSignature();
 		boolean sendMail = deliveryOptions.isDigitalSignatureMail();
@@ -526,7 +534,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 				 AssessmentEntryOutcomesListener.decorateResourceConfirmation(entry, testEntry, session, options, null, getLocale());
 			} else {
 				CourseEnvironment courseEnv = CourseFactory.loadCourse(entry).getCourseEnvironment();
-				QTI21AssessmentRunController.decorateCourseConfirmation(session, options, courseEnv, courseNode, sessionTestEntry, null, getLocale());
+				QTI21AssessmentRunController.decorateCourseConfirmation(session, options, courseEnv, courseNode, testEntry, null, getLocale());
 			}
 		}
 		return options;
