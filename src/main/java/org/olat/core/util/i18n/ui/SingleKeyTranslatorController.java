@@ -155,7 +155,7 @@ public class SingleKeyTranslatorController extends FormBasicController {
 			if(textArea) {
 				te = uifactory.addTextAreaElement(textId, null, -1, 8, 60, false, false, value, formLayout);
 			} else {
-				te = uifactory.addTextElement(textId, null, null, 255, value, formLayout);
+				te = uifactory.addTextElement(textId, textId, null, 255, value, formLayout);
 				te.setDisplaySize(60);
 			}
 			te.setMandatory(true);

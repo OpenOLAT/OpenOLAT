@@ -428,6 +428,7 @@ import org.junit.runners.Suite;
 	org.olat.restapi.EfficiencyStatementTest.class,
 	org.olat.restapi.FolderTest.class,
 	org.olat.restapi.ForumTest.class,
+	org.olat.restapi.GradingWebServiceTest.class,
 	org.olat.restapi.GroupFoldersTest.class,
 	org.olat.restapi.GroupMgmtTest.class,
 	org.olat.restapi.I18nTest.class,
