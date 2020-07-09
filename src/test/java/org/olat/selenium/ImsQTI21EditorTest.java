@@ -453,7 +453,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.assertFeedback("Incorrect")
 			.assertFeedback("Attempts")
 			.answerSingleChoiceWithParagraph("Correct")
-			.saveAnswer()
+			.saveAnswerMoveAndScrollTop()
 			.assertNoFeedback()
 			.endTest();
 	}

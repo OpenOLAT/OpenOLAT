@@ -99,9 +99,6 @@ public class PFParticipantController extends BasicController {
 			case displayReturn:
 				path = translate("return.box");
 				break;
-			default:
-				path = translate("drop.box");
-				break;
 		}
 		initFolderController(ureq, path);
 		
