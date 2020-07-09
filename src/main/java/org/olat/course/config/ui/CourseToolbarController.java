@@ -384,7 +384,9 @@ public class CourseToolbarController extends FormBasicController {
 		participantInfoEl.setVisible(enabled);
 		emailEl.setVisible(enabled);
 		blogEl.setVisible(enabled);
+		blogCont.setVisible(enabled);
 		wikiEl.setVisible(enabled);
+		wikiCont.setVisible(enabled);
 		forumEl.setVisible(enabled);
 		documentsEl.setVisible(enabled);
 		chatEl.setVisible(enabled);
