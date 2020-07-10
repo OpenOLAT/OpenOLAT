@@ -97,10 +97,12 @@ public class UserSearchDataSource implements FlexiTableDataSourceDelegate<Identi
 	
 	private List<Integer> getStatusFromFilter(List<FlexiTableFilter> filters) {
 		List<Integer> statusList = new ArrayList<>();
-		for(FlexiTableFilter filter:filters) {
-			if(!filter.isShowAll() && StringHelper.isLong(filter.getFilter())) {
-				statusList.add(Integer.parseInt(filter.getFilter()));
-			}	
+		if(filters != null && !filters.isEmpty()) {
+			for(FlexiTableFilter filter:filters) {
+				if(!filter.isShowAll() && StringHelper.isLong(filter.getFilter())) {
+					statusList.add(Integer.parseInt(filter.getFilter()));
+				}	
+			}
 		}
 		return statusList;
 	}
