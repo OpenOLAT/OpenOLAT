@@ -9,6 +9,8 @@
 		$r.render("convert.item.long")
 	</div>
 </div>
+#elseif($r.isTrue($deprecatedForm))
+<div class="o_error">$r.translate("error.qti.deprecated.no.conversion")</div>
 #end
 <div class="row">
 	#if($metadataSwitch)
