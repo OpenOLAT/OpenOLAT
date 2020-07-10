@@ -115,15 +115,17 @@ public class ConversionConfirmationController extends FormBasicController {
 	}
 	
 	private void updateInfos() {
-		String format = formatEl.getSelectedKey();
-		List<QuestionItemShort> items = formatToItems.get(format);
-		setFormInfo("convert.item.msg", new String[]{ Integer.toString(items.size()) });
-		questionsEl.setValue(getQuestionNames(items));
+		if(formatEl.isOneSelected()) {
+			String format = formatEl.getSelectedKey();
+			List<QuestionItemShort> items = formatToItems.get(format);
+			setFormInfo("convert.item.msg", new String[]{ Integer.toString(items.size()) });
+			questionsEl.setValue(getQuestionNames(items));
+		}
 	}
 
 	private String getQuestionNames(List<QuestionItemShort> items) {
 		return items.stream()
-				.map(item -> item.getTitle())
+				.map(QuestionItemShort::getTitle)
 				.collect(Collectors.joining(", "));
 	}
 	
@@ -132,6 +134,21 @@ public class ConversionConfirmationController extends FormBasicController {
 		addToItemsSourceEl.setVisible(showAddToSource);
 		boolean showEditable = itemsSource.askEditable() && addToItemsSourceEl.isAtLeastSelected(1);
 		editableEl.setVisible(showEditable);
+	}
+	
+	
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		formatEl.clearError();
+		if(!formatEl.isOneSelected()) {
+			formatEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+
+		return allOk;
 	}
 
 	@Override
