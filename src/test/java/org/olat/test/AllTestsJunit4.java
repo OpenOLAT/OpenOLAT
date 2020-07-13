@@ -425,6 +425,7 @@ import org.junit.runners.Suite;
 	org.olat.restapi.CurriculumsWebServiceTest.class,
 	org.olat.restapi.CurriculumElementsWebServiceTest.class,
 	org.olat.restapi.CurriculumElementTypesWebServiceTest.class,
+	org.olat.restapi.DocEditorWebServiceTest.class,
 	org.olat.restapi.EfficiencyStatementTest.class,
 	org.olat.restapi.FolderTest.class,
 	org.olat.restapi.ForumTest.class,
