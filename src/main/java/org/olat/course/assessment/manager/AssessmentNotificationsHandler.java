@@ -229,7 +229,7 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 
 		CourseGroupManager grpMan = course.getCourseEnvironment().getCourseGroupManager();
 		boolean isLearnResourceManager = organisationService.hasRole(ident, OrganisationRoles.learnresourcemanager);
-		return isLearnResourceManager || grpMan.isIdentityCourseAdministrator(ident) || grpMan.isIdentityCourseCoach(ident) || grpMan.hasRight(ident, CourseRights.RIGHT_ASSESSMENT);
+		return isLearnResourceManager || grpMan.isIdentityCourseAdministrator(ident) || grpMan.isIdentityCourseCoach(ident) || grpMan.hasRight(ident, CourseRights.RIGHT_ASSESSMENT, null);
 	}
 
 	/**
@@ -325,7 +325,7 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 					// course admins or users with the course right to have full access to
 					// the assessment tool will have full access to user tests
 					CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-					final boolean hasFullAccess = cgm.isIdentityCourseAdministrator(identity) || cgm.hasRight(identity, CourseRights.RIGHT_ASSESSMENT);
+					final boolean hasFullAccess = cgm.isIdentityCourseAdministrator(identity) || cgm.hasRight(identity, CourseRights.RIGHT_ASSESSMENT, null);
 					final Set<Identity> coachedUsers = new HashSet<>();
 					if (!hasFullAccess) {
 						// initialize list of users, only when user has not full access

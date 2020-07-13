@@ -27,6 +27,7 @@ package org.olat.course.nodes.sp;
 
 import java.util.List;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
@@ -139,8 +140,14 @@ public class SPRunController extends BasicController implements Activateable2 {
 		
 		if(isFileTypeEditable(fileName)) {
 			CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
+			GroupRoles role = GroupRoles.owner;
+			if (userCourseEnv.isParticipant()) {
+				role = GroupRoles.participant;
+			} else if (userCourseEnv.isCoach()) {
+				role = GroupRoles.coach;
+			}
 			return (config.getBooleanSafe(SPEditController.CONFIG_KEY_ALLOW_COACH_EDIT, false) && userCourseEnv.isCoach())
-					|| userCourseEnv.isAdmin() || cgm.hasRight(getIdentity(), CourseRights.RIGHT_COURSEEDITOR);
+					|| userCourseEnv.isAdmin() || cgm.hasRight(getIdentity(), CourseRights.RIGHT_COURSEEDITOR, role);
 
 		}
 		return false;

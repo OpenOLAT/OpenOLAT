@@ -420,8 +420,27 @@ public class GroupDAOTest extends OlatTestCase {
 		groupDao.addGrant(group, role, "hasGrant-perm", resource);
 		dbInstance.commitAndCloseSession();
 		
-		boolean hasGrant = groupDao.hasGrant(id, "hasGrant-perm", resource);
+		boolean hasGrant = groupDao.hasGrant(id, "hasGrant-perm", resource, role);
 		Assert.assertTrue(hasGrant);
+	}
+	
+	
+	@Test
+	public void hasGrant_currentRole() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("grant-1-");
+		Group group = groupDao.createGroup();
+		String role1 = "hasGrant-role-1";
+		groupDao.addMembershipTwoWay(group, id, role1);
+		String role2 = "hasGrant-role-2";
+		groupDao.addMembershipTwoWay(group, id, role2);
+		OLATResource resource = JunitTestHelper.createRandomResource();
+		groupDao.addGrant(group, role1, "hasGrant-perm", resource);
+		dbInstance.commitAndCloseSession();
+		
+		boolean hasGrantRole1 = groupDao.hasGrant(id, "hasGrant-perm", resource, role1);
+		Assert.assertTrue(hasGrantRole1);
+		boolean hasGrantRole2 = groupDao.hasGrant(id, "hasGrant-perm", resource, role2);
+		Assert.assertFalse(hasGrantRole2);
 	}
 	
 	@Test
@@ -434,7 +453,7 @@ public class GroupDAOTest extends OlatTestCase {
 		groupDao.addGrant(group, role, "getPermissions-perm", resource);
 		dbInstance.commitAndCloseSession();
 		
-		List<String> permissions = groupDao.getPermissions(id, resource);
+		List<String> permissions = groupDao.getPermissions(id, resource, role);
 		Assert.assertNotNull(permissions);
 		Assert.assertEquals(1, permissions.size());
 		Assert.assertEquals("getPermissions-perm", permissions.get(0));
@@ -449,42 +468,48 @@ public class GroupDAOTest extends OlatTestCase {
 		String role2 = "getPermissions-role-2";
 		groupDao.addMembershipTwoWay(group, id, role2);
 		OLATResource resource = JunitTestHelper.createRandomResource();
-		groupDao.addGrant(group, role1, "getPermissions-perm-1", resource);
-		groupDao.addGrant(group, role2, "getPermissions-perm-2", resource);
+		groupDao.addGrant(group, role1, "getPermissions-perm-1-1", resource);
+		groupDao.addGrant(group, role1, "getPermissions-perm-1-2", resource);
+		groupDao.addGrant(group, role2, "getPermissions-perm-2-1", resource);
+		groupDao.addGrant(group, role2, "getPermissions-perm-2-2", resource);
 		dbInstance.commitAndCloseSession();
 		
-		List<String> permissions = groupDao.getPermissions(id, resource);
+		List<String> permissions = groupDao.getPermissions(id, resource, role2);
 		Assert.assertNotNull(permissions);
 		Assert.assertEquals(2, permissions.size());
-		Assert.assertTrue(permissions.contains("getPermissions-perm-1"));
-		Assert.assertTrue(permissions.contains("getPermissions-perm-2"));
+		Assert.assertFalse(permissions.contains("getPermissions-perm-1-1"));
+		Assert.assertFalse(permissions.contains("getPermissions-perm-1-2"));
+		Assert.assertTrue(permissions.contains("getPermissions-perm-2-1"));
+		Assert.assertTrue(permissions.contains("getPermissions-perm-2-2"));
 	}
 	
 	@Test
 	public void addRemoveGrant() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("addremove-1-");
 		Group group = groupDao.createGroup();
-		groupDao.addMembershipTwoWay(group, id, "addremove-1");
-		groupDao.addMembershipTwoWay(group, id, "addremove-2");
+		String role1 = "addremove-1";
+		groupDao.addMembershipTwoWay(group, id, role1);
+		String role2 = "addremove-2";
+		groupDao.addMembershipTwoWay(group, id, role2);
 		OLATResource resource = JunitTestHelper.createRandomResource();
-		groupDao.addGrant(group, "addremove-1", "addremove-1-perm", resource);
-		groupDao.addGrant(group, "addremove-2", "addremove-2-perm", resource);
+		groupDao.addGrant(group, role1, "addremove-1-perm", resource);
+		groupDao.addGrant(group, role2, "addremove-2-perm", resource);
 		dbInstance.commitAndCloseSession();
 		
 		//setup check
-		boolean hasPerm1 = groupDao.hasGrant(id, "addremove-1-perm", resource);
+		boolean hasPerm1 = groupDao.hasGrant(id, "addremove-1-perm", resource, role1);
 		Assert.assertTrue(hasPerm1);
-		boolean hasPerm2 = groupDao.hasGrant(id, "addremove-2-perm", resource);
+		boolean hasPerm2 = groupDao.hasGrant(id, "addremove-2-perm", resource, role2);
 		Assert.assertTrue(hasPerm2);
 		
 		//remove perm 1
-		groupDao.removeGrant(group, "addremove-1", "addremove-1-perm", resource);
+		groupDao.removeGrant(group, role1, "addremove-1-perm", resource);
 		dbInstance.commitAndCloseSession();
 		
 		//check
-		boolean hasStillPerm1 = groupDao.hasGrant(id, "addremove-1-perm", resource);
+		boolean hasStillPerm1 = groupDao.hasGrant(id, "addremove-1-perm", resource, role1);
 		Assert.assertFalse(hasStillPerm1);
-		boolean hasStillPerm2 = groupDao.hasGrant(id, "addremove-2-perm", resource);
+		boolean hasStillPerm2 = groupDao.hasGrant(id, "addremove-2-perm", resource, role2);
 		Assert.assertTrue(hasStillPerm2);
 	}
 	
@@ -492,37 +517,39 @@ public class GroupDAOTest extends OlatTestCase {
 	public void addRemoveGrants() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("addremove-1-");
 		Group group = groupDao.createGroup();
-		groupDao.addMembershipTwoWay(group, id, "addremove-1");
-		groupDao.addMembershipTwoWay(group, id, "addremove-2");
+		String role1 = "addremove-1";
+		groupDao.addMembershipTwoWay(group, id, role1);
+		String role2 = "addremove-2";
+		groupDao.addMembershipTwoWay(group, id, role2);
 		OLATResource resource = JunitTestHelper.createRandomResource();
-		groupDao.addGrant(group, "addremove-1", "addremove-1-perm", resource);
-		groupDao.addGrant(group, "addremove-1", "addremove-11-perm", resource);
-		groupDao.addGrant(group, "addremove-2", "addremove-2-perm", resource);
-		groupDao.addGrant(group, "addremove-2", "addremove-22-perm", resource);
+		groupDao.addGrant(group, role1, "addremove-1-perm", resource);
+		groupDao.addGrant(group, role1, "addremove-11-perm", resource);
+		groupDao.addGrant(group, role2, "addremove-2-perm", resource);
+		groupDao.addGrant(group, role2, "addremove-22-perm", resource);
 		dbInstance.commitAndCloseSession();
 		
 		//setup check
-		boolean hasPerm1 = groupDao.hasGrant(id, "addremove-1-perm", resource);
+		boolean hasPerm1 = groupDao.hasGrant(id, "addremove-1-perm", resource, role1);
 		Assert.assertTrue(hasPerm1);
-		boolean hasPerm11 = groupDao.hasGrant(id, "addremove-11-perm", resource);
+		boolean hasPerm11 = groupDao.hasGrant(id, "addremove-11-perm", resource, role1);
 		Assert.assertTrue(hasPerm11);
-		boolean hasPerm2 = groupDao.hasGrant(id, "addremove-2-perm", resource);
+		boolean hasPerm2 = groupDao.hasGrant(id, "addremove-2-perm", resource, role2);
 		Assert.assertTrue(hasPerm2);
-		boolean hasPerm22 = groupDao.hasGrant(id, "addremove-22-perm", resource);
+		boolean hasPerm22 = groupDao.hasGrant(id, "addremove-22-perm", resource, role2);
 		Assert.assertTrue(hasPerm22);
 		
 		//remove perm 1
-		groupDao.removeGrants(group, "addremove-1", resource);
+		groupDao.removeGrants(group, role1, resource);
 		dbInstance.commitAndCloseSession();
 		
 		//check
-		boolean hasStillPerm1 = groupDao.hasGrant(id, "addremove-1-perm", resource);
+		boolean hasStillPerm1 = groupDao.hasGrant(id, "addremove-1-perm", resource, role1);
 		Assert.assertFalse(hasStillPerm1);
-		boolean hasStillPerm11 = groupDao.hasGrant(id, "addremove-11-perm", resource);
+		boolean hasStillPerm11 = groupDao.hasGrant(id, "addremove-11-perm", resource, role1);
 		Assert.assertFalse(hasStillPerm11);
-		boolean hasStillPerm2 = groupDao.hasGrant(id, "addremove-2-perm", resource);
+		boolean hasStillPerm2 = groupDao.hasGrant(id, "addremove-2-perm", resource, role2);
 		Assert.assertTrue(hasStillPerm2);
-		boolean hasStillPerm22 = groupDao.hasGrant(id, "addremove-22-perm", resource);
+		boolean hasStillPerm22 = groupDao.hasGrant(id, "addremove-22-perm", resource, role2);
 		Assert.assertTrue(hasStillPerm22);
 	}
 }

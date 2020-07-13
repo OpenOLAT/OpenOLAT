@@ -25,6 +25,7 @@
 
 package org.olat.course.nodes.dialog.security;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.nodes.dialog.DialogSecurityCallback;
@@ -48,9 +49,15 @@ class DialogCallback implements DialogSecurityCallback {
 		this.isUploader = isUploader;
 		this.isModerator = isModerator;
 		this.isPoster = isPoster;
+		GroupRoles role = GroupRoles.owner;
+		if (userCourseEnv.isParticipant()) {
+			role = GroupRoles.participant;
+		} else if (userCourseEnv.isCoach()) {
+			role = GroupRoles.coach;
+		}
 		this.isCourseEditor = userCourseEnv.getCourseEnvironment().getCourseGroupManager().hasRight(
 				userCourseEnv.getIdentityEnvironment().getIdentity(),
-				CourseRights.RIGHT_COURSEEDITOR);
+				CourseRights.RIGHT_COURSEEDITOR, role);
 		this.isGuestOnly = userCourseEnv.getIdentityEnvironment().getRoles().isGuestOnly();
 	}
 

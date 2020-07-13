@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
@@ -37,7 +38,6 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.export.CourseEnvironmentMapper;
@@ -160,13 +160,13 @@ public class PersistingCourseGroupManager implements CourseGroupManager {
 	}
 
 	@Override
-	public boolean hasRight(Identity identity, String courseRight) {
-		return rightManager.hasBGRight(courseRight, identity, getCourseResource());
+	public boolean hasRight(Identity identity, String courseRight, GroupRoles role) {
+		return rightManager.hasBGRight(courseRight, identity, getCourseResource(), role);
 	}
 
 	@Override
-	public List<String> getRights(Identity identity) {
-		return rightManager.getBGRights(identity, getCourseResource());
+	public List<String> getRights(Identity identity, GroupRoles role) {
+		return rightManager.getBGRights(identity, getCourseResource(), role);
 	}
 
 	@Override

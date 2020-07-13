@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.Grant;
 import org.olat.basesecurity.Group;
@@ -39,6 +40,7 @@ import org.olat.basesecurity.model.GroupImpl;
 import org.olat.basesecurity.model.GroupMembershipImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -263,27 +265,45 @@ public class GroupDAO {
 		return memberships == null || memberships.isEmpty() ? null : memberships.get(0);
 	}
 	
-	public boolean hasGrant(IdentityRef identity, String permission, OLATResource resource) {
+	public boolean hasGrant(IdentityRef identity, String permission, OLATResource resource, String currentRole) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(grant) from bgrant as grant")
 		  .append(" inner join grant.group as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
 		  .append(" where membership.identity.key=:identityKey and grant.resource.key=:resourceKey")
 		  .append("   and grant.permission=:permission and membership.role=grant.role");
-		Number count = dbInstance.getCurrentEntityManager()
+		if (StringHelper.containsNonWhitespace(currentRole)) {
+			sb.append("   and membership.role=:currentRole");
+		}
+		TypedQuery<Number> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Number.class)
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("resourceKey", resource.getKey())
-				.setParameter("permission", permission)
-				.getSingleResult();
+				.setParameter("permission", permission);
+		if (StringHelper.containsNonWhitespace(currentRole)) {
+			query.setParameter("currentRole", currentRole);
+		}
+
+		Number count = query.getSingleResult();
 		return count == null ? false: count.intValue() > 0;
 	}
 	
-	public List<String> getPermissions(IdentityRef identity, OLATResource resource) {
+	public List<String> getPermissions(IdentityRef identity, OLATResource resource, String currentRole) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select grant.permission");
+		sb.append("  from bgrant as grant");
+		sb.append(" inner join grant.group as baseGroup");
+		sb.append(" inner join baseGroup.members as membership");
+		sb.append(" where membership.identity.key=:identityKey");
+		sb.append("   and grant.resource.key=:resourceKey");
+		sb.append("   and membership.role=grant.role");
+		sb.append("   and membership.role=:currentRole");
+		
 		return dbInstance.getCurrentEntityManager()
-				.createNamedQuery("grantedPermissionByIdentityAndResource", String.class)
+				.createQuery(sb.toString(), String.class)
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("resourceKey", resource.getKey())
+				.setParameter("currentRole", currentRole)
 				.getResultList();
 	}
 	

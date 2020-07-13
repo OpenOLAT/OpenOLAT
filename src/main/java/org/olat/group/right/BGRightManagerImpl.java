@@ -107,18 +107,16 @@ public class BGRightManagerImpl implements BGRightManager {
 	}
 
 	@Override
-	public boolean hasBGRight(String bgRight, IdentityRef identity, OLATResource resource) {
-		return groupDao.hasGrant(identity, bgRight, resource);
+	public boolean hasBGRight(String bgRight, IdentityRef identity, OLATResource resource, GroupRoles role) {
+		String roleStr = role != null? role.name(): null;
+		return groupDao.hasGrant(identity, bgRight, resource, roleStr);
 	}
 	
 	@Override
-	public List<String> getBGRights(IdentityRef identity, OLATResource resource) {
-		return groupDao.getPermissions(identity, resource);
+	public List<String> getBGRights(IdentityRef identity, OLATResource resource, GroupRoles role) {
+		return groupDao.getPermissions(identity, resource, role.name());
 	}
 
-	/**
-	 * @see org.olat.group.right.BGRightManager#findBGRights(org.olat.group.BusinessGroup)
-	 */
 	@Override
 	public List<String> findBGRights(BusinessGroup group, BGRightsRole role) {
 		GroupRoles groupRole = null;

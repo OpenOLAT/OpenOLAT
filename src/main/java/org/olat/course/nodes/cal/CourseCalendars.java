@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.commons.calendar.CalendarManager;
@@ -126,8 +127,14 @@ public class CourseCalendars {
 
 		// add course group calendars
 		Roles roles = ureq.getUserSession().getRoles();
+		GroupRoles role = GroupRoles.owner;
+		if (userCourseEnv.isParticipant()) {
+			role = GroupRoles.participant;
+		} else if (userCourseEnv.isCoach()) {
+			role = GroupRoles.coach;
+		}
 		boolean isGroupManager = roles.isGroupManager() || userCourseEnv.isAdmin()
-				|| cgm.hasRight(identity, CourseRights.RIGHT_GROUPMANAGEMENT);
+				|| cgm.hasRight(identity, CourseRights.RIGHT_GROUPMANAGEMENT, role);
 		boolean readOnly = userCourseEnv.isCourseReadOnly();
 		
 		if (isGroupManager) {

@@ -269,7 +269,7 @@ public abstract class AbstractCourseNodeWebService {
 			RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 			return repositoryService.hasRoleExpanded(identity, cgm.getCourseEntry(),
 					OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name(),
-					GroupRoles.owner.name()) || cgm.hasRight(identity, CourseRights.RIGHT_COURSEEDITOR);
+					GroupRoles.owner.name()) || cgm.hasRight(identity, CourseRights.RIGHT_COURSEEDITOR, null);
 		} catch (Exception e) {
 			return false;
 		}

@@ -28,6 +28,7 @@ package org.olat.course.groupsandrights;
 import java.io.File;
 import java.util.List;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.id.Identity;
@@ -71,17 +72,19 @@ public interface CourseGroupManager {
 	 * 
 	 * @param identity
 	 * @param courseRight
+	 * @param role may be null
 	 * @return true if user has course right, false otherwise
 	 */
-	public boolean hasRight(Identity identity, String courseRight);
+	public boolean hasRight(Identity identity, String courseRight, GroupRoles role);
 	
 	/**
 	 * Return the users course rights in any of the available right group context of
 	 * this course
 	 * @param identity
+	 * @param role
 	 * @return
 	 */
-	public List<String> getRights(Identity identity);
+	public List<String> getRights(Identity identity, GroupRoles role);
 
 	/**
 	 * Checks if an identity is in a learning group with the given name in any

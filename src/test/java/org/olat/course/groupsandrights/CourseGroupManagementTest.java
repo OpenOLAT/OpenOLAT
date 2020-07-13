@@ -139,13 +139,13 @@ public class CourseGroupManagementTest extends OlatTestCase {
 
 		// test rights
 		DBFactory.getInstance().closeSession();
-		assertTrue(gm.hasRight(id1, CourseRights.RIGHT_ARCHIVING));
-		assertTrue(gm.hasRight(id1, CourseRights.RIGHT_COURSEEDITOR));
-		assertTrue(gm.hasRight(id1, CourseRights.RIGHT_GROUPMANAGEMENT));
-		assertFalse(gm.hasRight(id1, CourseRights.RIGHT_ASSESSMENT));
-		assertTrue(gm.hasRight(id1, CourseRights.RIGHT_COURSEEDITOR));
-		assertTrue(gm.hasRight(id1, CourseRights.RIGHT_COURSEEDITOR));
-		assertFalse(gm.hasRight(id2, CourseRights.RIGHT_COURSEEDITOR));
+		assertTrue(gm.hasRight(id1, CourseRights.RIGHT_ARCHIVING, GroupRoles.participant));
+		assertTrue(gm.hasRight(id1, CourseRights.RIGHT_COURSEEDITOR, GroupRoles.participant));
+		assertTrue(gm.hasRight(id1, CourseRights.RIGHT_GROUPMANAGEMENT, GroupRoles.participant));
+		assertFalse(gm.hasRight(id1, CourseRights.RIGHT_ASSESSMENT, GroupRoles.participant));
+		assertTrue(gm.hasRight(id1, CourseRights.RIGHT_COURSEEDITOR, GroupRoles.participant));
+		assertTrue(gm.hasRight(id1, CourseRights.RIGHT_COURSEEDITOR, GroupRoles.participant));
+		assertFalse(gm.hasRight(id2, CourseRights.RIGHT_COURSEEDITOR, GroupRoles.participant));
 
 		// test context
 		DBFactory.getInstance().closeSession();
@@ -215,13 +215,13 @@ public class CourseGroupManagementTest extends OlatTestCase {
 		
 		// test rights
 		DBFactory.getInstance().closeSession();
-		assertTrue(gm.hasRight(id1, CourseRights.RIGHT_ARCHIVING));
-		assertTrue(gm.hasRight(id1, CourseRights.RIGHT_COURSEEDITOR));
-		assertTrue(gm.hasRight(id1, CourseRights.RIGHT_GROUPMANAGEMENT));
-		assertFalse(gm.hasRight(id1, CourseRights.RIGHT_ASSESSMENT));
-		assertTrue(gm.hasRight(id1, CourseRights.RIGHT_COURSEEDITOR));
-		assertTrue(gm.hasRight(id1, CourseRights.RIGHT_COURSEEDITOR));
-		assertFalse(gm.hasRight(id2, CourseRights.RIGHT_COURSEEDITOR));
+		assertTrue(gm.hasRight(id1, CourseRights.RIGHT_ARCHIVING, GroupRoles.participant));
+		assertTrue(gm.hasRight(id1, CourseRights.RIGHT_COURSEEDITOR, GroupRoles.participant));
+		assertTrue(gm.hasRight(id1, CourseRights.RIGHT_GROUPMANAGEMENT, GroupRoles.participant));
+		assertFalse(gm.hasRight(id1, CourseRights.RIGHT_ASSESSMENT, GroupRoles.participant));
+		assertTrue(gm.hasRight(id1, CourseRights.RIGHT_COURSEEDITOR, GroupRoles.participant));
+		assertTrue(gm.hasRight(id1, CourseRights.RIGHT_COURSEEDITOR, GroupRoles.participant));
+		assertFalse(gm.hasRight(id2, CourseRights.RIGHT_COURSEEDITOR, GroupRoles.participant));
 
 		// test context
 		DBFactory.getInstance().closeSession();

@@ -91,7 +91,7 @@ public class RestSecurityHelper {
 			CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 			UserRequest ureq = getUserRequest(request);
 			Identity identity = ureq.getIdentity();
-			return cgm.isIdentityCourseAdministrator(identity) || cgm.hasRight(identity, CourseRights.RIGHT_GROUPMANAGEMENT);
+			return cgm.isIdentityCourseAdministrator(identity) || cgm.hasRight(identity, CourseRights.RIGHT_GROUPMANAGEMENT, null);
 		} catch (Exception e) {
 			return false;
 		}
@@ -105,7 +105,7 @@ public class RestSecurityHelper {
 				UserRequest ureq = getUserRequest(request);
 				Identity identity = ureq.getIdentity();
 				CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-				return cgm.hasRight(identity, CourseRights.RIGHT_GROUPMANAGEMENT);
+				return cgm.hasRight(identity, CourseRights.RIGHT_GROUPMANAGEMENT, null);
 			}
 			return false;
 		} catch (Exception e) {

@@ -114,12 +114,12 @@ final class PreviewCourseGroupManager implements CourseGroupManager {
 	}
 
 	@Override
-	public boolean hasRight(Identity identity, String courseRight) {
+	public boolean hasRight(Identity identity, String courseRight, GroupRoles role) {
 		return !courseRight.equals(CourseRights.RIGHT_COURSEEDITOR);
 	}
 
 	@Override
-	public List<String> getRights(Identity identity) {
+	public List<String> getRights(Identity identity, GroupRoles role) {
 		return new ArrayList<>(1);
 	}
 
