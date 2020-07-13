@@ -21,6 +21,7 @@ package org.olat.course.nodes.ms;
 
 import java.util.List;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -61,9 +62,10 @@ public class MSCoachRunController extends BasicController {
 		stackPanel.setCssClass("o_ms_stack_panel");
 		putInitialPanel(stackPanel);
 		
+		GroupRoles role = userCourseEnv.isCoach()? GroupRoles.coach: GroupRoles.owner;
 		// see CourseRuntimeController.doAssessmentTool(ureq);
 		boolean hasAssessmentRight = userCourseEnv.getCourseEnvironment().getCourseGroupManager()
-				.getRights(getIdentity()).contains(CourseRights.RIGHT_ASSESSMENT);
+				.hasRight(getIdentity(), CourseRights.RIGHT_ASSESSMENT, role);
 
 		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, courseEntry);

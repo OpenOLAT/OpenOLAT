@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.info.ui.InfoSecurityCallback;
 import org.olat.core.CoreSpringFactory;
@@ -320,7 +321,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		
 		courseRightsCache = new HashMap<>();
 		if(!reSecurity.isEntryAdmin() && !isGuestOnly) {
-			List<String> rights = cgm.getRights(getIdentity());
+			GroupRoles role = GroupRoles.valueOf(reSecurity.getCurrentRole().name());
+			List<String> rights = cgm.getRights(getIdentity(), role);
 			courseRightsCache.put(CourseRights.RIGHT_GROUPMANAGEMENT, Boolean.valueOf(rights.contains(CourseRights.RIGHT_GROUPMANAGEMENT)));
 			courseRightsCache.put(CourseRights.RIGHT_MEMBERMANAGEMENT, Boolean.valueOf(rights.contains(CourseRights.RIGHT_MEMBERMANAGEMENT)));
 			courseRightsCache.put(CourseRights.RIGHT_COURSEEDITOR, Boolean.valueOf(rights.contains(CourseRights.RIGHT_COURSEEDITOR)));

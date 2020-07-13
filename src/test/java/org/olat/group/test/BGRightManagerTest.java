@@ -129,10 +129,10 @@ public class BGRightManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check if the right is set
-		boolean right = rightManager.hasBGRight("bgr.has-right", identity, resource.getOlatResource());
+		boolean right = rightManager.hasBGRight("bgr.has-right", identity, resource.getOlatResource(), null);
 		Assert.assertTrue(right);
 		//check if a dummy is not set
-		boolean notright = rightManager.hasBGRight("bgrblabla", identity, resource.getOlatResource());
+		boolean notright = rightManager.hasBGRight("bgrblabla", identity, resource.getOlatResource(), null);
 		Assert.assertFalse(notright);
 	}
 	
@@ -147,10 +147,10 @@ public class BGRightManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check if the right is set
-		boolean right = rightManager.hasBGRight("bgr.has-right", identity, resource.getOlatResource());
+		boolean right = rightManager.hasBGRight("bgr.has-right", identity, resource.getOlatResource(), null);
 		Assert.assertTrue(right);
 		//check if a dummy is not set
-		boolean notright = rightManager.hasBGRight("bgrblabla", identity, resource.getOlatResource());
+		boolean notright = rightManager.hasBGRight("bgrblabla", identity, resource.getOlatResource(), null);
 		Assert.assertFalse(notright);
 	}
 	
@@ -167,7 +167,7 @@ public class BGRightManagerTest extends OlatTestCase {
 		//check if the rights are set
 		List<String> rights = rightManager.findBGRights(group, BGRightsRole.tutor);
 		Assert.assertEquals(1, rights.size());
-		Assert.assertTrue(rightManager.hasBGRight("bgr.right1", identity, resource.getOlatResource()));
+		Assert.assertTrue(rightManager.hasBGRight("bgr.right1", identity, resource.getOlatResource(), null));
 	}
 	
 	@Test
@@ -185,7 +185,7 @@ public class BGRightManagerTest extends OlatTestCase {
 		Assert.assertEquals(1, rights.size());
 		Assert.assertTrue(rights.contains("bgr.right1"));
 		//check that a participant cannot have a tutor right
-		Assert.assertFalse(rightManager.hasBGRight("bgr.right1", identity, resource.getOlatResource()));
+		Assert.assertFalse(rightManager.hasBGRight("bgr.right1", identity, resource.getOlatResource(), null));
 	}
 	
 	@Test
@@ -213,14 +213,14 @@ public class BGRightManagerTest extends OlatTestCase {
 		Assert.assertEquals("bgr.right2", participantRights.get(0));
 		
 		//id1 -> right2
-		Assert.assertFalse(rightManager.hasBGRight("bgr.right1", identity1, resource.getOlatResource()));
-		Assert.assertTrue(rightManager.hasBGRight("bgr.right2", identity1, resource.getOlatResource()));
+		Assert.assertFalse(rightManager.hasBGRight("bgr.right1", identity1, resource.getOlatResource(), null));
+		Assert.assertTrue(rightManager.hasBGRight("bgr.right2", identity1, resource.getOlatResource(), null));
 		//id2 -> right1 and right2
-		Assert.assertTrue(rightManager.hasBGRight("bgr.right1", identity2, resource.getOlatResource()));
-		Assert.assertTrue(rightManager.hasBGRight("bgr.right2", identity2, resource.getOlatResource()));
+		Assert.assertTrue(rightManager.hasBGRight("bgr.right1", identity2, resource.getOlatResource(), null));
+		Assert.assertTrue(rightManager.hasBGRight("bgr.right2", identity2, resource.getOlatResource(), null));
 		//id3 -> right2
-		Assert.assertTrue(rightManager.hasBGRight("bgr.right1", identity3, resource.getOlatResource()));
-		Assert.assertFalse(rightManager.hasBGRight("bgr.right2", identity3, resource.getOlatResource()));
+		Assert.assertTrue(rightManager.hasBGRight("bgr.right1", identity3, resource.getOlatResource(), null));
+		Assert.assertFalse(rightManager.hasBGRight("bgr.right2", identity3, resource.getOlatResource(), null));
 	}
 	
 	@Test
@@ -276,8 +276,8 @@ public class BGRightManagerTest extends OlatTestCase {
 		//check if the rights are set
 		List<String> rights = rightManager.findBGRights(group, BGRightsRole.participant);
 		Assert.assertEquals(2, rights.size());
-		Assert.assertTrue(rightManager.hasBGRight("bgr.removeright1", identity, resource.getOlatResource()));
-		Assert.assertTrue(rightManager.hasBGRight("bgr.removeright2", identity, resource.getOlatResource()));
+		Assert.assertTrue(rightManager.hasBGRight("bgr.removeright1", identity, resource.getOlatResource(), null));
+		Assert.assertTrue(rightManager.hasBGRight("bgr.removeright2", identity, resource.getOlatResource(), null));
 		
 		//remove right 1
 		rightManager.removeBGRight("bgr.removeright1", group.getBaseGroup(), resource.getOlatResource(), BGRightsRole.participant);
@@ -287,8 +287,8 @@ public class BGRightManagerTest extends OlatTestCase {
 		List<String> rightsAfterDelete = rightManager.findBGRights(group, BGRightsRole.participant);
 		Assert.assertEquals(1, rightsAfterDelete.size());
 		Assert.assertTrue(rightsAfterDelete.contains("bgr.removeright2"));
-		Assert.assertFalse(rightManager.hasBGRight("bgr.removeright1", identity, resource.getOlatResource()));
-		Assert.assertTrue(rightManager.hasBGRight("bgr.removeright2", identity, resource.getOlatResource()));
+		Assert.assertFalse(rightManager.hasBGRight("bgr.removeright1", identity, resource.getOlatResource(), null));
+		Assert.assertTrue(rightManager.hasBGRight("bgr.removeright2", identity, resource.getOlatResource(), null));
 	}
 	
 	@Test
@@ -312,8 +312,8 @@ public class BGRightManagerTest extends OlatTestCase {
 		//check if the rights are set
 		List<String> rights = rightManager.findBGRights(group, BGRightsRole.participant);
 		Assert.assertEquals(2, rights.size());
-		Assert.assertFalse(rightManager.hasBGRight("bgr.removeright1", participant, resource1.getOlatResource()));
-		Assert.assertTrue(rightManager.hasBGRight("bgr.removeright2", participant, resource1.getOlatResource()));
+		Assert.assertFalse(rightManager.hasBGRight("bgr.removeright1", participant, resource1.getOlatResource(), null));
+		Assert.assertTrue(rightManager.hasBGRight("bgr.removeright2", participant, resource1.getOlatResource(), null));
 		
 		//remove tutor right 1
 		rightManager.removeBGRight("bgr.removeright1", group.getBaseGroup(), resource1.getOlatResource(), BGRightsRole.tutor);
@@ -359,8 +359,8 @@ public class BGRightManagerTest extends OlatTestCase {
 		//check if the rights are set
 		List<String> rights = rightManager.findBGRights(group, BGRightsRole.participant);
 		Assert.assertEquals(2, rights.size());
-		Assert.assertFalse(rightManager.hasBGRight("bgr.removeright1", participant, resource1.getOlatResource()));
-		Assert.assertTrue(rightManager.hasBGRight("bgr.removeright2", participant, resource1.getOlatResource()));
+		Assert.assertFalse(rightManager.hasBGRight("bgr.removeright1", participant, resource1.getOlatResource(), null));
+		Assert.assertTrue(rightManager.hasBGRight("bgr.removeright2", participant, resource1.getOlatResource(), null));
 		
 		//remove tutor right 1
 		rightManager.removeBGRights(group, resource1.getOlatResource(), BGRightsRole.tutor);
@@ -462,13 +462,13 @@ public class BGRightManagerTest extends OlatTestCase {
 		Assert.assertEquals(2, grants.size()); // read, parti, archiving, courseeditor
 
 		DBFactory.getInstance().closeSession(); // simulate user clicks
-		assertFalse(rightManager.hasBGRight(CourseRights.RIGHT_ARCHIVING, id1, c2.getOlatResource()));
-		assertTrue(rightManager.hasBGRight(CourseRights.RIGHT_ARCHIVING, id1, c1.getOlatResource()));
-		assertTrue(rightManager.hasBGRight(CourseRights.RIGHT_ARCHIVING, id2, c1.getOlatResource()));
-		assertFalse(rightManager.hasBGRight(CourseRights.RIGHT_GROUPMANAGEMENT, id2, c1.getOlatResource()));
-		assertFalse(rightManager.hasBGRight(CourseRights.RIGHT_ARCHIVING, id3, c2.getOlatResource()));
-		assertTrue(rightManager.hasBGRight(CourseRights.RIGHT_COURSEEDITOR, id3, c2.getOlatResource()));
-		assertFalse(rightManager.hasBGRight(CourseRights.RIGHT_COURSEEDITOR, id3, c1.getOlatResource()));
+		assertFalse(rightManager.hasBGRight(CourseRights.RIGHT_ARCHIVING, id1, c2.getOlatResource(), null));
+		assertTrue(rightManager.hasBGRight(CourseRights.RIGHT_ARCHIVING, id1, c1.getOlatResource(), null));
+		assertTrue(rightManager.hasBGRight(CourseRights.RIGHT_ARCHIVING, id2, c1.getOlatResource(), null));
+		assertFalse(rightManager.hasBGRight(CourseRights.RIGHT_GROUPMANAGEMENT, id2, c1.getOlatResource(), null));
+		assertFalse(rightManager.hasBGRight(CourseRights.RIGHT_ARCHIVING, id3, c2.getOlatResource(), null));
+		assertTrue(rightManager.hasBGRight(CourseRights.RIGHT_COURSEEDITOR, id3, c2.getOlatResource(), null));
+		assertFalse(rightManager.hasBGRight(CourseRights.RIGHT_COURSEEDITOR, id3, c1.getOlatResource(), null));
 
 		Assert.assertEquals(2, rightManager.findBGRights(g1, BGRightsRole.participant).size());
 		Assert.assertEquals(1, rightManager.findBGRights(g2, BGRightsRole.participant).size());
@@ -480,9 +480,9 @@ public class BGRightManagerTest extends OlatTestCase {
 		rightManager.removeBGRight(CourseRights.RIGHT_COURSEEDITOR, g3.getBaseGroup(), c2.getOlatResource(), BGRightsRole.participant);
 
 		DBFactory.getInstance().closeSession(); // simulate user clicks
-		assertFalse(rightManager.hasBGRight(CourseRights.RIGHT_ARCHIVING, id1, c1.getOlatResource()));
-		assertFalse(rightManager.hasBGRight(CourseRights.RIGHT_ARCHIVING, id2, c1.getOlatResource()));
-		assertFalse(rightManager.hasBGRight(CourseRights.RIGHT_COURSEEDITOR, id3, c2.getOlatResource()));
+		assertFalse(rightManager.hasBGRight(CourseRights.RIGHT_ARCHIVING, id1, c1.getOlatResource(), null));
+		assertFalse(rightManager.hasBGRight(CourseRights.RIGHT_ARCHIVING, id2, c1.getOlatResource(), null));
+		assertFalse(rightManager.hasBGRight(CourseRights.RIGHT_COURSEEDITOR, id3, c2.getOlatResource(), null));
 
 		Assert.assertEquals(0, rightManager.findBGRights(g1, BGRightsRole.participant).size());
 		Assert.assertEquals(0, rightManager.findBGRights(g2, BGRightsRole.participant).size());

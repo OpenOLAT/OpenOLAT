@@ -29,6 +29,7 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
@@ -213,7 +214,13 @@ public class ChecklistCourseNode extends AbstractAccessableCourseNode {
 		if(canEdit) {
 			canManage = true;
 		} else {
-			canManage = userCourseEnv.isCoach() || cgm.hasRight(ureq.getIdentity(), CourseRights.RIGHT_GROUPMANAGEMENT);
+			GroupRoles role = GroupRoles.owner;
+			if (userCourseEnv.isParticipant()) {
+				role = GroupRoles.participant;
+			} else if (userCourseEnv.isCoach()) {
+				role = GroupRoles.coach;
+			}
+			canManage = userCourseEnv.isCoach() || cgm.hasRight(ureq.getIdentity(), CourseRights.RIGHT_GROUPMANAGEMENT, role);
 		}
 		Checklist checklist = loadOrCreateChecklist(userCourseEnv.getCourseEnvironment().getCoursePropertyManager());
 		ChecklistDisplayController checkController = new ChecklistDisplayController(ureq, wControl, checklist,

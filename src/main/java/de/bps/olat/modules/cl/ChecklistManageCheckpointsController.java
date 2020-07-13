@@ -160,7 +160,7 @@ public class ChecklistManageCheckpointsController extends BasicController {
 			
 			// collect all learning groups
 			lstGroups.addAll(cgm.getAllBusinessGroups());
-		} else if(cgm.hasRight(identity, CourseRights.RIGHT_GROUPMANAGEMENT)) {
+		} else if(cgm.hasRight(identity, CourseRights.RIGHT_GROUPMANAGEMENT, GroupRoles.coach)) {
 			// collect all identities in learning groups
 			Set<Identity> identitiesInGroups = new HashSet<>();
 			identitiesInGroups.addAll(cgm.getParticipantsFromBusinessGroups());

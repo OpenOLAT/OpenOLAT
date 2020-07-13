@@ -161,7 +161,13 @@ public class BCCourseNodeRunController extends BasicController implements Activa
 
 			VFSContainer courseContainer = null;
 			if(scallback.canWrite() && scallback.canCopy()) {
-				if (userCourseEnv.isAdmin() || cgm.hasRight(getIdentity(), CourseRights.RIGHT_COURSEEDITOR)) {
+				GroupRoles role = GroupRoles.owner;
+				if (userCourseEnv.isParticipant()) {
+					role = GroupRoles.participant;
+				} else if (userCourseEnv.isCoach()) {
+					role = GroupRoles.coach;
+				}
+				if (userCourseEnv.isAdmin() || cgm.hasRight(getIdentity(), CourseRights.RIGHT_COURSEEDITOR, role)) {
 					// use course folder as copy source
 					courseContainer = courseEnv.getCourseFolderContainer();
 				}

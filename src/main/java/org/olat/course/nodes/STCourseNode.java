@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
@@ -177,7 +178,13 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 					userCourseEnv.getCourseEnvironment().isPreview(), courseRepoKey);
 			// check if user is allowed to edit the page in the run view
 			CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
-			boolean hasEditRights = userCourseEnv.isAdmin() || cgm.hasRight(ureq.getIdentity(),CourseRights.RIGHT_COURSEEDITOR)
+			GroupRoles role = GroupRoles.owner;
+			if (userCourseEnv.isParticipant()) {
+				role = GroupRoles.participant;
+			} else if (userCourseEnv.isCoach()) {
+				role = GroupRoles.coach;
+			}
+			boolean hasEditRights = userCourseEnv.isAdmin() || cgm.hasRight(ureq.getIdentity(),CourseRights.RIGHT_COURSEEDITOR, role)
 					|| (getModuleConfiguration().getBooleanSafe(SPEditController.CONFIG_KEY_ALLOW_COACH_EDIT, false) && userCourseEnv.isCoach());
 			
 			if (hasEditRights) {

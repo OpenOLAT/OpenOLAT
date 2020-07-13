@@ -551,7 +551,7 @@ public class CourseAssessmentWebService {
 			CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 			return repositoryService.hasRoleExpanded(identity, cgm.getCourseEntry(),
 					OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name(),
-					GroupRoles.owner.name()) || cgm.hasRight(identity, CourseRights.RIGHT_ASSESSMENT);
+					GroupRoles.owner.name()) || cgm.hasRight(identity, CourseRights.RIGHT_ASSESSMENT, null);
 		} catch (Exception e) {
 			return false;
 		}
