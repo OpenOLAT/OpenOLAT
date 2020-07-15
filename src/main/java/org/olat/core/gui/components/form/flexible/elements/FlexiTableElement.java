@@ -25,6 +25,7 @@
 */ 
 package org.olat.core.gui.components.form.flexible.elements;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -36,9 +37,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.ExtendedFl
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
 import org.olat.core.util.UserSession;
@@ -281,6 +282,8 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	 * @param key
 	 */
 	public void setSelectedFilterKey(String key);
+	
+	public void setSelectedFilterKeys(Collection<String> keys);
 	
 	/**
 	 * Make sure that the option multi-selection is enabled if you specify several filters.

@@ -20,10 +20,12 @@
 package org.olat.user.ui.admin;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.admin.user.UserAdminController;
 import org.olat.admin.user.UsermanagerUserSearchController;
@@ -263,8 +265,13 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		selectedFilters.add(loginDeniedFilter);
 		tableEl.setSelectedFilters(selectedFilters);
 	}
-	
+
 	public void loadModel(SearchIdentityParams params) {
+		if (params.getExactStatusList() != null && !params.getExactStatusList().isEmpty()) {
+			Collection<String> keys = params.getExactStatusList().stream().map(i -> Integer.toString(i)).collect(Collectors.toSet());
+			tableEl.setSelectedFilterKeys(keys);
+			params.setExactStatusList(null);
+		}
 		currentSearchParams = params;
 		UserSearchDataSource dataSource = new UserSearchDataSource(params, userPropertyHandlers, getLocale());
 		tableModel.setSource(dataSource);
