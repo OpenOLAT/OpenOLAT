@@ -18,7 +18,7 @@
  * <p>
  */
 
-package org.olat.core.commons.services.doceditor.restapi;
+package org.olat.restapi.system;
 
 import javax.ws.rs.Path;
 
@@ -35,7 +35,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  *
  */
 @Tag(name = "Document Editor")
-@Path("doceditor")
 @Component
 public class DocEditorWebService {
 	

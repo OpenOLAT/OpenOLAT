@@ -37,12 +37,12 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
 import org.olat.core.commons.services.doceditor.DocEditorSecurityCallbackBuilder;
-import org.olat.core.commons.services.doceditor.restapi.DocEditorStatisticsVO;
 import org.olat.core.commons.services.doceditor.wopi.Access;
 import org.olat.core.commons.services.doceditor.wopi.WopiService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.manager.VFSMetadataDAO;
 import org.olat.core.id.Identity;
+import org.olat.restapi.system.vo.DocEditorStatisticsVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,7 +85,7 @@ public class DocEditorWebServiceTest extends OlatRestTestCase {
 		Assert.assertNotNull(access1);
 		Assert.assertNotNull(access2);
 		
-		URI request = UriBuilder.fromUri(getContextURI()).path("doceditor").path("sessions").path(randomAppName).build();
+		URI request = UriBuilder.fromUri(getContextURI()).path("system").path("monitoring").path("doceditor").path("sessions").path(randomAppName).build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());

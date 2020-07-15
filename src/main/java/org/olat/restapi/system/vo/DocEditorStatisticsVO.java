@@ -19,7 +19,7 @@
  */
 
 
-package org.olat.core.commons.services.doceditor.restapi;
+package org.olat.restapi.system.vo;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
