@@ -24,7 +24,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
  * @author mjenny, moritz.jenny@frentix.com, http://www.frentix.com
  */
 
-public class BigBlueButtonWebService {
+public class BigBlueButtonStatsWebService {
 	
 	/**
 	 * Return the statistics about Big Blue Button

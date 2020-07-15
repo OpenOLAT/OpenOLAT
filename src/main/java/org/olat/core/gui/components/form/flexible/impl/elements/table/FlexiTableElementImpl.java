@@ -430,6 +430,16 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			}
 		}
 	}
+	
+	@Override
+	public void setSelectedFilterKeys(Collection<String> keys) {
+		if(filters != null) {
+			for(FlexiTableFilter filter:filters) {
+				boolean selected = keys.contains(filter.getFilter());
+				filter.setSelected(selected);
+			}
+		}
+	}
 
 	@Override
 	public void setSelectedFilters(List<FlexiTableFilter> selectedFilters) {
