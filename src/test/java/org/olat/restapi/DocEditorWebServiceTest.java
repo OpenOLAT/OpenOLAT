@@ -69,21 +69,23 @@ public class DocEditorWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection();
 		Assert.assertTrue(conn.login("administrator", "openolat"));
 		
+		String randomAppName = random();
+		
 		VFSMetadata metadata = randomMetadata();
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("wopi");
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("restuser1");
 		DocEditorSecurityCallback secCallback = DocEditorSecurityCallbackBuilder.builder().withMode(Mode.EDIT).build();
 		VFSMetadata metadata2 = randomMetadata();
-		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("wopi2");
+		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("restuser2");
 		DocEditorSecurityCallback secCallback2 = DocEditorSecurityCallbackBuilder.builder().withMode(Mode.VIEW).build();
-		Access access1 = sut.getOrCreateAccess(metadata, identity, secCallback, "App1", null);
+		Access access1 = sut.getOrCreateAccess(metadata, identity, secCallback, randomAppName, null);
 		dbInstance.commitAndCloseSession();	
-		Access access2 = sut.getOrCreateAccess(metadata2, identity2, secCallback2, "App1", null);
+		Access access2 = sut.getOrCreateAccess(metadata2, identity2, secCallback2, randomAppName, null);
 		dbInstance.commitAndCloseSession();	
 		
 		Assert.assertNotNull(access1);
 		Assert.assertNotNull(access2);
 		
-		URI request = UriBuilder.fromUri(getContextURI()).path("doceditor").path("sessions").path("App1").build();
+		URI request = UriBuilder.fromUri(getContextURI()).path("doceditor").path("sessions").path(randomAppName).build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
