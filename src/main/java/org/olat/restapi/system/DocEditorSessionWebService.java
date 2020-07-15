@@ -18,7 +18,7 @@
  * <p>
  */
 
-package org.olat.core.commons.services.doceditor.restapi;
+package org.olat.restapi.system;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -30,6 +30,7 @@ import javax.ws.rs.core.Response;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.wopi.WopiService;
+import org.olat.restapi.system.vo.DocEditorStatisticsVO;
 import org.springframework.stereotype.Component;
 
 import io.swagger.v3.oas.annotations.Operation;

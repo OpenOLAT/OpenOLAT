@@ -52,7 +52,8 @@ public class MonitoringWebService {
 	private static final ThreadsWebService threadsWebService = new ThreadsWebService();
 	private static final OpenOLATStatisticsWebService ooStatsWebService = new OpenOLATStatisticsWebService();
 	private static final VFSStatsWebService vfsStatsWebService = new VFSStatsWebService();
-	private static final BigBlueButtonWebService bigBlueButtonWebService = new BigBlueButtonWebService();
+	private static final BigBlueButtonStatsWebService bigBlueButtonStatsWebService = new BigBlueButtonStatsWebService();
+	private static final DocEditorWebService docEditorWebService = new DocEditorWebService();
 	
 	public MonitoringWebService() {
 		//make Spring happy
@@ -94,8 +95,13 @@ public class MonitoringWebService {
 	}
 	
 	@Path("bigbluebutton")
-	public BigBlueButtonWebService getBigBlueButtonStatistics() {
-		return bigBlueButtonWebService;
+	public BigBlueButtonStatsWebService getBigBlueButtonStatistics() {
+		return bigBlueButtonStatsWebService;
+	}
+	
+	@Path("doceditor")
+	public DocEditorWebService getDocEditorWebService() {
+		return docEditorWebService;
 	}
 	
 	
