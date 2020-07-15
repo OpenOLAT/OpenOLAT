@@ -74,6 +74,7 @@ import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.FailedEvaluationType;
 import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.tools.CourseToolLinkTreeModel;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeNode;
@@ -192,6 +193,7 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 				// set the link tree model to internal for the HTML editor
 				CustomLinkTreeModel linkTreeModel = new CourseInternalLinkTreeModel(userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode());
 				spCtr.setInternalLinkTreeModel(linkTreeModel);
+				spCtr.setToolLinkTreeModel(new CourseToolLinkTreeModel(userCourseEnv.getCourseEnvironment().getCourseConfig(), ureq.getLocale()));
 			}
 			spCtr.addLoggingResourceable(LoggingResourceable.wrap(this));
 			// create clone wrapper layout, allow popping into second window

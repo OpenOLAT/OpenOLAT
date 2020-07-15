@@ -59,6 +59,7 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.nodes.SPCourseNode;
 import org.olat.course.nodes.TitledWrapperHelper;
+import org.olat.course.run.tools.CourseToolLinkTreeModel;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.modules.ModuleConfiguration;
@@ -88,6 +89,7 @@ public class SPRunController extends BasicController implements Activateable2 {
 	
 	private final boolean hasEditRights;
 	private CustomLinkTreeModel linkTreeModel;
+	private CustomLinkTreeModel toolLinkTreeModel;
 	private Long repoKey;
 
 	private final UserCourseEnvironment userCourseEnv;
@@ -121,6 +123,7 @@ public class SPRunController extends BasicController implements Activateable2 {
 
 		if (hasEditRights) {
 			linkTreeModel = new CourseInternalLinkTreeModel(userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode());
+			toolLinkTreeModel = new CourseToolLinkTreeModel(userCourseEnv.getCourseEnvironment().getCourseConfig(), getLocale());
 		}
 		
 		// init main panel and do start page or direct launch
@@ -202,6 +205,9 @@ public class SPRunController extends BasicController implements Activateable2 {
 			// set the link tree model to internal for the HTML editor
 			if (linkTreeModel != null) {
 				spCtr.setInternalLinkTreeModel(linkTreeModel);
+			}
+			if (toolLinkTreeModel != null) {
+				spCtr.setToolLinkTreeModel(toolLinkTreeModel);
 			}
 		}		
 

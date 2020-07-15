@@ -28,6 +28,7 @@ package org.olat.core.commons.modules.singlepage;
 
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.gui.UserRequest;
@@ -51,7 +52,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.CourseLoggingAction;
@@ -86,6 +86,7 @@ public class SinglePageController extends BasicController implements CloneableCo
 	private final IFrameDisplayController idc;
 	private final VelocityContainer myContent;
 	private CustomLinkTreeModel customLinkTreeModel;
+	private CustomLinkTreeModel toolLinkTreeModel;
 
 	private final String frameId;
 	private final boolean randomizeMapper;
@@ -263,7 +264,7 @@ public class SinglePageController extends BasicController implements CloneableCo
 					htmlEditorController = WysiwygFactory.createWysiwygController(ureq, getWindowControl(), g_new_rootContainer, g_curURI, true, true, edusharingProvider);
 				} else {
 					htmlEditorController = WysiwygFactory.createWysiwygControllerWithInternalLink(ureq, getWindowControl(), g_new_rootContainer,
-							g_curURI, true, customLinkTreeModel, edusharingProvider );
+							g_curURI, true, customLinkTreeModel, toolLinkTreeModel, edusharingProvider);
 				}
 				listenTo(htmlEditorController);
 				mainPanel.setContent(htmlEditorController.getInitialComponent());
@@ -290,6 +291,10 @@ public class SinglePageController extends BasicController implements CloneableCo
 	 */
 	public void setInternalLinkTreeModel(CustomLinkTreeModel customLinkTreeModel) {
 		this.customLinkTreeModel = customLinkTreeModel;
+	}
+	
+	public void setToolLinkTreeModel(CustomLinkTreeModel toolLinkTreeModel) {
+		this.toolLinkTreeModel = toolLinkTreeModel;
 	}
 
 	@Override

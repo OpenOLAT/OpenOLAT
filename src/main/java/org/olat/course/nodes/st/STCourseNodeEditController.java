@@ -52,6 +52,7 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.condition.Condition;
+import org.olat.course.config.CourseConfig;
 import org.olat.course.editor.CourseEditorHelper;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.highscore.ui.HighScoreEditController;
@@ -61,6 +62,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.sp.SecuritySettingsForm;
 import org.olat.course.run.scoring.ScoreCalculator;
+import org.olat.course.run.tools.CourseToolLinkTreeModel;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
@@ -122,6 +124,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 	private Link activateEasyModeButton;
 	private Link activateExpertModeButton;
 
+	private final CourseConfig courseConfig;
 	private VFSContainer courseFolderContainer;
 	private String chosenFile;
 	private boolean allowRelativeLinks;
@@ -148,6 +151,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 		super(ureq, wControl);
 		this.stNode = stNode;
 		this.courseFolderContainer = course.getCourseFolderContainer();
+		this.courseConfig = course.getCourseConfig();
 		this.euce = euce;
 		this.editorModel = course.getEditorTreeModel();
 		this.repoKey = RepositoryManager.getInstance().lookupRepositoryEntryKey(course, true);
@@ -385,9 +389,9 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 		}
 		// File create/select controller
 		VFSEdusharingProvider edusharingProvider = new LazyRepositoryEdusharingProvider(repoKey);
-		combiLinkCtr = new LinkFileCombiCalloutController(ureq, getWindowControl(), courseFolderContainer,
-				relFilePath, relFilPathIsProposal, allowRelativeLinks, false,
-				new CourseInternalLinkTreeModel(editorModel), edusharingProvider);
+		combiLinkCtr = new LinkFileCombiCalloutController(ureq, getWindowControl(), courseFolderContainer, relFilePath,
+				relFilPathIsProposal, allowRelativeLinks, false, new CourseInternalLinkTreeModel(editorModel),
+				new CourseToolLinkTreeModel(courseConfig, getLocale()), edusharingProvider);
 		listenTo(combiLinkCtr);
 		configvc.put("combiCtr", combiLinkCtr.getInitialComponent());		
 		configvc.contextPut("editorEnabled", combiLinkCtr.isEditorEnabled());

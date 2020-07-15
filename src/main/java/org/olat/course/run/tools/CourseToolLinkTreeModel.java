@@ -28,6 +28,8 @@ import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.course.config.CourseConfig;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.run.CourseRuntimeController;
 
 /**
@@ -45,20 +47,44 @@ public class CourseToolLinkTreeModel extends CustomLinkTreeModel {
 	private final Translator translator;
 	private TreeNode rootNode;
 
-	public CourseToolLinkTreeModel(Locale locale) {
+	public CourseToolLinkTreeModel(CourseConfig courseConfig, Locale locale) {
 		super("toollinktreenode");
 		translator = Util.createPackageTranslator(CourseRuntimeController.class, locale);
-		buildTree();
+		buildTree(courseConfig);
 	}
 
-	private void buildTree() {
+	private void buildTree(CourseConfig courseConfig) {
 		rootNode = createTreeNode(ROOT, translator.translate("tool.link.root"));
 		List<TreeNode> toolNodes = new ArrayList<>(CourseTool.values().length);
-		for (CourseTool courseTool : CourseTool.values()) {
-			//TODO uh Leistungsnachweis verlinken
-			TreeNode node = createTreeNode(courseTool);
-			toolNodes.add(node);
+		
+		if (courseConfig.isBlogEnabled()) {
+			toolNodes.add(createTreeNode(CourseTool.blog));
 		}
+		if (courseConfig.isDocumentsEnabled()) {
+			toolNodes.add(createTreeNode(CourseTool.documents));
+		}
+		if (courseConfig.isEfficencyStatementEnabled() || courseConfig.isCertificateEnabled()) {
+			toolNodes.add(createTreeNode(CourseTool.efficiencystatement));
+		}
+		if (courseConfig.isEmailEnabled()) {
+			toolNodes.add(createTreeNode(CourseTool.email));
+		}
+		if (courseConfig.isForumEnabled()) {
+			toolNodes.add(createTreeNode(CourseTool.forum));
+		}
+		if (courseConfig.isParticipantListEnabled()) {
+			toolNodes.add(createTreeNode(CourseTool.participantlist));
+		}
+		if (courseConfig.isParticipantInfoEnabled()) {
+			toolNodes.add(createTreeNode(CourseTool.participantinfos));
+		}
+		if (LearningPathNodeAccessProvider.TYPE.equals(courseConfig.getNodeAccessType().getType())) {
+			toolNodes.add(createTreeNode(CourseTool.learningpath));
+		}
+		if (courseConfig.isWikiEnabled()) {
+			toolNodes.add(createTreeNode(CourseTool.wiki));
+		}
+		
 		toolNodes.sort((n1, n2) -> n1.getTitle().compareToIgnoreCase(n2.getTitle()));
 		for (TreeNode node: toolNodes) {
 			rootNode.addChild(node);
@@ -76,7 +102,7 @@ public class CourseToolLinkTreeModel extends CustomLinkTreeModel {
 		treeNode.setTitle(title);
 		return treeNode;
 	}
-
+	
 	@Override
 	public TreeNode getRootNode() {
 		return rootNode;

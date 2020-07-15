@@ -104,7 +104,7 @@ public class IQLayoutConfigurationController extends BasicController {
 		}
 		combiLinkCtr = new LinkFileCombiCalloutController(ureq, wControl, courseFolderBaseContainer,
 				disclaimer, relFilPathIsProposal, allowRelativeLinks, true,
-				new CourseInternalLinkTreeModel(course.getEditorTreeModel()), null);
+				new CourseInternalLinkTreeModel(course.getEditorTreeModel()), null, null);
 		listenTo(combiLinkCtr);
 		myContent.put("combiCtr", combiLinkCtr.getInitialComponent());
 		myContent.contextPut("editorEnabled", combiLinkCtr.isEditorEnabled());

@@ -46,6 +46,7 @@ import org.olat.course.editor.NodeEditController;
 import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.nodes.SPCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.tools.CourseToolLinkTreeModel;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.modules.ModuleConfiguration;
@@ -123,9 +124,10 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 		// File create/select controller
 		Long repoKey = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getKey();
 		VFSEdusharingProvider edusharingProvider = new LazyRepositoryEdusharingProvider(repoKey);
-		combiLinkCtr = new LinkFileCombiCalloutController(ureq, wControl, courseFolderBaseContainer,
-				relFilePath, relFilPathIsProposal, allowRelativeLinks, false,
-				new CourseInternalLinkTreeModel(course.getEditorTreeModel()), edusharingProvider);
+		combiLinkCtr = new LinkFileCombiCalloutController(ureq, wControl, courseFolderBaseContainer, relFilePath,
+				relFilPathIsProposal, allowRelativeLinks, false,
+				new CourseInternalLinkTreeModel(course.getEditorTreeModel()),
+				new CourseToolLinkTreeModel(course.getCourseConfig(), getLocale()), edusharingProvider);
 		combiLinkCtr.setEditable(hasEditRights(relFilePath));
 		listenTo(combiLinkCtr);
 		myContent.put("combiCtr", combiLinkCtr.getInitialComponent());		

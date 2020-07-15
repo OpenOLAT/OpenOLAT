@@ -37,7 +37,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.course.run.tools.CourseToolLinkTreeModel;
 
 /**
  * Offer tabbed pane with certain type of link chooser.
@@ -67,14 +66,15 @@ public class LinkChooserController extends BasicController {
 	 * @param suffixes Supported file suffixes for file-chooser.
 	 * @param uriValidation Set to true if the filename need to be a valid URI
 	 * @param fileName Base file-path for file-chooser.
-	 * @param userActivityLogger
+	 * @param customLinkTreeModel
+	 * @param toolLinkTreeModel
 	 * @param internalLinkTreeModel Model with internal links e.g. course-node
 	 *          tree model. The internal-link chooser tab won't be shown when the
 	 *          internalLinkTreeModel is null.
 	 */
 	public LinkChooserController(UserRequest ureq, WindowControl wControl, VFSContainer rootDir,
 			String uploadRelPath, String absolutPath, String[] suffixes, boolean uriValidation, String fileName,
-			CustomLinkTreeModel customLinkTreeModel, boolean allowCustomMediaChooserFactory) {
+			CustomLinkTreeModel customLinkTreeModel, CustomLinkTreeModel toolLinkTreeModel, boolean allowCustomMediaChooserFactory) {
 		super(ureq, wControl);
 		
 		tabbedPaneViewVC = createVelocityContainer("linkchooser");
@@ -90,11 +90,9 @@ public class LinkChooserController extends BasicController {
 			courseLinkChooserController = new CustomLinkChooserController(ureq, wControl, customLinkTreeModel);
 			listenTo(courseLinkChooserController);
 			linkChooserTabbedPane.addTab(translate("linkchooser.tabbedpane.label.internallinkchooser"), courseLinkChooserController.getInitialComponent());
-			
-			// customLinkTreeModel is always the course node tree model. Instead of transfer a second model through all
-			// controller and factories, we just create the tool link model here, because if a goto course node can be chosen
-			// a goto course tool can be chosen as well.
-			courseToolLinkChooserController = new CustomLinkChooserController(ureq, wControl, new CourseToolLinkTreeModel(getLocale()));
+		}
+		if (toolLinkTreeModel != null && toolLinkTreeModel.getRootNode().getChildCount() > 0) {
+			courseToolLinkChooserController = new CustomLinkChooserController(ureq, wControl, toolLinkTreeModel);
 			listenTo(courseToolLinkChooserController);
 			linkChooserTabbedPane.addTab(translate("linkchooser.tabbedpane.label.internaltoolchooser"), courseToolLinkChooserController.getInitialComponent());
 		}

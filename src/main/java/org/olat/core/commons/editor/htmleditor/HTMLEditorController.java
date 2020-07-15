@@ -112,6 +112,7 @@ public class HTMLEditorController extends FormBasicController {
 	private FormCancel cancel;
 	private FormLink save, saveClose;
 	private CustomLinkTreeModel customLinkTreeModel;
+	private CustomLinkTreeModel toolLinkTreeModel;
 	
 	private VelocityContainer metadataVC;
 	private boolean editable = true;
@@ -151,10 +152,10 @@ public class HTMLEditorController extends FormBasicController {
 	 * @return Controller with internal-link selector
 	 */
 	public HTMLEditorController(UserRequest ureq, WindowControl wControl, VFSContainer baseContainer,
-			String relFilePath, CustomLinkTreeModel customLinkTreeModel, String mediaPath, boolean editorCheckEnabled,
-			boolean versions, VFSEdusharingProvider edusharingProvider) {
+			String relFilePath, CustomLinkTreeModel customLinkTreeModel, CustomLinkTreeModel toolLinkTreeModel,
+			String mediaPath, boolean editorCheckEnabled, boolean versions, VFSEdusharingProvider edusharingProvider) {
 		super(ureq, wControl, "htmleditor");
-		initEditorForm(baseContainer, relFilePath, customLinkTreeModel, mediaPath, editorCheckEnabled, versions, true, edusharingProvider);
+		initEditorForm(baseContainer, relFilePath, customLinkTreeModel, toolLinkTreeModel, mediaPath, editorCheckEnabled, versions, true, edusharingProvider);
 		initForm(ureq);
 	}
 	
@@ -164,12 +165,12 @@ public class HTMLEditorController extends FormBasicController {
 			boolean versions, boolean withButtons, VFSEdusharingProvider edusharingProvider, Form rootForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "htmleditor", rootForm);
 		// set some basic variables
-		initEditorForm(baseContainer, relFilePath, customLinkTreeModel, mediaPath, editorCheckEnabled, versions, withButtons, edusharingProvider);
+		initEditorForm(baseContainer, relFilePath, customLinkTreeModel, null, mediaPath, editorCheckEnabled, versions, withButtons, edusharingProvider);
 		initForm(ureq);
 	}
 	
 	private void initEditorForm(VFSContainer bContainer, String relFilePath, CustomLinkTreeModel linkTreeModel,
-			String mPath, boolean editorCheck, boolean versions, boolean withButtons,
+			CustomLinkTreeModel toolLinkTreeModel, String mPath, boolean editorCheck, boolean versions, boolean withButtons,
 			VFSEdusharingProvider edusharingProvider) {
 		
 		this.baseContainer = bContainer;
@@ -178,6 +179,7 @@ public class HTMLEditorController extends FormBasicController {
 		this.versionsEnabled = versions;
 		this.buttonsEnabled = withButtons;
 		this.customLinkTreeModel = linkTreeModel;
+		this.toolLinkTreeModel = toolLinkTreeModel;
 		this.editorCheckEnabled = editorCheck;
 		// make sure the filename doesn't start with a slash
 		this.fileName = ((relFilePath.charAt(0) == '/') ? relFilePath.substring(1) : relFilePath);
@@ -297,7 +299,9 @@ public class HTMLEditorController extends FormBasicController {
 			VelocityContainer vc = (VelocityContainer) formLayout.getComponent();
 			vc.contextPut("fileToLargeError", fileToLargeError);
 		} else {
-			htmlElement = uifactory.addRichTextElementForFileData("rtfElement", null, body, -1, -1, baseContainer, fileName, customLinkTreeModel, formLayout, ureq.getUserSession(), getWindowControl());
+			htmlElement = uifactory.addRichTextElementForFileData("rtfElement", null, body, -1, -1, baseContainer,
+					fileName, customLinkTreeModel, toolLinkTreeModel, formLayout, ureq.getUserSession(),
+					getWindowControl());
 			//
 			// Add resize handler
 			RichTextConfiguration editorConfiguration = htmlElement.getEditorConfiguration(); 

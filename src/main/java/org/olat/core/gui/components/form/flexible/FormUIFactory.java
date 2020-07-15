@@ -906,6 +906,7 @@ public class FormUIFactory {
 	 *            The path to the file relative to the baseContainer
 	 * @param customLinkTreeModel
 	 *            A custom link tree model or NULL not not use a custom model
+	 * @param toolLinkTreeModel 
 	 * @param formLayout
 	 *            The form item container where to add the rich text element
 	 * @param usess
@@ -914,19 +915,17 @@ public class FormUIFactory {
 	 *            the current window controller
 	 * @return The richt text element instance
 	 */
-	public RichTextElement addRichTextElementForFileData(String name,
-			final String i18nLabel, String initialValue, final int rows, int cols,
-			VFSContainer baseContainer, String relFilePath,
-			CustomLinkTreeModel customLinkTreeModel,
-			FormItemContainer formLayout, UserSession usess,
-			WindowControl wControl) {
+	public RichTextElement addRichTextElementForFileData(String name, final String i18nLabel, String initialValue,
+			final int rows, int cols, VFSContainer baseContainer, String relFilePath,
+			CustomLinkTreeModel customLinkTreeModel, CustomLinkTreeModel toolLinkTreeModel,
+			FormItemContainer formLayout, UserSession usess, WindowControl wControl) {
 		// Create richt text element with bare bone configuration
 		RichTextElement rte = new RichTextElementImpl(name, initialValue, rows, cols, formLayout.getRootForm(), formLayout.getTranslator().getLocale());
 		setLabelIfNotNull(i18nLabel, rte);
 		// Now configure editor
 		rte.getEditorConfiguration().setConfigProfileFileEditor(usess,
 				wControl.getWindowBackOffice().getWindow().getGuiTheme(),
-				baseContainer, relFilePath, customLinkTreeModel);
+				baseContainer, relFilePath, customLinkTreeModel, toolLinkTreeModel);
 		// Add to form and finish
 		formLayout.add(rte);
 		return rte;

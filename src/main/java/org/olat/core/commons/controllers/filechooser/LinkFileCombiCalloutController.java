@@ -46,8 +46,9 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
+import org.olat.course.run.tools.CourseToolLinkTreeModel;
 import org.olat.modules.edusharing.VFSEdusharingProvider;
 
 
@@ -67,6 +68,7 @@ public class LinkFileCombiCalloutController extends BasicController {
 	private Link calloutTriggerLink;
 	private CloseableCalloutWindowController calloutCtr;
 	private CustomLinkTreeModel customLinkTreeModel;
+	private CustomLinkTreeModel courseToolLinkTreeModel;
 	
 	private Link editLink, removeLink;
 	
@@ -109,18 +111,22 @@ public class LinkFileCombiCalloutController extends BasicController {
 	 * @param customLinkTreeModel
 	 *            The custom link tree model or NULL if no link tree model used
 	 *            in HTML editor
+	 * @param courseToolLinkTreeModel 
+	 * @param courseToolLinkTreeModel 
 	 * @param edusharingProviderm
 	 *            Enable content from edu-sharing with this provider
 	 */
 	
 	public LinkFileCombiCalloutController(UserRequest ureq, WindowControl wControl, VFSContainer baseContainer,
 			String relFilePath, boolean relFilPathIsProposal, boolean allowEditorRelativeLinks, boolean allowRemove,
-			CustomLinkTreeModel customLinkTreeModel, VFSEdusharingProvider edusharingProvider) {
+			CustomLinkTreeModel customLinkTreeModel, CourseToolLinkTreeModel courseToolLinkTreeModel,
+			VFSEdusharingProvider edusharingProvider) {
 		super(ureq, wControl);
 		this.baseContainer = baseContainer;
 		this.relFilPathIsProposal = relFilPathIsProposal;
 		this.allowEditorRelativeLinks = allowEditorRelativeLinks;
 		this.customLinkTreeModel = customLinkTreeModel;
+		this.courseToolLinkTreeModel = courseToolLinkTreeModel;
 		this.edusharingProvider = edusharingProvider;
 		
 		// Main container for everything
@@ -272,7 +278,8 @@ public class LinkFileCombiCalloutController extends BasicController {
 		}
 		// Open HTML editor in dialog
 		HTMLEditorController wysiwygCtr = WysiwygFactory.createWysiwygControllerWithInternalLink(ureq,
-				getWindowControl(), editorBaseContainer, editorRelPath, true, customLinkTreeModel, edusharingProvider);
+				getWindowControl(), editorBaseContainer, editorRelPath, true, customLinkTreeModel,
+				courseToolLinkTreeModel, edusharingProvider);
 		displayModal(wysiwygCtr);
 	}
 	
