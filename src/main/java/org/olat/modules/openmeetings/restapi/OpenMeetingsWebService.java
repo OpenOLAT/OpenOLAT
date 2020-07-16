@@ -20,7 +20,6 @@
 package org.olat.modules.openmeetings.restapi;
 
 import java.io.File;
-
 import java.util.Date;
 
 import javax.ws.rs.GET;
@@ -41,6 +40,7 @@ import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserManager;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -51,6 +51,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
+@Hidden
 @Component
 @Path("openmeetings")
 public class OpenMeetingsWebService {

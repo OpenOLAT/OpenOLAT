@@ -39,12 +39,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.doceditor.onlyoffice.Callback;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeModule;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeSecurityService;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeService;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -52,6 +52,7 @@ import org.olat.core.util.vfs.lock.LockResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -64,6 +65,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
+@Hidden
 @Service
 @Path("/onlyoffice/files/{fileId}")
 public class OnlyOfficeWebService {

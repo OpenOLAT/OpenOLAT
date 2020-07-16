@@ -55,6 +55,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -67,6 +68,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
+@Hidden
 @Service
 @Path("/collabora/wopi/files/{fileId}")
 public class CollaboraWebService {
