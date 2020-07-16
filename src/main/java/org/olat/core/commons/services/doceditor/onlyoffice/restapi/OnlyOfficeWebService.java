@@ -52,6 +52,7 @@ import org.olat.core.util.vfs.lock.LockResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -63,6 +64,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
+@Hidden
 @Service
 @Path("/onlyoffice/files/{fileId}")
 public class OnlyOfficeWebService {

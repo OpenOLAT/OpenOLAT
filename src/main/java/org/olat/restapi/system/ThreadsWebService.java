@@ -60,6 +60,10 @@ public class ThreadsWebService implements Sampler {
 	}
 	
 	@GET
+	@Operation(summary = "Retrieve threads info", description = "Retrieve information about threads count and number of deamons")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The infos", content = {
+					@Content(mediaType = "text") }) })	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getThreadsXml() {
 		ThreadMXBean bean = ManagementFactory.getThreadMXBean();

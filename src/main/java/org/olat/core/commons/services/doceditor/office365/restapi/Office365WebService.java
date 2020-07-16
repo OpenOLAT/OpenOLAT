@@ -55,6 +55,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -69,6 +70,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
+@Hidden
 @Tag(name = "Office365")
 @Service
 @Path("/office365/wopi/files/{fileId}")
