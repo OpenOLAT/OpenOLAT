@@ -30,6 +30,13 @@ import org.olat.core.commons.services.vfs.manager.VFSRevisionDAO;
 import org.olat.restapi.system.vo.VFSStatsVO;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 /**
  * 
  * <h3>Description:</h3>
@@ -49,6 +56,11 @@ public class VFSStatsWebService {
 	}
 	
 	@GET
+	@Operation(summary = "Retrieve threads info", description = "Retrieve information about threads count and number of deamons")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The infos", content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = VFSStatsVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = VFSStatsVO.class))) }) })	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getRevisionSizeXML() {
 		long size = vfsRevisionDAO.calculateRevisionsSize();
