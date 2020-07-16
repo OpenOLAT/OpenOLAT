@@ -20,8 +20,8 @@
 package org.olat.modules.curriculum.restapi;
 
 
-import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
+import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,9 +63,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -391,6 +391,18 @@ public class CurriculumsWebService {
 	
 	@GET
 	@Path("elements")
+	@Operation(summary = "Get the elements of all curriculums",
+	description = "Get all the elements of all curriculums")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The elements",
+					content = {
+							@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CurriculumElementVO.class))),
+							@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CurriculumElementVO.class)))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "406", description = "application/xml, application/json")}
+		)
 	public Response searchCurriculumElement(@QueryParam("externalId") String externalId, @QueryParam("identifier") String identifier,
 			@QueryParam("key") Long key, @Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
