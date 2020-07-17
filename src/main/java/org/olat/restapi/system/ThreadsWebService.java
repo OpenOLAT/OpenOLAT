@@ -43,7 +43,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * 
@@ -62,9 +61,8 @@ public class ThreadsWebService implements Sampler {
 	
 	@GET
 	@Operation(summary = "Retrieve threads info", description = "Retrieve information about threads count and number of deamons")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "The infos", content = {
-					@Content(mediaType = "text") }) })	
+	@ApiResponse(responseCode = "200", description = "The infos", content = {
+		@Content(mediaType = "text") })
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getThreadsXml() {
 		ThreadMXBean bean = ManagementFactory.getThreadMXBean();
