@@ -100,6 +100,7 @@ public class HelpModule extends AbstractSpringModule {
 	private String academyEnabled;
 	@Value("${help.academy.icon:o_icon_video}")
 	private String academyIcon;
+	@Value("${help.academy.pos:0}")
 	private int academyPos;
 	
 	// OOTeach settings
@@ -109,6 +110,7 @@ public class HelpModule extends AbstractSpringModule {
 	private String ooTeachEnabled;
 	@Value("${help.ooteach.icon:o_icon_coach}")
 	private String ooTeachIcon;
+	@Value("${help.ooteach.pos:0}")
 	private int ooTeachPos;
 
 	// Confluence settings
@@ -116,6 +118,7 @@ public class HelpModule extends AbstractSpringModule {
 	private String confluenceEnabled;
 	@Value("${help.confluence.icon:o_icon_manual}")
 	private String confluenceIcon;
+	@Value("${help.confluence.pos:0}")
 	private int confluencePos;
 
 	// Support settings
@@ -196,18 +199,18 @@ public class HelpModule extends AbstractSpringModule {
 		academyLink = getStringPropertyValue("help.academy.link", academyLink);
 		academyEnabled = getStringPropertyValue("help.academy.enabled", academyEnabled);
 		academyIcon = getStringPropertyValue("help.academy.icon", academyIcon);
-		academyPos = getIntPropertyValue("help.academy.pos");
+		academyPos = getIntPropertyValue("help.academy.pos", academyPos);
 		
 		// OOTeach Settings
 		ooTeachLink = getStringPropertyValue("help.ooteach.link", ooTeachLink);
 		ooTeachEnabled = getStringPropertyValue("help.ooteach.enabled", ooTeachEnabled);
 		ooTeachIcon = getStringPropertyValue("help.ooteach.icon", ooTeachIcon);
-		ooTeachPos = getIntPropertyValue("help.ooteach.pos");
+		ooTeachPos = getIntPropertyValue("help.ooteach.pos", ooTeachPos);
 
 		// Confluence settings
 		confluenceEnabled = getStringPropertyValue("help.confluence.enabled", confluenceEnabled);
 		confluenceIcon = getStringPropertyValue("help.confluence.icon", confluenceIcon);
-		confluencePos = getIntPropertyValue("help.confluence.pos");
+		confluencePos = getIntPropertyValue("help.confluence.pos", confluencePos);
 
 		// Support settings
 		supportEmail = getStringPropertyValue("help.support.email", supportEmail);
