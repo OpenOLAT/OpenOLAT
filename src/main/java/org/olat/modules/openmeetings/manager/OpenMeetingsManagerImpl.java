@@ -540,12 +540,16 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	
 	@Override
 	public boolean deleteRoom(OpenMeetingsRoom room) {
+		return deleteRoom(room, false);
+	}
+	
+	private boolean deleteRoom(OpenMeetingsRoom room, boolean force) {
 		try {
 			String adminSID = adminLogin();
 			RoomServicePortType roomWs = getRoomWebService();
 			long ret = roomWs.deleteRoom(adminSID, room.getRoomId());
 			boolean ok = ret > 0;
-			if(ok && room.getReference() != null) {
+			if((ok || force) && room.getReference() != null) {
 				openMeetingsDao.delete(room.getReference());
 			}
 			return ok;
@@ -715,7 +719,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 		boolean allOk = true;
 		OpenMeetingsRoom room = getLocalRoom(group, null, null);
 		if(room != null) {
-			allOk &= deleteRoom(room);
+			allOk &= deleteRoom(room, true);
 		}
 		return allOk;
 	}

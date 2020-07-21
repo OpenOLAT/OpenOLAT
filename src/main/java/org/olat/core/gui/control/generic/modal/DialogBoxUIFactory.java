@@ -37,6 +37,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.coordinate.LockEntry;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.user.UserManager;
 
@@ -117,10 +118,7 @@ public class DialogBoxUIFactory {
 		if(lockEntry.isSuccess()){
 			throw new AssertException("do not create a 'is locked message' if lock was succesfull! concerns lock:"+lockEntry.getOwner());
 		}
-		String fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(lockEntry.getOwner());
-		String[] i18nParams = new String[] { StringHelper.escapeHtml(fullName),
-				Formatter.getInstance(ureq.getLocale()).formatTime(new Date(lockEntry.getLockAquiredTime())) };
-		String lockMsg = translator.translate(i18nLockMsgKey, i18nParams);
+		String lockMsg = getLockedMessage(ureq, lockEntry.getLockEntry(), i18nLockMsgKey, translator);
 		
 		Translator trans = Util.createPackageTranslator(DialogBoxUIFactory.class, ureq.getLocale());
 		List<String> okButton = new ArrayList<>();
@@ -129,6 +127,13 @@ public class DialogBoxUIFactory {
 		DialogBoxController ctrl = new DialogBoxController(ureq, wControl, null, lockMsg, okButton);
 		ctrl.setCssClass("o_warning");
 		return ctrl;
+	}
+	
+	public static String getLockedMessage(UserRequest ureq, LockEntry lockEntry, String i18nLockMsgKey, Translator translator) {
+		String fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(lockEntry.getOwner());
+		String[] i18nParams = new String[] { StringHelper.escapeHtml(fullName),
+				Formatter.getInstance(ureq.getLocale()).formatTime(new Date(lockEntry.getLockAquiredTime())) };
+		return translator.translate(i18nLockMsgKey, i18nParams);
 	}
 	
 
