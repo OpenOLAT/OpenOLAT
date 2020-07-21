@@ -598,8 +598,8 @@ public class AssessmentTest extends Deployments {
 			.confirmStop();
 		
 		By continueBy = By.className("o_sel_assessment_continue");
-		OOGraphene.waitElement(continueBy, 10, ryomouBrowser);
-		OOGraphene.waitElement(continueBy, 10, kanuBrowser);
+		OOGraphene.waitElementSlowly(continueBy, 20, ryomouBrowser);
+		OOGraphene.waitElementSlowly(continueBy, 20, kanuBrowser);
 		kanuAssessment.backToOpenOLAT();
 		ryomouAssessment.backToOpenOLAT();
 		
