@@ -126,8 +126,8 @@ public abstract class AbstractToolsController extends BasicController {
 			}
 			lastLink = link;	
 		}
-		if(links.size() > 0 && "-".equals(links.get(links.size() - 1))) {
-			links.remove(links.size() -1);//no trialing separator
+		if(!links.isEmpty() && "-".equals(links.get(links.size() - 1))) {
+			links.remove(links.size() -1);//no trailing separator
 		}
 
 		mainVC.contextPut("links", links);
