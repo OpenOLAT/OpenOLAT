@@ -162,6 +162,16 @@ public class ClusterLocker implements Locker, GenericEventListener {
 		final String asset = OresHelper.createStringRepresenting(ores, locksubkey);
 		return clusterLockManager.isLocked(asset);
 	}
+	
+	@Override
+	public LockEntry getLockEntry(OLATResourceable ores, String locksubkey) {
+		final String asset = OresHelper.createStringRepresenting(ores, locksubkey);
+		LockImpl li = clusterLockManager.findLock(asset);
+		if(li == null) {
+			return null;
+		}
+		return new LockEntry(li.getAsset(), li.getCreationDate().getTime(), li.getOwner());
+	}
 
 	@Override
 	public Identity getLockedBy(OLATResourceable ores, String locksubkey) {

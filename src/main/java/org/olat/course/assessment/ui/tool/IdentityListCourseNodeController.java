@@ -59,6 +59,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
@@ -68,6 +69,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.coordinate.LockEntry;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
@@ -777,12 +779,42 @@ public class IdentityListCourseNodeController extends FormBasicController
 	
 	private void doSelect(UserRequest ureq, Identity assessedIdentity) {
 		List<AssessedIdentityElementRow> rows = usersTableModel.getObjects();
+		AssessedIdentityElementRow selectedRow = null;
 		for(AssessedIdentityElementRow row:rows) {
 			if(assessedIdentity.getKey().equals(row.getIdentityKey())) {
-				doSelect(ureq, row);
+				selectedRow = row;
 				break;
 			}
 		}
+		
+		if(selectedRow != null && !isAssessedIdentityLocked(ureq, assessedIdentity)) {
+			doSelect(ureq, selectedRow);
+		}
+	}
+	
+	/**
+	 * Preventive check if the identity is already locked by an other
+	 * user and show a warning message if needed.
+	 *  
+	 * @param ureq The user request
+	 * @param assessedIdentity The identity to assess
+	 * @return
+	 */
+	private boolean isAssessedIdentityLocked(UserRequest ureq, Identity assessedIdentity) {
+		if(courseNode.getParent() == null) return false;
+
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		String locksubkey = AssessmentIdentityCourseNodeController.lockKey(courseNode, assessedIdentity);
+		if(CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(course, locksubkey)) {
+			LockEntry lock = CoordinatorManager.getInstance().getCoordinator().getLocker().getLockEntry(course, locksubkey);
+			if(lock != null && lock.getOwner() != null && !lock.getOwner().equals(getIdentity())) {
+				String msg = DialogBoxUIFactory.getLockedMessage(ureq, lock, "assessmentLock", getTranslator());
+				getWindowControl().setWarning(msg);
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	private Controller doSelect(UserRequest ureq, AssessedIdentityElementRow row) {

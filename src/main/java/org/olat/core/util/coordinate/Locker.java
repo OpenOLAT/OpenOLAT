@@ -74,7 +74,14 @@ public interface Locker {
 	 * @return The identity which lock the resource or null.
 	 */
 	public Identity getLockedBy(OLATResourceable ores, String locksubkey);
-		
+	
+	/**
+	 * 
+	 * @param ores
+	 * @param locksubkey
+	 * @return
+	 */
+	public LockEntry getLockEntry(OLATResourceable ores, String locksubkey);
 	
 	/**
 	 * 

@@ -22,6 +22,7 @@ package org.olat.course.assessment.ui.tool;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -30,7 +31,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
@@ -74,7 +74,6 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 	private Controller identityInfosCtrl;
 	private Controller subDetailsController;
 	private Controller detailsEditController;
-	private DialogBoxController alreadyLockedDialogController;
 
 	private LockResult lockEntry;
 	private final CourseNode courseNode;
@@ -106,20 +105,19 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 		
 		identityAssessmentVC = createVelocityContainer("identity_personal_node_infos");
 		initDetails();
+		
+		identityInfosCtrl = new AssessedIdentityLargeInfosController(ureq, wControl, assessedIdentity, course);
+		listenTo(identityInfosCtrl);
+		identityAssessmentVC.put("identityInfos", identityInfosCtrl.getInitialComponent());
 
 		//acquire lock and show dialog box on failure.
-		String lockSubKey = "AssessmentLock-NID::" + courseNode.getIdent() + "-IID::" + assessedIdentity.getKey();
+		String lockSubKey = lockKey(courseNode, assessedIdentity);
 		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(course, ureq.getIdentity(), lockSubKey);
 		if(!lockEntry.isSuccess()) {
-			alreadyLockedDialogController = DialogBoxUIFactory.createResourceLockedMessage(ureq, wControl, lockEntry, "assessmentLock", getTranslator());
-			listenTo(alreadyLockedDialogController);
-			alreadyLockedDialogController.activate();
+			String msg = DialogBoxUIFactory.getLockedMessage(ureq, lockEntry.getLockEntry(), "assessmentLock", getTranslator());
+			getWindowControl().setWarning(msg);
 		} else if(courseNode instanceof AssessableCourseNode) {
-			AssessableCourseNode aCourseNode = (AssessableCourseNode)courseNode;
-			
-			identityInfosCtrl = new AssessedIdentityLargeInfosController(ureq, wControl, assessedIdentity, course);
-			listenTo(identityInfosCtrl);
-			identityAssessmentVC.put("identityInfos", identityInfosCtrl.getInitialComponent());
+			AssessableCourseNode aCourseNode = (AssessableCourseNode)courseNode;	
 
 			// Add the users details controller
 			if (aCourseNode.hasDetails() && courseNodeDetails) {
@@ -138,6 +136,10 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 			}
 		}
 		putInitialPanel(identityAssessmentVC);
+	}
+	
+	public static String lockKey(CourseNode node, IdentityRef identity) {
+		return "AssessmentLock-NID::" + node.getIdent() + "-IID::" + identity.getKey();
 	}
 	
 	public UserCourseEnvironment getCoachCourseEnvironment() {
