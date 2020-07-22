@@ -21,6 +21,7 @@ package org.olat.core.commons.services.license.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -154,6 +155,23 @@ public class ResourceLicenseDAOTest extends OlatTestCase {
 		List<ResourceLicense> loadedLicenses = licenseDao.loadLicenses(Arrays.asList(ores1, ores2, ores3));
 		
 		assertThat(loadedLicenses).containsExactlyInAnyOrder(license1, license2, license3);
+	}
+	
+	/**
+	 * Check only if the query is able to search with more than 32'000
+	 * resources. This is a limit of select in () with PostreSQL.
+	 */
+	@Test
+	public void shouldSearchWithLotOfResources() {
+		String resName = "res";
+		List<OLATResourceable> oresList = new ArrayList<>(64001);
+		for(int i=0; i<64000; i++) {
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance(resName, (new Random()).nextLong());
+			oresList.add(ores);
+		}
+		
+		List<ResourceLicense> loadedLicenses = licenseDao.loadLicenses(oresList);
+		assertThat(loadedLicenses).isEmpty();
 	}
 	
 	@Test

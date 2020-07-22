@@ -46,6 +46,11 @@ public class Resourceable implements OLATResourceable, Serializable, Cloneable {
 		this.resourceableId = key;
 	}
 	
+	public Resourceable(OLATResourceable resource) {
+		this.resourceableTypeName = resource.getResourceableTypeName();
+		this.resourceableId = resource.getResourceableId();
+	}
+	
 	@Override
 	public String getResourceableTypeName() {
 		return resourceableTypeName;
