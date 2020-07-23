@@ -517,13 +517,14 @@ public class QTI21Page {
 	 */
 	public QTI21Page answerGraphicGapClick(String item, String gap) {
 		By sourceBy = By.xpath("//div[contains(@class,'gap_container')]/div[contains(@class,'o_gap_item')][@data-qti-id='" + item + "']");
-		OOGraphene.waitElement(sourceBy, 5, browser);
+		OOGraphene.waitElement(sourceBy, browser);
 		browser.findElement(sourceBy).click();
 		By areaBy = By.xpath("//div[@class='graphicGapMatchInteraction']//map/area[@data-qti-id='" + gap + "']");
 		WebElement areaEl = browser.findElement(areaBy);
 		String coords = areaEl.getAttribute("coords");
-		By imgBy = By.xpath("//div[contains(@class,'graphicGapMatchInteraction')]/div/div/img");
-		WebElement element = browser.findElement(imgBy);
+		By canvasBy = By.xpath("//div[contains(@class,'graphicGapMatchInteraction')]/div/div/canvas");
+		OOGraphene.waitElement(canvasBy, browser);
+		WebElement element = browser.findElement(canvasBy);
 		Dimension dim = element.getSize();
 		Position pos = Position.valueOf(coords, dim);
 		new Actions(browser)

@@ -415,8 +415,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			resourcesList.deregisterResourceable(entry, subIdent, getWindow());
 		}
 		try {
-			suspendAssessmentTest(new Date());
+			candidateSession = qtiService.reloadAssessmentTestSession(candidateSession);
 			if(candidateSession != null) {
+				testSessionController = qtiService.getCachedTestSessionController(candidateSession, testSessionController);
+				suspendAssessmentTest(new Date());
+				
 				OLATResourceable sessionOres = OresHelper
 						.createOLATResourceableInstance(AssessmentTestSession.class, candidateSession.getKey());
 				CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, sessionOres);
@@ -570,6 +573,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	}
 	
 	private void doSuspend(UserRequest ureq) {
+		testSessionController = qtiService.getCachedTestSessionController(candidateSession, testSessionController);
+		
 		VelocityContainer suspendedVC = createVelocityContainer("suspended");
 		mainPanel.setContent(suspendedVC);
 		suspendAssessmentTest(ureq.getRequestTimestamp());
@@ -646,6 +651,17 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			showWarning("warning.reset.assessmenttest.data");
 		}
 		return sessionDeleted;
+	}
+	
+	private boolean sessionEndedOrSuspended() {
+		TestSessionState testSessionState = testSessionController.getTestSessionState();
+		if(testSessionState.isEnded() || testSessionState.isSuspended()) {
+			candidateSession = qtiService.reloadAssessmentTestSession(candidateSession);
+			showWarning("warning.suspended.ended.assessmenttest");
+			logAudit("Try to work on an ended/suspended test");
+			return true;
+		}
+		return false;
 	}
 	
 	/**
@@ -765,7 +781,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	}
 
 	private void processQTIEvent(UserRequest ureq, QTIWorksAssessmentTestEvent qe) {
-		if(timeLimitBarrier(ureq) || sessionReseted(ureq)) {
+		testSessionController = qtiService.getCachedTestSessionController(candidateSession, testSessionController);
+
+		if(timeLimitBarrier(ureq) || sessionReseted(ureq) || sessionEndedOrSuspended()) {
 			return;
 		}
 		
@@ -1720,6 +1738,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
         if (notificationRecorder!=null) {
             result.addNotificationListener(notificationRecorder);
         }
+        qtiService.putCachedTestSessionController(candidateSession, result);
 		return result;
 	}
 	
@@ -1727,9 +1746,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		Date requestTimestamp = ureq.getRequestTimestamp();
 		
         final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
-        TestSessionController controller =  createTestSessionController(notificationRecorder);
+        TestSessionController controller = createTestSessionController(notificationRecorder);
         if(!controller.getTestSessionState().isEnded() && !controller.getTestSessionState().isExited()) {
-        		controller.unsuspendTestSession(requestTimestamp);
+        	controller.unsuspendTestSession(requestTimestamp);
             
             TestSessionState testSessionState = controller.getTestSessionState();
 	    		TestPlanNodeKey currentItemKey = testSessionState.getCurrentItemKey();
@@ -1749,8 +1768,13 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	}
 	
 	private TestSessionController createTestSessionController(NotificationRecorder notificationRecorder) {
-        final TestSessionState testSessionState = qtiService.loadTestSessionState(candidateSession);
-        return createTestSessionController(testSessionState, notificationRecorder);
+		TestSessionController result = qtiService.getCachedTestSessionController(candidateSession, null);
+		if(result == null) {
+			final TestSessionState testSessionState = qtiService.loadTestSessionState(candidateSession);
+			result = createTestSessionController(testSessionState, notificationRecorder);
+			qtiService.putCachedTestSessionController(candidateSession, result);
+		}
+        return result;
     }
 	
     public TestSessionController createTestSessionController(TestSessionState testSessionState,  NotificationRecorder notificationRecorder) {

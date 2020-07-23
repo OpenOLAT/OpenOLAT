@@ -77,6 +77,13 @@
 			<expiration max-idle="1800000" interval="15000" />
 		</local-cache>
 		
+		<local-cache name="QTIWorks@testSessionControllers" simple-cache="true" statistics="true" statistics-available="true">
+			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
+			<transaction mode="NONE" auto-commit="true" />
+			<memory max-count="50000" when-full="REMOVE" />
+			<expiration max-idle="7200000" interval="15000" />
+		</local-cache>
+		
 		<local-cache name="WebDAVManager@webdav" simple-cache="true" statistics="true" statistics-available="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
