@@ -62,7 +62,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>1.8</targetJdk>
-		<org.springframework.version>5.2.7.RELEASE</org.springframework.version>
+		<org.springframework.version>5.2.8.RELEASE</org.springframework.version>
 		<org.hibernate.version>5.4.18.Final</org.hibernate.version>
 		<apache.cxf>3.3.7</apache.cxf>
 		<apache.pdfbox>2.0.20</apache.pdfbox>
@@ -73,11 +73,11 @@
 		<jackson.version>2.11.1</jackson.version>
 		<org.mysql.version>5.1.46</org.mysql.version>
 		<org.postgresql.version>42.2.14</org.postgresql.version>
-		<org.infinispan.version>11.0.0.Final</org.infinispan.version>
+		<org.infinispan.version>11.0.1.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>3.141.59</version.selenium>
 		<version.drone>2.5.1</version.drone>
-		<activemq.version>5.15.12</activemq.version>
+		<activemq.version>5.16.0</activemq.version>
 		<qtiworks.version>1.0.19</qtiworks.version>
 
 	    <!-- properties for testing and Q&A -->
@@ -424,17 +424,12 @@
 				<dependency>
 				    <groupId>org.webjars</groupId>
 				    <artifactId>swagger-ui</artifactId>
-				    <version>3.27.0</version>
+				    <version>3.30.0</version>
 				</dependency>
 				<dependency>
 				    <groupId>jakarta.xml.ws</groupId>
 				    <artifactId>jakarta.xml.ws-api</artifactId>
 				    <version>2.3.3</version>
-				</dependency>
-				<dependency>
-					<groupId>org.dom4j</groupId>
-					<artifactId>dom4j</artifactId>
-					<version>2.1.3</version>
 				</dependency>
 				<dependency>
 					<groupId>org.hibernate</groupId>
@@ -594,12 +589,6 @@
 					<scope>provided</scope>
 				</dependency>
 				
-				<dependency>
-					<groupId>dom4j</groupId>
-					<artifactId>dom4j</artifactId>
-					<version>1.6.1</version>
-					<scope>provided</scope>
-				</dependency>
 				<dependency>
 					<groupId>org.hibernate</groupId>
 					<artifactId>hibernate-core</artifactId>
@@ -1707,12 +1696,12 @@
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcmail-jdk15on</artifactId>
-			<version>1.65</version>
+			<version>1.66</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk15on</artifactId>
-			<version>1.65.01</version>
+			<version>1.66</version>
 		</dependency>
 		<dependency>
 		    <groupId>com.github.scribejava</groupId>
@@ -1759,6 +1748,12 @@
 			<groupId>org.jdom</groupId>
 			<artifactId>jdom</artifactId>
 			<version>1.1.3</version>
+			<!-- used by reload-jdom (SCORM) -->
+		</dependency>
+		<dependency>
+			<groupId>org.dom4j</groupId>
+			<artifactId>dom4j</artifactId>
+			<version>2.1.3</version>
 		</dependency>
 		<dependency>
 			<groupId>fmath</groupId>
@@ -1771,8 +1766,6 @@
 			<artifactId>jgrapht</artifactId>
 			<version>0.6.0</version>
 		</dependency>
-		<!-- fxdiff: FXOLAT-243 remove dependency to jbosscache (only for cluster + deprecated by JBoss) -->
-		<!-- cluster -->
 		<dependency>
 			<groupId>reload-diva</groupId>
 			<artifactId>reload-diva</artifactId>
@@ -1793,7 +1786,7 @@
 			<artifactId>reload-moonunit</artifactId>
 			<version>reload_dist255-moonunit.jar</version>
 		</dependency>
-		<!-- Sart dependency to qtiworks -->
+		<!-- Start dependency to qtiworks -->
 		<dependency>
 			<groupId>org.openolat.qtiworks</groupId>
 			<artifactId>qtiworks-jqtiplus</artifactId>
@@ -1933,12 +1926,12 @@
 		<dependency>
 			<groupId>nu.validator</groupId>
 			<artifactId>htmlparser</artifactId>
-			<version>1.4.15</version>
+			<version>1.4.16</version>
 		</dependency>
 		<dependency>
 			<groupId>com.googlecode.owasp-java-html-sanitizer</groupId>
 			<artifactId>owasp-java-html-sanitizer</artifactId>
-			<version>20200615.1</version>
+			<version>20200713.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.w3c.css</groupId>
