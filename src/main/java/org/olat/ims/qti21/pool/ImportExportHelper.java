@@ -43,20 +43,20 @@ public class ImportExportHelper {
 	
 	protected static List<String> getMaterials(AssessmentItem item) {
 		List<String> materials = new ArrayList<>();
-		QueryUtils.search(Img.class, item).forEach((img) -> {
+		QueryUtils.search(Img.class, item).forEach(img -> {
 			if(img.getSrc() != null) {
 				materials.add(img.getSrc().toString());
 			}
 		});
 		
-		QueryUtils.search(A.class, item).forEach((a) -> {
+		QueryUtils.search(A.class, item).forEach(a -> {
 			URI href = a.getHref();
 			if(href != null && href.getHost() == null && href.getPath() != null) {
 				materials.add(href.getPath());
 			}
 		});
 
-		QueryUtils.search(Object.class, item).forEach((object) -> {
+		QueryUtils.search(Object.class, item).forEach(object -> {
 			if(StringHelper.containsNonWhitespace(object.getData())) {
 				materials.add(object.getData());
 			}
@@ -67,7 +67,7 @@ public class ImportExportHelper {
 	protected static void getMaterials(AssessmentItem item, File itemFile, AssessmentItemsAndResources materials) {
 		File directory = itemFile.getParentFile();
 
-		QueryUtils.search(Img.class, item).forEach((img) -> {
+		QueryUtils.search(Img.class, item).forEach(img -> {
 			if(img.getSrc() != null) {
 				String imgPath = img.getSrc().toString();
 				File imgFile = new File(directory, imgPath);
@@ -77,7 +77,7 @@ public class ImportExportHelper {
 			}
 		});
 		
-		QueryUtils.search(A.class, item).forEach((a) -> {
+		QueryUtils.search(A.class, item).forEach(a -> {
 			URI href = a.getHref();
 			if(href != null && href.getHost() == null && href.getPath() != null) {
 				String hrefPath = href.getPath();
@@ -88,7 +88,7 @@ public class ImportExportHelper {
 			}
 		});
 
-		QueryUtils.search(Object.class, item).forEach((object) -> {
+		QueryUtils.search(Object.class, item).forEach(object -> {
 			if(StringHelper.containsNonWhitespace(object.getData())) {
 				String path = object.getData();
 				File objectFile = new File(directory, path);

@@ -129,7 +129,7 @@ public class QTI21ExportProcessor {
 		}
 	}
 	
-	public ResolvedAssessmentItem exportToQTIEditor(QuestionItemFull fullItem, File editorContainer)
+	public ResolvedAssessmentItem exportToQTIEditor(QuestionItemFull fullItem, File questionContainer)
 	throws IOException {
 		AssessmentItemsAndResources itemAndMaterials = new AssessmentItemsAndResources();
 		collectMaterials(fullItem, itemAndMaterials);
@@ -142,7 +142,7 @@ public class QTI21ExportProcessor {
 		for(ItemMaterial material:itemAndMaterials.getMaterials()) {
 			String exportPath = material.getExportUri();
 			File originalFile = material.getFile();
-			File exportFile = new File(editorContainer, exportPath);
+			File exportFile = new File(questionContainer, exportPath);
 			if(!exportFile.getParentFile().exists()) {
 				exportFile.getParentFile().mkdirs();
 			}

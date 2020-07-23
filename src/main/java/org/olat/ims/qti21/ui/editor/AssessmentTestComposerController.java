@@ -20,6 +20,7 @@
 package org.olat.ims.qti21.ui.editor;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -75,6 +76,8 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.CodeHelper;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -822,9 +825,13 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			AssessmentSection section = (AssessmentSection)sectionNode.getUserObject();
 			for(QuestionItemView item:items) {
 				QuestionItemFull qItem = qti21QPoolServiceProvider.getFullQuestionItem(item);
-				AssessmentItem assessmentItem = qti21QPoolServiceProvider.exportToQTIEditor(qItem, getLocale(), unzippedDirRoot);
+				String container =  qItem.getKey().toString();
+				File questionContainer = new File(unzippedDirRoot, container);
+				questionContainer.mkdir();
+				
+				AssessmentItem assessmentItem = qti21QPoolServiceProvider.exportToQTIEditor(qItem, getLocale(), questionContainer);
 				if(assessmentItem != null) {
-					AssessmentItemRef itemRef = doInsert(section, assessmentItem);
+					AssessmentItemRef itemRef = doInsert(section, container, assessmentItem);
 					if(firstItemId == null) {
 						firstItemId = itemRef.getIdentifier().toString();
 					}
@@ -882,7 +889,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 				
 				AssessmentItemBuilder itemBuilder = itemAndMetadata.getItemBuilder();
 				AssessmentItem assessmentItem = itemBuilder.getAssessmentItem();
-				AssessmentItemRef itemRef = doInsert(section, assessmentItem);
+				AssessmentItemRef itemRef = doInsert(section, null, assessmentItem);
 				ManifestMetadataBuilder metadata = manifestBuilder.getResourceBuilderByHref(itemRef.getHref().toString());
 				metadata.setQtiMetadataInteractionTypes(itemBuilder.getInteractionNames());
 				itemAndMetadata.toBuilder(metadata, getLocale());
@@ -912,13 +919,20 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		}
 	}
 	
-	private AssessmentItemRef doInsert(AssessmentSection section, AssessmentItem assessmentItem)
+	private AssessmentItemRef doInsert(AssessmentSection section, String container, AssessmentItem assessmentItem)
 	throws URISyntaxException {
 		AssessmentItemRef itemRef = new AssessmentItemRef(section);
 		String itemId = assessmentItem.getIdentifier();
 		itemRef.setIdentifier(Identifier.parseString(itemId));
-		File itemFile = new File(unzippedDirRoot, itemId + ".xml");
-		itemRef.setHref(new URI(itemFile.getName()));
+		
+		String itemFilename;
+		if(StringHelper.containsNonWhitespace(container)) {
+			itemFilename = container + "/" + itemId + ".xml";
+		} else {
+			itemFilename = itemId + ".xml";
+		}
+		File itemFile = new File(unzippedDirRoot, itemFilename);
+		itemRef.setHref(new URI(itemFilename));
 		section.getSectionParts().add(itemRef);
 		
 		qtiService.persistAssessmentObject(itemFile, assessmentItem);
@@ -927,7 +941,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		File testFile = new File(testUri);
 		qtiService.updateAssesmentObject(testFile, resolvedAssessmentTest);
 
-		manifestBuilder.appendAssessmentItem(itemFile.getName());
+		manifestBuilder.appendAssessmentItem(itemFilename);
 		doSaveManifest();
 		return itemRef;
 	}
@@ -1345,14 +1359,34 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			return;
 		}
 		QTI21QuestionType type = QTI21QuestionType.getType(originalAssessmentItem);
+		
+		String containerToCopy = getItemContainer(itemRefToCopy.getHref());
+		String container = null;
+		if(containerToCopy != null) {
+			File containerToCopyDir = new File(unzippedDirRoot, containerToCopy);
+			if(containerToCopyDir.exists()) {
+				container = generateContainerName(containerToCopy);
+				File containerDir = new File(unzippedDirRoot, container);
+				containerDir.mkdir();
+				FileUtils.copyDirContentsToDir(containerToCopyDir, containerDir, false, new XMLFileFilter(), "Copy question materials");
+			}
+		}
 
 		File itemFile = null;
 		try {
 			AssessmentItemRef itemRef = new AssessmentItemRef(section);
 			String itemId = IdentifierGenerator.newAsString(getTypePrefix(type));
 			itemRef.setIdentifier(Identifier.parseString(itemId));
-			itemFile = new File(unzippedDirRoot, itemId + ".xml");
-			itemRef.setHref(new URI(itemFile.getName()));
+			
+			String itemFilename;
+			if(container == null) {
+				itemFilename = itemId + ".xml";
+			} else {
+				itemFilename = container + "/" + itemId + ".xml";
+			}
+
+			itemFile = new File(unzippedDirRoot, itemFilename);
+			itemRef.setHref(new URI(itemFilename));
 
 			try(OutputStream out = new FileOutputStream(itemFile)) {
 				//make the copy
@@ -1370,7 +1404,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 				
 				Map<AssessmentItemRef, AssessmentItem> flyingObjects = Collections.singletonMap(itemRef, copiedAssessmentItem);
 				doSaveAssessmentTest(ureq, flyingObjects);
-				manifestBuilder.appendAssessmentItem(itemFile.getName());
+				manifestBuilder.appendAssessmentItem(itemFilename);
 				doSaveManifest();
 			} catch (Exception e) {
 				logError("", e);
@@ -1385,6 +1419,28 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		} catch (URISyntaxException e) {
 			logError("", e);
 		}
+	}
+	
+	private String generateContainerName(String original) {
+		String container = original + "_c";
+		for(int i=1; i<1000; i++) {
+			String containerName = container + i;
+			if(!new File(unzippedDirRoot, containerName).exists()) {
+				return containerName;
+			}	
+		}
+		return CodeHelper.getUniqueID();
+	}
+	
+	private String getItemContainer(URI itemUri) {
+		String itemUriString = itemUri.toString();
+		File file = new File(unzippedDirRoot, itemUriString);
+		if(file.getParentFile().equals(unzippedDirRoot)) {
+			return null;
+		}
+		
+		String itemFilename = file.getName();
+		return itemUriString.substring(0, itemUriString.length() - itemFilename.length() - 1);
 	}
 	
 	private String getTypePrefix(QTI21QuestionType type) {
@@ -1573,5 +1629,20 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private ManifestMetadataBuilder getMetadataBuilder(AssessmentItemRef itemRef) {
 		ResourceType resource = getResourceType(itemRef);
 		return manifestBuilder.getMetadataBuilder(resource, true);
+	}
+	
+	/**
+	 * Exclude file with XML extension.
+	 * 
+	 * Initial date: 23 juil. 2020<br>
+	 * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+	 *
+	 */
+	private static class XMLFileFilter implements FileFilter {
+		@Override
+		public boolean accept(File pathname) {
+			String filename = pathname.getName().toLowerCase();
+			return !filename.endsWith(".xml");
+		}
 	}
 }
