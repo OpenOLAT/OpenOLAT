@@ -105,6 +105,7 @@ class ResourceLicenseDAO {
 			resNames.add(resource.getResourceableTypeName());
 			resIds.add(resource.getResourceableId());
 		}
+		List<Long> resIdsList = new ArrayList<>(resIds);
 		
 		String query =  new StringBuilder(256)
 				.append("select license")
@@ -113,11 +114,20 @@ class ResourceLicenseDAO {
 				.append(" where license.resName in (:resNames)")
 				.append("   and license.resId in (:resIds)")
 				.toString();
-		return dbInstance.getCurrentEntityManager()
+
+		List<ResourceLicense> licenses = new ArrayList<>();
+		for(int i=0; i < resIdsList.size(); ) {
+			int nextInc = Math.min(resIdsList.size() - i, 10000);
+			List<Long> batchOfResIds = resIdsList.subList(i, i + nextInc);
+			List<ResourceLicense> bacthOfLicenses = dbInstance.getCurrentEntityManager()
 				.createQuery(query, ResourceLicense.class)
 				.setParameter("resNames", resNames)
-				.setParameter("resIds", resIds)
+				.setParameter("resIds", batchOfResIds)
 				.getResultList();
+			licenses.addAll(bacthOfLicenses);
+			i = i + nextInc;
+	    }
+		return licenses;
 	}
 
 	public void delete(OLATResourceable resource) {

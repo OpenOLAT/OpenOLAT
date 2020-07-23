@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.resource.Resourceable;
 import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryAuthorViewResults;
 import org.olat.repository.RepositoryService;
@@ -154,10 +155,8 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 		
 		Map<String,String> fullNames = userManager.getUserDisplayNamesByUserName(newNames);
 		List<OLATResourceAccess> resourcesWithOffer = acService.filterResourceWithAC(resourcesWithAC);
+		Map<Resourceable,ResourceLicense> licenses = getLicenses(repoEntries);
 		
-		Collection<OLATResourceable> resources = repoEntries.stream().map(RepositoryEntryAuthorView::getOlatResource).collect(Collectors.toList());
-		List<ResourceLicense> licenses = licenseService.loadLicenses(resources);
-
 		List<AuthoringEntryRow> items = new ArrayList<>();
 		for(RepositoryEntryAuthorView entry:repoEntries) {
 			String fullname = fullNames.get(entry.getAuthor());
@@ -194,17 +193,20 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 			}
 			
 			// license
-			for (ResourceLicense license: licenses) {
-				OLATResource resource = entry.getOlatResource();
-				if (license.getResId().equals(resource.getResourceableId()) && license.getResName().equals(resource.getResourceableTypeName())) {
-					row.setLicense(license);
-				}
-			}
-			
+			ResourceLicense license = licenses.get(new Resourceable(entry.getOlatResource()));
+			row.setLicense(license);
+
 			uifactory.forgeLinks(row);
 			
 			items.add(row);
 		}
 		return items;
+	}
+	
+	private Map<Resourceable,ResourceLicense> getLicenses(List<RepositoryEntryAuthorView> repoEntries) {
+		Collection<OLATResourceable> resources = repoEntries.stream().map(RepositoryEntryAuthorView::getOlatResource).collect(Collectors.toList());
+		List<ResourceLicense> licenses = licenseService.loadLicenses(resources);	
+		return licenses.stream().collect(Collectors
+				.toMap(license -> new Resourceable(license.getResName(), license.getResId()), license -> license, (u, v) -> v));
 	}
 }

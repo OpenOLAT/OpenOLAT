@@ -41,15 +41,16 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.core.gui.components.tree.TreeModel;
+import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
-import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeVisitor;
-import org.olat.core.util.tree.Visitor;
 import org.olat.course.CourseFactory;
-import org.olat.course.Structure;
+import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
@@ -102,16 +103,17 @@ public class AssessmentToReviewSmallController extends FormBasicController {
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(AssessmentToolConstants.reducedUsageIdentifyer, isAdministrativeUser);
 		
 		nodeIdentToNodeShortTitles = new HashMap<>();
-		Structure structure = CourseFactory.loadCourse(courseEntry).getRunStructure();
-		new TreeVisitor(new Visitor() {
-			@Override
-			public void visit(INode node) {
-				if(node instanceof CourseNode) {
-					CourseNode tNode = (CourseNode)node;
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		TreeModel tm = AssessmentHelper.assessmentTreeModel(course);
+		new TreeVisitor(node -> {
+			if(node instanceof TreeNode) {
+				Object uobject = ((TreeNode)node).getUserObject();
+				if(uobject instanceof CourseNode) {
+					CourseNode tNode = (CourseNode)uobject;
 					nodeIdentToNodeShortTitles.put(tNode.getIdent(), tNode.getShortTitle());
 				}
 			}
-		}, structure.getRootNode(), false).visitAll();
+		}, tm.getRootNode(), false).visitAll();
 		
 		initForm(ureq);
 		loadModel();
@@ -148,9 +150,12 @@ public class AssessmentToReviewSmallController extends FormBasicController {
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, null, null, assessmentCallback);
 		List<AssessmentEntry> entries = assessmentToolManager.getAssessmentEntries(getIdentity(), params, AssessmentEntryStatus.inReview);
 		List<UserToReviewRow> rows = new ArrayList<>();
-		
 		Map<Long,UserToReviewRow> identityKeyToRow = new HashMap<>();
 		for(AssessmentEntry entry:entries) {
+			if(!nodeIdentToNodeShortTitles.containsKey(entry.getSubIdent())) {
+				continue;
+			}
+			
 			Identity assessedIdentity = entry.getIdentity();
 			if(identityKeyToRow.containsKey(assessedIdentity.getKey())) {
 				identityKeyToRow.get(assessedIdentity.getKey())
