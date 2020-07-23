@@ -501,6 +501,10 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 			File fileStorage = testSessionDao.getSessionStorage(session);
 			testSessionDao.deleteTestSession(session);
 			FileUtils.deleteDirsAndFiles(fileStorage, true, true);
+			
+			OLATResourceable sessionOres = OresHelper.createOLATResourceableInstance(AssessmentTestSession.class, session.getKey());
+			coordinatorManager.getCoordinator().getEventBus()
+				.fireEventToListenersOf(new DeleteAssessmentTestSessionEvent(session.getKey()), sessionOres);
 		}
 		dbInstance.commit();// make sure it's flushed on the database 
 		return true;
