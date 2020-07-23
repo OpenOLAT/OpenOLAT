@@ -49,6 +49,7 @@ import uk.ac.ed.ph.jqtiplus.reading.QtiXmlReader;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentObject;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
+import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
@@ -512,5 +513,10 @@ public interface QTI21Service {
 	 * @return A number of seconds, 0 if nothing found
 	 */
 	public Long getMetadataCorrectionTimeInSeconds(RepositoryEntry testEntry, AssessmentTestSession candidateSession);
+	
+
+	public void putCachedTestSessionController(AssessmentTestSession testSession, TestSessionController testSessionController);
+	
+	public TestSessionController getCachedTestSessionController(AssessmentTestSession testSession, TestSessionController testSessionController);
 
 }

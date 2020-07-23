@@ -149,6 +149,7 @@ import uk.ac.ed.ph.jqtiplus.reading.QtiXmlReader;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentObject;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
+import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 import uk.ac.ed.ph.jqtiplus.serialization.SaxFiringOptions;
 import uk.ac.ed.ph.jqtiplus.state.AssessmentSectionSessionState;
@@ -229,6 +230,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	private InfinispanXsltStylesheetCache xsltStylesheetCache;
 	private CacheWrapper<File,ResolvedAssessmentTest> assessmentTestsCache;
 	private CacheWrapper<File,ResolvedAssessmentItem> assessmentItemsCache;
+	private CacheWrapper<AssessmentTestSession,TestSessionController> testSessionControllersCache;
 	
 	private final ConcurrentMap<String,URI> resourceToTestURI = new ConcurrentHashMap<>();
 	
@@ -255,6 +257,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
         Cacher cacher = coordinatorManager.getInstance().getCoordinator().getCacher();
         assessmentTestsCache = cacher.getCache("QTIWorks", "assessmentTests");
         assessmentItemsCache = cacher.getCache("QTIWorks", "assessmentItems");
+        testSessionControllersCache = cacher.getCache("QTIWorks", "testSessionControllers");
 	}
 
     @Override
@@ -593,6 +596,8 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 
 	@Override
 	public AssessmentTestSession reloadAssessmentTestSession(AssessmentTestSession session) {
+		if(session == null) return null;
+		if(session.getKey() == null) return session;
 		return testSessionDao.loadByKey(session.getKey());
 	}
 
@@ -1581,5 +1586,19 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 		}
 		
 		return Long.valueOf(timeInMinutes * 60l);
+	}
+
+	@Override
+	public void putCachedTestSessionController(AssessmentTestSession testSession, TestSessionController testSessionController) {
+		if(testSession == null || testSessionController == null) return;
+		testSessionControllersCache.put(testSession, testSessionController);
+	}
+
+	@Override
+	public TestSessionController getCachedTestSessionController(AssessmentTestSession testSession, TestSessionController testSessionController) {
+		if(testSession == null) return null;
+		
+		TestSessionController result = testSessionControllersCache.get(testSession);
+		return result == null ? testSessionController : result;
 	}
 }
