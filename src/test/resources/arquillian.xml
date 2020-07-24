@@ -29,6 +29,7 @@
 		<property name="firefoxDriverBinary">target/drone/ce03addb1fc8c24900011f90fc80f3c1/geckodriver</property>
 		-->
 		<property name="firefoxUserPreferences">src/test/profile/firefox/prefs.js</property>
+		<property name="chromeDriverVersion">84.0.4147.30</property>
 		<property name="chromeArguments">${webdriver.chrome.arguments}</property>
 		<property name="chromeExperimentalOption">{
 			"prefs":{"credentials_enable_service": false, "profile.password_manager_enabled": false }
