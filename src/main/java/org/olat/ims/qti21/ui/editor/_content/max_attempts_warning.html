@@ -1,0 +1,11 @@
+<div class="o_qti_max_attempts o_warning">
+#if($r.isNotEmpty($itemMsg))
+	<p>$itemMsg</p>
+#end
+#if($r.isNotEmpty($sectionMsg))
+	<p>$sectionMsg</p>
+#end
+#if($r.visible("force.inherited.max.attempts"))
+	$r.render("force.inherited.max.attempts")
+#end
+</div>
