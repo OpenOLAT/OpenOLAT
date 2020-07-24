@@ -43,6 +43,7 @@ import org.olat.selenium.page.User;
 import org.olat.selenium.page.core.ContactPage;
 import org.olat.selenium.page.core.FolderPage;
 import org.olat.selenium.page.core.MenuTreePageFragment;
+import org.olat.selenium.page.course.AssessmentToolPage;
 import org.olat.selenium.page.course.BigBlueButtonPage;
 import org.olat.selenium.page.course.CheckListConfigPage;
 import org.olat.selenium.page.course.CheckListPage;
@@ -2042,7 +2043,7 @@ public class CourseElementTest extends Deployments {
 			.assertOnJoin();
 	}
 	
-
+	
 	/**
 	 * An author create a course with a course element
 	 * with one check box. It add one participant. The
@@ -2055,11 +2056,11 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void courseWithCheckboxWithScore()
+	public void courseWithCheckboxWithScore(@Drone @User WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 						
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
-		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("ryomou");
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("nezuko");
 
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage.loginAs(author.getLogin(), author.getPassword());
@@ -2122,16 +2123,131 @@ public class CourseElementTest extends Deployments {
 			.save()
 			.clickToolbarBack();
 		
+		// participant comes in
+
+		LoginPage participantLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
+		participantLoginPage
+			.loginAs(participant.getLogin(), participant.getPassword());
+
+		NavigationPage participantNavBar = NavigationPage.load(participantBrowser);
+		participantNavBar
+			.openMyCourses()
+			.select(courseTitle);
+		
+		CoursePageFragment course = new CoursePageFragment(participantBrowser);
+		course
+			.clickTree()
+			.selectWithTitle(nodeTitle);
+
+		CheckListPage checkPage = new CheckListPage(participantBrowser);
+		checkPage
+			.assertOnCheckbox(checkboxTitle)
+			.check(checkboxTitle);
+		// student has done the course
+		course
+			.assertOnLearnPathNodeDone(nodeTitle)
+			.assertOnLearnPathPercent(100);
+		
+		// open the assessment tool and check the participant passed the node
+		// and the course
+		AssessmentToolPage assessmentTool = new CoursePageFragment(browser)
+			.assessmentTool();
+		assessmentTool
+			.users()
+			.assertOnUsers(participant)
+			.selectUser(participant)
+			.assertPassed(participant)
+			.assertUserPassedCourseNode(nodeTitle);
+	}
+	
+	/**
+	 * An author create a course with a course element
+	 * with one check box. It add one participant and he
+	 * checks the box.
+	 * 
+	 * @param loginPage The login page
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithCheckbox()
+	throws IOException, URISyntaxException {
+						
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("nezuko");
+
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Checklist" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		CoursePageFragment courseRuntime = navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle, true)
+			.clickToolbarBack();
+		
+		//add participant
+		MembersPage members = courseRuntime
+			.members();
+		members
+			.importMembers()
+			.setMembers(participant)
+			.nextUsers()
+			.nextOverview()
+			.selectRepositoryEntryRole(false, false, true)
+			.nextPermissions()
+			.finish();
+		// back to course
+		members
+			.clickToolbarBack();
+		
+		//create a course element of type Test with the test that we create above
+		String nodeTitle = "Liste de controle";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("checklist")
+			.nodeTitle(nodeTitle);
+		
+		String checkboxTitle = "Do some stuff";
+		
+		CheckListConfigPage checkConfig = new CheckListConfigPage(browser);
+		checkConfig
+			.selectListConfiguration()
+			.addCheckbox(checkboxTitle, -1)
+			.assertOnCheckboxInList(checkboxTitle);
+		
+		checkConfig
+			.selectAssessmentConfiguration()
+			.disableScoring()
+			.saveAssessmentConfiguration();
+		
+		courseEditor
+			.selectTabLearnPath()
+			.setCompletionCriterion(FullyAssessedTrigger.confirmed)
+			.save();
+		
+		courseEditor
+			.autoPublish()
+			.publish()
+			.settings()
+			.accessConfiguration()
+			.setUserAccess(UserAccess.membersOnly)
+			.save()
+			.clickToolbarBack();
 		
 		//log out
 		new UserToolsPage(browser)
 			.logout();
 		
 		// participant comes in
-		loginPage.loginAs(participant.getLogin(), participant.getPassword());
+		LoginPage.load(browser, deploymentUrl)
+			.loginAs(participant.getLogin(), participant.getPassword());
 
-		NavigationPage ryomouNavBar = NavigationPage.load(browser);
-		ryomouNavBar
+		NavigationPage participantNavBar = NavigationPage.load(browser);
+		participantNavBar
 			.openMyCourses()
 			.select(courseTitle);
 		
@@ -2144,8 +2260,13 @@ public class CourseElementTest extends Deployments {
 		checkPage
 			.assertOnCheckbox(checkboxTitle)
 			.check(checkboxTitle);
+		// check doesn't influence the learn path
+		course
+			.assertOnLearnPathNodeReady(nodeTitle)
+			.assertOnLearnPathPercent(0);
 		// student has done the course
 		course
+			.confirmNode()
 			.assertOnLearnPathNodeDone(nodeTitle)
 			.assertOnLearnPathPercent(100);
 	}

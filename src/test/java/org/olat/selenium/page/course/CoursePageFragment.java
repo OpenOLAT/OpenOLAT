@@ -169,8 +169,9 @@ public class CoursePageFragment {
 	}
 	
 	/**
-	 * Click the first element of the menu tree
-	 * @return
+	 * Click the first element of the menu tree.
+	 * 
+	 * @return Itself
 	 */
 	public MenuTreePageFragment clickTree() {
 		OOGraphene.waitElement(MenuTreePageFragment.treeBy, browser);
@@ -179,8 +180,9 @@ public class CoursePageFragment {
 	}
 	
 	/**
+	 * Confirm you have done the course element.
 	 * 
-	 * @return
+	 * @return Itself
 	 */
 	public CoursePageFragment confirmNode() {
 		By confirmationBy = By.cssSelector("div.o_course_pagination div.o_confirm a.btn");
@@ -194,8 +196,9 @@ public class CoursePageFragment {
 	}
 	
 	/**
-	 * Open the tools drop-down
-	 * @return
+	 * Open the tools drop-down.
+	 * 
+	 * @return IUtself
 	 */
 	public CoursePageFragment openToolsMenu() {
 		browser.findElement(toolsMenuCaret).click();
