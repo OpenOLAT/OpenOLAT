@@ -33,6 +33,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.olat.course.learningpath.FullyAssessedTrigger;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
@@ -43,6 +44,8 @@ import org.olat.selenium.page.core.ContactPage;
 import org.olat.selenium.page.core.FolderPage;
 import org.olat.selenium.page.core.MenuTreePageFragment;
 import org.olat.selenium.page.course.BigBlueButtonPage;
+import org.olat.selenium.page.course.CheckListConfigPage;
+import org.olat.selenium.page.course.CheckListPage;
 import org.olat.selenium.page.course.ContactConfigPage;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
@@ -2037,5 +2040,113 @@ public class CourseElementTest extends Deployments {
 			.selectMeeting(meetingName)
 			.assertOnMeeting(meetingName)
 			.assertOnJoin();
+	}
+	
+
+	/**
+	 * An author create a course with a course element
+	 * with one check box. It add one participant. The
+	 * participant log in, go to the course to check its
+	 * box and see if it has done the course with 100%.
+	 * 
+	 * @param loginPage The login page
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithCheckboxWithScore()
+	throws IOException, URISyntaxException {
+						
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("ryomou");
+
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Check Course" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		CoursePageFragment courseRuntime = navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle, true)
+			.clickToolbarBack();
+		
+		//add participant
+		MembersPage members = courseRuntime
+			.members();
+		members
+			.importMembers()
+			.setMembers(participant)
+			.nextUsers()
+			.nextOverview()
+			.selectRepositoryEntryRole(false, false, true)
+			.nextPermissions()
+			.finish();
+		// back to course
+		members
+			.clickToolbarBack();
+		
+		//create a course element of type Test with the test that we create above
+		String nodeTitle = "CheckNode";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("checklist")
+			.nodeTitle(nodeTitle);
+		
+		String checkboxTitle = "Do some programming";
+		
+		CheckListConfigPage checkConfig = new CheckListConfigPage(browser);
+		checkConfig
+			.selectListConfiguration()
+			.addCheckbox(checkboxTitle, 4)
+			.assertOnCheckboxInList(checkboxTitle);
+		
+		checkConfig
+			.selectAssessmentConfiguration()
+			.setScoring(0, 4, 3)
+			.saveAssessmentConfiguration();
+		
+		courseEditor
+			.selectTabLearnPath()
+			.setCompletionCriterion(FullyAssessedTrigger.passed)
+			.save();
+		
+		courseEditor
+			.autoPublish()
+			.publish()
+			.settings()
+			.accessConfiguration()
+			.setUserAccess(UserAccess.membersOnly)
+			.save()
+			.clickToolbarBack();
+		
+		
+		//log out
+		new UserToolsPage(browser)
+			.logout();
+		
+		// participant comes in
+		loginPage.loginAs(participant.getLogin(), participant.getPassword());
+
+		NavigationPage ryomouNavBar = NavigationPage.load(browser);
+		ryomouNavBar
+			.openMyCourses()
+			.select(courseTitle);
+		
+		CoursePageFragment course = new CoursePageFragment(browser);
+		course
+			.clickTree()
+			.selectWithTitle(nodeTitle);
+
+		CheckListPage checkPage = new CheckListPage(browser);
+		checkPage
+			.assertOnCheckbox(checkboxTitle)
+			.check(checkboxTitle);
+		// student has done the course
+		course
+			.assertOnLearnPathNodeDone(nodeTitle)
+			.assertOnLearnPathPercent(100);
 	}
 }

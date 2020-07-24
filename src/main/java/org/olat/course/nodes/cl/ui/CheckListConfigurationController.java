@@ -101,6 +101,7 @@ public class CheckListConfigurationController extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_cl_edit_assessment");
 		if(wizard) {
 			titlePrefixEl = uifactory.addTextElement("titelprefix", "title.prefix", 64, "", formLayout);
 			titlePrefixEl.setMandatory(true);
@@ -151,10 +152,12 @@ public class CheckListConfigurationController extends FormBasicController {
 		}
 		String minValStr = minVal == null ? "" : Float.toString(minVal.floatValue());
 		minPointsEl = uifactory.addTextElement("pointsmin", "config.points.min", 4, minValStr, formLayout);
+		minPointsEl.setElementCssClass("o_sel_cl_min_score");
 		minPointsEl.setMandatory(true);
 		minPointsEl.setDisplaySize(5);
 		String maxValStr = maxVal == null ? "" : Float.toString(maxVal.floatValue());
 		maxPointsEl = uifactory.addTextElement("pointsmax", "config.points.max", 4, maxValStr, formLayout);
+		maxPointsEl.setElementCssClass("o_sel_cl_max_score");
 		maxPointsEl.setMandatory(true);
 		maxPointsEl.setDisplaySize(5);
 		
@@ -180,6 +183,7 @@ public class CheckListConfigurationController extends FormBasicController {
 		
 		String cutValStr = cutVal == null ? "" : Float.toString(cutVal.floatValue());
 		cutValueEl = uifactory.addTextElement("cutvalue", "config.cutvalue", 4, cutValStr, formLayout);
+		cutValueEl.setElementCssClass("o_sel_cl_cut_value");
 		cutValueEl.setDisplaySize(5);
 		cutValueEl.setMandatory(true);
 		

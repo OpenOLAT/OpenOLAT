@@ -19,13 +19,18 @@
  */
 package org.olat.ims.qti21.ui.editor;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -34,8 +39,11 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
+import org.olat.ims.qti21.ui.editor.events.AssessmentTestEvent;
 
 import uk.ac.ed.ph.jqtiplus.node.test.AbstractPart;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
 import uk.ac.ed.ph.jqtiplus.node.test.ItemSessionControl;
 import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
 
@@ -56,7 +64,14 @@ public abstract class ItemSessionControlController extends FormBasicController {
 	private static final String[] yesNoInheritKeys = new String[] { YES, NO, INHERIT };
 
 	private TextElement maxAttemptsEl;
-	protected SingleSelection limitAttemptsEl, allowSkippingEl, allowCommentEl, allowReviewEl, showSolutionEl;
+	protected SingleSelection limitAttemptsEl;
+	private FormLink inheritMaxAttemptsButton;
+	private FormLayoutContainer maxAttemptsWarningLayout;
+	
+	protected SingleSelection allowReviewEl;
+	protected SingleSelection showSolutionEl;
+	protected SingleSelection allowSkippingEl;
+	protected SingleSelection allowCommentEl;
 	
 	private DialogBoxController attemptsWarningCtrl;
 	
@@ -108,6 +123,15 @@ public abstract class ItemSessionControlController extends FormBasicController {
 		maxAttemptsEl.setVisible(limitAttemptsEl.isSelected(0));
 		maxAttemptsEl.setEnabled(!restrictedEdit && editable);
 		
+		String warningPage = velocity_root + "/max_attempts_warning.html";
+		maxAttemptsWarningLayout = FormLayoutContainer.createCustomFormLayout("maxAttemptsWarning", getTranslator(), warningPage);
+		formLayout.add(maxAttemptsWarningLayout);
+		inheritMaxAttemptsButton = uifactory.addFormLink("force.inherited.max.attempts", maxAttemptsWarningLayout, Link.BUTTON_XSMALL);
+		inheritMaxAttemptsButton.setForceOwnDirtyFormWarning(false);
+		inheritMaxAttemptsButton.setDomReplacementWrapperRequired(false);
+		maxAttemptsWarningLayout.add("force.inherited.max.attempts", inheritMaxAttemptsButton);
+		updateWarningMaxAttempts();
+		
 		allowSkippingEl = uifactory.addRadiosHorizontal("item.session.control.allow.skipping", formLayout, aKeys, aValues);
 		allowSkippingEl.addActionListener(FormEvent.ONCHANGE);
 		allowSkippingEl.setEnabled(!restrictedEdit && editable);
@@ -157,6 +181,39 @@ public abstract class ItemSessionControlController extends FormBasicController {
 			showSolutionEl.select(key, true);
 		}
 	}
+	
+	private void updateWarningMaxAttempts() {
+		boolean needWarning = false;
+		
+		MaxAttemptsStatistics statistics = MaxAttemptsStatistics.calculate(part);
+		if(statistics.getNumOfItems() != 0 && statistics.getNumOfItems() == statistics.getNumOfItemsWithoutInherited()) {
+			String itemMsg = translate("warning.item.session.control.attempts.all.items.defined");
+			maxAttemptsWarningLayout.contextPut("itemMsg", itemMsg);
+			needWarning = true;
+		} else if(statistics.getNumOfItemsWithoutInherited() > 0) {
+			String itemMsg = translate("warning.item.session.control.attempts.items.defined");
+			maxAttemptsWarningLayout.contextPut("itemMsg", itemMsg);
+			needWarning = true;
+		} else {
+			maxAttemptsWarningLayout.contextRemove("itemMsg");
+		}
+
+		if(statistics.getNumOfSubSections() != 0 && statistics.getNumOfSubSections() == statistics.getNumOfSectionsWithoutInherited()) {
+			String sectionMsg = translate("warning.item.session.control.attempts.all.sections.defined");
+			maxAttemptsWarningLayout.contextPut("sectionMsg", sectionMsg);
+			needWarning = true;
+		} else if(statistics.getNumOfSectionsWithoutInherited() > 0) {
+			String sectionMsg = translate("warning.item.session.control.attempts.sections.defined");
+			maxAttemptsWarningLayout.contextPut("sectionMsg", sectionMsg);
+			needWarning = true;
+		} else {
+			maxAttemptsWarningLayout.contextRemove("sectionMsg");
+		}
+
+		boolean warningVisible = limitAttemptsEl.isSelected(0) && needWarning;
+		inheritMaxAttemptsButton.setVisible(warningVisible);
+		maxAttemptsWarningLayout.setVisible(warningVisible);
+	}
 
 	@Override
 	protected void doDispose() {
@@ -165,7 +222,7 @@ public abstract class ItemSessionControlController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		allOk &= validateSingleSelection(allowCommentEl);
 		allOk &= validateSingleSelection(allowReviewEl);
@@ -187,7 +244,7 @@ public abstract class ItemSessionControlController extends FormBasicController {
 			}
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	private boolean validateSingleSelection(SingleSelection selectionEl) {
@@ -200,8 +257,6 @@ public abstract class ItemSessionControlController extends FormBasicController {
 		return allOk;
 	}
 	
-	
-	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(attemptsWarningCtrl == source) {
@@ -210,6 +265,7 @@ public abstract class ItemSessionControlController extends FormBasicController {
 				limitAttemptsEl.getComponent().setDirty(true);
 				maxAttemptsEl.setVisible(false);
 			}
+			updateWarningMaxAttempts();
 			removeAsListenerAndDispose(attemptsWarningCtrl);
 			attemptsWarningCtrl = null;
 		}
@@ -228,6 +284,10 @@ public abstract class ItemSessionControlController extends FormBasicController {
 				String text = translate("warning.item.session.control.attempts");
 				attemptsWarningCtrl = activateOkCancelDialog(ureq, null, text, attemptsWarningCtrl);
 			}
+			updateWarningMaxAttempts();
+		} else if(inheritMaxAttemptsButton == source) {
+			doInheritMaxAttempts(ureq);
+			updateWarningMaxAttempts();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -280,7 +340,7 @@ public abstract class ItemSessionControlController extends FormBasicController {
 		if(limitAttemptsEl.isSelected(0) && maxAttemptsEl != null && maxAttemptsEl.isVisible()
 				&& StringHelper.isLong(maxAttemptsEl.getValue())) {
 			int maxAttempts = Integer.parseInt(maxAttemptsEl.getValue());
-			checkNotNull(itemSessionControl).setMaxAttempts(new Integer(maxAttempts));
+			checkNotNull(itemSessionControl).setMaxAttempts(Integer.valueOf(maxAttempts));
 		} else if(limitAttemptsEl.isSelected(1)) {
 			checkNotNull(itemSessionControl).setMaxAttempts(0);
 		} else if(itemSessionControl != null) {
@@ -294,5 +354,93 @@ public abstract class ItemSessionControlController extends FormBasicController {
 			part.setItemSessionControl(itemSessionControl);
 		}
 		return itemSessionControl;
+	}
+	
+	private void doInheritMaxAttempts(UserRequest ureq) {
+		doChildrenInheritMaxAttempts(part);
+		fireEvent(ureq, AssessmentTestEvent.ASSESSMENT_TEST_CHANGED_EVENT);
+	}
+	
+	private void doChildrenInheritMaxAttempts(AbstractPart aPart) {
+		List<? extends AbstractPart> parts = aPart.getChildAbstractParts();
+		for(AbstractPart subPart:parts) {
+			ItemSessionControl itemSessionControl = subPart.getItemSessionControl();
+			if(itemSessionControl != null) {
+				itemSessionControl.setMaxAttempts(null);
+			}
+			
+			if(subPart instanceof AssessmentSection) {
+				doChildrenInheritMaxAttempts(subPart);
+			}
+		}
+	}
+
+	private static class MaxAttemptsStatistics {
+		private int numOfSubSections = 0;
+		private int numOfItems = 0;
+		
+		private int numOfSectionsWithoutInherited = 0;
+		private int numOfItemsWithoutInherited = 0;
+		
+		public static final MaxAttemptsStatistics calculate(AbstractPart aPart) {
+			MaxAttemptsStatistics statistics = new MaxAttemptsStatistics();
+			warningMaxAttempts(aPart, statistics);
+			return statistics;
+		}
+		
+		private static void warningMaxAttempts(AbstractPart aPart, MaxAttemptsStatistics statistics) {
+			List<? extends AbstractPart> parts = aPart.getChildAbstractParts();
+			for(AbstractPart subPart:parts) {
+				if(subPart instanceof AssessmentItemRef) {
+					statistics.incrementNumOfItems();
+					if(!statistics.isMaxAttemptsInherited(subPart)) {
+						statistics.incrementNumOfItemsWithoutInherited();
+					}
+				} else if(subPart instanceof AssessmentSection) {
+					statistics.incrementNumOfSubSections();
+					if(!statistics.isMaxAttemptsInherited(subPart)) {
+						statistics.incrementNumOfSectionsWithoutInherited();
+					}
+					warningMaxAttempts(subPart, statistics);
+				}
+			}
+		}
+		
+		public int getNumOfSubSections() {
+			return numOfSubSections;
+		}
+		
+		public void incrementNumOfSubSections() {
+			numOfSubSections++;
+		}
+		
+		public int getNumOfItems() {
+			return numOfItems;
+		}
+		
+		public void incrementNumOfItems() {
+			numOfItems++;
+		}
+		
+		public int getNumOfSectionsWithoutInherited() {
+			return numOfSectionsWithoutInherited;
+		}
+		
+		public void incrementNumOfSectionsWithoutInherited() {
+			numOfSectionsWithoutInherited++;
+		}
+		
+		public int getNumOfItemsWithoutInherited() {
+			return numOfItemsWithoutInherited;
+		}
+		
+		public void incrementNumOfItemsWithoutInherited() {
+			numOfItemsWithoutInherited++;
+		}
+		
+		public boolean isMaxAttemptsInherited(AbstractPart aPart) {
+			ItemSessionControl itemSessionControl = aPart.getItemSessionControl();//can be null
+			return itemSessionControl == null || itemSessionControl.getMaxAttempts() == null;
+		}
 	}
 }

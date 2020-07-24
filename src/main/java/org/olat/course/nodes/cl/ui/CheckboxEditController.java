@@ -114,8 +114,10 @@ public class CheckboxEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_cl_edit_checkbox_form");
 		String title = checkbox.getTitle();
 		titleEl = uifactory.addTextElement("checkbox.title", "checkbox.title", 255, title, formLayout);
+		titleEl.setElementCssClass("o_sel_cl_checkbox_title");
 		
 		String[] releaseKeys = new String[] {
 				CheckboxReleaseEnum.userAndCoach.name(), CheckboxReleaseEnum.coachOnly.name()
@@ -142,6 +144,7 @@ public class CheckboxEditController extends FormBasicController {
 		String[] onKeys = new String[] { "on" };
 		String[] onValues = new String[] { translate("award.point.on") };
 		awardPointEl = uifactory.addCheckboxesHorizontal("points", formLayout, onKeys, onValues);
+		awardPointEl.setElementCssClass("o_sel_cl_checkbox_award_points");
 		awardPointEl.setVisible(withScore);
 		awardPointEl.addActionListener(FormEvent.ONCHANGE);
 		if(checkbox.getPoints() != null) {
@@ -149,6 +152,7 @@ public class CheckboxEditController extends FormBasicController {
 		}
 		String points = checkbox.getPoints() == null ? null : Float.toString(checkbox.getPoints().floatValue());
 		pointsEl = uifactory.addTextElement("numofpoints", null, 10, points, formLayout);
+		pointsEl.setElementCssClass("o_sel_cl_checkbox_points");
 		pointsEl.setVisible(withScore && awardPointEl.isAtLeastSelected(1));
 		pointsEl.setDisplaySize(5);
 		

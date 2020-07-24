@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -59,6 +58,7 @@ import org.olat.course.nodes.cl.model.CheckboxList;
 import org.olat.course.nodes.cl.ui.CheckboxConfigDataModel.Cols;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Controller to manage a list of checks
@@ -83,7 +83,8 @@ public class CheckListBoxListEditController extends FormBasicController {
 	private final CourseEnvironment courseEnv;
 	private final CheckListCourseNode courseNode;
 
-	private final CheckboxManager checkboxManager;
+	@Autowired
+	private CheckboxManager checkboxManager;
 	
 	public CheckListBoxListEditController(UserRequest ureq, WindowControl wControl,
 			OLATResourceable courseOres, CheckListCourseNode courseNode, boolean inUse) {
@@ -95,7 +96,6 @@ public class CheckListBoxListEditController extends FormBasicController {
 		ICourse course = CourseFactory.loadCourse(courseOres);
 		courseEnv = course.getCourseEnvironment();
 		config = courseNode.getModuleConfiguration();
-		checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
 		
 		initForm(ureq);
 	}
@@ -105,6 +105,7 @@ public class CheckListBoxListEditController extends FormBasicController {
 		setFormTitle("config.checkbox.title");
 		setFormDescription("config.checkbox.description");
 		setFormContextHelp("Assessment#_checklist_cb");
+		formLayout.setElementCssClass("o_sel_cl_edit_checklist");
 		if(inUse) {
 			setFormWarning("config.warning.inuse");
 		}
@@ -114,6 +115,7 @@ public class CheckListBoxListEditController extends FormBasicController {
 		formLayout.add(tableCont);
 		
 		addLink = uifactory.addFormLink("add.checkbox", tableCont, Link.BUTTON);
+		addLink.setElementCssClass("o_sel_cl_new_checkbox");
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.title.i18nKey(), Cols.title.ordinal()));
