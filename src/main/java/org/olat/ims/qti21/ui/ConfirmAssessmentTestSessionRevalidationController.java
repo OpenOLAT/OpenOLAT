@@ -34,6 +34,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -54,9 +55,11 @@ public class ConfirmAssessmentTestSessionRevalidationController extends FormBasi
 	private FormLink revalidateButton;
 	
 	private AssessmentTestSession session;
-	private final IQTESTCourseNode courseNode;
+	private RepositoryEntry testEntry;
+	private IQTESTCourseNode courseNode;
+	private final Identity assessedIdentity;
 	private final boolean canUpdateAssessmentEntry;
-	private final UserCourseEnvironment assessedUserCourseEnv;
+	private UserCourseEnvironment assessedUserCourseEnv;
 	
 	@Autowired
 	private DB dbInstance;
@@ -71,6 +74,17 @@ public class ConfirmAssessmentTestSessionRevalidationController extends FormBasi
 		this.session = session;
 		this.courseNode = courseNode;
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
+		assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+		canUpdateAssessmentEntry = canBeNextLastSession();
+		initForm(ureq);
+	}
+	
+	public ConfirmAssessmentTestSessionRevalidationController(UserRequest ureq, WindowControl wControl,
+			AssessmentTestSession session, RepositoryEntry testEntry, Identity assessedIdentity) {
+		super(ureq, wControl, "confirm_reval_test_session");
+		this.session = session;
+		this.testEntry = testEntry;
+		this.assessedIdentity = assessedIdentity;
 		canUpdateAssessmentEntry = canBeNextLastSession();
 		initForm(ureq);
 	}
@@ -120,15 +134,23 @@ public class ConfirmAssessmentTestSessionRevalidationController extends FormBasi
 		session = qtiService.updateAssessmentTestSession(session);
 		dbInstance.commit();
 		if(updateEntryResults) {
-			courseNode.promoteAssessmentTestSession(session, assessedUserCourseEnv, getIdentity(), Role.coach);
+			if(courseNode == null) {
+				qtiService.updateAssessmentEntry(session);
+			} else {
+				courseNode.promoteAssessmentTestSession(session, assessedUserCourseEnv, getIdentity(), Role.coach);
+			}
 		}
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
 	private boolean canBeNextLastSession() {
-		RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		List<AssessmentTestSession> sessions = qtiService.getAssessmentTestSessions(courseEntry, courseNode.getIdent(),
-				assessedUserCourseEnv.getIdentityEnvironment().getIdentity(), true);
+		List<AssessmentTestSession> sessions;
+		if(courseNode == null) {
+			sessions = qtiService.getAssessmentTestSessions(testEntry, null, assessedIdentity, true);
+		} else {
+			RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			sessions = qtiService.getAssessmentTestSessions(courseEntry, courseNode.getIdent(), assessedIdentity, true);
+		}
 		if(sessions.isEmpty()) {
 			return true;
 		}

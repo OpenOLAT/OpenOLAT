@@ -440,6 +440,14 @@ public interface QTI21Service {
 	public AssessmentTestSession pullSession(AssessmentTestSession candidateSession, DigitalSignatureOptions signatureOptions, Identity actor);
 	
 	/**
+	 * Update the assessment entry if the test is done within a test repository entry.
+	 * 
+	 * @param candidateSession The assessment test tession.
+	 * @return The updated assessment entry
+	 */
+	public AssessmentEntry updateAssessmentEntry(AssessmentTestSession candidateSession);
+	
+	/**
 	 * Sign the assessment result. Be careful, the file must not be changed
 	 * after that!
 	 * 

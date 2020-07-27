@@ -34,6 +34,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -56,9 +57,11 @@ public class ConfirmAssessmentTestSessionInvalidationController extends FormBasi
 	private FormLink invalidateButton;
 	
 	private AssessmentTestSession session;
-	private final IQTESTCourseNode courseNode;
+	private RepositoryEntry testEntry;
+	private IQTESTCourseNode courseNode;
+	private final Identity assessedIdentity;
 	private final boolean canUpdateAssessmentEntry;
-	private final UserCourseEnvironment assessedUserCourseEnv;
+	private UserCourseEnvironment assessedUserCourseEnv;
 	
 	@Autowired
 	private DB dbInstance;
@@ -67,6 +70,16 @@ public class ConfirmAssessmentTestSessionInvalidationController extends FormBasi
 	@Autowired
 	private UserManager userManager;
 	
+	/**
+	 * Invalidate the assessment test session linked to a course.
+	 * 
+	 * @param ureq The user request
+	 * @param wControl The window control
+	 * @param session The assessment test session to invalidate
+	 * @param lastSession If the specified test session is known to be the last session
+	 * @param courseNode The course element
+	 * @param assessedUserCourseEnv The user course environnment of the assessed identity
+	 */
 	public ConfirmAssessmentTestSessionInvalidationController(UserRequest ureq, WindowControl wControl,
 			AssessmentTestSession session, boolean lastSession, IQTESTCourseNode courseNode,
 			UserCourseEnvironment assessedUserCourseEnv) {
@@ -74,6 +87,27 @@ public class ConfirmAssessmentTestSessionInvalidationController extends FormBasi
 		this.session = session;
 		this.courseNode = courseNode;
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
+		assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+		canUpdateAssessmentEntry = lastSession && (getNextLastSession() != null);
+		initForm(ureq);
+	}
+	
+	/**
+	 * Invalidate the assessment test session of a test entry (without course).
+	 * 
+	 * @param ureq The user request
+	 * @param wControl The window control
+	 * @param session The assessment test session to invalidate
+	 * @param lastSession If the specified test session is known to be the last session
+	 * @param testEntry The test repository entry
+	 * @param assessedIdentity The assessed identity
+	 */
+	public ConfirmAssessmentTestSessionInvalidationController(UserRequest ureq, WindowControl wControl,
+			AssessmentTestSession session, boolean lastSession, RepositoryEntry testEntry, Identity assessedIdentity) {
+		super(ureq, wControl, "confirm_inval_test_session");
+		this.session = session;
+		this.testEntry = testEntry;
+		this.assessedIdentity = assessedIdentity;
 		canUpdateAssessmentEntry = lastSession && (getNextLastSession() != null);
 		initForm(ureq);
 	}
@@ -125,16 +159,25 @@ public class ConfirmAssessmentTestSessionInvalidationController extends FormBasi
 		if(updateEntryResults) {
 			AssessmentTestSession promotedSession = getNextLastSession();
 			if(promotedSession != null) {
-				courseNode.promoteAssessmentTestSession(promotedSession, assessedUserCourseEnv, getIdentity(), Role.coach);
+				if(courseNode == null) {
+					qtiService.updateAssessmentEntry(promotedSession);
+				} else {
+					courseNode.promoteAssessmentTestSession(promotedSession, assessedUserCourseEnv, getIdentity(), Role.coach);
+				}
 			}
 		}
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
 	private AssessmentTestSession getNextLastSession() {
-		RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		List<AssessmentTestSession> sessions = qtiService.getAssessmentTestSessions(courseEntry, courseNode.getIdent(),
-				assessedUserCourseEnv.getIdentityEnvironment().getIdentity(), true);
+		List<AssessmentTestSession> sessions;
+		if(courseNode == null) {
+			sessions = qtiService.getAssessmentTestSessions(testEntry, null, assessedIdentity, true);
+		} else {
+			RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			sessions = qtiService.getAssessmentTestSessions(courseEntry, courseNode.getIdent(), assessedIdentity, true);
+		}
+		
 		sessions.remove(session);
 		if(!sessions.isEmpty()) {
 			Collections.sort(sessions, new AssessmentTestSessionComparator());

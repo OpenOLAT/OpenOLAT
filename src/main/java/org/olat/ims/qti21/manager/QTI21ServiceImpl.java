@@ -107,6 +107,7 @@ import org.olat.ims.qti21.model.audit.CandidateTestEventType;
 import org.olat.ims.qti21.model.jpa.AssessmentTestSessionStatistics;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
+import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.event.DeleteAssessmentTestSessionEvent;
 import org.olat.ims.qti21.ui.event.RetrieveAssessmentTestSessionEvent;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -1238,6 +1239,34 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 		if(resultFile != null && resultFile.exists()) {
 			resultFile.delete();
 		}
+	}
+	
+	@Override
+	public AssessmentEntry updateAssessmentEntry(AssessmentTestSession candidateSession) {
+		Identity assessedIdentity = candidateSession.getIdentity();
+		RepositoryEntry testEntry = candidateSession.getTestEntry();
+		
+		File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
+		ResolvedAssessmentTest resolvedAssessmentTest = loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
+		AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
+		
+		AssessmentEntry assessmentEntry = assessmentEntryDao.loadAssessmentEntry(assessedIdentity, testEntry, null, testEntry);
+		BigDecimal finalScore = candidateSession.getFinalScore();
+		assessmentEntry.setScore(finalScore);
+		assessmentEntry.setAssessmentId(candidateSession.getKey());
+
+		Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
+		
+		Boolean passed = assessmentEntry.getPassed();
+		if(candidateSession.getManualScore() != null && finalScore != null && cutValue != null) {
+			boolean calculated = finalScore.compareTo(BigDecimal.valueOf(cutValue.doubleValue())) >= 0;
+			passed = Boolean.valueOf(calculated);
+		} else if(candidateSession.getPassed() != null) {
+			passed = candidateSession.getPassed();
+		}
+		assessmentEntry.setPassed(passed);
+		assessmentEntry = assessmentEntryDao.updateAssessmentEntry(assessmentEntry);
+		return assessmentEntry;
 	}
 	
 	@Override
