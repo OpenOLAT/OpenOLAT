@@ -104,7 +104,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		
 		courseEntry = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		List<AssessmentTestSessionStatistics> sessionsStatistics = qtiService
-				.getAssessmentTestSessionsStatistics(courseEntry, courseNode.getIdent(), assessedIdentity);
+				.getAssessmentTestSessionsStatistics(courseEntry, courseNode.getIdent(), assessedIdentity, true);
 		if(!sessionsStatistics.isEmpty()) {
 			Collections.sort(sessionsStatistics, new AssessmentTestSessionDetailsComparator());
 			lastSession = sessionsStatistics.get(0).getTestSession();

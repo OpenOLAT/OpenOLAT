@@ -331,7 +331,8 @@ public interface QTI21Service {
 	 * @param identity
 	 * @return
 	 */
-	public List<AssessmentTestSession> getAssessmentTestSessions(RepositoryEntryRef courseEntry, String subIdent, IdentityRef identity);
+	public List<AssessmentTestSession> getAssessmentTestSessions(RepositoryEntryRef courseEntry, String subIdent,
+			IdentityRef identity, boolean onlyValid);
 	
 	/**
 	 * Retrieve the sessions of a user with the number of corrected assessment items (only the test and its resource are fetched).
@@ -339,9 +340,11 @@ public interface QTI21Service {
 	 * @param courseEntry The course
 	 * @param subIdent The course node identifier
 	 * @param identity The user to assess
+	 * @param onlyValid true to excluded exploded or cancelled sessions
 	 * @return A list of assessment test sessions wrapped with number of corrected items
 	 */
-	public List<AssessmentTestSessionStatistics> getAssessmentTestSessionsStatistics(RepositoryEntryRef courseEntry, String subIdent, IdentityRef identity);
+	public List<AssessmentTestSessionStatistics> getAssessmentTestSessionsStatistics(RepositoryEntryRef courseEntry, String subIdent,
+			IdentityRef identity, boolean onlyValid);
 	
 	/**
 	 * Retrieve the last finished test session.
@@ -356,12 +359,12 @@ public interface QTI21Service {
 	
 	/**
 	 * Retrieve the sessions for a test. It returns only the sessions of authenticated users (fetched).
-	 * The anonymous ones are not included.
+	 * The anonymous ones are not included as exploded and cancelled.
 	 * 
-	 * @param courseEntry
-	 * @param subIdent
-	 * @param testEntry
-	 * @return
+	 * @param courseEntry The repository entry
+	 * @param subIdent Typically the course element identifier (optional)
+	 * @param testEntry The test entry
+	 * @return A list of valid test sessions
 	 */
 	public List<AssessmentTestSession> getAssessmentTestSessions(RepositoryEntryRef courseEntry, String subIdent, RepositoryEntry testEntry);
 	
@@ -418,7 +421,13 @@ public interface QTI21Service {
 	public AssessmentTestSession finishTestSession(AssessmentTestSession candidateSession, TestSessionState testSessionState, AssessmentResult assessmentResul,
 			Date timestamp, DigitalSignatureOptions signatureOptions, Identity assessedIdentity);
 	
-	public void cancelTestSession(AssessmentTestSession candidateSession, TestSessionState testSessionState);
+	/**
+	 * The test session and all files will be deleted.
+	 * 
+	 * @param candidateSession The test session
+	 * @param testSessionState The test session state
+	 */
+	public void deleteTestSession(AssessmentTestSession candidateSession, TestSessionState testSessionState);
 	
 	/**
 	 * Pull a running test

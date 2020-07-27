@@ -1,0 +1,1 @@
+alter table o_qti_assessmenttest_session add column q_cancelled bool default false not null;

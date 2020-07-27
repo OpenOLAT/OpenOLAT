@@ -1,4 +1,12 @@
 <ul class="o_dropdown list-unstyled">
+#if($r.available("download.pdf"))
 	<li>$r.render("download.pdf")</li>
+#end
+#if($r.available("download.log"))
 	<li>$r.render("download.log")</li>
+#end
+#if($r.available("revalidate.test"))
+	<li class="divider"></li>
+	<li>$r.render("revalidate.test")</li>
+#end
 </ul>

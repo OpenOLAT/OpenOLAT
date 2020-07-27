@@ -28,6 +28,7 @@ package org.olat.course.nodes;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -832,10 +833,24 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 				1.0d, AssessmentRunStatus.done, session.getKey());
 		updateUserScoreEvaluation(sceval, assessedUserCourseenv, coachingIdentity, true, by);
 	}
+	
+	public void promoteAssessmentTestSession(AssessmentTestSession testSession, UserCourseEnvironment assessedUserCourseEnv, Identity coachingIdentity, Role by) {
+		AssessmentTest assessmentTest = loadAssessmentTest(testSession.getTestEntry());
+		Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#incrementUserAttempts(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
+		BigDecimal finalScore = testSession.getFinalScore();
+		Float score = finalScore == null ? null : finalScore.floatValue();
+		Boolean passed = testSession.getPassed();
+		if(testSession.getManualScore() != null && finalScore != null && cutValue != null) {
+			boolean calculated = finalScore.compareTo(BigDecimal.valueOf(cutValue.doubleValue())) >= 0;
+			passed = Boolean.valueOf(calculated);
+		}
+		
+		ScoreEvaluation sceval = new ScoreEvaluation(score, passed, null, null, Boolean.TRUE,
+				1.0d, AssessmentRunStatus.done, testSession.getKey());
+		updateUserScoreEvaluation(sceval, assessedUserCourseEnv, coachingIdentity, false, by);
+	}
+
 	@Override
 	public void incrementUserAttempts(UserCourseEnvironment userCourseEnvironment, Role by) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();

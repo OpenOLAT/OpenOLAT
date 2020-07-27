@@ -440,7 +440,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 
 	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
-		List<AssessmentTestSession> sessions = testSessionDao.getUserTestSessions(identity);
+		List<AssessmentTestSession> sessions = testSessionDao.getAllUserTestSessions(identity);
 		for(AssessmentTestSession session:sessions) {
 			testSessionDao.deleteTestSession(session);
 		}
@@ -609,13 +609,15 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	}
 
 	@Override
-	public List<AssessmentTestSession> getAssessmentTestSessions(RepositoryEntryRef courseEntry, String subIdent, IdentityRef identity) {
-		return testSessionDao.getUserTestSessions(courseEntry, subIdent, identity);
+	public List<AssessmentTestSession> getAssessmentTestSessions(RepositoryEntryRef courseEntry, String subIdent,
+			IdentityRef identity, boolean onlyValid) {
+		return testSessionDao.getUserTestSessions(courseEntry, subIdent, identity, onlyValid);
 	}
 
 	@Override
-	public List<AssessmentTestSessionStatistics> getAssessmentTestSessionsStatistics(RepositoryEntryRef courseEntry, String subIdent, IdentityRef identity) {
-		return testSessionDao.getUserTestSessionsStatistics(courseEntry, subIdent, identity);
+	public List<AssessmentTestSessionStatistics> getAssessmentTestSessionsStatistics(RepositoryEntryRef courseEntry, String subIdent,
+			IdentityRef identity, boolean onlyValid) {
+		return testSessionDao.getUserTestSessionsStatistics(courseEntry, subIdent, identity, onlyValid);
 	}
 	
 	@Override
@@ -1199,7 +1201,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	 * 
 	 */
 	@Override
-	public void cancelTestSession(AssessmentTestSession candidateSession, TestSessionState testSessionState) {
+	public void deleteTestSession(AssessmentTestSession candidateSession, TestSessionState testSessionState) {
 		final File myStore = testSessionDao.getSessionStorage(candidateSession);
         final File sessionState = new File(myStore, "testSessionState.xml");
         final File resultFile = getAssessmentResultFile(candidateSession);

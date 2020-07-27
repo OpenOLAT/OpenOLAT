@@ -30,28 +30,50 @@ import org.olat.ims.qti21.AssessmentTestSession;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentTestSessionComparator  implements Comparator<AssessmentTestSession> {
+public class AssessmentTestSessionComparator implements Comparator<AssessmentTestSession> {
+	
+	private final boolean checkCancelled;
+	
+	public AssessmentTestSessionComparator() {
+		this(true);
+	}
+	
+	public AssessmentTestSessionComparator(boolean checkCancelled) {
+		this.checkCancelled = checkCancelled;
+	}
 
 	@Override
 	public int compare(AssessmentTestSession a1, AssessmentTestSession a2) {
-		Date t1 = a1.getTerminationTime();
-		if(t1 == null) {
-			t1 = a1.getFinishTime();
-		}
-		Date t2 = a2.getTerminationTime();
-		if(t2 == null) {
-			t2 = a2.getFinishTime();
+		int c = 0;
+		if(checkCancelled) {
+			boolean v1 = !a1.isExploded() && !a1.isCancelled();
+			boolean v2 = !a2.isExploded() && !a2.isCancelled();
+			if(v1 && !v2) {
+				c = 1;
+			} else if(!v1 && v2) {
+				c = -1;
+			}
 		}
 		
-		int c;
-		if(t1 == null && t2 == null) {
-			c = 0;
-		} else if(t2 == null) {
-			return 1;
-		} else if(t1 == null) {
-			return -1;
-		} else {
-			c = t1.compareTo(t2);
+		if(c == 0) {
+			Date t1 = a1.getTerminationTime();
+			if(t1 == null) {
+				t1 = a1.getFinishTime();
+			}
+			Date t2 = a2.getTerminationTime();
+			if(t2 == null) {
+				t2 = a2.getFinishTime();
+			}
+			
+			if(t1 == null && t2 == null) {
+				c = 0;
+			} else if(t2 == null) {
+				c = 1;
+			} else if(t1 == null) {
+				c = -1;
+			} else {
+				c = t1.compareTo(t2);
+			}
 		}
 		
 		if(c == 0) {
@@ -60,9 +82,9 @@ public class AssessmentTestSessionComparator  implements Comparator<AssessmentTe
 			if(c1 == null && c2 == null) {
 				c = 0;
 			} else if(c2 == null) {
-				return -1;
+				c = -1;
 			} else if(c1 == null) {
-				return 1;
+				c = 1;
 			} else {
 				c = c1.compareTo(c2);
 			}

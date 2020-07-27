@@ -52,6 +52,7 @@ public class InMemoryAssessmentTestSession implements AssessmentTestSession {
 	private Integer numOfAnsweredQuestions;
     
     private boolean exploded;
+    private boolean cancelled;
     
     private Identity identity;
     private String anonymousIdentifier;
@@ -87,8 +88,19 @@ public class InMemoryAssessmentTestSession implements AssessmentTestSession {
 		return exploded;
 	}
 
+	@Override
 	public void setExploded(boolean exploded) {
 		this.exploded = exploded;
+	}
+	
+	@Override
+	public boolean isCancelled() {
+		return cancelled;
+	}
+
+	@Override
+	public void setCancelled(boolean cancelled) {
+		this.cancelled = cancelled;
 	}
 
 	@Override

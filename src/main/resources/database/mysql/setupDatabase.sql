@@ -1619,6 +1619,7 @@ create table o_qti_assessmenttest_session (
    creationdate datetime not null,
    lastmodified datetime not null,
    q_exploded bit not null default 0,
+   q_cancelled bit not null default 0,
    q_author_mode bit not null default 0,
    q_finish_time datetime,
    q_termination_time datetime,
