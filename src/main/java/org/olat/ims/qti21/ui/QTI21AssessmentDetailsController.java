@@ -87,8 +87,6 @@ import org.olat.ims.qti21.ui.assessment.CorrectionIdentityAssessmentItemListCont
 import org.olat.ims.qti21.ui.assessment.CorrectionOverviewModel;
 import org.olat.ims.qti21.ui.components.AssessmentTestSessionDetailsNumberRenderer;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.assessment.AssessmentEntry;
-import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -156,8 +154,6 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	protected QTI21Service qtiService;
 	@Autowired
 	private RepositoryManager repositoryManager;
-	@Autowired
-	private AssessmentService assessmentService;
 	
 	/**
 	 * The constructor used by the assessment tool of the course.
@@ -481,10 +477,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	}
 	
 	private void doUpdateEntry(AssessmentTestSession session) {
-		AssessmentEntry assessmentEntry = assessmentService.loadAssessmentEntry(assessedIdentity, entry, null, entry);
-		assessmentEntry.setScore(session.getFinalScore());
-		assessmentEntry.setAssessmentId(session.getKey());
-		assessmentService.updateAssessmentEntry(assessmentEntry);
+		qtiService.updateAssessmentEntry(session);
 	}
 	
 	private void doResetData(UserRequest ureq) {
@@ -578,8 +571,13 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		
 		AssessmentTestSession lastSession = tableModel.getLastTestSession();
 		boolean isLastSession = session.equals(lastSession);
-		invalidateConfirmationCtr = new ConfirmAssessmentTestSessionInvalidationController(ureq, getWindowControl(),
+		if(courseNode == null) {
+			invalidateConfirmationCtr = new ConfirmAssessmentTestSessionInvalidationController(ureq, getWindowControl(),
+				session, isLastSession, session.getTestEntry(), assessedIdentity);
+		} else {
+			invalidateConfirmationCtr = new ConfirmAssessmentTestSessionInvalidationController(ureq, getWindowControl(),
 				session, isLastSession, courseNode, assessedUserCourseEnv);
+		}
 		listenTo(invalidateConfirmationCtr);
 
 		String title = translate("invalidate.test.confirm.title");
@@ -592,8 +590,13 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private void confirmRevalidateTestSession(UserRequest ureq, AssessmentTestSession session) {
 		if(guardModalController(revalidateConfirmationCtr)) return;
 		
-		revalidateConfirmationCtr = new ConfirmAssessmentTestSessionRevalidationController(ureq, getWindowControl(),
+		if(courseNode == null) {
+			revalidateConfirmationCtr = new ConfirmAssessmentTestSessionRevalidationController(ureq, getWindowControl(),
+				session, entry, assessedIdentity);
+		} else {
+			revalidateConfirmationCtr = new ConfirmAssessmentTestSessionRevalidationController(ureq, getWindowControl(),
 				session, courseNode, assessedUserCourseEnv);
+		}
 		listenTo(revalidateConfirmationCtr);
 
 		String title = translate("revalidate.test.confirm.title");
