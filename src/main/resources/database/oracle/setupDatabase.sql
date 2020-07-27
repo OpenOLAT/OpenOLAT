@@ -1636,6 +1636,7 @@ create table o_qti_assessmenttest_session (
    creationdate date not null,
    lastmodified date not null,
    q_exploded number default 0 not null,
+   q_cancelled number default 0 not null,
    q_author_mode number default 0 not null,
    q_finish_time date,
    q_termination_time date,

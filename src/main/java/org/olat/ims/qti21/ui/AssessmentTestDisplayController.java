@@ -638,7 +638,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		//only cancel unfinished test (prevent concurrent pull session / cancel to delete the data)
 		if(candidateSession.getFinishTime() == null) {
 			TestSessionState testSessionState = testSessionController.getTestSessionState();
-			qtiService.cancelTestSession(candidateSession, testSessionState);
+			qtiService.deleteTestSession(candidateSession, testSessionState);
 		}
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 		candidateSession = null;

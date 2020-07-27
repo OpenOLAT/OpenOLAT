@@ -145,7 +145,9 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private DialogBoxController retrieveConfirmationCtr;
 	private CloseableCalloutWindowController calloutCtrl;
 	private CorrectionIdentityAssessmentItemListController correctionCtrl;
-	
+	private ConfirmAssessmentTestSessionInvalidationController invalidateConfirmationCtr;
+	private ConfirmAssessmentTestSessionRevalidationController revalidateConfirmationCtr;
+
 	@Autowired
 	private PdfModule pdfModule;
 	@Autowired
@@ -217,6 +219,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TSCols.id));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.terminationTime));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.lastModified));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.duration, new TextFlexiCellRenderer(EscapeMode.none)));
@@ -239,18 +242,20 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("correction"), "correction"), null));
 			columnsModel.addFlexiColumnModel(correctionCol);
 		}
-		if(pdfModule.isEnabled()) {
-			DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(TSCols.tools);
-			toolsCol.setAlwaysVisible(true);
-			toolsCol.setExportable(false);
-			columnsModel.addFlexiColumnModel(toolsCol);
-		} else {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("download.log", translate("download.log"), "log"));
-		}
+		DefaultFlexiColumnModel cancelCol = new DefaultFlexiColumnModel(TSCols.invalidate.i18nHeaderKey(), TSCols.invalidate.ordinal(), "invalidate",
+				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("invalidate"), "invalidate"), null));
+		columnsModel.addFlexiColumnModel(cancelCol);
+
+		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(TSCols.tools);
+		toolsCol.setAlwaysVisible(true);
+		toolsCol.setExportable(false);
+		columnsModel.addFlexiColumnModel(toolsCol);
+
 
 		tableModel = new QTI21AssessmentTestSessionTableModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "sessions", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setEmtpyTableMessageKey("results.empty");
+		tableEl.setCssDelegate(tableModel);
 
 		if(reSecurity.isEntryAdmin() && !readOnly) {
 			resetButton = uifactory.addFormLink("menu.reset.title", formLayout, Link.BUTTON);
@@ -272,7 +277,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			manualCorrections = !grading && IQEditController.CORRECTION_MANUAL.equals(correctionMode);
 		}
 		
-		List<AssessmentTestSessionStatistics> sessionsStatistics = qtiService.getAssessmentTestSessionsStatistics(entry, subIdent, assessedIdentity);
+		List<AssessmentTestSessionStatistics> sessionsStatistics = qtiService.getAssessmentTestSessionsStatistics(entry, subIdent, assessedIdentity, false);
 		List<QTI21AssessmentTestSessionDetails> infos = new ArrayList<>();
 		final Map<RepositoryEntry,Boolean> manualCorrectionsMap = new HashMap<>();
 		for(AssessmentTestSessionStatistics sessionStatistics:sessionsStatistics) {
@@ -324,6 +329,8 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			logError("Cannot read test results", e);
 			error = true;
 		}
+		
+		error |= testSession.isExploded();
 
 		QTI21AssessmentTestSessionDetails row = new QTI21AssessmentTestSessionDetails(testSession,
 				numOfItems, responded, sessionStatistics.getNumOfCorrectedItems(), error);
@@ -366,7 +373,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 				doPullSession(ureq, (AssessmentTestSession)retrieveConfirmationCtr.getUserObject());
 				updateModel();
 			}
-		} else if(resetToolCtrl == source) {
+		} else if(invalidateConfirmationCtr == source || revalidateConfirmationCtr == source || resetToolCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				updateModel();
 				fireEvent(ureq, Event.CHANGED_EVENT);
@@ -383,12 +390,18 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(invalidateConfirmationCtr);
+		removeAsListenerAndDispose(revalidateConfirmationCtr);
+		removeAsListenerAndDispose(retrieveConfirmationCtr);
 		removeAsListenerAndDispose(correctionCtrl);
 		removeAsListenerAndDispose(resetToolCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(resultCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
+		invalidateConfirmationCtr = null;
+		revalidateConfirmationCtr = null;
+		retrieveConfirmationCtr = null;
 		correctionCtrl = null;
 		resetToolCtrl = null;
 		calloutCtrl = null;
@@ -415,17 +428,15 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 					}
 				} else if("correction".equals(cmd)) {
 					doCorrection(ureq, testSession);
-				} else if("log".equals(cmd)) {
-					doDownloadLog(ureq, testSession);
+				} else if("invalidate".equals(cmd)) {
+					confirmInvalidateTestSession(ureq, testSession);
 				}
 			}
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			if(link.getCmd().startsWith("tools")) {
-				this.doTools(ureq, link, (QTI21AssessmentTestSessionDetails)link.getUserObject());
+				doTools(ureq, link, (QTI21AssessmentTestSessionDetails)link.getUserObject());
 			}
-			
-			
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -586,6 +597,36 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		listenTo(cmc);
 	}
 	
+	private void confirmInvalidateTestSession(UserRequest ureq, AssessmentTestSession session) {
+		if(guardModalController(invalidateConfirmationCtr)) return;
+		
+		AssessmentTestSession lastSession = tableModel.getLastTestSession();
+		boolean isLastSession = session.equals(lastSession);
+		invalidateConfirmationCtr = new ConfirmAssessmentTestSessionInvalidationController(ureq, getWindowControl(),
+				session, isLastSession, courseNode, assessedUserCourseEnv);
+		listenTo(invalidateConfirmationCtr);
+
+		String title = translate("invalidate.test.confirm.title");
+		cmc = new CloseableModalController(getWindowControl(), "close", invalidateConfirmationCtr.getInitialComponent(),
+				true, title);
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void confirmRevalidateTestSession(UserRequest ureq, AssessmentTestSession session) {
+		if(guardModalController(revalidateConfirmationCtr)) return;
+		
+		revalidateConfirmationCtr = new ConfirmAssessmentTestSessionRevalidationController(ureq, getWindowControl(),
+				session, courseNode, assessedUserCourseEnv);
+		listenTo(revalidateConfirmationCtr);
+
+		String title = translate("revalidate.test.confirm.title");
+		cmc = new CloseableModalController(getWindowControl(), "close", revalidateConfirmationCtr.getInitialComponent(),
+				true, title);
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
 	private void doTools(UserRequest ureq, FormLink link, QTI21AssessmentTestSessionDetails row) {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(toolsCtrl);
@@ -654,6 +695,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		
 		private Link pdfLink;
 		private Link logLink;
+		private Link revalidateLink;
 		
 		private final QTI21AssessmentTestSessionDetails row;
 		
@@ -662,11 +704,18 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			this.row = row;
 			
 			VelocityContainer mainVC = createVelocityContainer("details_tools");
-			pdfLink = LinkFactory.createLink("download.pdf", mainVC, this);
-			pdfLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_pdf");
-			logLink = LinkFactory.createLink("download.log", mainVC, this);
-			logLink.setIconLeftCSS("o_icon o_icon-fw o_icon_log");	
+			if(pdfModule.isEnabled()) {
+				pdfLink = LinkFactory.createLink("download.pdf", mainVC, this);
+				pdfLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_pdf");
+			}
 			
+			logLink = LinkFactory.createLink("download.log", mainVC, this);
+			logLink.setIconLeftCSS("o_icon o_icon-fw o_icon_log");
+			
+			if(row.getTestSession().isCancelled()) {
+				revalidateLink = LinkFactory.createLink("revalidate.test", mainVC, this);
+				revalidateLink.setIconLeftCSS("o_icon o_icon-fw o_icon_log");
+			}
 			putInitialPanel(mainVC);
 		}
 
@@ -682,6 +731,8 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 				doDownloadPdf(ureq, row);
 			} else if(logLink == source) {
 				doDownloadLog(ureq, row.getTestSession());
+			} else if(revalidateLink == source) {
+				confirmRevalidateTestSession(ureq, row.getTestSession());
 			}
 		}
 	}

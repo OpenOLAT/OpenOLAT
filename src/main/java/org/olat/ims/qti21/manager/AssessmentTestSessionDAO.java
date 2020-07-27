@@ -83,6 +83,7 @@ public class AssessmentTestSessionDAO {
 		testSession.setAssessmentEntry(assessmentEntry);
 		testSession.setAuthorMode(authorMode);
 		testSession.setExploded(false);
+		testSession.setCancelled(false);
 		testSession.setIdentity(identity);
 		testSession.setAnonymousIdentifier(anonymousIdentifier);
 		testSession.setStorage(createSessionStorage(testSession));
@@ -116,8 +117,8 @@ public class AssessmentTestSessionDAO {
 		if(identity != null) {
 			sb.append(" and session.identity.key=:identityKey");
 		}
-		
-		sb.append(" order by session.creationDate desc");
+		sb.append(" and session.exploded=false and session.cancelled=false")
+		  .append(" order by session.creationDate desc");
 		
 		TypedQuery<AssessmentTestSession> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AssessmentTestSession.class)
@@ -298,7 +299,7 @@ public class AssessmentTestSessionDAO {
 				.setFirstResult(0)
 				.setMaxResults(1)
 				.getResultList();
-		return sessionKey != null && sessionKey.size() > 0 && sessionKey.get(0) != null;
+		return sessionKey != null && !sessionKey.isEmpty() && sessionKey.get(0) != null;
 	}
 	
 	/**
@@ -318,11 +319,12 @@ public class AssessmentTestSessionDAO {
 	
 	/**
 	 * The assessment test sessions of authenticated users (fetched in the query).
+	 * Invalid sessions like exploded and cancelled are excluded.
 	 * 
 	 * @param courseEntry
 	 * @param courseSubIdent
 	 * @param testEntry
-	 * @return
+	 * @return A list of valid test sessions
 	 */
 	public List<AssessmentTestSession> getTestSessions(RepositoryEntryRef courseEntry, String courseSubIdent, RepositoryEntry testEntry) {
 		StringBuilder sb = new StringBuilder();
@@ -331,13 +333,14 @@ public class AssessmentTestSessionDAO {
 		  .append(" left join fetch testEntry.olatResource testResource")
 		  .append(" inner join fetch session.identity assessedIdentity")
 		  .append(" inner join fetch assessedIdentity.user assessedUser")
-		  .append("  where session.repositoryEntry.key=:repositoryEntryKey and session.testEntry.key=:testEntryKey and ");
+		  .append(" where session.repositoryEntry.key=:repositoryEntryKey and session.testEntry.key=:testEntryKey and ");
 		if(StringHelper.containsNonWhitespace(courseSubIdent)) {
 			sb.append("session.subIdent=:subIdent");
 		} else {
 			sb.append("session.subIdent is null");
 		}
-		sb.append(" order by session.creationDate desc");
+		sb.append(" and session.exploded=false and session.cancelled=false")
+		  .append(" order by session.creationDate desc");
 		
 		TypedQuery<AssessmentTestSession> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AssessmentTestSession.class)
@@ -349,19 +352,26 @@ public class AssessmentTestSessionDAO {
 		return query.getResultList();
 	}
 	
-	public List<AssessmentTestSession> getUserTestSessions(IdentityRef identity) {
+	/**
+	 * A complete list of test sessions inclusive exploded and/or cancelled.
+	 * 
+	 * @param identity The assessed identity
+	 * @return A list of test sessions
+	 */
+	protected List<AssessmentTestSession> getAllUserTestSessions(IdentityRef identity) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select session from qtiassessmenttestsession session")
 		  .append(" left join fetch session.testEntry testEntry")
 		  .append(" left join fetch testEntry.olatResource testResource")
-		  .append(" where session.identity.key=:identityKey ");;
+		  .append(" where session.identity.key=:identityKey ");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AssessmentTestSession.class)
 				.setParameter("identityKey", identity.getKey())
 				.getResultList();
 	}
 
-	public List<AssessmentTestSession> getUserTestSessions(RepositoryEntryRef courseEntry, String courseSubIdent, IdentityRef identity) {
+	public List<AssessmentTestSession> getUserTestSessions(RepositoryEntryRef courseEntry, String courseSubIdent,
+			IdentityRef identity, boolean onlyValid) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select session from qtiassessmenttestsession session")
 		  .append(" left join fetch session.testEntry testEntry")
@@ -372,8 +382,11 @@ public class AssessmentTestSessionDAO {
 		} else {
 			sb.append("session.subIdent is null");
 		}
+		if(onlyValid) {
+			sb.append(" and session.exploded=false and session.cancelled=false");
+		}
 		sb.append(" order by session.creationDate desc");
-		
+
 		TypedQuery<AssessmentTestSession> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AssessmentTestSession.class)
 				.setParameter("repositoryEntryKey", courseEntry.getKey())
@@ -384,7 +397,8 @@ public class AssessmentTestSessionDAO {
 		return query.getResultList();
 	}
 	
-	public List<AssessmentTestSessionStatistics> getUserTestSessionsStatistics(RepositoryEntryRef courseEntry, String courseSubIdent, IdentityRef identity) {
+	public List<AssessmentTestSessionStatistics> getUserTestSessionsStatistics(RepositoryEntryRef courseEntry, String courseSubIdent,
+			IdentityRef identity, boolean onlyValid) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select session,")
 		  .append(" (select count(itemSession.key) from qtiassessmentitemsession itemSession")
@@ -393,11 +407,15 @@ public class AssessmentTestSessionDAO {
 		  .append(" from qtiassessmenttestsession session")
 		  .append(" left join fetch session.testEntry testEntry")
 		  .append(" left join fetch testEntry.olatResource testResource")
-		  .append("  where session.repositoryEntry.key=:repositoryEntryKey and session.identity.key=:identityKey and ");
+		  .append("  where session.repositoryEntry.key=:repositoryEntryKey and session.identity.key=:identityKey");
+		if(onlyValid) {
+			sb.append(" and session.exploded=false and session.cancelled=false");
+		}
+		
 		if(StringHelper.containsNonWhitespace(courseSubIdent)) {
-			sb.append("session.subIdent=:subIdent");
+			sb.append(" and session.subIdent=:subIdent");
 		} else {
-			sb.append("session.subIdent is null");
+			sb.append(" and session.subIdent is null");
 		}
 		sb.append(" order by session.creationDate desc");
 		
@@ -419,17 +437,29 @@ public class AssessmentTestSessionDAO {
 		return stats;
 	}
 	
+	/**
+	 * Returns the last test session with a finish or termination time,
+	 * last defined by the creation date and which is exploded or
+	 * cancelled.
+	 * 
+	 * @param courseEntry The entry
+	 * @param courseSubIdent The sub-identifier
+	 * @param testEntry The test repository entry
+	 * @param identity The assessed identity
+	 * @return The last test session with a finish or termination time, not exploded, not cancelled
+	 */
 	public AssessmentTestSession getLastUserTestSession(RepositoryEntryRef courseEntry, String courseSubIdent, RepositoryEntry testEntry, IdentityRef identity) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select session from qtiassessmenttestsession session")
 		  .append(" left join fetch session.testEntry testEntry")
 		  .append(" left join fetch testEntry.olatResource testResource")
-		  .append(" where session.repositoryEntry.key=:repositoryEntryKey and session.identity.key=:identityKey ")
-		  .append(" and session.testEntry.key=:testEntryKey and (session.finishTime is not null or session.terminationTime is not null) and ");
+		  .append(" where session.repositoryEntry.key=:repositoryEntryKey and session.identity.key=:identityKey")
+		  .append(" and session.testEntry.key=:testEntryKey and (session.finishTime is not null or session.terminationTime is not null)")
+		  .append(" and session.exploded=false and session.cancelled=false");
 		if(StringHelper.containsNonWhitespace(courseSubIdent)) {
-			sb.append("session.subIdent=:subIdent");
+			sb.append(" and session.subIdent=:subIdent");
 		} else {
-			sb.append("session.subIdent is null");
+			sb.append(" and session.subIdent is null");
 		}
 		sb.append(" order by session.creationDate desc");
 		
@@ -445,7 +475,7 @@ public class AssessmentTestSessionDAO {
 				.setFirstResult(0)
 				.setMaxResults(1)
 				.getResultList();
-		return sessions.size() > 0 ? sessions.get(0) : null;
+		return sessions.isEmpty() ? null : sessions.get(0);
 	}
 	
 	public List<AssessmentTestSession> getRunningTestSessions(RepositoryEntryRef entry, String courseSubIdent, RepositoryEntry testEntry) {
@@ -473,19 +503,28 @@ public class AssessmentTestSessionDAO {
 		return query.getResultList();
 	}
 	
+	/**
+	 * 
+	 * @param entry The repository entry (typically the course, or the test if not in a course) (mandatory)
+	 * @param courseSubIdent An optional sub-identifier
+	 * @param testEntry The test repository entry
+	 * @param identities The list of assessed identities
+	 * @return true if at least one of the identities has a running test session
+	 */
 	public boolean hasRunningTestSessions(RepositoryEntryRef entry, String courseSubIdent, RepositoryEntry testEntry, List<? extends IdentityRef> identities) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select session.key from qtiassessmenttestsession session")
 		  .append(" left join session.testEntry testEntry")
 		  .append(" left join testEntry.olatResource testResource")
 		  .append(" where session.repositoryEntry.key=:repositoryEntryKey and session.testEntry.key=:testEntryKey")
-		  .append(" and session.finishTime is null and session.terminationTime is null");
+		  .append(" and session.finishTime is null and session.terminationTime is null")
+		  .append(" and session.exploded=false and session.cancelled=false");
 		if(StringHelper.containsNonWhitespace(courseSubIdent)) {
 			sb.append(" and session.subIdent=:subIdent");
 		} else {
 			sb.append(" and session.subIdent is null");
 		}
-		if(identities != null && identities.size() > 0) {
+		if(identities != null && !identities.isEmpty()) {
 			sb.append(" and session.identity in (:identityKeys)");
 		}
 		
@@ -498,12 +537,12 @@ public class AssessmentTestSessionDAO {
 		if(StringHelper.containsNonWhitespace(courseSubIdent)) {
 			query.setParameter("subIdent", courseSubIdent);
 		}
-		if(identities != null && identities.size() > 0) {
+		if(identities != null && !identities.isEmpty()) {
 			query.setParameter("identityKeys", identities);
 		}
 		
 		List<Long> found = query.getResultList();
-		return found == null || found.isEmpty() || found.get(0) == null ? false : found.get(0) >= 0;
+		return found != null && !found.isEmpty() && found.get(0) != null && found.get(0) >= 0;
 	}
 	
 	public int deleteTestSession(AssessmentTestSession testSession) {
@@ -682,7 +721,8 @@ public class AssessmentTestSessionDAO {
 	 */
 	private static final void decorateTestSessionPermission(StringBuilder sb, QTI21StatisticSearchParams searchParams) {
 	  	sb.append(" where testSession.testEntry.key=:testEntryKey")
-	  	  .append("  and testSession.finishTime is not null and testSession.authorMode=false");
+	  	  .append(" and testSession.finishTime is not null and testSession.authorMode=false")
+		  .append(" and testSession.exploded=false and testSession.cancelled=false");
 		if(searchParams.getCourseEntry() != null || searchParams.getTestEntry() != null) {
 			sb.append(" and testSession.repositoryEntry.key=:repoEntryKey");
 		}

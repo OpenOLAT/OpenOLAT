@@ -28,6 +28,7 @@ package org.olat.course.nodes;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -107,6 +108,7 @@ import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
+import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.resultexport.QTI21ResultsExportMediaResource;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticsSecurityCallback;
@@ -609,6 +611,23 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			RepositoryEntry testEntry = IQEditController.getIQReference(getModuleConfiguration(), false);
 			CoreSpringFactory.getImpl(GradingService.class).assignGrader(testEntry, assessmentEntry, true);
 		}
+	}
+	
+	public void promoteAssessmentTestSession(AssessmentTestSession testSession, UserCourseEnvironment assessedUserCourseEnv, Identity coachingIdentity, Role by) {
+		AssessmentTest assessmentTest = loadAssessmentTest(testSession.getTestEntry());
+		Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
+
+		BigDecimal finalScore = testSession.getFinalScore();
+		Float score = finalScore == null ? null : finalScore.floatValue();
+		Boolean passed = testSession.getPassed();
+		if(testSession.getManualScore() != null && finalScore != null && cutValue != null) {
+			boolean calculated = finalScore.compareTo(BigDecimal.valueOf(cutValue.doubleValue())) >= 0;
+			passed = Boolean.valueOf(calculated);
+		}
+
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		ScoreEvaluation sceval = new ScoreEvaluation(score, passed, null, null, 1.0d, AssessmentRunStatus.done, testSession.getKey());
+		courseAssessmentService.updateScoreEvaluation(this, sceval, assessedUserCourseEnv, coachingIdentity, true, by);
 	}
 
 	/**

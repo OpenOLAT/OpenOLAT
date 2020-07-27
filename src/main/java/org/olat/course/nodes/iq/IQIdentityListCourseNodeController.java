@@ -542,7 +542,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		List<AssessmentTestSession> testSessions = new ArrayList<>(identities.size());
 		for(IdentityRef identity:identities) {
 			List<AssessmentTestSessionStatistics> sessionsStatistics = qtiService
-					.getAssessmentTestSessionsStatistics(getCourseRepositoryEntry(), courseNode.getIdent(), identity);
+					.getAssessmentTestSessionsStatistics(getCourseRepositoryEntry(), courseNode.getIdent(), identity, true);
 			if(!sessionsStatistics.isEmpty()) {
 				if(sessionsStatistics.size() > 1) {
 					Collections.sort(sessionsStatistics, new AssessmentTestSessionDetailsComparator());

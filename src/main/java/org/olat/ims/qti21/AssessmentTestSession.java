@@ -105,6 +105,10 @@ public interface AssessmentTestSession extends CreateInfo, ModifiedInfo {
 	
 	public void setExploded(boolean exploded);
 	
+	public boolean isCancelled();
+	
+	public void setCancelled(boolean cancelled);
+	
 	public String getStorage();
 	
 	
