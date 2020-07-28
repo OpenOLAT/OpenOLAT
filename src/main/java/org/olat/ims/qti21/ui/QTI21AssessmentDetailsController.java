@@ -143,6 +143,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private DialogBoxController retrieveConfirmationCtr;
 	private CloseableCalloutWindowController calloutCtrl;
 	private CorrectionIdentityAssessmentItemListController correctionCtrl;
+	private ConfirmReopenAssessmentEntryController reopenForCorrectionCtrl;
 	private ConfirmAssessmentTestSessionInvalidationController invalidateConfirmationCtr;
 	private ConfirmAssessmentTestSessionRevalidationController revalidateConfirmationCtr;
 
@@ -376,6 +377,15 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(reopenForCorrectionCtrl == source) {
+			cmc.deactivate();
+			AssessmentTestSession session = reopenForCorrectionCtrl.getAssessmentTestSession();
+			cleanUp();
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				fireEvent(ureq, Event.CHANGED_EVENT);
+				AssessmentTestSession testSession = qtiService.getAssessmentTestSession(session.getKey());
+				doOpenCorrection(ureq, testSession);
+			}
 		} else if(toolsCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				calloutCtrl.deactivate();
@@ -389,6 +399,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		removeAsListenerAndDispose(invalidateConfirmationCtr);
 		removeAsListenerAndDispose(revalidateConfirmationCtr);
 		removeAsListenerAndDispose(retrieveConfirmationCtr);
+		removeAsListenerAndDispose(reopenForCorrectionCtrl);
 		removeAsListenerAndDispose(correctionCtrl);
 		removeAsListenerAndDispose(resetToolCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
@@ -398,6 +409,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		invalidateConfirmationCtr = null;
 		revalidateConfirmationCtr = null;
 		retrieveConfirmationCtr = null;
+		reopenForCorrectionCtrl = null;
 		correctionCtrl = null;
 		resetToolCtrl = null;
 		calloutCtrl = null;
@@ -443,6 +455,16 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	}
 
 	private void doCorrection(UserRequest ureq, AssessmentTestSession session) {
+		boolean assessmentEntryDone = isAssessmentEntryDone();
+		if(assessmentEntryDone && !readOnly) {
+			confirmReopenAssessment(ureq, session);
+		} else {
+			doOpenCorrection(ureq, session);
+		}
+	}
+	
+	private void doOpenCorrection(UserRequest ureq, AssessmentTestSession session) {
+		boolean assessmentEntryDone = isAssessmentEntryDone();
 		RepositoryEntry testEntry = session.getTestEntry();
 		File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
 		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
@@ -454,11 +476,11 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			lastSessions.put(assessedIdentity, session);
 			Map<Identity, TestSessionState> testSessionStates = new HashMap<>();
 			testSessionStates.put(assessedIdentity, testSessionState);
-			boolean assessmentEntryDone = isCorrectionReadOnly();
+			boolean correctionReadOnly = readOnly || assessmentEntryDone;
 			CorrectionOverviewModel model = new CorrectionOverviewModel(entry, courseNode, testEntry,
 					resolvedAssessmentTest, manifestBuilder, lastSessions, testSessionStates);
 			correctionCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel,
-					model, assessedIdentity, assessmentEntryDone);
+					model, assessedIdentity, correctionReadOnly);
 			listenTo(correctionCtrl);
 			stackPanel.pushController(translate("correction"), correctionCtrl);
 		} catch(Exception e) {
@@ -467,9 +489,20 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		}
 	}
 	
-	private boolean isCorrectionReadOnly() {
-		if(readOnly) return true;
+	private void confirmReopenAssessment(UserRequest ureq, AssessmentTestSession session) {
+		if(guardModalController(reopenForCorrectionCtrl)) return;
 		
+		reopenForCorrectionCtrl = new ConfirmReopenAssessmentEntryController(ureq, getWindowControl(),
+				assessedUserCourseEnv, courseNode, session);
+		listenTo(reopenForCorrectionCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), "close", reopenForCorrectionCtrl.getInitialComponent(),
+				true, translate("reopen.assessment.title"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private boolean isAssessmentEntryDone() {
 		if(assessedUserCourseEnv != null) {
 			AssessmentEvaluation eval = assessedUserCourseEnv.getScoreAccounting().getScoreEvaluation(courseNode);
 			return eval != null && eval.getAssessmentStatus() == AssessmentEntryStatus.done;

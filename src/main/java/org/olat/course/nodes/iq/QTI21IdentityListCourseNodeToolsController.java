@@ -47,6 +47,7 @@ import org.olat.ims.qti21.model.jpa.AssessmentTestSessionStatistics;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.AssessmentTestSessionComparator;
+import org.olat.ims.qti21.ui.ConfirmReopenAssessmentEntryController;
 import org.olat.ims.qti21.ui.QTI21ResetDataController;
 import org.olat.ims.qti21.ui.QTI21RetrieveTestsController;
 import org.olat.ims.qti21.ui.assessment.CorrectionIdentityAssessmentItemListController;
@@ -82,6 +83,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	private ConfirmExtraTimeController extraTimeCtrl;
 	private QTI21RetrieveTestsController retrieveConfirmationCtr;
 	private CorrectionIdentityAssessmentItemListController correctionCtrl;
+	private ConfirmReopenAssessmentEntryController reopenForCorrectionCtrl;
 	
 	private RepositoryEntry testEntry;
 	private RepositoryEntry courseEntry;
@@ -166,7 +168,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(correctionLink == source) {
 			fireEvent(ureq, Event.CLOSE_EVENT);
-			doOpenCorrection(ureq);
+			doCorrection(ureq);
 		} else if(pullTestLink == source) {
 			fireEvent(ureq, Event.CLOSE_EVENT);
 			doConfirmPullSession(ureq, lastSession);
@@ -203,6 +205,10 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 			cmc.deactivate();
 			cleanUp();
 			fireAlteredEvent(ureq, event);
+		} else if(reopenForCorrectionCtrl == source) {
+			cmc.deactivate();
+			cleanUp();
+			doOpenCorrection(ureq);
 		} else if(cmc == source) {
 			cleanUp();
 			fireEvent(ureq, Event.CHANGED_EVENT);
@@ -221,17 +227,42 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(reopenForCorrectionCtrl);
 		removeAsListenerAndDispose(correctionCtrl);
 		removeAsListenerAndDispose(extraTimeCtrl);
 		removeAsListenerAndDispose(resetDataCtrl);
 		removeAsListenerAndDispose(cmc);
+		reopenForCorrectionCtrl = null;
 		correctionCtrl = null;
 		extraTimeCtrl = null;
 		resetDataCtrl = null;
 		cmc = null;
 	}
 	
+	private void doCorrection(UserRequest ureq) {
+		boolean assessmentEntryDone = isAssessementEntryDone();
+		if(assessmentEntryDone) {
+			doReopenForCorrection(ureq);
+		} else {
+			doOpenCorrection(ureq);
+		}	
+	}
+	
+	private void doReopenForCorrection(UserRequest ureq) {
+		if(guardModalController(reopenForCorrectionCtrl)) return;
+		
+		reopenForCorrectionCtrl = new ConfirmReopenAssessmentEntryController(ureq, getWindowControl(),
+				assessedUserCourseEnv, (IQTESTCourseNode)courseNode, null);
+		listenTo(reopenForCorrectionCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), "close", reopenForCorrectionCtrl.getInitialComponent(),
+				true, translate("reopen.assessment.title"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
 	private void doOpenCorrection(UserRequest ureq) {
+		boolean assessmentEntryDone = isAssessementEntryDone();
 		File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
 		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
 		ManifestBuilder manifestBuilder = ManifestBuilder.read(new File(unzippedDirRoot, "imsmanifest.xml"));
@@ -242,8 +273,8 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		testSessionStates.put(assessedIdentity, testSessionState);
 		CorrectionOverviewModel model = new CorrectionOverviewModel(courseEntry, testCourseNode, testEntry,
 				resolvedAssessmentTest, manifestBuilder, lastSessionMap, testSessionStates);
-		boolean readOnly = isAssessementEntryDone();
-		correctionCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel, model, assessedIdentity, readOnly);
+		
+		correctionCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel, model, assessedIdentity, assessmentEntryDone);
 		listenTo(correctionCtrl);
 		stackPanel.pushController(translate("tool.correction"), correctionCtrl);
 	}

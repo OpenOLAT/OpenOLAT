@@ -28,6 +28,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
@@ -49,6 +51,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -118,6 +122,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	private ConfirmExtraTimeController extraTimeCtrl;
 	private ValidationXmlSignatureController validationCtrl;
 	private CorrectionOverviewController correctionIdentitiesCtrl;
+	private ConfirmReopenAssessmentEntriesController reopenForCorrectionCtrl;
 	
 	private boolean modelDirty = false;
 
@@ -340,6 +345,16 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			} else if(event == Event.DONE_EVENT) {
 				loadModel(ureq);
 			}
+		} else if(reopenForCorrectionCtrl == source) {
+			CorrectionOverviewController correctionCtrl = (CorrectionOverviewController)reopenForCorrectionCtrl.getUserObject();
+			cmc.deactivate();
+			cleanUp();
+			if(event == Event.CHANGED_EVENT) {
+				doReopenAssessmentEntries(correctionCtrl);
+				doOpenCorrection(correctionCtrl);
+			} else if(event == Event.DONE_EVENT) {
+				doOpenCorrection(correctionCtrl);
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -367,10 +382,12 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	
 	@Override
 	protected void cleanUp() {
+		removeAsListenerAndDispose(reopenForCorrectionCtrl);
 		removeAsListenerAndDispose(retrieveConfirmationCtr);
 		removeAsListenerAndDispose(validationCtrl);
 		removeAsListenerAndDispose(extraTimeCtrl);
 		removeAsListenerAndDispose(resetDataCtrl);
+		reopenForCorrectionCtrl = null;
 		retrieveConfirmationCtr = null;
 		validationCtrl = null;
 		extraTimeCtrl = null;
@@ -431,14 +448,51 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	private void doStartCorrection(UserRequest ureq) {
 		AssessmentToolOptions asOptions = getOptions();
 
-		correctionIdentitiesCtrl = new CorrectionOverviewController(ureq, getWindowControl(), stackPanel,
+		CorrectionOverviewController correctionCtrl = new CorrectionOverviewController(ureq, getWindowControl(), stackPanel,
 				getCourseEnvironment(), asOptions, (IQTESTCourseNode)courseNode);
-		if(correctionIdentitiesCtrl.getNumberOfAssessedIdentities() == 0) {
+		long numOfAssessmentEntriesDone = usersTableModel.getObjects().stream()
+				.filter(row -> row.getAssessmentStatus() == AssessmentEntryStatus.done)
+				.count();
+		if(correctionCtrl.getNumberOfAssessedIdentities() == 0) {
 			showWarning("grade.nobody");
-			correctionIdentitiesCtrl = null;
+		} else if(numOfAssessmentEntriesDone > 0) {
+			doReopenForCorrection(ureq, correctionCtrl, numOfAssessmentEntriesDone);
 		} else {
-			listenTo(correctionIdentitiesCtrl);
-			stackPanel.pushController(translate("correction.test.title"), correctionIdentitiesCtrl);
+			doOpenCorrection(correctionCtrl);
+		}
+	}
+	
+	private void doOpenCorrection(CorrectionOverviewController correctionCtrl) {
+		correctionIdentitiesCtrl = correctionCtrl;
+		listenTo(correctionIdentitiesCtrl);
+		stackPanel.pushController(translate("correction.test.title"), correctionIdentitiesCtrl);
+	}
+	
+	private void doReopenForCorrection(UserRequest ureq, CorrectionOverviewController correctionCtrl, long numOfAssessmentEntriesDone) {
+		if(guardModalController(reopenForCorrectionCtrl)) return;
+		
+		reopenForCorrectionCtrl = new ConfirmReopenAssessmentEntriesController(ureq, getWindowControl(), numOfAssessmentEntriesDone);
+		reopenForCorrectionCtrl.setUserObject(correctionCtrl);
+		listenTo(reopenForCorrectionCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), "close", reopenForCorrectionCtrl.getInitialComponent(),
+				true, translate("reopen.assessments.title"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void doReopenAssessmentEntries(CorrectionOverviewController correctionCtrl) {
+		List<Identity> assessedIdentities = correctionCtrl.getAssessedIdentities();
+		Set<Long> assessedIdentitiesKeys = assessedIdentities.stream()
+				.map(Identity::getKey)
+				.collect(Collectors.toSet());
+		List<AssessedIdentityElementRow> rows = usersTableModel.getObjects();
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		for(AssessedIdentityElementRow row:rows) {
+			if(row.getAssessmentStatus() == AssessmentEntryStatus.done && assessedIdentitiesKeys.contains(row.getIdentityKey())) {
+				Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
+				doSetStatus(assessedIdentity, AssessmentEntryStatus.inReview, courseNode, course);
+				dbInstance.commitAndCloseSession();			}
 		}
 	}
 	

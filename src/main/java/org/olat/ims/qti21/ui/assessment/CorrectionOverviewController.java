@@ -109,7 +109,7 @@ public class CorrectionOverviewController extends BasicController implements Too
 			identifierToRefs.put(itemRef.getIdentifier(), itemRef);
 		}
 
-		List<Identity> assessedIdentities = getAssessedIdentities();
+		List<Identity> assessedIdentities = initializeAssessedIdentities();
 		model = new CorrectionOverviewModel(courseEntry, courseNode, testEntry,
 				resolvedAssessmentTest, manifestBuilder, assessedIdentities);
 		
@@ -134,7 +134,11 @@ public class CorrectionOverviewController extends BasicController implements Too
 		return model.getNumberOfAssessedIdentities();
 	}
 	
-	private List<Identity> getAssessedIdentities() {
+	public List<Identity> getAssessedIdentities() {
+		return model.getAssessedIdentities();
+	}
+	
+	private List<Identity> initializeAssessedIdentities() {
 		Set<Identity> identitiesSet;
 		if(asOptions.getGroup() != null) {
 			List<Identity> identities = businessGroupService.getMembers(asOptions.getGroup(), GroupRoles.participant.name());

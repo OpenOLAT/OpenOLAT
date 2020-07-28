@@ -52,11 +52,14 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
+import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Module.CorrectionWorkflow;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.ui.ConfirmReopenAssessmentEntryController;
 import org.olat.ims.qti21.ui.assessment.CorrectionIdentityTableModel.IdentityCols;
 import org.olat.ims.qti21.ui.assessment.components.CorrectedFlexiCellRenderer;
 import org.olat.ims.qti21.ui.assessment.components.NotCorrectedFlexiCellRenderer;
@@ -98,6 +101,7 @@ public class CorrectionIdentityListController extends FormBasicController {
 
 	private CloseableModalController cmc;
 	private ConfirmSaveTestsController confirmSaveTestCtrl;
+	private ConfirmReopenAssessmentEntryController reopenForCorrectionCtrl;
 	private CorrectionIdentityAssessmentItemListController identityItemListCtrl;
 
 	private final boolean isAdministrativeUser;
@@ -320,6 +324,14 @@ public class CorrectionIdentityListController extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(reopenForCorrectionCtrl == source) {
+			cmc.deactivate();
+			CorrectionIdentityRow row = (CorrectionIdentityRow)reopenForCorrectionCtrl.getUserObject();
+			cleanUp();
+			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
+				model.discardAssessmentEntryDone(row.getIdentity());
+				doOpenCorrection(ureq, row);
+			}
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -327,8 +339,10 @@ public class CorrectionIdentityListController extends FormBasicController {
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(reopenForCorrectionCtrl);
 		removeAsListenerAndDispose(confirmSaveTestCtrl);
 		removeAsListenerAndDispose(cmc);
+		reopenForCorrectionCtrl = null;
 		confirmSaveTestCtrl = null;
 		cmc = null;
 	}
@@ -361,10 +375,36 @@ public class CorrectionIdentityListController extends FormBasicController {
 		}
 		
 		Identity assessedIdentity = row.getIdentity();
-		boolean readOnly = model.isReadOnly(assessedIdentity); 
+		boolean assessmentEntryDone = model.isAssessmentEntryDone(assessedIdentity);
+		if(assessmentEntryDone) {
+			doReopenForCorrection(ureq, row);
+		} else {
+			doOpenCorrection(ureq, row);
+		}
+	}
+	
+	private void doReopenForCorrection(UserRequest ureq, CorrectionIdentityRow row) {
+		if(guardModalController(reopenForCorrectionCtrl)) return;
+
+		UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
+				.createAndInitUserCourseEnvironment(row.getIdentity(), model.getCourseEnvironment());
+		reopenForCorrectionCtrl = new ConfirmReopenAssessmentEntryController(ureq, getWindowControl(),
+				assessedUserCourseEnv, model.getCourseNode(), row.getCandidateSession());
+		reopenForCorrectionCtrl.setUserObject(row);
+		listenTo(reopenForCorrectionCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), "close", reopenForCorrectionCtrl.getInitialComponent(),
+				true, translate("reopen.assessment.title"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+
+	private void doOpenCorrection(UserRequest ureq, CorrectionIdentityRow row) {
+		Identity assessedIdentity = row.getIdentity();
+		boolean assessmentEntryDone = model.isAssessmentEntryDone(assessedIdentity);
 		String title = anonymous ? row.getUser() : userManager.getUserDisplayName(row.getIdentity());
 		identityItemListCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel,
-				model, assessedIdentity, title, readOnly);
+				model, assessedIdentity, title, assessmentEntryDone);
 		listenTo(identityItemListCtrl);
 		
 		String crumb;
