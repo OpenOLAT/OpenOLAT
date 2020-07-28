@@ -222,7 +222,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 	
 	private List<ResultDetail> createResultDetail (Identity identity, ZipOutputStream zout, String idDir) throws IOException {
 		List<ResultDetail> assessments = new ArrayList<>();
-		List<AssessmentTestSession> sessions = qtiService.getAssessmentTestSessions(entry, courseNode.getIdent(), identity);
+		List<AssessmentTestSession> sessions = qtiService.getAssessmentTestSessions(entry, courseNode.getIdent(), identity, true);
 		for (AssessmentTestSession session : sessions) {
 			Long assessmentID = session.getKey();
 			String idPath = idDir + translator.translate("table.user.attempt") + (sessions.indexOf(session)+1) + SEP;

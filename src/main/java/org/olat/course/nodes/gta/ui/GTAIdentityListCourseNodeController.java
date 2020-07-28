@@ -56,6 +56,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
@@ -218,12 +219,12 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 	}
 
 	@Override
-	protected void doSetDone(Identity assessedIdentity, CourseNode assessableCourseNode, ICourse course) {
-		super.doSetDone(assessedIdentity, assessableCourseNode, course);
+	protected void doSetStatus(Identity assessedIdentity, AssessmentEntryStatus status, CourseNode assessableCourseNode, ICourse course) {
+		super.doSetStatus(assessedIdentity, status, assessableCourseNode, course);
 		
 		TaskList taskList = gtaManager.getTaskList(getCourseRepositoryEntry(), (GTACourseNode)assessableCourseNode);
 		Task task = gtaManager.getTask(assessedIdentity, taskList);
-		if(task != null) {
+		if(task != null && status == AssessmentEntryStatus.done) {
 			gtaManager.updateTask(task, TaskProcess.graded, (GTACourseNode)assessableCourseNode, false, getIdentity(), Role.coach);
 		}
 	}

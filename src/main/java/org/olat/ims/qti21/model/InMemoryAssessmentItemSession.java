@@ -75,7 +75,7 @@ public class InMemoryAssessmentItemSession implements AssessmentItemSession {
 
 	@Override
 	public String getAssessmentItemIdentifier() {
-		return null;
+		return assessmentItemIdentifier;
 	}
 
 	@Override

@@ -160,11 +160,11 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private ContactFormController contactCtrl;
 	
 	@Autowired
-	private DB dbInstance;
+	protected DB dbInstance;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
-	private BaseSecurity securityManager;
+	protected BaseSecurity securityManager;
 	@Autowired
 	private GradingService gradingService;
 	@Autowired
@@ -987,14 +987,14 @@ public class IdentityListCourseNodeController extends FormBasicController
 			ICourse course = CourseFactory.loadCourse(courseEntry);
 			for(AssessedIdentityElementRow row:rows) {
 				Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
-				doSetDone(assessedIdentity, courseNode, course);
+				doSetStatus(assessedIdentity, AssessmentEntryStatus.done, courseNode, course);
 				dbInstance.commitAndCloseSession();
 			}
 			loadModel(ureq);
 		}
 	}
 	
-	protected void doSetDone(Identity assessedIdentity, CourseNode courseNode, ICourse course) {
+	protected void doSetStatus(Identity assessedIdentity, AssessmentEntryStatus status, CourseNode courseNode, ICourse course) {
 		Roles roles = securityManager.getRoles(assessedIdentity);
 		
 		IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, roles);
@@ -1003,11 +1003,10 @@ public class IdentityListCourseNodeController extends FormBasicController
 
 		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
 		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
-				AssessmentEntryStatus.done, null, scoreEval.getCurrentRunCompletion(),
+				status, null, scoreEval.getCurrentRunCompletion(),
 				scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 		courseAssessmentService.updateScoreEvaluation(courseNode, doneEval, assessedUserCourseEnv,
 				getIdentity(), false, Role.coach);
-		
 	}
 	
 	private void doUpdateCompletion(Double completion, AssessmentRunStatus status, Long assessedIdentityKey) {

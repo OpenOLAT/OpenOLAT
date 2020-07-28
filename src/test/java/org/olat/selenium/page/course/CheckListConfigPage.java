@@ -44,6 +44,13 @@ public class CheckListConfigPage {
 		return this;
 	}
 	
+	/**
+	 * Create a new check box with an optional score.
+	 * 
+	 * @param title the name of the checkbox
+	 * @param score The score or -1 if no score desired
+	 * @return Itself
+	 */
 	public CheckListConfigPage addCheckbox(String title, int score) {
 		By addCheckboxBy = By.className("o_sel_cl_new_checkbox");
 		OOGraphene.waitElement(addCheckboxBy, browser);
@@ -72,18 +79,55 @@ public class CheckListConfigPage {
 		return this;
 	}
 	
+	/**
+	 * Assert that the checkbox is in the edit list.
+	 * 
+	 * @param title The name of the check box
+	 * @return Itself
+	 */
 	public CheckListConfigPage assertOnCheckboxInList(String title) {
 		By checkboxBy = By.xpath("//fieldset[contains(@class,'o_sel_cl_edit_checklist')]//div[contains(@class,'o_table_flexi')]/table//td[contains(text(),'" + title + "')]");
 		OOGraphene.waitElement(checkboxBy, browser);
 		return this;
 	}
 	
+	/**
+	 * Select the tab to edit the assessment configuration.
+	 * 
+	 * @return Itself
+	 */
 	public CheckListConfigPage selectAssessmentConfiguration() {
 		By configBy = By.className("o_sel_cl_edit_assessment");
 		OOGraphene.selectTab("o_node_config", configBy, browser);
 		return this;
 	}
 	
+	/**
+	 * Disable the summing of points and the rule to
+	 * calculate passed with the cut value.
+	 * 
+	 * @return Itself
+	 */
+	public CheckListConfigPage disableScoring() {
+		By sumPointsBy = By.xpath("//fieldset[contains(@class,'o_sel_cl_edit_assessment')]//input[@name='points'][@value='on']");
+		OOGraphene.check(browser.findElement(sumPointsBy), Boolean.FALSE);
+		OOGraphene.waitBusy(browser);
+		
+		By passedBy = By.xpath("//fieldset[contains(@class,'o_sel_cl_edit_assessment')]//input[@name='passed'][@value='on']");
+		OOGraphene.check(browser.findElement(passedBy), Boolean.FALSE);
+		OOGraphene.waitBusy(browser);
+		
+		return this;
+	}
+	
+	/**
+	 * Set the minimal assessment configuration.
+	 * 
+	 * @param minScore The minimum number of points
+	 * @param maxScore The maximum number of points
+	 * @param cutValue The number of points to pass
+	 * @return Itself
+	 */
 	public CheckListConfigPage setScoring(int minScore, int maxScore, int cutValue) {
 		By minScoreBy = By.cssSelector("fieldset.o_sel_cl_edit_assessment input.o_sel_cl_min_score[type='text']");
 		OOGraphene.waitElement(minScoreBy, browser);

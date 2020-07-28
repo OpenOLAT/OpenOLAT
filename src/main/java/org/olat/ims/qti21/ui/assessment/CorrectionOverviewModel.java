@@ -262,7 +262,11 @@ public class CorrectionOverviewModel {
 		return manifestBuilder.getResourceBuilderByHref(itemRef.getHref().toString());
 	}
 	
-	public boolean isReadOnly(Identity assessedIdentity) {
+	public void discardAssessmentEntryDone(Identity assessedIdentity) {
+		assessedIdentitiesDone.remove(assessedIdentity);
+	}
+	
+	public boolean isAssessmentEntryDone(Identity assessedIdentity) {
 		Boolean done = assessedIdentitiesDone.computeIfAbsent(assessedIdentity, identity -> {
 			if(getCourseNode() != null) {
 				UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper

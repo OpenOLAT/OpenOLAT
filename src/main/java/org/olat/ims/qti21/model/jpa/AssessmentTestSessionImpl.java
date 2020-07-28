@@ -157,6 +157,14 @@ public class AssessmentTestSessionImpl implements AssessmentTestSession, Persist
      */
     @Column(name="q_exploded", nullable=false, insertable=true, updatable=true)
     private boolean exploded;
+    
+    /**
+     * Flag to indicate if this session was cancelled and will be ignored in
+     * assessment but the results are available.
+     */
+    @Column(name="q_cancelled", nullable=false, insertable=true, updatable=true)
+    private boolean cancelled;
+    
 
     @Override
 	public Long getKey() {
@@ -256,6 +264,16 @@ public class AssessmentTestSessionImpl implements AssessmentTestSession, Persist
 
 	public void setExploded(boolean exploded) {
 		this.exploded = exploded;
+	}
+
+	@Override
+	public boolean isCancelled() {
+		return cancelled;
+	}
+
+	@Override
+	public void setCancelled(boolean cancelled) {
+		this.cancelled = cancelled;
 	}
 
 	@Override

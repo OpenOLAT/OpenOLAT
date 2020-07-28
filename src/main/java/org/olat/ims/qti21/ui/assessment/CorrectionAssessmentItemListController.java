@@ -469,10 +469,10 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 						itemRef, itemNode);
 				itemCorrection.setItemSession(reloadItemSession);
 
-				boolean readOnly = model.isReadOnly(assessedIdentity);
+				boolean assessmentEntryDone = model.isAssessmentEntryDone(assessedIdentity);
 				identityItemCtrl = new CorrectionIdentityAssessmentItemNavigationController(ureq, getWindowControl(),
 						model.getTestEntry(), model.getResolvedAssessmentTest(), itemCorrection, listEntry,
-						selectedItemSessions, model, null, readOnly, true);
+						selectedItemSessions, model, null, assessmentEntryDone, true);
 				listenTo(identityItemCtrl);
 				updatePreviousNext();
 				

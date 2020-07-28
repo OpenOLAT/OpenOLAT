@@ -26,8 +26,10 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.course.assessment.AssessmentHelper;
@@ -40,7 +42,9 @@ import org.olat.ims.qti21.ui.QTI21AssessmentDetailsController.AssessmentTestSess
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataModel<QTI21AssessmentTestSessionDetails> {
+public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataModel<QTI21AssessmentTestSessionDetails> implements FlexiTableCssDelegate {
+	
+	private static final TSCols[] COLS = TSCols.values();
 	
 	private final Translator translator;
 	private AssessmentTestSession lastSession;
@@ -49,6 +53,10 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 		super(columnModel);
 		this.translator = translator;
 	}
+	
+	public AssessmentTestSession getLastTestSession() {
+		return lastSession;
+	}
 
 	@Override
 	public DefaultFlexiTableDataModel<QTI21AssessmentTestSessionDetails> createCopyWithEmptyList() {
@@ -56,17 +64,34 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 	}
 
 	@Override
+	public String getWrapperCssClass(FlexiTableRendererType type) {
+		return null;
+	}
+
+	@Override
+	public String getTableCssClass(FlexiTableRendererType type) {
+		return null;
+	}
+
+	@Override
+	public String getRowCssClass(FlexiTableRendererType type, int pos) {
+		QTI21AssessmentTestSessionDetails session = getObject(pos);
+		if(session.isError() || session.getTestSession().isExploded()) {
+			return "o_test_session_error";	
+		}
+		if(session.getTestSession().isCancelled()) {
+			return "o_test_session_cancelled";	
+		}
+		return null;
+	}
+
+	@Override
 	public Object getValueAt(int row, int col) {
 		QTI21AssessmentTestSessionDetails session = getObject(row);
 
-		switch(TSCols.values()[col]) {
-			case terminationTime: {
-				Date endTime = session.getTestSession().getTerminationTime();
-				if(endTime == null) {
-					endTime = session.getTestSession().getFinishTime();
-				}
-				return endTime;
-			}
+		switch(COLS[col]) {
+			case id: return session.getTestSession().getKey();
+			case terminationTime: return getTerminationTime(session);
 			case lastModified: return session.getTestSession().getLastModified();
 			case duration: {
 				if(session.getTestSession().getFinishTime() != null) {
@@ -102,23 +127,37 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 				return finished == null ? Boolean.FALSE : Boolean.TRUE;
 			}
 			case correction: return (lastSession != null && lastSession.equals(session.getTestSession()));
+			case invalidate: return !session.getTestSession().isCancelled() && !session.getTestSession().isExploded();
 			case tools: return session.getToolsLink();
 			default: return "ERROR";
 		}
+	}
+	
+	private Date getTerminationTime(QTI21AssessmentTestSessionDetails session) {
+		Date endTime = session.getTestSession().getTerminationTime();
+		if(endTime == null) {
+			endTime = session.getTestSession().getFinishTime();
+		}
+		return endTime;
 	}
 
 	@Override
 	public void setObjects(List<QTI21AssessmentTestSessionDetails> objects) {
 		super.setObjects(objects);
+		lastSession = null;
 		
 		List<QTI21AssessmentTestSessionDetails> sessions = new ArrayList<>(objects);
 		Collections.sort(sessions, new AssessmentTestSessionDetailsComparator());
-		if(sessions.size() > 0) {
-			lastSession = sessions.get(0).getTestSession();
+		for(QTI21AssessmentTestSessionDetails session:sessions) {
+			AssessmentTestSession testSession = session.getTestSession();
+			if(testSession != null && !testSession.isCancelled() && !testSession.isExploded()) {
+				lastSession = session.getTestSession();
+				break;
+			}
 		}
 	}
 
-	public enum TSCols implements FlexiColumnDef {
+	public enum TSCols implements FlexiSortableColumnDef {
 		terminationTime("table.header.terminationTime"),
 		lastModified("table.header.lastModified"),
 		duration("table.header.duration"),
@@ -131,7 +170,9 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 		finalScore("table.header.finalScore"),
 		open("table.header.action"),
 		correction("table.header.correction"),
-		tools("table.header.tools");
+		tools("table.header.tools"),
+		invalidate("table.header.invalidate"),
+		id("table.header.id");
 		
 		private final String i18nKey;
 		
@@ -142,6 +183,16 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 		@Override
 		public String i18nHeaderKey() {
 			return i18nKey;
+		}
+
+		@Override
+		public boolean sortable() {
+			return false;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
 		}
 	}
 }

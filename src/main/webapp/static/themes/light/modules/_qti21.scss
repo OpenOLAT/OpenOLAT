@@ -1368,6 +1368,10 @@ ul.testPartDrilldown {
 	margin-top: 0.5em;
 }
 
+tr.o_test_session_error>td, tr.o_test_session_cancelled>td {
+	text-decoration: line-through;
+}
+
 /* Statistics */
 /* Override the same for QTI 1.2 */
 ul.o_qti_statistics_answers li span.o_qti_statistics_answer {

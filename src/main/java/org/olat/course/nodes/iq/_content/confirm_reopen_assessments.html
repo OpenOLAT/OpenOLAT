@@ -1,0 +1,10 @@
+<p>$msg</p>
+<div class="o_button_group">
+	$r.render("cancel")
+	#if($r.available("reopen.assessment")) 
+		$r.render("reopen.assessment")
+	#end
+	#if($r.available("correction.readonly")) 
+		$r.render("correction.readonly")
+	#end
+</div>

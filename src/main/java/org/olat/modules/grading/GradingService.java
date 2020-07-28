@@ -236,6 +236,15 @@ public interface GradingService {
 	
 	public void appendTimeTo(GradingTimeRecordRef record, long addedTime, TimeUnit unit);
 	
+	/**
+	 * Check if the specified assignment has at least one minute of
+	 * recorded time.
+	 * 
+	 * @param assignment The assignment
+	 * @return true if at least one minute was recorded
+	 */
+	public boolean hasRecordedTime(GradingAssignment assignment);
+	
 	public String getCachedCourseElementTitle(RepositoryEntry entry, String subIdenty);
 	
 	/**

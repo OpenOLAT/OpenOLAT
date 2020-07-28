@@ -172,4 +172,48 @@ public class GradingTimeRecordDAOTest extends OlatTestCase {
 		GradingTimeRecord reloadedRecord = gradingTimesheetDao.loadByKey(record.getKey());
 		Assert.assertEquals(102l, reloadedRecord.getTime());
 	}
+	
+	@Test
+	public void hasRecordedTime() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("time-5");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(id);
+		AssessmentEntry assessment = assessmentEntryDao.createAssessmentEntry(id, null, entry, null, false, entry);
+		GraderToIdentity grader = gradedToIdentityDao.createRelation(entry, id);
+		GradingAssignment assignment = gradingAssignmentDao.createGradingAssignment(grader, entry, assessment, new Date(), null);
+		dbInstance.commit();
+
+		// create record
+		GradingTimeRecord record = gradingTimesheetDao.createRecord(grader, assignment, new Date());
+		dbInstance.commit();
+		// append time
+		gradingTimesheetDao.appendTimeInSeconds(record, 1l);
+		dbInstance.commitAndCloseSession();
+		
+		// check
+		boolean hasRecordedTime = gradingTimesheetDao.hasRecordedTime(assignment);
+		Assert.assertTrue(hasRecordedTime);
+	}
+	
+	@Test
+	public void hasNotRecordedTime() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("time-5");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(id);
+		AssessmentEntry assessment = assessmentEntryDao.createAssessmentEntry(id, null, entry, null, false, entry);
+		GraderToIdentity grader = gradedToIdentityDao.createRelation(entry, id);
+		GradingAssignment assignment = gradingAssignmentDao.createGradingAssignment(grader, entry, assessment, new Date(), null);
+		dbInstance.commitAndCloseSession();
+		
+		// check
+		boolean hasNotRecordedTime = gradingTimesheetDao.hasRecordedTime(assignment);
+		Assert.assertFalse(hasNotRecordedTime);
+
+		// create record
+		GradingTimeRecord record = gradingTimesheetDao.createRecord(grader, assignment, new Date());
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(record);
+		
+		// check
+		boolean hasStillNotRecordedTime = gradingTimesheetDao.hasRecordedTime(assignment);
+		Assert.assertFalse(hasStillNotRecordedTime);
+	}
 }
