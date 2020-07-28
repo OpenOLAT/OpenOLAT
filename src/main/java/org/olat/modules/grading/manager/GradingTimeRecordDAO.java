@@ -94,6 +94,23 @@ public class GradingTimeRecordDAO {
 		return records != null && !records.isEmpty() ? records.get(0) : null;
 	}
 	
+	public boolean hasRecordedTime(GradingAssignmentRef assignment) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select record from gradingtimerecord as record ")
+		  .append(" where record.assignment.key=:assignmentKey");
+		
+		List<GradingTimeRecord> records = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), GradingTimeRecord.class)
+				.setParameter("assignmentKey", assignment.getKey())
+				.getResultList();
+		
+		long time = 0l;
+		for(GradingTimeRecord record:records) {
+			time += record.getTime();
+		}
+		return time > 0l;
+	}
+	
 	public void appendTimeInSeconds(GraderToIdentity grader, GradingAssignmentRef assignment, Long addedTime, Date date) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("update gradingtimerecordappender set time=time+:addedTime, lastModified=:now")

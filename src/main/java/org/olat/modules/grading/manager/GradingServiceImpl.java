@@ -1095,6 +1095,11 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 	}
 
 	@Override
+	public boolean hasRecordedTime(GradingAssignment assignment) {
+		return gradingTimeRecordDao.hasRecordedTime(assignment);
+	}
+
+	@Override
 	public AssessmentEntry loadFullAssessmentEntry(AssessmentEntry assessmentEntry) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select data from assessmententry data")

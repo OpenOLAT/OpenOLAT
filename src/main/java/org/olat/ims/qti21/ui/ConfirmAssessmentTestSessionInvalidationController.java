@@ -35,11 +35,16 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.grading.GradingAssignment;
+import org.olat.modules.grading.GradingAssignmentStatus;
+import org.olat.modules.grading.GradingService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +67,7 @@ public class ConfirmAssessmentTestSessionInvalidationController extends FormBasi
 	private final Identity assessedIdentity;
 	private final boolean canUpdateAssessmentEntry;
 	private UserCourseEnvironment assessedUserCourseEnv;
+	private final GradingAssignment runningAssignment;
 	
 	@Autowired
 	private DB dbInstance;
@@ -69,6 +75,10 @@ public class ConfirmAssessmentTestSessionInvalidationController extends FormBasi
 	private QTI21Service qtiService;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private GradingService gradingService;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	/**
 	 * Invalidate the assessment test session linked to a course.
@@ -89,6 +99,7 @@ public class ConfirmAssessmentTestSessionInvalidationController extends FormBasi
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
 		canUpdateAssessmentEntry = lastSession && (getNextLastSession() != null);
+		runningAssignment = getRunningGradingAssignment();
 		initForm(ureq);
 	}
 	
@@ -109,15 +120,28 @@ public class ConfirmAssessmentTestSessionInvalidationController extends FormBasi
 		this.testEntry = testEntry;
 		this.assessedIdentity = assessedIdentity;
 		canUpdateAssessmentEntry = lastSession && (getNextLastSession() != null);
+		runningAssignment = null;
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer) {
+			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			String fullname = userManager.getUserDisplayName(session.getIdentity());
 			String text = translate("invalidate.test.confirm.text", new String[]{ fullname });
-			((FormLayoutContainer) formLayout).contextPut("msg", text);
+			layoutCont.contextPut("msg", text);
+			
+			if(runningAssignment != null) {
+				GradingAssignmentStatus assignmentStatus = runningAssignment.getAssignmentStatus();
+				if(assignmentStatus == GradingAssignmentStatus.assigned || assignmentStatus == GradingAssignmentStatus.inProcess) {
+					String warningText = translate("warning.assignment.inProcess");
+					layoutCont.contextPut("assignmentMsg", warningText);
+				} else if(assignmentStatus == GradingAssignmentStatus.done) {
+					String warningText = translate("warning.assignment.done");
+					layoutCont.contextPut("assignmentMsg", warningText);
+				}
+			}
 		}
 
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
@@ -127,6 +151,19 @@ public class ConfirmAssessmentTestSessionInvalidationController extends FormBasi
 		} else {
 			uifactory.addFormSubmitButton("invalidate", formLayout);
 		}
+	}
+	
+	private GradingAssignment getRunningGradingAssignment() {
+		if(courseNode == null) return null;
+		
+		if(gradingService.isGradingEnabled(session.getTestEntry(), null)) {
+			AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, assessedUserCourseEnv);
+			GradingAssignment assignment = gradingService.getGradingAssignment(session.getTestEntry(), assessmentEntry);
+			if(assignment != null && session.getKey().equals(assessmentEntry.getAssessmentId()) && gradingService.hasRecordedTime(assignment)) {
+				return assignment;
+			}
+		}
+		return null;
 	}
 
 	@Override
@@ -166,6 +203,16 @@ public class ConfirmAssessmentTestSessionInvalidationController extends FormBasi
 				}
 			}
 		}
+		
+		if(runningAssignment != null) {
+			GradingAssignmentStatus assignmentStatus = runningAssignment.getAssignmentStatus();
+			if(assignmentStatus == GradingAssignmentStatus.assigned
+					|| assignmentStatus == GradingAssignmentStatus.inProcess
+					|| assignmentStatus == GradingAssignmentStatus.done) {
+				gradingService.reopenAssignment(runningAssignment);
+			}
+		}
+		
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
