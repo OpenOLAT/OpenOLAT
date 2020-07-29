@@ -85,6 +85,8 @@ section below.
 #### 2. Setting up the database
 
 Prepare database permissions and initialize the database.
+
+*For PostgreSQL*: please check their PostgreSQL manual how to create a user and database.
  
 *For MySQL*: create a user 'openolat' and a database 'openolat'
 
@@ -95,7 +97,11 @@ UPDATE mysql.user SET HOST='localhost' WHERE USER='openolat' AND HOST='%';
 FLUSH PRIVILEGES;
 ```
 
-*For PostgreSQL*: please check their PostgreSQL manual how to create a user and database.
+The time zone needs to be set if you don't already defined it.
+
+```sql
+SET GLOBAL time_zone = 'Europe/Zurich';
+```
  
 Write the OpenOlat database schema to the OpenOlat database. Example for MySQL:
 
@@ -137,7 +143,7 @@ arguments to the VM arguments:
 
 Open the generated server.xml file and manually set the following parameters: 
 * In the "Context" element set parameter reloadable="false" 
-* In all "Connector" elements set paramter URIEncoding="UTF-8"
+* In all "Connector" elements set parameter URIEncoding="UTF-8"
 
 Option: to use the application server database connection pool configure a jdbc data
 resource in the "Context" element, set db.source=jndi in the olat.local.properties with
@@ -153,7 +159,7 @@ Next add the resource descriptor to your tomcat context descriptor.
 *For MySQL:*
 
 ```xml
-<Resource auth="Container" driverClassName="com.mysql.jdbc.Driver" type="javax.sql.DataSource"
+<Resource auth="Container" driverClassName="com.mysql.cj.jdbc.Driver" type="javax.sql.DataSource"
           maxIdle="4" maxTotal="16" maxWaitMillis="10000"
           name="jdbc/OpenOLATDS"
           password="olat" username="olat"

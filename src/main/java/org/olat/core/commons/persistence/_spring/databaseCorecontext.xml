@@ -25,7 +25,7 @@
 		<constructor-arg>
 			<props>
 			     <!-- Using datasource of hibernate -->
-				<prop key="hibernate.connection.driver_class">com.mysql.jdbc.Driver</prop>
+				<prop key="hibernate.connection.driver_class">com.mysql.cj.jdbc.Driver</prop>
 		        <prop key="hibernate.connection.url">jdbc:mysql://${db.host}:${db.host.port}/${db.name}${db.url.options.mysql}</prop>
 		        <prop key="hibernate.connection.username">${db.user}</prop>
 		        <prop key="hibernate.connection.password">${db.pass}</prop>
@@ -192,8 +192,8 @@
 	<!-- The mysql datasource checks upon startup whether the tables are of type InnoDB, if not it will not start. If you have an other type of transactional tables just switch back the spring config
 	to the normal  org.springframework.jdbc.datasource.DriverManagerDataSource and the check is gone.-->                  
 	<bean id="mysql_local_DataSource" class="org.olat.core.commons.persistence.InnoDBAwareDriverManagerDataSource" lazy-init="true" init-method="init">
-		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
-		<property name="url"><value>jdbc:mysql://${db.host}:${db.host.port}/${db.name}?useUnicode=true&amp;characterEncoding=UTF-8</value></property>
+		<property name="driverClassName" value="com.mysql.cj.jdbc.Driver" />
+		<property name="url"><value>jdbc:mysql://${db.host}:${db.host.port}/${db.name}${db.url.options.mysql}</value></property>
 		<property name="username" value="${db.user}" />
 		<property name="password" value="${db.pass}" />
 		<property name="dbVendor" value="${db.vendor}" />

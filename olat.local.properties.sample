@@ -34,7 +34,7 @@ db.user=openolat
 # the password of the OLAT database user
 db.pass=openolat
 # JDBC options (e.g., to set character channel behavior etc.)
-db.jdbc.options=useUnicode=true&amp;characterEncoding=UTF-8
+db.jdbc.options=?characterEncoding=UTF-8&connectionCollation=utf8_unicode_ci
 
 ########################################################################
 # Web application container (e.g., Tomcat) settings

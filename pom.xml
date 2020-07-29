@@ -71,7 +71,7 @@
 		<io.jsonwebtoken>0.10.7</io.jsonwebtoken>
 		<io.undertow>2.1.3.Final</io.undertow>
 		<jackson.version>2.11.1</jackson.version>
-		<org.mysql.version>5.1.46</org.mysql.version>
+		<org.mysql.version>8.0.21</org.mysql.version>
 		<org.postgresql.version>42.2.14</org.postgresql.version>
 		<org.infinispan.version>11.0.1.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
@@ -745,7 +745,7 @@
 	
 						<!-- common configuration shared by all executions -->
 						<configuration>
-							<driver>com.mysql.jdbc.Driver</driver>
+							<driver>com.mysql.cj.jdbc.Driver</driver>
 							<url>jdbc:mysql://localhost:${test.env.db.host.port}/${test.env.db.name}</url>
 							<username>${test.env.db.user}</username>
 							<password>${test.env.db.pass}</password>

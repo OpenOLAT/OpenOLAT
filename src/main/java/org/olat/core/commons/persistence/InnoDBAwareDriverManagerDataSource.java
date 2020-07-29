@@ -24,6 +24,7 @@
 */
 package org.olat.core.commons.persistence;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -60,36 +61,29 @@ public class InnoDBAwareDriverManagerDataSource extends DriverManagerDataSource 
 		if (!dbVendor.contains("mysql")) {
 			return;
 		}
-		
-		Statement statement = null;
-		try {
+
+		try(Connection connection = getConnection();
+				Statement statement = connection.createStatement()) {
 			log.info(Tracing.M_AUDIT, "Checking whether mysql tables support transactions based on innoDB tab...");
-			statement  = this.getConnection().createStatement();
 			statement.execute("show create table o_plock;");
+
 			ResultSet result = statement.getResultSet();
-			result.first();
-			String createTableCommand = result.getString("Create Table");
-			if (createTableCommand.contains("InnoDB")) {
-				log.info(Tracing.M_AUDIT, "Your mysql tables look like they support transactions, fine!");
+			if(result.next()) {
+				String createTableCommand = result.getString("Create Table");
+				if (createTableCommand.contains("InnoDB")) {
+					log.info(Tracing.M_AUDIT, "Your mysql tables look like they support transactions, fine!");
+				} else {
+					throw new StartupException("Your tables do not support transactions based on innoDB tables. Check your database server and enable innoDB engine! Your table currently runs: " + createTableCommand);
+				}
 			} else {
-				throw new StartupException("Your tables do not support transactions based on innoDB tables. Check your database server and enable innoDB engine! Your table currently runs: "+createTableCommand);
+				throw new StartupException("Cannot retrieve table informations.");
 			}
-			
+			result.close();
 		} catch (SQLException e) {
 			if (e.getMessage().contains("doesn't exist")) {
 				log.info(Tracing.M_AUDIT, "o_plock table does not yet exist, will check transaction support on next startup");
 			} else {
 				throw new StartupException("Could not execute db statement.", e);
-			}
-			
-		} finally {
-			try {
-				if (statement != null) {
-					statement.close();
-				}
-			} catch (SQLException e2){
-				log.warn("Could not close sql statement", e2);
-				throw new StartupException("Could not close sql statements.", e2);
 			}
 		}
 	}
