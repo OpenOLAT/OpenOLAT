@@ -36,6 +36,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
@@ -118,6 +119,8 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 	private DB dbInstance;
 	@Autowired
 	private MailManager mailManager;
+	@Autowired
+	private BaseSecurity securityManager;
 	@Autowired
 	private GradingModule gradingModule;
 	@Autowired
@@ -306,7 +309,11 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 		}
 		
 		for(IdentityTimeRecordStatistics record:records) {
-			GraderWithStatistics statistics = identityToStatistics.get(record.getKey());
+			Long graderIdentityKey = record.getKey();
+			GraderWithStatistics statistics = identityToStatistics.computeIfAbsent(graderIdentityKey, key -> {
+				Identity grader = securityManager.loadIdentityByKey(graderIdentityKey);
+				return new GraderWithStatistics(grader, GraderStatistics.empty(graderIdentityKey));
+			});
 			statistics.addRecordedTimeInSeconds(record.getTime());
 			statistics.addRecordedMetadataTimeInSeconds(record.getMetadataTime());
 		}
