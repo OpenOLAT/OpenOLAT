@@ -189,11 +189,11 @@ public class LinkRenderer extends DefaultComponentRenderer {
 					  .append(";\" ")
 					  .append("onclick=\"return o2cl_dirtyCheckOnly();\" ");
 				} else {
-					String href = StringHelper.containsNonWhitespace(link.getUrl()) ? link.getUrl() : "javascript:;";
+					boolean hasUrl = StringHelper.containsNonWhitespace(link.getUrl());
+					String href = hasUrl ? link.getUrl() : "javascript:;";
 					sb.append("href=\"").append(href).append("\" onclick=\"")
 					  .append(FormJSHelper.getJSFnCallFor(flexiLink.getRootForm(), elementId, 1))
-					  .append(";");
-					sb.append("\" ");
+					  .append("; ").append(" return false;", hasUrl).append("\" ");
 				}
 			} else if(link.isPopup()) {
 				try(StringOutput href = new StringOutput()) {
