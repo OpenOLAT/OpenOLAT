@@ -108,7 +108,8 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		}
 		
 		sb.append(" and asession.lastModified = (select max(a2session.lastModified) from qtiassessmenttestsession a2session")
-		  .append("   where asession.testEntry.key=a2session.testEntry.key and a2session.repositoryEntry.key=asession.repositoryEntry.key");
+		  .append("   where asession.testEntry.key=a2session.testEntry.key and a2session.repositoryEntry.key=asession.repositoryEntry.key")
+		  .append("   and a2session.exploded=false and a2session.cancelled=false");
 		if(searchParams.getNodeIdent() != null ) {
 			sb.append(" and a2session.subIdent=asession.subIdent");
 		} else {
@@ -125,7 +126,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 			sb.append(" and asession.identity.key in (select data.identity.key from assessmententry data")
 			  .append("   where data.repositoryEntry.key=asession.repositoryEntry.key")
 			  .append(" )");
-		} else if(searchParams.getLimitToGroups() != null && searchParams.getLimitToGroups().size() > 0) {
+		} else if(searchParams.getLimitToGroups() != null && !searchParams.getLimitToGroups().isEmpty()) {
 			sb.append(" and asession.identity.key in ( select membership.identity.key from bgroupmember membership")
 			  .append("   where membership.group in (:baseGroups) and membership.role='").append(GroupRole.participant).append("'")
 			  .append(" )");
@@ -164,7 +165,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 			//
 		} else if(searchParams.isViewAllUsers()) {
 			//
-		} else if(searchParams.getLimitToGroups() != null && searchParams.getLimitToGroups().size() > 0) {
+		} else if(searchParams.getLimitToGroups() != null && !searchParams.getLimitToGroups().isEmpty()) {
 			query.setParameter("baseGroups", searchParams.getLimitToGroups());
 		}
 	}
@@ -236,7 +237,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 			}
 			dataPos++;
 		}
-		if (rawDatas.size() == 0) {
+		if (rawDatas.isEmpty()) {
 			minScore = 0;
 		}
 		
@@ -344,7 +345,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		}
 
 		for(RawData result:results) {
-			Long numOfAnswers = result.getCount();;
+			Long numOfAnswers = result.getCount();
 			if(numOfAnswers != null && numOfAnswers.longValue() > 0) {
 				String stringuifiedResponse = result.getStringuifiedResponse();
 				for(int i=simpleChoices.size(); i-->0; ) {
@@ -377,7 +378,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		}
 
 		for(RawData result:results) {
-			Long numOfAnswers = result.getCount();;
+			Long numOfAnswers = result.getCount();
 			if(numOfAnswers != null && numOfAnswers.longValue() > 0) {
 				String stringuifiedResponse = result.getStringuifiedResponse();
 				for(int i=hottexts.size(); i-->0; ) {
@@ -410,7 +411,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		}
 
 		for(RawData result:results) {
-			Long numOfAnswers = result.getCount();;
+			Long numOfAnswers = result.getCount();
 			if(numOfAnswers != null && numOfAnswers.longValue() > 0) {
 				String stringuifiedResponse = result.getStringuifiedResponse();
 				for(int i=hotspotChoices.size(); i-->0; ) {
@@ -583,7 +584,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 			correctResponse = solution.toString();
 		}
 		
-		double points = Double.NaN;
+		double points;
 		if(numericalEntry.getScore() == null) {
 			points = 0.0d;//all score
 		} else  {

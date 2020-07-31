@@ -122,15 +122,17 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 				}
 				return "";
 			}
-			case open: {
-				Date finished = session.getTestSession().getFinishTime();
-				return finished == null ? Boolean.FALSE : Boolean.TRUE;
-			}
+			case open: return Boolean.valueOf(!isTestSessionOpen(session));
 			case correction: return (lastSession != null && lastSession.equals(session.getTestSession()));
-			case invalidate: return !session.getTestSession().isCancelled() && !session.getTestSession().isExploded();
+			case invalidate: return !isTestSessionOpen(session) && !session.getTestSession().isCancelled() && !session.getTestSession().isExploded();
 			case tools: return session.getToolsLink();
 			default: return "ERROR";
 		}
+	}
+	
+	private boolean isTestSessionOpen(QTI21AssessmentTestSessionDetails session) {
+		Date finished = session.getTestSession().getFinishTime();
+		return finished == null;
 	}
 	
 	private Date getTerminationTime(QTI21AssessmentTestSessionDetails session) {
