@@ -32,25 +32,34 @@ public class UserSearchTableSettings {
 	private final boolean bulkDelete;
 	private final boolean bulkOrganisationMove;
 	private final boolean statusFilter;
+	private final boolean tableSearch;
 	
-	private UserSearchTableSettings(boolean vCard, boolean bulkMail, boolean bulkOrganisationMove, boolean bulkDelete, boolean statusFilter) {
+	private UserSearchTableSettings(boolean vCard, boolean bulkMail, boolean bulkOrganisationMove, boolean bulkDelete, boolean statusFilter, boolean tableSearch) {
 		this.vCard = vCard;
 		this.bulkMail = bulkMail;
 		this.bulkDelete = bulkDelete;
 		this.bulkOrganisationMove = bulkOrganisationMove;
 		this.statusFilter = statusFilter;
+		this.tableSearch = tableSearch;
 	}
 	
-	public static UserSearchTableSettings none() {
-		return new UserSearchTableSettings(false, false, false, false, false);
+	/**
+	 * @return The table seetings with only the search enabled
+	 */
+	public static UserSearchTableSettings minimal() {
+		return new UserSearchTableSettings(false, false, false, false, false, true);
 	}
 	
-	public static UserSearchTableSettings withVCard(boolean bulkMail, boolean bulkOrganisationMove, boolean bulkDelete, boolean statusFilter) {
-		return new UserSearchTableSettings(false, bulkMail, bulkOrganisationMove, bulkDelete, statusFilter);
+	public static UserSearchTableSettings withVCard(boolean bulkMail, boolean bulkOrganisationMove, boolean bulkDelete, boolean statusFilter, boolean tableSearch) {
+		return new UserSearchTableSettings(false, bulkMail, bulkOrganisationMove, bulkDelete, statusFilter, tableSearch);
 	}
 	
 	public boolean isVCard() {
 		return vCard;
+	}
+	
+	public boolean isTableSearch() {
+		return tableSearch;
 	}
 	
 	public boolean isBulkMail() {

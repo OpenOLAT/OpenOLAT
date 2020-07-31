@@ -209,7 +209,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		tableEl.setExportEnabled(true);
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
-		tableEl.setSearchEnabled(true);
+		tableEl.setSearchEnabled(settings.isTableSearch());
 		tableEl.setAndLoadPersistedPreferences(ureq, "user_search_table");
 		
 		initBulkActions(formLayout);
