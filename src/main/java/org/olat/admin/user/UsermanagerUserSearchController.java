@@ -76,6 +76,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 
 	private final boolean showDelete;
 	private final boolean showEmailButton;
+	private final boolean showTableSearch;
 	private final boolean showStatusFilters;
 	private final boolean showOrganisationMove;
 	private final boolean isAdministrativeUser;
@@ -106,6 +107,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		showEmailButton = true;
 		showDelete = true;
 		showOrganisationMove = false;
+		showTableSearch = true;
 		
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 
@@ -131,12 +133,14 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	 * @param searchCreatedBefore
 	 */
 	public UsermanagerUserSearchController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackedPanel,
-			SearchIdentityParams predefinedQuery, boolean showEmailButton, boolean showOrganisationMove, boolean showDelete, boolean showStatusFilters) {
+			SearchIdentityParams predefinedQuery, boolean showEmailButton, boolean showOrganisationMove, boolean showDelete,
+			boolean showStatusFilters, boolean showTableSearch) {
 		super(ureq, wControl);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.showDelete = showDelete;
 		this.stackedPanel = stackedPanel;
 		this.showEmailButton = showEmailButton;
+		this.showTableSearch = showTableSearch;
 		this.showStatusFilters = showStatusFilters;
 		this.showOrganisationMove = showOrganisationMove;
 
@@ -144,7 +148,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		
 		tableCtr = new UserSearchTableController(ureq, getWindowControl(), stackedPanel,
-				UserSearchTableSettings.withVCard(showEmailButton, showOrganisationMove, showDelete, showStatusFilters));
+				UserSearchTableSettings.withVCard(showEmailButton, showOrganisationMove, showDelete, showStatusFilters, true));
 		listenTo(tableCtr);
 		tableCtr.loadModel(identityQueryParams);
 		putInitialPanel(tableCtr.getInitialComponent());
@@ -168,12 +172,13 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		this.stackedPanel = stackedPanel;
 		this.showEmailButton = showEmailButton;
 		showStatusFilters = false;
+		showTableSearch = false;
 		showOrganisationMove = false;
 		
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 
 		tableCtr = new UserSearchTableController(ureq, getWindowControl(), stackedPanel,
-				UserSearchTableSettings.withVCard(showEmailButton, false, showDelete, true));
+				UserSearchTableSettings.withVCard(showEmailButton, false, showDelete, true, true));
 		listenTo(tableCtr);
 		tableCtr.loadModel(identitiesList);
 		
@@ -229,11 +234,11 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		searchState.setDelegate(states);
 		searchFormCtrl.setStateEntry(searchState);
 		
-		doPushSearch(ureq);
+		doPushSearch(ureq, showTableSearch);
 		tableCtr.activate(ureq, entries, null);
 	}
 	
-	private void doPushSearch(UserRequest ureq) {
+	private void doPushSearch(UserRequest ureq, boolean withTableSearch) {
 		identityQueryParams = searchFormCtrl.getSearchIdentityParams();
 		if(identityQueryParams.getOrganisations() == null || identityQueryParams.getOrganisations().isEmpty()) {
 			identityQueryParams.setOrganisations(manageableOrganisations);
@@ -243,7 +248,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		tableCtr = new UserSearchTableController(ureq, bwControl, stackedPanel,
-				UserSearchTableSettings.withVCard(showEmailButton, showOrganisationMove, showDelete, showStatusFilters));
+				UserSearchTableSettings.withVCard(showEmailButton, showOrganisationMove, showDelete, showStatusFilters, withTableSearch));
 		listenTo(tableCtr);
 		tableCtr.loadModel(identityQueryParams);
 		stackedPanel.pushController("Results", tableCtr);
@@ -261,7 +266,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == searchFormCtrl) {
 			if (event == Event.DONE_EVENT) {
-				doPushSearch(ureq);
+				doPushSearch(ureq, false);
 			} else if (event == Event.CANCELLED_EVENT) {
 				fireEvent(ureq, Event.CANCELLED_EVENT);
 			}

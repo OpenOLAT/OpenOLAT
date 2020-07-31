@@ -76,7 +76,13 @@ public class ConfirmDeleteUserController extends FormBasicController {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layout = (FormLayoutContainer)formLayout;
 			String names = buildUserNameList(toDelete);
-			layout.contextPut("names", names);
+			String message;
+			if(toDelete.size() == 1) {
+				message = translate("readyToDelete.delete.confirm.single", names);
+			} else {
+				message = translate("readyToDelete.delete.confirm", names);
+			}
+			layout.contextPut("msg", message);
 			
 			FormLayoutContainer layoutCont = FormLayoutContainer.createDefaultFormLayout("confirm", getTranslator());
 			formLayout.add("confirm", layoutCont);

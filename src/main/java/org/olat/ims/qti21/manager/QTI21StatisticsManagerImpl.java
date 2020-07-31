@@ -112,7 +112,8 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		}
 		
 		sb.append(" and asession.lastModified = (select max(a2session.lastModified) from qtiassessmenttestsession a2session")
-		  .append("   where asession.testEntry.key=a2session.testEntry.key and a2session.repositoryEntry.key=asession.repositoryEntry.key");
+		  .append("   where asession.testEntry.key=a2session.testEntry.key and a2session.repositoryEntry.key=asession.repositoryEntry.key")
+		  .append("   and a2session.exploded=false and a2session.cancelled=false");
 		if(searchParams.getNodeIdent() != null ) {
 			sb.append(" and a2session.subIdent=asession.subIdent");
 		} else {

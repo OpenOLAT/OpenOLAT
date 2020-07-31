@@ -143,7 +143,7 @@ public class UserLifecycleOverviewController extends BasicController implements 
 		mainVC.put("tabPane", lifecycleTabbedPane);
 		
 		// ready to inactivate
-		readyToInactivateUserCtrl = new UserSearchTableController(ureq, getWindowControl(), stackPanel, UserSearchTableSettings.none());
+		readyToInactivateUserCtrl = new UserSearchTableController(ureq, getWindowControl(), stackPanel, UserSearchTableSettings.minimal());
 		listenTo(readyToInactivateUserCtrl);
 		lifecycleTabbedPane.addTab(translate("overview.ready.to.inactivate.user"), readyToInactivateUserCtrl.getInitialComponent());
 			
@@ -151,7 +151,7 @@ public class UserLifecycleOverviewController extends BasicController implements 
 		readyToInactivateUserCtrl.loadModel(readyToInactivateSearchParams);
 
 		// inactive
-		inactiveUserCtrl = new UserSearchTableController(ureq, getWindowControl(), stackPanel, UserSearchTableSettings.none());
+		inactiveUserCtrl = new UserSearchTableController(ureq, getWindowControl(), stackPanel, UserSearchTableSettings.minimal());
 		listenTo(inactiveUserCtrl);
 		lifecycleTabbedPane.addTab(translate("overview.inactive.user"), inactiveUserCtrl.getInitialComponent());
 
@@ -159,7 +159,7 @@ public class UserLifecycleOverviewController extends BasicController implements 
 		inactiveUserCtrl.loadModel(inactiveSearchParams);
 		
 		// ready to delete
-		readyToDeleteUserCtrl = new UserSearchTableController(ureq, getWindowControl(), stackPanel, UserSearchTableSettings.none());
+		readyToDeleteUserCtrl = new UserSearchTableController(ureq, getWindowControl(), stackPanel, UserSearchTableSettings.minimal());
 		listenTo(readyToDeleteUserCtrl);
 		lifecycleTabbedPane.addTab(translate("overview.ready.to.delete.user"), readyToDeleteUserCtrl.getInitialComponent());
 

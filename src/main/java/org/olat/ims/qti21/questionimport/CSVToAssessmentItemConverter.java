@@ -97,6 +97,7 @@ public class CSVToAssessmentItemConverter {
 	public void parse(String input) {
 		List<String[]> lines = getLines(input);
 		for(String[] line:lines) {
+			currentLine++;
 			processLine(line);
 		}
 		buildCurrentItem();
