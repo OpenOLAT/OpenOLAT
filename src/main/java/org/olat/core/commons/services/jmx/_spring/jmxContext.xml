@@ -12,9 +12,5 @@
 	<bean id="org.springframework.jmx.support.MBeanServerFactoryBean" class="org.springframework.jmx.support.MBeanServerFactoryBean">
 		<property name="locateExistingServerIfPossible" value="true" />
 	</bean>
-	
-	<bean id="registry" class="org.springframework.remoting.rmi.RmiRegistryFactoryBean" lazy-init="true">
-	  <property name="port" value="${jmx.rmi.port}"/>
-	</bean>	
 
 </beans>

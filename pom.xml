@@ -63,7 +63,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>1.8</targetJdk>
 		<org.springframework.version>5.2.8.RELEASE</org.springframework.version>
-		<org.hibernate.version>5.4.18.Final</org.hibernate.version>
+		<org.hibernate.version>5.4.19.Final</org.hibernate.version>
 		<apache.cxf>3.3.7</apache.cxf>
 		<apache.pdfbox>2.0.20</apache.pdfbox>
 		<apache.poi>4.1.2</apache.poi>
@@ -98,7 +98,6 @@
 	    <test.env.db.oracle.host>localhost</test.env.db.oracle.host>
 	    <test.env.db.oracle.host.port>1521</test.env.db.oracle.host.port>
 	    <test.env.instance.id>myolat</test.env.instance.id>
-	    <test.env.jmx.rmi.port.0>3000</test.env.jmx.rmi.port.0>
 	    <test.env.webdriver.browser>chrome</test.env.webdriver.browser>
 	    <test.env.webdriver.firefox.version>v0.27.0</test.env.webdriver.firefox.version>
 	    <test.env.webdriver.chrome.version>84.0.4147.30</test.env.webdriver.chrome.version>
@@ -1325,7 +1324,6 @@
 						<test.env.db.postgresql.pass>${test.env.db.postgresql.pass}</test.env.db.postgresql.pass>
 						<test.env.db.postgresql.host.port>${test.env.db.postgresql.host.port}</test.env.db.postgresql.host.port>
 						<test.env.instance.id>${test.env.instance.id}</test.env.instance.id>
-						<test.env.jmx.rmi.port.0>${test.env.jmx.rmi.port.0}</test.env.jmx.rmi.port.0>
 						<arquillian.launch>tomcat-7-managed</arquillian.launch>
 						<webdriver.browser>${test.env.webdriver.browser}</webdriver.browser>
 						<webdriver.firefox.version>${test.env.webdriver.firefox.version}</webdriver.firefox.version>
