@@ -62,8 +62,8 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>1.8</targetJdk>
-		<org.springframework.version>5.2.7.RELEASE</org.springframework.version>
-		<org.hibernate.version>5.4.18.Final</org.hibernate.version>
+		<org.springframework.version>5.2.8.RELEASE</org.springframework.version>
+		<org.hibernate.version>5.4.19.Final</org.hibernate.version>
 		<apache.cxf>3.3.7</apache.cxf>
 		<apache.pdfbox>2.0.20</apache.pdfbox>
 		<apache.poi>4.1.2</apache.poi>
@@ -73,11 +73,11 @@
 		<jackson.version>2.11.1</jackson.version>
 		<org.mysql.version>5.1.46</org.mysql.version>
 		<org.postgresql.version>42.2.14</org.postgresql.version>
-		<org.infinispan.version>11.0.0.Final</org.infinispan.version>
+		<org.infinispan.version>11.0.1.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>3.141.59</version.selenium>
 		<version.drone>2.5.1</version.drone>
-		<activemq.version>5.15.12</activemq.version>
+		<activemq.version>5.16.0</activemq.version>
 		<qtiworks.version>1.0.19</qtiworks.version>
 
 	    <!-- properties for testing and Q&A -->
@@ -98,7 +98,6 @@
 	    <test.env.db.oracle.host>localhost</test.env.db.oracle.host>
 	    <test.env.db.oracle.host.port>1521</test.env.db.oracle.host.port>
 	    <test.env.instance.id>myolat</test.env.instance.id>
-	    <test.env.jmx.rmi.port.0>3000</test.env.jmx.rmi.port.0>
 	    <test.env.webdriver.browser>chrome</test.env.webdriver.browser>
 	    <test.env.webdriver.firefox.version>v0.27.0</test.env.webdriver.firefox.version>
 	    <test.env.webdriver.chrome.version>84.0.4147.30</test.env.webdriver.chrome.version>
@@ -1336,7 +1335,6 @@
 						<test.env.db.postgresql.pass>${test.env.db.postgresql.pass}</test.env.db.postgresql.pass>
 						<test.env.db.postgresql.host.port>${test.env.db.postgresql.host.port}</test.env.db.postgresql.host.port>
 						<test.env.instance.id>${test.env.instance.id}</test.env.instance.id>
-						<test.env.jmx.rmi.port.0>${test.env.jmx.rmi.port.0}</test.env.jmx.rmi.port.0>
 						<arquillian.launch>tomcat-7-managed</arquillian.launch>
 						<webdriver.browser>${test.env.webdriver.browser}</webdriver.browser>
 						<webdriver.firefox.version>${test.env.webdriver.firefox.version}</webdriver.firefox.version>
