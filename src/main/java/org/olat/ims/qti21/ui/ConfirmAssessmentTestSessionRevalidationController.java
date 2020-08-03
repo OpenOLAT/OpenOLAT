@@ -85,7 +85,7 @@ public class ConfirmAssessmentTestSessionRevalidationController extends FormBasi
 		this.courseNode = courseNode;
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
-		canUpdateAssessmentEntry = canBeNextLastSession();
+		canUpdateAssessmentEntry = isNextLastSession(session);
 		runningAssignment = getRunningGradingAssignment();
 		initForm(ureq);
 	}
@@ -96,7 +96,7 @@ public class ConfirmAssessmentTestSessionRevalidationController extends FormBasi
 		this.session = session;
 		this.testEntry = testEntry;
 		this.assessedIdentity = assessedIdentity;
-		canUpdateAssessmentEntry = canBeNextLastSession();
+		canUpdateAssessmentEntry = isNextLastSession(session);
 		runningAssignment = null;
 		initForm(ureq);
 	}
@@ -109,7 +109,7 @@ public class ConfirmAssessmentTestSessionRevalidationController extends FormBasi
 			String text = translate("revalidate.test.confirm.text", new String[]{ fullname });
 			layoutCont.contextPut("msg", text);
 			
-			if(runningAssignment != null) {
+			if(runningAssignment != null && canUpdateAssessmentEntry) {
 				GradingAssignmentStatus assignmentStatus = runningAssignment.getAssignmentStatus();
 				if(assignmentStatus == GradingAssignmentStatus.assigned || assignmentStatus == GradingAssignmentStatus.inProcess) {
 					String warningText = translate("warning.assignment.inProcess");
@@ -159,7 +159,7 @@ public class ConfirmAssessmentTestSessionRevalidationController extends FormBasi
 		if(gradingService.isGradingEnabled(session.getTestEntry(), null)) {
 			AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, assessedUserCourseEnv);
 			GradingAssignment assignment = gradingService.getGradingAssignment(session.getTestEntry(), assessmentEntry);
-			if(assignment != null && session.getKey().equals(assessmentEntry.getAssessmentId())) {
+			if(assignment != null) {
 				return assignment;
 			}
 		}
@@ -170,35 +170,35 @@ public class ConfirmAssessmentTestSessionRevalidationController extends FormBasi
 		session.setCancelled(false);
 		session = qtiService.updateAssessmentTestSession(session);
 		dbInstance.commit();
-		
-		if(updateEntryResults) {
+
+		if(canUpdateAssessmentEntry) {
 			if(courseNode == null) {
-				qtiService.updateAssessmentEntry(session);
+				qtiService.updateAssessmentEntry(session, updateEntryResults);
 			} else {
-				courseNode.promoteAssessmentTestSession(session, assessedUserCourseEnv, getIdentity(), Role.coach);
+				courseNode.promoteAssessmentTestSession(session, assessedUserCourseEnv, updateEntryResults, getIdentity(), Role.coach);
+			}
+			
+			if(runningAssignment != null) {
+				GradingAssignmentStatus assignmentStatus = runningAssignment.getAssignmentStatus();
+				if(assignmentStatus == GradingAssignmentStatus.assigned
+						|| assignmentStatus == GradingAssignmentStatus.inProcess
+						|| assignmentStatus == GradingAssignmentStatus.done) {
+					gradingService.reopenAssignment(runningAssignment);
+				} else if(assignmentStatus == GradingAssignmentStatus.deactivated
+						|| assignmentStatus == GradingAssignmentStatus.unassigned) {
+					dbInstance.commit();// if the assessment was updated before
+					AssessmentEntry assessmentEntry = gradingService
+							.loadFullAssessmentEntry(runningAssignment.getAssessmentEntry());
+					RepositoryEntry referenceEntry = session.getTestEntry();
+					gradingService.assignGrader(referenceEntry, assessmentEntry, true);
+				}
 			}
 		}
-		
-		if(runningAssignment != null) {
-			GradingAssignmentStatus assignmentStatus = runningAssignment.getAssignmentStatus();
-			if(assignmentStatus == GradingAssignmentStatus.assigned
-					|| assignmentStatus == GradingAssignmentStatus.inProcess
-					|| assignmentStatus == GradingAssignmentStatus.done) {
-				gradingService.reopenAssignment(runningAssignment);
-			} else if(assignmentStatus == GradingAssignmentStatus.deactivated
-					|| assignmentStatus == GradingAssignmentStatus.unassigned) {
-				dbInstance.commit();// if the assessment was updated before
-				AssessmentEntry assessmentEntry = gradingService
-						.loadFullAssessmentEntry(runningAssignment.getAssessmentEntry());
-				RepositoryEntry referenceEntry = session.getTestEntry();
-				gradingService.assignGrader(referenceEntry, assessmentEntry, true);
-			}
-		}
-		
+
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
-	private boolean canBeNextLastSession() {
+	private boolean isNextLastSession(AssessmentTestSession testSession) {
 		List<AssessmentTestSession> sessions;
 		if(courseNode == null) {
 			sessions = qtiService.getAssessmentTestSessions(testEntry, null, assessedIdentity, true);
@@ -210,8 +210,8 @@ public class ConfirmAssessmentTestSessionRevalidationController extends FormBasi
 			return true;
 		}
 		
-		sessions.add(session);
+		sessions.add(testSession);
 		Collections.sort(sessions, new AssessmentTestSessionComparator(false));
-		return session.equals(sessions.get(0));
+		return testSession.equals(sessions.get(0));
 	}
 }

@@ -534,7 +534,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	}
 	
 	private void doUpdateEntry(AssessmentTestSession session) {
-		qtiService.updateAssessmentEntry(session);
+		qtiService.updateAssessmentEntry(session, true);
 	}
 	
 	private void doResetData(UserRequest ureq) {

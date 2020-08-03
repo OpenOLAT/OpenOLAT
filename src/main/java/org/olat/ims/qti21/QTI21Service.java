@@ -445,7 +445,7 @@ public interface QTI21Service {
 	 * @param candidateSession The assessment test tession.
 	 * @return The updated assessment entry
 	 */
-	public AssessmentEntry updateAssessmentEntry(AssessmentTestSession candidateSession);
+	public AssessmentEntry updateAssessmentEntry(AssessmentTestSession candidateSession, boolean updateScoring);
 	
 	/**
 	 * Sign the assessment result. Be careful, the file must not be changed
