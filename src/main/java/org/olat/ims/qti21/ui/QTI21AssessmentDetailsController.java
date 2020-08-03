@@ -567,7 +567,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private void doPullSession(UserRequest ureq, AssessmentTestSession session) {
 		//reload it to prevent lazy loading issues
 		session = qtiService.getAssessmentTestSession(session.getKey());
-		qtiService.pullSession(session, getSignatureOptions(session), getIdentity());
+		session = qtiService.pullSession(session, getSignatureOptions(session), getIdentity());
 		if(courseNode != null) {
 			courseNode.pullAssessmentTestSession(session, assessedUserCourseEnv, getIdentity(), Role.coach);
 		}

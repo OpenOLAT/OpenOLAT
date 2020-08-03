@@ -149,7 +149,7 @@ public interface GradingService {
 	
 	public List<GradingAssignmentWithInfos> getGradingAssignmentsWithInfos(GradingAssignmentSearchParameters searchParams);
 	
-	public void assignGrader(RepositoryEntry referenceEntry, AssessmentEntry assessmentEntry, boolean updateAssessmentDate);
+	public GradingAssignment assignGrader(RepositoryEntry referenceEntry, AssessmentEntry assessmentEntry, Date AssessmentDate, boolean updateAssessmentDate);
 	
 
 	public GradingAssignment extendAssignmentDeadline(GradingAssignment assignment, Date newDeadline);
@@ -169,7 +169,7 @@ public interface GradingService {
 	 */
 	public GradingAssignment assignmentDone(GradingAssignment assignment, Long metadatatime, Boolean visibleToUser);
 	
-	public GradingAssignment reopenAssignment(GradingAssignment assignment);
+	public GradingAssignment reopenAssignment(GradingAssignment assignment, Date assessmentDate);
 	
 
 	public void updateDeadline(RepositoryEntry referenceEntry, RepositoryEntryGradingConfiguration configuration);

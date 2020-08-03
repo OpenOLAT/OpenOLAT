@@ -188,7 +188,7 @@ public class GradingServiceTest extends OlatTestCase {
 		
 		//first assignment
 		for(int i=0; i<numOfAssessmentEntries; i++) {
-			gradingService.assignGrader(entry, assessmentEntries.get(i), true);
+			gradingService.assignGrader(entry, assessmentEntries.get(i), new Date(), true);
 		}
 		
 		List<GradingAssignment> assignmentsGrader1 = gradingAssignmentDao.getGradingAssignments(graderRelation1);
@@ -231,7 +231,7 @@ public class GradingServiceTest extends OlatTestCase {
 		
 		//first assignment
 		for(int i=0; i<numOfAssessmentEntries; i++) {
-			gradingService.assignGrader(entry, assessmentEntries.get(i), true);
+			gradingService.assignGrader(entry, assessmentEntries.get(i), new Date(), true);
 		}
 		
 		List<GradingAssignment> assignmentsGrader1 = gradingAssignmentDao.getGradingAssignments(graderRelation1);
@@ -272,7 +272,7 @@ public class GradingServiceTest extends OlatTestCase {
 		
 		//first assignment
 		for(int i=0; i<numOfAssessmentEntries; i++) {
-			gradingService.assignGrader(entry, assessmentEntries.get(i), true);
+			gradingService.assignGrader(entry, assessmentEntries.get(i), new Date(), true);
 		}
 		
 		List<GradingAssignment> assignmentsGrader1 = gradingAssignmentDao.getGradingAssignments(graderRelation1);
@@ -302,7 +302,7 @@ public class GradingServiceTest extends OlatTestCase {
 		absenceLeaveDao.createAbsenceLeave(grader, addDaysToNow(-12), addDaysToNow(-1), entry.getOlatResource(), null);
 		dbInstance.commitAndCloseSession();
 
-		gradingService.assignGrader(entry, assessment, true);
+		gradingService.assignGrader(entry, assessment, null, true);
 		dbInstance.commitAndCloseSession();
 		
 		List<GradingAssignment> assignmentsGrader = gradingAssignmentDao.getGradingAssignments(graderRelation);
@@ -325,7 +325,7 @@ public class GradingServiceTest extends OlatTestCase {
 				OresHelper.createOLATResourceableInstance("Holydays", 28l), null);
 		dbInstance.commitAndCloseSession();
 
-		gradingService.assignGrader(entry, assessment, true);
+		gradingService.assignGrader(entry, assessment, null, true);
 		dbInstance.commitAndCloseSession();
 		
 		List<GradingAssignment> assignmentsGrader = gradingAssignmentDao.getGradingAssignments(graderRelation);
@@ -348,7 +348,7 @@ public class GradingServiceTest extends OlatTestCase {
 				entry.getOlatResource(), "1200013");
 		dbInstance.commitAndCloseSession();
 
-		gradingService.assignGrader(entry, assessment, true);
+		gradingService.assignGrader(entry, assessment, new Date(), true);
 		dbInstance.commitAndCloseSession();
 		
 		List<GradingAssignment> assignmentsGrader = gradingAssignmentDao.getGradingAssignments(graderRelation);
@@ -371,7 +371,7 @@ public class GradingServiceTest extends OlatTestCase {
 				entry.getOlatResource(), null);
 		dbInstance.commitAndCloseSession();
 
-		gradingService.assignGrader(entry, assessment, true);
+		gradingService.assignGrader(entry, assessment, new Date(), true);
 		dbInstance.commitAndCloseSession();
 		
 		List<GradingAssignment> assignmentsGrader = gradingAssignmentDao.getGradingAssignments(graderRelation);
@@ -402,7 +402,7 @@ public class GradingServiceTest extends OlatTestCase {
 				entry.getOlatResource(), null);
 		dbInstance.commitAndCloseSession();
 
-		gradingService.assignGrader(entry, assessment, true);
+		gradingService.assignGrader(entry, assessment, new Date(), true);
 		dbInstance.commitAndCloseSession();
 		
 		List<GradingAssignment> assignmentsGrader = gradingAssignmentDao.getGradingAssignments(graderRelation);
@@ -430,7 +430,7 @@ public class GradingServiceTest extends OlatTestCase {
 				entry.getOlatResource(), "1200012");
 		dbInstance.commitAndCloseSession();
 
-		gradingService.assignGrader(entry, assessment, true);
+		gradingService.assignGrader(entry, assessment, new Date(), true);
 		dbInstance.commitAndCloseSession();
 		
 		List<GradingAssignment> assignmentsGrader = gradingAssignmentDao.getGradingAssignments(graderRelation);
@@ -743,7 +743,7 @@ public class GradingServiceTest extends OlatTestCase {
 		Assert.assertNotNull(graderRelation2);
 		
 		for(AssessmentEntry assessmentEntry:assessmentEntries) {
-			gradingService.assignGrader(entry, assessmentEntry, true);
+			gradingService.assignGrader(entry, assessmentEntry, new Date(), true);
 		}
 		dbInstance.commit();
 
@@ -780,7 +780,7 @@ public class GradingServiceTest extends OlatTestCase {
 		Assert.assertNotNull(graderRelation1);
 		
 		for(AssessmentEntry assessmentEntry:assessmentEntries) {
-			gradingService.assignGrader(entry, assessmentEntry, true);
+			gradingService.assignGrader(entry, assessmentEntry, new Date(), true);
 		}
 		dbInstance.commit();
 
@@ -807,7 +807,7 @@ public class GradingServiceTest extends OlatTestCase {
 		GraderToIdentity graderRelation = gradedToIdentityDao.createRelation(entry, grader);
 		dbInstance.commit();
 		
-		gradingService.assignGrader(entry, assessment, true);
+		gradingService.assignGrader(entry, assessment, new Date(), true);
 		dbInstance.commit();
 		
 		// check assignments

@@ -1054,7 +1054,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			
 			if(IQEditController.CORRECTION_GRADING.equals(correctionMode)) {
 				AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, userCourseEnv);
-				gradingService.assignGrader(testEntry, assessmentEntry, true);
+				gradingService.assignGrader(testEntry, assessmentEntry, new Date(), true);
 			}
 
 			assessmentNotificationsHandler.markPublisherNews(getIdentity(), userCourseEnv.getCourseEnvironment().getCourseResourceableId());

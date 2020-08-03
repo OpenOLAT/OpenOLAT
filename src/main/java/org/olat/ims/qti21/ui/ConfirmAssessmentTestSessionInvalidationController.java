@@ -201,7 +201,6 @@ public class ConfirmAssessmentTestSessionInvalidationController extends FormBasi
 				qtiService.updateAssessmentEntry(promotedSession, updateEntryResults);
 			} else {
 				courseNode.promoteAssessmentTestSession(promotedSession, assessedUserCourseEnv, updateEntryResults, getIdentity(), Role.coach);
-
 			}
 		}
 		
@@ -211,7 +210,7 @@ public class ConfirmAssessmentTestSessionInvalidationController extends FormBasi
 					|| assignmentStatus == GradingAssignmentStatus.inProcess
 					|| assignmentStatus == GradingAssignmentStatus.done) {
 				if(promotedSession != null) {
-					gradingService.reopenAssignment(runningAssignment);
+					gradingService.reopenAssignment(runningAssignment, promotedSession.getFinishTime());
 				} else {
 					gradingService.deactivateAssignment(runningAssignment);
 				}

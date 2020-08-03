@@ -183,14 +183,14 @@ public class ConfirmAssessmentTestSessionRevalidationController extends FormBasi
 				if(assignmentStatus == GradingAssignmentStatus.assigned
 						|| assignmentStatus == GradingAssignmentStatus.inProcess
 						|| assignmentStatus == GradingAssignmentStatus.done) {
-					gradingService.reopenAssignment(runningAssignment);
+					gradingService.reopenAssignment(runningAssignment, session.getFinishTime());
 				} else if(assignmentStatus == GradingAssignmentStatus.deactivated
 						|| assignmentStatus == GradingAssignmentStatus.unassigned) {
 					dbInstance.commit();// if the assessment was updated before
 					AssessmentEntry assessmentEntry = gradingService
 							.loadFullAssessmentEntry(runningAssignment.getAssessmentEntry());
 					RepositoryEntry referenceEntry = session.getTestEntry();
-					gradingService.assignGrader(referenceEntry, assessmentEntry, true);
+					gradingService.assignGrader(referenceEntry, assessmentEntry, session.getFinishTime(), true);
 				}
 			}
 		}
