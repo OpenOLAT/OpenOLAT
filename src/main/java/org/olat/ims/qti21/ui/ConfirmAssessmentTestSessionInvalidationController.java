@@ -159,7 +159,7 @@ public class ConfirmAssessmentTestSessionInvalidationController extends FormBasi
 		if(gradingService.isGradingEnabled(session.getTestEntry(), null)) {
 			AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, assessedUserCourseEnv);
 			GradingAssignment assignment = gradingService.getGradingAssignment(session.getTestEntry(), assessmentEntry);
-			if(assignment != null && session.getKey().equals(assessmentEntry.getAssessmentId()) && gradingService.hasRecordedTime(assignment)) {
+			if(assignment != null && session.getKey().equals(assessmentEntry.getAssessmentId())) {
 				return assignment;
 			}
 		}
@@ -193,8 +193,10 @@ public class ConfirmAssessmentTestSessionInvalidationController extends FormBasi
 		session.setCancelled(true);
 		session = qtiService.updateAssessmentTestSession(session);
 		dbInstance.commit();
+		
+		AssessmentTestSession promotedSession = null;
 		if(updateEntryResults) {
-			AssessmentTestSession promotedSession = getNextLastSession();
+			promotedSession = getNextLastSession();
 			if(promotedSession != null) {
 				if(courseNode == null) {
 					qtiService.updateAssessmentEntry(promotedSession);
@@ -209,7 +211,11 @@ public class ConfirmAssessmentTestSessionInvalidationController extends FormBasi
 			if(assignmentStatus == GradingAssignmentStatus.assigned
 					|| assignmentStatus == GradingAssignmentStatus.inProcess
 					|| assignmentStatus == GradingAssignmentStatus.done) {
-				gradingService.reopenAssignment(runningAssignment);
+				if(promotedSession != null) {
+					gradingService.reopenAssignment(runningAssignment);
+				} else {
+					gradingService.deactivateAssignment(runningAssignment);
+				}
 			}
 		}
 		
