@@ -182,7 +182,6 @@ public class ExceptionWindowController extends DefaultChiefController {
 		} else {
 			msg.contextPut("debug", Boolean.FALSE);			
 		}
-		msg.contextPut("listenerInfoRaw", componentListenerInfo);
 		msg.contextPut("listenerInfo", Formatter.escWithBR(componentListenerInfo).toString());			
 		msg.contextPut("stacktrace", OLATRuntimeException.throwableToHtml(th));			
 		

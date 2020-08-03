@@ -6,22 +6,20 @@
 <meta name="keywords" content="$r.translate("meta.keywords")" /> 
 <meta name="dcterms.creator" content="OpenOLAT - http://www.openolat.org" />
 <meta name="dcterms.subject" content="OpenOLAT - infinite learning - Your Open Source Learning Management System" />
-<meta name="dcterms.contributor" content="see http://www.openolat.org" />
+<meta name="dcterms.contributor" content="see https://www.openolat.org" />
 <meta name="dcterms.date" content="2010-03-16" />
 <meta name="dcterms.type" content="Interactive Resource" />
-<meta name="dcterms.identifier" content="http://www.openolat.org" />
-<meta name="dcterms.rights" content="http://www.openolat.org" />
+<meta name="dcterms.identifier" content="https://www.openolat.org" />
+<meta name="dcterms.rights" content="https://www.openolat.org" />
 ## hide toolbar on ios with minimal-ui
 <meta name="viewport" content="minimal-ui, width=device-width, initial-scale=1">
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
 ## <!-- IE cache -->
 <script>
-/* <![CDATA[ */
 #if($enforceTopFrame)
 if (top!=self){top.location=self.location+"?o_winrndo=1";}
 #end
 var o_info = new Object();
-/* ]]> */
 </script>
 ## jQuery libraries
 <script src='$r.staticLink("js/jquery/jquery-3.4.1.min.js")'></script>
@@ -52,9 +50,7 @@ var o_info = new Object();
 #end
 
 <script>
-/* <![CDATA[ */ 
   jQuery.noConflict();
-/* ]]> */
 </script>
 
 ## LAYOUT
@@ -159,6 +155,7 @@ $r.translate('error.time') ${time}
 				</form>
 			</div>
 			
+			#if($r.isTrue($debug))
 			<div class="o_box">
 				#o_togglebox_start("o_stacktrace" $r.translate("error.technical"))
 				<div class="o_copy_code o_nowrap">
@@ -167,13 +164,14 @@ $r.translate('error.time') ${time}
 				</div>
 				#o_togglebox_end()
 			</div>
-			
+			#end
 		</div>
 		## END ERROR AREA				
 		
 		<a id="o_toplink" href="#o_top" onclick="o_scrollToElement('#o_top');" title="$r.translateInAttribute("top.alt")">
 			<i class="o_icon o_icon_top"></i> $r.translate("top")</a>	
 	</div>
+</div>
 ## END #o_main -----
 
 ## ----- START footer ----------
