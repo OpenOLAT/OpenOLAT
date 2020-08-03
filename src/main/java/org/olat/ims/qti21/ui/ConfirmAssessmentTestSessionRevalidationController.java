@@ -137,13 +137,13 @@ public class ConfirmAssessmentTestSessionRevalidationController extends FormBasi
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		doInvalidateSession(ureq, canUpdateAssessmentEntry);
+		doValidateSession(ureq, canUpdateAssessmentEntry);
 	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(revalidateButton == source) {
-			doInvalidateSession(ureq, false);
+			doValidateSession(ureq, false);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -159,17 +159,18 @@ public class ConfirmAssessmentTestSessionRevalidationController extends FormBasi
 		if(gradingService.isGradingEnabled(session.getTestEntry(), null)) {
 			AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, assessedUserCourseEnv);
 			GradingAssignment assignment = gradingService.getGradingAssignment(session.getTestEntry(), assessmentEntry);
-			if(assignment != null && session.getKey().equals(assessmentEntry.getAssessmentId()) && gradingService.hasRecordedTime(assignment)) {
+			if(assignment != null && session.getKey().equals(assessmentEntry.getAssessmentId())) {
 				return assignment;
 			}
 		}
 		return null;
 	}
 	
-	private void doInvalidateSession(UserRequest ureq, boolean updateEntryResults) {
+	private void doValidateSession(UserRequest ureq, boolean updateEntryResults) {
 		session.setCancelled(false);
 		session = qtiService.updateAssessmentTestSession(session);
 		dbInstance.commit();
+		
 		if(updateEntryResults) {
 			if(courseNode == null) {
 				qtiService.updateAssessmentEntry(session);
@@ -184,6 +185,13 @@ public class ConfirmAssessmentTestSessionRevalidationController extends FormBasi
 					|| assignmentStatus == GradingAssignmentStatus.inProcess
 					|| assignmentStatus == GradingAssignmentStatus.done) {
 				gradingService.reopenAssignment(runningAssignment);
+			} else if(assignmentStatus == GradingAssignmentStatus.deactivated
+					|| assignmentStatus == GradingAssignmentStatus.unassigned) {
+				dbInstance.commit();// if the assessment was updated before
+				AssessmentEntry assessmentEntry = gradingService
+						.loadFullAssessmentEntry(runningAssignment.getAssessmentEntry());
+				RepositoryEntry referenceEntry = session.getTestEntry();
+				gradingService.assignGrader(referenceEntry, assessmentEntry, true);
 			}
 		}
 		
