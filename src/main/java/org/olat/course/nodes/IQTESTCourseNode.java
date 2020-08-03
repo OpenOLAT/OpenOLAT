@@ -609,7 +609,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		if(IQEditController.CORRECTION_GRADING.equals(correctionMode)) {
 			AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(this, assessedUserCourseEnv);
 			RepositoryEntry testEntry = IQEditController.getIQReference(getModuleConfiguration(), false);
-			CoreSpringFactory.getImpl(GradingService.class).assignGrader(testEntry, assessmentEntry, true);
+			CoreSpringFactory.getImpl(GradingService.class).assignGrader(testEntry, assessmentEntry, session.getFinishTime(), true);
 		}
 	}
 	

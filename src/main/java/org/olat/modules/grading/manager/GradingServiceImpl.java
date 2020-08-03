@@ -771,14 +771,18 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 	}
 
 	@Override
-	public void assignGrader(RepositoryEntry referenceEntry, AssessmentEntry assessmentEntry, boolean updateAssessmentDate) {	
+	public GradingAssignment assignGrader(RepositoryEntry referenceEntry, AssessmentEntry assessmentEntry, Date assessmentDate, boolean updateAssessmentDate) {	
+		if(assessmentDate == null) {
+			assessmentDate = new Date();
+		}
+		
 		GradingAssignment assignment = gradingAssignmentDao.getGradingAssignment(referenceEntry, assessmentEntry);
 		if(assignment != null && assignment.getGrader() != null) {
 			if(updateAssessmentDate) {
-				assignment.setAssessmentDate(new Date());
-				gradingAssignmentDao.updateAssignment(assignment);
+				assignment.setAssessmentDate(assessmentDate);
+				assignment = gradingAssignmentDao.updateAssignment(assignment);
 			}
-			return;
+			return assignment;
 		}
 		
 		GraderToIdentity choosedGrader = selectGrader(referenceEntry);
@@ -793,13 +797,13 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 		if(assignment == null) {
 			assignment = gradingAssignmentDao.createGradingAssignment(choosedGrader, referenceEntry, assessmentEntry, new Date(), deadLine);
 		} else {
-			assignment.setAssessmentDate(new Date());
+			assignment.setAssessmentDate(assessmentDate);
 			assignment.setDeadline(deadLine);
 			if(choosedGrader == null) {
 				assignment.setAssignmentStatus(GradingAssignmentStatus.unassigned);
 			} else {
 				assignment.setAssignmentStatus(GradingAssignmentStatus.assigned);
-				assignment.setAssignmentDate(new Date());
+				assignment.setAssignmentDate(assessmentDate);
 				assignment.setGrader(choosedGrader);
 			}
 			assignment = gradingAssignmentDao.updateAssignment(assignment);
@@ -811,9 +815,10 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 				sendGraderAsssignmentNotification(choosedGrader, referenceEntry, assignment, config);
 			}
 			assignment.setAssignmentNotificationDate(new Date());
-			gradingAssignmentDao.updateAssignment(assignment);
+			assignment = gradingAssignmentDao.updateAssignment(assignment);
 			dbInstance.commit();
 		}
+		return assignment;
 	}
 	
 	protected GraderToIdentity selectGrader(RepositoryEntry referenceEntry) {
@@ -1005,9 +1010,12 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 	}
 	
 	@Override
-	public GradingAssignment reopenAssignment(GradingAssignment assignment) {
+	public GradingAssignment reopenAssignment(GradingAssignment assignment, Date assessmentDate) {
 		assignment = gradingAssignmentDao.loadByKey(assignment.getKey());
 		assignment.setAssignmentStatus(GradingAssignmentStatus.assigned);
+		if(assessmentDate != null) {
+			assignment.setAssessmentDate(assessmentDate);
+		}
 		assignment.setClosingDate(null);
 		assignment = gradingAssignmentDao.updateAssignment(assignment);
 		log.info(Tracing.M_AUDIT, "Assignment reopened {}", assignment.getKey());
