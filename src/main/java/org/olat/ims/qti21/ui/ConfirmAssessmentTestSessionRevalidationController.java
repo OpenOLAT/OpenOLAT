@@ -75,7 +75,7 @@ public class ConfirmAssessmentTestSessionRevalidationController extends FormBasi
 		this.courseNode = courseNode;
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
-		canUpdateAssessmentEntry = canBeNextLastSession();
+		canUpdateAssessmentEntry = isNextLastSession(session);
 		initForm(ureq);
 	}
 	
@@ -85,7 +85,7 @@ public class ConfirmAssessmentTestSessionRevalidationController extends FormBasi
 		this.session = session;
 		this.testEntry = testEntry;
 		this.assessedIdentity = assessedIdentity;
-		canUpdateAssessmentEntry = canBeNextLastSession();
+		canUpdateAssessmentEntry = isNextLastSession(session);
 		initForm(ureq);
 	}
 
@@ -133,17 +133,18 @@ public class ConfirmAssessmentTestSessionRevalidationController extends FormBasi
 		session.setCancelled(false);
 		session = qtiService.updateAssessmentTestSession(session);
 		dbInstance.commit();
-		if(updateEntryResults) {
+
+		if(canUpdateAssessmentEntry) {
 			if(courseNode == null) {
-				qtiService.updateAssessmentEntry(session);
+				qtiService.updateAssessmentEntry(session, updateEntryResults);
 			} else {
-				courseNode.promoteAssessmentTestSession(session, assessedUserCourseEnv, getIdentity(), Role.coach);
+				courseNode.promoteAssessmentTestSession(session, assessedUserCourseEnv, updateEntryResults, getIdentity(), Role.coach);
 			}
 		}
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
-	private boolean canBeNextLastSession() {
+	private boolean isNextLastSession(AssessmentTestSession testSession) {
 		List<AssessmentTestSession> sessions;
 		if(courseNode == null) {
 			sessions = qtiService.getAssessmentTestSessions(testEntry, null, assessedIdentity, true);
@@ -155,8 +156,8 @@ public class ConfirmAssessmentTestSessionRevalidationController extends FormBasi
 			return true;
 		}
 		
-		sessions.add(session);
+		sessions.add(testSession);
 		Collections.sort(sessions, new AssessmentTestSessionComparator(false));
-		return session.equals(sessions.get(0));
+		return testSession.equals(sessions.get(0));
 	}
 }

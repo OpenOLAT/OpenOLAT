@@ -156,14 +156,14 @@ public class ConfirmAssessmentTestSessionInvalidationController extends FormBasi
 		session.setCancelled(true);
 		session = qtiService.updateAssessmentTestSession(session);
 		dbInstance.commit();
-		if(updateEntryResults) {
-			AssessmentTestSession promotedSession = getNextLastSession();
-			if(promotedSession != null) {
-				if(courseNode == null) {
-					qtiService.updateAssessmentEntry(promotedSession);
-				} else {
-					courseNode.promoteAssessmentTestSession(promotedSession, assessedUserCourseEnv, getIdentity(), Role.coach);
-				}
+
+		AssessmentTestSession promotedSession = getNextLastSession();
+		// choose to update or not: assessment of the assessment entry, push the score to the assessment entry
+		if(promotedSession != null) {
+			if(courseNode == null) {
+				qtiService.updateAssessmentEntry(promotedSession, updateEntryResults);
+			} else {
+				courseNode.promoteAssessmentTestSession(promotedSession, assessedUserCourseEnv, updateEntryResults, getIdentity(), Role.coach);
 			}
 		}
 		fireEvent(ureq, Event.CHANGED_EVENT);

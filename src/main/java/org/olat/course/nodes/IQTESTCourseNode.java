@@ -834,16 +834,22 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		updateUserScoreEvaluation(sceval, assessedUserCourseenv, coachingIdentity, true, by);
 	}
 	
-	public void promoteAssessmentTestSession(AssessmentTestSession testSession, UserCourseEnvironment assessedUserCourseEnv, Identity coachingIdentity, Role by) {
-		AssessmentTest assessmentTest = loadAssessmentTest(testSession.getTestEntry());
-		Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
-
-		BigDecimal finalScore = testSession.getFinalScore();
-		Float score = finalScore == null ? null : finalScore.floatValue();
-		Boolean passed = testSession.getPassed();
-		if(testSession.getManualScore() != null && finalScore != null && cutValue != null) {
-			boolean calculated = finalScore.compareTo(BigDecimal.valueOf(cutValue.doubleValue())) >= 0;
-			passed = Boolean.valueOf(calculated);
+	public void promoteAssessmentTestSession(AssessmentTestSession testSession, UserCourseEnvironment assessedUserCourseEnv,
+			boolean updateScoring, Identity coachingIdentity, Role by) {
+		
+		Float score = null;
+		Boolean passed = null;
+		if(updateScoring) {
+			AssessmentTest assessmentTest = loadAssessmentTest(testSession.getTestEntry());
+			Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
+	
+			BigDecimal finalScore = testSession.getFinalScore();
+			score = finalScore == null ? null : finalScore.floatValue();
+			passed = testSession.getPassed();
+			if(testSession.getManualScore() != null && finalScore != null && cutValue != null) {
+				boolean calculated = finalScore.compareTo(BigDecimal.valueOf(cutValue.doubleValue())) >= 0;
+				passed = Boolean.valueOf(calculated);
+			}
 		}
 		
 		ScoreEvaluation sceval = new ScoreEvaluation(score, passed, null, null, Boolean.TRUE,
