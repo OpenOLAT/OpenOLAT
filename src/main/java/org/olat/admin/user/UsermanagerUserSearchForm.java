@@ -141,8 +141,8 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 		statusValues = new String[] {
 				translate("rightsForm.status.activ"),
 				translate("rightsForm.status.permanent"),
-				translate("rightsForm.status.inactive"),
 				translate("rightsForm.status.pending"),
+				translate("rightsForm.status.inactive"),
 				translate("rightsForm.status.login_denied")
 		};
 		
