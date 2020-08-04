@@ -1424,7 +1424,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		break;
 		case efficiencystatement: {
 			if (efficiencyStatementsLink != null && efficiencyStatementsLink.isVisible()) {
-				doEmail(ureq);
+				doEfficiencyStatements(ureq);
 			} else {
 				doShowToolNotAvailable(CourseTool.efficiencystatement);
 			}
