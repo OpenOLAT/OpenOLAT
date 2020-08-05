@@ -66,6 +66,7 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	private boolean domReplacementWrapperRequired = false;
 	private boolean ownDirtyFormWarning = false;
 	private boolean newWindow;
+	private boolean newWindowAfterDispatchUrl;
 	private LinkPopupSettings popup;
 	private String iconLeftCSS;
 	private String iconRightCSS;
@@ -140,10 +141,16 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	public boolean isNewWindow() {
 		return newWindow;
 	}
+	
+	@Override
+	public boolean isNewWindowAfterDispatchUrl() {
+		return newWindowAfterDispatchUrl;
+	}
 
 	@Override
-	public void setNewWindow(boolean openInNewWindow) {
+	public void setNewWindow(boolean openInNewWindow, boolean afterDispatchUrl) {
 		newWindow = openInNewWindow;
+		newWindowAfterDispatchUrl = afterDispatchUrl;
 		if(component != null) {
 			component.setNewWindow(openInNewWindow);
 		}

@@ -28,7 +28,6 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
@@ -45,13 +44,7 @@ import org.olat.core.util.StringHelper;
  * Render the table as a long HTML table
  * @author Christian Guretzki
  */
-class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements ComponentRenderer {
-
-	@Override
-	public void render(Renderer renderer, StringOutput target, Component source, URLBuilder ubu,
-			Translator translator, RenderResult renderResult, String[] args) {
-		super.render(renderer, target, source, ubu, translator, renderResult, args);
-	}
+class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 	
 	@Override
 	protected void renderHeaders(StringOutput target, FlexiTableComponent ftC, Translator translator) {

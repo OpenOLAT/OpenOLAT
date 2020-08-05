@@ -55,6 +55,30 @@ public class CommandFactory {
 		return c;
 	}
 	
+	public static Command createNewWindowRedirectTo(String redirectURL) {
+		JSONObject root = new JSONObject();
+		try {
+			root.put("nwrurl", redirectURL);
+		} catch (JSONException e) {
+			throw new AssertException("wrong data put into json object", e);
+		}
+		Command c = new Command(8);
+		c.setSubJSON(root);
+		return c;
+	}
+	
+	public static Command createNewWindowCancelRedirectTo() {
+		JSONObject root = new JSONObject();
+		try {
+			root.put("nwrurl", "close-window");
+		} catch (JSONException e) {
+			throw new AssertException("wrong data put into json object", e);
+		}
+		Command c = new Command(8);
+		c.setSubJSON(root);
+		return c;
+	}
+	
 	/**
 	 * command to replace sub tree of the dom with html-fragments and execute the script-tags of the fragments
 	 * @return

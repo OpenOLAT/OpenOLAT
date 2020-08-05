@@ -37,13 +37,25 @@ public interface FormLink extends FormItem {
 	
 	public boolean isNewWindow();
 	
+	public boolean isNewWindowAfterDispatchUrl();
+	
 	/**
-	 * Use this with caution! A link which opens in a new window
-	 * will not commit the form changes.
+	 * Specify if the link open a new window. This is not equivalent to the
+	 * method setUrl to open the link in a new window with Ctrl + click. The
+	 * @param afterDispatchUrl allow to specify the target URL after the link
+	 * was clicked and the controller dispatched. To push the URL use:
 	 * 
-	 * @param true/false
+	 * {@code getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url))}
+	 * 
+	 * or to abort the operation and close the window after dispatching:
+	 * 
+	 * {@code getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo())}
+	 * 
+	 * @param openInNewWindow Open a new window
+	 * @param afterDispatchUrl true if the URL will be send after the
+	 * 		link is clicked with a JS command.
 	 */
-	public void setNewWindow(boolean openInNewWindow);
+	public void setNewWindow(boolean openInNewWindow, boolean afterDispatchUrl);
 	
 	public boolean isPopup();
 	

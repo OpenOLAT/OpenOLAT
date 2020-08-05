@@ -61,8 +61,6 @@ public class LinkRenderer extends DefaultComponentRenderer {
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		Link link = (Link) source;
-		String command = link.getCommand();
-		AJAXFlags flags = renderer.getGlobalSettings().getAjaxFlags();
 		
 		int presentation = link.getPresentation();
 		/*
@@ -114,13 +112,6 @@ public class LinkRenderer extends DefaultComponentRenderer {
 		}
 		cssSb.append("\"");
 
-		if (link.isEnabled()) {
-			// only set a target on an enabled link, target in span makes no sense
-			if (link.getTarget() != null){
-				cssSb.append(" target=\"").append(link.getTarget()).append("\"");
-			}
-		}
-
 		String elementId = link.getElementId();
 		
 		// String buffer to gather all Javascript stuff with this link
@@ -142,6 +133,10 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			  // add layouting
 			  .append(cssSb);
 			
+			if (link.getTarget() != null) {
+				sb.append(" target=\"").append(link.getTarget()).append("\"");
+			}
+			
 			//REVIEW:pb elementId is not null if it is a form link
 			//the javascript handler and the link.registerForMousePositionEvent
 			//need also access to a created and id set. -> avoid "o_c"+link.getDispatchID()
@@ -154,69 +149,9 @@ public class LinkRenderer extends DefaultComponentRenderer {
 				sb.append("accesskey=\"").append(accessKey).append("\" ");
 			}
 			if (flexiformlink) {
-				FormLink flexiLink = link.getFlexiForm();
-				if(flexiLink.isNewWindow()) {
-					String dispatchUri = flexiLink.getFormDispatchId();
-					URLBuilder subu = ubu.createCopyFor(flexiLink.getRootForm().getInitialComponent());
-					try(StringOutput href = new StringOutput()) {
-						subu.buildURI(href, AJAXFlags.MODE_NORMAL,
-								new NameValuePair("dispatchuri", dispatchUri),
-								new NameValuePair("dispatchevent", "2"),
-								new NameValuePair(Form.FORM_CSRF, renderer.getCsrfToken()));
-						sb.append("href=\"javascript:;\" onclick=\"o_openTab('").append(href).append("'); return false;\" ");
-					} catch(IOException e) {
-						log.error("", e);
-					}
-				} else if(flexiLink.isPopup()) {
-					LinkPopupSettings popup = link.getPopup();
-					String dispatchUri = flexiLink.getFormDispatchId();
-					URLBuilder subu = ubu.createCopyFor(flexiLink.getRootForm().getInitialComponent());
-					try(StringOutput href = new StringOutput()) {
-						subu.buildURI(href, AJAXFlags.MODE_NORMAL,
-								new NameValuePair("dispatchuri", dispatchUri),
-								new NameValuePair("dispatchevent", "2"),
-								new NameValuePair(Form.FORM_CSRF, renderer.getCsrfToken()));
-						sb.append("href=\"javascript:;\" onclick=\"o_openPopUp('").append(href).append("','")
-						  .append(popup.getTarget()).append("',").append(popup.getWidth())
-						  .append(",").append(popup.getHeight()).append(",").append(popup.isMenuBar())
-						  .append("); return false;\" ");
-					} catch(IOException e) {
-						log.error("", e);
-					}
-				} else if(link.isForceFlexiDirtyFormWarning()) {
-					sb.append("href=\"javascript:")
-					  .append(FormJSHelper.getJSFnCallFor(flexiLink.getRootForm(), elementId, 1))
-					  .append(";\" ")
-					  .append("onclick=\"return o2cl_dirtyCheckOnly();\" ");
-				} else {
-					boolean hasUrl = StringHelper.containsNonWhitespace(link.getUrl());
-					String href = hasUrl ? link.getUrl() : "javascript:;";
-					sb.append("href=\"").append(href).append("\" onclick=\"")
-					  .append(FormJSHelper.getJSFnCallFor(flexiLink.getRootForm(), elementId, 1))
-					  .append("; ").append(" return false;", hasUrl).append("\" ");
-				}
-			} else if(link.isPopup()) {
-				try(StringOutput href = new StringOutput()) {
-					LinkPopupSettings popup = link.getPopup();
-					ubu.buildURI(href, new String[] { VelocityContainer.COMMAND_ID }, new String[] { command }, null, AJAXFlags.MODE_NORMAL);
-					sb.append("href=\"javascript:;\" onclick=\"o_openPopUp('").append(href).append("','")
-					  .append(popup.getTarget()).append("',").append(popup.getWidth())
-					  .append(",").append(popup.getHeight()).append("); return false;\" ");
-				} catch(IOException e) {
-					log.error("", e);
-				}
-			} else if(link.isNewWindow()) {
-				try(StringOutput href = new StringOutput()) {
-					ubu.buildURI(href, new String[] { VelocityContainer.COMMAND_ID }, new String[] { command }, null, AJAXFlags.MODE_NORMAL);
-					sb.append("href=\"javascript:;\" onclick=\"o_openTab('").append(href).append("'); return false;\" ");
-				} catch(IOException e) {
-					log.error("", e);
-				}
+				renderHrefAndOnclickFormLink(renderer, sb, link.getFlexiForm(), ubu);
 			} else {
-				 // a link may force a non ajax-mode and a custom targ
-				boolean iframePostEnabled = flags.isIframePostEnabled() && link.isAjaxEnabled() && link.getTarget() == null;
-				ubu.buildHrefAndOnclick(sb, link.getUrl(), null, iframePostEnabled, !link.isSuppressDirtyFormWarning(), true,
-						new NameValuePair(VelocityContainer.COMMAND_ID, command));
+				renderHrefAndOnclickLink(renderer, sb, link, ubu);
 			}
 			
 			//tooltips
@@ -379,6 +314,87 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			  .append("(function(){ var ").append(elementId).append(" = jQuery('#").append(elementId).append("');")
 			  .append(jsSb).append("})();")
 		      .append("\n</script>");
+		}
+	}
+	
+	private void renderHrefAndOnclickLink(Renderer renderer, StringOutput sb, Link link, URLBuilder ubu) {
+		String command = link.getCommand();
+		if(link.isPopup()) {
+			try(StringOutput href = new StringOutput()) {
+				LinkPopupSettings popup = link.getPopup();
+				ubu.buildURI(href, new String[] { VelocityContainer.COMMAND_ID }, new String[] { command }, null, AJAXFlags.MODE_NORMAL);
+				sb.append("href=\"javascript:;\" onclick=\"o_openPopUp('").append(href).append("','")
+				  .append(popup.getTarget()).append("',").append(popup.getWidth())
+				  .append(",").append(popup.getHeight()).append("); return false;\" ");
+			} catch(IOException e) {
+				log.error("", e);
+			}
+		} else if(link.isNewWindow()) {
+			try(StringOutput href = new StringOutput()) {
+				ubu.buildURI(href, new String[] { VelocityContainer.COMMAND_ID }, new String[] { command }, null, AJAXFlags.MODE_NORMAL);
+				sb.append("href=\"javascript:;\" onclick=\"o_openTab('").append(href).append("'); return false;\" ");
+			} catch(IOException e) {
+				log.error("", e);
+			}
+		} else {
+			AJAXFlags flags = renderer.getGlobalSettings().getAjaxFlags();
+			 // a link may force a non ajax-mode and a custom targ
+			boolean iframePostEnabled = flags.isIframePostEnabled() && link.isAjaxEnabled() && link.getTarget() == null;
+			ubu.buildHrefAndOnclick(sb, link.getUrl(), null, iframePostEnabled, !link.isSuppressDirtyFormWarning(), true,
+					new NameValuePair(VelocityContainer.COMMAND_ID, command));
+		}
+	}
+	
+	private void renderHrefAndOnclickFormLink(Renderer renderer, StringOutput sb, FormLink flexiLink, URLBuilder ubu) {
+		Link link = flexiLink.getComponent();
+		String elementId = link.getElementId();
+		if(flexiLink.isNewWindow()) {
+			if(flexiLink.isNewWindowAfterDispatchUrl()) {
+				boolean hasUrl = StringHelper.containsNonWhitespace(link.getUrl());
+				String href = hasUrl ? link.getUrl() : "javascript:;";
+				sb.append("href=\"").append(href).append("\" onclick=\"")
+				  .append(FormJSHelper.getXHRFnCallFor(flexiLink, false, false, new NameValuePair("oo-opennewwindow-oo", "true")))
+				  .append("; return false;\"");
+			} else {
+				String dispatchUri = flexiLink.getFormDispatchId();
+				URLBuilder subu = ubu.createCopyFor(flexiLink.getRootForm().getInitialComponent());
+				try(StringOutput href = new StringOutput()) {
+					subu.buildURI(href, AJAXFlags.MODE_NORMAL,
+							new NameValuePair("dispatchuri", dispatchUri),
+							new NameValuePair("dispatchevent", "2"),
+							new NameValuePair(Form.FORM_CSRF, renderer.getCsrfToken()));
+					sb.append("href=\"javascript:;\" onclick=\"o_openTab('").append(href).append("'); return false;\" ");
+				} catch(IOException e) {
+					log.error("", e);
+				}
+			}
+		} else if(flexiLink.isPopup()) {
+			LinkPopupSettings popup = link.getPopup();
+			String dispatchUri = flexiLink.getFormDispatchId();
+			URLBuilder subu = ubu.createCopyFor(flexiLink.getRootForm().getInitialComponent());
+			try(StringOutput href = new StringOutput()) {
+				subu.buildURI(href, AJAXFlags.MODE_NORMAL,
+						new NameValuePair("dispatchuri", dispatchUri),
+						new NameValuePair("dispatchevent", "2"),
+						new NameValuePair(Form.FORM_CSRF, renderer.getCsrfToken()));
+				sb.append("href=\"javascript:;\" onclick=\"o_openPopUp('").append(href).append("','")
+				  .append(popup.getTarget()).append("',").append(popup.getWidth())
+				  .append(",").append(popup.getHeight()).append(",").append(popup.isMenuBar())
+				  .append("); return false;\" ");
+			} catch(IOException e) {
+				log.error("", e);
+			}
+		} else if(link.isForceFlexiDirtyFormWarning()) {
+			sb.append("href=\"javascript:")
+			  .append(FormJSHelper.getJSFnCallFor(flexiLink.getRootForm(), elementId, 1))
+			  .append(";\" ")
+			  .append("onclick=\"return o2cl_dirtyCheckOnly();\" ");
+		} else {
+			boolean hasUrl = StringHelper.containsNonWhitespace(link.getUrl());
+			String href = hasUrl ? link.getUrl() : "javascript:;";
+			sb.append("href=\"").append(href).append("\" onclick=\"")
+			  .append(FormJSHelper.getJSFnCallFor(flexiLink.getRootForm(), elementId, 1))
+			  .append("; ").append(" return false;", hasUrl).append("\" ");
 		}
 	}
 	

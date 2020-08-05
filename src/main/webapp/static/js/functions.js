@@ -499,6 +499,26 @@ function b_AddOnDomReplacementFinishedUniqueCallback(funct) {
 	b_AddOnDomReplacementFinishedCallback(funct);
 }
 
+function o_postInvoke(r, newWindow) {
+	var cmdcnt = r["cmdcnt"];
+	if (cmdcnt > 0) {
+		var cs = r["cmds"];
+		for (var i=0; i<cmdcnt; i++) {
+			var acmd = cs[i];
+			var co = acmd["cmd"];
+			if(co == 8) {
+				var url = acmd["cda"].nwrurl;
+				if(url == "close-window") {
+					newWindow.close()
+				} else {
+					newWindow.location.href = url;
+					newWindow.focus();
+				}
+			}
+		}
+	}
+}
+
 // main interpreter for ajax mode
 var o_debug_trid = 0;
 function o_ainvoke(r) {
@@ -1500,15 +1520,25 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirt
 		data['_csrf'] = jQuery('#' + formNam + " input[name='_csrf']").val();
 	}
 	
+	var openInNewWindow = false;
 	data['dispatchuri'] = dispId;
 	data['dispatchevent'] = eventInt;
 	if(arguments.length > 8) {
 		var argLength = arguments.length;
-		for(var i=8; i<argLength; i=i+2) {
-			if(argLength > i+1) {
-				data[arguments[i]] = arguments[i+1];
+		for(var j=8; j<argLength; j=j+2) {
+			if(argLength > j+1) {
+				data[arguments[j]] = arguments[j+1];
+				if(arguments[j] == "oo-opennewwindow-oo") {
+					openInNewWindow = true;
+				}
 			}
 		}
+	}
+	
+	var newTargetWindow = null;
+	if(openInNewWindow) {
+		newTargetWindow = window.open("","_blank");
+		newTargetWindow.blur();
 	}
 	
 	var targetUrl = jQuery('#' + formNam).attr("action");
@@ -1517,17 +1547,19 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirt
 		data: data,
 		cache: false,
 		dataType: 'json',
-		success: function(data, textStatus, jqXHR) {
+		success: function(responseData, textStatus, jqXHR) {
 			try {
-				o_ainvoke(data);
+				o_ainvoke(responseData);
 				if(push) {
-					var businessPath = data['businessPath'];
-					var documentTitle = data['documentTitle'];
-					var historyPointId = data['historyPointId'];
+					var businessPath = responseData['businessPath'];
+					var documentTitle = responseData['documentTitle'];
+					var historyPointId = responseData['historyPointId'];
 					if(businessPath) {
 						o_pushState(historyPointId, documentTitle, businessPath);
 					}
 				}
+				
+				o_postInvoke(responseData, newTargetWindow);
 			} catch(e) {
 				if(window.console) console.log(e);
 			} finally {

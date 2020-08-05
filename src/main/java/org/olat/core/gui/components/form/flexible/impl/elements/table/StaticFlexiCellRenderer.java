@@ -52,37 +52,65 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 	private String linkCSS;
 	private String linkTitle;
 	private boolean push = false;
-	private boolean newWindow = false;
 	private boolean dirtyCheck = true;
+	private boolean newWindow = false;
+	private boolean newWindowAfterDispatchUrl = false;
 	private FlexiCellRenderer labelDelegate;
 	
 	public StaticFlexiCellRenderer(String label, String action) {
-		this(label, action, false, null, null, null);
+		this(label, action, false, false, null, null, null);
 	}
 	
-	public StaticFlexiCellRenderer(String label, String action, boolean newWindow) {
-		this(label, action, newWindow, null, null, null);
+	/**
+	 * 
+	 * @param label The label
+	 * @param action The action
+	 * @param newWindow Open a new window
+	 * @param newWindowAfterDispatchUrl The URL of the new window will be generated after dispatching.
+	 * 		To push the URL use:
+	 * 		{@code getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url))}
+	 *		or to abort the operation and close the window after dispatching:
+	 * 		{@code getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo())}
+	 * 
+	 */
+	public StaticFlexiCellRenderer(String label, String action, boolean newWindow, boolean newWindowAfterDispatchUrl) {
+		this(label, action, newWindow, newWindowAfterDispatchUrl, null, null, null);
 	}
 	
 	public StaticFlexiCellRenderer(String label, String action, String linkCSS) {
-		this(label, action, false, linkCSS, null, null);
+		this(label, action, false, false, linkCSS, null, null);
 	}
 	
 	public StaticFlexiCellRenderer(String label, String action, String linkCSS, String iconLeftCSS) {
-		this(label, action, false, linkCSS, iconLeftCSS, null);
+		this(label, action, false, false, linkCSS, iconLeftCSS, null);
 	}
 	
 	public StaticFlexiCellRenderer(String label, String action, String linkCSS, String iconLeftCSS, String linkTitle) {
-		this(label, action, false, linkCSS, iconLeftCSS, linkTitle);
+		this(label, action, false, false, linkCSS, iconLeftCSS, linkTitle);
 	}
 	
-	public StaticFlexiCellRenderer(String label, String action, boolean newWindow, String linkCSS, String iconLeftCSS, String linkTitle) {
+	/**
+	 * 
+	 * @param label The label
+	 * @param action The action
+	 * @param newWindow Open a new window
+	 * @param newWindowAfterDispatchUrl The URL of the new window will be generated after dispatching.
+	 * 		To push the URL use:
+	 * 		{@code getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url))}
+	 *		or to abort the operation and close the window after dispatching:
+	 * 		{@code getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo())}
+	 * @param linkCSS Some CSS class applied to the link tag
+	 * @param iconLeftCSS An icon for the link
+	 * @param linkTitle The title attribute of the link
+	 */
+	public StaticFlexiCellRenderer(String label, String action, boolean newWindow, boolean newWindowAfterDispatchUrl, String linkCSS, String iconLeftCSS, String linkTitle) {
 		this.label = label;
 		this.action = action;
 		this.linkCSS = linkCSS;
 		this.iconLeftCSS = iconLeftCSS;
 		this.linkTitle = linkTitle;
 		this.newWindow = newWindow;
+		this.newWindowAfterDispatchUrl = newWindowAfterDispatchUrl;
 	}
 	
 	public StaticFlexiCellRenderer(String action, FlexiCellRenderer labelDelegate) {
@@ -154,6 +182,14 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 		this.newWindow = newWindow;
 	}
 
+	public boolean isNewWindowAfterDispatchUrl() {
+		return newWindowAfterDispatchUrl;
+	}
+
+	public void setNewWindowAfterDispatchUrl(boolean newWindowAfterDispatchUrl) {
+		this.newWindowAfterDispatchUrl = newWindowAfterDispatchUrl;
+	}
+
 	public boolean isDirtyCheck() {
 		return dirtyCheck;
 	}
@@ -174,31 +210,16 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 			NameValuePair pair = new NameValuePair(cellAction, Integer.toString(row));
 			
 			if(newWindow) {
-				String jsCode;
-				URLBuilder subu = ubu.createCopyFor(ftE.getRootForm().getInitialComponent());
-				try(StringOutput href = new StringOutput()) {
-					href.append("o_openTab('");
-					subu.buildURI(href, AJAXFlags.MODE_NORMAL,
-							new NameValuePair("dispatchuri", ftE.getFormDispatchId()),
-							new NameValuePair("dispatchevent", "1"),
-							pair);
-					href.append("')");
-					jsCode = href.toString();
-				} catch(IOException e) {
-					log.error("", e);
-					jsCode = "";
+				if(newWindowAfterDispatchUrl) {
+					String href = href(source, row);
+					String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, dirtyCheck, true, push,
+							pair, new NameValuePair("oo-opennewwindow-oo", "true"));
+					target.append("<a href=\"").append(href).append("\" onclick=\"").append(jsCode).append("; return false;\"");
+				} else {
+					renderOpenTab(target, ftE, pair, ubu);
 				}
-				target.append("<a href=\"javascript:").append(jsCode).append(";\"");
 			} else {
-				String href = null;
-				FlexiTableDataModel<?> model = source.getFlexiTableElement().getTableDataModel();
-				if(model instanceof FlexiBusinessPathModel) {
-					Object object = source.getFlexiTableElement().getTableDataModel().getObject(row);
-					href = ((FlexiBusinessPathModel)model).getUrl(source, object, action);
-				}
-				if(!StringHelper.containsNonWhitespace(href)) {
-					href = "javascript:;";
-				}
+				String href = href(source, row);
 				String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, dirtyCheck, true, push, pair);
 				target.append("<a href=\"").append(href).append("\" onclick=\"").append(jsCode).append("; return false;\"");
 			}
@@ -228,5 +249,36 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 		} else {
 			labelDelegate.render(renderer, target, cellValue, row, source, ubu, translator);
 		}
+	}
+	
+	private void renderOpenTab(StringOutput target, FlexiTableElementImpl ftE, NameValuePair actionPair, URLBuilder ubu) {
+		String jsCode;
+		URLBuilder subu = ubu.createCopyFor(ftE.getRootForm().getInitialComponent());
+		try(StringOutput href = new StringOutput()) {
+			href.append("o_openTab('");
+			subu.buildURI(href, AJAXFlags.MODE_NORMAL,
+					new NameValuePair("dispatchuri", ftE.getFormDispatchId()),
+					new NameValuePair("dispatchevent", "1"),
+					actionPair);
+			href.append("')");
+			jsCode = href.toString();
+		} catch(IOException e) {
+			log.error("", e);
+			jsCode = "";
+		}
+		target.append("<a href=\"javascript:").append(jsCode).append(";\"");
+	}
+	
+	private String href(FlexiTableComponent source, int row) {
+		String href = null;
+		FlexiTableDataModel<?> model = source.getFlexiTableElement().getTableDataModel();
+		if(model instanceof FlexiBusinessPathModel) {
+			Object object = source.getFlexiTableElement().getTableDataModel().getObject(row);
+			href = ((FlexiBusinessPathModel)model).getUrl(source, object, action);
+		}
+		if(!StringHelper.containsNonWhitespace(href)) {
+			href = "javascript:;";
+		}
+		return href;
 	}
 }

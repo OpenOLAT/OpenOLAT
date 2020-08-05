@@ -130,17 +130,26 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 	 * @param action
 	 */
 	public DefaultFlexiColumnModel(String headerKey, String label, String action) {
-		this(headerKey, label, action, false);
+		this(headerKey, label, action, false, false);
 	}
 	
 	/**
-	 * Always visible
-	 * @param headerKey
-	 * @param label
-	 * @param action
+	 * The column will be always visible.
+	 * 
+	 * 
+	 * @param headerKey The header i18nKey
+	 * @param label The translated label
+	 * @param action The action (mandatory to generate a link)
+	 * @param newWindow Open the link in a new window
+	 * @param newWindowAfterDispatchUrl The URL of the new window will be generated after dispatching.
+	 * 		To push the URL use:
+	 * 		{@code getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url))}
+	 *		or to abort the operation and close the window after dispatching:
+	 * 		{@code getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo())}
 	 */
-	public DefaultFlexiColumnModel(String headerKey, String label, String action, boolean newWindow) {
-		this(true, true, headerKey, null, -1, action, false, null, FlexiColumnModel.ALIGNMENT_LEFT, new StaticFlexiCellRenderer(label, action, newWindow));
+	public DefaultFlexiColumnModel(String headerKey, String label, String action, boolean newWindow, boolean newWindowAfterDispatchUrl) {
+		this(true, true, headerKey, null, -1, action, false, null, FlexiColumnModel.ALIGNMENT_LEFT,
+				new StaticFlexiCellRenderer(label, action, newWindow, newWindowAfterDispatchUrl));
 	}
 	
 	public DefaultFlexiColumnModel(String headerKey, int columnIndex, boolean sortable, String sortKey) {
@@ -156,12 +165,17 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 				new StaticFlexiCellRenderer(action, renderer));
 	}
 	
+	public DefaultFlexiColumnModel(boolean defVisible, FlexiSortableColumnDef def, String action, StaticFlexiCellRenderer renderer) {
+		this(defVisible, false, def.i18nHeaderKey(), null, def.ordinal(), action, def.sortable(), def.sortKey(), FlexiColumnModel.ALIGNMENT_LEFT,  renderer);
+	}
+	
 	/**
-	 * Always visible
-	 * @param headerKey
-	 * @param columnIndex
-	 * @param action
-	 * @param renderer
+	 * The column will be always visible.
+	 * 
+	 * @param headerKey The header i18n key
+	 * @param columnIndex The index of the collumn
+	 * @param action The action
+	 * @param renderer The cell renderer
 	 */
 	public DefaultFlexiColumnModel(String headerKey, int columnIndex, String action, FlexiCellRenderer renderer) {
 		this(true, true, headerKey, null, columnIndex, action, false, null, FlexiColumnModel.ALIGNMENT_LEFT, renderer);
