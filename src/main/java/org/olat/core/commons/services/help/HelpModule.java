@@ -229,18 +229,20 @@ public class HelpModule extends AbstractSpringModule {
 		custom1Enabled = getStringPropertyValue("help.custom1.enabled", custom1Enabled);
 		custom1NewWindow = getBooleanPropertyValue("help.custom1.new.window");
 		custom1Icon = getStringPropertyValue("help.custom1.icon", custom1Icon);
-
+		custom1Pos = getIntPropertyValue("help.custom1.pos");
 		// Custom link 2 settings
 		custom2Link = getStringPropertyValue("help.custom2.link", custom2Link);
 		custom2Enabled = getStringPropertyValue("help.custom2.enabled", custom2Enabled);
 		custom2NewWindow = getBooleanPropertyValue("help.custom2.new.window");
 		custom2Icon = getStringPropertyValue("help.custom2.icon", custom2Icon);
+		custom2Pos = getIntPropertyValue("help.custom2.pos");
 
 		// Custom link 2 settings
 		custom3Link = getStringPropertyValue("help.custom3.link", custom3Link);
 		custom3Enabled = getStringPropertyValue("help.custom3.enabled", custom3Enabled);
 		custom3NewWindow = getBooleanPropertyValue("help.custom3.new.window");
 		custom3Icon = getStringPropertyValue("help.custom3.icon", custom3Icon);
+		custom3Pos = getIntPropertyValue("help.custom3.pos");
 	}
 
 	// CRUD operations
@@ -458,6 +460,7 @@ public class HelpModule extends AbstractSpringModule {
 			break;
 		}
 
+		setPosition(plugin, listWrapper.getHelpPluginList().size());
 		loadListWrapper(true);
 	}
 
