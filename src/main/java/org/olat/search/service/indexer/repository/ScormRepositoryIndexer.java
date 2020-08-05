@@ -21,7 +21,6 @@ package org.olat.search.service.indexer.repository;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -59,41 +58,26 @@ public class ScormRepositoryIndexer extends FolderIndexer {
 
 	private static final Logger log = Tracing.createLoggerFor(ScormRepositoryIndexer.class);
 	
-	public static Set<String> stopWords = new HashSet<>();
+	private static final Set<String> stopWords = new HashSet<>();
 	static {
 		stopWords.add("LOMv1.0");
 		stopWords.add("yes");
 		stopWords.add("NA");
 	}
-	public static final List<String> forbiddenExtensions = new ArrayList<>();
-	static {
-		forbiddenExtensions.add("LOMv1.0");
-		forbiddenExtensions.add(".xsd");
-		forbiddenExtensions.add(".js");
-	}
-	public static final Set<String> forbiddenFiles = new HashSet<>();
-	static {
-		forbiddenFiles.add("imsmanifest.xml");
-	}
-	
-	
+
 	public static final String TYPE = "type.repository.entry.scorm";
 	public static final String ORES_TYPE_SCORM = ScormCPFileResource.TYPE_NAME;
 	
 	public ScormRepositoryIndexer() {
 		// Repository types
 	}
-	
-	/**
-	 * 
-	 */
+
+	@Override
 	public String getSupportedTypeName() {	
 		return ORES_TYPE_SCORM; 
 	}
 	
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsDownload()
-	 */
+	@Override
 	public void doIndex(SearchResourceContext resourceContext, Object parentObject, OlatFullIndexer indexWriter)
 	throws IOException,InterruptedException  {
 		if (log.isDebugEnabled()) log.debug("Index Scorm package...");
@@ -123,7 +107,7 @@ public class ScormRepositoryIndexer extends FolderIndexer {
 	private Document createManifestDocument(VFSLeaf fManifest, Element rootElement, SearchResourceContext resourceContext) {
 		IMSMetadataDocument document = new IMSMetadataDocument();
 		document.setResourceUrl(resourceContext.getResourceUrl());
-		if (log.isDebugEnabled()) log.debug("MM: URL=" + document.getResourceUrl());
+		if (log.isDebugEnabled()) log.debug("MM: URL={}", document.getResourceUrl());
 		document.setLastChange(new Date(fManifest.getLastModified()));
 		document.setDocumentType(resourceContext.getDocumentType());
 		if (StringHelper.containsNonWhitespace(resourceContext.getTitle())) {
@@ -134,8 +118,6 @@ public class ScormRepositoryIndexer extends FolderIndexer {
 		document.setParentContextType(resourceContext.getParentContextType());
 		document.setParentContextName(resourceContext.getParentContextName());
 	
-		
-		
 		StringBuilder sb = new StringBuilder();
 		collectLangString(sb, rootElement);
 		document.setContent(sb.toString());
@@ -157,21 +139,14 @@ public class ScormRepositoryIndexer extends FolderIndexer {
 		}
 	}
 	
-	public class ScormFileAccess implements FolderIndexerAccess {
-		
+	private static class ScormFileAccess implements FolderIndexerAccess {
 		@Override
 		public boolean allowed(VFSItem item) {
-			String name = item.getName();
-			if(forbiddenFiles.contains(name)) {
-				return false;
+			String name = item.getName().toLowerCase();
+			if(item instanceof VFSContainer) {
+				return !name.equals("template");
 			}
-			
-			for(String forbiddenExtension:forbiddenExtensions) {
-				if(name.endsWith(forbiddenExtension)) {
-					return false;
-				}
-			}
-			return true;
+			return name.endsWith(".htm") || name.endsWith(".html");
 		}
 	}
 }

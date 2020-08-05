@@ -43,8 +43,8 @@ import org.olat.search.service.indexer.repository.ScormRepositoryIndexer;
  * @author srosse, stephane.rosse@frentix.com
  */
 public class ScormCourseNodeIndexer extends ScormRepositoryIndexer implements CourseNodeIndexer {
-	public final static String NODE_TYPE = "type.course.node.scorm";
-	private final static String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.ScormCourseNode";
+	public static final String NODE_TYPE = "type.course.node.scorm";
+	private static final String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.ScormCourseNode";
 
 	@Override
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter)

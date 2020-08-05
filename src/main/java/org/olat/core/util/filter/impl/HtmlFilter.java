@@ -81,7 +81,7 @@ public class HtmlFilter implements Filter {
 		if (in == null) return null;
 		try {
 			HtmlParser parser = new HtmlParser(XmlViolationPolicy.ALTER_INFOSET);
-			HtmlHandler contentHandler = new HtmlHandler((int)(1000 * 0.66f), false);
+			HtmlHandler contentHandler = new HtmlHandler(8096, false);
 			parser.setContentHandler(contentHandler);
 			parser.parse(new InputSource(in));
 			return contentHandler.getContent();

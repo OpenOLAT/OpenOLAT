@@ -50,7 +50,7 @@ public class ImsCPRepositoryIndexer extends FolderIndexer {
 	private static final Logger log = Tracing.createLoggerFor(ImsCPRepositoryIndexer.class);
 	
 	// Must correspond with LocalString_xx.properties
-	// Do not use '_' because we want to seach for certain documenttype and lucene haev problems with '_' 
+	// Do not use '_' because we want to search for certain document types and lucene has problems with '_' 
 	public static final String TYPE = "type.repository.entry.imscp";
 
 	public static final String ORES_TYPE_CP = ImsCPFileResource.TYPE_NAME;
@@ -59,10 +59,7 @@ public class ImsCPRepositoryIndexer extends FolderIndexer {
 	public String getSupportedTypeName() {	
 		return ORES_TYPE_CP; 
 	}
-	
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsDownload()
-	 */
+
 	@Override
 	public void doIndex(SearchResourceContext resourceContext, Object parentObject, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
 		RepositoryEntry repositoryEntry = (RepositoryEntry) parentObject;
