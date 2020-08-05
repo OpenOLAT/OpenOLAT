@@ -27,6 +27,7 @@ import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.modules.bigbluebutton.manager.BigBlueButtonNativeRecordingsHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -52,6 +53,7 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 	private static final String PROP_PERMANENT_MEETING = "vc.bigbluebutton.permanent.meeting";
 	private static final String PROP_ADHOC_MEETING = "vc.bigbluebutton.adhoc.meeting";
 	private static final String PROP_USER_BANDWIDTH_REQUIREMENT = "vc.bigbluebutton.user.bandwidth.requirement";
+	private static final String PROP_RECORDING_HANDLER_ID = "vc.bigbluebutton.recording.handler.id";
 	
 	@Value("${vc.bigbluebutton.enabled}")
 	private boolean enabled;
@@ -88,6 +90,9 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 	@Value("${vc.http.connect.socket.timeout:30000}")
 	private int httpSocketTimeout;
 	
+	@Value("${vc.bigbluebutton.recording.handler.id:native}")
+	private String recordingHandlerId;
+	
 	@Autowired
 	public BigBlueButtonModule(CoordinatorManager coordinatorManager) {
 		super(coordinatorManager);
@@ -119,8 +124,8 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 		if(StringHelper.containsNonWhitespace(bandwidthReqObj)) {
 			userBandwidhtRequirement = Double.parseDouble(bandwidthReqObj);
 		}
-		
-		
+
+		recordingHandlerId = getStringPropertyValue(PROP_RECORDING_HANDLER_ID, recordingHandlerId);
 	}
 	
 	@Override
@@ -292,6 +297,16 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 		setStringProperty(PROP_ADHOC_MEETING, this.adhocMeetingEnabled, true);
 	}
 	
+	public String getRecordingHandlerId() {
+		return StringHelper.containsNonWhitespace(recordingHandlerId)
+				? recordingHandlerId : BigBlueButtonNativeRecordingsHandler.NATIVE_RECORDING_HANDLER_ID;
+	}
+
+	public void setRecordingHandlerId(String recordingHandlerId) {
+		this.recordingHandlerId = recordingHandlerId;
+		setStringProperty(PROP_RECORDING_HANDLER_ID, recordingHandlerId, true);
+	}
+
 	public int getHttpConnectTimeout() {
 		return httpConnectTimeout;
 	}

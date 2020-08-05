@@ -131,7 +131,7 @@ public class CoreSpringFactory implements ServletContextAware, BeanFactoryAware 
 	public static <T> T getImpl(Class<T> interfaceClass) {
 		ApplicationContext context = WebApplicationContextUtils.getWebApplicationContext(CoreSpringFactory.servletContext);
 		if(context == null) {
-			log.warn("Calling this bean before the Spring web application is started: " + interfaceClass.getName());
+			log.warn("Calling this bean before the Spring web application is started: {}", interfaceClass.getName());
 			return null;
 		}
 		
@@ -163,14 +163,13 @@ public class CoreSpringFactory implements ServletContextAware, BeanFactoryAware 
 		ApplicationContext context = WebApplicationContextUtils.getWebApplicationContext(CoreSpringFactory.servletContext);
 		Map<String, ?> m = context.getBeansOfType(interfaceName);
 		if (m.size() > 1)  {
-			//more than one bean found -> excecption 
+			//more than one bean found -> exception 
 			throw new OLATRuntimeException("found more than one bean for: "+interfaceName +". Calling this method should only find one bean!", null);
 		} else if (m.size() == 1 ) {
 			return new ArrayList<Object>(m.values()).get(0);
 		}
 		//fallback for beans named like the fully qualified path (legacy)
-		Object o = context.getBean(interfaceName.getName());
-		return o;
+		return context.getBean(interfaceName.getName());
 	}
 	
 	/**
@@ -228,8 +227,7 @@ public class CoreSpringFactory implements ServletContextAware, BeanFactoryAware 
 	public static <T> Map<String, T> getBeansOfType(Class<T> extensionType) {
 		WebApplicationContext context = WebApplicationContextUtils.getWebApplicationContext(CoreSpringFactory.servletContext);
 		Map<String, T> beans = context.getBeansOfType(extensionType);
-		Map<String, T> clone = new HashMap<>(beans);
-		return clone;
+		return new HashMap<>(beans);
 	}
 
 	@Override

@@ -25,10 +25,12 @@ import java.util.List;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.bigbluebutton.manager.BigBlueButtonUriBuilder;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonServerInfos;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.w3c.dom.Document;
 
 /**
  * 
@@ -49,6 +51,16 @@ public interface BigBlueButtonManager {
 	public List<BigBlueButtonServerInfos> getServersInfos();
 	
 	public List<BigBlueButtonServerInfos> filterServersInfos(List<BigBlueButtonServerInfos> infos);
+	
+	/**
+	 * @return The active recordings handler
+	 */
+	public BigBlueButtonRecordingsHandler getRecordingsHandler();
+	
+	/**
+	 * @return The list of available recordings handlers
+	 */
+	public List<BigBlueButtonRecordingsHandler> getRecordingsHandlers();
 	
 	
 	public void deleteServer(BigBlueButtonServer server, BigBlueButtonErrors errors);
@@ -138,7 +150,20 @@ public interface BigBlueButtonManager {
 	
 	public List<BigBlueButtonRecording> getRecordings(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors);
 	
+	public String getRecordingUrl(BigBlueButtonRecording record);
+	
 	public void deleteRecording(BigBlueButtonRecording record, BigBlueButtonMeeting meeting, BigBlueButtonErrors errors);
+	
+	/**
+	 * Factory method to create an URI builder which can calculate
+	 * the checksum for BigBlueButton.
+	 * 
+	 * @param server The server
+	 * @return An URI builder
+	 */
+	public BigBlueButtonUriBuilder getUriBuilder(BigBlueButtonServer server);
+	
+	public Document sendRequest(BigBlueButtonUriBuilder builder, BigBlueButtonErrors errors);
 	
 	public boolean checkConnection(String url, String sharedSecret, BigBlueButtonErrors errors);
 	

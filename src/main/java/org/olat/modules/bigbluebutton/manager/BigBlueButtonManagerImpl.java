@@ -64,6 +64,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonMeetingLayoutEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecording;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsHandler;
 import org.olat.modules.bigbluebutton.BigBlueButtonServer;
 import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
 import org.olat.modules.bigbluebutton.GuestPolicyEnum;
@@ -81,6 +82,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.manager.RepositoryEntryDAO;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
 
@@ -114,6 +116,10 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	private BigBlueButtonMeetingDAO bigBlueButtonMeetingDao;
 	@Autowired
 	private BigBlueButtonMeetingTemplateDAO bigBlueButtonMeetingTemplateDao;
+	@Autowired @Qualifier("native")
+	private BigBlueButtonRecordingsHandler defaultRecordingsHandler;
+	@Autowired
+	private List<BigBlueButtonRecordingsHandler> recordingsHandlers;
 	
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -222,6 +228,22 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		template.setGuestPolicyEnum(guestPolicy);
 		template.setEnabled(enabled);
 		bigBlueButtonMeetingTemplateDao.updateTemplate(template);
+	}
+	
+	@Override
+	public List<BigBlueButtonRecordingsHandler> getRecordingsHandlers() {
+		return recordingsHandlers;
+	}
+
+	@Override
+	public BigBlueButtonRecordingsHandler getRecordingsHandler() {
+		String selectedHandler = bigBlueButtonModule.getRecordingHandlerId();
+		for(BigBlueButtonRecordingsHandler recordingHandler:recordingsHandlers) {
+			if(selectedHandler.equals(recordingHandler.getId())) {
+				return recordingHandler;
+			}
+		}
+		return defaultRecordingsHandler;
 	}
 
 	@Override
@@ -539,44 +561,17 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	}
 	
 	private void deleteRecordings(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors) {
-		StringBuilder sb = new StringBuilder();
-		
 		List<BigBlueButtonRecording> recordings = getRecordings(meeting, errors);
 		if(recordings != null && !recordings.isEmpty()) {
-			for(BigBlueButtonRecording recording:recordings) {
-				String recordId = recording.getRecordId();
-				if(StringHelper.containsNonWhitespace(recordId)) {
-					if(sb.length() > 0) sb.append(",");
-					sb.append(recordId);
-				}
-			}
-		}
-		
-		if(sb.length() > 0) {
-			deleteRecording(sb.toString(), meeting.getServer(), errors);
+			getRecordingsHandler().deleteRecordings(recordings, meeting, errors);
 		}
 	}
 	
 	@Override
-	public void deleteRecording(BigBlueButtonRecording record, BigBlueButtonMeeting meeting, BigBlueButtonErrors errors) {
-		deleteRecording(record.getRecordId(), meeting.getServer(), errors);
+	public void deleteRecording(BigBlueButtonRecording recording, BigBlueButtonMeeting meeting, BigBlueButtonErrors errors) {
+		getRecordingsHandler().deleteRecordings(Collections.singletonList(recording), meeting, errors);
 	}
 
-	private void deleteRecording(String recordId, BigBlueButtonServer server, BigBlueButtonErrors errors) {
-		if(!server.isEnabled()) {
-			log.error("Try deleting a recording of a disabled server: {}", server.getUrl());
-			errors.append(new BigBlueButtonError(BigBlueButtonErrorCodes.serverDisabled));
-			return;
-		}
-		BigBlueButtonUriBuilder uriBuilder = getUriBuilder(server);
-		uriBuilder
-			.operation("deleteRecordings")
-			.parameter("recordID", recordId);
-		
-		Document doc = sendRequest(uriBuilder, errors);
-		BigBlueButtonUtils.checkSuccess(doc, errors);
-	}
-	
 	private void removeCalendarEvent(BigBlueButtonMeeting meeting) {
 		Kalendar calendar = getCalendar(meeting);
 		if(calendar == null) return;
@@ -766,6 +761,8 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 				.optionalParameter("userdata-bbb_show_participants_on_login", "false");
 		}
 		
+		getRecordingsHandler().appendMetadata(uriBuilder, meeting);
+		
 		return uriBuilder
 			.build()
 			.toString();
@@ -881,23 +878,15 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		Document doc = sendRequest(uriBuilder, errors);
 		return BigBlueButtonUtils.checkSuccess(doc, errors);
 	}
+	
+	@Override
+	public String getRecordingUrl(BigBlueButtonRecording recording) {
+		return getRecordingsHandler().getRecordingURL(recording);
+	}
 
 	@Override
 	public List<BigBlueButtonRecording> getRecordings(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors) {
-		if(meeting == null || meeting.getServer() == null || !meeting.getServer().isEnabled()) {
-			return new ArrayList<>();
-		}
-		
-		BigBlueButtonUriBuilder uriBuilder = getUriBuilder(meeting.getServer());
-		uriBuilder
-			.operation("getRecordings")
-			.parameter("meetingID", meeting.getMeetingId());
-		
-		Document doc = sendRequest(uriBuilder, errors);
-		if(BigBlueButtonUtils.checkSuccess(doc, errors)) {
-			return BigBlueButtonUtils.getRecordings(doc);
-		}
-		return Collections.emptyList();
+		return getRecordingsHandler().getRecordings(meeting, errors);
 	}
 	
 	@Override
@@ -910,13 +899,15 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		}
 		return false;
 	}
-	
-	private BigBlueButtonUriBuilder getUriBuilder(BigBlueButtonServer server) {
+
+	@Override
+	public BigBlueButtonUriBuilder getUriBuilder(BigBlueButtonServer server) {
 		URI uri = URI.create(server.getUrl());
 		return BigBlueButtonUriBuilder.fromUri(uri, server.getSharedSecret());	
 	}
 	
-	protected Document sendRequest(BigBlueButtonUriBuilder builder, BigBlueButtonErrors errors) {
+	@Override
+	public Document sendRequest(BigBlueButtonUriBuilder builder, BigBlueButtonErrors errors) {
 		dbInstance.commit();
 		
 		URI uri = builder.build();

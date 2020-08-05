@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -36,13 +37,16 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsHandler;
 import org.olat.modules.bigbluebutton.BigBlueButtonServer;
+import org.olat.modules.bigbluebutton.manager.BigBlueButtonNativeRecordingsHandler;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonConfigurationServersTableModel.ConfigServerCols;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -60,6 +64,7 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 	private MultipleSelectionElement moduleEnabled;
 	private MultipleSelectionElement enabledForEl;
 	private MultipleSelectionElement permanentForEl;
+	private SingleSelection recordingsHandlerEl;
 	
 	private FormLink addServerButton;
 	private FlexiTableElement serversTableEl;
@@ -69,6 +74,8 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 	private EditBigBlueButtonServerController editServerCtlr; 
 	private ConfirmDeleteServerController confirmDeleteServerCtrl;
 	
+	private final List<BigBlueButtonRecordingsHandler> recordingsHandlers;
+	
 	@Autowired
 	private BigBlueButtonModule bigBlueButtonModule;
 	@Autowired
@@ -76,6 +83,7 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 	
 	public BigBlueButtonConfigurationController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		recordingsHandlers = bigBlueButtonManager.getRecordingsHandlers();
 		
 		initForm(ureq);
 		updateUI();
@@ -117,6 +125,19 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		serversTableEl.setEmtpyTableMessageKey("bigbluebutton.servers.empty");
 		
 		addServerButton = uifactory.addFormLink("add.server", formLayout, Link.BUTTON);
+		
+		KeyValues handlersKeyPairs = new KeyValues();
+		for(BigBlueButtonRecordingsHandler recordingsHandler:recordingsHandlers) {
+			handlersKeyPairs.add(KeyValues.entry(recordingsHandler.getId(), recordingsHandler.getName(getLocale())));
+		}
+		recordingsHandlerEl = uifactory.addDropdownSingleselect("bigbluebutton.recording.handler", formLayout,
+				handlersKeyPairs.keys(), handlersKeyPairs.values());
+		String selectedHandlerId = bigBlueButtonModule.getRecordingHandlerId();
+		if(handlersKeyPairs.containsKey(selectedHandlerId)) {
+			recordingsHandlerEl.select(selectedHandlerId, true);
+		} else {
+			recordingsHandlerEl.select(BigBlueButtonNativeRecordingsHandler.NATIVE_RECORDING_HANDLER_ID, true);
+		}
 
 		//buttons save - check
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("save", getTranslator());
@@ -148,9 +169,16 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		//validate only if the module is enabled
+		serversTableEl.clearError();
+		recordingsHandlerEl.clearError();
 		if(moduleEnabled.isAtLeastSelected(1)) {
 			if(serversTableModel.getRowCount() == 0) {
 				serversTableEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
+			
+			if(!recordingsHandlerEl.isOneSelected()) {
+				recordingsHandlerEl.setErrorKey("form.legende.mandatory", null);
 				allOk &= false;
 			}
 		}
@@ -209,6 +237,7 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 			bigBlueButtonModule.setCoursesEnabled(enabledForEl.isSelected(0));
 			bigBlueButtonModule.setGroupsEnabled(enabledForEl.isSelected(1));
 			bigBlueButtonModule.setPermanentMeetingEnabled(permanentForEl.isAtLeastSelected(1));
+			bigBlueButtonModule.setRecordingHandlerId(recordingsHandlerEl.getSelectedKey());
 		}
 		CollaborationToolsFactory.getInstance().initAvailableTools();
 	}

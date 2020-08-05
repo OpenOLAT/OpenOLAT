@@ -44,6 +44,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.helpers.Settings;
@@ -167,8 +168,9 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BRecordingsCols.type, new RecordingTypeCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BRecordingsCols.start));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BRecordingsCols.end));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BRecordingsCols.open, new RecordingUrlCellRenderer(getTranslator())));
-		if(administrator) {
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.recording.open", translate("table.header.recording.open"),
+				"open-recording", true, true));
+		if(administrator && bigBlueButtonManager.getRecordingsHandler().canDeleteRecordings()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
 		}
 		
@@ -309,6 +311,8 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 				SelectionEvent se = (SelectionEvent)event;
 				if("delete".equals(se.getCommand())) {
 					doConfirmDeleteRecording(ureq, recordingTableModel.getObject(se.getIndex()));
+				} else if("open-recording".equals(se.getCommand())) {
+					doOpenRecording(recordingTableModel.getObject(se.getIndex()));
 				}
 			}
 		}
@@ -349,6 +353,16 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 			ureq.getDispatchResult().setResultingMediaResource(redirect);
 		} else {
 			showWarning("warning.no.access");
+		}
+	}
+	
+	private void doOpenRecording(BigBlueButtonRecording recording) {
+		String url = bigBlueButtonManager.getRecordingUrl(recording);
+		if(StringHelper.containsNonWhitespace(url)) {
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
+		} else {
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
+			showWarning("warning.recording.not.found");
 		}
 	}
 	
