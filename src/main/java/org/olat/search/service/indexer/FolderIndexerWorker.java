@@ -29,10 +29,10 @@ package org.olat.search.service.indexer;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -86,27 +86,28 @@ public class FolderIndexerWorker implements Callable<Boolean> {
 	throws IOException, InterruptedException {
 		// Items: List of VFSContainer & VFSLeaf
 		String myFilePath = fPath;
+		boolean debug = log.isDebugEnabled();
 		for (VFSItem item : cont.getItems(new VFSSystemItemFilter())) {
 			if (item instanceof VFSContainer) {
 				// ok it is a container go further
-				if (log.isDebugEnabled()) log.debug(item.getName() + " is a VFSContainer => go further ");
+				if (debug) log.debug("{} is a VFSContainer => go further ", item.getName());
 				if(aRule.allowed(item)) {
 					doIndexVFSContainer(resourceContext, (VFSContainer)item, writer, myFilePath + "/" + ((VFSContainer)item).getName(), aRule);
 				}
 			} else if (item instanceof VFSLeaf) {
 				// ok it is a file => analyse it
-				if (log.isDebugEnabled()) log.debug(item.getName() + " is a VFSLeaf => analyse file");
+				if (debug) log.debug("{} is a VFSLeaf => analyse file", item.getName() );
 				if(aRule.allowed(item)) {
 					doIndexVFSLeaf(resourceContext, (VFSLeaf)item, writer, myFilePath);
 				}
 			} else {
-				log.warn("Unkown element in item-list class=" + item.getClass());
+				log.warn("Unkown element in item-list class={}", item.getClass());
 			}
 		}
 	}
 
 	protected void doIndexVFSLeaf(SearchResourceContext leafResourceContext, VFSLeaf leaf, OlatFullIndexer writer, String fPath) {
-		if (log.isDebugEnabled()) log.debug("Analyse VFSLeaf=" + leaf.getName());
+		if (log.isDebugEnabled()) log.debug("Analyse VFSLeaf={}", leaf.getName());
 		try {
 			if (docFactory.isFileSupported(leaf)) {
 				String myFilePath = fPath + "/" + leaf.getName();
@@ -116,16 +117,16 @@ public class FolderIndexerWorker implements Callable<Boolean> {
 					writer.addDocument(document);
 				}
 			} else {
-				if (log.isDebugEnabled()) log.debug("Documenttype not supported. file=" + leaf.getName());
+				if (log.isDebugEnabled()) log.debug("Documenttype not supported. file={}", leaf.getName());
 			}
 		} catch (DocumentAccessException e) {
-			if (log.isDebugEnabled()) log.debug("Can not access document." + e.getMessage());
+			if (log.isDebugEnabled()) log.debug("Can not access document.", e);
 		} catch (InterruptedException e) {
-			if (log.isDebugEnabled()) log.debug("InterruptedException: Can not index leaf=" + leaf.getName() + ";" + e.getMessage());
+			if (log.isDebugEnabled()) log.debug("InterruptedException: Can not index leaf={}", leaf.getName(), e);
 		} catch (IOException ioEx) {
-			log.warn("IOException: Can not index leaf=" + leaf.getName(), ioEx);
+			log.warn("IOException: Can not index leaf={}", leaf.getName(), ioEx);
 		} catch (Exception ex) {
-			log.warn("Exception: Can not index leaf=" + leaf.getName(), ex);
+			log.warn("Exception: Can not index leaf={}", leaf.getName(), ex);
 		}
 	}
 

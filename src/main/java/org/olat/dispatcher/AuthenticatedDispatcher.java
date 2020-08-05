@@ -227,6 +227,13 @@ public class AuthenticatedDispatcher implements Dispatcher {
 			log.error("Unsupported encoding", e);
 		}
 		
+		if(restPart == null) {
+			return null;
+		}
+		int index = restPart.indexOf(";jsessionid=");
+		if(index >= 0) {
+			restPart = restPart.substring(0, index);
+		}
 		if(restPart.startsWith("repo/go")) {
 			return convertJumpInURL(ureq);
 		}
