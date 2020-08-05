@@ -325,7 +325,7 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase {
 			try {
 				UserSession session = new UserSession();
 				session.setIdentity(identity);
-				session.setSessionInfo(new SessionInfo(identity.getKey(), identity.getName()));
+				session.setSessionInfo(new SessionInfo(identity.getKey()));
 				ThreadLocalUserActivityLoggerInstaller.initUserActivityLogger(session);
 				
 				IdentityEnvironment ienv = new IdentityEnvironment();

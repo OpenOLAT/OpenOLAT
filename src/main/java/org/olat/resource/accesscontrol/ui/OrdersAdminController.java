@@ -87,7 +87,6 @@ public class OrdersAdminController extends FormBasicController implements Activa
 
 	private final OLATResource resource;
 
-	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 
 	@Autowired
@@ -115,7 +114,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		this.stackPanel = stackPanel;
 		
 		Roles roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
@@ -134,10 +133,6 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.orderNr));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.summary));
-		
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.username));
-		}
 
 		int i=0;
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
@@ -183,7 +178,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		options.setDefaultOrderBy(new SortKey(OrderCol.creationDate.sortKey(), false));
 		tableEl.setSortSettings(options);
 		
-		String id = resource == null ? "orders-admin-list" : "orders-resource-list";
+		String id = resource == null ? "orders-admin-list-v2" : "orders-resource-list-v2";
 		tableEl.setAndLoadPersistedPreferences(ureq, id);
 	
 		if(formLayout instanceof FormLayoutContainer) {

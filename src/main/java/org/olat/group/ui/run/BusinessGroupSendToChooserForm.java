@@ -215,9 +215,6 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 				userInfo.append(userProp.getUserProperty(currentUser, getLocale()));
 				userInfo.append(" ");
 			}
-			if(isAdministrativeUser) {
-				userInfo.append("[").append(membersList.get(i).getName()).append("]");
-			}
 			values[i] = userInfo.toString();	
 		}
 		return values;

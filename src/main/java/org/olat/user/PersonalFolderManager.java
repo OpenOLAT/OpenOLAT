@@ -52,7 +52,7 @@ public class PersonalFolderManager extends BriefcaseWebDAVProvider implements Us
 	@Override
 	public void export(Identity identity, ManifestBuilder manifest, File archiveDirectory, Locale lcoale) {
 		File folder = new File(archiveDirectory, "PersonalFolders");
-		String rootPath = FolderConfig.getCanonicalRoot() + FolderConfig.getUserHomes() + "/" + identity.getName();
+		String rootPath = FolderConfig.getCanonicalRoot() + FolderConfig.getUserHome(identity);
 		export("PersonalFolders", new File(rootPath, "private"), manifest, new File(folder, "private"));
 		export("PersonalFolders", new File(rootPath, "public"), manifest, new File(folder, "public"));
 	}

@@ -23,6 +23,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -32,6 +33,7 @@ import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
+import org.olat.basesecurity.model.FindNamedIdentity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
@@ -237,15 +239,16 @@ public class BlockConverter {
 		Identity teacher = teachersMap.get(string);
 		
 		if(teacher == null) {
-			teacher = securityManager.findIdentityByName(string);
+			List<String> names = Arrays.asList(string);
+			List<FindNamedIdentity> namedTeachers = securityManager.findIdentitiesBy(names);
+			if(namedTeachers.size() == 1) {
+				teacher = namedTeachers.get(0).getIdentity();
+			}
 			if(teacher == null) {
 				List<Identity> teachers = userManager.findIdentitiesByEmail(Collections.singletonList(string));
 				if(!teachers.isEmpty()) {
 					teacher = teachers.get(0);
 				}
-			}
-			if(teacher == null) {
-				teacher = securityManager.findIdentityByNumber(string);
 			}
 			
 			if(teacher != null) {

@@ -25,6 +25,7 @@ import java.util.List;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.model.CalendarUserConfiguration;
+import org.olat.commons.calendar.ui.CalendarController;
 import org.olat.commons.calendar.ui.WeeklyCalendarController;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -96,7 +97,7 @@ public abstract class AbstractUserInfoMainController extends BasicController {
 	protected HomePageDisplayController doOpenHomepage(UserRequest ureq) {
 		removeAsListenerAndDispose(homePageDisplayController);
 		
-		HomePageConfig homePageConfig = homePageConfigManager.loadConfigFor(chosenIdentity.getName());
+		HomePageConfig homePageConfig = homePageConfigManager.loadConfigFor(chosenIdentity);
 		removeAsListenerAndDispose(homePageDisplayController);
 		homePageDisplayController = new HomePageDisplayController(ureq, getWindowControl(), chosenIdentity, homePageConfig);
 		listenTo(homePageDisplayController);
@@ -125,7 +126,7 @@ public abstract class AbstractUserInfoMainController extends BasicController {
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		OLATResourceable callerOres = OresHelper.createOLATResourceableInstance(chosenIdentity.getName(), chosenIdentity.getKey());
 		calendarController = new WeeklyCalendarController(ureq, bwControl, calendars,
-				WeeklyCalendarController.CALLER_PROFILE, callerOres, false);
+				CalendarController.CALLER_PROFILE, callerOres, false);
 		listenTo(calendarController);
 		return calendarController;
 	}
@@ -133,7 +134,7 @@ public abstract class AbstractUserInfoMainController extends BasicController {
 	protected FolderRunController doOpenFolder(UserRequest ureq) {
 		removeAsListenerAndDispose(folderRunController);
 
-		String chosenUserFolderRelPath = FolderConfig.getUserHome(chosenIdentity.getName()) + "/public";
+		String chosenUserFolderRelPath = FolderConfig.getUserHome(chosenIdentity) + "/public";
 		
 		String fullName = userManager.getUserDisplayName(chosenIdentity);
 		VFSContainer rootFolder = VFSManager.olatRootContainer(chosenUserFolderRelPath, null);

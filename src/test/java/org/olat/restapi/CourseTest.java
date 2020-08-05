@@ -57,7 +57,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -78,6 +77,7 @@ import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.RepositoryEntryAccessVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.test.JunitTestHelper;
+import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatRestTestCase;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
@@ -101,8 +101,6 @@ public class CourseTest extends OlatRestTestCase {
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
-	private BaseSecurity securityManager;
-	@Autowired
 	private OrganisationService organisationService;
 
 	/**
@@ -113,7 +111,7 @@ public class CourseTest extends OlatRestTestCase {
 		conn = new RestConnection();
 		try {
 			// create course and persist as OLATResourceImpl
-			admin = securityManager.findIdentityByName("administrator");
+			admin = JunitTestHelper.findIdentityByLogin("administrator");
 			auth0 = JunitTestHelper.createAndPersistIdentityAsUser("rest-zero");
 			auth1 = JunitTestHelper.createAndPersistIdentityAsUser("rest-one");
 			auth2 = JunitTestHelper.createAndPersistIdentityAsUser("rest-two");
@@ -680,11 +678,11 @@ public class CourseTest extends OlatRestTestCase {
 	@Test
 	public void exportCourse_owner()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("course-owner-2");
-		RepositoryEntry course = JunitTestHelper.deployBasicCourse(author);
+		IdentityWithLogin author = JunitTestHelper.createAndPersistRndUser("course-owner-2");
+		RepositoryEntry course = JunitTestHelper.deployBasicCourse(author.getIdentity());
 		dbInstance.closeSession();
 		
-		Assert.assertTrue(conn.login(author.getName(), "A6B7C8"));
+		Assert.assertTrue(conn.login(author));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
 				.path(course.getOlatResource().getResourceableId().toString()).path("file").build();
@@ -700,11 +698,11 @@ public class CourseTest extends OlatRestTestCase {
 	public void exportCourse_notOwner()
 	throws IOException, URISyntaxException {
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("course-owner-3");
-		Identity otherUser = JunitTestHelper.createAndPersistIdentityAsRndUser("course-owner-4");
+		IdentityWithLogin otherUser = JunitTestHelper.createAndPersistRndUser("course-owner-4");
 		RepositoryEntry course = JunitTestHelper.deployBasicCourse(owner);
 		dbInstance.closeSession();
 		
-		Assert.assertTrue(conn.login(otherUser.getName(), "A6B7C8"));
+		Assert.assertTrue(conn.login(otherUser));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
 				.path(course.getOlatResource().getResourceableId().toString()).path("file").build();

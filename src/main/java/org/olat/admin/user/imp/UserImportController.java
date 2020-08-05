@@ -32,7 +32,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.velocity.VelocityContext;
@@ -69,6 +68,8 @@ import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupMembershipChange;
+import org.olat.ldap.LDAPLoginModule;
+import org.olat.ldap.ui.LDAPAuthenticationController;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.shibboleth.ShibbolethDispatcher;
 import org.olat.shibboleth.ShibbolethModule;
@@ -89,6 +90,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class UserImportController extends BasicController {
 
 	public static final String SHIBBOLETH_MARKER = "SHIBBOLETH::";
+	public static final String LDAP_MARKER = LDAPAuthenticationController.PROVIDER_LDAP + "::";
 
 	private List<UserPropertyHandler> userPropertyHandlers;
 	private static final String usageIdentifyer = UserImportController.class.getCanonicalName();
@@ -107,11 +109,14 @@ public class UserImportController extends BasicController {
 	@Autowired
 	private MailManager mailService;
 	@Autowired
+	private LDAPLoginModule ldapModule;
+	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
 	private OLATAuthManager olatAuthManager;
 	@Autowired
 	private ShibbolethModule shibbolethModule;
+	
 	@Autowired
 	private BusinessGroupService businessGroupService;
 
@@ -132,10 +137,6 @@ public class UserImportController extends BasicController {
 		putInitialPanel(mainVC);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source==importStepsController){
@@ -176,18 +177,18 @@ public class UserImportController extends BasicController {
 		}
 
 		// Create transient user without firstName,lastName, email
-		
 		User newUser = um.createUser(null, null, null);
-
 		List<UserPropertyHandler> userProperties = userPropertyHandlers;
 		for (UserPropertyHandler userPropertyHandler : userProperties) {
 			String thisValue = singleUser.getProperty(userPropertyHandler.getName(), null);
 			String stringValue = userPropertyHandler.getStringValue(thisValue, getLocale());
 			userPropertyHandler.setUserProperty(newUser, stringValue);
 		}
+		
 		// Init preferences
 		newUser.getPreferences().setLanguage(lang);
 		newUser.getPreferences().setInformSessionTimeout(true);
+		
 		// Save everything in database
 		Identity ident;
 		if(pwd != null && pwd.startsWith(SHIBBOLETH_MARKER) && shibbolethModule.isEnableShibbolethLogins()) {
@@ -196,6 +197,12 @@ public class UserImportController extends BasicController {
 					uniqueID, newUser, preselectedOrganisation);
 			report.incrementCreatedUser();
 			report.incrementUpdatedShibboletAuthentication();
+		} else if(pwd != null && pwd.startsWith(LDAP_MARKER) && ldapModule.isLDAPEnabled()) {
+			String uniqueID = pwd.substring(LDAP_MARKER.length());
+			ident = securityManager.createAndPersistIdentityAndUserWithUserGroup(login, null, LDAPAuthenticationController.PROVIDER_LDAP,
+					uniqueID, newUser, preselectedOrganisation);
+			report.incrementCreatedUser();
+			report.incrementUpdatedLdapAuthentication();
 		} else {
 			ident = securityManager.createAndPersistIdentityAndUserWithDefaultProviderAndUserGroup(login, null, pwd,
 					newUser, preselectedOrganisation);
@@ -220,17 +227,11 @@ public class UserImportController extends BasicController {
 		String password = userToUpdate.getPassword();
 		if(StringHelper.containsNonWhitespace(password)) {
 			if(password.startsWith(SHIBBOLETH_MARKER) && shibbolethModule.isEnableShibbolethLogins()) {
-				String uniqueID = password.substring(SHIBBOLETH_MARKER.length());
-				Authentication auth = securityManager.findAuthentication(identity, ShibbolethDispatcher.PROVIDER_SHIB);
-				if(auth == null) {
-					securityManager.createAndPersistAuthentication(identity, ShibbolethDispatcher.PROVIDER_SHIB, uniqueID, null, null);
+				if(doUpdateExternalProvider(identity, password, SHIBBOLETH_MARKER, ShibbolethDispatcher.PROVIDER_SHIB)) {
 					report.incrementUpdatedShibboletAuthentication();
-				} else if(!uniqueID.equals(auth.getAuthusername())) {
-					//remove the old authentication
-					securityManager.deleteAuthentication(auth);
-					DBFactory.getInstance().commit();
-					//create the new one with the new authusername
-					securityManager.createAndPersistAuthentication(identity, ShibbolethDispatcher.PROVIDER_SHIB, uniqueID, null, null);
+				}
+			} else if(password.startsWith(LDAP_MARKER) && ldapModule.isLDAPEnabled()) {
+				if(doUpdateExternalProvider(identity, password, LDAP_MARKER, LDAPAuthenticationController.PROVIDER_LDAP)) {
 					report.incrementUpdatedShibboletAuthentication();
 				}
 			} else if(updatePassword != null && updatePassword.booleanValue()) {
@@ -242,6 +243,25 @@ public class UserImportController extends BasicController {
 			}
 		}
 		return userToUpdate.getIdentity();
+	}
+	
+	private boolean doUpdateExternalProvider(Identity identity, String password, String marker, String provider) {
+		String uniqueID = password.substring(marker.length());
+		Authentication auth = securityManager.findAuthentication(identity, provider);
+		
+		boolean ok = false;
+		if(auth == null) {
+			securityManager.createAndPersistAuthentication(identity, provider, uniqueID, null, null);
+			ok = true;
+		} else if(!uniqueID.equals(auth.getAuthusername())) {
+			//remove the old authentication
+			securityManager.deleteAuthentication(auth);
+			dbInstance.commit();
+			//create the new one with the new authusername
+			securityManager.createAndPersistAuthentication(identity, provider, uniqueID, null, null);
+			ok = true;
+		}
+		return ok;
 	}
 
 	private String loadEmail(Identity updatedIdentity) {
@@ -283,10 +303,12 @@ public class UserImportController extends BasicController {
 					@SuppressWarnings("unchecked")
 					List<TransientIdentity> newIdents = (List<TransientIdentity>) runContext.get("newIdents");
 					Map<TransientIdentity,Identity> newPersistedIdentities = new HashMap<>();
+					List<Identity> allIdentitiesForGroups = new ArrayList<>();
 					for (TransientIdentity newIdent:newIdents) {
 						Identity newIdentity = doCreateAndPersistIdentity(newIdent, report);
 						if(newIdentity != null) {
 							newPersistedIdentities.put(newIdent, newIdentity);
+							allIdentitiesForGroups.add(newIdentity);
 						}
 						if(++count % 10 == 0) {
 							dbInstance.commitAndCloseSession();
@@ -299,7 +321,8 @@ public class UserImportController extends BasicController {
 					@SuppressWarnings("unchecked")
 					List<UpdateIdentity> updateIdents = (List<UpdateIdentity>) runContext.get("updateIdents");
 					for (UpdateIdentity updateIdent:updateIdents) {
-						doUpdateIdentity(updateIdent, updateUsers, updatePasswords, report);
+						Identity updatedIdentity = doUpdateIdentity(updateIdent, updateUsers, updatePasswords, report);
+						allIdentitiesForGroups.add(updatedIdentity);
 						if(++count % 10 == 0) {
 							dbInstance.commitAndCloseSession();
 						}
@@ -310,13 +333,10 @@ public class UserImportController extends BasicController {
 					List<Long> ownGroups = (List<Long>) runContext.get("ownerGroups");
 					@SuppressWarnings("unchecked")
 					List<Long> partGroups = (List<Long>) runContext.get("partGroups");
-
 					if ((ownGroups != null && !ownGroups.isEmpty()) || (partGroups != null && !partGroups.isEmpty())) {
-						@SuppressWarnings("unchecked")
-						List<Identity> allIdents = (List<Identity>) runContext.get("idents");
 						Boolean sendMailObj = (Boolean)runContext.get("sendMail");
 						boolean sendmail = sendMailObj != null && sendMailObj.booleanValue();
-						processGroupAdditionForAllIdents(allIdents, ownGroups, partGroups, sendmail);
+						processGroupAdditionForAllIdents(allIdentitiesForGroups, ownGroups, partGroups, sendmail);
 					} else {
 						Boolean sendMailObj = (Boolean)runContext.get("sendMail");
 						if(sendMailObj != null && sendMailObj) {
@@ -338,25 +358,6 @@ public class UserImportController extends BasicController {
 			translate("title"), "o_sel_user_import_wizard");
 		listenTo(importStepsController);
 		getWindowControl().pushAsModalDialog(importStepsController.getInitialComponent());
-	}
-	
-	private Collection<Identity> getIdentities(List<Identity> allIdents) {
-		Set<Identity> identities = new HashSet<>(allIdents.size());
-		List<String> usernames = new ArrayList<>();
-		for (Identity o : allIdents) {
-			if(o instanceof TransientIdentity) {
-				TransientIdentity transIdent = (TransientIdentity)o;
-				usernames.add(transIdent.getName());
-			} else if (o instanceof UpdateIdentity) {
-				identities.add(((UpdateIdentity)o).getIdentity());	
-			} else {
-				identities.add(o);	
-			}
-		}
-
-		List<Identity> nextIds = securityManager.findIdentitiesByNameCaseInsensitive(usernames);
-		identities.addAll(nextIds);
-		return identities;
 	}
 	
 	private void sendMailToNewIdentities(Map<TransientIdentity,Identity> newIdentities) {
@@ -404,7 +405,7 @@ public class UserImportController extends BasicController {
 	}
 
 	private void processGroupAdditionForAllIdents(List<Identity> allIdents, List<Long> tutorGroups, List<Long> partGroups, boolean sendmail) {
-		Collection<Identity> identities = getIdentities(allIdents);
+		Collection<Identity> identities = new HashSet<>(allIdents);
 		List<BusinessGroupMembershipChange> changes = new ArrayList<>();
 		for(Identity identity:identities) {
 			if(tutorGroups != null && !tutorGroups.isEmpty()) {
@@ -436,6 +437,7 @@ public class UserImportController extends BasicController {
 		private AtomicInteger updatedUser = new AtomicInteger(0);
 		private AtomicInteger createdUser = new AtomicInteger(0);
 		private AtomicInteger updatedPassword = new AtomicInteger(0);
+		private AtomicInteger updatedLdapAuthentication = new AtomicInteger(0);
 		private AtomicInteger updatedShibboletAuthentication = new AtomicInteger(0);
 		
 		private List<String> errors = new ArrayList<>();
@@ -489,6 +491,14 @@ public class UserImportController extends BasicController {
 
 		public void incrementUpdatedPassword() {
 			updatedPassword.incrementAndGet();
+		}
+		
+		public int getUpdatedLdapAuthentication() {
+			return updatedLdapAuthentication.get();
+		}
+
+		public void incrementUpdatedLdapAuthentication() {
+			updatedLdapAuthentication.incrementAndGet();
 		}
 
 		public int getUpdatedShibboletAuthentication() {

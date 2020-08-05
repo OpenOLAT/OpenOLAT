@@ -30,7 +30,6 @@ import java.util.StringTokenizer;
 import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
@@ -621,13 +620,6 @@ public class DENManager {
 		DefaultColumnDescriptor dcd = new DefaultColumnDescriptor("dates.table.participant.name", 5, null, ureq.getLocale());
 		dcd.setEscapeHtml(EscapeMode.none);
 		tableCntrl.addColumnDescriptor(dcd);
-		
-		boolean isAdministrativeUser = CoreSpringFactory.getImpl(BaseSecurityModule.class).isUserAllowedAdminProps(ureq.getUserSession().getRoles());
-		if(isAdministrativeUser) {
-			DefaultColumnDescriptor ucd = new DefaultColumnDescriptor("dates.table.participant.username", 6, null, ureq.getLocale());
-			ucd.setEscapeHtml(EscapeMode.none);
-			tableCntrl.addColumnDescriptor(ucd);
-		}
 		
 		if(!tableData.isReadOnly()) {
 			tableCntrl.addColumnDescriptor(new BooleanColumnDescriptor("participants", 7, DENListTableDataModel.CHANGE_ACTION,

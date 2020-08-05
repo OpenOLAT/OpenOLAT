@@ -89,7 +89,6 @@ public class CurriculumUserManagementController extends FormBasicController {
 	
 	private final Curriculum curriculum;
 	private final boolean membersManaged;
-	private final boolean isAdministrativeUser;
 	private final CurriculumSecurityCallback secCallback;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
@@ -108,7 +107,7 @@ public class CurriculumUserManagementController extends FormBasicController {
 		this.curriculum = curriculum;
 		this.secCallback = secCallback;
 		
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 		
 		membersManaged = CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.members);
@@ -128,9 +127,6 @@ public class CurriculumUserManagementController extends FormBasicController {
 		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumMemberCols.username));
-		}
 		
 		int colIndex = USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
@@ -148,7 +144,7 @@ public class CurriculumUserManagementController extends FormBasicController {
 		tableEl.setSelectAllEnable(true);
 		tableEl.setMultiSelect(true);
 		tableEl.setSearchEnabled(true);
-		tableEl.setAndLoadPersistedPreferences(ureq, "curriculum-element-user-list");
+		tableEl.setAndLoadPersistedPreferences(ureq, "curriculum-element-user-list-v2");
 	}
 	
 	private void loadModel(boolean reset) {

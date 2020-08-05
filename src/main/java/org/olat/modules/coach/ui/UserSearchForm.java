@@ -84,7 +84,7 @@ public class UserSearchForm extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		login = uifactory.addTextElement("login", "search.form.login", 128, "", formLayout);
-		login.setVisible(adminProps);
+		login.setVisible(adminProps);//TODO username
 		
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(PROPS_IDENTIFIER, adminProps);
 

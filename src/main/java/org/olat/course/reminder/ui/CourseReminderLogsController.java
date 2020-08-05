@@ -74,7 +74,6 @@ public class CourseReminderLogsController extends FormBasicController {
 	
 	private CourseReminderEditController reminderEditCtrl; 
 	
-	private final boolean isAdministrativeUser;
 	private final RepositoryEntry repositoryEntry;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
@@ -95,7 +94,7 @@ public class CourseReminderLogsController extends FormBasicController {
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
 		Roles roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 		
 		initForm(ureq);
@@ -108,11 +107,6 @@ public class CourseReminderLogsController extends FormBasicController {
 				 true, SendCols.status.name(), new StatusCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SendCols.reminder.i18nKey(), SendCols.reminder.ordinal(),
 				"reminder", true, SendCols.reminder.name(), new StaticFlexiCellRenderer("reminder", new TextFlexiCellRenderer())));
-
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SendCols.username.i18nKey(), SendCols.username.ordinal(),
-					true, SendCols.username.name()));
-		}
 		
 		int i=0;
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
@@ -145,7 +139,7 @@ public class CourseReminderLogsController extends FormBasicController {
 		tableModel = new CourseSendReminderTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_sel_course_sent_reminder_log_list");
-		tableEl.setAndLoadPersistedPreferences(ureq, "course-reminders-logs");
+		tableEl.setAndLoadPersistedPreferences(ureq, "course-reminders-logs-v2");
 		updateModel();
 	}
 	

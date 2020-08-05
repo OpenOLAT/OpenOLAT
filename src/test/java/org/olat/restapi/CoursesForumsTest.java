@@ -36,7 +36,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.course.CourseFactory;
@@ -72,14 +71,12 @@ public class CoursesForumsTest  extends OlatRestTestCase {
 	
 	@Autowired
 	private DB dbInstance;
-	@Autowired
-	private BaseSecurity securityManager;
 	
 	@Before
 	public void setUp() throws Exception {
 		conn = new RestConnection();
 		
-		admin = securityManager.findIdentityByName("administrator");
+		admin = JunitTestHelper.findIdentityByLogin("administrator");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin);
 		course1 = CourseFactory.loadCourse(courseEntry);
 		dbInstance.intermediateCommit();

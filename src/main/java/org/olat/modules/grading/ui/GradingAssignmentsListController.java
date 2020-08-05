@@ -160,7 +160,6 @@ public class GradingAssignmentsListController extends FormBasicController implem
 	private GradingAssessedIdentityVisibility testEntryAssessedIdentityVisibility;
 	
 	private final boolean myView;
-	private final boolean isAdministrativeUser;
 	private List<UserPropertyHandler> userPropertyHandlers;
 	private List<UserPropertyHandler> assessedUserPropertyHandlers;
 	private final GradingSecurityCallback secCallback;
@@ -225,7 +224,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		this.secCallback = secCallback;
 		
 		Roles roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 		assessedUserPropertyHandlers = userManager.getUserPropertyHandlersFor(ASSESSED_PROPS_ID, isAdministrativeUser);
 		
@@ -252,10 +251,6 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if(!myView) {
-			if(isAdministrativeUser) {
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GAssignmentsCol.username));
-			}
-			
 			int colPos = USER_PROPS_OFFSET;
 			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 				if (userPropertyHandler == null) continue;
@@ -274,10 +269,6 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		
 		// assessed user props
 		if(testEntry == null || testEntryAssessedIdentityVisibility == GradingAssessedIdentityVisibility.nameVisible) {
-			if(isAdministrativeUser) {
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GAssignmentsCol.assessedIdentityUsername));
-			}
-			
 			int aColPos = ASSESSED_PROPS_OFFSET;
 			for (UserPropertyHandler userPropertyHandler : assessedUserPropertyHandlers) {
 				if (userPropertyHandler == null) continue;
@@ -329,7 +320,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		tableEl.setEmptyTableSettings("table.assignments.empty", true);
 		tableEl.setElementCssClass("o_sel_grading_assignments_list");
 		tableEl.setExportEnabled(true);
-		String id = "grading-assignments-list-" + (testEntry == null ? "coaching" : testEntry.getKey());
+		String id = "grading-assignments-list-v2-" + (testEntry == null ? "coaching" : testEntry.getKey());
 		tableEl.setAndLoadPersistedPreferences(ureq, id);
 		
 		if(secCallback.canReport()) {

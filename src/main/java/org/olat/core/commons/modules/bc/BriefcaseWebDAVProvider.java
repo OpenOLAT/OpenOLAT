@@ -53,9 +53,6 @@ public class BriefcaseWebDAVProvider implements WebDAVProvider {
 		return identityEnv != null;
 	}
 
-	/**
-	 * @see org.olat.core.commons.services.webdav.WebDAVProvider#getContainer(org.olat.core.id.Identity)
-	 */
 	@Override
 	public VFSContainer getContainer(IdentityEnvironment identityEnv) {
 		// merge /public and /private
@@ -63,7 +60,7 @@ public class BriefcaseWebDAVProvider implements WebDAVProvider {
 	}
 	
 	protected static String getRootPathFor(Identity identity) {
-		return FolderConfig.getUserHomes() + "/" + identity.getName();
+		return FolderConfig.getUserHome(identity);
 	}
 }
 	

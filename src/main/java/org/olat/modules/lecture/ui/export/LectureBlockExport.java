@@ -60,7 +60,6 @@ public class LectureBlockExport extends OpenXMLWorkbookResource {
 	private final List<Identity> teachers;
 	
 	private final boolean authorizedAbsenceEnabled;
-	private final boolean isAdministrativeUser;
 	private List<UserPropertyHandler> userPropertyHandlers;
 	
 	private final UserManager userManager;
@@ -70,7 +69,6 @@ public class LectureBlockExport extends OpenXMLWorkbookResource {
 		this.teachers = teachers;
 		this.lectureBlock = lectureBlock;
 		lectureService = CoreSpringFactory.getImpl(LectureService.class);
-		this.isAdministrativeUser = isAdministrativeUser;
 		this.authorizedAbsenceEnabled = authorizedAbsenceEnabled;
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(ParticipantListRepositoryController.USER_PROPS_ID, isAdministrativeUser);
@@ -108,9 +106,6 @@ public class LectureBlockExport extends OpenXMLWorkbookResource {
 		Row footerRow = exportSheet.newRow();
 
 		int pos = 0;
-		if(isAdministrativeUser) {
-			pos++;
-		}
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) continue;
 			pos++;
@@ -131,10 +126,6 @@ public class LectureBlockExport extends OpenXMLWorkbookResource {
 			formatter.formatTimeShort(lectureBlock.getEndDate())
 		};
 		headerRow.addCell(pos, translator.translate("export.header.lectureblocks", args));
-		
-		if(isAdministrativeUser) {
-			pos++;
-		}
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) continue;
 			pos++;
@@ -159,9 +150,6 @@ public class LectureBlockExport extends OpenXMLWorkbookResource {
 	private void addHeaders_2(OpenXMLWorksheet exportSheet) {
 		Row headerRow = exportSheet.newRow();
 		int pos = 0;
-		if(isAdministrativeUser) {
-			pos++;
-		}
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) continue;
 			pos++;
@@ -173,10 +161,6 @@ public class LectureBlockExport extends OpenXMLWorkbookResource {
 		Row headerRow = exportSheet.newRow();
 		
 		int pos = 0;
-		if(isAdministrativeUser) {
-			headerRow.addCell(pos++, translator.translate("table.header.username"));
-		}
-		
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) continue;
 
@@ -209,10 +193,6 @@ public class LectureBlockExport extends OpenXMLWorkbookResource {
 			Row row = exportSheet.newRow();
 			
 			int pos = 0;
-			if(isAdministrativeUser) {
-				row.addCell(pos++, participant.getName());
-			}
-			
 			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 				if (userPropertyHandler == null) continue;
 				String val = userPropertyHandler.getUserProperty(participant.getUser(), translator.getLocale());

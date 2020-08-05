@@ -65,7 +65,6 @@ implements SortableFlexiTableDataModel<GradingInformationsRow> {
 	public Object getValueAt(GradingInformationsRow row, int col) {
 		if(col >= 0 && col < COLS.length) {
 			switch(COLS[col]) {
-				case username: return row.getGrader().getName();
 				case status: return row.getGraderStatus();
 				case absence: return row;
 				default: return "ERROR";
@@ -87,7 +86,6 @@ implements SortableFlexiTableDataModel<GradingInformationsRow> {
 	}
 
 	public enum GInfosCol implements FlexiSortableColumnDef {
-		username("table.header.username"),
 		status("table.header.status"),
 		absence("table.header.absence.leave");
 		

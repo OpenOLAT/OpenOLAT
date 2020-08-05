@@ -177,9 +177,9 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		
 		int found = 0;
 		for(UserVO user:users) {
-			String login = user.getLogin();
-			Assert.assertNotNull(login);
-			if(owner1.getName().equals(login) || owner2.getName().equals(login)) {
+			Long userKey = user.getKey();
+			Assert.assertNotNull(userKey);
+			if(owner1.getKey().equals(userKey) || owner2.getKey().equals(userKey)) {
 				found++;
 			}
 		}
@@ -298,9 +298,9 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		
 		int found = 0;
 		for(UserVO user:users) {
-			String login = user.getLogin();
-			Assert.assertNotNull(login);
-			if(coach1.getName().equals(login) || coach2.getName().equals(login)) {
+			Long identityKey = user.getKey();
+			Assert.assertNotNull(identityKey);
+			if(coach1.getKey().equals(identityKey) || coach2.getKey().equals(identityKey)) {
 				found++;
 			}
 		}
@@ -420,9 +420,9 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		
 		int found = 0;
 		for(UserVO user:users) {
-			String login = user.getLogin();
-			Assert.assertNotNull(login);
-			if(participant1.getName().equals(login) || participant2.getName().equals(login)) {
+			Long identityKey = user.getKey();
+			Assert.assertNotNull(identityKey);
+			if(participant1.getKey().equals(identityKey) || participant2.getKey().equals(identityKey)) {
 				found++;
 			}
 		}

@@ -53,7 +53,6 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.restapi.EventVO;
@@ -68,6 +67,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.restapi.support.vo.CourseConfigVO;
 import org.olat.test.JunitTestHelper;
+import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -84,13 +84,11 @@ public class CourseCalendarTest extends OlatRestTestCase {
 	
 	private static final Logger log = Tracing.createLoggerFor(CourseCalendarTest.class);
 	
-	private Identity auth1;
+	private IdentityWithLogin auth1;
 	private ICourse course1;
 
 	@Autowired
 	private DB dbInstance;
-	@Autowired
-	private BaseSecurity securityManager;
 	@Autowired
 	private CalendarManager calendarManager;
 	
@@ -101,10 +99,10 @@ public class CourseCalendarTest extends OlatRestTestCase {
 	public void setUp() throws Exception {
 		try {
 			// create course and persist as OLATResourceImpl
-			auth1 = JunitTestHelper.createAndPersistIdentityAsUser("rest-course-cal-one");
+			auth1 = JunitTestHelper.createAndPersistRndUser("rest-course-cal-one");
 			CourseConfigVO config = new CourseConfigVO();
 			config.setCalendar(Boolean.TRUE);
-			RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(auth1,
+			RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(auth1.getIdentity(),
 					RepositoryEntryStatusEnum.preparation, false, false);
 			course1 = CourseFactory.loadCourse(courseEntry);
 			dbInstance.commit();
@@ -135,7 +133,7 @@ public class CourseCalendarTest extends OlatRestTestCase {
 	public void getCalendarEvents()
 	throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(auth1.getName(), "A6B7C8"));
+		assertTrue(conn.login(auth1));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
 				.path(course1.getResourceableId().toString()).path("calendar").path("events").build();
@@ -152,7 +150,7 @@ public class CourseCalendarTest extends OlatRestTestCase {
 	@Test
 	public void putCalendarEvent() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(auth1.getName(), "A6B7C8"));
+		assertTrue(conn.login(auth1));
 
 		//create an event
 		EventVO event = new EventVO();
@@ -189,7 +187,7 @@ public class CourseCalendarTest extends OlatRestTestCase {
 	@Test
 	public void putVisibleCalendarEvent() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(auth1.getName(), "A6B7C8"));
+		assertTrue(conn.login(auth1));
 
 		//create an event
 		EventVO event = new EventVO();
@@ -225,7 +223,7 @@ public class CourseCalendarTest extends OlatRestTestCase {
 	@Test
 	public void putCalendarEvents() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		Identity admin = securityManager.findIdentityByName("administrator");
+		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
 
 		Assert.assertTrue(conn.login("administrator", "openolat"));
 		
@@ -284,7 +282,7 @@ public class CourseCalendarTest extends OlatRestTestCase {
 	@Test
 	public void deleteCalendarEvent() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(auth1.getName(), "A6B7C8"));
+		assertTrue(conn.login(auth1));
 		
 		//create an event if the event is saved
 		KalendarRenderWrapper calendarWrapper = calendarManager.getCourseCalendar(course1);

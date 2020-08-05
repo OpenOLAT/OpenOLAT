@@ -70,7 +70,6 @@ public class CourseSendReminderListController extends FormBasicController {
 	private CourseSendReminderTableModel tableModel;
 	
 	private final Reminder reminder;
-	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	@Autowired
@@ -88,7 +87,7 @@ public class CourseSendReminderListController extends FormBasicController {
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
 		Roles roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 		
 		initForm(ureq);
@@ -99,11 +98,6 @@ public class CourseSendReminderListController extends FormBasicController {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SendCols.status.i18nKey(), SendCols.status.ordinal(),
 				 true, SendCols.status.name(), new StatusCellRenderer()));
-
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SendCols.username.i18nKey(), SendCols.username.ordinal(),
-					true, SendCols.username.name()));
-		}
 		
 		int i=0;
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {

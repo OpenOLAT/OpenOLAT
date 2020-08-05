@@ -90,7 +90,6 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 	
 	private final CurriculumElement curriculumElement;
 	private final boolean membersManaged;
-	private final boolean isAdministrativeUser;
 	private final CurriculumSecurityCallback secCallback;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
@@ -110,7 +109,7 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 		this.curriculumElement = curriculumElement;
 		this.secCallback = secCallback;
 		
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 		
 		membersManaged = CurriculumElementManagedFlag.isManaged(curriculumElement, CurriculumElementManagedFlag.members);
@@ -130,10 +129,7 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumMemberCols.username));
-		}
-		
+
 		int colIndex = USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);

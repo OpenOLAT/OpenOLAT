@@ -59,7 +59,6 @@ public class GradersOverviewIdentitiesController extends StepFormBasicController
 	private FlexiTableElement tableEl;
 	private ImportGraderOverviewDataModel userTableModel;
 	
-	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	@Autowired
@@ -75,7 +74,7 @@ public class GradersOverviewIdentitiesController extends StepFormBasicController
 		setTranslator(userManager.getPropertyHandlerTranslator(Util
 				.createPackageTranslator(GradersListController.class, getLocale(), getTranslator())));
 
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 		
 		initForm (ureq);
@@ -89,9 +88,6 @@ public class GradersOverviewIdentitiesController extends StepFormBasicController
 		//add the table
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		int colIndex = 0;
-		if(isAdministrativeUser) {
-			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.username", colIndex++));
-		}
 		List<UserPropertyHandler> resultingPropertyHandlers = new ArrayList<>();
 		// followed by the users fields
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
@@ -103,7 +99,7 @@ public class GradersOverviewIdentitiesController extends StepFormBasicController
 			}
 		}
 		
-		userTableModel = new ImportGraderOverviewDataModel(resultingPropertyHandlers, isAdministrativeUser, getLocale(), tableColumnModel);
+		userTableModel = new ImportGraderOverviewDataModel(resultingPropertyHandlers, getLocale(), tableColumnModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "users", userTableModel, 24, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(false);
 	}

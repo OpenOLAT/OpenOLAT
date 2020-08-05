@@ -58,6 +58,8 @@ import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nModule;
+import org.olat.ldap.LDAPLoginModule;
+import org.olat.ldap.ui.LDAPAuthenticationController;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.login.validation.SyntaxValidator;
 import org.olat.login.validation.ValidationResult;
@@ -122,13 +124,15 @@ class ImportStep00 extends BasicStep {
 		@Autowired
 		private BaseSecurity securityManager;
 		@Autowired
+		private LDAPLoginModule ldapModule;
+		@Autowired
 		private ShibbolethModule shibbolethModule;
 
 		public ImportStepForm00(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext) {
 			super(ureq, control, rootForm, runContext, LAYOUT_VERTICAL, null);
 			flc.setTranslator(getTranslator());
-			this.usernameSyntaxValidator = olatAuthManager.createUsernameSytaxValidator();
-			this.passwordSyntaxValidator = olatAuthManager.createPasswordSytaxValidator();
+			usernameSyntaxValidator = olatAuthManager.createUsernameSytaxValidator();
+			passwordSyntaxValidator = olatAuthManager.createPasswordSytaxValidator();
 			initForm(ureq);
 		}
 
@@ -229,18 +233,7 @@ class ImportStep00 extends BasicStep {
 						break;
 					}
 				}
-				if(pwd != null && pwd.startsWith(UserImportController.SHIBBOLETH_MARKER) && shibbolethModule.isEnableShibbolethLogins()) {
-					String authusername = pwd.substring(UserImportController.SHIBBOLETH_MARKER.length());
-					Authentication auth = securityManager.findAuthenticationByAuthusername(authusername, ShibbolethDispatcher.PROVIDER_SHIB);
-					if(auth != null) {
-						String authLogin = auth.getIdentity().getName();
-						if(!login.equals(authLogin)) {
-							textAreaElement.setErrorKey("error.shibbolet.name.inuse", new String[] { String.valueOf(i + 1), authusername });
-							importDataError = true;
-							break;
-						}
-					}
-				}
+
 				columnId++;
 
 				// optional language fields
@@ -258,7 +251,7 @@ class ImportStep00 extends BasicStep {
 				}
 				columnId++;
 
-				Identity ident = securityManager.findIdentityByName(login);
+				Identity ident = findByLogin(login, pwd);
 				if (ident != null) {
 					// update existing accounts, add info message
 					
@@ -301,6 +294,20 @@ class ImportStep00 extends BasicStep {
 			}
 
 			return !importDataError;
+		}
+		
+		private Identity findByLogin(String login, String pwd) {
+			Authentication authentication;
+			if(pwd != null && pwd.startsWith(UserImportController.LDAP_MARKER) && ldapModule.isLDAPEnabled()) {
+				String ldapLogin = pwd.substring(UserImportController.LDAP_MARKER.length());
+				authentication = securityManager.findAuthenticationByAuthusername(ldapLogin, LDAPAuthenticationController.PROVIDER_LDAP);
+			} else if(pwd != null && pwd.startsWith(UserImportController.SHIBBOLETH_MARKER) && shibbolethModule.isEnableShibbolethLogins()) {
+				String shibbolethLogin = pwd.substring(UserImportController.SHIBBOLETH_MARKER.length());
+				authentication = securityManager.findAuthenticationByAuthusername(shibbolethLogin, ShibbolethDispatcher.PROVIDER_SHIB);
+			} else {
+				authentication = securityManager.findAuthenticationByAuthusername(login, "OLAT");
+			}
+			return authentication == null ? null : authentication.getIdentity();
 		}
 		
 		private boolean updateUserProperties(Identity ud, User originalUser, String[] parts, int i, int columnId,
@@ -403,7 +410,9 @@ class ImportStep00 extends BasicStep {
 		}
 		
 		private boolean validatePassword(String password, Identity userIdentity, int column) {
-			if (StringHelper.containsNonWhitespace(password)) {
+			if (StringHelper.containsNonWhitespace(password)
+					&& !password.startsWith(UserImportController.SHIBBOLETH_MARKER)
+					&& !password.startsWith(UserImportController.LDAP_MARKER)) {
 				ValidationResult validationResult = passwordSyntaxValidator.validate(password, userIdentity);
 				if (!validationResult.isValid()) {
 					String descriptions = formatDescriptionAsList(validationResult.getInvalidDescriptions(), getLocale());

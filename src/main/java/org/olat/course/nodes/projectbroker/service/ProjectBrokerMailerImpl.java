@@ -210,10 +210,10 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 	private MailerResult sendEmailToGroup(List<Identity> group, Identity enrolledIdentity, Project project, String subject, String body, Locale locale) {
 		MailTemplate enrolledMailTemplate = this.createMailTemplate(project, enrolledIdentity, subject, body, locale );
 		// loop over all project manger
-		StringBuilder identityNames = new StringBuilder();
+		StringBuilder identityKeys = new StringBuilder();
 		for (Identity identity : group) {
-			if (identityNames.length()>0) identityNames.append(",");
-			identityNames.append(identity.getName());
+			if (identityKeys.length()>0) identityKeys.append(",");
+			identityKeys.append(identity.getKey());
 		}
 		MailContext context = new MailContextImpl(project.getProjectBroker(), null, null);
 		String metaId = UUID.randomUUID().toString().replace("-", "");
@@ -221,23 +221,23 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 		MailerResult result = new MailerResult();
 		MailBundle[] bundles = mailManager.makeMailBundles(context, group, enrolledMailTemplate, null, metaId, result);
 		result.append(mailManager.sendMessage(bundles));
-		log.info(Tracing.M_AUDIT, "ProjectBroker: sendEmailToGroup: identities=" + identityNames.toString() + " , mailerResult.returnCode=" + result.getReturnCode());
+		log.info(Tracing.M_AUDIT, "ProjectBroker: sendEmailToGroup: identities={} , mailerResult.returnCode={}", identityKeys, result.getReturnCode());
 		return result;
 	}
 
 	private MailerResult sendEmailProjectChanged(List<Identity> group, Identity changer, Project project, String subject, String body, Locale locale) {
 		MailTemplate enrolledMailTemplate = this.createProjectChangeMailTemplate(project, changer, subject, body, locale );
 		// loop over all project manger
-		StringBuilder identityNames = new StringBuilder();
+		StringBuilder identityKeys = new StringBuilder();
 		for (Identity identity : group) {
-			if (identityNames.length()>0) identityNames.append(",");
-			identityNames.append(identity.getName());
+			if (identityKeys.length()>0) identityKeys.append(",");
+			identityKeys.append(identity.getKey());
 		}
 		MailContext context = new MailContextImpl(project.getProjectBroker(), null, null);
 		MailerResult result = new MailerResult();
 		MailBundle[] bundles = mailManager.makeMailBundles(context, group, enrolledMailTemplate, null, null, result);
 		result.append(mailManager.sendMessage(bundles));
-		log.info(Tracing.M_AUDIT, "ProjectBroker: sendEmailToGroup: identities=" + identityNames.toString() + " , mailerResult.returnCode=" + result.getReturnCode());
+		log.info(Tracing.M_AUDIT, "ProjectBroker: sendEmailToGroup: identities={} , mailerResult.returnCode={}", identityKeys, result.getReturnCode());
 		return result;
 	}
 

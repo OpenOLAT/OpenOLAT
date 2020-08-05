@@ -63,7 +63,6 @@ implements SortableFlexiTableDataModel<IdentityLecturesRollCallsRow> {
 	public Object getValueAt(IdentityLecturesRollCallsRow row, int col) {	
 		if(col < IdentitiesLecturesRollCallController.USER_PROPS_OFFSET) {
 			switch(IdentitiesLecturesCols.values()[col]) {
-				case username: return row.getIdentityName();
 				case tools: return row.getTools();
 				default: return "ERROR";
 			}
@@ -96,7 +95,6 @@ implements SortableFlexiTableDataModel<IdentityLecturesRollCallsRow> {
 	}
 	
 	public enum IdentitiesLecturesCols implements FlexiSortableColumnDef {
-		username("table.header.username"),
 		status("table.header.status"),
 		tools("table.header.tools");
 		

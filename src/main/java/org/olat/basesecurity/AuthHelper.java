@@ -422,7 +422,7 @@ public class AuthHelper {
 	 */
 	private static void setSessionInfoFor(Identity identity, UserSession usess, String authProvider, UserRequest ureq, boolean rest) {
 		HttpSession session = ureq.getHttpReq().getSession();
-		SessionInfo sinfo = new SessionInfo(identity.getKey(), identity.getName(), session);
+		SessionInfo sinfo = new SessionInfo(identity.getKey(), session);
 		sinfo.setFirstname(identity.getUser().getProperty(UserConstants.FIRSTNAME, ureq.getLocale()));
 		sinfo.setLastname(identity.getUser().getProperty(UserConstants.LASTNAME, ureq.getLocale()));
 		sinfo.setFromIP(ureq.getHttpReq().getRemoteAddr());

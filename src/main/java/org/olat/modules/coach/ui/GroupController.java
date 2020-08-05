@@ -103,8 +103,6 @@ public class GroupController extends FormBasicController implements Activateable
 	private final int numOfGroups;
 	private final BusinessGroup group;
 	private final GroupStatEntry entry;
-
-	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 
 	@Autowired
@@ -124,7 +122,7 @@ public class GroupController extends FormBasicController implements Activateable
 			GroupStatEntry groupStatistic, int index, int numOfGroups) {
 		super(ureq, wControl, "group_view");
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, isAdministrativeUser);
 		
 		this.index = index;
@@ -175,9 +173,6 @@ public class GroupController extends FormBasicController implements Activateable
 		
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.name, "select"));
-		}
 		
 		int colIndex = UserListController.USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
@@ -200,7 +195,7 @@ public class GroupController extends FormBasicController implements Activateable
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		tableEl.setEmtpyTableMessageKey("error.no.found");
-		tableEl.setAndLoadPersistedPreferences(ureq, "fGroupController");
+		tableEl.setAndLoadPersistedPreferences(ureq, "fGroupController-v2");
 	}
 
 	@Override

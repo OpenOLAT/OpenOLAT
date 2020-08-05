@@ -75,7 +75,6 @@ public class DialogElementListEditController extends FormBasicController {
 	private int counter = 0;
 	private final RepositoryEntry entry;
 	private final DialogCourseNode courseNode;
-	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 
 	private DialogBoxController confirmDeletionCtr;
@@ -96,7 +95,7 @@ public class DialogElementListEditController extends FormBasicController {
 		this.entry = entry;
 		this.courseNode = courseNode;
 
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 		
 		initForm(ureq);
@@ -109,10 +108,6 @@ public class DialogElementListEditController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DialogCols.filename));
 
 		//list of user properties
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DialogCols.authorUsername));
-		}
-		
 		int colIndex = USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
@@ -128,7 +123,7 @@ public class DialogElementListEditController extends FormBasicController {
 				
 		tableModel = new DialogElementsTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(), formLayout);
-		tableEl.setAndLoadPersistedPreferences(ureq, "dialog.elements");
+		tableEl.setAndLoadPersistedPreferences(ureq, "dialog.elements.v2");
 		tableEl.setPageSize(25);
 	}
 	

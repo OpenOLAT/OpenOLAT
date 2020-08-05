@@ -50,7 +50,6 @@ public class LecturesStatisticsExport extends OpenXMLWorkbookResource {
 	private static final Logger log = Tracing.createLoggerFor(LecturesStatisticsExport.class);
 	
 	private final Translator translator;
-	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final List<LectureBlockIdentityStatistics> statistics;
 	private final Curriculum curriculum;
@@ -69,13 +68,12 @@ public class LecturesStatisticsExport extends OpenXMLWorkbookResource {
 	 */
 	public LecturesStatisticsExport(List<LectureBlockIdentityStatistics> statistics,
 			Curriculum curriculum, CurriculumElement curriculumElement,
-			List<UserPropertyHandler> userPropertyHandlers, boolean isAdministrativeUser, Translator translator) {
+			List<UserPropertyHandler> userPropertyHandlers, Translator translator) {
 		super(label());
 		this.translator = translator;
 		this.statistics = statistics;
 		this.curriculum = curriculum;
 		this.curriculumElement = curriculumElement;
-		this.isAdministrativeUser = isAdministrativeUser;
 		this.userPropertyHandlers = userPropertyHandlers;
 		lectureService = CoreSpringFactory.getImpl(LectureService.class);
 	}
@@ -138,10 +136,6 @@ public class LecturesStatisticsExport extends OpenXMLWorkbookResource {
 	}
 	
 	private int addHeadersUser(Row headerRow, int pos) {
-		if(isAdministrativeUser) {
-			headerRow.addCell(pos++, translator.translate("table.header.username"));
-		}
-		
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) continue;
 			headerRow.addCell(pos++, translator.translate("form.name." + userPropertyHandler.getName()));
@@ -183,10 +177,6 @@ public class LecturesStatisticsExport extends OpenXMLWorkbookResource {
 	}
 
 	private int addContentUser(LectureBlockIdentityStatistics statistic, Row row, int pos) {
-		if(isAdministrativeUser) {
-			row.addCell(pos++, statistic.getIdentityName());
-		}
-		
 		int count = 0;
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) continue;

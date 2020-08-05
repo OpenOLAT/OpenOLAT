@@ -44,6 +44,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.test.JunitTestHelper;
+import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -69,9 +70,9 @@ public class WebDAVManagerTest extends OlatTestCase {
 	
 	@Test
 	public void handleBasicAuthentication() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("dav-user-1");
+		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("dav-user-1");
 
-		String credentialsClearText = id.getName() + ":" + JunitTestHelper.PWD;
+		String credentialsClearText = id.getLogin() + ":" + id.getPassword();
 		String credentials = StringHelper.encodeBase64(credentialsClearText);
 		HttpServletRequest request = new MockHttpServletRequest();
 		UserSession usess = webDAVManager.handleBasicAuthentication(credentials, request);
@@ -81,19 +82,20 @@ public class WebDAVManagerTest extends OlatTestCase {
 	
 	@Test
 	public void handleBasicAuthentication_denied() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("dav-user-2");
-		authManager.authenticate(id, id.getName(), JunitTestHelper.PWD);
+		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("dav-user-2");
+		authManager.authenticate(id.getIdentity(), id.getLogin(), id.getPassword());
 		dbInstance.commitAndCloseSession();// derived WebDAV authentications saved
 
 		// login successful
-		String credentialsClearText = id.getName() + ":" + JunitTestHelper.PWD;
+		String credentialsClearText = id.getLogin() + ":" + id.getPassword();
 		String credentials = StringHelper.encodeBase64(credentialsClearText);
 		HttpServletRequest request = new MockHttpServletRequest();
 		UserSession usess = webDAVManager.handleBasicAuthentication(credentials, request);
 		Assert.assertNotNull(usess);
 		
-		id = securityManager.saveIdentityStatus(id, Identity.STATUS_LOGIN_DENIED, id);
+		Identity identity = securityManager.saveIdentityStatus(id.getIdentity(), Identity.STATUS_LOGIN_DENIED, id.getIdentity());
 		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(identity);
 		
 		UserSession usessDenied = webDAVManager.handleBasicAuthentication(credentials, request);
 		Assert.assertNull(usessDenied);
@@ -101,8 +103,8 @@ public class WebDAVManagerTest extends OlatTestCase {
 	
 	@Test
 	public void handleDigestAuthentication() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("dav-user-3");
-		authManager.authenticate(id, id.getName(), JunitTestHelper.PWD);
+		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("dav-user-3");
+		authManager.authenticate(id.getIdentity(), id.getLogin(), id.getPassword());
 		dbInstance.commitAndCloseSession();// derived WebDAV authentications saved
 		
 		HttpServletRequest request = new MockHttpServletRequest();
@@ -126,8 +128,8 @@ public class WebDAVManagerTest extends OlatTestCase {
 	
 	@Test
 	public void handleDigestAuthentication_denied() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("dav-user-3");
-		authManager.authenticate(id, id.getName(), JunitTestHelper.PWD);
+		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("dav-user-3");
+		authManager.authenticate(id.getIdentity(), id.getLogin(), id.getPassword());
 		dbInstance.commitAndCloseSession();// derived WebDAV authentications saved
 		
 		HttpServletRequest request = new MockHttpServletRequest("POST", "https://www.openolat.col");
@@ -149,8 +151,9 @@ public class WebDAVManagerTest extends OlatTestCase {
 		Assert.assertNotNull(usess);
 		dbInstance.commit();
 		
-		id = securityManager.saveIdentityStatus(id, Identity.STATUS_LOGIN_DENIED, id);
+		Identity identity = securityManager.saveIdentityStatus(id.getIdentity(), Identity.STATUS_LOGIN_DENIED, id.getIdentity());
 		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(identity);
 		
 		UserSession deniedSession = webDAVManager.handleDigestAuthentication(digested, request);
 		Assert.assertNull(deniedSession);
@@ -158,8 +161,8 @@ public class WebDAVManagerTest extends OlatTestCase {
 	
 	@Test
 	public void testSetIdentityAsActiv() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("dav-user-4");
-		String credentialsClearText = id.getName() + ":" + JunitTestHelper.PWD;
+		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("dav-user-4");
+		String credentialsClearText = id.getLogin() + ":" + id.getPassword();
 		String credentials = StringHelper.encodeBase64(credentialsClearText);
 		
 		final int maxLoop = 50; // => 4000 x 11ms => 44sec => finished in 50sec

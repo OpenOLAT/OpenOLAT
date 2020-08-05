@@ -29,6 +29,7 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.commons.memberlist.model.CurriculumElementInfos;
 import org.olat.commons.memberlist.model.CurriculumMemberInfos;
@@ -72,6 +73,8 @@ public class MembersPrintController extends BasicController {
 	
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
 	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
@@ -148,7 +151,7 @@ public class MembersPrintController extends BasicController {
 	}
 	
 	private Member createMember(Identity identity, Map<Long,CurriculumMemberInfos> curriculumInfos) {
-		boolean hasPortrait = portraitManager.hasPortrait(identity.getName());
+		boolean hasPortrait = portraitManager.hasPortrait(identity);
 
 		String portraitCssClass;
 		String gender = identity.getUser().getProperty(UserConstants.GENDER, Locale.ENGLISH);
@@ -193,8 +196,8 @@ public class MembersPrintController extends BasicController {
 				if(endKeyIndex > 0) {
 					String idKey = relPath.substring(0, endKeyIndex);
 					Long key = Long.parseLong(idKey);
-					String username = userManager.getUsername(key);
-					VFSLeaf portrait = portraitManager.getLargestVFSPortrait(username);
+					Identity identity = securityManager.loadIdentityByKey(key);
+					VFSLeaf portrait = portraitManager.getLargestVFSPortrait(identity);
 					if(portrait.canMeta() == VFSConstants.YES) {
 						portrait = vfsRepositoryService.getThumbnail(portrait, 300, 300, false);
 					}

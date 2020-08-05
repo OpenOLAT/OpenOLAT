@@ -54,7 +54,6 @@ public class DocumentsInUseListController extends FormBasicController {
 	
 	private FlexiTableElement tableEl;
 	private DocumentsInUseDataModel dataModel;
-	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	@Autowired
@@ -68,7 +67,7 @@ public class DocumentsInUseListController extends FormBasicController {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 		
 		initForm(ureq);
@@ -78,13 +77,7 @@ public class DocumentsInUseListController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		
-		
 
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DocumentsInUseCols.username));
-		}
-		
 		int colIndex = USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
@@ -100,7 +93,7 @@ public class DocumentsInUseListController extends FormBasicController {
 		
 		dataModel = new DocumentsInUseDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
-		tableEl.setAndLoadPersistedPreferences(ureq, "doc-editor-files-in-use");
+		tableEl.setAndLoadPersistedPreferences(ureq, "doc-editor-files-in-use-v2");
 		
 		List<FlexiTableFilter> filters = new ArrayList<>();
 		filters.add(new FlexiTableFilter(translate("table.filter.edit"), Mode.EDIT.name()));

@@ -89,7 +89,6 @@ public class CheckboxAssessmentController extends FormBasicController {
 	private List<CheckListAssessmentRow> initialRows;
 	
 	private final CheckboxList checkboxList;
-	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	@Autowired
@@ -121,7 +120,7 @@ public class CheckboxAssessmentController extends FormBasicController {
 		withScore = (hasScore == null || hasScore.booleanValue());	
 
 		Roles roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(CheckListAssessmentController.USER_PROPS_ID, isAdministrativeUser);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
@@ -133,10 +132,6 @@ public class CheckboxAssessmentController extends FormBasicController {
 		setFormDescription("assessment.checkbox.description");
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.username.i18nKey(), Cols.username.ordinal(),
-					true, Cols.username.name()));
-		}
 		
 		int i=0;
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
@@ -225,7 +220,7 @@ public class CheckboxAssessmentController extends FormBasicController {
 		table = uifactory.addTableElement(getWindowControl(), "checkbox-list", model, getTranslator(), formLayout);
 		table.setCustomizeColumns(true);
 		table.setEditMode(true);
-		table.setAndLoadPersistedPreferences(ureq, "checkbox-assessment");
+		table.setAndLoadPersistedPreferences(ureq, "checkbox-assessment-v2");
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);

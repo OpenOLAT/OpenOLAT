@@ -323,7 +323,7 @@ public class RestApiLoginFilter implements Filter {
 			usess.setRoles(Roles.userRoles());
 
 			String remoteAddr = request.getRemoteAddr();
-			SessionInfo sinfo = new SessionInfo(Long.valueOf(-1), "REST", request.getSession());
+			SessionInfo sinfo = new SessionInfo(Long.valueOf(-1), request.getSession());
 			sinfo.setFirstname("REST");
 			sinfo.setLastname(remoteAddr);
 			sinfo.setFromIP(remoteAddr);

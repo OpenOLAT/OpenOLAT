@@ -25,7 +25,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
@@ -44,11 +43,8 @@ import org.olat.core.id.Persistable;
  */
 @Entity(name="bidentityshort")
 @Table(name="o_bs_identity_short_v")
-@NamedQueries({
-	@NamedQuery(name="selectAllIdentitiesShortUnordered", query="select ident from bidentityshort as ident"),
-	@NamedQuery(name="getIdentityShortById", query="select identity from bidentityshort as identity where identity.key=:identityKey")
-	
-})
+@NamedQuery(name="selectAllIdentitiesShortUnordered", query="select ident from bidentityshort as ident")
+@NamedQuery(name="getIdentityShortById", query="select identity from bidentityshort as identity where identity.key=:identityKey")
 public class IdentityShort implements Persistable, IdentityNames {
 
 	private static final long serialVersionUID = -9039644291427632379L;

@@ -37,7 +37,6 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 public class UserPropertiesRow {
 	
 	private final Long identityKey;
-	private final String identityName;
 	private final String[] identityProps;
 	
 	/**
@@ -48,9 +47,8 @@ public class UserPropertiesRow {
 	 * @param identityProps The raw user properties
 	 * @param locale The locale
 	 */
-	public UserPropertiesRow(Long identityKey, String identityName, List<UserPropertyHandler> userPropertyHandlers, String[] identityProps, Locale locale) {
+	public UserPropertiesRow(Long identityKey, List<UserPropertyHandler> userPropertyHandlers, String[] identityProps, Locale locale) {
 		this.identityKey = identityKey;
-		this.identityName = identityName;
 		this.identityProps = identityProps;
 		if(identityProps != null) {
 			QueryUserHelper user = new QueryUserHelper();
@@ -65,10 +63,8 @@ public class UserPropertiesRow {
 		identityProps = new String[userPropertyHandlers.size()];
 		if(identity == null) {
 			identityKey = null;
-			identityName = null;
 		} else {
 			identityKey = identity.getKey();
-			identityName = identity.getName();
 			for(int i=userPropertyHandlers.size(); i-->0; ) {
 				identityProps[i] = userPropertyHandlers.get(i).getUserProperty(identity.getUser(), locale);
 			}
@@ -78,10 +74,6 @@ public class UserPropertiesRow {
 	public Long getIdentityKey() {
 		return identityKey;
 	}
-
-	public String getIdentityName() {
-		return identityName;
-	}
 	
 	public String[] getIdentityProps() {
 		return identityProps;
@@ -90,5 +82,4 @@ public class UserPropertiesRow {
 	public String getIdentityProp(int index) {
 		return identityProps[index];
 	}
-
 }

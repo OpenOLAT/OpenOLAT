@@ -52,14 +52,12 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.group.ui.main.MemberListTableModel.Cols;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
@@ -93,7 +91,6 @@ public class SharedBindersController extends FormBasicController implements Acti
 	private FlexiTableElement tableEl;
 	private SharedBindersDataModel model;
 	private final TooledStackedPanel stackPanel;
-	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	private BinderController binderCtrl;
@@ -114,7 +111,7 @@ public class SharedBindersController extends FormBasicController implements Acti
 		stackPanel.addListener(this);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 
 		initForm(ureq);
@@ -127,19 +124,13 @@ public class SharedBindersController extends FormBasicController implements Acti
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ShareItemCols.binderKey, "select"));
 		
 		SortKey defaultSortKey = null;
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.username));
-			defaultSortKey = new SortKey(Cols.username.name(), true);
-		}
 		// followed by the users fields
 		int colPos = USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
 
 			String propName = userPropertyHandler.getName();
-			if(defaultSortKey == null && i == 0) {
-				defaultSortKey = new SortKey(propName, true);
-			} else if(UserConstants.LASTNAME.equals(propName) && !isAdministrativeUser) {
+			if(defaultSortKey == null) {
 				defaultSortKey = new SortKey(propName, true);
 			}
 			
@@ -176,7 +167,7 @@ public class SharedBindersController extends FormBasicController implements Acti
 		tableEl.setElementCssClass("o_binder_shared_items_listing");
 		tableEl.setEmtpyTableMessageKey("table.sEmptyTable");
 		tableEl.setPageSize(24);
-		tableEl.setAndLoadPersistedPreferences(ureq, "shared-items");
+		tableEl.setAndLoadPersistedPreferences(ureq, "shared-items-v2");
 		
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		if(defaultSortKey != null) {

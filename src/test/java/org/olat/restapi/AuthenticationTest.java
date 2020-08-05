@@ -56,6 +56,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.test.JunitTestHelper;
+import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -172,18 +173,19 @@ public class AuthenticationTest extends OlatRestTestCase {
 	
 	@Test
 	public void testAuthenticationDenied() throws IOException, URISyntaxException {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-denied");
+		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("rest-denied");
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id.getName(), JunitTestHelper.PWD));
+		assertTrue(conn.login(id));
 		conn.shutdown();
 		
-		id = securityManager.saveIdentityStatus(id, Identity.STATUS_LOGIN_DENIED, id);
+		Identity savedIdentity = securityManager.saveIdentityStatus(id.getIdentity(), Identity.STATUS_LOGIN_DENIED, id.getIdentity());
 		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(savedIdentity);
 		
 		RestConnection conn2 = new RestConnection();
-		Assert.assertFalse(conn2.login(id.getName(), JunitTestHelper.PWD));
+		Assert.assertFalse(conn2.login(id.getLogin(), id.getPassword()));
 		conn2.shutdown();
 	}
 	

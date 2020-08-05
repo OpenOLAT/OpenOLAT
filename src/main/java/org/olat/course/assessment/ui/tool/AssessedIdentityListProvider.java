@@ -84,7 +84,7 @@ public class AssessedIdentityListProvider implements ListProvider {
 			maxEntries--;
 			IdentityShort ident = it_res.next();
 			String key = ident.getKey().toString();
-			String displayKey = ident.getName();
+			String displayKey = null;//TODO username
 			String displayText = userManager.getUserDisplayName(ident);
 			receiver.addEntry(key, displayKey, displayText, CSSHelper.CSS_CLASS_USER);
 		}					

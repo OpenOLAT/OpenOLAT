@@ -57,13 +57,10 @@ public class IdentitiesOfGroupTableDataModel extends DefaultTableDataModel<Group
 		this.isAdministrativeUser = isAdministrativeUser;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
-	 */
+	@Override
 	public final Object getValueAt(int row, int col) {
 		GroupMemberView co = getObject(row);
 		switch(col) {
-			case 0: return co.getIdentity().getName();
 			case 1: return co.getOnlineStatus();
 			case 2: return co.getAddedAt();
 			default: {
@@ -74,10 +71,8 @@ public class IdentitiesOfGroupTableDataModel extends DefaultTableDataModel<Group
 			}
 		}
 	}
-	
-	/**
-	 * @see org.olat.core.gui.components.table.TableDataModel#getColumnCount()
-	 */
+
+	@Override
 	public int getColumnCount() {
 		// + loginname + adddate or just + loginname
 		return userPropertyHandlers.size() + (isAdministrativeUser ? 2 : 1);

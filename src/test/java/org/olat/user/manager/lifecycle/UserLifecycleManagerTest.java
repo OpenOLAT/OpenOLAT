@@ -434,7 +434,7 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		courseDisclaimerManager.acceptDisclaimer(course, identity, true, true);
 		
 		Assert.assertTrue(courseDisclaimerManager.isAccessGranted(course, identity));		
-		Assert.assertEquals(username, course.getInitialAuthor());
+		Assert.assertEquals(identity.getName(), course.getInitialAuthor());
 		Assert.assertTrue(repositoryService.hasRoleExpanded(identity, GroupRoles.owner.name()));
 		assertThat(courseDisclaimerManager.getConsents(course)).hasSize(1);
 		

@@ -158,7 +158,7 @@ public class HomePageDisplayController extends BasicController {
 	
 	private void exposeLogo(UserSession usess, Identity homeIdentity, VelocityContainer mainVC) {
 		if(userModule.isLogoByProfileEnabled()) {
-			File logo = displayPortraitManager.getBigLogo(homeIdentity.getName());
+			File logo = displayPortraitManager.getBigLogo(homeIdentity);
 			if (logo != null) {
 				ImageComponent logoCmp = new ImageComponent(usess, "logo");
 				logoCmp.setMedia(logo);

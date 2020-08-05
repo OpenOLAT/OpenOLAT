@@ -73,9 +73,7 @@ public class Util {
 	public static String getPackageVelocityRoot(String packageName) {
 		//TASK:fj:b compress velocity code with ant task. for debug mode: use _content, for productive mode, use _cleanedcontent or _compressedcontent (which does not mean gzip, but removing unnecessary whitespaces and such)
 		//	ch.goodsolutions.bla -> ch/goodsolutions/bla/_content where the velocity pages are found
-		String rep = packageName.replace('.', '/') + "/_content";
-		return rep;
-		
+		return packageName.replace('.', '/') + "/_content";
 	}
 
 	public static Translator createPackageTranslator(Class<?> baseClass, Locale locale) {
@@ -86,15 +84,13 @@ public class Util {
 		String fallbackpackage = Util.getPackageName(fallbackClass);
 		Translator fallback = new PackageTranslator(fallbackpackage, locale);
 		String transpackage = Util.getPackageName(baseClass);
-		Translator translator = new PackageTranslator(transpackage, locale, fallback);
-		return translator;
+		return new PackageTranslator(transpackage, locale, fallback);
 	}
 	
 	public static Translator createPackageTranslator(Translator baseClass, Class<?> fallbackClass, Locale locale) {
 		String fallbackpackage = Util.getPackageName(fallbackClass);
 		Translator fallback = new PackageTranslator(fallbackpackage, locale);
-		Translator translator = new PackageTranslator(((PackageTranslator)baseClass).getPackageName(), locale, fallback);
-		return translator;
+		return new PackageTranslator(((PackageTranslator)baseClass).getPackageName(), locale, fallback);
 	}
 	
 	public static Translator createPackageTranslator(Translator translator, Translator fallback, Locale locale) {

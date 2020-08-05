@@ -89,7 +89,6 @@ public class OrganisationUserManagementController extends FormBasicController {
 	
 	private Organisation organisation;
 	private final boolean membersManaged;
-	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	@Autowired
@@ -105,7 +104,7 @@ public class OrganisationUserManagementController extends FormBasicController {
 		
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 		
 		membersManaged = OrganisationManagedFlag.isManaged(organisation, OrganisationManagedFlag.members);
@@ -125,10 +124,7 @@ public class OrganisationUserManagementController extends FormBasicController {
 		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.username));
-		}
-		
+
 		int colIndex = USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
@@ -146,7 +142,7 @@ public class OrganisationUserManagementController extends FormBasicController {
 		tableEl.setSelectAllEnable(true);
 		tableEl.setMultiSelect(true);
 		tableEl.setSearchEnabled(true);
-		tableEl.setAndLoadPersistedPreferences(ureq, "organisation-user-list");
+		tableEl.setAndLoadPersistedPreferences(ureq, "organisation-user-list-v2");
 	}
 	
 	private void loadModel(boolean reset) {

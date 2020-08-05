@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.UUID;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
@@ -47,7 +46,6 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
-import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
 import org.olat.course.CourseFactory;
@@ -57,6 +55,7 @@ import org.olat.course.run.userview.CourseTreeVisitor;
 import org.olat.repository.RepositoryEntry;
 import org.olat.restapi.support.vo.FolderVOes;
 import org.olat.test.JunitTestHelper;
+import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -95,12 +94,12 @@ public class UserFoldersTest extends OlatRestTestCase {
 	 */
 	@Test
 	public void myFolders() throws IOException, URISyntaxException {
-		final Identity id = JunitTestHelper.createAndPersistIdentityAsUser("my-" + UUID.randomUUID().toString());
+		final IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("my");
 		dbInstance.commitAndCloseSession();
 		
 		//load my forums
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id.getName(), "A6B7C8"));
+		assertTrue(conn.login(id));
 		
 		//subscribed to nothing
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id.getKey().toString()).path("folders").build();
@@ -113,7 +112,7 @@ public class UserFoldersTest extends OlatRestTestCase {
 		Assert.assertEquals(0, folders.getFolders().length);
 		
 		//subscribe to the forum
-		IdentityEnvironment ienv = new IdentityEnvironment(id, Roles.userRoles());
+		IdentityEnvironment ienv = new IdentityEnvironment(id.getIdentity(), Roles.userRoles());
 		new CourseTreeVisitor(myCourse, ienv).visit(node -> {
 			if(node instanceof BCCourseNode) {
 				BCCourseNode folderNode = (BCCourseNode)node;	
@@ -121,7 +120,7 @@ public class UserFoldersTest extends OlatRestTestCase {
 				String businessPath = "[RepositoryEntry:" + myCourseRe.getKey() + "][CourseNode:" + folderNode.getIdent() + "]";
 				SubscriptionContext folderSubContext = new SubscriptionContext("CourseModule", myCourse.getResourceableId(), folderNode.getIdent());
 				PublisherData folderPdata = new PublisherData("FolderModule", relPath, businessPath);
-				notificationsManager.subscribe(id, folderSubContext, folderPdata);
+				notificationsManager.subscribe(id.getIdentity(), folderSubContext, folderPdata);
 			}
 		});
 		dbInstance.commitAndCloseSession();

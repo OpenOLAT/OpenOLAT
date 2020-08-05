@@ -19,14 +19,26 @@
  */
 package org.olat.basesecurity.manager;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.olat.basesecurity.Authentication;
+import org.olat.basesecurity.AuthenticationImpl;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.model.FindNamedIdentity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.User;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.StringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -45,7 +57,7 @@ public class IdentityDAO {
 	public Identity findIdentityByName(String identityName) {
 		if (identityName == null) throw new AssertException("findIdentitybyName: name was null");
 
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(128);
 		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
 		  .append(" inner join fetch ident.user user")
 		  .append(" where ident.name=:username");
@@ -59,6 +71,66 @@ public class IdentityDAO {
 			return null;
 		}
 		return identities.get(0);
+	}
+	
+	public List<FindNamedIdentity> findByNames(Collection<String> names) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select ident, auth from ").append(IdentityImpl.class.getName()).append(" as ident")
+		  .append(" left join ").append(AuthenticationImpl.class.getName()).append(" as auth on (auth.identity.key=ident.key)")
+		  .append(" inner join fetch ident.user user")
+		  .append(" where lower(ident.name) in (:names)")
+		  .append(" or lower(auth.authusername) in (:names)")
+		  .append(" or lower(concat(user.firstName,' ', user.lastName)) in (:names)")
+		  .append(" or lower(user.institutionalUserIdentifier) in (:names)");
+
+		List<String> loweredIdentityNames = names.stream()
+				.map(String::toLowerCase).collect(Collectors.toList());
+		
+		List<Object[]> rawObjects = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("names", loweredIdentityNames)
+				.getResultList();
+		
+		Set<String> loweredIdentityNamesSet = new HashSet<>(loweredIdentityNames);
+		
+		Map<Identity, FindNamedIdentity> namedIdentities = new HashMap<>();
+		for(Object[] rawObject:rawObjects) {
+			Identity identity = (Identity)rawObject[0];
+			Authentication authentication = (Authentication)rawObject[1];
+			FindNamedIdentity namedIdentity = namedIdentities
+					.computeIfAbsent(identity, FindNamedIdentity::new);
+			appendName(namedIdentity, authentication, loweredIdentityNamesSet);
+		}
+		return new ArrayList<>(namedIdentities.values());
+	}
+	
+	private void appendName(FindNamedIdentity namedIdentity, Authentication authentication, Collection<String> names) {
+		if(authentication != null) {
+			String authUsername = authentication.getAuthusername().toLowerCase();
+			if(names.contains(authUsername)) {
+				namedIdentity.addName(authentication.getAuthusername());
+			}
+		}
+		
+		Identity identity = namedIdentity.getIdentity();
+		if(names.contains(identity.getName().toLowerCase())) {
+			namedIdentity.addName(identity.getName());
+		}
+		
+		User user =  identity.getUser();
+		StringBuilder sb = new StringBuilder();
+		if(StringHelper.containsNonWhitespace(user.getFirstName())) {
+			sb.append(user.getFirstName());
+		}
+		sb.append(" ");
+		if(StringHelper.containsNonWhitespace(user.getLastName())) {
+			sb.append(user.getLastName());
+		}
+		
+		String fullName = sb.toString();
+		if(names.contains(fullName.toLowerCase())) {
+			namedIdentity.addName(fullName);
+		}
 	}
 	
 	public void setIdentityLastLogin(IdentityRef identity, Date lastLogin) {

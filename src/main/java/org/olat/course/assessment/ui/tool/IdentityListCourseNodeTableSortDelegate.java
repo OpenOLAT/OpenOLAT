@@ -68,9 +68,9 @@ public class IdentityListCourseNodeTableSortDelegate extends SortableFlexiTableM
 			
 			int c = compareCompletion(i1, i2);
 			if(c == 0) {
-				String n1 = r1.getIdentityName();
-				String n2 = r2.getIdentityName();
-				c = compareString(n1, n2);
+				Long k1 = r1.getIdentityKey();
+				Long k2 = r2.getIdentityKey();
+				c = compareLongs(k1, k2);
 			}
 			return c;
 		}

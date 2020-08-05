@@ -50,7 +50,6 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.manager.SecurityGroupDAO;
 import org.olat.core.commons.persistence.DB;
@@ -70,6 +69,7 @@ import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.support.vo.CatalogEntryVO;
 import org.olat.restapi.support.vo.CatalogEntryVOes;
 import org.olat.test.JunitTestHelper;
+import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatRestTestCase;
 import org.olat.user.restapi.UserVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,8 +93,6 @@ public class CatalogTest extends OlatRestTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private BaseSecurity securityManager;
-	@Autowired
 	private CatalogManager catalogManager;
 	@Autowired
 	private SecurityGroupDAO securityGroupDao;
@@ -108,14 +106,15 @@ public class CatalogTest extends OlatRestTestCase {
 	private OrganisationService organisationService;
 	
 	private Identity admin, id1;
+	private IdentityWithLogin id2;
 	private CatalogEntry root1, entry1, entry2, subEntry11, subEntry12;
 	private CatalogEntry entryToMove1, entryToMove2, subEntry13move;
 	
 	@Before
 	public void setUp() throws Exception {
-		id1 = JunitTestHelper.createAndPersistIdentityAsUser("rest-catalog-one");
-		JunitTestHelper.createAndPersistIdentityAsUser("rest-catalog-two");
-		admin = securityManager.findIdentityByName("administrator");
+		id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-catalog-one");
+		id2 = JunitTestHelper.createAndPersistRndUser("rest-catalog-two");
+		admin = JunitTestHelper.findIdentityByLogin("administrator");
 
 		//create a catalog
 		root1 = catalogManager.getRootCatalogEntries().get(0);
@@ -638,7 +637,7 @@ public class CatalogTest extends OlatRestTestCase {
 	@Test
 	public void testBasicSecurityPutCall() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("rest-catalog-two", "A6B7C8"));
+		assertTrue(conn.login(id2));
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString())
 				.queryParam("name", "Not-sub-entry-3")

@@ -32,12 +32,12 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.modules.appointments.Appointment;
@@ -45,7 +45,6 @@ import org.olat.modules.appointments.AppointmentsService;
 import org.olat.modules.appointments.Participation;
 import org.olat.modules.appointments.ParticipationSearchParams;
 import org.olat.modules.appointments.Topic;
-import org.olat.modules.appointments.ui.UserRestrictionTableModel.UserRestrictionCols;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
@@ -70,7 +69,6 @@ public class FindingConfirmationController extends FormBasicController {
 	private final Appointment appointment;
 	private final Topic topic;
 	private final RepositoryEntry entry;
-	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private List<Participation> participations;
 	private List<Long> participationIdentityKeys;
@@ -93,7 +91,7 @@ public class FindingConfirmationController extends FormBasicController {
 		this.topic = appointment.getTopic();
 		this.entry = topic.getEntry();
 		
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 	
 		initForm(ureq);
@@ -105,9 +103,6 @@ public class FindingConfirmationController extends FormBasicController {
 		setFormInfo("finding.confirmation.info");
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserRestrictionCols.username));
-		}
 		
 		int colIndex = UserRestrictionTableModel.USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
@@ -119,7 +114,7 @@ public class FindingConfirmationController extends FormBasicController {
 		
 		usersTableModel = new UserRestrictionTableModel(columnsModel, getLocale()); 
 		usersTableEl = uifactory.addTableElement(getWindowControl(), "users", usersTableModel, 20, false, getTranslator(), formLayout);
-		usersTableEl.setAndLoadPersistedPreferences(ureq, "finding.confirmation");
+		usersTableEl.setAndLoadPersistedPreferences(ureq, "finding.confirmation.v2");
 		usersTableEl.setEmtpyTableMessageKey("finding.confirmation.empty.table");
 		usersTableEl.setSelectAllEnable(true);
 		usersTableEl.setMultiSelect(true);
@@ -177,7 +172,7 @@ public class FindingConfirmationController extends FormBasicController {
 	
 	@Override
 	protected void formCancelled(UserRequest ureq) {
-		fireEvent(ureq, FormEvent.CANCELLED_EVENT);
+		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
 	@Override
@@ -210,7 +205,7 @@ public class FindingConfirmationController extends FormBasicController {
 		
 		appointmentsService.confirmAppointment(appointment);
 		
-		fireEvent(ureq, FormEvent.DONE_EVENT);
+		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
 	@Override

@@ -63,11 +63,11 @@ public class IdentityDocument extends OlatDocument {
 
 		UserManager userMgr = CoreSpringFactory.getImpl(UserManager.class);
 		HomePageConfigManager homepageMgr = CoreSpringFactory.getImpl(HomePageConfigManager.class);
-		HomePageConfig publishConfig = homepageMgr.loadConfigFor(identity.getName());
+		HomePageConfig publishConfig = homepageMgr.loadConfigFor(identity);
 
 		User user = identity.getUser();
 		IdentityDocument identityDocument = new IdentityDocument();
-		identityDocument.setTitle(identity.getName());
+		identityDocument.setTitle(userMgr.getUserDisplayName(identity));
 		identityDocument.setCreatedDate(user.getCreationDate());
 		
 		// loop through all user properties and collect the content string and the last modified

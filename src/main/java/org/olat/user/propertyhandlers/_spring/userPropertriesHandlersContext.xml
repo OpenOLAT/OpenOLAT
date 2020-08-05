@@ -9,8 +9,8 @@
 	<!-- 
 		Define all available user properties and its handlers 
 	-->
-	<bean id="userPropertyUserName" class="org.olat.user.propertyhandlers.UserNameReadOnlyPropertyHandler">
-		<property name="name" value="userName" />
+	<bean id="userPropertyUserNickName" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="nickName" />
 		<property name="group" value="account" />
 	</bean>
 
@@ -405,7 +405,6 @@
 		<property name="group" value="olatattr" />
 	</bean>
 	
-		<!-- fxdiff:  FXOLAT-239    UserPropertyConfigHandler Configuration -->
 	<bean name="propertyHandlerControllerMap" class="java.util.HashMap" scope="prototype" >
 	    <constructor-arg>
 	        <map key-type="java.lang.String" value-type="java.lang.String">

@@ -72,7 +72,6 @@ public class RepositoryEntryMembersController extends StepFormBasicController {
 	
 	private final GroupRoles role;
 	private final RepositoryEntry entry;
-	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	@Autowired
@@ -91,7 +90,7 @@ public class RepositoryEntryMembersController extends StepFormBasicController {
 		this.entry = entry;
 		
 		Roles roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 		
 		initForm(ureq);
@@ -104,10 +103,7 @@ public class RepositoryEntryMembersController extends StepFormBasicController {
 		//add the table
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		int colPos = 0;
-		if(isAdministrativeUser) {
-			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.user.login", colPos++, true, "login"));
-		}
-		
+
 		List<UserPropertyHandler> resultingPropertyHandlers = new ArrayList<>();
 		// followed by the users fields
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
@@ -121,7 +117,7 @@ public class RepositoryEntryMembersController extends StepFormBasicController {
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
 		
 		Translator myTrans = userManager.getPropertyHandlerTranslator(getTranslator());
-		userTableModel = new UserSearchFlexiTableModel(Collections.<Identity>emptyList(), resultingPropertyHandlers, isAdministrativeUser, getLocale(), tableColumnModel);
+		userTableModel = new UserSearchFlexiTableModel(Collections.<Identity>emptyList(), resultingPropertyHandlers, getLocale(), tableColumnModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "members", userTableModel, 250, false, myTrans, formLayout);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setMultiSelect(true);

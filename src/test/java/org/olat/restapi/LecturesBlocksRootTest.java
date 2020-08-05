@@ -43,6 +43,7 @@ import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.restapi.LectureBlockVO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
+import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -113,7 +114,7 @@ public class LecturesBlocksRootTest extends OlatRestTestCase {
 	public void getLecturesBlock_permissionDenied()
 	throws IOException, URISyntaxException {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lect-root-all");
-		Identity user = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lect-root-hacker");
+		IdentityWithLogin user = JunitTestHelper.createAndPersistRndAuthor("lect-root-hacker");
 		
 		RepositoryEntry entry = deployCourseWithLecturesEnabled(author);
 		LectureBlock block = createLectureBlock(entry);
@@ -122,7 +123,7 @@ public class LecturesBlocksRootTest extends OlatRestTestCase {
 		dbInstance.commit();
 
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(user.getName(), JunitTestHelper.PWD));
+		Assert.assertTrue(conn.login(user));
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("lectures").build();
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);

@@ -62,6 +62,7 @@ import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.gui.util.WindowControlMocker;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.id.UserConstants;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
@@ -278,7 +279,8 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 
 		List<AssessedMember> assessedMembers = new ArrayList<>();		
 		for(Identity identity : identities) {
-			String idDir = exportFolderName + "/" + DATA + identity.getName();
+			String lastname = StringHelper.transformDisplayNameToFileSystemName(identity.getUser().getLastName());
+			String idDir = exportFolderName + "/" + DATA + lastname + "_" + identity.getKey();
 			idDir = idDir.endsWith(SEP) ? idDir : idDir + SEP;
 			createZipDirectory(zout, idDir);				
 			
@@ -296,18 +298,17 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 			
 			String linkToUser = idDir.replace(exportFolderName + "/", "") + "index.html";
 			String memberEmail = userManager.getUserDisplayEmail(identity, ureq.getLocale());
-			AssessedMember member = new AssessedMember(identity.getName(),
-					identity.getUser().getLastName(), identity.getUser().getFirstName(), memberEmail,
-					assessments.size(), passed, score, linkToUser);
+			AssessedMember member = new AssessedMember(identity.getUser().getProperty(UserConstants.NICKNAME, null),
+					identity.getUser().getLastName(), identity.getUser().getFirstName(),
+					memberEmail, assessments.size(), passed, score, linkToUser);
 			
-			String userDataDir = exportFolderName + "/" + DATA + identity.getName();
 			String singleUserInfoHTML = createResultListingHTML(assessments, assessmentDocuments, member);
-			convertToZipEntry(zout, userDataDir + "/index.html", singleUserInfoHTML);
+			convertToZipEntry(zout, idDir + "index.html", singleUserInfoHTML);
 			assessedMembers.add(member);	
 			
 			//assessment documents
 			for(File document:assessmentDocuments) {
-				String assessmentDocDir = userDataDir + "/Assessment_documents/" + document.getName();
+				String assessmentDocDir = idDir + "Assessment_documents/" + document.getName();
 				ZipUtil.addFileToZip(assessmentDocDir, document, zout);
 			}
 		}
@@ -368,7 +369,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 	}
 	
 	private String createMemberListingHTML(List<AssessedMember> assessedMembers) {
-		Collections.sort(assessedMembers, (o1, o2) ->  o1.getUsername().compareTo(o2.getUsername()));
+		Collections.sort(assessedMembers, (o1, o2) ->  o1.getLastname().compareTo(o2.getLastname()));
 		// now put values to velocityContext
 		VelocityContext ctx = new VelocityContext();
 		ctx.put("t", translator);

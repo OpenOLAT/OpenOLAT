@@ -63,7 +63,6 @@ implements SortableFlexiTableDataModel<OrganisationUserRow> {
 	public Object getValueAt(OrganisationUserRow row, int col) {
 		if(col >= 0 && col < MemberCols.values().length) {
 			switch(MemberCols.values()[col]) {
-				case username: return row.getIdentityName();
 				case role: return row.getRole();
 				case inheritance: return row.getInheritanceMode();
 				default : return "ERROR";
@@ -80,7 +79,6 @@ implements SortableFlexiTableDataModel<OrganisationUserRow> {
 	}
 	
 	public enum MemberCols implements FlexiSortableColumnDef {
-		username("table.header.username"),
 		role("table.header.role"),
 		inheritance("table.header.inheritance.mode");
 		

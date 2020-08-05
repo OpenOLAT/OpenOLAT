@@ -150,7 +150,7 @@ public abstract class AbstractTaskNotificationHandler {
 			}
 			return "";
 		} catch (Exception e) {
-			log.warn("Can not extract user from path=" + filePath);
+			log.warn("Can not extract user from path={}", filePath);
 			return "";
 		}
 	}
@@ -158,7 +158,7 @@ public abstract class AbstractTaskNotificationHandler {
 	private boolean checkPublisher(Publisher p) {
 		try {
 			if ("CourseModule".equals(p.getResName()) && !NotificationsUpgradeHelper.checkCourse(p)) {
-				log.info("deactivating publisher with key; " + p.getKey());
+				log.info("deactivating publisher with key; {}", p.getKey());
 				notificationsManager.deactivate(p);
 				return false;
 			}

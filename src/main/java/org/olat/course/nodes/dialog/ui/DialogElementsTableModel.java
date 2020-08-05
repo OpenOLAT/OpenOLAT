@@ -42,7 +42,6 @@ public class DialogElementsTableModel extends DefaultFlexiTableDataModel<DialogE
 		if(col >= 0 && col < DialogCols.values().length) {
 			switch (DialogCols.values()[col]) {
 				case filename: return entry.getDownloadLink();
-				case authorUsername: return entry.getIdentityName();
 				case filesize: return entry.getSize();
 				case date: return entry.getCreationDate();
 				case newMessages: return entry.getNumOfUnreadMessages();
@@ -63,7 +62,6 @@ public class DialogElementsTableModel extends DefaultFlexiTableDataModel<DialogE
 	public enum DialogCols implements FlexiSortableColumnDef {
 		filename("table.header.filename"),
 		forum("table.header.forum"),
-		authorUsername("table.header.author"),
 		filesize("table.header.size"),
 		date("table.header.date"),
 		newMessages("table.header.newmessages"),

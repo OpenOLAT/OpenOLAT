@@ -45,6 +45,16 @@ public class UserPropertyUsageContext {
 	private Set<UserPropertyHandler> mandatoryProperties = new HashSet<>();
 	private Set<UserPropertyHandler> adminViewOnlyProperties = new HashSet<>();
 	private Set<UserPropertyHandler> userViewReadOnlyProperties = new HashSet<>();
+	
+	
+	public UserPropertyUsageContext copy() {
+		UserPropertyUsageContext context = new UserPropertyUsageContext();
+		context.propertyHandlers = new ArrayList<>(propertyHandlers);
+		context.mandatoryProperties = new HashSet<>(mandatoryProperties);
+		context.adminViewOnlyProperties = new HashSet<>(adminViewOnlyProperties);
+		context.userViewReadOnlyProperties = new HashSet<>(userViewReadOnlyProperties);
+		return context;
+	}
 
 	/**
 	 * Spring setter

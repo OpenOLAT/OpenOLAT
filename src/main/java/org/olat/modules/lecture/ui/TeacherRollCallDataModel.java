@@ -63,7 +63,6 @@ public class TeacherRollCallDataModel extends DefaultFlexiTableDataModel<Teacher
 	public Object getValueAt(TeacherRollCallRow row, int col) {
 		if(col < TeacherRollCallController.USER_PROPS_OFFSET) {
 			switch(RollCols.values()[col]) {
-				case username: return row.getIdentityName();
 				case status: return row.getRollCallStatusEl();
 				case authorizedAbsence: return row.getAuthorizedAbsenceCont();
 				case comment: return row.getCommentEl();
@@ -85,7 +84,6 @@ public class TeacherRollCallDataModel extends DefaultFlexiTableDataModel<Teacher
 	}
 	
 	public enum RollCols implements FlexiSortableColumnDef {
-		username("table.header.username"),
 		status("table.header.status"),
 		authorizedAbsence("table.header.authorized.absence"),
 		comment("table.header.comment"),

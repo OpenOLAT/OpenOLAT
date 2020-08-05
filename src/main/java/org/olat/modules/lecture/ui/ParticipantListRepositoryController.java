@@ -80,7 +80,6 @@ public class ParticipantListRepositoryController extends FormBasicController {
 
 	public static final int USER_PROPS_OFFSET = 500;
 	
-	private final boolean isAdministrativeUser;
 	private List<UserPropertyHandler> userPropertyHandlers;
 	
 	private FlexiTableElement tableEl;
@@ -120,7 +119,7 @@ public class ParticipantListRepositoryController extends FormBasicController {
 		this.secCallback = secCallback;
 		
 		Roles roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 
 		lectureConfig = lectureService.getRepositoryEntryLectureConfiguration(entry);
@@ -154,11 +153,7 @@ public class ParticipantListRepositoryController extends FormBasicController {
 
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.username));
-			options.setDefaultOrderBy(new SortKey(ParticipantsCols.username.sortKey(), true));
-		}
-		
+
 		int colPos = USER_PROPS_OFFSET;
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) continue;
@@ -217,7 +212,7 @@ public class ParticipantListRepositoryController extends FormBasicController {
 		tableEl.setExportEnabled(!printView);
 		tableEl.setEmtpyTableMessageKey("empty.table.participant.list");
 		tableEl.setSortSettings(options);
-		tableEl.setAndLoadPersistedPreferences(ureq, "participant-list-repo-entry");
+		tableEl.setAndLoadPersistedPreferences(ureq, "participant-list-repo-entry-v2");
 	}
 	
 	private void loadModel() {

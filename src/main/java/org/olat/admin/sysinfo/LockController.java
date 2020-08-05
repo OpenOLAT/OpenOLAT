@@ -28,8 +28,6 @@ package org.olat.admin.sysinfo;
 import java.util.List;
 
 import org.olat.admin.sysinfo.LockTableModel.Cols;
-import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
@@ -82,11 +80,6 @@ public class LockController extends BasicController {
 		tableConfig.setDownloadOffered(false);
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("lock.key", Cols.key.ordinal(), null, getLocale()));
-		
-		BaseSecurityModule securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
-		if(securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles())) {
-			tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("lock.owner", Cols.ownerName.ordinal(), null, getLocale()));
-		}
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("lock.owner", Cols.ownerFullname.ordinal(), null, getLocale()));
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("lock.aquiretime", Cols.acquiredTime.ordinal(), null, getLocale()));
 		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("lock.release", "lock.release", translate("lock.release")));
@@ -105,17 +98,12 @@ public class LockController extends BasicController {
 		tableCtr.setTableDataModel(locksTableModel);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
+		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == tableCtr) {
 			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
@@ -138,6 +126,7 @@ public class LockController extends BasicController {
 
 	}
 
+	@Override
 	protected void doDispose() {
 		// DialogBoxController and TableController get disposed by BasicController
 		locksTableModel = null;

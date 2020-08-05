@@ -95,8 +95,7 @@ public class TaxonomyLevelCompetenceController extends FormBasicController {
 	private EditTaxonomyCompetenceController editCompetenceCtrl;
 
 	private TaxonomyLevel taxonomyLevel;
-	private boolean isAdministrativeUser;
-	private List<UserPropertyHandler> userPropertyHandlers;
+	private final List<UserPropertyHandler> userPropertyHandlers;
 
 	@Autowired
 	private UserManager userManager;
@@ -111,7 +110,7 @@ public class TaxonomyLevelCompetenceController extends FormBasicController {
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
 		Roles roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 
 		initForm(ureq);
@@ -134,11 +133,7 @@ public class TaxonomyLevelCompetenceController extends FormBasicController {
 		// table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CompetenceCols.key));
-		
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CompetenceCols.username));
-		}
-		
+
 		int colPos = USER_PROPS_OFFSET;
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) continue;
@@ -162,7 +157,7 @@ public class TaxonomyLevelCompetenceController extends FormBasicController {
 		tableEl.setCustomizeColumns(true);
 		tableEl.setEmtpyTableMessageKey("table.competence.empty");
 		tableEl.setMultiSelect(multiSelect);
-		tableEl.setAndLoadPersistedPreferences(ureq, "tax-level-competences");
+		tableEl.setAndLoadPersistedPreferences(ureq, "tax-level-competences-v2");
 	}
 	
 	private void loadModel() {

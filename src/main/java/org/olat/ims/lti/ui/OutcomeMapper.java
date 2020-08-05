@@ -111,7 +111,7 @@ public class OutcomeMapper implements Mapper, Serializable {
 			usess = new UserSession();
 		} 
 		if(usess.getSessionInfo() == null) {
-			usess.setSessionInfo(new SessionInfo(identityKey, identity.getName(), request.getSession(true)));
+			usess.setSessionInfo(new SessionInfo(identityKey, request.getSession(true)));
 		}
 		if(usess.getIdentityEnvironment() == null || usess.getIdentity() == null) {
 			usess.setIdentity(identity);

@@ -87,7 +87,6 @@ public class ForumMessageListController extends FormBasicController {
 	private final boolean showMarks;
 	private final boolean showNew;
 	private final boolean guestOnly;
-	private final boolean isAdministrativeUser;
 	private final OLATResourceable forumOres;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private MessageView userObject, selectView;
@@ -114,7 +113,7 @@ public class ForumMessageListController extends FormBasicController {
 		this.guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 		forumOres = OresHelper.createOLATResourceableInstance("Forum", forum.getKey());
 
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 
 		initForm(ureq);

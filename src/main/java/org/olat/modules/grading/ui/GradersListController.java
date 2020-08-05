@@ -96,7 +96,6 @@ public class GradersListController extends FormBasicController {
 	
 	private int counter = 0;
 	private final RepositoryEntry referenceEntry;
-	private final boolean isAdministrativeUser;
 	private List<UserPropertyHandler> userPropertyHandlers;
 	
 	private final GradingSecurityCallback secCallback;
@@ -136,7 +135,7 @@ public class GradersListController extends FormBasicController {
 		this.referenceEntry = referenceEntry;
 		
 		Roles roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 		
 		initForm(ureq);
@@ -150,10 +149,6 @@ public class GradersListController extends FormBasicController {
 		addGraderButton.setElementCssClass("o_sel_repo_grading_add_graders");
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradersCol.username));
-		}
-		
 		int colPos = USER_PROPS_OFFSET;
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) continue;

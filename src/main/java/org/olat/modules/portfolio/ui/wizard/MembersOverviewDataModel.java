@@ -68,13 +68,8 @@ public class MembersOverviewDataModel extends DefaultTableDataModel<Identity> im
 	@Override
 	public Object getValueAt(int row, int col) {
 		Identity identity = getObject(row);
-		if(col == 0 && isAdministrativeUser) {
-			return identity.getName();
-		}
-
-		int pos = isAdministrativeUser ? col - 1 : col;
-		if(pos >= 0 && pos < userPropertyHandlers.size()) {
-			UserPropertyHandler handler = userPropertyHandlers.get(pos);
+		if(col >= 0 && col < userPropertyHandlers.size()) {
+			UserPropertyHandler handler = userPropertyHandlers.get(col);
 			return handler.getUserProperty(identity.getUser(), locale);
 		}
 		return "";

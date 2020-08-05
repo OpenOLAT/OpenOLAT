@@ -66,6 +66,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.restapi.security.RestSecurityHelper;
+import org.olat.test.JunitTestHelper.IdentityWithLogin;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -169,6 +170,11 @@ public class RestConnection {
 		} catch (IOException e) {
 			log.error("", e);
 		}
+	}
+	
+
+	public boolean login(IdentityWithLogin identity) throws IOException, URISyntaxException {
+		return login(identity.getLogin(), identity.getPassword());
 	}
 
 	public boolean login(String username, String password) throws IOException, URISyntaxException {

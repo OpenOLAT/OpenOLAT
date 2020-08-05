@@ -21,8 +21,10 @@ package org.olat.course.member.wizard;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.olat.admin.user.UserTableDataModel;
@@ -30,6 +32,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.model.FindNamedIdentity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -58,10 +61,15 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 	
 	private static final String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
 	
+	private FlexiTableElement tableEl;
+	private ImportMemberOverviewDataModel userTableModel;
+	
 	private List<Identity> oks;
 	private List<String> notfounds;
 	private boolean isAdministrativeUser;
 	private final List<Identity> anonymousUsers;
+	private Map<String,Set<Identity>> duplicates = new HashMap<>();
+	
 	
 	@Autowired
 	private UserManager userManager;
@@ -114,12 +122,26 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 			warnLayout.contextPut("notFounds", msg);
 		}
 		
+		StringBuilder sb = new StringBuilder();
+		for(Map.Entry<String,Set<Identity>> entry:duplicates.entrySet()) {
+			if(entry.getValue().size() > 1) {
+				if(sb.length() > 0) sb.append(", ");
+				sb.append(entry.getKey());
+			}	
+		}
+		
+		
+		if(sb.length() > 0) {
+			String page = velocity_root + "/warn_duplicates.html";
+			FormLayoutContainer warnLayout = FormLayoutContainer.createCustomFormLayout("warnNotFounds", getTranslator(), page);
+			warnLayout.setRootForm(mainForm);
+			formLayout.add(warnLayout);
+			warnLayout.contextPut("duplicatesMsg", translate("warn.duplicates.names", sb.toString()));
+		}
+		
 		//add the table
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		int colIndex = 0;
-		if(isAdministrativeUser) {
-			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.user.login", colIndex++));
-		}
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 		List<UserPropertyHandler> resultingPropertyHandlers = new ArrayList<>();
 		// followed by the users fields
@@ -133,10 +155,15 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 		}
 		
 		Translator myTrans = userManager.getPropertyHandlerTranslator(getTranslator());
-		ImportMemberOverviewDataModel userTableModel = new ImportMemberOverviewDataModel(oks, resultingPropertyHandlers,
-				isAdministrativeUser, getLocale(), tableColumnModel);
-		FlexiTableElement tableEl = uifactory.addTableElement(getWindowControl(), "users", userTableModel, myTrans, formLayout);
+		userTableModel = new ImportMemberOverviewDataModel(oks, resultingPropertyHandlers, getLocale(), tableColumnModel);
+		tableEl = uifactory.addTableElement(getWindowControl(), "users", userTableModel, myTrans, formLayout);
 		tableEl.setCustomizeColumns(false);
+		//TODO OO-4545
+		/*
+		tableEl.setMultiSelect(true);
+		tableEl.setSelectAllEnable(true);
+		tableEl.selectAll();
+		*/
 	}
 	
 	private void loadModel(List<String> keys) {
@@ -174,6 +201,7 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 	private void loadModel(String inp) {
 		oks = new ArrayList<>();
 		notfounds = new ArrayList<>();
+		duplicates.clear();
 		
 		Set<Identity> okSet = new HashSet<>();
 		List<String> identList = new ArrayList<>();
@@ -185,32 +213,25 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 			}
 		}
 		
-		//search by institutionalUserIdentifier, case sensitive
-		List<Identity> institutIdentities = securityManager.findIdentitiesByNumber(identList);
-		for(Identity identity:institutIdentities) {
-			String insitutionalIdentifier = identity.getUser().getProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, null);
-			if(insitutionalIdentifier != null) {
-				identList.remove(insitutionalIdentifier);
-			}
-			if(!validIdentity(identity)) {
-				notfounds.add(insitutionalIdentifier);
-			} else if(!okSet.contains(identity)) {
-				okSet.add(identity);
-			}
-		}
 		// make a lower case copy of identList for processing username and email
 		Collection<String> identListLowercase = new HashSet<>(identList.size());
 		for (String ident:identList) {
 			identListLowercase.add(ident.toLowerCase());
 		}
-		//search by names, must be lower case
-		List<Identity> identities = securityManager.findIdentitiesByNameCaseInsensitive(identListLowercase);
-		for(Identity identity:identities) {
-			identListLowercase.remove(identity.getName().toLowerCase());
-			if(!validIdentity(identity)) {
-				notfounds.add(identity.getName());
-			} else if (!okSet.contains(identity)) {
-				okSet.add(identity);
+		
+		// search by names, institutional identifier, first + last names, authentication user names
+		List<FindNamedIdentity> identities = securityManager.findIdentitiesBy(identList);
+		for(FindNamedIdentity identity:identities) {
+			identListLowercase.removeAll(identity.getNamesLowerCase());
+			if(!validIdentity(identity.getIdentity())) {
+				notfounds.add(identity.getFirstFoundName());
+			} else if (!okSet.contains(identity.getIdentity())) {
+				okSet.add(identity.getIdentity());
+			}
+			
+			for(String name:identity.getNamesLowerCase()) {
+				Set<Identity> ids = duplicates.computeIfAbsent(name, n -> new HashSet<>());
+				ids.add(identity.getIdentity());
 			}
 		}
 		
@@ -225,12 +246,12 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 		List<Identity> mailIdentities = userManager.findIdentitiesByEmail(emailListLowercase);
 		for(Identity identity:mailIdentities) {
 			String email = identity.getUser().getProperty(UserConstants.EMAIL, null);
-			if(email != null) {
-				identListLowercase.remove(email.toLowerCase());
+			if(email != null && identListLowercase.remove(email.toLowerCase())) {
+				duplicates.computeIfAbsent(email.toLowerCase(), n -> new HashSet<>()).add(identity);
 			}
 			String institutEmail = identity.getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null);
-			if(institutEmail != null) {
-				identListLowercase.remove(institutEmail.toLowerCase());
+			if(institutEmail != null && identListLowercase.remove(institutEmail.toLowerCase())) {
+				duplicates.computeIfAbsent(institutEmail.toLowerCase(), n -> new HashSet<>()).add(identity);
 			}
 			if(!validIdentity(identity)) {
 				if(email != null) {
@@ -256,11 +277,27 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 	public boolean validate() {
 		return true;
 	}
+	
+	@Override
+	protected void formNext(UserRequest ureq) {
+		//TODO OO-4545
+		/*
+		List<Identity> selectedOks = new ArrayList<>(oks.size());
+		for(Integer index:tableEl.getMultiSelectedIndex()) {
+			Identity selected = userTableModel.getObject(index.intValue());
+			if(selected != null) {
+				selectedOks.add(selected);
+			}
+		}
+		addToRunContext("members", selectedOks);
+		*/
+		addToRunContext("members", oks);
+		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		addToRunContext("members", oks);
-		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+		//
 	}
 
 	@Override

@@ -65,7 +65,6 @@ public class GradersListTableModel extends DefaultFlexiTableDataModel<GraderRow>
 	public Object getValueAt(GraderRow row, int col) {
 		if(col >= 0 && col < COLS.length) {
 			switch(COLS[col]) {
-				case username: return row.getGrader().getName();
 				case status: return row.getGraderStatus();
 				case total: return row.getTotalAssignments();
 				case done: return row.getNumOfDoneAssignments();
@@ -97,7 +96,6 @@ public class GradersListTableModel extends DefaultFlexiTableDataModel<GraderRow>
 	}
 	
 	public enum GradersCol implements FlexiSortableColumnDef {
-		username("table.header.username"),
 		status("table.header.status"),
 		total("table.header.assignments.total"),
 		done("table.header.assignments.done"),

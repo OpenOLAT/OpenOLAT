@@ -24,11 +24,9 @@ import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
-import org.olat.modules.curriculum.ui.CurriculumUserManagementTableModel.CurriculumMemberCols;
 import org.olat.user.UserPropertiesRow;
 
 /**
@@ -63,13 +61,6 @@ implements SortableFlexiTableDataModel<UserPropertiesRow> {
 
 	@Override
 	public Object getValueAt(UserPropertiesRow row, int col) {
-		if(col >= 0 && col < CurriculumMemberCols.values().length) {
-			switch(CurriculumMemberCols.values()[col]) {
-				case username: return row.getIdentityName();
-				default : return "ERROR";
-			}
-		}
-		
 		int propPos = col - ReportAccessController.USER_PROPS_OFFSET;
 		return row.getIdentityProp(propPos);
 	}
@@ -77,30 +68,5 @@ implements SortableFlexiTableDataModel<UserPropertiesRow> {
 	@Override
 	public DefaultFlexiTableDataModel<UserPropertiesRow> createCopyWithEmptyList() {
 		return new ReportMemberTableModel(getTableColumnModel(), locale);
-	}
-	
-	public enum ReportMemberCols implements FlexiSortableColumnDef {
-		username("report.member.username");
-		
-		private final String i18nKey;
-		
-		private ReportMemberCols(String i18nKey) {
-			this.i18nKey = i18nKey;
-		}
-		
-		@Override
-		public String i18nHeaderKey() {
-			return i18nKey;
-		}
-
-		@Override
-		public boolean sortable() {
-			return true;
-		}
-
-		@Override
-		public String sortKey() {
-			return name();
-		}
 	}
 }

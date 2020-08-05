@@ -83,7 +83,6 @@ public class SharedBindersDataModel extends DefaultFlexiTableDataModel<SharedIte
 	public Object getValueAt(SharedItemRow itemRow, int col) {
 		if(col >= 0 && col < ShareItemCols.values().length) {
 			switch(ShareItemCols.values()[col]) {
-				case username: return itemRow.getIdentityName();
 				case binderKey: return itemRow.getBinderKey();
 				case binderName: return itemRow.getBinderTitle();
 				case courseName: return itemRow.getEntryDisplayName();
@@ -115,7 +114,6 @@ public class SharedBindersDataModel extends DefaultFlexiTableDataModel<SharedIte
 	}
 
 	public enum ShareItemCols implements FlexiSortableColumnDef {
-		username("table.user.login"),
 		binderKey("table.header.key"),
 		binderName("table.header.title"),
 		courseName("table.header.course"),

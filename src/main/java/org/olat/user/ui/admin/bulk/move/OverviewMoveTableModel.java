@@ -42,7 +42,6 @@ public class OverviewMoveTableModel extends DefaultFlexiTableDataModel<OverviewI
 		if(col < OverviewMoveController.USER_PROPS_OFFSET) {
 			switch(MoveUserCols.values()[col]) {
 				case id: return userRow.getIdentityKey();
-				case username: return userRow.getIdentityName();
 				case creationDate: return userRow.getCreationDate();
 				case role: return userRow.getRoles();
 				default: return null;
@@ -61,7 +60,6 @@ public class OverviewMoveTableModel extends DefaultFlexiTableDataModel<OverviewI
 	
 	public enum MoveUserCols implements FlexiSortableColumnDef {
 		id("table.identity.id"),
-		username("table.identity.name"),
 		creationDate("table.identity.creationdate"),
 		role("table.header.role");
 		

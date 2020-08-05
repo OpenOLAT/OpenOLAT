@@ -66,8 +66,6 @@ implements SortableFlexiTableDataModel<IdentityRelationRow> {
 			switch(RelationCols.values()[col]) {
 				case key: return row.getRelationKey();
 				case managed: return row.getManagedFlags().length > 0;
-				case sourceUsername: return row.getSourceIdentity().getIdentityName();
-				case targetUsername: return row.getTargetIdentity().getIdentityName();
 				case role: return row.getRelationLabel();
 				case remove: return !IdentityToIdentityRelationManagedFlag
 						.isManaged(row.getManagedFlags(), IdentityToIdentityRelationManagedFlag.delete);
@@ -95,8 +93,6 @@ implements SortableFlexiTableDataModel<IdentityRelationRow> {
 		
 		key("table.header.key"),
 		managed("table.header.managed"),
-		sourceUsername("table.header.username"),
-		targetUsername("table.header.username"),
 		role("table.header.role"),
 		remove("remove");
 		

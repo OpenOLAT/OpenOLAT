@@ -66,7 +66,6 @@ public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> 
 	public Object getValueAt(MemberRow row, int col) {
 		if(col >= 0 && col < COLS.length) {
 			switch(COLS[col]) {
-				case username: return row.getView().getIdentityName();
 				case identityStatus: return row.getView().getIdentityStatus();
 				case firstTime: return row.getFirstTime();
 				case lastTime: return row.getLastTime();
@@ -139,7 +138,6 @@ public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> 
 	}
 
 	public enum Cols implements FlexiSortableColumnDef {
-		username("table.header.login"),
 		firstTime("table.header.firstTime"),
 		lastTime("table.header.lastTime"),
 		role("table.header.role"),

@@ -70,7 +70,6 @@ public class ReportResource extends OpenXMLWorkbookResource {
 	private final RepositoryEntry referenceEntry;
 	
 	private final Translator translator;
-	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> graderPropertyHandlers;
 	private final GradingDeadlineStatusCellRenderer statusRenderer;
 	private final List<UserPropertyHandler> assessedUserPropertyHandlers;
@@ -98,7 +97,7 @@ public class ReportResource extends OpenXMLWorkbookResource {
 		
 		statusRenderer = new GradingDeadlineStatusCellRenderer(translator);
 		this.translator = userManager.getPropertyHandlerTranslator(translator);
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		graderPropertyHandlers = userManager.getUserPropertyHandlersFor(GradersListController.USER_PROPS_ID, isAdministrativeUser);
 		assessedUserPropertyHandlers = userManager.getUserPropertyHandlersFor(GradingAssignmentsListController.ASSESSED_PROPS_ID, isAdministrativeUser);
 	}
@@ -124,9 +123,6 @@ public class ReportResource extends OpenXMLWorkbookResource {
 		CellStyle headerStyle = workbook.getStyles().getHeaderStyle();
 		
 		int pos = 0;
-		if(isAdministrativeUser) {
-			headerRow.addCell(pos++, translator.translate("table.header.username"), headerStyle);
-		}
 		for (UserPropertyHandler userPropertyHandler:graderPropertyHandlers) {
 			headerRow.addCell(pos++, translator.translate(userPropertyHandler.i18nColumnDescriptorLabelKey()), headerStyle);
 		}
@@ -146,9 +142,6 @@ public class ReportResource extends OpenXMLWorkbookResource {
 		Identity graderIdentity = graderStatistics.getGrader();
 		
 		int pos = 0;
-		if(isAdministrativeUser) {
-			row.addCell(pos++, graderIdentity.getName());
-		}
 		for (UserPropertyHandler userPropertyHandler:graderPropertyHandlers) {
 			String val = userPropertyHandler.getUserProperty(graderIdentity.getUser(), translator.getLocale());
 			row.addCell(pos++, val);
@@ -191,9 +184,6 @@ public class ReportResource extends OpenXMLWorkbookResource {
 		
 		// grader informations
 		int pos = 0;
-		if(isAdministrativeUser) {
-			headerRow.addCell(pos++, translator.translate("table.header.username"), headerStyle);
-		}
 		for (UserPropertyHandler userPropertyHandler:graderPropertyHandlers) {
 			headerRow.addCell(pos++, translator.translate(userPropertyHandler.i18nColumnDescriptorLabelKey()), headerStyle);
 		}
@@ -201,9 +191,6 @@ public class ReportResource extends OpenXMLWorkbookResource {
 		headerRow.addCell(pos++, translator.translate("table.header.deadline"), headerStyle);
 		
 		// assessed identities informations
-		if(isAdministrativeUser) {
-			headerRow.addCell(pos++, translator.translate("table.header.username"), headerStyle);
-		}
 		for (UserPropertyHandler userPropertyHandler:assessedUserPropertyHandlers) {
 			headerRow.addCell(pos++, translator.translate(userPropertyHandler.i18nColumnDescriptorLabelKey()), headerStyle);
 		}
@@ -233,16 +220,9 @@ public class ReportResource extends OpenXMLWorkbookResource {
 		// grader name
 		GradingAssignment assignment = assignmentWithInfos.getAssignment();
 		if(assignment.getGrader() == null || assignment.getGrader().getIdentity() == null) {
-			if(isAdministrativeUser) {
-				pos++;
-			}
 			pos += graderPropertyHandlers.size();
 		} else {
 			Identity graderIdentity = assignment.getGrader().getIdentity();
-		
-			if(isAdministrativeUser) {
-				row.addCell(pos++, graderIdentity.getName());
-			}
 			for (UserPropertyHandler userPropertyHandler:graderPropertyHandlers) {
 				String val = userPropertyHandler.getUserProperty(graderIdentity.getUser(), translator.getLocale());
 				row.addCell(pos++, val);
@@ -260,9 +240,6 @@ public class ReportResource extends OpenXMLWorkbookResource {
 		
 		// assessed identities informations
 		Identity assessedIdentity = assignmentWithInfos.getAssessedIdentity();
-		if(isAdministrativeUser) {
-			row.addCell(pos++, assessedIdentity.getName());
-		}
 		for (UserPropertyHandler userPropertyHandler:assessedUserPropertyHandlers) {
 			String val = userPropertyHandler.getUserProperty(assessedIdentity.getUser(), translator.getLocale());
 			row.addCell(pos++, val);

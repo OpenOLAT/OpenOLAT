@@ -28,6 +28,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.model.FindNamedIdentity;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -92,9 +93,6 @@ public class ImportAuthorOverviewIdentitiesController extends StepFormBasicContr
 		//add the table
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		int colIndex = 0;
-		if(isAdministrativeUser) {
-			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.user.login", colIndex++));
-		}
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 		List<UserPropertyHandler> resultingPropertyHandlers = new ArrayList<>();
 		// followed by the users fields
@@ -157,21 +155,26 @@ public class ImportAuthorOverviewIdentitiesController extends StepFormBasicContr
 		for (int i = 0; i < lines.length; i++) {
 			String username = lines[i].trim();
 			if (!username.equals("")) { // skip empty lines
-				Identity ident = securityManager.findIdentityByName(username);
-				if (ident == null) { // not found, add to not-found-list
+				List<FindNamedIdentity> namedIdentities = securityManager
+						.findIdentitiesBy(Collections.singletonList(username));
+				
+				if (namedIdentities.isEmpty()) { // not found, add to not-found-list
 					notfounds.add(username);
-				} else if (organisationService.hasRole(ident, OrganisationRoles.guest)) {
-					isanonymous.add(username);
 				} else {
-					// check if already in group
-					boolean inGroup = PersistenceHelper.containsPersistable(existIdents, ident);
-					if (inGroup) {
-						// added to warning: already in group
-						alreadyin.add(ident.getName());
-					} else {
-						// ok to add -> preview (but filter duplicate entries)
-						if (!PersistenceHelper.containsPersistable(okIdentities, ident)) {
-							okIdentities.add(ident);
+					for(FindNamedIdentity namedIdentity:namedIdentities) {
+						Identity ident = namedIdentity.getIdentity();
+						if (organisationService.hasRole(ident, OrganisationRoles.guest)) {
+							isanonymous.add(username);
+						} else {
+							// check if already in group
+							boolean inGroup = PersistenceHelper.containsPersistable(existIdents, ident);
+							if (inGroup) {
+								// added to warning: already in group
+								alreadyin.add(ident.getName());
+							} else if (!PersistenceHelper.containsPersistable(okIdentities, ident)) {
+								// ok to add -> preview (but filter duplicate entries)
+								okIdentities.add(ident);
+							}
 						}
 					}
 				}

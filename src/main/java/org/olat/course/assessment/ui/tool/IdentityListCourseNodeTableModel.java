@@ -144,7 +144,6 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 	public Object getValueAt(AssessedIdentityElementRow row, int col) {
 		if(col >= 0 && col < IdentityCourseElementCols.values().length) {
 			switch(IdentityCourseElementCols.values()[col]) {
-				case username: return row.getIdentityName();
 				case attempts: return row.getAttempts();
 				case userVisibility: return row.getUserVisibility();
 				case score: return row.getScore();
@@ -186,7 +185,6 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 	}
 	
 	public enum IdentityCourseElementCols implements FlexiSortableColumnDef {
-		username("table.header.name"),
 		attempts("table.header.attempts"),
 		userVisibility("table.header.userVisibility", "o_icon o_icon-fw o_icon_results_hidden"),
 		score("table.header.score"),

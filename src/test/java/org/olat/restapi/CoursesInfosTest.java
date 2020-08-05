@@ -38,7 +38,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.id.Identity;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -48,7 +47,6 @@ import org.olat.restapi.support.vo.CourseInfoVO;
 import org.olat.restapi.support.vo.CourseInfoVOes;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatRestTestCase;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -57,9 +55,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class CoursesInfosTest extends OlatRestTestCase {
-	
-	@Autowired
-	private BaseSecurity securityManager;
 	
 	@Test
 	public void testGetCourseInfos() throws IOException, URISyntaxException {
@@ -79,7 +74,7 @@ public class CoursesInfosTest extends OlatRestTestCase {
 	
 	@Test
 	public void testGetCourseInfos_byId() throws IOException, URISyntaxException {
-		Identity admin = securityManager.findIdentityByName("administrator");
+		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin, "course-info 1",
 				RepositoryEntryStatusEnum.preparation, false, false);
 		ICourse course = CourseFactory.loadCourse(courseEntry);

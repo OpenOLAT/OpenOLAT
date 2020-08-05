@@ -55,7 +55,6 @@ public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<Ident
 		if(col < UserSearchTableController.USER_PROPS_OFFSET) {
 			switch(UserCols.values()[col]) {
 				case id: return userRow.getIdentityKey();
-				case username: return userRow.getIdentityName();
 				case creationDate: return userRow.getCreationDate();
 				case lastLogin: return userRow.getLastLogin();
 				case status: return userRow.getStatus();
@@ -102,7 +101,6 @@ public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<Ident
 	
 	public enum UserCols implements FlexiSortableColumnDef {
 		id("table.identity.id"),
-		username("table.identity.name"),
 		creationDate("table.identity.creationdate"),
 		lastLogin("table.identity.lastlogin"),
 		action("table.header.action"),

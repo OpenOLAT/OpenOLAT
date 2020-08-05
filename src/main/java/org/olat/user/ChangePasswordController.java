@@ -153,7 +153,7 @@ public class ChangePasswordController extends BasicController implements Support
 					String newPwd = chPwdForm.getNewPasswordValue();
 					if(olatAuthenticationSpi.changePassword(ureq.getIdentity(), provenIdent, newPwd)) {			
 						fireEvent(ureq, Event.DONE_EVENT);
-						getLogger().info(Tracing.M_AUDIT, "Changed password for identity:" + provenIdent.getKey());
+						getLogger().info(Tracing.M_AUDIT, "Changed password for identity: {}", provenIdent.getKey());
 						showInfo("password.successful");
 					} else {
 						showError("password.failed");

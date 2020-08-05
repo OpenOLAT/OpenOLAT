@@ -80,7 +80,6 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 
 		if(col >= 0 && col < Columns.values().length) {
 			switch(Columns.getValueAt(col)) {
-				case name: return entry.getIdentityName();
 				case repoName: {
 					RepositoryEntry re = entry.getCourse();
 					return re.getDisplayname();
@@ -190,7 +189,6 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 	}
 	
 	public enum Columns implements FlexiSortableColumnDef {
-		name("student.name"), 
 		repoName("table.header.course.name"),
 		completion("table.header.completion"),
 		score("table.header.score"),
@@ -233,7 +231,7 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 			if(ordinal >= 0 && ordinal < values().length) {
 				return values()[ordinal];
 			}
-			return name;
+			return null;
 		}
 	}
 }

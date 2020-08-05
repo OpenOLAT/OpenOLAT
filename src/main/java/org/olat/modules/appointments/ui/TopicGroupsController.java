@@ -62,7 +62,6 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.appointments.AppointmentsService;
 import org.olat.modules.appointments.Topic;
-import org.olat.modules.appointments.ui.UserRestrictionTableModel.UserRestrictionCols;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntry;
@@ -99,7 +98,6 @@ public class TopicGroupsController extends FormBasicController {
 
 	private final Topic topic;
 	private final RepositoryEntry entry;
-	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private Map<String, Group> keyToBussinesGroups;
 	private Map<String, Group> keyToCurriculumElementGroup;
@@ -123,7 +121,7 @@ public class TopicGroupsController extends FormBasicController {
 		this.topic = topic;
 		entry = topic.getEntry();
 		
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 		
 		initForm(ureq);
@@ -219,10 +217,7 @@ public class TopicGroupsController extends FormBasicController {
 		addUserButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserRestrictionCols.username));
-		}
-		
+
 		int colIndex = UserRestrictionTableModel.USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
@@ -233,7 +228,7 @@ public class TopicGroupsController extends FormBasicController {
 		
 		usersTableModel = new UserRestrictionTableModel(columnsModel, getLocale()); 
 		usersTableEl = uifactory.addTableElement(getWindowControl(), "users", usersTableModel, 20, false, getTranslator(), usersLayout);
-		usersTableEl.setAndLoadPersistedPreferences(ureq, "topic.groups.users");
+		usersTableEl.setAndLoadPersistedPreferences(ureq, "topic.groups.users.v2");
 		usersTableEl.setEmtpyTableMessageKey("groups.users.empty.table");
 		usersTableEl.setSelectAllEnable(true);
 		usersTableEl.setMultiSelect(true);

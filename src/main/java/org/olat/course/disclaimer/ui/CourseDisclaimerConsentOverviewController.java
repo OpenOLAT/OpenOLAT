@@ -144,10 +144,6 @@ public class CourseDisclaimerConsentOverviewController extends FormBasicControll
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 
-		if (isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConsentCols.username, TABLE_ACTION_HOME));
-		}
-
 		int colPos = USER_PROPS_OFFSET;
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null)
@@ -184,7 +180,7 @@ public class CourseDisclaimerConsentOverviewController extends FormBasicControll
 		tableEl.setExportEnabled(true);
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
-		tableEl.setAndLoadPersistedPreferences(ureq, "course_disclaimer_consents_table");
+		tableEl.setAndLoadPersistedPreferences(ureq, "course_disclaimer_consents_table-v2");
 
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonLayout.setRootForm(mainForm);

@@ -218,7 +218,7 @@ public class MapperServiceTest extends OlatTestCase {
 	private UserSession createUserSession() {
 		HttpSession httpSession = new MockHttpSession();
 		UserSession userSession = sessionManager.getUserSession(null, httpSession);
-		SessionInfo infos = new SessionInfo(CodeHelper.getRAMUniqueID(), UUID.randomUUID().toString(), httpSession);
+		SessionInfo infos = new SessionInfo(CodeHelper.getRAMUniqueID(), httpSession);
 		userSession.setSessionInfo(infos);
 		//check if our mocked HTTP session makes what we want
 		Assert.assertNotNull(userSession.getSessionInfo());

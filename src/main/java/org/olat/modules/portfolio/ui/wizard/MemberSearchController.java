@@ -19,8 +19,6 @@
  */
 package org.olat.modules.portfolio.ui.wizard;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -61,16 +59,11 @@ public class MemberSearchController extends StepFormBasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(event instanceof SingleIdentityChosenEvent) {
 			SingleIdentityChosenEvent e = (SingleIdentityChosenEvent)event;
-			String key = e.getChosenIdentity().getKey().toString();
-			addToRunContext("keys", Collections.singletonList(key));
+			addToRunContext("identities", Collections.singletonList(e.getChosenIdentity()));
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		} else if(event instanceof MultiIdentityChosenEvent) {
 			MultiIdentityChosenEvent e = (MultiIdentityChosenEvent)event;
-			Collection<String> keys = new ArrayList<>();
-			for(Identity identity: e.getChosenIdentities()) {
-				keys.add(identity.getKey().toString());
-			}
-			addToRunContext("keys", keys);
+			addToRunContext("identities", e.getChosenIdentities());
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		} else {
 			super.event(ureq, source, event);
@@ -80,11 +73,7 @@ public class MemberSearchController extends StepFormBasicController {
 	@Override
 	protected void formNext(UserRequest ureq) {
 		List<Identity> identities = searchController.getSelectedIdentities();
-		Collection<String> keys = new ArrayList<>();
-		for(Identity identity: identities) {
-			keys.add(identity.getKey().toString());
-		}
-		addToRunContext("keys", keys);
+		addToRunContext("identities", identities);
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 

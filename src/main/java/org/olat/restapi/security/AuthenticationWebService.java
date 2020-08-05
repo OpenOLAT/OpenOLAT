@@ -131,7 +131,7 @@ public class AuthenticationWebService {
 	}
 	
 	private Response loginWithToken(String username, String secToken, HttpServletRequest httpRequest) {
-		Identity identity = securityManager.findIdentityByName(username);
+		Identity identity = securityManager.findIdentityByLogin(username);
 		if(identity == null) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
@@ -154,7 +154,7 @@ public class AuthenticationWebService {
 	
 	private Response loginWithPassword(String username, String password, HttpServletRequest httpRequest) {
 		UserRequest ureq = RestSecurityHelper.getUserRequest(httpRequest);
-		Identity identity = olatAuthenticationSpi.authenticate(null, username, password);
+		Identity identity = olatAuthenticationSpi.authenticate(username, password);
 		if(identity == null) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}

@@ -45,7 +45,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
@@ -77,8 +76,6 @@ public class CourseSecurityTest extends OlatRestTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private BaseSecurity securityManager;
-	@Autowired
 	private RepositoryManager repositoryManager;
 	
 	/**
@@ -89,7 +86,7 @@ public class CourseSecurityTest extends OlatRestTestCase {
 		conn = new RestConnection();
 		try {
 			// create course and persist as OLATResourceImpl
-			admin = securityManager.findIdentityByName("administrator");
+			admin = JunitTestHelper.findIdentityByLogin("administrator");
 			id1 = JunitTestHelper.createAndPersistIdentityAsUser("id-c-s-0");
 			Assert.assertNotNull(id1);
 			auth1 = JunitTestHelper.createAndPersistIdentityAsAuthor("id-c-s-1");

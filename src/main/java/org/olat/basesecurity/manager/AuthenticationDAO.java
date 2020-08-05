@@ -31,6 +31,7 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.AssertException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -46,6 +47,69 @@ public class AuthenticationDAO {
 	@Autowired
 	private DB dbInstance;
 	
+	public Authentication getAuthenticationByAuthusername(String authusername, String provider) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
+		  .append(" inner join fetch auth.identity ident")
+		  .append(" inner join fetch ident.user identUser")
+		  .append(" where auth.provider=:provider and auth.authusername=:authusername");
+
+		List<Authentication> results = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Authentication.class)
+				.setParameter("provider", provider)
+				.setParameter("authusername", authusername)
+				.getResultList();
+		if (results.isEmpty()) return null;
+		if (results.size() != 1) {
+			throw new AssertException("more than one entry for the a given authusername and provider, should never happen (even db has a unique constraint on those columns combined) ");
+		}
+		return results.get(0);
+	}
+	
+	public List<Authentication> getAuthenticationsByAuthusername(String authusername) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
+		  .append(" inner join fetch auth.identity ident")
+		  .append(" inner join fetch ident.user identUser")
+		  .append(" where auth.authusername=:authusername");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Authentication.class)
+				.setParameter("authusername", authusername)
+				.getResultList();
+	}
+	
+	public List<Authentication> getAuthenticationsByAuthusername(String authusername, List<String> providers) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
+		  .append(" inner join fetch auth.identity ident")
+		  .append(" inner join fetch ident.user identUser")
+		  .append(" where auth.authusername=:authusername and auth.provider in (:providers)");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Authentication.class)
+				.setParameter("authusername", authusername)
+				.setParameter("providers", providers)
+				.getResultList();
+	}
+	
+	/**
+	 * 
+	 * @param provider The authentication provider
+	 * @return A list of identities (the user is not fetched)
+	 */
+	public List<Identity> getIdentitiesWithLogin(String login) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select ident from ").append(AuthenticationImpl.class.getName()).append(" as auth")
+		  .append(" inner join auth.identity as ident")
+		  .append(" inner join ident.user as user")
+		  .append(" where auth.authusername=:login");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("login", login)
+				.getResultList();
+	}
+	
 	/**
 	 * 
 	 * @param provider The authentication provider
@@ -60,6 +124,22 @@ public class AuthenticationDAO {
 				.createQuery(sb.toString(), Identity.class)
 				.setParameter("provider", provider)
 				.getResultList();
+	}
+	
+	public Authentication getAuthentication(String authUsername, String provider) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
+		  .append(" inner join auth.identity as ident")
+		  .append(" inner join ident.user as user")
+		  .append(" where auth.authusername=:authUsername and auth.provider=:provider");
+		List<Authentication> authentications = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Authentication.class)
+				.setParameter("authUsername", authUsername)
+				.setParameter("provider", provider)
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return authentications != null && !authentications.isEmpty() ? authentications.get(0) : null;
 	}
 	
 	public boolean hasAuthentication(IdentityRef identity, String provider) {

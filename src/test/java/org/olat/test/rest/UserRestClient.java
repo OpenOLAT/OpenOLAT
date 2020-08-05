@@ -138,7 +138,8 @@ public class UserRestClient {
 		
 		UserVO vo = new UserVO();
 		String rndUsername = (name + "-" + uuid).substring(0, 24);
-		vo.setLogin(rndUsername.toLowerCase());
+		String login = rndUsername.toLowerCase();
+		vo.setLogin(login);
 		String rndPassword = ("passwd-" + uuid).substring(0, 24);
 		vo.setPassword(rndPassword);
 		vo.setFirstName(name + "-"+ role + "-" + uuid);
@@ -162,6 +163,7 @@ public class UserRestClient {
 		UserVO current = restConnection.parse(response.getEntity(), UserVO.class);
 		Assert.assertNotNull(current);
 		current.setPassword(vo.getPassword());
+		current.setLogin(login);
 		return current;
 	}
 	

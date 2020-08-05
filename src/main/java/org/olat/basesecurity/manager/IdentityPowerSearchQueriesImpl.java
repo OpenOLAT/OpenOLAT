@@ -94,7 +94,6 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		QueryBuilder sb = new QueryBuilder(5000);
 		sb.append("select")
 		  .append(" ident.id as ident_id,")
-		  .append(" ident.name as ident_name,")
 		  .append(" ident.creationDate as ident_cDate,")
 		  .append(" ident.lastLogin as ident_lDate,")
 		  .append(" ident.status as ident_Status,")
@@ -118,7 +117,6 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			int pos = 0;
 			
 			Long identityKey = ((Number)rawObject[pos++]).longValue();
-			String identityName = (String)rawObject[pos++];
 			Date creationDate = (Date)rawObject[pos++];
 			Date lastLogin = (Date)rawObject[pos++];
 			Integer status = (Integer)rawObject[pos++];
@@ -129,7 +127,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 				userProperties[i] = (String)rawObject[pos++];
 			}
 
-			rows.add(new IdentityPropertiesRow(identityKey, identityName, creationDate, lastLogin, status, inactivationDate,
+			rows.add(new IdentityPropertiesRow(identityKey, creationDate, lastLogin, status, inactivationDate,
 					userPropertyHandlers, userProperties, locale));
 		}
 		return rows;
@@ -380,6 +378,21 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			} else {
 				sb.append(" lower(ident.name) like :login");
 			}
+			
+			sb.append(" or exists (select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
+			  .append("  where ident.key=auth.identity.key and");
+			
+			if (params.getLogin().contains("_") && dbInstance.isOracle()) {
+				//oracle needs special ESCAPE sequence to search for escaped strings
+				sb.append(" lower(auth.authusername) like :login ESCAPE '\\'");
+			} else if (dbInstance.isMySQL()) {
+				sb.append(" auth.authusername like :login");
+			} else {
+				sb.append(" lower(auth.authusername) like :login");
+			}
+			
+			sb.append(")");
+			
 			// if user fields follow a join element is needed
 			needsUserPropertiesJoin = true;
 			// at least one user field used, after this and is required

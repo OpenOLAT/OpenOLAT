@@ -161,7 +161,7 @@ public class LockTest extends OlatTestCase {
 		assertEquals(1, entries.size());
 		LockEntry le = entries.get(0);
 		// must be original owner
-		assertEquals(le.getOwner().getName(), ident.getName());
+		assertEquals(le.getOwner().getKey(), ident.getKey());
 
 		// release lock
 		cl.releaseLock(res3);

@@ -35,6 +35,8 @@ import org.olat.user.UserManager;
  */
 public class DeletedUsersTableModel extends DefaultFlexiTableDataSourceModel<DeletedIdentity> {
 	
+	private static final DeletedCols[] COLS = DeletedCols.values();
+	
 	private final UserManager userManager;
 	
 	public DeletedUsersTableModel(FlexiTableDataSourceDelegate<DeletedIdentity> source, UserManager userManager, FlexiTableColumnModel columnModel) {
@@ -45,7 +47,7 @@ public class DeletedUsersTableModel extends DefaultFlexiTableDataSourceModel<Del
 	@Override
 	public Object getValueAt(int row, int col) {
 		DeletedIdentity identity = getObject(row);
-		switch(DeletedCols.values()[col]) {
+		switch(COLS[col]) {
 			case username: return identity.getIdentityName();
 			case firstName: return identity.getIdentityFirstName();
 			case lastName: return identity.getIdentityLastName();

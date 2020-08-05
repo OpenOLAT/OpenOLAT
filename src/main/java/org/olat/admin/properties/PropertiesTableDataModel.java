@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.components.table.DefaultTableDataModel;
-import org.olat.core.id.Identity;
 import org.olat.properties.Property;
 import org.olat.user.UserManager;
 
@@ -41,75 +40,46 @@ import org.olat.user.UserManager;
 */
 public class PropertiesTableDataModel extends DefaultTableDataModel<Property> {
 
-	private final boolean isAdministrativeUser;
 	private final UserManager userManager;
 	
 	/**
 	 * Default constructor.
 	 */
-	public PropertiesTableDataModel(boolean isAdministrativeUser) {
-		this(new ArrayList<Property>(), isAdministrativeUser);
-		
+	public PropertiesTableDataModel() {
+		this(new ArrayList<Property>());
 	}
 
 	/**
 	 * Initialize table model with objects.
 	 * @param objects
 	 */
-	public PropertiesTableDataModel(List<Property> objects, boolean isAdministrativeUser) {
+	public PropertiesTableDataModel(List<Property> objects) {
 		super(objects);
-		this.isAdministrativeUser = isAdministrativeUser;
 		userManager = UserManager.getInstance();
 	}
-	
-	/**
-	 * @see org.olat.core.gui.components.table.TableDataModel#getColumnCount()
-	 */
+
+	@Override
 	public int getColumnCount() {
 		// resourceTypeName, resourceTypeId, category, name, floatValue, stringValue, textValue
 		return 11;
 	}
 	
-	
-	/**
-	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
-	 */
+	@Override
 	public final Object getValueAt(int row, int col) {
 		Property p = getObject(row); 
 		switch(col) {
-			case 0:
-				Identity id = p.getIdentity();
-				if(id == null) {
-					return null;
-				}
-				if(isAdministrativeUser) {
-					return id.getName();
-				}
-				return userManager.getUserDisplayName(id);
-			case 1:
-				return p.getResourceTypeName();
-			case 2:
-				return p.getResourceTypeId(); // may be null; in this case, the table renders nothing for this cell;
-			case 3: 
-				return p.getCategory();
-			case 4: 
-				return p.getName();
-			case 5: 
-				return p.getFloatValue();
-			case 6: 
-				return p.getStringValue();
-			case 7: 
-				return p.getTextValue();
-			case 8:
-				return p.getCreationDate().toString();
-			case 9:
-				return p.getLastModified().toString();
-			case 10:
-				return p.getLongValue();
+			case 0: return userManager.getUserDisplayName(p.getIdentity());
+			case 1: return p.getResourceTypeName();
+			case 2: return p.getResourceTypeId();
+			case 3: return p.getCategory();
+			case 4: return p.getName();
+			case 5: return p.getFloatValue();
+			case 6: return p.getStringValue();
+			case 7: return p.getTextValue();
+			case 8: return p.getCreationDate().toString();
+			case 9: return p.getLastModified().toString();
+			case 10: return p.getLongValue();
 			default: return "error";
 		}
 	}
-	
-	
 }
-	

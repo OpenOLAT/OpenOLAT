@@ -136,7 +136,6 @@ public class IdentityListCourseNodeController extends FormBasicController
 	protected final RepositoryEntry courseEntry;
 	private final RepositoryEntry referenceEntry;
 	private final CourseEnvironment courseEnv;
-	private final boolean isAdministrativeUser;
 	protected final UserCourseEnvironment coachCourseEnv;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	protected final AssessmentToolSecurityCallback assessmentCallback;
@@ -202,7 +201,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			referenceEntry = null;
 		}
 		
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(AssessmentToolConstants.usageIdentifyer, isAdministrativeUser);
 		
 		initForm(ureq);
@@ -277,11 +276,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		//add the table
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		if(isAdministrativeUser) {
-			options.setDefaultOrderBy(new SortKey(IdentityCourseElementCols.username.sortKey(), true));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.username, select));
-		}
-		
+
 		int colIndex = AssessmentToolConstants.USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
@@ -312,7 +307,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		if(!extendedFilters.isEmpty()) {
 			tableEl.setExtendedFilterButton(translate("filter.groups"), extendedFilters);
 		}
-		tableEl.setAndLoadPersistedPreferences(ureq, getTableId());
+		tableEl.setAndLoadPersistedPreferences(ureq, getTableId());//TODO username
 	}
 	
 	protected List<FlexiTableFilter> getFilters() {

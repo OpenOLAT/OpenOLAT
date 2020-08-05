@@ -41,13 +41,13 @@ public class StudentStatEntry extends UserPropertiesRow {
 	private int countFailed = 0;
 	private int countNotAttempted = 0;
 	private int initialLaunch = 0;
-	private Double AverageCompletion;
+	private Double averageCompletion;
 	
 	private Set<String> repoIds = new HashSet<>();
 	private Set<String> launchIds = new HashSet<>();
 	
-	public StudentStatEntry(Long identityKey, String identityName, List<UserPropertyHandler> userPropertyHandlers, String[] userProperties, Locale locale) {
-		super(identityKey, identityName, userPropertyHandlers, userProperties, locale);
+	public StudentStatEntry(Long identityKey, List<UserPropertyHandler> userPropertyHandlers, String[] userProperties, Locale locale) {
+		super(identityKey, userPropertyHandlers, userProperties, locale);
 	}
 	
 	public int getCountRepo() {
@@ -107,10 +107,10 @@ public class StudentStatEntry extends UserPropertiesRow {
 	}
 
 	public Double getAverageCompletion() {
-		return AverageCompletion;
+		return averageCompletion;
 	}
 
 	public void setAverageCompletion(Double averageCompletion) {
-		this.AverageCompletion = averageCompletion;
+		this.averageCompletion = averageCompletion;
 	}
 }

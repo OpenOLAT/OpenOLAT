@@ -68,7 +68,6 @@ public class CurriculumElementLecturesController extends BasicController {
 	
 	private LecturesListController lecturesListCtlr;
 
-	private final boolean adminProps;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	@Autowired
@@ -87,7 +86,7 @@ public class CurriculumElementLecturesController extends BasicController {
 		super(ureq, wControl, Util.createPackageTranslator(CurriculumComposerController.class, ureq.getLocale()));
 
 		Roles roles = ureq.getUserSession().getRoles();
-		adminProps = securityModule.isUserAllowedAdminProps(roles);
+		boolean adminProps = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(PROPS_IDENTIFIER, adminProps);
 
 		VelocityContainer mainVC = createVelocityContainer("curriculum_lectures");

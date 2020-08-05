@@ -65,7 +65,7 @@ public class UserSessionTableModel extends DefaultTableDataModel<UserSessionView
 			switch (col) {
 				case 0: return usess.getLastname();
 				case 1: return usess.getFirstname();
-				case 2: return usess.getLogin();
+				case 2: return usess.getIdentityKey();
 				case 3: return usess.getAuthProvider();
 				case 4: return fromFQN.computeIfAbsent(usess.getFromIP(), ip -> {
 					String fqn = null;

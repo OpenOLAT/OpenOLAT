@@ -100,7 +100,7 @@ public class UserFoldersWebService {
 			return new VFSWebservice(myFodlers);
 		} else {
 			//only public
-			String chosenUserFolderRelPath = FolderConfig.getUserHome(identity.getName()) + "/" + "public";
+			String chosenUserFolderRelPath = FolderConfig.getUserHome(identity) + "/" + "public";
 			VFSContainer rootFolder = VFSManager.olatRootContainer(chosenUserFolderRelPath, null);
 			VFSSecurityCallback secCallback = new ReadOnlyCallback();
 			rootFolder.setLocalSecurityCallback(secCallback);

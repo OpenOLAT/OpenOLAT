@@ -72,8 +72,6 @@ public class CoachParticipantsTableModel extends DefaultFlexiTableDataModel<Coac
 	public Object getValueAt(CoachedIdentityRow row, int col) {
 		if(col == CGCols.mark.ordinal()) {
 			return row.getMarkLink();
-		} else if(col == CGCols.username.ordinal()) {
-			return row.getIdentity().getIdentityName();
 		} else if(col == CGCols.taskStatus.ordinal()) {
 			return row.getTaskStatus();
 		} else if(col == CGCols.taskName.ordinal()) {
@@ -106,7 +104,6 @@ public class CoachParticipantsTableModel extends DefaultFlexiTableDataModel<Coac
 	
 	public enum CGCols implements FlexiSortableColumnDef {
 		mark("table.header.mark"),
-		username("username"),
 		taskTitle("table.header.group.taskTitle"),
 		taskName("table.header.group.taskName"),
 		taskStatus("table.header.group.step"),

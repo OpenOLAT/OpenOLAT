@@ -117,9 +117,6 @@ public class LearningPathIdentityListController extends FormBasicController impl
 		flc.contextPut("courseTitle", courseTitle);
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathIdentityCols.username, CMD_SELECT));
-		}
 		
 		int colIndex = LearningPathIdentityDataModel.USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {

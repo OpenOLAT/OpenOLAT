@@ -804,7 +804,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 	@Test
 	public void getRepositoryentryMembership() {
 		//create a repository entry with an owner and a participant
-		Identity admin = securityManager.findIdentityByName("administrator");
+		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("re-m-is1-");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("re-m-is2-");
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("re-m-is3-");

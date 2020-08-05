@@ -74,7 +74,6 @@ public class CurriculumElementLearningPathListController extends FormBasicContro
 	private final TooledStackedPanel stackPanel;
 	private final CurriculumElement curriculumElement;
 	private final List<UserPropertyHandler> userPropertyHandlers;
-	private final boolean isAdministrativeUser;
 
 	@Autowired
 	private UserManager userManager;
@@ -94,7 +93,7 @@ public class CurriculumElementLearningPathListController extends FormBasicContro
 		this.curriculumElement = curriculumElement;
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USAGE_IDENTIFIER, isAdministrativeUser);
 		
 		initForm(ureq);
@@ -103,10 +102,7 @@ public class CurriculumElementLearningPathListController extends FormBasicContro
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathIdentityCols.username, CMD_SELECT));
-		}
-		
+
 		int colIndex = LearningPathIdentityDataModel.USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(i);

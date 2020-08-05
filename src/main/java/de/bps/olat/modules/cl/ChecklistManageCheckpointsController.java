@@ -226,7 +226,7 @@ public class ChecklistManageCheckpointsController extends BasicController {
 		} else if(groupForm.getSelection().equals(GroupChoiceForm.CHOICE_OTHERS)) {
 			lstIdents.addAll(notInGroupIdentities);
 		} else if(StringHelper.isLong(groupForm.getSelection())) {
-			Long groupKey = new Long(groupForm.getSelection());
+			Long groupKey = Long.valueOf(groupForm.getSelection());
 			BusinessGroup group = businessGroupService.loadBusinessGroup(groupKey);
 			lstIdents.addAll(businessGroupService.getMembers(group, GroupRoles.participant.name()));
 		}
@@ -244,11 +244,6 @@ public class ChecklistManageCheckpointsController extends BasicController {
 		listenTo(manageChecklistTable);
 		
 		int cols = 0;
-		if(isAdministrativeUser) {
-			manageChecklistTable.addColumnDescriptor(new DefaultColumnDescriptor("username", 1000, null, getLocale()));
-			cols++;
-		}
-
 		int i=0;
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) continue;

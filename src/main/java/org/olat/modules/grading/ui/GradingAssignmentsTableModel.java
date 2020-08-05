@@ -76,9 +76,7 @@ implements SortableFlexiTableDataModel<GradingAssignmentRow> {
 	public Object getValueAt(GradingAssignmentRow row, int col) {
 		if(col >= 0 && col < COLS.length) {
 			switch(COLS[col]) {
-				case username: return getGraderUsername(row);
 				case deadline: return row.getAssignmentStatus();
-				case assessedIdentityUsername: return getAssessedIdentityUsername(row);
 				case entry: return row.getEntryDisplayname();
 				case entryExternalRef: return row.getEntryExternalRef();
 				case taxonomy: return row.getTaxonomyLevels();
@@ -116,20 +114,6 @@ implements SortableFlexiTableDataModel<GradingAssignmentRow> {
 		}
 		return "ERROR";
 	}
-	
-	private String getAssessedIdentityUsername(GradingAssignmentRow row) {
-		if(row.getAssessedIdentity() != null && row.isAssessedIdentityVisible()) {
-			return row.getAssessedIdentity().getName();
-		}
-		return "-";
-	}
-	
-	private String getGraderUsername(GradingAssignmentRow row) {
-		if(row.hasGrader()) {
-			return row.getGrader().getName();
-		}
-		return translator.translate("assignment.status.unassigned");
-	}
 
 	@Override
 	public GradingAssignmentsTableModel createCopyWithEmptyList() {
@@ -137,9 +121,7 @@ implements SortableFlexiTableDataModel<GradingAssignmentRow> {
 	}
 	
 	public enum GAssignmentsCol implements FlexiSortableColumnDef {
-		username("table.header.username"),
 		deadline("table.header.deadline"),
-		assessedIdentityUsername("table.header.username"),
 		entry("table.header.entry"),
 		entryExternalRef("table.header.entry.external.ref"),
 		taxonomy("table.header.taxonomy"),

@@ -45,9 +45,10 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.junit.Assert;
 import org.apache.logging.log4j.Logger;
+import org.junit.Assert;
 import org.olat.core.logging.Tracing;
+import org.olat.test.JunitTestHelper.IdentityWithLogin;
 
 /**
  * 
@@ -97,6 +98,11 @@ public class WebDAVConnection implements Closeable {
 	
 	public CookieStore getCookieStore() {
 		return cookieStore;
+	}
+	
+
+	public void setCredentials(IdentityWithLogin identity) {
+		setCredentials(identity.getLogin(), identity.getPassword());
 	}
 	
 	public void setCredentials(String username, String password) {

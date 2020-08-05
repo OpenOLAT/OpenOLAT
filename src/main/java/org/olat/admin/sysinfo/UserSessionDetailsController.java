@@ -100,13 +100,13 @@ public class UserSessionDetailsController extends BasicController {
 		
 		if (success) {
 			// lock information
-			String username = sessInfo.getLogin();
+			Long identityKey = sessInfo.getIdentityKey();
 			List<String> lockList = new ArrayList<>();
 			List<LockEntry> locks = CoordinatorManager.getInstance().getCoordinator().getLocker().adminOnlyGetLockEntries();
 			Formatter f = Formatter.getInstance(ureq.getLocale());
 			for (LockEntry entry : locks) {
-				if (entry.getOwner().getName().equals(username)) {
-					lockList.add(entry.getKey()+" "+f.formatDateAndTime(new Date(entry.getLockAquiredTime())));
+				if (entry.getOwner().getKey().equals(identityKey)) {
+					lockList.add(entry.getKey() + " " + f.formatDateAndTime(new Date(entry.getLockAquiredTime())));
 				}
 			}					
 			sesDetails.contextPut("locklist", lockList);
@@ -155,7 +155,7 @@ public class UserSessionDetailsController extends BasicController {
 							// thrown when session already invalidated. fine. ignore.
 						}
 					}
-					showInfo("sess.kill.done", sessInfo.getLogin() );
+					showInfo("sess.kill.done", sessInfo.getIdentityKey().toString());
 				}
 			}
 		}

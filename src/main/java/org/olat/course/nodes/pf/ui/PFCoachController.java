@@ -107,8 +107,7 @@ public class PFCoachController extends FormBasicController implements Controller
 	private ContextualSubscriptionController contextualSubscriptionCtr;
 
 	private final List<UserPropertyHandler> userPropertyHandlers;
-	private final boolean isAdministrativeUser;
-
+	
 	private UserCourseEnvironment userCourseEnv;
 	private CourseEnvironment courseEnv;
 
@@ -130,7 +129,7 @@ public class PFCoachController extends FormBasicController implements Controller
 		this.pfNode = sfNode;
 		
 		Roles roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
@@ -281,7 +280,7 @@ public class PFCoachController extends FormBasicController implements Controller
 		dropboxTable.setExportEnabled(true);
 		dropboxTable.setSortSettings(options);
 		initFilters();
-		dropboxTable.setAndLoadPersistedPreferences(ureq, "participant-folder_coach");
+		dropboxTable.setAndLoadPersistedPreferences(ureq, "participant-folder_coach-v2");
 		dropboxTable.setEmtpyTableMessageKey("table.empty");
 		
 		

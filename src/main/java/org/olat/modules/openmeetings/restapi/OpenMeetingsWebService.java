@@ -33,11 +33,12 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.id.Identity;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
 import org.olat.user.DisplayPortraitManager;
-import org.olat.user.UserManager;
 import org.springframework.stereotype.Component;
 
 import io.swagger.v3.oas.annotations.Hidden;
@@ -81,12 +82,12 @@ public class OpenMeetingsWebService {
 		if(identityKey == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-		String username = CoreSpringFactory.getImpl(UserManager.class).getUsername(identityKey);
-		if(username == null) {
+		Identity identity = CoreSpringFactory.getImpl(BaseSecurity.class).loadIdentityByKey(identityKey);
+		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
-		File portrait = CoreSpringFactory.getImpl(DisplayPortraitManager.class).getBigPortrait(username);
+		File portrait = CoreSpringFactory.getImpl(DisplayPortraitManager.class).getBigPortrait(identity);
 		if(portrait == null || !portrait.exists()) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}

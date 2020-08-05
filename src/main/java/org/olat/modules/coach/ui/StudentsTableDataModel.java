@@ -95,7 +95,6 @@ public class StudentsTableDataModel extends DefaultFlexiTableDataModel<StudentSt
 		if(col >= 0 && col < Columns.values().length) {
 			int countRepo = student.getCountRepo();
 			switch(Columns.getValueAt(col)) {
-				case name: return student.getIdentityName();
 				case countCourse: return Integer.valueOf(countRepo);
 				case initialLaunch: {
 					if(countRepo == 0) {
@@ -153,8 +152,7 @@ public class StudentsTableDataModel extends DefaultFlexiTableDataModel<StudentSt
 		return new StudentsTableDataModel(getTableColumnModel());
 	}
 	
-	public static enum Columns implements FlexiSortableColumnDef {
-		name("student.name"),
+	public enum Columns implements FlexiSortableColumnDef {
 		countCourse("table.header.countCourses"),
 		initialLaunch("table.header.login"),
 		completion("table.header.completion"),
@@ -186,7 +184,7 @@ public class StudentsTableDataModel extends DefaultFlexiTableDataModel<StudentSt
 			if(ordinal >= 0 && ordinal < values().length) {
 				return values()[ordinal];
 			}
-			return name;
+			return null;
 		}
 	}
 }

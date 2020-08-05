@@ -174,10 +174,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, UserCols.id));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserCols.status, new IdentityStatusCellRenderer(getTranslator())));
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserCols.username, "select"));
-		}
-		
+
 		int colPos = USER_PROPS_OFFSET;
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) continue;
@@ -210,7 +207,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
 		tableEl.setSearchEnabled(settings.isTableSearch());
-		tableEl.setAndLoadPersistedPreferences(ureq, "user_search_table");
+		tableEl.setAndLoadPersistedPreferences(ureq, "user_search_table-v2");
 		
 		initBulkActions(formLayout);
 		if(settings.isStatusFilter()) {

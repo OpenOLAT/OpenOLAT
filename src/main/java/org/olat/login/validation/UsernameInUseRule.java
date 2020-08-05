@@ -38,7 +38,7 @@ class UsernameInUseRule extends DescriptionRule {
 	@Override
 	public boolean validate(String value, Identity identity) {
 		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
-		return securityManager.findIdentityByName(value) == null;
+		return securityManager.findIdentityByLogin(value) == null;
 	}
 
 	@Override

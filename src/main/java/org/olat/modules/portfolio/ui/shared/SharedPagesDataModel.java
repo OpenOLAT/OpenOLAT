@@ -106,7 +106,6 @@ public class SharedPagesDataModel extends DefaultFlexiTableDataModel<SharedPageR
 	public Object getValueAt(SharedPageRow itemRow, int col) {
 		if(col >= 0 && col < SharePageCols.values().length) {
 			switch(SharePageCols.values()[col]) {
-				case username: return itemRow.getIdentityName();
 				case pageKey: return itemRow.getPageKey();
 				case pageName: {
 					boolean draft = itemRow.getStatus() == null || PageStatus.draft.equals(itemRow.getStatus());
@@ -135,7 +134,6 @@ public class SharedPagesDataModel extends DefaultFlexiTableDataModel<SharedPageR
 	}
 	
 	public enum SharePageCols implements FlexiSortableColumnDef {
-		username("table.user.login"),
 		pageKey("table.header.key"),
 		pageName("table.header.title"),
 		lastChanges("table.header.lastUpdate"),

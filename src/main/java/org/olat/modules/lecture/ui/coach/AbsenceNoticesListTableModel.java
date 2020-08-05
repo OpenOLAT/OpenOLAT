@@ -76,7 +76,6 @@ implements SortableFlexiTableDataModel<AbsenceNoticeRow> {
 		if(col < AbsenceNoticesListController.USER_PROPS_OFFSET) {
 			switch(NoticeCols.values()[col]) {
 				case id: return row.getKey();
-				case username: return row.getIdentityName();
 				case date: return row;
 				case start: return row.getStartDate();
 				case end: return row.getEndDate();
@@ -140,7 +139,6 @@ implements SortableFlexiTableDataModel<AbsenceNoticeRow> {
 	
 	public enum NoticeCols implements FlexiSortableColumnDef {
 		id("table.header.id"),
-		username("table.header.username"),
 		date("table.header.date"),
 		start("table.header.start.time"),
 		end("table.header.end.time"),

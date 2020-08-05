@@ -163,7 +163,6 @@ public class MessageListController extends BasicController implements GenericEve
 	private final String thumbnailMapper;
 	private final ForumCallback foCallback;
 	private final OLATResourceable forumOres;
-	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	private LoadMode loadMode;
@@ -198,7 +197,7 @@ public class MessageListController extends BasicController implements GenericEve
 		formatter = Formatter.getInstance(getLocale());
 		forumOres = OresHelper.createOLATResourceableInstance("Forum", forum.getKey());
 		guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 		
 		thumbnailMapper = registerCacheableMapper(ureq, "fo_att_" + forum.getKey(), new AttachmentsMapper());

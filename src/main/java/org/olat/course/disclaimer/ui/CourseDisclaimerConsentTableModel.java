@@ -69,8 +69,6 @@ implements SortableFlexiTableDataModel<CourseDisclaimerConsenstPropertiesRow>  {
 		switch (ConsentCols.values()[col]) {
 			case consent:
 				return row.getConsentDate();
-			case username: 
-				return row.getIdentityName();
 			case tools:
 				return row.getToolsLink();
 			default:
@@ -116,9 +114,6 @@ implements SortableFlexiTableDataModel<CourseDisclaimerConsenstPropertiesRow>  {
 	}
 	
 	public static boolean contains(String searchValue, CourseDisclaimerConsenstPropertiesRow entry) {
-		if(entry.getIdentityName().toLowerCase().contains(searchValue)) {
-			return true;
-		}
 		String[] userProperties = entry.getIdentityProps();
 		for(int i=userProperties.length; i-->0; ) {
 			String userProp = userProperties[i];
@@ -139,7 +134,6 @@ implements SortableFlexiTableDataModel<CourseDisclaimerConsenstPropertiesRow>  {
 	}
 	
 	public enum ConsentCols implements FlexiSortableColumnDef {
-		username("table.header.login"),
 		consent("consent"),
 		tools("tools");
 

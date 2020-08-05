@@ -108,12 +108,6 @@ implements FlexiTableFooterModel, SortableFlexiTableDataModel<MSStatisticRow> {
 			int propPos = col - AssessmentToolConstants.USER_PROPS_OFFSET;
 			return row.getIdentityProp(propPos);
 		}
-		if (col >= 0) {
-			if (col == 0) {
-				return row.getIdentityName();
-			}
-			return null;
-		}
 		return null;
 	}
 	

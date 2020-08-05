@@ -49,6 +49,7 @@ import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -85,7 +86,7 @@ public class UserTest extends OlatTestCase {
 		// create some users with user manager
 		// set up fixture using the user manager
 		
-		if (securityManager.findIdentityByName("judihui") == null) {
+		if (JunitTestHelper.findIdentityByLogin("judihui") == null) {
 			u1 = userManager.createUser("judihui", "judihui", "judihui@id.uzh.ch");
 			u1.setProperty(UserConstants.INSTITUTIONALEMAIL, "instjudihui@id.uzh.ch");
 			u1.setProperty(UserConstants.INSTITUTIONALNAME, "id.uzh.ch");
@@ -93,10 +94,10 @@ public class UserTest extends OlatTestCase {
 			i1 = securityManager.createAndPersistIdentityAndUser(u1.getProperty(UserConstants.LASTNAME, new Locale("en")), null, u1, "OLAT", u1.getProperty(UserConstants.LASTNAME, new Locale("en")),"");
 		} else {
 			log.info("Does not create user, found 'judihui' already in db");
-			i1 = securityManager.findIdentityByName("judihui");
+			i1 = JunitTestHelper.findIdentityByLogin("judihui");
 			u1 = i1.getUser();
 		}
-		if (securityManager.findIdentityByName("migros") == null) {
+		if (JunitTestHelper.findIdentityByLogin("migros") == null) {
 			u2 = userManager.createUser("migros", "migros", "migros@id.migros.uzh.ch");
 			u2.setProperty(UserConstants.INSTITUTIONALEMAIL, "instmigros@id.migros.uzh.ch");
 			u2.setProperty(UserConstants.INSTITUTIONALNAME, "id.migros.uzh.ch");
@@ -104,18 +105,18 @@ public class UserTest extends OlatTestCase {
 			i2 = securityManager.createAndPersistIdentityAndUser(u2.getProperty(UserConstants.LASTNAME, new Locale("en")), null, u2, "OLAT", u2.getProperty(UserConstants.LASTNAME, new Locale("en")),"");
 		} else {
 			log.info("Does not create user, found 'migros' already in db");
-			i2 = securityManager.findIdentityByName("migros");
+			i2 = JunitTestHelper.findIdentityByLogin("migros");
 			u2 = i2.getUser();
 		}
-		if (securityManager.findIdentityByName("salat") == null) {
+		if (JunitTestHelper.findIdentityByLogin("salat") == null) {
 			u3 = userManager.createUser("salat", "salat", "salat@id.salat.uzh.ch");
 			u3.setProperty(UserConstants.INSTITUTIONALEMAIL,"instsalat@id.salat.uzh.ch");
 			u3.setProperty(UserConstants.INSTITUTIONALNAME, "id.salat.uzh.ch");
 			u3.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, "id.uzh.ch");
-			i3 = securityManager.createAndPersistIdentityAndUser(u3.getProperty(UserConstants.LASTNAME, new Locale("en")), null, u3," OLAT", u3.getProperty(UserConstants.LASTNAME, new Locale("en")),"");
+			i3 = securityManager.createAndPersistIdentityAndUser(u3.getProperty(UserConstants.LASTNAME, new Locale("en")), null, u3, "OLAT", u3.getProperty(UserConstants.LASTNAME, new Locale("en")),"");
 		} else {
 			log.info("Does not create user, found 'salat' already in db");
-			i3 = securityManager.findIdentityByName("salat");
+			i3 = JunitTestHelper.findIdentityByLogin("salat");
 			u3 = i3.getUser();
 		}
 	}

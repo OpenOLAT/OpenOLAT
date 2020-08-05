@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -43,7 +42,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -77,7 +75,6 @@ public class LecturesListController extends FormBasicController implements Expor
 	private TooledStackedPanel toolbarPanel;
 	
 	private final String propsIdentifier;
-	private final boolean isAdministrativeUser;
 	private final boolean authorizedAbsenceEnabled;
 	private final Curriculum curriculum;
 	private final CurriculumElement curriculumElement;
@@ -95,8 +92,6 @@ public class LecturesListController extends FormBasicController implements Expor
 	private LectureService lectureService;
 	@Autowired
 	private BaseSecurity securityManager;
-	@Autowired
-	private BaseSecurityModule securityModule;
 	
 	public LecturesListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			List<LectureBlockIdentityStatistics> statistics, List<RepositoryEntryRef> filterByEntries,
@@ -112,8 +107,6 @@ public class LecturesListController extends FormBasicController implements Expor
 		this.curriculumElement = curriculumElement;
 		this.userPropertyHandlers = userPropertyHandlers;
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
-		Roles roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		initForm(ureq);
 	}
 
@@ -121,10 +114,6 @@ public class LecturesListController extends FormBasicController implements Expor
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, StatsCols.id));
-		
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StatsCols.username));
-		}
 		
 		int colIndex = USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
@@ -196,8 +185,7 @@ public class LecturesListController extends FormBasicController implements Expor
 	
 	@Override
 	public MediaResource export(FlexiTableComponent ftC) {
-		return new LecturesStatisticsExport(statistics, curriculum, curriculumElement,
-				userPropertyHandlers, isAdministrativeUser, getTranslator());
+		return new LecturesStatisticsExport(statistics, curriculum, curriculumElement, userPropertyHandlers, getTranslator());
 	}
 	
 	private void doSelectAssessedIdentity(UserRequest ureq, LectureBlockIdentityStatistics row) {

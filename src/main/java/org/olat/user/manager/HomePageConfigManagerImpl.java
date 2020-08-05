@@ -66,12 +66,13 @@ public class HomePageConfigManagerImpl implements HomePageConfigManager {
 	 * @return homePageConfig
 	 */
 	@Override
-	public HomePageConfig loadConfigFor(String userName) {
+	public HomePageConfig loadConfigFor(Identity identity) {
+		String userName = identity.getName();
 		HomePageConfig retVal = null;
 		File configFile = getConfigFile(userName);
 		if (!configFile.exists()) {
 			// config file does not exist! create one, init the defaults, save it.
-			retVal = loadAndSaveDefaults(userName);
+			retVal = loadAndSaveDefaults(identity);
 		} else {
 			// file exists, load it with XStream, resolve version
 			try {
@@ -79,14 +80,14 @@ public class HomePageConfigManagerImpl implements HomePageConfigManager {
 				if (tmp instanceof HomePageConfig) {
 					retVal = (HomePageConfig)tmp;
 					if(retVal.resolveVersionIssues()) {
-						saveConfigTo(userName, retVal);
+						saveConfigTo(identity, retVal);
 					}
 				}
 			} catch (Exception e) {
 				log.error("Error while loading homepage config from path::" + configFile.getAbsolutePath() + ", fallback to default configuration",
 						e);
 				if (configFile.exists()) configFile.delete();
-				retVal = loadAndSaveDefaults(userName);
+				retVal = loadAndSaveDefaults(identity);
 				// show message to user
 			}
 		}
@@ -99,10 +100,10 @@ public class HomePageConfigManagerImpl implements HomePageConfigManager {
 	 * @param userName
 	 * @return
 	 */
-	private HomePageConfig loadAndSaveDefaults(String userName) {
+	private HomePageConfig loadAndSaveDefaults(Identity identity) {
 		HomePageConfig retVal = new HomePageConfig();
 		retVal.initDefaults();
-		saveConfigTo(userName, retVal);
+		saveConfigTo(identity, retVal);
 		return retVal;
 	}
 
@@ -111,8 +112,8 @@ public class HomePageConfigManagerImpl implements HomePageConfigManager {
 	 * @param homePageConfig
 	 */
 	@Override
-	public void saveConfigTo(String userName, HomePageConfig homePageConfig) {
-		File configFile = getConfigFile(userName);
+	public void saveConfigTo(Identity identity, HomePageConfig homePageConfig) {
+		File configFile = getConfigFile(identity.getName());
 		XStreamHelper.writeObject(homeConfigXStream, configFile, homePageConfig);
 	}
 
@@ -148,13 +149,13 @@ public class HomePageConfigManagerImpl implements HomePageConfigManager {
 	 */
 	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
-		String home = FolderConfig.getUserHomePage(identity.getName());
+		String home = FolderConfig.getUserHomePage(identity);
 		String pathHomePage = FolderConfig.getCanonicalRoot() + home;
 		File userHomePage = new File(pathHomePage);
 		if(userHomePage.exists()) {
 			VFSContainer homeContainer = VFSManager.olatRootContainer(home, null);
 			homeContainer.deleteSilently();
 		}
-		log.info(Tracing.M_AUDIT, "Homepage-config file and homepage-dir deleted for identity=" + identity);
+		log.info(Tracing.M_AUDIT, "Homepage-config file and homepage-dir deleted for identity={}", identity);
 	}
 }

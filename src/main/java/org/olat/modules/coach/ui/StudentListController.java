@@ -75,7 +75,6 @@ public class StudentListController extends FormBasicController implements Activa
 	
 	private boolean hasChanged;
 
-	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	@Autowired
@@ -90,7 +89,7 @@ public class StudentListController extends FormBasicController implements Activa
 	public StudentListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, isAdministrativeUser);
 
 		this.stackPanel = stackPanel;
@@ -104,10 +103,6 @@ public class StudentListController extends FormBasicController implements Activa
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.name, "select"));
-		}
-		
 		int colIndex = UserListController.USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
@@ -125,7 +120,7 @@ public class StudentListController extends FormBasicController implements Activa
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		tableEl.setEmtpyTableMessageKey("error.no.found");
-		tableEl.setAndLoadPersistedPreferences(ureq, "fStudentListController");
+		tableEl.setAndLoadPersistedPreferences(ureq, "fStudentListController-v2");
 
 		UserSession usess = ureq.getUserSession();
 		boolean autoCompleteAllowed = securityModule.isUserAllowedAutoComplete(usess.getRoles());

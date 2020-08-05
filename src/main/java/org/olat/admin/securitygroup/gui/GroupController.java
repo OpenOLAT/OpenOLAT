@@ -596,6 +596,7 @@ public class GroupController extends BasicController {
 		if (errorMessage.length() > 0) getWindowControl().setError(errorMessage.toString());
 	}
 
+	@Override
 	protected void doDispose() {
     // DialogBoxController and TableController get disposed by BasicController
 		// usc, userToGroupWizardCtr, addUserMailCtr, and removeUserMailCtr are registerd with listenTo and get disposed in BasicController
@@ -608,12 +609,6 @@ public class GroupController extends BasicController {
 	 */
 	protected void initGroupTable(TableController tableController, UserRequest ureq, boolean enableTablePreferences, boolean enableUserSelection) {			
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
-		if (isAdministrativeUser) {
-			// first the login name, but only if administrative user
-			DefaultColumnDescriptor cd0 = new DefaultColumnDescriptor("table.user.login", 0, COMMAND_VCARD, ureq.getLocale());
-			cd0.setIsPopUpWindowAction(true, "height=700, width=900, location=no, menubar=no, resizable=yes, status=no, scrollbars=yes, toolbar=no");
-			tableController.addColumnDescriptor(cd0);
-		}
 		if(chatEnabled) {
 			tableController.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.online", 1, COMMAND_IM, getLocale(),
 					ColumnDescriptor.ALIGNMENT_LEFT, new OnlineIconRenderer()));

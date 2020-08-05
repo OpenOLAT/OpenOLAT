@@ -88,13 +88,14 @@ public class InstantMessageServiceTest extends OlatTestCase {
 		
 		//check the properties of buddy 1
 		Buddy buddy1 = buddies.get(0).getIdentityKey().equals(chatter1.getKey()) ? buddies.get(0) : buddies.get(1);
-		Assert.assertTrue(buddy1.getUsername().equals(chatter1.getName()));
+		Assert.assertEquals(buddy1.getIdentityKey(), chatter1.getKey());
+		Assert.assertTrue(buddy1.getName().contains(chatter1.getUser().getLastName()));
 		Assert.assertFalse(buddy1.isAnonym());
 		Assert.assertFalse(buddy1.isVip());
 
 		//check the properties of buddy 2
 		Buddy buddy2 = buddies.get(0).getIdentityKey().equals(chatter2.getKey()) ? buddies.get(0) : buddies.get(1);
-		Assert.assertTrue(buddy2.getUsername().equals(chatter2.getName()));
+		Assert.assertEquals("Chatter-2", buddy2.getName());
 		Assert.assertTrue(buddy2.isAnonym());
 		Assert.assertTrue(buddy2.isVip());
 	}

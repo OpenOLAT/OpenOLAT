@@ -39,7 +39,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.modules.coach.ui.UserListController;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
-import org.olat.modules.lecture.ui.coach.LecturesMembersTableModel.PTCols;
 import org.olat.modules.lecture.ui.event.SelectLectureIdentityEvent;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -59,7 +58,6 @@ public abstract class LecturesMembersSearchController extends FormBasicControlle
 	protected FlexiTableElement tableEl;
 	protected LecturesMembersTableModel tableModel;
 	
-	protected final boolean isAdministrativeUser;
 	protected final List<UserPropertyHandler> userPropertyHandlers;
 
 	@Autowired
@@ -73,7 +71,7 @@ public abstract class LecturesMembersSearchController extends FormBasicControlle
 		super(ureq, wControl, "participants_search", Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_USAGE_IDENTIFIER, isAdministrativeUser);
 		
 		initForm(ureq);
@@ -82,10 +80,7 @@ public abstract class LecturesMembersSearchController extends FormBasicControlle
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PTCols.username, "select"));
-		}
-		
+
 		int colIndex = USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);

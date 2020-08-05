@@ -198,9 +198,7 @@ public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<Che
 		
 	@Override
 	public Object getValueAt(CheckListAssessmentRow row, int col) {
-		if(col == Cols.username.ordinal()) {
-			return row.getIdentityName();
-		} else if(col == Cols.totalPoints.ordinal()) {
+		if(col == Cols.totalPoints.ordinal()) {
 			return row.getTotalPoints();
 		} else if(col >= USER_PROPS_OFFSET && col < CHECKBOX_OFFSET) {
 			int propIndex = col - USER_PROPS_OFFSET;
@@ -227,7 +225,6 @@ public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<Che
 	}
 	
 	public enum Cols {
-		username("username"),
 		totalPoints("points");
 		
 		private final String i18nKey;

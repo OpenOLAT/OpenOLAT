@@ -31,6 +31,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.instantMessaging.manager.InstantMessageDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -44,13 +45,16 @@ public class InstantMessageDAOTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private UserManager userManager;
+	@Autowired
 	private InstantMessageDAO imDao;
 	
 	@Test
 	public void testCreateMessage() {
 		OLATResourceable chatResources = OresHelper.createOLATResourceableInstance("unit-test-1", System.currentTimeMillis());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAdmin("im-1-");
-		InstantMessage msg = imDao.createMessage(id, id.getName(), false, "Hello world", chatResources);
+		String from = userManager.getUserDisplayName(id);
+		InstantMessage msg = imDao.createMessage(id, from, false, "Hello world", chatResources);
 		Assert.assertNotNull(msg);
 		Assert.assertNotNull(msg.getKey());
 		Assert.assertNotNull(msg.getCreationDate());
@@ -64,7 +68,8 @@ public class InstantMessageDAOTest extends OlatTestCase {
 		//create a message
 		OLATResourceable chatResources = OresHelper.createOLATResourceableInstance("unit-test-2-" + UUID.randomUUID().toString(), System.currentTimeMillis());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAdmin("im-2-");
-		InstantMessage msg = imDao.createMessage(id, id.getName(), false, "Hello load by id", chatResources);
+		String from = userManager.getUserDisplayName(id);
+		InstantMessage msg = imDao.createMessage(id, from, false, "Hello load by id", chatResources);
 		Assert.assertNotNull(msg);
 		dbInstance.commitAndCloseSession();
 		
@@ -80,7 +85,8 @@ public class InstantMessageDAOTest extends OlatTestCase {
 		//create a message
 		OLATResourceable chatResources = OresHelper.createOLATResourceableInstance("unit-test-3-" + UUID.randomUUID().toString(), System.currentTimeMillis());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAdmin("im-3-");
-		InstantMessage msg = imDao.createMessage(id, id.getName(), false, "Hello load by resource", chatResources);
+		String from = userManager.getUserDisplayName(id);
+		InstantMessage msg = imDao.createMessage(id, from, false, "Hello load by resource", chatResources);
 		Assert.assertNotNull(msg);
 		dbInstance.commitAndCloseSession();
 		

@@ -86,6 +86,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.test.JunitTestHelper;
+import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatRestTestCase;
 import org.olat.user.notification.UsersSubscriptionManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,9 +106,9 @@ public class NotificationsTest extends OlatRestTestCase {
 	
 	private static final Logger log = Tracing.createLoggerFor(NotificationsTest.class);
 
-	private static Identity id3;
-	private static Identity userSubscriberId;
-	private static Identity userAndForumSubscriberId;
+	private static IdentityWithLogin id3;
+	private static IdentityWithLogin userSubscriberId;
+	private static IdentityWithLogin userAndForumSubscriberId;
 	
 	private static Forum forum;
 	private static boolean setup = false;
@@ -130,34 +131,34 @@ public class NotificationsTest extends OlatRestTestCase {
 	@Before
 	public void setUp() throws Exception {
 		if(!setup) {
-			userSubscriberId = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-notifications-test-1");
-			userAndForumSubscriberId = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-notifications-test-2");
-			id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-notifications-test-3");
+			userSubscriberId = JunitTestHelper.createAndPersistRndUser("rest-notifications-test-1");
+			userAndForumSubscriberId = JunitTestHelper.createAndPersistRndUser("rest-notifications-test-2");
+			id3 = JunitTestHelper.createAndPersistRndUser("rest-notifications-test-3");
 			//for the news
-			organisationService.addMember(userSubscriberId, OrganisationRoles.usermanager);
-			organisationService.addMember(userAndForumSubscriberId, OrganisationRoles.usermanager);
+			organisationService.addMember(userSubscriberId.getIdentity(), OrganisationRoles.usermanager);
+			organisationService.addMember(userAndForumSubscriberId.getIdentity(), OrganisationRoles.usermanager);
 			
 			SubscriptionContext subContext = usersSubscriptionManager.getNewUsersSubscriptionContext();
 			PublisherData publisherData = usersSubscriptionManager.getNewUsersPublisherData();
-			if(!notificationManager.isSubscribed(userSubscriberId, subContext)) {
-				notificationManager.subscribe(userSubscriberId, subContext, publisherData);
+			if(!notificationManager.isSubscribed(userSubscriberId.getIdentity(), subContext)) {
+				notificationManager.subscribe(userSubscriberId.getIdentity(), subContext, publisherData);
 			}
-			if(!notificationManager.isSubscribed(userAndForumSubscriberId, subContext)) {
-				notificationManager.subscribe(userAndForumSubscriberId, subContext, publisherData);
+			if(!notificationManager.isSubscribed(userAndForumSubscriberId.getIdentity(), subContext)) {
+				notificationManager.subscribe(userAndForumSubscriberId.getIdentity(), subContext, publisherData);
 			}
 			
 			//create a forum
 			forum = forumManager.addAForum();
-			Message m1 = createMessage(userSubscriberId, forum);
+			Message m1 = createMessage(userSubscriberId.getIdentity(), forum);
 			Assert.assertNotNull(m1);
 			
 			//subscribe
 			SubscriptionContext forumSubContext = new SubscriptionContext("NotificationRestCourse", forum.getKey(), "2387");
 			PublisherData forumPdata = new PublisherData(OresHelper.calculateTypeName(Forum.class), forum.getKey().toString(), "");
-			if(!notificationManager.isSubscribed(userAndForumSubscriberId, forumSubContext)) {
-				notificationManager.subscribe(userAndForumSubscriberId, forumSubContext, forumPdata);
+			if(!notificationManager.isSubscribed(userAndForumSubscriberId.getIdentity(), forumSubContext)) {
+				notificationManager.subscribe(userAndForumSubscriberId.getIdentity(), forumSubContext, forumPdata);
 			}
-			notificationManager.markPublisherNews(forumSubContext, userSubscriberId, true);
+			notificationManager.markPublisherNews(forumSubContext, userSubscriberId.getIdentity(), true);
 
 			//generate one notification
 			JunitTestHelper.createAndPersistIdentityAsRndUser("rnd");
@@ -170,7 +171,7 @@ public class NotificationsTest extends OlatRestTestCase {
 	@Test
 	public void testGetNotifications() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(userSubscriberId.getName(), JunitTestHelper.PWD));
+		assertTrue(conn.login(userSubscriberId));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("notifications").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -195,7 +196,7 @@ public class NotificationsTest extends OlatRestTestCase {
 	@Test
 	public void testGetUserNotifications() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(userSubscriberId.getName(), JunitTestHelper.PWD));
+		assertTrue(conn.login(userSubscriberId));
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications").queryParam("type", "User");
 		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);
@@ -220,7 +221,7 @@ public class NotificationsTest extends OlatRestTestCase {
 	@Test
 	public void testGetUserForumNotifications() throws URISyntaxException, IOException {
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(userAndForumSubscriberId.getName(), JunitTestHelper.PWD));
+		assertTrue(conn.login(userAndForumSubscriberId));
 		
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(new Date());
@@ -241,7 +242,7 @@ public class NotificationsTest extends OlatRestTestCase {
 	@Test
 	public void testGetUserForumNotificationsByType() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(userAndForumSubscriberId.getName(), JunitTestHelper.PWD));
+		assertTrue(conn.login(userAndForumSubscriberId));
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications").queryParam("type", "Forum");
 		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);
@@ -266,7 +267,7 @@ public class NotificationsTest extends OlatRestTestCase {
 	@Test
 	public void testGetNoNotifications() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id3.getName(), JunitTestHelper.PWD));
+		assertTrue(conn.login(id3));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/notifications").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -283,8 +284,8 @@ public class NotificationsTest extends OlatRestTestCase {
 	@Test
 	public void testGetBusinessGroupForumNotifications() throws IOException, URISyntaxException {
 		//create a business group with forum notifications
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-not-4-");
-		BusinessGroup group = businessGroupService.createBusinessGroup(id, "Notifications 1", "REST forum notifications for group", null, null, false, false, null);
+		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("rest-not-4-");
+		BusinessGroup group = businessGroupService.createBusinessGroup(id.getIdentity(), "Notifications 1", "REST forum notifications for group", null, null, false, false, null);
 		CollaborationTools tools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(group);
 		tools.setToolEnabled(CollaborationTools.TOOL_FORUM, true);
 		Forum groupForum = tools.getForum();
@@ -295,14 +296,14 @@ public class NotificationsTest extends OlatRestTestCase {
 		SubscriptionContext forumSubContext = new SubscriptionContext("BusinessGroup", group.getKey(), "toolforum");
 		PublisherData forumPdata =
 				new PublisherData(OresHelper.calculateTypeName(Forum.class), groupForum.getKey().toString(), businessPath);
-		notificationManager.subscribe(id, forumSubContext, forumPdata);
-		Message message = createMessage(id, groupForum);
+		notificationManager.subscribe(id.getIdentity(), forumSubContext, forumPdata);
+		Message message = createMessage(id.getIdentity(), groupForum);
 		notificationManager.markPublisherNews(forumSubContext, null, true);
 		dbInstance.commitAndCloseSession();
 		
 		//get the notification
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id.getName(), JunitTestHelper.PWD));
+		assertTrue(conn.login(id));
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications");
 		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);
@@ -323,8 +324,8 @@ public class NotificationsTest extends OlatRestTestCase {
 	@Test
 	public void testGetBusinessGroupFolderNotifications() throws IOException, URISyntaxException {
 		//create a business group with folder notifications
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-not-5-");
-		BusinessGroup group = businessGroupService.createBusinessGroup(id, "Notifications 2", "REST folder notifications for group", null, null, false, false, null);
+		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("rest-not-5-");
+		BusinessGroup group = businessGroupService.createBusinessGroup(id.getIdentity(), "Notifications 2", "REST folder notifications for group", null, null, false, false, null);
 		CollaborationTools tools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(group);
 		tools.setToolEnabled(CollaborationTools.TOOL_FOLDER, true);
 		String relPath = tools.getFolderRelPath();
@@ -334,9 +335,9 @@ public class NotificationsTest extends OlatRestTestCase {
 		String businessPath = "[BusinessGroup:" + group.getKey() + "][toolfolder:0]";
 		SubscriptionContext folderSubContext = new SubscriptionContext("BusinessGroup", group.getKey(), "toolfolder");
 		PublisherData folderPdata = new PublisherData("FolderModule", relPath, businessPath);
-		notificationManager.subscribe(id, folderSubContext, folderPdata);
+		notificationManager.subscribe(id.getIdentity(), folderSubContext, folderPdata);
 		//add a file
-		VFSContainer folder = tools.getSecuredFolder(group, folderSubContext, id, true);
+		VFSContainer folder = tools.getSecuredFolder(group, folderSubContext, id.getIdentity(), true);
 		String filename = addFile(folder);
 		
 		//mark as published
@@ -345,7 +346,7 @@ public class NotificationsTest extends OlatRestTestCase {
 		
 		//get the notification
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id.getName(), JunitTestHelper.PWD));
+		assertTrue(conn.login(id));
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications");
 		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);
@@ -366,8 +367,8 @@ public class NotificationsTest extends OlatRestTestCase {
 	@Test
 	public void testGetCourseForumNotifications() throws IOException, URISyntaxException {
 		//create a course with a forum
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAuthor("rest-not-6-");
-		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(id);
+		IdentityWithLogin id = JunitTestHelper.createAndPersistRndAuthor("rest-not-6-");
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(id.getIdentity());
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.intermediateCommit();
 		//create the forum
@@ -379,7 +380,7 @@ public class NotificationsTest extends OlatRestTestCase {
 		forumNode.setNoAccessExplanation("You don't have access");
 		Forum courseForum = forumNode.loadOrCreateForum(course.getCourseEnvironment());
 		course.getEditorTreeModel().addCourseNode(forumNode, rootNode);
-		CourseFactory.publishCourse(course, RepositoryEntryStatusEnum.published, true, false, id, Locale.ENGLISH);
+		CourseFactory.publishCourse(course, RepositoryEntryStatusEnum.published, true, false, id.getIdentity(), Locale.ENGLISH);
 		dbInstance.intermediateCommit();
 		
 		//add message and publisher
@@ -388,14 +389,14 @@ public class NotificationsTest extends OlatRestTestCase {
 		SubscriptionContext forumSubContext = new SubscriptionContext("CourseModule", course.getResourceableId(), forumNode.getIdent());
 		PublisherData forumPdata =
 				new PublisherData(OresHelper.calculateTypeName(Forum.class), courseForum.getKey().toString(), businessPath);
-		notificationManager.subscribe(id, forumSubContext, forumPdata);
-		Message message = createMessage(id, courseForum);
+		notificationManager.subscribe(id.getIdentity(), forumSubContext, forumPdata);
+		Message message = createMessage(id.getIdentity(), courseForum);
 		notificationManager.markPublisherNews(forumSubContext, null, true);
 		dbInstance.commitAndCloseSession();
 		
 		//get the notification
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id.getName(), JunitTestHelper.PWD));
+		assertTrue(conn.login(id));
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications");
 		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);
@@ -417,8 +418,8 @@ public class NotificationsTest extends OlatRestTestCase {
 	@Test
 	public void testGetCourseFolderNotifications() throws IOException, URISyntaxException {
 		//create a course with a forum
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAuthor("rest-not-7-");
-		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(id);
+		IdentityWithLogin id = JunitTestHelper.createAndPersistRndAuthor("rest-not-7-");
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(id.getIdentity());
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.intermediateCommit();
 		//create the folder
@@ -431,7 +432,7 @@ public class NotificationsTest extends OlatRestTestCase {
 		String relPath = BCCourseNode.getFoldernodePathRelToFolderBase(course.getCourseEnvironment(), folderNode);
 		VFSContainer folder = BCCourseNode.getNodeFolderContainer(folderNode, course.getCourseEnvironment());
 		course.getEditorTreeModel().addCourseNode(folderNode, rootNode);
-		CourseFactory.publishCourse(course, RepositoryEntryStatusEnum.published, true, false, id, Locale.ENGLISH);
+		CourseFactory.publishCourse(course, RepositoryEntryStatusEnum.published, true, false, id.getIdentity(), Locale.ENGLISH);
 		dbInstance.intermediateCommit();
 		
 		//add message and publisher
@@ -439,14 +440,14 @@ public class NotificationsTest extends OlatRestTestCase {
 		String businessPath = "[RepositoryEntry:" + re.getKey() + "][CourseNode:" + folderNode.getIdent() + "]";
 		SubscriptionContext folderSubContext = new SubscriptionContext("CourseModule", course.getResourceableId(), folderNode.getIdent());
 		PublisherData folderPdata = new PublisherData("FolderModule", relPath, businessPath);
-		notificationManager.subscribe(id, folderSubContext, folderPdata);
+		notificationManager.subscribe(id.getIdentity(), folderSubContext, folderPdata);
 		String filename = addFile(folder);
 		notificationManager.markPublisherNews(folderSubContext, null, true);
 		dbInstance.commitAndCloseSession();
 
 		//get the notification
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id.getName(), JunitTestHelper.PWD));
+		assertTrue(conn.login(id));
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications");
 		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);

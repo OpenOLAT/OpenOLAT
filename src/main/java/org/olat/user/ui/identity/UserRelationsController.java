@@ -86,7 +86,6 @@ public class UserRelationsController extends FormBasicController {
 	
 	private final boolean canModify;
 	private final Identity editedIdentity;
-	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 
 	@Autowired
@@ -102,7 +101,7 @@ public class UserRelationsController extends FormBasicController {
 		this.canModify = canModify;
 		this.editedIdentity = editedIdentity;
 		
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 		
 		initForm(ureq);
@@ -127,10 +126,6 @@ public class UserRelationsController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RelationCols.managed, new ManagedCellRenderer()));
 		}
 		//add the table
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RelationCols.sourceUsername));
-		}
-		
 		int colIndex = USER_SOURCE_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
@@ -140,10 +135,6 @@ public class UserRelationsController extends FormBasicController {
 		}
 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RelationCols.role));
-		
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RelationCols.targetUsername));
-		}
 		
 		colIndex = USER_TARGET_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
@@ -161,7 +152,7 @@ public class UserRelationsController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 24, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		tableEl.setMultiSelect(true);
-		tableEl.setAndLoadPersistedPreferences(ureq, "relations-u-to-u");
+		tableEl.setAndLoadPersistedPreferences(ureq, "relations-u-to-u-v2");
 	}
 	
 	protected void loadModel() {

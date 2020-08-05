@@ -69,9 +69,7 @@ public class GroupAssessmentModel extends DefaultFlexiTableDataModel<AssessmentR
 
 	@Override
 	public Object getValueAt(AssessmentRow row, int col) {
-		if(col == Cols.username.ordinal()) {
-			return row.getIdentity().getName();
-		} else if(col == Cols.scoreVal.ordinal()) {
+		if(col == Cols.scoreVal.ordinal()) {
 			return row.getScore();
 		} else if(col == Cols.passedVal.ordinal()) {
 			return row.getPassed();
@@ -92,7 +90,6 @@ public class GroupAssessmentModel extends DefaultFlexiTableDataModel<AssessmentR
 	}
 
 	public enum Cols {
-		username("username"),
 		passedVal("table.header.passed"),
 		scoreVal("table.header.score"),
 		commentVal("table.header.comment"),

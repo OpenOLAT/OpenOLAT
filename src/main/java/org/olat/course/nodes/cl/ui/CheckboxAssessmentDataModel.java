@@ -64,9 +64,7 @@ public class CheckboxAssessmentDataModel extends DefaultFlexiTableDataModel<Chec
 		
 	@Override
 	public Object getValueAt(CheckboxAssessmentRow row, int col) {
-		if(col == Cols.username.ordinal()) {
-			return row.getIdentityName();
-		} else if(col == Cols.check.ordinal()) {
+		if(col == Cols.check.ordinal()) {
 			return row.getCheckedEl();
 		} else if(col == Cols.points.ordinal()) {
 			return row.getPointEl();
@@ -78,7 +76,6 @@ public class CheckboxAssessmentDataModel extends DefaultFlexiTableDataModel<Chec
 	}
 	
 	public enum Cols {
-		username("username"),
 		check("box.check"),
 		points("box.points");
 		

@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.UUID;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
@@ -46,7 +45,6 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
-import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
 import org.olat.core.util.resource.OresHelper;
@@ -58,6 +56,7 @@ import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.restapi.ForumVOes;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
+import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -86,12 +85,12 @@ public class MyForumsTest extends OlatRestTestCase {
 		Assert.assertNotNull(myCourseRe);
 		ICourse myCourse = CourseFactory.loadCourse(myCourseRe);
 		
-		final Identity id = JunitTestHelper.createAndPersistIdentityAsUser("my-" + UUID.randomUUID().toString());
+		final IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("my-");
 		dbInstance.commitAndCloseSession();
 		
 		//load my forums
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id.getName(), "A6B7C8"));
+		assertTrue(conn.login(id));
 		
 		//subscribed to nothing
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id.getKey().toString()).path("forums").build();
@@ -104,7 +103,7 @@ public class MyForumsTest extends OlatRestTestCase {
 		Assert.assertEquals(0, forums.getForums().length);
 		
 		//subscribe to the forum
-		IdentityEnvironment ienv = new IdentityEnvironment(id, Roles.userRoles());
+		IdentityEnvironment ienv = new IdentityEnvironment(id.getIdentity(), Roles.userRoles());
 		new CourseTreeVisitor(myCourse, ienv).visit(node -> {
 			if(node instanceof FOCourseNode) {
 				FOCourseNode forumNode = (FOCourseNode)node;	
@@ -112,7 +111,7 @@ public class MyForumsTest extends OlatRestTestCase {
 				String businessPath = "[RepositoryEntry:" + myCourseRe.getKey() + "][CourseNode:" + forumNode.getIdent() + "]";
 				SubscriptionContext forumSubContext = new SubscriptionContext("CourseModule", myCourse.getResourceableId(), forumNode.getIdent());
 				PublisherData forumPdata = new PublisherData(OresHelper.calculateTypeName(Forum.class), forum.getKey().toString(), businessPath);
-				notificationsManager.subscribe(id, forumSubContext, forumPdata);
+				notificationsManager.subscribe(id.getIdentity(), forumSubContext, forumPdata);
 			}
 		});
 		dbInstance.commitAndCloseSession();

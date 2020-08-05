@@ -65,6 +65,7 @@ import org.olat.login.oauth.OAuthSPI;
 import org.olat.login.validation.PasswordValidationRulesFactory;
 import org.olat.login.validation.SyntaxValidator;
 import org.olat.login.validation.UsernameValidationRulesFactory;
+import org.olat.login.validation.ValidationResult;
 import org.olat.registration.RegistrationManager;
 import org.olat.registration.TemporaryKey;
 import org.olat.shibboleth.ShibbolethDispatcher;
@@ -106,6 +107,29 @@ public class OLATAuthManager implements AuthenticationSPI {
 	@Autowired
 	private UsernameValidationRulesFactory usernameRulesFactory;
 	
+	@Override
+	public List<String> getProviderNames() {
+		return Collections.singletonList("OLAT");
+	}
+
+	@Override
+	public boolean canChangeAuthenticationUsername(String provider) {
+		return "OLAT".equals(provider);
+	}
+
+	@Override
+	public boolean changeAuthenticationUsername(Authentication authentication, String newUsername) {
+		authentication.setAuthusername(newUsername);
+		authentication = authenticationDao.updateAuthentication(authentication);
+		webDAVAuthManager.removeDigestAuthentications(authentication.getIdentity());
+		return true;
+	}
+
+	@Override
+	public ValidationResult validateAuthenticationUsername(String name, Identity identity) {
+		return  createUsernameSytaxValidator().validate(name, identity);
+	}
+
 	/**
 	 * 
 	 * @param identity
@@ -114,6 +138,10 @@ public class OLATAuthManager implements AuthenticationSPI {
 	 * @return
 	 */
 	@Override
+	public Identity authenticate(String login, String password) {
+		return authenticate(null, login, password);
+	}
+	
 	public Identity authenticate(Identity ident, String login, String password) {
 		Authentication authentication;	
 		if (ident == null) {
@@ -216,6 +244,24 @@ public class OLATAuthManager implements AuthenticationSPI {
 		return new SyntaxValidator(passwordRulesFactory.createRules(), true);
 	}
 	
+	public String getAuthenticationUsername(Identity identity) {
+		List<Authentication> authentications = securityManager.getAuthentications(identity);
+		if(ldapLoginModule.isLDAPEnabled()) {
+			for(Authentication authentication:authentications) {
+				if(LDAPAuthenticationController.PROVIDER_LDAP.equals(authentication.getProvider())) {
+					return authentication.getAuthusername();
+				}
+			}
+		}
+		
+		for(Authentication authentication:authentications) {
+			if("OLAT".equals(authentication.getProvider())) {
+				return authentication.getAuthusername();
+			}
+		}
+		return null;
+	}
+	
 	/**
 	 * Change the password of an identity. if the given identity is a LDAP-User,
 	 * the pw-change is propagated to LDAP (according to config) NOTE: caller of
@@ -303,7 +349,7 @@ public class OLATAuthManager implements AuthenticationSPI {
 	public boolean changeOlatPassword(Identity doer, Identity identity, String username, String newPwd) {
 		Authentication auth = securityManager.findAuthentication(identity, "OLAT");
 		if (auth == null) { // create new authentication for provider OLAT
-			securityManager.createAndPersistAuthentication(identity, "OLAT", identity.getName(), newPwd, loginModule.getDefaultHashAlgorithm());
+			securityManager.createAndPersistAuthentication(identity, "OLAT", username, newPwd, loginModule.getDefaultHashAlgorithm());
 			log.info(Tracing.M_AUDIT, "{} created new authenticatin for identity: {}", doer.getKey(), identity.getKey());
 		} else {
 			securityManager.updateCredentials(auth, newPwd, loginModule.getDefaultHashAlgorithm());
@@ -311,7 +357,7 @@ public class OLATAuthManager implements AuthenticationSPI {
 		}
 		
 		if(StringHelper.containsNonWhitespace(username) && webDAVAuthManager != null) {
-			webDAVAuthManager.changeDigestPassword(doer, identity, newPwd);
+			webDAVAuthManager.changeDigestPassword(doer, identity, username, newPwd);
 		}
 		return true;
 	}
@@ -336,7 +382,7 @@ public class OLATAuthManager implements AuthenticationSPI {
 		}
 		
 		if(StringHelper.containsNonWhitespace(username) && webDAVAuthManager != null) {
-			webDAVAuthManager.changeDigestPassword(doer, identity, newPwd);
+			webDAVAuthManager.changeDigestPassword(doer, identity, username, newPwd);
 		}
 		return true;
 	}
@@ -355,7 +401,8 @@ public class OLATAuthManager implements AuthenticationSPI {
 	 * @return
 	 */
 	public boolean changePasswordAsAdmin(Identity identity, String newPwd) {
-		Identity adminUserIdentity = securityManager.findIdentityByName("administrator");
+		Authentication adminAuthIdentity = securityManager.findAuthenticationByAuthusername("administrator", "OLAT");
+		Identity adminUserIdentity = adminAuthIdentity.getIdentity();
 		return changePassword(adminUserIdentity, identity, newPwd);
 	}
 	

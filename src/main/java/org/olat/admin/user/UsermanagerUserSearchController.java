@@ -79,7 +79,6 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	private final boolean showTableSearch;
 	private final boolean showStatusFilters;
 	private final boolean showOrganisationMove;
-	private final boolean isAdministrativeUser;
 	private List<Organisation> manageableOrganisations;
 	private SearchIdentityParams identityQueryParams;
 	
@@ -109,8 +108,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		showOrganisationMove = false;
 		showTableSearch = true;
 		
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
-
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		searchFormCtrl = new UsermanagerUserSearchForm(ureq, wControl, isAdministrativeUser, manageableOrganisations);
 		listenTo(searchFormCtrl);
 		
@@ -145,7 +143,6 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		this.showOrganisationMove = showOrganisationMove;
 
 		identityQueryParams = predefinedQuery;
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		
 		tableCtr = new UserSearchTableController(ureq, getWindowControl(), stackedPanel,
 				UserSearchTableSettings.withVCard(showEmailButton, showOrganisationMove, showDelete, showStatusFilters, true));
@@ -175,8 +172,6 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		showTableSearch = false;
 		showOrganisationMove = false;
 		
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
-
 		tableCtr = new UserSearchTableController(ureq, getWindowControl(), stackedPanel,
 				UserSearchTableSettings.withVCard(showEmailButton, false, showDelete, true, true));
 		listenTo(tableCtr);

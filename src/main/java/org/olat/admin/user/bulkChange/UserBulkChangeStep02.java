@@ -96,7 +96,6 @@ class UserBulkChangeStep02 extends BasicStep {
 	
 	private final class UserBulkChangeStepForm02 extends StepFormBasicController {
 
-		private final boolean isAdministrativeUser;
 		private final List<UserPropertyHandler> userPropertyHandlers;
 		
 		@Autowired
@@ -119,7 +118,7 @@ class UserBulkChangeStep02 extends BasicStep {
 			Translator pt4 = Util.createPackageTranslator(SystemRolesAndRightsController.class, getLocale(), pt3);
 			setTranslator(pt4);
 			flc.setTranslator(pt4);
-			isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+			boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 			userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 			
 			initForm(ureq);
@@ -160,7 +159,6 @@ class UserBulkChangeStep02 extends BasicStep {
 			FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 			// fixed fields:
 			int colPos = 0;
-			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.user.login", colPos++));
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("form.name.pwd", colPos++));
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "form.name.language", colPos++, false, null, FlexiColumnModel.ALIGNMENT_LEFT, textRenderer));
 			for (int j = 0; j < userPropertyHandlers.size(); j++) {
@@ -206,9 +204,6 @@ class UserBulkChangeStep02 extends BasicStep {
 			// loop over users to be edited:
 			for (Identity identity : selectedIdentities) {
 				List<String> userDataArray = new ArrayList<>();
-
-				// add column for login
-				userDataArray.add(identity.getName());
 				// add columns for password
 				if (attributeChangeMap.containsKey(UserBulkChangeManager.CRED_IDENTIFYER)) {
 					userDataArray.add(attributeChangeMap.get(UserBulkChangeManager.CRED_IDENTIFYER));

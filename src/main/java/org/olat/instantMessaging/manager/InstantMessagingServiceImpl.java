@@ -294,7 +294,7 @@ public class InstantMessagingServiceImpl implements InstantMessagingService, Del
 		} else {
 			status = Presence.unavailable.name();
 		}
-		return new Buddy(identity.getKey(), identity.getName(), fullname, false, status);
+		return new Buddy(identity.getKey(), fullname, false, status);
 	}
 
 	@Override
@@ -396,7 +396,7 @@ public class InstantMessagingServiceImpl implements InstantMessagingService, Del
 			}
 			boolean vip = GroupRoles.coach.name().equals(member.getRole());
 			String name = userManager.getUserDisplayName(member);
-			group.addBuddy(new Buddy(member.getIdentityKey(), member.getUsername(), name, false, vip, status));	
+			group.addBuddy(new Buddy(member.getIdentityKey(), name, false, vip, status));	
 		}
 	}
 
@@ -408,7 +408,7 @@ public class InstantMessagingServiceImpl implements InstantMessagingService, Del
 			for(RosterEntryView entry:roster) {
 				String name = entry.isAnonym() ? entry.getNickName() : entry.getFullName();
 				String status = getOnlineStatus(entry.getIdentityKey());
-				buddies.add(new Buddy(entry.getIdentityKey(), entry.getUsername(), name, entry.isAnonym(), entry.isVip(), status));
+				buddies.add(new Buddy(entry.getIdentityKey(), name, entry.isAnonym(), entry.isVip(), status));
 			}
 		}
 		return buddies;

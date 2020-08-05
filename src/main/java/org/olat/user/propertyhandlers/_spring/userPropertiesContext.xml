@@ -15,7 +15,7 @@
 		<property name="maxNumOfInterests" value="${user.interests.max.number:5}" />
 		<property name="userPropertyHandlers">
 			<list>
-				<ref bean="userPropertyUserName" />
+				<ref bean="userPropertyUserNickName" />
 				<ref bean="userPropertyFirstName" />
 				<ref bean="userPropertyLastName" />
 				<ref bean="userPropertyEmail" />
@@ -102,7 +102,7 @@
 						<property name="description" value="Users Profile-Form (Home->Settings)" />
 						<property name="propertyHandlers">
 							<list>
-								<ref bean="userPropertyUserName" />
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
@@ -132,7 +132,7 @@
 						</property>
 						<property name="mandatoryProperties">
 							<set>
-								<ref bean="userPropertyUserName" />
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
@@ -140,7 +140,7 @@
 						</property>
 						<property name="userViewReadOnlyProperties">
 							<set>
-								<ref bean="userPropertyUserName" />
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyInstitutionalName" />
@@ -205,6 +205,7 @@
 						<!--  the login field is always available, this is
 						defined within the UserSearchform.java -->
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
@@ -216,6 +217,7 @@
 						</property>
 						<property name="adminViewOnlyProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyEmail" />
 								<ref bean="userPropertyInstitutionalName" />
 								<ref bean="userPropertyInstitutionalUserIdentifier" />
@@ -232,6 +234,7 @@
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
@@ -242,6 +245,7 @@
 						</property>
 						<property name="adminViewOnlyProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyEmail" />
 								<ref bean="userPropertyInstitutionalName" />
 								<ref bean="userPropertyInstitutionalUserIdentifier" />
@@ -255,7 +259,7 @@
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="propertyHandlers">
 							<list>
-								<ref bean="userPropertyUserName" />
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
@@ -266,13 +270,14 @@
 						</property>
 						<property name="mandatoryProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyFirstName" />
 							</set>
 						</property>
 						<property name="adminViewOnlyProperties">
 							<set>
-								<ref bean="userPropertyUserName" />
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyEmail" />
 								<ref bean="userPropertyInstitutionalName" />
 								<ref bean="userPropertyInstitutionalUserIdentifier" />
@@ -286,6 +291,7 @@
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
@@ -296,6 +302,7 @@
 						</property>
 						<property name="adminViewOnlyProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyEmail" />
 								<ref bean="userPropertyInstitutionalName" />
 								<ref bean="userPropertyInstitutionalUserIdentifier" />
@@ -304,6 +311,7 @@
 						</property>
 						<property name="mandatoryProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
@@ -316,15 +324,19 @@
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 							</list>
 						</property>
 						<property name="adminViewOnlyProperties">
-							<set></set>
+							<set>
+								<ref bean="userPropertyUserNickName" />
+							</set>
 						</property>
 						<property name="mandatoryProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 							</set>
@@ -337,6 +349,7 @@
 						<property name="description" value="List of users in roll call" />
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
@@ -347,6 +360,7 @@
 						</property>
 						<property name="mandatoryProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
@@ -360,15 +374,19 @@
 						<property name="description" value="List of graders of the grading tool" />
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 							</list>
 						</property>
 						<property name="adminViewOnlyProperties">
-							<set></set>
+							<set>
+								<ref bean="userPropertyUserNickName" />
+							</set>
 						</property>
 						<property name="mandatoryProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 							</set>
@@ -381,15 +399,19 @@
 						<property name="description" value="List of assessed users of the grading tool" />
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 							</list>
 						</property>
 						<property name="adminViewOnlyProperties">
-							<set></set>
+							<set>
+								<ref bean="userPropertyUserNickName" />
+							</set>
 						</property>
 						<property name="mandatoryProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 							</set>
@@ -402,16 +424,20 @@
 						<property name="description" value="List of users in competence management" />
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
 							</list>
 						</property>
 						<property name="adminViewOnlyProperties">
-							<set></set>
+							<set>
+								<ref bean="userPropertyUserNickName" />
+							</set>
 						</property>
 						<property name="mandatoryProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
@@ -425,16 +451,20 @@
 						<property name="description" value="List of users in lecture blocks overview" />
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
 							</list>
 						</property>
 						<property name="adminViewOnlyProperties">
-							<set></set>
+							<set>
+								<ref bean="userPropertyUserNickName" />
+							</set>
 						</property>
 						<property name="mandatoryProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
@@ -448,15 +478,19 @@
 						<property name="description" value="List of users in the QTI 2.1 correction workflow" />
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 							</list>
 						</property>
 						<property name="adminViewOnlyProperties">
-							<set></set>
+							<set>
+								<ref bean="userPropertyUserNickName" />
+							</set>
 						</property>
 						<property name="mandatoryProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 							</set>
@@ -469,6 +503,7 @@
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyEmail" />
 								<ref bean="userPropertyInstitutionalName" />
 								<ref bean="userPropertyInstitutionalUserIdentifier" />
@@ -477,6 +512,7 @@
 						</property>
 						<property name="adminViewOnlyProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyEmail" />
 								<ref bean="userPropertyInstitutionalUserIdentifier" />
 								<ref bean="userPropertyInstitutionalEmail" />
@@ -490,6 +526,7 @@
 						<property name="description" value="Booking list" />
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyInstitutionalUserIdentifier" />
@@ -497,12 +534,14 @@
 						</property>
 						<property name="mandatoryProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyFirstName" />
 							</set>
 						</property>
 						<property name="adminViewOnlyProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyInstitutionalUserIdentifier" />
 							</set>
 						</property>
@@ -514,6 +553,7 @@
 						<property name="description" value="Table for check lists" />
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyInstitutionalUserIdentifier" />
@@ -521,12 +561,14 @@
 						</property>
 						<property name="mandatoryProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 							</set>
 						</property>
 						<property name="adminViewOnlyProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyInstitutionalUserIdentifier" />
 							</set>
 						</property>
@@ -538,6 +580,7 @@
 						<property name="description" value="Assessment table in the group task." />
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyInstitutionalUserIdentifier" />
@@ -545,12 +588,14 @@
 						</property>
 						<property name="mandatoryProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyFirstName" />
 							</set>
 						</property>
 						<property name="adminViewOnlyProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyInstitutionalUserIdentifier" />
 							</set>
 						</property>
@@ -561,16 +606,20 @@
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
 							</list>
 						</property>
 						<property name="adminViewOnlyProperties">
-							<set></set>
+							<set>
+								<ref bean="userPropertyUserNickName" />
+							</set>
 						</property>
 						<property name="mandatoryProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
@@ -584,19 +633,21 @@
 						<property name="description" value="Print view in the members course element and group member tool" />
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
-
 							</list>
 						</property>
 						<property name="adminViewOnlyProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyEmail" />
 							</set>
 						</property>
 						<property name="mandatoryProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
@@ -624,6 +675,7 @@
 						<property name="description" value="List view and Excel export in the members course element and group member tool" />
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
@@ -652,6 +704,7 @@
 						</property>
 						<property name="mandatoryProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
@@ -659,6 +712,7 @@
 						</property>
 						<property name="adminViewOnlyProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyEmail" />
 								<ref bean="userPropertyBirthDay" />
 								<ref bean="userPropertyGender" />
@@ -693,7 +747,7 @@
 							<list>
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
-								<ref bean="userPropertyUserName" />
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyInstitutionalUserIdentifier" />
 							</list>
 						</property>
@@ -740,6 +794,7 @@
 						</property>
 						<property name="mandatoryProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
@@ -834,6 +889,7 @@
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
@@ -862,6 +918,7 @@
 						</property>
 						<property name="mandatoryProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
@@ -869,6 +926,7 @@
 						</property>
 						<property name="adminViewOnlyProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyEmail" />
 								<ref bean="userPropertyBirthDay" />
 								<ref bean="userPropertyGender" />
@@ -899,6 +957,7 @@
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
@@ -927,6 +986,7 @@
 						</property>
 						<property name="mandatoryProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
@@ -934,6 +994,7 @@
 						</property>
 						<property name="adminViewOnlyProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyEmail" />
 								<ref bean="userPropertyInstitutionalUserIdentifier" />
 								<ref bean="userPropertyInstitutionalEmail" />
@@ -946,6 +1007,7 @@
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
@@ -974,6 +1036,7 @@
 						</property>
 						<property name="mandatoryProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
@@ -981,6 +1044,7 @@
 						</property>
 						<property name="adminViewOnlyProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyEmail" />
 								<ref bean="userPropertyBirthDay" />
 								<ref bean="userPropertyGender" />
@@ -1016,6 +1080,7 @@
 						<property name="description" value="Visiting card" />
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
@@ -1042,6 +1107,11 @@
 								<ref bean="userPropertyStudySubject" />
 							</list>
 						</property>
+						<property name="adminViewOnlyProperties">
+							<set>
+								<ref bean="userPropertyUserNickName" />
+							</set>
+						</property>
 					</bean>
 				</entry>
 
@@ -1050,6 +1120,7 @@
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
@@ -1059,6 +1130,11 @@
 								<ref bean="userPropertyOrgUnit" />
 								<ref bean="userPropertyStudySubject" />
 							</list>
+						</property>
+						<property name="adminViewOnlyProperties">
+							<set>
+								<ref bean="userPropertyUserNickName" />
+							</set>
 						</property>
 					</bean>
 				</entry>
@@ -1095,28 +1171,13 @@
 						</property>
 					</bean>
 				</entry>
-
-				<entry key="org.olat.course.assessment.EfficiencyStatementController">
-					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
-					<property name="description" value="Efficiency-Statements" />
-						<property name="propertyHandlers">
-							<list>
-								<ref bean="userPropertyFirstName" />
-								<ref bean="userPropertyLastName" />
-								<ref bean="userPropertyEmail" />
-								<ref bean="userPropertyInstitutionalName" />
-								<ref bean="userPropertyInstitutionalUserIdentifier" />
-								<ref bean="userPropertyInstitutionalEmail" />
-							</list>
-						</property>
-					</bean>
-				</entry>
 				
 				<entry key="org.olat.modules.appointments.ui.UserRestrictionTableModel">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 					<property name="description" value="Participation restrictions in appointments" />
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
@@ -1127,8 +1188,14 @@
 						</property>
 						<property name="mandatoryProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyFirstName" />
+							</set>
+						</property>
+						<property name="adminViewOnlyProperties">
+							<set>
+								<ref bean="userPropertyUserNickName" />
 							</set>
 						</property>
 					</bean>
@@ -1136,9 +1203,10 @@
 				
 				<entry key="org.olat.user.ui.identity.UserRelationsController">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
-					<property name="description" value="Relations user to user" />
+						<property name="description" value="Relations user to user" />
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
@@ -1146,6 +1214,11 @@
 								<ref bean="userPropertyInstitutionalUserIdentifier" />
 								<ref bean="userPropertyInstitutionalEmail" />
 							</list>
+						</property>
+						<property name="adminViewOnlyProperties">
+							<set>
+								<ref bean="userPropertyUserNickName" />
+							</set>
 						</property>
 					</bean>
 				</entry>
@@ -1172,6 +1245,7 @@
 						<property name="description" value="List of users in the check list course building block" />
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyInstitutionalUserIdentifier" />
@@ -1185,6 +1259,7 @@
 						</property>
 						<property name="mandatoryProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyInstitutionalUserIdentifier" />
@@ -1192,6 +1267,7 @@
 						</property>
 						<property name="adminViewOnlyProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyInstitutionalUserIdentifier" />
 							</set>
 						</property>
@@ -1231,6 +1307,7 @@
 						</property>
 						<property name="mandatoryProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
@@ -1244,14 +1321,21 @@
 						<property name="description" value="File dialog" />
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyFirstName" />
 							</list>
 						</property>
 						<property name="mandatoryProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyFirstName" />
+							</set>
+						</property>
+						<property name="adminViewOnlyProperties">
+							<set>
+								<ref bean="userPropertyUserNickName" />
 							</set>
 						</property>
 					</bean>
@@ -1262,14 +1346,21 @@
 						<property name="description" value="Assessment tool" />
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyFirstName" />
 							</list>
 						</property>
 						<property name="mandatoryProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyFirstName" />
+							</set>
+						</property>
+						<property name="adminViewOnlyProperties">
+							<set>
+								<ref bean="userPropertyUserNickName" />
 							</set>
 						</property>
 					</bean>
@@ -1280,14 +1371,21 @@
 						<property name="description" value="Learning path of coaches" />
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyFirstName" />
 							</list>
 						</property>
 						<property name="mandatoryProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyFirstName" />
+							</set>
+						</property>
+						<property name="adminViewOnlyProperties">
+							<set>
+								<ref bean="userPropertyUserNickName" />
 							</set>
 						</property>
 					</bean>
@@ -1298,14 +1396,21 @@
 						<property name="description" value="Learning progress in the curriculum browser" />
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyFirstName" />
 							</list>
 						</property>
 						<property name="mandatoryProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyFirstName" />
+							</set>
+						</property>
+						<property name="adminViewOnlyProperties">
+							<set>
+								<ref bean="userPropertyUserNickName" />
 							</set>
 						</property>
 					</bean>
@@ -1316,14 +1421,21 @@
 						<property name="description" value="Coaching tool" />
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyFirstName" />
 							</list>
 						</property>
 						<property name="mandatoryProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyFirstName" />
+							</set>
+						</property>
+						<property name="adminViewOnlyProperties">
+							<set>
+								<ref bean="userPropertyUserNickName" />
 							</set>
 						</property>
 					</bean>
@@ -1334,14 +1446,21 @@
 						<property name="description" value="Small preview in assessment tool" />
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyFirstName" />
 							</list>
 						</property>
 						<property name="mandatoryProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
+							</set>
+						</property>
+						<property name="adminViewOnlyProperties">
+							<set>
+								<ref bean="userPropertyUserNickName" />
 							</set>
 						</property>
 					</bean>
@@ -1400,6 +1519,7 @@
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
@@ -1451,6 +1571,7 @@
 									only used by user admin to trigger user password change workflow at
 									login, not visible for users when logged in
 								-->
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyEmailDisabled" />
 							</set>
 						</property>
@@ -1557,6 +1678,7 @@
 						<property name="description" value="Properties used in the user search of the coaching tool." />
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
@@ -1571,6 +1693,11 @@
 								<ref bean="userPropertyStudySubject" />
 							</list>
 						</property>
+						<property name="adminViewOnlyProperties">
+							<set>
+								<ref bean="userPropertyUserNickName" />
+							</set>
+						</property>
 					</bean>
 				</entry>
 
@@ -1579,6 +1706,7 @@
 						<property name="description" value="Properties used in the user search for lectures of the coaching tool." />
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
@@ -1590,8 +1718,14 @@
 						</property>
 						<property name="mandatoryProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
+							</set>
+						</property>
+						<property name="adminViewOnlyProperties">
+							<set>
+								<ref bean="userPropertyUserNickName" />
 							</set>
 						</property>
 					</bean>
@@ -1602,6 +1736,7 @@
 						<property name="description" value="Properties used in the portfolio v2.0." />
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 							</list>
@@ -1613,7 +1748,9 @@
 							</set>
 						</property>
 						<property name="adminViewOnlyProperties">
-							<set></set>
+							<set>
+								<ref bean="userPropertyUserNickName" />
+							</set>
 						</property>
 					</bean>
 				</entry>
@@ -1623,6 +1760,7 @@
 						<property name="description" value="Properties used in the quality management" />
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
@@ -1630,13 +1768,16 @@
 						</property>
 						<property name="mandatoryProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
 							</set>
 						</property>
 						<property name="adminViewOnlyProperties">
-							<set></set>
+							<set>
+								<ref bean="userPropertyUserNickName" />
+							</set>
 						</property>
 					</bean>
 				</entry>

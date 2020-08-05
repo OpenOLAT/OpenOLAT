@@ -102,7 +102,6 @@ public class IdentitiesLecturesRollCallController extends FormBasicController {
 	
 	private int counter = 0;
 	private final Formatter format;
-	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final List<Identity> participants;
 	private List<LectureBlock> lectureBlocks;
@@ -144,7 +143,7 @@ public class IdentitiesLecturesRollCallController extends FormBasicController {
 		rollCallSecCallback = new RollCallSecurityCallbackImpl(false, secCallback.viewAs() == LectureRoles.teacher, null, lectureModule);
 		
 		Collections.sort(this.lectureBlocks, new LectureBlockStartDateComparator());
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_USAGE_IDENTIFIER, isAdministrativeUser);
 		
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
@@ -186,10 +185,6 @@ public class IdentitiesLecturesRollCallController extends FormBasicController {
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentitiesLecturesCols.username, "select"));
-		}
-		
 		int colIndex = USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);

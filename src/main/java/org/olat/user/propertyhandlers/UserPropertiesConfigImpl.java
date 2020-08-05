@@ -51,6 +51,7 @@ public class UserPropertiesConfigImpl implements UserPropertiesConfig {
 	
 	private List<UserPropertyHandler> userPropertyHandlers;
 	private Map<String, UserPropertyUsageContext> userPropertyUsageContexts;
+	private Map<String, UserPropertyUsageContext> defaultUserPropertyUsageContexts;
 
 	private int maxNumOfInterests;
 
@@ -73,11 +74,20 @@ public class UserPropertiesConfigImpl implements UserPropertiesConfig {
 	 */
 	public void setUserPropertyUsageContexts(Map<String,UserPropertyUsageContext> userPropertyUsageContexts) {
 		this.userPropertyUsageContexts = userPropertyUsageContexts;
+		
+		defaultUserPropertyUsageContexts = new HashMap<>();
+		for(Map.Entry<String,UserPropertyUsageContext> entry:userPropertyUsageContexts.entrySet()) {
+			defaultUserPropertyUsageContexts.put(entry.getKey(), entry.getValue().copy());
+		}
 	}
 
 	@Override
-	public Map<String,UserPropertyUsageContext> getUserPropertyUsageContexts(){
+	public Map<String,UserPropertyUsageContext> getUserPropertyUsageContexts() {
 		return userPropertyUsageContexts;
+	}
+	
+	public Map<String,UserPropertyUsageContext> getDefaultUserPropertyUsageContexts() {
+		return defaultUserPropertyUsageContexts;
 	}
 
 	/**
@@ -97,9 +107,9 @@ public class UserPropertiesConfigImpl implements UserPropertiesConfig {
 
 	@Override
 	public UserPropertyHandler getPropertyHandler(String handlerName) {
-		UserPropertyHandler handler =  userPropertyNameLookupMap.get(handlerName);
+		UserPropertyHandler handler = userPropertyNameLookupMap.get(handlerName);
 		if (handler == null && log.isDebugEnabled()) {
-			log.debug("UserPropertyHander for handlerName::" + handlerName + " not found, check your configuration.");
+			log.debug("UserPropertyHander for handlerName::{} not found, check your configuration.", handlerName);
 		}
 		return handler;
 	}
@@ -160,9 +170,7 @@ public class UserPropertiesConfigImpl implements UserPropertiesConfig {
 		UserPropertyUsageContext currentUsageConfig = userPropertyUsageContexts.get(usageIdentifyer);
 		if (currentUsageConfig == null) {
 			currentUsageConfig = userPropertyUsageContexts.get("default");
-			log.warn(
-					"Could not find user property usage configuration for usageIdentifyer::" + usageIdentifyer
-							+ ", please check yout olat_userconfig.xml file. Using default configuration instead.");
+			log.warn("Could not find user property usage configuration for usageIdentifyer::{}, please check yout olat_userconfig.xml file. Using default configuration instead.", usageIdentifyer);
 			if (currentUsageConfig == null) {
 				throw new OLATRuntimeException("Missing default user property usage configuration in olat_userconfig.xml", null);
 			}

@@ -51,9 +51,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class CertificatesSelectionOverviewController extends StepFormBasicController {
-	
-	private CertificatesSelectionDataModel tableModel;
-	
+
 	private final boolean hasAssessableNodes;
 	private final boolean isAdministrativeUser;
 	
@@ -79,10 +77,7 @@ public class CertificatesSelectionOverviewController extends StepFormBasicContro
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();;
 		int colPos = 0;
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.name", CertificatesSelectionDataModel.USERNAME_COL));
-		}
-		
+
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(AssessedIdentitiesTableDataModel.usageIdentifyer, isAdministrativeUser);
 		List<UserPropertyHandler> resultingPropertyHandlers = new ArrayList<>();
 		// followed by the users fields
@@ -100,7 +95,7 @@ public class CertificatesSelectionOverviewController extends StepFormBasicContro
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.score", CertificatesSelectionDataModel.SCORE_COL));
 		}
 		
-		tableModel = new CertificatesSelectionDataModel(columnsModel, resultingPropertyHandlers);
+		CertificatesSelectionDataModel tableModel = new CertificatesSelectionDataModel(columnsModel, resultingPropertyHandlers);
 		@SuppressWarnings("unchecked")
 		List<CertificateInfos> selectedInfos =  (List<CertificateInfos>)getFromRunContext("infos");
 		tableModel.setObjects(selectedInfos);

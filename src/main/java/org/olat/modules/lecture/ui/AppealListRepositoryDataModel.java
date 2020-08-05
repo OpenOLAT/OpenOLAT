@@ -101,7 +101,6 @@ implements SortableFlexiTableDataModel<AppealRollCallRow>, FilterableFlexiTableM
 	public Object getValueAt(AppealRollCallRow row, int col) {
 		if(col < AppealListRepositoryController.USER_PROPS_OFFSET) {
 			switch(AppealCols.values()[col]) {
-				case username: return row.getIdentityName();
 				case lectureBlockDate: return row.getRollCall().getLectureBlock().getStartDate();
 				case lectureBlockName: return row.getRollCall().getLectureBlock().getTitle();
 				case coach: return row.getCoach();
@@ -203,7 +202,6 @@ implements SortableFlexiTableDataModel<AppealRollCallRow>, FilterableFlexiTableM
 	}
 	
 	public enum AppealCols implements FlexiSortableColumnDef {
-		username("table.header.username"),
 		lectureBlockDate("table.header.date"),
 		lectureBlockName("table.header.lecture.block"),
 		coach("table.header.teachers"),

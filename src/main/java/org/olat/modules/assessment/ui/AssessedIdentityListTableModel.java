@@ -112,7 +112,6 @@ public class AssessedIdentityListTableModel extends DefaultFlexiTableDataModel<A
 	public Object getValueAt(AssessedIdentityElementRow row, int col) {
 		if(col >= 0 && col < IdentityCourseElementCols.values().length) {
 			switch(IdentityCourseElementCols.values()[col]) {
-				case username: return row.getIdentityName();
 				case attempts: return row.getAttempts();
 				case score: return row.getScore();
 				case min: {
@@ -152,7 +151,6 @@ public class AssessedIdentityListTableModel extends DefaultFlexiTableDataModel<A
 	}
 	
 	public enum IdentityCourseElementCols implements FlexiSortableColumnDef {
-		username("table.header.name"),
 		attempts("table.header.attempts"),
 		score("table.header.score"),
 		min("table.header.min"),

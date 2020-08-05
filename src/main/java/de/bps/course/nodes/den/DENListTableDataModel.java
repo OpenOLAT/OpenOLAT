@@ -87,16 +87,6 @@ public class DENListTableDataModel extends DefaultTableDataModel<KalendarEvent> 
 					}
 				}
 				return names.toString();
-			case 6:
-				//usernames
-				StringBuilder usernames = new StringBuilder();
-				if(event.getParticipants() != null && event.getParticipants().length > 0) {
-					for( String participant : event.getParticipants()) {
-						if(usernames.length() > 0) usernames.append("<br/>");
-						usernames.append(participant);
-					}
-				}
-				return usernames.toString();
 			case 7: return Boolean.TRUE;
 			default:	return "error";
 		}

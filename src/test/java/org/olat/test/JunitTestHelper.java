@@ -35,6 +35,8 @@ import java.util.Locale;
 import java.util.Random;
 import java.util.UUID;
 
+import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.OrganisationRoles;
@@ -45,7 +47,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.User;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
@@ -127,6 +128,13 @@ public class JunitTestHelper {
 		return createAndPersistIdentityAsUser(login);
 	}
 	
+	public static final IdentityWithLogin createAndPersistRndUser(String prefixLogin) {
+		String login = getRandomizedLoginName(prefixLogin);
+		String password = PWD;
+		Identity identity = createAndPersistIdentityAsUser(login, password);
+		return new IdentityWithLogin(identity, login, password);
+	}
+	
 	private static final String getRandomizedLoginName(String prefixLogin) {
 		if(StringHelper.containsNonWhitespace(prefixLogin)) {
 			if(!prefixLogin.endsWith("-")) {
@@ -137,24 +145,53 @@ public class JunitTestHelper {
 		}
 		return prefixLogin + UUID.randomUUID();
 	}
+	
+
+	public static final Identity createAndPersistIdentityAsUser(String login) {
+		return createAndPersistIdentityAsUser(login, PWD);
+	}
 
 	/**
 	 * Create an identity with user permissions
 	 * @param login
 	 * @return
 	 */
-	public static final Identity createAndPersistIdentityAsUser(String login) {
-		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
-		Identity identity = securityManager.findIdentityByName(login);
+	public static final Identity createAndPersistIdentityAsUser(String login, String pwd) {
+		Identity identity = findIdentityByLogin(login);
 		if (identity != null) {
 			return identity;
 		}
+		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
 		User user = userManager.createUser("first" + login, "last" + login, login + "@" + maildomain);
-		identity = securityManager.createAndPersistIdentityAndUser(login, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, PWD);
+		identity = securityManager.createAndPersistIdentityAndUser(login, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, pwd);
 		addToDefaultOrganisation(identity, OrganisationRoles.user);
 		CoreSpringFactory.getImpl(DB.class).commitAndCloseSession();
 		return identity;
+	}
+	
+	/**
+	 * Return the identity with the specified login or
+	 * user name save as credentials for the OLAT authentication
+	 * provider.
+	 * 
+	 * @param login The login
+	 * @return An identity
+	 */
+	public static final Identity findIdentityByLogin(String login) {
+		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
+		Authentication auth = securityManager.findAuthenticationByAuthusername(login, "OLAT");
+		if (auth != null) {
+			return auth.getIdentity();
+		}
+		return null;
+	}
+	
+	public static final IdentityWithLogin createAndPersistRndAuthor(String prefixLogin) {
+		String login = getRandomizedLoginName(prefixLogin);
+		String password = PWD;
+		Identity identity = createAndPersistIdentityAsAuthor(login, password);
+		return new IdentityWithLogin(identity, login, password);
 	}
 	
 	/**
@@ -167,48 +204,61 @@ public class JunitTestHelper {
 		String login = getRandomizedLoginName(prefixLogin);
 		return createAndPersistIdentityAsAuthor(login);
 	}
+	
+
+	public static final Identity createAndPersistIdentityAsAuthor(String login) {
+		return createAndPersistIdentityAsAuthor(login, PWD);
+	}
 
 	/**
 	 * Create an identity with author permissions
 	 * @param login
 	 * @return
 	 */
-	public static final Identity createAndPersistIdentityAsAuthor(String login) {
-		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
-		Identity identity = securityManager.findIdentityByName(login);
+	public static final Identity createAndPersistIdentityAsAuthor(String login, String password) {
+		Identity identity = findIdentityByLogin(login);
 		if (identity != null) {
 			return identity;
 		}
-
+		
+		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		User user = CoreSpringFactory.getImpl(UserManager.class)
 				.createUser("first" + login, "last" + login, login + "@" + maildomain);
-		identity = securityManager.createAndPersistIdentityAndUser(login, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, PWD);
+		identity = securityManager.createAndPersistIdentityAndUser(login, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, password);
 		addToDefaultOrganisation(identity, OrganisationRoles.author);
 		addToDefaultOrganisation(identity, OrganisationRoles.user);
 		CoreSpringFactory.getImpl(DB.class).commitAndCloseSession();
 		return identity;
 	}
 	
+	public static final IdentityWithLogin createAndPersistRndAdmin(String prefixLogin) {
+		String login = getRandomizedLoginName(prefixLogin);
+		String password = PWD;
+		Identity identity = createAndPersistIdentityAsAdmin(login, password);
+		return new IdentityWithLogin(identity, login, password);
+	}
+	
 	public static final Identity createAndPersistIdentityAsRndAdmin(String prefixLogin) {
 		String login = getRandomizedLoginName(prefixLogin);
-		return createAndPersistIdentityAsAdmin(login);
+		return createAndPersistIdentityAsAdmin(login, PWD);
 	}
 	
 	/**
-	 * Create an identity with admin permissions
-	 * @param login
+	 * Create an identity with administrator permissions
+	 * @param login The login
+	 * @param password The password
 	 * @return
 	 */
-	private static final Identity createAndPersistIdentityAsAdmin(String login) {
+	private static final Identity createAndPersistIdentityAsAdmin(String login, String password) {
 		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
-		Identity identity = securityManager.findIdentityByName(login);
+		Identity identity = findIdentityByLogin(login);
 		if (identity != null) {
 			return identity;
 		}
 
 		User user = CoreSpringFactory.getImpl(UserManager.class)
 				.createUser("first" + login, "last" + login, login + "@" + maildomain);
-		identity = securityManager.createAndPersistIdentityAndUser(login, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, PWD);
+		identity = securityManager.createAndPersistIdentityAndUser(login, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, password);
 		addToDefaultOrganisation(identity, OrganisationRoles.administrator);
 		addToDefaultOrganisation(identity, OrganisationRoles.user);
 		CoreSpringFactory.getImpl(DB.class).commitAndCloseSession();
@@ -227,7 +277,7 @@ public class JunitTestHelper {
 	 */
 	private static final Identity createAndPersistIdentityAsLearnResourceManager(String login) {
 		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
-		Identity identity = securityManager.findIdentityByName(login);
+		Identity identity = findIdentityByLogin(login);
 		if (identity != null) {
 			return identity;
 		}
@@ -411,5 +461,38 @@ public class JunitTestHelper {
 			log.error("", e);
 			return null;
 		}
+	}
+	
+	public static class IdentityWithLogin {
+		
+		private final Identity identity;
+		private final String login;
+		private final String password;
+		
+		public IdentityWithLogin(Identity identity, String login, String password) {
+			this.identity = identity;
+			this.login = login;
+			this.password = password;
+		}
+		
+		public Long getKey() {
+			return identity.getKey();
+		}
+		
+		public Identity getIdentity() {
+			return identity;
+		}
+		
+		public User getUser() {
+			return identity.getUser();
+		}
+		
+		public String getLogin() {
+			return login;
+		}
+		
+		public String getPassword() {
+			return password;
+		}	
 	}
 }

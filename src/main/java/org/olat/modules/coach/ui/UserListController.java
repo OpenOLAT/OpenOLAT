@@ -75,7 +75,6 @@ public class UserListController extends FormBasicController implements Activatea
 	private boolean hasChanged;
 	private SearchCoachedIdentityParams searchParams;
 
-	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	@Autowired
@@ -90,7 +89,7 @@ public class UserListController extends FormBasicController implements Activatea
 	public UserListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 		this.stackPanel = stackPanel;
 		initForm(ureq);
@@ -100,10 +99,7 @@ public class UserListController extends FormBasicController implements Activatea
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.name, "select"));
-		}
-		
+
 		int colIndex = UserListController.USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);

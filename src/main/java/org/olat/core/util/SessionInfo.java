@@ -46,7 +46,6 @@ public class SessionInfo implements Serializable {
 	private static final long serialVersionUID = -380173272533291504L;
 	
 	private Long identityKey;
-	private String login;
 	private transient HttpSession session;
 	private String firstname;
 	private String lastname;
@@ -65,9 +64,8 @@ public class SessionInfo implements Serializable {
 	 * @param login
 	 * @param session
 	 */
-	public SessionInfo(Long identityKey, String login, HttpSession session) {
+	public SessionInfo(Long identityKey, HttpSession session) {
 		this.identityKey = identityKey;
-		setLogin(login);
 		setSession(session);
 		secure = false;
 		creationTime = session.getCreationTime();
@@ -79,9 +77,8 @@ public class SessionInfo implements Serializable {
 	 * @param login
 	 * @param session
 	 */
-	public SessionInfo(Long identityKey, String login) {
+	public SessionInfo(Long identityKey) {
 		this.identityKey = identityKey;
-		setLogin(login);
 		secure = false;
 		creationTime = new Date().getTime();
 	}
@@ -120,13 +117,6 @@ public class SessionInfo implements Serializable {
 	}
 
 	/**
-	 * @return login of logged-in user
-	 */
-	public String getLogin() {
-		return login;
-	}
-
-	/**
 	 * @return last name of logged-in user
 	 */
 	public String getLastname() {
@@ -145,13 +135,6 @@ public class SessionInfo implements Serializable {
 	 */
 	public void setFirstname(String string) {
 		firstname = string;
-	}
-
-	/**
-	 * @param string
-	 */
-	private void setLogin(String string) {
-		login = string;
 	}
 
 	/**

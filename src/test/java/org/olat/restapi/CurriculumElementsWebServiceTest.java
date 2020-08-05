@@ -77,6 +77,7 @@ import org.olat.modules.taxonomy.restapi.TaxonomyLevelVO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.test.JunitTestHelper;
+import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatRestTestCase;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
@@ -556,12 +557,12 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		
 		// other administration organisation
 		Organisation adminOrganisation = organisationService.createOrganisation("REST Admin Organisation", "REST-p-4admin-organisation", "", defOrganisation, null);
-		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndUser("p-4admin");
-		organisationService.addMember(adminOrganisation, admin, OrganisationRoles.administrator);
+		IdentityWithLogin admin = JunitTestHelper.createAndPersistRndUser("p-4admin");
+		organisationService.addMember(adminOrganisation, admin.getIdentity(), OrganisationRoles.administrator);
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(admin.getName(), JunitTestHelper.PWD));
+		assertTrue(conn.login(admin));
 		
 		CurriculumElementVO vo = CurriculumElementVO.valueOf(element);
 		vo.setExternalId("REST-CEL-10");

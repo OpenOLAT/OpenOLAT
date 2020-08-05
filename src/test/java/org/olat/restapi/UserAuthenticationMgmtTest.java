@@ -109,7 +109,7 @@ public class UserAuthenticationMgmtTest extends OlatRestTestCase {
 	@Test
 	public void createAuthentications() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		Identity adminIdent = securityManager.findIdentityByName("administrator");
+		Identity adminIdent = JunitTestHelper.findIdentityByLogin("administrator");
 		try {
 			Authentication refAuth = securityManager.findAuthentication(adminIdent, "REST-API");
 			if(refAuth != null) {
@@ -208,7 +208,7 @@ public class UserAuthenticationMgmtTest extends OlatRestTestCase {
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		//create an authentication token
-		Identity adminIdent = securityManager.findIdentityByName("administrator");
+		Identity adminIdent = JunitTestHelper.findIdentityByLogin("administrator");
 		Authentication authentication = securityManager.createAndPersistAuthentication(adminIdent, "REST-A-2", "administrator", "credentials", Encoder.Algorithm.sha512);
 		assertTrue(authentication != null && authentication.getKey() != null && authentication.getKey().longValue() > 0);
 		dbInstance.intermediateCommit();

@@ -37,7 +37,6 @@ public class UserSessionView {
 	private Long identityKey;
 	private String firstname;
 	private String lastname;
-	private String login;
 	private String fromIP;
 	private String authProvider;
 	private Date lastClickTime;
@@ -56,7 +55,6 @@ public class UserSessionView {
 			identityKey = sessInfo.getIdentityKey();
 			firstname = sessInfo.getFirstname();
 			lastname = sessInfo.getLastname();
-			login = sessInfo.getLogin();
 			fromIP = sessInfo.getFromIP();
 			authProvider = sessInfo.getAuthProvider();
 			try {
@@ -110,10 +108,6 @@ public class UserSessionView {
 	
 	public String getFirstname() {
 		return firstname;
-	}
-	
-	public String getLogin() {
-		return login;
 	}
 	
 	public String getAuthProvider() {

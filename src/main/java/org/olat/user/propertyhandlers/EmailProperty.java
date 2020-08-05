@@ -115,11 +115,7 @@ public class EmailProperty extends Generic127CharTextPropertyHandler {
 		} 
 		return tElem;
 	}
-	
-	
-	/* (non-Javadoc)
-	 * @see org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler#isValid(org.olat.core.gui.components.form.flexible.FormItem, java.util.Map)
-	 */
+
 	@Override
 	public boolean isValid(User user, FormItem formItem, Map<String,String> formContext) {
 		if (!super.isValid(user, formItem, formContext)) {
@@ -137,9 +133,9 @@ public class EmailProperty extends Generic127CharTextPropertyHandler {
 			}
 			// email is syntactically correct. 
 		  // Check whether it's available.
-			if (!isAddressAvailable(value, (formContext != null) ? formContext.get("username") : null)) {
+			if (!isAddressAvailable(value, user)) {
 				textElement.setErrorKey(i18nFormElementLabelKey() + ".error.exists", new String[] { value });
-			  return false;
+				return false;
 			}
 		}
 		// all checks successful
@@ -170,17 +166,7 @@ public class EmailProperty extends Generic127CharTextPropertyHandler {
 		return true;
 	}
 	
-	
-	private boolean isAddressAvailable(String emailAddress, String currentUsername) {
-		User currentUser = null; 
-		Identity currentIdentity;
-		if (currentUsername != null) {
-			currentIdentity = BaseSecurityManager.getInstance().findIdentityByName(currentUsername);
-			if (currentIdentity != null) {
-				currentUser = currentIdentity.getUser();
-			}
-		}
-		return UserManager.getInstance().isEmailAllowed(emailAddress, currentUser);
+	private boolean isAddressAvailable(String emailAddress, User user) {
+		return UserManager.getInstance().isEmailAllowed(emailAddress, user);
 	}
-
 }

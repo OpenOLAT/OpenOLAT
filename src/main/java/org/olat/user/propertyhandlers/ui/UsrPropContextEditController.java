@@ -209,7 +209,6 @@ public class UsrPropContextEditController extends FormBasicController {
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source instanceof FormToggle) {
 			FormToggle sourceToggle = (FormToggle) source;

@@ -58,9 +58,7 @@ public class ChecklistManageTableDataModel extends DefaultTableDataModel<Row> {
 	@Override
 	public Object getValueAt(int row, int col) {
 		Row rowObj = getObject(row);
-		if(col == 1000) {
-			return rowObj.getIdentityName();
-		} else if(col < 500) {
+		if(col < 500) {
 			String[] props = rowObj.getIdentityProps();
 			if(col >= 0 && col < props.length) {
 				return props[col];

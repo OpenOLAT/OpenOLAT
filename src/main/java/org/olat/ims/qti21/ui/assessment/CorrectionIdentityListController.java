@@ -104,7 +104,6 @@ public class CorrectionIdentityListController extends FormBasicController {
 	private ConfirmReopenAssessmentEntryController reopenForCorrectionCtrl;
 	private CorrectionIdentityAssessmentItemListController identityItemListCtrl;
 
-	private final boolean isAdministrativeUser;
 	private List<UserPropertyHandler> userPropertyHandlers;
 
 	private LockResult lockResult;
@@ -131,7 +130,7 @@ public class CorrectionIdentityListController extends FormBasicController {
 		stackPanel.addListener(this);
 		
 		Roles roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 
 		initForm(ureq);
@@ -153,9 +152,6 @@ public class CorrectionIdentityListController extends FormBasicController {
 		if(anonymous) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.user, "select"));
 		} else {
-			if(isAdministrativeUser) {
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.username, "select"));
-			}
 			int colPos = USER_PROPS_OFFSET;
 			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 				if (userPropertyHandler == null) continue;

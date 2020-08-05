@@ -146,8 +146,8 @@ public class ValidationStepForm extends StepFormBasicController {
 		}
 		validModel.setObjects(validDatas);
 		invalidModel.setObjects(invalidDatas);
-		flc.contextPut("hasValidItems", Boolean.valueOf(validDatas.size()>0));
-		flc.contextPut("hasInvalidItems", Boolean.valueOf(invalidDatas.size()>0));
+		flc.contextPut("hasValidItems", Boolean.valueOf(!validDatas.isEmpty()));
+		flc.contextPut("hasInvalidItems", Boolean.valueOf(!invalidDatas.isEmpty()));
 		validTableEl.reset();
 		invalidTableEl.reset();
 	}
@@ -156,7 +156,7 @@ public class ValidationStepForm extends StepFormBasicController {
 		Map<String,Identity> idToIdentityMap = new HashMap<>();
 		
 		for(String assessedId : assessedIdList) {
-			Identity identity = securityManager.findIdentityByName(assessedId);
+			Identity identity = securityManager.findIdentityByLogin(assessedId);
 			if(identity != null) {
 				idToIdentityMap.put(assessedId, identity);
 				continue;
@@ -164,7 +164,7 @@ public class ValidationStepForm extends StepFormBasicController {
 
 			for(String prop : userPropsToSearch) {
 				List<Identity> found = userManager.findIdentitiesWithProperty(prop, assessedId);
-				if(found != null && found.size() > 0) {
+				if(found != null && !found.isEmpty()) {
 					// ignore multiple hits, just take the first one
 					identity = found.get(0);
 					idToIdentityMap.put(assessedId, identity);

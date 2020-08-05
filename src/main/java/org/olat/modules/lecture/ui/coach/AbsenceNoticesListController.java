@@ -111,7 +111,6 @@ public class AbsenceNoticesListController extends FormBasicController {
 	 */
 	private final boolean wholeDateDefault;
 	private final boolean withUserProperties;
-	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final LecturesSecurityCallback secCallback;
 	private AbsenceNoticeSearchParameters lastSearchParams;
@@ -146,7 +145,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 		this.authorizedEnabled = authorizedEnabled;
 		this.withUserProperties = withUserProperties;
 
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_USAGE_IDENTIFIER, isAdministrativeUser);
 		
 		initForm(ureq);
@@ -184,7 +183,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 		tableEl.setCustomizeColumns(true);
 		tableEl.setNumOfRowsEnabled(true);
 		tableEl.setEmtpyTableMessageKey("empty.absences.list");
-		tableEl.setAndLoadPersistedPreferences(ureq, "absences-list-" + tableId + "-" + secCallback.viewAs());
+		tableEl.setAndLoadPersistedPreferences(ureq, "absences-list-v3-" + tableId + "-" + secCallback.viewAs());
 		
 		if(authorizedEnabled && secCallback.canAuthorizeAbsence()) {
 			tableEl.setMultiSelect(true);
@@ -194,10 +193,6 @@ public class AbsenceNoticesListController extends FormBasicController {
 	}
 	
 	protected void initUserColumns(FlexiTableColumnModel columnsModel) {
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NoticeCols.username, "select"));
-		}
-		
 		int colIndex = USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);

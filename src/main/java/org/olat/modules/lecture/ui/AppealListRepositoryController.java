@@ -85,7 +85,6 @@ public class AppealListRepositoryController extends FormBasicController {
 	private final RepositoryEntry entry;
 	private final Identity profiledIdentity;
 	private final LecturesSecurityCallback secCallback;
-	private final boolean isAdministrativeUser;
 	private List<UserPropertyHandler> userPropertyHandlers;
 	private LectureBlockRollCallSearchParameters searchParams = new LectureBlockRollCallSearchParameters();
 	
@@ -123,7 +122,7 @@ public class AppealListRepositoryController extends FormBasicController {
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
 		Roles roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
@@ -137,10 +136,6 @@ public class AppealListRepositoryController extends FormBasicController {
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if(secCallback.viewAs() != LectureRoles.participant) {
-			if(isAdministrativeUser) {
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AppealCols.username));
-			}
-			
 			int colPos = USER_PROPS_OFFSET;
 			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 				if (userPropertyHandler == null) continue;
@@ -191,7 +186,7 @@ public class AppealListRepositoryController extends FormBasicController {
 		tableEl.setFilters("filer", filters, true);
 		tableEl.setExportEnabled(true);
 		tableEl.setEmtpyTableMessageKey("empty.appeals.list");
-		tableEl.setAndLoadPersistedPreferences(ureq, "appeal-roll-call");
+		tableEl.setAndLoadPersistedPreferences(ureq, "appeal-roll-call-v2");
 
 		if(secCallback.canApproveAppeal()) {
 			tableEl.setMultiSelect(true);

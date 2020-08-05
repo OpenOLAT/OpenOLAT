@@ -28,7 +28,6 @@ import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -58,8 +57,6 @@ public class OrganisationDAOTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;
-	@Autowired
-	private BaseSecurity securityManager;
 	@Autowired
 	private OrganisationDAO organisationDao;
 	@Autowired
@@ -519,7 +516,7 @@ public class OrganisationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void hasRole_administrator() {
-		Identity administrator = securityManager.findIdentityByName("administrator");
+		Identity administrator = JunitTestHelper.findIdentityByLogin("administrator");
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		dbInstance.commit();
 

@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.components.table.TableController;
 import org.olat.core.id.Identity;
@@ -49,14 +48,12 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class UserTableDataModel extends DefaultTableDataModel<Identity> {
 
-	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private static final String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
 	
-	private UserTableDataModel(Locale locale, List<UserPropertyHandler> userPropertyHandlers, boolean isAdministrativeUser) {
+	private UserTableDataModel(Locale locale, List<UserPropertyHandler> userPropertyHandlers) {
 		super(new ArrayList<Identity>());
 		setLocale(locale);
-		this.isAdministrativeUser = isAdministrativeUser;
 		this.userPropertyHandlers = userPropertyHandlers;
 	}
 	
@@ -66,7 +63,6 @@ public class UserTableDataModel extends DefaultTableDataModel<Identity> {
 	public UserTableDataModel(List<Identity> objects, Locale locale, boolean isAdministrativeUser) {
 		super(objects);
 		setLocale(locale);
-		this.isAdministrativeUser = isAdministrativeUser;
 		userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 	}
 	
@@ -78,10 +74,6 @@ public class UserTableDataModel extends DefaultTableDataModel<Identity> {
 	 * @param actionCommand command fired when the login name is clicked or NULL when no command is used
 	 */
 	public void addColumnDescriptors(TableController tableCtr, String actionCommand) {
-		// first column is users login name
-		if(isAdministrativeUser) {
-			tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.user.login", 0, actionCommand, getLocale()));
-		}
 		// followed by the users fields
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
@@ -118,7 +110,7 @@ public class UserTableDataModel extends DefaultTableDataModel<Identity> {
 
 	@Override
 	public Object createCopyWithEmptyList() {
-		return new UserTableDataModel(getLocale(), userPropertyHandlers, isAdministrativeUser);
+		return new UserTableDataModel(getLocale(), userPropertyHandlers);
 	}
 
 	/**

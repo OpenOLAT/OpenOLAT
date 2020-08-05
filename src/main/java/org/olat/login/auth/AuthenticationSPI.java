@@ -27,9 +27,9 @@ import org.olat.core.id.Identity;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface AuthenticationSPI {
+public interface AuthenticationSPI extends AuthenticationProviderSPI {
 	
-	public Identity authenticate(Identity identity, String login, String password);
+	public Identity authenticate(String login, String password);
 	
 	/**
 	 * Update the password

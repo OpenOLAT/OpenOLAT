@@ -21,7 +21,9 @@ package org.olat.user.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -109,14 +111,22 @@ public class UserAuthenticationWebService {
 	@ApiResponse(responseCode = "404", description = "The identity not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getAuthenticationTokenList(@PathParam("username") String username, @Context HttpServletRequest request) {
-		Identity identity = securityManager.findIdentityByName(username);
-		if(identity == null) {
+		List<Authentication> identities = securityManager.findAuthenticationsByAuthusername(username, null);
+		if(identities.isEmpty()) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-		if(!isManager(identity, request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		Set<Identity> identitiesSet = new HashSet<>();
+		for(Authentication identity:identities) {
+			if(!isManager(identity.getIdentity(), request)) {
+				return Response.serverError().status(Status.UNAUTHORIZED).build();
+			}
+			identitiesSet.add(identity.getIdentity());
+		}
+		if(identitiesSet.size() > 1) {
+			return Response.serverError().status(Status.CONFLICT).build();
 		}
 		
+		Identity identity = identitiesSet.iterator().next();
 		List<Authentication> authentications = securityManager.getAuthentications(identity);
 		AuthenticationVO[] vos = new AuthenticationVO[authentications.size()];
 		int count = 0;
@@ -152,9 +162,6 @@ public class UserAuthenticationWebService {
 		}
 		if(!isManager(identity, request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-		if(!identity.getName().equals(username)) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
 		String provider = authenticationVO.getProvider();
@@ -194,7 +201,7 @@ public class UserAuthenticationWebService {
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The identity not found")
 	public Response delete(@PathParam("username") String username, @PathParam("authKey") Long authKey, @Context HttpServletRequest request) {
-		Identity identity = securityManager.findIdentityByName(username);
+		Identity identity = securityManager.findIdentityByLogin(username);
 		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}

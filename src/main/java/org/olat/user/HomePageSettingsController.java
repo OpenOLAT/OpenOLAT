@@ -85,7 +85,7 @@ public class HomePageSettingsController extends FormBasicController {
 		List<UserPropertyHandler> homepagePropertyHanders = userManager.getUserPropertyHandlersFor(HomePageConfig.class.getCanonicalName(), isAdministrativeUser);
 
 		Map<String, FormLayoutContainer> groupContainerMap = new HashMap<>();
-		HomePageConfig conf = hpcm.loadConfigFor(identityToModify.getName());
+		HomePageConfig conf = hpcm.loadConfigFor(identityToModify);
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) {
 				continue;
@@ -137,7 +137,7 @@ public class HomePageSettingsController extends FormBasicController {
 	}
 
 	protected void updatePreview(UserRequest ureq) {
-		HomePageConfig conf = hpcm.loadConfigFor(identityToModify.getName());
+		HomePageConfig conf = hpcm.loadConfigFor(identityToModify);
 		updatePreview(ureq, conf);
 	}
 	
@@ -172,9 +172,9 @@ public class HomePageSettingsController extends FormBasicController {
 				String propName = (String)publishCheckbox.getUserObject();
 				
 				//load and update config
-				HomePageConfig conf = hpcm.loadConfigFor(identityToModify.getName());
+				HomePageConfig conf = hpcm.loadConfigFor(identityToModify);
 				conf.setEnabled(propName, enabled);
-				hpcm.saveConfigTo(identityToModify.getName(), conf);
+				hpcm.saveConfigTo(identityToModify, conf);
 				updatePreview(ureq, conf);
 			}
 		}

@@ -77,7 +77,6 @@ public class LecturesSearchFormController extends FormBasicController {
 	private final Map<String,FormItem> propFormItems = new HashMap<>();
 	private final List<OrganisationRef> searcheableOrganisations;
 	
-	
 	@Autowired
 	private UserManager userManager;
 	@Autowired

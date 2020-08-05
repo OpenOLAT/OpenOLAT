@@ -95,7 +95,7 @@ public class UserVOFactory {
 		userVO.setEmail(user.getProperty(UserConstants.EMAIL, null));
 		
 		if(withPortrait) {
-			File portrait = CoreSpringFactory.getImpl(DisplayPortraitManager.class).getSmallPortrait(identity.getName());
+			File portrait = CoreSpringFactory.getImpl(DisplayPortraitManager.class).getSmallPortrait(identity);
 			if(portrait != null && portrait.exists()) {
 				try(InputStream input = new FileInputStream(portrait)) {
 					byte[] datas = IOUtils.toByteArray(input);
@@ -109,7 +109,7 @@ public class UserVOFactory {
 		
 		if(allProperties) {
 			UserManager um = UserManager.getInstance();
-			HomePageConfig hpc = isAdmin ? null : CoreSpringFactory.getImpl(HomePageConfigManager.class).loadConfigFor(identity.getName());
+			HomePageConfig hpc = isAdmin ? null : CoreSpringFactory.getImpl(HomePageConfigManager.class).loadConfigFor(identity);
 			List<UserPropertyHandler> propertyHandlers = um.getUserPropertyHandlersFor(UserWebService.PROPERTY_HANDLER_IDENTIFIER, false);
 			for (UserPropertyHandler propertyHandler : propertyHandlers) {
 				String propName = propertyHandler.getName();

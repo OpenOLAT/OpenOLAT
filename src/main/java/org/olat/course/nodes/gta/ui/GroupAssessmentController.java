@@ -99,7 +99,6 @@ public class GroupAssessmentController extends FormBasicController {
 	private EditCommentController editCommentCtrl;
 	private CloseableCalloutWindowController commentCalloutCtrl;
 	
-	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 
 	private Float cutValue;
@@ -137,7 +136,7 @@ public class GroupAssessmentController extends FormBasicController {
 		withComment = assessmentConfig.hasComment();
 		
 		Roles roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(GTACoachedGroupGradingController.USER_PROPS_ID, isAdministrativeUser);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
@@ -186,10 +185,7 @@ public class GroupAssessmentController extends FormBasicController {
 		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.username.i18nKey(), Cols.username.ordinal()));
-		}
-		
+
 		int i=0;
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			int colIndex = GTACoachedGroupGradingController.USER_PROPS_OFFSET + i++;
@@ -227,7 +223,7 @@ public class GroupAssessmentController extends FormBasicController {
 		table = uifactory.addTableElement(getWindowControl(), "group-list", model, getTranslator(), formLayout);
 		table.setCustomizeColumns(true);
 		table.setEditMode(true);
-		table.setAndLoadPersistedPreferences(ureq, "gtagroup-assessment");
+		table.setAndLoadPersistedPreferences(ureq, "gtagroup-assessment-v2");
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);

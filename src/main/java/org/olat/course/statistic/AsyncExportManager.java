@@ -80,7 +80,7 @@ public class AsyncExportManager {
 		}
 		
 		// DEBUG ONLY
-		log.info("asyncArchiveCourseLogFiles: user " + identity.getKey() + " wants to archive a course log. Already pending jobs: " + waitingCnt);
+		log.info("asyncArchiveCourseLogFiles: user {} wants to archive a course log. Already pending jobs: {}", identity.getKey(), waitingCnt);
 
 		Roles roles = securityManager.getRoles(identity);
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
@@ -129,14 +129,14 @@ public class AsyncExportManager {
 		@Override
 		public void run() {
 			try{
-				log.info("asyncArchiveCourseLogFiles: user " + identity.getKey() + " aquires lock for archiving course log");
+				log.info("asyncArchiveCourseLogFiles: user {} aquires lock for archiving course log", identity.getKey());
 				asyncExportManager.waitForSlot(identity);
-				log.info("asyncArchiveCourseLogFiles: user " + identity.getKey() + " starts archiving...");
+				log.info("asyncArchiveCourseLogFiles: user {} starts archiving...", identity.getKey());
 				exportManager.archiveCourseLogFiles(oresID, exportDir, begin, end, adminLog, userLog, statisticLog, locale, email, isAdministrativeUser);
-				log.info("asyncArchiveCourseLogFiles: user " + identity.getKey() + " finished archiving...");
+				log.info("asyncArchiveCourseLogFiles: user {} finished archiving...", identity.getKey());
 			} finally {
 				asyncExportManager.returnSlot(identity);
-				log.info("asyncArchiveCourseLogFiles: user " + identity.getKey() + " releases lock for archiving course log");
+				log.info("asyncArchiveCourseLogFiles: user {} releases lock for archiving course log", identity.getKey());
 				callback.run();
 			}
 		}

@@ -59,7 +59,6 @@ implements SortableFlexiTableDataModel<TaxonomyLevelCompetenceRow> {
 		if(col < TaxonomyLevelCompetenceController.USER_PROPS_OFFSET) {
 			switch(CompetenceCols.values()[col]) {
 				case key: return row.getKey();
-				case username: return row.getIdentityName();
 				case type: return row.getCompetenceType(); 
 				case achievement: return row.getAchievement();
 				case reliability: return row.getReliability();
@@ -79,7 +78,6 @@ implements SortableFlexiTableDataModel<TaxonomyLevelCompetenceRow> {
 	
 	public enum CompetenceCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
-		username("username"),
 		type("table.header.competence.type"),
 		achievement("table.header.competence.achievement"),
 		reliability("table.header.competence.reliability"),

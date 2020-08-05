@@ -183,7 +183,7 @@ public class DisplayPortraitController extends BasicController implements Generi
 			}
 			
 			if (useLarge) {
-				image = displayPortraitManager.getBigPortrait(portraitIdent.getName());
+				image = displayPortraitManager.getBigPortrait(portraitIdent);
 				if (image != null && !forceAnonymous && !isDeletedUser) {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.AVATAR_BIG_CSS_CLASS);
 				} else if (isAnonymous || forceAnonymous || isDeletedUser) {
@@ -196,7 +196,7 @@ public class DisplayPortraitController extends BasicController implements Generi
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_FEMALE_BIG_CSS_CLASS);
 				}
 			} else {
-				image = displayPortraitManager.getSmallPortrait(portraitIdent.getName());
+				image = displayPortraitManager.getSmallPortrait(portraitIdent);
 				if (image != null && !forceAnonymous && !isDeletedUser) {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.AVATAR_SMALL_CSS_CLASS);					
 				} else if (isAnonymous || forceAnonymous || isDeletedUser) {

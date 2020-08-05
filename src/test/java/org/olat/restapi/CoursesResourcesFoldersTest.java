@@ -50,7 +50,6 @@ import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
@@ -63,7 +62,6 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.restapi.support.vo.LinkVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatRestTestCase;
-import org.springframework.beans.factory.annotation.Autowired;
 
 public class CoursesResourcesFoldersTest extends OlatRestTestCase {
 	
@@ -74,14 +72,11 @@ public class CoursesResourcesFoldersTest extends OlatRestTestCase {
 	
 	private RestConnection conn;
 	
-	@Autowired
-	private BaseSecurity securityManager;
-	
 	@Before
 	public void setUp() throws Exception {
 		conn = new RestConnection();
 		
-		admin = securityManager.findIdentityByName("administrator");
+		admin = JunitTestHelper.findIdentityByLogin("administrator");
 		RepositoryEntry courseEntry = JunitTestHelper.deployEmptyCourse(admin, "Empty course",
 				RepositoryEntryStatusEnum.preparation, false, false);
 		course1 = CourseFactory.loadCourse(courseEntry);

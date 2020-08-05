@@ -85,11 +85,6 @@ public class IdentityListDataSource implements FlexiTableDataSourceDelegate<Iden
 			return true;
 		}
 		if(StringHelper.containsNonWhitespace(query)) {
-			String name = row.getIdentityName();
-			if(name != null && name.toLowerCase().contains(query)) {
-				return true;
-			}
-			
 			String[] values = row.getIdentityProps();
 			if(values != null && values.length > 0) {
 				for(String value:values) {

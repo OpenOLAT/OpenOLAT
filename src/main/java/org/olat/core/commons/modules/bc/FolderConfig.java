@@ -29,6 +29,8 @@ package org.olat.core.commons.modules.bc;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.olat.core.id.Identity;
+
 /**
  * Initial Date:  18.12.2002
  *
@@ -114,6 +116,10 @@ public class FolderConfig {
 	public static String getUserHome(String username) {
 		return getUserHomes()+"/"+username;
 	}
+	
+	public static String getUserHome(Identity identity) {
+		return getUserHome(identity.getName());
+	}
 
 	/**
 	 * Returns the groupHomes.
@@ -138,6 +144,10 @@ public class FolderConfig {
 	 */
 	public static String getUserHomePage(String username) {
 		return getUserHomePages()+"/"+username;
+	}
+	
+	public static String getUserHomePage(Identity identity) {
+		return getUserHomePage(identity.getName());
 	}
 	
 	

@@ -688,7 +688,7 @@ public class ViteroManager implements UserDataDeletable {
 	protected boolean storePortrait(Identity identity, int userId)
 	throws VmsNotAvailableException {
 		try {
-			File portrait = portraitManager.getBigPortrait(identity.getName());
+			File portrait = portraitManager.getBigPortrait(identity);
 			if(portrait != null && portrait.exists()) {
 				Mtom mtomWs = getMtomWebService();
 				
@@ -1398,7 +1398,7 @@ public class ViteroManager implements UserDataDeletable {
 						if(identity != null) {
 							authenticationCreated++;
 							securityManager.createAndPersistAuthentication(identity, VMS_PROVIDER, Integer.toString(user.getId()), null, null);
-							log.info("Recreate VMS authentication for: " + identity.getKey());
+							log.info("Recreate VMS authentication for: {}", identity.getKey());
 						}
 					}
 				}	

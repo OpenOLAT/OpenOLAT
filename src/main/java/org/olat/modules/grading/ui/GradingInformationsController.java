@@ -54,7 +54,6 @@ import org.olat.modules.co.ContactFormController;
 import org.olat.modules.grading.GraderToIdentity;
 import org.olat.modules.grading.GradingService;
 import org.olat.modules.grading.RepositoryEntryGradingConfiguration;
-import org.olat.modules.grading.ui.GradersListTableModel.GradersCol;
 import org.olat.modules.grading.ui.GradingInformationsTableModel.GInfosCol;
 import org.olat.modules.grading.ui.component.GraderAbsenceLeaveCellRenderer;
 import org.olat.modules.grading.ui.component.GraderStatusCellRenderer;
@@ -84,7 +83,6 @@ public class GradingInformationsController extends FormBasicController {
 	private GradingInformationsTableModel tableModel;
 	
 	private RepositoryEntry testEntry;
-	private final boolean isAdministrativeUser;
 	private List<UserPropertyHandler> userPropertyHandlers;
 	
 	private CloseableModalController cmc;
@@ -106,7 +104,7 @@ public class GradingInformationsController extends FormBasicController {
 		this.testEntry = testEntry;
 		
 		Roles roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 
 		initForm(ureq);
@@ -125,10 +123,7 @@ public class GradingInformationsController extends FormBasicController {
 	
 	protected void initGradersTable(FormItemContainer formLayout) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradersCol.username));
-		}
-		
+
 		int colPos = USER_PROPS_OFFSET;
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) continue;

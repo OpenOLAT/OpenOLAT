@@ -386,7 +386,7 @@ public class CoursesWebService {
 		Identity identity = null;
 		// Set the owner of the imported course to the user defined in the parameter
 		if (ownerUsername != null && !ownerUsername.isEmpty() && isAuthor(request)) {
-			identity = securityManager.findIdentityByName(ownerUsername);
+			identity = securityManager.findIdentityByLogin(ownerUsername);
 			if(identity == null) {
 				return Response.serverError().status(Status.BAD_REQUEST).build();
 			}

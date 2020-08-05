@@ -28,6 +28,7 @@ package org.olat.admin.sysinfo;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.coordinate.LockEntry;
@@ -47,26 +48,19 @@ public class LockTableModel extends DefaultTableDataModel<LockEntry> {
 	 */
 	public LockTableModel(List<LockEntry> locks) {
 		super(locks);
-		userManager = UserManager.getInstance();
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
 	}
-	
-	/**
-	 * @see org.olat.core.gui.components.table.TableDataModel#getColumnCount()
-	 */
+
 	@Override
 	public int getColumnCount() {
 		return 4;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
-	 */
 	@Override
 	public Object getValueAt(int row, int col) {
 		LockEntry lock = getObject(row); 
 		switch (Cols.values()[col]) {
 			case key: return lock.getKey();
-			case ownerName: return lock.getOwner().getName();
 			case ownerFullname: return	userManager.getUserDisplayName(lock.getOwner());	
 			case acquiredTime: return Formatter.formatDatetime(new Date(lock.getLockAquiredTime()));
 			default: return "Error";
@@ -75,7 +69,6 @@ public class LockTableModel extends DefaultTableDataModel<LockEntry> {
 	
 	public enum Cols {
 		key,
-		ownerName,
 		ownerFullname,
 		acquiredTime	
 	}

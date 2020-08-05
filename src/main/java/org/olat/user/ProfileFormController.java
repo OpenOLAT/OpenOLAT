@@ -239,7 +239,7 @@ public class ProfileFormController extends FormBasicController {
 		groupContainer.setElementCssClass("o_user_aboutme");
 		formLayout.add(groupContainer);
 		
-		HomePageConfig conf = hpcm.loadConfigFor(identityToModify.getName());
+		HomePageConfig conf = hpcm.loadConfigFor(identityToModify);
 		textAboutMe = uifactory.addRichTextElementForStringData("form.text", "form.text",
 				conf.getTextAboutMe(), 10, -1, false, null, null, groupContainer,
 				ureq.getUserSession(), getWindowControl());
@@ -251,7 +251,7 @@ public class ProfileFormController extends FormBasicController {
 		groupContainer.setFormTitle(translate("ul.header"));
 		formLayout.add(groupContainer);
 
-		File portraitFile = dps.getLargestPortrait(identityToModify.getName());
+		File portraitFile = dps.getLargestPortrait(identityToModify);
 		// Init upload controller
 		Set<String> mimeTypes = new HashSet<>();
 		mimeTypes.add("image/gif");
@@ -279,7 +279,7 @@ public class ProfileFormController extends FormBasicController {
 			groupContainer.setFormTitle(translate("logo.header"));
 			formLayout.add(groupContainer);
 
-			File logoFile = dps.getLargestLogo(identityToModify.getName());
+			File logoFile = dps.getLargestLogo(identityToModify);
 			logoUpload = uifactory.addFileElement(getWindowControl(), "logo.select", "logo.select", groupContainer);
 			logoUpload.setMaxUploadSizeKB(10000, null, null);
 			logoUpload.setPreview(ureq.getUserSession(), true);
@@ -324,9 +324,9 @@ public class ProfileFormController extends FormBasicController {
 			}
 		}
 		// Store the "about me" text.
-		HomePageConfig conf = hpcm.loadConfigFor(identityToModify.getName());
+		HomePageConfig conf = hpcm.loadConfigFor(identityToModify);
 		conf.setTextAboutMe(textAboutMe.getValue());
-		hpcm.saveConfigTo(identityToModify.getName(), conf);
+		hpcm.saveConfigTo(identityToModify, conf);
 	}
 	
 	public Identity updateIdentityFromFormData(Identity identity) {
@@ -446,7 +446,7 @@ public class ProfileFormController extends FormBasicController {
 		}
 		
 		if (portraitDeleted) {
-			File img = dps.getLargestPortrait(identityToModify.getName());
+			File img = dps.getLargestPortrait(identityToModify);
 			if(img != null) {
 				dps.deletePortrait(identityToModify);
 				notifyPortraitChanged();
@@ -456,12 +456,12 @@ public class ProfileFormController extends FormBasicController {
 		File uploadedImage = portraitUpload.getUploadFile();
 		String uploadedFilename = portraitUpload.getUploadFileName();
 		if(uploadedImage != null) {
-			dps.setPortrait(uploadedImage, uploadedFilename, identityToModify.getName());
+			dps.setPortrait(uploadedImage, uploadedFilename, identityToModify);
 			notifyPortraitChanged();
 		}
 		
 		if (logoDeleted) {
-			File img = dps.getLargestLogo(identityToModify.getName());
+			File img = dps.getLargestLogo(identityToModify);
 			if(img != null) {
 				dps.deleteLogo(identityToModify);
 				notifyPortraitChanged();
@@ -472,15 +472,15 @@ public class ProfileFormController extends FormBasicController {
 			File uploadedLogo = logoUpload.getUploadFile();
 			String uploadedLogoname = logoUpload.getUploadFileName();
 			if(uploadedLogo != null) {
-				dps.setLogo(uploadedLogo, uploadedLogoname, identityToModify.getName());
+				dps.setLogo(uploadedLogo, uploadedLogoname, identityToModify);
 				notifyPortraitChanged();
 			}
 		}
 		
 		// Store the "about me" text.
-		HomePageConfig conf = hpcm.loadConfigFor(identityToModify.getName());
+		HomePageConfig conf = hpcm.loadConfigFor(identityToModify);
 		conf.setTextAboutMe(textAboutMe.getValue());
-		hpcm.saveConfigTo(identityToModify.getName(), conf);
+		hpcm.saveConfigTo(identityToModify, conf);
 
 		// fire the appropriate event
 		fireEvent(ureq, Event.DONE_EVENT);

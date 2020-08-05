@@ -86,7 +86,6 @@ public class MSStatisticController extends FormBasicController {
 	private final MSCourseNode courseNode;
 	private final Form form;
 	private final List<RubricWrapper> rubrics;
-	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final boolean sum;
 	private final float scale;
@@ -120,7 +119,7 @@ public class MSStatisticController extends FormBasicController {
 				MSCourseNode.CONFIG_DEFAULT_EVAL_FORM_SCALE);
 		this.scale = Float.parseFloat(scaleConfig);
 		
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(AssessmentToolConstants.usageIdentifyer, isAdministrativeUser);
 		
 		initForm(ureq);
@@ -190,13 +189,8 @@ public class MSStatisticController extends FormBasicController {
 	}
 
 	private void updateTable() {
-		int columnIndex = 0;
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		if(isAdministrativeUser) {
-			options.setDefaultOrderBy(new SortKey("username_sort_key", true));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("tool.stats.table.title.username", columnIndex++, true, "username_sort_key"));
-		}
 		
 		int colIndex = AssessmentToolConstants.USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {

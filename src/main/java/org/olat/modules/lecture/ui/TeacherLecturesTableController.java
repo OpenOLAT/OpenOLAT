@@ -115,8 +115,6 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 	private final boolean withTeachers;
 	private final boolean withAssessment;
 	private final boolean withRepositoryEntry;
-	
-	private final boolean isAdministrativeUser;
 	private final boolean authorizedAbsenceEnabled;
 	
 	@Autowired
@@ -142,8 +140,6 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 		this.withAssessment = withAssessment;
 		this.withRepositoryEntry = withRepositoryEntry;
 		
-		Roles roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 		initForm(ureq);
 	}
@@ -190,7 +186,7 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 		tableEl.setCustomizeColumns(false);
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setEmtpyTableMessageKey(emptyI18nKey);
-		tableEl.setAndLoadPersistedPreferences(ureq, "lecture-teacher-overview-v2-".concat(id));
+		tableEl.setAndLoadPersistedPreferences(ureq, "lecture-teacher-overview-v3-".concat(id));
 	}
 	
 	public int getRowCount() {
@@ -337,6 +333,9 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 	private void doExportLectureBlock(UserRequest ureq, LectureBlock row) {
 		LectureBlock lectureBlock = lectureService.getLectureBlock(row);
 		List<Identity> teachers = lectureService.getTeachers(lectureBlock);
+		
+		Roles roles = ureq.getUserSession().getRoles();
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		LectureBlockExport export = new LectureBlockExport(lectureBlock, teachers, isAdministrativeUser, authorizedAbsenceEnabled, getTranslator());
 		ureq.getDispatchResult().setResultingMediaResource(export);
 	}

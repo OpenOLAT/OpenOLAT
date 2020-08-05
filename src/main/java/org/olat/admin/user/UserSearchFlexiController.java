@@ -213,9 +213,6 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 			//add the table
 			FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 			int colPos = 0;
-			if(isAdministrativeUser) {
-				tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.user.login", colPos++, true, "login"));
-			}
 			List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 			List<UserPropertyHandler> resultingPropertyHandlers = new ArrayList<>();
 			// followed by the users fields
@@ -230,7 +227,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
 			
 			Translator myTrans = userManager.getPropertyHandlerTranslator(getTranslator());
-			userTableModel = new UserSearchFlexiTableModel(Collections.<Identity>emptyList(), resultingPropertyHandlers, isAdministrativeUser, getLocale(), tableColumnModel);
+			userTableModel = new UserSearchFlexiTableModel(Collections.<Identity>emptyList(), resultingPropertyHandlers, getLocale(), tableColumnModel);
 			tableEl = uifactory.addTableElement(getWindowControl(), "users", userTableModel, 250, false, myTrans, formLayout);
 			tableEl.setCustomizeColumns(false);
 			tableEl.setMultiSelect(multiSelection);

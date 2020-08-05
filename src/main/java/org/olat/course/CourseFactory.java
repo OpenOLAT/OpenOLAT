@@ -778,7 +778,7 @@ public class CourseFactory {
 	public static File getOrCreateDataExportDirectory(Identity identity, String courseName) {
 		String courseFolder = StringHelper.transformDisplayNameToFileSystemName(courseName);
 		// folder where exported user data should be put
-		File exportFolder = new File(FolderConfig.getCanonicalRoot() + FolderConfig.getUserHomes() + "/" + identity.getName() + "/private/archive/"
+		File exportFolder = new File(FolderConfig.getCanonicalRoot() + FolderConfig.getUserHome(identity) + "/private/archive/"
 						+ courseFolder);
 		if (exportFolder.exists()) {
 			if (!exportFolder.isDirectory()) { throw new OLATRuntimeException(ExportUtil.class, "File " + exportFolder.getAbsolutePath()
@@ -800,7 +800,7 @@ public class CourseFactory {
 	public static File getDataExportDirectory(Identity identity, String courseName) {
 		File exportFolder = new File( // folder where exported user data should be
 				// put
-				FolderConfig.getCanonicalRoot() + FolderConfig.getUserHomes() + "/" + identity.getName() + "/private/archive/"
+				FolderConfig.getCanonicalRoot() + FolderConfig.getUserHome(identity) + "/private/archive/"
 						+ Formatter.makeStringFilesystemSave(courseName));
 		return exportFolder;
 	}
@@ -818,7 +818,7 @@ public class CourseFactory {
 		if (identity==null) {
 			return null;
 		}
-		return new File(FolderConfig.getCanonicalRoot() + FolderConfig.getUserHomes() + "/" + identity.getName());
+		return new File(FolderConfig.getCanonicalRoot() + FolderConfig.getUserHome(identity));
 	}
 
 	/**
@@ -832,7 +832,7 @@ public class CourseFactory {
 	public static File getOrCreateStatisticDirectory(Identity identity, String courseName) {
 		File exportFolder = new File( // folder where exported user data should be
 				// put
-				FolderConfig.getCanonicalRoot() + FolderConfig.getUserHomes() + "/" + identity.getName() + "/private/statistics/"
+				FolderConfig.getCanonicalRoot() + FolderConfig.getUserHome(identity) + "/private/statistics/"
 						+ Formatter.makeStringFilesystemSave(courseName));
 		if (exportFolder.exists()) {
 			if (!exportFolder.isDirectory()) { throw new OLATRuntimeException(ExportUtil.class, "File " + exportFolder.getAbsolutePath()

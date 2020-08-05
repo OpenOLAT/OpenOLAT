@@ -649,7 +649,6 @@ public class CoachingDAO {
 		NativeQueryBuilder sb = new NativeQueryBuilder(1024, dbInstance);
 		sb.append("select")
 		  .append("  sg_participant_id.id as part_id,")
-		  .append("  sg_participant_id.name as part_name,")
 		  .append("  sg_participant_user.user_id as part_user_id,");
 		writeUserProperties("sg_participant_user",  sb, userPropertyHandlers);
 		sb.append("  ").appendToArray("sg_re.repositoryentry_id").append(" as re_ids,")
@@ -666,7 +665,6 @@ public class CoachingDAO {
 		  .append(" where sg_coach.fk_identity_id=:coachKey and sg_re.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed())
 		  .append(" group by sg_participant_id.id, sg_participant_user.user_id");
 		if(dbInstance.isOracle()) {
-			sb.append(", sg_participant_id.name");
 			writeUserPropertiesGroupBy("sg_participant_user", sb, userPropertyHandlers);
 		}
 
@@ -681,7 +679,6 @@ public class CoachingDAO {
 			int pos = 0;
 			
 			Long identityKey = ((Number)rawStat[pos++]).longValue();
-			String identityName = (String)rawStat[pos++];
 			((Number)rawStat[pos++]).longValue();//user key
 			
 			String[] userProperties = new String[numOfProperties];
@@ -689,7 +686,7 @@ public class CoachingDAO {
 				userProperties[i] = (String)rawStat[pos++];
 			}
 			
-			StudentStatEntry entry = new StudentStatEntry(identityKey, identityName, userPropertyHandlers, userProperties, locale);
+			StudentStatEntry entry = new StudentStatEntry(identityKey, userPropertyHandlers, userProperties, locale);
 			appendArrayToSet(rawStat[pos++], entry.getRepoIds());
 			appendArrayToSet(rawStat[pos++], entry.getLaunchIds());
 			map.put(entry.getIdentityKey(), entry);
@@ -715,7 +712,6 @@ public class CoachingDAO {
 		NativeQueryBuilder sb = new NativeQueryBuilder(1024, dbInstance);
 		sb.append("select")
 		  .append("  sg_participant_id.id as part_id,")
-		  .append("  sg_participant_id.name as part_name,")
 		  .append("  sg_participant_user.user_id as part_user_id,");
 		writeUserProperties("sg_participant_user",  sb, userPropertyHandlers);
 		sb.append("  ").appendToArray("sg_re.repositoryentry_id").append(" as re_ids,")
@@ -736,7 +732,6 @@ public class CoachingDAO {
 		  .append(" )")
 		  .append(" group by sg_participant_id.id, sg_participant_user.user_id");
 		if(dbInstance.isOracle()) {
-			sb.append(", sg_participant_id.name");
 			writeUserPropertiesGroupBy("sg_participant_user", sb, userPropertyHandlers);
 		}
 
@@ -752,7 +747,6 @@ public class CoachingDAO {
 			
 			int pos = 0;
 			Long identityKey = ((Number)rawStat[pos++]).longValue();
-			String identityName = (String)rawStat[pos++];
 			((Number)rawStat[pos++]).longValue();//user key
 			
 			StudentStatEntry entry;
@@ -764,7 +758,7 @@ public class CoachingDAO {
 				for(int i=0; i<numOfProperties; i++) {
 					userProperties[i] = (String)rawStat[pos++];
 				}
-				entry = new StudentStatEntry(identityKey, identityName, userPropertyHandlers, userProperties, locale);
+				entry = new StudentStatEntry(identityKey, userPropertyHandlers, userProperties, locale);
 				
 				map.put(identityKey, entry);
 			}
@@ -938,7 +932,6 @@ public class CoachingDAO {
 		Map<String,Object> queryParams = new HashMap<>();
 		sb.append("select ")
 		  .append("  sg_participant_id.id as part_id,")
-		  .append("  sg_participant_id.name as part_name,")
 		  .append("  sg_participant_user.user_id as part_user_id,");
 		writeUserProperties("sg_participant_user",  sb, userPropertyHandlers);
 		sb.append("  count(distinct sg_re.repositoryentry_id) as re_count, ")
@@ -957,7 +950,6 @@ public class CoachingDAO {
 		appendUsersStatisticsSearchParams(params, queryParams, sb)
 		  .append(" group by sg_participant_id.id, sg_participant_user.user_id");
 		if(dbInstance.isOracle()) {
-			sb.append(", sg_participant_id.name");
 			writeUserPropertiesGroupBy("sg_participant_user", sb, userPropertyHandlers);
 		}
 
@@ -974,14 +966,13 @@ public class CoachingDAO {
 			
 			int pos = 0;
 			Long identityKey = ((Number)rawStat[pos++]).longValue();
-			String identityName = (String)rawStat[pos++];
 			((Number)rawStat[pos++]).longValue();//user key
 			
 			String[] userProperties = new String[numOfProperties];
 			for(int i=0; i<numOfProperties; i++) {
 				userProperties[i] = (String)rawStat[pos++];
 			}
-			StudentStatEntry entry = new StudentStatEntry(identityKey, identityName, userPropertyHandlers, userProperties, locale);
+			StudentStatEntry entry = new StudentStatEntry(identityKey, userPropertyHandlers, userProperties, locale);
 			entry.setCountRepo(((Number)rawStat[pos++]).intValue());
 			entry.setInitialLaunch(((Number)rawStat[pos++]).intValue());
 			map.put(identityKey, entry);
@@ -1058,6 +1049,9 @@ public class CoachingDAO {
 			} else {
 				sb.append(" and lower(id_participant.name) like :login");
 			}
+			
+			//TODO login
+			
 			queryParams.put("login", login);
 		}
 		

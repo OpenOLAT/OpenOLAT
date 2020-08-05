@@ -25,6 +25,7 @@
 
 package org.olat.user;
 
+import org.olat.core.id.Identity;
 
 /**
  * Description: <br>
@@ -51,7 +52,7 @@ public interface HomePageConfigManager extends UserDataDeletable {
 	 * @param userName
 	 * @return configuration for a homepage
 	 */
-	HomePageConfig loadConfigFor(String userName);
+	public HomePageConfig loadConfigFor(Identity identity);
 
 	/**
 	 * saves the configuration for the given user
@@ -59,6 +60,6 @@ public interface HomePageConfigManager extends UserDataDeletable {
 	 * @param userName
 	 * @param homePageConfig
 	 */
-	void saveConfigTo(String userName, HomePageConfig homePageConfig);
+	public void saveConfigTo(Identity identity, HomePageConfig homePageConfig);
 
 }

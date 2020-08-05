@@ -85,9 +85,6 @@ public class UserOverviewIdentitiesController extends StepFormBasicController {
 		//add the table
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		int colIndex = 0;
-		if(isAdministrativeUser) {
-			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.user.login", colIndex++));
-		}
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 		List<UserPropertyHandler> resultingPropertyHandlers = new ArrayList<>();
 		// followed by the users fields
@@ -101,8 +98,7 @@ public class UserOverviewIdentitiesController extends StepFormBasicController {
 		}
 		
 		Translator myTrans = userManager.getPropertyHandlerTranslator(getTranslator());
-		UserOverviewDataModel userTableModel = new UserOverviewDataModel(oks, resultingPropertyHandlers,
-				isAdministrativeUser, getLocale(), tableColumnModel);
+		UserOverviewDataModel userTableModel = new UserOverviewDataModel(oks, resultingPropertyHandlers, getLocale(), tableColumnModel);
 		FlexiTableElement tableEl = uifactory.addTableElement(getWindowControl(), "users", userTableModel, myTrans, formLayout);
 		tableEl.setCustomizeColumns(false);
 	}

@@ -111,7 +111,6 @@ public class TeacherRollCallController extends FormBasicController {
 	private int counter = 0;
 	private final boolean withBack;
 	private LectureBlock lectureBlock;
-	private final boolean isAdministrativeUser;
 	private List<UserPropertyHandler> userPropertyHandlers;
 	private RollCallSecurityCallback secCallback;
 	private final boolean authorizedAbsenceEnabled;
@@ -142,7 +141,7 @@ public class TeacherRollCallController extends FormBasicController {
 		numOfLectures = lectureBlock.getCalculatedLecturesNumber();
 
 		Roles roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
@@ -206,11 +205,7 @@ public class TeacherRollCallController extends FormBasicController {
 		// table
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCols.username));
-			options.setDefaultOrderBy(new SortKey(RollCols.username.sortKey(), true));
-		}
-		
+
 		int colPos = USER_PROPS_OFFSET;
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) continue;
@@ -253,7 +248,7 @@ public class TeacherRollCallController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setSortSettings(options);
-		tableEl.setAndLoadPersistedPreferences(ureq, "teacher-roll-call");
+		tableEl.setAndLoadPersistedPreferences(ureq, "teacher-roll-call-v2");
 		
 		//buttons
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());

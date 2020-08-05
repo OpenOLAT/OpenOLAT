@@ -136,10 +136,9 @@ public class InvitationDAO {
 		} else {
 			invitee = userManager.findUniqueIdentityByEmail(invitation.getMail());
 			if (invitee == null) {
-				String tempUsername = UUID.randomUUID().toString();
 				User user = userManager.createUser(invitation.getFirstName(), invitation.getLastName(), invitation.getMail());
 				user.getPreferences().setLanguage(locale.toString());
-				invitee = securityManager.createAndPersistIdentityAndUser(tempUsername, null, user, null, null, null);
+				invitee = securityManager.createAndPersistIdentityAndUser(null, null, user, null, null, null);
 			}
 		}
 		

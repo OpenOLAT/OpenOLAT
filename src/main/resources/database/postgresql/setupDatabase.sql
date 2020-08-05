@@ -298,6 +298,7 @@ create table o_user (
    u_firstname varchar(255),
    u_lastname varchar(255),
    u_email varchar(255),
+   u_nickname varchar(255),
    u_birthday varchar(255),
    u_graduation varchar(255),
    u_gender varchar(255),

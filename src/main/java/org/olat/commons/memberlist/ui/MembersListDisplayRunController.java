@@ -350,7 +350,7 @@ public class MembersListDisplayRunController extends BasicController {
 	}
 	
 	private Member createMember(Identity identity) {		
-		boolean hasPortrait = portraitManager.hasPortrait(identity.getName());
+		boolean hasPortrait = portraitManager.hasPortrait(identity);
 
 		String portraitCssClass;
 		String gender = identity.getUser().getProperty(UserConstants.GENDER, Locale.ENGLISH);

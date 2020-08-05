@@ -82,7 +82,6 @@ implements SortableFlexiTableDataModel<ParticipantRow>, ExportableFlexiTableData
 	public Object getValueAt(ParticipantRow row, int col) {
 		if(col < ParticipantListRepositoryController.USER_PROPS_OFFSET) {
 			switch(ParticipantsCols.values()[col]) {
-				case username: return row.getIdentityName();
 				case progress: return row.getStatistics();
 				case plannedLectures: return positive(row.getStatistics().getTotalPersonalPlannedLectures());
 				case attendedLectures: return positive(row.getStatistics().getTotalAttendedLectures());
@@ -109,7 +108,6 @@ implements SortableFlexiTableDataModel<ParticipantRow>, ExportableFlexiTableData
 	}
 	
 	public enum ParticipantsCols implements FlexiSortableColumnDef {
-		username("table.header.username"),
 		plannedLectures("table.header.planned.lectures"),
 		attendedLectures("table.header.attended.lectures"),
 		absentLectures("table.header.absent.lectures"),

@@ -103,7 +103,6 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	private final UserCourseEnvironment coachCourseEnv;
 	
 	private int count;
-	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final boolean markedOnly;
 
@@ -131,7 +130,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		super(ureq, wControl, coachCourseEnv.getCourseEnvironment(), gtaNode);
 		
 		Roles roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(GTACoachedGroupGradingController.USER_PROPS_ID, isAdministrativeUser);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.coachCourseEnv = coachCourseEnv;
@@ -174,11 +173,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		DefaultFlexiColumnModel markCol = new DefaultFlexiColumnModel(CGCols.mark);
 		markCol.setExportable(false);
 		columnsModel.addFlexiColumnModel(markCol);
-		
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.username));
-		}
-		
+
 		int i=0;
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			int colIndex = GTACoachedGroupGradingController.USER_PROPS_OFFSET + i++;
@@ -223,7 +218,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		tableEl = uifactory.addTableElement(getWindowControl(), "entries", tableModel, 10, false, getTranslator(), formLayout);
 		tableEl.setShowAllRowsEnabled(true);
 		tableEl.setExportEnabled(true);
-		tableEl.setAndLoadPersistedPreferences(ureq, "gta-coached-participants-v2-" + markedOnly);
+		tableEl.setAndLoadPersistedPreferences(ureq, "gta-coached-participants-v3-" + markedOnly);
 		if(gtaManager.isDueDateEnabled(gtaNode) && !gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES)) {
 			tableEl.setMultiSelect(true);
 			extendButton = uifactory.addFormLink("extend.list", "duedates", "duedates", formLayout, Link.BUTTON);

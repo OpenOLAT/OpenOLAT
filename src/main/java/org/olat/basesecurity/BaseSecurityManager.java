@@ -46,8 +46,10 @@ import javax.persistence.TypedQuery;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.events.NewIdentityCreatedEvent;
+import org.olat.basesecurity.manager.AuthenticationDAO;
 import org.olat.basesecurity.manager.AuthenticationHistoryDAO;
 import org.olat.basesecurity.manager.IdentityDAO;
+import org.olat.basesecurity.model.FindNamedIdentity;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
@@ -96,6 +98,8 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	private IdentityDAO identityDao;
 	@Autowired
 	private LoginModule loginModule;
+	@Autowired
+	private AuthenticationDAO authenticationDao;
 	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
@@ -359,11 +363,34 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	 */
 	@Override
 	public Identity createAndPersistIdentityAndUser(String username, String externalId, User user, String provider, String authusername, String credential) {
+		return createAndPersistIdentityAndUser(null, username, externalId, user, provider, authusername, credential);
+	}	
+		
+	/**
+	 * 
+	 * @param legacyName Force the use of the legacy name (option, only for guest)
+	 * @param username
+	 * @param externalId
+	 * @param user The user
+	 * @param provider The authentication provider
+	 * @param authusername The authentication username
+	 * @param credential The password
+	 * @return
+	 */
+	private Identity createAndPersistIdentityAndUser(String legacyName, String username, String externalId, User user, String provider, String authusername, String credential) {
 		IdentityImpl iimpl = new IdentityImpl();
 		iimpl.setUser(user);
-		iimpl.setName(username);
 		iimpl.setExternalId(externalId);
 		iimpl.setStatus(Identity.STATUS_ACTIV);
+		if(StringHelper.containsNonWhitespace(username) && !StringHelper.containsNonWhitespace(user.getProperty(UserConstants.NICKNAME, null))) {
+			user.setProperty(UserConstants.NICKNAME, username);
+		}
+		dbInstance.getCurrentEntityManager().persist(user);
+		if(StringHelper.containsNonWhitespace(legacyName)) {
+			iimpl.setName(legacyName);
+		} else {
+			iimpl.setName("u" + user.getKey());
+		}
 		((UserImpl)user).setIdentity(iimpl);
 		dbInstance.getCurrentEntityManager().persist(iimpl);
 
@@ -390,13 +417,11 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 			User newUser, Organisation organisation) {
 		Identity ident;
 		if (pwd == null) {
-			// when no password is used the provider must be set to null to not generate
-			// an OLAT authentication token. See method doku.
-			ident = createAndPersistIdentityAndUser(loginName, externalId, newUser, null, null);
-			log.info(Tracing.M_AUDIT, "Create an identity without authentication (login=" + loginName + ")");
+			ident = createAndPersistIdentityAndUser(loginName, externalId, newUser, BaseSecurityModule.getDefaultAuthProviderIdentifier(), loginName);
+			log.info(Tracing.M_AUDIT, "Create an identity with {} authentication (login={}) but no password", BaseSecurityModule.getDefaultAuthProviderIdentifier(), loginName);
  		} else {
 			ident = createAndPersistIdentityAndUser(loginName, externalId, newUser, BaseSecurityModule.getDefaultAuthProviderIdentifier(), loginName, pwd);
-			log.info(Tracing.M_AUDIT, "Create an identity with " + BaseSecurityModule.getDefaultAuthProviderIdentifier() + " authentication (login=" + loginName + ")");
+			log.info(Tracing.M_AUDIT, "Create an identity with {} authentication (login={})", BaseSecurityModule.getDefaultAuthProviderIdentifier(), loginName);
 		}
 
 		// Add user to the default organization as user
@@ -437,23 +462,15 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	}
 
 	@Override
-	public Identity findIdentityByName(String identityName) {
-		if (identityName == null) throw new AssertException("findIdentitybyName: name was null");
+	public Identity findIdentityByLogin(String login) {
+		List<Identity> identities = authenticationDao.getIdentitiesWithLogin(login);
+		Set<Identity> identitiesSet = new HashSet<>(identities);
+		return identitiesSet.size() == 1 ? identitiesSet.iterator().next() : null;
+	}
 
-		StringBuilder sb = new StringBuilder(128);
-		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
-		  .append(" inner join fetch ident.user user")
-		  .append(" where ident.name=:username");
-		
-		List<Identity> identities = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Identity.class)
-				.setParameter("username", identityName)
-				.getResultList();
-		
-		if(identities.isEmpty()) {
-			return null;
-		}
-		return identities.get(0);
+	@Override
+	public Identity findIdentityByName(String identityName) {
+		return identityDao.findIdentityByName(identityName);
 	}
 	
 	@Override
@@ -470,73 +487,9 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		return identities == null || identities.isEmpty() ? null : identities.get(0);
 	}
 
-	/**
-	 * Custom search operation by BiWa
-	 * find identity by student/institution number 
-	 * @return
-	 */
 	@Override
-	public Identity findIdentityByNumber(String identityNumber) {
-		//default initializations
-		Map<String, String> userPropertiesSearch = Collections.singletonMap(UserConstants.INSTITUTIONALUSERIDENTIFIER, identityNumber);
-		List<Identity> identities = getIdentitiesByPowerSearch(null, userPropertiesSearch, true, null, null, null, null, null, null, null);
-		//check for unique search result
-		if(identities.size() == 1) {
-			return identities.get(0);
-		}
-		return null;
-	}
-
-	@Override
-	public List<Identity> findIdentitiesByNumber(Collection<String> identityNumbers) {
-		if(identityNumbers == null || identityNumbers.isEmpty()) return Collections.emptyList();
-		
-		StringBuilder sb = new StringBuilder();
-		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" ident ")
-			.append(" inner join fetch ident.user user ")
-			.append(" where user.").append(UserConstants.INSTITUTIONALUSERIDENTIFIER).append(" in (:idNumbers) ")
-			.append(" and ident.status<:status");
-
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Identity.class)
-				.setParameter("idNumbers", identityNumbers)
-				.setParameter("status", Identity.STATUS_VISIBLE_LIMIT)
-				.getResultList();
-	}
-
-	@Override
-	public List<Identity> findIdentitiesByName(Collection<String> identityNames) {
-		if (identityNames == null || identityNames.isEmpty()) return Collections.emptyList();
-
-		StringBuilder sb = new StringBuilder(128);
-		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
-		  .append(" inner join fetch ident.user user")
-		  .append(" where ident.name in (:username)");
-		
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Identity.class)
-				.setParameter("username", identityNames)
-				.getResultList();
-	}
-	
-	
-
-	@Override
-	public List<Identity> findIdentitiesByNameCaseInsensitive(Collection<String> identityNames) {
-		if (identityNames == null || identityNames.isEmpty()) return Collections.emptyList();
-
-		StringBuilder sb = new StringBuilder();
-		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
-		  .append(" inner join fetch ident.user user")
-		  .append(" where lower(ident.name) in (:usernames)");
-		
-		List<String> loweredIdentityNames = identityNames.stream()
-				.map(String::toLowerCase).collect(Collectors.toList());
-
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Identity.class)
-				.setParameter("usernames", loweredIdentityNames)
-				.getResultList();
+	public List<FindNamedIdentity> findIdentitiesBy(Collection<String> names) {
+		return identityDao.findByNames(names);
 	}
 
 	@Override
@@ -835,9 +788,11 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		auth.setCreationDate(new Date());
 		auth.setLastModified(auth.getCreationDate());
 		dbInstance.getCurrentEntityManager().persist(auth);
-		updateAuthenticationHistory(auth, ident);
+		if(StringHelper.containsNonWhitespace(credentials)) {
+			updateAuthenticationHistory(auth, ident);
+		}
 		dbInstance.commit();
-		log.info(Tracing.M_AUDIT, "Create " + provider + " authentication (login=" + ident.getKey() + ",authusername=" + authUserName + ")");
+		log.info(Tracing.M_AUDIT, "Create {} authentication (login={},authusername={})", provider, ident.getKey(), authUserName);
 		return auth;
 	}
 	
@@ -1051,36 +1006,15 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 
 	@Override
 	public Authentication findAuthenticationByAuthusername(String authusername, String provider) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
-		  .append(" inner join fetch auth.identity ident")
-		  .append(" inner join fetch ident.user identUser")
-		  .append(" where auth.provider=:provider and auth.authusername=:authusername");
-
-		List<Authentication> results = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Authentication.class)
-				.setParameter("provider", provider)
-				.setParameter("authusername", authusername)
-				.getResultList();
-		if (results.isEmpty()) return null;
-		if (results.size() != 1) {
-			throw new AssertException("more than one entry for the a given authusername and provider, should never happen (even db has a unique constraint on those columns combined) ");
-		}
-		return results.get(0);
+		return authenticationDao.getAuthenticationByAuthusername(authusername, provider);
 	}
 	
 	@Override
-	public List<Authentication> findAuthenticationByAuthusername(String authusername, List<String> providers) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
-		  .append(" inner join fetch auth.identity ident")
-		  .append(" inner join fetch ident.user identUser")
-		  .append(" where auth.provider in (:providers) and auth.authusername=:authusername");
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Authentication.class)
-				.setParameter("providers", providers)
-				.setParameter("authusername", authusername)
-				.getResultList();
+	public List<Authentication> findAuthenticationsByAuthusername(String authusername, List<String> providers) {
+		if(providers == null || providers.isEmpty()) {
+			return authenticationDao.getAuthenticationsByAuthusername(authusername);
+		}
+		return authenticationDao.getAuthenticationsByAuthusername(authusername, providers);
 	}
 
 	@Override
@@ -1267,7 +1201,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 			// Create it lazy on demand
 			User guestUser = UserManager.getInstance().createUser(trans.translate("user.guest"), null, null);
 			guestUser.getPreferences().setLanguage(locale.toString());
-			guestIdentity = createAndPersistIdentityAndUser(guestUsername, null, guestUser, null, null, null);
+			guestIdentity = createAndPersistIdentityAndUser(guestUsername, guestUsername, null, guestUser, null, null, null);
 			organisationService.addMember(guestIdentity, OrganisationRoles.guest);
 		} else if (!guestIdentity.getUser().getProperty(UserConstants.FIRSTNAME, locale).equals(trans.translate("user.guest"))) {
 			//Check if guest name has been updated in the i18n tool

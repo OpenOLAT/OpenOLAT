@@ -48,9 +48,9 @@ public class IdentityPropertiesRow extends UserPropertiesRow {
 		inactivationDate = identity.getInactivationDate();
 	}
 	
-	public IdentityPropertiesRow(Long identityKey, String identityName, Date creationDate, Date lastLogin, Integer status,
+	public IdentityPropertiesRow(Long identityKey, Date creationDate, Date lastLogin, Integer status,
 			Date inactivationDate, List<UserPropertyHandler> userPropertyHandlers, String[] identityProps, Locale locale) {
-		super(identityKey, identityName, userPropertyHandlers, identityProps, locale);
+		super(identityKey, userPropertyHandlers, identityProps, locale);
 		this.status = status;
 		this.creationDate = creationDate;
 		this.lastLogin = lastLogin;	

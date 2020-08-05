@@ -109,8 +109,6 @@ public class CourseController extends FormBasicController implements Activateabl
 	
 	private final RepositoryEntry course;
 	private final CourseStatEntry courseStat;
-
-	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	@Autowired
@@ -130,7 +128,7 @@ public class CourseController extends FormBasicController implements Activateabl
 			RepositoryEntry course, CourseStatEntry courseStat, int index, int numOfCourses) {
 		super(ureq, wControl, "course");
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, isAdministrativeUser);
 		
 		this.course = course;
@@ -182,9 +180,6 @@ public class CourseController extends FormBasicController implements Activateabl
 		
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.name, "select"));
-		}
 		
 		int colIndex = UserListController.USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
@@ -213,7 +208,7 @@ public class CourseController extends FormBasicController implements Activateabl
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		tableEl.setEmtpyTableMessageKey("error.no.found");
-		tableEl.setAndLoadPersistedPreferences(ureq, "fCourseController");
+		tableEl.setAndLoadPersistedPreferences(ureq, "fCourseController-v2");
 	}
 
 	@Override

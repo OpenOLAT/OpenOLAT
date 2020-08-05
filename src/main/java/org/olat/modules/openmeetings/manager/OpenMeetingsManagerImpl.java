@@ -259,7 +259,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	}
 	
 	private String getPortraitURL(Identity identity) {
-		File portrait = portraitManager.getBigPortrait(identity.getName());
+		File portrait = portraitManager.getBigPortrait(identity);
 		if(portrait == null || !portrait.exists()) {
 			return "";
 		}

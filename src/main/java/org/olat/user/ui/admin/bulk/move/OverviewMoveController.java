@@ -71,7 +71,6 @@ public class OverviewMoveController extends StepFormBasicController {
 	private final UserBulkMove userBulkMove;
 	
 	private final Roles roles;
-	private final boolean isAdministrativeUser;
 	private List<UserPropertyHandler> userPropertyHandlers;
 	
 	@Autowired
@@ -89,7 +88,7 @@ public class OverviewMoveController extends StepFormBasicController {
 		this.userBulkMove = userBulkMove;
 		
 		roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 		
 		initForm(ureq);
@@ -99,11 +98,7 @@ public class OverviewMoveController extends StepFormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, MoveUserCols.id));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MoveUserCols.username));
-		}
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, MoveUserCols.id));
 		
 		int colPos = USER_PROPS_OFFSET;
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
@@ -121,7 +116,7 @@ public class OverviewMoveController extends StepFormBasicController {
 		FlexiTableElement tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setEmtpyTableMessageKey("error.no.user.found");
-		tableEl.setAndLoadPersistedPreferences(ureq, "overview_user_search_table");
+		tableEl.setAndLoadPersistedPreferences(ureq, "overview_user_search_table-v2");
 	}
 	
 	private void loadModel() {

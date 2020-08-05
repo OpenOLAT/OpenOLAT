@@ -81,7 +81,7 @@ public class UserShortDescription extends BasicController {
 		boolean alreadyDefinedUsername = false;
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 		for(UserPropertyHandler userPropertyHandler:userPropertyHandlers) {
-			if(UserConstants.USERNAME.equals(userPropertyHandler.getName())) {
+			if(UserConstants.NICKNAME.equals(userPropertyHandler.getName())) {
 				alreadyDefinedUsername = true;
 			}
 		}
@@ -92,7 +92,7 @@ public class UserShortDescription extends BasicController {
 		mainVC.contextPut("usernamePosition", "top");
 		mainVC.contextPut("locale", getLocale());
 		if(!alreadyDefinedUsername && (getIdentity().equals(identity) || isAdministrativeUser)) {
-			mainVC.contextPut("username", identity.getName());
+			mainVC.contextPut("username", identity.getUser().getProperty(UserConstants.NICKNAME, getLocale()));
 		}
 		mainVC.contextPut("usernameLabel", usernameLabel);
 		mainVC.contextPut("additionalRows", additionalRows);

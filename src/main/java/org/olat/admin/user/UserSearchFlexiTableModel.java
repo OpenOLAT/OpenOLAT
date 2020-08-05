@@ -38,16 +38,14 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class UserSearchFlexiTableModel extends DefaultTableDataModel<Identity> implements FlexiTableDataModel<Identity>, SortableFlexiTableDataModel<Identity> {
 	private Locale locale;
-	private boolean isAdministrativeUser;
 	private FlexiTableColumnModel columnModel;
 	private List<UserPropertyHandler> userPropertyHandlers;
 	
 	public UserSearchFlexiTableModel(List<Identity> identities, List<UserPropertyHandler> userPropertyHandlers,
-			boolean isAdministrativeUser, Locale locale, FlexiTableColumnModel columnModel) {
+			Locale locale, FlexiTableColumnModel columnModel) {
 		super(identities);
 		this.locale = locale;
 		this.columnModel = columnModel;
-		this.isAdministrativeUser = isAdministrativeUser;
 		this.userPropertyHandlers = userPropertyHandlers;
 	}
 
@@ -74,13 +72,8 @@ public class UserSearchFlexiTableModel extends DefaultTableDataModel<Identity> i
 
 	@Override
 	public Object getValueAt(Identity identity, int col) {
-		if(col == 0 && isAdministrativeUser) {
-			return identity.getName();
-		}
-
-		int pos = isAdministrativeUser ? col - 1 : col;
-		if(pos >= 0 && pos < userPropertyHandlers.size()) {
-			UserPropertyHandler handler = userPropertyHandlers.get(pos);
+		if(col >= 0 && col < userPropertyHandlers.size()) {
+			UserPropertyHandler handler = userPropertyHandlers.get(col);
 			return handler.getUserProperty(identity.getUser(), locale);
 		}
 		return "";
@@ -88,7 +81,7 @@ public class UserSearchFlexiTableModel extends DefaultTableDataModel<Identity> i
 
 	@Override
 	public UserSearchFlexiTableModel createCopyWithEmptyList() {
-		return new UserSearchFlexiTableModel(new ArrayList<Identity>(), userPropertyHandlers, isAdministrativeUser, locale, columnModel);
+		return new UserSearchFlexiTableModel(new ArrayList<Identity>(), userPropertyHandlers, locale, columnModel);
 	}
 
 	@Override

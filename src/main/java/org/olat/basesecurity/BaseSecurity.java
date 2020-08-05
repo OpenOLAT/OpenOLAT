@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.olat.basesecurity.model.FindNamedIdentity;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
@@ -85,6 +86,7 @@ public interface BaseSecurity {
 
 	public boolean isGuest(IdentityRef identity);
 	
+	public Identity findIdentityByLogin(String login);
 
 	/**
 	 * Find an identity by its name. This is an exact match. Use the
@@ -99,30 +101,18 @@ public interface BaseSecurity {
 	public Identity findIdentityByName(String identityName);
 	
 	public Identity findIdentityByNameCaseInsensitive(String identityName);
-	
-	public List<Identity> findIdentitiesByName(Collection<String> identityName);
-	
-	public List<Identity> findIdentitiesByNameCaseInsensitive(Collection<String> identityNames);
 
 	/**
-	 * Find an identity by student/institutionalnumber (i.e., Matrikelnummer), using the getIdentititesByPowerSearch() method.
-	 * <p>
-	 * Be aware that this method does <b>not</b> check the identities status! This method returns identities with any state, also deleted identities!
+	 * Specialized method to import identities in courses, groups... The query
+	 * search in the legacy name of identity, in authentication user name,
+	 * concat first and last name and institutional number. It's all case
+	 * insensitive.
 	 * 
-	 * @param identityNumber
-	 * @return the identity or null if not found
-	 */
-	public Identity findIdentityByNumber(String identityNumber);
-	
-	/**
-	 * The list of visible identities with a institutional number like in the
-	 * specified list. Deleted ones, login denied, pending or inactive are not
-	 * included.
-	 * 
-	 * @param identityNumbers The list of institutional numbers
+	 * @param identityNames A list of names
 	 * @return A list of identities
 	 */
-	public List<Identity> findIdentitiesByNumber(Collection<String> identityNumbers);
+	public List<FindNamedIdentity> findIdentitiesBy(Collection<String> names);
+	
 	
 	/**
 	 * Find an identity by its user
@@ -386,7 +376,7 @@ public interface BaseSecurity {
 	public Authentication findAuthenticationByAuthusername(String authusername, String provider);
 	
 
-	public List<Authentication> findAuthenticationByAuthusername(String authusername, List<String> providers);
+	public List<Authentication> findAuthenticationsByAuthusername(String authusername, List<String> providers);
 
 
 	/**

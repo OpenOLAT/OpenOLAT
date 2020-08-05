@@ -45,7 +45,6 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -153,7 +152,6 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	protected final RepositoryEntry repoEntry;
 	private final BusinessGroup businessGroup;
 	private final boolean isLastVisitVisible;
-	private final boolean isAdministrativeUser;
 	private final boolean chatEnabled;
 	
 	private boolean overrideManaged = false;
@@ -210,7 +208,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		chatEnabled = imModule.isEnabled() && imModule.isPrivateEnabled() && !secCallback.isReadonly();
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		isLastVisitVisible = securityModule.isUserLastVisitVisible(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 		
@@ -244,7 +242,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		membersTable = uifactory.addTableElement(getWindowControl(), "memberList", memberListModel, 20, false, getTranslator(), formLayout);
 		membersTable.setMultiSelect(true);
 		membersTable.setEmtpyTableMessageKey("nomembers");
-		membersTable.setAndLoadPersistedPreferences(ureq, this.getClass().getSimpleName());
+		membersTable.setAndLoadPersistedPreferences(ureq, this.getClass().getSimpleName() + "-v3");
 		membersTable.setSearchEnabled(true);
 		
 		membersTable.setExportEnabled(true);
@@ -302,13 +300,6 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		}
 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.identityStatus, new IdentityStatusCellRenderer(getLocale())));
-
-		if(isAdministrativeUser) {
-			FlexiCellRenderer renderer = new StaticFlexiCellRenderer(editAction, new TextFlexiCellRenderer());
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.username.i18n(), Cols.username.ordinal(), editAction,
-					true, Cols.username.name(), renderer));
-			defaultSortKey = new SortKey(Cols.username.name(), true);
-		}
 		
 		int colPos = USER_PROPS_OFFSET;
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {

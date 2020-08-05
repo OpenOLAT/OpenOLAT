@@ -35,11 +35,11 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.course.nodes.gta.rule.AssignTaskRuleSPI;
 import org.olat.modules.reminder.Reminder;
@@ -56,6 +56,7 @@ import org.olat.modules.reminder.restapi.ReminderVO;
 import org.olat.modules.reminder.rule.DateRuleSPI;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
+import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -140,12 +141,12 @@ public class RemindersWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void putNewReminder()
 	throws IOException, URISyntaxException {
-		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndAdmin("rest-rem-1");
+		IdentityWithLogin creator = JunitTestHelper.createAndPersistRndAdmin("rest-rem-1");
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(creator.getName(), JunitTestHelper.PWD));
+		Assert.assertTrue(conn.login(creator));
 		
 		ReminderVO reminderVo = new ReminderVO();
 		reminderVo.setDescription("Hello, I'm a reminder");
@@ -186,7 +187,7 @@ public class RemindersWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals("Hello, I'm a reminder", reminder.getDescription());
 		Assert.assertEquals("Remind me", reminder.getEmailSubject());
 		Assert.assertEquals("<p>To remind you</p>", reminder.getEmailBody());
-		Assert.assertEquals(creator, ((ReminderImpl)reminder).getCreator());
+		Assert.assertEquals(creator.getIdentity(), ((ReminderImpl)reminder).getCreator());
 		
 		// check rule configuration
 		String configuration = reminder.getConfiguration();
@@ -204,10 +205,10 @@ public class RemindersWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void postReminder()
 	throws IOException, URISyntaxException {
-		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndAdmin("rest-rem-3");
+		IdentityWithLogin creator = JunitTestHelper.createAndPersistRndAdmin("rest-rem-3");
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		
-		Reminder reminder = reminderService.createReminder(entry, creator);
+		Reminder reminder = reminderService.createReminder(entry, creator.getIdentity());
 		reminder.setDescription("Hello, I'm a reminder");
 		reminder.setEmailSubject("Remind me");
 		reminder.setEmailBody("<p>To remind you</p>");
@@ -225,7 +226,7 @@ public class RemindersWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(creator.getName(), JunitTestHelper.PWD));
+		Assert.assertTrue(conn.login(creator));
 		
 		ReminderVO reminderVo = new ReminderVO();
 		reminderVo.setKey(reminder.getKey());

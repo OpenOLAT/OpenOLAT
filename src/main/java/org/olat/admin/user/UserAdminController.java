@@ -82,6 +82,7 @@ import org.olat.user.ProfileFormController;
 import org.olat.user.PropFoundEvent;
 import org.olat.user.UserManager;
 import org.olat.user.UserPropertiesController;
+import org.olat.user.ui.admin.authentication.UserAuthenticationsEditorController;
 import org.olat.user.ui.admin.lifecycle.ConfirmDeleteUserController;
 import org.olat.user.ui.admin.lifecycle.IdentityDeletedEvent;
 import org.olat.user.ui.data.UserDataExportController;
@@ -298,11 +299,11 @@ public class UserAdminController extends BasicController implements Activateable
 			if (event == Event.DONE_EVENT) {
 				// rebuild authentication tab, could be wrong now
 				if (authenticationsCtr != null) {
-					authenticationsCtr.rebuildAuthenticationsTableDataModel();
+					authenticationsCtr.loadModel();
 				}
 			}
-		} else if (source == userProfileCtr){
-			if (event == Event.DONE_EVENT){
+		} else if (userProfileCtr == source || authenticationsCtr == source) {
+			if (event == Event.DONE_EVENT) {
 				//reload profile data on top
 				editedIdentity = securityManager.loadIdentityByKey(editedIdentity.getKey());
 				exposeUserDataToVC(ureq, editedIdentity);

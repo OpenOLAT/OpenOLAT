@@ -31,20 +31,19 @@ import org.olat.course.assessment.AssessmentHelper;
  */
 public class AssessedMember {
 	
-	private String username;
-	private String name;
 	private String lastname;
 	private String firstname;
 	private String email;
+	private String nickname;
 	
 	private int attempts;
 	private Boolean passed;
 	private BigDecimal score;
 	private String href;
 
-	public AssessedMember(String username, String lastname, String firstname, String email,
+	public AssessedMember(String nickname, String lastname, String firstname, String email,
 			int attempts, Boolean passed, BigDecimal score, String href) {
-		this.username = username;
+		this.nickname = nickname;
 		this.lastname = lastname;
 		this.firstname = firstname;
 		this.email = email;
@@ -53,13 +52,9 @@ public class AssessedMember {
 		this.score = score;
 		this.href = href;
 	}
-
-	public String getName() {
-		return name;
-	}
-
-	public String getUsername() {
-		return username;
+	
+	public String getNickname() {
+		return nickname;
 	}
 
 	public String getLastname() {

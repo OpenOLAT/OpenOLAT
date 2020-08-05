@@ -224,7 +224,7 @@ public class ExampleData extends OlatTestCase {
 		curriculumService.addMember(element, coach, CurriculumRoles.coach);
 		
 		for (int i = 0; i < param.getNumberCourses(); i++) {
-			Identity admin = securityManager.findIdentityByName("administrator");
+			Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
 			if (admin != null) {
 				RepositoryEntry course = JunitTestHelper.deployBasicCourse(admin);
 				curriculumService.addRepositoryEntry(element, course, true);

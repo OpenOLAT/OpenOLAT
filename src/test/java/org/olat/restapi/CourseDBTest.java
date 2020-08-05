@@ -39,7 +39,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
@@ -50,6 +49,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.restapi.support.vo.KeyValuePair;
 import org.olat.test.JunitTestHelper;
+import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -61,7 +61,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CourseDBTest extends OlatRestTestCase {
 	
-	private Identity auth;
+	private IdentityWithLogin auth;
 	private ICourse course;
 	
 	private boolean initialized = false;
@@ -77,8 +77,8 @@ public class CourseDBTest extends OlatRestTestCase {
 	public void setUp() throws Exception {
 		// create course and persist as OLATResourceImpl
 		if(!initialized) {
-			auth = JunitTestHelper.createAndPersistIdentityAsUser("rest-course-cal-one");
-			RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(auth);
+			auth = JunitTestHelper.createAndPersistRndUser("rest-course-cal-one");
+			RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(auth.getIdentity());
 			course = CourseFactory.loadCourse(courseEntry);
 			initialized = true;
 		}
@@ -87,7 +87,7 @@ public class CourseDBTest extends OlatRestTestCase {
 	@Test
 	public void createEntry_putQuery() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(auth.getName(), JunitTestHelper.PWD));
+		Assert.assertTrue(conn.login(auth));
 		
 		String category = createRndCategory();
 		String key = "myKeyName";
@@ -103,7 +103,7 @@ public class CourseDBTest extends OlatRestTestCase {
 		
 		conn.shutdown();
 		
-		CourseDBEntry entry = courseDbManager.getValue(course, auth, category, key);
+		CourseDBEntry entry = courseDbManager.getValue(course, auth.getIdentity(), category, key);
 		Assert.assertNotNull(entry);
 		Assert.assertEquals(key, entry.getName());
 		Assert.assertEquals(value, entry.getValue());
@@ -113,7 +113,7 @@ public class CourseDBTest extends OlatRestTestCase {
 	@Test
 	public void createEntry_putQuery_repoKey() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(auth.getName(), JunitTestHelper.PWD));
+		Assert.assertTrue(conn.login(auth));
 		
 		OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", course.getResourceableId());
 		RepositoryEntry courseRe = repositoryManager.lookupRepositoryEntry(courseOres, true);
@@ -132,7 +132,7 @@ public class CourseDBTest extends OlatRestTestCase {
 		
 		conn.shutdown();
 		
-		CourseDBEntry entry = courseDbManager.getValue(course, auth, category, key);
+		CourseDBEntry entry = courseDbManager.getValue(course, auth.getIdentity(), category, key);
 		Assert.assertNotNull(entry);
 		Assert.assertEquals(key, entry.getName());
 		Assert.assertEquals(value, entry.getValue());
@@ -142,7 +142,7 @@ public class CourseDBTest extends OlatRestTestCase {
 	@Test
 	public void createEntry_putJsonEntity() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(auth.getName(), JunitTestHelper.PWD));
+		Assert.assertTrue(conn.login(auth));
 		
 		String category = createRndCategory();
 		
@@ -164,7 +164,7 @@ public class CourseDBTest extends OlatRestTestCase {
 	@Test
 	public void createEntry_post() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(auth.getName(), JunitTestHelper.PWD));
+		Assert.assertTrue(conn.login(auth));
 		
 		String category = createRndCategory();
 		String key = "postit";
@@ -180,7 +180,7 @@ public class CourseDBTest extends OlatRestTestCase {
 		
 		conn.shutdown();
 		
-		CourseDBEntry entry = courseDbManager.getValue(course, auth, category, key);
+		CourseDBEntry entry = courseDbManager.getValue(course, auth.getIdentity(), category, key);
 		Assert.assertNotNull(entry);
 		Assert.assertEquals(key, entry.getName());
 		Assert.assertEquals(value, entry.getValue());
@@ -193,12 +193,12 @@ public class CourseDBTest extends OlatRestTestCase {
 		String key = "getit";
 		String value = "get a value";
 		
-		CourseDBEntry entry = courseDbManager.setValue(course, auth, category, key, value);
+		CourseDBEntry entry = courseDbManager.setValue(course, auth.getIdentity(), category, key, value);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(entry);
 		
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(auth.getName(), JunitTestHelper.PWD));
+		Assert.assertTrue(conn.login(auth));
 
 		UriBuilder uri = getUriBuilder(course.getResourceableId(), category).path("values").path(key);
 		HttpGet get = conn.createGet(uri.build(), MediaType.APPLICATION_JSON, true);
@@ -217,7 +217,7 @@ public class CourseDBTest extends OlatRestTestCase {
 	@Test
 	public void getUsedCategories() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(auth.getName(), JunitTestHelper.PWD));
+		Assert.assertTrue(conn.login(auth));
 		
 		String category = createRndCategory();
 		

@@ -225,7 +225,7 @@ public class OAuthDispatcher implements Dispatcher {
 				if(StringHelper.containsNonWhitespace(email)) {
 					Identity identity = userManager.findUniqueIdentityByEmail(email);
 					if(identity == null) {
-						identity = securityManager.findIdentityByName(id);
+						identity = securityManager.findIdentityByLogin(id);
 					}
 					if(identity != null) {
 						securityManager.createAndPersistAuthentication(identity, registration.getAuthProvider(), id, null, null);

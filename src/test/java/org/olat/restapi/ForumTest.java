@@ -55,14 +55,13 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSContainer;
@@ -77,6 +76,7 @@ import org.olat.modules.fo.restapi.ReplyVO;
 import org.olat.restapi.support.vo.File64VO;
 import org.olat.restapi.support.vo.FileVO;
 import org.olat.test.JunitTestHelper;
+import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -90,7 +90,7 @@ public class ForumTest extends OlatRestTestCase {
 	
 	private static Forum forum;
 	private static Message m1, m2, m3, m4 ,m5;
-	private static Identity id1;
+	private static IdentityWithLogin id1;
 	
 	@Autowired
 	private DB dbInstance;
@@ -100,33 +100,33 @@ public class ForumTest extends OlatRestTestCase {
 	@Before
 	public void setUp() throws Exception {
 
-		id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-zero");
+		id1 = JunitTestHelper.createAndPersistRndUser("rest-zero");
 		
 		forum = forumManager.addAForum();
 		
-		m1 = forumManager.createMessage(forum, id1, false);
+		m1 = forumManager.createMessage(forum, id1.getIdentity(), false);
 		m1.setTitle("Thread-1");
 		m1.setBody("Body of Thread-1");
 		forumManager.addTopMessage(m1);
 		
-		m2 = forumManager.createMessage(forum, id1, false);
+		m2 = forumManager.createMessage(forum, id1.getIdentity(), false);
 		m2.setTitle("Thread-2");
 		m2.setBody("Body of Thread-2");
 		forumManager.addTopMessage(m2);
 		
 		dbInstance.intermediateCommit();
 		
-		m3 = forumManager.createMessage(forum, id1, false);
+		m3 = forumManager.createMessage(forum, id1.getIdentity(), false);
 		m3.setTitle("Message-1.1");
 		m3.setBody("Body of Message-1.1");
 		forumManager.replyToMessage(m3, m1);
 		
-		m4 = forumManager.createMessage(forum, id1, false);
+		m4 = forumManager.createMessage(forum, id1.getIdentity(), false);
 		m4.setTitle("Message-1.1.1");
 		m4.setBody("Body of Message-1.1.1");
 		forumManager.replyToMessage(m4, m3);
 		
-		m5 = forumManager.createMessage(forum, id1, false);
+		m5 = forumManager.createMessage(forum, id1.getIdentity(), false);
 		m5.setTitle("Message-1.2");
 		m5.setBody("Body of Message-1.2");
 		forumManager.replyToMessage(m5, m1);
@@ -344,7 +344,7 @@ public class ForumTest extends OlatRestTestCase {
 	@Test
 	public void testUploadAttachment() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1.getName(), JunitTestHelper.PWD));
+		assertTrue(conn.login(id1));
 		
 		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString())
 			.queryParam("authorKey", id1.getKey())
@@ -390,7 +390,7 @@ public class ForumTest extends OlatRestTestCase {
 	@Test
 	public void testUpload64Attachment() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1.getName(), "A6B7C8"));
+		assertTrue(conn.login(id1));
 		
 		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString())
 			.queryParam("authorKey", id1.getKey())
@@ -438,7 +438,7 @@ public class ForumTest extends OlatRestTestCase {
 	@Test
 	public void testReplyWithTwoAttachments() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1.getName(), "A6B7C8"));
+		assertTrue(conn.login(id1));
 
 		ReplyVO vo = new ReplyVO();
 		vo.setTitle("Reply with attachment");
@@ -514,7 +514,7 @@ public class ForumTest extends OlatRestTestCase {
 	@Test
 	public void testUploadAttachmentWithFile64VO() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1.getName(), "A6B7C8"));
+		assertTrue(conn.login(id1));
 		
 		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString())
 			.queryParam("authorKey", id1.getKey())
@@ -566,7 +566,7 @@ public class ForumTest extends OlatRestTestCase {
 	@Test
 	public void testUploadAttachmentAndRename() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1.getName(), "A6B7C8"));
+		assertTrue(conn.login(id1));
 		
 		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString())
 			.queryParam("authorKey", id1.getKey())

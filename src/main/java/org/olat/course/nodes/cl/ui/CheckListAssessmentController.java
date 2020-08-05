@@ -117,7 +117,6 @@ public class CheckListAssessmentController extends FormBasicController implement
 	private final CheckListCourseNode courseNode;
 	private final ModuleConfiguration config;
 	private final UserCourseEnvironment coachCourseEnv;
-	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 
 	private FormSubmit saveButton;
@@ -165,7 +164,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 			checkboxList = configCheckboxList;
 		}
 		Roles roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 		
 		closeAfterDueDate = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_CLOSE_AFTER_DUE_DATE);
@@ -198,11 +197,6 @@ public class CheckListAssessmentController extends FormBasicController implement
 
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		if(isAdministrativeUser) {
-			options.setDefaultOrderBy(new SortKey(Cols.username.name(), true));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.username.i18nKey(), Cols.username.ordinal(),
-					true, Cols.username.name()));
-		}
 		
 		int i=0;
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
@@ -256,7 +250,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 		table.setCustomizeColumns(true);
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
 		table.setSortSettings(sortOptions);
-		table.setAndLoadPersistedPreferences(ureq, "checklist-assessment-" + courseNode.getIdent());
+		table.setAndLoadPersistedPreferences(ureq, "checklist-assessment-v2-" + courseNode.getIdent());
 		
 		pdfExportButton = uifactory.addFormLink("pdf.export", formLayout, Link.BUTTON);
 		pdfExportButton.setEnabled(numOfCheckbox > 0);

@@ -307,6 +307,7 @@ public class MemberViewQueries {
 			} else {
 				sb.append("lower(ident.name) like :login");
 			}
+			//TODO username
 		}
 
 		// append queries for user fields

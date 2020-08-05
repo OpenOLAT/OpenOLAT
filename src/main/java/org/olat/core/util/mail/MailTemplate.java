@@ -187,9 +187,9 @@ public abstract class MailTemplate {
 			locale = I18nManager.getInstance().getLocaleOrDefault(user.getPreferences().getLanguage());
 		}
 		
-		vContext.put("login", identity.getName());
-		vContext.put("username", identity.getName());
-		vContext.put("userName", identity.getName());
+		vContext.put("login", user.getProperty(UserConstants.NICKNAME, locale));
+		vContext.put("username", user.getProperty(UserConstants.NICKNAME, locale));
+		vContext.put("userName", user.getProperty(UserConstants.NICKNAME, locale));
 		vContext.put("first", user.getProperty(UserConstants.FIRSTNAME, locale));
 		vContext.put("firstname", user.getProperty(UserConstants.FIRSTNAME, locale));
 		vContext.put("firstName", user.getProperty(UserConstants.FIRSTNAME, locale));

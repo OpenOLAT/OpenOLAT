@@ -84,7 +84,6 @@ public class OrdersDataModel extends DefaultFlexiTableDataSourceModel<OrderTable
 				return "-";
 			}
 			case summary: return order.getResourceDisplayname();
-			case username: return order.getUsername();
 			default: return order;
 		}
 	}
@@ -101,8 +100,7 @@ public class OrdersDataModel extends DefaultFlexiTableDataSourceModel<OrderTable
 		methods("order.part.payment", "trxMethodIds"),
 		total("order.total", "total_amount"),
 		summary("order.summary", "resDisplaynames"),
-		status("order.status", "o_status"),
-		username("order.username", "delivery_ident_name");
+		status("order.status", "o_status");
 
 		private final String i18nKey;
 		private final String sortKey;

@@ -114,7 +114,6 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 	private final boolean withPassed;
 	private final boolean withComment;
 	
-	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	@Autowired
@@ -147,7 +146,7 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 		withComment = assessmentConfig.hasComment();
 		
 		Roles roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(GTACoachedGroupGradingController.USER_PROPS_ID, isAdministrativeUser);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
@@ -187,9 +186,6 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.username.i18nKey(), Cols.username.ordinal()));
-		}
 		
 		int i=0;
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
@@ -226,7 +222,7 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 		model = new GroupAssessmentModel(gtaNode, userPropertyHandlers, getLocale(), columnsModel);
 		table = uifactory.addTableElement(getWindowControl(), "group-list", model, getTranslator(), formLayout);
 		table.setCustomizeColumns(true);
-		table.setAndLoadPersistedPreferences(ureq, "gtagroup-assessment");
+		table.setAndLoadPersistedPreferences(ureq, "gtagroup-assessment-v2");
 	}
 
 	private void loadMembers() {

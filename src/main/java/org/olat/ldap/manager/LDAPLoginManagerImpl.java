@@ -92,8 +92,11 @@ import org.olat.ldap.LDAPLoginModule;
 import org.olat.ldap.LDAPSyncConfiguration;
 import org.olat.ldap.model.LDAPGroup;
 import org.olat.ldap.model.LDAPUser;
+import org.olat.ldap.model.LDAPValidationResult;
 import org.olat.ldap.ui.LDAPAuthenticationController;
+import org.olat.login.auth.AuthenticationProviderSPI;
 import org.olat.login.auth.OLATAuthManager;
+import org.olat.login.validation.ValidationResult;
 import org.olat.user.UserLifecycleManager;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -106,7 +109,7 @@ import org.springframework.stereotype.Service;
  * @author Maurus Rohrer
  */
 @Service("org.olat.ldap.LDAPLoginManager")
-public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListener {
+public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationProviderSPI, GenericEventListener {
 	
 	private static final Logger log = Tracing.createLoggerFor(LDAPLoginManagerImpl.class);
 
@@ -148,6 +151,41 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		this.taskExecutorManager = taskExecutorManager;
 		coordinator.getEventBus().registerFor(this, null, ldapSyncLockOres);
 		FrameworkStartupEventChannel.registerForStartupEvent(this);
+	}
+
+	@Override
+	public List<String> getProviderNames() {
+		return Collections.singletonList("LDAP");
+	}
+
+	@Override
+	public boolean canChangeAuthenticationUsername(String provider) {
+		return "LDAP".equals(provider);
+	}
+
+	@Override
+	public boolean changeAuthenticationUsername(Authentication authentication, String newUsername) {
+		authentication.setAuthusername(newUsername);
+		authentication = authenticationDao.updateAuthentication(authentication);
+		return authentication != null;
+	}
+
+	@Override
+	public ValidationResult validateAuthenticationUsername(String name, Identity identity) {
+
+		LdapContext ctx = bindSystem();
+		if(ctx != null) {
+			String userDN = ldapDao.searchUserForLogin(name, ctx);
+			if(StringHelper.containsNonWhitespace(userDN)) {
+				Authentication currentAuth = authenticationDao.getAuthentication(name, LDAPAuthenticationController.PROVIDER_LDAP);
+				if(currentAuth == null || currentAuth.getIdentity().equals(identity)) {
+					return LDAPValidationResult.allOk();
+				}
+				return LDAPValidationResult.error("error.user.already.in.use");
+			}
+			return LDAPValidationResult.error("error.user.not.found");
+		}
+		return LDAPValidationResult.error("delete.error.connection");
 	}
 
 	@Override
@@ -531,7 +569,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		// Get and Check Config
 		String[] reqAttrs = syncConfiguration.checkRequestAttributes(userAttributes);
 		if (reqAttrs != null) {
-			log.warn("Can not create and persist user, the following attributes are missing::" + ArrayUtils.toString(reqAttrs));
+			log.warn("Can not create and persist user, the following attributes are missing::{}", ArrayUtils.toString(reqAttrs));
 			return null;
 		}
 		
@@ -539,17 +577,17 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 				.getOlatPropertyToLdapAttribute(LDAPConstants.LDAP_USER_IDENTIFYER)));
 		String email = getAttributeValue(userAttributes.get(syncConfiguration.getOlatPropertyToLdapAttribute(UserConstants.EMAIL)));
 		// Lookup user
-		if (securityManager.findIdentityByNameCaseInsensitive(uid) != null) {
-			log.error("Can't create user with username='" + uid + "', this username does already exist in OLAT database");
+		if (securityManager.findIdentityByLogin(uid) != null) {
+			log.error("Can't create user with username='{}', this username does already exist in OLAT database", uid);
 			return null;
 		}
 		if (!MailHelper.isValidEmailAddress(email)) {
 			// needed to prevent possibly an AssertException in findIdentityByEmail breaking the sync!
-			log.error("Cannot try to lookup user " + uid + " by email with an invalid email::" + email);
+			log.error("Cannot try to lookup user {} by email with an invalid email::{}", uid, email);
 			return null;
 		}
 		if (!userManager.isEmailAllowed(email)) {
-			log.error("Can't create user with email='" + email + "', a user with that email does already exist in OLAT database");
+			log.error("Can't create user with email='{}', a user with that email does already exist in OLAT database", email);
 			return null;
 		}
 		
@@ -777,31 +815,29 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 				.getOlatPropertyToLdapAttribute(LDAPConstants.LDAP_USER_IDENTIFYER)));
 		String token = getAttributeValue(attrs.get(syncConfiguration.getLdapUserLoginAttribute()));
 
-		Identity identity = securityManager.findIdentityByNameCaseInsensitive(uid);
-		if (identity == null) {
-			return null;
+		Authentication ldapAuth = authenticationDao.getAuthentication(token, LDAPAuthenticationController.PROVIDER_LDAP);
+		if(ldapAuth != null) {
+			return ldapAuth.getIdentity();
 		}
 
-		boolean hasLdapAuthentication = authenticationDao.hasAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP);
-		if (hasLdapAuthentication) {
-			Authentication ldapAuth = securityManager.findAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP);
-			if(ldapAuth == null) {
-				//BUG Fixe: update the user and test if it has a ldap provider
-				securityManager.createAndPersistAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP, token, null, null);
-			} else if(StringHelper.containsNonWhitespace(token) && !token.equals(ldapAuth.getAuthusername())) {
+		ldapAuth = authenticationDao.getAuthentication(uid, LDAPAuthenticationController.PROVIDER_LDAP);
+		if(ldapAuth != null) {
+			if(StringHelper.containsNonWhitespace(token) && !token.equals(ldapAuth.getAuthusername())) {
 				ldapAuth.setAuthusername(token);
-				securityManager.updateAuthentication(ldapAuth);
+				ldapAuth = securityManager.updateAuthentication(ldapAuth);
 			}
-			return identity;
+			return ldapAuth.getIdentity();
 		}
-		if (ldapLoginModule.isConvertExistingLocalUsersToLDAPUsers()) {
-			// Add user to LDAP security group and add the ldap provider
-			securityManager.createAndPersistAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP, token, null, null);
-			log.info("Found identity by LDAP username that was not yet in LDAP security group. Converted user::" + uid
-					+ " to be an LDAP managed user");
-			return identity;
+		
+		if(ldapLoginModule.isConvertExistingLocalUsersToLDAPUsers()) {
+			Authentication defaultAuth = authenticationDao.getAuthentication(uid, "OLAT");
+			if(defaultAuth != null) {
+				// Add user to LDAP security group and add the ldap provider
+				securityManager.createAndPersistAuthentication(defaultAuth.getIdentity(), LDAPAuthenticationController.PROVIDER_LDAP, token, null, null);
+				log.info("Found identity by LDAP username that was not yet in LDAP security group. Converted user::{} to be an LDAP managed user", uid);
+				return defaultAuth.getIdentity();
+			}
 		}
-		errors.insert("findIdentyByLdapAuthentication: User with username::" + uid + " exist but not Managed by LDAP");
 		return null;
 	}
 
@@ -1198,8 +1234,8 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 					if (reqAttrs == null) {
 						newLdapUserList.add(ldapUser);
 					} else {
-						log.warn("LDAP batch sync: can't create user with username::" + user + " : missing required attributes::"
-							+ ArrayUtils.toString(reqAttrs));
+						log.warn("LDAP batch sync: can't create user with username::{} : missing required attributes::{}",
+							user, ArrayUtils.toString(reqAttrs));
 					}
 				} else {
 					log.warn(errors.get());
@@ -1247,7 +1283,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		
 		// create new users
 		if (newLdapUserList.isEmpty()) {
-			log.info("LDAP batch sync: no users to create" + sinceSentence);
+			log.info("LDAP batch sync: no users to create {}", sinceSentence);
 		} else {			
 			int newCount = 0;
 			for (LDAPUser ldapUser: newLdapUserList) {

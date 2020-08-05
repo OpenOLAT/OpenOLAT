@@ -34,19 +34,17 @@ public class Buddy implements OLATResourceable, Comparable<Buddy>, Serializable 
 	private static final long serialVersionUID = 2256891747103723186L;
 	
 	private final Long identityKey;
-	private final String username;
 	private String name;
 	private boolean anonym;
 	private boolean vip;
 	private String status;
 	
-	public Buddy(Long identityKey, String username, String name, boolean anonym, String status) {
-		this(identityKey, username, name, anonym, false, status);
+	public Buddy(Long identityKey, String name, boolean anonym, String status) {
+		this(identityKey, name, anonym, false, status);
 	}
 	
-	public Buddy(Long identityKey, String username, String name, boolean anonym, boolean vip, String status) {
+	public Buddy(Long identityKey, String name, boolean anonym, boolean vip, String status) {
 		this.identityKey = identityKey;
-		this.username = username;
 		this.name = name;
 		this.anonym = anonym;
 		this.vip = vip;
@@ -55,10 +53,6 @@ public class Buddy implements OLATResourceable, Comparable<Buddy>, Serializable 
 
 	public Long getIdentityKey() {
 		return identityKey;
-	}
-
-	public String getUsername() {
-		return username;
 	}
 
 	public String getName() {
@@ -105,7 +99,7 @@ public class Buddy implements OLATResourceable, Comparable<Buddy>, Serializable 
 	
 	@Override
 	public Buddy clone() {
-		return new Buddy(identityKey, username, name, anonym, vip, status);
+		return new Buddy(identityKey, name, anonym, vip, status);
 	}
 
 	@Override

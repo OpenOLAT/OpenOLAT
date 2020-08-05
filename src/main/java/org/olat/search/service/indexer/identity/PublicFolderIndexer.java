@@ -58,7 +58,7 @@ public class PublicFolderIndexer extends FolderIndexer {
 		try {
 			// get public folder for user
 			Identity identity = (Identity) parentObject;
-			VFSContainer rootContainer = VFSManager.olatRootContainer(FolderConfig.getUserHome(identity.getName()) + "/public", null);
+			VFSContainer rootContainer = VFSManager.olatRootContainer(FolderConfig.getUserHome(identity) + "/public", null);
 			if (!rootContainer.exists()) return;
 			// build new resource context
 			SearchResourceContext searchResourceContext = new SearchResourceContext(parentResourceContext);
@@ -71,6 +71,6 @@ public class PublicFolderIndexer extends FolderIndexer {
 			log.warn("Exception while indexing public folder of identity::" + parentObject.toString() + ". Skipping this user, try next one.",
 							ex);
 		}
-		if (log.isDebugEnabled()) log.debug("PublicFolder finished for user::" + parentObject.toString());
+		if (log.isDebugEnabled()) log.debug("PublicFolder finished for user::{}", parentObject);
 	}
 }

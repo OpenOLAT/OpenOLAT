@@ -1,0 +1,265 @@
+/**
+* OLAT - Online Learning and Training<br>
+* http://www.olat.org
+* <p>
+* Licensed under the Apache License, Version 2.0 (the "License"); <br>
+* you may not use this file except in compliance with the License.<br>
+* You may obtain a copy of the License at
+* <p>
+* http://www.apache.org/licenses/LICENSE-2.0
+* <p>
+* Unless required by applicable law or agreed to in writing,<br>
+* software distributed under the License is distributed on an "AS IS" BASIS, <br>
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+* See the License for the specific language governing permissions and <br>
+* limitations under the License.
+* <p>
+* Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
+* University of Zurich, Switzerland.
+* <hr>
+* <a href="http://www.openolat.org">
+* OpenOLAT - Online Learning and Training</a><br>
+* This file has been modified by the OpenOLAT community. Changes are licensed
+* under the Apache 2.0 license as the original file.
+*/
+
+package org.olat.user.ui.admin.authentication;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.olat.admin.user.UserChangePasswordController;
+import org.olat.basesecurity.Authentication;
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.id.Identity;
+import org.olat.core.util.Util;
+import org.olat.login.auth.AuthenticationProviderSPI;
+import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
+
+/**
+ * Initial Date:  Aug 27, 2004
+ *
+ * @author Mike Stock
+ */
+public class UserAuthenticationsEditorController extends FormBasicController {
+	
+	private FlexiTableElement tableEl;
+	private AuthenticationsTableDataModel tableModel;
+
+	private CloseableModalController cmc;
+	private DialogBoxController confirmationDialog;
+	private UserAuthenticationEditController editCtrl;
+	
+	private final Identity changeableIdentity;
+	
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
+
+	/**
+	 * @param ureq
+	 * @param wControl
+	 * @param changeableIdentity
+	 */
+	public UserAuthenticationsEditorController(UserRequest ureq, WindowControl wControl, Identity changeableIdentity) { 
+		super(ureq, wControl, "authentications", Util.createPackageTranslator(UserChangePasswordController.class, ureq.getLocale()));
+		
+		this.changeableIdentity = changeableIdentity;
+		initForm(ureq);
+		loadModel();
+	}
+	
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AuthenticationCols.provider));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AuthenticationCols.login));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AuthenticationCols.credential));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.action", translate("delete"), "delete"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.action", AuthenticationCols.edit.ordinal(), "edit",
+				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("edit"), "edit"), null)));
+		
+		tableModel = new AuthenticationsTableDataModel(columnsModel);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
+		tableEl.setCustomizeColumns(false);
+	}
+	
+	@Override
+	protected void doDispose() {
+		//
+	}
+	
+	/**
+	 * Rebuild the authentications table data model
+	 */
+	public void loadModel() {
+		Map<String, AuthenticationProviderSPI> providers = CoreSpringFactory.getBeansOfType(AuthenticationProviderSPI.class);
+		List<Authentication> authentications = securityManager.getAuthentications(changeableIdentity);
+		List<UserAuthenticationRow> rows = new ArrayList<>(authentications.size());
+		for(Authentication authentication:authentications) {
+			AuthenticationProviderSPI provider = getProvider(authentication, providers);
+			boolean canChange = provider != null && provider.canChangeAuthenticationUsername(authentication.getProvider());
+			rows.add(new UserAuthenticationRow(authentication, provider, canChange));
+		}
+		tableModel.setObjects(rows);
+		tableEl.reset(true, true, true);
+	}
+	
+	private AuthenticationProviderSPI getProvider(Authentication authentication, Map<String, AuthenticationProviderSPI> providers) {
+		for(AuthenticationProviderSPI provider:providers.values()) {
+			List<String> names = provider.getProviderNames();
+			if(names.contains(authentication.getProvider())) {
+				return provider;
+			}	
+		}
+		return null;
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(tableEl == source) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				if("delete".equals(se.getCommand())) {
+					doConfirmDelete(ureq, tableModel.getObject(se.getIndex()));
+				} else if("edit".equals(se.getCommand())) {
+					doEdit(ureq, tableModel.getObject(se.getIndex()));
+				}
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	public void event(UserRequest ureq, Controller source, Event event) {
+		if (source == confirmationDialog) {
+			if (DialogBoxUIFactory.isYesEvent(event)) { 
+				doDelete((Authentication)confirmationDialog.getUserObject());
+			}
+		} else if(editCtrl == source) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				loadModel();
+				fireEvent(ureq, Event.DONE_EVENT);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
+		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(editCtrl);
+		removeAsListenerAndDispose(cmc);
+		editCtrl = null;
+		cmc = null;
+	}
+	
+	private void doEdit(UserRequest ureq, UserAuthenticationRow row) {
+		editCtrl = new UserAuthenticationEditController(ureq, getWindowControl(), row.getAuthentication(), row.getProvider());
+		listenTo(editCtrl);
+		
+		String title = translate("edit.title");
+		cmc = new CloseableModalController(getWindowControl(), "close", editCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doConfirmDelete(UserRequest ureq, UserAuthenticationRow row) {
+		String fullname = userManager.getUserDisplayName(changeableIdentity);
+		String msg = translate("authedit.delete.confirm", new String[] { row.getAuthentication().getProvider(), fullname });
+		confirmationDialog = activateYesNoDialog(ureq, null, msg, confirmationDialog);
+		confirmationDialog.setUserObject(row.getAuthentication());
+	}
+	
+	private void doDelete(Authentication auth) {
+		securityManager.deleteAuthentication(auth);
+		getWindowControl().setInfo(getTranslator().translate("authedit.delete.success", 
+				new String[] { auth.getProvider(), changeableIdentity.getName() }));
+		loadModel();
+	}
+
+	public enum AuthenticationCols implements FlexiSortableColumnDef {
+		provider("table.auth.provider"),
+		login("table.auth.login"),
+		credential("table.auth.credential"),
+		edit("edit");
+		
+		private final String i18nKey;
+		
+		private AuthenticationCols(String i18nKey) {
+			this.i18nKey = i18nKey;
+		}
+		
+		@Override
+		public String i18nHeaderKey() {
+			return i18nKey;
+		}
+
+		@Override
+		public boolean sortable() {
+			return false;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
+		}
+	}
+	
+	private static class AuthenticationsTableDataModel extends DefaultFlexiTableDataModel<UserAuthenticationRow> {
+		
+		private static final AuthenticationCols[] COLS = AuthenticationCols.values();
+
+		public AuthenticationsTableDataModel(FlexiTableColumnModel columnsModel) {
+			super(columnsModel);
+		}
+
+		@Override
+		public final Object getValueAt(int row, int col) {
+			UserAuthenticationRow authRow = getObject(row);
+			Authentication auth = authRow.getAuthentication();
+			switch (COLS[col]) {
+				case provider: return auth.getProvider();
+				case login: return auth.getAuthusername();
+				case credential: return auth.getCredential();
+				case edit: return authRow.isCanEditAuthenticationUsername();
+				default: return "error";
+			}
+		}
+
+		@Override
+		public AuthenticationsTableDataModel createCopyWithEmptyList() {
+			return new AuthenticationsTableDataModel(getTableColumnModel());
+		}
+	}
+}

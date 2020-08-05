@@ -35,7 +35,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
@@ -67,7 +66,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class AssessmentToReviewSmallController extends FormBasicController {
 	
 	private final RepositoryEntry testEntry;
-	private final boolean isAdministrativeUser;
 	private final AssessmentToolSecurityCallback assessmentCallback;
 	
 	private FlexiTableElement tableEl;
@@ -90,7 +88,7 @@ public class AssessmentToReviewSmallController extends FormBasicController {
 		this.testEntry = testEntry;
 		this.assessmentCallback = assessmentCallback;
 		
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(AssessmentToolConstants.reducedUsageIdentifyer, isAdministrativeUser);
 		
 		initForm(ureq);
@@ -101,10 +99,7 @@ public class AssessmentToReviewSmallController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToReviewCols.username, "select"));
-		}
-		
+
 		int colIndex = AssessmentToolConstants.USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
@@ -207,11 +202,6 @@ public class AssessmentToReviewSmallController extends FormBasicController {
 
 		@Override
 		public Object getValueAt(UserToReviewRow row, int col) {
-			if(col >= 0 && col < ToReviewCols.values().length) {
-				switch(ToReviewCols.values()[col]) {
-					case username: return row.getIdentityName();
-				}
-			}
 			int propPos = col - AssessmentToolConstants.USER_PROPS_OFFSET;
 			return row.getIdentityProp(propPos);
 		}
@@ -219,32 +209,6 @@ public class AssessmentToReviewSmallController extends FormBasicController {
 		@Override
 		public DefaultFlexiTableDataModel<UserToReviewRow> createCopyWithEmptyList() {
 			return new UsersToReviewTableModel(getTableColumnModel());
-		}
-	}
-
-	public enum ToReviewCols implements FlexiSortableColumnDef {
-		
-		username("table.header.name");
-		
-		private final String i18nKey;
-		
-		private ToReviewCols(String i18nKey) {
-			this.i18nKey = i18nKey;
-		}
-		
-		@Override
-		public String i18nHeaderKey() {
-			return i18nKey;
-		}
-
-		@Override
-		public boolean sortable() {
-			return true;
-		}
-
-		@Override
-		public String sortKey() {
-			return name();
 		}
 	}
 }

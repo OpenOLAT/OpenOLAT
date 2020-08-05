@@ -68,7 +68,6 @@ implements SortableFlexiTableDataModel<LectureBlockIdentityStatistics>, FlexiTab
 		if(col >= 0 && col < StatsCols.values().length) {
 			switch(StatsCols.values()[col]) {
 				case id: return row.getIdentityKey();
-				case username: return row.getIdentityName();
 				case externalRef: return row.getExternalRef();
 				case entry: return row.getDisplayName();
 				case plannedLectures: return positive(row.getTotalPersonalPlannedLectures());
@@ -122,7 +121,6 @@ implements SortableFlexiTableDataModel<LectureBlockIdentityStatistics>, FlexiTab
 	
 	public enum StatsCols implements FlexiSortableColumnDef {
 		id("table.header.id"),
-		username("table.header.username"),
 		externalRef("table.header.entry"),
 		entry("table.header.entry"),
 		plannedLectures("table.header.planned.lectures"),
@@ -130,8 +128,7 @@ implements SortableFlexiTableDataModel<LectureBlockIdentityStatistics>, FlexiTab
 		absentLectures("table.header.absent.lectures"),
 		unauthorizedAbsenceLectures("table.header.unauthorized.absence"),
 		authorizedAbsenceLectures("table.header.authorized.absence"),
-		currentRate("table.header.attended.current.rate")
-		;
+		currentRate("table.header.attended.current.rate");
 		
 		private final String i18nKey;
 		

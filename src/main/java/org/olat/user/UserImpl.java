@@ -56,7 +56,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
- * Desciption: 
+ * Description: 
  * <p>
  * The user represents an known OLAT user. A user can log into OLAT
  * and user the system.
@@ -114,6 +114,8 @@ public class UserImpl implements Persistable, User {
 	private String email;
 	@Column(name="u_privateemail", nullable=true, insertable=true, updatable=true)
 	private String privateEmail;
+	@Column(name="u_nickname", nullable=true, insertable=true, updatable=true)
+	private String nickName;
 	
 	@Column(name="u_gender", nullable=true, insertable=true, updatable=true)
 	private String gender;
@@ -307,7 +309,7 @@ public class UserImpl implements Persistable, User {
 		this.identity = identity;
 	}
 	
-
+	@Override
 	public String getFirstName() {
 		return firstName;
 	}
@@ -323,6 +325,14 @@ public class UserImpl implements Persistable, User {
 
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
+	}
+
+	public String getNickName() {
+		return nickName;
+	}
+
+	public void setNickName(String nickName) {
+		this.nickName = nickName;
 	}
 
 	@Override
@@ -343,6 +353,7 @@ public class UserImpl implements Persistable, User {
 		this.institutionalEmail = institutionalEmail;
 	}
 	
+	@Override
 	public String getSmsTelMobile() {
 		return smsTelMobile;
 	}
@@ -359,9 +370,6 @@ public class UserImpl implements Persistable, User {
 		this.webdav = isWebdav;
 	}
 
-	/**
-	 * @see User#getPreferences()
-	 */
 	@Override
 	public Preferences getPreferences() {
 		if(preferences == null) {
@@ -370,9 +378,6 @@ public class UserImpl implements Persistable, User {
 		return preferences;	
 	}
 	
-	/**
-	 * @see User#setPreferences(Preferences)
-	 */
 	@Override
 	public void setPreferences(Preferences prefs){
 		this.preferences = (PreferencesImpl)prefs;	
@@ -383,6 +388,7 @@ public class UserImpl implements Persistable, User {
 			case UserConstants.FIRSTNAME: return firstName;
 			case UserConstants.LASTNAME: return lastName;
 			case UserConstants.EMAIL: return email;
+			case UserConstants.NICKNAME: return nickName;
 			case "birthDay": return birthDay;
 			case "graduation": return graduation;
 			case "gender": return gender;
@@ -458,6 +464,7 @@ public class UserImpl implements Persistable, User {
 			case UserConstants.FIRSTNAME: firstName = value; break;
 			case UserConstants.LASTNAME: lastName = value; break;
 			case UserConstants.EMAIL: email = value; break;
+			case UserConstants.NICKNAME: nickName = value; break;
 			case "birthDay": birthDay = value; break;
 			case "graduation": graduation = value; break;
 			case "gender": gender = value; break;
@@ -557,23 +564,20 @@ public class UserImpl implements Persistable, User {
 	}
 
 	/**
-	 * Returns the users username, lastname, firstname and database key.
+	 * Returns the users firstname, lastname, email and database key.
 	 * @return String user info
 	 */
+	@Override
 	public String toString() {
-		UserManager um = UserManager.getInstance();
-		if (um != null) { //can be null during startup, may inject via spring
-		String quickinfo = "UserImpl(" + getKey() + ")[" + um.getUserPropertiesConfig().getPropertyHandler(UserConstants.LASTNAME).getUserProperty(this, null)
-				+ " " + um.getUserPropertiesConfig().getPropertyHandler(UserConstants.FIRSTNAME).getUserProperty(this, null) + ","
-				+ um.getUserPropertiesConfig().getPropertyHandler(UserConstants.EMAIL).getUserProperty(this, null) + "]";
-		return quickinfo + "," + super.toString();
-		}
-		return super.toString();
+		StringBuilder sb = new StringBuilder(64);
+		sb.append("UserImpl(").append(getKey() == null ? "NULL" :  getKey()).append("[")
+		  .append(firstName == null ? "NULL" : firstName).append(" ")
+		  .append(lastName == null ? "NULL" : lastName).append(" ")
+		  .append(email == null ? "NULL" : email).append("]")
+		  .append(super.toString());
+		return sb.toString();
 	}
 
-	/**
-	 * @see org.olat.core.id.User#getProperty(java.lang.String, java.util.Locale)
-	 */
 	@Override
 	public String getProperty(String propertyName, Locale locale) {
 		UserManager um = UserManager.getInstance();
@@ -583,32 +587,23 @@ public class UserImpl implements Persistable, User {
 		return propertyHandler.getUserProperty(this, locale);
 	}
 
-	/**
-	 * @see org.olat.core.id.User#setProperty(java.lang.String, java.lang.String)
-	 */
 	@Override
 	public void setProperty(String propertyName, String propertyValue) {
 		UserManager um = UserManager.getInstance();
 		UserPropertyHandler propertyHandler = um.getUserPropertiesConfig().getPropertyHandler(propertyName);
 		if(propertyHandler == null) {
-			log.error("Try to set unkown property: " + propertyName + " for user: " + getKey());
+			log.error("Try to set unkown property: {} for user: {}", propertyName, getKey());
 		} else {
 			propertyHandler.setUserProperty(this, propertyValue);
 		}
 	}
-	
-	/**
-	 * 
-	 * @see org.olat.core.id.User#setIdentityEnvironmentAttributes(java.util.Map)
-	 */
+
+	@Override
 	public void setIdentityEnvironmentAttributes(Map<String, String> identEnvAttribs) {
 		this.identEnvAttribs = identEnvAttribs;
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.id.User#getPropertyOrIdentityEnvAttribute(java.lang.String, java.util.Locale)
-	 */
+	@Override
 	public String getPropertyOrIdentityEnvAttribute(String propertyName, Locale locale){
 		String retVal = getProperty(propertyName, locale);
 		if(retVal == null && identEnvAttribs != null){
@@ -616,6 +611,4 @@ public class UserImpl implements Persistable, User {
 		}
 		return retVal;
 	}
-	
-	
 }

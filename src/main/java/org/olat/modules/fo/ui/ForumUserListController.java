@@ -68,7 +68,6 @@ public class ForumUserListController extends FormBasicController {
 	private FormLink backLink;
 	private FlexiTableElement tableEl;
 	private ForumUserDataModel dataModel;
-	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	private final Forum forum;
@@ -86,7 +85,7 @@ public class ForumUserListController extends FormBasicController {
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
 		this.forum = forum;
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 		
 		initForm(ureq);
@@ -107,7 +106,9 @@ public class ForumUserListController extends FormBasicController {
 			boolean visible = userManager.isMandatoryUserProperty(USER_PROPS_ID , userPropertyHandler);
 
 			FlexiColumnModel col;
-			if(UserConstants.FIRSTNAME.equals(propName) || UserConstants.LASTNAME.equals(propName)) {
+			if(UserConstants.FIRSTNAME.equals(propName)
+					|| UserConstants.LASTNAME.equals(propName)
+					|| UserConstants.NICKNAME.equals(propName)) {
 				col = new DefaultFlexiColumnModel(userPropertyHandler.i18nColumnDescriptorLabelKey(), colPos, "select", true, propName,
 						new StaticFlexiCellRenderer("select", new TextFlexiCellRenderer()));
 			} else {
@@ -127,7 +128,7 @@ public class ForumUserListController extends FormBasicController {
 		dataModel = new ForumUserDataModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "users", dataModel, 25, false, getTranslator(), formLayout);
 		tableEl.setPageSize(25);
-		tableEl.setAndLoadPersistedPreferences(ureq, "forum-users");
+		tableEl.setAndLoadPersistedPreferences(ureq, "forum-users-v2");
 	}
 	
 	private void loadModel() {

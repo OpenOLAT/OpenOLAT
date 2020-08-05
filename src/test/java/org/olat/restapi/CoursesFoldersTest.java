@@ -49,7 +49,6 @@ import org.apache.http.client.methods.HttpPut;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSContainer;
@@ -65,6 +64,7 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.restapi.support.vo.FolderVO;
 import org.olat.restapi.support.vo.FolderVOes;
 import org.olat.test.JunitTestHelper;
+import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -74,8 +74,6 @@ public class CoursesFoldersTest extends OlatRestTestCase {
 	
 	@Autowired
 	private DB dbInstance;
-	@Autowired
-	private BaseSecurity securityManager;
 	
 	@Before
 	public void setUp() throws Exception {
@@ -115,8 +113,8 @@ public class CoursesFoldersTest extends OlatRestTestCase {
 	 */
 	@Test
 	public void testGetFolderInfoByUser() throws IOException, URISyntaxException {
-		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-user-bc");
-		assertTrue(conn.login(user.getName(), "A6B7C8"));
+		IdentityWithLogin user = JunitTestHelper.createAndPersistRndUser("rest-user-bc");
+		assertTrue(conn.login(user));
 		
 		CourseWithBC courseWithBc = deployCourse();
 		URI uri = UriBuilder.fromUri(getNodeURI(courseWithBc)).build();
@@ -291,7 +289,7 @@ public class CoursesFoldersTest extends OlatRestTestCase {
 	}
 	
 	private CourseWithBC deployCourse() {
-		Identity admin = securityManager.findIdentityByName("administrator");
+		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.intermediateCommit();

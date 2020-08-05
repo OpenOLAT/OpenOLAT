@@ -36,7 +36,6 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class CertificatesSelectionDataModel extends DefaultFlexiTableDataModel<CertificateInfos> {
 	
-	protected static final int USERNAME_COL = 10000;
 	protected static final int PASSED_COL = 10001;
 	protected static final int SCORE_COL = 10002;
 	
@@ -56,9 +55,7 @@ public class CertificatesSelectionDataModel extends DefaultFlexiTableDataModel<C
 	public Object getValueAt(int row, int col) {
 		CertificateInfos infos = getObject(row);
 		Identity identity = infos.getAssessedIdentity();
-		if(col == USERNAME_COL) {
-			return identity.getName();
-		} else if(col == PASSED_COL) {
+		if(col == PASSED_COL) {
 			return infos.getPassed();
 		} else if(col == SCORE_COL) {
 			Float score = infos.getScore();

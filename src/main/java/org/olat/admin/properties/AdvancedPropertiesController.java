@@ -27,8 +27,6 @@ package org.olat.admin.properties;
 
 import java.util.List;
 
-import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
@@ -41,7 +39,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.id.Roles;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 
@@ -58,7 +55,6 @@ public class AdvancedPropertiesController extends BasicController {
 	private VelocityContainer vcSearchForm;
 	
 	private TableController tableCtr;
-	private final boolean isAdministrativeUser;
 	
 	/**
 	 * caller of this constructor must make sure only olat admins come here
@@ -69,9 +65,6 @@ public class AdvancedPropertiesController extends BasicController {
 	public AdvancedPropertiesController(UserRequest ureq, WindowControl wControl) {
 		super(ureq,wControl);
 		
-		Roles roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = CoreSpringFactory.getImpl(BaseSecurityModule.class).isUserAllowedAdminProps(roles);
-
 		myPanel = new Panel("myPanel");
 		myPanel.addListener(this);
 		
@@ -84,16 +77,12 @@ public class AdvancedPropertiesController extends BasicController {
 		putInitialPanel(myPanel);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == searchForm && event == Event.DONE_EVENT) {
 				
@@ -109,7 +98,7 @@ public class AdvancedPropertiesController extends BasicController {
 				List<Property> entries = PropertyManager.getInstance().listProperties(searchForm.getIdentity(), null, resourceTypeName, resTypeId, category, propertyName);
 				
 				
-				PropertiesTableDataModel ptdm = new PropertiesTableDataModel(entries, isAdministrativeUser);
+				PropertiesTableDataModel ptdm = new PropertiesTableDataModel(entries);
 
 				TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 				

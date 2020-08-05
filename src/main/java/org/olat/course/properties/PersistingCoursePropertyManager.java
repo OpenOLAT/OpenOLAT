@@ -56,7 +56,7 @@ import org.olat.properties.Property;
 public class PersistingCoursePropertyManager implements CoursePropertyManager {
 
 	private NarrowedPropertyManager pm;
-	private Map<String,String> anonymizerMap;
+	private Map<Long,String> anonymizerMap;
 	private OLATResourceable ores;
 	private static Random random = new Random(System.currentTimeMillis());
 
@@ -182,12 +182,10 @@ public class PersistingCoursePropertyManager implements CoursePropertyManager {
 		return ("NID:" + type + "::" + node.getIdent());
 	}
 
-	/**
-	 * @see org.olat.ims.qti.export.helper.IdentityAnonymizerCallback#getAnonymizedUserName(org.olat.core.id.Identity)
-	 */
+	@Override
 	public String getAnonymizedUserName(Identity identity) {
 		synchronized (anonymizerMap) {
-			String anonymizedName = anonymizerMap.get(identity.getName());
+			String anonymizedName = anonymizerMap.get(identity.getKey());
 			if (anonymizedName == null) {
 				// try to fetch from course properties
 				Property anonymizedProperty = pm.findProperty(identity, null, "Anonymizing", "AnonymizedUserName");
@@ -202,15 +200,13 @@ public class PersistingCoursePropertyManager implements CoursePropertyManager {
 					// property found - use property value from there
 					anonymizedName = anonymizedProperty.getStringValue();
 				}
-				anonymizerMap.put(identity.getName(), anonymizedName);
+				anonymizerMap.put(identity.getKey(), anonymizedName);
 			}
 			return anonymizedName;
 		}
 	}
 
-	/**
-	 * @see org.olat.course.properties.CoursePropertyManager#deleteAllCourseProperties()
-	 */
+	@Override
 	public void deleteAllCourseProperties() {
 		pm.deleteAllProperties();
 	}

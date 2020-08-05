@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
-import java.util.UUID;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
@@ -32,13 +31,12 @@ import javax.ws.rs.core.UriBuilder;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.MarkManager;
-import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -47,6 +45,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.CourseVOes;
 import org.olat.test.JunitTestHelper;
+import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -74,15 +73,15 @@ public class UserCoursesTest extends OlatRestTestCase {
 	@Test
 	public void testMyCourses() throws IOException, URISyntaxException {
 		//prepare a course with a participant
-		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("My-course-");
+		IdentityWithLogin user = JunitTestHelper.createAndPersistRndUser("My-course-");
 		
-		RepositoryEntry courseRe = JunitTestHelper.deployBasicCourse(user);
+		RepositoryEntry courseRe = JunitTestHelper.deployBasicCourse(user.getIdentity());
 		repositoryManager.setAccess(courseRe, RepositoryEntryStatusEnum.published, false, false);
-		repositoryService.addRole(user, courseRe, GroupRoles.participant.name());
+		repositoryService.addRole(user.getIdentity(), courseRe, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(user.getName(), JunitTestHelper.PWD));
+		Assert.assertTrue(conn.login(user));
 		
 		//without paging
 		URI request = UriBuilder.fromUri(getContextURI()).path("users").path(user.getKey().toString()).path("courses").path("my").build();
@@ -111,14 +110,14 @@ public class UserCoursesTest extends OlatRestTestCase {
 	@Test
 	public void testTeachedCourses() throws IOException, URISyntaxException {
 		//prepare a course with a tutor
-		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("Course-teacher-");
-		RepositoryEntry courseRe = JunitTestHelper.deployBasicCourse(teacher);
+		IdentityWithLogin teacher = JunitTestHelper.createAndPersistRndUser("Course-teacher-");
+		RepositoryEntry courseRe = JunitTestHelper.deployBasicCourse(teacher.getIdentity());
 		repositoryManager.setAccess(courseRe, RepositoryEntryStatusEnum.published, false, false);
-		repositoryService.addRole(teacher, courseRe, GroupRoles.coach.name());
+		repositoryService.addRole(teacher.getIdentity(), courseRe, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(teacher.getName(), JunitTestHelper.PWD));
+		Assert.assertTrue(conn.login(teacher));
 		
 		//without paging
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users").path(teacher.getKey().toString()).path("/courses/teached").build();
@@ -147,14 +146,14 @@ public class UserCoursesTest extends OlatRestTestCase {
 	@Test
 	public void testFavoritCourses() throws IOException, URISyntaxException {
 		//prepare a course with a tutor
-		Identity me = JunitTestHelper.createAndPersistIdentityAsUser("Course-teacher-" + UUID.randomUUID().toString());
-		RepositoryEntry courseRe = JunitTestHelper.deployBasicCourse(me);
+		IdentityWithLogin me = JunitTestHelper.createAndPersistRndUser("Course-teacher-");
+		RepositoryEntry courseRe = JunitTestHelper.deployBasicCourse(me.getIdentity());
 		repositoryManager.setAccess(courseRe, RepositoryEntryStatusEnum.published, true, false);
-		markManager.setMark(courseRe, me, null, "[RepositoryEntry:" + courseRe.getKey() + "]");	
+		markManager.setMark(courseRe, me.getIdentity(), null, "[RepositoryEntry:" + courseRe.getKey() + "]");	
 		dbInstance.commitAndCloseSession();
 
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(me.getName(), JunitTestHelper.PWD));
+		Assert.assertTrue(conn.login(me));
 		
 		//without paging
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users").path(me.getKey().toString()).path("/courses/favorite").build();

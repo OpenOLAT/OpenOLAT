@@ -45,6 +45,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -158,7 +159,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 			if(task != null && task.getCreator() != null) {
 				UserSession session = new UserSession();
 				session.setIdentity(task.getCreator());
-				session.setSessionInfo(new SessionInfo(task.getCreator().getKey(), task.getCreator().getName()));
+				session.setSessionInfo(new SessionInfo(task.getCreator().getKey()));
 				ThreadLocalUserActivityLoggerInstaller.initUserActivityLogger(session);
 				infos[0] = LoggingResourceable.wrap(courseRes, OlatResourceableType.course);
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(infos[0]);
@@ -403,8 +404,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 			
 			boolean identityHasReturnFile = false;
 			if(hasReturnFiles && row.getReturnFiles() != null && !row.getReturnFiles().isEmpty()) {
-				String assessedId = row.getAssessedId();
-				File assessedFolder = new File(unzipped, assessedId);
+				File assessedFolder = getAssessedFolder(row, identity);
 				identityHasReturnFile = assessedFolder.exists();
 				if(identityHasReturnFile) {
 					processReturnFile(courseNode, row, uce, assessedFolder);
@@ -443,6 +443,18 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 		}
 	}
 	
+	private File getAssessedFolder(BulkAssessmentRow row, Identity identity) {
+		String assessedId = row.getAssessedId();
+		File assessedFolder = new File(unzipped, assessedId);
+		if(!assessedFolder.exists()) {
+			String username = identity.getUser().getProperty(UserConstants.NICKNAME, null);
+			if(StringHelper.containsNonWhitespace(username)) {
+				assessedFolder = new File(unzipped, username);
+			}
+		}
+		return assessedFolder;
+	}
+	
 	private void updateTasksState(GTACourseNode courseNode, UserCourseEnvironment uce, TaskProcess status, boolean acceptSubmission) {
 		final GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
 		Identity identity = uce.getIdentityEnvironment().getIdentity();
@@ -477,7 +489,6 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 	}
 	
 	private void processReturnFile(CourseNode courseNode, BulkAssessmentRow row, UserCourseEnvironment uce, File assessedFolder) {
-		String assessedId = row.getAssessedId();
 		Identity identity = uce.getIdentityEnvironment().getIdentity();
 		VFSContainer returnBox = getReturnBox(uce, courseNode, identity);
 		if(returnBox != null) {
@@ -494,7 +505,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 					try(InputStream inStream = new FileInputStream(returnFile)) {
 						VFSManager.copyContent(inStream, returnLeaf);
 					} catch (IOException e) {
-						log.error("Cannot copy return file " + returnFilename + " from " + assessedId, e);
+						log.error("Cannot copy return file {} from {}", returnFilename, row.getIdentityKey(), e);
 					}
 				}
 			}

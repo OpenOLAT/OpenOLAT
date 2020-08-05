@@ -21,7 +21,6 @@ package org.olat.modules.lecture.ui.coach;
 
 import java.util.List;
 
-import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -34,7 +33,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
@@ -61,7 +59,6 @@ public class LecturesListSegmentController extends BasicController {
 	private LecturesListController aggregatedListCtrl;
 	
 	private final String propsIdentifier;
-	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final List<LectureBlockIdentityStatistics> statistics;
 
@@ -69,8 +66,6 @@ public class LecturesListSegmentController extends BasicController {
 	private UserManager userManager;
 	@Autowired
 	private LectureService lectureService;
-	@Autowired
-	private BaseSecurityModule securityModule;
 	
 	public LecturesListSegmentController(UserRequest ureq, WindowControl wControl,
 			List<LectureBlockIdentityStatistics> statistics,
@@ -80,8 +75,6 @@ public class LecturesListSegmentController extends BasicController {
 		this.statistics = statistics;
 		this.propsIdentifier = propsIdentifier;
 		this.userPropertyHandlers = userPropertyHandlers;
-		Roles roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		
 		mainVC = createVelocityContainer("segmented_list");
 		
@@ -141,7 +134,7 @@ public class LecturesListSegmentController extends BasicController {
 	}
 	
 	private void doExportStatistics(UserRequest ureq) {
-		LecturesStatisticsExport export = new LecturesStatisticsExport(statistics, null, null, userPropertyHandlers, isAdministrativeUser, getTranslator());
+		LecturesStatisticsExport export = new LecturesStatisticsExport(statistics, null, null, userPropertyHandlers, getTranslator());
 		ureq.getDispatchResult().setResultingMediaResource(export);
 	}
 }

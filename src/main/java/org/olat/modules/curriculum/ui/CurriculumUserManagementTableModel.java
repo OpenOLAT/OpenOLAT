@@ -69,7 +69,6 @@ implements SortableFlexiTableDataModel<CurriculumMemberRow> {
 	public Object getValueAt(CurriculumMemberRow row, int col) {
 		if(col >= 0 && col < CurriculumMemberCols.values().length) {
 			switch(CurriculumMemberCols.values()[col]) {
-				case username: return row.getIdentityName();
 				case role: return row.getRole();
 				default : return "ERROR";
 			}
@@ -85,7 +84,6 @@ implements SortableFlexiTableDataModel<CurriculumMemberRow> {
 	}
 	
 	public enum CurriculumMemberCols implements FlexiSortableColumnDef {
-		username("table.header.username"),
 		role("table.header.role");
 		
 		private final String i18nKey;

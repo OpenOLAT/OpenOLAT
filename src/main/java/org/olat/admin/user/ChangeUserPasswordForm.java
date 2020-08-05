@@ -55,6 +55,7 @@ public class ChangeUserPasswordForm extends FormBasicController {
 	private TextElement pass2;
 	
 	private String cred = "";
+	private final String authenticationUsername;
 
 	private final SyntaxValidator syntaxValidator;
 	private final Identity userIdentity;
@@ -69,10 +70,11 @@ public class ChangeUserPasswordForm extends FormBasicController {
 	 * @param WindowControl
 	 * @param Identity of which password is to be changed
 	 */
-	public ChangeUserPasswordForm(UserRequest ureq, WindowControl wControl, Identity treatedIdentity) {
+	public ChangeUserPasswordForm(UserRequest ureq, WindowControl wControl, Identity treatedIdentity, String authenticationUsername) {
 		super(ureq, wControl, null, Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale()));
 		userIdentity = treatedIdentity;
-		this.syntaxValidator = olatAuthManager.createPasswordSytaxValidator();
+		this.authenticationUsername = authenticationUsername;
+		syntaxValidator = olatAuthManager.createPasswordSytaxValidator();
 		initForm(ureq);
 	}
 	
@@ -117,7 +119,7 @@ public class ChangeUserPasswordForm extends FormBasicController {
 		String descriptions = formatDescriptionAsList(syntaxValidator.getAllDescriptions(), getLocale());
 		setFormDescription("form.please.enter.new", new String[] { descriptions });
 		
-		TextElement username = uifactory.addTextElement("username", "form.username", 255, userIdentity.getName(), formLayout);
+		TextElement username = uifactory.addTextElement("username", "form.username", 255, authenticationUsername, formLayout);
 		username.setEnabled(false);		
 		
 		pass1 = uifactory.addPasswordElement("pass1", "form.password.new1", 255, "", formLayout);

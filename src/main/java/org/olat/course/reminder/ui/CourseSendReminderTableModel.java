@@ -66,8 +66,6 @@ public class CourseSendReminderTableModel extends DefaultFlexiTableDataModel<Sen
 			return reminder.getStatus();
 		} else if(col == SendCols.sendTime.ordinal()) {
 			return reminder.getSendDate();
-		}  else if(col == SendCols.username.ordinal()) {
-			return reminder.getIdentityName();
 		} else if(col >= CourseSendReminderListController.USER_PROPS_OFFSET) {
 			int propIndex = col - CourseSendReminderListController.USER_PROPS_OFFSET;
 			return reminder.getIdentityProp(propIndex);
@@ -78,7 +76,6 @@ public class CourseSendReminderTableModel extends DefaultFlexiTableDataModel<Sen
 	public enum SendCols {
 		reminder("table.header.reminder"),
 		status("table.header.status"),
-		username("table.header.username"),
 		sendTime("table.header.sendTime");
 		
 		private final String i18nKey;

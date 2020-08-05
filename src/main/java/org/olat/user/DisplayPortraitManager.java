@@ -164,19 +164,19 @@ public class DisplayPortraitManager implements UserDataDeletable, UserDataExport
 		return null;
 	}
 
-	public File getSmallPortrait(String username) {
-		return getPortraitFile(username, PORTRAIT_SMALL_FILENAME);
+	public File getSmallPortrait(Identity identity) {
+		return getPortraitFile(identity, PORTRAIT_SMALL_FILENAME);
 	}
 	
-	public File getBigPortrait(String username) {
-		return getPortraitFile(username, PORTRAIT_BIG_FILENAME);
+	public File getBigPortrait(Identity identity) {
+		return getPortraitFile(identity, PORTRAIT_BIG_FILENAME);
 	}
 	
-	public File getMasterPortrait(String username) {
-		return getPortraitFile(username, PORTRAIT_MASTER_FILENAME);
+	public File getMasterPortrait(Identity identity) {
+		return getPortraitFile(identity, PORTRAIT_MASTER_FILENAME);
 	}
 	
-	public VFSLeaf getLargestVFSPortrait(String username) {
+	public VFSLeaf getLargestVFSPortrait(Identity username) {
 		VFSLeaf portrait = getPortraitLeaf(username, PORTRAIT_MASTER_FILENAME);
 		if(portrait == null || !portrait.exists()) {
 			portrait = getPortraitLeaf(username, PORTRAIT_BIG_FILENAME);
@@ -187,38 +187,38 @@ public class DisplayPortraitManager implements UserDataDeletable, UserDataExport
 		return portrait;
 	}
 	
-	public File getLargestPortrait(String username) {
-		File portrait = getPortraitFile(username, PORTRAIT_MASTER_FILENAME);
+	public File getLargestPortrait(Identity identity) {
+		File portrait = getPortraitFile(identity, PORTRAIT_MASTER_FILENAME);
 		if(portrait == null || !portrait.exists()) {
-			portrait = getPortraitFile(username, PORTRAIT_BIG_FILENAME);
+			portrait = getPortraitFile(identity, PORTRAIT_BIG_FILENAME);
 		}
 		if(portrait == null || !portrait.exists()) {
-			portrait = getPortraitFile(username, PORTRAIT_SMALL_FILENAME);
-		}
-		return portrait;
-	}
-	
-	public File getSmallLogo(String username) {
-		return getPortraitFile(username, LOGO_SMALL_FILENAME);
-	}
-	
-	public File getBigLogo(String username) {
-		return getPortraitFile(username, LOGO_BIG_FILENAME);
-	}
-	
-	public File getLargestLogo(String username) {
-		File portrait = getPortraitFile(username, LOGO_MASTER_FILENAME);
-		if(portrait == null || !portrait.exists()) {
-			portrait = getPortraitFile(username, LOGO_BIG_FILENAME);
-		}
-		if(portrait == null || !portrait.exists()) {
-			portrait = getPortraitFile(username, LOGO_SMALL_FILENAME);
+			portrait = getPortraitFile(identity, PORTRAIT_SMALL_FILENAME);
 		}
 		return portrait;
 	}
 	
-	public boolean hasPortrait(String username) {
-		File portraitDir = getPortraitDir(username, false);
+	public File getSmallLogo(Identity identity) {
+		return getPortraitFile(identity, LOGO_SMALL_FILENAME);
+	}
+	
+	public File getBigLogo(Identity identity) {
+		return getPortraitFile(identity, LOGO_BIG_FILENAME);
+	}
+	
+	public File getLargestLogo(Identity identity) {
+		File portrait = getPortraitFile(identity, LOGO_MASTER_FILENAME);
+		if(portrait == null || !portrait.exists()) {
+			portrait = getPortraitFile(identity, LOGO_BIG_FILENAME);
+		}
+		if(portrait == null || !portrait.exists()) {
+			portrait = getPortraitFile(identity, LOGO_SMALL_FILENAME);
+		}
+		return portrait;
+	}
+	
+	public boolean hasPortrait(Identity identity) {
+		File portraitDir = getPortraitDir(identity, false);
 		if(portraitDir != null && portraitDir.exists()) {
 			File[] portraits = portraitDir.listFiles();
 			if(portraits.length > 0) {
@@ -230,6 +230,10 @@ public class DisplayPortraitManager implements UserDataDeletable, UserDataExport
 			}
 		}
 		return false;
+	}
+
+	private File getPortraitFile(Identity identity, String prefix) {
+		return getPortraitFile(identity.getName(), prefix);
 	}
 
 	private File getPortraitFile(String username, String prefix) {
@@ -247,6 +251,10 @@ public class DisplayPortraitManager implements UserDataDeletable, UserDataExport
 		return null;
 	}
 	
+	private VFSLeaf getPortraitLeaf(Identity identity, String prefix) {
+		return getPortraitLeaf(identity.getName(), prefix);
+	}
+	
 	private VFSLeaf getPortraitLeaf(String username, String prefix) {
 		VFSContainer portraitDir = getPortraitFolder(username);
 		if(portraitDir != null) {
@@ -260,22 +268,22 @@ public class DisplayPortraitManager implements UserDataDeletable, UserDataExport
 		return null;
 	}
 	
-	public void setPortrait(File file, String filename, String username) {
-		setImage(file, filename, username, PORTRAIT_PREFIX_FILENAME,
+	public void setPortrait(File file, String filename, Identity identity) {
+		setImage(file, filename, identity, PORTRAIT_PREFIX_FILENAME,
 				PORTRAIT_MASTER_FILENAME, PORTRAIT_BIG_FILENAME, PORTRAIT_SMALL_FILENAME,
 				WIDTH_PORTRAIT_BIG, WIDTH_PORTRAIT_SMALL);
 	}
 	
-	public void setLogo(File file, String filename, String username) {
-		setImage(file, filename, username, LOGO_PREFIX_FILENAME,
+	public void setLogo(File file, String filename, Identity identity) {
+		setImage(file, filename, identity, LOGO_PREFIX_FILENAME,
 				LOGO_MASTER_FILENAME, LOGO_BIG_FILENAME, LOGO_SMALL_FILENAME,
 				WIDTH_LOGO_BIG, WIDTH_LOGO_SMALL);
 	}
 
-	private void setImage(File file, String filename, String username, String prefix,
+	private void setImage(File file, String filename, Identity identity, String prefix,
 			String masterImagePrefix, String largeImagePrefix, String smallImagePrefix,
 			int maxBigWidth, int maxSmallWidth) {
-		File directory = getPortraitDir(username, true);
+		File directory = getPortraitDir(identity, true);
 		if(directory != null) {
 			for(File currentImage:directory.listFiles()) {
 				if(currentImage.equals(file)) {
@@ -311,7 +319,7 @@ public class DisplayPortraitManager implements UserDataDeletable, UserDataExport
 			imageHelper.scaleImage(file, extension, smallFile, maxSmallWidth, HEIGHT_SMALL, false);
 		}
 		
-		VFSLeaf vfsPortrait = getLargestVFSPortrait(username);
+		VFSLeaf vfsPortrait = getLargestVFSPortrait(identity);
 		if(vfsPortrait.canMeta() == VFSConstants.YES) {
 			vfsRepositoryService.resetThumbnails(vfsPortrait);
 		}
@@ -350,6 +358,10 @@ public class DisplayPortraitManager implements UserDataDeletable, UserDataExport
 			imageResource.setCacheControlDuration(ServletUtil.CACHE_ONE_DAY);
 		}
 		return imageResource;
+	}
+	
+	public File getPortraitDir(Identity identity, boolean create) {
+		return getPortraitDir(identity.getName(), create);
 	}
 	
 	/**

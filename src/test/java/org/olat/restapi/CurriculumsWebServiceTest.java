@@ -62,6 +62,7 @@ import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.curriculum.restapi.CurriculumElementVO;
 import org.olat.modules.curriculum.restapi.CurriculumVO;
 import org.olat.test.JunitTestHelper;
+import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatRestTestCase;
 import org.olat.user.restapi.UserVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -244,10 +245,10 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void createCurriculum_notAuthorized()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("rest-curriculum");
+		IdentityWithLogin author = JunitTestHelper.createAndPersistRndAuthor("rest-curriculum");
 		
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(author.getName(), JunitTestHelper.PWD));
+		assertTrue(conn.login(author));
 		
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation", "REST-p-organisation", "", null, null);
 		dbInstance.commitAndCloseSession();
@@ -270,11 +271,11 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void updateCurriculum_authorizedOrNot()
 	throws IOException, URISyntaxException {
-		Identity curriculumManager = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-curriculum");
+		IdentityWithLogin curriculumManager = JunitTestHelper.createAndPersistRndUser("rest-curriculum");
 		Organisation parentOrganisation = organisationService.createOrganisation("Root curriculum organisation", "REST-curl-organisation", "", null, null);
 		Organisation organisationA = organisationService.createOrganisation("Organisation A", "REST-A-organisation", "", parentOrganisation, null);
 		Organisation organisationB = organisationService.createOrganisation("Organisation B", "REST-B-organisation", "", parentOrganisation, null);
-		organisationService.addMember(organisationB, curriculumManager, OrganisationRoles.curriculummanager);
+		organisationService.addMember(organisationB, curriculumManager.getIdentity(), OrganisationRoles.curriculummanager);
 		dbInstance.commitAndCloseSession();
 		
 		//create 2 curriculums
@@ -284,7 +285,7 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 		
 		
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(curriculumManager.getName(), JunitTestHelper.PWD));
+		assertTrue(conn.login(curriculumManager));
 
 		CurriculumVO voA = CurriculumVO.valueOf(curriculumA);
 		voA.setIdentifier("Take control A");

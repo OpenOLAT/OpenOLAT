@@ -75,7 +75,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class AssessmentToReviewSmallController extends FormBasicController {
 	
 	private final RepositoryEntry courseEntry;
-	private final boolean isAdministrativeUser;
 	private final AssessmentToolSecurityCallback assessmentCallback;
 	
 	private FlexiTableElement tableEl;
@@ -99,7 +98,7 @@ public class AssessmentToReviewSmallController extends FormBasicController {
 		this.courseEntry = courseEntry;
 		this.assessmentCallback = assessmentCallback;
 		
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(AssessmentToolConstants.reducedUsageIdentifyer, isAdministrativeUser);
 		
 		nodeIdentToNodeShortTitles = new HashMap<>();
@@ -123,10 +122,7 @@ public class AssessmentToReviewSmallController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToReviewCols.username, "select"));
-		}
-		
+
 		int colIndex = AssessmentToolConstants.USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
@@ -235,7 +231,6 @@ public class AssessmentToReviewSmallController extends FormBasicController {
 		public Object getValueAt(UserToReviewRow row, int col) {
 			if(col >= 0 && col < ToReviewCols.values().length) {
 				switch(ToReviewCols.values()[col]) {
-					case username: return row.getIdentityName();
 					case toReview: return row;
 				}
 			}
@@ -250,8 +245,6 @@ public class AssessmentToReviewSmallController extends FormBasicController {
 	}
 
 	public enum ToReviewCols implements FlexiSortableColumnDef {
-		
-		username("table.header.name"),
 		toReview("table.header.elements.toReview");
 		
 		private final String i18nKey;

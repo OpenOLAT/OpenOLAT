@@ -124,7 +124,6 @@ public class StudentCoursesController extends FormBasicController implements Act
 	private final boolean fullAccess;
 	private final StudentStatEntry statEntry;
 
-	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	@Autowired
@@ -150,7 +149,7 @@ public class StudentCoursesController extends FormBasicController implements Act
 			StudentStatEntry statEntry, Identity student, int index, int numOfStudents, boolean fullAccess) {
 		super(ureq, wControl, "student_course_list");
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, isAdministrativeUser);
 
 		this.index = index;
@@ -214,10 +213,7 @@ public class StudentCoursesController extends FormBasicController implements Act
 		
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.name, "select"));
-		}
-		
+
 		int colIndex = UserListController.USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
@@ -250,7 +246,7 @@ public class StudentCoursesController extends FormBasicController implements Act
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		tableEl.setEmtpyTableMessageKey("error.no.found");
-		tableEl.setAndLoadPersistedPreferences(ureq, "fStudentCourseListController");
+		tableEl.setAndLoadPersistedPreferences(ureq, "fStudentCourseListController-v2");
 	}
 
 	@Override
@@ -436,7 +432,7 @@ public class StudentCoursesController extends FormBasicController implements Act
 	private void resetPassword(UserRequest ureq) {
 		removeAsListenerAndDispose(cmc);
 		
-		userChangePasswordController = new UserChangePasswordController(ureq, getWindowControl(), student);;
+		userChangePasswordController = new UserChangePasswordController(ureq, getWindowControl(), student);
 		listenTo(userChangePasswordController);
 		String name = student.getUser().getFirstName() + " " + student.getUser().getLastName();
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), userChangePasswordController.getInitialComponent(), true, translate("reset.title", name));

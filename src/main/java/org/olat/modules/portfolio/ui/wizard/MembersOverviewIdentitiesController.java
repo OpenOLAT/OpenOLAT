@@ -22,7 +22,6 @@ package org.olat.modules.portfolio.ui.wizard;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -42,7 +41,6 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.id.UserConstants;
 import org.olat.core.util.Util;
 import org.olat.modules.portfolio.ui.PortfolioHomeController;
 import org.olat.modules.portfolio.ui.PublishController;
@@ -65,8 +63,6 @@ public class MembersOverviewIdentitiesController extends StepFormBasicController
 	@Autowired
 	private UserManager userManager;
 	@Autowired
-	private BaseSecurity securityManager;
-	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
 	private OrganisationService organisationService;
@@ -77,18 +73,10 @@ public class MembersOverviewIdentitiesController extends StepFormBasicController
 		setTranslator(Util.createPackageTranslator(PublishController.class, getLocale(), getTranslator()));
 
 		oks = null;
-		if(containsRunContextKey("logins")) {
-			String logins = (String)runContext.get("logins");
-			loadModel(logins);
-		} else if(containsRunContextKey("keys")) {
-			@SuppressWarnings("unchecked")
-			List<String> keys = (List<String>)runContext.get("keys");
-			loadModel(keys);
-		} else if(containsRunContextKey("identities")) {
-			@SuppressWarnings("unchecked")
-			List<Identity> identities = (List<Identity>)runContext.get("identities");
-			loadModelByIdentities(identities);
-		}
+	
+		@SuppressWarnings("unchecked")
+		List<Identity> identities = (List<Identity>)runContext.get("identities");
+		loadModelByIdentities(identities);
 
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 
@@ -117,9 +105,7 @@ public class MembersOverviewIdentitiesController extends StepFormBasicController
 		//add the table
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		int colIndex = 0;
-		if(isAdministrativeUser) {
-			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.user.login", colIndex++));
-		}
+
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 		List<UserPropertyHandler> resultingPropertyHandlers = new ArrayList<>();
 		// followed by the users fields
@@ -151,82 +137,6 @@ public class MembersOverviewIdentitiesController extends StepFormBasicController
 				oks.add(ident);
 			}
 		}
-	}
-	
-	private void loadModel(List<String> keys) {
-		oks = new ArrayList<>();
-		List<String> isanonymous = new ArrayList<>();
-		notfounds = new ArrayList<>();
-
-		for (String identityKey : keys) {
-			Identity ident = securityManager.loadIdentityByKey(Long.parseLong(identityKey));
-			if (ident == null) { // not found, add to not-found-list
-				notfounds.add(identityKey);
-			} else if (organisationService.hasRole(ident, OrganisationRoles.guest)) {
-				isanonymous.add(identityKey);
-			} else if (!PersistenceHelper.containsPersistable(oks, ident)) {
-				oks.add(ident);
-			}
-		}
-	}
-	
-	private void loadModel(String inp) {
-		oks = new ArrayList<>();
-		notfounds = new ArrayList<>();
-
-		List<String> identList = new ArrayList<>();
-		String[] lines = inp.split("\r?\n");
-		for (int i = 0; i < lines.length; i++) {
-			String username = lines[i].trim();
-			if(username.length() > 0) {
-				identList.add(username);
-			}
-		}
-		
-		//search by institutionalUserIdentifier, case sensitive
-		List<Identity> institutIdentities = securityManager.findIdentitiesByNumber(identList);
-		for(Identity identity:institutIdentities) {
-			String userIdent = identity.getUser().getProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, null);
-			if(userIdent != null) {
-				identList.remove(userIdent);
-			}
-			if (!PersistenceHelper.containsPersistable(oks, identity) && !organisationService.hasRole(identity, OrganisationRoles.guest)) {
-				oks.add(identity);
-			}
-		}
-		// make a lowercase copy of identList for processing username and email
-		List<String> identListLowercase = new ArrayList<>(identList.size());
-		for (String ident:identList) {
-			identListLowercase.add(ident.toLowerCase());
-		}
-		//search by names, must be lower case
-		List<Identity> identities = securityManager.findIdentitiesByNameCaseInsensitive(identListLowercase);
-		for(Identity identity:identities) {
-			identListLowercase.remove(identity.getName().toLowerCase());
-			if (!PersistenceHelper.containsPersistable(oks, identity)
-					&& !organisationService.hasRole(identity, OrganisationRoles.guest)) {
-				oks.add(identity);
-			}
-		}
-		
-		//search by email, case insensitive
-		List<Identity> mailIdentities = userManager.findIdentitiesByEmail(identListLowercase);
-		for(Identity identity:mailIdentities) {
-			String email = identity.getUser().getProperty(UserConstants.EMAIL, null);
-			if(email != null) {
-				identListLowercase.remove(email.toLowerCase());
-			}
-			String institutEmail = identity.getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null);
-			if(institutEmail != null) {
-				identListLowercase.remove(institutEmail.toLowerCase());
-			}
-			if (!PersistenceHelper.containsPersistable(oks, identity)
-					&& !organisationService.hasRole(identity, OrganisationRoles.guest)) {
-				oks.add(identity);
-			}
-		}
-		
-		notfounds.addAll(identListLowercase);
 	}
 
 	public boolean validate() {

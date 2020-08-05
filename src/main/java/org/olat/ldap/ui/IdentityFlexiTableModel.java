@@ -35,8 +35,6 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  *
  */
 public class IdentityFlexiTableModel extends DefaultFlexiTableDataModel<Identity> {
-		
-	protected static final int USERNAME_COL_INDEX = 10000;
 	
 	private final Locale locale;
 	private final List<UserPropertyHandler> handlers;
@@ -55,10 +53,6 @@ public class IdentityFlexiTableModel extends DefaultFlexiTableDataModel<Identity
 	@Override
 	public Object getValueAt(int row, int col) {
 		Identity identity = getObject(row);
-		if(col == USERNAME_COL_INDEX) {
-			return identity.getName();
-		}
-		
 		UserPropertyHandler userPropertyHandler = handlers.get(col);
 		String value = userPropertyHandler.getUserProperty(identity.getUser(), locale);
 		return (value == null ? "n/a" : value);

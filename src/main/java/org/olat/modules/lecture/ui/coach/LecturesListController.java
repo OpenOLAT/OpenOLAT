@@ -22,7 +22,6 @@ package org.olat.modules.lecture.ui.coach;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
-import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -37,7 +36,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
@@ -68,7 +66,6 @@ public class LecturesListController extends FormBasicController {
 	private final boolean showRepositoryEntry;
 	
 	private final String propsIdentifier;
-	private final boolean isAdministrativeUser;
 	private final boolean authorizedAbsenceEnabled;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final List<LectureBlockIdentityStatistics> statistics;
@@ -79,8 +76,6 @@ public class LecturesListController extends FormBasicController {
 	private LectureModule lectureModule;
 	@Autowired
 	private LectureService lectureService;
-	@Autowired
-	private BaseSecurityModule securityModule;
 	
 	public LecturesListController(UserRequest ureq, WindowControl wControl,
 			List<LectureBlockIdentityStatistics> statistics,
@@ -94,8 +89,6 @@ public class LecturesListController extends FormBasicController {
 		this.showRepositoryEntry = showRepositoryEntry;
 		this.userPropertyHandlers = userPropertyHandlers;
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
-		Roles roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		initForm(ureq);
 	}
 
@@ -108,11 +101,7 @@ public class LecturesListController extends FormBasicController {
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, StatsCols.id));
-		
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StatsCols.username));
-		}
-		
+
 		int colIndex = USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
@@ -170,7 +159,7 @@ public class LecturesListController extends FormBasicController {
 	}
 
 	private void doExportStatistics(UserRequest ureq) {
-		LecturesStatisticsExport export = new LecturesStatisticsExport(statistics, null, null, userPropertyHandlers, isAdministrativeUser, getTranslator());
+		LecturesStatisticsExport export = new LecturesStatisticsExport(statistics, null, null, userPropertyHandlers, getTranslator());
 		ureq.getDispatchResult().setResultingMediaResource(export);
 	}
 	

@@ -311,7 +311,7 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 			// and set valid true if valid.
 			// In this example, we simply check
 			// that neither field is blank
-			Identity identity = webDAVAuthManager.authenticate(null, userID, password);
+			Identity identity = webDAVAuthManager.authenticate(userID, password);
 			if (identity != null && securityManager.isIdentityLoginAllowed(identity)) {
 				log.debug("WebDAV Basic authentication of: {}", identity);
 				return afterAuthorization(identity, request);
@@ -335,7 +335,7 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 			Roles roles = securityManager.getRoles(identity);
 			usess.setRoles(roles);
 			// set session info
-			SessionInfo sinfo = new SessionInfo(identity.getKey(), identity.getName(), request.getSession());
+			SessionInfo sinfo = new SessionInfo(identity.getKey(), request.getSession());
 			User usr = identity.getUser();
 			sinfo.setFirstname(usr.getProperty(UserConstants.FIRSTNAME, null));
 			sinfo.setLastname(usr.getProperty(UserConstants.LASTNAME, null));

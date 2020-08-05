@@ -434,7 +434,7 @@ public class PLockTest extends OlatTestCase {
 		for (int i = 0; i < count + maxUsers; i++) {
 			Identity id = JunitTestHelper.createAndPersistIdentityAsUser("u-" + i + "-" + UUID.randomUUID().toString());
 			identities.add(id);
-			log.info("testSync: Identity=" + id.getName() + " created");
+			log.info("testSync: Identity={} created", id);
 		}
 		dbInstance.closeSession();
 
@@ -493,7 +493,7 @@ public class PLockTest extends OlatTestCase {
 				// now sleep a while to allow others to think also that there is still space left in the group
 				sleep(100);
 				// now add the user to the security group
-				sb.append(" adding " + i.getName() + ": current.. " + cnt + ", max = " + count);
+				sb.append(" adding " + i.getKey() + ": current.. " + cnt + ", max = " + count);
 				securityGroupDao.addIdentityToSecurityGroup(i, group);
 			}
 			log.info(sb.toString());

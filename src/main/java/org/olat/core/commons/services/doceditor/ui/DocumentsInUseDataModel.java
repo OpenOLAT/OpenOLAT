@@ -87,7 +87,6 @@ implements SortableFlexiTableDataModel<DocumentsInUseRow>, FilterableFlexiTableM
 	public Object getValueAt(DocumentsInUseRow row, int col) {
 		if(col >= 0 && col < UserCols.values().length) {
 			switch(DocumentsInUseCols.values()[col]) {
-			case username: return row.getIdentityName();
 			case fileName: return row.getFilename();
 			case app: return row.getApp();
 			case edit: return row.isCanEdit();
@@ -106,7 +105,6 @@ implements SortableFlexiTableDataModel<DocumentsInUseRow>, FilterableFlexiTableM
 	}
 	
 	public enum DocumentsInUseCols implements FlexiSortableColumnDef {
-		username("table.header.username"),
 		fileName("table.header.file.name"),
 		app("table.header.app"),
 		edit("table.header.edit"),

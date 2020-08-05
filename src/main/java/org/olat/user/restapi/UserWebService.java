@@ -66,7 +66,6 @@ import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.IdentityPowerSearchQueries;
-import org.olat.basesecurity.IdentityShort;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.SearchIdentityParams;
@@ -314,7 +313,7 @@ public class UserWebService {
 		}
 			
 		// Check if login is still available
-		Identity identity = securityManager.findIdentityByName(user.getLogin());
+		Identity identity = securityManager.findIdentityByLogin(user.getLogin());
 		if (identity != null) {
 			Locale locale = getLocale(request);
 			Translator translator = Util.createPackageTranslator(UserShortDescription.class, locale);
@@ -675,12 +674,12 @@ public class UserWebService {
 	@ApiResponse(responseCode = "404", description = "The identity or the portrait not found")
 	@Produces({"image/jpeg","image/jpg",MediaType.APPLICATION_OCTET_STREAM})
 	public Response getPortraitHead(@PathParam("identityKey") Long identityKey) {
-		IdentityShort identity = securityManager.loadIdentityShortByKey(identityKey);
+		Identity identity = securityManager.loadIdentityByKey(identityKey);
 		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
-		File portrait = portraitManager.getBigPortrait(identity.getName());
+		File portrait = portraitManager.getBigPortrait(identity);
 		if(portrait == null || !portrait.exists()) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
@@ -702,18 +701,18 @@ public class UserWebService {
 	@ApiResponse(responseCode = "404", description = "The identity or the portrait not found")
 	@Produces({"image/jpeg","image/jpg",MediaType.APPLICATION_OCTET_STREAM})
 	public Response getOriginalPortraitHead(@PathParam("identityKey") Long identityKey, @PathParam("size") String size) {
-		IdentityShort identity = securityManager.loadIdentityShortByKey(identityKey);
+		Identity identity = securityManager.loadIdentityByKey(identityKey);
 		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 
 		File portrait = null;
 		if("master".equals(size)) {
-			portrait = portraitManager.getMasterPortrait(identity.getName());
+			portrait = portraitManager.getMasterPortrait(identity);
 		} else if("big".equals(size)) {
-			portrait = portraitManager.getBigPortrait(identity.getName());
+			portrait = portraitManager.getBigPortrait(identity);
 		} else if("small".equals(size)) {
-			portrait = portraitManager.getSmallPortrait(identity.getName());
+			portrait = portraitManager.getSmallPortrait(identity);
 		}
 
 		if(portrait == null || !portrait.exists()) {
@@ -737,12 +736,12 @@ public class UserWebService {
 	@ApiResponse(responseCode = "404", description = "The identity or the portrait not found")
 	@Produces({"image/jpeg","image/jpg",MediaType.APPLICATION_OCTET_STREAM})
 	public Response getPortrait(@PathParam("identityKey") Long identityKey, @Context Request request) {
-		IdentityShort identity = securityManager.loadIdentityShortByKey(identityKey);
+		Identity identity = securityManager.loadIdentityByKey(identityKey);
 		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
-		File portrait = portraitManager.getBigPortrait(identity.getName());
+		File portrait = portraitManager.getBigPortrait(identity);
 		if(portrait == null || !portrait.exists()) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
@@ -773,7 +772,7 @@ public class UserWebService {
 	public Response postPortrait(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		MultipartReader partsReader = null;
 		try {
-			IdentityShort identity = securityManager.loadIdentityShortByKey(identityKey);
+			Identity identity = securityManager.loadIdentityByKey(identityKey);
 			if(identity == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
@@ -785,7 +784,7 @@ public class UserWebService {
 			partsReader = new MultipartReader(request);
 			File tmpFile = partsReader.getFile();
 			String filename = partsReader.getFilename();
-			portraitManager.setPortrait(tmpFile, filename, identity.getName());
+			portraitManager.setPortrait(tmpFile, filename, identity);
 			return Response.ok().build();
 		} catch (Exception e) {
 			throw new WebApplicationException(e);

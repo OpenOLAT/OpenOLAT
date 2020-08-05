@@ -39,6 +39,7 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -46,7 +47,6 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSContainer;
@@ -64,6 +64,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.restapi.CoursePublishTest;
 import org.olat.test.JunitTestHelper;
+import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -103,11 +104,11 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	public void testOptions()
 	throws IOException, URISyntaxException {
 		//create a user
-		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("webdav-1-");
+		IdentityWithLogin user = JunitTestHelper.createAndPersistRndUser("webdav-1-");
 		
 		//list root content of its webdav folder
 		WebDAVConnection conn = new WebDAVConnection();
-		conn.setCredentials(user.getName(), "A6B7C8");
+		conn.setCredentials(user);
 		
 		URI baseUri = conn.getBaseURI().build();
 		HttpOptions optionsRoot = conn.createOptions(baseUri);
@@ -140,13 +141,13 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	public void testHead()
 	throws IOException, URISyntaxException {
 		//create a user
-		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("webdav-2-");
+		IdentityWithLogin user = JunitTestHelper.createAndPersistRndUser("webdav-2-");
 
 		WebDAVConnection conn = new WebDAVConnection();
-		conn.setCredentials(user.getName(), "A6B7C8");
+		conn.setCredentials(user);
 		
 		//create a file
-		String publicPath = FolderConfig.getUserHomes() + "/" + user.getName() + "/public";
+		String publicPath = FolderConfig.getUserHome(user.getIdentity()) + "/public";
 		VFSContainer vfsPublic = VFSManager.olatRootContainer(publicPath, null);
 		createFile(vfsPublic, "test_head.txt");
 		
@@ -169,10 +170,10 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	public void testPropFind()
 	throws IOException, URISyntaxException {
 		//create a user
-		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("webdav-2-");
+		IdentityWithLogin user = JunitTestHelper.createAndPersistRndUser("webdav-2-");
 
 		WebDAVConnection conn = new WebDAVConnection();
-		conn.setCredentials(user.getName(), "A6B7C8");
+		conn.setCredentials(user);
 		
 		//list root content of its webdav folder
 		URI uri = conn.getBaseURI().build();
@@ -194,16 +195,16 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	public void testMkcol_public()
 	throws IOException, URISyntaxException {
 		//create a user
-		Identity user = JunitTestHelper.createAndPersistIdentityAsRndAuthor("webdav-2a-");
+		IdentityWithLogin user = JunitTestHelper.createAndPersistRndAuthor("webdav-2a-");
 
 		//create a file
-		String publicPath = FolderConfig.getUserHomes() + "/" + user.getName() + "/public";
+		String publicPath = FolderConfig.getUserHome(user.getIdentity()) + "/public";
 		VFSContainer vfsPublic = VFSManager.olatRootContainer(publicPath, null);
 		Assert.assertTrue(vfsPublic.exists());
 
 		
 		WebDAVConnection conn = new WebDAVConnection();
-		conn.setCredentials(user.getName(), "A6B7C8");
+		conn.setCredentials(user);
 
 		//author check course folder
 		URI publicUri = conn.getBaseURI().path("webdav").path("home").path("public").build();
@@ -228,16 +229,16 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	public void testMove_public()
 	throws IOException, URISyntaxException {
 		//create a user
-		Identity user = JunitTestHelper.createAndPersistIdentityAsRndAuthor("webdav-2b-");
+		IdentityWithLogin user = JunitTestHelper.createAndPersistRndAuthor("webdav-2b-");
 
 		//create a file
-		String publicPath = FolderConfig.getUserHomes() + "/" + user.getName() + "/public";
+		String publicPath = FolderConfig.getUserHome(user.getIdentity()) + "/public";
 		VFSContainer vfsPublic = VFSManager.olatRootContainer(publicPath, null);
 		createFile(vfsPublic, "test.txt");
 		VFSContainer subPublic = vfsPublic.createChildContainer("moveto");
 
 		WebDAVConnection conn = new WebDAVConnection();
-		conn.setCredentials(user.getName(), "A6B7C8");
+		conn.setCredentials(user);
 
 		//author check course folder
 		URI publicUri = conn.getBaseURI().path("webdav").path("home").path("public").build();
@@ -262,16 +263,16 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	public void testCopy_public()
 	throws IOException, URISyntaxException {
 		//create a user
-		Identity user = JunitTestHelper.createAndPersistIdentityAsRndAuthor("webdav-2b-");
+		IdentityWithLogin user = JunitTestHelper.createAndPersistRndAuthor("webdav-2b-");
 
 		//create a file
-		String publicPath = FolderConfig.getUserHomes() + "/" + user.getName() + "/public";
+		String publicPath = FolderConfig.getUserHome(user.getIdentity()) + "/public";
 		VFSContainer vfsPublic = VFSManager.olatRootContainer(publicPath, null);
 		createFile(vfsPublic, "test.txt");
 		VFSContainer subPublic = vfsPublic.createChildContainer("copyto");
 
 		WebDAVConnection conn = new WebDAVConnection();
-		conn.setCredentials(user.getName(), "A6B7C8");
+		conn.setCredentials(user);
 
 		//author check course folder
 		URI publicUri = conn.getBaseURI().path("webdav").path("home").path("public").build();
@@ -298,11 +299,11 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	public void testPut_course()
 	throws IOException, URISyntaxException {
 		//create a user
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("webdav-3-");
-		deployTestCourse(author, null);
+		IdentityWithLogin author = JunitTestHelper.createAndPersistRndAuthor("webdav-3-");
+		deployTestCourse(author.getIdentity(), null);
 
 		WebDAVConnection conn = new WebDAVConnection();
-		conn.setCredentials(author.getName(), "A6B7C8");
+		conn.setCredentials(author);
 
 		//author check course folder
 		URI courseUri = conn.getBaseURI().path("webdav").path("coursefolders").build();
@@ -339,11 +340,11 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	public void testPut_PropPatch_home()
 	throws IOException, URISyntaxException {
 		//create a user
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("webdav-3-");
-		deployTestCourse(author, null);
+		IdentityWithLogin author = JunitTestHelper.createAndPersistRndAuthor("webdav-3-");
+		deployTestCourse(author.getIdentity(), null);
 
 		WebDAVConnection conn = new WebDAVConnection();
-		conn.setCredentials(author.getName(), "A6B7C8");
+		conn.setCredentials(author);
 
 		//author check course folder
 		URI privateUri = conn.getBaseURI().path("webdav").path("home").path("private").build();
@@ -399,15 +400,15 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	public void testLock()
 	throws IOException, URISyntaxException {
 		//create a user
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("webdav-4-");
-		Identity assistant = JunitTestHelper.createAndPersistIdentityAsRndAuthor("webdav-5-");
-		deployTestCourse(author, assistant);
+		IdentityWithLogin author = JunitTestHelper.createAndPersistRndAuthor("webdav-4-");
+		IdentityWithLogin assistant = JunitTestHelper.createAndPersistRndAuthor("webdav-5-");
+		deployTestCourse(author.getIdentity(), assistant.getIdentity());
 
 		WebDAVConnection authorConn = new WebDAVConnection();
-		authorConn.setCredentials(author.getName(), "A6B7C8");
+		authorConn.setCredentials(author);
 		
 		WebDAVConnection assistantConn = new WebDAVConnection();
-		assistantConn.setCredentials(assistant.getName(), "A6B7C8");
+		assistantConn.setCredentials(assistant);
 		
 		//author check course folder
 		URI courseUri = authorConn.getBaseURI().path("webdav").path("coursefolders").build();
@@ -460,9 +461,9 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	public void testLock_propfind_lockedInOpenOLAT()
 	throws IOException, URISyntaxException {
 		//create a user
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("webdav-4-");
+		IdentityWithLogin author = JunitTestHelper.createAndPersistRndAuthor("webdav-4-");
 		Identity assistant = JunitTestHelper.createAndPersistIdentityAsRndAuthor("webdav-5-");
-		RepositoryEntry re = deployTestCourse(author, assistant);
+		RepositoryEntry re = deployTestCourse(author.getIdentity(), assistant);
 		ICourse course = CourseFactory.loadCourse(re.getOlatResource());
 		Assert.assertNotNull(course);
 		
@@ -476,7 +477,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		
 		//author make a propfind in the locked resource
 		WebDAVConnection conn = new WebDAVConnection();
-		conn.setCredentials(author.getName(), "A6B7C8");
+		conn.setCredentials(author);
 		
 		URI toLockUri = conn.getBaseURI().path("webdav").path("coursefolders").path("_other").path("Kurs").path("tolock.txt").build();
 		String propfindXml = conn.propfind(toLockUri, 2);
@@ -508,16 +509,16 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	public void testLock_guilike_lockedWithWebdAV()
 	throws IOException, URISyntaxException {
 		//create a user
-		Identity user = JunitTestHelper.createAndPersistIdentityAsRndAuthor("webdav-2c-");
+		IdentityWithLogin user = JunitTestHelper.createAndPersistRndAuthor("webdav-2c-");
 
 		//create a file
-		String publicPath = FolderConfig.getUserHomes() + "/" + user.getName() + "/public";
+		String publicPath = FolderConfig.getUserHome(user.getIdentity()) + "/public";
 		VFSContainer vfsPublic = VFSManager.olatRootContainer(publicPath, null);
 		VFSItem item = createFile(vfsPublic, "test.txt");
 		
 		//lock the item with WebDAV
 		WebDAVConnection conn = new WebDAVConnection();
-		conn.setCredentials(user.getName(), "A6B7C8");
+		conn.setCredentials(user);
 
 		//author check file 
 		URI textUri = conn.getBaseURI().path("webdav").path("home").path("public").path("test.txt").build();
@@ -529,7 +530,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		Assert.assertNotNull(lockToken);
 
 		//check vfs lock
-		boolean lockedForMe = lockManager.isLockedForMe(item, user, VFSLockApplicationType.vfs, null);
+		boolean lockedForMe = lockManager.isLockedForMe(item, user.getIdentity(), VFSLockApplicationType.vfs, null);
 		Assert.assertTrue(lockedForMe);
 		LockInfo lock = lockManager.getLock(item);
 		Assert.assertNotNull(lock);
@@ -564,23 +565,23 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	public void testLock_public_samePathLock()
 	throws IOException, URISyntaxException {
 		//create a user
-		Identity user1 = JunitTestHelper.createAndPersistIdentityAsRndUser("webdav-2d");
-		Identity user2 = JunitTestHelper.createAndPersistIdentityAsRndUser("webdav-2e");
+		IdentityWithLogin user1 = JunitTestHelper.createAndPersistRndUser("webdav-2d");
+		IdentityWithLogin user2 = JunitTestHelper.createAndPersistRndUser("webdav-2e");
 
 		//create a file
-		String publicPath1 = FolderConfig.getUserHomes() + "/" + user1.getName() + "/public";
+		String publicPath1 = FolderConfig.getUserHome(user1.getIdentity()) + "/public";
 		VFSContainer vfsPublic1 = VFSManager.olatRootContainer(publicPath1, null);
 		VFSItem item1 = createFile(vfsPublic1, "test.txt");
 		Assert.assertNotNull(item1);
 		
-		String publicPath2 = FolderConfig.getUserHomes() + "/" + user2.getName() + "/public";
+		String publicPath2 = FolderConfig.getUserHome(user2.getIdentity()) + "/public";
 		VFSContainer vfsPublic2 = VFSManager.olatRootContainer(publicPath2, null);
 		VFSItem item2 = createFile(vfsPublic2, "test.txt");
 		Assert.assertNotNull(item2);
 		
 		//lock the item with WebDAV
 		WebDAVConnection conn1 = new WebDAVConnection();
-		conn1.setCredentials(user1.getName(), "A6B7C8");
+		conn1.setCredentials(user1);
 
 		//user 1 lock the file
 		URI textUri = conn1.getBaseURI().path("webdav").path("home").path("public").path("test.txt").build();
@@ -593,7 +594,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 
 		//user 2 lock its own file
 		WebDAVConnection conn2 = new WebDAVConnection();
-		conn2.setCredentials(user2.getName(), "A6B7C8");
+		conn2.setCredentials(user2);
 		String textPropfind2 = conn2.propfind(textUri, 0);
 		Assert.assertNotNull(textPropfind2);
 		
@@ -610,10 +611,10 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	public void testDelete()
 	throws IOException, URISyntaxException {
 		//create a user
-		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("webdav-6-" + UUID.randomUUID().toString());
+		IdentityWithLogin user = JunitTestHelper.createAndPersistRndUser("webdav-6");
 		
 		//create a file
-		String publicPath = FolderConfig.getUserHomes() + "/" + user.getName() + "/public";
+		String publicPath = FolderConfig.getUserHome(user.getIdentity()) + "/public";
 		VFSContainer vfsPublic = VFSManager.olatRootContainer(publicPath, null);
 		createFile(vfsPublic, "testDelete.txt");
 		
@@ -625,7 +626,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 
 		//delete the file
 		WebDAVConnection conn = new WebDAVConnection();
-		conn.setCredentials(user.getName(), "A6B7C8");
+		conn.setCredentials(user);
 	
 		//check public folder
 		URI checkUri = conn.getBaseURI().path("webdav").path("home").path("public").path("testDelete.txt").build();
@@ -652,15 +653,15 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		webDAVModule.setEnableLearnersBookmarksCourse(true);
 		webDAVModule.setEnableLearnersParticipatingCourses(true);
 		
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("auth-webdav");
-		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-webdav");
+		IdentityWithLogin author = JunitTestHelper.createAndPersistRndAuthor("auth-webdav");
+		IdentityWithLogin participant = JunitTestHelper.createAndPersistRndUser("participant-webdav");
 		URL courseWithForumsUrl = WebDAVCommandsTest.class.getResource("webdav_course.zip");
-		RepositoryEntry course = deployTestCourse(author, null, "WebDAV course", courseWithForumsUrl);
-		repositoryEntryRelationDao.addRole(participant, course, GroupRoles.participant.name());
+		RepositoryEntry course = deployTestCourse(author.getIdentity(), null, "WebDAV course", courseWithForumsUrl);
+		repositoryEntryRelationDao.addRole(participant.getIdentity(), course, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
 		WebDAVConnection conn = new WebDAVConnection();
-		conn.setCredentials(participant.getName(), "A6B7C8");
+		conn.setCredentials(participant);
 
 		URI courseUri = conn.getBaseURI().path("webdav").path("coursefolders").build();
 		String publicXml = conn.propfind(courseUri, 2);
@@ -685,13 +686,13 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		webDAVModule.setEnableLearnersBookmarksCourse(true);
 		webDAVModule.setEnableLearnersParticipatingCourses(true);
 		
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("auth-webdav");
+		IdentityWithLogin author = JunitTestHelper.createAndPersistRndAuthor("auth-webdav");
 		URL courseWithForumsUrl = WebDAVCommandsTest.class.getResource("webdav_course.zip");
-		deployTestCourse(author, null, "WebDAV course", courseWithForumsUrl);
+		deployTestCourse(author.getIdentity(), null, "WebDAV course", courseWithForumsUrl);
 		dbInstance.commitAndCloseSession();
 		
 		WebDAVConnection conn = new WebDAVConnection();
-		conn.setCredentials(author.getName(), "A6B7C8");
+		conn.setCredentials(author);
 
 		URI courseUri = conn.getBaseURI().path("webdav").path("coursefolders").build();
 		String publicXml = conn.propfind(courseUri, 2);
@@ -725,9 +726,9 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		
 		//create a user
 		Identity auth = JunitTestHelper.createAndPersistIdentityAsRndAuthor("webdav-4-");
-		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("webdav-5");
+		IdentityWithLogin participant = JunitTestHelper.createAndPersistRndUser("webdav-5");
 		RepositoryEntry courseEntry = deployMkdirsCourse(auth);
-		repositoryEntryRelationDao.addRole(participant, courseEntry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(participant.getIdentity(), courseEntry, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
 		//put a reference file there
@@ -749,7 +750,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		
 		//participant try to put a file
 		WebDAVConnection conn = new WebDAVConnection();
-		conn.setCredentials(participant.getName(), "A6B7C8");
+		conn.setCredentials(participant);
 		URI courseUri = conn.getBaseURI().path("webdav").path("coursefolders").path("_other").path("Mkdirs").build();
 		
 		
@@ -829,11 +830,11 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	@Test
 	public void customizingFolder()
 	throws IOException, URISyntaxException {
-		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin("admin-webdav");
+		IdentityWithLogin admin = JunitTestHelper.createAndPersistRndAdmin("admin-webdav");
 		dbInstance.commitAndCloseSession();
 		
 		WebDAVConnection conn = new WebDAVConnection();
-		conn.setCredentials(admin.getName(), "A6B7C8");
+		conn.setCredentials(admin);
 
 		//Has access?
 		URI customizingUri = conn.getBaseURI().path("webdav").path("customizing").build();
@@ -863,11 +864,11 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	@Test
 	public void customizingFolder_permission()
 	throws IOException, URISyntaxException {
-		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("user-webdav");
+		IdentityWithLogin user = JunitTestHelper.createAndPersistRndUser("user-webdav");
 		dbInstance.commitAndCloseSession();
 		
 		WebDAVConnection conn = new WebDAVConnection();
-		conn.setCredentials(user.getName(), "A6B7C8");
+		conn.setCredentials(user);
 
 		URI customizingUri = conn.getBaseURI().path("webdav").path("customizing").build();
 		HttpPropFind propfind = new HttpPropFind(customizingUri);
@@ -888,10 +889,10 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	@Test
 	public void forbiddenUserAgent()
 	throws IOException, URISyntaxException {
-		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("webdav-2-");
+		IdentityWithLogin user = JunitTestHelper.createAndPersistRndUser("webdav-2-");
 		
 		//create a file
-		String publicPath = FolderConfig.getUserHomes() + "/" + user.getName() + "/public";
+		String publicPath = FolderConfig.getUserHome(user.getIdentity()) + "/public";
 		VFSContainer vfsPublic = VFSManager.olatRootContainer(publicPath, null);
 		createFile(vfsPublic, "test_head.txt");
 		
@@ -899,7 +900,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		URI publicUri = conn.getBaseURI().path("webdav").path("home").path("public").path("test_head.txt").build();
 
 		//head file with standard Apache User Agent -> Ok
-		conn.setCredentials(user.getName(), "A6B7C8");
+		conn.setCredentials(user);
 		HttpResponse response = conn.head(publicUri);
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
@@ -907,7 +908,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		
 		// check with  "-" as User-Agent -> Forbidden
 		WebDAVConnection hyphenConn = new WebDAVConnection("-");
-		hyphenConn.setCredentials(user.getName(), "A6B7C8");
+		hyphenConn.setCredentials(user);
 		HttpResponse hyphenResponse = hyphenConn.head(publicUri);
 		Assert.assertEquals(403, hyphenResponse.getStatusLine().getStatusCode());
 		EntityUtils.consume(hyphenResponse.getEntity());
@@ -915,7 +916,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		
 		// check with  "" as User-Agent -> Forbidden
 		WebDAVConnection emptyConn = new WebDAVConnection("-");
-		emptyConn.setCredentials(user.getName(), "A6B7C8");
+		emptyConn.setCredentials(user);
 		HttpResponse emptyResponse = emptyConn.head(publicUri);
 		Assert.assertEquals(403, emptyResponse.getStatusLine().getStatusCode());
 		EntityUtils.consume(emptyResponse.getEntity());
