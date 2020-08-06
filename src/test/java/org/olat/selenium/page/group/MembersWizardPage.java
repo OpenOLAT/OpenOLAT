@@ -46,7 +46,7 @@ public class MembersWizardPage {
 	
 	public MembersWizardPage nextUsers() {
 		OOGraphene.nextStep(browser);
-		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_user_import_overview"), 5, browser);
+		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_user_import_overview"), browser);
 		return this;
 	}
 	
