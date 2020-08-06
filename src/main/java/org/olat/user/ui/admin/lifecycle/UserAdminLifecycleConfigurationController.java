@@ -170,7 +170,7 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 	private TranslationBundle initForm(String labelI18nKey, String textI18nKey, FormItemContainer formLayout) {
 		String text = translate(textI18nKey);
 		StaticTextElement viewEl = uifactory.addStaticTextElement("view." + counter++, labelI18nKey, text, formLayout);
-		FormLink translationLink = uifactory.addFormLink("translate." + counter++, "translate", null, formLayout, Link.LINK);
+		FormLink translationLink = uifactory.addFormLink("translate." + counter++, "translation.edit", null, formLayout, Link.LINK);
 		TranslationBundle bundle = new TranslationBundle(textI18nKey, labelI18nKey, viewEl, translationLink);
 		translationLink.setUserObject(bundle);
 		return bundle;
