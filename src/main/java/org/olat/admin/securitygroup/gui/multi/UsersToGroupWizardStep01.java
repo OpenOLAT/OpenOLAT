@@ -24,6 +24,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
+import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.mail.MailTemplate;
@@ -47,7 +48,7 @@ public class UsersToGroupWizardStep01 extends BasicStep {
 		setI18nTitleAndDescr("import.title.select", null);
 		
 		if(mailDefaultTemplate == null) {
-			setNextStep(BasicStep.NOSTEP);
+			setNextStep(Step.NOSTEP);
 		} else {
 			setNextStep(new UsersToGroupWizardStep02(ureq));
 		}

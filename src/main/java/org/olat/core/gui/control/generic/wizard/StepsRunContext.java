@@ -31,23 +31,11 @@ package org.olat.core.gui.control.generic.wizard;
  */
 public interface StepsRunContext {
 	
-	/**
-	 * 
-	 * @param key
-	 * @param value
-	 */
 	public void put(String key, Object value);
-	/**
-	 * 
-	 * @param key
-	 * @return
-	 */
+
 	public Object get(String key);
 	
-	/**
-	 * 
-	 * @param key
-	 * @return
-	 */
 	public boolean containsKey(String key);
+	
+	public void remove(String key);
 }

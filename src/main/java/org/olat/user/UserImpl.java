@@ -74,7 +74,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 @Entity
 @Table(name="o_user")
-public class UserImpl implements Persistable, User {
+public class UserImpl implements User {
 
 	private static final long serialVersionUID = -2872102058369727753L;
 	private static final Logger log = Tracing.createLoggerFor(UserImpl.class);

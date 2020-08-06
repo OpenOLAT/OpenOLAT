@@ -81,6 +81,8 @@ public class IdentityDAO {
 		  .append(" where lower(ident.name) in (:names)")
 		  .append(" or lower(auth.authusername) in (:names)")
 		  .append(" or lower(concat(user.firstName,' ', user.lastName)) in (:names)")
+		  .append(" or lower(user.email) in (:names)")
+		  .append(" or lower(user.institutionalEmail) in (:names)")
 		  .append(" or lower(user.institutionalUserIdentifier) in (:names)");
 
 		List<String> loweredIdentityNames = names.stream()
@@ -130,6 +132,16 @@ public class IdentityDAO {
 		String fullName = sb.toString();
 		if(names.contains(fullName.toLowerCase())) {
 			namedIdentity.addName(fullName);
+		}
+		
+		if(StringHelper.containsNonWhitespace(user.getEmail())
+				&& names.contains(user.getEmail().toLowerCase())) {
+			namedIdentity.addName(user.getEmail());
+		}
+		
+		if(StringHelper.containsNonWhitespace(user.getInstitutionalEmail())
+				&& names.contains(user.getInstitutionalEmail().toLowerCase())) {
+			namedIdentity.addName(user.getInstitutionalEmail());
 		}
 	}
 	

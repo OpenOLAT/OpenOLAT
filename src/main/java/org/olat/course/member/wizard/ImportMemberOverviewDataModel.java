@@ -38,6 +38,11 @@ public class ImportMemberOverviewDataModel extends DefaultTableDataModel<Identit
 	private FlexiTableColumnModel columnModel;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
+	public ImportMemberOverviewDataModel(List<UserPropertyHandler> userPropertyHandlers, Locale locale,
+			FlexiTableColumnModel columnModel) {
+		this(new ArrayList<>(), userPropertyHandlers, locale, columnModel);
+	}
+	
 	public ImportMemberOverviewDataModel(List<Identity> identities, List<UserPropertyHandler> userPropertyHandlers,
 			Locale locale, FlexiTableColumnModel columnModel) {
 		super(identities);

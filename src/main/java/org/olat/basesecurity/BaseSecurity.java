@@ -105,8 +105,8 @@ public interface BaseSecurity {
 	/**
 	 * Specialized method to import identities in courses, groups... The query
 	 * search in the legacy name of identity, in authentication user name,
-	 * concat first and last name and institutional number. It's all case
-	 * insensitive.
+	 * concat first and last name, email, institutional number, institutional
+	 * email. It's all case insensitive.
 	 * 
 	 * @param identityNames A list of names
 	 * @return A list of identities

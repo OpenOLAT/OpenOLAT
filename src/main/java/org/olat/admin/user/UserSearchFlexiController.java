@@ -102,7 +102,8 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 
 	private static final String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
 	
-	private FormLink backLink, searchButton;
+	private FormLink backLink;
+	private FormLink searchButton;
 	private TextElement loginEl;
 	private Map <String,FormItem>propFormItems;
 	private FlexiTableElement tableEl;

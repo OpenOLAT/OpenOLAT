@@ -25,6 +25,8 @@
 */
 package org.olat.core.gui.control.generic.wizard;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -94,14 +96,25 @@ public abstract class StepFormBasicController extends FormBasicController implem
 		runContext = null;
 	}
 
-	protected void addToRunContext(String key, Object value){
+	protected void addToRunContext(String key, Object value) {
 		runContext.put(key, value);
 	}
-	protected boolean containsRunContextKey(String key){
+	
+	protected void removeFromRunContext(String key) {
+		runContext.remove(key);
+	}
+	
+	protected boolean containsRunContextKey(String key) {
 		return runContext.containsKey(key);
 	}
-	protected Object getFromRunContext(String key){
+	
+	protected Object getFromRunContext(String key) {
 		return runContext.get(key);
+	}
+
+	@SuppressWarnings({ "unused", "unchecked" })
+	protected <T> List<T> getListFromRunContext(String key, Class<T> resultClass) {
+		return (List<T>)runContext.get(key);
 	}
 	
 	public void back() {

@@ -47,4 +47,8 @@ public class DefaultStepsRunContext implements StepsRunContext {
 		return context.containsKey(key);
 	}
 
+	@Override
+	public void remove(String key) {
+		context.remove(key);
+	}
 }
