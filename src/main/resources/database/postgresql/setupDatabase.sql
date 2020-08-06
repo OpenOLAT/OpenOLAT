@@ -1249,6 +1249,18 @@ create table o_bbb_meeting (
    primary key (id)
 );
 
+create table o_bbb_attendee (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   b_role varchar(32),
+   b_join_date timestamp,
+   b_pseudo varchar(255),
+   fk_identity_id int8,
+   fk_meeting_id int8 not null,
+   primary key (id)
+);
+
 -- efficiency statments
 create table o_as_eff_statement (
    id int8 not null,
@@ -3650,6 +3662,11 @@ alter table o_bbb_meeting add constraint bbb_meet_template_idx foreign key (fk_t
 create index idx_bbb_meet_template_idx on o_bbb_meeting(fk_template_id);
 alter table o_bbb_meeting add constraint bbb_meet_serv_idx foreign key (fk_server_id) references o_bbb_server (id);
 create index idx_bbb_meet_serv_idx on o_bbb_meeting(fk_server_id);
+
+alter table o_bbb_attendee add constraint bbb_attend_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
+create index idx_bbb_attend_ident_idx on o_bbb_attendee(fk_identity_id);
+alter table o_bbb_attendee add constraint bbb_attend_meet_idx foreign key (fk_meeting_id) references o_bbb_meeting (id);
+create index idx_bbb_attend_meet_idx on o_bbb_attendee(fk_meeting_id);
 
 -- tag
 alter table o_tag add constraint FK6491FCA5A4FA5DC foreign key (fk_author_id) references o_bs_identity (id);

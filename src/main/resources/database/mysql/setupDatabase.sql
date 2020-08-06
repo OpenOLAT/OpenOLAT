@@ -1227,6 +1227,18 @@ create table o_bbb_meeting (
    primary key (id)
 );
 
+create table o_bbb_attendee (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   b_role varchar(32),
+   b_join_date datetime,
+   b_pseudo varchar(255),
+   fk_identity_id bigint,
+   fk_meeting_id bigint not null,
+   primary key (id)
+);
+
 
 -- assessment tables
 -- efficiency statments
@@ -3334,6 +3346,7 @@ alter table o_aconnect_user ENGINE = InnoDB;
 alter table o_bbb_template ENGINE = InnoDB;
 alter table o_bbb_meeting ENGINE = InnoDB;
 alter table o_bbb_server ENGINE = InnoDB;
+alter table o_bbb_attendee ENGINE = InnoDB;
 alter table o_im_message ENGINE = InnoDB;
 alter table o_im_notification ENGINE = InnoDB;
 alter table o_im_roster_entry ENGINE = InnoDB;
@@ -3735,6 +3748,9 @@ alter table o_bbb_meeting add constraint bbb_meet_grp_idx foreign key (fk_group_
 alter table o_bbb_meeting add constraint bbb_meet_template_idx foreign key (fk_template_id) references o_bbb_template (id);
 
 alter table o_bbb_meeting add constraint bbb_meet_serv_idx foreign key (fk_server_id) references o_bbb_server (id);
+
+alter table o_bbb_attendee add constraint bbb_attend_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
+alter table o_bbb_attendee add constraint bbb_attend_meet_idx foreign key (fk_meeting_id) references o_bbb_meeting (id);
 
 -- tag
 alter table o_tag add constraint FK6491FCA5A4FA5DC foreign key (fk_author_id) references o_bs_identity (id);

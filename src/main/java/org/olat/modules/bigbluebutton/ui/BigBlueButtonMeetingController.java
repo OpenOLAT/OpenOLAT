@@ -55,6 +55,7 @@ import org.olat.core.util.UserSession;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.bigbluebutton.BigBlueButtonAttendeeRoles;
 import org.olat.modules.bigbluebutton.BigBlueButtonDispatcher;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
@@ -335,12 +336,14 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		String meetingUrl = null;
 		BigBlueButtonErrors errors = new BigBlueButtonErrors();
 		if(moderator || administrator) {
-			meetingUrl = bigBlueButtonManager.join(meeting, getIdentity(), null, (administrator || moderator), false, null, errors);
+			meetingUrl = bigBlueButtonManager.join(meeting, getIdentity(), null, BigBlueButtonAttendeeRoles.moderator, null, errors);
 			delayEvent(new BigBlueButtonEvent(meeting.getKey(), getIdentity().getKey()));
 		} else if(!moderatorStartMeeting) {
-			meetingUrl = bigBlueButtonManager.join(meeting, getIdentity(), null, false, guest, null, errors);
+			BigBlueButtonAttendeeRoles role = guest ? BigBlueButtonAttendeeRoles.guest : BigBlueButtonAttendeeRoles.external;
+			meetingUrl = bigBlueButtonManager.join(meeting, getIdentity(), null, role, null, errors);
 		} else if(bigBlueButtonManager.isMeetingRunning(meeting)) {
-			meetingUrl = bigBlueButtonManager.join(meeting, getIdentity(), null, false, guest, Boolean.TRUE, errors);
+			BigBlueButtonAttendeeRoles role = guest ? BigBlueButtonAttendeeRoles.guest : BigBlueButtonAttendeeRoles.external;
+			meetingUrl = bigBlueButtonManager.join(meeting, getIdentity(), null, role, Boolean.TRUE, errors);
 		}
 		redirectTo(ureq, meetingUrl, errors);
 	}

@@ -171,6 +171,7 @@
 		<class>org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingImpl</class>
 		<class>org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingTemplateImpl</class>
 		<class>org.olat.modules.bigbluebutton.model.BigBlueButtonServerImpl</class>
+		<class>org.olat.modules.bigbluebutton.model.BigBlueButtonAttendeeImpl</class>
 		<class>org.olat.modules.curriculum.model.CurriculumImpl</class>
 		<class>org.olat.modules.curriculum.model.CurriculumElementImpl</class>
 		<class>org.olat.modules.curriculum.model.CurriculumElementTypeImpl</class>

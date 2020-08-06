@@ -58,6 +58,7 @@ import org.olat.course.ICourse;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.DeletableGroupData;
+import org.olat.modules.bigbluebutton.BigBlueButtonAttendeeRoles;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingLayoutEnum;
@@ -80,6 +81,7 @@ import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.manager.RepositoryEntryDAO;
+import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -94,7 +96,7 @@ import org.w3c.dom.Document;
  */
 @Service
 public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
-	DeletableGroupData, RepositoryEntryDataDeletable, InitializingBean {
+	DeletableGroupData, RepositoryEntryDataDeletable, UserDataDeletable, InitializingBean {
 	
 	private static final Logger log = Tracing.createLoggerFor(BigBlueButtonManagerImpl.class);
 
@@ -114,6 +116,8 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	private BigBlueButtonServerDAO bigBlueButtonServerDao;
 	@Autowired
 	private BigBlueButtonMeetingDAO bigBlueButtonMeetingDao;
+	@Autowired
+	private BigBlueButtonAttendeeDAO bigBlueButtonAttendeeDao;
 	@Autowired
 	private BigBlueButtonMeetingTemplateDAO bigBlueButtonMeetingTemplateDao;
 	@Autowired @Qualifier("native")
@@ -264,6 +268,11 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 			deleteMeeting(meeting, errors);
 		}
 		return !errors.hasErrors();
+	}
+	
+	@Override
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
+		bigBlueButtonAttendeeDao.deleteAttendee(identity);
 	}
 
 	@Override
@@ -431,6 +440,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		if(reloadedMeeting != null) {
 			removeCalendarEvent(reloadedMeeting);
 			deleteRecordings(meeting, errors);
+			bigBlueButtonAttendeeDao.deleteAttendee(reloadedMeeting);
 			bigBlueButtonMeetingDao.deleteMeeting(reloadedMeeting);
 		}
 		return false;
@@ -725,14 +735,26 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	}
 
 	@Override
-	public String join(BigBlueButtonMeeting meeting, Identity identity, String pseudo, boolean moderator, boolean guest, Boolean isRunning, BigBlueButtonErrors errors) {
+	public String join(BigBlueButtonMeeting meeting, Identity identity, String pseudo, BigBlueButtonAttendeeRoles role, Boolean isRunning, BigBlueButtonErrors errors) {
 		String joinUrl = null;
+		boolean moderator = role == BigBlueButtonAttendeeRoles.moderator;
+		boolean guest = false;
+		
 		if(isRunning != null && isRunning.booleanValue() && meeting.getServer() != null) {
 			joinUrl = buildJoinUrl(meeting, meeting.getServer(), identity, pseudo, moderator, guest);
 		} else {
 			meeting = getMeetingWithServer(meeting);
 			if(createBigBlueButtonMeeting(meeting, errors)) {
 				joinUrl = buildJoinUrl(meeting, meeting.getServer(), identity, pseudo, moderator, guest);
+			}
+		}
+		if(StringHelper.containsNonWhitespace(joinUrl)) {
+			if((role == BigBlueButtonAttendeeRoles.moderator || role == BigBlueButtonAttendeeRoles.viewer)
+					&& !bigBlueButtonAttendeeDao.hasAttendee(identity, meeting)) {
+				bigBlueButtonAttendeeDao.createAttendee(identity, null, role, new Date(), meeting);
+			} else if((role == BigBlueButtonAttendeeRoles.guest || role == BigBlueButtonAttendeeRoles.external)
+					&& !bigBlueButtonAttendeeDao.hasAttendee(pseudo, meeting)) {
+				bigBlueButtonAttendeeDao.createAttendee(null, pseudo, role, new Date(), meeting);
 			}
 		}
 		return joinUrl;

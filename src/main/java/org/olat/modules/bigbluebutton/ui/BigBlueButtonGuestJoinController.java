@@ -53,6 +53,7 @@ import org.olat.course.run.userview.AccessibleFilter;
 import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroupService;
+import org.olat.modules.bigbluebutton.BigBlueButtonAttendeeRoles;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
@@ -293,7 +294,15 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 		
 		BigBlueButtonErrors errors = new BigBlueButtonErrors();
 		String pseudo = nameEl.getValue();
-		String url = bigBlueButtonManager.join(meeting, null, pseudo, false, true, null, errors);
+
+		BigBlueButtonAttendeeRoles role;
+		UserSession usess = ureq.getUserSession();
+		if(getIdentity() == null || usess.getRoles() == null) {
+			role = BigBlueButtonAttendeeRoles.external;
+		} else {
+			role = BigBlueButtonAttendeeRoles.guest;
+		}
+		String url = bigBlueButtonManager.join(meeting, null, pseudo, role, null, errors);
 		MediaResource resource = new RedirectMediaResource(url);
 		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
