@@ -32,6 +32,7 @@ import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.Util;
+import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
@@ -46,6 +47,8 @@ import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.types.VideoFileResource;
+import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.video.ui.VideoDisplayOptions;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -72,7 +75,7 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
-		VideoEditController childTabCntrllr = new VideoEditController(this, ureq, wControl, course, euce);
+		VideoEditController childTabCntrllr = new VideoEditController(this, ureq, wControl);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
 	}
@@ -93,12 +96,35 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public NodeRunConstructionResult createNodeRunConstructionResult(
-			UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback,
-			String nodecmd) {
+	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
 		VideoRunController cprunC = new VideoRunController(getModuleConfiguration(), wControl, ureq, userCourseEnv, this);
 		return cprunC.createNodeRunConstructionResult(ureq);
+	}
+	
+	public VideoDisplayOptions getVideoDisplay(RepositoryEntry videoEntry, boolean readOnly) {
+		// configure the display controller according to config
+		ModuleConfiguration config = getModuleConfiguration();
+		boolean autoplay = config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY);
+		boolean comments = config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS);
+		boolean ratings = config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING);
+		String customtext = config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_CUSTOMTEXT);
+
+		VideoDisplayOptions displayOptions = VideoDisplayOptions.valueOf(autoplay, comments, ratings, true, false, false, null, false, readOnly);
+		switch(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT, "none")) {
+			case "customDescription":
+				displayOptions.setShowDescription(true);
+				displayOptions.setDescriptionText(customtext);
+				break;
+			case "resourceDescription":
+				displayOptions.setShowDescription(true);
+				displayOptions.setDescriptionText(videoEntry.getDescription());
+				break;
+			default:
+				displayOptions.setShowDescription(false);
+				break;
+		}
+		return displayOptions;
 	}
 
 	@Override
@@ -108,12 +134,11 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 		StatusDescription sd = StatusDescription.NOERROR;
 		boolean isValid = VideoEditController.isModuleConfigValid(getModuleConfiguration());
 		if (!isValid) {
-			// FIXME: refine statusdescriptions
 			String shortKey = "no.video.chosen";
 			String longKey = "error.noreference.long";
 			String[] params = new String[] { this.getShortTitle() };
 			String translPackage = Util.getPackageName(VideoEditController.class);
-			sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, params, translPackage);
+			sd = new StatusDescription(ValidationStatus.ERROR, shortKey, longKey, params, translPackage);
 			sd.setDescriptionForUnit(getIdent());
 			// set which pane is affected by error
 			sd.setActivateableViewIdentifier(VideoEditController.PANE_TAB_VIDEOCONFIG);

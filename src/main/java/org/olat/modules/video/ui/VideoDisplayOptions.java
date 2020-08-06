@@ -33,7 +33,6 @@ public class VideoDisplayOptions {
 	private boolean showRating;
 	private boolean showTitle;
 	private boolean showDescription;
-	private boolean customDescription;
 	private boolean autoWidth;
 	private boolean readOnly;
 	private String descriptionText;
@@ -46,11 +45,10 @@ public class VideoDisplayOptions {
 	private boolean authorMode;
 	
 	public static VideoDisplayOptions valueOf(boolean autoplay, boolean showComments, boolean showRating, boolean showTitle, boolean showDescription,
-			boolean customDescription, boolean autoWidth, String descriptionText, boolean authorMode, boolean readOnly) {
+			boolean autoWidth, String descriptionText, boolean authorMode, boolean readOnly) {
 		VideoDisplayOptions options = new VideoDisplayOptions();
 		options.setAutoplay(autoplay);
 		options.setAutoWidth(autoWidth);
-		options.setCustomDescription(customDescription);
 		options.setDescriptionText(descriptionText);
 		options.setReadOnly(readOnly);
 		options.setShowComments(showComments);
@@ -71,7 +69,6 @@ public class VideoDisplayOptions {
 		VideoDisplayOptions options = new VideoDisplayOptions();
 		options.setAutoplay(false);
 		options.setAutoWidth(false);
-		options.setCustomDescription(false);
 		options.setDescriptionText(null);
 		options.setReadOnly(false);
 		options.setShowComments(false);
@@ -166,14 +163,6 @@ public class VideoDisplayOptions {
 
 	public void setShowDescription(boolean showDescription) {
 		this.showDescription = showDescription;
-	}
-
-	public boolean isCustomDescription() {
-		return customDescription;
-	}
-	
-	public void setCustomDescription(boolean customDescription) {
-		this.customDescription = customDescription;
 	}
 	
 	public boolean isAutoWidth() {

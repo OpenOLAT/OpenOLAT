@@ -46,10 +46,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSContainerMapper;
-import org.olat.course.ICourse;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.VideoCourseNode;
-import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.types.VideoFileResource;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.video.VideoManager;
@@ -71,11 +69,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class VideoEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
 
 	public static final String PANE_TAB_VIDEOCONFIG = "pane.tab.videoconfig";
-	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
-	private final static String[] paneKeys = { PANE_TAB_VIDEOCONFIG};
+	private static final String[] paneKeys = { PANE_TAB_VIDEOCONFIG};
 
 	public static final String NLS_ERROR_VIDEOREPOENTRYMISSING = "error.videorepoentrymissing";
-	private static final String NLS_CONDITION_ACCESSIBILITY_TITLE = "condition.accessibility.title";
 	private static final String NLS_COMMAND_CHOOSEVIDEO = "command.choosevideo";
 	private static final String NLS_COMMAND_CREATEVID = "command.createvideo";
 	private static final String NLS_COMMAND_CHANGEVID = "command.changevideo";
@@ -98,8 +94,8 @@ public class VideoEditController extends ActivateableTabbableDefaultController i
 	private TabbedPane myTabbedPane;
 	private VelocityContainer videoConfigurationVc;
 
-	private ModuleConfiguration config;
 	private final VideoCourseNode videoNode;
+	private final ModuleConfiguration config;
 	private RepositoryEntry repositoryEntry;
 
 	private CloseableModalController cmc;
@@ -107,10 +103,10 @@ public class VideoEditController extends ActivateableTabbableDefaultController i
 	private VideoOptionsForm videoOptionsCtrl;
 	private ReferencableEntriesSearchController searchController;
 
-	public VideoEditController(VideoCourseNode videoNode, UserRequest ureq, WindowControl wControl, ICourse course, UserCourseEnvironment euce) {
+	public VideoEditController(VideoCourseNode videoNode, UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		this.config = videoNode.getModuleConfiguration();
 		this.videoNode = videoNode;
+		this.config = videoNode.getModuleConfiguration();
 		
 		main = new Panel("videomain");
 
@@ -249,23 +245,7 @@ public class VideoEditController extends ActivateableTabbableDefaultController i
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(previewCtrl);
 		
-		boolean autoplay = config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY);
-		boolean showRating = config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING);
-		boolean showComments = config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS);
-		
-		VideoDisplayOptions options = VideoDisplayOptions.valueOf(autoplay, showComments, showRating, true, true, false, false, "", true, true);
-		switch(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT, "none")) {
-			case "customDescription":
-				options.setCustomDescription(true);
-				options.setDescriptionText(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_CUSTOMTEXT));
-				break;
-			case "none":
-				options.setShowDescription(false);
-				break;
-			default:
-				break;
-		}
-
+		VideoDisplayOptions options = videoNode.getVideoDisplay(repositoryEntry, true);
 		previewCtrl = new VideoDisplayController(ureq, getWindowControl(), repositoryEntry, null, null, options);
 		listenTo(previewCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), previewCtrl.getInitialComponent(), true, translate(NLS_COMMAND_CHOOSEVIDEO));
