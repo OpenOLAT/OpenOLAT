@@ -1,14 +1,18 @@
 <div class="o_sel_bbb_meeting">
 <h3>$r.escapeHtml($title)</h3>
-#if($errorMessage && !${errorMessage.isEmpty()})
+#if($r.isNotEmpty($errorMessage))
 	<div class="o_error">$errorMessage</div>
 #end
 #if($r.isNotNull($start) || $r.isNotNull($end))
 <div><i class="o_icon o_icon_lifecycle_date"> </i> #if($r.isNotNull($start))$start#end - #if($r.isNotNull($end))$end#end</div>
 #end
-#if($description && !${description.isEmpty()})
+#if($r.isNotEmpty($mainPresenter))
+<div><i class="o_icon o_icon_user"> </i> $r.escapeHtml($mainPresenter)</div>
+#end
+#if($r.isNotEmpty($description))
 	<div class="o_block_large o_info">$r.xssScan($description)</div>
 #end
+
 #if($r.isNotEmpty($externalUrl) && $r.isFalse($ended))
 <div class="o_block_large">
 	<label forid="externalusersmeetingurl">$r.translate("meeting.url.external.users")</label>
@@ -55,4 +59,3 @@
 </div>
 #end
 </div>
-

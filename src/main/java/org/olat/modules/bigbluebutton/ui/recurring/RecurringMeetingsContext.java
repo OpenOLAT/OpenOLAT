@@ -41,6 +41,7 @@ public class RecurringMeetingsContext {
 	private String name;
 	private String description;
 	private String welcome;
+	private String mainPresenter;
 	private Date startTime;
 	private Date endTime;
 	private long leadTime;
@@ -108,6 +109,14 @@ public class RecurringMeetingsContext {
 
 	public void setWelcome(String welcome) {
 		this.welcome = welcome;
+	}
+
+	public String getMainPresenter() {
+		return mainPresenter;
+	}
+
+	public void setMainPresenter(String mainPresenter) {
+		this.mainPresenter = mainPresenter;
 	}
 
 	public Date getStartTime() {

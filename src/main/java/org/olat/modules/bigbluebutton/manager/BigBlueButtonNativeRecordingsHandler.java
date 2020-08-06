@@ -27,6 +27,7 @@ import java.util.Locale;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.User;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -108,9 +109,11 @@ public class BigBlueButtonNativeRecordingsHandler implements BigBlueButtonRecord
 		uriBuilder.optionalParameter("meta_dc-title", meeting.getName());
 		// Media package and event identifier
 		uriBuilder.optionalParameter("meta_dc-identifier", meeting.getMeetingId());
-		
-		//TODO OO-4820
-		uriBuilder.optionalParameter("meta_dc-creator", "creator");
+
+		String creator = getCreator(meeting);
+		if(StringHelper.containsNonWhitespace(creator)) {
+			uriBuilder.optionalParameter("meta_dc-creator", creator);
+		}
 
 		// Series identifier of which the event is part of
 		RepositoryEntry re = meeting.getEntry();
@@ -129,7 +132,7 @@ public class BigBlueButtonNativeRecordingsHandler implements BigBlueButtonRecord
 
 		// The primary language
 		if (re != null && StringHelper.containsNonWhitespace(re.getMainLanguage())) {
-				uriBuilder.optionalParameter("meta_dc-language", re.getMainLanguage().trim());
+			uriBuilder.optionalParameter("meta_dc-language", re.getMainLanguage().trim());
 		}
 
 		// Description of the event
@@ -143,8 +146,28 @@ public class BigBlueButtonNativeRecordingsHandler implements BigBlueButtonRecord
 		uriBuilder.optionalParameter("meta_dc-created", Formatter.formatDatetime(meetingCreation));							
 
 		// Rights holder
-		//TODO OO-4820
-		uriBuilder.optionalParameter("meta_dc-rightsHolder", "Main presenter");
+		if(StringHelper.containsNonWhitespace(meeting.getMainPresenter())) {
+			uriBuilder.optionalParameter("meta_dc-rightsHolder", meeting.getMainPresenter());
+		}
+	}
+	
+	private String getCreator(BigBlueButtonMeeting meeting) {
+		if(meeting.getCreator() == null) return null;
+		
+		User creator = meeting.getCreator().getUser();
+		StringBuilder sb = new StringBuilder();
+		if(StringHelper.containsNonWhitespace(creator.getFirstName())) {
+			sb.append(creator.getFirstName());
+		}
+		if(StringHelper.containsNonWhitespace(creator.getLastName())) {
+			if(sb.length() > 0) sb.append(" ");
+			sb.append(creator.getLastName());
+		}
+		if(StringHelper.containsNonWhitespace(creator.getEmail())) {
+			if(sb.length() > 0) sb.append(" ");
+			sb.append("<").append(creator.getEmail()).append(">");
+		}
+		return sb.toString();
 	}
 
 	@Override

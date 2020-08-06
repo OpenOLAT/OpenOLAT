@@ -74,9 +74,11 @@ public interface BigBlueButtonManager {
 	 * @param entry The repository entry (optional but this or group)
 	 * @param subIdent The sub-identifier (optional)
 	 * @param businessGroup The business group (optional but this or entry)
+	 * @param creator Who creates the meeting
 	 * @return A meeting with some default values
 	 */
-	public BigBlueButtonMeeting createAndPersistMeeting(String name, RepositoryEntry entry, String subIdent, BusinessGroup businessGroup);
+	public BigBlueButtonMeeting createAndPersistMeeting(String name, RepositoryEntry entry, String subIdent,
+			BusinessGroup businessGroup, Identity creator);
 	
 	/**
 	 * Is there a server available.

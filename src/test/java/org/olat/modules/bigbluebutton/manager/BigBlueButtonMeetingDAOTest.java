@@ -28,6 +28,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
@@ -63,8 +64,9 @@ public class BigBlueButtonMeetingDAOTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String name = "BigBlueButton - 1";
 		String subIdent = UUID.randomUUID().toString();
+		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("bbb-creator-3");
 		
-		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting(name, entry, subIdent, null);
+		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting(name, entry, subIdent, null, creator);
 		dbInstance.commit();
 		Assert.assertNotNull(meeting.getKey());
 		Assert.assertNotNull(meeting.getCreationDate());
@@ -74,6 +76,7 @@ public class BigBlueButtonMeetingDAOTest extends OlatTestCase {
 		Assert.assertNotNull(meeting.getModeratorPassword());
 		Assert.assertEquals(entry, meeting.getEntry());
 		Assert.assertEquals(subIdent, meeting.getSubIdent());
+		Assert.assertEquals(creator, meeting.getCreator());
 		Assert.assertNull(meeting.getBusinessGroup());	
 	}
 	
@@ -83,8 +86,9 @@ public class BigBlueButtonMeetingDAOTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String name = "BigBlueButton - 2";
 		String subIdent = UUID.randomUUID().toString();
+		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("bbb-creator-4");
 		
-		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting(name, entry, subIdent, null);
+		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting(name, entry, subIdent, null, creator);
 		dbInstance.commit();
 		meeting.setName("A brand new name");
 		meeting.setDescription("A little description");
@@ -94,6 +98,7 @@ public class BigBlueButtonMeetingDAOTest extends OlatTestCase {
 		meeting.setLeadTime(15);
 		meeting.setEndDate(new Date());
 		meeting.setFollowupTime(7);
+		meeting.setMainPresenter("John Smith");
 		
 		meeting = bigBlueButtonMeetingDao.updateMeeting(meeting);
 		dbInstance.commit();
@@ -120,12 +125,15 @@ public class BigBlueButtonMeetingDAOTest extends OlatTestCase {
 		Assert.assertNotNull(meeting.getEndWithFollowupTime());
 		
 		Assert.assertNull(reloadedMeeting.getBusinessGroup());
+		
+		Assert.assertEquals("John Smith", reloadedMeeting.getMainPresenter());
+		Assert.assertEquals(creator, reloadedMeeting.getCreator());
 	}
 	
 	@Test
 	public void loadByIdentifier() {
 		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB 8 group", "bbb-desc", -1, -1, false, false, false, false, false);
-		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting("BigBlueButton - 8", null, null, group);
+		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting("BigBlueButton - 8", null, null, group, null);
 		dbInstance.commitAndCloseSession();
 		
 		BigBlueButtonMeeting loadedMeeting = bigBlueButtonMeetingDao.loadByIdentifier(meeting.getIdentifier());
@@ -136,8 +144,8 @@ public class BigBlueButtonMeetingDAOTest extends OlatTestCase {
 	@Test
 	public void isIdentifierInUse() {
 		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB 12 group", "bbb-desc", -1, -1, false, false, false, false, false);
-		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting("BigBlueButton - 12", null, null, group);
-		BigBlueButtonMeeting meetingOther = bigBlueButtonMeetingDao.createAndPersistMeeting("BigBlueButton - 13", null, null, group);
+		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting("BigBlueButton - 12", null, null, group, null);
+		BigBlueButtonMeeting meetingOther = bigBlueButtonMeetingDao.createAndPersistMeeting("BigBlueButton - 13", null, null, group, null);
 		dbInstance.commit();
 		String identifier = UUID.randomUUID().toString();
 		meeting.setReadableIdentifier(identifier);
@@ -155,13 +163,15 @@ public class BigBlueButtonMeetingDAOTest extends OlatTestCase {
 	@Test
 	public void loadByKey() {
 		String name = "BigBlueButton - 9";
+		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("bbb-creator-1");
 		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB 9 group", "bbb-desc", -1, -1, false, false, false, false, false);
-		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting(name, null, null, group);
+		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting(name, null, null, group, creator);
 		dbInstance.commitAndCloseSession();
 		
 		BigBlueButtonMeeting loadedMeeting = bigBlueButtonMeetingDao.loadByKey(meeting.getKey());
 		Assert.assertNotNull(loadedMeeting);
 		Assert.assertEquals(meeting, loadedMeeting);
+		Assert.assertEquals(creator, loadedMeeting.getCreator());
 	}
 	
 	@Test
@@ -169,14 +179,14 @@ public class BigBlueButtonMeetingDAOTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String name = "BigBlueButton - 2";
 		String subIdent = UUID.randomUUID().toString();
-		
-		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting(name, entry, subIdent, null);
+		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("bbb-creator-2");
+		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting(name, entry, subIdent, null, creator);
 		dbInstance.commit();
 
-		
 		BigBlueButtonMeeting reloadedMeeting = bigBlueButtonMeetingDao.loadForUpdate(meeting);
 		dbInstance.commit();
 		Assert.assertNotNull(reloadedMeeting);
+		Assert.assertEquals(meeting, reloadedMeeting);
 	}
 	
 	@Test
@@ -185,7 +195,7 @@ public class BigBlueButtonMeetingDAOTest extends OlatTestCase {
 		String name = "BigBlueButton - 2";
 		String subIdent = UUID.randomUUID().toString();
 		
-		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting(name, entry, subIdent, null);
+		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting(name, entry, subIdent, null, null);
 		dbInstance.commit();
 		
 		List<BigBlueButtonMeeting> meetings = bigBlueButtonMeetingDao.getMeetings(entry, subIdent, null, false);
@@ -199,8 +209,8 @@ public class BigBlueButtonMeetingDAOTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		
-		BigBlueButtonMeeting meetingMember = bigBlueButtonMeetingDao.createAndPersistMeeting("BigBlueButton - 10", entry, subIdent, null);
-		BigBlueButtonMeeting meetingGuest = bigBlueButtonMeetingDao.createAndPersistMeeting("BigBlueButton - 11", entry, subIdent, null);
+		BigBlueButtonMeeting meetingMember = bigBlueButtonMeetingDao.createAndPersistMeeting("BigBlueButton - 10", entry, subIdent, null, null);
+		BigBlueButtonMeeting meetingGuest = bigBlueButtonMeetingDao.createAndPersistMeeting("BigBlueButton - 11", entry, subIdent, null, null);
 		dbInstance.commit();
 		meetingGuest.setGuest(true);
 		meetingGuest = bigBlueButtonMeetingDao.updateMeeting(meetingGuest);
@@ -217,7 +227,7 @@ public class BigBlueButtonMeetingDAOTest extends OlatTestCase {
 	public void getAllMeetings() {
 		String name = "BigBlueButton - 3";
 		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB group", "bbb-desc", -1, -1, false, false, false, false, false);
-		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting(name, null, null, group);
+		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting(name, null, null, group, null);
 		dbInstance.commit();
 		
 		List<BigBlueButtonMeeting> meetings = bigBlueButtonMeetingDao.getAllMeetings();
@@ -234,7 +244,7 @@ public class BigBlueButtonMeetingDAOTest extends OlatTestCase {
 		
 		String name = "BigBlueButton - 7";
 		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB server", "bbb-server", -1, -1, false, false, false, false, false);
-		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting(name, null, null, group);
+		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting(name, null, null, group, null);
 		dbInstance.commit();
 		
 		((BigBlueButtonMeetingImpl)meeting).setServer(server);
@@ -283,7 +293,7 @@ public class BigBlueButtonMeetingDAOTest extends OlatTestCase {
 	
 	private BigBlueButtonMeeting createMeeting(String name, Date start, int leadTime, Date end, int followupTime,
 			BigBlueButtonMeetingTemplate template, BusinessGroup group) {
-		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting(name, null, null, group);
+		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting(name, null, null, group, null);
 		meeting.setStartDate(start);
 		meeting.setLeadTime(leadTime);
 		meeting.setEndDate(end);

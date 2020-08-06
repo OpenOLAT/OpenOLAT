@@ -54,6 +54,7 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 	
 	private TextElement nameEl;
 	private TextElement descriptionEl;
+	private TextElement mainPresenterEl;
 	private TextElement welcomeEl;
 	private TextElement leadTimeEl;
 	private TextElement followupTimeEl;
@@ -94,6 +95,9 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 
 		String welcome = meetingsContext.getWelcome();
 		welcomeEl = uifactory.addRichTextElementForStringDataMinimalistic("meeting.welcome", "meeting.welcome", welcome, 8, 60, formLayout, getWindowControl());
+		
+		String mainPresenter = meetingsContext.getMainPresenter();
+		mainPresenterEl = uifactory.addTextElement("meeting.main.presenter", "meeting.main.presenter", 128, mainPresenter, formLayout);
 		
 		Long selectedTemplateKey = meetingsContext.getTemplate() == null ? null : meetingsContext.getTemplate().getKey();
 		KeyValues templatesKeyValues = new KeyValues();
@@ -333,6 +337,7 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 		meetingsContext.setName(nameEl.getValue());
 		meetingsContext.setDescription(descriptionEl.getValue());
 		meetingsContext.setWelcome(welcomeEl.getValue());
+		meetingsContext.setMainPresenter(mainPresenterEl.getValue());
 		BigBlueButtonMeetingTemplate template = getSelectedTemplate();
 		meetingsContext.setTemplate(template);
 

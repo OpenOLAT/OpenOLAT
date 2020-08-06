@@ -65,6 +65,7 @@ import org.olat.modules.bigbluebutton.ui.recurring.RecurringMeetingsContext;
 import org.olat.modules.bigbluebutton.ui.recurring.RecurringMeetingsContext.RecurringMode;
 import org.olat.modules.gotomeeting.ui.GoToMeetingTableModel.MeetingsCols;
 import org.olat.repository.RepositoryEntry;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -95,6 +96,8 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 	private final RepositoryEntry entry;
 	private final BusinessGroup businessGroup;
 
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private BigBlueButtonModule bigBlueButtonModule;
 	@Autowired
@@ -306,6 +309,8 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 				.calculatePermissions(entry, businessGroup, getIdentity(), ureq.getUserSession().getRoles());
 		final RecurringMeetingsContext context = new RecurringMeetingsContext(entry, subIdent, businessGroup,
 				permissions, RecurringMode.daily);
+		context.setMainPresenter(userManager.getUserDisplayName(getIdentity()));
+		
 		RecurringMeeting1Step step = new RecurringMeeting1Step(ureq, context);
 		StepRunnerCallback finishCallback = (uureq, swControl, runContext) -> {
 			addRecurringMeetings(context);
@@ -324,6 +329,8 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 				.calculatePermissions(entry, businessGroup, getIdentity(), ureq.getUserSession().getRoles());
 		final RecurringMeetingsContext context = new RecurringMeetingsContext(entry, subIdent, businessGroup,
 				permissions, RecurringMode.weekly);
+		context.setMainPresenter(userManager.getUserDisplayName(getIdentity()));
+
 		RecurringMeeting1Step step = new RecurringMeeting1Step(ureq, context);
 		StepRunnerCallback finishCallback = (uureq, swControl, runContext) -> {
 			addRecurringMeetings(context);
@@ -342,9 +349,10 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 			}
 			
 			BigBlueButtonMeeting bMeeting = bigBlueButtonManager.createAndPersistMeeting(context.getName(),
-					context.getEntry(), context.getSubIdent(), context.getBusinessGroup());
+					context.getEntry(), context.getSubIdent(), context.getBusinessGroup(), getIdentity());
 			bMeeting.setDescription(context.getDescription());
 			bMeeting.setWelcome(context.getWelcome());
+			bMeeting.setMainPresenter(context.getMainPresenter());
 			bMeeting.setPermanent(false);
 			bMeeting.setTemplate(context.getTemplate());
 			bMeeting.setStartDate(meeting.getStartDate());

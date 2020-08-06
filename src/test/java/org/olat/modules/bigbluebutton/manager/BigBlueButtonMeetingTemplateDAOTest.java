@@ -127,7 +127,7 @@ public class BigBlueButtonMeetingTemplateDAOTest extends OlatTestCase {
 		// make a template and use it in a meeting
 		BigBlueButtonMeetingTemplate template = bigBlueButtonMeetingTemplateDao.createTemplate("A new template", UUID.randomUUID().toString(), false);
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting("BigBlueButton templated - 10", entry, UUID.randomUUID().toString(), null);
+		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting("BigBlueButton templated - 10", entry, UUID.randomUUID().toString(), null, null);
 		meeting.setTemplate(template);
 		bigBlueButtonMeetingDao.updateMeeting(meeting);
 		dbInstance.commitAndCloseSession();

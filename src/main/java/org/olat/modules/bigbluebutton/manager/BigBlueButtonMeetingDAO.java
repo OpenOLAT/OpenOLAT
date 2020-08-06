@@ -30,6 +30,7 @@ import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
@@ -55,7 +56,7 @@ public class BigBlueButtonMeetingDAO {
 	private DB dbInstance;
 	
 	public BigBlueButtonMeeting createAndPersistMeeting(String name,
-			RepositoryEntry entry, String subIdent, BusinessGroup businessGroup) {
+			RepositoryEntry entry, String subIdent, BusinessGroup businessGroup, Identity creator) {
 		BigBlueButtonMeetingImpl meeting = new BigBlueButtonMeetingImpl();
 		meeting.setCreationDate(new Date());
 		meeting.setLastModified(meeting.getCreationDate());
@@ -72,6 +73,8 @@ public class BigBlueButtonMeetingDAO {
 		meeting.setSubIdent(subIdent);
 		meeting.setBusinessGroup(businessGroup);
 		
+		meeting.setCreator(creator);
+		
 		dbInstance.getCurrentEntityManager().persist(meeting);
 		return meeting;
 	}
@@ -83,6 +86,8 @@ public class BigBlueButtonMeetingDAO {
 		  .append(" left join fetch meeting.businessGroup as businessGroup")
 		  .append(" left join fetch meeting.template as template")
 		  .append(" left join fetch meeting.server as server")
+		  .append(" left join fetch meeting.creator as creator")
+		  .append(" left join fetch creator.user as creatorUser")
 		  .append(" where meeting.key=:meetingKey");
 		
 		List<BigBlueButtonMeeting> meetings = dbInstance.getCurrentEntityManager()
@@ -99,6 +104,8 @@ public class BigBlueButtonMeetingDAO {
 		  .append(" left join fetch meeting.businessGroup as businessGroup")
 		  .append(" left join fetch meeting.template as template")
 		  .append(" left join fetch meeting.server as server")
+		  .append(" left join fetch meeting.creator as creator")
+		  .append(" left join fetch creator.user as creatorUser")
 		  .append(" where meeting.identifier=:identifier or meeting.readableIdentifier=:identifier");
 		
 		List<BigBlueButtonMeeting> meetings = dbInstance.getCurrentEntityManager()

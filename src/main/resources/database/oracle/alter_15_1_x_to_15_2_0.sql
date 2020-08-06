@@ -18,3 +18,9 @@ alter table o_bbb_attendee add constraint bbb_attend_ident_idx foreign key (fk_i
 create index idx_bbb_attend_ident_idx on o_bbb_attendee(fk_identity_id);
 alter table o_bbb_attendee add constraint bbb_attend_meet_idx foreign key (fk_meeting_id) references o_bbb_meeting (id);
 create index idx_bbb_attend_meet_idx on o_bbb_attendee(fk_meeting_id);
+
+
+alter table o_bbb_meeting add b_main_presenter varchar2(255);
+alter table o_bbb_meeting add fk_creator_id number(20);
+alter table o_bbb_meeting add constraint bbb_meet_creator_idx foreign key (fk_creator_id) references o_bs_identity (id);
+create index idx_bbb_meet_creator_idx on o_bbb_meeting(fk_creator_id);

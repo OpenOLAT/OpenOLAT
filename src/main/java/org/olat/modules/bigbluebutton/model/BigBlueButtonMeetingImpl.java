@@ -33,6 +33,8 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.olat.basesecurity.IdentityImpl;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
@@ -108,13 +110,20 @@ public class BigBlueButtonMeetingImpl implements Persistable, BigBlueButtonMeeti
 	private String attendeePassword;
 	@Column(name="b_moderator_pw", nullable=false, insertable=true, updatable=false)
 	private String moderatorPassword;
+
+	@Column(name="b_main_presenter", nullable=true, insertable=true, updatable=true)
+	private String mainPresenter;
+	
+	@ManyToOne(targetEntity=IdentityImpl.class, fetch=FetchType.LAZY, optional=true)
+	@JoinColumn(name="fk_creator_id", nullable=true, insertable=true, updatable=false)
+	private Identity creator;
 	
 	@ManyToOne(targetEntity=RepositoryEntry.class, fetch=FetchType.LAZY, optional=true)
 	@JoinColumn(name="fk_entry_id", nullable=true, insertable=true, updatable=false)
 	private RepositoryEntry entry;
 	@Column(name="a_sub_ident", nullable=true, insertable=true, updatable=false)
 	private String subIdent;
-	
+
 	@ManyToOne(targetEntity=BusinessGroupImpl.class, fetch=FetchType.LAZY, optional=true)
 	@JoinColumn(name="fk_group_id", nullable=true, insertable=true, updatable=false)
 	private BusinessGroup businessGroup;
@@ -331,6 +340,25 @@ public class BigBlueButtonMeetingImpl implements Persistable, BigBlueButtonMeeti
 
 	public void setEndWithFollowupTime(Date endWithFollowupTime) {
 		this.endWithFollowupTime = endWithFollowupTime;
+	}
+
+	@Override
+	public String getMainPresenter() {
+		return mainPresenter;
+	}
+
+	@Override
+	public void setMainPresenter(String mainPresenter) {
+		this.mainPresenter = mainPresenter;
+	}
+
+	@Override
+	public Identity getCreator() {
+		return creator;
+	}
+
+	public void setCreator(Identity creator) {
+		this.creator = creator;
 	}
 
 	@Override

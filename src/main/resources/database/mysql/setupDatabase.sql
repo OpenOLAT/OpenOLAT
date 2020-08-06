@@ -345,8 +345,8 @@ create table if not exists o_user (
    u_officemobilephone varchar(255),
    u_department varchar(255),
    u_privateemail varchar(255),
-   u_employeenumber varchar(255),
-   u_organizationalunit varchar(255),
+   u_employeenumber text(255),
+   u_organizationalunit text(255),
 
    u_edupersonaffiliation text(255),
    u_swissedupersonstaffcategory text(255),
@@ -1219,6 +1219,8 @@ create table o_bbb_meeting (
    b_end_date datetime default null,
    b_followuptime bigint default 0 not null,
    b_end_with_followuptime datetime,
+   b_main_presenter varchar(255),
+   fk_creator_id bigint default null,
    fk_entry_id bigint default null,
    a_sub_ident varchar(64) default null,
    fk_group_id bigint default null,
@@ -3746,6 +3748,7 @@ alter table o_aconnect_user add constraint aconn_ident_idx foreign key (fk_ident
 alter table o_bbb_meeting add constraint bbb_meet_entry_idx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);
 alter table o_bbb_meeting add constraint bbb_meet_grp_idx foreign key (fk_group_id) references o_gp_business (group_id);
 alter table o_bbb_meeting add constraint bbb_meet_template_idx foreign key (fk_template_id) references o_bbb_template (id);
+alter table o_bbb_meeting add constraint bbb_meet_creator_idx foreign key (fk_creator_id) references o_bs_identity (id);
 
 alter table o_bbb_meeting add constraint bbb_meet_serv_idx foreign key (fk_server_id) references o_bbb_server (id);
 

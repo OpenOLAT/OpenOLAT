@@ -22,6 +22,7 @@ package org.olat.modules.bigbluebutton;
 import java.util.Date;
 
 import org.olat.core.id.CreateInfo;
+import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.group.BusinessGroup;
 import org.olat.repository.RepositoryEntry;
@@ -91,6 +92,12 @@ public interface BigBlueButtonMeeting extends ModifiedInfo, CreateInfo {
 	public void setFollowupTime(long followupTime);
 
 	public Date getEndWithFollowupTime();
+	
+	public String getMainPresenter();
+	
+	public void setMainPresenter(String name);
+	
+	public Identity getCreator();
 	
 	public BigBlueButtonMeetingTemplate getTemplate();
 

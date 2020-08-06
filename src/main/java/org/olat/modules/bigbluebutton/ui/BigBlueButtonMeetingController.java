@@ -146,6 +146,10 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 				String url = BigBlueButtonDispatcher.getMeetingUrl(meeting.getReadableIdentifier());
 				layoutCont.contextPut("externalUrl", url);
 			}
+			
+			if(StringHelper.containsNonWhitespace(meeting.getMainPresenter())) {
+				layoutCont.contextPut("mainPresenter", meeting.getMainPresenter());
+			}
 		}
 		
 		joinButton = LinkFactory.createButtonLarge("meeting.join.button", flc.getFormItemComponent(), this);

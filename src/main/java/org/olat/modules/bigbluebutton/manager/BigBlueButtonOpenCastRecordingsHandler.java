@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.User;
+import org.olat.core.id.UserConstants;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -88,8 +90,21 @@ public class BigBlueButtonOpenCastRecordingsHandler implements BigBlueButtonReco
 		// Media package and event identifier
 		uriBuilder.optionalParameter("meta_dc-identifier", meeting.getMeetingId());
 		
-		//TODO OO-4820
-		uriBuilder.optionalParameter("meta_dc-creator", "creator.firstname lastname");
+		User creator = null;
+		if(meeting.getCreator() != null) {
+			creator = meeting.getCreator().getUser();
+			
+			String creatorFirstLastName = creatorFirstLastName(creator);
+			if(StringHelper.containsNonWhitespace(creatorFirstLastName)) {
+				uriBuilder.optionalParameter("meta_dc-creator", creatorFirstLastName);
+			}
+			
+			String username = creator.getProperty(UserConstants.NICKNAME, null);
+			if(StringHelper.containsNonWhitespace(username)) {
+				uriBuilder.optionalParameter("meta_dc-rightsHolder", username);
+				uriBuilder.optionalParameter("meta_opencast-acl-read-roles", "ROLE_OAUTH_USER ROLE_USER_" + username);
+			}
+		}
 
 		// Series identifier of which the event is part of
 		RepositoryEntry re = meeting.getEntry();
@@ -117,7 +132,7 @@ public class BigBlueButtonOpenCastRecordingsHandler implements BigBlueButtonReco
 		uriBuilder.optionalParameter("meta_dc-isPartOf", context);
 
 		// The primary language
-		if (re != null) {
+		if (re != null && StringHelper.containsNonWhitespace(re.getMainLanguage())) {
 			uriBuilder.optionalParameter("meta_dc-language", re.getMainLanguage().trim());
 		}
 
@@ -126,14 +141,19 @@ public class BigBlueButtonOpenCastRecordingsHandler implements BigBlueButtonReco
 		// Date of the event
 		uriBuilder.optionalParameter("meta_dc-created", Formatter.formatDatetime(meetingCreation));							
 
-		// Rights holder
-		//TODO OO-4820
-		uriBuilder.optionalParameter("meta_dc-rightsHolder", "creator.username");
-		
 		uriBuilder.optionalParameter("meta_opencast-series-dc-title", seriesTitle);
-
-		//TODO OO-4820
-		uriBuilder.optionalParameter("meta_opencast-acl-read-roles", "ROLE_OAUTH_USER ROLE_USER_{upperCase(creator.username)}");
+	}
+	
+	private String creatorFirstLastName(User creator) {
+		StringBuilder sb = new StringBuilder();
+		if(StringHelper.containsNonWhitespace(creator.getFirstName())) {
+			sb.append(creator.getFirstName());
+		}
+		if(StringHelper.containsNonWhitespace(creator.getLastName())) {
+			if(sb.length() > 0) sb.append(" ");
+			sb.append(creator.getLastName());
+		}
+		return sb.toString();
 	}
 
 	@Override

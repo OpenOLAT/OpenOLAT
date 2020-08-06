@@ -40,6 +40,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.id.Identity;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
@@ -51,6 +52,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
 import org.olat.repository.RepositoryEntry;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -66,6 +68,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	private FormLink openCalLink;
 	private TextElement nameEl;
 	private TextElement descriptionEl;
+	private TextElement mainPresenterEl;
 	private TextElement welcomeEl;
 	private TextElement leadTimeEl;
 	private TextElement followupTimeEl;
@@ -89,6 +92,8 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	private BigBlueButtonMeetingsCalendarController calCtr;
 	private CloseableModalController cmc;
 	
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private BigBlueButtonModule bigBlueButtonModule;
 	@Autowired
@@ -144,6 +149,12 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			nameEl.setFocus(true);
 		}
 		
+		Identity creator = meeting == null ? getIdentity() : meeting.getCreator();
+		if(creator != null) {
+			String creatorFullName = userManager.getUserDisplayName(creator);
+			uifactory.addStaticTextElement("meeting.creator", creatorFullName, formLayout);
+		}
+		
 		String description = meeting == null ? "" : meeting.getDescription();
 		descriptionEl = uifactory.addTextAreaElement("meeting.description", "meeting.description", 2000, 4, 72, false, false, description, formLayout);
 		descriptionEl.setEnabled(editable);
@@ -151,6 +162,11 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		String welcome = meeting == null ? "" : meeting.getWelcome();
 		welcomeEl = uifactory.addRichTextElementForStringDataMinimalistic("meeting.welcome", "meeting.welcome", welcome, 8, 60, formLayout, getWindowControl());
 		welcomeEl.setEnabled(editable);
+		
+		String presenter = meeting == null ? userManager.getUserDisplayName(getIdentity()) : meeting.getMainPresenter();
+		mainPresenterEl = uifactory.addTextElement("meeting.main.presenter", "meeting.main.presenter", 128, presenter, formLayout);
+		mainPresenterEl.setElementCssClass("o_sel_bbb_edit_meeting_presenter");
+		mainPresenterEl.setEnabled(editable);
 		
 		Long selectedTemplateKey = meeting == null || meeting.getTemplate() == null
 				? null : meeting.getTemplate().getKey();
@@ -206,6 +222,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		guestEl = uifactory.addCheckboxesHorizontal("meeting.guest", formLayout, onKeys, guestValues);
 		guestEl.setVisible(entry != null && entry.isGuests());
 		guestEl.select(onKeys[0], meeting != null && meeting.isGuest());
+		guestEl.setEnabled(editable);
 		
 		String externalLink = meeting == null ? CodeHelper.getForeverUniqueID() + "" : meeting.getReadableIdentifier();
 		externalLinkEl = uifactory.addTextElement("meeting.external.users", 64, externalLink, formLayout);
@@ -546,7 +563,8 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if(meeting == null) {
-			meeting = bigBlueButtonManager.createAndPersistMeeting(nameEl.getValue(), entry, subIdent, businessGroup);
+			meeting = bigBlueButtonManager
+					.createAndPersistMeeting(nameEl.getValue(), entry, subIdent, businessGroup, getIdentity());
 		} else {
 			meeting = bigBlueButtonManager.getMeeting(meeting);
 			meeting.setName(nameEl.getValue());
@@ -554,6 +572,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		
 		meeting.setDescription(descriptionEl.getValue());
 		meeting.setWelcome(welcomeEl.getValue());
+		meeting.setMainPresenter(mainPresenterEl.getValue());
 		BigBlueButtonMeetingTemplate template = getSelectedTemplate();
 		meeting.setTemplate(template);
 		
@@ -591,7 +610,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			meeting.setMeetingLayout(BigBlueButtonMeetingLayoutEnum.standard);
 		}
 		
-		bigBlueButtonManager.updateMeeting(meeting);
+		meeting = bigBlueButtonManager.updateMeeting(meeting);
 
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
@@ -602,7 +621,6 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	}
 	
 	public enum Mode {
-		
 		permanent,
 		dates
 	}

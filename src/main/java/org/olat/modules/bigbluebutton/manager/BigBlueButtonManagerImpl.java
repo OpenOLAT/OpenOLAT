@@ -334,8 +334,9 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	}
 
 	@Override
-	public BigBlueButtonMeeting createAndPersistMeeting(String name, RepositoryEntry entry, String subIdent, BusinessGroup businessGroup) {
-		return bigBlueButtonMeetingDao.createAndPersistMeeting(name, entry, subIdent, businessGroup);
+	public BigBlueButtonMeeting createAndPersistMeeting(String name, RepositoryEntry entry, String subIdent,
+			BusinessGroup businessGroup, Identity creator) {
+		return bigBlueButtonMeetingDao.createAndPersistMeeting(name, entry, subIdent, businessGroup, creator);
 	}
 	
 	@Override
