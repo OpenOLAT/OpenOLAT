@@ -107,27 +107,9 @@ public class VideoRunController extends BasicController {
 			showError(VideoEditController.NLS_ERROR_VIDEOREPOENTRYMISSING);
 			return;
 		}
-		
-		// configure the display controller according to config
-		boolean autoplay = config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY);
-		boolean comments = config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS);
-		boolean ratings = config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING);
-		String customtext = config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_CUSTOMTEXT);
 
-		VideoDisplayOptions displayOptions = VideoDisplayOptions.valueOf(autoplay, comments, ratings, true, true, false, false, null, false, userCourseEnv.isCourseReadOnly());
-		switch(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT,"none")) {
-			case "customDescription":
-				displayOptions.setCustomDescription(true);
-				displayOptions.setDescriptionText(customtext);
-				break;
-			case "none":
-				displayOptions.setShowDescription(false);
-				break;
-			default:
-				break;
-		}
-		
 		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		VideoDisplayOptions displayOptions = videoNode.getVideoDisplay(videoEntry, userCourseEnv.isCourseReadOnly());
 		videoDispCtr = new VideoDisplayController(ureq, getWindowControl(), videoEntry, courseEntry, videoNode, displayOptions);
 		listenTo(videoDispCtr);
 		
