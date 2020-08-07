@@ -93,6 +93,10 @@ public interface BigBlueButtonMeeting extends ModifiedInfo, CreateInfo {
 
 	public Date getEndWithFollowupTime();
 	
+	public BigBlueButtonRecordingsPublishingEnum getRecordingsPublishingEnum();
+
+	public void setRecordingsPublishingEnum(BigBlueButtonRecordingsPublishingEnum publishing);
+	
 	public String getMainPresenter();
 	
 	public void setMainPresenter(String name);

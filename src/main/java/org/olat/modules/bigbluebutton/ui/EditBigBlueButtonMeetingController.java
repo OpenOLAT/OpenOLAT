@@ -50,6 +50,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingLayoutEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishingEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
@@ -76,6 +77,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	private DateChooser endDateEl;
 	private SingleSelection templateEl;
 	private SingleSelection layoutEl;
+	private SingleSelection publishingEl;
 	private MultipleSelectionElement guestEl;
 	private TextElement externalLinkEl;
 
@@ -197,6 +199,14 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		if(!templateSelected && templatesKeys.length > 0) {
 			templateEl.select(templatesKeys[0], true);
 		}
+		
+		KeyValues publishKeyValues = new KeyValues();
+		publishKeyValues.add(KeyValues.entry(BigBlueButtonRecordingsPublishingEnum.auto.name(), translate("meeting.publishing.auto")));
+		publishKeyValues.add(KeyValues.entry(BigBlueButtonRecordingsPublishingEnum.manual.name(), translate("meeting.publishing.manual")));
+		publishingEl = uifactory.addRadiosVertical("meeting.publishing", formLayout, publishKeyValues.keys(), publishKeyValues.values());
+		BigBlueButtonRecordingsPublishingEnum publish = meeting == null ? BigBlueButtonRecordingsPublishingEnum.auto :  meeting.getRecordingsPublishingEnum();
+		publishingEl.select(publish.name(), true);
+		publishingEl.setEnabled(editable);
 
 		KeyValues layoutKeyValues = new KeyValues();
 		layoutKeyValues.add(KeyValues.entry(BigBlueButtonMeetingLayoutEnum.standard.name(), translate("layout.standard")));
@@ -404,6 +414,13 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			nameEl.setErrorKey("form.invalidchar.noamp", null);
 			allOk &= false;
 		}
+		
+		publishingEl.clearError();
+		if(!publishingEl.isOneSelected()) {
+			publishingEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
 		return allOk;
 	}
 	
@@ -609,6 +626,8 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		} else {
 			meeting.setMeetingLayout(BigBlueButtonMeetingLayoutEnum.standard);
 		}
+		
+		meeting.setRecordingsPublishingEnum(BigBlueButtonRecordingsPublishingEnum.valueOf(publishingEl.getSelectedKey()));
 		
 		meeting = bigBlueButtonManager.updateMeeting(meeting);
 

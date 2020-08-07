@@ -19,6 +19,7 @@
  */
 package org.olat.modules.bigbluebutton.ui;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.TimerTask;
@@ -29,19 +30,23 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.ExternalLink;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.winmgr.CommandFactory;
@@ -55,13 +60,17 @@ import org.olat.core.util.UserSession;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.bigbluebutton.BigBlueButtonAttendee;
 import org.olat.modules.bigbluebutton.BigBlueButtonAttendeeRoles;
 import org.olat.modules.bigbluebutton.BigBlueButtonDispatcher;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecording;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecordingReference;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishedRoles;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
+import org.olat.modules.bigbluebutton.model.BigBlueButtonRecordingWithReference;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonRecordingTableModel.BRecordingsCols;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -86,8 +95,10 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 	private ExternalLink guestJoinButton;
 	private FlexiTableElement tableEl;
 	private BigBlueButtonRecordingTableModel recordingTableModel;
-	
+
+	private PublishRecordingController publishCtrl;
 	private DialogBoxController confirmDeleteRecordingDialog;
+	private CloseableCalloutWindowController publishCalloutCtrl;
 
 	@Autowired
 	private TaskExecutorManager taskExecutorManager;
@@ -173,10 +184,13 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BRecordingsCols.type, new RecordingTypeCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BRecordingsCols.start));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BRecordingsCols.end));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.recording.open", translate("table.header.recording.open"),
-				"open-recording", true, true));
-		if(administrator && bigBlueButtonManager.getRecordingsHandler().canDeleteRecordings()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.recording.open", BRecordingsCols.open.ordinal(), "open-recording",
+				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.recording.open"), "open-recording"), null)));
+		if(administrator) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BRecordingsCols.publish));
+			if(bigBlueButtonManager.getRecordingsHandler().canDeleteRecordings()) {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
+			}
 		}
 		
 		recordingTableModel = new BigBlueButtonRecordingTableModel(columnsModel, getLocale());
@@ -187,11 +201,49 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 	}
 	
 	private void loadRecordingsModel() {
+		BigBlueButtonAttendee attendee = bigBlueButtonManager.getAttendee(getIdentity(), meeting);
+		
 		BigBlueButtonErrors errors = new BigBlueButtonErrors();
-		List<BigBlueButtonRecording> recordings = bigBlueButtonManager.getRecordings(meeting, errors);
-		recordingTableModel.setObjects(recordings);
+		List<BigBlueButtonRecordingWithReference> recordings = bigBlueButtonManager.getRecordingAndReferences(meeting, errors);
+		List<BigBlueButtonRecordingRow> rows = new ArrayList<>(recordings.size());
+		for(BigBlueButtonRecordingWithReference recording:recordings) {
+			BigBlueButtonRecordingRow row = forgeRow(recording, attendee);
+			if(row != null) {
+				rows.add(row);
+			}
+		}
+		recordingTableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 		flc.contextPut("hasRecordings", Boolean.valueOf(!recordings.isEmpty()));
+	}
+	
+	private BigBlueButtonRecordingRow forgeRow(BigBlueButtonRecordingWithReference recording, BigBlueButtonAttendee attendee) {
+		boolean pusblished = isPublishedForMe(recording.getReference(), attendee);
+		BigBlueButtonRecordingRow row = new BigBlueButtonRecordingRow(recording, pusblished);
+		if(administrator || moderator) {
+			FormLink publishLink = uifactory.addFormLink("publish-" + recording.getRecording().getRecordId(),
+					"publish", "publish.recording", tableEl);
+			row.setPublishLink(publishLink);
+			publishLink.setUserObject(row);
+		}
+		return row;
+	}
+	
+	private boolean isPublishedForMe(BigBlueButtonRecordingReference reference, BigBlueButtonAttendee attendee) {
+		if(reference == null) return false;
+		
+		BigBlueButtonRecordingsPublishedRoles[] publishTo = reference.getPublishToEnum();
+		if(BigBlueButtonRecordingsPublishedRoles.has(publishTo, BigBlueButtonRecordingsPublishedRoles.none)) {
+			return false;
+		}
+		if(guest) {
+			return BigBlueButtonRecordingsPublishedRoles.has(publishTo, BigBlueButtonRecordingsPublishedRoles.guest);
+		}
+		if(attendee != null && BigBlueButtonRecordingsPublishedRoles.has(publishTo, BigBlueButtonRecordingsPublishedRoles.all)) {
+			return true;
+		}
+		return ((administrator || moderator) && BigBlueButtonRecordingsPublishedRoles.has(publishTo, BigBlueButtonRecordingsPublishedRoles.coach))
+				|| BigBlueButtonRecordingsPublishedRoles.has(publishTo, BigBlueButtonRecordingsPublishedRoles.participant);
 	}
 	
 	private boolean isEnded() {
@@ -300,13 +352,25 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 				doDeleteRecording(recording);
 			}
 			cleanUp();
+		} else if(publishCtrl == source) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				loadRecordingsModel();
+			}
+			publishCalloutCtrl.deactivate();
+			cleanUp();
+		} else if(publishCalloutCtrl == source) {
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(confirmDeleteRecordingDialog);
+		removeAsListenerAndDispose(publishCalloutCtrl);
+		removeAsListenerAndDispose(publishCtrl);
 		confirmDeleteRecordingDialog = null;
+		publishCalloutCtrl = null;
+		publishCtrl = null;
 	}
 
 	@Override
@@ -315,10 +379,15 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				if("delete".equals(se.getCommand())) {
-					doConfirmDeleteRecording(ureq, recordingTableModel.getObject(se.getIndex()));
+					doConfirmDeleteRecording(ureq, recordingTableModel.getObject(se.getIndex()).getRecording());
 				} else if("open-recording".equals(se.getCommand())) {
-					doOpenRecording(recordingTableModel.getObject(se.getIndex()));
+					doOpenRecording(recordingTableModel.getObject(se.getIndex()).getRecording());
 				}
+			}
+		} else if(source instanceof FormLink) {
+			FormLink link = (FormLink)source;
+			if("publish".equals(link.getCmd()) && link.getUserObject() instanceof BigBlueButtonRecordingRow) {
+				doPublish(ureq, link, (BigBlueButtonRecordingRow)link.getUserObject());
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -327,6 +396,16 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private void doPublish(UserRequest ureq, FormLink link, BigBlueButtonRecordingRow row) {
+		publishCtrl = new PublishRecordingController(ureq, getWindowControl(), row);
+		listenTo(publishCtrl); 
+
+		publishCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				publishCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(publishCalloutCtrl);
+		publishCalloutCtrl.activate();
 	}
 
 	private void doJoin(UserRequest ureq) {
@@ -346,7 +425,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 			BigBlueButtonAttendeeRoles role = guest ? BigBlueButtonAttendeeRoles.guest : BigBlueButtonAttendeeRoles.external;
 			meetingUrl = bigBlueButtonManager.join(meeting, getIdentity(), null, role, null, errors);
 		} else if(bigBlueButtonManager.isMeetingRunning(meeting)) {
-			BigBlueButtonAttendeeRoles role = guest ? BigBlueButtonAttendeeRoles.guest : BigBlueButtonAttendeeRoles.external;
+			BigBlueButtonAttendeeRoles role = guest ? BigBlueButtonAttendeeRoles.guest : BigBlueButtonAttendeeRoles.viewer;
 			meetingUrl = bigBlueButtonManager.join(meeting, getIdentity(), null, role, Boolean.TRUE, errors);
 		}
 		redirectTo(ureq, meetingUrl, errors);

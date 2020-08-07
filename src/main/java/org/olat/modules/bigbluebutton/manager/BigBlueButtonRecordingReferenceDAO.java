@@ -1,0 +1,78 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.modules.bigbluebutton.manager;
+
+import java.util.Date;
+import java.util.List;
+
+import org.olat.core.commons.persistence.DB;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecording;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecordingReference;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishedRoles;
+import org.olat.modules.bigbluebutton.model.BigBlueButtonRecordingReferenceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+/**
+ * 
+ * Initial date: 7 août 2020<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
+@Service
+public class BigBlueButtonRecordingReferenceDAO {
+	
+	@Autowired
+	private DB dbInstance;
+	
+	public BigBlueButtonRecordingReference createReference(BigBlueButtonRecording recording, BigBlueButtonMeeting meeting,
+			BigBlueButtonRecordingsPublishedRoles[] publishTo) {
+		BigBlueButtonRecordingReferenceImpl ref = new BigBlueButtonRecordingReferenceImpl();
+		ref.setCreationDate(new Date());
+		ref.setLastModified(ref.getCreationDate());
+		ref.setRecordingId(recording.getRecordId());
+		ref.setStartDate(recording.getStart());
+		ref.setEndDate(recording.getEnd());
+		ref.setType(recording.getType());
+		ref.setUrl(recording.getUrl());
+		ref.setPublishToEnum(publishTo);
+		ref.setMeeting(meeting);
+		dbInstance.getCurrentEntityManager().persist(ref);
+		return ref;
+	}
+	
+	public BigBlueButtonRecordingReference updateRecordingReference(BigBlueButtonRecordingReference reference) {
+		((BigBlueButtonRecordingReferenceImpl)reference).setLastModified(new Date());
+		return dbInstance.getCurrentEntityManager().merge(reference);
+	}
+	
+	public List<BigBlueButtonRecordingReference> getRecordingReferences(BigBlueButtonMeeting meeting) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select record from bigbluebuttonrecording as record")
+		  .append(" where record.meeting.key=:meetingKey");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), BigBlueButtonRecordingReference.class)
+				.setParameter("meetingKey", meeting.getKey())
+				.getResultList();
+	}
+
+}

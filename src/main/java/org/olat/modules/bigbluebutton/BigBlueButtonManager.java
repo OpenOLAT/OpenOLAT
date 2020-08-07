@@ -27,6 +27,7 @@ import org.olat.core.id.Roles;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.bigbluebutton.manager.BigBlueButtonUriBuilder;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
+import org.olat.modules.bigbluebutton.model.BigBlueButtonRecordingWithReference;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonServerInfos;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -150,11 +151,16 @@ public interface BigBlueButtonManager {
 	
 	public boolean isMeetingRunning(BigBlueButtonMeeting meeting);
 	
-	public List<BigBlueButtonRecording> getRecordings(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors);
+	public List<BigBlueButtonRecordingWithReference> getRecordingAndReferences(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors);
+	
+	public BigBlueButtonRecordingReference updateRecordingReference(BigBlueButtonRecordingReference reference);
 	
 	public String getRecordingUrl(BigBlueButtonRecording record);
 	
 	public void deleteRecording(BigBlueButtonRecording record, BigBlueButtonMeeting meeting, BigBlueButtonErrors errors);
+	
+	
+	public BigBlueButtonAttendee getAttendee(Identity identity, BigBlueButtonMeeting meeting);
 	
 	/**
 	 * Factory method to create an URI builder which can calculate

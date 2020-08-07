@@ -28,7 +28,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
-import org.olat.modules.bigbluebutton.BigBlueButtonRecording;
 
 /**
  * 
@@ -36,8 +35,8 @@ import org.olat.modules.bigbluebutton.BigBlueButtonRecording;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class BigBlueButtonRecordingTableModel extends DefaultFlexiTableDataModel<BigBlueButtonRecording>
-implements SortableFlexiTableDataModel<BigBlueButtonRecording> {
+public class BigBlueButtonRecordingTableModel extends DefaultFlexiTableDataModel<BigBlueButtonRecordingRow>
+implements SortableFlexiTableDataModel<BigBlueButtonRecordingRow> {
 	
 	private static final BRecordingsCols[] COLS = BRecordingsCols.values();
 	
@@ -51,31 +50,32 @@ implements SortableFlexiTableDataModel<BigBlueButtonRecording> {
 	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
-			List<BigBlueButtonRecording> views = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+			List<BigBlueButtonRecordingRow> views = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
 			super.setObjects(views);
 		}
 	}
 	
 	@Override
 	public Object getValueAt(int row, int col) {
-		BigBlueButtonRecording recording = getObject(row);
+		BigBlueButtonRecordingRow recording = getObject(row);
 		return getValueAt(recording, col) ;
 	}
 
 	@Override
-	public Object getValueAt(BigBlueButtonRecording row, int col) {
+	public Object getValueAt(BigBlueButtonRecordingRow row, int col) {
 		switch(COLS[col]) {
 			case name: return row.getName();
 			case type: return row.getType();
 			case start: return row.getStart();
 			case end: return row.getEnd();
-			case open: return row.getUrl();
+			case open: return row.isPublished();
+			case publish: return row.getPublishLink();
 			default: return "ERROR";
 		}
 	}
 
 	@Override
-	public DefaultFlexiTableDataModel<BigBlueButtonRecording> createCopyWithEmptyList() {
+	public DefaultFlexiTableDataModel<BigBlueButtonRecordingRow> createCopyWithEmptyList() {
 		return new BigBlueButtonRecordingTableModel(getTableColumnModel(), locale);
 	}
 	
@@ -85,7 +85,8 @@ implements SortableFlexiTableDataModel<BigBlueButtonRecording> {
 		type("table.header.recording.type"),
 		start("table.header.recording.start"),
 		end("table.header.recording.end"),
-		open("table.header.recording.open");
+		open("table.header.recording.open"),
+		publish("table.header.publish");
 		
 		private final String i18nHeaderKey;
 		

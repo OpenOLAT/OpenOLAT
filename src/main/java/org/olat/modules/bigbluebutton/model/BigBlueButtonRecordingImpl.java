@@ -88,4 +88,21 @@ public class BigBlueButtonRecordingImpl implements BigBlueButtonRecording {
 	public Date getEnd() {
 		return end;
 	}
+
+	@Override
+	public int hashCode() {
+		return recordId == null ? 86424 : recordId.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == this) {
+			return true;
+		}
+		if(obj instanceof BigBlueButtonRecordingImpl) {
+			BigBlueButtonRecordingImpl recording = (BigBlueButtonRecordingImpl)obj;
+			return recordId != null && recordId.equals(recording.recordId);
+		}
+		return false;
+	}
 }

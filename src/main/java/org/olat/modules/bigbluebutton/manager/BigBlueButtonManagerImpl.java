@@ -27,6 +27,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -58,6 +59,7 @@ import org.olat.course.ICourse;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.DeletableGroupData;
+import org.olat.modules.bigbluebutton.BigBlueButtonAttendee;
 import org.olat.modules.bigbluebutton.BigBlueButtonAttendeeRoles;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
@@ -65,7 +67,10 @@ import org.olat.modules.bigbluebutton.BigBlueButtonMeetingLayoutEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecording;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecordingReference;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsHandler;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishedRoles;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishingEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonServer;
 import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
 import org.olat.modules.bigbluebutton.GuestPolicyEnum;
@@ -74,6 +79,7 @@ import org.olat.modules.bigbluebutton.model.BigBlueButtonErrorCodes;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingImpl;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingInfos;
+import org.olat.modules.bigbluebutton.model.BigBlueButtonRecordingWithReference;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonServerInfos;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryDataDeletable;
@@ -120,6 +126,8 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	private BigBlueButtonAttendeeDAO bigBlueButtonAttendeeDao;
 	@Autowired
 	private BigBlueButtonMeetingTemplateDAO bigBlueButtonMeetingTemplateDao;
+	@Autowired
+	private BigBlueButtonRecordingReferenceDAO bigBlueButtonRecordingReferenceDao;
 	@Autowired @Qualifier("native")
 	private BigBlueButtonRecordingsHandler defaultRecordingsHandler;
 	@Autowired
@@ -572,9 +580,14 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	}
 	
 	private void deleteRecordings(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors) {
-		List<BigBlueButtonRecording> recordings = getRecordings(meeting, errors);
-		if(recordings != null && !recordings.isEmpty()) {
+		List<BigBlueButtonRecordingWithReference> recordingsAndRefs = getRecordingAndReferences(meeting, errors);
+		if(recordingsAndRefs != null && !recordingsAndRefs.isEmpty()) {
+			List<BigBlueButtonRecording> recordings = recordingsAndRefs.stream()
+					.map(BigBlueButtonRecordingWithReference::getRecording)
+					.collect(Collectors.toList());
 			getRecordingsHandler().deleteRecordings(recordings, meeting, errors);
+			
+			//TODO delete references
 		}
 	}
 	
@@ -903,15 +916,60 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	}
 	
 	@Override
+	public BigBlueButtonAttendee getAttendee(Identity identity, BigBlueButtonMeeting meeting) {
+		return bigBlueButtonAttendeeDao.getAttendee(identity, meeting);
+	}
+	
+	@Override
 	public String getRecordingUrl(BigBlueButtonRecording recording) {
 		return getRecordingsHandler().getRecordingURL(recording);
 	}
 
 	@Override
-	public List<BigBlueButtonRecording> getRecordings(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors) {
-		return getRecordingsHandler().getRecordings(meeting, errors);
+	public List<BigBlueButtonRecordingWithReference> getRecordingAndReferences(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors) {
+		List<BigBlueButtonRecording> recordings = getRecordingsHandler().getRecordings(meeting, errors);
+		List<BigBlueButtonRecordingReference> references = bigBlueButtonRecordingReferenceDao.getRecordingReferences(meeting);
+		Map<String,BigBlueButtonRecordingReference> recordIdToReferences = references.stream()
+				.collect(Collectors.toMap(BigBlueButtonRecordingReference::getRecordingId, u -> u, (u, v) -> u));
+
+		List<BigBlueButtonRecordingWithReference> withReferences = new ArrayList<>(recordings.size());
+		for(BigBlueButtonRecording recording:recordings) {
+			BigBlueButtonRecordingReference reference = recordIdToReferences.get(recording.getRecordId());
+			if(reference == null) {
+				reference = syncReference(recording, meeting);
+				if(reference == null) {
+					continue;
+				}
+				recordIdToReferences.put(recording.getRecordId(), reference);
+			}
+			withReferences.add(new BigBlueButtonRecordingWithReference(recording, reference));
+		}
+		return withReferences;
 	}
 	
+	private BigBlueButtonRecordingReference syncReference(BigBlueButtonRecording recording, BigBlueButtonMeeting meeting) {
+		try {
+			BigBlueButtonRecordingsPublishedRoles role;
+			if(meeting.getRecordingsPublishingEnum() == BigBlueButtonRecordingsPublishingEnum.auto) {
+				role = BigBlueButtonRecordingsPublishedRoles.all;
+			} else {
+				role = BigBlueButtonRecordingsPublishedRoles.none;
+			}
+			BigBlueButtonRecordingReference reference = bigBlueButtonRecordingReferenceDao.createReference(recording, meeting,
+					new BigBlueButtonRecordingsPublishedRoles[] { role });
+			dbInstance.commit();
+			return reference;
+		} catch (Exception e) {
+			log.error("", e);
+			return null;
+		}
+	}
+	
+	@Override
+	public BigBlueButtonRecordingReference updateRecordingReference(BigBlueButtonRecordingReference reference) {
+		return bigBlueButtonRecordingReferenceDao.updateRecordingReference(reference);
+	}
+
 	@Override
 	public boolean checkConnection(String url, String sharedSecret, BigBlueButtonErrors errors) {
 		BigBlueButtonUriBuilder uriBuilder = BigBlueButtonUriBuilder.fromUri(URI.create(url), sharedSecret);

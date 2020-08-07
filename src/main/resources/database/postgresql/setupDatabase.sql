@@ -1242,6 +1242,7 @@ create table o_bbb_meeting (
    b_followuptime bigint default 0 not null,
    b_end_with_followuptime timestamp,
    b_main_presenter varchar(255),
+   b_recordings_publishing varchar(16) default 'auto',
    fk_creator_id int8,
    fk_entry_id int8 default null,
    a_sub_ident varchar(64) default null,
@@ -1260,6 +1261,21 @@ create table o_bbb_attendee (
    b_pseudo varchar(255),
    fk_identity_id int8,
    fk_meeting_id int8 not null,
+   primary key (id)
+);
+
+create table o_bbb_recording (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   b_recording_id varchar(255) not null,
+   b_publish_to varchar(128),
+   b_start_date timestamp default null,
+   b_end_date timestamp default null,
+   b_url varchar(1024),
+   b_type varchar(32),
+   fk_meeting_id int8 not null,
+   unique(b_recording_id,fk_meeting_id),
    primary key (id)
 );
 
@@ -3671,6 +3687,9 @@ alter table o_bbb_attendee add constraint bbb_attend_ident_idx foreign key (fk_i
 create index idx_bbb_attend_ident_idx on o_bbb_attendee(fk_identity_id);
 alter table o_bbb_attendee add constraint bbb_attend_meet_idx foreign key (fk_meeting_id) references o_bbb_meeting (id);
 create index idx_bbb_attend_meet_idx on o_bbb_attendee(fk_meeting_id);
+
+alter table o_bbb_recording add constraint bbb_record_meet_idx foreign key (fk_meeting_id) references o_bbb_meeting (id);
+create index idx_bbb_record_meet_idx on o_bbb_recording(fk_meeting_id);
 
 -- tag
 alter table o_tag add constraint FK6491FCA5A4FA5DC foreign key (fk_author_id) references o_bs_identity (id);

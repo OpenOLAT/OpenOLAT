@@ -25,3 +25,23 @@ alter table o_bbb_meeting add column fk_creator_id int8;
 alter table o_bbb_meeting add constraint bbb_meet_creator_idx foreign key (fk_creator_id) references o_bs_identity (id);
 create index idx_bbb_meet_creator_idx on o_bbb_meeting(fk_creator_id);
 
+
+alter table o_bbb_meeting add column b_recordings_publishing varchar(16) default 'auto';
+
+create table o_bbb_recording (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   b_recording_id varchar(255) not null,
+   b_publish_to varchar(128),
+   b_start_date timestamp default null,
+   b_end_date timestamp default null,
+   b_url varchar(1024),
+   b_type varchar(32),
+   fk_meeting_id int8 not null,
+   unique(b_recording_id,fk_meeting_id),
+   primary key (id)
+);
+
+alter table o_bbb_recording add constraint bbb_record_meet_idx foreign key (fk_meeting_id) references o_bbb_meeting (id);
+create index idx_bbb_record_meet_idx on o_bbb_recording(fk_meeting_id);

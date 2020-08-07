@@ -1065,6 +1065,17 @@ public class FormUIFactory {
 		}
 		return fte;
 	}
+	
+	public FormLink addFormLink(String name, String cmd, String i18nLink, FlexiTableElement table) {
+		FormLinkImpl fte = new FormLinkImpl(name, cmd, i18nLink, Link.LINK);
+		fte.setI18nKey(i18nLink);
+		setLabelIfNotNull(null, fte);
+		
+		if(table instanceof FlexiTableElementImpl) {
+			((FlexiTableElementImpl)table).addFormItem(fte);
+		}
+		return fte;
+	}
 
 	/**
 	 * Add a form link with a special css class
@@ -1109,38 +1120,38 @@ public class FormUIFactory {
 	 * @param linkTitle
 	 * @param i18nLabel
 	 * @param file
-	 * @param formLayout
+	 * @param table
 	 * @return
 	 */
-	public DownloadLink addDownloadLink(String name,  String linkTitle, String i18nLabel, VFSLeaf file, FlexiTableElement formLayout) {
+	public DownloadLink addDownloadLink(String name,  String linkTitle, String i18nLabel, VFSLeaf file, FlexiTableElement table) {
 		DownloadLinkImpl fte = new DownloadLinkImpl(name);
 		fte.setLinkText(linkTitle);
 		fte.setDownloadItem(file);
 		setLabelIfNotNull(i18nLabel, fte);
-		if(formLayout != null) {
-			((FlexiTableElementImpl)formLayout).addFormItem(fte);
+		if(table instanceof FlexiTableElementImpl) {
+			((FlexiTableElementImpl)table).addFormItem(fte);
 		}
 		return fte;
 	}
 	
-	public DownloadLink addDownloadLink(String name,  String linkTitle, String i18nLabel, File file, FlexiTableElement formLayout) {
+	public DownloadLink addDownloadLink(String name,  String linkTitle, String i18nLabel, File file, FlexiTableElement table) {
 		DownloadLinkImpl fte = new DownloadLinkImpl(name);
 		fte.setLinkText(linkTitle);
 		fte.setDownloadItem(file);
 		setLabelIfNotNull(i18nLabel, fte);
-		if(formLayout != null) {
-			((FlexiTableElementImpl)formLayout).addFormItem(fte);
+		if(table instanceof FlexiTableElementImpl) {
+			((FlexiTableElementImpl)table).addFormItem(fte);
 		}
 		return fte;
 	}
 	
-	public DownloadLink addDownloadLink(String name,  String linkTitle, String i18nLabel, MediaResource resource, FlexiTableElement formLayout) {
+	public DownloadLink addDownloadLink(String name,  String linkTitle, String i18nLabel, MediaResource resource, FlexiTableElement table) {
 		DownloadLinkImpl fte = new DownloadLinkImpl(name);
 		fte.setLinkText(linkTitle);
 		fte.setDownloadMedia(resource);
 		setLabelIfNotNull(i18nLabel, fte);
-		if(formLayout != null) {
-			((FlexiTableElementImpl)formLayout).addFormItem(fte);
+		if(table instanceof FlexiTableElementImpl) {
+			((FlexiTableElementImpl)table).addFormItem(fte);
 		}
 		return fte;
 	}

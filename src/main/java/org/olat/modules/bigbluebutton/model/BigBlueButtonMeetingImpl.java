@@ -41,6 +41,7 @@ import org.olat.group.BusinessGroupImpl;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingLayoutEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishingEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonServer;
 import org.olat.repository.RepositoryEntry;
 
@@ -110,9 +111,12 @@ public class BigBlueButtonMeetingImpl implements Persistable, BigBlueButtonMeeti
 	private String attendeePassword;
 	@Column(name="b_moderator_pw", nullable=false, insertable=true, updatable=false)
 	private String moderatorPassword;
-
+	
 	@Column(name="b_main_presenter", nullable=true, insertable=true, updatable=true)
 	private String mainPresenter;
+
+	@Column(name="b_recordings_publishing", nullable=true, insertable=true, updatable=true)
+	private String recordingsPublishing;
 	
 	@ManyToOne(targetEntity=IdentityImpl.class, fetch=FetchType.LAZY, optional=true)
 	@JoinColumn(name="fk_creator_id", nullable=true, insertable=true, updatable=false)
@@ -340,6 +344,26 @@ public class BigBlueButtonMeetingImpl implements Persistable, BigBlueButtonMeeti
 
 	public void setEndWithFollowupTime(Date endWithFollowupTime) {
 		this.endWithFollowupTime = endWithFollowupTime;
+	}
+
+	public String getRecordingsPublishing() {
+		return recordingsPublishing;
+	}
+
+	public void setRecordingsPublishing(String recordingsPublishing) {
+		this.recordingsPublishing = recordingsPublishing;
+	}
+	
+	public BigBlueButtonRecordingsPublishingEnum getRecordingsPublishingEnum() {
+		return BigBlueButtonRecordingsPublishingEnum.secureValueOf(recordingsPublishing);
+	}
+
+	public void setRecordingsPublishingEnum(BigBlueButtonRecordingsPublishingEnum recordingsPublishing) {
+		if(recordingsPublishing == null) {
+			this.recordingsPublishing = BigBlueButtonRecordingsPublishingEnum.auto.name();
+		} else {
+			this.recordingsPublishing = recordingsPublishing.name();
+		}
 	}
 
 	@Override
