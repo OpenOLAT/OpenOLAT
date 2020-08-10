@@ -174,6 +174,7 @@ public class HelpAdminEditController extends FormBasicController {
 			iconEl.setValue("o_icon_external_link");
 			setElementVisible(inputEl, true, true, true);
 			setElementVisible(newWindowEl, true, true, false);
+			break;
 		case HelpModule.CUSTOM_3: 
 			inputEl.setLabel("help.admin.input.url", null);
 			newWindowEl.select(onKeys[0], helpModule.isCustom3NewWindow());

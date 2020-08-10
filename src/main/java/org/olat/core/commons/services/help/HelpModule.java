@@ -623,9 +623,7 @@ public class HelpModule extends AbstractSpringModule {
 		return custom1Icon;
 	}
 
-	public String getCustom2Link() {
-		return custom2Link;
-	}
+	public String getCustom2Link() { return custom2Link; }
 
 	public boolean isCustom2NewWindow() {
 		return custom2NewWindow;
