@@ -166,7 +166,7 @@ public class FeedMediaDispatcher implements Dispatcher, GenericEventListener {
 						try {
 							validatedUriCache.remove(key);
 						} catch (Exception e) {
-							log.info("Cannot remove this key: " + key);
+							log.info("Cannot remove this key: {}", key);
 						}
 					}
 				}
@@ -185,6 +185,11 @@ public class FeedMediaDispatcher implements Dispatcher, GenericEventListener {
 			ureq = new UserRequestImpl(uriPrefix, request, response);
 		} catch(NumberFormatException nfe) {
 			//
+		}
+		
+		if(requestedPath == null || requestedPath.length() == 0) {
+			DispatcherModule.sendBadRequest(request.getRequestURI(), response);
+			return;
 		}
 
 		Path path = null;
