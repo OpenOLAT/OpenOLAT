@@ -21,9 +21,7 @@ package org.olat.user.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -63,19 +61,19 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
- * This web service handles functionalities related to authentication credentials of users.
  * 
- * @author srosse, stephane.rosse@frentix.com
+ * Initial date: 10 août 2020<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-@Deprecated
 @Tag(name = "Users")
 @Component
-@Path("users/{username}/auth")
-public class UserAuthenticationWebService {
+@Path("users/{identityKey}/authentications")
+public class UserAuthenticationsWebService {
 	
-	private static final Logger log = Tracing.createLoggerFor(UserAuthenticationWebService.class);
+	private static final Logger log = Tracing.createLoggerFor(UserAuthenticationsWebService.class);
 	
-	private static final String VERSION = "1.0";
+	private static final String VERSION = "2.0";
 	
 	@Autowired
 	private BaseSecurity securityManager;
@@ -99,35 +97,27 @@ public class UserAuthenticationWebService {
 	/**
 	 * Returns all user authentications
 	 * 
-	 * @param username The username of the user to retrieve authentication
+	 * @param identityKey The identity primary key of the user to retrieve the list authentication
 	 * @param request The HTTP request
-	 * @return
+	 * @return A list of authentication
 	 */
 	@GET
-	@Operation(summary = "Returns all user authentications", description = "Returns all user authentications", deprecated=true)
+	@Operation(summary = "Returns all user authentications", description = "Returns all user authentications")
 	@ApiResponse(responseCode = "200", description = "The list of all users in the OLAT system", content = {
 			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = AuthenticationVO.class))),
 			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = AuthenticationVO.class))) })
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The identity not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getAuthenticationTokenList(@PathParam("username") String username, @Context HttpServletRequest request) {
-		List<Authentication> identities = securityManager.findAuthenticationsByAuthusername(username, null);
-		if(identities.isEmpty()) {
+	public Response getAuthenticationTokenList(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
+		Identity identity = securityManager.loadIdentityByKey(identityKey);
+		if(identityKey == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-		Set<Identity> identitiesSet = new HashSet<>();
-		for(Authentication identity:identities) {
-			if(!isManager(identity.getIdentity(), request)) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
-			}
-			identitiesSet.add(identity.getIdentity());
-		}
-		if(identitiesSet.size() > 1) {
-			return Response.serverError().status(Status.CONFLICT).build();
+		if(!isManager(identity, request)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
-		Identity identity = identitiesSet.iterator().next();
 		List<Authentication> authentications = securityManager.getAuthentications(identity);
 		AuthenticationVO[] vos = new AuthenticationVO[authentications.size()];
 		int count = 0;
@@ -140,13 +130,13 @@ public class UserAuthenticationWebService {
 	/**
 	 * Creates and persists an authentication
 	 *
-	 * @param username The username of the user
+	 * @param identityKey The identity key of the user
 	 * @param authenticationVO The authentication object to persist
 	 * @param request The HTTP request
 	 * @return the saved authentication
 	 */
 	@PUT
-	@Operation(summary = "Creates and persists an authentication", description = "Creates and persists an authentication", deprecated=true)
+	@Operation(summary = "Creates and persists an authentication", description = "Creates and persists an authentication")
 	@ApiResponse(responseCode = "200", description = "The saved authentication", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = AuthenticationVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = AuthenticationVO.class)) })
@@ -156,13 +146,13 @@ public class UserAuthenticationWebService {
 	@ApiResponse(responseCode = "409", description = "Cannot create the authentication because the authentication username is already used by someone else within the same provider")	
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response create(@PathParam("username") String username, AuthenticationVO authenticationVO, @Context HttpServletRequest request) {
+	public Response create(@PathParam("identityKey") Long identityKey, AuthenticationVO authenticationVO, @Context HttpServletRequest request) {
 		Identity identity = securityManager.loadIdentityByKey(authenticationVO.getIdentityKey(), false);
 		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!isManager(identity, request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		String provider = authenticationVO.getProvider();
@@ -189,7 +179,7 @@ public class UserAuthenticationWebService {
 	/**
 	 * Deletes an authentication from the system
 	 * 
-	 * @param username The username of the user
+	 * @param identityKey The identity key of the user
 	 * @param authKey The authentication key identifier
 	 * @param request The HTTP request
 	 * @return <code>Response</code> object. The operation status (success or
@@ -197,17 +187,17 @@ public class UserAuthenticationWebService {
 	 */
 	@DELETE
 	@Path("{authKey}")
-	@Operation(summary = "Deletes an authentication from the system", description = "Deletes an authentication from the system", deprecated=true)
+	@Operation(summary = "Deletes an authentication from the system", description = "Deletes an authentication from the system")
 	@ApiResponse(responseCode = "200", description = "The authentication successfully deleted")
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The identity not found")
-	public Response delete(@PathParam("username") String username, @PathParam("authKey") Long authKey, @Context HttpServletRequest request) {
-		Identity identity = securityManager.findIdentityByLogin(username);
+	public Response delete(@PathParam("identityKey") Long identityKey, @PathParam("authKey") Long authKey, @Context HttpServletRequest request) {
+		Identity identity = securityManager.loadIdentityByKey(identityKey);
 		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!isManager(identity, request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		List<Authentication> authentications = securityManager.getAuthentications(identity);
@@ -223,30 +213,30 @@ public class UserAuthenticationWebService {
 	/**
 	 * Change the password of a user.
 	 * 
-	 * @param username The username of the user to change the password
+	 * @param username The identity key of the user to change the password
 	 * @param newPassword The new password
 	 * @param request The HTTP request
 	 * @return <code>Response</code> object. The operation status (success or fail)
 	 */
 	@POST
 	@Path("password")
-	@Operation(summary = "Change the password of a user", description = "Change the password of a user", deprecated=true)
+	@Operation(summary = "Change the password of a user", description = "Change the password of a user")
 	@ApiResponse(responseCode = "200", description = "The password successfully changed")
 	@ApiResponse(responseCode = "304", description = "The password was not changed")
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The identity or the authentication not found")
-	public Response changePassword(@PathParam("username") String username, @FormParam("newPassword") String newPassword,
+	public Response changePassword(@PathParam("identityKey") Long identityKey, @FormParam("newPassword") String newPassword,
 			@Context HttpServletRequest request) {
 		Identity doer = getIdentity(request);
 		if(doer == null) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
-		Identity identity = securityManager.findIdentityByName(username);
+		Identity identity = securityManager.loadIdentityByKey(identityKey);
 		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!isManager(identity, request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		boolean ok = authManager.changePassword(doer, identity, newPassword);

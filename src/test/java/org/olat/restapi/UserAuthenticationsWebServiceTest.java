@@ -1,34 +1,25 @@
 /**
-* OLAT - Online Learning and Training<br>
-* http://www.olat.org
-* <p>
-* Licensed under the Apache License, Version 2.0 (the "License"); <br>
-* you may not use this file except in compliance with the License.<br>
-* You may obtain a copy of the License at
-* <p>
-* http://www.apache.org/licenses/LICENSE-2.0
-* <p>
-* Unless required by applicable law or agreed to in writing,<br>
-* software distributed under the License is distributed on an "AS IS" BASIS, <br>
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
-* See the License for the specific language governing permissions and <br>
-* limitations under the License.
-* <p>
-* Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
-* University of Zurich, Switzerland.
-* <hr>
-* <a href="http://www.openolat.org">
-* OpenOLAT - Online Learning and Training</a><br>
-* This file has been modified by the OpenOLAT community. Changes are licensed
-* under the Apache 2.0 license as the original file.  
-* <p>
-*/
-
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
 package org.olat.restapi;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -71,17 +62,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * 
- * Description:<br>
- * Test the authentication management per user
- * 
- * <P>
- * Initial Date:  15 apr. 2010 <br>
- * @author srosse, stephane.rosse@frentix.com
+ * Initial date: 10 août 2020<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-@Deprecated
-public class UserAuthenticationMgmtTest extends OlatRestTestCase {
+public class UserAuthenticationsWebServiceTest extends OlatRestTestCase {
 	
-	private static final Logger log = Tracing.createLoggerFor(UserAuthenticationMgmtTest.class);
+	private static final Logger log = Tracing.createLoggerFor(UserAuthenticationsWebServiceTest.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -95,14 +82,17 @@ public class UserAuthenticationMgmtTest extends OlatRestTestCase {
 	public void getAuthentications() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
+		Identity administrator = securityManager.findIdentityByLogin("administrator");
 		
-		URI request = UriBuilder.fromUri(getContextURI()).path("/users/administrator/auth").build();
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("users").path(administrator.getKey().toString()).path("authentications")
+				.build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
 		List<AuthenticationVO> vos = parseAuthenticationArray(response.getEntity());
-		assertNotNull(vos);
-		assertFalse(vos.isEmpty());
+		Assert.assertNotNull(vos);
+		Assert.assertFalse(vos.isEmpty());
 
 		conn.shutdown();
 	}
@@ -129,20 +119,22 @@ public class UserAuthenticationMgmtTest extends OlatRestTestCase {
 		vo.setProvider("REST-API");
 		vo.setCredential("credentials");
 		
-		URI request = UriBuilder.fromUri(getContextURI()).path("/users/administrator/auth").build();
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("users").path(adminIdent.getKey().toString()).path("authentications")
+				.build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
 		conn.addJsonEntity(method, vo);
 
 		HttpResponse response = conn.execute(method);
-		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+		Assert.assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
 		AuthenticationVO savedAuth = conn.parse(response, AuthenticationVO.class);
 		Authentication refAuth = securityManager.findAuthentication(adminIdent, "REST-API");
 
-		assertNotNull(refAuth);
-		assertNotNull(refAuth.getKey());
-		assertTrue(refAuth.getKey().longValue() > 0);
-		assertNotNull(savedAuth);
-		assertNotNull(savedAuth.getKey());
+		Assert.assertNotNull(refAuth);
+		Assert.assertNotNull(refAuth.getKey());
+		Assert.assertTrue(refAuth.getKey().longValue() > 0);
+		Assert.assertNotNull(savedAuth);
+		Assert.assertNotNull(savedAuth.getKey());
 		assertTrue(savedAuth.getKey().longValue() > 0);
 		assertEquals(refAuth.getKey(), savedAuth.getKey());
 		assertEquals(refAuth.getAuthusername(), savedAuth.getAuthUsername());
@@ -174,7 +166,7 @@ public class UserAuthenticationMgmtTest extends OlatRestTestCase {
 		vo1.setIdentityKey(id1.getKey());
 		vo1.setProvider("REST-API");
 		vo1.setCredential("credentials");
-		URI request1 = UriBuilder.fromUri(getContextURI()).path("/users/" + id1.getName() + "/auth").build();
+		URI request1 = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("authentications").build();
 		HttpPut method1 = conn.createPut(request1, MediaType.APPLICATION_JSON, true);
 		conn.addJsonEntity(method1, vo1);
 
@@ -191,7 +183,7 @@ public class UserAuthenticationMgmtTest extends OlatRestTestCase {
 		vo2.setIdentityKey(id2.getKey());
 		vo2.setProvider("REST-API");
 		vo2.setCredential("credentials");
-		URI request2 = UriBuilder.fromUri(getContextURI()).path("/users/" + id2.getName() + "/auth").build();
+		URI request2 = UriBuilder.fromUri(getContextURI()).path("users").path(id2.getKey().toString()).path("authentications").build();
 		HttpPut method2 = conn.createPut(request2, MediaType.APPLICATION_JSON, true);
 		conn.addJsonEntity(method2, vo2);
 
@@ -215,7 +207,8 @@ public class UserAuthenticationMgmtTest extends OlatRestTestCase {
 		dbInstance.intermediateCommit();
 		
 		//delete an authentication token
-		URI request = UriBuilder.fromUri(getContextURI()).path("/users/administrator/auth/" + authentication.getKey()).build();
+		URI request = UriBuilder.fromUri(getContextURI()).path("users").path(adminIdent.getKey().toString())
+				.path("authentications").path(authentication.getKey().toString()).build();
 		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_XML);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
@@ -236,7 +229,7 @@ public class UserAuthenticationMgmtTest extends OlatRestTestCase {
 		assertTrue(conn.login("administrator", "openolat"));
 
 		URI request = UriBuilder.fromUri(getContextURI())
-				.path("users").path(user.getName()).path("auth").path("password")
+				.path("users").path(user.getKey().toString()).path("authentications").path("password")
 				.build();
 		HttpPost method = conn.createPost(request, "*/*");
 		conn.addEntity(method, new BasicNameValuePair("newPassword", "top-secret"));

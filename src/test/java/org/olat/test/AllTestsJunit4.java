@@ -450,6 +450,7 @@ import org.junit.runners.Suite;
 	org.olat.restapi.RemindersWebServiceTest.class,
 	org.olat.restapi.RestApiLoginFilterTest.class,
 	org.olat.restapi.UserAuthenticationMgmtTest.class,
+	org.olat.restapi.UserAuthenticationsWebServiceTest.class,
 	org.olat.restapi.UserFoldersTest.class,
 	org.olat.restapi.UserCoursesTest.class,
 	org.olat.restapi.UserMgmtTest.class,

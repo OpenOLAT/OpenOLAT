@@ -52,6 +52,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
  * Initial Date:  7 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
+@Deprecated
 @Path("auth")
 @Component
 public class AuthenticationWebService {
@@ -110,7 +111,7 @@ public class AuthenticationWebService {
 			"	  not possible.\n" + 
 			"	  \n" + 
 			"	  When using the REST API, best-practice is to use basic authentication and\n" + 
-			"	  activate cookies in your HTTP client for automatic session management.")
+			"	  activate cookies in your HTTP client for automatic session management.", deprecated=true)
 	@ApiResponse(responseCode = "200", description = "Say hello to the authenticated user, and\n" + 
 			"	 *                                  give it a security token\n" + 
 			"	 *                                  &lt;hello&gt;Hello john&lt;/hello&gt;")

@@ -510,30 +510,6 @@
 		</property>
 		<property name="parentTreeNodeIdentifier" value="develParent" /> 
 	</bean>
-			
-		
-		
-		
-		
-		<!-- Devel / Advanced properties -->
-		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
-			<property name="order" value="7500" />
-			<property name="actionController">	
-				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-					<property name="className" value="org.olat.admin.properties.AdvancedPropertiesController"/>
-				</bean>
-			</property>
-			<property name="navigationKey" value="advancedproperties" />
-		<property name="parentTreeNodeIdentifier" value="develParent" /> 
-			<property name="i18nActionKey" value="menu.advancedproperties"/>
-			<property name="i18nDescriptionKey" value="menu.advancedproperties.alt"/>
-			<property name="translationPackage" value="org.olat.admin"/>
-			<property name="extensionPoints">
-				<list>	
-					<value>org.olat.admin.SystemAdminMainController</value>		
-				</list>
-			</property>
-		</bean>	
 
 		<!-- Help module -->
 		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">

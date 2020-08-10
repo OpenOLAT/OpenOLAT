@@ -155,11 +155,21 @@ public class UserCalendarWebService {
 		if(ureq.getIdentity() == null || !ureq.getUserSession().isAuthenticated()) {
 			throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
 		}
-		if (!ureq.getIdentity().getKey().equals(identityKey) && !isManager(identityKey, httpRequest)) {
+		
+		Identity identity;
+		if(ureq.getIdentity().getKey().equals(identityKey)) {
+			identity = ureq.getIdentity();
+		} else if (!ureq.getIdentity().getKey().equals(identityKey) && !isManager(identityKey, httpRequest)) {
 			throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
+		} else {
+			identity = securityManager.loadIdentityByKey(identityKey);
 		}
 		
-		KalendarRenderWrapper calendar = getCalendar(ureq, calendarId);
+		if(identity == null) {
+			throw new WebApplicationException(Response.serverError().status(Status.NOT_FOUND).build());
+		}
+		
+		KalendarRenderWrapper calendar = getCalendar(ureq, identity, calendarId);
 		if(calendar == null) {
 			throw new WebApplicationException(Response.serverError().status(Status.NOT_FOUND).build());
 		}
@@ -210,7 +220,7 @@ public class UserCalendarWebService {
 		return processEvents(events, onlyFuture, start, limit, httpRequest, request);
 	}
 	
-	private KalendarRenderWrapper getCalendar(UserRequest ureq, String calendarId) {
+	private KalendarRenderWrapper getCalendar(UserRequest ureq, Identity identity, String calendarId) {
 		int typeIndex = calendarId.indexOf('_');
 		if(typeIndex <= 0 || (typeIndex + 1 >= calendarId.length())) {
 			return null;
@@ -241,13 +251,10 @@ public class UserCalendarWebService {
 			CalSecurityCallback secCallback = CalSecurityCallbackFactory.createCourseCalendarCallback(userCourseEnv);
 			wrapper = CourseCalendars.getCourseCalendarWrapper(ureq, userCourseEnv, secCallback);
 		} else if("user".equals(type) && calendarModule.isEnablePersonalCalendar()) {
-			if(id.equals(ureq.getIdentity().getName())) {
-				wrapper = getPersonalCalendar(ureq.getIdentity());
+			if(id.equals(identity.getName()) || id.equals(identity.getKey().toString())) {
+				wrapper = getPersonalCalendar(identity);
 			} else {
-				Identity identity = securityManager.findIdentityByName(id);
-				if(isManager(identity, ureq.getHttpReq())) {
-					wrapper = getPersonalCalendar(identity);
-				}
+				log.warn("Personal calendar id {} doesn't match identity key: {}", id, identity.getKey());
 			}
 		}
 		return wrapper;
