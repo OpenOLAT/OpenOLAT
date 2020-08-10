@@ -882,6 +882,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if (calendarIsEnabled && userCourseEnv != null) {
 			calendarLink = LinkFactory.createToolLink("calendar",translate("command.calendar"), this, "o_icon_calendar");
 			calendarLink.setPopup(new LinkPopupSettings(950, 750, "cal"));
+			calendarLink.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[Calendar:0]"));
 			calendarLink.setVisible(cc.isCalendarEnabled());
 			toolbarPanel.addTool(calendarLink);
 		}
@@ -1305,6 +1307,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			} else if("Forum".equalsIgnoreCase(type)) {
 				if (forumLink != null && forumLink.isVisible()) {
 					doForum(ureq);
+				}
+			} else if("Calendar".equalsIgnoreCase(type)) {
+				if (calendarLink != null && calendarLink.isVisible()) {
+					doCalendar(ureq);
 				}
 			} else if("Documents".equalsIgnoreCase(type)) {
 				if (documentsLink != null && documentsLink.isVisible()) {
@@ -1963,7 +1969,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			currentToolCtr = emailCtrl;
 		} else {
 			delayedClose = Delayed.email;
-		};
+		}
 	}
 	
 	private BlogToolController doBlog(UserRequest ureq) {
@@ -2033,6 +2039,27 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		return null;
 	}
 	
+	/**
+	 * Open the calendar as sub-controller.
+	 * 
+	 * @param ureq The user request
+	 * @return The calendar controller
+	 */
+	private CourseCalendarController doCalendar(UserRequest ureq) {
+		OLATResourceable ores = OresHelper.createOLATResourceableType("Calendar");
+		WindowControl swControl = addToHistory(ureq, ores, null);
+		CourseCalendarController calendarController = new CourseCalendarController(ureq, swControl, getUserCourseEnvironment());
+		pushController(ureq, translate("command.calendar"), calendarController);
+		setActiveTool(calendarLink);
+		currentToolCtr = calendarController;
+		return calendarController;
+	}
+	
+	/**
+	 * Open the course calendar as popup.
+	 * 
+	 * @param ureq The user request
+	 */
 	private void launchCalendar(UserRequest ureq) {
 		ControllerCreator ctrlCreator = (lureq, lwControl) -> {
 			ICourse course = CourseFactory.loadCourse(getRepositoryEntry());

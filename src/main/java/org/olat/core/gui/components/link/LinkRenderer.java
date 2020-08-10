@@ -199,7 +199,9 @@ public class LinkRenderer extends DefaultComponentRenderer {
 				try(StringOutput href = new StringOutput()) {
 					LinkPopupSettings popup = link.getPopup();
 					ubu.buildURI(href, new String[] { VelocityContainer.COMMAND_ID }, new String[] { command }, null, AJAXFlags.MODE_NORMAL);
-					sb.append("href=\"javascript:;\" onclick=\"o_openPopUp('").append(href).append("','")
+					boolean hasUrl = StringHelper.containsNonWhitespace(link.getUrl());
+					String hrefUrl = hasUrl ? link.getUrl() : "javascript:;";
+					sb.append("href=\"").append(hrefUrl).append("\" onclick=\"o_openPopUp('").append(href).append("','")
 					  .append(popup.getTarget()).append("',").append(popup.getWidth())
 					  .append(",").append(popup.getHeight()).append("); return false;\" ");
 				} catch(IOException e) {
