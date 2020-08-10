@@ -47,29 +47,26 @@ import org.olat.core.util.session.UserSessionManager;
  */
 public class AdminModuleDispatcher implements Dispatcher {
 	
-	private final static  String PARAMETER_CMD          = "cmd"; 
-	private final static  String PARAMETER_MSG          = "msg";
-	private final static  String PARAMETER_MAX_MESSAGE  = "maxsessions";
-	private final static  String PARAMETER_NBR_SESSIONS = "nbrsessions";
-	private final static  String PARAMETER_SESSIONTIMEOUT ="sec";
+	private static final String PARAMETER_CMD          = "cmd"; 
+	private static final String PARAMETER_MSG          = "msg";
+	private static final String PARAMETER_MAX_MESSAGE  = "maxsessions";
+	private static final String PARAMETER_NBR_SESSIONS = "nbrsessions";
+	private static final String PARAMETER_SESSIONTIMEOUT ="sec";
 	
-	private final static  String CMD_SET_MAINTENANCE_MESSAGE    = "setmaintenancemessage";
-	private final static  String CMD_SET_INFO_MESSAGE    				= "setinfomessage"; 
-	private final static  String CMD_SET_LOGIN_BLOCKED          = "setloginblocked";
-	private final static  String CMD_SET_LOGIN_NOT_BLOCKED      = "setloginnotblocked";
-	private final static  String CMD_SET_MAX_SESSIONS           = "setmaxsessions";
-	private final static  String CMD_INVALIDATE_ALL_SESSIONS    = "invalidateallsessions";
-	private final static  String CMD_INVALIDATE_OLDEST_SESSIONS = "invalidateoldestsessions";
-	private final static  String CMD_SET_SESSIONTIMEOUT         = "sessiontimeout";
+	private static final String CMD_SET_MAINTENANCE_MESSAGE    = "setmaintenancemessage";
+	private static final String CMD_SET_INFO_MESSAGE    	   = "setinfomessage"; 
+	private static final String CMD_SET_LOGIN_BLOCKED          = "setloginblocked";
+	private static final String CMD_SET_LOGIN_NOT_BLOCKED      = "setloginnotblocked";
+	private static final String CMD_SET_MAX_SESSIONS           = "setmaxsessions";
+	private static final String CMD_INVALIDATE_ALL_SESSIONS    = "invalidateallsessions";
+	private static final String CMD_INVALIDATE_OLDEST_SESSIONS = "invalidateoldestsessions";
+	private static final String CMD_SET_SESSIONTIMEOUT         = "sessiontimeout";
 	
-	
-	/** 
-	 * @see org.olat.core.dispatcher.Dispatcher#execute(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.lang.String)
-	 */
+
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response) {
 		String cmd = request.getParameter(PARAMETER_CMD);
-		if (cmd.equalsIgnoreCase(CMD_SET_MAINTENANCE_MESSAGE) || cmd.equalsIgnoreCase(CMD_SET_INFO_MESSAGE)) {
+		if (CMD_SET_MAINTENANCE_MESSAGE.equalsIgnoreCase(cmd) || CMD_SET_INFO_MESSAGE.equalsIgnoreCase(cmd)) {
 			handleSetMaintenanceOrInfoMessage(request, response, cmd);
 		} else {
 			if (CoreSpringFactory.getImpl(AdminModule.class).checkSessionAdminToken(request)) {
@@ -182,7 +179,4 @@ public class AdminModuleDispatcher implements Dispatcher {
 			DispatcherModule.sendForbidden(request.getPathInfo(), response);
 		}
 	}
-
-	
-
 }

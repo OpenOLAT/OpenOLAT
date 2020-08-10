@@ -264,4 +264,13 @@
     	<exception-type>java.lang.Throwable</exception-type>
     	<location>/errors/error.html</location>
     </error-page>
+    
+    <security-constraint>
+		<web-resource-collection>
+			<web-resource-name><strong>restricted methods</strong></web-resource-name>
+			<url-pattern>/*</url-pattern>
+			<http-method>TRACE</http-method>
+		</web-resource-collection>
+		<auth-constraint />
+    </security-constraint>
 </web-app>

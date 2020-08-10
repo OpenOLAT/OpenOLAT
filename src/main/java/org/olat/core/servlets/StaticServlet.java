@@ -107,7 +107,7 @@ public class StaticServlet extends HttpServlet {
 			// version provided - remove it
 			int start = pathInfo.indexOf("/", 2);
 			int end = pathInfo.length();
-			if(start <= end) {
+			if(start >= 2 && start <= end) {
 				String staticRelPath = pathInfo.substring(start, end);
 				String normalizedRelPath = ServletUtil.normalizePath(staticRelPath);
 				if (normalizedRelPath == null) {
@@ -170,7 +170,7 @@ public class StaticServlet extends HttpServlet {
 					}
 				}
 				// log as error, file exists but wrongly mapped
-				log.warn("File exists but not mapped using version - use StaticMediaDispatch methods to create URL of static files! invalid URI::" + request.getRequestURI());			
+				log.warn("File exists but not mapped using version - use StaticMediaDispatch methods to create URL of static files! invalid URI::{}", request.getRequestURI());			
 			}
 		}
 		
