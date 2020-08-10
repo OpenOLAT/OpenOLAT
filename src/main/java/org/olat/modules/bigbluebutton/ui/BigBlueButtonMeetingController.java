@@ -185,7 +185,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BRecordingsCols.start));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BRecordingsCols.end));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.recording.open", BRecordingsCols.open.ordinal(), "open-recording",
-				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.recording.open"), "open-recording"), null)));
+				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.recording.open"), "open-recording", true, true), null)));
 		if(administrator) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BRecordingsCols.publish));
 			if(bigBlueButtonManager.getRecordingsHandler().canDeleteRecordings()) {
