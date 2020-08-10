@@ -46,6 +46,7 @@ import org.olat.core.id.RolesByOrganisation;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.Encoder;
+import org.olat.ldap.ui.LDAPAuthenticationController;
 import org.olat.login.LoginModule;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.JunitTestHelper.IdentityWithLogin;
@@ -618,6 +619,27 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		List<Authentication> authentications = securityManager.getAuthentications(test.getIdentity());
 		Authentication authentication = authentications.get(0);
 		Assert.assertEquals(test.getLogin(), authentication.getAuthusername());
+	}
+	
+	@Test
+	public void findAuthenticationNameOLAT() {
+		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("auth-0");
+		String testLogin = id.getLogin();
+		
+		String name = securityManager.findAuthenticationName(id.getIdentity());
+		Assert.assertEquals(testLogin,name);
+	}
+	
+	@Test
+	public void findAuthenticationNameLDAP() {
+		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("auth-0");
+		String ldapAuthusername = UUID.randomUUID().toString();
+		securityManager.createAndPersistAuthentication(id.getIdentity(), LDAPAuthenticationController.PROVIDER_LDAP, ldapAuthusername, null, null);
+		securityManager.createAndPersistAuthentication(id.getIdentity(), WebDAVAuthManager.PROVIDER_HA1, UUID.randomUUID().toString(), "secret", Encoder.Algorithm.sha512);
+		dbInstance.commitAndCloseSession();
+		
+		String name = securityManager.findAuthenticationName(id.getIdentity());
+		Assert.assertEquals(ldapAuthusername, name);
 	}
 
 	@Test

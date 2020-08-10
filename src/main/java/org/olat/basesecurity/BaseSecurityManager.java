@@ -71,7 +71,9 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.ldap.ui.LDAPAuthenticationController;
 import org.olat.login.LoginModule;
+import org.olat.shibboleth.ShibbolethDispatcher;
 import org.olat.user.UserDataDeletable;
 import org.olat.user.UserImpl;
 import org.olat.user.UserManager;
@@ -742,15 +744,8 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	}	
 
 	@Override
-	public List<Authentication> getAuthentications(Identity identity) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth ")
-		  .append("inner join fetch auth.identity as ident")
-		  .append(" where ident.key=:identityKey");
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Authentication.class)
-				.setParameter("identityKey", identity.getKey())
-				.getResultList();
+	public List<Authentication> getAuthentications(IdentityRef identity) {
+		return authenticationDao.getAuthentications(identity);
 	}
 
 	@Override
@@ -1002,6 +997,45 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 				.setParameter("authusername", email)
 				.setParameter("providers", providers)
 				.executeUpdate();
+	}
+
+	@Override
+	public String findAuthenticationName(IdentityRef identity) {
+		List<Authentication> authentications = authenticationDao.getAuthentications(identity);
+		String authusername = findAuthenticationName(authentications, LDAPAuthenticationController.PROVIDER_LDAP);
+		if(authusername == null) {
+			authusername = findAuthenticationName(authentications, ShibbolethDispatcher.PROVIDER_SHIB);
+		}
+		if(authusername == null) {
+			authusername = findAuthenticationName(authentications, "OLAT");
+		}
+		if(authusername == null) {
+			Collections.sort(authentications, (a1, a2) -> {
+				return a1.getProvider().compareTo(a2.getProvider());
+			});
+			
+			for(Authentication authentication:authentications) {
+				String provider = authentication.getProvider();
+				if(!WebDAVAuthManager.PROVIDER_HA1.equals(provider)
+						&& !WebDAVAuthManager.PROVIDER_HA1_EMAIL.equals(provider)
+						&& !WebDAVAuthManager.PROVIDER_HA1_INSTITUTIONAL_EMAIL.equals(provider)
+						&& !WebDAVAuthManager.PROVIDER_WEBDAV.equals(provider)
+						&& !WebDAVAuthManager.PROVIDER_WEBDAV_EMAIL.equals(provider)
+						&& !WebDAVAuthManager.PROVIDER_WEBDAV_INSTITUTIONAL_EMAIL.equals(provider)) {
+					authusername = authentication.getAuthusername();
+				}
+			}
+		}
+		return authusername;
+	}
+	
+	private String findAuthenticationName(List<Authentication> authentications, String provider) {
+		for(Authentication authentication:authentications) {
+			if(provider.equals(authentication.getProvider())) {
+				return authentication.getAuthusername();
+			}
+		}
+		return null;
 	}
 
 	@Override

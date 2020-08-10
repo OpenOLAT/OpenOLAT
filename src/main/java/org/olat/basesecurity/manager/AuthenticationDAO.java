@@ -48,7 +48,7 @@ public class AuthenticationDAO {
 	private DB dbInstance;
 	
 	public Authentication getAuthenticationByAuthusername(String authusername, String provider) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(256);
 		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
 		  .append(" inner join fetch auth.identity ident")
 		  .append(" inner join fetch ident.user identUser")
@@ -67,7 +67,7 @@ public class AuthenticationDAO {
 	}
 	
 	public List<Authentication> getAuthenticationsByAuthusername(String authusername) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(256);
 		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
 		  .append(" inner join fetch auth.identity ident")
 		  .append(" inner join fetch ident.user identUser")
@@ -80,7 +80,7 @@ public class AuthenticationDAO {
 	}
 	
 	public List<Authentication> getAuthenticationsByAuthusername(String authusername, List<String> providers) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(256);
 		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
 		  .append(" inner join fetch auth.identity ident")
 		  .append(" inner join fetch ident.user identUser")
@@ -99,7 +99,7 @@ public class AuthenticationDAO {
 	 * @return A list of identities (the user is not fetched)
 	 */
 	public List<Identity> getIdentitiesWithLogin(String login) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(256);
 		sb.append("select ident from ").append(AuthenticationImpl.class.getName()).append(" as auth")
 		  .append(" inner join auth.identity as ident")
 		  .append(" inner join ident.user as user")
@@ -116,7 +116,7 @@ public class AuthenticationDAO {
 	 * @return A list of identities (the user is not fetched)
 	 */
 	public List<Identity> getIdentitiesWithAuthentication(String provider) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(256);
 		sb.append("select ident from ").append(AuthenticationImpl.class.getName()).append(" as auth")
 		  .append(" inner join auth.identity as ident")
 		  .append(" where auth.provider=:provider");
@@ -127,7 +127,7 @@ public class AuthenticationDAO {
 	}
 	
 	public Authentication getAuthentication(String authUsername, String provider) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(256);
 		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
 		  .append(" inner join auth.identity as ident")
 		  .append(" inner join ident.user as user")
@@ -143,7 +143,7 @@ public class AuthenticationDAO {
 	}
 	
 	public boolean hasAuthentication(IdentityRef identity, String provider) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(256);
 		sb.append("select auth.key from ").append(AuthenticationImpl.class.getName()).append(" as auth")
 		  .append(" where auth.identity.key=:identityKey and auth.provider=:provider");
 		List<Long> authentications = dbInstance.getCurrentEntityManager()
@@ -154,6 +154,17 @@ public class AuthenticationDAO {
 				.setMaxResults(1)
 				.getResultList();
 		return authentications != null && !authentications.isEmpty();
+	}
+	
+	public List<Authentication> getAuthentications(IdentityRef identity) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth ")
+		  .append("inner join fetch auth.identity as ident")
+		  .append(" where ident.key=:identityKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Authentication.class)
+				.setParameter("identityKey", identity.getKey())
+				.getResultList();
 	}
 	
 	public Authentication updateAuthentication(Authentication authentication) {

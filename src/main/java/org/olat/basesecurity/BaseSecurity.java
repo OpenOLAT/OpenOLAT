@@ -275,7 +275,7 @@ public interface BaseSecurity {
 	 * @param identity
 	 * @return a list of Authentication
 	 */
-	public List<Authentication> getAuthentications(Identity identity);
+	public List<Authentication> getAuthentications(IdentityRef identity);
 
 	/**
 	 * @param identity
@@ -286,6 +286,16 @@ public interface BaseSecurity {
 	public Authentication findAuthentication(IdentityRef identity, String provider);
 	
 	public List<Authentication> findAuthentications(IdentityRef identity, List<String> providers);
+	
+	/**
+	 * This returns the user name by priority: first LDAP, Shibboleth, OLAT
+	 * and after the social logins. The WebDAV logins are excluded. The method
+	 * returns always the same name.
+	 * 
+	 * @param identity The identity
+	 * @return A user name
+	 */
+	public String findAuthenticationName(IdentityRef identity);
 	
 	public String findAuthenticationName(IdentityRef identity, String provider);
 	
