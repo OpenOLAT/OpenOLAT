@@ -37,6 +37,7 @@ import org.olat.basesecurity.model.FindNamedIdentity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
+import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.StringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -142,6 +143,11 @@ public class IdentityDAO {
 		if(StringHelper.containsNonWhitespace(user.getInstitutionalEmail())
 				&& names.contains(user.getInstitutionalEmail().toLowerCase())) {
 			namedIdentity.addName(user.getInstitutionalEmail());
+		}
+		
+		if(StringHelper.containsNonWhitespace(user.getProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, null))
+				&& names.contains(user.getProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, null).toLowerCase())) {
+			namedIdentity.addName(user.getProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, null));
 		}
 	}
 	

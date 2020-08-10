@@ -159,8 +159,9 @@ public class ImportMemberByUsernamesController extends StepFormBasicController {
 	protected void formNext(UserRequest ureq) {
 		String logins = idata.getValue();
 		if(tableContainer.isVisible()) {
-			selectDuplicates();
-			addToRunContext("keyIdentities", new ArrayList<>(identitiesList));
+			List<Identity> all = new ArrayList<>(identitiesList);
+			all.addAll(selectDuplicates());
+			addToRunContext("keyIdentities", all);
 			addToRunContext("notFounds", notFoundNames);
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		} else if(processInput(logins)) {
@@ -179,7 +180,7 @@ public class ImportMemberByUsernamesController extends StepFormBasicController {
 		identitiesList = null;
 	}
 	
-	private void selectDuplicates() {
+	private List<Identity> selectDuplicates() {
 		List<Identity> selectedIdentities = new ArrayList<>();
 		for(Integer index:tableEl.getMultiSelectedIndex()) {
 			Identity identity = userTableModel.getObject(index.intValue());
@@ -187,7 +188,7 @@ public class ImportMemberByUsernamesController extends StepFormBasicController {
 				selectedIdentities.add(identity);
 			}
 		}
-		identitiesList.addAll(selectedIdentities);
+		return selectedIdentities;
 	}
 
 	/**
