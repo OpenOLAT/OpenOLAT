@@ -513,7 +513,7 @@ public class CoursesWebService {
 		OLATResource originalOres = olatResourceManager.findResourceable(src.getOlatResource());
 		boolean isAlreadyLocked = handlerFactory.getRepositoryHandler(src).isLocked(originalOres);
 		LockResult lockResult = handlerFactory.getRepositoryHandler(src).acquireLock(originalOres, ureq.getIdentity());
-
+		
 		if(lockResult == null || (lockResult != null && lockResult.isSuccess()) && !isAlreadyLocked) {
 			//create new repo entry
 			String name;
@@ -601,6 +601,8 @@ public class CoursesWebService {
 			repositoryManager.copyImage(src, preparedEntry);
 			ICourse course = prepareCourse(preparedEntry, shortTitle, longTitle, courseConfigVO);
 			handlerFactory.getRepositoryHandler(src).releaseLock(lockResult);
+			
+			log.info(Tracing.M_AUDIT, "Create course {} from template {}", preparedEntry, src);
 			return course;
 		} else {
 			log.info("Course locked");
@@ -672,6 +674,7 @@ public class CoursesWebService {
 					? NodeAccessType.of(nodeAccessType)
 					: course.getCourseConfig().getNodeAccessType(); // default type
 			CourseFactory.initNodeAccessType(addedEntry, type);
+			log.info(Tracing.M_AUDIT, "Create course: {}", addedEntry);
 			return prepareCourse(addedEntry, shortTitle, longTitle, courseConfigVO);
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
