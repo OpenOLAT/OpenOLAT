@@ -31,6 +31,7 @@ import org.olat.core.id.User;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
@@ -99,7 +100,7 @@ public class BigBlueButtonNativeRecordingsHandler implements BigBlueButtonRecord
 	}
 
 	@Override
-	public String getRecordingURL(BigBlueButtonRecording recording) {
+	public String getRecordingURL(UserSession usess, BigBlueButtonRecording recording) {
 		return recording.getUrl();
 	}
 

@@ -17,22 +17,36 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.bigbluebutton.model;
+package org.olat.modules.opencast.manager.client;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * 
- * Initial date: 18 avr. 2019<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 4 Aug 2020<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public enum BigBlueButtonErrorCodes {
+@JsonIgnoreProperties(ignoreUnknown=true)
+public class Api {
 	
-	sharedSecretDenied,
-	deletedObject,
-	serverNotAvailable,
-	serverDisabled,
-	opencastDisabled,
-	unkown
-	;
-
+	private String version;
+	private String url;
+	
+	public String getVersion() {
+		return version;
+	}
+	
+	public void setVersion(String version) {
+		this.version = version;
+	}
+	
+	public String getUrl() {
+		return url;
+	}
+	
+	public void setUrl(String url) {
+		this.url = url;
+	}
+	
 }

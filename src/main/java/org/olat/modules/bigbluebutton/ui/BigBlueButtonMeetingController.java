@@ -381,7 +381,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 				if("delete".equals(se.getCommand())) {
 					doConfirmDeleteRecording(ureq, recordingTableModel.getObject(se.getIndex()).getRecording());
 				} else if("open-recording".equals(se.getCommand())) {
-					doOpenRecording(recordingTableModel.getObject(se.getIndex()).getRecording());
+					doOpenRecording(ureq, recordingTableModel.getObject(se.getIndex()).getRecording());
 				}
 			}
 		} else if(source instanceof FormLink) {
@@ -442,8 +442,8 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		}
 	}
 	
-	private void doOpenRecording(BigBlueButtonRecording recording) {
-		String url = bigBlueButtonManager.getRecordingUrl(recording);
+	private void doOpenRecording(UserRequest ureq, BigBlueButtonRecording recording) {
+		String url = bigBlueButtonManager.getRecordingUrl(ureq.getUserSession(), recording);
 		if(StringHelper.containsNonWhitespace(url)) {
 			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
 		} else {

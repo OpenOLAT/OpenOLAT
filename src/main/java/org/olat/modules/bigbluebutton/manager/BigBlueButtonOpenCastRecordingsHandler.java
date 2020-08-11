@@ -19,27 +19,46 @@
  */
 package org.olat.modules.bigbluebutton.manager;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
+import org.olat.core.dispatcher.mapper.Mapper;
+import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroup;
+import org.olat.ims.lti.LTIContext;
+import org.olat.ims.lti.LTIManager;
+import org.olat.ims.lti.ui.PostDataMapper;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecording;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsHandler;
+import org.olat.modules.bigbluebutton.model.BigBlueButtonError;
+import org.olat.modules.bigbluebutton.model.BigBlueButtonErrorCodes;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
+import org.olat.modules.bigbluebutton.model.BigBlueButtonRecordingImpl;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonAdminController;
+import org.olat.modules.opencast.OpencastBBBRecordingContext;
+import org.olat.modules.opencast.OpencastEvent;
+import org.olat.modules.opencast.OpencastModule;
+import org.olat.modules.opencast.OpencastService;
 import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -51,9 +70,20 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @Qualifier("opencast")
-public class BigBlueButtonOpenCastRecordingsHandler implements BigBlueButtonRecordingsHandler  {
+public class BigBlueButtonOpenCastRecordingsHandler implements BigBlueButtonRecordingsHandler {
+	
+	private static final Logger log = Tracing.createLoggerFor(BigBlueButtonOpenCastRecordingsHandler.class);
 	
 	public static final String OPENCAST_RECORDING_HANDLER_ID = "opencast";
+	
+	@Autowired
+	private OpencastModule opencastModule;
+	@Autowired
+	private OpencastService opencastService;
+	@Autowired
+	private LTIManager ltiManager;
+	@Autowired
+	private MapperService mapperService;
 	
 	@Override
 	public String getId() {
@@ -73,12 +103,34 @@ public class BigBlueButtonOpenCastRecordingsHandler implements BigBlueButtonReco
 
 	@Override
 	public List<BigBlueButtonRecording> getRecordings(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors) {
-		return Collections.emptyList();
+		if(!opencastModule.isEnabled()) {
+			log.error("Try getting recordings of disabled Opencast: {}", opencastModule.getApiUrl());
+			errors.append(new BigBlueButtonError(BigBlueButtonErrorCodes.opencastDisabled));
+			return Collections.emptyList();
+		}
+		
+		List<OpencastEvent> events = opencastService.getEvents(meeting.getIdentifier());
+		List<BigBlueButtonRecording> recordings = new ArrayList<>(events.size());
+		for (OpencastEvent event : events) {
+			String recordId = event.getIdentifier();
+			String name = event.getTitle();
+			String meetingId = meeting.getIdentifier();
+			Date startTime = event.getStart();
+			Date endTime = event.getEnd();
+			String url = null;
+			String type = null;
+			recordings.add(BigBlueButtonRecordingImpl.valueOf(recordId, name, meetingId, startTime, endTime, url, type));
+		}
+		return recordings;
 	}
 
 	@Override
-	public String getRecordingURL(BigBlueButtonRecording recording) {
-		return recording.getUrl();
+	public String getRecordingURL(UserSession usess, BigBlueButtonRecording recording) {
+		LTIContext context = new OpencastBBBRecordingContext(recording.getRecordId());
+		Map<String,String> unsignedProps = ltiManager.forgeLTIProperties(usess.getIdentity(), usess.getLocale(), context, false, false, true);
+		Mapper contentMapper = new PostDataMapper(unsignedProps, opencastModule.getLtiUrl(), opencastModule.getLtiKey(), opencastModule.getLtiSecret(), false);
+		MapperKey mapperKey = mapperService.register(usess, contentMapper);
+		return mapperKey.getUrl();
 	}
 
 	@Override
@@ -139,7 +191,7 @@ public class BigBlueButtonOpenCastRecordingsHandler implements BigBlueButtonReco
 		// Location of the event
 		uriBuilder.optionalParameter("meta_dc-spatial", "Olat-BigBlueButton");
 		// Date of the event
-		uriBuilder.optionalParameter("meta_dc-created", Formatter.formatDatetime(meetingCreation));							
+		uriBuilder.optionalParameter("meta_dc-created", Formatter.formatDatetime(meetingCreation));
 
 		uriBuilder.optionalParameter("meta_opencast-series-dc-title", seriesTitle);
 	}
@@ -158,6 +210,12 @@ public class BigBlueButtonOpenCastRecordingsHandler implements BigBlueButtonReco
 
 	@Override
 	public boolean deleteRecordings(List<BigBlueButtonRecording> recordings, BigBlueButtonMeeting meeting, BigBlueButtonErrors errors) {
-		return false;
+		if (!opencastModule.isEnabled()) {
+			log.error("Try deleting a recording of disabled Opencast: {}", opencastModule.getApiUrl());
+			errors.append(new BigBlueButtonError(BigBlueButtonErrorCodes.opencastDisabled));
+			return false;
+		}
+		
+		return opencastService.deleteEvents(meeting.getIdentifier());
 	}
 }
