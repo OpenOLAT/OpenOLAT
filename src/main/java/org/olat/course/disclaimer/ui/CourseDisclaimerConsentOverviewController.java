@@ -87,6 +87,8 @@ public class CourseDisclaimerConsentOverviewController extends FormBasicControll
 	public static final String TABLE_ACTION_CONTACT = "tbl_contact";
 
 	private final AtomicInteger counter = new AtomicInteger();
+	private final boolean canRevokeConsents;
+
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private UserInfoMainController visitingCardCtrl;
@@ -95,7 +97,6 @@ public class CourseDisclaimerConsentOverviewController extends FormBasicControll
 	private FlexiTableElement tableEl;
 	private CourseDisclaimerConsentTableModel tableModel;
 
-	private boolean isAdministrativeUser;
 	private List<UserPropertyHandler> userPropertyHandlers;
 
 	private RepositoryEntry repositoryEntry;
@@ -119,17 +120,18 @@ public class CourseDisclaimerConsentOverviewController extends FormBasicControll
 	private BaseSecurity securityManager;
 
 	public CourseDisclaimerConsentOverviewController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry repositoryEntry, TooledStackedPanel stackedPanel) {
+			RepositoryEntry repositoryEntry, TooledStackedPanel stackedPanel, boolean canRevokeConsents) {
 		super(ureq, wControl, "consent_list");
 
 		setTranslator(Util.createPackageTranslator(AbstractMemberListController.class, getLocale(), getTranslator()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 		this.repositoryEntry = repositoryEntry;
 		this.courseConfig = CourseFactory.loadCourse(repositoryEntry.getOlatResource().getResourceableId()).getCourseConfig();
 		this.toolbarPanel = stackedPanel;
+		this.canRevokeConsents = canRevokeConsents;
 
 		initForm(ureq);
 		loadModel();
@@ -189,7 +191,7 @@ public class CourseDisclaimerConsentOverviewController extends FormBasicControll
 		revokeBtn = uifactory.addFormLink("consents.selected.revoke", formLayout, Link.BUTTON);
 		buttonLayout.add(revokeBtn);
 
-		if (isAdministrativeUser) {
+		if (canRevokeConsents) {
 			removeBtn = uifactory.addFormLink("consents.selected.delete", formLayout, Link.BUTTON);
 			buttonLayout.add(removeBtn);
 		}
@@ -207,13 +209,13 @@ public class CourseDisclaimerConsentOverviewController extends FormBasicControll
 
 		if (rows.isEmpty()) {
 			revokeBtn.setVisible(false);
-			if (removeBtn != null && isAdministrativeUser) {
+			if (removeBtn != null && canRevokeConsents) {
 				removeBtn.setVisible(false);
 			}
 			tableEl.setSearchEnabled(false);
 		} else {
 			revokeBtn.setVisible(true);
-			if (removeBtn != null && isAdministrativeUser) {
+			if (removeBtn != null && canRevokeConsents) {
 				removeBtn.setVisible(true);
 			}
 			tableEl.setSearchEnabled(true);

@@ -278,7 +278,7 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 		} else if (CMD_CONSENTS.equals(cmd)) {
 			if ((entryAdmin || principal || memberManagementRight || groupManagementRight) && courseModule.isDisclaimerEnabled()) {
 				if(disclaimerController == null) {
-					disclaimerController = new CourseDisclaimerConsentOverviewController(ureq, bwControl, repoEntry, toolbarPanel);
+					disclaimerController = new CourseDisclaimerConsentOverviewController(ureq, bwControl, repoEntry, toolbarPanel, entryAdmin || memberManagementRight || groupManagementRight);
 					listenTo(disclaimerController);
 				}
 				mainVC.put("content", disclaimerController.getInitialComponent());
