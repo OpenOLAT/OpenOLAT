@@ -51,6 +51,7 @@ import org.olat.course.nodes.livestream.LiveStreamService;
 import org.olat.course.nodes.livestream.model.LiveStreamEventImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.stereotype.Service;
@@ -62,7 +63,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class LiveStreamServiceImpl implements LiveStreamService {
+public class LiveStreamServiceImpl implements LiveStreamService, DisposableBean {
 	
 	private static final Logger log = Tracing.createLoggerFor(LiveStreamServiceImpl.class);
 	
@@ -82,6 +83,13 @@ public class LiveStreamServiceImpl implements LiveStreamService {
 			scheduler = Executors.newScheduledThreadPool(1, threadFactory);
 		}
 		return scheduler;
+	}
+
+	@Override
+	public void destroy() throws Exception {
+		if(scheduler != null) {
+			scheduler.shutdownNow();
+		}
 	}
 
 	@Override
