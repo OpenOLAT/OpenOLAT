@@ -75,6 +75,12 @@ public class BigBlueButtonNativeRecordingsHandler implements BigBlueButtonRecord
 		Translator translator = Util.createPackageTranslator(BigBlueButtonAdminController.class, locale);
 		return translator.translate("native.recording.handler");
 	}
+
+	@Override
+	public String getRecordingInfo(Locale locale) {
+		Translator translator = Util.createPackageTranslator(BigBlueButtonAdminController.class, locale);
+		return translator.translate("recording.browser.infos");
+	}
 	
 	@Override
 	public boolean canDeleteRecordings() {

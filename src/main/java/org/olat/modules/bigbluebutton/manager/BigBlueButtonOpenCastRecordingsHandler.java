@@ -95,6 +95,11 @@ public class BigBlueButtonOpenCastRecordingsHandler implements BigBlueButtonReco
 		Translator translator = Util.createPackageTranslator(BigBlueButtonAdminController.class, locale);
 		return translator.translate("opencast.recording.handler");
 	}
+
+	@Override
+	public String getRecordingInfo(Locale locale) {
+		return null;
+	}
 	
 	@Override
 	public boolean canDeleteRecordings() {

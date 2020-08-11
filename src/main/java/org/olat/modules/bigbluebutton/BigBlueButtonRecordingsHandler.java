@@ -40,6 +40,8 @@ public interface BigBlueButtonRecordingsHandler {
 	
 	public boolean canDeleteRecordings();
 	
+	public String getRecordingInfo(Locale locale);
+
 	public List<BigBlueButtonRecording> getRecordings(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors);
 	
 	public String getRecordingURL(UserSession usess, BigBlueButtonRecording recording);

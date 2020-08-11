@@ -51,8 +51,8 @@
 <div class="o_block_large">
 	<fieldset>
 		<legend>$r.translate("recordings")</legend>
-		#if ($r.isTrue($hasRecordings))
-		<div class="o_note"><i class="o_icon o_icon-fw o_icon_info"> </i> $r.translate("recording.browser.infos")</div>
+		#if ($r.isTrue($hasRecordings) && $r.isNotNull($recordingInfo))
+		<div class="o_note"><i class="o_icon o_icon-fw o_icon_info"> </i> $recordingInfo</div>
 		#end
 		$r.render("recordings")
 	</fieldset>

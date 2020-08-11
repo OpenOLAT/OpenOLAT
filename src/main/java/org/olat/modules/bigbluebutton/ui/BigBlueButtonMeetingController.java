@@ -215,6 +215,8 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		recordingTableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 		flc.contextPut("hasRecordings", Boolean.valueOf(!recordings.isEmpty()));
+		String recordingInfo = bigBlueButtonManager.getRecordingsHandler().getRecordingInfo(getLocale());
+		flc.contextPut("recordingInfo", recordingInfo);
 	}
 	
 	private BigBlueButtonRecordingRow forgeRow(BigBlueButtonRecordingWithReference recording, BigBlueButtonAttendee attendee) {
