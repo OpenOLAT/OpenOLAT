@@ -58,11 +58,13 @@ import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.model.AssessmentModeStatistics;
 import org.olat.course.assessment.ui.mode.AssessmentModeHelper;
 import org.olat.course.assessment.ui.mode.AssessmentModeListController;
 import org.olat.course.assessment.ui.mode.ModeStatusCellRenderer;
 import org.olat.course.assessment.ui.mode.TimeCellRenderer;
 import org.olat.course.assessment.ui.tool.AssessmentModeOverviewListTableModel.ModeCols;
+import org.olat.course.assessment.ui.tool.component.AssessmentModeProgressionItem;
 import org.olat.course.assessment.ui.tool.event.AssessmentModeStatusEvent;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
 import org.olat.course.nodes.CourseNode;
@@ -157,6 +159,9 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 			for(FormLink elementLink:elementLinks) {
 				cmps.add(elementLink.getComponent());
 			}
+			if(mode.getWaitBarItem() != null) {
+				cmps.add(mode.getWaitBarItem().getComponent());
+			}
 		}
 		return cmps;
 	}
@@ -195,12 +200,15 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 		long endInMillseconds = cal.getTimeInMillis() - now;
 		boolean endSoon = (endInMillseconds < (5l * 60l * 1000l))
 				&& (mode.getStatus() == Status.assessment || mode.getStatus() == Status.followup);
+		
+		
+		
 		AssessmentModeOverviewRow row = new AssessmentModeOverviewRow(mode, isToday, endSoon, endInMillseconds);
 		
 		LectureBlock block = mode.getLectureBlock();
 		boolean allowToStartStop = assessmentCallback.canStartStopAllAssessments()
 				|| (block != null && teachedLectures.contains(block.getKey()));
-		
+
 		if(mode.isManualBeginEnd() && allowToStartStop) {
 			if(assessmentModeCoordinationService.canStart(mode)) {
 				String id = "start_" + (++count);
@@ -209,6 +217,7 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 				startButton.setIconLeftCSS("o_icon o_icon-fw o_as_mode_assessment");
 				startButton.setUserObject(row);
 				flc.add(id, startButton);
+				forgeStatistics(mode, row);
 				row.setActionButton(startButton);
 			} else if(assessmentModeCoordinationService.canStop(mode)) {
 				String id = "end_" + (++count);
@@ -217,8 +226,15 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 				endButton.setIconLeftCSS("o_icon o_icon-fw o_as_mode_stop");
 				endButton.setUserObject(row);
 				flc.add(id, endButton);
+				forgeStatistics(mode, row);
 				row.setActionButton(endButton);
 			}
+		} else if (mode.getStatus() == AssessmentMode.Status.leadtime
+				|| mode.getStatus() == AssessmentMode.Status.assessment
+				|| mode.getStatus() == AssessmentMode.Status.followup) {
+			forgeStatistics(mode, row);
+		} else {
+			row.setWaitBarItem(null);
 		}
 		
 		String elements = mode.getElementList();
@@ -242,6 +258,20 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 		}
 
 		return row;
+	}
+	
+	private void forgeStatistics(AssessmentMode mode, AssessmentModeOverviewRow row) {
+		AssessmentModeStatistics statistics = assessmentModeCoordinationService.getStatistics(mode);
+		if(statistics != null) {
+			statistics.setStatus(mode.getStatus());// direct from the database
+			
+			String id = "wait_" + (++count);
+			AssessmentModeProgressionItem waitBarItem = new AssessmentModeProgressionItem(id, mode, getTranslator());
+			waitBarItem.setMax(statistics.getNumPlanned());
+			waitBarItem.setActual(statistics.getNumInOpenOlat());
+			row.setWaitBarItem(waitBarItem);
+			flc.add(waitBarItem);
+		}
 	}
 
 	@Override

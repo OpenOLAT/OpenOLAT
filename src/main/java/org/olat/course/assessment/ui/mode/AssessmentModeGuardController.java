@@ -46,6 +46,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.assessment.AssessmentMode.Status;
+import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.AssessmentModeNotificationEvent;
 import org.olat.course.assessment.model.TransientAssessmentMode;
@@ -72,6 +73,8 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 	
 	@Autowired
 	private AssessmentModeManager assessmentModeMgr;
+	@Autowired
+	private AssessmentModeCoordinationService assessmentModeCoordinationService;
 	
 	/**
 	 *
@@ -197,6 +200,9 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 			Link go = guard.getGo();
 			Link cont = guard.getContinue();
 			state = updateButtons(mode, now, go, cont);
+			if(go.isVisible()) {
+				assessmentModeCoordinationService.waitFor(getIdentity(), mode);
+			}
 		} else {
 			state = "error";
 		}
@@ -389,7 +395,7 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 	 */
 	private void launchAssessmentMode(UserRequest ureq, TransientAssessmentMode mode) {
 		cmc.deactivate();
-		
+	
 		ureq.getUserSession().setAssessmentModes(null);
 		OLATResourceable resource = mode.getResource();
 		ureq.getUserSession().setLockResource(resource, mode);
@@ -401,13 +407,16 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 			businessPath += "[CourseNode:" + mode.getStartElementKey() + "]";
 		}
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+
+		assessmentModeCoordinationService.start(getIdentity(), mode);
 	}
 	
 	public static final class ResourceGuard {
 
 		private String status;
 		private String errors;
-		private final Link goButton, continueButton;
+		private final Link goButton;
+		private final Link continueButton;
 		
 		private final Long modeKey;
 		private String name;

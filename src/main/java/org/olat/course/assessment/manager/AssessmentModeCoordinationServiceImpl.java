@@ -28,13 +28,16 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.control.Event;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.session.UserSessionManager;
 import org.olat.course.CourseFactory;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.Status;
@@ -42,6 +45,7 @@ import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeNotificationEvent;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.model.AssessmentModeImpl;
+import org.olat.course.assessment.model.AssessmentModeStatistics;
 import org.olat.course.assessment.model.CoordinatedAssessmentMode;
 import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
@@ -73,9 +77,12 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 	@Autowired
 	private CoordinatorManager coordinatorManager;
 	@Autowired
+	private UserSessionManager userSessionManager;
+	@Autowired
 	private AssessmentModeManagerImpl assessmentModeManager;
 	
 	private Map<Long,CoordinatedAssessmentMode> coordinatedModes = new ConcurrentHashMap<>();
+	private CacheWrapper<Long,AssessmentModeStatistics> coordinatedModeStatistics;
 	
 	protected synchronized void beat() {
 		if(assessmentModule.isAssessmentModeEnabled()) {
@@ -150,12 +157,13 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 		}
 	}
 	
-	
-	
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		coordinatorManager.getCoordinator().getEventBus()
 			.registerFor(this, null, OresHelper.lookupType(RepositoryEntry.class));
+		
+		coordinatedModeStatistics = coordinatorManager.getCoordinator().getCacher()
+				.getCache(AssessmentModeStatistics.class.getSimpleName(), "waiting");
 	}
 
 	@Override
@@ -358,6 +366,10 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 		AssessmentModeNotificationEvent event = new AssessmentModeNotificationEvent(cmd, transientMode, assessedIdentityKeys);
 		coordinatorManager.getCoordinator().getEventBus()
 			.fireEventToListenersOf(event, AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
+		
+		// update the status
+		AssessmentModeStatistics statistics = getStatistics(mode.getKey(), assessedIdentityKeys);
+		statistics.setStatus(mode.getStatus());
 	}
 
 	@Override
@@ -427,5 +439,45 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 	private void warmUpAssessment(AssessmentMode mode) {
 		RepositoryEntry entry = repositoryEntryDao.loadByKey(mode.getRepositoryEntry().getKey());
 		CourseFactory.loadCourse(entry);
+	}
+
+	@Override
+	public AssessmentModeStatistics getStatistics(AssessmentMode assessmentMode) {
+		AssessmentModeStatistics statistics = getStatistics(assessmentMode.getKey(), null);
+		if(assessmentMode.getStatus() == AssessmentMode.Status.none) {
+			Set<Long> notRegisteredIdentityKeys = statistics.getNotRegisteredAssessedIdentitiesKeys();
+			for(Long notRegisteredIdentityKey:notRegisteredIdentityKeys) {
+				if(userSessionManager.isOnline(notRegisteredIdentityKey)) {
+					statistics.addLoggedInIdentitiesKeys(new IdentityRefImpl(notRegisteredIdentityKey));
+				}
+			}
+		}
+		return statistics;
+	}
+	
+	private AssessmentModeStatistics getStatistics(Long assessmentModeKey, Set<Long> assessedIdentitiesKeys) {
+		AssessmentModeStatistics coordinatedAssessmentMode = coordinatedModeStatistics
+				.computeIfAbsent(assessmentModeKey, key -> new AssessmentModeStatistics());
+		
+		if(assessedIdentitiesKeys != null) {
+			coordinatedAssessmentMode.updatePlannedAssessedIdentitiesKeys(assessedIdentitiesKeys);
+		} else if(coordinatedAssessmentMode.getNumPlanned() == 0) {
+			AssessmentMode mode = assessmentModeManager.getAssessmentModeById(assessmentModeKey);
+			assessedIdentitiesKeys = assessmentModeManager.getAssessedIdentityKeys(mode);
+			coordinatedAssessmentMode.updatePlannedAssessedIdentitiesKeys(assessedIdentitiesKeys);
+		}
+		return coordinatedAssessmentMode;
+	}
+
+	@Override
+	public void waitFor(IdentityRef identity, TransientAssessmentMode assessmentMode) {
+		AssessmentModeStatistics coordinatedAssessmentMode = getStatistics(assessmentMode.getModeKey(), null);
+		coordinatedAssessmentMode.addWaitingAssessedIdentity(identity);
+	}
+	
+	@Override
+	public void start(IdentityRef identity, TransientAssessmentMode assessmentMode) {
+		AssessmentModeStatistics coordinatedAssessmentMode = getStatistics(assessmentMode.getModeKey(), null);
+		coordinatedAssessmentMode.addStartedAssessedIdentity(identity);
 	}
 }

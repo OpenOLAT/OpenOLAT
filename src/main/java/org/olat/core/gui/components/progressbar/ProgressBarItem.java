@@ -88,6 +88,10 @@ public class ProgressBarItem extends FormItemImpl {
 		component.setCssClass(cssClass);
 	}
 	
+	public void setPercentagesEnabled(boolean enabled) {
+		component.setPercentagesEnabled(enabled);
+	}
+	
 	public void setInfo(String info) {
 		component.setInfo(info);
 	}

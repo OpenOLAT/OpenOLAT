@@ -56,6 +56,7 @@ public class CoordinatedAssessmentMode {
 	public void setAssessmentMode(AssessmentMode assessmentMode) {
 		this.assessmentMode = assessmentMode;
 	}
+	
 	@Override
 	public int hashCode() {
 		return key.hashCode();

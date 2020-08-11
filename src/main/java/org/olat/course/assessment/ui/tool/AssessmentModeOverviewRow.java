@@ -25,6 +25,7 @@ import java.util.List;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.util.CodeHelper;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.ui.tool.component.AssessmentModeProgressionItem;
 
 /**
  * 
@@ -35,6 +36,7 @@ import org.olat.course.assessment.AssessmentMode;
 public class AssessmentModeOverviewRow {
 	
 	private FormLink actionButton;
+	private AssessmentModeProgressionItem waitBarItem;
 	private final List<FormLink> elementLinks = new ArrayList<>();
 	
 	private final String id;
@@ -73,6 +75,14 @@ public class AssessmentModeOverviewRow {
 	
 	public AssessmentMode getAssessmentMode() {
 		return assessmentMode;
+	}
+	
+	public AssessmentModeProgressionItem getWaitBarItem() {
+		return waitBarItem;
+	}
+	
+	public void setWaitBarItem(AssessmentModeProgressionItem waitBarItem) {
+		this.waitBarItem = waitBarItem;
 	}
 
 	public FormLink getActionButton() {
