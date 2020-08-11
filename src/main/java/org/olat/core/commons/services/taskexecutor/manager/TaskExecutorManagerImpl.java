@@ -108,8 +108,9 @@ public class TaskExecutorManagerImpl implements TaskExecutorManager {
 	}
 
 	public void shutdown() {
-		taskExecutor.shutdown();
-		sequentialTaskExecutor.shutdown();
+		taskExecutor.shutdownNow();
+		sequentialTaskExecutor.shutdownNow();
+		lowPriorityTaskExecutor.shutdownNow();
 	}
 	
 	@Override

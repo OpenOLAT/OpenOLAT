@@ -5,7 +5,7 @@
   http://www.springframework.org/schema/beans 
   http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-	<bean id="taskExecutorManager" class="org.olat.core.commons.services.taskexecutor.manager.TaskExecutorManagerImpl">
+	<bean id="taskExecutorManager" class="org.olat.core.commons.services.taskexecutor.manager.TaskExecutorManagerImpl" destroy-method="shutdown">
 		<constructor-arg index="0" ref="mpTaskExecutorService" />
 		<constructor-arg index="1" ref="sequentialTaskExecutorService" />
 		<constructor-arg index="2" ref="lowPriorityTaskSpringExecutorService" />

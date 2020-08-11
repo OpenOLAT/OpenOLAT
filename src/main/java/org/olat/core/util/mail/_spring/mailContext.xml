@@ -13,11 +13,12 @@
 		<property name="className" value="org.olat.core.util.mail.ui.SendDocumentsByEMailController"/>
 	</bean>
 	
-		<bean id="mailAsyncExecutorService" class="org.springframework.core.task.support.ExecutorServiceAdapter">
+	<bean id="mailAsyncExecutorService" class="org.springframework.core.task.support.ExecutorServiceAdapter">
 		<constructor-arg index="0" ref="mailAsyncExecutor" />
 	</bean>
 	
 	<bean id="mailAsyncExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+		<property name="waitForTasksToCompleteOnShutdown" value="true" />
 		<property name="corePoolSize" value="1" />
 		<property name="maxPoolSize" value="1" />
 		<property name="queueCapacity" value="2000" />
