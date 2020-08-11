@@ -63,7 +63,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>1.8</targetJdk>
 		<org.springframework.version>5.2.8.RELEASE</org.springframework.version>
-		<org.hibernate.version>5.4.19.Final</org.hibernate.version>
+		<org.hibernate.version>5.4.20.Final</org.hibernate.version>
 		<apache.cxf>3.3.7</apache.cxf>
 		<apache.pdfbox>2.0.20</apache.pdfbox>
 		<apache.poi>4.1.2</apache.poi>
@@ -73,7 +73,7 @@
 		<jackson.version>2.11.2</jackson.version>
 		<org.mysql.version>8.0.21</org.mysql.version>
 		<org.postgresql.version>42.2.14</org.postgresql.version>
-		<org.infinispan.version>11.0.1.Final</org.infinispan.version>
+		<org.infinispan.version>11.0.3.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>3.141.59</version.selenium>
 		<version.drone>2.5.1</version.drone>
@@ -1589,7 +1589,7 @@
 			<!-- Used by email address validator -->
 			<groupId>commons-validator</groupId>
 			<artifactId>commons-validator</artifactId>
-			<version>1.6</version>
+			<version>1.7</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
