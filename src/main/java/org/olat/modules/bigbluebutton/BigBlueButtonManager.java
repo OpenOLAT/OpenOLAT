@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.util.UserSession;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.bigbluebutton.manager.BigBlueButtonUriBuilder;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
@@ -155,7 +156,7 @@ public interface BigBlueButtonManager {
 	
 	public BigBlueButtonRecordingReference updateRecordingReference(BigBlueButtonRecordingReference reference);
 	
-	public String getRecordingUrl(BigBlueButtonRecording record);
+	public String getRecordingUrl(UserSession usess, BigBlueButtonRecording record);
 	
 	public void deleteRecording(BigBlueButtonRecording record, BigBlueButtonMeeting meeting, BigBlueButtonErrors errors);
 	

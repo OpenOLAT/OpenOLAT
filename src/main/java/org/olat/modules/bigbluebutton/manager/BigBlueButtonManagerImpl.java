@@ -53,6 +53,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -921,8 +922,8 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	}
 	
 	@Override
-	public String getRecordingUrl(BigBlueButtonRecording recording) {
-		return getRecordingsHandler().getRecordingURL(recording);
+	public String getRecordingUrl(UserSession usess, BigBlueButtonRecording recording) {
+		return getRecordingsHandler().getRecordingURL(usess, recording);
 	}
 
 	@Override

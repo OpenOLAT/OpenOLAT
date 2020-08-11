@@ -17,22 +17,24 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.bigbluebutton.model;
+package org.olat.modules.opencast;
+
+import java.util.Date;
 
 /**
  * 
- * Initial date: 18 avr. 2019<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 10 Aug 2020<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public enum BigBlueButtonErrorCodes {
+public interface OpencastEvent {
 	
-	sharedSecretDenied,
-	deletedObject,
-	serverNotAvailable,
-	serverDisabled,
-	opencastDisabled,
-	unkown
-	;
+	String getIdentifier();
+	
+	String getTitle();
+	
+	Date getStart();
+	
+	Date getEnd();
 
 }

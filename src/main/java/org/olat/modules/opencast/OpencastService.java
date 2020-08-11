@@ -17,22 +17,39 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.bigbluebutton.model;
+package org.olat.modules.opencast;
+
+import java.util.List;
 
 /**
  * 
- * Initial date: 18 avr. 2019<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 4 Aug 2020<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public enum BigBlueButtonErrorCodes {
+public interface OpencastService {
+
+	/**
+	 * Check if the connection to Opencast can be established with the url and credentials of the OpencastModul.
+	 *
+	 * @return true if the connection was successfully established.
+	 */
+	boolean checkApiConnection();
+
+	/**
+	 * Get the events with the identifier
+	 *
+	 * @param identifier
+	 * @return
+	 */
+	List<OpencastEvent> getEvents(String identifier);
 	
-	sharedSecretDenied,
-	deletedObject,
-	serverNotAvailable,
-	serverDisabled,
-	opencastDisabled,
-	unkown
-	;
+	/**
+	 * Delete all events with the identifier.
+	 *
+	 * @param identifier
+	 * @return true if some event was deleted
+	 */
+	boolean deleteEvents(String identifier);
 
 }

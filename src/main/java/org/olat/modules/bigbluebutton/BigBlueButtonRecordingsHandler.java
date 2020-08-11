@@ -22,6 +22,7 @@ package org.olat.modules.bigbluebutton;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.util.UserSession;
 import org.olat.modules.bigbluebutton.manager.BigBlueButtonUriBuilder;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
 
@@ -41,7 +42,7 @@ public interface BigBlueButtonRecordingsHandler {
 	
 	public List<BigBlueButtonRecording> getRecordings(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors);
 	
-	public String getRecordingURL(BigBlueButtonRecording recording);
+	public String getRecordingURL(UserSession usess, BigBlueButtonRecording recording);
 	
 	public void appendMetadata(BigBlueButtonUriBuilder uriBuilder, BigBlueButtonMeeting meeting);
 	
