@@ -63,6 +63,7 @@ public class AutoCompleterComponent extends FormBaseComponentImpl {
 			autoCompleter.setKey(key);
 			autoCompleter.setValue(value);
 			fireEvent(ureq, new AutoCompleteEvent(AutoCompleteEvent.SELECT_EVENT, key));
+			autoCompleter.dispatchFormRequest(ureq);
 		}
 	}
 

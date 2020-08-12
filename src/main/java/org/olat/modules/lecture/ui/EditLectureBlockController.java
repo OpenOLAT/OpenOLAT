@@ -104,7 +104,6 @@ public class EditLectureBlockController extends FormBasicController {
 	private List<Identity> teachers;
 	private List<GroupBox> groupBox;
 	private String[] teacherKeys;
-	private String[] teacherValues;
 	private final boolean lectureManagementManaged;
 	private final List<LocationHistory> locations;
 	
@@ -205,7 +204,7 @@ public class EditLectureBlockController extends FormBasicController {
 		}
 		allPossibleTeachers = new ArrayList<>(new HashSet<>(allPossibleTeachers));
 		teacherKeys = new String[allPossibleTeachers.size() + 1];
-		teacherValues = new String[allPossibleTeachers.size() + 1];
+		String[] teacherValues = new String[allPossibleTeachers.size() + 1];
 		for(int i=allPossibleTeachers.size() + 1; i-->1; ) {
 			Identity coach = allPossibleTeachers.get(i - 1);
 			teacherKeys[i] = coach.getKey().toString();
@@ -396,8 +395,6 @@ public class EditLectureBlockController extends FormBasicController {
 		}
 		lectureBlock.setStartDate(dateEl.getDate());
 		lectureBlock.setEndDate(dateEl.getSecondDate());
-		System.out.println(dateEl.getDate());
-		System.out.println(dateEl.getSecondDate());
 		
 		int plannedLectures = Integer.parseInt(plannedLecturesEl.getSelectedKey());
 		lectureBlock.setPlannedLecturesNumber(plannedLectures);

@@ -96,12 +96,25 @@ public class AutoCompleterImpl extends AbstractTextElement implements AutoComple
 		}
 	}
 
+	@Override
 	public int getMinLength() {
 		return minLength;
 	}
 
+	@Override
 	public void setMinLength(int minLength) {
 		this.minLength = minLength;
+	}
+
+	@Override
+	public void dispatchFormRequest(UserRequest ureq) {
+		String cmd = ureq.getParameter("cid");
+		if("select".equals(cmd)) {
+			String uKey = ureq.getParameter("key");
+			setKey(uKey);
+			setValue(ureq.getParameter("value"));
+			getRootForm().fireFormEvent(ureq, new AutoCompleteFormEvent(AutoCompleteEvent.SELECT_EVENT, this, uKey));
+		}
 	}
 
 	@Override
