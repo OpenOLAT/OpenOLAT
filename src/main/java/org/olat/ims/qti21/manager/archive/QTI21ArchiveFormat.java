@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.media.MediaResource;
@@ -43,7 +44,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -68,9 +68,9 @@ import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentResponse;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.manager.AssessmentItemSessionDAO;
 import org.olat.ims.qti21.manager.AssessmentResponseDAO;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
-import org.olat.ims.qti21.manager.QTI21ServiceImpl;
 import org.olat.ims.qti21.manager.archive.interactions.AssociateInteractionArchive;
 import org.olat.ims.qti21.manager.archive.interactions.ChoiceInteractionArchive;
 import org.olat.ims.qti21.manager.archive.interactions.DefaultInteractionArchive;
@@ -97,6 +97,7 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.AssociateInteraction;
@@ -154,23 +155,26 @@ public class QTI21ArchiveFormat {
 	private List<AbstractInfos> elementInfos;
 	private final Map<String, InteractionArchive> interactionArchiveMap = new HashMap<>();
 	
-	private final QTI21Service qtiService;
-	private final UserManager userManager;
-	private final AssessmentResponseDAO responseDao;
-	private final AssessmentTestSessionDAO testSessionDao;
+	@Autowired
+	private QTI21Service qtiService;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private AssessmentResponseDAO responseDao;
+	@Autowired
+	private AssessmentTestSessionDAO testSessionDao;
+	@Autowired
+	private AssessmentItemSessionDAO itemSessionDao;
 	
 	public QTI21ArchiveFormat(Locale locale, QTI21StatisticSearchParams searchParams) {
+		CoreSpringFactory.autowireObject(this);
+		
 		this.searchParams = searchParams;
 		if(searchParams.getArchiveOptions() == null || searchParams.getArchiveOptions().getExportFormat() == null) {
 			exportConfig = new ExportFormat(true, true, true, true, true);
 		} else {
 			exportConfig = searchParams.getArchiveOptions().getExportFormat();
 		}
-		
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
-		qtiService = CoreSpringFactory.getImpl(QTI21ServiceImpl.class);
-		responseDao = CoreSpringFactory.getImpl(AssessmentResponseDAO.class);
-		testSessionDao = CoreSpringFactory.getImpl(AssessmentTestSessionDAO.class);
 		
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(QTIArchiver.TEST_USER_PROPERTIES, true);
 		
@@ -469,11 +473,16 @@ public class QTI21ArchiveFormat {
 			AssessmentTestSession testSession = sessions.get(i);
 			SessionResponses sessionResponses = new SessionResponses(testSession);
 			List<AssessmentResponse> responses = responseDao.getResponses(testSession);
-			
 			for(AssessmentResponse response:responses) {
 				AssessmentItemSession itemSession = response.getAssessmentItemSession();
 				sessionResponses.addResponse(itemSession, response);
 			}
+			
+			List<AssessmentItemSession> itemSessions = itemSessionDao.getAssessmentItemSessions(testSession);
+			for(AssessmentItemSession itemSession:itemSessions) {
+				sessionResponses.addItemSession(itemSession);
+			}
+			
 			writeDataRow(i + 1, sessionResponses, exportSheet, workbook);	
 			DBFactory.getInstance().commitAndCloseSession();
 		}
@@ -726,11 +735,13 @@ public class QTI21ArchiveFormat {
 		
 		public void addResponse(AssessmentItemSession itemSession, AssessmentResponse response) {
 			String itemIdentifier = itemSession.getAssessmentItemIdentifier();
-			if(!itemSessionsMap.containsKey(itemIdentifier)) {
-				itemSessionsMap.put(itemIdentifier, itemSession);
-				responsesMap.put(itemIdentifier, new ArrayList<>(5));
-			}
-			responsesMap.get(itemIdentifier).add(response);	
+			itemSessionsMap.putIfAbsent(itemIdentifier, itemSession);
+			responsesMap.computeIfAbsent(itemIdentifier, id -> new ArrayList<>(5))
+				.add(response);	
+		}
+		
+		public void addItemSession(AssessmentItemSession itemSession) {
+			itemSessionsMap.put(itemSession.getAssessmentItemIdentifier(), itemSession);
 		}
 		
 		public AssessmentItemSession getItemSession(String itemIdentifier) {
