@@ -72,6 +72,10 @@ public class AutoCompleterImpl extends AbstractTextElement implements AutoComple
 		mapper = new AutoCompleterMapper(provider);
 		mapperKey = CoreSpringFactory.getImpl(MapperService.class).register(usess, mapper);
 	}
+	
+	public int getMaxEntries() {
+		return mapper.getMaxEntries();
+	}
 
 	@Override
 	public String getMapperUri() {
@@ -150,6 +154,10 @@ public class AutoCompleterImpl extends AbstractTextElement implements AutoComple
 		
 		public AutoCompleterMapper(ListProvider provider) {
 			this.provider = provider;
+		}
+		
+		public int getMaxEntries() {
+			return provider.getMaxEntries();
 		}
 
 		@Override

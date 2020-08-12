@@ -46,6 +46,11 @@ public class AutoCompleterRenderer extends DefaultComponentRenderer {
 		AutoCompleterComponent cmp = (AutoCompleterComponent)source;
 		AutoCompleter autoCompleter = cmp.getAutoCompleter();
 		
+		int limit = autoCompleter.getMaxEntries();
+		if(limit <= 0) {
+			limit = 5;
+		}
+		
 		final int inputSize = 72;
 		String id = autoCompleter.getFormDispatchId();
 		if(autoCompleter.isEnabled()) {
@@ -63,7 +68,6 @@ public class AutoCompleterRenderer extends DefaultComponentRenderer {
 			}
 			sb.append("\" />");
 			sb.append("<script>\n")
-			  .append("/* <![CDATA[ */\n")
 			  .append("jQuery(function(){\n")
 			  .append("  var fullNameTypeahead = new Bloodhound({\n")
 			  .append("	   datumTokenizer: function (d) {\n")
@@ -95,12 +99,12 @@ public class AutoCompleterRenderer extends DefaultComponentRenderer {
 			  .append(" },{\n")
 			  .append("	  minLength: ").append(minLength).append(",\n")
 			  .append("	  displayKey: 'fullName',\n")
+			  .append("	  limit: ").append(limit).append(",\n")
 			  .append("	  source: fullNameTypeahead.ttAdapter()\n")
 			  .append(" }).on('typeahead:selected', function (e, object) {\n")
 			  .append("	  ").append(command).append(",'key',object.value,'value',object.fullName);\n")
 			  .append(" });\n")
 			  .append("});\n")
-			  .append("/* ]]> */\n")
 			  .append("</script>");
 		} else {
 			String value = "";

@@ -1029,6 +1029,8 @@ OPOL.adjustHeight = function() {
 		var col2 = col2El.length == 0 ? 0 : col2El.outerHeight(true);
 		var col3El = jQuery('#o_main_center_content');
 		var col3 = col3El.length == 0 ? 0 : col3El.outerHeight(true);
+		
+		console.log(col1, col2, col3);
 
 		var contentHeight = Math.max(col1, col2, col3);
 		// Assign new column height
@@ -1040,6 +1042,7 @@ OPOL.adjustHeight = function() {
 		}
 		if (col3El.length > 0) {
 			jQuery('#o_main_center').css({'min-height' : contentHeight + "px"});
+			jQuery('#o_main_center_content').css({'min-height' : contentHeight + "px"});
 		}
 	} catch (e) {
 		if(window.console)	console.log(e);
