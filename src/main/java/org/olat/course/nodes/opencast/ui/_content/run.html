@@ -1,0 +1,23 @@
+<div>
+<h3>$r.escapeHtml($title)</h3>
+#if($r.isNotEmpty($errorMessage))
+	<div class="o_error">$errorMessage</div>
+#end
+#if($r.isNotNull($start))
+	<div><i class="o_icon o_icon-fw o_icon_lifecycle_date"> </i> $start</div>
+#end
+#if($r.isNotEmpty($creator))
+	<div><i class="o_icon o_icon-fw o_icon_user"> </i> $r.escapeHtml($creator)</div>
+#end
+</div>
+#if($r.isNotNull($mapperUri))
+	<div class="o_iframedisplay">
+		<iframe id="OpencastIFrame" src="${mapperUri}?$r.uuid" marginwidth="0" marginheight="0" frameborder="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+	</div>
+	<script>
+	/* <![CDATA[ */ 
+		jQuery(function() {b_resizeIframeToMainMaxHeight("OpencastIFrame");});
+		registerIFrameAndObserve("OpencastIFrame", false);
+	/* ]]> */
+	</script>
+#end

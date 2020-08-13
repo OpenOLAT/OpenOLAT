@@ -36,8 +36,8 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
-import org.olat.course.nodes.opencast.ui.OpencastDisplayController;
 import org.olat.course.nodes.opencast.ui.OpencastEditController;
+import org.olat.course.nodes.opencast.ui.OpencastRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -95,7 +95,7 @@ public class OpencastCourseNode extends AbstractAccessableCourseNode {
 			String message = trans.translate("freezenoaccess.message");
 			runCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		} else {
-			runCtrl = new OpencastDisplayController(ureq, wControl, this, userCourseEnv);
+			runCtrl = new OpencastRunController(ureq, wControl, this, userCourseEnv);
 		}
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, this, ICON_CSS);
 		return new NodeRunConstructionResult(ctrl);
