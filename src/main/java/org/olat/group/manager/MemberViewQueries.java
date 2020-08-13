@@ -296,18 +296,11 @@ public class MemberViewQueries {
 
 		// append query for login
 		boolean appendOr = false;
-		
-		if (params.getLogin() != null) {
+		if (params.getLogin() != null) {// backwards compatibility
 			appendOr = true;
-			if (params.getLogin().contains("_") && dbInstance.isOracle()) {
-				//oracle needs special ESCAPE sequence to search for escaped strings
-				sb.append("lower(ident.name) like :login ESCAPE '\\'");
-			} else if (dbInstance.isMySQL()) {
-				sb.append("ident.name like :login");
-			} else {
-				sb.append("lower(ident.name) like :login");
-			}
-			//TODO username
+			PersistenceHelper.appendFuzzyLike(sb, "ident.name", "login", dbInstance.getDbVendor());
+			sb.append(" or ");
+			PersistenceHelper.appendFuzzyLike(sb, "identUser.nickName", "login", dbInstance.getDbVendor());
 		}
 
 		// append queries for user fields
@@ -319,15 +312,7 @@ public class MemberViewQueries {
 				} else {
 					appendOr = true;
 				}
-				
-				if(dbInstance.isMySQL()) {
-					sb.append("identUser.").append(key).append(" like :").append(key).append("_value");
-				} else {
-					sb.append("lower(identUser.").append(key).append(") like :").append(key).append("_value");
-				}
-				if(dbInstance.isOracle()) {
-					sb.append(" escape '\\'");
-				}
+				PersistenceHelper.appendFuzzyLike(sb, "identUser.".concat(key), key.concat("_value"), dbInstance.getDbVendor());
 			}
 		}
 

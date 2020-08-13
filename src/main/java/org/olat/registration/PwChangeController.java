@@ -317,8 +317,8 @@ public class PwChangeController extends BasicController {
 	 * @return Identity or null if not found.
 	 */
 	private Identity findIdentityByUsernameOrEmail(String emailOrUsername) {
-		// See if the entered value is a username
-		Identity identity = securityManager.findIdentityByName(emailOrUsername);
+		// See if the entered value is the authusername of an authentication
+		Identity identity = securityManager.findIdentityByLogin(emailOrUsername);
 		if (identity == null) {
 			// Try fallback with email, maybe user used his email address instead
 			identity = userManager.findUniqueIdentityByEmail(emailOrUsername);

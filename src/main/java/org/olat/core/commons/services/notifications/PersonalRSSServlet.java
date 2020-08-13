@@ -111,9 +111,9 @@ public class PersonalRSSServlet extends HttpServlet {
 			if (encoding == null) {
 				encoding = DEFAULT_ENCODING;
 				if (log.isDebugEnabled()) {
-					log.debug("Feed encoding::" + encoding);
+					log.debug("Feed encoding::{}", encoding);
 				}
-				log.warn("No encoding provided by feed::" + feed.getClass().getCanonicalName() + " Using utf-8 as default.");
+				log.warn("No encoding provided by feed::{} Using utf-8 as default.", feed.getClass().getCanonicalName());
 			}
 			response.setCharacterEncoding(encoding);
 			response.setContentType("application/rss+xml");

@@ -91,7 +91,7 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 
 	@Override
 	protected String getTableId() {
-		return "gta-assessment-tool-identity-list";
+		return "gta-assessment-tool-identity-list-v2";
 	}
 
 	@Override

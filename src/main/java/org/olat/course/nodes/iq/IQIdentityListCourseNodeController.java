@@ -147,9 +147,9 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	@Override
 	protected String getTableId() {
 		if(isTestQTI21()) {
-			return"qti21-assessment-tool-identity-list";
+			return"qti21-assessment-tool-identity-list-v2";
 		}
-		return "qti-assessment-tool-identity-list";
+		return "qti-assessment-tool-identity-list-v2";
 	}
 
 	@Override

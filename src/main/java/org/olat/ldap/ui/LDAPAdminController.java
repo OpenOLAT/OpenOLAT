@@ -168,7 +168,7 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 			}	else if (source == userSearchCtrl) {
 				calloutCtr.deactivate();
 				Identity choosenIdent = ((SingleIdentityChosenEvent)event).getChosenIdentity();
-				ldapLoginManager.doSyncSingleUser(choosenIdent);
+				ldapLoginManager.doSyncSingleUserWithLoginAttribute(choosenIdent);
 			}
 		}
 	}

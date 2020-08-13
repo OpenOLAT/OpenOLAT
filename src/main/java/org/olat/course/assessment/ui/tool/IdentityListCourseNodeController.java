@@ -307,7 +307,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		if(!extendedFilters.isEmpty()) {
 			tableEl.setExtendedFilterButton(translate("filter.groups"), extendedFilters);
 		}
-		tableEl.setAndLoadPersistedPreferences(ureq, getTableId());//TODO username
+		tableEl.setAndLoadPersistedPreferences(ureq, getTableId());
 	}
 	
 	protected List<FlexiTableFilter> getFilters() {
@@ -365,7 +365,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	}
 	
 	protected String getTableId() {
-		return "assessment-tool-identity-list";
+		return "assessment-tool-identity-list-v2";
 	}
 	
 	protected void initAssessmentColumns(FlexiTableColumnModel columnsModel, AssessmentConfig assessmentConfig) {

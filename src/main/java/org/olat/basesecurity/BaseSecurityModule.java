@@ -113,6 +113,8 @@ public class BaseSecurityModule extends AbstractSpringModule {
 	
 	private static final String WIKI_ENABLED = "wiki";
 	
+	private static final String IDENTITY_NAME = "identity.name";
+	
 	/**
 	 * default values
 	 */
@@ -310,6 +312,9 @@ public class BaseSecurityModule extends AbstractSpringModule {
 		userSearchMaxResults = getStringPropertyValue(USERSEARCH_MAXRESULTS, userSearchMaxResults);
 		userInfosTunnelCourseBuildingBlock = getStringPropertyValue(USERINFOS_TUNNEL_CBB, userInfosTunnelCourseBuildingBlock);
 		wikiEnabled = getStringPropertyValue(WIKI_ENABLED, wikiEnabled);
+		
+		identityName = getStringPropertyValue(IDENTITY_NAME, identityName);
+		log.info("Identity.name generator: {}", identityName);
 	}
 	
 	public static final OrganisationRoles[] getUserAllowedRoles() {
@@ -322,6 +327,15 @@ public class BaseSecurityModule extends AbstractSpringModule {
 		return "auto".equals(identityName);
 	}
 	
+	public String getIdentityName() {
+		return identityName;
+	}
+
+	public void setIdentityName(String identityName) {
+		this.identityName = identityName;
+		setStringProperty(IDENTITY_NAME, identityName, true);
+	}
+
 	public boolean isUserAllowedAdminProps(Roles roles) {
 		if(roles == null || roles.isInvitee() || roles.isGuestOnly()) return false;
 

@@ -69,8 +69,6 @@ public interface LDAPLoginManager {
 	
 	public void freeSyncLock();
 	
-	public void doSyncSingleUser(Identity ident);
-	
 	/**
 	 * A filter is build from the login attribute value and the resulting
 	 * attributes are sync to the specified identity.

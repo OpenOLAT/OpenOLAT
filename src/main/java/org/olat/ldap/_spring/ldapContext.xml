@@ -121,6 +121,7 @@
     			<entry key='${ldap.attributename.email}' value='email' />
     			<entry key='${ldap.attributename.firstName}' value='firstName' />
     			<entry key='${ldap.attributename.lastName}' value='lastName' />
+    			<entry key='${ldap.attributename.nickName}' value='nickName' />
     			
     			<!-- example for another mapping
     			<entry key='description' value='orgUnit' />

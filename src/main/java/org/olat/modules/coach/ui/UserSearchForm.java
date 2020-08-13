@@ -50,7 +50,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class UserSearchForm extends FormBasicController {
 	
-	private static final String  PROPS_IDENTIFIER = UserSearchForm.class.getName();
+	private static final String PROPS_IDENTIFIER = UserSearchForm.class.getName();
 	private static final String[] activeKeys = new String[] { "on" };
 	private static final String[] activeValues = new String[] { "" };
 	
@@ -84,7 +84,7 @@ public class UserSearchForm extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		login = uifactory.addTextElement("login", "search.form.login", 128, "", formLayout);
-		login.setVisible(adminProps);//TODO username
+		login.setVisible(adminProps);
 		
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(PROPS_IDENTIFIER, adminProps);
 
@@ -139,7 +139,9 @@ public class UserSearchForm extends FormBasicController {
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		return validate() & super.validateFormLogic(ureq);
+		boolean allOk = super.validateFormLogic(ureq);
+		allOk &= validate();
+		return allOk;
 	}
 
 	private boolean validate() {

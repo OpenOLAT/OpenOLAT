@@ -228,7 +228,7 @@ public class OLATAuthManager implements AuthenticationSPI {
 				String currentEmail = mails.get("currentEMail");
 				String changedEmail = mails.get("changedEMail");
 				if (login.equals(changedEmail) && StringHelper.containsNonWhitespace(currentEmail)) {
-					return securityManager.findIdentityByName(currentEmail);
+					return securityManager.findIdentityByName(currentEmail);//TODO username
 				}
 			}
 		}

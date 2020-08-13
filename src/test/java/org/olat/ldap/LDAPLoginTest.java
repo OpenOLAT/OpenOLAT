@@ -33,10 +33,8 @@ import org.zapodot.junit.ldap.EmbeddedLdapRuleBuilder;
 
 
 /**
- * Description:<br>
- * LDAP junit tests
- * 
- * please import "olattest.ldif" into your configured LDAP directory
+ * Low level LDAP authentication unit tests. this test must happend
+ * before LDAPLoginManagerTest (it will do a sync).
  * 
  * <P>
  * Initial Date:  June 30, 2008 <br>
@@ -48,6 +46,8 @@ public class LDAPLoginTest extends OlatTestCase {
 	private LDAPLoginManager ldapManager;
 	@Autowired
 	private LDAPLoginModule ldapLoginModule;
+	@Autowired
+	private LDAPSyncConfiguration syncConfiguration;
 	
 	@Rule
 	public EmbeddedLdapRule embeddedLdapRule = EmbeddedLdapRuleBuilder
@@ -67,7 +67,7 @@ public class LDAPLoginTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testUserBind() throws Exception {
+	public void userBind() throws Exception {
 		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
 
 		LDAPError errors = new LDAPError();
@@ -98,5 +98,22 @@ public class LDAPLoginTest extends OlatTestCase {
 		attrs = ldapManager.bindUser(uid, userPW, errors);
 		Assert.assertNull(attrs);
 		Assert.assertEquals("Username and password must be selected", errors.get());
+	}
+	
+	@Test
+	public void userBindLoginWithAlternativeLoginAttribute() throws Exception {
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
+		String currentLoginAttr = syncConfiguration.getLdapUserLoginAttribute();
+		
+		// use SN as login attribute
+		syncConfiguration.setLdapUserLoginAttribute("sn");
+
+		LDAPError errors = new LDAPError();
+		Attributes attrs = ldapManager.bindUser("Forster", "olat", errors);
+		Assert.assertNotNull(attrs);
+		Assert.assertEquals("Forster", attrs.get("sn").get());
+		Assert.assertTrue(errors.isEmpty());
+		
+		syncConfiguration.setLdapUserLoginAttribute(currentLoginAttr);
 	}
 }

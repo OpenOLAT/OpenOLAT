@@ -117,7 +117,7 @@ public class STIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	
 	@Override
 	protected String getTableId() {
-		return "st-assessment-tool-identity-list";
+		return "st-assessment-tool-identity-list-v2";
 	}
 
 	@Override

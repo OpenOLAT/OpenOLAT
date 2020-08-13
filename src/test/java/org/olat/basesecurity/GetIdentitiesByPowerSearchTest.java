@@ -304,8 +304,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 
 		// authentication provider search
 		String[] authProviders = {BaseSecurityModule.getDefaultAuthProviderIdentifier(), "Shib"};
-		String[] authProvidersInvalid = { "nonexist" };// max length 8 !		
-		String[] authProvidersAll = { BaseSecurityModule.getDefaultAuthProviderIdentifier(), "Shib", null };
+		String[] authProvidersInvalid = { "nonexist" };// max length 8 !
 		
 		List<Identity> results = baseSecurityManager.getIdentitiesByPowerSearch(null, null, true, null, authProviders, null, null, null, null, null);
 		Assert.assertFalse(results.isEmpty());
@@ -364,21 +363,6 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		Assert.assertFalse("Found no results", results.isEmpty());
 		checkIdentitiesAreInGroups(results, groups1);
 		checkIdentitiesHasAuthProvider(results,authProviders );
-
-		//TODO username
-		/*
-		results = baseSecurityManager.getIdentitiesByPowerSearch("%y", null, true, groups1, authProvidersAll, before, null, null, null, null);
-		Assert.assertTrue(results.contains(ident));
-		Assert.assertTrue(results.contains(ident2));
-		results = baseSecurityManager.getVisibleIdentitiesByPowerSearch("%y", null, true, groups1, authProvidersAll, before, null);
-		Assert.assertTrue(results.contains(ident));
-		Assert.assertTrue(results.contains(ident2));
-
-		results = baseSecurityManager.getIdentitiesByPowerSearch("%y", null, true, groups1, authProvidersAll, null, before, null, null, null);
-		Assert.assertTrue(results.isEmpty());
-		results = baseSecurityManager.getVisibleIdentitiesByPowerSearch("%y", null, true, groups1, authProvidersAll, null, before);
-		Assert.assertTrue(results.isEmpty());
-		*/
 	}
 	
 	@Test

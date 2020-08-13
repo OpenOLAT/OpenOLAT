@@ -133,4 +133,93 @@ uid: krass
 userpassword:: e1NIQX1SWEhpU0lWZGN1SU1EdVNiVCtaaFpOcWFwYWs9
 modifyTimestamp: 20100630180000Z
 
+dn: uid=dforster,ou=person,dc=olattest,dc=org
+objectClass: organizationalPerson
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: top
+cn: Dalia Forster
+givenname: Dalia
+labeleduri: https://www.openolat.com/dforster
+mail: dforster@openolat.com
+o: Informatik
+sn: Forster
+uid: dforster
+userPassword: olat
+modifyTimestamp: 20100630180000Z
+
+dn: uid=sramljak,ou=person,dc=olattest,dc=org
+objectClass: organizationalPerson
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: top
+cn: Sandy Ramljak
+givenname: Sandy
+labeleduri: https://www.openolat.com/sramljak
+mail: sramljak@openolat.com
+o: Informatik
+sn: Ramljak
+uid: sramljak
+userPassword: olat
+modifyTimestamp: 20100630180000Z
+
+dn: uid=cguerrera,ou=person,dc=olattest,dc=org
+objectClass: organizationalPerson
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: top
+cn: Carmen Guerrera
+givenname: Carmen
+labeleduri: https://www.openolat.com/cguerrera
+mail: cguerrera@openolat.com
+o: Informatik
+sn: Guerrera
+uid: cguerrera
+userPassword: olat
+modifyTimestamp: 20100630180000Z
+
+dn: uid=lsalathe,ou=person,dc=olattest,dc=org
+objectClass: organizationalPerson
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: top
+cn: Leyla Salathe
+givenname: Leyla
+labeleduri: https://www.openolat.com/lsalathe
+mail: lsalathe@openolat.com
+o: Informatik
+sn: Salathe
+uid: lsalathe
+userPassword: olat
+modifyTimestamp: 20100630180000Z
+
+dn: uid=ahentschel,ou=person,dc=olattest,dc=org
+objectClass: organizationalPerson
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: top
+cn: Alessandro	Hentschel
+givenname: Alessandro
+labeleduri: https://www.openolat.com/ahentschel
+mail: ahentschel@openolat.com
+o: Informatik
+sn: Hentschel
+uid: ahentschel
+userPassword: olat
+modifyTimestamp: 20100630180000Z
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

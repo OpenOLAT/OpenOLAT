@@ -194,7 +194,7 @@ public class LDAPDAO {
 			} catch (Exception e) {
 				log.error("Exception when trying to search users from LDAP using ldapBase::" + ldapBase + " on row::" + counter, e);
 			}
-			log.debug("finished search for ldapBase:: " + ldapBase);
+			log.debug("finished search for ldapBase:: {}", ldapBase);
 		}
 	}
 	
@@ -368,7 +368,7 @@ public class LDAPDAO {
 	
 	private boolean isPagedResultControlSupported(LdapContext ctx) {
 		// FXOLAT-299, might return false on 2nd execution
-		if (pagingSupportedAlreadyFound == true) return true;
+		if (pagingSupportedAlreadyFound) return true;
 		try {
 			SearchControls ctl = new SearchControls();
 			ctl.setReturningAttributes(new String[]{"supportedControl"});
