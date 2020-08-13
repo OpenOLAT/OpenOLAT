@@ -129,8 +129,8 @@ public class DisplayPortraitManager implements UserDataDeletable, UserDataExport
 		return getPortraitResource(identityKey, LOGO_SMALL_FILENAME);
 	}
 	
-	public MediaResource getBigLogoResource(String String) {
-		return getPortraitResource(String, LOGO_BIG_FILENAME);
+	public MediaResource getBigLogoResource(String username) {
+		return getPortraitResource(username, LOGO_BIG_FILENAME);
 	}
 	public MediaResource getBigLogoResource(Long identityKey) {
 		return getPortraitResource(identityKey, LOGO_BIG_FILENAME);
@@ -394,11 +394,11 @@ public class DisplayPortraitManager implements UserDataDeletable, UserDataExport
 		
 	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
-		File portraitDir = getPortraitDir(identity.getName(), false);
+		File portraitDir = getPortraitDir(identity, false);
 		if(portraitDir.exists()) {
 			FileUtils.deleteDirsAndFiles(portraitDir, true, true);
 		}
-		log.debug("Homepage-config file deleted for identity=" + identity);
+		log.debug("Homepage-config file deleted for identity={}", identity.getKey());
 	}
 	@Override
 	public String getExporterID() {

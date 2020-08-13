@@ -218,7 +218,7 @@ public class OLATAuthManager implements AuthenticationSPI {
 		//nothing to do
 	}
 
-	private Identity findIdentInChangingEmailWorkflow(String login){
+	private Identity findIdentInChangingEmailWorkflow(String login) {
 		List<TemporaryKey> tk = registrationManager.loadTemporaryKeyByAction(RegistrationManager.EMAIL_CHANGE);
 		if (tk != null) {
 			for (TemporaryKey temporaryKey : tk) {
@@ -228,7 +228,8 @@ public class OLATAuthManager implements AuthenticationSPI {
 				String currentEmail = mails.get("currentEMail");
 				String changedEmail = mails.get("changedEMail");
 				if (login.equals(changedEmail) && StringHelper.containsNonWhitespace(currentEmail)) {
-					return securityManager.findIdentityByName(currentEmail);//TODO username
+					// legacy, probably wrong
+					return securityManager.findIdentityByName(currentEmail);
 				}
 			}
 		}
