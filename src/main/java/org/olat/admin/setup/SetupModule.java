@@ -140,7 +140,11 @@ public class SetupModule extends AbstractSpringModule {
 
 			// Now finally create that user thing on the database with all
 			// credentials, person etc. in one transaction context!
-			identity = securityManager.createAndPersistIdentityAndUser(user.getUserName(), null, newUser, authenticationProviderConstant,
+			String legacyName = null;
+			if(user.isAdmin() || user.isSysAdmin() || user.isGuest()) {
+				legacyName = user.getUserName();
+			}
+			identity = securityManager.createAndPersistIdentityAndUser(legacyName, user.getUserName(), null, newUser, authenticationProviderConstant,
 					user.getUserName(), user.getPassword());
 
 			if (identity == null) {

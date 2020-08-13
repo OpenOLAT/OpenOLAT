@@ -91,7 +91,7 @@ public class UserTest extends OlatTestCase {
 			u1.setProperty(UserConstants.INSTITUTIONALEMAIL, "instjudihui@id.uzh.ch");
 			u1.setProperty(UserConstants.INSTITUTIONALNAME, "id.uzh.ch");
 			u1.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, "id.uzh.ch");
-			i1 = securityManager.createAndPersistIdentityAndUser(u1.getProperty(UserConstants.LASTNAME, new Locale("en")), null, u1, "OLAT", u1.getProperty(UserConstants.LASTNAME, new Locale("en")),"");
+			i1 = securityManager.createAndPersistIdentityAndUser(null, u1.getProperty(UserConstants.LASTNAME, new Locale("en")), null, u1, "OLAT", u1.getProperty(UserConstants.LASTNAME, new Locale("en")),"");
 		} else {
 			log.info("Does not create user, found 'judihui' already in db");
 			i1 = JunitTestHelper.findIdentityByLogin("judihui");
@@ -102,7 +102,7 @@ public class UserTest extends OlatTestCase {
 			u2.setProperty(UserConstants.INSTITUTIONALEMAIL, "instmigros@id.migros.uzh.ch");
 			u2.setProperty(UserConstants.INSTITUTIONALNAME, "id.migros.uzh.ch");
 			u2.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, "id.uzh.ch");
-			i2 = securityManager.createAndPersistIdentityAndUser(u2.getProperty(UserConstants.LASTNAME, new Locale("en")), null, u2, "OLAT", u2.getProperty(UserConstants.LASTNAME, new Locale("en")),"");
+			i2 = securityManager.createAndPersistIdentityAndUser(null, u2.getProperty(UserConstants.LASTNAME, new Locale("en")), null, u2, "OLAT", u2.getProperty(UserConstants.LASTNAME, new Locale("en")),"");
 		} else {
 			log.info("Does not create user, found 'migros' already in db");
 			i2 = JunitTestHelper.findIdentityByLogin("migros");
@@ -113,7 +113,7 @@ public class UserTest extends OlatTestCase {
 			u3.setProperty(UserConstants.INSTITUTIONALEMAIL,"instsalat@id.salat.uzh.ch");
 			u3.setProperty(UserConstants.INSTITUTIONALNAME, "id.salat.uzh.ch");
 			u3.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, "id.uzh.ch");
-			i3 = securityManager.createAndPersistIdentityAndUser(u3.getProperty(UserConstants.LASTNAME, new Locale("en")), null, u3, "OLAT", u3.getProperty(UserConstants.LASTNAME, new Locale("en")),"");
+			i3 = securityManager.createAndPersistIdentityAndUser(null, u3.getProperty(UserConstants.LASTNAME, new Locale("en")), null, u3, "OLAT", u3.getProperty(UserConstants.LASTNAME, new Locale("en")),"");
 		} else {
 			log.info("Does not create user, found 'salat' already in db");
 			i3 = JunitTestHelper.findIdentityByLogin("salat");
@@ -404,7 +404,7 @@ public class UserTest extends OlatTestCase {
 		User user2 = userManager.findUniqueIdentityByEmail("migros@id.migros.uzh.ch").getUser();
 		User user1_2 = userManager.findUniqueIdentityByEmail("salat@id.salat.uzh.ch").getUser();
 
-		assertFalse("Wrong equals implementation, different types are recognized as equals ",user1.equals(new Integer(1)));
+		assertFalse("Wrong equals implementation, different types are recognized as equals ",user1.equals(Integer.valueOf(1)));
 		assertFalse("Wrong equals implementation, different users are recognized as equals ",user1.equals(user2));
 		assertFalse("Wrong equals implementation, null value is recognized as equals ",user1.equals(null));
 		assertTrue("Wrong equals implementation, same users are NOT recognized as equals ",user1.equals(user1));
@@ -417,7 +417,7 @@ public class UserTest extends OlatTestCase {
 		Identity ident2 = userManager.findUniqueIdentityByEmail("migros@id.migros.uzh.ch");
 		Identity ident1_2 = userManager.findUniqueIdentityByEmail("salat@id.salat.uzh.ch");
 
-		assertFalse("Wrong equals implementation, different types are recognized as equals ",ident1.equals(new Integer(1)));
+		assertFalse("Wrong equals implementation, different types are recognized as equals ",ident1.equals(Integer.valueOf(1)));
 		assertFalse("Wrong equals implementation, different users are recognized as equals ",ident1.equals(ident2));
 		assertFalse("Wrong equals implementation, null value is recognized as equals ",ident1.equals(null));
 		assertTrue("Wrong equals implementation, same users are NOT recognized as equals ",ident1.equals(ident1));
@@ -440,7 +440,7 @@ public class UserTest extends OlatTestCase {
 		user.setProperty(UserConstants.INSTITUTIONALEMAIL, "inst" + login + "@" + institution);
 		user.setProperty(UserConstants.INSTITUTIONALNAME, institution);
 		user.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, institution);
-		Identity identity = securityManager.createAndPersistIdentityAndUser(login, null, user, "OLAT", login,"secret");
+		Identity identity = securityManager.createAndPersistIdentityAndUser(null, login, null, user, "OLAT", login,"secret");
 		return identity;
 	}
 

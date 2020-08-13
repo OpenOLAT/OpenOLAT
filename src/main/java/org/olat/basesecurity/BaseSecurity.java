@@ -217,56 +217,41 @@ public interface BaseSecurity {
 	 */
 	public Long countUniqueUserLoginsSince (Date lastLoginLimit);
 	
-	/**
-	 * @param username the username
-	 * @param user the unpresisted User
-	 * @param provider the provider of the authentication ("OLAT" or "AAI"). If
-	 *          null, no authentication token is generated.
-	 * @param authusername the username used as authentication credential
-	 *          (=username for provider "OLAT")
-	 * @param credential the credentials or null if not used
-	 * @return the new identity
-	 */
-	public Identity createAndPersistIdentityAndUser(String username, String externalId, User user, String provider, String authusername);
 
 	/**
-	 * @param username the username
-	 * @param user the unpresisted User
-	 * @param provider the provider of the authentication ("OLAT" or "AAI"). If
+	 * @param identityName Optionally set the name of identity (if null it will be generated), must be unique and cannot be changed
+	 * @param nickName An optional nickname
+	 * @param externalId An optional external id
+	 * @param user The unpersisted user
+	 * @param provider The provider of the authentication ("OLAT", "LDAP"...). If
 	 *          null, no authentication token is generated.
-	 * @param authusername the username used as authentication credential
+	 * @param authusername The user name used as authentication credential
 	 *          (=username for provider "OLAT")
 	 * @param password The password which will be used as credentials (not hashed it)
-	 * @return the new identity
+	 * @return The new persisted identity
 	 */
-	public Identity createAndPersistIdentityAndUser(String username, String externalId, User user, String provider, String authusername, String password);
+	public Identity createAndPersistIdentityAndUser(String identityName, String nickName, String externalId,
+			User user, String provider, String authusername, String password);
 	
 	/**
 	 * Persists the given user, creates an identity for it and adds the user to
-	 * the users system group
+	 * the specified organization or the default one, create an authentication for
+	 * an external provider if the provider is specified.
 	 * 
-	 * @param loginName
-	 * @param externalId
-	 * @param pwd null: no OLAT authentication is generated. If not null, the password will be 
-	 *   encrypted and and an OLAT authentication is generated.
-	 * @param newUser The unpersisted users
-	 * @param organisation The organization where it is user (if null the default organization will be choosed)
-	 * @return Identity
+	 * @param identityName Optionally set the name of identity (if null it will be generated), must be unique and cannot be changed
+	 * @param nickName An optional nickname
+	 * @param externalId An optional external id
+	 * @param user The unpersisted user
+	 * @param provider The provider of the authentication ("OLAT", "LDAP"...). If
+	 *          null, no authentication token is generated.
+	 * @param authusername The user name used as authentication credential
+	 *          (=username for provider "OLAT")
+	 * @param pwd The password which will be used as credentials (not hashed it)
+	 * @param organisation The organization or null, null will be the default organization
+	 * @return The new persisted identity
 	 */
-	public Identity createAndPersistIdentityAndUserWithDefaultProviderAndUserGroup(String loginName, String externalId, String pwd, User newUser, Organisation organisation);
-	
-	/**
-	 * Persists the given user, creates an identity for it and adds the user to
-	 * the users system group, create an authentication for an external provider
-	 * 
-	 * @param loginName
-	 * @param externalId
-	 * @param provider
-	 * @param authusername
-	 * @param newUser
-	 * @return
-	 */
-	public Identity createAndPersistIdentityAndUserWithUserGroup(String loginName, String externalId, String provider, String authusername, User newUser, Organisation organisation);
+	public Identity createAndPersistIdentityAndUserWithOrganisation(String identityName, String nickName, String externalId,
+			User user, String provider, String authusername, String password, Organisation organisation);
 	
 
 	/**

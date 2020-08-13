@@ -523,7 +523,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 
 		User onePropUser = UserManager.getInstance().createUser("onepropuser", "onepropuser", one + "@lustig.com");
 		onePropUser.setProperty(UserConstants.FIRSTNAME, "one");		
-		Identity onePropIdentity = baseSecurityManager.createAndPersistIdentityAndUser(oneUsername, null, onePropUser, BaseSecurityModule.getDefaultAuthProviderIdentifier(), oneUsername, "ppp");
+		Identity onePropIdentity = baseSecurityManager.createAndPersistIdentityAndUser(null, oneUsername, null, onePropUser, BaseSecurityModule.getDefaultAuthProviderIdentifier(), oneUsername, "ppp");
 		Assert.assertNotNull(onePropIdentity);
 		
 		String two = "two" + UUID.randomUUID().toString().replace("-", "");
@@ -532,7 +532,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		User twoPropUser = UserManager.getInstance().createUser("twopropuser", "twopropuser", two + "@lustig.com");
 		twoPropUser.setProperty(UserConstants.FIRSTNAME, "two");
 		twoPropUser.setProperty(UserConstants.LASTNAME, "prop");
-		Identity twoPropIdentity = baseSecurityManager.createAndPersistIdentityAndUser(twoUsername, null, twoPropUser, BaseSecurityModule.getDefaultAuthProviderIdentifier(), twoUsername, "ppp");
+		Identity twoPropIdentity = baseSecurityManager.createAndPersistIdentityAndUser(null, twoUsername, null, twoPropUser, BaseSecurityModule.getDefaultAuthProviderIdentifier(), twoUsername, "ppp");
 		Assert.assertNotNull(twoPropIdentity);
 		dbInstance.commitAndCloseSession();
 
@@ -637,7 +637,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		user.setProperty(UserConstants.INSTITUTIONALEMAIL, multiInst + "@lustig.com");		
 		user.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, multiInst);		
 		user.setProperty(UserConstants.CITY, "züri");		
-		Identity identity = baseSecurityManager.createAndPersistIdentityAndUser(multiUsername, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), multiUsername, "ppp");
+		Identity identity = baseSecurityManager.createAndPersistIdentityAndUser(null, multiUsername, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), multiUsername, "ppp");
 		Assert.assertNotNull(identity);
 		
 		// commit
@@ -792,7 +792,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 			User user = UserManager.getInstance().createUser(loginName+"_Firstname", loginName + "_Lastname", loginName + "@lustig.com");
 			user.setProperty(UserConstants.INSTITUTIONALNAME, "unizh2");
 			user.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, "12-345-678-908");
-			ident = baseSecurityManager.createAndPersistIdentityAndUser(loginName, null, user, authProvider, loginName, "ppp");
+			ident = baseSecurityManager.createAndPersistIdentityAndUser(null, loginName, null, user, authProvider, loginName, "ppp");
 			return ident;
 		}
 	}

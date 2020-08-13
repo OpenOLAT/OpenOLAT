@@ -26,8 +26,6 @@ import java.util.Map;
 import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.OrganisationRoles;
-import org.olat.basesecurity.OrganisationService;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -87,8 +85,6 @@ public class OAuthRegistrationController extends FormBasicController {
 	private BaseSecurity securityManager;
 	@Autowired
 	private OLATAuthManager olatAuthManager;
-	@Autowired
-	private OrganisationService organisationService;
 	@Autowired
 	private RegistrationManager registrationManager;
 	
@@ -215,7 +211,7 @@ public class OAuthRegistrationController extends FormBasicController {
 
 		User newUser = userManager.createUser(null, null, null);
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-			FormItem propertyItem = this.flc.getFormComponent(userPropertyHandler.getName());
+			FormItem propertyItem = flc.getFormComponent(userPropertyHandler.getName());
 			userPropertyHandler.updateUserFromFormItem(newUser, propertyItem);
 		}
 		
@@ -231,10 +227,9 @@ public class OAuthRegistrationController extends FormBasicController {
 		} else {
 			id = username;
 		}
-		authenticatedIdentity = securityManager.createAndPersistIdentityAndUser(username, null, newUser, registration.getAuthProvider(), id, null);
-		// Add user to default organization as user
-		organisationService.addMember(authenticatedIdentity, OrganisationRoles.user);
-		
+		authenticatedIdentity = securityManager.createAndPersistIdentityAndUserWithOrganisation(null, username, null, newUser,
+				registration.getAuthProvider(), id, null, null);
+
 		//open disclaimer
 		removeAsListenerAndDispose(disclaimerController);
 		disclaimerController = new DisclaimerController(ureq, getWindowControl(), authenticatedIdentity, false);

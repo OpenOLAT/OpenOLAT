@@ -74,33 +74,78 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	
 	
 	@Test
-	public void testCreateIdentity() {
-		String username = "createid-" + UUID.randomUUID().toString();
-		User user = userManager.createUser("first" + username, "last" + username, username + "@frentix.com");
-		Identity identity = securityManager.createAndPersistIdentityAndUser(username, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), username, "secret");
+	public void createIdentity() {
+		String name = "createid-" + UUID.randomUUID().toString();
+		User user = userManager.createUser("first" + name, "last" + name, name + "@frentix.com");
+		Identity identity = securityManager.createAndPersistIdentityAndUser(null, name, null, user,
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), name, "secret");
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertNotNull(identity);
+		Assert.assertNotNull(identity.getKey());
+		Assert.assertNotNull(identity.getUser());
+		Assert.assertNotNull(identity.getName());
+		Assert.assertEquals(user, identity.getUser());
+		Assert.assertEquals("u" + user.getKey(), identity.getName());
+		Assert.assertEquals("first" + name, identity.getUser().getFirstName());
+		Assert.assertEquals("last" + name, identity.getUser().getLastName());
+		Assert.assertEquals("first" + name, identity.getUser().getProperty(UserConstants.FIRSTNAME, null));
+		Assert.assertEquals("last" + name, identity.getUser().getProperty(UserConstants.LASTNAME, null));
+		Assert.assertEquals(name + "@frentix.com", identity.getUser().getProperty(UserConstants.EMAIL, null));
+	}
+	
+	@Test
+	public void createIdentityWithIdentityName() {
+		String name = "createid-" + UUID.randomUUID().toString();
+		User user = userManager.createUser("first" + name, "last" + name, name + "@openolat.com");
+		Identity identity = securityManager.createAndPersistIdentityAndUser(name, name, null, user,
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), name, "secret");
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(identity);
 		Assert.assertNotNull(identity.getKey());
 		Assert.assertNotNull(identity.getUser());
 		Assert.assertEquals(user, identity.getUser());
-		Assert.assertEquals("first" + username, identity.getUser().getFirstName());
-		Assert.assertEquals("last" + username, identity.getUser().getLastName());
-		Assert.assertEquals("first" + username, identity.getUser().getProperty(UserConstants.FIRSTNAME, null));
-		Assert.assertEquals("last" + username, identity.getUser().getProperty(UserConstants.LASTNAME, null));
-		Assert.assertEquals(username + "@frentix.com", identity.getUser().getProperty(UserConstants.EMAIL, null));
+		Assert.assertEquals(name, identity.getName());
+		Assert.assertEquals("first" + name, identity.getUser().getFirstName());
+		Assert.assertEquals("last" + name, identity.getUser().getLastName());
+		Assert.assertEquals("first" + name, identity.getUser().getProperty(UserConstants.FIRSTNAME, null));
+		Assert.assertEquals("last" + name, identity.getUser().getProperty(UserConstants.LASTNAME, null));
+		Assert.assertEquals(name + "@openolat.com", identity.getUser().getProperty(UserConstants.EMAIL, null));
+	}
+	
+	@Test
+	public void createAndPersistIdentityAndUserWithOrganisationAndName() {
+		String name = "createid-" + UUID.randomUUID().toString();
+		User user = userManager.createUser("first" + name, "last" + name, name + "@openolat.com");
+		Identity identity = securityManager.createAndPersistIdentityAndUserWithOrganisation(name, name, null, user,
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), name, "secret", null);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertNotNull(identity);
+		Assert.assertNotNull(identity.getKey());
+		Assert.assertNotNull(identity.getUser());
+		Assert.assertEquals(user, identity.getUser());
+		Assert.assertEquals(name, identity.getName());
+		
+		List<Organisation> organisations = organisationService.getOrganisations(identity, OrganisationRoles.user);
+		Assert.assertEquals(1, organisations.size());
+		Organisation defaultOrganisation = organisationService.getDefaultOrganisation();
+		Assert.assertEquals(defaultOrganisation, organisations.get(0));
 	}
 	
 	/**
 	 * This test is primarily made against Oracle
 	 */
 	@Test
-	public void testCreateUpdateIdentity() {
-		String username = "update-id-" + UUID.randomUUID().toString();
-		User user = userManager.createUser("first" + username, "last" + username, username + "@frentix.com");
+	public void createUpdateIdentity() {
+		String authusername = "update-id-" + UUID.randomUUID().toString();
+		String nickName = "nn" + authusername;
+		User user = userManager.createUser("first" + authusername, "last" + authusername, authusername + "@frentix.com");
 		user.setProperty(UserConstants.COUNTRY, "");
 		user.setProperty(UserConstants.CITY, "Basel");
-		Identity identity = securityManager.createAndPersistIdentityAndUser(username, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), username, "secret");
+		Identity identity = securityManager.createAndPersistIdentityAndUser(null, nickName, null, user,
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), authusername, "secret");
 		dbInstance.commitAndCloseSession();
 		
 		//reload and update
@@ -108,6 +153,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		identityPrime.getUser().setProperty(UserConstants.FIRSTNAME, "firstname");
 		identityPrime.getUser().setProperty(UserConstants.COUNTRY, "CH");
 		identityPrime.getUser().setProperty(UserConstants.CITY, "Lausanne");
+		identityPrime.getUser().setProperty(UserConstants.NICKNAME, nickName);
 		userManager.updateUserFromIdentity(identityPrime);
 		dbInstance.commitAndCloseSession();
 		
@@ -115,8 +161,8 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Identity identitySecond = securityManager.loadIdentityByKey(identity.getKey());
 		dbInstance.commitAndCloseSession();//check the fetch join on user
 		Assert.assertEquals("firstname", identitySecond.getUser().getProperty(UserConstants.FIRSTNAME, null));
-		Assert.assertEquals("last" + username, identitySecond.getUser().getProperty(UserConstants.LASTNAME, null));
-		Assert.assertEquals(username + "@frentix.com", identitySecond.getUser().getProperty(UserConstants.EMAIL, null));
+		Assert.assertEquals("last" + authusername, identitySecond.getUser().getProperty(UserConstants.LASTNAME, null));
+		Assert.assertEquals(authusername + "@frentix.com", identitySecond.getUser().getProperty(UserConstants.EMAIL, null));
 		Assert.assertEquals("CH", identitySecond.getUser().getProperty(UserConstants.COUNTRY, null));
 		Assert.assertEquals("Lausanne", identitySecond.getUser().getProperty(UserConstants.CITY, null));
 	}

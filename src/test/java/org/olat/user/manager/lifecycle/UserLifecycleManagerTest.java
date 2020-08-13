@@ -411,7 +411,7 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		user.setProperty(UserConstants.CITY, "Basel");
 		user.setProperty(UserConstants.INSTITUTIONALNAME, "Del-23");
 		user.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, "Del-24");
-		Identity identity = securityManager.createAndPersistIdentityAndUser(username, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), username, "secret");
+		Identity identity = securityManager.createAndPersistIdentityAndUser(null, username, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), username, "secret");
 		dbInstance.commitAndCloseSession();
 		// add some stuff
 		
@@ -485,7 +485,7 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		user.setProperty(UserConstants.CITY, "Basel");
 		user.setProperty(UserConstants.INSTITUTIONALNAME, "Del-23");
 		user.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, "Del-24");
-		Identity identity = securityManager.createAndPersistIdentityAndUser(username, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), username, "secret");
+		Identity identity = securityManager.createAndPersistIdentityAndUser(null, username, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), username, "secret");
 		dbInstance.commitAndCloseSession();
 
 		//a group

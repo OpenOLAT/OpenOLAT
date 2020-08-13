@@ -289,12 +289,14 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		if (!hasBeen && isNow) {
 			// user not yet in security group, add him
 			organisationService.addMember(organisation, updatedIdentity, role);
-			log.info(Tracing.M_AUDIT, "User::" + (actingIdentity == null ? "unkown" : actingIdentity.getKey()) + " added system role::" + role.name() + " to user::" + updatedIdentity.getKey());
+			log.info(Tracing.M_AUDIT, "User::{} added system role::{} to user::{}",
+					(actingIdentity == null ? "unkown" : actingIdentity.getKey()), role, updatedIdentity.getKey());
 		} else if (hasBeen && !isNow) {
 			// user not anymore in security group, remove him
 			boolean deleted = organisationService.removeMember(organisation, updatedIdentity, role, true);
 			if(deleted) {
-				log.info(Tracing.M_AUDIT, "User::" + (actingIdentity == null ? "unkown" : actingIdentity.getKey()) + " removed system role::" + role.name() + " from user::" + updatedIdentity.getKey());
+				log.info(Tracing.M_AUDIT, "User::{} removed system role::{} from user::{}",
+						(actingIdentity == null ? "unkown" : actingIdentity.getKey()), role, updatedIdentity.getKey());
 			}
 		}
 	}
@@ -340,33 +342,6 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 
 		return openolatRoles;
 	}
-
-	/**
-	 * @param username The username
-	 * @param user The unpresisted User
-	 * @param provider The provider of the authentication ("OLAT" or "AAI"). If null, no authentication token is generated.
-	 * @param authusername The username used as authentication credential (=username for provider "OLAT")
-	 * @return Identity
-	 */
-	@Override
-	public Identity createAndPersistIdentityAndUser(String username, String externalId, User user, String provider, String authusername) {
-		return createAndPersistIdentityAndUser(username, externalId, user, provider, authusername, null);
-	}
-
-	/**
-	 * @param username the username
-	 * @param user the unpresisted User
-	 * @param authusername the username used as authentication credential
-	 *          (=username for provider "OLAT")
-	 * @param provider the provider of the authentication ("OLAT" or "AAI"). If null, no 
-	 * authentication token is generated.
-	 * @param credential the credentials or null if not used
-	 * @return Identity
-	 */
-	@Override
-	public Identity createAndPersistIdentityAndUser(String username, String externalId, User user, String provider, String authusername, String credential) {
-		return createAndPersistIdentityAndUser(null, username, externalId, user, provider, authusername, credential);
-	}	
 		
 	/**
 	 * 
@@ -379,13 +354,15 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	 * @param credential The password
 	 * @return
 	 */
-	private Identity createAndPersistIdentityAndUser(String legacyName, String username, String externalId, User user, String provider, String authusername, String credential) {
+	@Override
+	public Identity createAndPersistIdentityAndUser(String legacyName, String nickName, String externalId,
+			User user, String provider, String authusername, String credential) {
 		IdentityImpl iimpl = new IdentityImpl();
 		iimpl.setUser(user);
 		iimpl.setExternalId(externalId);
 		iimpl.setStatus(Identity.STATUS_ACTIV);
-		if(StringHelper.containsNonWhitespace(username) && !StringHelper.containsNonWhitespace(user.getProperty(UserConstants.NICKNAME, null))) {
-			user.setProperty(UserConstants.NICKNAME, username);
+		if(StringHelper.containsNonWhitespace(nickName) && !StringHelper.containsNonWhitespace(user.getProperty(UserConstants.NICKNAME, null))) {
+			user.setProperty(UserConstants.NICKNAME, nickName);
 		}
 		dbInstance.getCurrentEntityManager().persist(user);
 		if(StringHelper.containsNonWhitespace(legacyName)) {
@@ -405,38 +382,6 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	
 	/**
 	 * Persists the given user, creates an identity for it and adds the user to
-	 * the users system group
-	 * 
-	 * @param loginName
-	 * @param externalId
-	 * @param pwd null: no OLAT authentication is generated. If not null, the password will be 
-	 * encrypted and and an OLAT authentication is generated.
-	 * @param newUser unpersisted users
-	 * @return Identity
-	 */
-	@Override
-	public Identity createAndPersistIdentityAndUserWithDefaultProviderAndUserGroup(String loginName, String externalId, String pwd,
-			User newUser, Organisation organisation) {
-		Identity ident;
-		if (pwd == null) {
-			ident = createAndPersistIdentityAndUser(loginName, externalId, newUser, BaseSecurityModule.getDefaultAuthProviderIdentifier(), loginName);
-			log.info(Tracing.M_AUDIT, "Create an identity with {} authentication (login={}) but no password", BaseSecurityModule.getDefaultAuthProviderIdentifier(), loginName);
- 		} else {
-			ident = createAndPersistIdentityAndUser(loginName, externalId, newUser, BaseSecurityModule.getDefaultAuthProviderIdentifier(), loginName, pwd);
-			log.info(Tracing.M_AUDIT, "Create an identity with {} authentication (login={})", BaseSecurityModule.getDefaultAuthProviderIdentifier(), loginName);
-		}
-
-		// Add user to the default organization as user
-		if(organisation == null) {
-			organisationService.addMember(ident, OrganisationRoles.user);
-		} else {
-			organisationService.addMember(organisation, ident, OrganisationRoles.user);
-		}
-		return ident;
-	}
-	
-	/**
-	 * Persists the given user, creates an identity for it and adds the user to
 	 * the users system group, create an authentication for an external provider
 	 * 
 	 * @param loginName
@@ -447,12 +392,22 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	 * @return
 	 */
 	@Override
-	public Identity createAndPersistIdentityAndUserWithUserGroup(String loginName, String externalId, String provider, String authusername,
-			User newUser, Organisation organisation) {
-		Identity ident = createAndPersistIdentityAndUser(loginName, externalId, newUser, provider, authusername, null);
-		log.info(Tracing.M_AUDIT, "Create an identity with " + provider + " authentication (login=" + loginName + ",authusername=" + authusername + ")");
-		// Add user to the default organization as user
-		organisationService.addMember(organisation, ident, OrganisationRoles.user);
+	public Identity createAndPersistIdentityAndUserWithOrganisation(String legacyName, String loginName, String externalId, User newUser,
+			String provider, String authusername, String pwd, Organisation organisation) {
+		Identity ident;
+		if (pwd == null) {
+			ident = createAndPersistIdentityAndUser(legacyName, loginName, externalId, newUser, provider, loginName, null);
+			log.info(Tracing.M_AUDIT, "Create an identity with {} authentication (login={},authusername={}) but no password", provider, authusername, loginName);
+ 		} else {
+			ident = createAndPersistIdentityAndUser(legacyName, loginName, externalId, newUser, provider, loginName, pwd);
+			log.info(Tracing.M_AUDIT, "Create an identity with {} authentication (login={},authusername={})", provider, authusername, loginName);
+		}
+		
+		if(organisation == null) {
+			organisationService.addMember(ident, OrganisationRoles.user);
+		} else {
+			organisationService.addMember(organisation, ident, OrganisationRoles.user);
+		}
 		return ident;
 	}
 	
@@ -1010,9 +965,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 			authusername = findAuthenticationName(authentications, "OLAT");
 		}
 		if(authusername == null) {
-			Collections.sort(authentications, (a1, a2) -> {
-				return a1.getProvider().compareTo(a2.getProvider());
-			});
+			Collections.sort(authentications, (a1, a2) -> a1.getProvider().compareTo(a2.getProvider()));
 			
 			for(Authentication authentication:authentications) {
 				String provider = authentication.getProvider();
@@ -1257,7 +1210,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		List<Authentication> authentications = getAuthentications(identity);
 		for (Authentication auth:authentications) {
 			deleteAuthentication(auth);
-			log.info("Delete authentication provider::" + auth.getProvider() + "  of identity="  + identity);
+			log.info("Delete authentication provider::{} of identity={}", auth.getProvider(), identity);
 		}
 		
 		// 2) Delete the authentication history

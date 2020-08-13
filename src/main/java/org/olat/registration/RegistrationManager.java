@@ -45,6 +45,7 @@ import javax.mail.internet.MimeMessage;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationRefImpl;
@@ -204,7 +205,8 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 	public Identity createNewUserAndIdentityFromTemporaryKey(String login, String pwd, User user, TemporaryKey tk) {
 		Organisation organisation = getOrganisationForRegistration();
 		Identity identity = securityManager
-				.createAndPersistIdentityAndUserWithDefaultProviderAndUserGroup(login, null, pwd, user, organisation);
+				.createAndPersistIdentityAndUserWithOrganisation(null, login, null, user,
+						BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, pwd,  organisation);
 		if(!OrganisationService.DEFAULT_ORGANISATION_IDENTIFIER.equals(organisation.getIdentifier())) {
 			Organisation defOrganisation = organisationService.getDefaultOrganisation();
 			organisationService.addMember(defOrganisation, identity, OrganisationRoles.user);
@@ -304,7 +306,7 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 		MimeMessage msg = mailManager.createMimeMessage(from, to, null, null, subject, decoratedBody, null, result);
 		mailManager.sendMessage(msg, result);
 		if (result.getReturnCode() != MailerResult.OK ) {
-			log.error("Could not send registration notification message, MailerResult was ::" + result.getReturnCode());			
+			log.error("Could not send registration notification message, MailerResult was ::{}", result.getReturnCode());			
 		}
 	}
 	

@@ -82,6 +82,7 @@ public class ContactViewExtended implements BusinessGroupMemberView, IdentityNam
 		return identityKey;
 	}
 
+	@Override
 	public Long getIdentityKey() {
 		return identityKey;
 	}
@@ -102,6 +103,7 @@ public class ContactViewExtended implements BusinessGroupMemberView, IdentityNam
 		return username;
 	}
 
+	@Override
 	public String getUsername() {
 		return username;
 	}
@@ -110,6 +112,7 @@ public class ContactViewExtended implements BusinessGroupMemberView, IdentityNam
 		this.username = username;
 	}
 
+	@Override
 	public String getFirstName() {
 		return firstName;
 	}
@@ -118,6 +121,7 @@ public class ContactViewExtended implements BusinessGroupMemberView, IdentityNam
 		this.firstName = firstName;
 	}
 
+	@Override
 	public String getLastName() {
 		return lastName;
 	}
