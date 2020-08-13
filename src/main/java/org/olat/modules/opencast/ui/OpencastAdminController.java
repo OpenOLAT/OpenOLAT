@@ -281,7 +281,7 @@ public class OpencastAdminController extends FormBasicController {
 			opencastModule.setCourseNodeEnabled(cnEnabled);
 			
 			Type authDelegateType = authDelegateTypeEl.isOneSelected()
-					? Type.valueOf(authDelegateTypeEl.getSelectedValue())
+					? Type.valueOf(authDelegateTypeEl.getSelectedKey())
 					: Type.User;
 			opencastModule.setAuthDelegateType(authDelegateType);
 			
