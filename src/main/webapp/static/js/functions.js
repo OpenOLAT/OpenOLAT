@@ -1030,8 +1030,6 @@ OPOL.adjustHeight = function() {
 		var col3El = jQuery('#o_main_center_content');
 		var col3 = col3El.length == 0 ? 0 : col3El.outerHeight(true);
 		
-		console.log(col1, col2, col3);
-
 		var contentHeight = Math.max(col1, col2, col3);
 		// Assign new column height
 		if (col1El.length > 0) {
