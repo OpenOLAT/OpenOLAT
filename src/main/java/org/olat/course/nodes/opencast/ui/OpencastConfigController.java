@@ -37,12 +37,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.OpencastCourseNode;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.opencast.OpencastEvent;
 import org.olat.modules.opencast.OpencastEventProvider;
-import org.olat.modules.opencast.OpencastSeries;
 import org.olat.modules.opencast.OpencastSeriesProvider;
-import org.olat.modules.opencast.OpencastService;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -67,9 +63,6 @@ public class OpencastConfigController extends FormBasicController {
 	
 	private final ModuleConfiguration config;
 	
-	@Autowired
-	private OpencastService opencastService;
-
 	public OpencastConfigController(UserRequest ureq, WindowControl wControl, OpencastCourseNode courseNode) {
 		super(ureq, wControl);
 		config = courseNode.getModuleConfiguration();
@@ -88,10 +81,7 @@ public class OpencastConfigController extends FormBasicController {
 		String seriesIdentifier = config.getStringValue(OpencastCourseNode.CONFIG_SERIES_IDENTIFIER, null);
 		String seriesTitle = null;
 		if (seriesIdentifier != null) {
-			OpencastSeries series = opencastService.getSeries(seriesIdentifier);
-			if (series != null) {
-				seriesTitle = series.getTitle();
-			}
+			seriesTitle = config.getStringValue(OpencastCourseNode.CONFIG_TITLE);
 		}
 		seriesEl = uifactory.addTextElementWithAutoCompleter("config.series", "config.series", 128, seriesTitle, formLayout);
 		seriesEl.setListProvider(new OpencastSeriesProvider(getIdentity(), MORE_KEY), ureq.getUserSession());
@@ -101,10 +91,7 @@ public class OpencastConfigController extends FormBasicController {
 		String eventIdentifier = config.getStringValue(OpencastCourseNode.CONFIG_EVENT_IDENTIFIER, null);
 		String eventTitle = null;
 		if (eventIdentifier != null) {
-			OpencastEvent event = opencastService.getEvent(eventIdentifier);
-			if (event != null) {
-				eventTitle = event.getTitle();
-			}
+			eventTitle = config.getStringValue(OpencastCourseNode.CONFIG_TITLE);
 		}
 		eventEl = uifactory.addTextElementWithAutoCompleter("config.event", "config.event", 128, eventTitle, formLayout);
 		eventEl.setListProvider(new OpencastEventProvider(getIdentity(), MORE_KEY), ureq.getUserSession());
