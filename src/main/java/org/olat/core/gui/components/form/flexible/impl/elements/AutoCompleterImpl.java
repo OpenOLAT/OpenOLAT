@@ -175,4 +175,5 @@ public class AutoCompleterImpl extends AbstractTextElement implements AutoComple
 			return new JSONMediaResource(result, "UTF-8");
 		}
 	}
+
 }

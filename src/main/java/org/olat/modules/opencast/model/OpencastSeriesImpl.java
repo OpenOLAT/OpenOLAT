@@ -19,67 +19,35 @@
  */
 package org.olat.modules.opencast.model;
 
-import java.util.Date;
-
-import org.olat.modules.opencast.OpencastEvent;
+import org.olat.modules.opencast.OpencastSeries;
 
 /**
  * 
- * Initial date: 10 Aug 2020<br>
+ * Initial date: 12 Aug 2020<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class OpencastEventImpl implements OpencastEvent {
-	
+public class OpencastSeriesImpl implements OpencastSeries {
+
 	private String identifier;
 	private String title;
-	private String creator;
-	private Date start;
-	private Date end;
-
+	
 	@Override
 	public String getIdentifier() {
 		return identifier;
-	}
 
+	}
 	public void setIdentifier(String identifier) {
 		this.identifier = identifier;
-	}
 
+	}
 	@Override
 	public String getTitle() {
 		return title;
-	}
 
+	}
 	public void setTitle(String title) {
 		this.title = title;
 	}
-
-	@Override
-	public String getCreator() {
-		return creator;
-	}
-
-	public void setCreator(String creator) {
-		this.creator = creator;
-	}
-
-	@Override
-	public Date getStart() {
-		return start;
-	}
-
-	public void setStart(Date start) {
-		this.start = start;
-	}
-
-	@Override
-	public Date getEnd() {
-		return end;
-	}
-
-	public void setEnd(Date end) {
-		this.end = end;
-	}
-
+	
 }

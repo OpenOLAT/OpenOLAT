@@ -17,17 +17,17 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.opencast;
+package org.olat.modules.opencast.model;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.ims.lti.LTIContext;
 import org.olat.ims.lti.LTIDisplayOptions;
 import org.olat.ims.lti.LTIManager;
+import org.olat.modules.opencast.OpencastService;
 
 /**
  * 
@@ -35,18 +35,19 @@ import org.olat.ims.lti.LTIManager;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class OpencastBBBRecordingContext implements LTIContext {
+public class OpencastLtiContext implements LTIContext {
 	
-	private static final String LTI_ROLE = "Learner";
 	private static final String HEIGTH = "auto";
 	private static final String WIDTH = "auto";
 	private static final String TARGET = LTIDisplayOptions.fullscreen.name();
 	private static final String CUSTOM_TOOL = "tool";
 	
-	private final String identifier;
+	private final String tool;
+	private final String role;
 
-	public OpencastBBBRecordingContext(String identifier) {
-		this.identifier = identifier;
+	public OpencastLtiContext(String tool, String role) {
+		this.tool = tool;
+		this.role = role;
 	}
 
 	@Override
@@ -91,14 +92,14 @@ public class OpencastBBBRecordingContext implements LTIContext {
 
 	@Override
 	public String getRoles(Identity identity) {
-		return LTI_ROLE;
+		return role;
 	}
 
 	@Override
 	public String getCustomProperties() {
 		Map<String, String> customProps = new HashMap<>();
 		
-		customProps.put(CUSTOM_TOOL, "play/" + identifier);
+		customProps.put(CUSTOM_TOOL, tool);
 		
 		return CoreSpringFactory.getImpl(LTIManager.class).joinCustomProps(customProps);
 	}
@@ -120,7 +121,7 @@ public class OpencastBBBRecordingContext implements LTIContext {
 
 	@Override
 	public String getUserId(Identity identity) {
-		return CoreSpringFactory.getImpl(BaseSecurityManager.class).findAuthenticationName(identity);
+		return CoreSpringFactory.getImpl(OpencastService.class).getUserId(identity);
 	}
 
 }

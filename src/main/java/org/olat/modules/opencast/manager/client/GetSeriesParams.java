@@ -31,7 +31,7 @@ import org.olat.modules.opencast.AuthDelegate;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class GetEventsParams {
+public class GetSeriesParams {
 	
 	public enum Filter {
 		title,
@@ -46,7 +46,7 @@ public class GetEventsParams {
 	private String filterParam;
 	private String sortParam;
 	
-	private GetEventsParams(Builder builder) {
+	private GetSeriesParams(Builder builder) {
 		this.authDelegate = builder.authDelegate;
 		
 		if (builder.limit != null) {
@@ -65,7 +65,7 @@ public class GetEventsParams {
 					.collect(Collectors.joining(","));
 		}
 	}
-	
+
 	public AuthDelegate getAuthDelegate() {
 		return authDelegate;
 	}
@@ -119,8 +119,8 @@ public class GetEventsParams {
 			return this;
 		}
 		
-		public GetEventsParams build() {
-			return new GetEventsParams(this);
+		public GetSeriesParams build() {
+			return new GetSeriesParams(this);
 		}
 	}
 

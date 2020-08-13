@@ -249,7 +249,7 @@ public class BusinessGroupRelationDAO {
 	 * Match the list of roles with the list of specfified roles
 	 * @param identity
 	 * @param group
-	 * @param roles
+	 * @param Roles
 	 * @return
 	 */
 	public boolean hasRole(IdentityRef identity, BusinessGroupRef group, String role) {

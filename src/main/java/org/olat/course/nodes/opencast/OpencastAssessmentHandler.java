@@ -17,26 +17,24 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.opencast;
+package org.olat.course.nodes.opencast;
 
-import java.util.Date;
+import org.olat.course.learningpath.LearningPathOnlyAssessmentHandler;
+import org.olat.course.nodes.OpencastCourseNode;
+import org.springframework.stereotype.Service;
 
 /**
  * 
- * Initial date: 10 Aug 2020<br>
+ * Initial date: 11.09.2020<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface OpencastEvent {
-	
-	String getIdentifier();
-	
-	String getTitle();
-	
-	String getCreator();
+@Service
+public class OpencastAssessmentHandler extends LearningPathOnlyAssessmentHandler {
 
-	Date getStart();
-	
-	Date getEnd();
-	
+	@Override
+	public String acceptCourseNodeType() {
+		return OpencastCourseNode.TYPE;
+	}
+
 }

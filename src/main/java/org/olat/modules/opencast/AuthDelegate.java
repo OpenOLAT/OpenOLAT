@@ -19,24 +19,45 @@
  */
 package org.olat.modules.opencast;
 
-import java.util.Date;
-
 /**
  * 
- * Initial date: 10 Aug 2020<br>
+ * Initial date: 13 Aug 2020<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface OpencastEvent {
+public class AuthDelegate {
 	
-	String getIdentifier();
+	public enum Type {
+		None, User, Roles;
+		
+		static public boolean isValid(String name) {
+			for (Type type : Type.values())
+				if (type.name().equals(name)) {
+					return true;
+				}
+			return false;
+		}
+	};
 	
-	String getTitle();
+	private final Type type;
+	private final String value;
 	
-	String getCreator();
+	public static AuthDelegate of(Type type, String value) {
+		return new AuthDelegate(type, value);
+	}
+	
+	private AuthDelegate(Type type, String value) {
+		super();
+		this.type = type;
+		this.value = value;
+	}
 
-	Date getStart();
-	
-	Date getEnd();
-	
+	public Type getType() {
+		return type;
+	}
+
+	public String getValue() {
+		return value;
+	}
+
 }

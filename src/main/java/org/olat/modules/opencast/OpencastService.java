@@ -21,6 +21,9 @@ package org.olat.modules.opencast;
 
 import java.util.List;
 
+import org.olat.core.id.Identity;
+import org.olat.core.util.UserSession;
+
 /**
  * 
  * Initial date: 4 Aug 2020<br>
@@ -37,12 +40,28 @@ public interface OpencastService {
 	boolean checkApiConnection();
 
 	/**
-	 * Get the events with the identifier
+	 * Get the event.
 	 *
 	 * @param identifier
 	 * @return
 	 */
-	List<OpencastEvent> getEvents(String identifier);
+	OpencastEvent getEvent(String identifier);
+	
+	/**
+	 * Get all events of the corresponding authDelegate.
+	 *
+	 * @param identifier
+	 * @return
+	 */
+	List<OpencastEvent> getEvents(AuthDelegate authDelegate);
+	
+	/**
+	 * Get the events with the metadata in the bibliographic data
+	 *
+	 * @param metadata
+	 * @return
+	 */
+	List<OpencastEvent> getEvents(String metadata);
 	
 	/**
 	 * Delete all events with the identifier.
@@ -51,5 +70,45 @@ public interface OpencastService {
 	 * @return true if some event was deleted
 	 */
 	boolean deleteEvents(String identifier);
+	
+	/**
+	 * Get the series.
+	 *
+	 * @param identifier
+	 * @return
+	 */
+	OpencastSeries getSeries(String identifier);
+	
+	/**
+	 * Get all series of the corresponding authDelegate.
+	 *
+	 * @param authDelegate
+	 * @return
+	 */
+	List<OpencastSeries> getSeries(AuthDelegate authDelegate);
+	
+	AuthDelegate getAuthDelegate(Identity identity);
+
+	String getUserId(Identity identity);
+
+	/**
+	 * 
+	 *
+	 * @param usess
+	 * @param identifier
+	 * @param roles
+	 * @return
+	 */
+	String getLtiEventMapperUrl(UserSession usess, String identifier, String roles);
+
+	/**
+	 * 
+	 *
+	 * @param userSession
+	 * @param opencastSeries
+	 * @param roles
+	 * @return
+	 */
+	String getLtiSeriesMapperUrl(UserSession userSession, OpencastSeries opencastSeries, String roles);
 
 }

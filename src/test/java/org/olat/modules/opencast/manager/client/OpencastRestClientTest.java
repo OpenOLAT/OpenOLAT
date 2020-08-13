@@ -25,6 +25,7 @@ import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.modules.opencast.OpencastModule;
+import org.olat.modules.opencast.manager.client.GetEventsParams.Filter;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -60,18 +61,41 @@ public class OpencastRestClientTest extends OlatTestCase {
 	
 	@Test
 	public void shouldGetEvents() {
-		GetEventsParams params = new GetEventsParams();
-		params.getFilter().setTextFilter("8678c09a-9f76-4d60-b178-fb84d2b9c494");
+		GetEventsParams params = GetEventsParams.builder()
+				.addFilter(Filter.textFilter, "8678c09a-9f76-4d60-b178-fb84d2b9c494")
+				.build();
 		
 		Event[] events = sut.getEvents(params);
 		
 		SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(events.length).isEqualTo(1);
-		Event event = events[0];
-		softly.assertThat(event.getIdentifier()).isNotNull();
-		softly.assertThat(event.getTitle()).isNotNull();
-		softly.assertThat(event.getStart()).isNotNull();
-		softly.assertThat(event.getDuration()).isNotNull();
+		if (events.length > 0) {
+			Event event = events[0];
+			softly.assertThat(event.getIdentifier()).isNotNull();
+			softly.assertThat(event.getTitle()).isNotNull();
+			softly.assertThat(event.getStart()).isNotNull();
+			softly.assertThat(event.getDuration()).isNotNull();
+		};
+		softly.assertAll();
+	}
+	
+	@Test
+	public void shouldGetEventsByTitle() {
+		GetEventsParams params = GetEventsParams.builder()
+				.addFilter(Filter.title, "o")
+				.build();
+		
+		Event[] events = sut.getEvents(params);
+		
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(events.length).isEqualTo(1);
+		if (events.length > 0) {
+			Event event = events[0];
+			softly.assertThat(event.getIdentifier()).isNotNull();
+			softly.assertThat(event.getTitle()).isNotNull();
+			softly.assertThat(event.getStart()).isNotNull();
+			softly.assertThat(event.getDuration()).isNotNull();
+		}
 		softly.assertAll();
 	}
 	

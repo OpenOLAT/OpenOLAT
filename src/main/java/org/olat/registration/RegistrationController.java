@@ -486,7 +486,7 @@ public class RegistrationController extends BasicController implements Activatea
 	 * displays the final step of the registration process. (step5)<br />
 	 * see also _content/finish.html
 	 * 
-	 * @param user
+	 * @param User
 	 *            The newly created User from which to display information
 	 * 
 	 */

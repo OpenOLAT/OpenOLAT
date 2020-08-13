@@ -1019,7 +1019,7 @@ public class RepositoryManager {
 	/**
 	 * Count by type, exclude deleted.
 	 * @param restrictedType
-	 * @param roles
+	 * @param Roles
 	 * @return Number of repo entries
 	 */
 	public int countByType(String restrictedType) {
@@ -1135,7 +1135,7 @@ public class RepositoryManager {
 	/**
 	 * Query by initial-author
 	 * @param restrictedType
-	 * @param roles
+	 * @param Roles
 	 * @return Results
 	 */
 	public List<RepositoryEntry> queryByInitialAuthor(String initialAuthor) {

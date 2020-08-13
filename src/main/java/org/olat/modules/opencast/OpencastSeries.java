@@ -19,24 +19,16 @@
  */
 package org.olat.modules.opencast;
 
-import java.util.Date;
-
 /**
  * 
- * Initial date: 10 Aug 2020<br>
+ * Initial date: 12 Aug 2020<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface OpencastEvent {
-	
-	String getIdentifier();
-	
-	String getTitle();
-	
-	String getCreator();
+public interface OpencastSeries {
 
-	Date getStart();
-	
-	Date getEnd();
-	
+	String getIdentifier();
+
+	String getTitle();
+
 }

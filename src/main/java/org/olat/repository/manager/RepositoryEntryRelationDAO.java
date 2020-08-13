@@ -300,7 +300,7 @@ public class RepositoryEntryRelationDAO {
 	 * the organizations.
 	 * 
 	 * @param re The repository entry
-	 * @param roles The role (mandatory)
+	 * @param Roles The role (mandatory)
 	 * @return
 	 */
 	public int countMembers(RepositoryEntryRef re, String role) {

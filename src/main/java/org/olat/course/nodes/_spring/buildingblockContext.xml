@@ -100,7 +100,11 @@
 	<bean id="livestream" class="org.olat.course.nodes.livestream.LiveStreamCourseNodeConfiguration" scope="prototype">
 		<property name="order" value="222" />
 	</bean>
-		
+	
+	<bean id="opencast" class="org.olat.course.nodes.opencast.OpencastCourseNodeConfiguration" scope="prototype">
+		<property name="order" value="223" />
+	</bean>
+	
 	<bean id="edusharing" class="org.olat.course.nodes.edusharing.EdusharingCourseNodeConfiguration" scope="prototype">
 		<property name="order" value="224" />
 	</bean>
