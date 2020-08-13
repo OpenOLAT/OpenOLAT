@@ -71,7 +71,6 @@ public class OpencastAdminController extends FormBasicController {
 	private MultipleSelectionElement courseNodeEnabledEl;
 	private SingleSelection authDelegateTypeEl;
 	private TextElement authDelegateRolesEl;
-	private MultipleSelectionElement startImmediatelyEl;
 	private MultipleSelectionElement rolesAdminEl;
 	private MultipleSelectionElement rolesCoachEl;
 	private MultipleSelectionElement rolesParticipantEl;
@@ -146,7 +145,6 @@ public class OpencastAdminController extends FormBasicController {
 		authDelegateTypeEl.addActionListener(FormEvent.ONCHANGE);
 		authDelegateRolesEl = uifactory.addTextElement("admin.auth.delegate.roles", 128, null, formLayout);
 		authDelegateRolesEl.setMandatory(true);
-		startImmediatelyEl = uifactory.addCheckboxesHorizontal("admin.start.immediately", formLayout, ENABLED_KEYS, enableValues);
 		
 		String[] ltiRolesValues = new String[]{
 				translate("roles.lti.learner"),
@@ -178,7 +176,6 @@ public class OpencastAdminController extends FormBasicController {
 		courseNodeEnabledEl.select(ENABLED_KEYS[0], opencastModule.isCourseNodeEnabledRaw());
 		authDelegateTypeEl.select(opencastModule.getAuthDelegateType().name(), true);
 		authDelegateRolesEl.setValue(opencastModule.getAuthDelegateRoles());
-		startImmediatelyEl.select(ENABLED_KEYS[0], opencastModule.isStartImmediately());
 		udpateRoles(rolesAdminEl, opencastModule.getRolesAdmin());
 		udpateRoles(rolesCoachEl, opencastModule.getRolesCoach());
 		udpateRoles(rolesParticipantEl, opencastModule.getRolesParticipant());
@@ -196,7 +193,6 @@ public class OpencastAdminController extends FormBasicController {
 		authDelegateTypeEl.setVisible(enabled);
 		boolean authDelegateRoles = authDelegateTypeEl.isOneSelected() && Type.Roles == Type.valueOf(authDelegateTypeEl.getSelectedValue());
 		authDelegateRolesEl.setVisible(enabled && authDelegateRoles);
-		startImmediatelyEl.setVisible(enabled);
 		rolesAdminEl.setVisible(enabled);
 		rolesCoachEl.setVisible(enabled);
 		rolesParticipantEl.setVisible(enabled);
@@ -293,9 +289,6 @@ public class OpencastAdminController extends FormBasicController {
 					? authDelegateRolesEl.getValue()
 					: null;
 			opencastModule.setAuthDelegateRoles(authDelegateRoles);
-			
-			boolean startImmediately = startImmediatelyEl.isAtLeastSelected(1);
-			opencastModule.setStartImmediately(startImmediately);
 			
 			String rolesAdmin = getRoles(rolesAdminEl);
 			opencastModule.setRolesAdmin(rolesAdmin);

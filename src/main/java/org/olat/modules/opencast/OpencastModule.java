@@ -54,7 +54,6 @@ public class OpencastModule extends AbstractSpringModule implements ConfigOnOff 
 	private static final String LTI_SECRET = "lti.secret";
 	private static final String BBB_ENABLED = "opencast.bbb.enabled";
 	private static final String COURSE_NODE_ENABLED = "opencast.course.node.enabled";
-	private static final String START_IMMEDIATELY = "start.immediately";
 	private static final String ROLES_ADMIN = "roles.admin";
 	private static final String ROLES_COACH = "roles.coach";
 	private static final String ROLES_PARTICIPANT = "roles.participant";
@@ -81,8 +80,6 @@ public class OpencastModule extends AbstractSpringModule implements ConfigOnOff 
 	private boolean bigBlueButtonEnabled;
 	@Value("${opencast.course.node.enabled}")
 	private boolean courseNodeEnabled;
-	@Value("${opencast.course.node.start.immediately}")
-	private boolean startImmediately;
 	@Value("${opencast.course.node.roles.admin}")
 	private String rolesAdmin;
 	@Value("${opencast.course.node.roles.coach}")
@@ -126,11 +123,6 @@ public class OpencastModule extends AbstractSpringModule implements ConfigOnOff 
 		String courseNodeEnabledObj = getStringPropertyValue(COURSE_NODE_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(courseNodeEnabledObj)) {
 			courseNodeEnabled = "true".equals(courseNodeEnabledObj);
-		}
-		
-		String startImmediatelyObj = getStringPropertyValue(START_IMMEDIATELY, true);
-		if(StringHelper.containsNonWhitespace(startImmediatelyObj)) {
-			startImmediately = "true".equals(startImmediatelyObj);
 		}
 		
 		rolesAdmin = getStringPropertyValue(ROLES_ADMIN, rolesAdmin);
@@ -270,15 +262,6 @@ public class OpencastModule extends AbstractSpringModule implements ConfigOnOff 
 	public void setCourseNodeEnabled(boolean courseNodeEnabled) {
 		this.courseNodeEnabled = courseNodeEnabled;
 		setStringProperty(COURSE_NODE_ENABLED, Boolean.toString(courseNodeEnabled), true);
-	}
-
-	public boolean isStartImmediately() {
-		return startImmediately;
-	}
-
-	public void setStartImmediately(boolean startImmediately) {
-		this.startImmediately = startImmediately;
-		setStringProperty(START_IMMEDIATELY, Boolean.toString(startImmediately), true);
 	}
 
 	public String getRolesAdmin() {

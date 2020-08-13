@@ -66,7 +66,6 @@ public class OpencastDisplayController extends FormBasicController {
 		roles = initRoles(userCourseEnv);
 		
 		initForm(ureq);
-		doStartImmediately(ureq);
 	}
 
 	private String initRoles(UserCourseEnvironment userCourseEnv) {
@@ -126,18 +125,6 @@ public class OpencastDisplayController extends FormBasicController {
 			doStartEvent(ureq, opencastEvent);
 		}
 		super.formInnerEvent(ureq, source, event);
-	}
-
-	private void doStartImmediately(UserRequest ureq) {
-		if (opencastModule.isStartImmediately()) {
-			if (seriesButton != null) {
-				OpencastSeries opencastSeries = (OpencastSeries)seriesButton.getUserObject();
-				doStartSeries(ureq, opencastSeries);
-			} else if (eventButton != null) {
-				OpencastEvent opencastEvent = (OpencastEvent)eventButton.getUserObject();
-				doStartEvent(ureq, opencastEvent);
-			}
-		}
 	}
 
 	private void doStartSeries(UserRequest ureq, OpencastSeries opencastSeries) {
