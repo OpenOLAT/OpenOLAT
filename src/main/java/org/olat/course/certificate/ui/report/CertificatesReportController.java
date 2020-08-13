@@ -191,7 +191,7 @@ public class CertificatesReportController extends FormBasicController {
 	
 	private void doReport(UserRequest ureq, RepositoryEntry re) {
 		String filename = re.getDisplayname() + "_Certificates_" + Formatter.formatDatetimeWithMinutes(ureq.getRequestTimestamp());
-		filename = StringHelper.transformDisplayNameToFileSystemName(filename);
+		filename = StringHelper.transformDisplayNameToFileSystemName(filename) + ".xlsx";
 		
 		List<RepositoryEntry> entries = Collections.singletonList(re);
 		CertificatesReportParameters reportParams = getReportParameters();
@@ -205,7 +205,7 @@ public class CertificatesReportController extends FormBasicController {
 			showWarning("warning.at.least.one.test");
 		} else {
 			String filename = "Certificates_" + Formatter.formatDatetimeWithMinutes(ureq.getRequestTimestamp());
-			filename = StringHelper.transformDisplayNameToFileSystemName(filename);
+			filename = StringHelper.transformDisplayNameToFileSystemName(filename) + ".xlsx";
 			
 			CertificatesReportParameters reportParams = getReportParameters();
 			MediaResource report = new CertificatesReportMediaResource(filename, entries, reportParams, getTranslator());
