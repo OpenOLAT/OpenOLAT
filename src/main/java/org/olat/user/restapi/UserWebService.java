@@ -191,7 +191,7 @@ public class UserWebService {
 			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))) })
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getUserListQuery(@QueryParam("login") String login,
+	public Response getUserListQuery(@QueryParam("login") String login, @QueryParam("externalId") String externalId,
 			@QueryParam("authProvider") String authProvider, @QueryParam("authUsername") String authUsername,
 			@QueryParam("statusVisibleLimit") String statusVisibleLimit,
 			@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest) {
@@ -244,7 +244,13 @@ public class UserWebService {
 			if(isAdministrativeUser && "all".equalsIgnoreCase(statusVisibleLimit)) {
 				status = null;
 			}
-			identities = securityManager.getIdentitiesByPowerSearch(login, userProps, true, null, authProviders, null, null, null, null, status);
+			
+			SearchIdentityParams searchParams = new SearchIdentityParams(login, userProps, true,
+					null, authProviders, null, null, null, null, status);
+			if(StringHelper.containsNonWhitespace(externalId)) {
+				searchParams.setExternalId(externalId);
+			}
+			identities = securityManager.getIdentitiesByPowerSearch(searchParams, 0, -1);
 		}
 		
 		int count = 0;

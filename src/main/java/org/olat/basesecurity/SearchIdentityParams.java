@@ -38,6 +38,7 @@ import org.olat.modules.curriculum.CurriculumRoles;
  */
 public class SearchIdentityParams {
 	private String idAndExternalIds;
+	private String externalId;
 	private String login;
 	private String searchString;
 	private Map<String, String> userProperties;
@@ -323,6 +324,14 @@ public class SearchIdentityParams {
 
 	public void setIdAndExternalIds(String idAndExternalIds) {
 		this.idAndExternalIds = idAndExternalIds;
+	}
+
+	public String getExternalId() {
+		return externalId;
+	}
+
+	public void setExternalId(String externalId) {
+		this.externalId = externalId;
 	}
 
 	public List<Integer> getExactStatusList() {

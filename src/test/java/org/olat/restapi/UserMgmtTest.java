@@ -63,6 +63,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -164,6 +165,8 @@ public class UserMgmtTest extends OlatRestTestCase {
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private BaseSecurityModule securityModule;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -360,12 +363,170 @@ public class UserMgmtTest extends OlatRestTestCase {
 				.queryParam("login", id.getLogin()).build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
 		List<UserVO> vos = parseUserArray(response.getEntity());
 
-		assertNotNull(vos);
-		assertEquals(1, vos.size());
-		assertEquals(id.getIdentity().getName(), vos.get(0).getLogin());
+		Assert.assertNotNull(vos);
+		Assert.assertEquals(1, vos.size());
+		Assert.assertEquals(id.getIdentity().getKey(), vos.get(0).getKey());
+		Assert.assertNull(vos.get(0).getLogin());
+		conn.shutdown();
+	}
+	
+	@Test
+	public void testFindUsersByLogin_manualIdentityName() throws IOException, URISyntaxException {
+		String currentIdentityNameSetting = securityModule.getIdentityName();
+		securityModule.setIdentityName("manual");
+		
+		//there is user-rest-...
+		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("u-rest-manual");
+		Assert.assertNotNull(id);
+
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("users")
+				.queryParam("login", id.getLogin()).build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		List<UserVO> vos = parseUserArray(response.getEntity());
+
+		Assert.assertNotNull(vos);
+		Assert.assertEquals(1, vos.size());
+		Assert.assertEquals(id.getIdentity().getKey(), vos.get(0).getKey());
+		Assert.assertEquals(id.getIdentity().getName(), vos.get(0).getLogin());
+		conn.shutdown();
+		securityModule.setIdentityName(currentIdentityNameSetting);
+	}
+	
+	@Test
+	public void testFindUsersByExternalId() throws IOException, URISyntaxException {
+		//there is user-rest-...
+		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("user-external-id");
+		Assert.assertNotNull(id);
+		String externalId = UUID.randomUUID().toString();
+		Identity identity = securityManager.setExternalId(id.getIdentity(), externalId);
+		dbInstance.commitAndCloseSession();
+
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("users")
+				.queryParam("externalId", externalId)
+				.queryParam("statusVisibleLimit", "all")
+				.build();
+
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		List<UserVO> vos = parseUserArray(response.getEntity());
+
+		Assert.assertNotNull(vos);
+		Assert.assertEquals(1, vos.size());
+		Assert.assertEquals(identity.getKey(), vos.get(0).getKey());
+		Assert.assertNull(vos.get(0).getLogin());
+		conn.shutdown();
+	}
+	
+	@Test
+	public void testFindUsersByAuthusername() throws IOException, URISyntaxException {
+		//there is user-rest-...
+		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("user-auth-name");
+		Assert.assertNotNull(id);
+
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("users")
+				.queryParam("authProvider", "OLAT")
+				.queryParam("authUsername", id.getLogin())
+				.queryParam("statusVisibleLimit", "all")
+				.build();
+
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		List<UserVO> vos = parseUserArray(response.getEntity());
+
+		Assert.assertNotNull(vos);
+		Assert.assertEquals(1, vos.size());
+		Assert.assertEquals(id.getKey(), vos.get(0).getKey());
+		Assert.assertNull(vos.get(0).getLogin());
+		conn.shutdown();
+	}
+	
+	@Test
+	public void testFindUsersByAuthusernameShib() throws IOException, URISyntaxException {
+		//there is user-rest-...
+		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("user-auth-name");
+		Assert.assertNotNull(id);
+		String shibIdent = UUID.randomUUID().toString();
+		securityManager.createAndPersistAuthentication(id.getIdentity(), "Shib", shibIdent, null, null);
+		dbInstance.commitAndCloseSession();
+
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("users")
+				.queryParam("authProvider", "Shib")
+				.queryParam("authUsername", shibIdent)
+				.queryParam("statusVisibleLimit", "all")
+				.build();
+
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		List<UserVO> vos = parseUserArray(response.getEntity());
+
+		Assert.assertNotNull(vos);
+		Assert.assertEquals(1, vos.size());
+		Assert.assertEquals(id.getKey(), vos.get(0).getKey());
+		Assert.assertNull(vos.get(0).getLogin());
+		
+		// false check
+		URI negativeRequest = UriBuilder.fromUri(getContextURI()).path("users")
+				.queryParam("authProvider", "OLAT")
+				.queryParam("authUsername", shibIdent)
+				.queryParam("statusVisibleLimit", "all")
+				.build();
+
+		HttpGet negativeMethod = conn.createGet(negativeRequest, MediaType.APPLICATION_JSON, true);
+		HttpResponse negativeResponse = conn.execute(negativeMethod);
+		Assert.assertEquals(200, negativeResponse.getStatusLine().getStatusCode());
+		List<UserVO> negativeVos = parseUserArray(negativeResponse.getEntity());
+
+		Assert.assertNotNull(negativeVos);
+		Assert.assertTrue(negativeVos.isEmpty());
+
+		conn.shutdown();
+	}
+	
+	@Test
+	public void testFindUsersByExternalId_negatif() throws IOException, URISyntaxException {
+		//there is user-rest-...
+		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("user-external-id-2");
+		Assert.assertNotNull(id);
+		String externalId = UUID.randomUUID().toString();
+		Identity identity = securityManager.setExternalId(id.getIdentity(), externalId);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(identity);
+
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("users")
+				.queryParam("externalId", "a-non-existing-external-key")
+				.queryParam("statusVisibleLimit", "all")
+				.build();
+
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		List<UserVO> vos = parseUserArray(response.getEntity());
+
+		Assert.assertNotNull(vos);
+		Assert.assertTrue(vos.isEmpty());
 		conn.shutdown();
 	}
 	

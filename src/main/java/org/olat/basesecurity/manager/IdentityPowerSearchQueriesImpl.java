@@ -170,7 +170,8 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 				|| params.hasRoles() || params.hasExcludedRoles()
 				|| params.getRepositoryEntryRole() != null || params.getBusinessGroupRole() != null || params.getCurriculumRole() != null
 				|| params.hasOrganisations() || params.hasOrganisationParents()
-				|| StringHelper.containsNonWhitespace(params.getIdAndExternalIds());
+				|| StringHelper.containsNonWhitespace(params.getIdAndExternalIds())
+				|| StringHelper.containsNonWhitespace(params.getExternalId());
 	}
 	
 	private boolean createQueryPart(SearchIdentityParams params, QueryBuilder sb, boolean needsAnd) {	
@@ -282,6 +283,11 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 				sb.append("ident.key=:idKey or user.key=:idKey or ");
 			}
 			sb.append("ident.externalId=:idAndRefs)");
+		}
+		
+		if(StringHelper.containsNonWhitespace(params.getExternalId())) {
+			needsAnd = checkAnd(sb, needsAnd);
+			sb.append("ident.externalId=:externalId");
 		}
 		
 		if(params.getManaged() != null) {
@@ -610,6 +616,10 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 				dbq.setParameter("idKey", Long.valueOf(params.getIdAndExternalIds()));
 			}
 			dbq.setParameter("idAndRefs", params.getIdAndExternalIds());
+		}
+		
+		if(params.getExternalId() != null) {
+			dbq.setParameter("externalId", params.getExternalId());
 		}
 	}
 	
