@@ -74,5 +74,13 @@ public class BigBlueButtonRecordingReferenceDAO {
 				.setParameter("meetingKey", meeting.getKey())
 				.getResultList();
 	}
+	
+	public int deleteRecordingReferences(BigBlueButtonMeeting meeting) {
+		String query = "delete from bigbluebuttonrecording as record where record.meeting.key=:meetingKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query)
+				.setParameter("meetingKey", meeting.getKey())
+				.executeUpdate();
+	}
 
 }

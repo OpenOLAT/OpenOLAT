@@ -587,9 +587,8 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 					.map(BigBlueButtonRecordingWithReference::getRecording)
 					.collect(Collectors.toList());
 			getRecordingsHandler().deleteRecordings(recordings, meeting, errors);
-			
-			//TODO delete references
 		}
+		bigBlueButtonRecordingReferenceDao.deleteRecordingReferences(meeting);
 	}
 	
 	@Override

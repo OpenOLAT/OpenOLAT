@@ -231,7 +231,7 @@ public class OAuthDispatcher implements Dispatcher {
 						securityManager.createAndPersistAuthentication(identity, registration.getAuthProvider(), id, null, null);
 						registration.setIdentity(identity);
 					} else {
-						log.error("OAuth Login failed, user with user name {} not found.", email);
+						log.error("OAuth Login failed, user with user name {} not found. OAuth user: {}", email, infos);
 					}
 				}
 			} else {
