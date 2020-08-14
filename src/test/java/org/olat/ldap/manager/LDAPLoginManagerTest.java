@@ -22,9 +22,11 @@ package org.olat.ldap.manager;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.naming.directory.Attributes;
+import javax.naming.ldap.LdapContext;
 
 import org.junit.Assert;
 import org.junit.Assume;
@@ -47,6 +49,7 @@ import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
 import org.olat.ldap.LDAPSyncConfiguration;
 import org.olat.ldap.ui.LDAPAuthenticationController;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,6 +107,27 @@ public class LDAPLoginManagerTest extends OlatTestCase {
 		// historic
 		Identity identity = userManager.findUniqueIdentityByEmail("hhuerlimann@openolat.com");
 		Assert.assertNotNull(identity);
+	}
+	
+	@Test
+	public void getIdentitiesDeletedInLdap() {
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
+		Identity orphan = JunitTestHelper.createAndPersistIdentityAsRndUser("ldap-orphan");
+		securityManager.createAndPersistAuthentication(orphan, LDAPAuthenticationController.PROVIDER_LDAP,
+				UUID.randomUUID().toString(), null, null);
+		dbInstance.commitAndCloseSession();
+
+		LdapContext ctx = ldapManager.bindSystem();
+		List<Identity> identities = ldapManager.getIdentitiesDeletedInLdap(ctx);
+		
+		Assert.assertNotNull(identities);
+		Assert.assertTrue(identities.contains(orphan));
+
+		// historic
+		Identity identity1 = userManager.findUniqueIdentityByEmail("hhuerlimann@openolat.com");
+		Assert.assertFalse(identities.contains(identity1));
+		Identity identity2 = userManager.findUniqueIdentityByEmail("ahentschel@openolat.com");
+		Assert.assertFalse(identities.contains(identity2));
 	}
 	
 	@Test

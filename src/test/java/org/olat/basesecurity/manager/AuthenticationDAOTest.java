@@ -71,6 +71,17 @@ public class AuthenticationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getAuthenticationIdentityProvider() {
+		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-1-");
+		dbInstance.commitAndCloseSession();
+		
+		//check if the new token was saved
+		Authentication authentication = authenticationDao.getAuthentication(ident.getIdentity(), "OLAT");
+		Assert.assertEquals(ident.getIdentity(), authentication.getIdentity());
+		Assert.assertEquals(ident.getLogin(), authentication.getAuthusername());
+	}
+	
+	@Test
 	public void getIdentitiesWithAuthentication() {
 		String token = UUID.randomUUID().toString();
 		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-6-");
@@ -140,6 +151,19 @@ public class AuthenticationDAOTest extends OlatTestCase {
 		Assert.assertNotNull(olatAuthentications);
 		Assert.assertEquals(1, olatAuthentications.size());
 		Assert.assertEquals(ident.getIdentity(), olatAuthentications.get(0).getIdentity());
+	}
+	
+	@Test
+	public void getAuthenticationsByProvider() {
+		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-2-");
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(ident);
+
+		List<Authentication> olatAuthentications = authenticationDao.getAuthentications("OLAT");
+		Assert.assertNotNull(olatAuthentications);
+		for(Authentication authentication:olatAuthentications) {
+			Assert.assertEquals("OLAT", authentication.getProvider());
+		}
 	}
 	
 	@Test

@@ -190,7 +190,7 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 			// get deleted users
 			List<Identity> identitiesToDelete = null;
 			try {
-				identitiesToDelete = ldapLoginManager.getIdentitysDeletedInLdap(ctx);
+				identitiesToDelete = ldapLoginManager.getIdentitiesDeletedInLdap(ctx);
 				ctx.close();
 			} catch (NamingException e) {
 				showError("delete.error.connection.close");

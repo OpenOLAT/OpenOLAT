@@ -767,24 +767,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 
 	@Override
 	public Authentication findAuthentication(IdentityRef identity, String provider) {
-		if (identity==null) {
-			throw new IllegalArgumentException("identity must not be null");
-		}
-		
-		StringBuilder sb = new StringBuilder();
-		sb.append("select auth from ").append(AuthenticationImpl.class.getName())
-		  .append(" as auth where auth.identity.key=:identityKey and auth.provider=:provider");
-		
-		List<Authentication> results = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Authentication.class)
-				.setParameter("identityKey", identity.getKey())
-				.setParameter("provider", provider)
-				.getResultList();
-		if (results == null || results.isEmpty()) return null;
-		if (results.size() > 1) {
-			throw new AssertException("Found more than one Authentication for a given subject and a given provider.");
-		}
-		return results.get(0);
+		return authenticationDao.getAuthentication(identity, provider);
 	}
 	
 	@Override

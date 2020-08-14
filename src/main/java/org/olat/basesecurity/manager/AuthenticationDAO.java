@@ -32,6 +32,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.StringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -124,6 +125,48 @@ public class AuthenticationDAO {
 				.createQuery(sb.toString(), Identity.class)
 				.setParameter("provider", provider)
 				.getResultList();
+	}
+	
+	/**
+	 * 
+	 * @param provider The authentication provider
+	 * @return A list of identities (the user is not fetched)
+	 */
+	public List<Authentication> getAuthentications(String provider) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
+		  .append(" inner join fetch auth.identity as ident")
+		  .append(" inner join fetch ident.user as identUser")
+		  .append(" where auth.provider=:provider");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Authentication.class)
+				.setParameter("provider", provider)
+				.getResultList();
+	}
+
+	public Authentication getAuthentication(IdentityRef identity, String provider) {
+		if (identity == null || !StringHelper.containsNonWhitespace(provider)) {
+			throw new IllegalArgumentException("identity must not be null");
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
+		  .append(" inner join auth.identity as ident")
+		  .append(" inner join ident.user as user")
+		  .append(" where auth.identity.key=:identityKey and auth.provider=:provider");
+		
+		List<Authentication> results = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Authentication.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("provider", provider)
+				.getResultList();
+		if (results == null || results.isEmpty()) {
+			return null;
+		}
+		if (results.size() > 1) {
+			throw new AssertException("Found more than one Authentication for a given subject and a given provider.");
+		}
+		return results.get(0);
 	}
 	
 	public Authentication getAuthentication(String authUsername, String provider) {

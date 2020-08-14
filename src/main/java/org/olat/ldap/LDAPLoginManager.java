@@ -51,7 +51,7 @@ public interface LDAPLoginManager {
 	
 	public Map<String,String> prepareUserPropertyForSync(Attributes attributes, Identity identity);
 	
-	public List<Identity> getIdentitysDeletedInLdap(LdapContext ctx);
+	public List<Identity> getIdentitiesDeletedInLdap(LdapContext ctx);
 	
 	public Identity findIdentityByLdapAuthentication(Attributes attrs, LDAPError errors);
 	

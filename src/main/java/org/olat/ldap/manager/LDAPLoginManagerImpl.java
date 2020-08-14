@@ -409,7 +409,9 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 	 */
 	@Override
 	public boolean changePassword(Identity identity, String pwd, LDAPError errors) {
-		String uid = identity.getName();
+		String uid = identity.getName();//TODO username
+		
+		
 		String ldapUserPasswordAttribute = syncConfiguration.getLdapUserPasswordAttribute();
 		try {
 			LdapContext ctx = bindSystem();
@@ -724,10 +726,12 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		LdapContext ctx = bindSystem();
 		if (ctx == null) {
 			log.error("could not bind to ldap");
+			return;
 		}
 			
 		String ldapUserIDAttribute = syncConfiguration.getOlatPropertyToLdapAttribute(LDAPConstants.LDAP_USER_IDENTIFYER);
-		String filter = ldapDao.buildSearchUserFilter(ldapUserIDAttribute, identity.getName());
+		Authentication authentication = authenticationDao.getAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP);
+		String filter = ldapDao.buildSearchUserFilter(ldapUserIDAttribute, authentication.getAuthusername());
 
 		boolean withCoacheOfGroups = StringHelper.containsNonWhitespace(syncConfiguration.getCoachedGroupAttribute());
 		List<String> ldapBases = syncConfiguration.getLdapBases();
@@ -874,10 +878,11 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 	 * @throws NamingException
 	 */
 	@Override
-	public List<Identity> getIdentitysDeletedInLdap(LdapContext ctx) {
+	public List<Identity> getIdentitiesDeletedInLdap(LdapContext ctx) {
 		if (ctx == null) {
-			return null;
+			return Collections.emptyList();
 		}
+		
 		// Find all LDAP Users
 		String userID = syncConfiguration.getOlatPropertyToLdapAttribute(LDAPConstants.LDAP_USER_IDENTIFYER);
 		String userFilter = syncConfiguration.getLdapUserFilter();
@@ -897,18 +902,18 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		}, (userFilter == null ? "" : userFilter), new String[] { userID }, ctx);
 
 		if (ldapList.isEmpty()) {
-			log.warn("No users in LDAP found, can't create deletionList!!");
+			log.warn("No users in LDAP found, can't create the deletion list.");
 			return Collections.emptyList();
 		}
-
+		
 		List<Identity> identityListToDelete = new ArrayList<>();
-		List<Identity> olatListIdentity = authenticationDao.getIdentitiesWithAuthentication(LDAPAuthenticationController.PROVIDER_LDAP);
-		for (Identity ida:olatListIdentity) {
-			// compare usernames with lowercase
-			if (!ldapList.contains(ida.getName().toLowerCase())) {
-				identityListToDelete.add(ida);
+		List<Authentication> ldapAuthentications = authenticationDao.getAuthentications(LDAPAuthenticationController.PROVIDER_LDAP);
+		for (Authentication ldapAuthentication:ldapAuthentications) {
+			if (!ldapList.contains(ldapAuthentication.getAuthusername().toLowerCase())) {
+				identityListToDelete.add(ldapAuthentication.getIdentity());
 			}
 		}
+		dbInstance.commitAndCloseSession();
 		return identityListToDelete;
 	}
 
@@ -1167,7 +1172,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 					break;
 				}
 				default: {
-					log.error("LDAP Role synchronization not supported for: " + role);
+					log.error("LDAP Role synchronization not supported for: {}", role);
 				}
 			}
 		}
@@ -1175,11 +1180,12 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 	
 	private void doBatchSyncDeletedUsers(LdapContext ctx, String sinceSentence) {
 		// create User to Delete List
-		List<Identity> deletedUserList = getIdentitysDeletedInLdap(ctx);
+		List<Identity> deletedUserList = getIdentitiesDeletedInLdap(ctx);
 		// delete old users
 		if (deletedUserList == null || deletedUserList.isEmpty()) {
-			log.info("LDAP batch sync: no users to delete" + sinceSentence);
+			log.info("LDAP batch sync: no users to delete {}", sinceSentence);
 		} else {
+			int deletedUserListSize = deletedUserList.size();
 			if (ldapLoginModule.isDeleteRemovedLDAPUsersOnSync()) {
 				// check if more not more than the defined percentages of
 				// users managed in LDAP should be deleted
@@ -1189,31 +1195,24 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 				if (olatListIdentity.isEmpty())
 					log.info("No users managed by LDAP, can't delete users");
 				else {
-					int prozente = (int) (((float)deletedUserList.size() / (float) olatListIdentity.size())*100);
-					if (prozente >= ldapLoginModule.getDeleteRemovedLDAPUsersPercentage()) {
-						log.info("LDAP batch sync: more than "
-										+ ldapLoginModule.getDeleteRemovedLDAPUsersPercentage()
-										+ "% of LDAP managed users should be deleted. Please use Admin Deletion Job. Or increase deleteRemovedLDAPUsersPercentage. "
-										+ prozente
-										+ "% tried to delete.");
+					int prozente = (int) (((float)deletedUserListSize / (float) olatListIdentity.size()) * 100.0);
+					int cutValue = ldapLoginModule.getDeleteRemovedLDAPUsersPercentage();
+					if (prozente >= cutValue) {
+						log.info("LDAP batch sync: more than {}% of LDAP managed users should be deleted. Please use Admin Deletion Job. Or increase deleteRemovedLDAPUsersPercentage. {}% tried to delete.", cutValue, prozente);
 					} else {
 						// delete users
 						deleteIdentities(deletedUserList, null);
-						log.info("LDAP batch sync: " + deletedUserList.size() + " users deleted" + sinceSentence);
+						log.info("LDAP batch sync: {} users deleted {}", deletedUserListSize, sinceSentence);
 					}
 				}
 			} else {
 				// Do nothing, only log users to logfile
-				StringBuilder users = new StringBuilder();
+				StringBuilder users = new StringBuilder(deletedUserListSize * 42);
 				for (Identity toBeDeleted : deletedUserList) {
-					users.append(toBeDeleted.getName()).append(',');
+					users.append(toBeDeleted.getKey()).append(',');
 				}
-				log.info("LDAP batch sync: "
-					+ deletedUserList.size()
-					+ " users detected as to be deleted"
-					+ sinceSentence
-					+ ". Automatic deleting is disabled in LDAPLoginModule, delete these users manually::["
-					+ users.toString() + "]");
+				log.info("LDAP batch sync: {} users detected as to be deleted {}. Automatic deleting is disabled in LDAPLoginModule, delete these users manually::[{}]",
+						deletedUserListSize, sinceSentence, users);
 			}
 		}
 		dbInstance.commitAndCloseSession();
@@ -1558,7 +1557,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		}
 		
 		String ldapUserIDAttribute = syncConfiguration.getLdapUserLoginAttribute();
-		Authentication authentication = securityManager.findAuthentication(ident, LDAPAuthenticationController.PROVIDER_LDAP);
+		Authentication authentication = authenticationDao.getAuthentication(ident, LDAPAuthenticationController.PROVIDER_LDAP);
 		String filter = ldapDao.buildSearchUserFilter(ldapUserIDAttribute, authentication.getAuthusername());
 		
 		List<Attributes> ldapUserAttrs = new ArrayList<>();
