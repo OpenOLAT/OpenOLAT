@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.OrganisationModule;
@@ -42,6 +43,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
+import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
@@ -67,9 +69,11 @@ public class LecturesSearchFormController extends FormBasicController {
 	private TextElement login;
 	private TextElement bulkEl;
 	private FormLink searchButton;
-	private DateChooser startDateEl, endDateEl;
+	private DateChooser startDateEl;
+	private DateChooser endDateEl;
 	private FormLayoutContainer privateDatesCont;
-	private SingleSelection dateTypesEl, publicDatesEl;
+	private SingleSelection dateTypesEl;
+	private SingleSelection publicDatesEl;
 
 	private final boolean admin;
 	private final boolean adminProps;
@@ -110,7 +114,14 @@ public class LecturesSearchFormController extends FormBasicController {
 		login = uifactory.addTextElement("login", "search.form.login", 128, "", formLayout);
 		login.setVisible(adminProps);
 		
-		userPropertyHandlers = userManager.getUserPropertyHandlersFor(PROPS_IDENTIFIER, adminProps);
+		List<UserPropertyHandler> allPropertyHandlers = userManager.getUserPropertyHandlersFor(PROPS_IDENTIFIER, adminProps);
+		if(adminProps) {
+			userPropertyHandlers = allPropertyHandlers.stream()
+					.filter(prop -> !UserConstants.NICKNAME.equals(prop.getName()))
+					.collect(Collectors.toList());
+		} else {
+			userPropertyHandlers = allPropertyHandlers;
+		}
 
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler != null) {

@@ -21,7 +21,6 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
 
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.FormDecorator;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
@@ -39,7 +38,7 @@ import org.olat.core.util.StringHelper;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer implements ComponentRenderer {
+class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer {
 
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,

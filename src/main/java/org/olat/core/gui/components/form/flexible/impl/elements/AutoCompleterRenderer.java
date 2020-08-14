@@ -54,7 +54,6 @@ public class AutoCompleterRenderer extends DefaultComponentRenderer {
 		final int inputSize = 72;
 		String id = autoCompleter.getFormDispatchId();
 		if(autoCompleter.isEnabled()) {
-			boolean showDisplayKey = false;
 			String mapperUri = autoCompleter.getMapperUri();
 			int minLength = autoCompleter.getMinLength();
 			StringOutput command = new StringOutput(64);
@@ -80,13 +79,9 @@ public class AutoCompleterRenderer extends DefaultComponentRenderer {
 			  .append("     filter: function ( response ) {\n")
 			  .append("      return jQuery.map(response, function (object) {\n")
 			  .append("		  return {\n")
-			  .append("			value: '' + object.key,\n");
-			if(showDisplayKey) {
-				sb.append("       fullName: object.displayKey + ': ' + object.value\n");
-			} else {
-				sb.append("       fullName: object.value\n");
-			}
-			sb.append("         };\n")
+			  .append("			value: '' + object.key,\n")
+			  .append("         fullName: object.value\n")
+			  .append("         };\n")
 			  .append("       });\n")
 			  .append("     }\n")
 			  .append("   }\n")

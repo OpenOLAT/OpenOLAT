@@ -60,7 +60,6 @@ public class StudentListProvider implements ListProvider {
 			if(contains(searchValue, entry)) {
 				maxEntries--;
 				String key = entry.getIdentityKey().toString();
-				String displayKey = null;//TODO username was name
 				String displayText = userManager.getUserDisplayName(entry.getIdentityKey());
 				receiver.addEntry(key, null, displayText, CSSHelper.CSS_CLASS_USER);
 			}

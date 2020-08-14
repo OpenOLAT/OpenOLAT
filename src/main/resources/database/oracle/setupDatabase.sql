@@ -3211,11 +3211,13 @@ create view o_bs_identity_short_v as (
    select
       ident.id as id_id,
       ident.name as id_name,
+      ident.external_id as id_external,
       ident.lastlogin as id_lastlogin,
       ident.status as id_status,
       us.user_id as us_id,
       us.u_firstname as first_name,
       us.u_lastname as last_name,
+      us.u_nickname as nick_name,
       us.u_email as email
    from o_bs_identity ident
    inner join o_user us on (ident.id = us.fk_identity)

@@ -852,28 +852,13 @@ public class LectureBlockRollCallDAO {
 		if(StringHelper.containsNonWhitespace(params.getLogin())) {
 			String login = PersistenceHelper.makeFuzzyQueryString(params.getLogin());
 			
-			sb.append(" and (");
-			if (login.contains("_") && dbInstance.isOracle()) {
-				//oracle needs special ESCAPE sequence to search for escaped strings
-				sb.append("lower(ident.name) like :login ESCAPE '\\'");
-			} else if (dbInstance.isMySQL()) {
-				sb.append("ident.name like :login");
-			} else {
-				sb.append("lower(ident.name) like :login");
-			}
-			
+			sb.append(" and (");	
+			PersistenceHelper.appendFuzzyLike(sb, "ident.name", "login", dbInstance.getDbVendor());
+			sb.append(" or ");
+			PersistenceHelper.appendFuzzyLike(sb, "user.nickName", "login", dbInstance.getDbVendor());
 			sb.append(" or exists (select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
 			  .append("  where ident.key=auth.identity.key and");
-			
-			if (params.getLogin().contains("_") && dbInstance.isOracle()) {
-				//oracle needs special ESCAPE sequence to search for escaped strings
-				sb.append(" lower(auth.authusername) like :login ESCAPE '\\'");
-			} else if (dbInstance.isMySQL()) {
-				sb.append(" auth.authusername like :login");
-			} else {
-				sb.append(" lower(auth.authusername) like :login");
-			}
-			
+			PersistenceHelper.appendFuzzyLike(sb, "auth.authusername", "login", dbInstance.getDbVendor());
 			sb.append("))");
 			
 			queryParams.put("login", login);
@@ -897,14 +882,8 @@ public class LectureBlockRollCallDAO {
 					}
 				}
 				
-				if(dbInstance.isMySQL()) {
-					sb.append(" and user.").append(handler.getName()).append(" like :").append(qName);
-				} else {
-					sb.append(" and lower(user.").append(handler.getName()).append(") like :").append(qName);
-					if(dbInstance.isOracle()) {
-						sb.append(" escape '\\'");
-					}
-				}
+				sb.append(" and ");
+				PersistenceHelper.appendFuzzyLike(sb, "user.".concat(handler.getName()), qName, dbInstance.getDbVendor());
 				queryParams.put(qName, PersistenceHelper.makeFuzzyQueryString(propValue));
 			}
 		}

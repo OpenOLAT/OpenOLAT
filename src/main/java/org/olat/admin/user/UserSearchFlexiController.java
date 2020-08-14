@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -139,7 +140,14 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 		this.multiSelection = multiSelection;
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
-		userSearchFormPropertyHandlers = userManager.getUserPropertyHandlersFor(UserSearchForm.class.getCanonicalName(), isAdministrativeUser);
+		List<UserPropertyHandler> allSearchFormPropertyHandlers = userManager.getUserPropertyHandlersFor(UserSearchForm.class.getCanonicalName(), isAdministrativeUser);
+		if(isAdministrativeUser) {
+			userSearchFormPropertyHandlers = allSearchFormPropertyHandlers.stream()
+					.filter(prop -> !UserConstants.NICKNAME.equals(prop.getName()))
+					.collect(Collectors.toList());
+		} else {
+			userSearchFormPropertyHandlers = allSearchFormPropertyHandlers;
+		}
 		
 		searchableOrganisations = organisationService.getOrganisations(getIdentity(), roles,
 				OrganisationRoles.valuesWithoutGuestAndInvitee());
@@ -185,7 +193,6 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 			loginEl = uifactory.addTextElement("login", "search.form.login", 128, "", searchFormContainer);
 			loginEl.setVisible(isAdministrativeUser);
 
-			
 			propFormItems = new HashMap<>();
 			for (UserPropertyHandler userPropertyHandler : userSearchFormPropertyHandlers) {
 				if (userPropertyHandler == null) continue;

@@ -370,28 +370,14 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		}
 		// append query for login
 		if (params.getLogin() != null) {
-			if (params.getLogin().contains("_") && dbInstance.isOracle()) {
-				//oracle needs special ESCAPE sequence to search for escaped strings
-				sb.append(" lower(ident.name) like :login ESCAPE '\\'");
-			} else if (dbInstance.isMySQL()) {
-				sb.append(" ident.name like :login");
-			} else {
-				sb.append(" lower(ident.name) like :login");
-			}
-			
+			sb.append("(");
+			PersistenceHelper.appendFuzzyLike(sb, "ident.name", "login", dbInstance.getDbVendor());
+			sb.append(" or ");
+			PersistenceHelper.appendFuzzyLike(sb, "user.nickName", "login", dbInstance.getDbVendor());
 			sb.append(" or exists (select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
 			  .append("  where ident.key=auth.identity.key and");
-			
-			if (params.getLogin().contains("_") && dbInstance.isOracle()) {
-				//oracle needs special ESCAPE sequence to search for escaped strings
-				sb.append(" lower(auth.authusername) like :login ESCAPE '\\'");
-			} else if (dbInstance.isMySQL()) {
-				sb.append(" auth.authusername like :login");
-			} else {
-				sb.append(" lower(auth.authusername) like :login");
-			}
-			
-			sb.append(")");
+			PersistenceHelper.appendFuzzyLike(sb, "auth.authusername", "login", dbInstance.getDbVendor());
+			sb.append("))");
 			
 			// if user fields follow a join element is needed
 			needsUserPropertiesJoin = true;

@@ -47,6 +47,7 @@ public class StudentsTableDataModel extends DefaultFlexiTableDataModel<StudentSt
 	implements SortableFlexiTableDataModel<StudentStatEntry> {
 	
 	private static final Logger log = Tracing.createLoggerFor(StudentsTableDataModel.class);
+	private static final Columns[] COLS = Columns.values();
 
 	private List<StudentStatEntry> backupList;
 	
@@ -92,9 +93,9 @@ public class StudentsTableDataModel extends DefaultFlexiTableDataModel<StudentSt
 	
 	@Override
 	public Object getValueAt(StudentStatEntry student, int col) {
-		if(col >= 0 && col < Columns.values().length) {
+		if(col >= 0 && col < COLS.length) {
 			int countRepo = student.getCountRepo();
-			switch(Columns.getValueAt(col)) {
+			switch(COLS[col]) {
 				case countCourse: return Integer.valueOf(countRepo);
 				case initialLaunch: {
 					if(countRepo == 0) {
@@ -134,6 +135,7 @@ public class StudentsTableDataModel extends DefaultFlexiTableDataModel<StudentSt
 					}
 					return new LightedValue(passed, light);
 				}
+				default: return "ERROR";
 			}
 		}
 

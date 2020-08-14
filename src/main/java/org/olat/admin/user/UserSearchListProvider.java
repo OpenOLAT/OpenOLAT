@@ -30,6 +30,7 @@ import org.olat.basesecurity.IdentityShort;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListReceiver;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.UserConstants;
 import org.olat.user.UserManager;
@@ -81,9 +82,9 @@ public class UserSearchListProvider implements ListProvider {
 			maxEntries--;
 			IdentityShort ident = it_res.next();
 			String key = ident.getKey().toString();
-			String displayKey = ident.getName();
+			String displayKey = ident.getNickName();
 			String displayText = userManager.getUserDisplayName(ident);
-			receiver.addEntry(key, displayKey, displayText, null);
+			receiver.addEntry(key, displayKey, displayText, CSSHelper.CSS_CLASS_USER);
 		}
 		if(hasMore){
 			receiver.addEntry(".....",".....");

@@ -40,7 +40,6 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.choice.Choice;
 import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.FormItemCollection;
 import org.olat.core.gui.components.form.flexible.elements.AutoCompleter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
@@ -80,7 +79,7 @@ import org.olat.core.util.prefs.Preferences;
  * @author Christian Guretzki
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableElement, FormItemCollection,
+public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableElement,
 	ControllerEventListener, ComponentEventListener, Disposable {
 	
 	//settings
