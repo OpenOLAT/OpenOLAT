@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.olat.modules.opencast.AuthDelegate;
+import org.olat.modules.opencast.AuthDelegate.Type;
 
 /**
  * 
@@ -32,6 +33,8 @@ import org.olat.modules.opencast.AuthDelegate;
  *
  */
 public class GetSeriesParams {
+	
+	private static final AuthDelegate AUTH_NONE = AuthDelegate.of(Type.None, null);
 	
 	public enum Filter {
 		title,
@@ -47,7 +50,7 @@ public class GetSeriesParams {
 	private String sortParam;
 	
 	private GetSeriesParams(Builder builder) {
-		this.authDelegate = builder.authDelegate;
+		this.authDelegate = builder.authDelegate != null? builder.authDelegate: AUTH_NONE;
 		
 		if (builder.limit != null) {
 			this.limit = Integer.toString(builder.limit);
