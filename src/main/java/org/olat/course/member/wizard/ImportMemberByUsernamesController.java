@@ -135,6 +135,8 @@ public class ImportMemberByUsernamesController extends StepFormBasicController {
 		tableEl.setCustomizeColumns(false);
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
+		tableEl.setCustomizeColumns(true);
+		tableEl.setAndLoadPersistedPreferences(ureq, "user-import-table-v1");
 	}
 
 	@Override

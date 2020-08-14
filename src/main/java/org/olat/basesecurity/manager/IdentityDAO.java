@@ -82,6 +82,7 @@ public class IdentityDAO {
 		  .append(" where lower(ident.name) in (:names)")
 		  .append(" or lower(auth.authusername) in (:names)")
 		  .append(" or lower(concat(user.firstName,' ', user.lastName)) in (:names)")
+		  .append(" or lower(user.nickName) in (:names)")
 		  .append(" or lower(user.email) in (:names)")
 		  .append(" or lower(user.institutionalEmail) in (:names)")
 		  .append(" or lower(user.institutionalUserIdentifier) in (:names)");
@@ -107,7 +108,7 @@ public class IdentityDAO {
 		return new ArrayList<>(namedIdentities.values());
 	}
 	
-	private void appendName(FindNamedIdentity namedIdentity, Authentication authentication, Collection<String> names) {
+	private void appendName(FindNamedIdentity namedIdentity, Authentication authentication, Set<String> names) {
 		if(authentication != null) {
 			String authUsername = authentication.getAuthusername().toLowerCase();
 			if(names.contains(authUsername)) {
@@ -148,6 +149,11 @@ public class IdentityDAO {
 		if(StringHelper.containsNonWhitespace(user.getProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, null))
 				&& names.contains(user.getProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, null).toLowerCase())) {
 			namedIdentity.addName(user.getProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, null));
+		}
+		
+		if(StringHelper.containsNonWhitespace(user.getProperty(UserConstants.NICKNAME, null))
+				&& names.contains(user.getProperty(UserConstants.NICKNAME, null).toLowerCase())) {
+			namedIdentity.addName(user.getProperty(UserConstants.NICKNAME, null));
 		}
 	}
 	

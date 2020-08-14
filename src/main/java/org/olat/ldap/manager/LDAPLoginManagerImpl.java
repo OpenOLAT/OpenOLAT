@@ -1414,12 +1414,12 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 			currentMemberKeys.add(currentMember.getKey());
 		}
 
-		List<LDAPUser> coaches = new ArrayList<>(ldapGroup.getCoaches());
-		List<LDAPUser> participants = new ArrayList<>(ldapGroup.getParticipants());
+		Set<LDAPUser> coaches = new HashSet<>(ldapGroup.getCoaches());
+		Set<LDAPUser> participants = new HashSet<>(ldapGroup.getParticipants());
 		// transfer member cn's to the participants list
 		for(String member:ldapGroup.getMembers()) {
 			try {
-				LDAPUser ldapUser = getLDAPUser(ctx, member, dnToIdentityKeyMap, errors); dnToIdentityKeyMap.get(member);
+				LDAPUser ldapUser = getLDAPUser(ctx, member, dnToIdentityKeyMap, errors);
 				if(ldapUser != null && !participants.contains(ldapUser)) {
 					participants.add(ldapUser);
 				}
