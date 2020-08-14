@@ -191,7 +191,7 @@ public class OpencastAdminController extends FormBasicController {
 		courseNodeSpacerEl.setVisible(enabled);
 		courseNodeEnabledEl.setVisible(enabled);
 		authDelegateTypeEl.setVisible(enabled);
-		boolean authDelegateRoles = authDelegateTypeEl.isOneSelected() && Type.Roles == Type.valueOf(authDelegateTypeEl.getSelectedValue());
+		boolean authDelegateRoles = authDelegateTypeEl.isOneSelected() && Type.Roles == Type.valueOf(authDelegateTypeEl.getSelectedKey());
 		authDelegateRolesEl.setVisible(enabled && authDelegateRoles);
 		rolesAdminEl.setVisible(enabled);
 		rolesCoachEl.setVisible(enabled);
@@ -203,7 +203,7 @@ public class OpencastAdminController extends FormBasicController {
 		if (source == enabledEl) {
 			updateUI();
 		} else if (source == authDelegateTypeEl) {
-			boolean authDelegateRoles = authDelegateTypeEl.isOneSelected() && Type.Roles == Type.valueOf(authDelegateTypeEl.getSelectedValue());
+			boolean authDelegateRoles = authDelegateTypeEl.isOneSelected() && Type.Roles == Type.valueOf(authDelegateTypeEl.getSelectedKey());
 			authDelegateRolesEl.setVisible(authDelegateRoles);
 		} else if (source == checkApiConnectionButton) {
 			doCheckApiConnection();
