@@ -93,6 +93,20 @@ public class AuthenticationDAOTest extends OlatTestCase {
 		Assert.assertTrue(identities.contains(ident.getIdentity()));
 	}
 	
+	
+	@Test
+	public void countIdentitiesWithAuthentication() {
+		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-16-");
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(ident);
+
+		long numOfOlatAuthentication = authenticationDao.countIdentitiesWithAuthentication("OLAT");
+		Assert.assertTrue(numOfOlatAuthentication > 0);
+		
+		List<Identity> identities = authenticationDao.getIdentitiesWithAuthentication("OLAT");
+		Assert.assertEquals((int)numOfOlatAuthentication, identities.size());
+	}
+	
 	@Test
 	public void getIdentitiesWithLogin() {
 		String token = UUID.randomUUID().toString();

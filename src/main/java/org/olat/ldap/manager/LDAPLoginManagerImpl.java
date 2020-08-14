@@ -717,7 +717,8 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 
 	/**
 	 * The method search in LDAP the user, search the groups
-	 * of which it is member of, and sync the groups.
+	 * of which it is member of, and sync the groups. The method doesn't
+	 * work if the login attribute is not the same as the user identifier.
 	 * 
 	 * @param identity The identity to sync
 	 */
@@ -728,7 +729,8 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 			log.error("could not bind to ldap");
 			return;
 		}
-			
+		
+		// This doesn't work if the login attribute is not the same as the user identifier.
 		String ldapUserIDAttribute = syncConfiguration.getOlatPropertyToLdapAttribute(LDAPConstants.LDAP_USER_IDENTIFYER);
 		Authentication authentication = authenticationDao.getAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP);
 		String filter = ldapDao.buildSearchUserFilter(ldapUserIDAttribute, authentication.getAuthusername());
@@ -884,9 +886,17 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		}
 		
 		// Find all LDAP Users
+		List<String> returningAttrList = new ArrayList<>(2);
 		String userID = syncConfiguration.getOlatPropertyToLdapAttribute(LDAPConstants.LDAP_USER_IDENTIFYER);
+		returningAttrList.add(userID);
+		String loginAttr = syncConfiguration.getLdapUserLoginAttribute();
+		if(loginAttr != null && !loginAttr.equals(userID)) {
+			returningAttrList.add(loginAttr);
+		}
+		
+		String[] returningAttrs = returningAttrList.toArray(new String[returningAttrList.size()]);
 		String userFilter = syncConfiguration.getLdapUserFilter();
-		final List<String> ldapList = new ArrayList<>();
+		final Set<String> ldapList = new HashSet<>();
 		
 		ldapDao.searchInLdap(new LDAPVisitor() {
 			@Override
@@ -899,7 +909,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 					ldapList.add(attr.get().toString().toLowerCase());
 				}
 			}
-		}, (userFilter == null ? "" : userFilter), new String[] { userID }, ctx);
+		}, (userFilter == null ? "" : userFilter), returningAttrs, ctx);
 
 		if (ldapList.isEmpty()) {
 			log.warn("No users in LDAP found, can't create the deletion list.");
@@ -1191,11 +1201,11 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 				// users managed in LDAP should be deleted
 				// if they are over the percentage, they will not be deleted
 				// by the sync job
-				List<Identity> olatListIdentity = authenticationDao.getIdentitiesWithAuthentication(LDAPAuthenticationController.PROVIDER_LDAP);
-				if (olatListIdentity.isEmpty())
+				long olatListIdentitySize = authenticationDao.countIdentitiesWithAuthentication(LDAPAuthenticationController.PROVIDER_LDAP);
+				if (olatListIdentitySize == 0) {
 					log.info("No users managed by LDAP, can't delete users");
-				else {
-					int prozente = (int) (((float)deletedUserListSize / (float) olatListIdentity.size()) * 100.0);
+				} else {
+					int prozente = (int) (((float)deletedUserListSize / (float)olatListIdentitySize) * 100.0);
 					int cutValue = ldapLoginModule.getDeleteRemovedLDAPUsersPercentage();
 					if (prozente >= cutValue) {
 						log.info("LDAP batch sync: more than {}% of LDAP managed users should be deleted. Please use Admin Deletion Job. Or increase deleteRemovedLDAPUsersPercentage. {}% tried to delete.", cutValue, prozente);

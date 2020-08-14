@@ -127,6 +127,17 @@ public class AuthenticationDAO {
 				.getResultList();
 	}
 	
+	public long countIdentitiesWithAuthentication(String provider) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select count(auth.identity.key) from ").append(AuthenticationImpl.class.getName()).append(" as auth")
+		  .append(" where auth.provider=:provider");
+		List<Long> count = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("provider", provider)
+				.getResultList();
+		return count == null || count.isEmpty() || count.get(0) == null ? 0l : count.get(0).longValue();
+	}
+	
 	/**
 	 * 
 	 * @param provider The authentication provider
