@@ -244,8 +244,10 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		if(attendee != null && BigBlueButtonRecordingsPublishedRoles.has(publishTo, BigBlueButtonRecordingsPublishedRoles.all)) {
 			return true;
 		}
-		return ((administrator || moderator) && BigBlueButtonRecordingsPublishedRoles.has(publishTo, BigBlueButtonRecordingsPublishedRoles.coach))
-				|| BigBlueButtonRecordingsPublishedRoles.has(publishTo, BigBlueButtonRecordingsPublishedRoles.participant);
+		if(administrator || moderator) {
+			return BigBlueButtonRecordingsPublishedRoles.has(publishTo, BigBlueButtonRecordingsPublishedRoles.coach);
+		}
+		return BigBlueButtonRecordingsPublishedRoles.has(publishTo, BigBlueButtonRecordingsPublishedRoles.participant);
 	}
 	
 	private boolean isEnded() {

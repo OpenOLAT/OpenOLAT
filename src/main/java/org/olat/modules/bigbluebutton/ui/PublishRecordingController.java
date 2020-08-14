@@ -62,8 +62,8 @@ public class PublishRecordingController extends FormBasicController {
 		KeyValues publishToKeyValues = new KeyValues();
 		publishToKeyValues.add(KeyValues.entry(BigBlueButtonRecordingsPublishedRoles.coach.name(), translate("publish.to.coach")));
 		publishToKeyValues.add(KeyValues.entry(BigBlueButtonRecordingsPublishedRoles.participant.name(), translate("publish.to.participant")));
-		publishToKeyValues.add(KeyValues.entry(BigBlueButtonRecordingsPublishedRoles.guest.name(), translate("publish.to.guest")));
 		publishToKeyValues.add(KeyValues.entry(BigBlueButtonRecordingsPublishedRoles.all.name(), translate("publish.to.all")));
+		publishToKeyValues.add(KeyValues.entry(BigBlueButtonRecordingsPublishedRoles.guest.name(), translate("publish.to.guest")));
 		publishEl = uifactory.addCheckboxesVertical("publish.to.list", "publish.to.list", formLayout,
 				publishToKeyValues.keys(), publishToKeyValues.values(), 1);
 		BigBlueButtonRecordingsPublishedRoles[] currentRoles = row.getReference().getPublishToEnum();
