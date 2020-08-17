@@ -597,21 +597,6 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 				.doesNotContain(deleted.getKey(), trashed.getKey());
 	}
 	
-	@Test
-	public void shouldLoadLectureBlockCount() {
-		RepositoryEntry course = JunitTestHelper.createAndPersistRepositoryEntry();
-		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
-		createLectureBlock(course, teacher, 1);
-		createLectureBlock(course, teacher, 1);
-		dbInstance.commitAndCloseSession();
-
-		SearchParameters searchParams = new SearchParameters();
-		searchParams.setTeacherRef(teacher);
-		Long count = sut.loadLectureBlockCount(searchParams);
-
-		assertThat(count).isEqualTo(2);
-	}
-	
 	private LectureBlock createLectureBlock(RepositoryEntry course, Identity teacher, int numLectures) {
 		return createLectureBlock(course, teacher, numLectures, nextHour(), nextHour());
 	}

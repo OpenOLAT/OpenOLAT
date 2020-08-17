@@ -31,7 +31,9 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Predicate;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
@@ -43,6 +45,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.forms.EvaluationFormManager;
@@ -87,6 +90,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class CourseLecturesFollowUpProvider implements QualityGeneratorProvider {
+
+	private static final Logger log = Tracing.createLoggerFor(CourseLecturesFollowUpProvider.class);
 
 	public static final String CONFIG_KEY_DURATION_DAYS = "duration.days";
 	public static final String CONFIG_KEY_GRADE_TOTAL_LIMIT = "grade.total.limit";
@@ -148,7 +153,7 @@ public class CourseLecturesFollowUpProvider implements QualityGeneratorProvider 
 		
 		SearchParameters searchParams = getSeachParameters(generator, configs, organisations, fromDate, toDate,
 				previousGeneratorRef, previosGeneratorConfigs);
-		List<LectureBlockInfo> lectureBlockInfos = providerDao.loadLectureBlockInfo(searchParams);
+		List<LectureBlockInfo> lectureBlockInfos = loadLectureBlockInfo(generator, configs, searchParams);
 		lectureBlockInfos.removeIf(lb -> gradeIsSufficient(lb, configs, previousGeneratorRef, previosGeneratorConfigs));
 		int count = lectureBlockInfos.size();
 		
@@ -190,7 +195,7 @@ public class CourseLecturesFollowUpProvider implements QualityGeneratorProvider 
 		
 		SearchParameters searchParams = getSeachParameters(generator, configs, organisations, fromDate, toDate,
 				previousGeneratorRef, previosGeneratorConfigs);
-		List<LectureBlockInfo> lectureBlockInfos = providerDao.loadLectureBlockInfo(searchParams);
+		List<LectureBlockInfo> lectureBlockInfos = loadLectureBlockInfo(generator, configs, searchParams);
 		lectureBlockInfos.removeIf(lb -> gradeIsSufficient(lb, configs, previousGeneratorRef, previosGeneratorConfigs));
 		
 		List<QualityDataCollection> dataCollections = new ArrayList<>();
@@ -200,6 +205,22 @@ public class CourseLecturesFollowUpProvider implements QualityGeneratorProvider 
 			dataCollections.add(dataCollection);
 		}
 		return dataCollections;
+	}
+	
+	private List<LectureBlockInfo> loadLectureBlockInfo(QualityGenerator generator, QualityGeneratorConfigs configs,
+			SearchParameters searchParams) {
+		log.debug("Generator {} searches with {}", generator, searchParams);
+		
+		List<LectureBlockInfo> blockInfos = providerDao.loadLectureBlockInfo(searchParams);
+		log.debug("Generator {} found {} entries", generator, blockInfos.size());
+		
+		String minutesBeforeEnd = configs.getValue(CONFIG_KEY_MINUTES_BEFORE_END);
+		String duration = configs.getValue(CONFIG_KEY_DURATION_DAYS);
+		Predicate<? super LectureBlockInfo> deadlineIsInPast = new DeadlineIsInPast(minutesBeforeEnd, duration);
+		blockInfos.removeIf(deadlineIsInPast);
+		log.debug("Generator {} has {} entries after removal of entries with deadline in past.", generator, blockInfos.size());
+		
+		return blockInfos;
 	}
 
 	private QualityDataCollection generateDataCollection(QualityGenerator generator, QualityGeneratorConfigs configs,

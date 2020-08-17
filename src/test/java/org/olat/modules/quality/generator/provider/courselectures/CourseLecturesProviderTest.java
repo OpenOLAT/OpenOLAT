@@ -25,7 +25,6 @@ import static org.olat.test.JunitTestHelper.random;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.assertj.core.api.SoftAssertions;
@@ -84,9 +83,9 @@ public class CourseLecturesProviderTest extends OlatTestCase {
 	
 	@Test
 	public void shouldCopyOrganisationsOfCourseToDataCollection() {
-		Date startDate = new GregorianCalendar(2010, 6, 3).getTime();
-		Date startEnd = new GregorianCalendar(2010, 6, 4).getTime();
-		RepositoryEntry courseEntry = createCourseWithThreeLectures(startDate, startEnd);
+		Date startDate = DateUtils.addDays(new Date(), -2);
+		Date startEnd = DateUtils.addDays(new Date(), -1);
+		RepositoryEntry courseEntry = createCourseWithLecture(startDate, startEnd);
 		Organisation defaultOrganisation = organisationService.getDefaultOrganisation();
 		repositoryService.removeOrganisation(courseEntry, defaultOrganisation);
 		Organisation courseOrganisation1 = createOrganisation(defaultOrganisation);
@@ -98,10 +97,10 @@ public class CourseLecturesProviderTest extends OlatTestCase {
 		
 		QualityGenerator generator = createGeneratorInDefaultOrganisation();
 		String durationDays = "10";
-		QualityGeneratorConfigs configs = createAfterSecondLectureConfigs(generator, durationDays, element);
+		QualityGeneratorConfigs configs = createConfigs(generator, durationDays, element);
 		
-		Date lastRun = new GregorianCalendar(2010, 6, 1).getTime();
-		Date now = new GregorianCalendar(2010, 6, 13).getTime();
+		Date lastRun = DateUtils.addDays(new Date(), -2);
+		Date now = new Date();
 		
 		List<QualityDataCollection> generated = sut.generate(generator, configs, lastRun, now);
 		dbInstance.commitAndCloseSession();
@@ -114,17 +113,60 @@ public class CourseLecturesProviderTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldGenerateWithAnnouncementForwards() {
-		Date now = new Date();
-		Date startDate = DateUtils.addDays(now, 3);
-		Date startEnd = DateUtils.addDays(now, 4);
-		RepositoryEntry courseEntry = createCourseWithThreeLectures(startDate, startEnd);
+	public void shouldCreateDataCollectionIfDeadlineIsInFuture() {
+		Date startDate = DateUtils.addDays(new Date(), -2);
+		Date startEnd = DateUtils.addDays(new Date(), -1);
+		RepositoryEntry courseEntry = createCourseWithLecture(startDate, startEnd);
 		CurriculumElement element = createCurriculumElement();
 		curriculumService.addRepositoryEntry(element, courseEntry, false);
 		
 		QualityGenerator generator = createGeneratorInDefaultOrganisation();
 		String durationDays = "10";
-		QualityGeneratorConfigs configs = createAfterSecondLectureConfigs(generator, durationDays, element);
+		QualityGeneratorConfigs configs = createConfigs(generator, durationDays, element);
+		
+		Date lastRun = DateUtils.addDays(new Date(), -2);
+		Date now = new Date();
+		
+		List<QualityDataCollection> generated = sut.generate(generator, configs, lastRun, now);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(generated).hasSize(1);
+	}
+	
+	@Test
+	public void shouldNotCreateDataCollectionIfDeadlineIsInPast() {
+		Date startDate = DateUtils.addDays(new Date(), -12);
+		Date startEnd = DateUtils.addDays(new Date(), -11);
+		RepositoryEntry courseEntry = createCourseWithLecture(startDate, startEnd);
+		CurriculumElement element = createCurriculumElement();
+		curriculumService.addRepositoryEntry(element, courseEntry, false);
+		
+		QualityGenerator generator = createGeneratorInDefaultOrganisation();
+		String durationDays = "10";
+		QualityGeneratorConfigs configs = createConfigs(generator, durationDays, element);
+		
+		Date lastRun = DateUtils.addDays(new Date(), -20);
+		Date now = new Date();
+		
+		List<QualityDataCollection> generated = sut.generate(generator, configs, lastRun, now);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(generated).isEmpty();
+		
+	}
+	
+	@Test
+	public void shouldGenerateWithAnnouncementForwards() {
+		Date now = new Date();
+		Date startDate = DateUtils.addDays(now, 3);
+		Date startEnd = DateUtils.addDays(now, 4);
+		RepositoryEntry courseEntry = createCourseWithLecture(startDate, startEnd);
+		CurriculumElement element = createCurriculumElement();
+		curriculumService.addRepositoryEntry(element, courseEntry, false);
+		
+		QualityGenerator generator = createGeneratorInDefaultOrganisation();
+		String durationDays = "10";
+		QualityGeneratorConfigs configs = createConfigs(generator, durationDays, element);
 		configs.setValue(CourseLecturesProvider.CONFIG_KEY_ANNOUNCEMENT_COACH_DAYS, "5");
 		
 		Date lastRun = DateUtils.addDays(now, -9);
@@ -149,13 +191,13 @@ public class CourseLecturesProviderTest extends OlatTestCase {
 		Date now = new Date();
 		Date startDate = DateUtils.addDays(now,-2);
 		Date startEnd = DateUtils.addDays(now, -1);
-		RepositoryEntry courseEntry = createCourseWithThreeLectures(startDate, startEnd);
+		RepositoryEntry courseEntry = createCourseWithLecture(startDate, startEnd);
 		CurriculumElement element = createCurriculumElement();
 		curriculumService.addRepositoryEntry(element, courseEntry, false);
 		
 		QualityGenerator generator = createGeneratorInDefaultOrganisation();
 		String durationDays = "10";
-		QualityGeneratorConfigs configs = createAfterSecondLectureConfigs(generator, durationDays, element);
+		QualityGeneratorConfigs configs = createConfigs(generator, durationDays, element);
 		configs.setValue(CourseLecturesProvider.CONFIG_KEY_ANNOUNCEMENT_COACH_DAYS, "2");
 		
 		Date lastRun = DateUtils.addDays(now, -9);
@@ -169,13 +211,13 @@ public class CourseLecturesProviderTest extends OlatTestCase {
 		assertThat(reminder).isNull();
 	}
 
-	private RepositoryEntry createCourseWithThreeLectures(Date startDate, Date endDate) {
+	private RepositoryEntry createCourseWithLecture(Date lectureStartDate, Date lectureEndDate) {
 		Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsAuthor(JunitTestHelper.random());
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(initialAuthor);
 		LectureBlock lectureBlock = lectureService.createLectureBlock(courseEntry);
 		lectureBlock.setPlannedLecturesNumber(3);
-		lectureBlock.setStartDate(startDate);
-		lectureBlock.setEndDate(endDate);
+		lectureBlock.setStartDate(lectureStartDate);
+		lectureBlock.setEndDate(lectureEndDate);
 		lectureService.save(lectureBlock, null);
 		lectureService.addTeacher(lectureBlock, initialAuthor);
 		
@@ -183,7 +225,7 @@ public class CourseLecturesProviderTest extends OlatTestCase {
 		return courseEntry;
 	}
 
-	private QualityGeneratorConfigs createAfterSecondLectureConfigs(QualityGenerator generator, String durationDays,
+	private QualityGeneratorConfigs createConfigs(QualityGenerator generator, String durationDays,
 			CurriculumElementRef curriculumElementRef) {
 		QualityGeneratorConfigs configs = new QualityGeneratorConfigsImpl(generator);
 		configs.setValue(CourseLecturesProvider.CONFIG_KEY_TITLE, "DATA_COLLECTION_TITLE");
