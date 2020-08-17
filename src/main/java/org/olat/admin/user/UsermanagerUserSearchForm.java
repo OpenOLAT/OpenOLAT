@@ -58,6 +58,7 @@ import org.olat.login.LoginModule;
 import org.olat.login.auth.AuthenticationProvider;
 import org.olat.login.oauth.OAuthLoginModule;
 import org.olat.login.oauth.OAuthSPI;
+import org.olat.shibboleth.ShibbolethDispatcher;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.EmailProperty;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -326,6 +327,9 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 					for(OAuthSPI spi:spis) {
 						apl.add(spi.getProviderName());
 					}
+				} else if("ShibGeneric".equals(authKey)) {
+					apl.add(ShibbolethDispatcher.PROVIDER_SHIB);
+					apl.add(authKey);
 				} else {
 					apl.add(authKey);
 				}
