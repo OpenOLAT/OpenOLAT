@@ -41,6 +41,7 @@ import org.olat.core.commons.services.pdf.ui.AthenaPdfSettingsController;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.helpers.Settings;
@@ -143,6 +144,9 @@ public class AthenaPdfSPI extends AbstractSpringModule implements PdfSPI {
 		cache.put(key, delivery);
 		render(key, "index.html", out);
 		cache.remove(key);
+		if(delivery.getBrowserWindow() instanceof Disposable) {
+			((Disposable)delivery.getBrowserWindow()).dispose();
+		}
 	}
 
 	private void render(String key, String rootFilename, OutputStream out) {
@@ -184,7 +188,7 @@ public class AthenaPdfSPI extends AbstractSpringModule implements PdfSPI {
 			if(response.getStatusLine().getStatusCode() == 200) {
 				copyResponse(response, out);
 			} else {
-				log.error("Cannot renderer PDF: " + response.getStatusLine().getStatusCode());
+				log.error("Cannot renderer PDF: {}", response.getStatusLine().getStatusCode());
 				EntityUtils.consume(response.getEntity());
 			}
 		} catch(IOException e) {
