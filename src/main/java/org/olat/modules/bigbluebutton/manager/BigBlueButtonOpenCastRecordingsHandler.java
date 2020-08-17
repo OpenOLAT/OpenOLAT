@@ -130,9 +130,9 @@ public class BigBlueButtonOpenCastRecordingsHandler implements BigBlueButtonReco
 		Date meetingCreation = (meeting.getStartDate() != null ? meeting.getStartDate() : meeting.getCreationDate());
 		
 		// Title of the episode
-		uriBuilder.optionalParameter("meta_dc-title", Formatter.formatDateFilesystemSave(meetingCreation) + " - " + meeting.getName());
+		uriBuilder.optionalParameter("meta_opencast-dc-title", Formatter.formatDateFilesystemSave(meetingCreation) + " - " + meeting.getName());
 		// Media package and event identifier
-		uriBuilder.optionalParameter("meta_dc-identifier", meeting.getMeetingId());
+		uriBuilder.optionalParameter("meta_opencast-dc-identifier", meeting.getMeetingId());
 		
 		User creator = null;
 		if(meeting.getCreator() != null) {
@@ -140,7 +140,7 @@ public class BigBlueButtonOpenCastRecordingsHandler implements BigBlueButtonReco
 			
 			String creatorFirstLastName = creatorFirstLastName(creator);
 			if(StringHelper.containsNonWhitespace(creatorFirstLastName)) {
-				uriBuilder.optionalParameter("meta_dc-creator", creatorFirstLastName);
+				uriBuilder.optionalParameter("meta_opencast-dc-creator", creatorFirstLastName);
 			}
 			
 			String username;
@@ -150,8 +150,9 @@ public class BigBlueButtonOpenCastRecordingsHandler implements BigBlueButtonReco
 				username = meeting.getCreator().getName();
 			}
 			if(StringHelper.containsNonWhitespace(username)) {
-				uriBuilder.optionalParameter("meta_dc-rightsHolder", username);
-				uriBuilder.optionalParameter("meta_opencast-acl-read-roles", "ROLE_OAUTH_USER ROLE_USER_" + username);
+				uriBuilder.optionalParameter("meta_opencast-dc-rightsHolder", username);
+				uriBuilder.optionalParameter("meta_opencast-acl-read-roles", "ROLE_OAUTH_USER ROLE_USER_" + username.toUpperCase());
+				uriBuilder.optionalParameter("meta_opencast-acl-write-roles", "ROLE_USER_" + username.toUpperCase());
 			}
 		}
 
@@ -178,19 +179,19 @@ public class BigBlueButtonOpenCastRecordingsHandler implements BigBlueButtonReco
 				}
 			}
 		}
-		uriBuilder.optionalParameter("meta_dc-isPartOf", context);
+		uriBuilder.optionalParameter("meta_opencast-dc-isPartOf", context);
 
 		// The primary language
 		if (re != null && StringHelper.containsNonWhitespace(re.getMainLanguage())) {
-			uriBuilder.optionalParameter("meta_dc-language", re.getMainLanguage().trim());
+			uriBuilder.optionalParameter("meta_opencast-dc-language", re.getMainLanguage().trim().toUpperCase());
 		}
 
 		// Location of the event
-		uriBuilder.optionalParameter("meta_dc-spatial", "Olat-BigBlueButton");
+		uriBuilder.optionalParameter("meta_opencast-dc-spatial", "Olat-BigBlueButton");
 		// Date of the event
-		uriBuilder.optionalParameter("meta_dc-created", Formatter.formatDatetime(meetingCreation));
+		uriBuilder.optionalParameter("meta_opencast-dc-created", Formatter.formatDatetime(meetingCreation));
 
-		uriBuilder.optionalParameter("meta_opencast-series-dc-title", seriesTitle);
+		uriBuilder.optionalParameter("meta_opencast-meta_series-dc-title", seriesTitle);
 	}
 	
 	private String creatorFirstLastName(User creator) {

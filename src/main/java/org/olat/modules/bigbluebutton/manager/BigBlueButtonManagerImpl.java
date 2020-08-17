@@ -796,9 +796,6 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 				.optionalParameter("userdata-bbb_auto_share_webcam", "true")
 				.optionalParameter("userdata-bbb_show_participants_on_login", "false");
 		}
-		
-		getRecordingsHandler().appendMetadata(uriBuilder, meeting);
-		
 		return uriBuilder
 			.build()
 			.toString();
@@ -910,6 +907,9 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 				// guest policy
 				.optionalParameter("guestPolicy", GuestPolicyEnum.ALWAYS_ACCEPT.name());
 		}
+		
+		// metadata
+		getRecordingsHandler().appendMetadata(uriBuilder, meeting);
 		
 		Document doc = sendRequest(uriBuilder, errors);
 		return BigBlueButtonUtils.checkSuccess(doc, errors);
