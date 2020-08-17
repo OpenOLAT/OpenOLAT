@@ -350,6 +350,10 @@ public class UserModule extends AbstractSpringModule {
 		return pwdchangeallowed;
 	}
 	
+	public boolean isPasswordChangeWithoutAuthenticationAllowed() {
+		return pwdChangeWithoutAuthenticationAllowed;
+	}
+	
 	public boolean isLogoByProfileEnabled() {
 		return "enabled".equals(enabledLogoByProfile);
 	}
