@@ -21,8 +21,10 @@ package org.olat.core.commons.services.pdf.model;
 
 import java.io.Serializable;
 
+import org.olat.core.gui.components.Window;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.id.Identity;
 
 /**
@@ -37,8 +39,11 @@ public class PdfDelivery implements Serializable {
 	private final String key;
 	private String directory;
 	private Identity identity;
-	private ControllerCreator controllerCreator;
+	
+	private Window window;
 	private WindowControl windowControl;
+	private PopupBrowserWindow browserWindow;
+	private ControllerCreator controllerCreator;
 	
 	public PdfDelivery(String key) {
 		this.key = key;
@@ -64,6 +69,14 @@ public class PdfDelivery implements Serializable {
 		this.identity = identity;
 	}
 
+	public Window getWindow() {
+		return window;
+	}
+
+	public void setWindow(Window window) {
+		this.window = window;
+	}
+
 	public WindowControl getWindowControl() {
 		return windowControl;
 	}
@@ -78,6 +91,14 @@ public class PdfDelivery implements Serializable {
 
 	public void setControllerCreator(ControllerCreator controllerCreator) {
 		this.controllerCreator = controllerCreator;
+	}
+
+	public PopupBrowserWindow getBrowserWindow() {
+		return browserWindow;
+	}
+
+	public void setBrowserWindow(PopupBrowserWindow browserWindow) {
+		this.browserWindow = browserWindow;
 	}
 
 	@Override

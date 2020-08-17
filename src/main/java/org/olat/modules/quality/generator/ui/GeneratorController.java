@@ -22,6 +22,7 @@ package org.olat.modules.quality.generator.ui;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
@@ -45,6 +46,7 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.logging.Tracing;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorService;
 import org.olat.modules.quality.ui.GeneratorReportAccessController;
@@ -59,6 +61,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class GeneratorController extends BasicController implements TooledController, Activateable2 {
+
+	private static final Logger log = Tracing.createLoggerFor(GeneratorController.class);
 
 	private Dropdown enableDropdown;
 	private Link enableLink;
@@ -280,6 +284,7 @@ public class GeneratorController extends BasicController implements TooledContro
 		generator.setEnabled(true);
 		generator.setLastRun(fromDate);
 		generator = generatorService.updateGenerator(generator);
+		log.info("Generator {} enabled by {}", generator, getIdentity());
 		updateUI(ureq);	
 	}
 	

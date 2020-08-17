@@ -222,8 +222,9 @@ public class QualityGeneratorServiceImpl implements QualityGeneratorService {
 				Date now = new Date();
 				List<QualityDataCollection> dataCollections = provider.generate(generator, configs, generator.getLastRun(), now);
 				copyReportAccess(generator, dataCollections);
-				generator.setLastRun(now);
-				generatorDao.save(generator);
+				QualityGenerator reloadedGenerator = generatorDao.loadByKey(generator);
+				reloadedGenerator.setLastRun(now);
+				generatorDao.save(reloadedGenerator);
 				if (!dataCollections.isEmpty()) {
 					log.info(dataCollections.size() + " data collections created by generator " + generator.toString());
 				}

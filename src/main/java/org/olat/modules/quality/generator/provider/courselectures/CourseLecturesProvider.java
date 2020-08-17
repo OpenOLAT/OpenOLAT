@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Predicate;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -141,17 +142,9 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 
 		List<Organisation> organisations = generatorService.loadGeneratorOrganisations(generator);
 		SearchParameters searchParams = getSeachParameters(generator, configs, organisations, fromDate, toDate);
-		Long count = loadLectureBlockCount(generator, searchParams);
+		int count = loadLectureBlockInfo(generator, configs, searchParams).size();
 		
 		return translator.translate("generate.info", new String[] { String.valueOf(count)});
-	}
-
-	private Long loadLectureBlockCount(QualityGenerator generator, SearchParameters searchParams) {
-		if(log.isDebugEnabled()) log.debug("Generator " + generator + " searches with " + searchParams);
-		
-		Long count = providerDao.loadLectureBlockCount(searchParams);
-		if(log.isDebugEnabled()) log.debug("Generator " + generator + " found " + count + " entries");
-		return count;
 	}
 
 	@Override
@@ -183,7 +176,7 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 			Date fromDate, Date toDate) {
 		List<Organisation> organisations = generatorService.loadGeneratorOrganisations(generator);
 		SearchParameters searchParams = getSeachParameters(generator, configs, organisations, fromDate, toDate);
-		List<LectureBlockInfo> infos = loadLectureBlockInfo(generator, searchParams);
+		List<LectureBlockInfo> infos = loadLectureBlockInfo(generator, configs, searchParams);
 		
 		List<QualityDataCollection> dataCollections = new ArrayList<>();
 		for (LectureBlockInfo lectureBlockInfo: infos) {
@@ -193,11 +186,19 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 		return dataCollections;
 	}
 
-	private List<LectureBlockInfo> loadLectureBlockInfo(QualityGenerator generator, SearchParameters searchParams) {
-		if(log.isDebugEnabled()) log.debug("Generator " + generator + " searches with " + searchParams);
+	private List<LectureBlockInfo> loadLectureBlockInfo(QualityGenerator generator, QualityGeneratorConfigs configs,
+			SearchParameters searchParams) {
+		log.debug("Generator {} searches with {}", generator, searchParams);
 		
 		List<LectureBlockInfo> blockInfos = providerDao.loadLectureBlockInfo(searchParams);
-		if(log.isDebugEnabled()) log.debug("Generator " + generator + " found " + blockInfos.size() + " entries");
+		log.debug("Generator {} found {} entries", generator, blockInfos.size());
+		
+		String minutesBeforeEnd = configs.getValue(CONFIG_KEY_MINUTES_BEFORE_END);
+		String duration = configs.getValue(CONFIG_KEY_DURATION_DAYS);
+		Predicate<? super LectureBlockInfo> deadlineIsInPast = new DeadlineIsInPast(minutesBeforeEnd, duration);
+		blockInfos.removeIf(deadlineIsInPast);
+		log.debug("Generator {} has {} entries after removal of entries with deadline in past..", generator, blockInfos.size());
+		
 		return blockInfos;
 	}
 	
@@ -210,18 +211,17 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 		Identity teacher = securityManager.loadIdentityByKey(lectureBlockInfo.getTeacherKey());
 		String topicKey =  getTopicKey(configs);
 		
-		// create data collection	
+		// create data collection
 		Long generatorProviderKey = CONFIG_KEY_TOPIC_COACH.equals(topicKey)? course.getKey(): teacher.getKey();
 		QualityDataCollection dataCollection = qualityService.createDataCollection(courseOrganisations, formEntry,
 				generator, generatorProviderKey);
 
 		// fill in data collection attributes
 		Date dcStart = lectureBlockInfo.getLectureEndDate();
+		dataCollection.setStart(dcStart);
 		String minutesBeforeEnd = configs.getValue(CONFIG_KEY_MINUTES_BEFORE_END);
 		minutesBeforeEnd = StringHelper.containsNonWhitespace(minutesBeforeEnd)? minutesBeforeEnd: "0";
 		dcStart = addMinutes(dcStart, "-" + minutesBeforeEnd);
-		dataCollection.setStart(dcStart);
-		
 		String duration = configs.getValue(CONFIG_KEY_DURATION_DAYS);
 		Date deadline = addDays(dcStart, duration);
 		dataCollection.setDeadline(deadline);
