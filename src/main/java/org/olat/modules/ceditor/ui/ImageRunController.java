@@ -180,6 +180,8 @@ public class ImageRunController extends BasicController implements PageRunElemen
 
 	@Override
 	protected void doDispose() {
-		//
+		if(imageCmp != null) {
+			imageCmp.dispose();
+		}
 	}
 }

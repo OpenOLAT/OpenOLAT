@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Disposable;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.ValidatingController;
 
@@ -33,12 +34,19 @@ import org.olat.modules.ceditor.ValidatingController;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PageRunControllerElement implements PageRunElement {
+public class PageRunControllerElement implements PageRunElement, Disposable {
 	
 	private Controller controller;
 	
 	public PageRunControllerElement(Controller controller) {
 		this.controller = controller;
+	}
+	
+	@Override
+	public void dispose() {
+		if(controller != null) {
+			controller.dispose();
+		}
 	}
 
 	@Override

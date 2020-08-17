@@ -28,6 +28,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.commons.services.pdf.model.PdfDelivery;
@@ -39,7 +40,6 @@ import org.olat.core.gui.components.Window;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.id.Roles;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.UserSession;
@@ -77,32 +77,38 @@ public class PdfDeliveryDispatcher implements Dispatcher {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN);
 			return;
 		}
-		
-		String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
-		final String origUri = request.getRequestURI();
-		String uuid = origUri.substring(uriPrefix.length());
-		int indexSuffix = uuid.indexOf('/');
-		
-		String key = null;
-		String filename = null;
-		if(indexSuffix > 0) {
-			key = uuid.substring(0, indexSuffix);
-			filename = uuid.substring(indexSuffix + 1);
-		}
-		
-		PdfDelivery delivery = cache.get(key);
-		if(delivery == null) {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND);
-		} else if(delivery.getDirectory() != null) {
-			renderFile(delivery, filename, response);
-		} else if(delivery.getControllerCreator() != null) {
-			renderController(delivery, request, response);
-		} else {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+
+		try {
+			String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
+			final String origUri = request.getRequestURI();
+			String uuid = origUri.substring(uriPrefix.length());
+			int indexSuffix = uuid.indexOf('/');
+			
+			String key = null;
+			String filename = null;
+			if(indexSuffix > 0) {
+				key = uuid.substring(0, indexSuffix);
+				filename = uuid.substring(indexSuffix + 1);
+			}
+
+			PdfDelivery delivery = cache.get(key);
+			if(delivery == null) {
+				response.sendError(HttpServletResponse.SC_NOT_FOUND);
+			} else if(origUri.contains("close-window")) {
+				response.setStatus(HttpServletResponse.SC_OK);
+			} else if(delivery.getDirectory() != null) {
+				renderFile(delivery, filename, response);
+			} else if(delivery.getControllerCreator() != null) {
+				renderController(delivery, request, response);
+			} else {
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+			}
+		} catch (IOException e) {
+			log.error("", e);
 		}
 	}
 	
-	private void renderController(PdfDelivery delivery, HttpServletRequest request, HttpServletResponse response) {
+	private synchronized void renderController(PdfDelivery delivery, HttpServletRequest request, HttpServletResponse response) {
 		ControllerCreator creator = delivery.getControllerCreator();
 		UserRequest ureq = new UserRequestImpl("pdfd", request, response);
 		UserSession usess = ureq.getUserSession();
@@ -113,9 +119,16 @@ public class PdfDeliveryDispatcher implements Dispatcher {
 			usess.setRoles(Roles.userRoles());
 		}
 		
-		PopupBrowserWindow pbw = delivery.getWindowControl().getWindowBackOffice()
-				.getWindowManager().createNewPopupBrowserWindowFor(ureq, creator);
-		Window window = pbw.getPopupWindowControl().getWindowBackOffice().getWindow();
+		Window window;
+		if(delivery.getWindow() == null) {
+			PopupBrowserWindow pbw = delivery.getWindowControl().getWindowBackOffice()
+					.getWindowManager().createNewPopupBrowserWindowFor(ureq, creator);
+			window = pbw.getPopupWindowControl().getWindowBackOffice().getWindow();
+			delivery.setWindow(window);
+			delivery.setBrowserWindow(pbw);
+		} else {
+			window = delivery.getWindow();
+		}
 		window.dispatchRequest(ureq, true);
 	}
 	

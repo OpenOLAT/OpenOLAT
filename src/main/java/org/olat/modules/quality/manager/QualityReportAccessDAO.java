@@ -241,15 +241,15 @@ class QualityReportAccessDAO {
 	private List<Identity> loadRecipientsOfGroupRoles(QualityReportAccess reportAccess) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select membership.identity");
-		sb.append("  from qualityreportaccess as ra");
-		sb.append("     , qualitydatacollection as collection");
-		sb.append("     , qualitycontext as context");
-		sb.append("     , repoentrytogroup as rel");
-		sb.append("     , bgroupmember as membership");
-		sb.and().append("ra.dataCollection.key = context.dataCollection.key");
-		sb.and().append("rel.entry.key = context.audienceRepositoryEntry.key");
-		sb.and().append("rel.group.key = membership.group.key");
-		sb.and().append("membership.role = ra.role");
+		sb.append("  from qualitycontext as context");
+		sb.append("       join context.dataCollection as collection");
+		sb.append("       join qualityreportaccess as ra");
+		sb.append("         on ra.dataCollection.key = context.dataCollection.key");
+		sb.append("       join repoentrytogroup as rel");
+		sb.append("         on rel.entry.key = context.audienceRepositoryEntry.key");
+		sb.append("       join bgroupmember as membership");
+		sb.append("         on membership.group.key = rel.group.key");
+		sb.append("        and membership.role = ra.role");
 		sb.and().append("ra.key = :reportAccessKey");
 		
 		List<Identity> coureseMembers = dbInstance.getCurrentEntityManager()
@@ -259,15 +259,15 @@ class QualityReportAccessDAO {
 		
 		QueryBuilder sbEle = new QueryBuilder();
 		sbEle.append("select membership.identity");
-		sbEle.append("  from qualityreportaccess as ra");
-		sbEle.append("     , qualitydatacollection as collection");
-		sbEle.append("     , qualitycontext as context");
-		sbEle.append("     , curriculumelement as ele");
-		sbEle.append("     , bgroupmember as membership");
-		sbEle.and().append("ra.dataCollection.key = context.dataCollection.key");
-		sbEle.and().append("ele.key = context.audienceCurriculumElement.key");
-		sbEle.and().append("ele.group.key = membership.group.key");
-		sbEle.and().append("membership.role = ra.role");
+		sbEle.append("  from qualitycontext as context");
+		sbEle.append("       join context.dataCollection as collection");
+		sbEle.append("       join qualityreportaccess as ra");
+		sbEle.append("         on ra.dataCollection.key = context.dataCollection.key");
+		sbEle.append("       join curriculumelement as ele");
+		sbEle.append("         on ele.key = context.audienceCurriculumElement.key");
+		sbEle.append("       join bgroupmember as membership");
+		sbEle.append("         on membership.group.key = ele.group.key");
+		sbEle.append("        and membership.role = ra.role");
 		sbEle.and().append("ra.key = :reportAccessKey");
 		
 		List<Identity> curriculumElementMembers = dbInstance.getCurrentEntityManager()
@@ -302,8 +302,8 @@ class QualityReportAccessDAO {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select membership.identity");
 		sb.append("  from qualityreportaccess as ra");
-		sb.append("     , bgroupmember as membership");
-		sb.and().append("ra.group.key = membership.group.key");
+		sb.append("       join bgroupmember as membership");
+		sb.append("         on membership.group.key = ra.group.key");
 		sb.and().append("ra.key = :reportAccessKey");
 		
 		return dbInstance.getCurrentEntityManager()

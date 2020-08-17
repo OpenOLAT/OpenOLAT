@@ -286,9 +286,11 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			}
 			infos.add(forgeDetailsRow(sessionStatistics));
 		}
-		correctionCol.setAlwaysVisible(manualCorrections);
-		correctionCol.setDefaultVisible(manualCorrections);
-		tableEl.setColumnModelVisible(correctionCol, manualCorrections);
+		if(correctionCol != null) {
+			correctionCol.setAlwaysVisible(manualCorrections);
+			correctionCol.setDefaultVisible(manualCorrections);
+			tableEl.setColumnModelVisible(correctionCol, manualCorrections);
+		}
 		
 		Collections.sort(infos, new AssessmentTestSessionDetailsComparator());
 		tableModel.setObjects(infos);

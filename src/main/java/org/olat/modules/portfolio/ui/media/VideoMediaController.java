@@ -42,6 +42,8 @@ import org.olat.modules.portfolio.ui.MediaMetadataController;
  */
 public class VideoMediaController extends BasicController {
 	
+	private final ImageComponent videoCmp;
+	
 	public VideoMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints) {
 		super(ureq, wControl);
 		
@@ -49,7 +51,7 @@ public class VideoMediaController extends BasicController {
 
 		File mediaDir = new File(FolderConfig.getCanonicalRoot(), media.getStoragePath());
 		File mediaFile = new File(mediaDir, media.getRootFilename());
-		ImageComponent videoCmp = new ImageComponent(ureq.getUserSession(), "image");
+		videoCmp = new ImageComponent(ureq.getUserSession(), "image");
 		videoCmp.setMedia(mediaFile);
 		mainVC.put("video", videoCmp);
 		mainVC.contextPut("pdf", hints.isToPdf());
@@ -77,6 +79,6 @@ public class VideoMediaController extends BasicController {
 
 	@Override
 	protected void doDispose() {
-		//
+		videoCmp.dispose();
 	}
 }

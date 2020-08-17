@@ -27,6 +27,7 @@ import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.control.Disposable;
 import org.olat.modules.ceditor.ui.ValidationMessage;
 import org.olat.modules.ceditor.ui.model.PageFragment;
 
@@ -36,7 +37,7 @@ import org.olat.modules.ceditor.ui.model.PageFragment;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PageFragmentsComponent extends AbstractComponent implements ComponentCollection  {
+public class PageFragmentsComponent extends AbstractComponent implements ComponentCollection, Disposable  {
 	
 	private static final PageFragmentsComponentRenderer RENDERER = new PageFragmentsComponentRenderer();
 	
@@ -79,6 +80,19 @@ public class PageFragmentsComponent extends AbstractComponent implements Compone
 		return components;
 	}
 	
+	@Override
+	public void dispose() {
+		List<PageFragment> fragmentList = getFragments();
+		for(PageFragment fragment:fragmentList) {
+			if(fragment.getPageRunElement() instanceof Disposable) {
+				((Disposable)fragment.getPageRunElement()).dispose();
+			}
+			if(fragment.getPageElement() instanceof Disposable) {
+				((Disposable)fragment.getPageElement()).dispose();
+			}
+		}
+	}
+
 	public boolean validateElements(UserRequest ureq, List<ValidationMessage> messages) {
 		boolean allOk = true;
 		List<PageFragment> fragmentList = getFragments();
