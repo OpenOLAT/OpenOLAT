@@ -605,7 +605,11 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 				String olatProperty = mapLdapAttributeToOlatProperty(attr.getID());
 				if (!attr.getID().equalsIgnoreCase(syncConfiguration.getOlatPropertyToLdapAttribute(LDAPConstants.LDAP_USER_IDENTIFYER)) ) {
 					String ldapValue = getAttributeValue(attr);
-					if (olatProperty == null || ldapValue == null) continue;
+					if (olatProperty == null || ldapValue == null) {
+						continue;
+					} else if(ldapValue != null && ldapValue.length() > 250) {
+						ldapValue = ldapValue.substring(0, 250);
+					}
 					user.setProperty(olatProperty, ldapValue);
 				} 
 			}
@@ -791,7 +795,8 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 						boolean coach = groupList != null && groupList.contains(group.getCommonName());
 						if(coach) {
 							businessGroupRelationDao.addRole(identity, managedGroup, GroupRoles.coach.name());
-						} else {
+						}
+						if(!coach || syncConfiguration.isGroupCoachParticipant()) {
 							businessGroupRelationDao.addRole(identity, managedGroup, GroupRoles.participant.name());
 						}
 					}
@@ -1440,25 +1445,24 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		}
 		
 		int count = 0;
-		for(LDAPUser participant:participants) {
-			IdentityRef memberIdentity = participant.getCachedIdentity();
+		Set<LDAPUser> members = new HashSet<>(participants);
+		members.addAll(coaches);
+		for(LDAPUser member:members) {
+			boolean participant = participants.contains(member);
+			boolean coach = coaches.contains(member);
+			if(syncConfiguration.isGroupCoachParticipant()) {
+				if(coach && !participant) {
+					participant = true;
+				}
+			} else if(coach && participant) {
+				participant = false;
+			}
+
+			IdentityRef memberIdentity = member.getCachedIdentity();
 			if(memberIdentity != null && memberIdentity.getKey() != null) {
-				syncMembership(businessGroup, memberIdentity, false);
+				syncMemberships(businessGroup, memberIdentity, coach, participant);
 				currentMemberKeys.remove(memberIdentity.getKey());
 			}
-			if(count % 20 == 0) {
-				dbInstance.commitAndCloseSession();
-			}
-			count++;
-		}
-		
-		for(LDAPUser coach:coaches) {
-			IdentityRef memberIdentity = coach.getCachedIdentity();
-			if(memberIdentity != null && memberIdentity.getKey() != null) {
-				syncMembership(businessGroup, memberIdentity, true);
-				currentMemberKeys.remove(memberIdentity.getKey());
-			}
-			
 			if(count % 20 == 0) {
 				dbInstance.commitAndCloseSession();
 			}
@@ -1479,37 +1483,29 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		}
 		dbInstance.commitAndCloseSession();
 	}
-	
-	private void syncMembership(BusinessGroup businessGroup, IdentityRef identityRef, boolean coach) {
-		if(identityRef != null) {
-			List<String> roles = businessGroupRelationDao.getRoles(identityRef, businessGroup);
-			if(roles.isEmpty()) {
-				Identity identity = securityManager.loadIdentityByKey(identityRef.getKey());
-				if(coach) {
-					businessGroupRelationDao.addRole(identity, businessGroup, GroupRoles.coach.name());
-				} else {
-					businessGroupRelationDao.addRole(identity, businessGroup, GroupRoles.participant.name());
-				}
-			} else if(coach && roles.size() == 1 && roles.contains(GroupRoles.coach.name())) {
-				//coach and only coach, do nothing
-			} else if(!coach && roles.size() == 1 && roles.contains(GroupRoles.participant.name())) {
-				//participant and only participant, do nothing
-			} else {
-				boolean already = false;
-				Identity identity = securityManager.loadIdentityByKey(identityRef.getKey());
-				String mainRole = coach ? GroupRoles.coach.name() : GroupRoles.participant.name();
-				for(String role:roles) {
-					if(mainRole.equals(role)) {
-						already = true;
-					} else {
-						businessGroupRelationDao.removeRole(identity, businessGroup, role);
-					}
-				}
-				
-				if(!already) {
-					businessGroupRelationDao.addRole(identity, businessGroup, mainRole);
-				}
-			}
+
+	private void syncMemberships(BusinessGroup businessGroup, IdentityRef identityRef, boolean coach, boolean participant) {
+		if(identityRef == null || businessGroup == null) return;
+
+		List<String> roles = businessGroupRelationDao.getRoles(identityRef, businessGroup);
+		if((coach && participant && roles.size() == 2 && roles.contains(GroupRoles.coach.name()) && roles.contains(GroupRoles.participant.name()))
+				|| (coach && !participant && roles.size() == 1 && roles.contains(GroupRoles.coach.name()))
+				|| (!coach && participant && roles.size() == 1 && roles.contains(GroupRoles.participant.name()))
+				|| (!coach && !participant && roles.isEmpty())) {
+			return;// fail fast
+		}
+
+		Identity identity = securityManager.loadIdentityByKey(identityRef.getKey());
+		if(coach && !roles.contains(GroupRoles.coach.name())) {
+			businessGroupRelationDao.addRole(identity, businessGroup, GroupRoles.coach.name());
+		} else if(!coach && roles.contains(GroupRoles.coach.name())) {
+			businessGroupRelationDao.removeRole(identity, businessGroup, GroupRoles.coach.name());
+		}
+
+		if(participant && !roles.contains(GroupRoles.participant.name())) {
+			businessGroupRelationDao.addRole(identity, businessGroup, GroupRoles.participant.name());
+		} else if(!participant && roles.contains(GroupRoles.participant.name())) {
+			businessGroupRelationDao.removeRole(identity, businessGroup, GroupRoles.participant.name());
 		}
 	}
 	
@@ -1519,7 +1515,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		List<BusinessGroup> businessGroups = businessGroupService.findBusinessGroups(params, null, 0, -1);
 		
 		BusinessGroup managedBusinessGroup;
-		if(businessGroups.size() == 0) {
+		if(businessGroups.isEmpty()) {
 			String managedFlags = BusinessGroupManagedFlag.membersmanagement.name() + "," + BusinessGroupManagedFlag.delete.name();
 			managedBusinessGroup = businessGroupService
 					.createBusinessGroup(null, externalId, externalId, externalId, managedFlags, null, null, false, false, null);
@@ -1527,7 +1523,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		} else if(businessGroups.size() == 1) {
 			managedBusinessGroup = businessGroups.get(0);
 		} else {
-			log.error(businessGroups.size() + " managed groups found with the following external id: " + externalId);
+			log.error("{} managed groups found with the following external id: {}", businessGroups.size(), externalId);
 			managedBusinessGroup = null;
 		}
 		return managedBusinessGroup;

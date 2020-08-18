@@ -99,6 +99,8 @@ public class LDAPSyncConfiguration {
 	private String learningResourceManagerRoleAttribute;
 	private String learningResourceManagerRoleValue;
 	
+	private String groupCoachAsParticipant;
+	
 	/**
 	 * Static user properties that should be added to user when syncing
 	 */ 
@@ -259,6 +261,18 @@ public class LDAPSyncConfiguration {
 
 	public void setAuthorRoleValue(String value) {
 		this.authorRoleValue = value;
+	}
+	
+	public boolean isGroupCoachParticipant() {
+		return "true".equals(groupCoachAsParticipant);
+	}
+
+	public String getGroupCoachAsParticipant() {
+		return groupCoachAsParticipant;
+	}
+
+	public void setGroupCoachAsParticipant(String groupCoachAsParticipant) {
+		this.groupCoachAsParticipant = groupCoachAsParticipant;
 	}
 
 	public List<String> getUserManagersGroupBase() {
