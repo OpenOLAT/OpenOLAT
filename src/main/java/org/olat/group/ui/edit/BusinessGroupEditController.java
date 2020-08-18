@@ -148,8 +148,7 @@ public class BusinessGroupEditController extends BasicController implements Gene
 				putInitialPanel(mainVC);
 			}
 		} else {
-			//lock was not successful !
-			String i18nMsg = lockEntry.isDifferentWindows() ? "error.message.locked" : "error.message.locked.same.user";
+			//lock was not successful
 			alreadyLockedDialogController = DialogBoxUIFactory.createResourceLockedMessage(ureq, wControl, lockEntry, "error.message.locked", getTranslator());
 			listenTo(alreadyLockedDialogController);
 			alreadyLockedDialogController.activate();
@@ -184,13 +183,13 @@ public class BusinessGroupEditController extends BasicController implements Gene
 		
 		editDetailsController.setAllowWaitingList(tabAccessCtrl == null || !tabAccessCtrl.isPaymentMethodInUse());
 		tabbedPane.addTab(translate("group.edit.tab.details"), editDetailsController.getInitialComponent());
-		tabbedPane.addTab(translate("group.edit.tab.collabtools"), uureq -> {
+		tabbedPane.addTab(ureq, translate("group.edit.tab.collabtools"), uureq -> {
 				collaborationToolsController = new BusinessGroupToolsController(uureq, getWindowControl(), currBusinessGroup);
 				listenTo(collaborationToolsController);
 				return collaborationToolsController.getInitialComponent();
 			});
 		
-		membersTab = tabbedPane.addTab(translate("group.edit.tab.members"), uureq -> {
+		membersTab = tabbedPane.addTab(ureq, translate("group.edit.tab.members"), uureq -> {
 				if(membersController == null) {
 					membersController = new BusinessGroupMembersController(uureq, getWindowControl(), toolbarPanel, currBusinessGroup);
 					listenTo(membersController);
@@ -204,7 +203,7 @@ public class BusinessGroupEditController extends BasicController implements Gene
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean resourceEnabled = roles.isAdministrator() || roles.isGroupManager() || roles.isAuthor() || hasResources;
 		if(resourceEnabled) {
-			tabbedPane.addTab(translate("group.edit.tab.resources"), uureq -> {
+			tabbedPane.addTab(ureq, translate("group.edit.tab.resources"), uureq -> {
 				if(resourceController == null) {
 					resourceController = new BusinessGroupEditResourceController(uureq, getWindowControl(), currBusinessGroup);
 					listenTo(resourceController);
@@ -217,7 +216,7 @@ public class BusinessGroupEditController extends BasicController implements Gene
 		}
 
 		if(tabAccessCtrl != null) {
-			tabbedPane.addTab(translate("group.edit.tab.accesscontrol"), uureq -> tabAccessCtrl.getInitialComponent());
+			tabbedPane.addTab(ureq, translate("group.edit.tab.accesscontrol"), uureq -> tabAccessCtrl.getInitialComponent());
 		}
 
 		if(currentSelectedPane > 0) {

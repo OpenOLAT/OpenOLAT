@@ -422,7 +422,7 @@ public class UserAdminController extends BasicController implements Activateable
 		}
 
 		if(isAdminOf || isUserManagerOf || isRolesManagerOf) {
-			userTabP.addTab(translate(NLS_EDIT_UPREFS), uureq -> {
+			userTabP.addTab(ureq, translate(NLS_EDIT_UPREFS), uureq -> {
 				prefsCtr = new ChangePrefsController(uureq, getWindowControl(), identity);
 				listenTo(prefsCtr);
 				return prefsCtr.getInitialComponent();
@@ -430,7 +430,7 @@ public class UserAdminController extends BasicController implements Activateable
 		}
 
 		if (isPasswordChangesAllowed(identity)) {
-			userTabP.addTab(translate(NLS_EDIT_UPCRED), uureq -> {
+			userTabP.addTab(ureq, translate(NLS_EDIT_UPCRED), uureq -> {
 				pwdCtr =  new UserChangePasswordController(uureq, getWindowControl(), identity);
 				listenTo(pwdCtr);
 				return pwdCtr.getInitialComponent();
@@ -438,13 +438,13 @@ public class UserAdminController extends BasicController implements Activateable
 		}
 
 		if (isAdminOf) {
-			userTabP.addTab(translate(NLS_EDIT_UAUTH),  uureq -> {
+			userTabP.addTab(ureq, translate(NLS_EDIT_UAUTH),  uureq -> {
 				authenticationsCtr =  new UserAuthenticationsEditorController(uureq, getWindowControl(), identity);
 				listenTo(authenticationsCtr);
 				return authenticationsCtr.getInitialComponent();
 			});
 
-			userTabP.addTab(translate(NLS_EDIT_UPROP), uureq -> {
+			userTabP.addTab(ureq, translate(NLS_EDIT_UPROP), uureq -> {
 				propertiesCtr = new UserPropertiesController(uureq, getWindowControl(), identity, editedRoles);
 				listenTo(propertiesCtr);
 				return propertiesCtr.getInitialComponent();
@@ -452,14 +452,14 @@ public class UserAdminController extends BasicController implements Activateable
 		}
 		
 		if(isAdminOf || isPrincipalOf || isUserManagerOf || isRolesManagerOf) {
-			userTabP.addTab(translate(NLS_VIEW_GROUPS),  uureq -> {
+			userTabP.addTab(ureq, translate(NLS_VIEW_GROUPS),  uureq -> {
 				boolean canModify = isAdminOf || isUserManagerOf || isRolesManagerOf;
 				grpCtr = new GroupOverviewController(uureq, getWindowControl(), identity, canModify);
 				listenTo(grpCtr);
 				return grpCtr.getInitialComponent();
 			});
 	
-			userTabP.addTab(translate(NLS_VIEW_COURSES), uureq -> {
+			userTabP.addTab(ureq, translate(NLS_VIEW_COURSES), uureq -> {
 				boolean canModify = isAdminOf || isUserManagerOf || isRolesManagerOf;
 				courseCtr = new CourseOverviewController(uureq, getWindowControl(), identity, canModify);
 				listenTo(courseCtr);
@@ -468,13 +468,13 @@ public class UserAdminController extends BasicController implements Activateable
 		}
 
 		if (isAdminOf || isPrincipalOf || isRolesManagerOf) {
-			userTabP.addTab(translate(NLS_VIEW_ACCESS), uureq -> {
+			userTabP.addTab(ureq, translate(NLS_VIEW_ACCESS), uureq -> {
 				Controller accessCtr = new UserOrderController(uureq, getWindowControl(), identity);
 				listenTo(accessCtr);
 				return accessCtr.getInitialComponent();
 			});
 
-			userTabP.addTab(translate(NLS_VIEW_EFF_STATEMENTS),  uureq -> {
+			userTabP.addTab(ureq, translate(NLS_VIEW_EFF_STATEMENTS),  uureq -> {
 				boolean canModify = isAdminOf || isRolesManagerOf;
 				efficicencyCtrl = new CertificateAndEfficiencyStatementListController(uureq, getWindowControl(),
 						identity, true, canModify);
@@ -488,7 +488,7 @@ public class UserAdminController extends BasicController implements Activateable
 		}
 
 		if (isUserManagerOf || isRolesManagerOf || isAdminOf) {
-			userTabP.addTab(translate(NLS_VIEW_SUBSCRIPTIONS),  uureq -> {
+			userTabP.addTab(ureq, translate(NLS_VIEW_SUBSCRIPTIONS),  uureq -> {
 				Controller subscriptionsCtr = new NotificationSubscriptionController(uureq, getWindowControl(), identity, true, true);
 				listenTo(subscriptionsCtr);
 				return subscriptionsCtr.getInitialComponent();
@@ -496,14 +496,14 @@ public class UserAdminController extends BasicController implements Activateable
 		}
 
 		// the controller manager is read-write permissions
-		rolesTab = userTabP.addTab(translate(NLS_EDIT_UROLES), uureq -> {
+		rolesTab = userTabP.addTab(ureq, translate(NLS_EDIT_UROLES), uureq -> {
 			rolesCtr = new SystemRolesAndRightsController(getWindowControl(), uureq, identity);
 			listenTo(rolesCtr);
 			return rolesCtr.getInitialComponent();
 		});
 		
 		if (securityModule.isRelationRoleEnabled() && (isUserManagerOf || isRolesManagerOf || isAdminOf || isPrincipalOf)) {
-			userTabP.addTab(translate(NLS_EDIT_RELATIONS),  uureq -> {
+			userTabP.addTab(ureq, translate(NLS_EDIT_RELATIONS),  uureq -> {
 				boolean canModify = isUserManagerOf || isRolesManagerOf || isAdminOf;
 				relationsCtrl = new UserRelationsController(uureq, getWindowControl(), identity, canModify);
 				listenTo(relationsCtrl);
@@ -512,7 +512,7 @@ public class UserAdminController extends BasicController implements Activateable
 		}
 
 		if (isUserManagerOf || isRolesManagerOf || isAdminOf) {
-			userTabP.addTab(translate(NLS_EDIT_UQUOTA),  uureq -> {
+			userTabP.addTab(ureq, translate(NLS_EDIT_UQUOTA),  uureq -> {
 				String relPath = FolderConfig.getUserHomes() + "/" + identity.getName();
 				quotaCtr = quotaManager.getQuotaEditorInstance(uureq, getWindowControl(), relPath, true, false);
 				return quotaCtr.getInitialComponent();
@@ -520,7 +520,7 @@ public class UserAdminController extends BasicController implements Activateable
 		}
 
 		if(lectureModule.isEnabled() && (isUserManagerOf || isRolesManagerOf || isAdminOf || isPrincipalOf)) {
-			userTabP.addTab(translate(NLS_VIEW_LECTURES),  uureq -> {
+			userTabP.addTab(ureq, translate(NLS_VIEW_LECTURES),  uureq -> {
 				lecturesCtrl = new ParticipantLecturesOverviewController(uureq, getWindowControl(), identity, null,
 						true, true, true, true, true, false);
 				listenTo(lecturesCtrl);
@@ -533,7 +533,7 @@ public class UserAdminController extends BasicController implements Activateable
 		}
 		
 		if(taxonomyModule.isEnabled() && (isUserManagerOf || isRolesManagerOf || isAdminOf || isPrincipalOf)) {
-			userTabP.addTab(translate(NLS_VIEW_COMPETENCES),  uureq -> {
+			userTabP.addTab(ureq, translate(NLS_VIEW_COMPETENCES),  uureq -> {
 				boolean canModify = isUserManagerOf || isRolesManagerOf || isAdminOf;
 				competencesCtrl = new IdentityCompetencesController(uureq, getWindowControl(), identity, canModify);
 				listenTo(competencesCtrl);
@@ -546,7 +546,7 @@ public class UserAdminController extends BasicController implements Activateable
 		}
 		
 		if(curriculumModule.isEnabled() && (isUserManagerOf || isRolesManagerOf || isAdminOf || isPrincipalOf)) {
-			userTabP.addTab(translate(NLS_VIEW_CURRICULUM),  uureq -> {
+			userTabP.addTab(ureq, translate(NLS_VIEW_CURRICULUM),  uureq -> {
 				curriculumCtr = new CurriculumListController(uureq, getWindowControl(), identity);
 				listenTo(curriculumCtr);
 				BreadcrumbedStackedPanel curriculumPanel = new BreadcrumbedStackedPanel("curriculums", getTranslator(), curriculumCtr);
@@ -558,7 +558,7 @@ public class UserAdminController extends BasicController implements Activateable
 		}
 		
 		if(gradingModule.isEnabled()) {
-			userTabP.addTab(translate(NLS_VIEW_GRADER),  uureq -> {
+			userTabP.addTab(ureq, translate(NLS_VIEW_GRADER),  uureq -> {
 				graderOverviewCtrl = new GraderUserOverviewController(uureq, getWindowControl(), identity);
 				listenTo(graderOverviewCtrl);
 				BreadcrumbedStackedPanel gradingPanel = new BreadcrumbedStackedPanel("curriculums", getTranslator(), graderOverviewCtrl);

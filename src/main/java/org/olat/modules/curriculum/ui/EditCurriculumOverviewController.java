@@ -59,14 +59,14 @@ public class EditCurriculumOverviewController extends BasicController {
 		editMetadataCtrl = new EditCurriculumController(ureq, getWindowControl(), curriculum, secCallback);
 		listenTo(editMetadataCtrl);
 		tabPane.addTab(translate("curriculum.metadata"), editMetadataCtrl);
-		initTabPane();
+		initTabPane(ureq);
 		
 		mainVC.put("tabs", tabPane);
 		putInitialPanel(mainVC);
 	}
 	
-	private void initTabPane() {
-		tabPane.addTab(translate("tab.user.management"), uureq -> {
+	private void initTabPane(UserRequest ureq) {
+		tabPane.addTab(ureq, translate("tab.user.management"), uureq -> {
 			userManagementCtrl = new CurriculumUserManagementController(uureq, getWindowControl(), curriculum, secCallback);
 			listenTo(userManagementCtrl);
 			return userManagementCtrl.getInitialComponent();

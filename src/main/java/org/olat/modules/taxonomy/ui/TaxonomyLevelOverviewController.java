@@ -91,7 +91,7 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 		metadataCtrl = new EditTaxonomyLevelController(ureq, getWindowControl(), taxonomyLevel);
 		listenTo(metadataCtrl);
 		tabPane.addTab(translate("taxonomy.metadata"), metadataCtrl);
-		initTabPane();
+		initTabPane(ureq);
 		
 		mainVC.put("tabs", tabPane);
 		
@@ -99,14 +99,14 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 		updateProperties();
 	}
 	
-	private void initTabPane() {
-		tabPane.addTab(translate("taxonomy.level.competences"), uureq -> {
+	private void initTabPane(UserRequest ureq) {
+		tabPane.addTab(ureq, translate("taxonomy.level.competences"), uureq -> {
 			competencesCtrl = new TaxonomyLevelCompetenceController(uureq, getWindowControl(), taxonomyLevel);
 			listenTo(competencesCtrl);
 			return competencesCtrl.getInitialComponent();
 		});
 		
-		tabPane.addTab(translate("taxonomy.level.relations"), uureq -> {
+		tabPane.addTab(ureq, translate("taxonomy.level.relations"), uureq -> {
 			relationsCtrl = new TaxonomyLevelRelationsController(uureq, getWindowControl(), taxonomyLevel);
 			listenTo(relationsCtrl);
 			return relationsCtrl.getInitialComponent();

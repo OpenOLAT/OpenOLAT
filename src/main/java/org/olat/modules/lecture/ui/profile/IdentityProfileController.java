@@ -145,7 +145,7 @@ public class IdentityProfileController extends BasicController implements Activa
 		dailyTab = tabPane.addTab(translate("cockpit.day.overview"), dailyOverviewCtrl);
 		
 		// list of lectures
-		lecturesTab = tabPane.addTab(translate("user.overview.lectures"), uureq -> {
+		lecturesTab = tabPane.addTab(ureq, translate("user.overview.lectures"), uureq -> {
 			lecturesCtrl = new ParticipantLecturesOverviewController(uureq, getWindowControl(), profiledIdentity, null,
 					true, true, true, true, true, false);
 			listenTo(lecturesCtrl);
@@ -158,7 +158,7 @@ public class IdentityProfileController extends BasicController implements Activa
 
 		// dispensation
 		if(lectureModule.isAbsenceNoticeEnabled()) {
-			dispensationsTab = tabPane.addTab(translate("user.overview.dispensation"), uureq -> {
+			dispensationsTab = tabPane.addTab(ureq, translate("user.overview.dispensation"), uureq -> {
 				dispensationsCtrl = new DispensationsController(uureq, getWindowControl(), null, secCallback, profiledIdentity, false, false);
 				listenTo(dispensationsCtrl);
 				return dispensationsCtrl.getInitialComponent();
@@ -167,7 +167,7 @@ public class IdentityProfileController extends BasicController implements Activa
 
 		// appeals
 		if(lectureModule.isAbsenceAppealEnabled()) {
-			appealsTab = tabPane.addTab(translate("user.overview.appeals"), uureq -> {
+			appealsTab = tabPane.addTab(ureq, translate("user.overview.appeals"), uureq -> {
 				appealsCtrl = new AppealListRepositoryController(uureq, getWindowControl(), profiledIdentity, secCallback);
 				listenTo(appealsCtrl);
 				return appealsCtrl.getInitialComponent();
