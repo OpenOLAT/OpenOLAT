@@ -169,6 +169,11 @@ public class UpdateIdentity implements Identity {
 		}
 
 		@Override
+		public String getNickName() {
+			return updatedProperties.get(UserConstants.NICKNAME);
+		}
+
+		@Override
 		public String getEmail() {
 			return updatedProperties.get(UserConstants.EMAIL);
 		}

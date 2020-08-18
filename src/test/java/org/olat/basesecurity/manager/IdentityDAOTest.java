@@ -26,6 +26,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.model.FindNamedIdentity;
 import org.olat.core.id.Identity;
+import org.olat.core.id.UserConstants;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatTestCase;
@@ -86,6 +87,17 @@ public class IdentityDAOTest extends OlatTestCase {
 		Identity loadedIdentity = identityDao.findIdentityByName(legacyName);
 		Assert.assertNotNull(loadedIdentity);
 		Assert.assertEquals(identity.getIdentity(), loadedIdentity);
+	}
+	
+	@Test
+	public void findIdentityByNickName() {
+		IdentityWithLogin identity = JunitTestHelper.createAndPersistRndUser("id-dao-3");
+		String nickName = identity.getIdentity().getUser().getProperty(UserConstants.NICKNAME, null);
+		
+		List<Identity> loadedIdentities = identityDao.findIdentitiesByNickName(nickName);
+		Assert.assertNotNull(loadedIdentities);
+		Assert.assertEquals(1, loadedIdentities.size());
+		Assert.assertEquals(identity.getIdentity(), loadedIdentities.get(0));
 	}
 
 }

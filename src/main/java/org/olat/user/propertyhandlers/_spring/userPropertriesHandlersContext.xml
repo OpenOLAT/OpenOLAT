@@ -9,7 +9,7 @@
 	<!-- 
 		Define all available user properties and its handlers 
 	-->
-	<bean id="userPropertyUserNickName" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+	<bean id="userPropertyUserNickName" class="org.olat.user.propertyhandlers.GenericUnique127CharTextPropertyHandler">
 		<property name="name" value="nickName" />
 		<property name="group" value="account" />
 	</bean>

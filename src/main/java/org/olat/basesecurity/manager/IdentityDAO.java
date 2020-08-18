@@ -74,6 +74,20 @@ public class IdentityDAO {
 		return identities.get(0);
 	}
 	
+	public List<Identity> findIdentitiesByNickName(String name) {
+		if(!StringHelper.containsNonWhitespace(name)) return new ArrayList<>();
+
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
+		  .append(" inner join fetch ident.user user")
+		  .append(" where user.nickName=:username");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("username", name)
+				.getResultList();
+	}
+	
 	public List<FindNamedIdentity> findByNames(Collection<String> names) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select ident, auth from ").append(IdentityImpl.class.getName()).append(" as ident")

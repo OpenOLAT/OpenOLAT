@@ -208,8 +208,9 @@ public class UserImportController extends BasicController {
 			report.incrementCreatedUser();
 			report.incrementUpdatedLdapAuthentication();
 		} else {
+			String provider = StringHelper.containsNonWhitespace(pwd) ? BaseSecurityModule.getDefaultAuthProviderIdentifier() : null;
 			ident = securityManager.createAndPersistIdentityAndUserWithOrganisation(identityName, login, null, newUser,
-					BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, pwd,  preselectedOrganisation);
+					provider, login, pwd,  preselectedOrganisation);
 			report.incrementCreatedUser();
 		}
 		return ident;

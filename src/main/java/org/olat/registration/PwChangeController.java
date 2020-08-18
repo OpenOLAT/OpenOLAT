@@ -27,7 +27,6 @@ package org.olat.registration;
 
 import java.text.DateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -325,10 +324,7 @@ public class PwChangeController extends BasicController {
 			identity = userManager.findUniqueIdentityByEmail(emailOrUsername);
 		}
 		if (identity == null) {
-			List<Identity> identities = userManager.findIdentitiesWithProperty(UserConstants.NICKNAME, emailOrUsername);
-			if(identities != null && identities.size() == 1) {
-				identity = identities.get(0);
-			}
+			identity = securityManager.findIdentityByNickName(emailOrUsername);
 		}
 		return identity;
 	}

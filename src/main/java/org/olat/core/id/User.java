@@ -48,6 +48,8 @@ public interface User extends CreateInfo, Persistable {
 	
 	public String getLastName();
 	
+	public String getNickName();
+	
 	public String getEmail();
 	
 	public String getInstitutionalEmail();

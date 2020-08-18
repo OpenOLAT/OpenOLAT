@@ -3565,6 +3565,7 @@ alter table o_bs_identity_to_identity add constraint id_to_role_idx foreign key 
 create index usr_notification_interval_idx on o_user (notification_interval);
 create index idx_user_firstname_idx on o_user (u_firstname);
 create index idx_user_lastname_idx on o_user (u_lastname);
+create index idx_user_nickname_idx on o_user (u_nickname);
 create index idx_user_email_idx on o_user (u_email);
 create index idx_user_instname_idx on o_user (u_institutionalname);
 create index idx_user_instid_idx on o_user (u_institutionaluseridentifier);

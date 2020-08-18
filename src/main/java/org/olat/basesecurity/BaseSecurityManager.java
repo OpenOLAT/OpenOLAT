@@ -428,8 +428,18 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	@Override
 	public Identity findIdentityByName(String identityName) {
 		return identityDao.findIdentityByName(identityName);
-	}
+	}	
 	
+	@Override
+	public Identity findIdentityByNickName(String name) {
+		List<Identity> identities = identityDao.findIdentitiesByNickName(name);
+		if(identities != null && identities.size() > 1) {
+			log.warn("Nick name is not unique: {}", name);
+			return null;
+		}
+		return identities != null && identities.size() == 1 ? identities.get(0) : null;
+	}
+
 	@Override
 	public Identity findIdentityByNameCaseInsensitive(String identityName) {
 		if (identityName == null) throw new AssertException("findIdentitybyName: name was null");

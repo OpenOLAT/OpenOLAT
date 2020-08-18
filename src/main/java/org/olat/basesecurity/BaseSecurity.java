@@ -87,6 +87,8 @@ public interface BaseSecurity {
 	public boolean isGuest(IdentityRef identity);
 	
 	public Identity findIdentityByLogin(String login);
+	
+	public Identity findIdentityByNickName(String name);
 
 	/**
 	 * Find an identity by its name. This is an exact match. Use the
