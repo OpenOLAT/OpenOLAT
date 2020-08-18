@@ -151,7 +151,7 @@ public class BigBlueButtonOpenCastRecordingsHandler implements BigBlueButtonReco
 			}
 			if(StringHelper.containsNonWhitespace(username)) {
 				uriBuilder.optionalParameter("meta_opencast-dc-rightsHolder", username);
-				uriBuilder.optionalParameter("meta_opencast-acl-read-roles", "ROLE_OAUTH_USER ROLE_USER_" + username.toUpperCase());
+				uriBuilder.optionalParameter("meta_opencast-acl-read-roles", "ROLE_USER_" + username.toUpperCase());
 				uriBuilder.optionalParameter("meta_opencast-acl-write-roles", "ROLE_USER_" + username.toUpperCase());
 			}
 		}
@@ -187,7 +187,7 @@ public class BigBlueButtonOpenCastRecordingsHandler implements BigBlueButtonReco
 		}
 
 		// Location of the event
-		uriBuilder.optionalParameter("meta_opencast-dc-spatial", "Olat-BigBlueButton");
+		uriBuilder.optionalParameter("meta_opencast-dc-spatial", "OpenOlat-BigBlueButton");
 		// Date of the event
 		uriBuilder.optionalParameter("meta_opencast-dc-created", Formatter.formatDatetime(meetingCreation));
 
