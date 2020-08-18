@@ -327,6 +327,7 @@ public class UserImpl implements User {
 		this.lastName = lastName;
 	}
 
+	@Override
 	public String getNickName() {
 		return nickName;
 	}

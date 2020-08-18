@@ -66,6 +66,11 @@ public class QueryUserHelper implements User {
 	}
 
 	@Override
+	public String getNickName() {
+		return null;
+	}
+
+	@Override
 	public String getEmail() {
 		return null;
 	}

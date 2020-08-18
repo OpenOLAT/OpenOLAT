@@ -1023,9 +1023,8 @@ public class CoachingDAO {
 		return !rawList.isEmpty();
 	}
 	
-
 	private NativeQueryBuilder appendUsersStatisticsJoins(SearchCoachedIdentityParams params, NativeQueryBuilder sb) {
-		if(params != null && params.getUserProperties() != null && params.getUserProperties().size() > 0) {
+		if(StringHelper.containsNonWhitespace(params.getLogin()) || (params != null && params.getUserProperties() != null && params.getUserProperties().size() > 0)) {
 			sb.append(" inner join o_user user_participant on (user_participant.fk_identity=id_participant.id)");
 		}
 		return sb;
@@ -1041,17 +1040,27 @@ public class CoachingDAO {
 		
 		if(StringHelper.containsNonWhitespace(params.getLogin())) {
 			String login = PersistenceHelper.makeFuzzyQueryString(params.getLogin());
+			sb.append(" and (");
+			
 			if (login.contains("_") && dbInstance.isOracle()) {
 				//oracle needs special ESCAPE sequence to search for escaped strings
-				sb.append(" and lower(id_participant.name) like :login ESCAPE '\\'");
+				sb.append(" lower(id_participant.name) like :login ESCAPE '\\'");
 			} else if (dbInstance.isMySQL()) {
-				sb.append(" and id_participant.name like :login");
+				sb.append(" id_participant.name like :login");
 			} else {
-				sb.append(" and lower(id_participant.name) like :login");
+				sb.append(" lower(id_participant.name) like :login");
 			}
-			
-			//TODO login
-			
+			sb.append(" or ");
+			if (login.contains("_") && dbInstance.isOracle()) {
+				//oracle needs special ESCAPE sequence to search for escaped strings
+				sb.append(" lower(user_participant.u_nickname) like :login ESCAPE '\\'");
+			} else if (dbInstance.isMySQL()) {
+				sb.append(" user_participant.u_nickname like :login");
+			} else {
+				sb.append(" lower(user_participant.u_nickname) like :login");
+			}
+			sb.append(")");
+
 			queryParams.put("login", login);
 		}
 		

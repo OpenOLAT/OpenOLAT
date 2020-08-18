@@ -122,6 +122,11 @@ public class EMailIdentity implements Identity {
 		}
 		
 		@Override
+		public String getNickName() {
+			return data.get(UserConstants.NICKNAME);
+		}
+
+		@Override
 		public String getEmail() {
 			return data.get(UserConstants.EMAIL);
 		}

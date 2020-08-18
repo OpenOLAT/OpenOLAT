@@ -3407,6 +3407,7 @@ create index idx_id_to_id_role_idx on o_bs_identity_to_identity (fk_role_id);
 create index usr_notification_interval_idx on o_user (notification_interval);
 create index idx_user_firstname_idx on o_user (u_firstname);
 create index idx_user_lastname_idx on o_user (u_lastname);
+create index idx_user_nickname_idx on o_user (u_nickname);
 create index idx_user_email_idx on o_user (u_email);
 create index idx_user_instname_idx on o_user (u_institutionalname);
 create index idx_user_instid_idx on o_user (u_institutionaluseridentifier);
@@ -3416,6 +3417,7 @@ create index idx_user_creationdate_idx on o_user (creationdate);
 create index xx_idx_email_low_text on o_user(lower(u_email) text_pattern_ops);
 create index xx_idx_institutionalemail_low_text on o_user(lower(u_institutionalemail) text_pattern_ops);
 create index xx_idx_username_low_text on o_bs_identity(lower(name) text_pattern_ops);
+create index xx_idx_nickname_low_text on o_user(lower(u_nickname) text_pattern_ops);
 
 create index propvalue_idx on o_userproperty (propvalue);
 

@@ -79,6 +79,11 @@ public class TransientIdentity implements Identity, User {
 	public String getLastName() {
 		return properties.get(UserConstants.LASTNAME);
 	}
+	
+	@Override
+	public String getNickName() {
+		return properties.get(UserConstants.NICKNAME);
+	}
 
 	@Override
 	public String getEmail() {

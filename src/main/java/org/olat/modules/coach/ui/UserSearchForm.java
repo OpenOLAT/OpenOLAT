@@ -22,6 +22,7 @@ package org.olat.modules.coach.ui;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
@@ -36,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.EmailProperty;
@@ -86,7 +88,14 @@ public class UserSearchForm extends FormBasicController {
 		login = uifactory.addTextElement("login", "search.form.login", 128, "", formLayout);
 		login.setVisible(adminProps);
 		
-		userPropertyHandlers = userManager.getUserPropertyHandlersFor(PROPS_IDENTIFIER, adminProps);
+		List<UserPropertyHandler> allPropertyHandlers = userManager.getUserPropertyHandlersFor(PROPS_IDENTIFIER, adminProps);
+		if(adminProps) {
+			userPropertyHandlers = allPropertyHandlers.stream()
+					.filter(prop -> !UserConstants.NICKNAME.equals(prop.getName()))
+					.collect(Collectors.toList());
+		} else {
+			userPropertyHandlers = allPropertyHandlers;
+		}
 
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler != null) {
