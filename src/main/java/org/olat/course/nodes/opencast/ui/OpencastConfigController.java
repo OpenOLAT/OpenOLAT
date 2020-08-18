@@ -37,8 +37,11 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.OpencastCourseNode;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.opencast.AuthDelegate;
 import org.olat.modules.opencast.OpencastEventProvider;
 import org.olat.modules.opencast.OpencastSeriesProvider;
+import org.olat.modules.opencast.OpencastService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -63,6 +66,9 @@ public class OpencastConfigController extends FormBasicController {
 	
 	private final ModuleConfiguration config;
 	
+	@Autowired
+	private OpencastService opncastService;
+	
 	public OpencastConfigController(UserRequest ureq, WindowControl wControl, OpencastCourseNode courseNode) {
 		super(ureq, wControl);
 		config = courseNode.getModuleConfiguration();
@@ -73,6 +79,8 @@ public class OpencastConfigController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormTranslatedDescription(getFormDescription());
+		
 		displayEl = uifactory.addRadiosVertical("config.display", formLayout, DISPLAY_KEYS, translateAll(getTranslator(), DISPLAY_KEYS));
 		displayEl.addActionListener(FormEvent.ONCHANGE);
 		String selectedKey = config.has(OpencastCourseNode.CONFIG_EVENT_IDENTIFIER)? DISPLAY_KEY_EVENT: DISPLAY_KEY_SERIES;
@@ -109,6 +117,18 @@ public class OpencastConfigController extends FormBasicController {
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", buttonsCont);
+	}
+
+	private String getFormDescription() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(translate("config.desc.select"));
+		AuthDelegate authDelegate = opncastService.getAuthDelegate(getIdentity());
+		if (AuthDelegate.Type.User == authDelegate.getType()) {
+			sb.append(" ").append(translate("config.desc.user", new String[] {authDelegate.getValue()}));
+		} else if (AuthDelegate.Type.Roles == authDelegate.getType()) {
+			sb.append(" ").append(translate("config.desc.roles", new String[] {authDelegate.getValue()}));
+		}
+		return sb.toString();
 	}
 	
 	private void updateUI() {
