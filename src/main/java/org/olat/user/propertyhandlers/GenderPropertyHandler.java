@@ -78,14 +78,17 @@ public class GenderPropertyHandler extends AbstractUserPropertyHandler {
 
 	@Override
 	public String getUserProperty(User user, Locale locale) {
-		Translator myTrans;
-		if (locale == null) {
-			myTrans = Util.createPackageTranslator(this.getClass(), I18nModule.getDefaultLocale());			
-		} else {
-			myTrans = Util.createPackageTranslator(this.getClass(), locale);
-		}
 		String internalValue = getInternalValue(user);
-		return myTrans.translate("form.name.gender." + internalValue);
+		if(internalValue != null && (internalValue.equals(keys[0]) || internalValue.equals(keys[1]) || internalValue.equals(keys[2]))) {
+			Translator myTrans;
+			if (locale == null) {
+				myTrans = Util.createPackageTranslator(this.getClass(), I18nModule.getDefaultLocale());			
+			} else {
+				myTrans = Util.createPackageTranslator(this.getClass(), locale);
+			}
+			return myTrans.translate("form.name.gender." + internalValue);
+		}
+		return internalValue;
 	}
 
 	@Override
