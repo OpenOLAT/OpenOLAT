@@ -121,7 +121,8 @@ public class MultiSPController extends FormBasicController {
 		String[] singleKey = new String[]{ node.getId() };
 		String[] singleValue = new String[]{ node.getName() };
 		String[] iconCSS = new String[]{ "o_icon o_icon-fw " + node.getIconCssClass() };
-		MultipleSelectionElement nodeSelection = uifactory.addCheckboxesVertical("print.node.list." + nodeSelections.size(), layoutcont, singleKey, singleValue, iconCSS, 1);
+		MultipleSelectionElement nodeSelection = uifactory.addCheckboxesVertical("print.node.list." + nodeSelections.size(), null, layoutcont,
+				singleKey, singleValue, iconCSS, 1);
 		nodeSelection.setLabel("multi.sps.file", null);
 		
 		nodeSelection.setUserObject(node);

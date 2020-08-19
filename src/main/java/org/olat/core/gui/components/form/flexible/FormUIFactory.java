@@ -270,6 +270,10 @@ public class FormUIFactory {
 		return addCheckboxesVertical(name, name, formLayout, keys, values, null, iconLeftCSS, columns);
 	}
 	
+	public MultipleSelectionElement addCheckboxesVertical(String name, String i18nLabel, FormItemContainer formLayout, String[] keys, String[] values, String[] iconLeftCSS, int columns) {
+		return addCheckboxesVertical(name, i18nLabel, formLayout, keys, values, null, iconLeftCSS, columns);
+	}
+	
 	public MultipleSelectionElement addCheckboxesVertical(String name, String i18nLabel, FormItemContainer formLayout, String[] keys, String[] values, int columns) {
 		return addCheckboxesVertical(name, i18nLabel, formLayout, keys, values, null, null, columns);
 	}

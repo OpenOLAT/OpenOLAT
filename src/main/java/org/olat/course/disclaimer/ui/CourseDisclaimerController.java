@@ -110,7 +110,7 @@ public class CourseDisclaimerController extends FormBasicController {
 		uifactory.addSpacerElement("course.disclaimer.spacer.1", formLayout, false);
 
 		// Disclaimer 1
-		disclaimer1HeaderEl = uifactory.addStaticTextElement("course.disclaimer.1.section", translate("course.disclaimer.1"), formLayout);
+		disclaimer1HeaderEl = uifactory.addStaticTextElement("course.disclaimer.1.section", null, translate("course.disclaimer.1"), formLayout);
 		disclaimer1HeaderEl.showLabel(false);
 		disclaimer1HeaderEl.setElementCssClass("o_static_textelement_bold");
 
@@ -129,7 +129,7 @@ public class CourseDisclaimerController extends FormBasicController {
 		spacer = uifactory.addSpacerElement("course.disclaimer.spacer.2", formLayout, false);
 
 		// Disclaimer 2
-		disclaimer2HeaderEl = uifactory.addStaticTextElement("course.disclaimer.2.section", translate("course.disclaimer.2"), formLayout);
+		disclaimer2HeaderEl = uifactory.addStaticTextElement("course.disclaimer.2.section", null, translate("course.disclaimer.2"), formLayout);
 		disclaimer2HeaderEl.showLabel(false);
 		disclaimer2HeaderEl.setElementCssClass("o_static_textelement_bold");
 
