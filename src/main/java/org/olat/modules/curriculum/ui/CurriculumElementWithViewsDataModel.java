@@ -22,8 +22,10 @@ package org.olat.modules.curriculum.ui;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusinessPathModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.modules.curriculum.CurriculumElementStatus;
@@ -34,7 +36,7 @@ import org.olat.modules.curriculum.CurriculumElementStatus;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDataModel<CurriculumElementWithViewsRow> {
+public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDataModel<CurriculumElementWithViewsRow> implements FlexiBusinessPathModel {
 	
 	public CurriculumElementWithViewsDataModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
@@ -78,6 +80,20 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 		return active;
 	}
 	
+	@Override
+	public String getUrl(Component source, Object object, String action) {
+		if("select".equals(action) && object instanceof CurriculumElementWithViewsRow) {
+			CurriculumElementWithViewsRow row = (CurriculumElementWithViewsRow)object;
+			if(row.getStartUrl() != null) {
+				return row.getStartUrl();
+			}
+			if(row.getDetailsUrl() != null) {
+				return row.getDetailsUrl();
+			}
+		}
+		return null;
+	}
+
 	@Override
 	public boolean hasChildren(int row) {
 		CurriculumElementWithViewsRow element = getObject(row);

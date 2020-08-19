@@ -149,7 +149,7 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 				pair = new NameValuePair("tt-open", Integer.toString(row));
 			}
 			String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, true, true, pair);
-			target.append("<a href=\"javascript:").append(jsCode).append(";\"><i class='o_icon o_icon-fw ");
+			target.append("<a href=\"javascript:;\" onclick=\"").append(jsCode).append("; return false\"><i class='o_icon o_icon-fw ");
 			if(open) {
 				target.append("o_icon_close_tree");
 			} else {
@@ -162,10 +162,24 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 			labelDelegate.render(renderer, target, cellValue, row, source, ubu, translator);
 		} else {
 			NameValuePair pair = new NameValuePair(action, Integer.toString(row));
+			String href = href(source, row);
 			String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, false, false, pair);
-			target.append("<a href=\"javascript:").append(jsCode).append(";\">");
+			target.append("<a href=\"").append(href).append("\" onclick=\"").append(jsCode).append("; return false;\">");
 			labelDelegate.render(renderer, target, cellValue, row, source, ubu, translator);
 			target.append("</a></div>");
 		}
+	}
+	
+	private String href(FlexiTableComponent source, int row) {
+		String href = null;
+		FlexiTableDataModel<?> model = source.getFlexiTableElement().getTableDataModel();
+		if(model instanceof FlexiBusinessPathModel) {
+			Object object = source.getFlexiTableElement().getTableDataModel().getObject(row);
+			href = ((FlexiBusinessPathModel)model).getUrl(source, object, action);
+		}
+		if(!StringHelper.containsNonWhitespace(href)) {
+			href = "javascript:;";
+		}
+		return href;
 	}
 }

@@ -385,12 +385,11 @@ public class CurriculumElementListController extends FormBasicController impleme
 		if(startLink != null) {
 			startLink.setUserObject(row);
 			String businessPath = "[RepositoryEntry:" + row.getRepositoryEntryKey() + "]";
-			startLink.setUrl(BusinessControlFactory.getInstance()
-					.getAuthenticatedURLFromBusinessPathString(businessPath));
-			row.setStartLink(startLink);
+			String startUrl = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath);
+			startLink.setUrl(startUrl);
+			row.setStartLink(startLink, startUrl);
 		}
 
-		
 		if (!row.isAllUsers() && !row.isGuests()) {
 			// members only always show lock icon
 			types.add(new PriceMethod("", "o_ac_membersonly_icon", translate("cif.access.membersonly.short")));
@@ -410,12 +409,14 @@ public class CurriculumElementListController extends FormBasicController impleme
 		detailsLink.setCustomEnabledLinkCSS("o_details");
 		detailsLink.setUserObject(row);
 		Long repoEntryKey = row.getRepositoryEntryKey();
+		String detailsUrl = null;
 		if(repoEntryKey != null) {
 			String businessPath = "[RepositoryEntry:" + repoEntryKey + "][Infos:0]";
-			detailsLink.setUrl(BusinessControlFactory.getInstance()
-					.getAuthenticatedURLFromBusinessPathString(businessPath));
+			detailsUrl = BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathString(businessPath);
+			detailsLink.setUrl(detailsUrl);
 		}
-		row.setDetailsLink(detailsLink);
+		row.setDetailsLink(detailsLink, detailsUrl);
 	}
 	
 	private void forgeMarkLink(CurriculumElementWithViewsRow row) {

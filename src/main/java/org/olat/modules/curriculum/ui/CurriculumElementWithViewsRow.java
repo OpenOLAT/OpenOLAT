@@ -79,6 +79,9 @@ public class CurriculumElementWithViewsRow implements CurriculumElementWithView,
 	private String thumbnailRelPath;
 	private boolean marked;
 	
+	private String startUrl;
+	private String detailsUrl;
+	
 	private FormLink startLink;
 	private FormLink detailsLink;
 	private FormLink markLink;
@@ -491,8 +494,13 @@ public class CurriculumElementWithViewsRow implements CurriculumElementWithView,
 		return startLink;
 	}
 	
-	public void setStartLink(FormLink startLink) {
+	public void setStartLink(FormLink startLink, String startUrl) {
 		this.startLink = startLink;
+		this.startUrl = startUrl;
+	}
+	
+	public String getStartUrl() {
+		return startUrl;
 	}
 	
 	public String getDetailsLinkName() {
@@ -503,8 +511,13 @@ public class CurriculumElementWithViewsRow implements CurriculumElementWithView,
 		return detailsLink;
 	}
 
-	public void setDetailsLink(FormLink detailsLink) {
+	public void setDetailsLink(FormLink detailsLink, String detailsUrl) {
 		this.detailsLink = detailsLink;
+		this.detailsUrl = detailsUrl;
+	}
+	
+	public String getDetailsUrl() {
+		return detailsUrl;
 	}
 	
 	public String getSelectLinkName() {
