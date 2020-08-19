@@ -189,8 +189,8 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 			lowerToleranceEl.setVisible(visible);
 			upperToleranceEl.setVisible(visible);
 			if(mode == ToleranceMode.RELATIVE) {
-				lowerToleranceEl.setExampleKey("fib.tolerance.mode.relative.example", null);
-				upperToleranceEl.setExampleKey("fib.tolerance.mode.relative.example", null);
+				lowerToleranceEl.setExampleKey("fib.tolerance.mode.relative.low.example", null);
+				upperToleranceEl.setExampleKey("fib.tolerance.mode.relative.up.example", null);
 			} else if(mode == ToleranceMode.ABSOLUTE) {
 				lowerToleranceEl.setExampleKey("fib.tolerance.mode.absolute.example", null);
 				upperToleranceEl.setExampleKey("fib.tolerance.mode.absolute.example", null);
