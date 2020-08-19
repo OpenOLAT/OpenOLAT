@@ -47,7 +47,10 @@ import org.olat.user.UserManager;
 
 public class GenderPropertyHandler extends AbstractUserPropertyHandler {
 	
-	private static final String[] keys = new String[] { "male", "female", "-" };
+	private static final String MALE = "male";
+	private static final String FEMALE = "female";
+	private static final String OTHER = "-";
+	private static final String[] keys = new String[] { MALE, FEMALE, OTHER };
 	
 	/**
 	 * Helper method to create translated values that correspond with the static keys
@@ -78,13 +81,16 @@ public class GenderPropertyHandler extends AbstractUserPropertyHandler {
 
 	@Override
 	public String getUserProperty(User user, Locale locale) {
+		String internalValue = getInternalValue(user);
+		if(!FEMALE.equals(internalValue) && !MALE.equals(internalValue) && !OTHER.equals(internalValue)) {
+			internalValue = OTHER;
+		}
 		Translator myTrans;
 		if (locale == null) {
 			myTrans = Util.createPackageTranslator(this.getClass(), I18nModule.getDefaultLocale());			
 		} else {
 			myTrans = Util.createPackageTranslator(this.getClass(), locale);
 		}
-		String internalValue = getInternalValue(user);
 		return myTrans.translate("form.name.gender." + internalValue);
 	}
 
@@ -112,7 +118,7 @@ public class GenderPropertyHandler extends AbstractUserPropertyHandler {
 	@Override
 	public FormItem addFormItem(Locale locale, User user, String usageIdentifyer, boolean isAdministrativeUser,	FormItemContainer formItemContainer) {
 		SingleSelection	genderElem = FormUIFactory.getInstance().addRadiosVertical(getName(), i18nFormElementLabelKey(), formItemContainer, keys, getTranslatedValues(locale));
-		String key = user == null ? "-" : getInternalValue(user);
+		String key = user == null ? OTHER : getInternalValue(user);
 		for(int i=keys.length; i-->0; ) {
 			if(keys[i].equals(key)) {
 				genderElem.select(keys[i], true);
@@ -132,7 +138,7 @@ public class GenderPropertyHandler extends AbstractUserPropertyHandler {
 	@Override
 	public String getInternalValue(User user) {
 		String value = super.getInternalValue(user);
-		return (StringHelper.containsNonWhitespace(value) ? value : "-"); // default		
+		return (StringHelper.containsNonWhitespace(value) ? value : OTHER); // default		
 	}
 
 	@Override

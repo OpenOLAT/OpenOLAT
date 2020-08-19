@@ -260,7 +260,7 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 	private void initMissingItemsElements(FormUIFactory formFactory, FormItemContainer formLayout,
 			String[] bundlesKeys, String[] bundlesValues) {
 		// Add missing bundles selector
-		missingBundlesSelection = formFactory.addDropdownSingleselect("missingBundlesSelection", this.flc, bundlesKeys, bundlesValues, null);
+		missingBundlesSelection = formFactory.addDropdownSingleselect("missingBundlesSelection", null, flc, bundlesKeys, bundlesValues, null);
 		missingBundlesSelection.addActionListener(FormEvent.ONCHANGE);
 		missingBundlesSelection.select(ALL_BUNDLES_IDENTIFYER, true);
 		// Add missing bundles children switch
@@ -288,7 +288,7 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 	private void initExistingItemsElements(FormUIFactory formFactory, FormItemContainer formLayout,
 			String[] bundlesKeys, String[] bundlesValues) {
 		// Add existing bundles selector
-		existingBundlesSelection = formFactory.addDropdownSingleselect("existingBundlesSelection", this.flc, bundlesKeys, bundlesValues, null);
+		existingBundlesSelection = formFactory.addDropdownSingleselect("existingBundlesSelection", null, flc, bundlesKeys, bundlesValues, null);
 		existingBundlesSelection.addActionListener(FormEvent.ONCHANGE);
 		existingBundlesSelection.select(ALL_BUNDLES_IDENTIFYER, true);
 		// Add existing bundles children switch
@@ -316,7 +316,7 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 	private void initAllItemsElements(FormUIFactory formFactory, FormItemContainer formLayout,
 			String[] bundlesKeys, String[] bundlesValues) {
 		// Add all bundles selector
-		allBundlesSelection = formFactory.addDropdownSingleselect("allBundlesSelection", this.flc, bundlesKeys, bundlesValues, null);
+		allBundlesSelection = formFactory.addDropdownSingleselect("allBundlesSelection", null, flc, bundlesKeys, bundlesValues, null);
 		allBundlesSelection.addActionListener(FormEvent.ONCHANGE);
 		allBundlesSelection.select(ALL_BUNDLES_IDENTIFYER, true);
 		// Add all bundles children switch
@@ -366,7 +366,7 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 				searchReferenceTargetKeys, searchReferenceTargetValues);
 		searchReferenceTargetSelection.select(KEYS_TARGET, true);
 		// Add search bundles selector : reuse keys from above
-		searchBundlesSelection = formFactory.addDropdownSingleselect("searchBundlesSelection", searchLayoutContainer, bundlesKeys,
+		searchBundlesSelection = formFactory.addDropdownSingleselect("searchBundlesSelection", null, searchLayoutContainer, bundlesKeys,
 				bundlesValues, null);
 		searchBundlesSelection.setLabel("generic.limit.bundles", null);
 		searchBundlesSelection.addActionListener(FormEvent.ONCHANGE);

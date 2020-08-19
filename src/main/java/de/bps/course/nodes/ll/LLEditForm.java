@@ -322,7 +322,8 @@ public class LLEditForm extends FormBasicController {
 		lTarget.setUserObject(link);
 		lTargetInputList.add(index, lTarget);
 		//add html target
-		SingleSelection htmlTargetSelection = uifactory.addDropdownSingleselect("html_target" + counter, flc, new String[]{BLANK_KEY, SELF_KEY}, new String[]{translate("ll.table.html_target"), translate("ll.table.html_target.self")}, null);
+		SingleSelection htmlTargetSelection = uifactory.addDropdownSingleselect("html_target" + counter, null, flc,
+				new String[]{BLANK_KEY, SELF_KEY}, new String[]{translate("ll.table.html_target"), translate("ll.table.html_target.self")}, null);
 		htmlTargetSelection.setUserObject(link);
 		htmlTargetSelection.select((SELF_KEY.equals(link.getHtmlTarget()) ? SELF_KEY : BLANK_KEY), true);
 		lHtmlTargetInputList.add(index, htmlTargetSelection);

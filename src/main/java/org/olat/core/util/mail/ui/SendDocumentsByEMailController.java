@@ -37,6 +37,7 @@ import org.olat.core.commons.modules.bc.commands.FolderCommand;
 import org.olat.core.commons.modules.bc.commands.FolderCommandHelper;
 import org.olat.core.commons.modules.bc.commands.FolderCommandStatus;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
+import org.olat.core.commons.modules.bc.meta.MetaInfoController;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -111,7 +112,8 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 	private BaseSecurity securityManager;
 
 	public SendDocumentsByEMailController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, null, Util.createPackageTranslator(MailModule.class, ureq.getLocale()));
+		super(ureq, wControl, null, Util.createPackageTranslator(MailModule.class, ureq.getLocale(),
+				Util.createPackageTranslator(MetaInfoController.class, ureq.getLocale())));
 		setBasePackage(MailModule.class);
 
 		allowAttachments = !FolderConfig.getSendDocumentLinkOnly();

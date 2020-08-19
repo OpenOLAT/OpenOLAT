@@ -179,20 +179,20 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 		}
 		String[] bundlesListArray = ArrayHelper.toArray(bundlesList);
 		String[] keysListArray = ArrayHelper.toArray(keysList);
-		bundlesSelection = uifactory.addDropdownSingleselect("bundlesSelection", this.flc, bundlesListArray, bundlesListArray, null);
+		bundlesSelection = uifactory.addDropdownSingleselect("bundlesSelection", null, flc, bundlesListArray, bundlesListArray, null);
 		bundlesSelection.setDomReplacementWrapperRequired(false);
 		bundlesSelection.addActionListener(FormEvent.ONCHANGE);
 		bundlesSelection.select(currentItem.getBundleName(), true);
-		keysSelection = uifactory.addDropdownSingleselect("keysSelection", this.flc, keysListArray, keysListArray, null);
+		keysSelection = uifactory.addDropdownSingleselect("keysSelection", null, flc, keysListArray, keysListArray, null);
 		keysSelection.setDomReplacementWrapperRequired(false);
 		keysSelection.addActionListener(FormEvent.ONCHANGE);
 		keysSelection.select(currentItem.getKey(), true);
 		// Add reference box
-		referenceArea = uifactory.addTextAreaElement("referenceArea", "edit.referenceArea", -1, 1, -1, true, false, null, flc);
+		referenceArea = uifactory.addTextAreaElement("referenceArea", null, -1, 1, -1, true, false, null, flc);
 		referenceArea.setEnabled(false); // read only
 		// Add compare box
 		Boolean compareEnabledPrefs = (Boolean) guiPrefs.get(I18nModule.class, I18nModule.GUI_PREFS_COMPARE_LANG_ENABLED, Boolean.FALSE);
-		compareArea = uifactory.addTextAreaElement("compareArea", "edit.compareArea", -1, 1, -1, true, false, null, this.flc);
+		compareArea = uifactory.addTextAreaElement("compareArea", null, -1, 1, -1, true, false, null, flc);
 		compareArea.setEnabled(false); // read only
 		compareArea.setVisible(compareEnabledPrefs.booleanValue());
 		
@@ -221,7 +221,7 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 				.getDefaultLocale().toString());
 		compareLocale = i18nMgr.getLocaleOrNull(comparePrefs);
 		if (compareLocale == null) compareLocale = I18nModule.getDefaultLocale();
-		compareLangSelection = uifactory.addDropdownSingleselect("compareLangSelection", flc, comparelangKeys, compareLangValues, null);
+		compareLangSelection = uifactory.addDropdownSingleselect("compareLangSelection", null, flc, comparelangKeys, compareLangValues, null);
 		compareLangSelection.setDomReplacementWrapperRequired(false);
 		compareLangSelection.select(i18nModule.getLocaleKey(compareLocale), true);
 		flc.contextPut("compareLanguageKey", i18nModule.getLocaleKey(compareLocale));
@@ -231,9 +231,9 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 		// Add target box
 		flc.contextPut("targetLanguageKey", i18nModule.getLocaleKey(currentItem.getLocale()));
 		flc.contextPut("targetLanguage", i18nMgr.getLanguageTranslated(i18nModule.getLocaleKey(currentItem.getLocale()), false));			
-		targetArea = uifactory.addTextAreaElement("targetArea", "edit.targetArea", -1, 5, -1, true, false, null, flc);
+		targetArea = uifactory.addTextAreaElement("targetArea", null, -1, 5, -1, true, false, null, flc);
 		// Add annotation box
-		annotationArea = uifactory.addTextAreaElement("annotationArea", "edit.annotationArea", -1, 1, -1, true, false, null, flc);
+		annotationArea = uifactory.addTextAreaElement("annotationArea", null, -1, 1, -1, true, false, null, flc);
 		// Add progress bar
 		// init with values
 		progressBarBundle = new ProgressBar("progressBarBundle", 300, 1, bundlesList.size(), translate("generic.bundles"));
@@ -278,7 +278,7 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 			// still in same bundle, just select the currentItemPosition key
 			keysSelection.select(currentItem.getKey(), true);
 			// Update key progress bar
-			progressBarKey.setActual(keysSelection.getSelected() + 1);
+			progressBarKey.setActual(keysSelection.getSelected() + 1.0f);
 		} else {
 			// in new bundle, load new keys
 			updateKeysSelectionAndProgress();
@@ -343,11 +343,11 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 		keysSelection.select(currentItem.getKey(), true);
 		// Update key progress bar
 		progressBarKey.setMax(keysListArray.length);
-		progressBarKey.setActual(keysSelection.getSelected()+1);
+		progressBarKey.setActual(keysSelection.getSelected() + 1.0f);
 		// Set currentItemPosition bundle
 		bundlesSelection.select(currentItem.getBundleName(), true);
 		// Update bundle progress bar
-		progressBarBundle.setActual(bundlesSelection.getSelected()+1);
+		progressBarBundle.setActual(bundlesSelection.getSelected() + 1.0f);
 	}
 
 	private void doPrevious(UserRequest ureq) {
@@ -384,16 +384,9 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK
-	 * (org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
-	// no form ok events to catch
+		// no form ok events to catch
 	}
 
 	@Override
@@ -411,14 +404,6 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 		return allOk;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @seeorg.olat.core.gui.components.form.flexible.impl.FormBasicController#
-	 * formInnerEvent(org.olat.core.gui.UserRequest,
-	 * org.olat.core.gui.components.form.flexible.FormItem,
-	 * org.olat.core.gui.components.form.flexible.impl.FormEvent)
-	 */
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == bundlesSelection) {
@@ -490,12 +475,7 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @seeorg.olat.core.gui.control.generic.breadcrumb.CrumbController#
-	 * getCrumbLinkHooverText()
-	 */
+	@Override
 	public String getCrumbLinkHooverText() {
 		if (customizingMode) {
 			return translate("edit.customize.crumb.hoover");			
@@ -503,24 +483,11 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 		return translate("edit.crumb.hoover");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.olat.core.gui.control.generic.breadcrumb.CrumbController#getCrumbLinkText
-	 * ()
-	 */
+	@Override
 	public String getCrumbLinkText() {
 		return translate("edit.crumb.link");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose
-	 * ()
-	 */
 	@Override
 	protected void doDispose() {
 		i18nItems = null;
