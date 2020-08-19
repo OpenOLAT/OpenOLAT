@@ -61,15 +61,18 @@ public class BigBlueButtonMeetingDAO {
 		meeting.setCreationDate(new Date());
 		meeting.setLastModified(meeting.getCreationDate());
 		meeting.setName(name);
+		// ID for BBB used as meetingID, in metadata as "externalId"
 		meeting.setMeetingId(UUID.randomUUID().toString());
 		meeting.setAttendeePassword(UUID.randomUUID().toString());
 		meeting.setModeratorPassword(UUID.randomUUID().toString());
 		meeting.setMeetingLayout(BigBlueButtonMeetingLayoutEnum.standard);
 		
 		meeting.setGuest(false);
+		// ID for OO internal dispatcher (guest access). BBB does not now this ID. 
 		meeting.setIdentifier(UUID.randomUUID().toString());
 		
 		meeting.setEntry(entry);
+		// ID for OO internal context subinformation such as the course node ID
 		meeting.setSubIdent(subIdent);
 		meeting.setBusinessGroup(businessGroup);
 		
