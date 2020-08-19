@@ -20,6 +20,7 @@
 package org.olat.modules.opencast;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.olat.core.CoreSpringFactory;
@@ -35,6 +36,7 @@ import org.olat.core.id.Identity;
  */
 public class OpencastSeriesProvider implements ListProvider {
 
+	private static final Function<Object, String> SERIES_TITLE_STINGIFIER = new SeriesTitleStingifier();
 	private static final int LIMIT = 15;
 
 	private final String moreKey;
@@ -63,7 +65,7 @@ public class OpencastSeriesProvider implements ListProvider {
 		}
 		
 		List<OpencastSeries> matchingSeries = series.stream()
-			.filter(s -> s.getTitle().toLowerCase().indexOf(searchValue.toLowerCase()) > -1)
+			.filter(new WildcardFilter(searchValue, SERIES_TITLE_STINGIFIER))
 			.sorted((s1, s2) -> s1.getTitle().compareToIgnoreCase(s2.getTitle()))
 			.collect(Collectors.toList());
 		List<OpencastSeries> limitedSeries = matchingSeries.stream()
@@ -74,6 +76,18 @@ public class OpencastSeriesProvider implements ListProvider {
 		if (matchingSeries.size() > limitedSeries.size()) {
 			receiver.addEntry(moreKey, moreKey);
 		}
+	}
+	
+	private static final class SeriesTitleStingifier implements Function<Object, String> {
+
+		@Override
+		public String apply(Object object) {
+			if (object instanceof OpencastSeries) {
+				return ((OpencastSeries)object).getTitle();
+			}
+			return null;
+		}
+		
 	}
 
 }

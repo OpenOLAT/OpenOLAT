@@ -519,6 +519,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.forms.manager.RubricStatisticCalculatorTest.class,
 	org.olat.modules.forms.model.xml.ScaleTypeTest.class,
 	org.olat.modules.forms.RubricsComparisonTest.class,
+	org.olat.modules.opencast.WildcardFilterTest.class,
 	org.olat.modules.qpool.manager.QuestionPoolServiceImplTest.class,
 	org.olat.modules.qpool.manager.QuestionPoolUserDataDeletableTest.class,
 	org.olat.modules.qpool.manager.review.LowerLimitProviderTest.class,
