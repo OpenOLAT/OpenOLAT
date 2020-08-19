@@ -105,12 +105,12 @@ public class BigBlueButtonOpenCastRecordingsHandler implements BigBlueButtonReco
 			return Collections.emptyList();
 		}
 		
-		List<OpencastEvent> events = opencastService.getEvents(meeting.getIdentifier());
+		List<OpencastEvent> events = opencastService.getEvents(meeting.getMeetingId());
 		List<BigBlueButtonRecording> recordings = new ArrayList<>(events.size());
 		for (OpencastEvent event : events) {
 			String recordId = event.getIdentifier();
 			String name = event.getTitle();
-			String meetingId = meeting.getIdentifier();
+			String meetingId = meeting.getMeetingId();
 			Date startTime = event.getStart();
 			Date endTime = event.getEnd();
 			String url = null;
@@ -213,7 +213,16 @@ public class BigBlueButtonOpenCastRecordingsHandler implements BigBlueButtonReco
 			errors.append(new BigBlueButtonError(BigBlueButtonErrorCodes.opencastDisabled));
 			return false;
 		}
-		
-		return opencastService.deleteEvents(meeting.getIdentifier());
+		boolean success = false;
+		for (BigBlueButtonRecording recording : recordings) {
+			boolean ok = opencastService.deleteEvents(recording.getRecordId());			
+			if (!ok) {
+				log.warn("Could not delete open case event::{} for meetingId::{})", recording.getRecordId(),  meeting.getMeetingId());
+				errors.append(new BigBlueButtonError(BigBlueButtonErrorCodes.unkown));
+				return false;
+			}
+			success &= ok;			
+		}
+		return success;
 	}
 }
