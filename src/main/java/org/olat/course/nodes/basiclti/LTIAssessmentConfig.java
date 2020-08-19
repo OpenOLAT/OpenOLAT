@@ -87,7 +87,7 @@ public class LTIAssessmentConfig implements AssessmentConfig {
 	
 	@Override
 	public Float getCutValue() {
-		if (Mode.none != getPassedMode()) { 
+		if (Mode.none == getPassedMode()) { 
 			throw new OLATRuntimeException(LTIAssessmentConfig.class, "getCutValue not defined when hasPassedConfigured set to false", null);
 		}
 		return config.getFloatEntry(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
