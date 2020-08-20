@@ -779,7 +779,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		
 		String userId = null;
 		if(!guest && identity != null) {
-			userId = WebappHelper.getInstanceId() + "-" + identity.getKey();
+			userId = WebappHelper.getInstanceId() + "-" + identity.getName();
 		}
 
 		BigBlueButtonUriBuilder uriBuilder = getUriBuilder(server);
