@@ -191,7 +191,7 @@ public class BigBlueButtonOpenCastRecordingsHandler implements BigBlueButtonReco
 		// Date of the event
 		uriBuilder.optionalParameter("meta_opencast-dc-created", Formatter.formatDatetime(meetingCreation));
 
-		uriBuilder.optionalParameter("meta_opencast-meta_series-dc-title", seriesTitle);
+		uriBuilder.optionalParameter("meta_opencast-series-dc-title", seriesTitle);
 	}
 	
 	private String creatorFirstLastName(User creator) {
