@@ -179,8 +179,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private DialogBoxController confirmSuspendDialog;
 	
 	private CandidateEvent lastEvent;
-	private Date touchTimestamp;
-	private Date currentRequestTimestamp;
+	private Date touchCacheTimestamp;
 	private AssessmentTestSession candidateSession;
 	private ResolvedAssessmentTest resolvedAssessmentTest;
 	private AssessmentTestMarks marks;
@@ -265,12 +264,10 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		FileResourceManager frm = FileResourceManager.getInstance();
 		fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
 		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
-		touchTimestamp = ureq.getRequestTimestamp();
+		touchCacheTimestamp = ureq.getRequestTimestamp();
 		if(resolvedAssessmentTest == null || resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful() == null) {
 			mainVC = createVelocityContainer("error");
 		} else {
-			currentRequestTimestamp = ureq.getRequestTimestamp();
-			
 			initMarks();
 			initOrResumeAssessmentTestSession(ureq, authorMode);
 			
@@ -280,6 +277,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 					new ResourcesMapper(assessmentObjectUri, submissionDir));
 	
 			/* Handle immediate end of test session */
+			testSessionController.setCurrentRequestTimestamp(ureq.getRequestTimestamp());
 	        if (testSessionController.getTestSessionState() != null && testSessionController.getTestSessionState().isEnded()) {
 	        		immediateEndTestSession(ureq);
 	        		mainVC = createVelocityContainer("end");
@@ -318,7 +316,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
             candidateSession = qtiService.updateAssessmentTestSession(candidateSession);
 		} else {
 			candidateSession = qtiService.finishTestSession(candidateSession, testSessionController.getTestSessionState(), assessmentResult,
-         		currentRequestTimestamp, getDigitalSignatureOptions(), getIdentity());
+					ureq.getRequestTimestamp(), getDigitalSignatureOptions(), getIdentity());
 		}
 	}
 	
@@ -470,7 +468,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 
 	@Override
 	public Date getCurrentRequestTimestamp() {
-		return currentRequestTimestamp;
+		return testSessionController.getCurrentRequestTimestamp();
 	}
 	
 	public boolean isResultsVisible() {
@@ -594,7 +592,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			return false;
 		}
 		
-		testSessionController.touchDurations(currentRequestTimestamp);
+		testSessionController.touchDurations(testSessionController.getCurrentRequestTimestamp());
 		testSessionController.suspendTestSession(requestTimestamp);
 		
 		TestSessionState testSessionState = testSessionController.getTestSessionState();
@@ -677,8 +675,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private void touchResolvedAssessmentTest(UserRequest ureq) {
 		try {
 			Date timestamp = ureq.getRequestTimestamp();
-			if(touchTimestamp == null || (timestamp.getTime() > touchTimestamp.getTime() + 300000l)) {
-				touchTimestamp = timestamp;
+			if(touchCacheTimestamp == null || (timestamp.getTime() > touchCacheTimestamp.getTime() + 300000l)) {
+				touchCacheTimestamp = timestamp;
 				qtiService.touchCachedResolveAssessmentTest(fUnzippedDirRoot);
 			}
 		} catch (Exception e) {
@@ -695,7 +693,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				long durationMillis = testSessionState.getDurationAccumulated();
 				durationMillis += getRequestTimeStampDifferenceToNow();
 				if(durationMillis > maximumAssessmentTestDuration) {
-					currentRequestTimestamp = ureq.getRequestTimestamp();
+					testSessionController.setCurrentRequestTimestamp(ureq.getRequestTimestamp());
 					processExitTestAfterTimeLimit(ureq);
 					return true;
 				}
@@ -746,7 +744,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private Long getLeadingTimeEndTestOption() {
 		if(overrideOptions != null && overrideOptions.getEndTestDate() != null) {
 			Date endTestDate = overrideOptions.getEndTestDate();
-			long diff = endTestDate.getTime() - currentRequestTimestamp.getTime();
+			long diff = endTestDate.getTime() - testSessionController.getCurrentRequestTimestamp().getTime();
 			if(diff < 0l) {
 				diff = 0l;
 			}
@@ -760,9 +758,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	 */
 	private long getRequestTimeStampDifferenceToNow() {
 		long diff = 0l;
-		if(currentRequestTimestamp != null) {
+		if(testSessionController.getCurrentRequestTimestamp() != null) {
 			//take time between 2 reloads if the user reload the page
-			diff = (new Date().getTime() - currentRequestTimestamp.getTime());
+			diff = (new Date().getTime() - testSessionController.getCurrentRequestTimestamp().getTime());
 			if(diff < 0) {
 				diff = 0;
 			}
@@ -775,19 +773,21 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	 */
 	private long getAssessmentTestDuration() {
 		TestSessionState testSessionState = testSessionController.getTestSessionState();
-		long duration = testSessionState.getDurationAccumulated();
-		duration += getRequestTimeStampDifferenceToNow();
-		return duration;
+		
+		Date timestamp = new Date();
+		Date startTime = testSessionState.getDurationIntervalStartTime();
+        final long durationDelta = timestamp.getTime() - startTime.getTime();
+        return testSessionState.getDurationAccumulated() + durationDelta;
 	}
 
 	private void processQTIEvent(UserRequest ureq, QTIWorksAssessmentTestEvent qe) {
 		testSessionController = qtiService.getCachedTestSessionController(candidateSession, testSessionController);
-
+		testSessionController.setCurrentRequestTimestamp(ureq.getRequestTimestamp());
+		
 		if(timeLimitBarrier(ureq) || sessionReseted(ureq) || sessionEndedOrSuspended()) {
 			return;
 		}
 		
-		currentRequestTimestamp = ureq.getRequestTimestamp();
 		switch(qe.getEvent()) {
 			case selectItem:
 				processSelectItem(ureq, qe.getSubCommand());
@@ -1619,7 +1619,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			if(testSessionState.isEnded() || testSessionState.isExited()) return;
 			
 			//close duration
-			testSessionController.touchDurations(currentRequestTimestamp);
+			testSessionController.touchDurations(testSessionController.getCurrentRequestTimestamp());
 			
 	        final Date requestTimestamp = ureq.getRequestTimestamp();
 			testSessionController.exitTestIncomplete(requestTimestamp);
@@ -1698,7 +1698,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
         	if(currentTestPart != null && currentTestPart.getNavigationMode() == NavigationMode.NONLINEAR) {
         		//go to the first assessment item
         		if(testSessionController.hasFollowingNonLinearItem()) {
-        			testSessionController.selectFollowingItemNonLinear(currentRequestTimestamp);
+        			testSessionController.selectFollowingItemNonLinear(ureq.getRequestTimestamp());
         		}
         	}
         }
@@ -1747,7 +1747,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		
         final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
         TestSessionController controller = createTestSessionController(notificationRecorder);
-        if(!controller.getTestSessionState().isEnded() && !controller.getTestSessionState().isExited()) {
+        if(!controller.getTestSessionState().isEnded() && !controller.getTestSessionState().isExited()
+        		&& (controller.getTestSessionState().isSuspended() || controller.getCurrentRequestTimestamp() == null)) {
+        	controller.setCurrentRequestTimestamp(ureq.getRequestTimestamp());
         	controller.unsuspendTestSession(requestTimestamp);
             
             TestSessionState testSessionState = controller.getTestSessionState();
