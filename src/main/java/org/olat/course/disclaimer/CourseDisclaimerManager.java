@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -53,7 +54,7 @@ public interface CourseDisclaimerManager {
 	 * @param disc1Accepted
 	 * @param disc2Accepted
 	 */
-	public void acceptDisclaimer(RepositoryEntry repositoryEntry, Identity identity, boolean disc1Accepted, boolean disc2Accepted);
+	public void acceptDisclaimer(RepositoryEntry repositoryEntry, Identity identity, Roles roles, boolean disc1Accepted, boolean disc2Accepted);
 	
 	/**
 	 * Deletes all disclaimer consent database entries related to a repository entry and a list of users
@@ -86,7 +87,7 @@ public interface CourseDisclaimerManager {
 	 * @param identityRef
 	 * @return boolean
 	 */
-	public boolean isAccessGranted(RepositoryEntry repositoryEntry, IdentityRef identityRef);
+	public boolean isAccessGranted(RepositoryEntry repositoryEntry, IdentityRef identityRef, Roles roles);
 	
 	/**
 	 * Returns whether any disclaimer has been accepted yet 

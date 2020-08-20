@@ -412,6 +412,7 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		user.setProperty(UserConstants.INSTITUTIONALNAME, "Del-23");
 		user.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, "Del-24");
 		Identity identity = securityManager.createAndPersistIdentityAndUser(null, username, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), username, "secret");
+		Roles roles = securityManager.getRoles(identity);
 		dbInstance.commitAndCloseSession();
 		// add some stuff
 		
@@ -431,9 +432,9 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		CourseFactory.saveCourse(courseOres.getResourceableId());
 		CourseFactory.closeCourseEditSession(courseOres.getResourceableId(), true);
 		//a consent to the disclaimer
-		courseDisclaimerManager.acceptDisclaimer(course, identity, true, true);
+		courseDisclaimerManager.acceptDisclaimer(course, identity, roles, true, true);
 		
-		Assert.assertTrue(courseDisclaimerManager.isAccessGranted(course, identity));		
+		Assert.assertTrue(courseDisclaimerManager.isAccessGranted(course, identity, roles));
 		Assert.assertEquals(identity.getName(), course.getInitialAuthor());
 		Assert.assertTrue(repositoryService.hasRoleExpanded(identity, GroupRoles.owner.name()));
 		assertThat(courseDisclaimerManager.getConsents(course)).hasSize(1);
