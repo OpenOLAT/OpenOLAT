@@ -860,7 +860,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		
 		if (!assessmentLock && !isGuestOnly
 				&& LearningPathNodeAccessProvider.TYPE.equals(cc.getNodeAccessType().getType())) {
-			learningPathLink = LinkFactory.createToolLink("learningPath", translate("command.learning.path") + "-LP", this, CourseTool.learningpath.getIconCss());
+			learningPathLink = LinkFactory.createToolLink("learningPath", translate("command.learning.path"), this, CourseTool.learningpath.getIconCss());
 			learningPathLink.setUrl(BusinessControlFactory.getInstance()
 					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[LearningPath:0]"));
 			toolbarPanel.addTool(learningPathLink);
