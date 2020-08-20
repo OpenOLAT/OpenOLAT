@@ -282,7 +282,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		
 		// if a disclaimer is enabled, show it first
 		if (courseModule.isDisclaimerEnabled() && course.getCourseEnvironment().getCourseConfig().isDisclaimerEnabled() && 
-				!disclaimerManager.isAccessGranted(courseRepositoryEntry, getIdentity())) {
+				!disclaimerManager.isAccessGranted(courseRepositoryEntry, getIdentity(), ureq.getUserSession().getRoles())) {
 			disclaimerController = new CourseDisclaimerConsentController(ureq, getWindowControl(), courseRepositoryEntry);
 			listenTo(disclaimerController);
 			coursemain.put("coursemain", disclaimerController.getInitialComponent());

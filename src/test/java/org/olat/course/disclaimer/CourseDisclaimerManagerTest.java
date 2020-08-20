@@ -32,10 +32,12 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
@@ -67,7 +69,9 @@ public class CourseDisclaimerManagerTest extends OlatTestCase {
 	private String disclaimer2Label2 = "Course 2 Label 2";
 	
 	private Identity id1;
+	private Roles roles1;
 	private Identity id2;
+	private Roles roles2;
 
 	private RepositoryEntry repositoryEntry;
 	private ICourse course;
@@ -84,6 +88,8 @@ public class CourseDisclaimerManagerTest extends OlatTestCase {
 	private OLATResourceManager resourceManager;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private BaseSecurityManager baseSecurityManager;
 	
 	
 	@Before
@@ -98,7 +104,9 @@ public class CourseDisclaimerManagerTest extends OlatTestCase {
 				"Test custom course disclaimer");
 		
 		id1 = JunitTestHelper.createAndPersistIdentityAsUser("id1");
+		roles1 = baseSecurityManager.getRoles(id1);
 		id2 = JunitTestHelper.createAndPersistIdentityAsUser("id2");
+		roles2 = baseSecurityManager.getRoles(id2);
 		
 		dbInstance.commitAndCloseSession();
 	}
@@ -155,13 +163,13 @@ public class CourseDisclaimerManagerTest extends OlatTestCase {
 		
 		Assert.assertFalse(courseDisclaimerManager.hasAnyConsent(repositoryEntry));
 		
-		courseDisclaimerManager.acceptDisclaimer(repositoryEntry, id1, true, true);
-		courseDisclaimerManager.acceptDisclaimer(repositoryEntry, id2, true, false);
+		courseDisclaimerManager.acceptDisclaimer(repositoryEntry, id1, roles1, true, true);
+		courseDisclaimerManager.acceptDisclaimer(repositoryEntry, id2, roles2, true, false);
 		
 		dbInstance.commitAndCloseSession();
 		
-		Assert.assertTrue(courseDisclaimerManager.isAccessGranted(repositoryEntry, id1));
-		Assert.assertFalse(courseDisclaimerManager.isAccessGranted(repositoryEntry, id2));
+		Assert.assertTrue(courseDisclaimerManager.isAccessGranted(repositoryEntry, id1, roles1));
+		Assert.assertFalse(courseDisclaimerManager.isAccessGranted(repositoryEntry, id2, roles2));
 		
 		assertThat(courseDisclaimerManager.getConsents(repositoryEntry)).hasSize(2);
 	}
@@ -170,28 +178,28 @@ public class CourseDisclaimerManagerTest extends OlatTestCase {
 	public void revokeAllConsents() {
 		initDisclaimer();
 		
-		courseDisclaimerManager.acceptDisclaimer(repositoryEntry, id1, true, true);
-		courseDisclaimerManager.acceptDisclaimer(repositoryEntry, id2, true, true);
+		courseDisclaimerManager.acceptDisclaimer(repositoryEntry, id1, roles1, true, true);
+		courseDisclaimerManager.acceptDisclaimer(repositoryEntry, id2, roles2, true, true);
 		
 		dbInstance.commitAndCloseSession();
 		
-		Assert.assertTrue(courseDisclaimerManager.isAccessGranted(repositoryEntry, id1));
-		Assert.assertTrue(courseDisclaimerManager.isAccessGranted(repositoryEntry, id2));
+		Assert.assertTrue(courseDisclaimerManager.isAccessGranted(repositoryEntry, id1, roles1));
+		Assert.assertTrue(courseDisclaimerManager.isAccessGranted(repositoryEntry, id2, roles2));
 		
 		courseDisclaimerManager.revokeAllConsents(repositoryEntry);
 		
 		dbInstance.commitAndCloseSession();
 		
-		Assert.assertFalse(courseDisclaimerManager.isAccessGranted(repositoryEntry, id1));
-		Assert.assertFalse(courseDisclaimerManager.isAccessGranted(repositoryEntry, id2));
+		Assert.assertFalse(courseDisclaimerManager.isAccessGranted(repositoryEntry, id1, roles1));
+		Assert.assertFalse(courseDisclaimerManager.isAccessGranted(repositoryEntry, id2, roles2));
 	}
 	
 	@Test
 	public void removeConsents() {
 		initDisclaimer();
 		
-		courseDisclaimerManager.acceptDisclaimer(repositoryEntry, id1, true, true);
-		courseDisclaimerManager.acceptDisclaimer(repositoryEntry, id2, true, true);
+		courseDisclaimerManager.acceptDisclaimer(repositoryEntry, id1, roles1, true, true);
+		courseDisclaimerManager.acceptDisclaimer(repositoryEntry, id2, roles2, true, true);
 		
 		dbInstance.commitAndCloseSession();
 		
@@ -210,13 +218,13 @@ public class CourseDisclaimerManagerTest extends OlatTestCase {
 	public void revokeConsents() {
 		initDisclaimer();
 		
-		courseDisclaimerManager.acceptDisclaimer(repositoryEntry, id1, true, true);
-		courseDisclaimerManager.acceptDisclaimer(repositoryEntry, id2, true, true);
+		courseDisclaimerManager.acceptDisclaimer(repositoryEntry, id1, roles1, true, true);
+		courseDisclaimerManager.acceptDisclaimer(repositoryEntry, id2, roles2, true, true);
 		
 		dbInstance.commitAndCloseSession();
 		
-		Assert.assertTrue(courseDisclaimerManager.isAccessGranted(repositoryEntry, id1));
-		Assert.assertTrue(courseDisclaimerManager.isAccessGranted(repositoryEntry, id2));
+		Assert.assertTrue(courseDisclaimerManager.isAccessGranted(repositoryEntry, id1, roles1));
+		Assert.assertTrue(courseDisclaimerManager.isAccessGranted(repositoryEntry, id2, roles2));
 		
 		List<Long> identitiesToRevoke = new ArrayList<>();
 		identitiesToRevoke.add(id1.getKey());
@@ -224,8 +232,8 @@ public class CourseDisclaimerManagerTest extends OlatTestCase {
 		
 		dbInstance.commitAndCloseSession();
 		
-		Assert.assertFalse(courseDisclaimerManager.isAccessGranted(repositoryEntry, id1));
-		Assert.assertTrue(courseDisclaimerManager.isAccessGranted(repositoryEntry, id2));
+		Assert.assertFalse(courseDisclaimerManager.isAccessGranted(repositoryEntry, id1, roles1));
+		Assert.assertTrue(courseDisclaimerManager.isAccessGranted(repositoryEntry, id2, roles2));
 		assertThat(courseDisclaimerManager.getConsents(repositoryEntry)).hasSize(2);
 	}
 	
@@ -235,8 +243,8 @@ public class CourseDisclaimerManagerTest extends OlatTestCase {
 		
 		Assert.assertFalse(courseDisclaimerManager.hasAnyEntry(repositoryEntry));
 		
-		courseDisclaimerManager.acceptDisclaimer(repositoryEntry, id1, true, true);
-		courseDisclaimerManager.acceptDisclaimer(repositoryEntry, id2, true, true);
+		courseDisclaimerManager.acceptDisclaimer(repositoryEntry, id1, roles1, true, true);
+		courseDisclaimerManager.acceptDisclaimer(repositoryEntry, id2, roles2, true, true);
 		
 		dbInstance.commitAndCloseSession();
 		
@@ -250,8 +258,8 @@ public class CourseDisclaimerManagerTest extends OlatTestCase {
 		
 		Assert.assertFalse(courseDisclaimerManager.hasAnyConsent(repositoryEntry));
 		
-		courseDisclaimerManager.acceptDisclaimer(repositoryEntry, id1, true, true);
-		courseDisclaimerManager.acceptDisclaimer(repositoryEntry, id2, true, true);
+		courseDisclaimerManager.acceptDisclaimer(repositoryEntry, id1, roles1, true, true);
+		courseDisclaimerManager.acceptDisclaimer(repositoryEntry, id2, roles2, true, true);
 		
 		dbInstance.commitAndCloseSession();
 		

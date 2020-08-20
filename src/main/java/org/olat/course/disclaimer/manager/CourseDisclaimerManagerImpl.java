@@ -26,6 +26,7 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.config.CourseConfig;
@@ -72,8 +73,8 @@ public class CourseDisclaimerManagerImpl implements CourseDisclaimerManager, Use
 	}
 
 	@Override
-	public void acceptDisclaimer(RepositoryEntry repositoryEntry, Identity identitiy, boolean disc1Accepted, boolean disc2Accepted) {
-		if (baseSecurityManager.getRoles(identitiy).isGuestOnly()) {
+	public void acceptDisclaimer(RepositoryEntry repositoryEntry, Identity identitiy, Roles roles, boolean disc1Accepted, boolean disc2Accepted) {
+		if (roles.isGuestOnly()) {
 			return;
 		}
 
@@ -94,7 +95,7 @@ public class CourseDisclaimerManagerImpl implements CourseDisclaimerManager, Use
 	}
 
 	@Override
-	public boolean isAccessGranted(RepositoryEntry repositoryEntry, IdentityRef identitiyRef) {
+	public boolean isAccessGranted(RepositoryEntry repositoryEntry, IdentityRef identitiyRef, Roles roles) {
 		CourseConfig courseConfig = CourseFactory.loadCourse(repositoryEntry.getOlatResource().getResourceableId()).getCourseConfig();
 		boolean accessGranted = true;
 		
@@ -115,7 +116,7 @@ public class CourseDisclaimerManagerImpl implements CourseDisclaimerManager, Use
 					accessGranted &= false;
 				}
 			}
-			if (baseSecurityManager.getRoles(identitiyRef).isGuestOnly()) {
+			if (roles.isGuestOnly()) {
 				accessGranted &= false;
 			}
 		}

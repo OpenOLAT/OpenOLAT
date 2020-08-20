@@ -68,7 +68,7 @@ public class CourseDisclaimerConsentController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		disclaimerManager.acceptDisclaimer(repositoryEntry, getIdentity(), courseConfig.isDisclaimerEnabled(1), courseConfig.isDisclaimerEnabled(2));
+		disclaimerManager.acceptDisclaimer(repositoryEntry, getIdentity(), ureq.getUserSession().getRoles(), courseConfig.isDisclaimerEnabled(1), courseConfig.isDisclaimerEnabled(2));
 
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
