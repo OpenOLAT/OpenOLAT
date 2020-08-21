@@ -414,6 +414,9 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		try {
 			LdapContext ctx = bindSystem();
 			String dn = ldapDao.searchUserDNByUid(uid, ctx);
+			if(dn == null) {
+				dn = ldapDao.searchUserForLogin(uid, ctx);
+			}
 
 			List<ModificationItem> modificationItemList = new ArrayList<>();
 			if(ldapLoginModule.isActiveDirectory()) {
@@ -435,8 +438,8 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 
 				//active directory need the password enquoted and unicoded (but little-endian)
 				String quotedPassword = "\"" + pwd + "\"";
-				char unicodePwd[] = quotedPassword.toCharArray();
-				byte pwdArray[] = new byte[unicodePwd.length * 2];
+				char[] unicodePwd = quotedPassword.toCharArray();
+				byte[] pwdArray = new byte[unicodePwd.length * 2];
 				for (int i=0; i<unicodePwd.length; i++) {
 					pwdArray[i*2 + 1] = (byte) (unicodePwd[i] >>> 8);
 					pwdArray[i*2 + 0] = (byte) (unicodePwd[i] & 0xff);
