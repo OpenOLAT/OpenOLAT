@@ -596,7 +596,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 			return null;
 		}
 		if (!userManager.isEmailAllowed(email)) {
-			log.error("Can't create user with email='{}', a user with that email does already exist in the database", email);
+			log.error("Can't create user {} with email='{}', a user with that email does already exist in the database", uid, email);
 			return null;
 		}
 		
