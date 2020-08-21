@@ -175,6 +175,9 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		LdapContext ctx = bindSystem();
 		if(ctx != null) {
 			String userDN = ldapDao.searchUserForLogin(name, ctx);
+			if(userDN == null) {
+				userDN = ldapDao.searchUserDNByUid(name, ctx);
+			}
 			if(StringHelper.containsNonWhitespace(userDN)) {
 				Authentication currentAuth = authenticationDao.getAuthentication(name, LDAPAuthenticationController.PROVIDER_LDAP);
 				if(currentAuth == null || currentAuth.getIdentity().equals(identity)) {
