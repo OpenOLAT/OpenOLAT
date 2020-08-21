@@ -62,7 +62,9 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.condition.additionalconditions.AdditionalConditionManager;
 import org.olat.course.editor.EditorMainController;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
@@ -330,12 +332,18 @@ public class NavigationHandler implements Disposable {
 						controller.addControllerListener(listeningController);
 					}
 				} else {
-					// NOTE: we do not take into account what node caused the non-access by
-					// being !isAtLeastOneAccessible, but always state the
-					// NoAccessExplanation of the Node originally called by the user
-					String explan = courseNode.getNoAccessExplanation();
-					String sExplan = (explan == null ? "" : Formatter.formatLatexFormulas(explan));
-					 controller = MessageUIFactory.createInfoMessage(ureq, wControl, null, sExplan);
+					String sExplan;
+					if (LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(userCourseEnv).getType())) {
+						Translator translator = Util.createPackageTranslator(EditorMainController.class, ureq.getLocale());
+						sExplan = translator.translate("form.noAccessExplanation.default");
+					} else {
+						// NOTE: we do not take into account what node caused the non-access by
+						// being !isAtLeastOneAccessible, but always state the
+						// NoAccessExplanation of the Node originally called by the user
+						String explan = courseNode.getNoAccessExplanation();
+						sExplan = (explan == null ? "" : Formatter.formatLatexFormulas(explan));
+					}
+					controller = MessageUIFactory.createInfoMessage(ureq, wControl, null, sExplan);
 					// write log information
 					ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_NAVIGATION_NODE_NO_ACCESS, getClass(),
 							LoggingResourceable.wrap(courseNode));

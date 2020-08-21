@@ -199,7 +199,8 @@ public class CourseIndexer extends AbstractHierarchicalIndexer {
 
 		CourseNodeIndexer courseNodeIndexer = getCourseNodeIndexer(courseNode);
 		bcContextEntry.setTransientState(new CourseNodeEntry(courseNode));
-		return courseNodeIndexer.checkAccess(bcContextEntry, businessControl, identity, roles)
+		return courseNodeIndexer != null
+				&& courseNodeIndexer.checkAccess(bcContextEntry, businessControl, identity, roles)
 				&& super.checkAccess(bcContextEntry, businessControl, identity, roles);
 	}
 	
