@@ -24,7 +24,6 @@ import java.io.File;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -39,11 +38,10 @@ import org.olat.core.gui.control.WindowControl;
 public class PFFileUploadController extends FormBasicController {
 	
 	private FileElement uploadFileEl;
-	private StaticTextElement typeEl;
 	
 	private File uploadFile;
 	private String uploadFileName;
-	private boolean uploadToAll;
+	private final boolean uploadToAll;
 
 	public PFFileUploadController(UserRequest ureq, WindowControl wControl, boolean uploadToall) {
 		super(ureq, wControl);
@@ -54,32 +52,32 @@ public class PFFileUploadController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-
 		uploadFileEl = uifactory.addFileElement(getWindowControl(), "upload", "textfield.upload", formLayout);
 		uploadFileEl.addActionListener(FormEvent.ONCHANGE);
 		
-		
-		typeEl = uifactory.addStaticTextElement("video.mime.type", "video.mime.type", "", formLayout);
-		typeEl.setVisible(false);		
-	
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonGroupLayout);
+		uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("submit", "upload.link", buttonGroupLayout);
+	}
+	
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if (uploadFileEl.isUploadSuccess()) {
-			this.uploadFile = uploadFileEl.getUploadFile();
-			this.uploadFileName = uploadFileEl.getUploadFileName();
-			this.fireEvent(ureq, Event.DONE_EVENT);	
+			uploadFile = uploadFileEl.getUploadFile();
+			uploadFileName = uploadFileEl.getUploadFileName();
+			fireEvent(ureq, Event.DONE_EVENT);	
 		}
-		
 	}
 
 	@Override
 	protected void doDispose() {
-
+		//
 	}
 	
 	protected File getUpLoadFile () {
@@ -93,5 +91,4 @@ public class PFFileUploadController extends FormBasicController {
 	protected boolean isUploadToAll () {
 		return uploadToAll;
 	}
-
 }

@@ -157,9 +157,9 @@ public class PFCoachController extends FormBasicController implements Controller
 					pfManager.uploadFileToDropBox(pfFileUploadCtr.getUpLoadFile(),
 							pfFileUploadCtr.getUploadFileName(), 4, courseEnv, pfNode, getIdentity());
 				}
-				cmc.deactivate();
-				cleanUpCMC();
-			}			
+			}
+			cmc.deactivate();
+			cleanUpCMC();
 		} else if (source == cmc) {
 			cleanUpCMC();
 		}
