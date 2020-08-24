@@ -36,6 +36,8 @@ import org.olat.core.util.ValidationStatus;
  *
  */
 abstract class FormButton extends FormItemImpl {
+	
+	private boolean newWindowAfterDispatchUrl;
 
 	/**
 	 * @param name
@@ -50,6 +52,14 @@ abstract class FormButton extends FormItemImpl {
 	 */
 	public FormButton(String id, String name) {
 		super(id, name, false);
+	}
+	
+	public boolean isNewWindowAfterDispatchUrl() {
+		return newWindowAfterDispatchUrl;
+	}
+
+	public void setNewWindowAfterDispatchUrl(boolean newWindowAfterDispatchUrl) {
+		this.newWindowAfterDispatchUrl = newWindowAfterDispatchUrl;
 	}
 	
 	/* (non-Javadoc)

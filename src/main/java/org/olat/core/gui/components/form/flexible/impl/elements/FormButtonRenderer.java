@@ -28,6 +28,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
+import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -61,7 +62,14 @@ class FormButtonRenderer extends DefaultComponentRenderer {
 		} else if (fs.hasFocus()) {
 			sb.append(" autofocus");
 		}
-		sb.append(FormJSHelper.getRawJSFor(fs.getRootForm(), id, fs.getAction()));
+		
+		StringBuilder js;
+		if(fs.isNewWindowAfterDispatchUrl()) {
+			js = FormJSHelper.getRawJSFor(fs.getRootForm(), id, fs.getAction(), new NameValuePair("oo-opennewwindow-oo", "true"));
+		} else {
+			js = FormJSHelper.getRawJSFor(fs.getRootForm(), id, fs.getAction());
+		}
+		sb.append(js);
 		sb.append(" class=\"btn");
 		if (fsC.getIsSubmitAndValidate()) {
 			sb.append(" btn-primary");			

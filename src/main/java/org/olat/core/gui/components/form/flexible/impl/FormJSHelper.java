@@ -60,7 +60,7 @@ public class FormJSHelper {
 	 * @param actions
 	 * @return
 	 */
-	public static StringBuilder getRawJSFor(Form form, String id, int actions) {
+	public static StringBuilder getRawJSFor(Form form, String id, int actions, NameValuePair... pairs) {
 		StringBuilder sb = new StringBuilder(64);
 		// find correct action! only one action supported
 		for (int i = FormEvent.ON_DOTDOTDOT.length - 1; i >= 0; i--) {
@@ -69,7 +69,7 @@ public class FormJSHelper {
 			if (actions - FormEvent.ON_DOTDOTDOT[i] == 0) {
 				sb.append(" on").append(EXTJSACTIONS[i]);// javascript action
 				sb.append("=\"");
-				sb.append(getJSFnCallFor(form, id, i));
+				sb.append(getJSFnCallFor(form, id, i, pairs));
 				sb.append("\"");
 				break;
 			}
@@ -77,7 +77,7 @@ public class FormJSHelper {
 		return sb;
 	}
 
-	public static String getJSFnCallFor(Form form, String id, int actionIndex) {
+	public static String getJSFnCallFor(Form form, String id, int actionIndex, NameValuePair... pairs) {
 		StringBuilder sb = new StringBuilder(64);
 		sb.append("o_ffEvent('")
 		  .append(form.getFormName()).append("','")
@@ -85,7 +85,18 @@ public class FormJSHelper {
 		  .append(id).append("','")
 		  .append(form.getEventFieldId()).append("','")
 		  .append(FormEvent.ON_DOTDOTDOT[actionIndex])
-		  .append("')");
+		  .append("'");
+		if(pairs != null && pairs.length > 0) {
+			for(NameValuePair pair:pairs) {
+				if(pair != null) {
+					sb.append(",'")
+					  .append(pair.getName()).append("','")
+					  .append(pair.getValue())
+					  .append("'");
+				}
+			}
+		}
+		sb.append(")");
 		return sb.toString();
 	}
 	

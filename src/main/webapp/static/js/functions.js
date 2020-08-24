@@ -509,7 +509,7 @@ function o_postInvoke(r, newWindow) {
 			if(co == 8) {
 				var url = acmd["cda"].nwrurl;
 				if(url == "close-window") {
-					newWindow.close()
+					newWindow.close();
 				} else {
 					newWindow.location.href = url;
 					newWindow.focus();
@@ -1314,6 +1314,15 @@ function o_ffEvent(formNam, dispIdField, dispId, eventIdField, eventInt){
 			formValid = false;
 		});
 	if (formValid) {
+		if(arguments.length > 4) {
+			for(var j=4; j<arguments.length; j++) {
+				if(arguments[j] == "oo-opennewwindow-oo") {
+					o_info.newWindow = window.open("","_blank");
+					o_info.newWindow.blur();
+				}
+			}
+		}
+		
 		var enctype = form.attr('enctype');
 		if(enctype && enctype.indexOf("multipart") == 0) {
 			form.submit(); // jQuery send onsubmit events
@@ -1341,7 +1350,12 @@ function o_TableMultiActionEvent(formNam, action){
 }
 
 function o_XHRSubmit(formNam) {
+	var newWindow = o_info.newWindow;
+	o_info.newWindow = null;
 	if(o_info.linkbusy) {
+		if(newWindow !== "undefined" && newWindow != null) {
+			newWindow.close();
+		}
 		return false;
 	}
 
@@ -1372,7 +1386,12 @@ function o_XHRSubmit(formNam) {
 				enctype: 'multipart/form-data',
 			    processData: false,
 				dataType: 'json',
-				success: o_onXHRSuccess,
+				success: function(returnedData, textStatus, jqXHR) {
+					o_onXHRSuccess(returnedData, textStatus, jqXHR);
+					if(newWindow !== "undefined" && newWindow != null) {
+						o_postInvoke(returnedData, newWindow);
+					}
+				},
 				error: o_onXHRError
 			});
 			return false;
@@ -1399,13 +1418,18 @@ function o_XHRSubmit(formNam) {
 			}
 		}
 	
-		var targetUrl = form.attr("action");
-		jQuery.ajax(targetUrl,{
+		var actionUrl = form.attr("action");
+		jQuery.ajax(actionUrl, {
 			type:'POST',
 			data: data,
 			cache: false,
 			dataType: 'json',
-			success: o_onXHRSuccess,
+			success: function(returnedData, textStatus, jqXHR) {
+				o_onXHRSuccess(returnedData, textStatus, jqXHR);
+				if(newWindow !== "undefined" && newWindow != null) {
+					o_postInvoke(returnedData, newWindow);
+				}
+			},
 			error: o_onXHRError
 		});
 		return false;
