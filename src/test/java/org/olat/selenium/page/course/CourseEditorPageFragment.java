@@ -321,7 +321,7 @@ public class CourseEditorPageFragment {
 	 * @return Itself
 	 */
 	public CourseEditorPageFragment selectTabLearnContent() {
-		OOGraphene.selectTab("o_node_config", (b) -> {
+		OOGraphene.selectTab("o_node_config", b -> {
 			for(By chooseRepoEntriesButton: chooseRepoEntriesButtonList) {
 				List<WebElement> chooseRepoEntry = b.findElements(chooseRepoEntriesButton);
 				if(!chooseRepoEntry.isEmpty()) {
@@ -470,24 +470,31 @@ public class CourseEditorPageFragment {
 	private CourseEditorPageFragment createResource(By chooseButton, String resourceTitle, String resourceType) {
 		browser.findElement(chooseButton).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
+		
 		//popup
-		WebElement popup = browser.findElement(By.className("o_sel_search_referenceable_entries"));
-		popup.findElement(By.cssSelector("a.o_sel_repo_popup_my_resources")).click();
+		By myResourcesBy = By.cssSelector(".modal-body .o_sel_search_referenceable_entries a.o_sel_repo_popup_my_resources");
+		OOGraphene.waitElement(myResourcesBy, browser);
+		browser.findElement(myResourcesBy).click();
 		OOGraphene.waitBusy(browser);
+		By mySelectedResourcesBy = By.cssSelector(".modal-body .o_sel_search_referenceable_entries a.btn-primary.o_sel_repo_popup_my_resources");
+		OOGraphene.waitElement(mySelectedResourcesBy, browser);
 		
 		//click create
-		List<WebElement> createEls = popup.findElements(By.className("o_sel_repo_popup_create_resource"));
+		By createResourceBy = By.cssSelector(".o_sel_search_referenceable_entries .o_sel_repo_popup_create_resource");
+		List<WebElement> createEls = browser.findElements(createResourceBy);
 		if(createEls.isEmpty()) {
 			//open drop down
-			popup.findElement(By.className("o_sel_repo_popup_create_resources")).click();
+			By createResourcesBy = By.cssSelector("button.o_sel_repo_popup_create_resources");
+			browser.findElement(createResourcesBy).click();
 			//choose the right type
 			By selectType = By.xpath("//ul[contains(@class,'o_sel_repo_popup_create_resources')]//a[contains(@onclick,'" + resourceType + "')]");
-			popup.findElement(selectType).click();
-			OOGraphene.waitBusy(browser);
+			OOGraphene.waitElement(selectType, browser);
+			browser.findElement(selectType).click();
 		} else {
-			popup.findElement(By.className("o_sel_repo_popup_create_resource")).click();
-			OOGraphene.waitBusy(browser);
+			browser.findElement(createResourceBy).click();	
 		}
+		OOGraphene.waitBusy(browser);
 
 		//fill the create form
 		return fillCreateForm(resourceTitle);
@@ -496,6 +503,7 @@ public class CourseEditorPageFragment {
 	private CourseEditorPageFragment fillCreateForm(String displayName) {
 		OOGraphene.waitModalDialog(browser);
 		By inputBy = By.cssSelector("div.modal.o_sel_author_create_popup div.o_sel_author_displayname input");
+		OOGraphene.waitElement(inputBy, browser);
 		browser.findElement(inputBy).sendKeys(displayName);
 		By submitBy = By.cssSelector("div.modal.o_sel_author_create_popup .o_sel_author_create_submit");
 		browser.findElement(submitBy).click();
