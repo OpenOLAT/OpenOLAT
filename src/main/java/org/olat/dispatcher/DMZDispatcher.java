@@ -214,7 +214,7 @@ public class DMZDispatcher implements Dispatcher {
 					// when a previous user logged off, and 30min later (when the httpsession is invalidated), the next user clicks e.g. on 
 					// the log-in link in the -same- browser window ->
 					// -> there is no window -> create a new one
-					if(ignoreMisssingWindow(request)) {
+					if(ignoreMissingWindow(request)) {
 						DispatcherModule.setNotContent(request.getPathInfo(), response);
 						return;
 					}
@@ -291,7 +291,7 @@ public class DMZDispatcher implements Dispatcher {
 		}
 	}
 	
-	private boolean ignoreMisssingWindow(HttpServletRequest request) {
+	private boolean ignoreMissingWindow(HttpServletRequest request) {
 		String pathInfo = request.getPathInfo();
 		if(pathInfo.contains("cid:close-window")) {
 			return true;

@@ -82,6 +82,8 @@ import org.olat.core.gui.control.navigation.BornSiteInstance;
 import org.olat.core.gui.control.navigation.NavElement;
 import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.gui.control.util.ZIndexWrapper;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
@@ -94,8 +96,6 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.id.context.HistoryPointImpl;
-import org.olat.core.id.context.StateEntry;
-import org.olat.core.id.context.StateSite;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
@@ -667,7 +667,8 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 				
 				HistoryPoint point = ureq.getUserSession().popLastHistoryEntry();
 				if(point != null) {
-					back(ureq, point);
+					Command reloadCmd = CommandFactory.reloadWindow();
+					getWindow().getWindowBackOffice().sendCommandTo(reloadCmd);
 				}
 			}
 		} else if (source == mainVc) {
@@ -681,40 +682,6 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 				mainVc.setDirty(false);
 			} else if("close-window".equals(event.getCommand())) {
 				getWindow().setMarkToBeRemoved(true);
-			}
-		}
-	}
-	
-	protected void back(UserRequest ureq, HistoryPoint cstate) {
-		List<ContextEntry> entries = cstate.getEntries();
-		if(entries.isEmpty()) return;
-		
-		entries = new ArrayList<>(entries);
-		
-		ContextEntry state = entries.remove(0);
-		if(state == null) return;//no red screen for this
-		
-		OLATResourceable ores = state.getOLATResourceable();
-		if(ores != null && "HomeSite".equals(ores.getResourceableTypeName())) {
-			activateSite(userTools, ureq, entries, false);
-		} else {
-			DTab dt = getDTab(ores);
-			if(dt != null) {
-				doActivateDTab(dt);
-				if(dt.getController() instanceof Activateable2) {
-					((Activateable2)dt.getController()).activate(ureq, entries, null);
-				}
-				updateBusinessPath(ureq, dt);
-			} else {
-				StateEntry s = state.getTransientState();
-				if(s instanceof StateSite && ((StateSite)s).getSite() != null && sites != null) {
-					SiteInstance site = ((StateSite)s).getSite();
-					for(SiteInstance savedSite:sites) {
-						if(savedSite != null && site.getClass().equals(savedSite.getClass())) {
-							activateSite(savedSite, ureq, entries, false);
-						}
-					}
-				}
 			}
 		}
 	}
