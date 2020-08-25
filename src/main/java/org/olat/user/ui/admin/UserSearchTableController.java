@@ -618,7 +618,9 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		List<Long> identityKeys = new ArrayList<>(selections.size());
 		for(Integer selection:selections) {
 			IdentityPropertiesRow row = tableModel.getObject(selection.intValue());
-			identityKeys.add(row.getIdentityKey());
+			if(row != null) {
+				identityKeys.add(row.getIdentityKey());
+			}
 		}
 		return securityManager.loadIdentityByKeys(identityKeys);
 	}
