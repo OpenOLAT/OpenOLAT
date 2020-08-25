@@ -1,0 +1,12 @@
+build:
+  artifacts:
+    paths:
+      - target/
+    expire_in: 30 days
+  image: maven
+  script:
+    - mvn clean install 
+    #- mvn -Declipse.workspace=m2/ eclipse:configure-workspace
+    #- mvn eclipse:clean eclipse:eclipse
+    #- mvn archetype:generate
+#egi
