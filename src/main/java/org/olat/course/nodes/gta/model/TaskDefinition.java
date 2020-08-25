@@ -35,6 +35,17 @@ public class TaskDefinition implements Serializable {
 	private String description;
 	private String filename;
 	
+	public TaskDefinition() {
+		//
+	}
+	
+	public static TaskDefinition fromFile(String filename) {
+		TaskDefinition def = new TaskDefinition();
+		def.setFilename(filename);
+		def.setTitle(filename);
+		return def;
+	}
+	
 	public String getTitle() {
 		return title;
 	}
