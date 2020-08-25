@@ -177,7 +177,7 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			ICourse course, UserCourseEnvironment euce) {
 		ProjectBrokerCourseEditorController childTabCntrllr = ProjectBrokerControllerFactory
-				.createCourseEditController(ureq, wControl, course, euce, this);
+				.createCourseEditController(ureq, wControl, course, this);
 		CourseNode chosenNode = course.getEditorTreeModel()
 				.getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		NodeEditController editController = new NodeEditController(ureq, wControl, course, chosenNode, euce,
@@ -223,22 +223,13 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public Controller createPreviewController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
-		return ProjectBrokerControllerFactory.createPreviewController(ureq, wControl, userCourseEnv, this);
-	}
-
-	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
 		if (nodeSecCallback.isAccessible()) {
-			Controller peekViewController = ProjectBrokerControllerFactory.createPeekViewRunController(ureq, wControl,
-					userCourseEnv, this);
-			return peekViewController;
-		} else {
-			// use standard peekview
-			return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback);
+			return ProjectBrokerControllerFactory.createPeekViewRunController(ureq, wControl, userCourseEnv, this);
 		}
+		// use standard peekview
+		return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback);
 	}
 
 	@Override

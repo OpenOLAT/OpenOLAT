@@ -123,7 +123,7 @@ public class ProjectListController extends BasicController implements GenericEve
 	 * @param ne
 	 * @param previewMode
 	 */
-	protected ProjectListController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNode courseNode, boolean previewMode) {
+	protected ProjectListController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNode courseNode) {
 		super(ureq, wControl);
 		this.userCourseEnv = userCourseEnv;
 		this.courseNode = courseNode;
@@ -154,8 +154,7 @@ public class ProjectListController extends BasicController implements GenericEve
 		contentVC.contextPut("infoProjectBrokerRunMode", infoProjectBrokerRunMode);
 		mainPanel = new SimpleStackedPanel("projectlist_panel");
 		CoursePropertyManager cpm = userCourseEnv.getCourseEnvironment().getCoursePropertyManager();
-		if ((projectGroupManager.isAccountManager(ureq.getIdentity(), cpm, courseNode ) && !previewMode)
-				|| userCourseEnv.isAdmin()) {
+		if (projectGroupManager.isAccountManager(ureq.getIdentity(), cpm, courseNode ) || userCourseEnv.isAdmin()) {
 			contentVC.contextPut("isAccountManager", true);
 			createNewProjectButton = LinkFactory.createButtonSmall("create.new.project.button", contentVC, this);
 			createNewProjectButton.setIconLeftCSS("o_icon o_icon_add");
@@ -172,7 +171,7 @@ public class ProjectListController extends BasicController implements GenericEve
 			ProjectBroker projectBroker = projectBrokerManager.createAndSaveProjectBroker();
 			projectBrokerId = projectBroker.getKey();
 			projectBrokerManager.saveProjectBrokerId(projectBrokerId, cpm, courseNode);
-			getLogger().info("no project-broker exist => create a new one projectBrokerId=" + projectBrokerId);
+			getLogger().info("no project-broker exist => create a new one projectBrokerId={}", projectBrokerId);
 		}
 
 		tableController = createTableController(ureq, wControl);
