@@ -35,6 +35,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -108,7 +109,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author Florian Gnägi
  */
 public class FileUploadController extends FormBasicController {
-	
+	/**
+	 * Extra validation for the htmlLinkValidation option
+	 */
+	private static final char[] HTML_EXTRA_FORBIDDEN_CHARS =  { '+' };
+	static {
+		Arrays.sort(HTML_EXTRA_FORBIDDEN_CHARS);
+	}
+
 	private static final String[] resizeKeys = new String[]{"resize"};
 	private int status = FolderCommandStatus.STATUS_SUCCESS;
 
@@ -129,6 +137,7 @@ public class FileUploadController extends FormBasicController {
 	private long remainingQuotKB;
 	private Set<String> mimeTypes;
 	private boolean uriValidation;
+	private boolean htmlLinkValidation;
 	//
 	// Form elements
 	private FileElement fileEl;
@@ -836,6 +845,14 @@ public class FileUploadController extends FormBasicController {
 		}
 	}
 
+	public boolean isHtmlLinkValidation() {
+		return htmlLinkValidation;
+	}
+
+	public void setHtmlLinkValidation(boolean htmlLinkValidation) {
+		this.htmlLinkValidation = htmlLinkValidation;
+	}
+
 	public String getNewFileName() {
 		return (this.newFile != null) ? this.newFile.getName() : null; 
 	}
@@ -953,6 +970,15 @@ public class FileUploadController extends FormBasicController {
 			} catch(Exception e) {
 				itemEl.setErrorKey("cfile.name.notvalid.uri", null);
 				allOk &= false;
+			}
+		} else if(htmlLinkValidation) {
+			for(int i=0; i<filename.length(); i++) {
+				char character = filename.charAt(i);
+				if(Arrays.binarySearch(HTML_EXTRA_FORBIDDEN_CHARS, character) >= 0) {
+					itemEl.setErrorKey("cfile.name.notvalid", null);
+					allOk &= false;
+					break;
+				}
 			}
 		}
 		

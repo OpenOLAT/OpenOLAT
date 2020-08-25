@@ -98,7 +98,8 @@ public class FileLinkChooserController extends BasicController {
 	 *          index.html
 	 */
 	public FileLinkChooserController(UserRequest ureq, WindowControl wControl,
-			VFSContainer rootDir, String uploadRelPath, String absolutePath, String[] suffixes, boolean uriValidation, String fileName) {
+			VFSContainer rootDir, String uploadRelPath, String absolutePath, String[] suffixes,
+			boolean uriValidation, boolean htmlLinkValidation, String fileName) {
 		super(ureq, wControl);
 		this.fileName = fileName;
 		this.suffixes = suffixes;
@@ -173,6 +174,7 @@ public class FileLinkChooserController extends BasicController {
 			
 			uploadCtr = new FileUploadController(wControl, fileUploadBase, ureq, uploadLimit, remainingSpace,
 					mimeTypes, uriValidation, true, false, true, true, false);
+			uploadCtr.setHtmlLinkValidation(htmlLinkValidation);
 			listenTo(uploadCtr);
 			// set specific upload path
 			uploadCtr.setUploadRelPath(uploadRelPath);
