@@ -20,11 +20,17 @@
 package org.olat.admin.layout;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.dispatcher.mapper.GlobalMapperRegistry;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -46,6 +52,7 @@ import org.springframework.stereotype.Service;
 public class LayoutModule extends AbstractSpringModule  {
 	
 	public static final OLATResourceable layoutCustomizingOResourceable = OresHelper.createOLATResourceableType("LayoutCustomizing");
+	private static final Logger log = Tracing.createLoggerFor(LayoutModule.class);
 
 	private static final String LOGO_FILENAME = "logo.filename";
 	private static final String LOGO_ALT = "logo.alt";
@@ -74,47 +81,24 @@ public class LayoutModule extends AbstractSpringModule  {
 		super(coordinatorManager);
 	}
 
+	public String getConfigProperty(String property) {
+		String propertyObj = getStringPropertyValue(property, true);
+		if(StringHelper.containsNonWhitespace(propertyObj)) {
+			return propertyObj;
+		} else {
+			return null;
+		}
+	}
+
 	@Override
 	public void init() {
 		logoUri = GlobalMapperRegistry.getInstance().register("logo", new LogoMapper(this));
-		
-		String filenameObj = getStringPropertyValue(LOGO_FILENAME, true);
-		if(StringHelper.containsNonWhitespace(filenameObj)) {
-			logoFilename = filenameObj;
-		} else {
-			logoFilename = null;
-		}
-		String logoAltObj = getStringPropertyValue(LOGO_ALT, true);
-		if(StringHelper.containsNonWhitespace(logoAltObj)) {
-			logoAlt = logoAltObj;
-		} else {
-			logoAlt = null;
-		}
-		String logoLinkTypeObj = getStringPropertyValue(LOGO_LINK_TYPE, true);
-		if(StringHelper.containsNonWhitespace(logoLinkTypeObj)) {
-			logoLinkType = logoLinkTypeObj;
-		} else {
-			logoLinkType = null;
-		}
-		String logoUriObj = getStringPropertyValue(LOGO_URI, true);
-		if(StringHelper.containsNonWhitespace(logoUriObj)) {
-			logoLinkUri = logoUriObj;
-		} else {
-			logoLinkUri = null;
-		}
-		
-		String footerUriObj = getStringPropertyValue(FOOTER_URI, true);
-		if(StringHelper.containsNonWhitespace(footerUriObj)) {
-			footerLinkUri = footerUriObj;
-		} else {
-			footerLinkUri = null;
-		}
-		String footerLineObj = getStringPropertyValue(FOOTER_LINE, true);
-		if(StringHelper.containsNonWhitespace(footerLineObj)) {
-			footerLine = footerLineObj;
-		} else {
-			footerLine = null;
-		}
+		logoFilename = getConfigProperty(LOGO_FILENAME);
+		logoAlt = getConfigProperty(LOGO_ALT);
+		logoLinkType = getConfigProperty(LOGO_LINK_TYPE);
+		logoLinkUri = getConfigProperty(LOGO_URI);
+		footerLinkUri = getConfigProperty(FOOTER_URI);
+		footerLine = getConfigProperty(FOOTER_LINE);
 	}
 
 	@Override
@@ -134,11 +118,7 @@ public class LayoutModule extends AbstractSpringModule  {
 		logoFilename = filename;
 		setStringProperty(LOGO_FILENAME, filename, true);
 	}
-	
-	public void updateLogo(String filename) {
-		setLogoFilename(filename);
-	}
-	
+
 	public File getLogo() {
 		File logo = null;
 		String filename = getLogoFilename();
@@ -155,22 +135,29 @@ public class LayoutModule extends AbstractSpringModule  {
 		}
 		return dir;
 	}
-	
+
+	private void removeAndLog(Path path) throws IOException {
+		boolean deleteSuccess = Files.deleteIfExists(path);
+		if (!deleteSuccess) {
+			log.warn("Deleting file {} failed.", path);
+		}
+	}
+
 	public void removeLogo() {
-		File logo = getLogo();
-		if(logo != null && logo.exists()) {
-			logo.delete();
-		}
 		File dir = getLogoDirectory();
-		File logo1x = new File(dir, "oo-logo@1x.png");
-		if(logo1x.exists()) {
-			logo1x.delete();
+		try {
+			File logo = getLogo();
+
+			Path logoDir = Paths.get(dir.getAbsolutePath());
+			if (logo != null && FileUtils.directoryContains(dir, logo)) {
+				removeAndLog(logo.toPath());
+			}
+			removeAndLog(logoDir.resolve("oo-logo@1x.png"));
+			removeAndLog(logoDir.resolve("oo-logo@2x.png"));
+			setLogoFilename("");
+		} catch (IOException e) {
+			log.warn("IO Error occured deleting logo in {}", dir);
 		}
-		File logo2x = new File(dir, "oo-logo@2x.png");
-		if(logo2x.exists()) {
-			logo2x.delete();
-		}
-		setLogoFilename("");
 	}
 	
 	public String getLogoAlt() {

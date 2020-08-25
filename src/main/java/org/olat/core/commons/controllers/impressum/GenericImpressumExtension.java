@@ -19,10 +19,8 @@
  */
 package org.olat.core.commons.controllers.impressum;
 
-import org.olat.core.extensions.ExtensionElement;
+import org.olat.core.extensions.action.GenericActionExtension;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.vfs.LocalFolderImpl;
 
@@ -30,25 +28,32 @@ import org.olat.core.util.vfs.LocalFolderImpl;
  * Initial date: 12 Apr 2020<br>
  * @author aboeckle, alexander.boeckle@frentix.com
  */
-public class PrivacyPolicyExtension extends GenericImpressumExtension {
+public class GenericImpressumExtension extends GenericActionExtension {
 
-	public PrivacyPolicyExtension(ImpressumModule impressumModule, I18nModule i18nModule) {
-		super(impressumModule, i18nModule);
+	protected final ImpressumModule impressumModule;
+	protected final I18nModule i18nModule;
+	private static final String INDEX_HTML = "index_%s.html";
+
+	public GenericImpressumExtension(ImpressumModule impressumModule, I18nModule i18nModule) {
+		this.impressumModule = impressumModule;
+		this.i18nModule = i18nModule;
 	}
 
-	@Override
-	public Controller createController(UserRequest ureq, WindowControl wControl, Object arg) {
-		return new PrivacyPolicyController(ureq, wControl);
-	}
-
-	@Override
-	public ExtensionElement getExtensionFor(String extensionPoint, UserRequest ureq) {
+	protected boolean isModuleEnabled(LocalFolderImpl baseFolder, UserRequest ureq) {
 		boolean enabled = false;
 		
-		if (impressumModule.isEnabled()) {
-			LocalFolderImpl impressumDir = new LocalFolderImpl(impressumModule.getPrivacyPolicyDirectory());
-			enabled = isModuleEnabled(impressumDir, ureq);
+		if (baseFolder.isSafeHtmlFile(String.format(INDEX_HTML, ureq.getLocale().getLanguage()))) {
+			enabled = true;
+		} else if (baseFolder.isSafeHtmlFile(String.format(INDEX_HTML, I18nModule.getDefaultLocale().getLanguage()))) {
+			enabled = true;
+		} else {
+			for (String locale : i18nModule.getEnabledLanguageKeys()) {
+				if (baseFolder.isSafeHtmlFile(String.format(INDEX_HTML, locale))) {
+					enabled = true;
+					break;
+				}
+			}
 		}
-		return enabled ? super.getExtensionFor(extensionPoint, ureq) : null;
+		return enabled;
 	}
 }

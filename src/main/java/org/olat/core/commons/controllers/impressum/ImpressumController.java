@@ -46,6 +46,8 @@ public class ImpressumController extends BasicController {
 	@Autowired
 	private I18nModule i18nModule;
 
+	private static final String index_html = "index_%s.html";
+
 	/**
 	 * @param ureq
 	 * @param control
@@ -57,17 +59,17 @@ public class ImpressumController extends BasicController {
 		listenTo(iframe);
 		
 		String langCode = ureq.getLocale().getLanguage();
-		String fileName = "index_" + langCode + ".html";
+		String fileName = String.format(index_html, langCode);
 		if (new File (baseFolder, fileName).exists()){
 			iframe.setCurrentURI(fileName);
 		} else {
 			langCode = I18nModule.getDefaultLocale().getLanguage();
-			fileName = "index_" + langCode + ".html";
+			fileName = String.format(index_html, langCode);
 			if (new File(baseFolder, fileName).exists()) {
 				iframe.setCurrentURI(fileName);
 			} else {
 				for (String lang : i18nModule.getEnabledLanguageKeys()) {
-					fileName = "index_" + lang + ".html";
+					fileName = String.format(index_html, lang);
 					if (new File(baseFolder, fileName).exists()) {
 						iframe.setCurrentURI(fileName);
 						break;
