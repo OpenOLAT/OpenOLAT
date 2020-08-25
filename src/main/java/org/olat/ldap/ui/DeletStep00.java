@@ -120,7 +120,6 @@ public class DeletStep00 extends BasicStep{
 			
 			FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 			int colPos = 0;
-			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("username", 10000));
 			for (UserPropertyHandler userProperty : handlers) {
 				tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(userProperty.i18nColumnDescriptorLabelKey(), colPos++));
 			}
