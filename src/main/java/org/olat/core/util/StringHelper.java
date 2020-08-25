@@ -475,6 +475,8 @@ public class StringHelper {
 	 * @return transformed string
 	 */
 	public static String transformDisplayNameToFileSystemName(String s){
+		if(s == null) return "";
+		
 		//replace some separator with an underscore
 		s = s.replace('?', '_').replace('\\', '_').replace('/', '_').replace(' ', '_');
 		//remove all non-ascii characters

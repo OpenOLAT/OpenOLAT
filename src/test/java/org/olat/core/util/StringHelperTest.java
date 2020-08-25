@@ -92,6 +92,11 @@ public class StringHelperTest {
 	}
 	
 	@Test
+	public void transformDisplayNameToFileSystemNameNull() {
+		Assert.assertEquals("", StringHelper.transformDisplayNameToFileSystemName(null));
+	}
+	
+	@Test
 	public void filterPrintControlCharacter() {
 		String value1 = StringHelper.cleanUTF8ForXml("Hello world");
 		Assert.assertEquals("Dummy test", "Hello world", value1);

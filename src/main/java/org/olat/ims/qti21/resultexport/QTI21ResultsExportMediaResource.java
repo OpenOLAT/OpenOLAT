@@ -279,6 +279,10 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 
 		List<AssessedMember> assessedMembers = new ArrayList<>();		
 		for(Identity identity : identities) {
+			if(identity == null || identity.getStatus() == null || identity.getStatus().equals(Identity.STATUS_DELETED)) {
+				continue;
+			}
+			
 			String lastname = StringHelper.transformDisplayNameToFileSystemName(identity.getUser().getLastName());
 			String idDir = exportFolderName + "/" + DATA + lastname + "_" + identity.getKey();
 			idDir = idDir.endsWith(SEP) ? idDir : idDir + SEP;
