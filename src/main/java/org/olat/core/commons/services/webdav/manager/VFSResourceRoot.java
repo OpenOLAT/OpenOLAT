@@ -40,6 +40,7 @@ import org.olat.core.commons.services.webdav.servlets.WebResourceRoot;
 import org.olat.core.id.Identity;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaExceededException;
 import org.olat.core.util.vfs.VFSConstants;
@@ -60,7 +61,6 @@ import org.olat.core.util.vfs.filters.VFSItemFilter;
 public class VFSResourceRoot implements WebResourceRoot  {
 	
 	private static final Logger log = Tracing.createLoggerFor(VFSResourceRoot.class);
-	private static final int BUFFER_SIZE = 2048;
 	
 	private final Identity identity;
 	private final VFSContainer base;
@@ -266,7 +266,7 @@ public class VFSResourceRoot implements WebResourceRoot  {
 			}
 		}
 		// Open os
-		byte[] buffer = new byte[BUFFER_SIZE];
+		byte[] buffer = new byte[FileUtils.BSIZE];
 		int len = -1;
 		boolean quotaExceeded = false;
 		try(OutputStream os = file.getOutputStream(false)) {
@@ -277,7 +277,7 @@ public class VFSResourceRoot implements WebResourceRoot  {
 					// re-calculate quota and check
 					quotaLeft = quotaLeft - len;
 					if (quotaLeft < 0) {
-						log.info("Quota exceeded: " + file);
+						log.info("Quota exceeded: {}", file);
 						quotaExceeded = true;
 						break;
 					}
