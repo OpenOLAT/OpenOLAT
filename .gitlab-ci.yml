@@ -9,4 +9,3 @@ build:
     #- mvn -Declipse.workspace=m2/ eclipse:configure-workspace
     #- mvn eclipse:clean eclipse:eclipse
     #- mvn archetype:generate
-#egi
