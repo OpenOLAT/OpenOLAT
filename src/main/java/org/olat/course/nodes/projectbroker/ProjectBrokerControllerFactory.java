@@ -38,19 +38,14 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  * @author guretzki
  * 
  */
-
 public class ProjectBrokerControllerFactory {
 
-	public static ProjectBrokerCourseEditorController createCourseEditController(UserRequest ureq, WindowControl wControl, ICourse course, UserCourseEnvironment euce, ProjectBrokerCourseNode projectBrokerCourseNode) {
+	public static ProjectBrokerCourseEditorController createCourseEditController(UserRequest ureq, WindowControl wControl, ICourse course, ProjectBrokerCourseNode projectBrokerCourseNode) {
 		return new ProjectBrokerCourseEditorController(ureq, wControl, course, projectBrokerCourseNode);
 	}
 
 	public static Controller createRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNode courseNode) {
-		return new ProjectListController(ureq, wControl, userCourseEnv, courseNode, false);
-	}
-
-	public static Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNode courseNode) {
-		return new ProjectListController(ureq, wControl, userCourseEnv, courseNode, true);
+		return new ProjectListController(ureq, wControl, userCourseEnv, courseNode);
 	}
 
 	public static Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,

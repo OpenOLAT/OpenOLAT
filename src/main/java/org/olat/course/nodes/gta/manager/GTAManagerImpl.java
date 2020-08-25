@@ -188,6 +188,22 @@ public class GTAManagerImpl implements GTAManager {
 			if(taskDefinitionsList != null && taskDefinitionsList.getTasks() != null) {
 				taskDefinitions.addAll(taskDefinitionsList.getTasks());
 			}
+			
+			File tasksFolder = getTasksDirectory(courseEnv, cNode);
+			String[] taskFiles = tasksFolder.list(SystemFilenameFilter.FILES_ONLY);
+			if(taskFiles != null) {
+				for(String taskFile:taskFiles) {
+					boolean found = false;
+					for(TaskDefinition taskDefinition:taskDefinitions) {
+						if(taskFile.equalsIgnoreCase(taskDefinition.getFilename())) {
+							found = true;
+						}
+					}
+					if(!found) {
+						taskDefinitions.add(TaskDefinition.fromFile(taskFile));
+					}
+				}
+			}
 		} else {
 			syncWithTaskList(courseEnv, cNode, () -> {
 				ModuleConfiguration config = cNode.getModuleConfiguration();

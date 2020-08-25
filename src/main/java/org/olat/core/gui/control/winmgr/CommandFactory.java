@@ -126,7 +126,12 @@ public class CommandFactory {
 		Command c = new Command(5);
 		c.setSubJSON(root);
 		return c;
-	}	
+	}
+	
+	public static Command reloadWindow() {
+		String script = "try { window.location.reload(); } catch(e) { if(window.console) console.log(e) }";
+		return new JSCommand(script);
+	}
 	
 }
 
