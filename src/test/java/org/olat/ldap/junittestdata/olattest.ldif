@@ -208,6 +208,23 @@ uid: ahentschel
 userPassword: olat
 modifyTimestamp: 20100630180000Z
 
+dn: uid=LP7AFreimann,ou=person,dc=olattest,dc=org
+objectClass: organizationalPerson
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: top
+cn: Lorcan Freimann
+givenname: Lorcan
+labeleduri: https://www.openolat.com/lp7afreimann
+mail: LP7AFreimann@openolat.com
+o: Informatik
+sn: Freimann
+uid: LP7AFreimann
+userPassword: olat
+modifyTimestamp: 20100630180000Z
+
+
+
 
 
 

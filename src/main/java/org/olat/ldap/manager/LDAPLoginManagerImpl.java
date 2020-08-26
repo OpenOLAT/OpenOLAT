@@ -376,30 +376,33 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		}
 		
 		if (ldapError.isEmpty() && attrs != null) { 
-			Identity identity = findIdentityByLdapAuthentication(attrs, ldapError);
+			Authentication auth = findAuthenticationByLdapAuthentication(attrs, ldapError);
 			if (!ldapError.isEmpty()) {
 				return null;
 			}
-			if (identity == null) {
+			
+			Identity identity = null;
+			if (auth == null) {
 				if(ldapLoginModule.isCreateUsersOnLogin()) {
 					// User authenticated but not yet existing - create as new OLAT user
-					createAndPersistUser(attrs);
-					identity = findIdentityByLdapAuthentication(attrs, ldapError);
+					identity = createAndPersistUser(attrs);
+					auth = findAuthenticationByLdapAuthentication(attrs, ldapError);
 				} else {
 					ldapError.insert("login.notauthenticated");
 				}
 			} else {
 				// User does already exist - just sync attributes
+				identity = auth.getIdentity();
 				Map<String, String> olatProToSync = prepareUserPropertyForSync(attrs, identity);
 				if (olatProToSync != null) {
 					syncUser(olatProToSync, identity);
 				}
 			}
 			// Add or update an OLAT authentication token for this user if configured in the module
-			if (identity != null && ldapLoginModule.isCacheLDAPPwdAsOLATPwdOnLogin()) {
+			if (identity != null && auth != null && ldapLoginModule.isCacheLDAPPwdAsOLATPwdOnLogin()) {
 				// there is no WEBDAV token but an HA1, the HA1 is linked to the OLAT one.
 				CoreSpringFactory.getImpl(OLATAuthManager.class)
-					.synchronizeOlatPasswordAndUsername(identity, identity, username, pwd);
+					.synchronizeOlatPasswordAndUsername(identity, identity, auth.getAuthusername(), pwd);
 			}
 			return identity;
 		} 
@@ -822,6 +825,11 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 	 */
 	@Override
 	public Identity findIdentityByLdapAuthentication(Attributes attrs, LDAPError errors) {
+		Authentication auth = findAuthenticationByLdapAuthentication(attrs, errors);
+		return auth == null ? null : auth.getIdentity();
+	}
+	
+	private Authentication findAuthenticationByLdapAuthentication(Attributes attrs, LDAPError errors) {
 		if(attrs == null) {
 			errors.insert("findIdentyByLdapAuthentication: attrs::null");
 			return null;
@@ -830,7 +838,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		String token = getAttributeValue(attrs.get(syncConfiguration.getLdapUserLoginAttribute()));
 		Authentication ldapAuth = authenticationDao.getAuthentication(token, LDAPAuthenticationController.PROVIDER_LDAP);
 		if(ldapAuth != null) {
-			return ldapAuth.getIdentity();
+			return ldapAuth;
 		}
 
 		String uid = getAttributeValue(attrs.get(syncConfiguration
@@ -841,7 +849,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 				ldapAuth.setAuthusername(token);
 				ldapAuth = securityManager.updateAuthentication(ldapAuth);
 			}
-			return ldapAuth.getIdentity();
+			return ldapAuth;
 		}
 		
 		if(ldapLoginModule.isConvertExistingLocalUsersToLDAPUsers()) {
@@ -850,7 +858,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 				// Add user to LDAP security group and add the ldap provider
 				securityManager.createAndPersistAuthentication(defaultAuth.getIdentity(), LDAPAuthenticationController.PROVIDER_LDAP, token, null, null);
 				log.info("Found identity by LDAP username that was not yet in LDAP security group. Converted user::{} to be an LDAP managed user", uid);
-				return defaultAuth.getIdentity();
+				return defaultAuth;
 			}
 			
 			Identity identity = null;
@@ -860,9 +868,9 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 				identity = securityManager.findIdentityByName(uid);
 			}
 			if(identity != null) {
-				securityManager.createAndPersistAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP, token, null, null);
+				ldapAuth = securityManager.createAndPersistAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP, token, null, null);
 				log.info(Tracing.M_AUDIT, "Found identity by identity name that was not yet in LDAP security group. Converted user::{} to be an LDAP managed user", uid);
-				return identity;
+				return ldapAuth;
 			}
 		}
 		return null;
