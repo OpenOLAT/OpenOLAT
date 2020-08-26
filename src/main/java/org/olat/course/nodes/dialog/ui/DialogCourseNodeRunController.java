@@ -346,7 +346,7 @@ public class DialogCourseNodeRunController extends BasicController implements Ac
 	private class MyLinkChooserController extends LinkChooserController {
 		
 		public MyLinkChooserController(UserRequest ureq, WindowControl wControl, VFSContainer rootDir, String uploadRelPath) {
-			super(ureq, wControl, rootDir, uploadRelPath, null, null, false, "", null, null, true);
+			super(ureq, wControl, rootDir, uploadRelPath, null, null, false, false, "", null, null, true);
 		}
 		
 		@Override

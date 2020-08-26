@@ -698,7 +698,7 @@ public class GroupController extends BasicController {
 		}
 		
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
-		identitiesTableModel = new IdentitiesOfGroupTableDataModel(views, getLocale(), userPropertyHandlers, isAdministrativeUser);
+		identitiesTableModel = new IdentitiesOfGroupTableDataModel(views, getLocale(), userPropertyHandlers);
 		tableCtr.setTableDataModel(identitiesTableModel);
 	}
 }

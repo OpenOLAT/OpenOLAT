@@ -181,10 +181,10 @@ class RichTextElementComponent extends FormBaseComponentImpl {
 				CustomLinkTreeModel toolLinkTreeModel = config.getToolLinkTreeModel();
 				if (type.equals(CMD_FILEBROWSER)) {
 					// when in file mode we include the internal links to the selection
-					myLinkChooserController = new LinkChooserController(lureq, lwControl, baseContainer, uploadRelPath, absolutePath, suffixes, uriValidation, fileName, linkBrowserCustomTreeModel, toolLinkTreeModel, allowCustomMediaFactory);			
+					myLinkChooserController = new LinkChooserController(lureq, lwControl, baseContainer, uploadRelPath, absolutePath, suffixes, true, uriValidation, fileName, linkBrowserCustomTreeModel, toolLinkTreeModel, allowCustomMediaFactory);			
 				} else {
 					// in media or image mode, internal links make no sense here
-					myLinkChooserController = new LinkChooserController(lureq, lwControl, baseContainer, uploadRelPath, absolutePath, suffixes, uriValidation, fileName, null, null, allowCustomMediaFactory);						
+					myLinkChooserController = new LinkChooserController(lureq, lwControl, baseContainer, uploadRelPath, absolutePath, suffixes, true, uriValidation, fileName, null, null, allowCustomMediaFactory);						
 				}
 				return new LayoutMain3ColsController(lureq, lwControl, myLinkChooserController);
 			}

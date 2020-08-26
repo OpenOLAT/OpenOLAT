@@ -73,7 +73,7 @@ public class LinkChooserController extends BasicController {
 	 *          internalLinkTreeModel is null.
 	 */
 	public LinkChooserController(UserRequest ureq, WindowControl wControl, VFSContainer rootDir,
-			String uploadRelPath, String absolutPath, String[] suffixes, boolean uriValidation, String fileName,
+			String uploadRelPath, String absolutPath, String[] suffixes, boolean uriValidation, boolean htmlExtraValidation, String fileName,
 			CustomLinkTreeModel customLinkTreeModel, CustomLinkTreeModel toolLinkTreeModel, boolean allowCustomMediaChooserFactory) {
 		super(ureq, wControl);
 		
@@ -82,7 +82,8 @@ public class LinkChooserController extends BasicController {
 		linkChooserTabbedPane = new TabbedPane("linkChooserTabbedPane", ureq.getLocale());
 		tabbedPaneViewVC.put("linkChooserTabbedPane", linkChooserTabbedPane);
 
-		fileLinkChooserController = new FileLinkChooserController(ureq, wControl, rootDir, uploadRelPath, absolutPath, suffixes, uriValidation, fileName);		
+		fileLinkChooserController = new FileLinkChooserController(ureq, wControl, rootDir, uploadRelPath, absolutPath, suffixes,
+				uriValidation, htmlExtraValidation, fileName);		
 		listenTo(fileLinkChooserController);
 		linkChooserTabbedPane.addTab(translate("linkchooser.tabbedpane.label.filechooser"), fileLinkChooserController.getInitialComponent());
 		

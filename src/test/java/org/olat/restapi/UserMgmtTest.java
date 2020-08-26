@@ -117,6 +117,8 @@ import org.olat.test.JunitTestHelper;
 import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatRestTestCase;
 import org.olat.user.DisplayPortraitManager;
+import org.olat.user.HomePageConfig;
+import org.olat.user.HomePageConfigManager;
 import org.olat.user.UserManager;
 import org.olat.user.restapi.ManagedUserVO;
 import org.olat.user.restapi.PreferencesVO;
@@ -159,6 +161,8 @@ public class UserMgmtTest extends OlatRestTestCase {
 	private DB dbInstance;
 	@Autowired
 	private ForumManager forumManager;
+	@Autowired
+	private HomePageConfigManager homePageConfigManager;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
@@ -570,6 +574,42 @@ public class UserMgmtTest extends OlatRestTestCase {
 		assertEquals(admin.getKey(), vos.get(0).getKey());
 		conn.shutdown();
 	}
+	
+	@Test
+	public void testGetMe() throws IOException, URISyntaxException {
+		IdentityWithLogin meLogin = JunitTestHelper.createAndPersistRndUser("rest-users");
+		Identity me = meLogin.getIdentity();
+		me.getUser().setProperty("telMobile", "39847592");
+		me.getUser().setProperty("telOffice", "39847592");
+		me.getUser().setProperty("telPrivate", "39847592");
+		me.getUser().setProperty("gender", "female");
+		me.getUser().setProperty("birthDay", "20040405");
+		dbInstance.updateObject(me.getUser());
+		dbInstance.commit();
+		
+		HomePageConfig hpc = homePageConfigManager.loadConfigFor(me);
+		hpc.setEnabled("telOffice", true);
+		hpc.setEnabled("telMobile", true);
+		hpc.setEnabled("birthDay", true);
+		homePageConfigManager.saveConfigTo(me, hpc);
+		dbInstance.commitAndCloseSession();
+
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(meLogin.getLogin(), meLogin.getPassword()));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("/users/me").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		UserVO vo = conn.parse(response, UserVO.class);
+
+		assertNotNull(vo);
+		assertEquals(vo.getKey(), me.getKey());
+		//are the properties there?
+		assertFalse(vo.getProperties().isEmpty());
+		conn.shutdown();
+	}
+	
 	
 	@Test
 	public void testGetUser() throws IOException, URISyntaxException {

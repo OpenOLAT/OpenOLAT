@@ -44,43 +44,44 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 public class IdentitiesOfGroupTableDataModel extends DefaultTableDataModel<GroupMemberView> {
 	private List<UserPropertyHandler> userPropertyHandlers;
-	private boolean isAdministrativeUser;
-
    
 	/**
 	 * @param combo a List of Object[] with the array[0] = Identity, array[1] = addedToGroupTimestamp
 	 */
-	public IdentitiesOfGroupTableDataModel(List<GroupMemberView> combo, Locale locale, List<UserPropertyHandler> userPropertyHandlers, boolean isAdministrativeUser) {
+	public IdentitiesOfGroupTableDataModel(List<GroupMemberView> combo, Locale locale, List<UserPropertyHandler> userPropertyHandlers) {
 		super(combo);
 		setLocale(locale);		
 		this.userPropertyHandlers = userPropertyHandlers;
-		this.isAdministrativeUser = isAdministrativeUser;
 	}
 
 	@Override
 	public final Object getValueAt(int row, int col) {
 		GroupMemberView co = getObject(row);
-		switch(col) {
-			case 1: return co.getOnlineStatus();
-			case 2: return co.getAddedAt();
-			default: {
-				User user = co.getIdentity().getUser();
-				UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(col - 3);
-				String value = userPropertyHandler.getUserProperty(user, getLocale());
-				return (value == null ? "n/a" : value);
-			}
+		if(col == 1) {
+			return co.getOnlineStatus();
 		}
+		if(col == 2) {
+			return co.getAddedAt();
+		}
+		int index = col - 3;
+		if(index >= 0 && index < userPropertyHandlers.size()) {
+			User user = co.getIdentity().getUser();
+			UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(col - 3);
+			String value = userPropertyHandler.getUserProperty(user, getLocale());
+			return (value == null ? "n/a" : value);
+		}
+		return "ERROR";
 	}
 
 	@Override
 	public int getColumnCount() {
-		// + loginname + adddate or just + loginname
-		return userPropertyHandlers.size() + (isAdministrativeUser ? 2 : 1);
+		// online status + add date
+		return userPropertyHandlers.size() +  2;
 	}
 	
 	@Override
 	public IdentitiesOfGroupTableDataModel createCopyWithEmptyList() {
-		return new IdentitiesOfGroupTableDataModel(new ArrayList<GroupMemberView>(), getLocale(), userPropertyHandlers, isAdministrativeUser);
+		return new IdentitiesOfGroupTableDataModel(new ArrayList<GroupMemberView>(), getLocale(), userPropertyHandlers);
 	}
 	
 	/**

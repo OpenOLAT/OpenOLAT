@@ -64,13 +64,9 @@ public class MediaChooserController extends LinkChooserController {
 	 */
 	public MediaChooserController(UserRequest ureq, WindowControl wControl, VFSContainer rootDir, String uploadRelPath, String[] suffixes, String fileName,
 			CustomLinkTreeModel customLinkTreeModel, boolean allowCustomMediaFactory) {
-		super(ureq, wControl, rootDir, uploadRelPath, null, suffixes, false, fileName, customLinkTreeModel, null, allowCustomMediaFactory);
+		super(ureq, wControl, rootDir, uploadRelPath, null, suffixes, true, false, fileName, customLinkTreeModel, null, allowCustomMediaFactory);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {		
 		fireEvent(ureq, event);

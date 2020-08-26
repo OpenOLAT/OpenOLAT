@@ -285,6 +285,22 @@ public class UserWebService {
 		return Response.ok(userVOs).build();
 	}
 	
+	@GET
+	@Path("me")
+	@Operation(summary = "Informations of the logged in user", description = "Get the user informations of the currenntly log in user")
+	@ApiResponse(responseCode = "200", description = "Informations of the logged in user", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))) })
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getMe(@Context HttpServletRequest httpRequest) {
+		Identity identity = getIdentity(httpRequest);
+		if(identity == null) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		return Response.ok(get(identity, true, false)).build();
+	}
+	
 	/**
 	 * Creates and persists a new user entity
 	 * 
