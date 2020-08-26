@@ -1655,28 +1655,37 @@ function o_XHREvent(targetUrl, dirtyCheck, push) {
 	o_beforeserver();
 	
 	var data = new Object();
+	var openInNewWindow = false;
 	if(arguments.length > 3) {
 		var argLength = arguments.length;
 		for(var i=3; i<argLength; i=i+2) {
 			if(argLength > i+1) {
 				data[arguments[i]] = arguments[i+1];
+				if(arguments[i] == "oo-opennewwindow-oo") {
+					openInNewWindow = true;
+				}
 			}
 		}
 	}
 	
+	var newTargetWindow = null;
+	if(openInNewWindow) {
+		newTargetWindow = window.open("","_blank");
+		newTargetWindow.blur();
+	}
+
 	jQuery.ajax(targetUrl,{
 		type:'POST',
 		data: data,
 		cache: false,
 		dataType: 'json',
-		success: function(data, textStatus, jqXHR) {
+		success: function(responseData, textStatus, jqXHR) {
 			try {
-				
 				if(push) {
 					try {
-						var businessPath = data['businessPath'];
-						var documentTitle = data['documentTitle'];
-						var historyPointId = data['historyPointId'];
+						var businessPath = responseData['businessPath'];
+						var documentTitle = responseData['documentTitle'];
+						var historyPointId = responseData['historyPointId'];
 						if(businessPath) {
 							// catch separately - nothing must fail here!
 							o_pushState(historyPointId, documentTitle, businessPath);
@@ -1685,7 +1694,8 @@ function o_XHREvent(targetUrl, dirtyCheck, push) {
 						if(window.console) console.log(e);
 					}
 				}
-				o_ainvoke(data);
+				o_ainvoke(responseData);
+				o_postInvoke(responseData, newTargetWindow);
 			} catch(e) {
 				if(window.console) console.log(e);
 			} finally {

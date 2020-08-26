@@ -332,11 +332,18 @@ public class LinkRenderer extends DefaultComponentRenderer {
 				log.error("", e);
 			}
 		} else if(link.isNewWindow()) {
-			try(StringOutput href = new StringOutput()) {
-				ubu.buildURI(href, new String[] { VelocityContainer.COMMAND_ID }, new String[] { command }, null, AJAXFlags.MODE_NORMAL);
-				sb.append("href=\"javascript:;\" onclick=\"o_openTab('").append(href).append("'); return false;\" ");
-			} catch(IOException e) {
-				log.error("", e);
+			if(link.isNewWindowAfterDispatchUrl()) {
+				AJAXFlags flags = renderer.getGlobalSettings().getAjaxFlags();
+				boolean iframePostEnabled = flags.isIframePostEnabled() && link.isAjaxEnabled() && link.getTarget() == null;
+				ubu.buildHrefAndOnclick(sb, link.getUrl(), null, iframePostEnabled, !link.isSuppressDirtyFormWarning(), true,
+						new NameValuePair(VelocityContainer.COMMAND_ID, command), new NameValuePair("oo-opennewwindow-oo", "true"));
+			} else {
+				try(StringOutput href = new StringOutput()) {
+					ubu.buildURI(href, new String[] { VelocityContainer.COMMAND_ID }, new String[] { command }, null, AJAXFlags.MODE_NORMAL);
+					sb.append("href=\"javascript:;\" onclick=\"o_openTab('").append(href).append("'); return false;\" ");
+				} catch(IOException e) {
+					log.error("", e);
+				}
 			}
 		} else {
 			AJAXFlags flags = renderer.getGlobalSettings().getAjaxFlags();

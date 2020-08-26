@@ -152,7 +152,7 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 		newWindow = openInNewWindow;
 		newWindowAfterDispatchUrl = afterDispatchUrl;
 		if(component != null) {
-			component.setNewWindow(openInNewWindow);
+			component.setNewWindow(openInNewWindow, afterDispatchUrl);
 		}
 	}
 
@@ -233,7 +233,7 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 		component.setAriaLabel(ariaLabel);
 		component.setForceFlexiDirtyFormWarning(ownDirtyFormWarning);
 		component.setPopup(popup);
-		component.setNewWindow(newWindow);
+		component.setNewWindow(newWindow, newWindowAfterDispatchUrl);
 		component.setUrl(url);
 		if(textReasonForDisabling != null) {
 			component.setTextReasonForDisabling(textReasonForDisabling);

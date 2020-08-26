@@ -119,6 +119,7 @@ public class Link extends AbstractComponent implements ComponentCollection {
 	private Badge badge;
 	private Component innerComponent;
 	private boolean newWindow;
+	private boolean newWindowAfterDispatchUrl;
 	private LinkPopupSettings popup;
 
 	/**
@@ -276,9 +277,14 @@ public class Link extends AbstractComponent implements ComponentCollection {
 	public boolean isNewWindow() {
 		return newWindow;
 	}
+	
+	public boolean isNewWindowAfterDispatchUrl() {
+		return newWindowAfterDispatchUrl;
+	}
 
-	public void setNewWindow(boolean newWindow) {
+	public void setNewWindow(boolean newWindow, boolean afterDispatchUrl) {
 		this.newWindow = newWindow;
+		this.newWindowAfterDispatchUrl = afterDispatchUrl;
 	}
 
 	public Badge getBadge() {
