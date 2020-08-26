@@ -64,6 +64,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.io.SystemFilenameFilter;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -164,7 +165,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 	
 	protected void updateModel(UserRequest ureq) {
 		fileExistsRenderer.setFilenames(tasksFolder.list());
-		List<TaskDefinition> taskDefinitions = gtaManager.getTaskDefinitions(courseEnv, gtaNode);
+		List<TaskDefinition> taskDefinitions = getTaskDefinitions();
 		List<TaskDefinitionRow> rows = new ArrayList<>(taskDefinitions.size());
 		Roles roles = ureq.getUserSession().getRoles();
 		for(TaskDefinition def:taskDefinitions) {
@@ -181,8 +182,32 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 			TaskDefinitionRow row = new TaskDefinitionRow(def, downloadLink, mode);
 			rows.add(row);
 		}
+		
 		taskModel.setObjects(rows);
 		taskDefTableEl.reset();
+	}
+	
+	private List<TaskDefinition> getTaskDefinitions() {
+		List<TaskDefinition> taskDefinitions = gtaManager.getTaskDefinitions(courseEnv, gtaNode);
+		// load ghost files which are not in task definitions
+		String[] taskFiles = tasksFolder.list(SystemFilenameFilter.FILES_ONLY);
+		if(taskFiles != null) {
+			for(String taskFile:taskFiles) {
+				boolean found = false;
+				for(TaskDefinition taskDefinition:taskDefinitions) {
+					if(taskFile.equalsIgnoreCase(taskDefinition.getFilename())) {
+						found = true;
+					}
+				}
+				if(!found) {
+					TaskDefinition ghostTask = TaskDefinition.fromFile(taskFile);
+					gtaManager.addTaskDefinition(ghostTask, courseEnv, gtaNode);
+					taskDefinitions.add(ghostTask);
+				}
+			}
+		}
+				
+		return taskDefinitions;
 	}
 	
 	@Override
