@@ -144,12 +144,6 @@ public class WaitingGroupController extends GroupController {
 	protected void initGroupTable(TableController tableCtr, UserRequest ureq, boolean enableTablePreferences, boolean enableUserSelection) {
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 		// first the login name
-		if (isAdministrativeUser) {
-			// first the login name, but only if administrative user
-			DefaultColumnDescriptor cd0 = new DefaultColumnDescriptor("table.user.login", 0, COMMAND_VCARD, ureq.getLocale());
-			cd0.setIsPopUpWindowAction(true, "height=700, width=900, location=no, menubar=no, resizable=yes, status=no, scrollbars=yes, toolbar=no");
-			tableCtr.addColumnDescriptor(cd0);
-		}
 		if(chatEnabled) {
 			tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.online", 1, COMMAND_IM, getLocale(),
 					ColumnDescriptor.ALIGNMENT_LEFT, new OnlineIconRenderer()));
