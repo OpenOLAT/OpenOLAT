@@ -172,14 +172,20 @@ public abstract class AbstractItemListController extends FormBasicController
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("quickview", "<i class='o_icon o_icon_quickview'> </i>", "quick-view"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.mark));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.editable.i18nHeaderKey(), Cols.editable.ordinal(),
+		DefaultFlexiColumnModel quickViewCol = new DefaultFlexiColumnModel("quickview", "<i class='o_icon o_icon_quickview'> </i>", "quick-view");
+		quickViewCol.setExportable(false);
+		columnsModel.addFlexiColumnModel(quickViewCol);
+		DefaultFlexiColumnModel markCol = new DefaultFlexiColumnModel(Cols.mark);
+		markCol.setExportable(false);
+		columnsModel.addFlexiColumnModel(markCol);
+		DefaultFlexiColumnModel editableCol = new DefaultFlexiColumnModel(true, Cols.editable.i18nHeaderKey(), Cols.editable.ordinal(),
 				false, null, FlexiColumnModel.ALIGNMENT_LEFT,
 				new BooleanCellRenderer(
 						new CSSIconFlexiCellRenderer(CSS_ICON_READWRITE),
 						new CSSIconFlexiCellRenderer(CSS_ICON_READONLY))
-		));
+		);
+		editableCol.setExportable(false);
+		columnsModel.addFlexiColumnModel(editableCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.identifier, "select-item"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.title, "select-item"));
@@ -204,7 +210,7 @@ public abstract class AbstractItemListController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.rating));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.numberOfRatings));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.itemVersion));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status, new QuestionStatusCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status, new QuestionStatusCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.statusLastModified));	
 		if (licenseModule.isEnabled(licenseHandler)) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, false, Cols.license.i18nHeaderKey(), null, Cols.license.ordinal(), "license", false, null, FlexiColumnModel.ALIGNMENT_LEFT,
@@ -221,6 +227,7 @@ public abstract class AbstractItemListController extends FormBasicController
 		itemsTable.setSortSettings(new FlexiTableSortOptions(true));
 		itemsTable.setExtendedSearch(extendedSearchCtrl);
 		itemsTable.setColumnIndexForDragAndDropLabel(Cols.title.ordinal());
+		itemsTable.setExportEnabled(true);
 		itemsTable.setAndLoadPersistedPreferences(ureq, "qpool-list-" + prefsKey);
 		listenTo(extendedSearchCtrl);
 		
@@ -236,7 +243,9 @@ public abstract class AbstractItemListController extends FormBasicController
 	}
 	
 	protected void initActionColumns(FlexiTableColumnModel columnsModel) {
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("details", translate("details"), "select-item"));
+		DefaultFlexiColumnModel detailsCol = new DefaultFlexiColumnModel("details", translate("details"), "select-item");
+		detailsCol.setExportable(false);
+		columnsModel.addFlexiColumnModel(detailsCol);
 	}
 	
 	protected abstract void initButtons(UserRequest ureq, FormItemContainer formLayout);

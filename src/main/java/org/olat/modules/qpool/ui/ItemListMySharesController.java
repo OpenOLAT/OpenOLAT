@@ -136,7 +136,9 @@ public class ItemListMySharesController extends AbstractItemListController {
 	
 	@Override
 	protected void initActionColumns(FlexiTableColumnModel columnsModel) {
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select-item"));
+		DefaultFlexiColumnModel selectCol = new DefaultFlexiColumnModel("select", translate("select"), "select-item");
+		selectCol.setExportable(false);
+		columnsModel.addFlexiColumnModel(selectCol);
 	}
 
 	@Override

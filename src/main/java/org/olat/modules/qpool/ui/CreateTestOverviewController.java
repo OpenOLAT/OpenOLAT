@@ -111,7 +111,7 @@ public class CreateTestOverviewController extends FormBasicController {
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.type));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.format));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status, new QuestionStatusCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status, new QuestionStatusCellRenderer(getTranslator())));
 		if(withLicenses) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.license));
 		}

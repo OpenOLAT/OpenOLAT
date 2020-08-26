@@ -30,6 +30,12 @@ import org.olat.modules.qpool.QuestionStatus;
  *
  */
 public class QuestionStatusCellRenderer extends LabelCellRenderer {
+	
+	private final Translator translator;
+	
+	public QuestionStatusCellRenderer(Translator translator) {
+		this.translator = translator;
+	}
 
 	@Override
 	protected String getElementCssClass(Object val) {
@@ -50,7 +56,7 @@ public class QuestionStatusCellRenderer extends LabelCellRenderer {
 	}
 
 	@Override
-	protected String getCellValue(Object val, Translator translator) {
+	protected String getCellValue(Object val, Translator transl) {
 		if (val instanceof QuestionStatus) {
 			QuestionStatus status = (QuestionStatus) val;
 			return translator.translate("lifecycle.status." + status.name());
