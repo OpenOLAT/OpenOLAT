@@ -17,7 +17,6 @@
 	#end
 </div>
 <script>
-/* <![CDATA[ */ 
 jQuery(function(){
 	var fullNameTypeahead = new Bloodhound({
 		datumTokenizer: function (d) {
@@ -59,7 +58,14 @@ jQuery(function(){
 		    		'<div>','$autocompleter_emptymessage','</div>' 
 	        ].join('\n'),
 	    	#end
-	    	suggestion: function(obj) {return "<div class='"+obj.cssClass+"'>"+obj.fullName+"</div>"}
+	    	suggestion: function(obj) {
+	    		var s = "<div>";
+	    		if(obj.cssClass !== "undefined" && obj.cssClass != null && obj.cssClass.length > 0) {
+	    			s += "<i class='o_icon " + obj.cssClass + "'> </i> ";
+	    		}
+	    		s += obj.fullName + "</div>";
+	    		return s;
+	    	}
 		}
 	}).on('typeahead:render', function (e) {
 		// disabled and error items should not be selectable
@@ -72,5 +78,4 @@ jQuery(function(){
 			'$r.getId("o_autocomplete_input")',jQuery('#$r.getId("o_autocomplete_input")').val());
 	});
 });
-/* ]]> */
 </script>

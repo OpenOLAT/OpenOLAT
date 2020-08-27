@@ -49,7 +49,7 @@ import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
  * characters, the system performs a server side search and shows a list of
  * search results the user can choose from.
  * <p>
- * This controller uses ExtJS javascript library to implement the feature
+ * This controller uses typeahead javascript library to implement the feature
  * <p>
  * Fires: an EntriesChosenEvent which contain the chosen entry/entries as
  * strings
@@ -121,8 +121,7 @@ public class AutoCompleterController extends BasicController {
 			
 		// Add mapper URL to JS data store in velocity
 		String fetchUri = registerMapper(ureq, mapper);
-		final String fulluri = fetchUri; // + "/" + fileName;
-		myContent.contextPut("mapuri", fulluri+"/autocomplete.json");
+		myContent.contextPut("mapuri", fetchUri + "/autocomplete.json");
 		putInitialPanel(myContent);
 	}
 
