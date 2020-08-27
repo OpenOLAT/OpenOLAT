@@ -51,7 +51,7 @@ import org.olat.core.gui.control.WindowControl;
  * characters, the system performs a server side search and shows a list of
  * search results the user can choose from.
  * <p>
- * This controller uses ExtJS javascript library to implement the feature
+ * This controller uses the typeahead javascript library to implement the feature
  * <p>
  * Fires: an EntriesChosenEvent which contain the chosen entry/entries as
  * strings
@@ -166,8 +166,7 @@ public class FlexiAutoCompleterController extends FormBasicController {
 		
 		// Add mapper URL to JS data store in velocity
 		String fetchUri = registerMapper(ureq, mapper);
-		final String fulluri = fetchUri; // + "/" + fileName;
-		layoutCont.contextPut("mapuri", fulluri+"/autocomplete.json");
+		layoutCont.contextPut("mapuri", fetchUri + "/autocomplete.json");
 	}
 	
 	@Override

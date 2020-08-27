@@ -48,20 +48,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
 
 /**
- * Description:<br>
- * component to use the TextBoxList from
- * http://www.interiders.com/2008/02/18/protomultiselect-02/ a bugfixed-version
- * (the one used in OLAT) stays here:
- * http://github.com/thewebfellas/protomultiselect
- * 
- * note: march 2012, strentini merged some bugfixes from
- * https://github.com/garrytan/protomultiselect as of march 2012, this is
- * intended to be used always within a flexiform.
- * 
- * <P>
  * Initial Date: 23.07.2010 <br>
- * 
- * 
  * 
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
@@ -285,6 +272,7 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 		return new ArrayList<>(currentItems.values());
 	}
 
+	@Override
 	public void validate(UserRequest ureq, ValidationResult vr) {
 		super.validate(ureq, vr);
 		JSAndCSSAdder jsa = vr.getJsAndCSSAdder();
@@ -302,6 +290,7 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 	 */
 	private void setMapper(UserRequest ureq) {
 		Mapper mapper = new Mapper() {
+			@Override
 			public MediaResource handle(String relPath, HttpServletRequest request) {
 				String lastInput = request.getParameter("term");
 				if (lastInput != null && lastInput.length() > 2) {

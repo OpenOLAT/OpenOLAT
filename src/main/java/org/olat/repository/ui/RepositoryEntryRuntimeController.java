@@ -280,10 +280,10 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				&& lock.getResourceableTypeName().equals(resource.getResourceableTypeName());
 	}
 	
-	protected void reloadSecurity(UserRequest ureq) {
+	protected final void reloadSecurity(UserRequest ureq) {
 		reSecurity.setWrappedSecurity(repositoryManager.isAllowed(ureq, getRepositoryEntry()));
-		initToolbar();
 		onSecurityReloaded(ureq);
+		initToolbar();
 	}
 	
 	//ureq my be used by sub controller

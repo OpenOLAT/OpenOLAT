@@ -85,7 +85,7 @@ public class AutoCompleterListReceiver implements ListReceiver {
 			throw new AssertException("Can not add entry with displayText::" + displayText + " with a NULL key!");
 		}
 		if (log.isDebugEnabled()) {
-			log.debug("Add entry with key::" + key+ ", displayKey::" + displayKey + ", displayText::" + displayText + ", iconCssClass::" + iconCssClass);
+			log.debug("Add entry with key::{}, displayKey::{}, displayText::{}, iconCssClass::{}", key, displayKey, displayText, iconCssClass);
 		}
 		try {
 			JSONObject object = new JSONObject();
@@ -112,7 +112,7 @@ public class AutoCompleterListReceiver implements ListReceiver {
 
 		} catch (JSONException e) {
 			// do nothing, only log error to logfile
-			log.error("Could not add entry with key::" + key+ ", displayKey::" + displayKey + ", displayText::" + displayText + ", iconCssClass::" + iconCssClass, e);
+			log.error("Could not add entry with key::{}, displayKey::{}, displayText::{}, iconCssClass::{}", key, displayKey, displayText, iconCssClass, e);
 		}
 
 	}
