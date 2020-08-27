@@ -122,8 +122,12 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 				&& !Boolean.TRUE.equals(ureq.getUserSession().getEntry("meeting-" + meeting.getKey()))) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.contextPut("title", meeting.getName());
-			if(StringHelper.containsNonWhitespace(meeting.getDescription())) {
-				layoutCont.contextPut("description", meeting.getDescription());
+			String descr = meeting.getDescription();
+			if(StringHelper.containsNonWhitespace(descr)) {
+				if(!StringHelper.isHtml(descr)) {
+					descr = Formatter.escWithBR(descr).toString();
+				}
+				layoutCont.contextPut("description", descr);
 			}
 			if(meeting.getStartDate() != null) {
 				String start = Formatter.getInstance(getLocale()).formatDateAndTime(meeting.getStartDate());
