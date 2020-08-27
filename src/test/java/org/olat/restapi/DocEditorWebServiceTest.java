@@ -34,11 +34,9 @@ import org.apache.http.client.methods.HttpGet;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallbackBuilder;
-import org.olat.core.commons.services.doceditor.wopi.Access;
-import org.olat.core.commons.services.doceditor.wopi.WopiService;
+import org.olat.core.commons.services.doceditor.manager.AccessDAO;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.manager.VFSMetadataDAO;
 import org.olat.core.id.Identity;
@@ -60,7 +58,7 @@ public class DocEditorWebServiceTest extends OlatRestTestCase {
 	@Autowired
 	private VFSMetadataDAO vfsMetadataDAO;
 	@Autowired
-	private WopiService sut;
+	private AccessDAO accessDao;
 
 	@Test
 	public void docEditorSessionQuery()
@@ -70,16 +68,10 @@ public class DocEditorWebServiceTest extends OlatRestTestCase {
 		Assert.assertTrue(conn.login("administrator", "openolat"));
 		
 		String randomAppName = random();
-		
-		VFSMetadata metadata = randomMetadata();
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("restuser1");
-		DocEditorSecurityCallback secCallback = DocEditorSecurityCallbackBuilder.builder().withMode(Mode.EDIT).build();
-		VFSMetadata metadata2 = randomMetadata();
 		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("restuser2");
-		DocEditorSecurityCallback secCallback2 = DocEditorSecurityCallbackBuilder.builder().withMode(Mode.VIEW).build();
-		Access access1 = sut.getOrCreateAccess(metadata, identity, secCallback, randomAppName, null);
-		dbInstance.commitAndCloseSession();	
-		Access access2 = sut.getOrCreateAccess(metadata2, identity2, secCallback2, randomAppName, null);
+		Access access1 = accessDao.createAccess(randomMetadata(), identity, randomAppName, random(), Mode.EDIT, true, null);
+		Access access2 = accessDao.createAccess(randomMetadata(), identity2, randomAppName, random(), Mode.VIEW, false, null);
 		dbInstance.commitAndCloseSession();	
 		
 		Assert.assertNotNull(access1);

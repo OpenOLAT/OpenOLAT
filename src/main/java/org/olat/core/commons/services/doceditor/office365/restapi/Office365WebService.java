@@ -19,7 +19,7 @@
  */
 package org.olat.core.commons.services.doceditor.office365.restapi;
 
-import static org.olat.core.commons.services.doceditor.wopi.WopiRestHelper.getAsIso8601;
+import static org.olat.core.commons.services.doceditor.DocEditorRestHelper.getAsIso8601;
 
 import java.io.InputStream;
 import java.util.List;
@@ -41,11 +41,15 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.services.doceditor.Access;
+import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorIdentityService;
+import org.olat.core.commons.services.doceditor.DocEditorService;
+import org.olat.core.commons.services.doceditor.UserInfo;
 import org.olat.core.commons.services.doceditor.office365.Office365Module;
 import org.olat.core.commons.services.doceditor.office365.Office365Service;
-import org.olat.core.commons.services.doceditor.wopi.Access;
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -83,14 +87,16 @@ public class Office365WebService {
 	@Autowired 
 	private Office365Service office365Service;
 	@Autowired
-	private DocEditorIdentityService identityService; 
+	private DocEditorService docEditorService;
+	@Autowired
+	private DocEditorIdentityService identityService;
 	
 	@GET
 	@Operation(summary = "Get file Info", description = "Get file Info")
 	@ApiResponse(responseCode = "200", description = "The files", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = CheckFileInfoVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = CheckFileInfoVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")		
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "403", description = "Forbidden")
 	@ApiResponse(responseCode = "404", description = "File not found")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -116,24 +122,27 @@ public class Office365WebService {
 			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
 		}
 		
-		Access access = office365Service.getAccess(accessToken);
+		Access access = docEditorService.getAccess(accessToken);
 		if (access == null) {
 			log.debug("No access for token. File ID: " + fileId + ", token: " + accessToken);
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		VFSLeaf vfsLeaf = office365Service.getVfsLeaf(access);
+		VFSLeaf vfsLeaf = docEditorService.getVfsLeaf(access);
 		if (vfsLeaf == null) {
 			log.debug("File not found. File ID: " + fileId);
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
 		String userId = identityService.getGlobalIdentityId(access.getIdentity());
+		UserInfo userInfo = docEditorService.getUserInfo(access.getIdentity());
+		String info = userInfo != null? userInfo.getInfo(): null;
 		VFSMetadata metadata = access.getMetadata();
 		// ownerId is mandatory (this hack seens to work)
 		String ownerId = metadata.getAuthor() != null
 				? identityService.getGlobalIdentityId(metadata.getAuthor())
 				: userId;
+		String documentUrl = docEditorService.getDocumentUrl(access);
 		CheckFileInfoVO checkFileInfoVO = CheckFileInfoVO.builder()
 				.withBaseFileName(metadata.getFilename()) // suffix is mandatory
 				.withOwnerId(ownerId)
@@ -147,11 +156,15 @@ public class Office365WebService {
 				.withSupportsExtendedLockLength(true)
 				.withSupportsUpdate(true)
 				.withSupportsRename(false)
-				.withUserCanWrite(access.isCanEdit())
+				.withUserCanWrite(Mode.EDIT == access.getMode())
 				.withUserCanNotWriteRelative(true)
+				.withSupportsUserInfo(true)
+				.withUserInfo(info)
+				.withLicenseCheckForEditIsEnabled(true)
+				.withHostEditUrl(documentUrl)
 				.build();
 		logCheckFileInfoResponse(checkFileInfoVO);
-		
+
 		return Response
 				.ok(checkFileInfoVO)
 				.type(MediaType.APPLICATION_JSON)
@@ -161,14 +174,15 @@ public class Office365WebService {
 	@POST
 	@Operation(summary = "WOPI REST post request for file", description = "WOPI REST post request for file")
 	@ApiResponse(responseCode = "200", description = "WOPI REST post request for file")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")	
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "403", description = "Forbidden")
 	@ApiResponse(responseCode = "404", description = "File not found")
 	public Response post(
 			@PathParam("fileId") String fileId,
 			@QueryParam("access_token") String accessToken,
 			@Context UriInfo uriInfo,
-			@Context HttpHeaders httpHeaders) {
+			@Context HttpHeaders httpHeaders,
+			String body) {
 		log.debug("WOPI REST post request for file: " + fileId);
 		logRequestHeaders(httpHeaders);
 		
@@ -186,13 +200,13 @@ public class Office365WebService {
 			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
 		}
 		
-		Access access = office365Service.getAccess(accessToken);
+		Access access = docEditorService.getAccess(accessToken);
 		if (access == null) {
 			log.debug("No access for token. File ID: " + fileId + ", token: " + accessToken);
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		VFSLeaf vfsLeaf = office365Service.getVfsLeaf(access);
+		VFSLeaf vfsLeaf = docEditorService.getVfsLeaf(access);
 		if (vfsLeaf == null) {
 			log.debug("File not found. File ID: " + fileId);
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -216,6 +230,10 @@ public class Office365WebService {
 		}
 		case "GET_LOCK": {
 			return getLock(vfsLeaf, access);
+		}
+		case "PUT_USER_INFO": {
+			putUserInfo(access, body);
+			return Response.ok().build();
 		}
 		default:
 			return Response.serverError().status(Status.NOT_IMPLEMENTED).build();
@@ -245,17 +263,16 @@ public class Office365WebService {
 		
 		String currentLockToken = office365Service.getLockToken(vfsLeaf);
 		if (currentLockToken == null) {
-			if(office365Service.lock(vfsLeaf, access.getIdentity(), lockToken)) {
+			if (office365Service.lock(vfsLeaf, access.getIdentity(), lockToken)) {
 				String itemVersion = String.valueOf(access.getMetadata().getRevisionNr());
 				return Response.ok()
 						.header("X-WOPI-ItemVersion", itemVersion)
 						.build();
-			} else {
-				return Response.serverError()
-						.status(Status.CONFLICT)
-						.header("X-WOPI-Lock", currentLockToken)
-						.build();
 			}
+			return Response.serverError()
+					.status(Status.CONFLICT)
+					.header("X-WOPI-Lock", currentLockToken)
+					.build();
 		}
 		
 		if (lockToken.equals(currentLockToken)) {
@@ -327,6 +344,13 @@ public class Office365WebService {
 				.header("X-WOPI-Lock", currentLockToken)
 				.build();
 	}
+	
+	private void putUserInfo(Access access, String info) {
+		Identity identity = access.getIdentity();
+		log.debug("WOPI REST PutIserInfo for {}:{} ", identity, info);
+		
+		docEditorService.createOrUpdateUserInfo(identity, info);
+	}
 
 	@GET
 	@Path("/contents")
@@ -355,13 +379,13 @@ public class Office365WebService {
 			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
 		}
 		
-		Access access = office365Service.getAccess(accessToken);
+		Access access = docEditorService.getAccess(accessToken);
 		if (access == null) {
 			log.debug("No access for token. File ID: " + fileId + ", token: " + accessToken);
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		VFSLeaf vfsLeaf = office365Service.getVfsLeaf(access);
+		VFSLeaf vfsLeaf = docEditorService.getVfsLeaf(access);
 		if (vfsLeaf == null) {
 			log.debug("File not found. File ID: " + fileId);
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -408,13 +432,13 @@ public class Office365WebService {
 			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
 		}
 		
-		Access access = office365Service.getAccess(accessToken);
+		Access access = docEditorService.getAccess(accessToken);
 		if (access == null) {
 			log.debug("No access for token. File ID: " + fileId + ", token: " + accessToken);
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		VFSLeaf vfsLeaf = office365Service.getVfsLeaf(access);
+		VFSLeaf vfsLeaf = docEditorService.getVfsLeaf(access);
 		if (vfsLeaf == null) {
 			log.debug("File not found. File ID: " + fileId);
 			return Response.serverError().status(Status.NOT_FOUND).build();

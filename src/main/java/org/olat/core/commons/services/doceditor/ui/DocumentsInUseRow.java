@@ -22,7 +22,8 @@ package org.olat.core.commons.services.doceditor.ui;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.core.commons.services.doceditor.wopi.Access;
+import org.olat.core.commons.services.doceditor.Access;
+import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -46,11 +47,11 @@ public class DocumentsInUseRow extends UserPropertiesRow {
 	}
 
 	public String getApp() {
-		return access.getApp();
+		return access.getEditorType();
 	}
 
-	public Boolean isCanEdit() {
-		return Boolean.valueOf(access.isCanEdit());
+	public Mode getMode() {
+		return access.getMode();
 	}
 
 	public Object getOpened() {

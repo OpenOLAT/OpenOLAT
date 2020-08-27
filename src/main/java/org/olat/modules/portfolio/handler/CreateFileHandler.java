@@ -26,7 +26,7 @@ import java.util.Locale;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.doceditor.DocTemplates;
 import org.olat.core.commons.services.doceditor.DocTemplates.Builder;
-import org.olat.core.commons.services.doceditor.DocumentEditorService;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
@@ -43,7 +43,7 @@ import org.olat.modules.portfolio.ui.media.CreateFileMediaController;
 public class CreateFileHandler extends FileHandler {
 	
 	public static DocTemplates getEditableTemplates(Identity identity, Roles roles, Locale locale) {
-		DocumentEditorService docEditorService = CoreSpringFactory.getImpl(DocumentEditorService.class);
+		DocEditorService docEditorService = CoreSpringFactory.getImpl(DocEditorService.class);
 		Builder builder = DocTemplates.builder(locale);
 		if (docEditorService.hasEditor(identity, roles, "docx", EDIT, true)) {
 			builder.addDocx();

@@ -19,7 +19,6 @@
  */
 package org.olat.course.nodes.gta.ui;
 
-import static org.olat.core.commons.services.doceditor.DocEditor.Mode.EDIT;
 import static org.olat.course.nodes.gta.ui.GTAUIFactory.getOpenMode;
 import static org.olat.course.nodes.gta.ui.GTAUIFactory.htmlOffice;
 
@@ -36,9 +35,7 @@ import java.util.List;
 import org.olat.core.commons.modules.singlepage.SinglePageController;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallbackBuilder;
-import org.olat.core.commons.services.doceditor.ui.DocEditorFullscreenController;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
@@ -58,14 +55,11 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.id.context.ContextEntry;
-import org.olat.core.id.context.StateEntry;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.io.SystemFileFilter;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -86,7 +80,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-class SubmitDocumentsController extends FormBasicController implements Activateable2 {
+class SubmitDocumentsController extends FormBasicController {
 	
 	private DocumentTableModel model;
 	private FlexiTableElement tableEl;
@@ -99,7 +93,6 @@ class SubmitDocumentsController extends FormBasicController implements Activatea
 	private DocumentUploadController replaceCtrl;
 	private DialogBoxController confirmDeleteCtrl;
 	private SinglePageController viewDocCtrl;
-	private DocEditorFullscreenController docEditorCtrl;
 	
 	private final int minDocs;
 	private final int maxDocs;
@@ -121,6 +114,8 @@ class SubmitDocumentsController extends FormBasicController implements Activatea
 	private UserManager userManager;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
+	@Autowired
+	private DocEditorService docEditorService;
 	
 	public SubmitDocumentsController(UserRequest ureq, WindowControl wControl, Task assignedTask,
 			File documentsDir, VFSContainer documentsContainer, int minDocs, int maxDocs, GTACourseNode cNode,
@@ -268,13 +263,6 @@ class SubmitDocumentsController extends FormBasicController implements Activatea
 	}
 
 	@Override
-	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if((entries == null ||entries.isEmpty()) && docEditorCtrl != null) {
-			cleanUp();
-		}
-	}
-
-	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(confirmDeleteCtrl == source) {
 			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
@@ -315,21 +303,10 @@ class SubmitDocumentsController extends FormBasicController implements Activatea
 			if(event == Event.DONE_EVENT) {
 				fireEvent(ureq, new SubmitEvent(SubmitEvent.CREATE, filename));
 				gtaManager.markNews(courseEnv, gtaNode);
-				doOpen(ureq, filename, EDIT);
 				updateModel(ureq);
 				updateWarnings();
 			} 
 			checkDeadline(ureq);
-		} else if (source == docEditorCtrl) {
-			if(event == Event.DONE_EVENT) {
-				fireEvent(ureq, new SubmitEvent(SubmitEvent.UPDATE, docEditorCtrl.getVfsLeaf().getName()));
-				gtaManager.markNews(courseEnv, gtaNode);
-			}
-			updateModel(ureq);
-			updateWarnings();
-			cleanUp();
-			checkDeadline(ureq);
-			addToHistory(ureq, this);
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -338,13 +315,11 @@ class SubmitDocumentsController extends FormBasicController implements Activatea
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(confirmDeleteCtrl);
-		removeAsListenerAndDispose(docEditorCtrl);
 		removeAsListenerAndDispose(viewDocCtrl);
 		removeAsListenerAndDispose(uploadCtrl);
 		removeAsListenerAndDispose(newDocCtrl);
 		removeAsListenerAndDispose(cmc);
 		confirmDeleteCtrl = null;
-		docEditorCtrl = null;
 		viewDocCtrl = null;
 		uploadCtrl = null;
 		newDocCtrl = null;
@@ -431,17 +406,18 @@ class SubmitDocumentsController extends FormBasicController implements Activatea
 	}
 	
 	private void doOpen(UserRequest ureq, String filename, Mode mode) {
+		gtaManager.markNews(courseEnv, gtaNode);
+		updateWarnings();
+		checkDeadline(ureq);
 		VFSItem vfsItem = documentsContainer.resolve(filename);
 		if(vfsItem == null || !(vfsItem instanceof VFSLeaf)) {
 			showError("error.missing.file");
 		} else {
-			DocEditorSecurityCallback secCallback = DocEditorSecurityCallbackBuilder.builder()
-					.withMode(mode)
-					.build();
-			DocEditorConfigs configs = GTAUIFactory.getEditorConfig(documentsContainer, filename, null);
-			WindowControl swb = addToHistory(ureq, OresHelper.createOLATResourceableType("DocEditor"), null);
-			docEditorCtrl = new DocEditorFullscreenController(ureq, swb, (VFSLeaf)vfsItem, secCallback, configs);
-			listenTo(docEditorCtrl);
+			VFSLeaf vfsLeaf = (VFSLeaf)vfsItem;
+			fireEvent(ureq, new SubmitEvent(SubmitEvent.UPDATE, vfsLeaf.getName()));
+			DocEditorConfigs configs = GTAUIFactory.getEditorConfig(documentsContainer, vfsLeaf, filename, mode, null);
+			String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
 		}
 	}
 	

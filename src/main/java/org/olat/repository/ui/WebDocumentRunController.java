@@ -19,14 +19,13 @@
  */
 package org.olat.repository.ui;
 
-import static org.olat.core.commons.services.doceditor.DocEditorConfigs.none;
-
 import javax.servlet.http.HttpServletRequest;
 
+import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallbackBuilder;
-import org.olat.core.commons.services.doceditor.DocumentEditorService;
+import org.olat.core.commons.services.doceditor.DocEditorConfig;
+import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.video.MovieService;
@@ -64,7 +63,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class WebDocumentRunController extends BasicController {
 
 	@Autowired
-	private DocumentEditorService docEditorService;
+	private DocEditorService docEditorService;
 	@Autowired
 	private MovieService movieService;
 
@@ -101,11 +100,12 @@ public class WebDocumentRunController extends BasicController {
 					mainVC.contextPut("width", 640);
 				}
 			} else if (docEditorService.hasEditor(getIdentity(), ureq.getUserSession().getRoles(), extension, Mode.VIEW, true)) {
-				DocEditorSecurityCallback secCallback = DocEditorSecurityCallbackBuilder.builder()
+				DocEditorConfigs docEditorConfigs = DocEditorConfigs.builder()
 						.withMode(Mode.VIEW)
-						.withCanClose(false)
-						.build();
-				Controller editCtrl = new DocEditorController(ureq, wControl, document, secCallback, none(), "o_web_document");
+						.addConfig(new DocEditorConfig("o_web_document"))
+						.build(document);
+				Access access = docEditorService.createAccess(getIdentity(), ureq.getUserSession().getRoles(), docEditorConfigs);
+				Controller editCtrl = new DocEditorController(ureq, wControl, access, docEditorConfigs);
 				listenTo(editCtrl);
 				mainVC.put("content", editCtrl.getInitialComponent());
 			} else {

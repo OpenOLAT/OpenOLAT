@@ -21,10 +21,10 @@ package org.olat.core.commons.services.doceditor.onlyoffice;
 
 import java.util.Locale;
 
+import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditor;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorIdentityService;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
 import org.olat.core.commons.services.doceditor.onlyoffice.ui.OnlyOfficeEditorController;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
@@ -47,6 +47,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class OnlyOfficeEditor implements DocEditor {
 	
+	public static final String TYPE = "onlyoffice";
+	
 	@Autowired
 	private OnlyOfficeModule onlyOfficeModule;
 	@Autowired
@@ -61,7 +63,7 @@ public class OnlyOfficeEditor implements DocEditor {
 
 	@Override
 	public String getType() {
-		return "onlyoffice";
+		return TYPE;
 	}
 
 	@Override
@@ -73,6 +75,16 @@ public class OnlyOfficeEditor implements DocEditor {
 	@Override
 	public boolean isDataTransferConfirmationEnabled() {
 		return onlyOfficeModule.isDataTransferConfirmationEnabled();
+	}
+
+	@Override
+	public boolean hasDocumentBaseUrl() {
+		return false;
+	}
+
+	@Override
+	public String getDocumentBaseUrl() {
+		return null;
 	}
 
 	@Override
@@ -88,8 +100,8 @@ public class OnlyOfficeEditor implements DocEditor {
 	}
 
 	@Override
-	public boolean isSupportingFormat(String suffix, Mode mode, boolean hasMeta) {
-		return hasMeta && onlyOfficeService.isSupportedFormat(suffix, mode);
+	public boolean isSupportingFormat(String suffix, Mode mode, boolean metadataAvailable) {
+		return metadataAvailable && onlyOfficeService.isSupportedFormat(suffix, mode);
 	}
 
 	@Override
@@ -110,8 +122,8 @@ public class OnlyOfficeEditor implements DocEditor {
 
 	@Override
 	public Controller getRunController(UserRequest ureq, WindowControl wControl, Identity identity, VFSLeaf vfsLeaf,
-			DocEditorSecurityCallback securityCallback, DocEditorConfigs configs) {
-		return new OnlyOfficeEditorController(ureq, wControl, vfsLeaf, securityCallback);
+			DocEditorConfigs configs, Access access) {
+		return new OnlyOfficeEditorController(ureq, wControl, vfsLeaf, configs, access);
 	}
 
 }

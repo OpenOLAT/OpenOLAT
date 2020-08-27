@@ -20,8 +20,8 @@
 package org.olat.core.commons.services.doceditor.collabora.ui;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.collabora.CollaboraService;
-import org.olat.core.commons.services.doceditor.wopi.Access;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.StringHelper;
 import org.olat.restapi.security.RestSecurityHelper;
@@ -40,7 +40,6 @@ class CollaboraEditorUrlBuilder {
 	private final Access access;
 	private String lang;
 	private String permission;
-	private boolean closeButton = false;
 	private boolean debug = false;
 
 	@Autowired
@@ -65,11 +64,6 @@ class CollaboraEditorUrlBuilder {
 		return this;
 	}
 	
-	CollaboraEditorUrlBuilder withCloseButton(boolean closeButton) {
-		this.closeButton = closeButton;
-		return this;
-	}
-	
 	CollaboraEditorUrlBuilder withDebug(boolean debug) {
 		this.debug = debug;
 		return this;
@@ -80,13 +74,13 @@ class CollaboraEditorUrlBuilder {
 		String editorBaseUrl = collaboraService.getEditorBaseUrl(access.getMetadata());
 		url.append(editorBaseUrl);
 		
-		StringBuilder wopiPath = new StringBuilder();
-		wopiPath.append(Settings.getServerContextPathURI());
-		wopiPath.append(RestSecurityHelper.SUB_CONTEXT);
-		wopiPath.append("/collabora/wopi/files/");
-		wopiPath.append(access.getMetadata().getUuid());
+		StringBuilder filesPath = new StringBuilder();
+		filesPath.append(Settings.getServerContextPathURI());
+		filesPath.append(RestSecurityHelper.SUB_CONTEXT);
+		filesPath.append("/collabora/wopi/files/");
+		filesPath.append(access.getMetadata().getUuid());
 		url.append("WOPISrc=");
-		url.append(StringHelper.urlEncodeUTF8(wopiPath.toString()));
+		url.append(StringHelper.urlEncodeUTF8(filesPath.toString()));
 		
 		url.append("&access_token=").append(access.getToken());
 		
@@ -98,10 +92,8 @@ class CollaboraEditorUrlBuilder {
 			url.append("&permission=").append(permission);
 		}
 		
-		if (closeButton) {
-			// Apparently that parameter is ignored. The close button is always visible!
-			url.append("&closebutton=1");
-		}
+		// Apparently that parameter is ignored. The close button is always visible!
+		url.append("&closebutton=1");
 		
 		if (debug) {
 			url.append("&debug=1");

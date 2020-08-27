@@ -39,9 +39,7 @@ import org.olat.core.commons.modules.bc.FileSelection;
 import org.olat.core.commons.modules.bc.FolderLicenseHandler;
 import org.olat.core.commons.modules.bc.FolderManager;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallbackBuilder;
-import org.olat.core.commons.services.doceditor.DocumentEditorService;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseHandler;
 import org.olat.core.commons.services.license.LicenseModule;
@@ -100,7 +98,7 @@ public class ListRenderer {
 	private VFSRepositoryService vfsRepositoryService;
 	private VFSVersionModule vfsVersionModule;
 	private VFSLockManager lockManager;
-	private DocumentEditorService docEditorService;
+	private DocEditorService docEditorService;
 	private UserManager userManager;
 	boolean licensesEnabled ;
  	
@@ -135,7 +133,7 @@ public class ListRenderer {
 			vfsVersionModule = CoreSpringFactory.getImpl(VFSVersionModule.class);
 		}
 		if (docEditorService == null) {
-			docEditorService = CoreSpringFactory.getImpl(DocumentEditorService.class);
+			docEditorService = CoreSpringFactory.getImpl(DocEditorService.class);
 		}
 		
 		LicenseModule licenseModule = CoreSpringFactory.getImpl(LicenseModule.class);
@@ -517,15 +515,9 @@ public class ListRenderer {
 	private String getOpenIconCss(VFSItem child, VFSMetadata metadata, boolean canWrite, Identity identity, Roles roles) {
 		if (child instanceof VFSLeaf) {
 			VFSLeaf vfsLeaf = (VFSLeaf) child;
-			boolean hasMeta = vfsLeaf.canMeta() == VFSConstants.YES;
-			DocEditorSecurityCallbackBuilder secCallbackBuilder = DocEditorSecurityCallbackBuilder.builder()
-					.withVersionControlled(true)
-					.withHasMeta(hasMeta);
-			DocEditorSecurityCallback editSecCallback = secCallbackBuilder.withMode(Mode.EDIT).build();
-			DocEditorSecurityCallback viewSecCallback = secCallbackBuilder.withMode(Mode.VIEW).build();
-			if (canWrite && docEditorService.hasEditor(identity, roles, vfsLeaf, metadata, editSecCallback)) {
+			if (canWrite && docEditorService.hasEditor(identity, roles, vfsLeaf, metadata, Mode.EDIT)) {
 				return "o_icon_edit";
-			} else if (docEditorService.hasEditor(identity, roles, vfsLeaf, metadata, viewSecCallback)) {
+			} else if (docEditorService.hasEditor(identity, roles, vfsLeaf, metadata, Mode.VIEW)) {
 				return "o_icon_preview";
 			}
 		}

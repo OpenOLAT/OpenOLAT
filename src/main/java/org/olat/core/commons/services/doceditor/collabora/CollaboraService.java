@@ -21,10 +21,9 @@ package org.olat.core.commons.services.doceditor.collabora;
 
 import java.io.InputStream;
 
+import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
-import org.olat.core.commons.services.doceditor.wopi.Access;
-import org.olat.core.commons.services.doceditor.wopi.Discovery;
+import org.olat.core.commons.services.doceditor.discovery.Discovery;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -42,14 +41,6 @@ public interface CollaboraService {
 	
 	public static final OLATResourceable REFRESH_EVENT_ORES = OresHelper
 			.createOLATResourceableType(CollaboraRefreshDiscoveryEvent.class.getSimpleName() + ":RefreshDiscovery");
-
-	VFSLeaf getVfsLeaf(Access access);
-	
-	Access createAccess(VFSMetadata vfsMetadata, Identity identity, DocEditorSecurityCallback secCallback);
-
-	Access getAccess(String accessToken);
-	
-	void deleteAccess(Access access);
 	
 	boolean canUpdateContent(Access access, String fileId);
 
@@ -69,6 +60,6 @@ public interface CollaboraService {
 
 	LockResult lock(VFSLeaf vfsLeaf, Identity identity);
 
-	void unlock(VFSLeaf vfsLeaf, LockResult lock);
+	void deleteAccessAndUnlock(Access access, LockResult lock);
 
 }

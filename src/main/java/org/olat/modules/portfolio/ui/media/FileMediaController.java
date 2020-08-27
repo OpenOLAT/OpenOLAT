@@ -24,19 +24,16 @@ import java.util.List;
 
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallbackBuilder;
-import org.olat.core.commons.services.doceditor.DocumentEditorService;
-import org.olat.core.commons.services.doceditor.ui.DocEditorFullscreenController;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Roles;
 import org.olat.core.util.FileUtils;
@@ -71,8 +68,6 @@ public class FileMediaController extends BasicController implements PageElementE
 	private VelocityContainer mainVC;
 	private Link editLink;
 
-	private DocEditorFullscreenController docEditorCtrl;
-
 	private final Roles roles;
 	private final Media media;
 	private final MediaRenderingHints hints;
@@ -85,7 +80,7 @@ public class FileMediaController extends BasicController implements PageElementE
 	@Autowired
 	private UserManager userManager;
 	@Autowired
-	private DocumentEditorService docEditorService;
+	private DocEditorService docEditorService;
 	
 	public FileMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints) {
 		super(ureq, wControl);
@@ -143,13 +138,14 @@ public class FileMediaController extends BasicController implements PageElementE
 		if (editLink != null) mainVC.remove(editLink);
 		
 		if (vfsLeaf != null && !hints.isToPdf()) {
-			DocEditorSecurityCallback secCallback = getSecurityCallback();
-			if (secCallback != null) {
+			Mode mode = getMode();
+			if (mode != null) {
 				editLink = LinkFactory.createCustomLink("edit", "edit", "", Link.NONTRANSLATED | Link.LINK, mainVC,
 						this);
-				String editIcon = Mode.EDIT.equals(secCallback.getMode())? "o_icon_edit": "o_icon_preview";
+				String editIcon = Mode.EDIT.equals(mode)? "o_icon_edit": "o_icon_preview";
 				editLink.setIconLeftCSS("o_icon " + editIcon);
-				editLink.setUserObject(secCallback);
+				editLink.setUserObject(mode);
+				editLink.setNewWindow(true, true);
 			}
 		}
 	}
@@ -165,15 +161,13 @@ public class FileMediaController extends BasicController implements PageElementE
 		updateUI();
 	}
 	
-	private DocEditorSecurityCallback getSecurityCallback() {
-		DocEditorSecurityCallback editSC = DocEditorSecurityCallbackBuilder.builder().withMode(Mode.EDIT).build();
-		DocEditorSecurityCallback viewSC = DocEditorSecurityCallbackBuilder.builder().withMode(Mode.VIEW).build();
+	private Mode getMode() {
 		if (isEditingExcluded()) {
 			return null;
-		} else if (editMode && docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, editSC)) {
-			return editSC;
-		} else if (docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, viewSC)) {
-			return viewSC;
+		} else if (editMode && docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, Mode.EDIT, true)) {
+			return Mode.EDIT;
+		} else if (docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, Mode.VIEW, true)) {
+			return Mode.VIEW;
 		}
 		return null;
 	}
@@ -186,35 +180,22 @@ public class FileMediaController extends BasicController implements PageElementE
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == editLink) {
-			DocEditorSecurityCallback secCallback = (DocEditorSecurityCallback)editLink.getUserObject();
-			doOpen(ureq, secCallback);
+			Mode mode = (Mode)editLink.getUserObject();
+			doOpen(ureq, mode);
 		}
 	}
 
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == docEditorCtrl) {
-			if(event == Event.DONE_EVENT) {
-				cleanUp();
-			}
-		} 
-		super.event(ureq, source, event);
-	}
-	
-	private void cleanUp() {
-		removeAsListenerAndDispose(docEditorCtrl);
-		docEditorCtrl = null;
-	}
-
-	private void doOpen(UserRequest ureq, DocEditorSecurityCallback secCallback) {
+	private void doOpen(UserRequest ureq, Mode mode) {
 		VFSContainer container = fileStorage.getMediaContainer(media);
 		VFSItem vfsItem = container.resolve(media.getRootFilename());
 		if(vfsItem == null || !(vfsItem instanceof VFSLeaf)) {
 			showError("error.missing.file");
 		} else {
-			DocEditorConfigs configs = DocEditorConfigs.builder().build();
-			docEditorCtrl = new DocEditorFullscreenController(ureq, getWindowControl(), (VFSLeaf)vfsItem, secCallback, configs);
-			listenTo(docEditorCtrl);
+			DocEditorConfigs configs = DocEditorConfigs.builder()
+					.withMode(mode)
+					.build(vfsLeaf);
+			String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
 		}
 	}
 

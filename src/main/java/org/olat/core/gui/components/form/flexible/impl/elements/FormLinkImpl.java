@@ -75,6 +75,7 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	private String title;
 	private String ariaLabel;
 	private String textReasonForDisabling;
+	private String target;
 
 	/**
 	 * creates a form link with the given name which acts also as command, i18n
@@ -171,6 +172,18 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 		this.popup = popup;
 		if(component != null) {
 			component.setPopup(popup);
+		}
+	}
+
+	public String getTarget() {
+		return target;
+	}
+
+	@Override
+	public void setTarget(String target) {
+		this.target = target;
+		if(component != null) {
+			component.setTarget(target);
 		}
 	}
 

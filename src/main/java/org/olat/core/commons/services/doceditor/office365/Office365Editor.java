@@ -21,10 +21,10 @@ package org.olat.core.commons.services.doceditor.office365;
 
 import java.util.Locale;
 
+import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditor;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorIdentityService;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
 import org.olat.core.commons.services.doceditor.office365.ui.Office365EditorController;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
@@ -63,16 +63,26 @@ public class Office365Editor implements DocEditor {
 	public String getType() {
 		return "office365";
 	}
-
+	
 	@Override
 	public String getDisplayName(Locale locale) {
 		Translator translator = Util.createPackageTranslator(Office365EditorController.class, locale);
 		return translator.translate("editor.display.name");
 	}
-
+	
 	@Override
 	public boolean isDataTransferConfirmationEnabled() {
 		return office365Module.isDataTransferConfirmationEnabled();
+	}
+
+	@Override
+	public boolean hasDocumentBaseUrl() {
+		return true;
+	}
+
+	@Override
+	public String getDocumentBaseUrl() {
+		return office365Module.getDocumentBaseUrl();
 	}
 
 	@Override
@@ -88,8 +98,8 @@ public class Office365Editor implements DocEditor {
 	}
 
 	@Override
-	public boolean isSupportingFormat(String suffix, Mode mode, boolean hasMeta) {
-		return hasMeta && office365Service.isSupportingFormat(suffix, mode);
+	public boolean isSupportingFormat(String suffix, Mode mode, boolean metadataAvailable) {
+		return metadataAvailable && office365Service.isSupportingFormat(suffix, mode);
 	}
 
 	@Override
@@ -110,8 +120,8 @@ public class Office365Editor implements DocEditor {
 
 	@Override
 	public Controller getRunController(UserRequest ureq, WindowControl wControl, Identity identity, VFSLeaf vfsLeaf,
-			DocEditorSecurityCallback securityCallback, DocEditorConfigs configs) {
-		return new Office365EditorController(ureq, wControl, vfsLeaf, securityCallback);
+			DocEditorConfigs configs, Access access) {
+		return new Office365EditorController(ureq, wControl, vfsLeaf, access);
 	}
 
 }

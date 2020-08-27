@@ -28,9 +28,7 @@ import java.util.List;
 
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallbackBuilder;
-import org.olat.core.commons.services.doceditor.ui.DocEditorFullscreenController;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -50,9 +48,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -83,7 +81,6 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 	private EditSolutionController addSolutionCtrl;
 	private EditSolutionController editSolutionCtrl;
 	private NewSolutionController newSolutionCtrl;
-	private DocEditorFullscreenController docEditorCtrl;
 	
 	private final File solutionDir;
 	private final boolean readOnly;
@@ -98,6 +95,8 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 	private UserManager userManager;
 	@Autowired
 	private GTAManager gtaManager;
+	@Autowired
+	private DocEditorService docEditorService;
 	
 	public GTASampleSolutionsEditController(UserRequest ureq, WindowControl wControl, GTACourseNode gtaNode,
 			CourseEnvironment courseEnv, boolean readOnly) {
@@ -203,15 +202,8 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 			
 			if(event == Event.DONE_EVENT) {
 				gtaManager.addSolution(newSolution, courseEnv, gtaNode);
-				doOpen(ureq, newSolution, Mode.EDIT);
 				updateModel(ureq);
 				gtaManager.markNews(courseEnv, gtaNode);
-			}
-		} else if (source == docEditorCtrl) {
-			if(event == Event.DONE_EVENT) {
-				gtaManager.markNews(courseEnv, gtaNode);
-				updateModel(ureq);
-				cleanUp();
 			}
 		} else if(cmc == source) {
 			cleanUp();
@@ -220,11 +212,9 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 	}
 	
 	private void cleanUp() {
-		removeAsListenerAndDispose(docEditorCtrl);
 		removeAsListenerAndDispose(editSolutionCtrl);
 		removeAsListenerAndDispose(addSolutionCtrl);
 		removeAsListenerAndDispose(cmc);
-		docEditorCtrl = null;
 		editSolutionCtrl = null;
 		addSolutionCtrl = null;
 		cmc = null;
@@ -269,13 +259,10 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 		if(!(vfsItem instanceof VFSLeaf)) {
 			showError("error.missing.file");
 		} else {
-			DocEditorSecurityCallback secCallback = DocEditorSecurityCallbackBuilder.builder()
-					.withMode(mode)
-					.build();
-			DocEditorConfigs configs = GTAUIFactory.getEditorConfig(solutionContainer, solution.getFilename(), courseRepoKey);
-			WindowControl swb = addToHistory(ureq, OresHelper.createOLATResourceableType("DocEditor"), null);
-			docEditorCtrl = new DocEditorFullscreenController(ureq, swb, (VFSLeaf)vfsItem, secCallback, configs);
-			listenTo(docEditorCtrl);
+			gtaManager.markNews(courseEnv, gtaNode);
+			DocEditorConfigs configs = GTAUIFactory.getEditorConfig(solutionContainer, (VFSLeaf)vfsItem, solution.getFilename(), mode, courseRepoKey);
+			String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
 		}
 	}
 

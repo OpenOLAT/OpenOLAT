@@ -59,30 +59,30 @@ public class DocTemplates {
 		return docTemplates.isEmpty();
 	}
 	
-	public static Builder editables(Identity identity, Roles roles, Locale locale, boolean hasMeta) {
+	public static Builder editables(Identity identity, Roles roles, Locale locale, boolean metadataAvailable) {
 		Builder builder = new Builder(locale);
 		
-		DocumentEditorService docEditorService = CoreSpringFactory.getImpl(DocumentEditorService.class);
+		DocEditorService docEditorService = CoreSpringFactory.getImpl(DocEditorService.class);
 		
-		if (docEditorService.hasEditor(identity, roles, "txt", EDIT, hasMeta)) {
+		if (docEditorService.hasEditor(identity, roles, "txt", EDIT, metadataAvailable)) {
 			builder.addTxt();
 		}
-		if (docEditorService.hasEditor(identity, roles, "html", EDIT, hasMeta)) {
+		if (docEditorService.hasEditor(identity, roles, "html", EDIT, metadataAvailable)) {
 			builder.addHtml();
 		}
-		if (docEditorService.hasEditor(identity, roles, "css", EDIT, hasMeta)) {
+		if (docEditorService.hasEditor(identity, roles, "css", EDIT, metadataAvailable)) {
 			builder.addCss();
 		}
-		if (docEditorService.hasEditor(identity, roles, "xml", EDIT, hasMeta)) {
+		if (docEditorService.hasEditor(identity, roles, "xml", EDIT, metadataAvailable)) {
 			builder.addXml();
 		}
-		if (docEditorService.hasEditor(identity, roles, "docx", EDIT, hasMeta)) {
+		if (docEditorService.hasEditor(identity, roles, "docx", EDIT, metadataAvailable)) {
 			builder.addDocx();
 		}
-		if (docEditorService.hasEditor(identity, roles, "xlsx", EDIT, hasMeta)) {
+		if (docEditorService.hasEditor(identity, roles, "xlsx", EDIT, metadataAvailable)) {
 			builder.addXlsx();
 		}
-		if (docEditorService.hasEditor(identity, roles, "pptx", EDIT, hasMeta)) {
+		if (docEditorService.hasEditor(identity, roles, "pptx", EDIT, metadataAvailable)) {
 			builder.addPptx();
 		}
 			

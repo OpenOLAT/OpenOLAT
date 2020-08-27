@@ -47,6 +47,10 @@ public interface DocEditor {
 
 	boolean isDataTransferConfirmationEnabled();
 	
+	boolean hasDocumentBaseUrl();
+
+	String getDocumentBaseUrl();
+
 	/**
 	 * Indicates whether a specific identity with specific roles is permitted to use the editor.
 	 *
@@ -61,10 +65,10 @@ public interface DocEditor {
 	 *
 	 * @param suffix
 	 * @param mode
-	 * @param hasMeta 
+	 * @param metadataAvailable 
 	 * @return
 	 */
-	boolean isSupportingFormat(String suffix, Mode mode, boolean hasMeta);
+	boolean isSupportingFormat(String suffix, Mode mode, boolean metadataAvailable);
 	
 	/**
 	 * Checks whether a file is locked for this identity and editor.
@@ -77,8 +81,8 @@ public interface DocEditor {
 	boolean isLockedForMe(VFSLeaf vfsLeaf, Identity identity, Mode mode);
 	
 	boolean isLockedForMe(VFSLeaf vfsLeaf, VFSMetadata metadata, Identity identity, Mode mode);
-	
+
 	Controller getRunController(UserRequest ureq, WindowControl wControl, Identity identity, VFSLeaf vfsLeaf,
-			DocEditorSecurityCallback securityCallback, DocEditorConfigs configs);
+			DocEditorConfigs configs, Access access);
 
 }

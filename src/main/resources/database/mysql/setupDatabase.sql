@@ -1893,18 +1893,27 @@ create table o_vfs_revision (
    primary key (id)
 );
 
--- WOPI
-create table o_wopi_access (
+-- Document editor
+create table o_de_access (
    id bigint not null auto_increment,
    creationdate datetime not null,
    lastmodified datetime not null,
-   o_app varchar(64) not null,
+   o_editor_type varchar(64) not null,
    o_token varchar(64) not null,
-   o_expires_at datetime,
-   o_can_edit bool not null,
-   o_can_close bool not null,
+   o_expires_at datetime not null,
+   o_mode varchar(64) not null,
    o_version_controlled bool not null,
    fk_metadata bigint not null,
+   fk_identity bigint not null,
+   primary key (id)
+);
+
+-- used in fxOpenOlat
+create table o_de_user_info (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   o_info varchar(2048) not null,
    fk_identity bigint not null,
    primary key (id)
 );
@@ -3422,7 +3431,8 @@ alter table o_qual_analysis_presentation ENGINE = InnoDB;
 alter table o_vfs_metadata ENGINE = InnoDB;
 alter table o_vfs_thumbnail ENGINE = InnoDB;
 alter table o_vfs_revision ENGINE = InnoDB;
-alter table o_wopi_access ENGINE = InnoDB;
+alter table o_de_access ENGINE = InnoDB;
+alter table o_de_user_info ENGINE = InnoDB;
 alter table o_sms_message_log ENGINE = InnoDB;
 alter table o_feed ENGINE = InnoDB;
 alter table o_feed_item ENGINE = InnoDB;
@@ -3949,9 +3959,9 @@ alter table o_vfs_revision add constraint fvers_to_author_idx foreign key (fk_au
 alter table o_vfs_revision add constraint fvers_to_meta_idx foreign key (fk_metadata) references o_vfs_metadata (id);
 alter table o_vfs_metadata add constraint fvers_to_lic_type_idx foreign key (fk_license_type) references o_lic_license_type (id);
 
--- WOPI
-create unique index idx_wopi_token_idx on o_wopi_access(o_token);
-create index idx_wopi_ident_meta_idx on o_wopi_access(fk_identity, fk_metadata);
+-- Document editor
+create unique index idx_de_token_idx on o_de_access(o_token);
+create unique index idx_de_userinfo_ident_idx on o_de_user_info(fk_identity);
 
 -- quality management
 alter table o_qual_data_collection add constraint qual_dc_to_gen_idx foreign key (fk_generator) references o_qual_generator (id);

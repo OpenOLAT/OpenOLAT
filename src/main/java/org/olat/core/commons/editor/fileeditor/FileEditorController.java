@@ -36,7 +36,6 @@ import org.olat.core.commons.editor.plaintexteditor.TextEditorController;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs.Config;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -64,11 +63,11 @@ public class FileEditorController extends BasicController {
 	private VFSLockManager vfsLockManager;
 
 	protected FileEditorController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsLeaf,
-			DocEditorSecurityCallback secCallback, DocEditorConfigs configs) {
+			DocEditorConfigs configs) {
 		super(ureq, wControl);
 		this.vfsLeaf = vfsLeaf;
 		
-		boolean isEdit = Mode.EDIT.equals(secCallback.getMode());
+		boolean isEdit = Mode.EDIT.equals(configs.getMode());
 		if (isEdit) {
 			if(vfsLockManager.isLockedForMe(vfsLeaf, ureq.getIdentity(), VFSLockApplicationType.vfs, null)) {
 				// It the file is locked by someone other, show it in preview mode
@@ -96,11 +95,11 @@ public class FileEditorController extends BasicController {
 				CustomLinkTreeModel customLinkTreeModel = config.getCustomLinkTreeModel();
 				if (customLinkTreeModel != null) {
 					htmlCtrl = WysiwygFactory.createWysiwygControllerWithInternalLink(ureq, getWindowControl(),
-							config.getVfsContainer(), config.getFilePath(), true, secCallback.isVersionControlled(), customLinkTreeModel,
+							config.getVfsContainer(), config.getFilePath(), true, configs.isVersionControlled(), customLinkTreeModel,
 							null, config.getEdusharingProvider());
 				} else {
 					htmlCtrl = WysiwygFactory.createWysiwygController(ureq, getWindowControl(), config.getVfsContainer(),
-							config.getFilePath(), config.getMediaPath(), true, secCallback.isVersionControlled(), config.getEdusharingProvider());
+							config.getFilePath(), config.getMediaPath(), true, configs.isVersionControlled(), config.getEdusharingProvider());
 				}
 				
 				htmlCtrl.setNewFile(false);
@@ -111,11 +110,11 @@ public class FileEditorController extends BasicController {
 				
 				editCtrl = htmlCtrl;
 			} else {
-				editCtrl = new HTMLReadOnlyController(ureq, getWindowControl(), vfsLeaf.getParentContainer(), vfsLeaf.getName(), secCallback.canClose());
+				editCtrl = new HTMLReadOnlyController(ureq, getWindowControl(), vfsLeaf.getParentContainer(), vfsLeaf.getName(), false);
 			}
 		}
 		else {
-			editCtrl = new TextEditorController(ureq, getWindowControl(), vfsLeaf, "utf-8", !isEdit, secCallback.isVersionControlled());
+			editCtrl = new TextEditorController(ureq, getWindowControl(), vfsLeaf, "utf-8", !isEdit, configs.isVersionControlled());
 		}
 		listenTo(editCtrl);
 		

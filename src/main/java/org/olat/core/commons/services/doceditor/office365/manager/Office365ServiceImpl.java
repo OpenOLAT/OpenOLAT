@@ -32,15 +32,15 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
+import org.olat.core.commons.services.doceditor.discovery.Action;
+import org.olat.core.commons.services.doceditor.discovery.Discovery;
+import org.olat.core.commons.services.doceditor.discovery.DiscoveryService;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.office365.Office365Module;
 import org.olat.core.commons.services.doceditor.office365.Office365RefreshDiscoveryEvent;
 import org.olat.core.commons.services.doceditor.office365.Office365Service;
-import org.olat.core.commons.services.doceditor.wopi.Access;
-import org.olat.core.commons.services.doceditor.wopi.Action;
-import org.olat.core.commons.services.doceditor.wopi.Discovery;
-import org.olat.core.commons.services.doceditor.wopi.WopiService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.control.Event;
@@ -81,9 +81,11 @@ public class Office365ServiceImpl implements Office365Service, GenericEventListe
 	@Autowired
 	private Office365Module office365Module;
 	@Autowired
-	private WopiService wopiService;
+	private DiscoveryService discoveryService;
 	@Autowired
 	private UrlParser urlParser;
+	@Autowired
+	private DocEditorService docEditorService;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
@@ -93,33 +95,10 @@ public class Office365ServiceImpl implements Office365Service, GenericEventListe
 	private void init() {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, null, REFRESH_EVENT_ORES);
 	}
-
-	@Override
-	public VFSLeaf getVfsLeaf(Access access) {
-		return wopiService.getVfsLeaf(access);
-	}
-
-	@Override
-	public Access createAccess(VFSMetadata vfsMetadata, Identity identity, DocEditorSecurityCallback secCallback) {
-		Date expiresIn24Hours = Date.from(Instant.now().plus(Duration.ofHours(24)));
-		return wopiService.getOrCreateAccess(vfsMetadata, identity, secCallback, LOCK_APP, expiresIn24Hours);
-	}
-
-	@Override
-	public Access getAccess(String accessToken) {
-		return wopiService.getAccess(accessToken);
-	}
-
-	@Override
-	public void deleteAccess(Access access) {
-		if (access == null) return;
-		
-		wopiService.deleteAccess(access.getToken());
-	}
-
+	
 	@Override
 	public boolean updateContent(Access access, InputStream fileInputStream) {
-		VFSLeaf vfsLeaf = wopiService.getVfsLeaf(access);
+		VFSLeaf vfsLeaf = docEditorService.getVfsLeaf(access);
 		boolean updated = false;
 		try {
 			if(access.isVersionControlled() && vfsLeaf.canVersion() == VFSConstants.YES) {
@@ -155,14 +134,14 @@ public class Office365ServiceImpl implements Office365Service, GenericEventListe
 	private Discovery getDiscovery() {
 		if (discovery == null) {
 			String discoveryUrl = getDiscoveryUrl();
-			discovery = wopiService.getDiscovery(discoveryUrl);
+			discovery = discoveryService.getDiscovery(discoveryUrl);
 			log.info("Recieved new WOPI discovery from " + discoveryUrl);
 		}
 		return discovery;
 	}
 
 	private String getDiscoveryUrl() {
-		return office365Module.getBaseUrl() + wopiService.getRegularDiscoveryPath();
+		return office365Module.getBaseUrl() + discoveryService.getRegularDiscoveryPath();
 	}
 
 	private void deleteDiscovery() {
@@ -229,7 +208,7 @@ public class Office365ServiceImpl implements Office365Service, GenericEventListe
 	@Override
 	public Collection<String> getContentSecurityPolicyUrls() {
 		if (cspUrls == null) {
-			Collection<Action> actions = wopiService.getActions(getDiscovery());
+			Collection<Action> actions = discoveryService.getActions(getDiscovery());
 			Set<String> urls = new HashSet<>();
 			for (Action action : actions) {
 				String protocolAndDomain = urlParser.getProtocolAndDomain(action.getUrlSrc());
@@ -261,6 +240,8 @@ public class Office365ServiceImpl implements Office365Service, GenericEventListe
 			urlSb.append(locale.toString());
 		}
 		
+		urlSb.append("&IsLicensedUser=1");
+		
 		String url = urlSb.toString();
 		log.debug("Editor action URL: " + url);
 		return url;
@@ -270,9 +251,9 @@ public class Office365ServiceImpl implements Office365Service, GenericEventListe
 		String suffix = FileUtils.getFileSuffix(vfsMetadata.getFilename());
 		Action action = null;
 		if (Mode.EDIT.equals(mode)) {
-			action = wopiService.getAction(getDiscovery(), "edit", suffix);
+			action = discoveryService.getAction(getDiscovery(), "edit", suffix);
 		} else if (Mode.VIEW.equals(mode)) {
-			action = wopiService.getAction(getDiscovery(), "view", suffix);
+			action = discoveryService.getAction(getDiscovery(), "view", suffix);
 		}
 		return action != null? action.getUrlSrc(): null;
 	}
@@ -288,9 +269,9 @@ public class Office365ServiceImpl implements Office365Service, GenericEventListe
 
 	@Override
 	public boolean isSupportingFormat(String suffix, Mode mode) {
-		boolean accepts = wopiService.hasAction(getDiscovery(), "edit", suffix);
+		boolean accepts = discoveryService.hasAction(getDiscovery(), "edit", suffix);
 		if (!accepts && Mode.VIEW.equals(mode)) {
-			accepts = wopiService.hasAction(getDiscovery(), "view", suffix);
+			accepts = discoveryService.hasAction(getDiscovery(), "view", suffix);
 		}
 		return accepts;
 	}

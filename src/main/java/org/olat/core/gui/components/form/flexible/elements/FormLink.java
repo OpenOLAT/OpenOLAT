@@ -167,4 +167,11 @@ public interface FormLink extends FormItem {
 	 */
 	public void setForceOwnDirtyFormWarning(boolean warning);
 
+	/**
+	 * 
+	 *
+	 * @param string
+	 */
+	public void setTarget(String string);
+
 }

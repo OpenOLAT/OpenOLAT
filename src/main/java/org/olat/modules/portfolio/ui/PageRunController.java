@@ -30,7 +30,7 @@ import org.olat.core.commons.services.commentAndRating.ReadOnlyCommentsSecurityC
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocTemplate;
-import org.olat.core.commons.services.doceditor.DocumentEditorService;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -159,7 +159,7 @@ public class PageRunController extends BasicController implements TooledControll
 	@Autowired
 	private PortfolioService portfolioService;
 	@Autowired
-	private DocumentEditorService vfsRepositoryService;
+	private DocEditorService docEditorService;
 	
 	public PageRunController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			BinderSecurityCallback secCallback, Page page, boolean openEditMode) {
@@ -814,7 +814,7 @@ public class PageRunController extends BasicController implements TooledControll
 		private boolean isCreateFilePossible(Roles roles) {
 			List<DocTemplate> editableTemplates = CreateFileHandler.getEditableTemplates(getIdentity(), roles, getLocale()).getTemplates();
 			for (DocTemplate docTemplate: editableTemplates) {
-				if (vfsRepositoryService.hasEditor(getIdentity(), roles,  docTemplate.getSuffix(), Mode.EDIT, true)) {
+				if (docEditorService.hasEditor(getIdentity(), roles,  docTemplate.getSuffix(), Mode.EDIT, true)) {
 					return true;
 				}
 			}

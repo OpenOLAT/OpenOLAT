@@ -68,7 +68,8 @@
 		<class>org.olat.commons.calendar.model.CalendarUserConfiguration</class>
 		<class>org.olat.commons.info.model.InfoMessageImpl</class>
 		<class>org.olat.core.commons.services.csp.model.CSPLogImpl</class>
-		<class>org.olat.core.commons.services.doceditor.wopi.model.AccessImpl</class>
+		<class>org.olat.core.commons.services.doceditor.model.AccessImpl</class>
+		<class>org.olat.core.commons.services.doceditor.model.UserInfoImpl</class>
 		<class>org.olat.core.commons.services.license.model.LicenseTypeActivation</class>
 		<class>org.olat.core.commons.services.license.model.LicenseTypeImpl</class>
 		<class>org.olat.core.commons.services.license.model.ResourceLicenseImpl</class>

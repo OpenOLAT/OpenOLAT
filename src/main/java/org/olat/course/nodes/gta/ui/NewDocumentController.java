@@ -21,6 +21,9 @@ package org.olat.course.nodes.gta.ui;
 
 import java.util.List;
 
+import org.olat.core.commons.services.doceditor.DocEditor.Mode;
+import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.DocTemplate;
 import org.olat.core.commons.services.doceditor.DocTemplates;
 import org.olat.core.commons.services.vfs.VFSMetadata;
@@ -31,9 +34,11 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSConstants;
@@ -58,6 +63,8 @@ public class NewDocumentController extends FormBasicController {
 	
 	@Autowired
 	private VFSRepositoryService vfsService;
+	@Autowired
+	private DocEditorService docEditorService;
 	
 	public NewDocumentController(UserRequest ureq, WindowControl wControl, VFSContainer documentContainer,
 			DocTemplates templates) {
@@ -96,7 +103,8 @@ public class NewDocumentController extends FormBasicController {
 		
 		FormLayoutContainer formButtons = FormLayoutContainer.createButtonLayout("formButton", getTranslator());
 		formLayout.add(formButtons);
-		uifactory.addFormSubmitButton("submit", "create", formButtons);
+		FormSubmit submitButton = uifactory.addFormSubmitButton("submit", "create", formButtons);
+		submitButton.setNewWindowAfterDispatchUrl(true);
 		uifactory.addFormCancelButton("cancel", formButtons, ureq, getWindowControl());
 	}
 	
@@ -162,7 +170,16 @@ public class NewDocumentController extends FormBasicController {
 			metaInfo.setAuthor(getIdentity());
 			vfsService.updateMetadata(metaInfo);
 		}
+		
+		doOpen(ureq, vfsLeaf);
+		
 		fireEvent(ureq, Event.DONE_EVENT);
+	}
+
+	private void doOpen(UserRequest ureq, VFSLeaf vfsLeaf) {
+		DocEditorConfigs configs = GTAUIFactory.getEditorConfig(documentContainer, vfsLeaf, vfsLeaf.getName(), Mode.EDIT, null);
+		String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
+		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
 	}
 
 	@Override

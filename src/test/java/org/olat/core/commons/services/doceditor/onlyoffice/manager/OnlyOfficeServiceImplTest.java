@@ -28,8 +28,8 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeModule;
-import org.olat.core.commons.services.doceditor.wopi.WopiService;
 
 /**
  * 
@@ -42,7 +42,7 @@ public class OnlyOfficeServiceImplTest {
 	@Mock
 	private OnlyOfficeModule onlyOfficeModuleMock;
 	@Mock
-	private WopiService wopiServiceMock;
+	private DocEditorService documentEditorServiceMock;
 	
 	@InjectMocks
 	private OnlyOfficeServiceImpl sut ;
@@ -73,7 +73,7 @@ public class OnlyOfficeServiceImplTest {
 	@Test
 	public void shouldAllowEditIfNotAllLicensesInUse() {
 		when(onlyOfficeModuleMock.getLicenseEdit()).thenReturn(10);
-		when(wopiServiceMock.getAccessCount(any(), any())).thenReturn(Long.valueOf(4));
+		when(documentEditorServiceMock.getAccessCount(any(), any())).thenReturn(Long.valueOf(4));
 		
 		boolean editLicenseAvailable = sut.isEditLicenseAvailable();
 		
@@ -83,7 +83,7 @@ public class OnlyOfficeServiceImplTest {
 	@Test
 	public void shouldNotAllowEditIfAllLicensesInUse() {
 		when(onlyOfficeModuleMock.getLicenseEdit()).thenReturn(10);
-		when(wopiServiceMock.getAccessCount(any(), any())).thenReturn(Long.valueOf(10));
+		when(documentEditorServiceMock.getAccessCount(any(), any())).thenReturn(Long.valueOf(10));
 		
 		boolean editLicenseAvailable = sut.isEditLicenseAvailable();
 		

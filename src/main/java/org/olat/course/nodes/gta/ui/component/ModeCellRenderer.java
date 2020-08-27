@@ -30,7 +30,7 @@ import org.olat.core.gui.translator.Translator;
 public class ModeCellRenderer extends StaticFlexiCellRenderer {
 
 	public ModeCellRenderer(String action) {
-		super("", action);
+		super("", action, true, true);
 	}
 
 	@Override

@@ -11,59 +11,20 @@ body.o_doceditor_body {
 		margin-left: 0px;
 		margin-right: 0px;
 	}
-	#o_toplink {
+	#o_navbar_wrapper,
+	#o_container_page_width_toggler,
+	#o_toplink  {
 		display: none;
 	}
+
 }
 
 .o_doceditor {
-	margin-top: 10px;
-	
-	.o_doceditor_config {
-		.nav {
-			button {
-				margin-top: 3px;
-			}
-		}
-	}
-	
-	// Avoid collapsing the navbar on small devices
-	.navbar-collapse {
-		border-top: 0 !important;
-	}
-	.navbar-collapse.collapse {
-		 display: block!important;
-	}
-	.navbar-nav {
-		margin: 0;
-	}
-	.navbar-nav>li, .navbar-nav {
-		float: left !important;
-	}
-	.navbar-right {
-		float: right!important;
-	}
-	.navbar-nav > li > .dropdown-menu {
-		background-color: $navbar-default-bg;
-		border-color: $navbar-default-border;
-		position: absolute;
-		right: 0;
-		left: auto;
-	}
-	.navbar-nav > li > a {
-		padding-top: 10px !important;
-		padding-bottom: 10px !important;
-		line-height: 20px !important;
-	}
-	
-	
-	/**  Collabora Online and OnlyOffice and Office 365  **/
 	.o_collabora, .o_onlyoffice, .o_office365 {
 		iframe {
 			width: 100%;
-			height: calc(100vh - 61px);
-			height: calc(var(--doceditorvh, 1vh) * 100 - 61px);
-			margin-top: 10px;
+			height: 100vh;  // fallback if css variables are not supported
+			height: calc(var(--doceditorvh, 1vh) * 100);
 			border-width: 0px;
 		}
 	}
@@ -73,21 +34,9 @@ body.o_doceditor_body {
 			iframe {
 				width: 100%;
 				height: calc(100vh - 321px);  // editor selection is not taken
-				height: calc(var(--doceditorvh, 1vh) * 100 - 321px);
+				height: calc(var(--doceditorvh, 1vh) * 100 - 321px); //332
 				margin-top: 10px;
 				margin-bottom: 10px;
-				border-width: 1px;
-			}
-		}
-	}
-	&.o_web_document_edit {
-		.o_collabora, .o_onlyoffice, .o_office365 {
-			iframe {
-				width: 100%;
-				height: calc(100vh - 276px); // editor selection is not taken
-				height: calc(var(--doceditorvh, 1vh) * 100 - 276px);
-				margin-top: 10px;
-				margin-bottom: 25px;
 				border-width: 1px;
 			}
 		}

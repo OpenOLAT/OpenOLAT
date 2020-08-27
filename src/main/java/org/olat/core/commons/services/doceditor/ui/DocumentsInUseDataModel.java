@@ -61,9 +61,9 @@ implements SortableFlexiTableDataModel<DocumentsInUseRow>, FilterableFlexiTableM
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
 		if(filters != null && !filters.isEmpty() && filters.get(0) != null && !filters.get(0).isShowAll()) {
 			String filterKey = filters.get(0).getFilter();
-			boolean canEdit = Mode.EDIT == Mode.valueOf(filterKey);
+			Mode mode = Mode.valueOf(filterKey);
 			List<DocumentsInUseRow> filteredRows = backups.stream()
-						.filter(row -> canEdit == row.isCanEdit())
+						.filter(row -> mode == row.getMode())
 						.collect(Collectors.toList());
 			super.setObjects(filteredRows);
 		} else {
@@ -89,7 +89,7 @@ implements SortableFlexiTableDataModel<DocumentsInUseRow>, FilterableFlexiTableM
 			switch(DocumentsInUseCols.values()[col]) {
 			case fileName: return row.getFilename();
 			case app: return row.getApp();
-			case edit: return row.isCanEdit();
+			case edit: return row.getMode();
 			case opened: return row.getOpened();
 			default: return null;
 		}

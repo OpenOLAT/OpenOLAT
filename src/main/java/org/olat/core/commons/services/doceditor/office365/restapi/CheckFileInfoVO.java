@@ -47,6 +47,7 @@ public class CheckFileInfoVO {
 	private final Boolean supportsExtendedLockLength;
 	private final Boolean supportsUpdate;
 	private final Boolean supportsRename;
+	private final Boolean supportsUserInfo;
 	
 	private final Boolean readOnly;
 	private final Boolean userCanWrite;
@@ -55,6 +56,10 @@ public class CheckFileInfoVO {
 	
 	private final String lastModifiedTime;
 	private final String userFriendlyName;
+	private final String userInfo;
+	private final Boolean isEduUser;
+	private final Boolean licenseCheckForEditIsEnabled;
+	private final String hostEditUrl;
 	
 	private CheckFileInfoVO(Builder builder) {
 		this.baseFileName = builder.baseFileName;
@@ -67,12 +72,17 @@ public class CheckFileInfoVO {
 		this.supportsExtendedLockLength = builder.supportsExtendedLockLength;
 		this.supportsUpdate = builder.supportsUpdate;
 		this.supportsRename = builder.supportsRename;
+		this.supportsUserInfo = builder.supportsUserInfo;
 		this.readOnly = builder.readOnly;
 		this.userCanWrite = builder.userCanWrite;
 		this.userCanNotWriteRelative = builder.userCanNotWriteRelative;
 		this.userCanRename = builder.userCanRename;
 		this.lastModifiedTime = builder.lastModifiedTime;
 		this.userFriendlyName = builder.userFriendlyName;
+		this.userInfo = builder.userInfo;
+		this.isEduUser = builder.isEduUser;
+		this.licenseCheckForEditIsEnabled = builder.licenseCheckForEditIsEnabled;
+		this.hostEditUrl = builder.hostEditUrl;
 	}
 	
 	public String getBaseFileName() {
@@ -115,6 +125,10 @@ public class CheckFileInfoVO {
 		return supportsRename;
 	}
 
+	public Boolean getSupportsUserInfo() {
+		return supportsUserInfo;
+	}
+
 	public Boolean getReadOnly() {
 		return readOnly;
 	}
@@ -139,6 +153,22 @@ public class CheckFileInfoVO {
 		return userFriendlyName;
 	}
 
+	public String getUserInfo() {
+		return userInfo;
+	}
+
+	public Boolean getIsEduUser() {
+		return isEduUser;
+	}
+
+	public Boolean getLicenseCheckForEditIsEnabled() {
+		return licenseCheckForEditIsEnabled;
+	}
+
+	public String getHostEditUrl() {
+		return hostEditUrl;
+	}
+
 	public static Builder builder() {
 		return new Builder();
 	}
@@ -154,12 +184,17 @@ public class CheckFileInfoVO {
 		private Boolean supportsExtendedLockLength;
 		private Boolean supportsUpdate;
 		private Boolean supportsRename;
+		private Boolean supportsUserInfo;
 		private Boolean readOnly;
 		private Boolean userCanWrite;
 		private Boolean userCanNotWriteRelative;
 		private Boolean userCanRename;
 		private String lastModifiedTime;
 		private String userFriendlyName;
+		private String userInfo;
+		private Boolean isEduUser;
+		private Boolean licenseCheckForEditIsEnabled;
+		private String hostEditUrl;
 
 		private Builder() {
 		}
@@ -214,6 +249,11 @@ public class CheckFileInfoVO {
 			return this;
 		}
 
+		public Builder withSupportsUserInfo(Boolean supportsUserInfo) {
+			this.supportsUserInfo = supportsUserInfo;
+			return this;
+		}
+
 		public Builder withReadOnly(Boolean readOnly) {
 			this.readOnly = readOnly;
 			return this;
@@ -243,7 +283,28 @@ public class CheckFileInfoVO {
 			this.userFriendlyName = userFriendlyName;
 			return this;
 		}
-
+		
+		public Builder withUserInfo(String userInfo) {
+			this.userInfo = userInfo;
+			return this;
+		}
+		
+		public Builder withIsEduUser(Boolean isEduUser) {
+			this.isEduUser = isEduUser;
+			return this;
+		}
+		
+		public Builder withLicenseCheckForEditIsEnabled(Boolean licenseCheckForEditIsEnabled) {
+			this.licenseCheckForEditIsEnabled = licenseCheckForEditIsEnabled;
+			return this;
+		}
+		
+		public Builder withHostEditUrl(String hostEditUrl) {
+			this.hostEditUrl = hostEditUrl;
+			return this;
+		}
+		
+		
 		public CheckFileInfoVO build() {
 			return new CheckFileInfoVO(this);
 		}

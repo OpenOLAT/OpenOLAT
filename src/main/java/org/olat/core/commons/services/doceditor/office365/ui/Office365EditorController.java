@@ -19,11 +19,14 @@
  */
 package org.olat.core.commons.services.doceditor.office365.ui;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Date;
+
+import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallbackBuilder;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.office365.Office365Service;
-import org.olat.core.commons.services.doceditor.wopi.Access;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -42,20 +45,21 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class Office365EditorController extends BasicController {
 
+	private Access access;
+
 	@Autowired
 	private Office365Service office365Service;
+	@Autowired
+	private DocEditorService docEditorService;
 	
 	public Office365EditorController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsLeaf,
-			DocEditorSecurityCallback securityCallback) {
+			Access access) {
 		super(ureq, wControl);
+		this.access = access;
 		
-		DocEditorSecurityCallback secCallback = securityCallback;
-		
-		if (office365Service.isLockNeeded(secCallback.getMode())) {
+		if (office365Service.isLockNeeded(access.getMode())) {
 			if (office365Service.isLockedForMe(vfsLeaf, getIdentity())) {
-				secCallback = DocEditorSecurityCallbackBuilder.clone(secCallback)
-						.withMode(Mode.VIEW)
-						.build();
+				this.access = docEditorService.updateMode(access, Mode.VIEW);
 				showWarning("editor.warning.locked");
 			}
 		}
@@ -65,8 +69,7 @@ public class Office365EditorController extends BasicController {
 		if (vfsMetadata == null) {
 			mainVC.contextPut("warning", translate("editor.warning.no.metadata"));
 		} else {
-			Access access = office365Service.createAccess(vfsMetadata, getIdentity(), secCallback);
-			String actionUrl = office365Service.getEditorActionUrl(vfsMetadata, secCallback.getMode(), getLocale());
+			String actionUrl = office365Service.getEditorActionUrl(vfsMetadata, access.getMode(), getLocale());
 			if (actionUrl == null) {
 				mainVC.contextPut("warning", translate("editor.warning.no.metadata"));
 			} else {
@@ -86,7 +89,8 @@ public class Office365EditorController extends BasicController {
 
 	@Override
 	protected void doDispose() {
-		//
+		Date expiresAt = Date.from(Instant.now().plus(Duration.ofMinutes(5)));
+		docEditorService.updatetExpiresAt(access, expiresAt);
 	}
 
 }

@@ -22,9 +22,12 @@ package org.olat.core.commons.services.doceditor.ui;
 import static org.olat.core.gui.components.util.KeyValues.entry;
 
 import java.util.List;
+import java.util.function.Function;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfoFormController;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.DocTemplate;
 import org.olat.core.commons.services.doceditor.DocTemplates;
 import org.olat.core.commons.services.vfs.VFSMetadata;
@@ -35,10 +38,12 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSConstants;
@@ -49,7 +54,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 19 Mar 2019<br>
+ * Initial date: 26 Aug 2020<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
@@ -62,15 +67,20 @@ public class CreateDocumentController extends FormBasicController {
 
 	private final VFSContainer vfsContainer;
 	private final List<DocTemplate> templates;
+	private final Function<VFSLeaf, DocEditorConfigs> configsProvider;
 	private VFSLeaf vfsLeaf;
 	
 	@Autowired
+	private DocEditorService docEditorService;
+	@Autowired
 	private VFSRepositoryService vfsService;
 	
-	public CreateDocumentController(UserRequest ureq, WindowControl wControl, VFSContainer vfsContainer, DocTemplates templates) {
+	public CreateDocumentController(UserRequest ureq, WindowControl wControl, VFSContainer vfsContainer,
+			DocTemplates templates, Function<VFSLeaf, DocEditorConfigs> configsProvider) {
 		super(ureq, wControl, "create_document");
 		this.vfsContainer = vfsContainer;
 		this.templates = templates.getTemplates();
+		this.configsProvider = configsProvider;
 		initForm(ureq);
 	}
 	
@@ -107,7 +117,8 @@ public class CreateDocumentController extends FormBasicController {
 		formLayout.add(butonsCont);
 		FormLayoutContainer formButtons = FormLayoutContainer.createButtonLayout("formButtons", getTranslator());
 		butonsCont.add(formButtons);
-		uifactory.addFormSubmitButton("submit", "create.doc.button", formButtons);
+		FormSubmit submitButton = uifactory.addFormSubmitButton("submit", "create.doc.button", formButtons);
+		submitButton.setNewWindowAfterDispatchUrl(true);
 		uifactory.addFormCancelButton("cancel", formButtons, ureq, getWindowControl());
 	}
 	
@@ -174,6 +185,8 @@ public class CreateDocumentController extends FormBasicController {
 		// has committed the data.
 		DBFactory.getInstance().commitAndCloseSession();
 		
+		doOpen(ureq, vfsLeaf);
+		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
@@ -200,6 +213,12 @@ public class CreateDocumentController extends FormBasicController {
 			vfsService.updateMetadata(meta);
 			vfsService.resetThumbnails(vfsLeaf);
 		}
+	}
+	
+	private void doOpen(UserRequest ureq, VFSLeaf vfsLeaf) {
+		DocEditorConfigs configs = configsProvider.apply(vfsLeaf);
+		String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
+		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
 	}
 
 	@Override

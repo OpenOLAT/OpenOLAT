@@ -25,19 +25,15 @@
 */
 package org.olat.core.commons.modules.bc.commands;
 
-import java.util.List;
+import java.util.function.Function;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.editor.htmleditor.HTMLEditorConfig;
-import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.services.doceditor.DocEditor;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallbackBuilder;
 import org.olat.core.commons.services.doceditor.DocTemplates;
-import org.olat.core.commons.services.doceditor.DocumentEditorService;
 import org.olat.core.commons.services.doceditor.ui.CreateDocumentController;
-import org.olat.core.commons.services.doceditor.ui.DocEditorFullscreenController;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
@@ -50,20 +46,19 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.util.ContainerAndFile;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
- * Initial Date:  13.12.2005
+ * Initial Date: 13.12.2005
+ * 
  * @author Florian Gnägi
  * @author Urs Hensler
  */
@@ -71,50 +66,48 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 
 	private int status = FolderCommandStatus.STATUS_SUCCESS;
 	private String fileName;
-	
+
 	private CloseableModalController cmc;
 	private CreateDocumentController createCtrl;
-	private Controller editorCtr;
-	private FolderComponent folderComponent;
-	
+
 	private VFSLeaf vfsLeaf;
-	
-	@Autowired
-	private DocumentEditorService docEditorService;
-	@Autowired
-	private NotificationsManager notificationsManager;
+	private FolderComponent folderCmp;
 
 	protected CmdCreateFile(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 	}
 
 	@Override
-	public Controller execute(FolderComponent folderCmp, UserRequest ureq, WindowControl wControl, Translator translator) {
+	public Controller execute(FolderComponent folderCmp, UserRequest ureq, WindowControl wControl,
+			Translator translator) {
+		this.folderCmp = folderCmp;
 		if (folderCmp.getCurrentContainer().canWrite() != VFSConstants.YES) {
 			throw new AssertException("Illegal attempt to create file in: " + folderCmp.getCurrentContainerPath());
-		}		
+		}
 		setTranslator(translator);
-		this.folderComponent = folderCmp;
 
-		//check for quota
+		// check for quota
 		long quotaLeft = VFSManager.getQuotaLeftKB(folderCmp.getCurrentContainer());
-		if (quotaLeft <= 0 && quotaLeft != -1 ) {
+		if (quotaLeft <= 0 && quotaLeft != -1) {
 			String supportAddr = WebappHelper.getMailConfig("mailQuota");
 			String msg = translate("QuotaExceededSupport", new String[] { supportAddr });
 			getWindowControl().setError(msg);
 			return null;
 		}
-		
-		boolean hasMeta = folderCmp.getCurrentContainer().canMeta() == VFSConstants.YES;
+
+		boolean metaAvailable = folderCmp.getCurrentContainer().canMeta() == VFSConstants.YES;
 		Identity identity = getIdentity();
-		DocTemplates docTemplates = DocTemplates.editables(identity, ureq.getUserSession().getRoles(), getLocale(), hasMeta).build();
-		createCtrl = new CreateDocumentController(ureq, wControl, folderCmp.getCurrentContainer(), docTemplates);
+		DocTemplates docTemplates = DocTemplates
+				.editables(identity, ureq.getUserSession().getRoles(), getLocale(), metaAvailable).build();
+		createCtrl = new CreateDocumentController(ureq, wControl, folderCmp.getCurrentContainer(), docTemplates,
+				new ConfigsProvider(folderCmp));
 		listenTo(createCtrl);
-		
+
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), createCtrl.getInitialComponent(),
 				true, translate("cfile.header"));
 		cmc.activate();
 		listenTo(cmc);
+		
 		return this;
 	}
 	
@@ -122,7 +115,7 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 	protected void doDispose() {
 		//
 	}
-	
+
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == createCtrl) {
@@ -133,92 +126,30 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 					status = FolderCommandStatus.STATUS_FAILED;
 				} else {
 					fileName = vfsLeaf.getName();
-					doEdit(ureq);
+					markNews(folderCmp.getRootContainer());
 				}
 			} else {
 				fireEvent(ureq, FOLDERCOMMAND_FINISHED);
 			}
-		} else if (source == editorCtr) {
-			fireEvent(ureq, new FolderEvent(FolderEvent.NEW_FILE_EVENT, fileName));
-			fireEvent(ureq, FOLDERCOMMAND_FINISHED);
-			notifyFinished(ureq);
 			cleanUp();
 		}
 	}
-
-	private void notifyFinished(UserRequest ureq) {
-		VFSContainer container = VFSManager.findInheritingSecurityCallbackContainer(folderComponent.getRootContainer());
+	
+	private void markNews(VFSItem rootContainer) {
+		VFSContainer container = VFSManager.findInheritingSecurityCallbackContainer(rootContainer);
 		VFSSecurityCallback secCallback = container.getLocalSecurityCallback();
 		if(secCallback != null) {
 			SubscriptionContext subsContext = secCallback.getSubscriptionContext();
 			if (subsContext != null) {
-				notificationsManager.markPublisherNews(subsContext, ureq.getIdentity(), true);
+				NotificationsManager notificationsManager = CoreSpringFactory.getImpl(NotificationsManager.class);
+				notificationsManager.markPublisherNews(subsContext, getIdentity(), true);
 			}
 		}
-	}
-	
-	private void doEdit(UserRequest ureq) {
-		VFSContainer currentContainer = folderComponent.getCurrentContainer();
-		boolean hasMeta = currentContainer.canMeta() == VFSConstants.YES;
-		
-		String suffix = FileUtils.getFileSuffix(vfsLeaf.getName());
-		List<DocEditor> editors = docEditorService.getEditors(getIdentity(), ureq.getUserSession().getRoles(), suffix,
-				DocEditor.Mode.EDIT, hasMeta);
-		// Not able to decide which editor to use -> show the folder list
-		if (editors.size() != 1) {
-			fireEvent(ureq, new FolderEvent(FolderEvent.NEW_FILE_EVENT, fileName));
-			fireEvent(ureq, FOLDERCOMMAND_FINISHED);
-			return;
-		}
-		
-		DocEditorSecurityCallback secCallback = DocEditorSecurityCallbackBuilder.builder()
-				.withMode(DocEditor.Mode.EDIT)
-				.withHasMeta(hasMeta)
-				.withVersionControlled(true)
-				.build();
-		HTMLEditorConfig htmlEditorConfig = getHtmlEditorConfig();
-		DocEditorConfigs configs = DocEditorConfigs.builder()
-				.addConfig(htmlEditorConfig)
-				.build();
-		WindowControl swb = addToHistory(ureq, OresHelper.createOLATResourceableType("DocEditor"), null);
-		editorCtr = new DocEditorFullscreenController(ureq, swb, vfsLeaf, secCallback, configs);
-		listenTo(editorCtr);
 	}
 
-	private HTMLEditorConfig getHtmlEditorConfig() {
-		// start HTML editor with the folders root folder as base and the file
-		// path as a relative path from the root directory. But first check if the 
-		// root directory is wirtable at all (e.g. not the case in users personal 
-		// briefcase), and seach for the next higher directory that is writable.
-		String relFilePath = "/" + vfsLeaf.getName();
-		// add current container path if not at root level
-		if (!folderComponent.getCurrentContainerPath().equals("/")) { 
-			relFilePath = folderComponent.getCurrentContainerPath() + relFilePath;
-		}
-		VFSContainer writableRootContainer = folderComponent.getRootContainer();
-		ContainerAndFile result = VFSManager.findWritableRootFolderFor(writableRootContainer, relFilePath);
-		if (result != null) {
-			if(vfsLeaf.getParentContainer() != null) {
-				writableRootContainer = vfsLeaf.getParentContainer();
-				relFilePath = vfsLeaf.getName();
-			} else {
-				writableRootContainer = result.getContainer();
-			}
-		} else {
-			// use fallback that always work: current directory and current file
-			relFilePath = vfsLeaf.getName();
-			writableRootContainer = folderComponent.getCurrentContainer(); 
-		}
-		return HTMLEditorConfig.builder(writableRootContainer, relFilePath)
-				.withCustomLinkTreeModel(folderComponent.getCustomLinkTreeModel())
-				.build();
-	}
-	
 	private void cleanUp() {
 		removeAsListenerAndDispose(createCtrl);
-		removeAsListenerAndDispose(editorCtr);
 		createCtrl = null;
-		editorCtr = null;
 	}
 
 	public String getFileName() {
@@ -234,7 +165,7 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 	public boolean runsModal() {
 		return true;
 	}
-		
+
 	@Override
 	public String getModalTitle() {
 		return null;
@@ -244,4 +175,53 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
+	
+	private static final class ConfigsProvider implements Function<VFSLeaf, DocEditorConfigs> {
+
+		private final FolderComponent folderComponent;
+
+		public ConfigsProvider(FolderComponent folderComponent) {
+			this.folderComponent = folderComponent;
+		}
+
+		@Override
+		public DocEditorConfigs apply(VFSLeaf vfsLeaf) {
+			HTMLEditorConfig htmlEditorConfig = getHtmlEditorConfig(vfsLeaf);
+			return DocEditorConfigs.builder()
+					.withMode(DocEditor.Mode.EDIT)
+					.withVersionControlled(true)
+					.addConfig(htmlEditorConfig)
+					.build(vfsLeaf);
+		}
+		
+		private HTMLEditorConfig getHtmlEditorConfig(VFSLeaf vfsLeaf) {
+			// start HTML editor with the folders root folder as base and the file
+			// path as a relative path from the root directory. But first check if the
+			// root directory is wirtable at all (e.g. not the case in users personal
+			// briefcase), and seach for the next higher directory that is writable.
+			String relFilePath = "/" + vfsLeaf.getName();
+			// add current container path if not at root level
+			if (!folderComponent.getCurrentContainerPath().equals("/")) {
+				relFilePath = folderComponent.getCurrentContainerPath() + relFilePath;
+			}
+			VFSContainer writableRootContainer = folderComponent.getRootContainer();
+			ContainerAndFile result = VFSManager.findWritableRootFolderFor(writableRootContainer, relFilePath);
+			if (result != null) {
+				if (vfsLeaf.getParentContainer() != null) {
+					writableRootContainer = vfsLeaf.getParentContainer();
+					relFilePath = vfsLeaf.getName();
+				} else {
+					writableRootContainer = result.getContainer();
+				}
+			} else {
+				// use fallback that always work: current directory and current file
+				relFilePath = vfsLeaf.getName();
+				writableRootContainer = folderComponent.getCurrentContainer();
+			}
+			return HTMLEditorConfig.builder(writableRootContainer, relFilePath)
+					.withCustomLinkTreeModel(folderComponent.getCustomLinkTreeModel()).build();
+		}
+		
+	}
+	
 }

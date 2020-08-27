@@ -24,15 +24,16 @@ import java.io.InputStream;
 import javax.annotation.PostConstruct;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
+import org.olat.core.commons.services.doceditor.DocEditorService;
+import org.olat.core.commons.services.doceditor.collabora.CollaboraEditor;
 import org.olat.core.commons.services.doceditor.collabora.CollaboraModule;
 import org.olat.core.commons.services.doceditor.collabora.CollaboraRefreshDiscoveryEvent;
 import org.olat.core.commons.services.doceditor.collabora.CollaboraService;
-import org.olat.core.commons.services.doceditor.wopi.Access;
-import org.olat.core.commons.services.doceditor.wopi.Action;
-import org.olat.core.commons.services.doceditor.wopi.Discovery;
-import org.olat.core.commons.services.doceditor.wopi.WopiService;
+import org.olat.core.commons.services.doceditor.discovery.Action;
+import org.olat.core.commons.services.doceditor.discovery.Discovery;
+import org.olat.core.commons.services.doceditor.discovery.DiscoveryService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.control.Event;
@@ -62,14 +63,14 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 
 	private static final Logger log = Tracing.createLoggerFor(CollaboraServiceImpl.class);
 	
-	private static final String LOCK_APP = "collabora";
-
 	private Discovery discovery;
 	
 	@Autowired
 	private CollaboraModule collaboraModule;
 	@Autowired
-	private WopiService wopiService;
+	private DocEditorService docEditorService;
+	@Autowired
+	private DiscoveryService discoveryService;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
@@ -81,39 +82,17 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 	}
 	
 	@Override
-	public VFSLeaf getVfsLeaf(Access access) {
-		return wopiService.getVfsLeaf(access);
-	}
-
-	@Override
-	public Access createAccess(VFSMetadata vfsMetadata, Identity identity, DocEditorSecurityCallback secCallback) {
-		return wopiService.getOrCreateAccess(vfsMetadata, identity, secCallback, LOCK_APP, null);
-	}
-
-	@Override
-	public Access getAccess(String accessToken) {
-		return wopiService.getAccess(accessToken);
-	}
-
-	@Override
-	public void deleteAccess(Access access) {
-		if (access == null) return;
-		
-		wopiService.deleteAccess(access.getToken());
-	}
-
-	@Override
 	public boolean canUpdateContent(Access access, String fileId) {
 		if (!fileId.equals(access.getMetadata().getUuid())) {
 			return false;
 		}
-		VFSLeaf vfsLeaf = wopiService.getVfsLeaf(access);
+		VFSLeaf vfsLeaf = docEditorService.getVfsLeaf(access);
 		return !isLockedForMe(vfsLeaf, access.getIdentity());
 	}
 
 	@Override
 	public boolean updateContent(Access access, InputStream fileInputStream) {
-		VFSLeaf vfsLeaf = wopiService.getVfsLeaf(access);
+		VFSLeaf vfsLeaf = docEditorService.getVfsLeaf(access);
 		boolean updated = false;
 		try {
 			if(access.isVersionControlled() && vfsLeaf.canVersion() == VFSConstants.YES) {
@@ -143,17 +122,17 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 	public Discovery getDiscovery() {
 		if (discovery == null) {
 			String discoveryUrl = getDiscoveryUrl();
-			discovery = wopiService.getDiscovery(discoveryUrl);
+			discovery = discoveryService.getDiscovery(discoveryUrl);
 			if (discovery != null) {
-				log.info("Recieved new WOPI discovery from " + discoveryUrl);
+				log.info("Recieved new document editor discovery from " + discoveryUrl);
 			}
-				log.warn("Not able to fetch new WOPI discovery from " + discoveryUrl);
+				log.warn("Not able to fetch new document editor discovery from " + discoveryUrl);
 		}
 		return discovery;
 	}
 
 	private String getDiscoveryUrl() {
-		return collaboraModule.getBaseUrl() + wopiService.getRegularDiscoveryPath();
+		return collaboraModule.getBaseUrl() + discoveryService.getRegularDiscoveryPath();
 	}
 	
 	@Override
@@ -165,24 +144,24 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 
 	private void deleteDiscovery() {
 		discovery = null;
-		log.info("Deleted WOPI discovery. It will be refreshed with the next access.");
+		log.info("Deleted document editor discovery. It will be refreshed with the next access.");
 	}
 
 	@Override
 	public String getEditorBaseUrl(VFSMetadata vfsMetadata) {
 		String suffix = FileUtils.getFileSuffix(vfsMetadata.getFilename());
-		Action action = wopiService.getAction(getDiscovery(), "edit", suffix);
+		Action action = discoveryService.getAction(getDiscovery(), "edit", suffix);
 		if (action == null) {
-			action = wopiService.getAction(getDiscovery(), "view", suffix);
+			action = discoveryService.getAction(getDiscovery(), "view", suffix);
 		}
 		return action != null? action.getUrlSrc(): null;
 	}
 
 	@Override
 	public boolean accepts(String suffix, Mode mode) {
-		boolean accepts = wopiService.hasAction(getDiscovery(), "edit", suffix);
+		boolean accepts = discoveryService.hasAction(getDiscovery(), "edit", suffix);
 		if (!accepts && Mode.VIEW.equals(mode)) {
-			accepts = wopiService.hasAction(getDiscovery(), "view", suffix);
+			accepts = discoveryService.hasAction(getDiscovery(), "view", suffix);
 		}
 		return accepts;
 	}
@@ -194,24 +173,30 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 
 	@Override
 	public boolean isLockedForMe(VFSLeaf vfsLeaf, Identity identity) {
-		return lockManager.isLockedForMe(vfsLeaf, identity, VFSLockApplicationType.collaboration, LOCK_APP);
+		return lockManager.isLockedForMe(vfsLeaf, identity, VFSLockApplicationType.collaboration, CollaboraEditor.TYPE);
 	}
 	
 	@Override
 	public boolean isLockedForMe(VFSLeaf vfsLeaf, VFSMetadata metadata, Identity identity) {
-		return lockManager.isLockedForMe(vfsLeaf, metadata, identity, VFSLockApplicationType.collaboration, LOCK_APP);
+		return lockManager.isLockedForMe(vfsLeaf, metadata, identity, VFSLockApplicationType.collaboration, CollaboraEditor.TYPE);
 	}
 
 	@Override
 	public LockResult lock(VFSLeaf vfsLeaf, Identity identity) {
-		return lockManager.lock(vfsLeaf, identity, VFSLockApplicationType.collaboration, LOCK_APP);
+		return lockManager.lock(vfsLeaf, identity, VFSLockApplicationType.collaboration, CollaboraEditor.TYPE);
 	}
 
 	@Override
-	public void unlock(VFSLeaf vfsLeaf, LockResult lock) {
+	public void deleteAccessAndUnlock(Access access, LockResult lock) {
 		if (lock == null) return;
 		
-		lockManager.unlock(vfsLeaf, lock);
+		boolean openOnce = docEditorService.getAccessCount(CollaboraEditor.TYPE, access.getMetadata(), access.getIdentity()) == 1;
+		docEditorService.deleteAccess(access);
+		
+		if (openOnce) {
+			VFSLeaf vfsLeaf = docEditorService.getVfsLeaf(access);
+			lockManager.unlock(vfsLeaf, lock);
+		}
 	}
 
 }

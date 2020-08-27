@@ -21,10 +21,10 @@ package org.olat.core.commons.services.doceditor.collabora;
 
 import java.util.Locale;
 
+import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditor;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorIdentityService;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
 import org.olat.core.commons.services.doceditor.collabora.ui.CollaboraEditorController;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
@@ -47,6 +47,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class CollaboraEditor implements DocEditor {
 
+	public static final String TYPE = "collabora";
+	
 	@Autowired
 	private CollaboraModule collaboraModule;
 	@Autowired
@@ -61,7 +63,7 @@ public class CollaboraEditor implements DocEditor {
 
 	@Override
 	public String getType() {
-		return "collabora";
+		return TYPE;
 	}
 
 	@Override
@@ -73,6 +75,16 @@ public class CollaboraEditor implements DocEditor {
 	@Override
 	public boolean isDataTransferConfirmationEnabled() {
 		return collaboraModule.isDataTransferConfirmationEnabled();
+	}
+
+	@Override
+	public boolean hasDocumentBaseUrl() {
+		return false;
+	}
+
+	@Override
+	public String getDocumentBaseUrl() {
+		return null;
 	}
 
 	@Override
@@ -88,8 +100,8 @@ public class CollaboraEditor implements DocEditor {
 	}
 
 	@Override
-	public boolean isSupportingFormat(String suffix, Mode mode, boolean hasMeta) {
-		return hasMeta && collaboraService.accepts(suffix, mode);
+	public boolean isSupportingFormat(String suffix, Mode mode, boolean metadataAvailable) {
+		return metadataAvailable && collaboraService.accepts(suffix, mode);
 	}
 
 	@Override
@@ -110,8 +122,8 @@ public class CollaboraEditor implements DocEditor {
 
 	@Override
 	public Controller getRunController(UserRequest ureq, WindowControl wControl, Identity identity, VFSLeaf vfsLeaf,
-			DocEditorSecurityCallback securityCallback, DocEditorConfigs configs) {
-		return new CollaboraEditorController(ureq, wControl, vfsLeaf, securityCallback);
+			DocEditorConfigs configs, Access access) {
+		return new CollaboraEditorController(ureq, wControl, vfsLeaf, access);
 	}
 
 }

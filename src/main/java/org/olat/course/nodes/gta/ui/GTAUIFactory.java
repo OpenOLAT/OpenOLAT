@@ -27,11 +27,9 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.editor.htmleditor.HTMLEditorConfig;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallbackBuilder;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.DocTemplates;
 import org.olat.core.commons.services.doceditor.DocTemplates.Builder;
-import org.olat.core.commons.services.doceditor.DocumentEditorService;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.vfs.VFSContainer;
@@ -48,34 +46,33 @@ import org.olat.repository.ui.settings.LazyRepositoryEdusharingProvider;
 class GTAUIFactory {
 	
 	static Mode getOpenMode(Identity identity, Roles roles, VFSLeaf vfsLeaf, boolean readOnly) {
-		DocumentEditorService docEditorService = CoreSpringFactory.getImpl(DocumentEditorService.class);
-		DocEditorSecurityCallback editSC = DocEditorSecurityCallbackBuilder.builder().withMode(Mode.EDIT).build();
-		DocEditorSecurityCallback viewSC = DocEditorSecurityCallbackBuilder.builder().withMode(Mode.VIEW).build();
-		if (!readOnly && docEditorService.hasEditor(identity, roles, vfsLeaf, editSC)) {
+		DocEditorService docEditorService = CoreSpringFactory.getImpl(DocEditorService.class);
+		if (!readOnly && docEditorService.hasEditor(identity, roles, vfsLeaf, Mode.EDIT, true)) {
 			return Mode.EDIT;
-		} else if (docEditorService.hasEditor(identity, roles, vfsLeaf, viewSC)) {
+		} else if (docEditorService.hasEditor(identity, roles, vfsLeaf, Mode.VIEW, true)) {
 			return Mode.VIEW;
 		}
 		return null;
 	}
 	
-	static DocEditorConfigs getEditorConfig(VFSContainer vfsContainer, String filePath, Long courseRepoKey) {
+	static DocEditorConfigs getEditorConfig(VFSContainer vfsContainer, VFSLeaf vfsLeaf, String filePath, Mode mode, Long courseRepoKey) {
 		VFSEdusharingProvider edusharingProvider = courseRepoKey != null
 				? new LazyRepositoryEdusharingProvider(courseRepoKey)
 				: null;
 		 HTMLEditorConfig htmlEditorConfig = HTMLEditorConfig.builder(vfsContainer, filePath)
-				 .withMediaPath("media")
+				.withMediaPath("media")
 				.withAllowCustomMediaFactory(false)
 				.withDisableMedia(true)
 				.withEdusharingProvider(edusharingProvider)
 				.build();
 		 return DocEditorConfigs.builder()
+				.withMode(mode)
 				.addConfig(htmlEditorConfig)
-				.build();
+				.build(vfsLeaf);
 	}
 	
 	static DocTemplates htmlOffice(Identity identity, Roles roles, Locale locale) {
-		DocumentEditorService docEditorService = CoreSpringFactory.getImpl(DocumentEditorService.class);
+		DocEditorService docEditorService = CoreSpringFactory.getImpl(DocEditorService.class);
 		Builder builder = DocTemplates.builder(locale);
 		if (docEditorService.hasEditor(identity, roles, "html", EDIT, true)) {
 			builder.addHtml();

@@ -23,9 +23,8 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.Locale;
 
+import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
-import org.olat.core.commons.services.doceditor.wopi.Access;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -43,14 +42,6 @@ public interface Office365Service {
 	public static final OLATResourceable REFRESH_EVENT_ORES = OresHelper
 			.createOLATResourceableType(Office365RefreshDiscoveryEvent.class.getSimpleName() + ":RefreshDiscovery");
 
-	VFSLeaf getVfsLeaf(Access access);
-	
-	Access createAccess(VFSMetadata vfsMetadata, Identity identity, DocEditorSecurityCallback secCallback);
-
-	Access getAccess(String accessToken);
-	
-	void deleteAccess(Access access);
-	
 	boolean updateContent(Access access, InputStream fileInputStream);
 	
 	boolean verifyProofKey(String requestUrl, String accessToken, String timeStamp, String proofKey, String oldProofKey);

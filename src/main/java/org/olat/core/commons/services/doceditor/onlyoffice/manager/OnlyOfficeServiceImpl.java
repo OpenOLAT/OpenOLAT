@@ -33,8 +33,9 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorIdentityService;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.onlyoffice.ApiConfig;
+import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeEditor;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeModule;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeSecurityService;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeService;
@@ -44,8 +45,6 @@ import org.olat.core.commons.services.doceditor.onlyoffice.model.EditorConfigImp
 import org.olat.core.commons.services.doceditor.onlyoffice.model.InfoImpl;
 import org.olat.core.commons.services.doceditor.onlyoffice.model.PermissionsImpl;
 import org.olat.core.commons.services.doceditor.onlyoffice.model.UserImpl;
-import org.olat.core.commons.services.doceditor.wopi.Access;
-import org.olat.core.commons.services.doceditor.wopi.WopiService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.helpers.Settings;
@@ -78,7 +77,6 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 
 	private static final Logger log = Tracing.createLoggerFor(OnlyOfficeServiceImpl.class);
 	
-	private static final String LOCK_APP_NAME = "onlyoffice";
 	private static final DateFormat LAST_MODIFIED = new SimpleDateFormat("yyyyMMddHHmmss");
 	
 	private static ObjectMapper mapper = new ObjectMapper();
@@ -88,13 +86,13 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 	@Autowired
 	private OnlyOfficeSecurityService onlyOfficeSecurityService;
 	@Autowired
+	private DocEditorService documentEditorServie;
+	@Autowired
 	private DocEditorIdentityService identityService;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
 	private VFSLockManager lockManager;
-	@Autowired
-	private WopiService wopiService;
 
 	@Override
 	public boolean fileExists(String fileId) {
@@ -125,19 +123,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 	}
 
 	@Override
-	public Access createAccess(VFSMetadata vfsMetadata, Identity identity, DocEditorSecurityCallback secCallback) {
-		return wopiService.getOrCreateAccess(vfsMetadata, identity, secCallback, LOCK_APP_NAME, null);
-	}
-
-	@Override
-	public void deleteAccess(Access access) {
-		if (access == null) return;
-		
-		wopiService.deleteAccess(access.getToken());
-	}
-
-	@Override
-	public ApiConfig getApiConfig(VFSMetadata vfsMetadata, Identity identity, DocEditorSecurityCallback secCallback) {
+	public ApiConfig getApiConfig(VFSMetadata vfsMetadata, Identity identity, Mode mode, boolean versionControlled) {
 		String fileName = vfsMetadata.getFilename();
 
 		ApiConfigImpl apiConfig = new ApiConfigImpl();
@@ -166,7 +152,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 		document.setInfo(info);
 		
 		PermissionsImpl permissions = new PermissionsImpl();
-		boolean edit = Mode.EDIT.equals(secCallback.getMode());
+		boolean edit = Mode.EDIT.equals(mode);
 		permissions.setEdit(edit);
 		permissions.setComment(true);
 		permissions.setDownload(true);
@@ -176,10 +162,10 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 		document.setPermissions(permissions);
 		
 		EditorConfigImpl editorConfig = new EditorConfigImpl();
-		String callbackUrl = getCallbackUrl(vfsMetadata, secCallback.isVersionControlled());
+		String callbackUrl = getCallbackUrl(vfsMetadata, versionControlled);
 		editorConfig.setCallbackUrl(callbackUrl);
-		String mode = edit? "edit": "view";
-		editorConfig.setMode(mode);
+		String modeConfig = edit? "edit": "view";
+		editorConfig.setMode(modeConfig);
 		editorConfig.setLang(identity.getUser().getPreferences().getLanguage());
 		apiConfig.setEditor(editorConfig);
 		
@@ -294,13 +280,13 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 		if (licenseEdit == null) return true;
 		if (licenseEdit.intValue() == 0) return false;
 		
-		Long accessCount = wopiService.getAccessCount(LOCK_APP_NAME, Mode.EDIT);
+		Long accessCount = documentEditorServie.getAccessCount(OnlyOfficeEditor.TYPE, Mode.EDIT);
 		return accessCount < licenseEdit.byteValue();
 	}
 
 	@Override
 	public Long getEditLicensesInUse() {
-		return wopiService.getAccessCount(LOCK_APP_NAME, Mode.EDIT);
+		return documentEditorServie.getAccessCount(OnlyOfficeEditor.TYPE, Mode.EDIT);
 	}
 	
 	@Override
@@ -310,17 +296,17 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 
 	@Override
 	public boolean isLockedForMe(VFSLeaf vfsLeaf, Identity identity) {
-		return lockManager.isLockedForMe(vfsLeaf, identity, VFSLockApplicationType.collaboration, LOCK_APP_NAME);
+		return lockManager.isLockedForMe(vfsLeaf, identity, VFSLockApplicationType.collaboration, OnlyOfficeEditor.TYPE);
 	}
 
 	@Override
 	public boolean isLockedForMe(VFSLeaf vfsLeaf, VFSMetadata metadata, Identity identity) {
-		return lockManager.isLockedForMe(vfsLeaf, metadata, identity, VFSLockApplicationType.collaboration, LOCK_APP_NAME);
+		return lockManager.isLockedForMe(vfsLeaf, metadata, identity, VFSLockApplicationType.collaboration, OnlyOfficeEditor.TYPE);
 	}
 
 	@Override
 	public LockResult lock(VFSLeaf vfsLeaf, Identity identity) {
-		LockResult lock = lockManager.lock(vfsLeaf, identity, VFSLockApplicationType.collaboration, LOCK_APP_NAME);
+		LockResult lock = lockManager.lock(vfsLeaf, identity, VFSLockApplicationType.collaboration, OnlyOfficeEditor.TYPE);
 		log.debug("Locked file. File name: " + vfsLeaf.getName() + ", Identity: " + identity);
 		return lock;
 	}
@@ -328,7 +314,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 	@Override
 	public void unlock(VFSLeaf vfsLeaf) {
 		LockInfo lock = lockManager.getLock(vfsLeaf);
-		if (lock != null && LOCK_APP_NAME.equals(lock.getAppName())) {
+		if (lock != null && OnlyOfficeEditor.TYPE.equals(lock.getAppName())) {
 			lock.getTokens().clear();
 			lockManager.unlock(vfsLeaf, VFSLockApplicationType.collaboration);
 			log.debug("Unlocked file. File name: " + vfsLeaf.getName());

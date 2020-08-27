@@ -20,6 +20,7 @@
 package org.olat.user;
 
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,8 @@ import java.util.Set;
 import org.olat.admin.user.SystemRolesAndRightsController;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.commons.services.doceditor.DocEditor;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -35,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -69,6 +73,7 @@ public class PreferencesFormController extends FormBasicController {
 	private SingleSelection language;
 	private SingleSelection mailSystem;
 	private SingleSelection notificationInterval;
+	private SingleSelection documentEditorEl;
 	
 	private static final String[] mailIntern = new String[]{"intern.only","send.copy"};
 	
@@ -86,6 +91,8 @@ public class PreferencesFormController extends FormBasicController {
 	private BaseSecurityModule securityModule;
 	@Autowired
 	private NotificationsManager notificiationMgr;
+	@Autowired
+	private DocEditorService docEditorService;
 
 	/**
 	 * Constructor for the user preferences form
@@ -125,6 +132,11 @@ public class PreferencesFormController extends FormBasicController {
 		}
 
 		userManager.setUserCharset(tobeChangedIdentity, charset.getSelectedKey());
+		
+		if (documentEditorEl != null && documentEditorEl.isOneSelected()) {
+			docEditorService.setPreferredEditorType(getIdentity(), documentEditorEl.getSelectedKey());
+		}
+		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
@@ -233,6 +245,20 @@ public class PreferencesFormController extends FormBasicController {
 		}
 		if(!charset.isOneSelected() && charsets.containsKey("UTF-8")) {
 			charset.select("UTF-8", true);
+		}
+		
+		// Document editor
+		List<DocEditor> editors = docEditorService.getExternalEditors(getIdentity(), ureq.getUserSession().getRoles());
+		if (editors.size() >= 2) {
+			KeyValues editorKV = new KeyValues();
+			editors.stream()
+					.sorted((e1, e2) -> e1.getDisplayName(getLocale()).compareTo(e2.getDisplayName(getLocale())))
+					.forEach(e -> editorKV.add(KeyValues.entry(e.getType(), e.getDisplayName(getLocale()))));
+			documentEditorEl = uifactory.addDropdownSingleselect("form.document.editor", formLayout, editorKV.keys(), editorKV.values());
+			String preferredEditorType = docEditorService.getPreferredEditorType(getIdentity());
+			if (Arrays.asList(documentEditorEl.getKeys()).contains(preferredEditorType)) {
+				documentEditorEl.select(preferredEditorType, true);
+			}
 		}
 
 		// Submit and cancel buttons

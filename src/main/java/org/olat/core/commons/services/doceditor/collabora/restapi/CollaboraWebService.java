@@ -19,8 +19,8 @@
  */
 package org.olat.core.commons.services.doceditor.collabora.restapi;
 
-import static org.olat.core.commons.services.doceditor.wopi.WopiRestHelper.getAsIso8601;
-import static org.olat.core.commons.services.doceditor.wopi.WopiRestHelper.getFirstRequestHeader;
+import static org.olat.core.commons.services.doceditor.DocEditorRestHelper.getAsIso8601;
+import static org.olat.core.commons.services.doceditor.DocEditorRestHelper.getFirstRequestHeader;
 
 import java.io.InputStream;
 import java.util.Date;
@@ -42,10 +42,12 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.services.doceditor.Access;
+import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorIdentityService;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.collabora.CollaboraModule;
 import org.olat.core.commons.services.doceditor.collabora.CollaboraService;
-import org.olat.core.commons.services.doceditor.wopi.Access;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -79,6 +81,8 @@ public class CollaboraWebService {
 	@Autowired 
 	private CollaboraService collaboraService;
 	@Autowired
+	private DocEditorService docEditorService;
+	@Autowired
 	private DocEditorIdentityService identityService;
 	
 	@GET
@@ -95,20 +99,20 @@ public class CollaboraWebService {
 			@PathParam("fileId") String fileId,
 			@QueryParam("access_token") String accessToken,
 			@Context HttpHeaders httpHeaders) {
-		log.debug("WOPI REST CheckFileInfo request for file: " + fileId);
+		log.debug("Collabora REST CheckFileInfo request for file: " + fileId);
 		logRequestHeaders(httpHeaders);
 		
 		if (!collaboraModule.isEnabled()) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
-		Access access = collaboraService.getAccess(accessToken);
+		Access access = docEditorService.getAccess(accessToken);
 		if (access == null) {
 			log.debug("No access for token. File ID: " + fileId + ", token: " + accessToken);
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		VFSLeaf vfsLeaf = collaboraService.getVfsLeaf(access);
+		VFSLeaf vfsLeaf = docEditorService.getVfsLeaf(access);
 		if (vfsLeaf == null) {
 			log.debug("File not found. File ID: " + fileId);
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -124,7 +128,7 @@ public class CollaboraWebService {
 				.withUserFriendlyName(identityService.getUserDisplayName(access.getIdentity()))
 				.withVersion(String.valueOf(metadata.getRevisionNr()))
 				.withLastModifiedTime(getAsIso8601(metadata.getLastModified()))
-				.withUserCanWrite(access.isCanEdit())
+				.withUserCanWrite(Mode.EDIT == access.getMode())
 				.withDisablePrint(Boolean.FALSE)
 				.withUserCanNotWriteRelative(Boolean.TRUE)
 				.build();
@@ -145,20 +149,20 @@ public class CollaboraWebService {
 			@PathParam("fileId") String fileId,
 			@QueryParam("access_token") String accessToken,
 			@Context HttpHeaders httpHeaders) {
-		log.debug("WOPI REST GetFile request for file: " + fileId);
+		log.debug("Collabora REST GetFile request for file: " + fileId);
 		logRequestHeaders(httpHeaders);
 		
 		if (!collaboraModule.isEnabled()) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
-		Access access = collaboraService.getAccess(accessToken);
+		Access access = docEditorService.getAccess(accessToken);
 		if (access == null) {
 			log.debug("No access for token. File ID: " + fileId + ", token: " + accessToken);
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		VFSLeaf vfsLeaf = collaboraService.getVfsLeaf(access);
+		VFSLeaf vfsLeaf = docEditorService.getVfsLeaf(access);
 		if (vfsLeaf == null) {
 			log.debug("File not found. File ID: " + fileId);
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -187,20 +191,20 @@ public class CollaboraWebService {
 			@QueryParam("access_token") String accessToken,
 			@Context HttpHeaders httpHeaders,
 			InputStream fileInputStream) {
-		log.debug("WOPI REST PutFile request for file: " + fileId);
+		log.debug("Collabora REST PutFile request for file: " + fileId);
 		logRequestHeaders(httpHeaders);
 		
 		if (!collaboraModule.isEnabled()) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
-		Access access = collaboraService.getAccess(accessToken);
+		Access access = docEditorService.getAccess(accessToken);
 		if (access == null) {
 			log.debug("No access for token. File ID: " + fileId + ", token: " + accessToken);
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		VFSLeaf vfsLeaf = collaboraService.getVfsLeaf(access);
+		VFSLeaf vfsLeaf = docEditorService.getVfsLeaf(access);
 		if (vfsLeaf == null) {
 			log.debug("File not found. File ID: " + fileId);
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -243,7 +247,7 @@ public class CollaboraWebService {
 
 	private void logRequestHeaders(HttpHeaders httpHeaders) {
 		if (log.isDebugEnabled()) {
-			log.debug("WOPI Resquest headers:");
+			log.debug("Collabora Resquest headers:");
 			for (Entry<String, List<String>> entry : httpHeaders.getRequestHeaders().entrySet()) {
 				String name = entry.getKey();
 				String value = entry.getValue().stream().collect(Collectors.joining(", "));
@@ -257,7 +261,7 @@ public class CollaboraWebService {
 			ObjectMapper mapper = new ObjectMapper();
 			try {
 				String json = mapper.writeValueAsString(checkFileInfoVO);
-				log.debug("WOPI REST CheckFileInfo response: " + json);
+				log.debug("Collabora REST CheckFileInfo response: " + json);
 			} catch (JsonProcessingException e) {
 				log.error("", e);
 			}
@@ -269,7 +273,7 @@ public class CollaboraWebService {
 			ObjectMapper mapper = new ObjectMapper();
 			try {
 				String json = mapper.writeValueAsString(putFileVO);
-				log.debug("WOPI REST PutFile response: " + json);
+				log.debug("Collabora REST PutFile response: " + json);
 			} catch (JsonProcessingException e) {
 				log.error("", e);
 			}

@@ -20,13 +20,13 @@
 package org.olat.core.commons.services.doceditor.onlyoffice.ui;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallbackBuilder;
+import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.onlyoffice.ApiConfig;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeModule;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeService;
-import org.olat.core.commons.services.doceditor.wopi.Access;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -57,25 +57,22 @@ public class OnlyOfficeEditorController extends BasicController {
 	private OnlyOfficeModule onlyOfficeModule;
 	@Autowired
 	private OnlyOfficeService onlyOfficeService;
+	@Autowired
+	private DocEditorService docEditorService;
 
 	public OnlyOfficeEditorController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsLeaf,
-			final DocEditorSecurityCallback securityCallback) {
+			final DocEditorConfigs configs, Access runAccess) {
 		super(ureq, wControl);
+		access = runAccess;
 
-		DocEditorSecurityCallback secCallback = securityCallback;
-		
-		if (Mode.EDIT == secCallback.getMode() && !onlyOfficeService.isEditLicenseAvailable()) {
-			secCallback = DocEditorSecurityCallbackBuilder.clone(secCallback)
-					.withMode(Mode.VIEW)
-					.build();
+		if (Mode.EDIT == access.getMode() && !onlyOfficeService.isEditLicenseAvailable()) {
+			access = docEditorService.updateMode(access, Mode.VIEW);
 			showWarning("editor.warning.no.edit.license");
 		}
 		
-		if (onlyOfficeService.isLockNeeded(secCallback.getMode())) {
+		if (onlyOfficeService.isLockNeeded(access.getMode())) {
 			if (onlyOfficeService.isLockedForMe(vfsLeaf, getIdentity())) {
-				secCallback = DocEditorSecurityCallbackBuilder.clone(secCallback)
-						.withMode(Mode.VIEW)
-						.build();
+				access = docEditorService.updateMode(access, Mode.VIEW);
 				showWarning("editor.warning.locked");
 			} else {
 				onlyOfficeService.lock(vfsLeaf, getIdentity());
@@ -87,21 +84,19 @@ public class OnlyOfficeEditorController extends BasicController {
 		if (vfsMetadata == null) {
 			mainVC.contextPut("warning", translate("editor.warning.no.metadata"));
 		} else {
-			ApiConfig apiConfig = onlyOfficeService.getApiConfig(vfsMetadata, getIdentity(), secCallback);
+			ApiConfig apiConfig = onlyOfficeService.getApiConfig(vfsMetadata, getIdentity(), access.getMode(), configs.isVersionControlled());
 			String apiConfigJson = onlyOfficeService.toJson(apiConfig);
 			log.debug("OnlyOffice ApiConfig: " + apiConfigJson);
 			
 			if (apiConfig == null) {
 				mainVC.contextPut("warning", translate("editor.warning.no.api.configs"));
 			} else {
-				this.access = onlyOfficeService.createAccess(vfsMetadata, getIdentity(), secCallback);
 				mainVC.contextPut("id", "o_" + CodeHelper.getRAMUniqueID());
 				mainVC.contextPut("apiUrl", onlyOfficeModule.getApiUrl());
 				mainVC.contextPut("apiConfig", apiConfigJson);
 				
 				openVfsMetadataKey = vfsMetadata.getKey();
-				openMode = secCallback.getMode();
-				log.info("Document (key={}) opened with ONLYOFFICE ({}) by {}", openVfsMetadataKey, openMode,
+				log.info("Document (key={}) opened with ONLYOFFICE ({}) by {}", openVfsMetadataKey, access.getMode(),
 						getIdentity());
 			}
 		}
@@ -117,9 +112,9 @@ public class OnlyOfficeEditorController extends BasicController {
 	@Override
 	protected void doDispose() {
 		if (access != null) {
-			log.info("Document (key={}) opened with ONLYOFFICE ({}) by {}", openVfsMetadataKey, openMode,
+			log.info("Document (key={}) closed with ONLYOFFICE ({}) by {}", openVfsMetadataKey, openMode,
 					getIdentity());
-			onlyOfficeService.deleteAccess(access);
+			docEditorService.deleteAccess(access);
 		}
 	}
 

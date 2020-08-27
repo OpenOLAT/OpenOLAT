@@ -19,18 +19,15 @@
  */
 package org.olat.repository.handlers;
 
-import static org.olat.core.commons.services.doceditor.DocEditorConfigs.none;
-
 import java.io.File;
 import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallbackBuilder;
-import org.olat.core.commons.services.doceditor.DocumentEditorService;
-import org.olat.core.commons.services.doceditor.ui.DocEditorController;
+import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorService;
+import org.olat.core.commons.services.doceditor.ui.DocEditorStandaloneOpenController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
@@ -79,7 +76,7 @@ public class DocumentEditorDelegate implements WebDocumentCreateDelegate, WebDoc
 	}
 
 	private boolean canEdit(Identity identity, Roles roles) {
-		DocumentEditorService docEditorService = CoreSpringFactory.getImpl(DocumentEditorService.class);
+		DocEditorService docEditorService = CoreSpringFactory.getImpl(DocEditorService.class);
 		return docEditorService.hasEditor(identity, roles, type.getSuffix(), Mode.EDIT, true);
 	}
 	
@@ -121,12 +118,10 @@ public class DocumentEditorDelegate implements WebDocumentCreateDelegate, WebDoc
 		if (document == null) {
 			throw new AssertException("Web document not found! " + re);
 		}
-		
-		DocEditorSecurityCallback secCallback = DocEditorSecurityCallbackBuilder.builder()
+		DocEditorConfigs docEditorConfigs = DocEditorConfigs.builder()
 				.withMode(Mode.EDIT)
-				.withCanClose(false)
-				.build();
-		return new DocEditorController(ureq, wControl, document, secCallback, none(), "o_web_document_edit");
+				.build(document);
+		return new DocEditorStandaloneOpenController(ureq, wControl, docEditorConfigs);
 	}
 	
 }

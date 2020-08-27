@@ -23,9 +23,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditor;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -49,7 +49,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class FileEditor implements DocEditor {
 	
-	private static final List<String> HTML_EDITOR_SUFFIX = Arrays.asList("html", "htm");
+	public static final String TYPE = "OpenOLAT";
+	public static final List<String> HTML_EDITOR_SUFFIX = Arrays.asList("html", "htm");
 	private static final List<String> TEXT_EDITOR_SUFFIX = Arrays.asList("txt", "css", "csv", "xml");
 	
 	@Autowired
@@ -62,7 +63,7 @@ public class FileEditor implements DocEditor {
 
 	@Override
 	public String getType() {
-		return "OpenOLAT";
+		return TYPE;
 	}
 
 	@Override
@@ -77,12 +78,22 @@ public class FileEditor implements DocEditor {
 	}
 
 	@Override
+	public boolean hasDocumentBaseUrl() {
+		return false;
+	}
+
+	@Override
+	public String getDocumentBaseUrl() {
+		return null;
+	}
+
+	@Override
 	public boolean isEnabledFor(Identity identity, Roles roles) {
 		return true;
 	}
 
 	@Override
-	public boolean isSupportingFormat(String suffix, Mode mode, boolean hasMeta) {
+	public boolean isSupportingFormat(String suffix, Mode mode, boolean metaAvailable) {
 		// Both the HTML editor and the text editor supports view and edit
 		return HTML_EDITOR_SUFFIX.contains(suffix) || TEXT_EDITOR_SUFFIX.contains(suffix)? true: false;
 	}
@@ -105,8 +116,8 @@ public class FileEditor implements DocEditor {
 
 	@Override
 	public Controller getRunController(UserRequest ureq, WindowControl wControl, Identity identity, VFSLeaf vfsLeaf,
-			DocEditorSecurityCallback secCallback, DocEditorConfigs configs) {
-		return new FileEditorController(ureq, wControl, vfsLeaf, secCallback, configs);
+			DocEditorConfigs configs, Access access) {
+		return new FileEditorController(ureq, wControl, vfsLeaf, configs);
 	}
 
 }

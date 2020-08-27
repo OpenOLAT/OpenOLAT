@@ -29,7 +29,7 @@ import javax.ws.rs.core.Response;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
-import org.olat.core.commons.services.doceditor.wopi.WopiService;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.restapi.system.vo.DocEditorStatisticsVO;
 import org.springframework.stereotype.Component;
 
@@ -51,25 +51,24 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 public class DocEditorSessionWebService {
 
 	@GET
-	@Path("{app}")
+	@Path("{editorType}")
 	@Operation(summary = "Returns information about doceditor", description = "Returns information about the doceditor given as parameter")
 	@ApiResponse(responseCode = "200", description = "Information about the doceditor", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = DocEditorStatisticsVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = DocEditorStatisticsVO.class)) })
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-		
-	public Response getStatistics(@PathParam("app") String app) {
-		DocEditorStatisticsVO stats = getDocEditorStatistics(app);
+	public Response getStatistics(@PathParam("editorType") String editorType) {
+		DocEditorStatisticsVO stats = getDocEditorStatistics(editorType);
 		return Response.ok(stats).build();
-	}	
+	}
 	
-	private DocEditorStatisticsVO getDocEditorStatistics(String app) {
+	private DocEditorStatisticsVO getDocEditorStatistics(String editorType) {
 		DocEditorStatisticsVO stats = new DocEditorStatisticsVO();
-		WopiService wopiService = CoreSpringFactory.getImpl(WopiService.class);		
-		stats.setAppName(app);
-		stats.setOpenDocumentsWrite(wopiService.getAccessCount(app, Mode.EDIT));
-		stats.setOpenDocumentsRead(wopiService.getAccessCount(app, Mode.VIEW));
+		DocEditorService docEditorService = CoreSpringFactory.getImpl(DocEditorService.class);
+		stats.setAppName(editorType);
+		stats.setOpenDocumentsWrite(docEditorService.getAccessCount(editorType, Mode.EDIT));
+		stats.setOpenDocumentsRead(docEditorService.getAccessCount(editorType, Mode.VIEW));
 		return stats;
-	}	
+	}
 
 }

@@ -23,10 +23,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.ui.DocumentsInUseDataModel.DocumentsInUseCols;
-import org.olat.core.commons.services.doceditor.wopi.Access;
-import org.olat.core.commons.services.doceditor.wopi.WopiService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -57,7 +57,7 @@ public class DocumentsInUseListController extends FormBasicController {
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	@Autowired
-	private WopiService wopiService;
+	private DocEditorService docEditorService;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -105,7 +105,7 @@ public class DocumentsInUseListController extends FormBasicController {
 	}
 	
 	void loadModel() {
-		List<Access> accesses = wopiService.getAccesses(null);
+		List<Access> accesses = docEditorService.getAccesses(null);
 		
 		List<DocumentsInUseRow> rows = new ArrayList<>(accesses.size());
 		for (Access access : accesses) {

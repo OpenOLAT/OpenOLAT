@@ -26,11 +26,9 @@ import org.olat.core.commons.editor.htmleditor.HTMLEditorConfig;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.components.ListRenderer;
 import org.olat.core.commons.services.doceditor.DocEditor;
+import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallbackBuilder;
-import org.olat.core.commons.services.doceditor.DocumentEditorService;
-import org.olat.core.commons.services.doceditor.ui.DocEditorFullscreenController;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
@@ -40,9 +38,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -64,12 +62,9 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 	private int status = FolderCommandStatus.STATUS_SUCCESS;
 	
 	private FolderComponent folderComponent;
-	private Controller editCtrl;
 	
 	@Autowired
-	private DocumentEditorService docEditorService;
-	@Autowired
-	private NotificationsManager notificationsManager;
+	private DocEditorService docEditorService;
 	
 	protected CmdOpenContent(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -119,44 +114,35 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 		}
 		
 		VFSLeaf vfsLeaf = (VFSLeaf) currentItem;
-		
-		DocEditorSecurityCallback secCallback = getDocEditorSecCallback(ureq, vfsLeaf);
-		HTMLEditorConfig htmlEditorConfig = getHtmlEditorConfig(vfsLeaf);
-		DocEditorConfigs configs = DocEditorConfigs.builder()
-				.addConfig(htmlEditorConfig)
-				.build();
-		
-		WindowControl swb = addToHistory(ureq, OresHelper.createOLATResourceableType("DocEditor"), null);
-		editCtrl = new DocEditorFullscreenController(ureq, swb, vfsLeaf, secCallback, configs);
-		listenTo(editCtrl);
-		
-		if (vfsLeaf.canMeta() == VFSConstants.YES) {
+		boolean metaAvailable = vfsLeaf.canMeta() == VFSConstants.YES;
+		if (metaAvailable) {
 			CoreSpringFactory.getImpl(VFSRepositoryService.class).increaseDownloadCount(vfsLeaf);
 		}
 		
-		return editCtrl;
+		Mode mode = getMode(ureq, vfsLeaf, metaAvailable);
+		HTMLEditorConfig htmlEditorConfig = getHtmlEditorConfig(vfsLeaf);
+		DocEditorConfigs configs = DocEditorConfigs.builder()
+				.withMode(mode)
+				.withVersionControlled(true)
+				.addConfig(htmlEditorConfig)
+				.build(vfsLeaf);
+		
+		String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
+		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
+
+		if (DocEditor.Mode.EDIT == mode) {
+			markNews(folderCmp.getRootContainer());
+		}
+		
+		return null;
 	}
 	
-	private DocEditorSecurityCallback getDocEditorSecCallback(UserRequest ureq, VFSLeaf vfsLeaf) {
+	private DocEditor.Mode getMode(UserRequest ureq, VFSLeaf vfsLeaf, boolean metaAvailable) {
 		VFSContainer currentContainer = folderComponent.getCurrentContainer();
-		boolean hasMeta = currentContainer.canMeta() == VFSConstants.YES;
 		VFSContainer container = VFSManager.findInheritingSecurityCallbackContainer(currentContainer);
 		boolean canWrite = container.getLocalSecurityCallback().canWrite();
-		
-		DocEditorSecurityCallbackBuilder secCallbackBuilder = DocEditorSecurityCallbackBuilder.builder()
-				.withVersionControlled(true)
-				.withHasMeta(hasMeta);
-		DocEditor.Mode mode = getMode(ureq, vfsLeaf, canWrite, secCallbackBuilder);
-		secCallbackBuilder.withMode(mode);
-		return secCallbackBuilder.build();
-	}
-	
-	private DocEditor.Mode getMode(UserRequest ureq, VFSLeaf vfsLeaf, boolean canWrite, DocEditorSecurityCallbackBuilder secCallbackBuilder) {
-		if (canWrite) {
-			DocEditorSecurityCallback editSecCallback = secCallbackBuilder.withMode(DocEditor.Mode.EDIT).build();
-			if (docEditorService.hasEditor(getIdentity(), ureq.getUserSession().getRoles(), vfsLeaf, editSecCallback)) {
-				return DocEditor.Mode.EDIT;
-			}
+		if (canWrite && docEditorService.hasEditor(getIdentity(), ureq.getUserSession().getRoles(), vfsLeaf, DocEditor.Mode.EDIT, metaAvailable)) {
+			return DocEditor.Mode.EDIT;
 		}
 		return DocEditor.Mode.VIEW;
 	}
@@ -189,6 +175,18 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 				.withCustomLinkTreeModel(folderComponent.getCustomLinkTreeModel())
 				.build();
 	}
+	
+	private void markNews(VFSItem rootContainer) {
+		VFSContainer container = VFSManager.findInheritingSecurityCallbackContainer(rootContainer);
+		VFSSecurityCallback secCallback = container.getLocalSecurityCallback();
+		if(secCallback != null) {
+			SubscriptionContext subsContext = secCallback.getSubscriptionContext();
+			if (subsContext != null) {
+				NotificationsManager notificationsManager = CoreSpringFactory.getImpl(NotificationsManager.class);
+				notificationsManager.markPublisherNews(subsContext, getIdentity(), true);
+			}
+		}
+	}
 
 	@Override
 	public int getStatus() {
@@ -208,34 +206,6 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
-	}
-	
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == editCtrl) {
-			if (event == Event.DONE_EVENT) {
-				notifyFinished(ureq);
-			}
-			cleanUp();
-			fireEvent(ureq, FOLDERCOMMAND_FINISHED);
-		}
-		super.event(ureq, source, event);
-	}
-
-	private void notifyFinished(UserRequest ureq) {
-		VFSContainer container = VFSManager.findInheritingSecurityCallbackContainer(folderComponent.getRootContainer());
-		VFSSecurityCallback secCallback = container.getLocalSecurityCallback();
-		if(secCallback != null) {
-			SubscriptionContext subsContext = secCallback.getSubscriptionContext();
-			if (subsContext != null) {
-				notificationsManager.markPublisherNews(subsContext, ureq.getIdentity(), true);
-			}
-		}
-	}
-	
-	private void cleanUp() {
-		removeAsListenerAndDispose(editCtrl);
-		editCtrl = null;
 	}
 
 	@Override

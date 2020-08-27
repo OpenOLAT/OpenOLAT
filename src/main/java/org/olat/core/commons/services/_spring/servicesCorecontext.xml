@@ -118,14 +118,14 @@
 		</property>
 	</bean>
 	
-		<!-- Cleaning job for WOPI access -->
-	<bean id="wopiDeleteExpiredAccessJob" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<!-- Cleaning job for document editor access -->
+	<bean id="expiredDocumentAccessDeletionJob" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 		<property name="jobDetail">
 		<bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
-					<property name="jobClass" value="org.olat.core.commons.services.doceditor.wopi.manager.WopiDeleteExpiredAccessJob" />
+					<property name="jobClass" value="org.olat.core.commons.services.doceditor.manager.ExpiredDocumentAccessDeletionJob" />
 				</bean>
 			</property>
-			<property name="cronExpression" value="0 23 4 * * ?"/>
+			<property name="cronExpression" value="52 * * * * ?"/> <!-- Every minute at xx:xx:52 -->
 			<property name="startDelay" value="45000" />
 	</bean>
 	

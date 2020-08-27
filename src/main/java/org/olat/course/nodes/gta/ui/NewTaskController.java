@@ -21,6 +21,9 @@ package org.olat.course.nodes.gta.ui;
 
 import java.util.List;
 
+import org.olat.core.commons.services.doceditor.DocEditor.Mode;
+import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.DocTemplate;
 import org.olat.core.commons.services.doceditor.DocTemplates;
 import org.olat.core.gui.UserRequest;
@@ -29,9 +32,11 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
@@ -39,6 +44,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.nodes.gta.model.TaskDefinition;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -52,6 +58,9 @@ public class NewTaskController extends FormBasicController {
 	private SingleSelection docTypeEl;
 	private final VFSContainer documentContainer;
 	private final List<DocTemplate> templates;
+	
+	@Autowired
+	private DocEditorService docEditorService;
 	
 	public NewTaskController(UserRequest ureq, WindowControl wControl, VFSContainer documentContainer,
 			DocTemplates docTemplates) {
@@ -96,7 +105,8 @@ public class NewTaskController extends FormBasicController {
 		
 		FormLayoutContainer formButtons = FormLayoutContainer.createButtonLayout("formButton", getTranslator());
 		formLayout.add(formButtons);
-		uifactory.addFormSubmitButton("submit", "create", formButtons);
+		FormSubmit submitButton = uifactory.addFormSubmitButton("submit", "create", formButtons);
+		submitButton.setNewWindowAfterDispatchUrl(true);
 		uifactory.addFormCancelButton("cancel", formButtons, ureq, getWindowControl());
 		
 		String jsPage = velocity_root + "/new_task_js.html";
@@ -179,11 +189,20 @@ public class NewTaskController extends FormBasicController {
 		if (docTemplate != null) {
 			VFSManager.copyContent(docTemplate.getContentProvider().getContent(getLocale()), vfsLeaf);
 		}
+		
+		doOpen(ureq, vfsLeaf);
+		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+	
+	private void doOpen(UserRequest ureq, VFSLeaf vfsLeaf) {
+		DocEditorConfigs configs = GTAUIFactory.getEditorConfig(documentContainer, vfsLeaf, vfsLeaf.getName(), Mode.EDIT, null);
+		String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
+		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
 	}
 }
