@@ -90,7 +90,7 @@ public class AccessDAOTest extends OlatTestCase {
 	public void shouldUpdateExpiresAt() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("doceditor");
 		VFSMetadata vfsMetadata = vfsMetadataDAO.createMetadata(random(), "relPath", "file.name", new Date(), 1000l, false, "file://" + random(), "file", null);
-		Access access = sut.createAccess(vfsMetadata, identity, random(), random(), Mode.EDIT, true, null);
+		Access access = sut.createAccess(vfsMetadata, identity, random(), random(), Mode.EDIT, true, new Date());
 		dbInstance.commitAndCloseSession();
 		
 		Date expiresIn24Hours = Date.from(Instant.now().plus(Duration.ofHours(24)));
@@ -104,7 +104,7 @@ public class AccessDAOTest extends OlatTestCase {
 	public void shouldUpdateMode() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("doceditor");
 		VFSMetadata vfsMetadata = vfsMetadataDAO.createMetadata(random(), "relPath", "file.name", new Date(), 1000l, false, "file://" + random(), "file", null);
-		Access access = sut.createAccess(vfsMetadata, identity, random(), random(), Mode.EDIT, true, null);
+		Access access = sut.createAccess(vfsMetadata, identity, random(), random(), Mode.EDIT, true, new Date());
 		dbInstance.commitAndCloseSession();
 		
 		access = sut.updateMode(access, Mode.VIEW);
@@ -138,10 +138,10 @@ public class AccessDAOTest extends OlatTestCase {
 		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("doceditor2");
 		Identity identity3 = JunitTestHelper.createAndPersistIdentityAsRndUser("doceditor3");
 		VFSMetadata vfsMetadata = vfsMetadataDAO.createMetadata(random(), "relPath", "file.name", new Date(), 1000l, false, "file://" + random(), "file", null);
-		Access accessEdit1 = sut.createAccess(vfsMetadata, identity1, "app1", random(), Mode.EDIT, true, null);
-		Access accessEdit2 = sut.createAccess(vfsMetadata, identity2, "app1", random(), Mode.EDIT, true, null);
-		Access accessEdit3 = sut.createAccess(vfsMetadata, identity1, "app2", random(), Mode.EDIT, true, null);
-		Access accessView = sut.createAccess(vfsMetadata, identity3, "app1", random(), Mode.VIEW, true, null);
+		Access accessEdit1 = sut.createAccess(vfsMetadata, identity1, "app1", random(), Mode.EDIT, true, new Date());
+		Access accessEdit2 = sut.createAccess(vfsMetadata, identity2, "app1", random(), Mode.EDIT, true, new Date());
+		Access accessEdit3 = sut.createAccess(vfsMetadata, identity1, "app2", random(), Mode.EDIT, true, new Date());
+		Access accessView = sut.createAccess(vfsMetadata, identity3, "app1", random(), Mode.VIEW, true, new Date());
 		dbInstance.commitAndCloseSession();
 		
 		List<Access> accesses = sut.getAccesses(Mode.EDIT);
@@ -157,10 +157,10 @@ public class AccessDAOTest extends OlatTestCase {
 		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("doceditor2");
 		Identity identity3 = JunitTestHelper.createAndPersistIdentityAsRndUser("doceditor3");
 		VFSMetadata vfsMetadata = vfsMetadataDAO.createMetadata(random(), "relPath", "file.name", new Date(), 1000l, false, "file://" + random(), "file", null);
-		sut.createAccess(vfsMetadata, identity1, "app1", random(), Mode.EDIT, true, null);
-		sut.createAccess(vfsMetadata, identity2, "app1", random(), Mode.EDIT, true, null);
-		sut.createAccess(vfsMetadata, identity1, "app2", random(), Mode.EDIT, true, null);
-		sut.createAccess(vfsMetadata, identity3, "app1", random(), Mode.VIEW, true, null);
+		sut.createAccess(vfsMetadata, identity1, "app1", random(), Mode.EDIT, true, new Date());
+		sut.createAccess(vfsMetadata, identity2, "app1", random(), Mode.EDIT, true, new Date());
+		sut.createAccess(vfsMetadata, identity1, "app2", random(), Mode.EDIT, true, new Date());
+		sut.createAccess(vfsMetadata, identity3, "app1", random(), Mode.VIEW, true, new Date());
 		dbInstance.commitAndCloseSession();
 		
 		Long accessCount = sut.getAccessCount("app1", Mode.EDIT);
@@ -175,12 +175,12 @@ public class AccessDAOTest extends OlatTestCase {
 		VFSMetadata vfsMetadata = vfsMetadataDAO.createMetadata(random(), "relPath", "file.name", new Date(), 1000l, false, "file://" + random(), "file", null);
 		VFSMetadata vfsMetadataOther = vfsMetadataDAO.createMetadata(random(), "relPath", "file.name", new Date(), 1000l, false, "file://" + random(), "file", null);
 		String editorType = "et";
-		sut.createAccess(vfsMetadata, identity, editorType, random(), Mode.EDIT, true, null);
-		sut.createAccess(vfsMetadata, identity, editorType, random(), Mode.EDIT, true, null);
-		sut.createAccess(vfsMetadata, identity, editorType, random(), Mode.VIEW, true, null);
-		sut.createAccess(vfsMetadataOther, identity, editorType, random(), Mode.EDIT, true, null);
-		sut.createAccess(vfsMetadata, identityOther, editorType, random(), Mode.EDIT, true, null);
-		sut.createAccess(vfsMetadata, identity, "other", random(), Mode.EDIT, true, null);
+		sut.createAccess(vfsMetadata, identity, editorType, random(), Mode.EDIT, true, new Date());
+		sut.createAccess(vfsMetadata, identity, editorType, random(), Mode.EDIT, true, new Date());
+		sut.createAccess(vfsMetadata, identity, editorType, random(), Mode.VIEW, true, new Date());
+		sut.createAccess(vfsMetadataOther, identity, editorType, random(), Mode.EDIT, true, new Date());
+		sut.createAccess(vfsMetadata, identityOther, editorType, random(), Mode.EDIT, true, new Date());
+		sut.createAccess(vfsMetadata, identity, "other", random(), Mode.EDIT, true, new Date());
 		dbInstance.commitAndCloseSession();
 		
 		Long accessCount = sut.getAccessCount(editorType, vfsMetadata, identity);
@@ -220,7 +220,6 @@ public class AccessDAOTest extends OlatTestCase {
 		Access expiredOneDayAgo = sut.createAccess(vfsMetadata, identity, random(), random(), Mode.EDIT, true, oneDayAgo);
 		Date inOneDay = Date.from(Instant.now().plus(Duration.ofDays(1)));
 		Access expiresInOneDay = sut.createAccess(vfsMetadata, identity, random(), random(), Mode.EDIT, true, inOneDay);
-		Access noExpiration = sut.createAccess(vfsMetadata, identity, random(), random(), Mode.EDIT, true, null);
 		dbInstance.commitAndCloseSession();
 		
 		Date now = new Date();
@@ -231,7 +230,6 @@ public class AccessDAOTest extends OlatTestCase {
 		softly.assertThat(reload(expiredOneDayAgo)).isNull();
 		softly.assertThat(reload(expiredTwoDaysAgo)).isNull();
 		softly.assertThat(reload(expiresInOneDay)).isNotNull();
-		softly.assertThat(reload(noExpiration)).isNotNull();
 		softly.assertAll();
 	}
 
@@ -246,6 +244,6 @@ public class AccessDAOTest extends OlatTestCase {
 		String token = random();
 		boolean versionControlled = true;
 		
-		return sut.createAccess(vfsMetadata, identity, app, token, Mode.EDIT, versionControlled, null);
+		return sut.createAccess(vfsMetadata, identity, app, token, Mode.EDIT, versionControlled, new Date());
 	}
 }
