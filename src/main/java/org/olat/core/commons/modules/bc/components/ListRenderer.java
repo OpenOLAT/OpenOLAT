@@ -275,7 +275,7 @@ public class ListRenderer {
 		if(xssErrors) {
 			sb.append("<i class='o_icon o_icon-fw o_icon_banned'> </i> ");
 			sb.append(StringHelper.escapeHtml(name));
-			log.error("XSS Scan found something suspicious in: " + child);
+			log.error("XSS Scan found something suspicious in: {}", child);
 		} else {
 			sb.append("<a id='o_sel_doc_").append(pos).append("'");
 		
@@ -361,7 +361,6 @@ public class ListRenderer {
 			if (hasMeta) {
 				// render tooltip only when it contains something
 				sb.append("<script>")
-			      .append("/* <![CDATA[ */")
 				  .append("jQuery(function() {\n")
 				  .append("  jQuery('#o_sel_doc_").append(pos).append("').tooltip({\n")
 				  .append("	   html: true,\n")
@@ -372,7 +371,6 @@ public class ListRenderer {
 				  .append("	   jQuery('#o_sel_doc_").append(pos).append("').tooltip('hide');\n")
 				  .append("  });\n")
 				  .append("});")
-				  .append("/* ]]> */")
 				  .append("</script>");
 			}
 		}
@@ -412,7 +410,7 @@ public class ListRenderer {
 		}
 
 		if(canContainerVersion) {
-			if (canVersion && revisionNr > 1) {
+			if (metadata != null && canVersion && revisionNr > 1) {
 				sb.append("<span class='text-muted small'>")
 				  .append(metadata.getRevisionNr())
 				  .append("</span>");
@@ -453,7 +451,7 @@ public class ListRenderer {
 			if (openIcon != null) {
 				sb.append("<a ");
 				ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false,
-						new NameValuePair(PARAM_CONTENT_EDIT_ID, pos));
+						new NameValuePair(PARAM_CONTENT_EDIT_ID, pos), new NameValuePair("oo-opennewwindow-oo", "true"));
 				sb.append(" title=\"").append(StringHelper.escapeHtml(translator.translate("mf.open")));
 				sb.append("\"><i class=\"o_icon o_icon-fw ").append(openIcon).append("\"></i></a>");
 			}
@@ -500,11 +498,9 @@ public class ListRenderer {
 
 				sb.append("</ul></div>")
 				  .append("<script>")
-			      .append("/* <![CDATA[ */")
 				  .append("jQuery(function() {\n")
 				  .append("  o_popover('o_sel_actions_").append(pos).append("','o_sel_actions_pop_").append(pos).append("','left');\n")
 				  .append("});")
-				  .append("/* ]]> */")
 				  .append("</script>");
 			}
 		}

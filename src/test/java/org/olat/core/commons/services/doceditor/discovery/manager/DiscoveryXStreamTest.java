@@ -31,7 +31,6 @@ import org.olat.core.commons.services.doceditor.discovery.App;
 import org.olat.core.commons.services.doceditor.discovery.Discovery;
 import org.olat.core.commons.services.doceditor.discovery.NetZone;
 import org.olat.core.commons.services.doceditor.discovery.ProofKey;
-import org.olat.core.commons.services.doceditor.discovery.manager.DiscoveryXStream;
 
 /**
  * 

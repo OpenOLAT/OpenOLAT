@@ -29,7 +29,6 @@ import org.junit.Test;
 import org.olat.core.commons.services.doceditor.discovery.Action;
 import org.olat.core.commons.services.doceditor.discovery.App;
 import org.olat.core.commons.services.doceditor.discovery.NetZone;
-import org.olat.core.commons.services.doceditor.discovery.manager.DiscoveryServiceImpl;
 import org.olat.core.commons.services.doceditor.discovery.model.ActionImpl;
 import org.olat.core.commons.services.doceditor.discovery.model.AppImpl;
 import org.olat.core.commons.services.doceditor.discovery.model.DiscoveryImpl;
