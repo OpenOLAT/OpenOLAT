@@ -32,6 +32,7 @@ import java.util.UUID;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
@@ -87,6 +88,8 @@ public class ReminderServiceImpl implements ReminderService {
 	private UserManager userManager;
 	@Autowired
 	private ReminderRuleEngine ruleEngine;
+	@Autowired
+	private BaseSecurity securityManager;
 	
 	@Override
 	public Reminder createReminder(RepositoryEntry entry, Identity creator) {
@@ -284,16 +287,18 @@ public class ReminderServiceImpl implements ReminderService {
 		@Override
 		public void putVariablesInMailContext(VelocityContext vContext, Identity recipient) {
 			User user = recipient.getUser();
-			vContext.put("firstname", user.getProperty(UserConstants.FIRSTNAME, null));
-			vContext.put(UserConstants.FIRSTNAME, user.getProperty(UserConstants.FIRSTNAME, null));
-			vContext.put("lastname", user.getProperty(UserConstants.LASTNAME, null));
-			vContext.put(UserConstants.LASTNAME, user.getProperty(UserConstants.LASTNAME, null));
+			vContext.put("firstname", user.getFirstName());
+			vContext.put(UserConstants.FIRSTNAME, user.getFirstName());
+			vContext.put("lastname", user.getLastName());
+			vContext.put(UserConstants.LASTNAME, user.getLastName());
 			String fullName = userManager.getUserDisplayName(recipient);
 			vContext.put("fullname", fullName);
 			vContext.put("fullName", fullName); 
-			vContext.put("mail", userManager.getUserDisplayEmail(user, locale));
-			vContext.put("email", userManager.getUserDisplayEmail(user, locale));
-			vContext.put("username", recipient.getName());
+			String email = userManager.getUserDisplayEmail(user, locale);
+			vContext.put("mail", email);
+			vContext.put("email", email);
+			String loginName = securityManager.findAuthenticationName(recipient);
+			vContext.put("username", loginName);
 			// Put variables from greater context
 			if(entry != null) {
 				vContext.put("courseurl", url);
