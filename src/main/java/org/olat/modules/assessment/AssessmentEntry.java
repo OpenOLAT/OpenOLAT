@@ -116,6 +116,10 @@ public interface AssessmentEntry extends AssessmentEntryLight {
 	public AssessmentRunStatus getCurrentRunStatus();
 	
 	public void setCurrentRunStatus(AssessmentRunStatus runStatus);
+	
+	public Date getCurrentRunStartDate();
+	
+	public void setCurrentRunStartDate(Date date);
 
 	public String getComment();
 

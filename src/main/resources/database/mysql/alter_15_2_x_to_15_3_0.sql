@@ -27,3 +27,8 @@ alter table o_de_user_info ENGINE = InnoDB;
 
 create unique index idx_de_token_idx on o_de_access(o_token);
 create unique index idx_de_userinfo_ident_idx on o_de_user_info(fk_identity);
+
+
+-- Assessment
+alter table o_as_entry add column a_current_run_start datetime;
+

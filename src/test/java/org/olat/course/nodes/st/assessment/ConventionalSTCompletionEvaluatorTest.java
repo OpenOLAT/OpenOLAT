@@ -150,6 +150,6 @@ public class ConventionalSTCompletionEvaluatorTest {
 	
 	private AssessmentEvaluation createAssessmentEvaluation(Boolean passed, Boolean userVisibility) {
 		return new AssessmentEvaluation(null, passed, null, null, null, null, null, userVisibility, null, null, null,
-				null, null, null, null, 0, null, null, null, null, null, null, null, null, null, null);
+				null, null, null, null, null, 0, null, null, null, null, null, null, null, null, null, null);
 	}
 }

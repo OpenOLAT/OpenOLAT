@@ -69,23 +69,23 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	}
 
 	public AssessmentEvaluation(Float score, Boolean passed, Boolean fullyAssessed, Long assessmentID) {
-		this(score, passed, null, null, null, null, null, null, fullyAssessed, null, null, null, assessmentID, null,
+		this(score, passed, null, null, null, null, null, null, fullyAssessed, null, null, null, null, assessmentID, null,
 				null, -1, null, null, null, null, null, null, null, null, null, null);
 	}
 
 	public AssessmentEvaluation(Date lastModified, Date lastUserModified, Date lastCoachModified) {
-		this(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, -1, lastModified,
+		this(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, -1, lastModified,
 				lastUserModified, lastCoachModified, null, null, null, null, null, null, null);
 	}
 
 	public AssessmentEvaluation(Float score, Boolean passed, Boolean passedOverriden, Integer attempts,
 			Date lastAttempt, Double completion, AssessmentEntryStatus assessmentStatus, Boolean userVisibility,
-			Boolean fullyAssessed, Date fullyAssessedDate, Double currentRunCompletion, AssessmentRunStatus runStatus,
+			Boolean fullyAssessed, Date fullyAssessedDate, Date currentRunStart, Double currentRunCompletion, AssessmentRunStatus runStatus,
 			Long assessmentID, String comment, String coachComment, int numOfAssessmentDocs, Date lastModified,
 			Date lastUserModified, Date lastCoachModified, Date assessmentDone, Date startDate,
 			Overridable<Date> endDate, Overridable<AssessmentObligation> obligation, Integer duration, Date firstVisit,
 			Date lastVisit) {
-		super(score, passed, assessmentStatus, userVisibility, currentRunCompletion, runStatus, assessmentID);
+		super(score, passed, assessmentStatus, userVisibility, currentRunStart, currentRunCompletion, runStatus, assessmentID);
 		this.passedOverriden = passedOverriden;
 		this.attempts = attempts;
 		this.lastAttempt = lastAttempt;
@@ -116,7 +116,7 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	public AssessmentEvaluation(AssessmentEvaluation eval, AssessmentEntryStatus assessmentStatus) {
 		this(eval.getScore(), eval.getPassed(), eval.getPassedOverriden(), eval.getAttempts(), eval.getLastAttempt(),
 				eval.getCompletion(), assessmentStatus, eval.getUserVisible(), eval.getFullyAssessed(),
-				eval.getFullyAssessedDate(), eval.getCurrentRunCompletion(), eval.getCurrentRunStatus(),
+				eval.getFullyAssessedDate(), eval.getCurrentRunStartDate(), eval.getCurrentRunCompletion(), eval.getCurrentRunStatus(),
 				eval.getAssessmentID(), eval.getComment(), eval.getCoachComment(), -1, eval.getLastModified(),
 				eval.getLastUserModified(), eval.getLastCoachModified(), eval.getAssessmentDone(), eval.getStartDate(),
 				eval.getEndDate(), eval.getObligation(), eval.getDuration(), eval.getFirstVisit(), eval.getLastVisit());
@@ -228,16 +228,18 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 		}
 		
 		Double completion = null;
+		Date currentRunStartDate = null;
 		Double currentRunCompletion = null;
 		AssessmentRunStatus runStatus = null;
 		if(assessmentConfig.getCompletionMode() != null && !Mode.none.equals(assessmentConfig.getCompletionMode())) {
 			completion = entry.getCompletion();
+			currentRunStartDate = entry.getCurrentRunStartDate();
 			currentRunCompletion = entry.getCurrentRunCompletion();
 			runStatus = entry.getCurrentRunStatus();
 		}
 		
 		return new AssessmentEvaluation(score, passed, passedOverriden, attempts, lastAttempt, completion, entry.getAssessmentStatus(),
-				entry.getUserVisibility(), entry.getFullyAssessed(), entry.getFullyAssessedDate(), currentRunCompletion,
+				entry.getUserVisibility(), entry.getFullyAssessed(), entry.getFullyAssessedDate(), currentRunStartDate, currentRunCompletion,
 				runStatus, entry.getAssessmentId(), comment, entry.getCoachComment(),
 				entry.getNumberOfAssessmentDocuments(), entry.getLastModified(), entry.getLastUserModified(),
 				entry.getLastCoachModified(), entry.getAssessmentDone(), entry.getStartDate(), entry.getEndDate(),

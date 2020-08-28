@@ -1340,6 +1340,7 @@ create table o_as_entry (
    a_completion float(24),
    a_current_run_completion float(24),
    a_current_run_status varchar(16),
+   a_current_run_start timestamp,
    a_comment text,
    a_coach_comment text,
    a_num_assessment_docs int8 not null default 0,

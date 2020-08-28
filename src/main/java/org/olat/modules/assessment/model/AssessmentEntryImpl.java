@@ -111,6 +111,8 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	private Double completion;
 	@Column(name="a_current_run_completion", nullable=true, insertable=true, updatable=true)
 	private Double currentRunCompletion;
+	@Column(name="a_current_run_start", nullable=true, insertable=true, updatable=true)
+	private Date currentRunStartDate;
 	@Column(name="a_current_run_status", nullable=true, insertable=true, updatable=true)
 	private String runStatus;
 
@@ -505,7 +507,17 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	public void setCurrentRunCompletion(Double currentCompletion) {
 		this.currentRunCompletion = currentCompletion;
 	}
-	
+
+	@Override
+	public Date getCurrentRunStartDate() {
+		return currentRunStartDate;
+	}
+
+	@Override
+	public void setCurrentRunStartDate(Date currentRunStart) {
+		this.currentRunStartDate = currentRunStart;
+	}
+
 	public String getRunStatus() {
 		return runStatus;
 	}

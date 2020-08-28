@@ -48,7 +48,7 @@ public interface OutcomesListener {
 	 * @param pass Currently passed or failed (null is possible)
 	 * @param compeltion The number of questions answered measured against the number of questions in the test
 	 */
-	public void updateOutcomes(Float score, Boolean pass, Double completion);
+	public void updateOutcomes(Float score, Boolean pass, Date start, Double completion);
 	
 	/**
 	 * The test or item is submitted, it's finished.
@@ -58,6 +58,6 @@ public interface OutcomesListener {
 	 * @param completion The completion grade of the test
 	 * @param assessmentId The ID of the session (primary of the test or item session)
 	 */
-	public void submit(Float score, Boolean pass, Double completion, Long assessmentId);
+	public void submit(Float score, Boolean pass, Date start, Double completion, Long assessmentId);
 
 }

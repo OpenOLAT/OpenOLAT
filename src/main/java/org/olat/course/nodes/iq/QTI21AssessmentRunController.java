@@ -934,7 +934,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		
 		removeHistory(ureq);
 		if(userCourseEnv.isParticipant() && courseNode instanceof IQTESTCourseNode) {
-			courseAssessmentService.updateCurrentCompletion(courseNode, userCourseEnv, null, null, Role.user);
+			courseAssessmentService.updateCurrentCompletion(courseNode, userCourseEnv, null, null, null, Role.user);
 		}
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("test", -1l);
@@ -1011,18 +1011,19 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	}
 
 	@Override
-	public void updateOutcomes(Float score, Boolean pass, Double completion) {
+	public void updateOutcomes(Float score, Boolean pass, Date start, Double completion) {
 		if(courseNode instanceof IQTESTCourseNode) {
-			courseAssessmentService.updateCurrentCompletion(courseNode, userCourseEnv, completion, AssessmentRunStatus.running,
+			courseAssessmentService.updateCurrentCompletion(courseNode, userCourseEnv, start, completion, AssessmentRunStatus.running,
 					Role.user);
 			coordinatorManager.getCoordinator().getEventBus()
-				.fireEventToListenersOf(new CompletionEvent(CompletionEvent.PROGRESS, courseNode.getIdent(), completion, AssessmentRunStatus.running, getIdentity().getKey()),
+				.fireEventToListenersOf(new CompletionEvent(CompletionEvent.PROGRESS, courseNode.getIdent(),
+						start, completion, AssessmentRunStatus.running, getIdentity().getKey()),
 						userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource());
 		}
 	}
 
 	@Override
-	public void submit(Float score, Boolean pass, Double completion, Long assessmentId) {
+	public void submit(Float score, Boolean pass, Date start, Double completion, Long assessmentId) {
 		if(anonym) {
 			assessmentNotificationsHandler.markPublisherNews(getIdentity(), userCourseEnv.getCourseEnvironment().getCourseResourceableId());
 			return;
@@ -1039,7 +1040,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				assessmentStatus = AssessmentEntryStatus.done;
 				visibility = Boolean.TRUE;
 			}
-			ScoreEvaluation sceval = new ScoreEvaluation(score, pass, assessmentStatus, visibility, completion,
+			ScoreEvaluation sceval = new ScoreEvaluation(score, pass, assessmentStatus, visibility, start, completion,
 					AssessmentRunStatus.done, assessmentId);
 			
 			boolean increment = incrementAttempts.getAndSet(false);
@@ -1049,8 +1050,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				ThreadLocalUserActivityLogger.log(QTI21LoggingAction.QTI_CLOSE_IN_COURSE, getClass());
 			}
 			coordinatorManager.getCoordinator().getEventBus()
-				.fireEventToListenersOf(new CompletionEvent(CompletionEvent.PROGRESS, courseNode.getIdent(), completion, AssessmentRunStatus.done, getIdentity().getKey()),
-					userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource());
+				.fireEventToListenersOf(new CompletionEvent(CompletionEvent.PROGRESS, courseNode.getIdent(),
+						start, completion, AssessmentRunStatus.done, getIdentity().getKey()),
+						userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource());
 			
 			if(IQEditController.CORRECTION_GRADING.equals(correctionMode)) {
 				AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, userCourseEnv);

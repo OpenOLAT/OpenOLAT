@@ -1430,7 +1430,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 
 		Boolean totalPassed = null;
 		if(totalSectionClosed == assessmentSections.size()) {
-			totalPassed = new Boolean(allPassed);
+			totalPassed = Boolean.valueOf(allPassed);
 		} else {
 			if(assessmentSections.size() == totalSectionPassed) {
 				totalPassed = Boolean.TRUE;
@@ -1443,7 +1443,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 		if("CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
 			ICourse course = CourseFactory.loadCourse(entry);
 			CourseNode courseNode = course.getRunStructure().getNode(binder.getSubIdent());
-			ScoreEvaluation scoreEval= new ScoreEvaluation(totalScore.floatValue(), totalPassed, binderStatus, true, null, null, binder.getKey());
+			ScoreEvaluation scoreEval= new ScoreEvaluation(totalScore.floatValue(), totalPassed, binderStatus, true, null, null, null, binder.getKey());
 			UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
 			courseAssessmentService.updateScoreEvaluation(courseNode, scoreEval, userCourseEnv, coachingIdentity, false,
 					Role.coach);
@@ -1497,7 +1497,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 			AssessmentEvaluation eval = courseAssessmentService.getAssessmentEvaluation(pfNode, userCourseEnv);
 			
 			ScoreEvaluation scoreEval = new ScoreEvaluation(eval.getScore(), eval.getPassed(), status, true,
-					null, null, binder.getKey());
+					null, null, null, binder.getKey());
 			courseAssessmentService.updateScoreEvaluation(courseNode, scoreEval, userCourseEnv, coachingIdentity, false,
 					Role.coach);
 		} else {
@@ -1522,8 +1522,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	private OLATResourceable getOLATResourceableForEvaluationForm(PageBody body) {
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("portfolio-evaluation", body.getKey());
-		return ores;
+		return OresHelper.createOLATResourceableInstance("portfolio-evaluation", body.getKey());
 	}
 
 	@Override

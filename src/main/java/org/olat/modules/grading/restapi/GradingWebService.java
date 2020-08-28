@@ -231,7 +231,8 @@ public class GradingWebService {
 		Identity doer = RestSecurityHelper.getIdentity(request);
 		
 		ScoreEvaluation manualScoreEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
-				scoreEval.getAssessmentStatus(), userVisible, scoreEval.getCurrentRunCompletion(),
+				scoreEval.getAssessmentStatus(), userVisible,
+				scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
 				scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 		courseAssessmentService.updateScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,
 				doer, false, Role.coach);

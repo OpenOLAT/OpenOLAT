@@ -53,6 +53,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 	implements SortableFlexiTableDataModel<AssessedIdentityElementRow>, FilterableFlexiTableModel {
 	
 	private static final Logger log = Tracing.createLoggerFor(IdentityListCourseNodeTableModel.class);
+	private static final IdentityCourseElementCols[] COLS = IdentityCourseElementCols.values();
 
 	private final Locale locale;
 	
@@ -143,7 +144,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 	@Override
 	public Object getValueAt(AssessedIdentityElementRow row, int col) {
 		if(col >= 0 && col < IdentityCourseElementCols.values().length) {
-			switch(IdentityCourseElementCols.values()[col]) {
+			switch(COLS[col]) {
 				case attempts: return row.getAttempts();
 				case userVisibility: return row.getUserVisibility();
 				case score: return row.getScore();
@@ -161,6 +162,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 				}
 				case assessmentStatus: return row.getAssessmentStatus();
 				case currentCompletion: return row.getCurrentCompletion();
+				case currentRunStart: return row.getCurrentRunStart();
 				case certificate: return certificateMap.get(row.getIdentityKey());
 				case recertification: {
 					CertificateLight certificate = certificateMap.get(row.getIdentityKey());
@@ -173,6 +175,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 				case externalGrader: return row.getGraderFullName();
 				case tools: return row.getToolsLink();
 				case details: return row.getDetails();
+				default: return "ERROR";
 			}
 		}
 		int propPos = col - AssessmentToolConstants.USER_PROPS_OFFSET;
@@ -205,7 +208,8 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 		tools("table.header.tools"),
 		details("table.header.details"),
 		cut("table.header.cut"),
-		externalGrader("table.header.external.grader");
+		externalGrader("table.header.external.grader"),
+		currentRunStart("table.header.run.start");
 		
 		private final String i18nKey;
 		private final String icon;

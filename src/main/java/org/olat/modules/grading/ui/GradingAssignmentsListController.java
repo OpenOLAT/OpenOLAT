@@ -646,7 +646,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 				userVisible = Boolean.valueOf(((IQTESTCourseNode)courseNode).isScoreVisibleAfterCorrection());
 			}
 			ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, passed,
-					finalStatus, userVisible, scoreEval.getCurrentRunCompletion(),
+					finalStatus, userVisible, scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
 					scoreEval.getCurrentRunStatus(), testSessionsToComplete.getKey());
 			courseAssessmentService.updateScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,
 					getIdentity(), false, Role.coach);

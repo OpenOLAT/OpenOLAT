@@ -529,7 +529,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			userVisible = Boolean.valueOf(courseNode.isScoreVisibleAfterCorrection());
 		}
 		ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, passed,
-				finalStatus, userVisible, scoreEval.getCurrentRunCompletion(), 
+				finalStatus, userVisible, scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(), 
 				scoreEval.getCurrentRunStatus(), session.getKey());
 		courseAssessmentService.updateScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,
 				getIdentity(), false, Role.coach);

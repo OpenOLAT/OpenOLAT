@@ -42,6 +42,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TimeFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -158,6 +159,8 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		IQTESTCourseNode testCourseNode = (IQTESTCourseNode)courseNode;
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		if(testCourseNode != null && Mode.setByNode.equals(assessmentConfig.getCompletionMode())) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.currentRunStart,
+					new TimeFlexiCellRenderer(getLocale(), true)));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.currentCompletion));
 		}
 		
@@ -525,7 +528,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 				userVisible = Boolean.valueOf(userVisibleAfter);
 			}
 			ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, passed,
-					finalStatus, userVisible, scoreEval.getCurrentRunCompletion(),
+					finalStatus, userVisible, scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
 					scoreEval.getCurrentRunStatus(), testSession.getKey());
 			courseAssessmentService.updateScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,
 					getIdentity(), false, Role.coach);

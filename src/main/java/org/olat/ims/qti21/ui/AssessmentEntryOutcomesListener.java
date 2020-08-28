@@ -87,22 +87,21 @@ public class AssessmentEntryOutcomesListener implements OutcomesListener {
 		String fullname = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(assessedIdentity);
 		Date assessedDate = candidateSession.getFinishTime() == null ? timestamp : candidateSession.getFinishTime();
 
-		
 		Translator translator = Util.createPackageTranslator(QTI21RuntimeController.class, locale);
 		String[] args = new String[] {
-				entry.getDisplayname(),		// {0}
-				entry.getKey().toString(),	// {1}
-				"",							// {2}
-				"",							// {3}
-				testEntry.getDisplayname(),	// {4}
-				fullname,					// {5}
+				entry.getDisplayname(),												// 0
+				entry.getKey().toString(),											// 1
+				"",																	// 2
+				"",																	// 3
+				testEntry.getDisplayname(),											// 4
+				fullname,															// 5
 				Formatter.getInstance(locale)
-					.formatDateAndTime(assessedDate), 								// {6}
-				assessedIdentity.getName(),											// {7}
+					.formatDateAndTime(assessedDate), 								// 6
+				assessedIdentity.getName(),											// 7
 				assessedIdentity.getUser()
-					.getProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, locale),	// {8}
+					.getProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, locale),// 8
 				assessedIdentity.getUser()
-					.getProperty(UserConstants.INSTITUTIONALNAME, locale),			// {9}
+					.getProperty(UserConstants.INSTITUTIONALNAME, locale),			// 9
 		};
 
 		String subject = translator.translate("digital.signature.mail.subject", args);
@@ -112,7 +111,7 @@ public class AssessmentEntryOutcomesListener implements OutcomesListener {
 	}
 
 	@Override
-	public void updateOutcomes(Float updatedScore, Boolean updatedPassed, Double completion) {
+	public void updateOutcomes(Float updatedScore, Boolean updatedPassed, Date startTime, Double completion) {
 		AssessmentEntryStatus assessmentStatus = AssessmentEntryStatus.inProgress;
 		assessmentEntry.setCompletion(completion);
 		assessmentEntry.setAssessmentStatus(assessmentStatus);
@@ -125,7 +124,7 @@ public class AssessmentEntryOutcomesListener implements OutcomesListener {
 	}
 
 	@Override
-	public void submit(Float submittedScore, Boolean submittedPass, Double completion, Long assessmentId) {
+	public void submit(Float submittedScore, Boolean submittedPass, Date startTime, Double completion, Long assessmentId) {
 		AssessmentEntryStatus assessmentStatus;
 		if(needManualCorrection) {
 			assessmentStatus = AssessmentEntryStatus.inReview;

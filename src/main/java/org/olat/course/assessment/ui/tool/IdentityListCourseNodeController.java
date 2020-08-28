@@ -21,6 +21,7 @@ package org.olat.course.assessment.ui.tool;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +37,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.date.TimeElement;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -482,8 +484,10 @@ public class IdentityListCourseNodeController extends FormBasicController
 			AssessmentEntry entry = entryMap.get(assessedIdentity.getKey());
 			
 			String grader = null;
+			TimeElement currentStart = new TimeElement("current-start-" + (++counter), getLocale());
 			CompletionItem currentCompletion = new CompletionItem("current-completion-" + (++counter), getLocale());
 			if(entry != null) {
+				currentStart.setDate(entry.getCurrentRunStartDate());
 				currentCompletion.setCompletion(entry.getCurrentRunCompletion());
 				AssessmentRunStatus status = entry.getCurrentRunStatus();
 				currentCompletion.setEnded(status != null && AssessmentRunStatus.done.equals(status));
@@ -494,7 +498,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
 		
 			AssessedIdentityElementRow row = new AssessedIdentityElementRow(assessedIdentity, entry, grader,
-					currentCompletion, toolsLink, userPropertyHandlers, getLocale());
+					currentStart, currentCompletion, toolsLink, userPropertyHandlers, getLocale());
 			toolsLink.setUserObject(row);
 			rows.add(row);
 		}
@@ -609,7 +613,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		if(event instanceof CompletionEvent) {
 			CompletionEvent ce = (CompletionEvent)event;
 			if(courseNode.getIdent().equals(ce.getSubIdent())) {
-				doUpdateCompletion(ce.getCompletion(), ce.getStatus(), ce.getIdentityKey());
+				doUpdateCompletion(ce.getStart(), ce.getCompletion(), ce.getStatus(), ce.getIdentityKey());
 			}
 		}
 	}
@@ -632,7 +636,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		}
 		loadModel(ureq);
 		
-		if(entries != null && entries.size() > 0) {
+		if(entries != null && !entries.isEmpty()) {
 			ContextEntry entry = entries.get(0);
 			String resourceType = entry.getOLATResourceable().getResourceableTypeName();
 			if("Identity".equals(resourceType)) {
@@ -957,7 +961,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 
 			ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
 			ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
-					scoreEval.getAssessmentStatus(), visibility, scoreEval.getCurrentRunCompletion(),
+					scoreEval.getAssessmentStatus(), visibility,
+					scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
 					scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 			courseAssessmentService.updateScoreEvaluation(courseNode, doneEval, assessedUserCourseEnv, getIdentity(),
 					false, Role.coach);
@@ -989,32 +994,33 @@ public class IdentityListCourseNodeController extends FormBasicController
 		}
 	}
 	
-	protected void doSetStatus(Identity assessedIdentity, AssessmentEntryStatus status, CourseNode courseNode, ICourse course) {
+	protected void doSetStatus(Identity assessedIdentity, AssessmentEntryStatus status, CourseNode cNode, ICourse course) {
 		Roles roles = securityManager.getRoles(assessedIdentity);
 		
 		IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, roles);
 		UserCourseEnvironment assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment(), coachCourseEnv.isCourseReadOnly());
 		assessedUserCourseEnv.getScoreAccounting().evaluateAll();
 
-		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
+		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(cNode, assessedUserCourseEnv);
 		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
-				status, null, scoreEval.getCurrentRunCompletion(),
+				status, null, scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
 				scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
-		courseAssessmentService.updateScoreEvaluation(courseNode, doneEval, assessedUserCourseEnv,
+		courseAssessmentService.updateScoreEvaluation(cNode, doneEval, assessedUserCourseEnv,
 				getIdentity(), false, Role.coach);
 	}
 	
-	private void doUpdateCompletion(Double completion, AssessmentRunStatus status, Long assessedIdentityKey) {
+	private void doUpdateCompletion(Date start, Double completion, AssessmentRunStatus status, Long assessedIdentityKey) {
 		List<AssessedIdentityElementRow> rows = usersTableModel.getObjects();
 		for(AssessedIdentityElementRow row:rows) {
 			if(assessedIdentityKey.equals(row.getIdentityKey())) {
-				doUpdateCompletion(completion, status, row);
+				doUpdateCompletion(start, completion, status, row);
 				break;
 			}
 		}
 	}
 	
-	private void doUpdateCompletion(Double completion, AssessmentRunStatus status, AssessedIdentityElementRow row) {
+	private void doUpdateCompletion(Date start, Double completion, AssessmentRunStatus status, AssessedIdentityElementRow row) {
+		row.getCurrentRunStart().setDate(start);
 		row.getCurrentCompletion().setCompletion(completion);
 		boolean endedRow = row.getCurrentCompletion().isEnded();
 		boolean endedEvent = status != null && AssessmentRunStatus.done.equals(status);

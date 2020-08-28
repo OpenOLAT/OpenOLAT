@@ -106,7 +106,7 @@ public class MSResetDataController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		confirmationEl.clearError();
 		if(!confirmationEl.isAtLeastSelected(1)) {
@@ -114,14 +114,15 @@ public class MSResetDataController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		UserNodeAuditManager auditManager = courseEnv.getAuditManager();
 		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
-		ScoreEvaluation scoreEval = new ScoreEvaluation(null, null, AssessmentEntryStatus.notStarted, null, 0.0d, AssessmentRunStatus.notStarted, null);
+		ScoreEvaluation scoreEval = new ScoreEvaluation(null, null, AssessmentEntryStatus.notStarted, null,
+				null, 0.0d, AssessmentRunStatus.notStarted, null);
 		for(Identity identity:identities) {
 			IdentityEnvironment ienv = new IdentityEnvironment(identity, Roles.userRoles());
 			UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, courseEnv);

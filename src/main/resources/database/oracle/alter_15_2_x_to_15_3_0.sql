@@ -24,3 +24,7 @@ create table o_de_user_info (
 
 create unique index idx_de_token_idx on o_de_access(o_token);
 create unique index idx_de_userinfo_ident_idx on o_de_user_info(fk_identity);
+
+
+-- Assessment
+alter table o_as_entry add a_current_run_start timestamp;

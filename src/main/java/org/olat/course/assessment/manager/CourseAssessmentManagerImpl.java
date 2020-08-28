@@ -407,12 +407,13 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 
 	@Override
 	public void updateCurrentCompletion(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnvironment,
-			Double currentCompletion, AssessmentRunStatus runStatus, Role by) {
+			Date start, Double currentCompletion, AssessmentRunStatus runStatus, Role by) {
 		ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
 		
 		Boolean entryRoot = isEntryRoot(course, courseNode);
 		AssessmentEntry nodeAssessment = getOrCreateAssessmentEntry(courseNode, assessedIdentity, entryRoot);
 		nodeAssessment.setCurrentRunCompletion(currentCompletion);
+		nodeAssessment.setCurrentRunStartDate(start);
 		nodeAssessment.setCurrentRunStatus(runStatus);
 		if(by == Role.coach) {
 			nodeAssessment.setLastCoachModified(new Date());
@@ -517,6 +518,9 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		}
 		if(scoreEvaluation.getCurrentRunStatus() != null) {
 			assessmentEntry.setCurrentRunStatus(scoreEvaluation.getCurrentRunStatus());
+		}
+		if(scoreEvaluation.getCurrentRunStartDate() != null) {
+			assessmentEntry.setCurrentRunCompletion(scoreEvaluation.getCurrentRunCompletion());
 		}
 		
 		Integer attempts = null;

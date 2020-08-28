@@ -17,11 +17,13 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.gui.components.form.flexible.impl.elements.table;
+package org.olat.core.gui.components.date;
 
 import java.util.Date;
-import java.util.Locale;
 
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
@@ -29,38 +31,28 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 
 /**
- * Render the time only.
  * 
- * Initial date: 30 mars 2017<br>
+ * Initial date: 28 août 2020<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TimeFlexiCellRenderer implements FlexiCellRenderer {
-	
-	private final Formatter format;
-	private final boolean fullDateTooltip;
-	
-	public TimeFlexiCellRenderer(Locale locale) {
-		this(locale, false);
-	}
-	
-	public TimeFlexiCellRenderer(Locale locale, boolean fullDateTooltip) {
-		format = Formatter.getInstance(locale);
-		this.fullDateTooltip = fullDateTooltip;
-	}
+public class TimeComponentRenderer extends DefaultComponentRenderer {
 
 	@Override
-	public void render(Renderer renderer, StringOutput target, Object cellValue,
-			int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
-		if(cellValue instanceof Date) {
-			Date date = (Date)cellValue;
-			if(fullDateTooltip) {
-				target.append("<span title='").append(format.formatDateAndTime(date)).append("'>")
-					.append(format.formatTimeShort((Date)cellValue))
-					.append("</span>");
-			} else {
-				target.append(format.formatTimeShort((Date)cellValue));
-			}
+	public void render(Renderer renderer, StringOutput sb, Component source,
+			URLBuilder ubu, Translator translator, RenderResult renderResult,
+			String[] args) {
+		TimeComponent cmp = (TimeComponent)source;
+		Date date = cmp.getDate();
+		sb.append("<span id=\"o_c").append(cmp.getDispatchID());
+		if(date == null) {
+			sb.append("\">");
+		} else {
+			Formatter formatter = Formatter.getInstance(cmp.getLocale());
+			String title = formatter.formatDateAndTime(date);
+			sb.append("\" title=\"").append(title).append("\">")
+			  .append(formatter.formatTimeShort(date));
 		}
+		sb.append("</span>");
 	}
 }

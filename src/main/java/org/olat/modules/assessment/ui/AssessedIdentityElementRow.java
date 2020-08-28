@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.gui.components.date.TimeElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.Identity;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -56,12 +57,15 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 	private Date initialCourseLaunchDate;
 	
 	private FormLink toolsLink;
+	private TimeElement currentStart;
 	private CompletionItem currentCompletion;
 	
 	public AssessedIdentityElementRow(Identity identity, AssessmentEntry entry, String graderFullName,
-			CompletionItem currentCompletion, FormLink toolsLink, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+			TimeElement currentStart, CompletionItem currentCompletion, FormLink toolsLink,
+			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(identity, userPropertyHandlers, locale);
 		this.currentCompletion = currentCompletion;
+		this.currentStart = currentStart;
 		this.toolsLink = toolsLink;
 		setAssessmentEntry(entry, graderFullName);
 	}
@@ -133,6 +137,10 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 
 	public AssessmentEntryStatus getAssessmentStatus() {
 		return status;
+	}
+	
+	public TimeElement getCurrentRunStart() {
+		return currentStart;
 	}
 	
 	public CompletionItem getCurrentCompletion() {

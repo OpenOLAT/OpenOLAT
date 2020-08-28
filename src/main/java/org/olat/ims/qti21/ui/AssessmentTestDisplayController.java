@@ -1839,10 +1839,10 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		}
 
 		if (submit) {
-			outcomesListener.submit(score, pass, completion, candidateSession.getKey());
+			outcomesListener.submit(score, pass, candidateSession.getCreationDate(), completion, candidateSession.getKey());
 		} else if(candidateSession != null && candidateSession.getFinishTime() == null) {
 			//don't change the outcome if the test is finished
-			outcomesListener.updateOutcomes(score, pass, completion);
+			outcomesListener.updateOutcomes(score, pass, candidateSession.getCreationDate(), completion);
 		}
 	}
 	

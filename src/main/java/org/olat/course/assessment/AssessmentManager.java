@@ -95,11 +95,12 @@ public interface AssessmentManager {
 	 * @param courseNode The course node
 	 * @param identity The identity which does the action
 	 * @param assessedIdentity The assessed identity
-	 * @param currentCompletion The completion of the current running taks
+	 * @param start The start date of the current run (null will not update the value)
+	 * @param currentCompletion The completion of the current running task
 	 * @param by The role of the identity which does the action.
 	 */
 	public void updateCurrentCompletion(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnvironment,
-			Double currentCompletion, AssessmentRunStatus status, Role by);
+			Date start, Double currentCompletion, AssessmentRunStatus status, Role by);
 	
 	public void updateCompletion(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnvironment,
 			Double currentCompletion, AssessmentEntryStatus status, Role by);

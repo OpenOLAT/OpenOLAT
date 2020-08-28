@@ -19,6 +19,8 @@
  */
 package org.olat.modules.assessment.ui.event;
 
+import java.util.Date;
+
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
 
@@ -33,21 +35,27 @@ public class CompletionEvent extends MultiUserEvent {
 	private static final long serialVersionUID = 61311103785495742L;
 	public static final String PROGRESS = "completion-progess";
 	
+	private final Date start;
 	private final Double completion;
 	private final AssessmentRunStatus status;
 	private final String subIdent; 
 	private final Long identityKey;
 	
-	public CompletionEvent(String name, String subIdent, Double completion, AssessmentRunStatus status, Long identityKey) {
+	public CompletionEvent(String name, String subIdent, Date start, Double completion, AssessmentRunStatus status, Long identityKey) {
 		super(name);
 		this.status = status;
 		this.subIdent = subIdent;
+		this.start = start;
 		this.completion = completion;
 		this.identityKey = identityKey;
 	}
 
 	public String getSubIdent() {
 		return subIdent;
+	}
+	
+	public Date getStart() {
+		return start;
 	}
 
 	public Double getCompletion() {

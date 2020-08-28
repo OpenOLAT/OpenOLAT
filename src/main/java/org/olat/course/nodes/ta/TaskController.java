@@ -347,7 +347,7 @@ public class TaskController extends BasicController {
 		ScoreEvaluation eval = courseAssessmentService.getAssessmentEvaluation(node, userCourseEnv);
 		if(eval.getAssessmentStatus() == null || eval.getAssessmentStatus() == AssessmentEntryStatus.notStarted) {
 			eval = new ScoreEvaluation(eval.getScore(), eval.getPassed(), AssessmentEntryStatus.inProgress,
-					eval.getUserVisible(), null, null, null);
+					eval.getUserVisible(), null, null, null, null);
 			courseAssessmentService.saveScoreEvaluation(node, getIdentity(), eval, userCourseEnv, false, Role.user);
 		}
 	}

@@ -148,7 +148,7 @@ final class PreviewAssessmentManager implements AssessmentManager {
 
 	@Override
 	public void updateCurrentCompletion(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnvironment,
-			Double currentCompletion, AssessmentRunStatus runStatus, Role by) {
+			Date start, Double currentCompletion, AssessmentRunStatus runStatus, Role by) {
 		//
 	}
 

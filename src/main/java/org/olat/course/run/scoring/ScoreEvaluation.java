@@ -25,6 +25,8 @@
 
 package org.olat.course.run.scoring;
 
+import java.util.Date;
+
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
 
@@ -42,6 +44,7 @@ public class ScoreEvaluation {
 	private final Boolean userVisible;
 	private final AssessmentEntryStatus assessmentStatus;
 	
+	private Date currentRunStartDate;
 	private Double currentRunCompletion;
 	private AssessmentRunStatus runStatus;
 	
@@ -56,25 +59,27 @@ public class ScoreEvaluation {
 	 */
 	public ScoreEvaluation(ScoreEvaluation scoreEval) {
 		this(scoreEval.getScore(), scoreEval.getPassed(), scoreEval.getAssessmentStatus(), scoreEval.getUserVisible(),
-				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
+				scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(),
+				scoreEval.getAssessmentID());
 	}
 
 	public ScoreEvaluation(Float score, Boolean passed) {
-		this(score, passed, null, null, null, null, null);
+		this(score, passed, null, null, null, null, null, null);
 	}
 
 	public ScoreEvaluation(Float score, Boolean passed, Long assessmentID) {
-		this(score, passed, null, null, null, null, assessmentID);
+		this(score, passed, null, null, null, null, null, assessmentID);
 	}
 	
 	public ScoreEvaluation(Float score, Boolean passed, AssessmentEntryStatus assessmentStatus,
-			Boolean userVisible, Double currentRunCompletion, AssessmentRunStatus runStatus, Long assessmentID) {
+			Boolean userVisible, Date currentRunStartDate, Double currentRunCompletion, AssessmentRunStatus runStatus, Long assessmentID) {
 		this.score = score;
 		this.passed = passed;
 		this.assessmentID = assessmentID;
 		this.userVisible = userVisible;
 		this.assessmentStatus = assessmentStatus;
 		this.currentRunCompletion = currentRunCompletion;
+		this.currentRunStartDate = currentRunStartDate;
 		this.runStatus = runStatus;
 	}
 
@@ -104,6 +109,10 @@ public class ScoreEvaluation {
 	
 	public AssessmentRunStatus getCurrentRunStatus() {
 		return runStatus;
+	}
+	
+	public Date getCurrentRunStartDate() {
+		return currentRunStartDate;
 	}
 	
 	@Override
