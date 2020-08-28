@@ -472,25 +472,6 @@
 		</property>
 		<property name="parentTreeNodeIdentifier" value="sysconfigParent" /> 
 	</bean>
-	<!--  the spring-extensions ("Software Module") menu-entry -->
-	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
-			<property name="order" value="7207" />
-			<property name="actionController">	
-				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-					<property name="className" value="org.olat.admin.extensions.ExtensionsAdminController"/>
-				</bean>
-			</property>
-			<property name="navigationKey" value="extensions" />
-			<property name="i18nActionKey" value="menu.extensions"/>
-			<property name="i18nDescriptionKey" value="menu.extensions.alt"/>
-			<property name="translationPackage" value="org.olat.admin"/>
-			<property name="extensionPoints">
-				<list>	
-					<value>org.olat.admin.SystemAdminMainController</value>		
-				</list>
-			</property>
-			<property name="parentTreeNodeIdentifier" value="develParent" /> 
-	</bean>	
 
 	<!--  the ("einrichten")  menu-entry -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension"  init-method="initExtensionPoints">
