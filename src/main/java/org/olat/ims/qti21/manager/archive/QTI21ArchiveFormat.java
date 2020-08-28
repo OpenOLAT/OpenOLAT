@@ -500,7 +500,15 @@ public class QTI21ArchiveFormat {
 		Identity assessedIdentity = entry.getIdentity();
 		
 		//user properties
-		if(assessedIdentity == null) {
+		if(anonymizerCallback != null) {
+			String anonymizedName;
+			if(assessedIdentity == null) {
+				anonymizedName = translator.translate("anonym.user");
+			} else {
+				anonymizedName = anonymizerCallback.getAnonymizedUserName(assessedIdentity);
+			}
+			dataRow.addCell(col++, anonymizedName, null);
+		} else if(assessedIdentity == null) {
 			for (UserPropertyHandler userPropertyHandler:userPropertyHandlers) {
 				if (userPropertyHandler != null) {
 					if(userPropertyHandlers.get(0) == userPropertyHandler) {
@@ -510,9 +518,6 @@ public class QTI21ArchiveFormat {
 					}	
 				}	
 			}
-		} else if(anonymizerCallback != null) {
-			String anonymizedName = anonymizerCallback.getAnonymizedUserName(assessedIdentity);
-			dataRow.addCell(col++, anonymizedName, null);
 		} else {
 			User assessedUser = assessedIdentity.getUser();
 			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
