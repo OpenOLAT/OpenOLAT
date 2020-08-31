@@ -39,6 +39,7 @@
 		<property name="coachedGroupAttributeSeparator" value="${ldap.user.coachedGroupAttributeSeparator}"/>
 		<property name="coachRoleAttribute" value="${ldap.coachRoleAttribute}"/>
 		<property name="coachRoleValue" value="${ldap.coachRoleValue}"/>
+		<property name="groupCoachAsParticipant" value="${ldap.groupCoachAsParticipant}"/>
 		
 		<!-- sync authors -->
 		<property name="authorsGroupBase" >

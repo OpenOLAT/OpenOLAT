@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
+import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.SizeLimitExceededException;
@@ -144,15 +145,15 @@ public class LDAPDAO {
 				counter++;
 			}
 		} catch (SizeLimitExceededException e) {
-			log.error("SizeLimitExceededException after "
-							+ counter
-							+ " records when getting all users from LDAP, reconfigure your LDAP server, hints: http://www.ldapbrowser.com/forum/viewtopic.php?t=14");
+			log.error("SizeLimitExceededException after {} records when getting all users from LDAP, reconfigure your LDAP server, hints: http://www.ldapbrowser.com/forum/viewtopic.php?t=14", counter);
+		} catch (NameNotFoundException e) {
+			log.warn("Name not found: {} in base: {}", filter, ldapBase);
 		} catch (NamingException e) {
-			log.error("NamingException when trying to search from LDAP using ldapBase::" + ldapBase + " on row::" + counter, e);
+			log.error("NamingException when trying to search from LDAP using ldapBase::{} on row::{}", ldapBase,counter, e);
 		} catch (Exception e) {
-			log.error("Exception when trying to search from LDAP using ldapBase::" + ldapBase + " on row::" + counter, e);
+			log.error("Exception when trying to search from LDAP using ldapBase::{} on row::{}", ldapBase, counter, e);
 		}
-		log.debug("finished search for ldapBase:: " + ldapBase);
+		log.debug("finished search for ldapBase:: {}", ldapBase);
 	}
 	
 	
