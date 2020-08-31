@@ -86,6 +86,7 @@ import org.olat.ims.qti21.ui.AssessmentResultController;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class QTI21ResultsExportMediaResource implements MediaResource {
 
@@ -108,11 +109,14 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 	
 	private final Set<RepositoryEntry> testEntries = new HashSet<>();
 	
-	private final UserManager userManager;
-	private final QTI21Service qtiService;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private QTI21Service qtiService;
 	
 	public QTI21ResultsExportMediaResource(CourseEnvironment courseEnv, List<Identity> identities,
-			QTICourseNode courseNode, String archivePath, Locale locale) {	
+			QTICourseNode courseNode, String archivePath, Locale locale) {
+		CoreSpringFactory.autowireObject(this);
 		this.courseNode = courseNode;
 		this.identities = identities;
 		this.courseEnv = courseEnv;
@@ -124,8 +128,6 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		ureq.getUserSession().setRoles(Roles.userRoles());
 
 		velocityHelper = VelocityHelper.getInstance();
-		qtiService = CoreSpringFactory.getImpl(QTI21Service.class);
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		entry = courseEnv.getCourseGroupManager().getCourseEntry();
 		translator = Util.createPackageTranslator(QTI21ResultsExportMediaResource.class, locale);
 		exportFolderName = ZipUtil.concat(archivePath, translator.translate("export.folder.name"));
@@ -277,13 +279,16 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 			assessmentEntryMap.put(assessmentEntry.getIdentity(), assessmentEntry);
 		}
 
-		List<AssessedMember> assessedMembers = new ArrayList<>();		
+		List<AssessedMember> assessedMembers = new ArrayList<>();
 		for(Identity identity : identities) {
 			if(identity == null || identity.getStatus() == null || identity.getStatus().equals(Identity.STATUS_DELETED)) {
 				continue;
 			}
-			
-			String lastname = StringHelper.transformDisplayNameToFileSystemName(identity.getUser().getLastName());
+			String lastNameOrAnoymous = identity.getUser().getLastName();
+			if(!StringHelper.containsNonWhitespace(lastNameOrAnoymous)) {
+				lastNameOrAnoymous = "anonym";
+			}
+			String lastname = StringHelper.transformDisplayNameToFileSystemName(lastNameOrAnoymous);
 			String idDir = exportFolderName + "/" + DATA + lastname + "_" + identity.getKey();
 			idDir = idDir.endsWith(SEP) ? idDir : idDir + SEP;
 			createZipDirectory(zout, idDir);				
@@ -303,7 +308,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 			String linkToUser = idDir.replace(exportFolderName + "/", "") + "index.html";
 			String memberEmail = userManager.getUserDisplayEmail(identity, ureq.getLocale());
 			AssessedMember member = new AssessedMember(identity.getUser().getProperty(UserConstants.NICKNAME, null),
-					identity.getUser().getLastName(), identity.getUser().getFirstName(),
+					lastNameOrAnoymous, identity.getUser().getFirstName(),
 					memberEmail, assessments.size(), passed, score, linkToUser);
 			
 			String singleUserInfoHTML = createResultListingHTML(assessments, assessmentDocuments, member);
@@ -373,7 +378,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 	}
 	
 	private String createMemberListingHTML(List<AssessedMember> assessedMembers) {
-		Collections.sort(assessedMembers, (o1, o2) ->  o1.getLastname().compareTo(o2.getLastname()));
+		Collections.sort(assessedMembers, new AssessedMemberComparator());
 		// now put values to velocityContext
 		VelocityContext ctx = new VelocityContext();
 		ctx.put("t", translator);
