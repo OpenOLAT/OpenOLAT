@@ -17,24 +17,27 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.doceditor.onlyoffice;
+package org.olat.core.commons.services.doceditor.onlyoffice.model;
+
+import org.olat.core.commons.services.doceditor.onlyoffice.Embedded;
 
 /**
  * 
- * Initial date: 22 Apr 2019<br>
+ * Initial date: 31 Aug 2020<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface EditorConfig {
+public class EmbeddedImpl implements Embedded {
 	
-	String getCallbackUrl();
-	
-	String getLang();
-	
-	String getMode();
-	
-	User getUser();
-	
-	Embedded getEmbedded();
+	private String saveUrl;
+
+	@Override
+	public String getSaveUrl() {
+		return saveUrl;
+	}
+
+	public void setSaveUrl(String saveUrl) {
+		this.saveUrl = saveUrl;
+	}
 
 }

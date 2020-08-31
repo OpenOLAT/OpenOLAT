@@ -21,20 +21,12 @@ package org.olat.core.commons.services.doceditor.onlyoffice;
 
 /**
  * 
- * Initial date: 22 Apr 2019<br>
+ * Initial date: 31 Aug 2020<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface EditorConfig {
+public interface Embedded {
 	
-	String getCallbackUrl();
-	
-	String getLang();
-	
-	String getMode();
-	
-	User getUser();
-	
-	Embedded getEmbedded();
+	String getSaveUrl();
 
 }

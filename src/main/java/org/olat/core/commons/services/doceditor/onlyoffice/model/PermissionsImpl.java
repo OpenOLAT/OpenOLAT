@@ -37,7 +37,7 @@ public class PermissionsImpl implements Permissions {
 	private boolean download;
 	private boolean edit;
 	private boolean print;
-	private boolean follForms;
+	private boolean fillForms;
 	private boolean review;
 	
 	@Override
@@ -77,12 +77,12 @@ public class PermissionsImpl implements Permissions {
 	}
 
 	@Override
-	public boolean getFollForms() {
-		return follForms;
+	public boolean getFillForms() {
+		return fillForms;
 	}
 
-	public void setFollForms(boolean follForms) {
-		this.follForms = follForms;
+	public void setFillForms(boolean fillForms) {
+		this.fillForms = fillForms;
 	}
 
 	@Override

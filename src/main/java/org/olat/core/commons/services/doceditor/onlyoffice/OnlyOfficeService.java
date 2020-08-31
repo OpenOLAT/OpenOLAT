@@ -41,7 +41,7 @@ public interface OnlyOfficeService {
 
 	VFSLeaf getVfsLeaf(String fileId);
 	
-	ApiConfig getApiConfig(VFSMetadata vfsMetadata, Identity identity, Mode mode, boolean versionControlled);
+	ApiConfig getApiConfig(VFSMetadata vfsMetadata, Identity identity, Mode mode, boolean versionControlled, String downloadUrl);
 
 	String toJson(ApiConfig apiConfig);
 	

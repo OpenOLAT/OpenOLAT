@@ -33,8 +33,8 @@ body.o_doceditor_body {
 		.o_collabora, .o_onlyoffice, .o_office365 {
 			iframe {
 				width: 100%;
-				height: calc(100vh - 321px);  // editor selection is not taken
-				height: calc(var(--doceditorvh, 1vh) * 100 - 321px); //332
+				height: calc(100vh - 331px);  // editor selection is not taken
+				height: calc(var(--doceditorvh, 1vh) * 100 - 331px);
 				margin-top: 10px;
 				margin-bottom: 10px;
 				border-width: 1px;
@@ -46,11 +46,5 @@ body.o_doceditor_body {
 	.o_doceditor_data_transfer {
 		margin-right: 15px;
 		margin-left: 15px;
-	}
-}
-
-.o_web_content {
-	.o_doceditor {
-		margin-top: 0px;
 	}
 }

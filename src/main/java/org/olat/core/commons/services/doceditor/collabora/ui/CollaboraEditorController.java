@@ -85,9 +85,9 @@ public class CollaboraEditorController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if ("close".equals(event.getCommand())) {
 			// Suppress close event, because we can not hide close button
-//			if (!isEmbeded()) {
-//				fireEvent(ureq, Event.DONE_EVENT);
-//			}
+			if (!Mode.EMBEDDED.equals(access.getMode())) {
+				fireEvent(ureq, Event.DONE_EVENT);
+			}
 		}
 	}
 

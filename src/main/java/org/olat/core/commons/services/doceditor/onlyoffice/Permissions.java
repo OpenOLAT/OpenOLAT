@@ -35,7 +35,7 @@ public interface Permissions {
 	
 	boolean getPrint();
 	
-	boolean getFollForms();
+	boolean getFillForms();
 	
 	boolean getReview();
 

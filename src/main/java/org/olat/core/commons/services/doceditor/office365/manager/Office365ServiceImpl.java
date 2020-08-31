@@ -34,10 +34,10 @@ import javax.annotation.PostConstruct;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.discovery.Action;
 import org.olat.core.commons.services.doceditor.discovery.Discovery;
 import org.olat.core.commons.services.doceditor.discovery.DiscoveryService;
-import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.office365.Office365Module;
 import org.olat.core.commons.services.doceditor.office365.Office365RefreshDiscoveryEvent;
 import org.olat.core.commons.services.doceditor.office365.Office365Service;
@@ -249,12 +249,8 @@ public class Office365ServiceImpl implements Office365Service, GenericEventListe
 
 	private String getRawActionUrl(VFSMetadata vfsMetadata, Mode mode) {
 		String suffix = FileUtils.getFileSuffix(vfsMetadata.getFilename());
-		Action action = null;
-		if (Mode.EDIT.equals(mode)) {
-			action = discoveryService.getAction(getDiscovery(), "edit", suffix);
-		} else if (Mode.VIEW.equals(mode)) {
-			action = discoveryService.getAction(getDiscovery(), "view", suffix);
-		}
+		String actionName = getActionName(mode);
+		Action action = discoveryService.getAction(getDiscovery(), actionName, suffix);
 		return action != null? action.getUrlSrc(): null;
 	}
 
@@ -266,14 +262,20 @@ public class Office365ServiceImpl implements Office365Service, GenericEventListe
 		wopiPath.append(vfsMetadata.getUuid());
 		return wopiPath.toString();
 	}
-
+	
 	@Override
 	public boolean isSupportingFormat(String suffix, Mode mode) {
-		boolean accepts = discoveryService.hasAction(getDiscovery(), "edit", suffix);
-		if (!accepts && Mode.VIEW.equals(mode)) {
-			accepts = discoveryService.hasAction(getDiscovery(), "view", suffix);
+		String actionName = getActionName(mode);
+		return discoveryService.hasAction(getDiscovery(), actionName, suffix);
+	}
+	
+	private String getActionName(Mode mode) {
+		if (Mode.EDIT.equals(mode)) {
+			return "edit";
+		} else if (Mode.EMBEDDED.equals(mode)) {
+			return "embedview";
 		}
-		return accepts;
+		return "view";
 	}
 
 	@Override

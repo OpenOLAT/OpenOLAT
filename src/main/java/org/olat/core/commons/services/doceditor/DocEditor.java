@@ -37,7 +37,7 @@ import org.olat.core.util.vfs.VFSLeaf;
  */
 public interface DocEditor {
 	
-	public enum Mode {EDIT, VIEW};
+	public enum Mode {EDIT, VIEW, EMBEDDED};
 	
 	boolean isEnable();
 	

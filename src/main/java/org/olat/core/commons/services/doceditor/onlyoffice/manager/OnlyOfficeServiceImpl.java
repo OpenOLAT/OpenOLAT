@@ -42,6 +42,7 @@ import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeService;
 import org.olat.core.commons.services.doceditor.onlyoffice.model.ApiConfigImpl;
 import org.olat.core.commons.services.doceditor.onlyoffice.model.DocumentImpl;
 import org.olat.core.commons.services.doceditor.onlyoffice.model.EditorConfigImpl;
+import org.olat.core.commons.services.doceditor.onlyoffice.model.EmbeddedImpl;
 import org.olat.core.commons.services.doceditor.onlyoffice.model.InfoImpl;
 import org.olat.core.commons.services.doceditor.onlyoffice.model.PermissionsImpl;
 import org.olat.core.commons.services.doceditor.onlyoffice.model.UserImpl;
@@ -123,13 +124,17 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 	}
 
 	@Override
-	public ApiConfig getApiConfig(VFSMetadata vfsMetadata, Identity identity, Mode mode, boolean versionControlled) {
+	public ApiConfig getApiConfig(VFSMetadata vfsMetadata, Identity identity, Mode mode, boolean versionControlled, String downloadUrl) {
 		String fileName = vfsMetadata.getFilename();
 
 		ApiConfigImpl apiConfig = new ApiConfigImpl();
 		apiConfig.setWidth("100%");
 		apiConfig.setHeight("100%");
-		apiConfig.setType("desktop");
+		String type = "desktop";
+		if (Mode.EMBEDDED.equals(mode)) {
+			type = "embedded";
+		}
+		apiConfig.setType(type);
 		String suffix = FileUtils.getFileSuffix(fileName);
 		String documentType = getEditorDocumentType(suffix);
 		apiConfig.setDocumentType(documentType);
@@ -156,7 +161,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 		permissions.setEdit(edit);
 		permissions.setComment(true);
 		permissions.setDownload(true);
-		permissions.setFollForms(true);
+		permissions.setFillForms(true);
 		permissions.setPrint(true);
 		permissions.setReview(true);
 		document.setPermissions(permissions);
@@ -167,6 +172,12 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 		String modeConfig = edit? "edit": "view";
 		editorConfig.setMode(modeConfig);
 		editorConfig.setLang(identity.getUser().getPreferences().getLanguage());
+		
+		if (Mode.EMBEDDED.equals(mode)) {
+			EmbeddedImpl embedded = new EmbeddedImpl();
+			embedded.setSaveUrl(downloadUrl);
+			editorConfig.setEmbedded(embedded);
+		}
 		apiConfig.setEditor(editorConfig);
 		
 		UserImpl user = new UserImpl();

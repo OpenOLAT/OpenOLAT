@@ -20,6 +20,7 @@
 package org.olat.core.commons.services.doceditor.onlyoffice.model;
 
 import org.olat.core.commons.services.doceditor.onlyoffice.EditorConfig;
+import org.olat.core.commons.services.doceditor.onlyoffice.Embedded;
 import org.olat.core.commons.services.doceditor.onlyoffice.User;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -42,7 +43,7 @@ public class EditorConfigImpl implements EditorConfig {
 	// private Customization customization;
 	// private Object recent;
 	// private String createUrl;
-	// private Embedded embedded;
+	private Embedded embedded;
 	
 	@Override
 	public String getCallbackUrl() {
@@ -78,5 +79,13 @@ public class EditorConfigImpl implements EditorConfig {
 
 	public void setUser(User user) {
 		this.user = user;
+	}
+
+	public Embedded getEmbedded() {
+		return embedded;
+	}
+
+	public void setEmbedded(Embedded embedded) {
+		this.embedded = embedded;
 	}
 }

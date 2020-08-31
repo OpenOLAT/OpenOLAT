@@ -34,9 +34,11 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -84,7 +86,12 @@ public class OnlyOfficeEditorController extends BasicController {
 		if (vfsMetadata == null) {
 			mainVC.contextPut("warning", translate("editor.warning.no.metadata"));
 		} else {
-			ApiConfig apiConfig = onlyOfficeService.getApiConfig(vfsMetadata, getIdentity(), access.getMode(), configs.isVersionControlled());
+			String mediaUrl = null;
+			if (Mode.EMBEDDED == access.getMode()) {
+				mediaUrl = Settings.createServerURI() + registerMapper(ureq, new VFSMediaMapper(configs.getVfsLeaf()));
+			}
+			ApiConfig apiConfig = onlyOfficeService.getApiConfig(vfsMetadata, getIdentity(), access.getMode(),
+					configs.isVersionControlled(), mediaUrl);
 			String apiConfigJson = onlyOfficeService.toJson(apiConfig);
 			log.debug("OnlyOffice ApiConfig: " + apiConfigJson);
 			

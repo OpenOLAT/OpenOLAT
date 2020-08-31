@@ -160,7 +160,7 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 	@Override
 	public boolean accepts(String suffix, Mode mode) {
 		boolean accepts = discoveryService.hasAction(getDiscovery(), "edit", suffix);
-		if (!accepts && Mode.VIEW.equals(mode)) {
+		if (!accepts && !Mode.EDIT.equals(mode)) {
 			accepts = discoveryService.hasAction(getDiscovery(), "view", suffix);
 		}
 		return accepts;
