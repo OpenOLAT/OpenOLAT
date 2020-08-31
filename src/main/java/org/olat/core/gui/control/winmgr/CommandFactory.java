@@ -67,6 +67,10 @@ public class CommandFactory {
 		return c;
 	}
 	
+	public static Command createCloseWindow() {
+		return createNewWindowCancelRedirectTo();
+	}
+	
 	public static Command createNewWindowCancelRedirectTo() {
 		JSONObject root = new JSONObject();
 		try {

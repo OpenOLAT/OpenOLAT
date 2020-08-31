@@ -164,9 +164,7 @@ public class GroupTaskPage {
 		By saveAndCloseDirtyBy = By.cssSelector(".o_htmleditor #o_button_saveclose a.btn.o_button_dirty");
 		OOGraphene.waitElement(saveAndCloseDirtyBy, browser);
 		browser.findElement(saveAndCloseDirtyBy).click();
-		OOGraphene.waitBusy(browser);
 		
-		browser.close();
 		browser.switchTo().window(startWindow);
 		
 		OOGraphene.waitElement(By.className("o_process"), browser);

@@ -20,6 +20,7 @@
 package org.olat.selenium.page.core;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
@@ -88,6 +89,8 @@ public class FolderPage {
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		
+		String startWindow = browser.getWindowHandle();
+		
 		// create a new HTML document
 		By typeBy = By.cssSelector(".o_sel_folder_new_doc_type select");
 		OOGraphene.waitElement(typeBy, browser);
@@ -106,14 +109,21 @@ public class FolderPage {
 		By createBy = By.cssSelector(".o_sel_folder_new_file button.btn-primary");
 		browser.findElement(createBy).click();
 		OOGraphene.waitBusy(browser);
-		OOGraphene.waitModalDialogDisappears(browser);
 		
-		// wait the HTML document
-		OOGraphene.tinymce(content, browser);
+		List<String> allHandles = new ArrayList<>(browser.getWindowHandles());
+		allHandles.remove(startWindow);
+		String editorHandle = allHandles.get(0);
+		
+		// switch to the editor and write the text
+		browser.switchTo().window(editorHandle);
+		OOGraphene.tinymceExec(content, browser);
+		
 		// save the HTML document
-		By saveAndCloseButton = By.cssSelector("#o_button_saveclose a.btn");
-		OOGraphene.clickAndWait(saveAndCloseButton, browser);
-		OOGraphene.waitBusy(browser);
+		By saveAndCloseDirtyBy = By.cssSelector(".o_htmleditor #o_button_saveclose a.btn.o_button_dirty");
+		OOGraphene.waitElement(saveAndCloseDirtyBy, browser);
+		browser.findElement(saveAndCloseDirtyBy).click();
+		
+		browser.switchTo().window(startWindow);
 		return this;
 	}
 	

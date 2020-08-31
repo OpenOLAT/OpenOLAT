@@ -121,6 +121,10 @@ public class Windows implements Disposable, Serializable {
 		return (getWindow(uriPrefix, wId) != null);
 	}
 	
+	public boolean isExisting(UserRequest ureq) {
+		return (getWindow(ureq) != null);
+	}
+	
 	public Window getFirstWindow() {
 		Map<UriPrefixIdPair,ChiefController> entries = windows.copyEntries();
 		for(Map.Entry<UriPrefixIdPair,ChiefController> entry:entries.entrySet()) {

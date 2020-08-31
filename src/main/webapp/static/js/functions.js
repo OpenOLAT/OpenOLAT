@@ -1360,6 +1360,7 @@ function o_XHRSubmit(formNam) {
 	}
 
 	o_beforeserver();
+	var thisWindow = window;
 	var form = jQuery('#' + formNam);
 	var enctype = form.attr('enctype');
 	if(enctype && enctype.indexOf("multipart") == 0) {
@@ -1390,6 +1391,8 @@ function o_XHRSubmit(formNam) {
 					o_onXHRSuccess(returnedData, textStatus, jqXHR);
 					if(newWindow !== "undefined" && newWindow != null) {
 						o_postInvoke(returnedData, newWindow);
+					} else {
+						o_postInvoke(returnedData, thisWindow);
 					}
 				},
 				error: o_onXHRError
@@ -1428,6 +1431,8 @@ function o_XHRSubmit(formNam) {
 				o_onXHRSuccess(returnedData, textStatus, jqXHR);
 				if(newWindow !== "undefined" && newWindow != null) {
 					o_postInvoke(returnedData, newWindow);
+				} else {
+					o_postInvoke(returnedData, thisWindow);
 				}
 			},
 			error: o_onXHRError

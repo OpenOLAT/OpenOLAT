@@ -44,6 +44,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.controller.BlankController;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockApplicationType;
@@ -131,7 +132,13 @@ public class FileEditorController extends BasicController {
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == editCtrl) {
-			fireEvent(ureq, event);
+			if(event == Event.DONE_EVENT) {
+				fireEvent(ureq, Event.CLOSE_EVENT);
+				doUnlock();
+				getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
+			} else {
+				fireEvent(ureq, event);
+			}
 		}
 	}
 

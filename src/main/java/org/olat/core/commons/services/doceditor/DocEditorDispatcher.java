@@ -117,7 +117,8 @@ public class DocEditorDispatcher implements Dispatcher {
 		UserRequest ureq = null;
 		String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
 		try{
-			ureq = new UserRequestImpl(uriPrefix, request, response);
+			String uriPrefixWithToken = uriPrefix + access.getToken();
+			ureq = new UserRequestImpl(uriPrefixWithToken, request, response);
 		} catch(NumberFormatException nfe) {
 			DispatcherModule.sendBadRequest(request.getPathInfo(), response);
 			return;
@@ -142,7 +143,6 @@ public class DocEditorDispatcher implements Dispatcher {
 		} else {
 			log.warn("Document dispatcher: {} not authenticated. Token {}", ureq.getIdentity(),  accessToken);
 			DispatcherModule.sendForbidden(request.getPathInfo(), response);
-			return;
 		}
 	}
 	
@@ -186,12 +186,13 @@ public class DocEditorDispatcher implements Dispatcher {
 		bfwcParts.setContentControllerCreator(controllerCreator);
 		
 		Windows windows = Windows.getWindows(usess);
-		boolean windowHere = windows.isExisting(uriPrefix, ureq.getWindowID());
+		String uriPrefixWithAccess = uriPrefix + access.getToken() + "/";
+		boolean windowHere = windows.isExisting(ureq);
 		if (!windowHere) {
 			synchronized (windows) {
 				ChiefController cc = new BaseFullWebappController(ureq, bfwcParts);
 				Window window = cc.getWindow();
-				window.setUriPrefix(uriPrefix);
+				window.setUriPrefix(uriPrefixWithAccess);
 				ureq.overrideWindowComponentID(window.getDispatchID());
 				windows.registerWindow(cc);
 			}

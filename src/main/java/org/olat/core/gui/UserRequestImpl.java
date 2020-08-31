@@ -308,7 +308,13 @@ public class UserRequestImpl implements UserRequest {
 
 		// parse parameters
 		int nextSlash = nonParsedUri.indexOf('/');
-		if (nextSlash == -1) return; //no params
+		if (nextSlash == -1) {
+			return; //no params
+		}
+		if(nextSlash == 0) {// trim starting /
+			nonParsedUri = nonParsedUri.substring(1, nonParsedUri.length());
+			nextSlash = nonParsedUri.indexOf('/');
+		}
 		String encparams = nonParsedUri.substring(0, nextSlash);
 		parseEncodedParams(encparams);
 		

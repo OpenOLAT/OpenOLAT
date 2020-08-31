@@ -127,6 +127,7 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 				} else {
 					fileName = vfsLeaf.getName();
 					markNews(folderCmp.getRootContainer());
+					folderCmp.updateChildren();
 				}
 			} else {
 				fireEvent(ureq, FOLDERCOMMAND_FINISHED);
