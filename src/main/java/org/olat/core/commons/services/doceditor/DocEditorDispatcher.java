@@ -42,6 +42,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.dispatcher.LocaleNegotiator;
@@ -89,13 +90,19 @@ public class DocEditorDispatcher implements Dispatcher {
 	
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		log.debug("Dispatch dispatcher request: {}", request.getRequestURI());	
+		log.debug("Dispatch dispatcher request: {}", request.getRequestURI());
 		
 		String accessToken = getAccessToken(request);
+		if (!StringHelper.containsNonWhitespace(accessToken) || accessToken.contains(":")) {
+			log.debug("Invalid access token {}", accessToken);
+			DispatcherModule.sendNotFound(request.getPathInfo(), response);
+			return;
+		}
+		
 		log.debug("Document dispatcher: Get document. Token {}", accessToken);
 		Access access = docEditorService.getAccess(accessToken);
 		if (access == null) {
-			log.warn("Doc editor edit callback. No access for token {}", accessToken);
+			log.warn("No access for token {}", accessToken);
 			DispatcherModule.sendNotFound(request.getPathInfo(), response);
 			return;
 		}
