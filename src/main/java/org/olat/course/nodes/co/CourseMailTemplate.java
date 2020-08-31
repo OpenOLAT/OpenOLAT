@@ -22,11 +22,13 @@ package org.olat.course.nodes.co;
 import java.util.Locale;
 
 import org.apache.velocity.VelocityContext;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
@@ -61,6 +63,7 @@ public class CourseMailTemplate extends MailTemplate {
 		if(sender != null) {
 			User user = sender.getUser();
 			UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
+			BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 			
 			vContext.put("firstname", user.getProperty(UserConstants.FIRSTNAME, null));
 			vContext.put(UserConstants.FIRSTNAME, user.getProperty(UserConstants.FIRSTNAME, null));
@@ -71,7 +74,11 @@ public class CourseMailTemplate extends MailTemplate {
 			vContext.put("fullName", fullName); 
 			vContext.put("mail", userManager.getUserDisplayEmail(user, locale));
 			vContext.put("email", userManager.getUserDisplayEmail(user, locale));
-			vContext.put("username", sender.getName());
+			String loginName = securityManager.findAuthenticationName(recipient);
+			if(!StringHelper.containsNonWhitespace(loginName)) {
+				loginName = recipient.getName();
+			}
+			vContext.put("username", loginName);
 		}
 	}
 }

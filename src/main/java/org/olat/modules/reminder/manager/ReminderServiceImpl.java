@@ -298,6 +298,9 @@ public class ReminderServiceImpl implements ReminderService {
 			vContext.put("mail", email);
 			vContext.put("email", email);
 			String loginName = securityManager.findAuthenticationName(recipient);
+			if(!StringHelper.containsNonWhitespace(loginName)) {
+				loginName = recipient.getName();
+			}
 			vContext.put("username", loginName);
 			// Put variables from greater context
 			if(entry != null) {

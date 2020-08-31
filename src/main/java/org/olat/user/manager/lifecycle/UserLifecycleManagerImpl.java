@@ -48,6 +48,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailBundle;
@@ -383,7 +384,11 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 				vContext.put("fullName", fullName); 
 				vContext.put("mail", userManager.getUserDisplayEmail(user, locale));
 				vContext.put("email", userManager.getUserDisplayEmail(user, locale));
-				vContext.put("username", recipient.getName());
+				String loginName = securityManager.findAuthenticationName(recipient);
+				if(!StringHelper.containsNonWhitespace(loginName)) {
+					loginName = recipient.getName();
+				}
+				vContext.put("username", loginName);
 			}
 		}
 	}
