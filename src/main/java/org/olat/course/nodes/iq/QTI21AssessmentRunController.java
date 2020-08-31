@@ -803,8 +803,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		
 		RepositoryEntry courseRe = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		if (!userCourseEnv.isParticipant() && courseNode instanceof IQTESTCourseNode) {
+			boolean authorMode = !ureq.getUserSession().getRoles().isGuestOnly();
 			displayCtrl = new AssessmentTestDisplayController(ureq, getWindowControl(), new InMemoryOutcomeListener(),
-					testEntry, courseRe, courseNode.getIdent(), deliveryOptions, overrideOptions, true, true, true);
+					testEntry, courseRe, courseNode.getIdent(), deliveryOptions, overrideOptions, true, authorMode, true);
 		} else {
 			displayCtrl = new AssessmentTestDisplayController(ureq, bwControl, this, testEntry, courseRe,
 					courseNode.getIdent(), deliveryOptions, overrideOptions, true, false, false);
