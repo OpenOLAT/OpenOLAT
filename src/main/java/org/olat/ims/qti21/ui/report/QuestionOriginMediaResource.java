@@ -31,6 +31,10 @@ import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.license.License;
+import org.olat.core.commons.services.license.LicenseModule;
+import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
@@ -47,6 +51,7 @@ import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
 import org.olat.imscp.xml.manifest.ResourceType;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.manager.QuestionPoolLicenseHandler;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryManager;
@@ -77,6 +82,7 @@ public class QuestionOriginMediaResource extends OpenXMLWorkbookResource {
 	
 	private static final Logger log = Tracing.createLoggerFor(QuestionOriginMediaResource.class);
 	
+	private boolean licenseEnabled;
 	private final Translator translator;
 	private final List<RepositoryEntry> testEntries;
 	private final ConcurrentMap<RepositoryEntry, TestHolder> holdersMap = new ConcurrentHashMap<>();
@@ -88,17 +94,24 @@ public class QuestionOriginMediaResource extends OpenXMLWorkbookResource {
 	@Autowired
 	private QPoolService qpoolService;
 	@Autowired
+	private LicenseService licenseService;
+	@Autowired
 	private ReferenceManager referenceManager;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private LicenseModule licenseModule;
+	@Autowired
+	private QuestionPoolLicenseHandler licenseHandler;
 	
 	public QuestionOriginMediaResource(String label, List<RepositoryEntry> testEntries, Translator translator) {
 		super(label);
 		CoreSpringFactory.autowireObject(this);
 		this.translator = translator;
 		this.testEntries = testEntries;
+		licenseEnabled = licenseModule.isEnabled(licenseHandler);
 	}
 	
 	@Override
@@ -133,11 +146,16 @@ public class QuestionOriginMediaResource extends OpenXMLWorkbookResource {
 		headerRow.addCell(col++, translator.translate("report.question.author"));
 		headerRow.addCell(col++, translator.translate("report.question.identifier"));
 		headerRow.addCell(col++, translator.translate("report.question.keywords"));
+		headerRow.addCell(col++, translator.translate("report.question.taxonomy.level"));
 		headerRow.addCell(col++, translator.translate("report.question.taxonomy.path"));
 		headerRow.addCell(col++, translator.translate("report.question.topic"));
 		headerRow.addCell(col++, translator.translate("report.question.context"));
+		headerRow.addCell(col++, translator.translate("report.question.correction.time"));
 		headerRow.addCell(col++, translator.translate("report.question.type"));
-		
+		if (licenseEnabled) {
+			headerRow.addCell(col++, translator.translate("report.question.license"));
+		}
+
 		// master
 		headerRow.addCell(col++, translator.translate("report.question.master.identifier"));
 		headerRow.addCell(col++, translator.translate("report.question.master.author"));
@@ -190,10 +208,15 @@ public class QuestionOriginMediaResource extends OpenXMLWorkbookResource {
 		row.addCell(col++, question.getAuthor());
 		row.addCell(col++, question.getIdentifier());
 		row.addCell(col++, question.getKeywords());
+		row.addCell(col++, question.getTaxonomyLevel());
 		row.addCell(col++, question.getTaxonomyPath());
 		row.addCell(col++, question.getTopic());
 		row.addCell(col++, question.getEducationalContextLevel());
+		row.addCell(col++, question.getCorrectionTime());
 		row.addCell(col++, question.getType());
+		if(licenseEnabled) {
+			row.addCell(col++, question.getLicense());
+		}
 		
 		// master question
 		row.addCell(col++, question.getMasterIdentifier());
@@ -294,7 +317,8 @@ public class QuestionOriginMediaResource extends OpenXMLWorkbookResource {
 			} else {
 				QuestionItem item = items.get(0);
 				String authors = getAuthors(item);
-				infos = new QuestionInformations(authors, item);
+				String license = getLicense(item);
+				infos = new QuestionInformations(authors, item, license);
 			}
 
 			if(StringHelper.containsNonWhitespace(masterIdentifier)) {
@@ -308,6 +332,28 @@ public class QuestionOriginMediaResource extends OpenXMLWorkbookResource {
 			}
 		}
 		return infos;
+	}
+	
+	private String getLicense(QuestionItem item) {
+		License license = null;
+		if(licenseEnabled) {
+			license = licenseService.loadLicense(item);
+		}
+		
+		String licenseText = null;
+		if(license != null) {
+			LicenseType licenseType = license.getLicenseType();
+			if (licenseService.isFreetext(licenseType)) {
+				licenseText = license.getFreetext();
+			} else if (!licenseService.isNoLicense(licenseType)) {
+				licenseText = license.getLicenseType().getName();
+			}
+			
+			if(licenseText != null && licenseText.length() > 32000) {
+				licenseText = licenseText.substring(0, 32000);
+			}
+		}
+		return licenseText;
 	}
 
 	private List<CourseToTestHolder> loadCoursesAndTests() {
@@ -409,31 +455,39 @@ public class QuestionOriginMediaResource extends OpenXMLWorkbookResource {
 		private final String author;
 		private final String keywords;
 		private final String taxonomyPath;
+		private final String taxonomyLevel;
+		private final String correctionTime;
 		private final String topic;
 		private final String context;
 		private final String type;
 		private final String masterIdentifier;
+		private final String license;
 
 		private MasterInformations masterInformations;
 		
-		public QuestionInformations(String author, QuestionItem item) {
+		public QuestionInformations(String author, QuestionItem item, String license) {
 			identifier = item.getIdentifier();
 			title = item.getTitle();
 			this.author = author;
 			keywords = item.getKeywords();
 			taxonomyPath = item.getTaxonomicPath();
+			taxonomyLevel = item.getTaxonomyLevelName();
 			topic = item.getTopic();
 			context = item.getEducationalContextLevel();
 			type = item.getItemType();
 			masterIdentifier = item.getMasterIdentifier();
+			correctionTime = item.getCorrectionTime() == null ? "" : item.getCorrectionTime().toString();
+			this.license = license;
 		}
 		
 		public QuestionInformations(AssessmentItem assessmentItem, ManifestMetadataBuilder metadata, String testOwners) {
 			identifier = metadata.getOpenOLATMetadataIdentifier();
 			if(StringHelper.containsNonWhitespace(metadata.getTitle())) {
 				title = metadata.getTitle();
-			} else {
+			} else if (assessmentItem != null) {
 				title = assessmentItem.getTitle();
+			} else {
+				title = "Unkown";
 			}
 			if(StringHelper.containsNonWhitespace(metadata.getOpenOLATMetadataCreator())) {
 				author = metadata.getOpenOLATMetadataCreator();
@@ -445,6 +499,18 @@ public class QuestionOriginMediaResource extends OpenXMLWorkbookResource {
 
 			keywords = metadata.getGeneralKeywords();
 			taxonomyPath = metadata.getClassificationTaxonomy();
+			
+			String level = null;
+			if(StringHelper.containsNonWhitespace(taxonomyPath)) {
+				int index = taxonomyPath.lastIndexOf('/');
+				if(index >= 0) {
+					level = taxonomyPath.substring(index + 1, taxonomyPath.length());
+				} else {
+					level = taxonomyPath;
+				}
+			}
+			taxonomyLevel = level;
+			
 			topic = metadata.getOpenOLATMetadataTopic();
 			context = metadata.getEducationContext();
 			if(StringHelper.containsNonWhitespace(metadata.getOpenOLATMetadataQuestionType())) {
@@ -453,6 +519,13 @@ public class QuestionOriginMediaResource extends OpenXMLWorkbookResource {
 				type = QTI21QuestionType.getType(assessmentItem).name();
 			}
 			masterIdentifier = metadata.getOpenOLATMetadataMasterIdentifier();
+			correctionTime = metadata.getOpenOLATMetadataCorrectionTime() == null ? "" :  metadata.getOpenOLATMetadataCorrectionTime().toString();
+			
+			String l = metadata.getLicense();
+			if(StringHelper.containsNonWhitespace(l) && l.length() > 32000) {
+				l = l.substring(0, 32000);
+			}
+			license = l;
 		}
 		
 		public QuestionInformations(AssessmentItem assessmentItem) {
@@ -461,16 +534,19 @@ public class QuestionOriginMediaResource extends OpenXMLWorkbookResource {
 			author = null;
 			keywords = null;
 			taxonomyPath = null;
+			taxonomyLevel = null;
 			topic = assessmentItem.getLabel();
 			context = null;
 			masterIdentifier = null;
+			license = null;
 
 			QTI21QuestionType qType = QTI21QuestionType.getType(assessmentItem);
 			if(qType == null) {
 				type = null;
 			} else {
 				type = qType.name();
-			}	
+			}
+			correctionTime = null;
 		}
 
 		public String getAuthor() {
@@ -488,6 +564,10 @@ public class QuestionOriginMediaResource extends OpenXMLWorkbookResource {
 		public String getKeywords() {
 			return keywords;
 		}
+		
+		public String getTaxonomyLevel() {
+			return taxonomyLevel;
+		}
 
 		public String getTaxonomyPath() {
 			return taxonomyPath;
@@ -499,6 +579,14 @@ public class QuestionOriginMediaResource extends OpenXMLWorkbookResource {
 
 		public String getEducationalContextLevel() {
 			return context;
+		}
+		
+		public String getCorrectionTime() {
+			return correctionTime;
+		}
+		
+		public String getLicense() {
+			return license;
 		}
 
 		public String getType() {

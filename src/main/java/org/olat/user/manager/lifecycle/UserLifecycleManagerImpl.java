@@ -45,8 +45,10 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailBundle;
@@ -57,6 +59,7 @@ import org.olat.core.util.session.UserSessionManager;
 import org.olat.repository.RepositoryDeletionModule;
 import org.olat.user.UserDataDeletable;
 import org.olat.user.UserLifecycleManager;
+import org.olat.user.UserManager;
 import org.olat.user.UserModule;
 import org.olat.user.ui.admin.lifecycle.UserAdminLifecycleConfigurationController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,6 +86,8 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 	private IdentityDAO identityDao;
 	@Autowired
 	private MailManager mailManager;
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -331,7 +336,7 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 		
 		String subject = translator.translate(subjectI18nKey);
 		String body = translator.translate(bodyI18nKey);
-		LifecycleMailTemplate template = new LifecycleMailTemplate(subject, body);
+		LifecycleMailTemplate template = new LifecycleMailTemplate(subject, body, locale);
 		
 		sendUserEmailTo(identity, template, type);
 	}
@@ -356,15 +361,35 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 		return CalendarUtils.startOfDay(date);
 	}
 	
-	private static final class LifecycleMailTemplate extends MailTemplate {
+	private final class LifecycleMailTemplate extends MailTemplate {
 		
-		public LifecycleMailTemplate(String subject, String body) {
+		private final Locale locale;
+		
+		public LifecycleMailTemplate(String subject, String body, Locale locale) {
 			super(subject, body, null);
+			this.locale = locale;
 		}
 
 		@Override
 		public void putVariablesInMailContext(VelocityContext vContext, Identity recipient) {
-			//
+			if(recipient != null) {
+				User user = recipient.getUser();
+				
+				vContext.put("firstname", user.getProperty(UserConstants.FIRSTNAME, null));
+				vContext.put(UserConstants.FIRSTNAME, user.getProperty(UserConstants.FIRSTNAME, null));
+				vContext.put("lastname", user.getProperty(UserConstants.LASTNAME, null));
+				vContext.put(UserConstants.LASTNAME, user.getProperty(UserConstants.LASTNAME, null));
+				String fullName = userManager.getUserDisplayName(recipient);
+				vContext.put("fullname", fullName);
+				vContext.put("fullName", fullName); 
+				vContext.put("mail", userManager.getUserDisplayEmail(user, locale));
+				vContext.put("email", userManager.getUserDisplayEmail(user, locale));
+				String loginName = securityManager.findAuthenticationName(recipient);
+				if(!StringHelper.containsNonWhitespace(loginName)) {
+					loginName = recipient.getName();
+				}
+				vContext.put("username", loginName);
+			}
 		}
 	}
 	
