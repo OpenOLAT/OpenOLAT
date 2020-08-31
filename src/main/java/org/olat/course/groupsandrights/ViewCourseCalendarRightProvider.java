@@ -35,9 +35,21 @@ import org.springframework.stereotype.Component;
 @Component
 public class ViewCourseCalendarRightProvider implements RelationRightProvider {
 
+	public static final String RELATION_RIGHT = CourseRightsEnum.viewCourseCalendar.name();
+
+	@Override
+	public RelationRightProvider getParent() {
+		return null;
+	}
+
+	@Override
+	public int getPosition() {
+		return 0;
+	}
+
 	@Override
 	public String getRight() {
-		return CourseRightsEnum.viewCourseCalendar.name();
+		return RELATION_RIGHT;
 	}
 
 	@Override

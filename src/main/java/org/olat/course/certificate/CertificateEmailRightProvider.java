@@ -44,6 +44,16 @@ public class CertificateEmailRightProvider implements RelationRightProvider {
 	}
 
 	@Override
+	public RelationRightProvider getParent() {
+		return null;
+	}
+
+	@Override
+	public int getPosition() {
+		return 0;
+	}
+
+	@Override
 	public String getTranslatedName(Locale locale) {
 		Translator translator = Util.createPackageTranslator(CertificateController.class, locale);
 		return translator.translate("relation.right.email");

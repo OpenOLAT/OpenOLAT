@@ -93,7 +93,7 @@ public class GroupOverviewController extends BasicController {
 	
 	private final Identity identity;
 
-	public GroupOverviewController(UserRequest ureq, WindowControl control, Identity identity, boolean canEdit) {
+	public GroupOverviewController(UserRequest ureq, WindowControl control, Identity identity, boolean canEdit, boolean canOpenGroup) {
 		super(ureq, control, Util.createPackageTranslator(BusinessGroupTableModelWithType.class, ureq.getLocale()));
 		setTranslator(Util.createPackageTranslator(BGRoleCellRenderer.class, getLocale(), getTranslator()));
 		
@@ -105,7 +105,7 @@ public class GroupOverviewController extends BasicController {
 		
 		groupListCtr = new TableController(null, ureq, control, getTranslator());
 		listenTo(groupListCtr);
-		groupListCtr.addColumnDescriptor(new BusinessGroupNameColumnDescriptor(TABLE_ACTION_LAUNCH, getLocale()));
+		groupListCtr.addColumnDescriptor(new BusinessGroupNameColumnDescriptor(canOpenGroup ? TABLE_ACTION_LAUNCH : null, getLocale()));
 		groupListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(Cols.key.i18n(), Cols.key.ordinal(), null, getLocale()));
 		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.firstTime.i18n(), Cols.firstTime.ordinal(), null, getLocale()));
 		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.lastTime.i18n(), Cols.lastTime.ordinal(), null, getLocale()));

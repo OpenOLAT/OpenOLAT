@@ -20,7 +20,6 @@
 package org.olat.basesecurity.model;
 
 import java.util.Date;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -86,7 +85,7 @@ public class RelationRoleToRightImpl implements RelationRoleToRight, Persistable
 	}
 
 	@Override
-	public RelationRole getRole() {
+	public RelationRole getRelationRole() {
 		return role;
 	}
 
@@ -95,7 +94,7 @@ public class RelationRoleToRightImpl implements RelationRoleToRight, Persistable
 	}
 
 	@Override
-	public RelationRight getRight() {
+	public RelationRight getRelationRight() {
 		return right;
 	}
 

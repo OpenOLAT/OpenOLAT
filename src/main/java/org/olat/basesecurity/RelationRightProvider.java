@@ -29,8 +29,12 @@ import java.util.Locale;
  */
 public interface RelationRightProvider {
 
+	public int getPosition();
+
+	public RelationRightProvider getParent();
+
 	public String getRight();
-	
+
 	public String getTranslatedName(Locale locale);
-	
+
 }

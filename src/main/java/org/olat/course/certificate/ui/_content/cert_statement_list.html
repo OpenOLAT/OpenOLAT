@@ -1,12 +1,15 @@
-#if($r.available("coaching.tool"))
+#if($withFieldSet)
 ## in user management
 <fieldset >
 	<legend>
 		<i class="o_icon o_icon o_icon-fw o_icon_certificate"> </i>$r.translate("certificates.and.statements.title")
 	</legend>
+	## e.g in user relations the buttons should not be shown
+	#if($withButtonGroup)
 	<div class="o_button_group o_button_group_right">
 		$r.render("coaching.tool")
 	</div>
+	#end
 	$r.render("certificates")
 </fieldset>
 #else

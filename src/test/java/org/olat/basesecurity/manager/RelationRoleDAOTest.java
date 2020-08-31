@@ -131,8 +131,8 @@ public class RelationRoleDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, loadedRelationRole.getRights().size());
 		
 		RelationRoleToRight roleToRight = loadedRelationRole.getRights().iterator().next();
-		Assert.assertEquals(relationRole, roleToRight.getRole());
-		Assert.assertEquals(relationRight, roleToRight.getRight());	
+		Assert.assertEquals(relationRole, roleToRight.getRelationRole());
+		Assert.assertEquals(relationRight, roleToRight.getRelationRight());
 	}
 	
 	@Test
@@ -158,7 +158,7 @@ public class RelationRoleDAOTest extends OlatTestCase {
 		
 		Set<RelationRoleToRight> roleToRights = loadedRelationRole.getRights();
 		List<RelationRight> savedRights = roleToRights.stream()
-				.map(RelationRoleToRight::getRight).collect(Collectors.toList());
+				.map(RelationRoleToRight::getRelationRight).collect(Collectors.toList());
 		Assert.assertTrue(savedRights.contains(relationRight1));
 		Assert.assertTrue(savedRights.contains(relationRight2));
 	}
@@ -189,7 +189,7 @@ public class RelationRoleDAOTest extends OlatTestCase {
 		
 		Set<RelationRoleToRight> roleToRights = loadedRelationRole.getRights();
 		List<RelationRight> savedRights = roleToRights.stream()
-				.map(RelationRoleToRight::getRight).collect(Collectors.toList());
+				.map(RelationRoleToRight::getRelationRight).collect(Collectors.toList());
 		Assert.assertTrue(savedRights.contains(relationRight1));
 		Assert.assertTrue(savedRights.contains(relationRight2));
 		
@@ -209,7 +209,7 @@ public class RelationRoleDAOTest extends OlatTestCase {
 		
 		Set<RelationRoleToRight> updatedRoleToRights = reloadedRelationRole.getRights();
 		List<RelationRight> updatededRights = updatedRoleToRights.stream()
-				.map(RelationRoleToRight::getRight).collect(Collectors.toList());
+				.map(RelationRoleToRight::getRelationRight).collect(Collectors.toList());
 		Assert.assertTrue(updatededRights.contains(relationRight2));
 		Assert.assertTrue(updatededRights.contains(relationRight3));
 	}

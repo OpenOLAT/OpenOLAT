@@ -379,7 +379,7 @@ public class CourseController extends FormBasicController implements Activateabl
 		});
 		
 		statementCtrl = new UserDetailsController(ureq, bwControl, stackPanel,
-				entry, assessedIdentity, details, entryIndex, model.getRowCount(), selectedTool);
+				entry, assessedIdentity, details, entryIndex, model.getRowCount(), selectedTool, true, false);
 		listenTo(statementCtrl);
 		
 		stackPanel.popUpToController(this);

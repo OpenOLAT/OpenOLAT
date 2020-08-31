@@ -35,7 +35,9 @@ import javax.persistence.Query;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.RelationRole;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.NativeQueryBuilder;
 import org.olat.core.commons.persistence.PersistenceHelper;
@@ -685,7 +687,7 @@ public class CoachingDAO {
 			for(int i=0; i<numOfProperties; i++) {
 				userProperties[i] = (String)rawStat[pos++];
 			}
-			
+
 			StudentStatEntry entry = new StudentStatEntry(identityKey, userPropertyHandlers, userProperties, locale);
 			appendArrayToSet(rawStat[pos++], entry.getRepoIds());
 			appendArrayToSet(rawStat[pos++], entry.getLaunchIds());
@@ -701,7 +703,7 @@ public class CoachingDAO {
 			  .append("p_").append(handler.getDatabaseColumnName()).append(",");
 		}	
 	}
-	
+
 	private void writeUserPropertiesGroupBy(String user, NativeQueryBuilder sb, List<UserPropertyHandler> userPropertyHandlers) {
 		for(UserPropertyHandler handler:userPropertyHandlers) {
 			sb.append(", ").append(user).append(".").append(handler.getDatabaseColumnName());
@@ -1246,5 +1248,182 @@ public class CoachingDAO {
 				.createQuery(sb.toString(), RepositoryEntry.class)
 				.setParameter("studentKey", student.getKey())
 				.getResultList();
+	}
+
+	protected List<StudentStatEntry> getUserStatistics(IdentityRef source, RelationRole relationRole, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		Map<Long, StudentStatEntry> map = getRelationTargets(source, relationRole, userPropertyHandlers, locale);
+		boolean hasTargets = getUserStatistics(source, relationRole, map, userPropertyHandlers, locale);
+		if(hasTargets) {
+			for(StudentStatEntry entry:map.values()) {
+				entry.setCountRepo(entry.getRepoIds().size());
+				entry.setRepoIds(null);
+				entry.setInitialLaunch(entry.getLaunchIds().size());
+				entry.setLaunchIds(null);
+			}
+
+			getUsersStatisticStatement(source, relationRole, map);
+			for(StudentStatEntry entry:map.values()) {
+				int notAttempted = entry.getCountRepo() - entry.getCountPassed() - entry.getCountFailed();
+				entry.setCountNotAttempted(notAttempted);
+			}
+			getUsersCompletionStatement(source, relationRole, map);
+		}
+		return new ArrayList<>(map.values());
+	}
+
+	private Map<Long, StudentStatEntry> getRelationTargets(IdentityRef source, RelationRole relationRole, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		StringBuilder sb = new StringBuilder(1024);
+		sb.append("select targetIdentity from ").append(IdentityImpl.class.getName()).append(" as targetIdentity");
+		sb.append(" inner join fetch targetIdentity.user user")
+		  .append(" inner join identitytoidentity as relation on relation.target=targetIdentity")
+		  .append(" where relation.source.key=:sourceKey and relation.role.key=:roleKey");
+
+		List<Identity> identities = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("sourceKey", source.getKey())
+				.setParameter("roleKey", relationRole.getKey())
+				.getResultList();
+
+		Map<Long, StudentStatEntry> targetsMap = new HashMap<>();
+
+		for(Identity identity:identities) {
+			StudentStatEntry entry = new StudentStatEntry(identity, userPropertyHandlers, locale);
+			targetsMap.put(identity.getKey(), entry);
+		}
+
+		return targetsMap;
+	}
+
+	private boolean getUserStatistics(IdentityRef source, RelationRole relationRole, Map<Long, StudentStatEntry> map, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		NativeQueryBuilder sb = new NativeQueryBuilder(1024, dbInstance);
+		sb.append("select")
+		  .append("  sg_participant_id.id as part_id,")
+		  .append("  sg_participant_id.name as part_name,")
+		  .append("  sg_participant_user.user_id as part_user_id,");
+		writeUserProperties("sg_participant_user",  sb, userPropertyHandlers);
+		sb.append("  ").appendToArray("sg_re.repositoryentry_id").append(" as re_ids,")
+		  .append("  ").appendToArray("pg_initial_launch.id").append(" as pg_ids")
+		  .append(" from o_repositoryentry as sg_re")
+		  .append(" inner join o_olatresource sg_res on (sg_res.resource_id = sg_re.fk_olatresource and sg_res.resname = 'CourseModule') ")
+		  .append(" inner join o_re_to_group togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id)")
+		  .append(" inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=togroup.fk_group_id and sg_participant.g_role='participant')")
+		  .append(" inner join o_bs_identity_to_identity sg_relation on (sg_relation.fk_target_id=sg_participant.fk_identity_id)")
+		  .append(" inner join o_bs_identity sg_participant_id on (sg_participant_id.id=sg_participant.fk_identity_id)")
+		  .append(" inner join o_user sg_participant_user on (sg_participant_user.fk_identity=sg_participant.fk_identity_id)")
+		  .append(" left join o_as_user_course_infos pg_initial_launch")
+		  .append("   on (pg_initial_launch.fk_resource_id = sg_re.fk_olatresource and pg_initial_launch.fk_identity = sg_participant.fk_identity_id)")
+		  .append(" where sg_relation.fk_source_id=:sourceKey and sg_relation.fk_role_id=:roleKey and sg_re.status").in(RepositoryEntryStatusEnum.coachPublishedToClosed())
+		  .append(" group by sg_participant_id.id, sg_participant_user.user_id");
+		if(dbInstance.isOracle()) {
+			sb.append(", sg_participant_id.name");
+			writeUserPropertiesGroupBy("sg_participant_user", sb, userPropertyHandlers);
+		}
+
+		List<?> rawList = dbInstance.getCurrentEntityManager()
+				.createNativeQuery(sb.toString())
+				.setParameter("sourceKey", source.getKey())
+				.setParameter("roleKey", relationRole.getKey())
+				.getResultList();
+
+		int numOfProperties = userPropertyHandlers.size();
+		for(Object rawObject:rawList) {
+			Object[] rawStat = (Object[])rawObject;
+			int pos = 0;
+
+			Long identityKey = ((Number)rawStat[pos++]).longValue();
+			String identityName = (String)rawStat[pos++];
+			((Number)rawStat[pos++]).longValue();//user key
+
+			String[] userProperties = new String[numOfProperties];
+			for(int i=0; i<numOfProperties; i++) {
+				userProperties[i] = (String)rawStat[pos++];
+			}
+
+			StudentStatEntry entry = new StudentStatEntry(identityKey, userPropertyHandlers, userProperties, locale);
+			appendArrayToSet(rawStat[pos++], entry.getRepoIds());
+			appendArrayToSet(rawStat[pos++], entry.getLaunchIds());
+			map.put(entry.getIdentityKey(), entry);
+		}
+
+		return !rawList.isEmpty();
+	}
+
+	private boolean getUsersStatisticStatement(IdentityRef source, RelationRole relationRole, Map<Long,StudentStatEntry> stats) {
+		NativeQueryBuilder sb = new NativeQueryBuilder(1024, dbInstance);
+		sb.append("select ")
+		  .append(" fin_statement.fk_identity, ")
+		  .append("  count(fin_statement.id), ")
+		  .append("  sum(case when fin_statement.passed=").appendTrue().append(" then 1 else 0 end) as num_of_passed, ")
+		  .append("  sum(case when fin_statement.passed=").appendFalse().append(" then 1 else 0 end) as num_of_failed ")
+		  .append(" from o_as_eff_statement fin_statement ")
+		  .append(" where fin_statement.id in (");
+			sb.append(" select ").append("distinct")
+			  .append(" sg_statement.id as st_id")
+			  .append(" from o_repositoryentry sg_re")
+			  .append("  inner join o_re_to_group togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id)")
+			  .append("  inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=togroup.fk_group_id and sg_participant.g_role='participant')")
+			  .append("  inner join o_bs_identity_to_identity sg_relation on (sg_relation.fk_target_id=sg_participant.fk_identity_id)")
+			  .append("  inner join o_as_eff_statement sg_statement")
+			  .append("   on (sg_statement.fk_identity = sg_relation.fk_target_id and sg_statement.fk_resource_id = sg_re.fk_olatresource)")
+			  .append(" where sg_relation.fk_role_id=:roleKey and sg_relation.fk_source_id=:sourceKey and sg_re.status").in(RepositoryEntryStatusEnum.coachPublishedToClosed());
+		sb.append(")")
+		  .append(" group by fin_statement.fk_identity");
+
+		List<?> rawList = dbInstance.getCurrentEntityManager()
+				.createNativeQuery(sb.toString())
+				.setParameter("sourceKey", source.getKey())
+				.setParameter("roleKey", relationRole.getKey())
+				.getResultList();
+
+		for(Object rawObject:rawList) {
+			Object[] rawStat = (Object[])rawObject;
+			Long identityKey = ((Number)rawStat[0]).longValue();
+			StudentStatEntry entry = stats.get(identityKey);
+			if(entry != null) {
+				int passed = ((Number)rawStat[2]).intValue();
+				int failed = ((Number)rawStat[3]).intValue();
+				entry.setCountPassed(passed);
+				entry.setCountFailed(failed);
+			}
+		}
+		return !rawList.isEmpty();
+	}
+
+	private boolean getUsersCompletionStatement(IdentityRef source, RelationRole relationRole, Map<Long,StudentStatEntry> stats) {
+		NativeQueryBuilder sb = new NativeQueryBuilder(1024, dbInstance);
+		sb.append("select ")
+		  .append(" ae.fk_identity, ")
+		  .append("  avg(ae.a_completion)")
+		  .append(" from o_as_entry ae ")
+		  .append(" where ae.id in ( ");
+			sb.append(" select ").append("distinct")
+			  .append("  sg_ae.id as ae_id")
+			  .append(" from o_repositoryentry sg_re")
+			  .append(" inner join o_re_to_group togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id)")
+			  .append(" inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=togroup.fk_group_id and sg_participant.g_role='participant')")
+			  .append(" inner join o_bs_identity_to_identity sg_relation on (sg_relation.fk_target_id=sg_participant.fk_identity_id)")
+			  .append(" inner join o_as_entry sg_ae")
+			  .append("    on (sg_ae.fk_identity = sg_participant.fk_identity_id and sg_ae.fk_entry = sg_re.repositoryentry_id)")
+			  .append(" where sg_relation.fk_role_id=:roleKey and sg_relation.fk_source_id=:sourceKey and sg_re.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed())
+			  .append("    and sg_ae.a_entry_root=").appendTrue().append(" and sg_ae.a_completion is not null");
+		sb.append(")")
+		  .append(" group by ae.fk_identity");
+
+		List<?> rawList = dbInstance.getCurrentEntityManager()
+				.createNativeQuery(sb.toString())
+				.setParameter("sourceKey", source.getKey())
+				.setParameter("roleKey", relationRole.getKey())
+				.getResultList();
+
+		for(Object rawObject:rawList) {
+			Object[] rawStat = (Object[])rawObject;
+			Long identityKey = ((Number)rawStat[0]).longValue();
+			StudentStatEntry entry = stats.get(identityKey);
+			if(entry != null) {
+				Double completion = rawStat[1] != null? ((Number)rawStat[1]).doubleValue(): null;
+				entry.setAverageCompletion(completion);
+			}
+		}
+		return !rawList.isEmpty();
 	}
 }

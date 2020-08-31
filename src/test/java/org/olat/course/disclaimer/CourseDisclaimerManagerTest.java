@@ -107,7 +107,6 @@ public class CourseDisclaimerManagerTest extends OlatTestCase {
 		roles1 = baseSecurityManager.getRoles(id1);
 		id2 = JunitTestHelper.createAndPersistIdentityAsUser("id2");
 		roles2 = baseSecurityManager.getRoles(id2);
-		
 		dbInstance.commitAndCloseSession();
 	}
 	

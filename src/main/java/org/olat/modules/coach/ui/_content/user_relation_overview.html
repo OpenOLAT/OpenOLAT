@@ -1,0 +1,9 @@
+<div class="o_header_with_buttons">
+	<h3><i class="o_icon o_icon_user"> </i> $relationAndName</h3>
+	#if($r.available("user_details"))
+		<div class='o_user_details'>
+			$r.render("user_details")
+		</div>
+	#end
+</div>
+$r.render("functionsTabbedPane")

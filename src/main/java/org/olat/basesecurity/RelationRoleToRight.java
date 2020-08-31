@@ -31,8 +31,8 @@ public interface RelationRoleToRight extends CreateInfo {
 	
 	public Long getKey();
 	
-	public RelationRole getRole();
+	public RelationRole getRelationRole();
 
-	public RelationRight getRight();
+	public RelationRight getRelationRight();
 
 }

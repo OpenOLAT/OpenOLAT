@@ -116,7 +116,7 @@ public class EditRelationRoleController extends FormBasicController {
 		if(relationRole != null) {
 			Set<RelationRoleToRight> roleToRights = relationRole.getRights();
 			for(RelationRoleToRight roleToRight:roleToRights) {
-				String right = roleToRight.getRight().getRight();
+				String right = roleToRight.getRelationRight().getRight();
 				for(String rightKey:rightKeys) {
 					if(rightKey.equals(right)) {
 						rightsEl.select(rightKey, true);

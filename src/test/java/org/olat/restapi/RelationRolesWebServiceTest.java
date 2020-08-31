@@ -149,7 +149,7 @@ public class RelationRolesWebServiceTest extends OlatRestTestCase {
 		Set<RelationRoleToRight> roleToRights = relationRole.getRights();
 		Assert.assertNotNull(roleToRights);
 		Assert.assertEquals(1, roleToRights.size());
-		Assert.assertEquals(CourseRightsEnum.viewCourseCalendar.name(), roleToRights.iterator().next().getRight().getRight());
+		Assert.assertEquals(CourseRightsEnum.viewCourseCalendar.name(), roleToRights.iterator().next().getRelationRight().getRight());
 		
 		conn.shutdown();
 	}
@@ -208,7 +208,7 @@ public class RelationRolesWebServiceTest extends OlatRestTestCase {
 		Set<RelationRoleToRight> roleToRights = persistedRelationRole.getRights();
 		Assert.assertNotNull(roleToRights);
 		Assert.assertEquals(1, roleToRights.size());
-		Assert.assertEquals(CourseRightsEnum.viewEfficiencyStatement.name(), roleToRights.iterator().next().getRight().getRight());
+		Assert.assertEquals(CourseRightsEnum.viewEfficiencyStatement.name(), roleToRights.iterator().next().getRelationRight().getRight());
 		
 		conn.shutdown();
 	}
@@ -266,7 +266,7 @@ public class RelationRolesWebServiceTest extends OlatRestTestCase {
 		Set<RelationRoleToRight> roleToRights = persistedRelationRole.getRights();
 		Assert.assertNotNull(roleToRights);
 		Assert.assertEquals(1, roleToRights.size());
-		Assert.assertEquals(CourseRightsEnum.viewEfficiencyStatement.name(), roleToRights.iterator().next().getRight().getRight());
+		Assert.assertEquals(CourseRightsEnum.viewEfficiencyStatement.name(), roleToRights.iterator().next().getRelationRight().getRight());
 		
 		conn.shutdown();
 	}

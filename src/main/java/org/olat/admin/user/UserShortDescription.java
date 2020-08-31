@@ -38,6 +38,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
+import org.olat.modules.coach.ui.UserRelationOverviewController;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,9 +56,8 @@ public class UserShortDescription extends BasicController {
 	
 	private static final String usageIdentifyer = UserShortDescription.class.getCanonicalName();
 
-	private final VelocityContainer mainVC;
-	private final boolean isAdministrativeUser;
-	
+	private VelocityContainer mainVC;
+
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -69,34 +69,61 @@ public class UserShortDescription extends BasicController {
 	
 	public UserShortDescription(UserRequest ureq, WindowControl wControl, Identity identity, Rows additionalRows) {
 		super(ureq, wControl);
-		
+		Roles roles = ureq.getUserSession().getRoles();
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+
+		initProperties(usageIdentifyer, identity, isAdministrativeUser,true, additionalRows);
+	}
+	
+	// Used in coaching tool -> user relations
+	public UserShortDescription(UserRequest ureq, WindowControl wControl, Identity identity, boolean isAdministrativeUser) {
+		super(ureq, wControl);
+
+		initProperties(UserRelationOverviewController.usageIdentifier, identity, isAdministrativeUser, true, null);
+	}
+
+	private void initProperties(String identifier, Identity identity, boolean isAdministrativeUser, boolean usernameOnTop, Rows additionalRows) {
 		String usernameLabel = translate("table.user.login");
 		//use the PropertyHandlerTranslator for the velocityContainer
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		mainVC = createVelocityContainer("userShortDescription");
 		mainVC.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
-		
-		Roles roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);	
+
 		boolean alreadyDefinedUsername = false;
-		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(identifier, isAdministrativeUser);
 		for(UserPropertyHandler userPropertyHandler:userPropertyHandlers) {
 			if(UserConstants.NICKNAME.equals(userPropertyHandler.getName())) {
 				alreadyDefinedUsername = true;
 			}
 		}
-		
+
+		// Show all defined user properties
 		mainVC.contextPut("userPropertyHandlers", userPropertyHandlers);
-		mainVC.contextPut("user", identity.getUser());			
-		mainVC.contextPut("identityKey", identity.getKey());
-		mainVC.contextPut("usernamePosition", "top");
+		mainVC.contextPut("user", identity.getUser());
 		mainVC.contextPut("locale", getLocale());
-		if(!alreadyDefinedUsername && (getIdentity().equals(identity) || isAdministrativeUser)) {
-			mainVC.contextPut("username", identity.getUser().getProperty(UserConstants.NICKNAME, getLocale()));
+
+		// Show identity key to administrative users
+		if (isAdministrativeUser) {
+			mainVC.contextPut("identityKey", identity.getKey());
 		}
-		mainVC.contextPut("usernameLabel", usernameLabel);
-		mainVC.contextPut("additionalRows", additionalRows);
-		
+
+		// Show user name to administrative users if not already in user properties defined
+		if(!alreadyDefinedUsername && (getIdentity().equals(identity) || isAdministrativeUser)) {
+			mainVC.contextPut("username", identity.getName());
+			mainVC.contextPut("usernameLabel", usernameLabel);
+			mainVC.contextPut("usernamePosition", "top");
+		}
+
+		if (usernameOnTop) {
+			mainVC.contextPut("usernamePosition", "top");
+		} else {
+			mainVC.contextPut("usernamePosition", "bottom");
+		}
+
+		if (additionalRows != null) {
+			mainVC.contextPut("additionalRows", additionalRows);
+		}
+
 		putInitialPanel(mainVC);
 	}
 	

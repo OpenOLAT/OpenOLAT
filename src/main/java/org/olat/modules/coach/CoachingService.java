@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.RelationRole;
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.group.BusinessGroup;
@@ -51,13 +52,13 @@ public interface CoachingService {
 	public List<RepositoryEntry> getStudentsCourses(Identity coach, Identity student);
 	
 	public List<StudentStatEntry> getStudentsStatistics(Identity coach, List<UserPropertyHandler> userPropertyHandlers, Locale locale);
-	
-	
+
 	public List<StudentStatEntry> getUsersStatistics(SearchCoachedIdentityParams params, List<UserPropertyHandler> userPropertyHandlers, Locale locale);
+
+	public List<StudentStatEntry> getUserStatistics(IdentityRef source, RelationRole relationRole, List<UserPropertyHandler> userPropertyHandlers, Locale locale);
 	
 	public List<RepositoryEntry> getUserCourses(Identity student);
-	
-	
+
 	public List<CourseStatEntry> getCoursesStatistics(Identity coach);
 	
 	public List<GroupStatEntry> getGroupsStatistics(Identity coach);

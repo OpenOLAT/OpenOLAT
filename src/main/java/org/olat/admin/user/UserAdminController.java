@@ -365,8 +365,6 @@ public class UserAdminController extends BasicController implements Activateable
 	 * Check if user allowed to modify this identity. Only modification of user
 	 * that have lower rights is allowed. No one exept admins can manage usermanager
 	 * and admins
-	 * @param ureq
-	 * @param identity
 	 * @return boolean
 	 */
 	private boolean allowedToManageUser() {
@@ -454,7 +452,7 @@ public class UserAdminController extends BasicController implements Activateable
 		if(isAdminOf || isPrincipalOf || isUserManagerOf || isRolesManagerOf) {
 			userTabP.addTab(ureq, translate(NLS_VIEW_GROUPS),  uureq -> {
 				boolean canModify = isAdminOf || isUserManagerOf || isRolesManagerOf;
-				grpCtr = new GroupOverviewController(uureq, getWindowControl(), identity, canModify);
+				grpCtr = new GroupOverviewController(uureq, getWindowControl(), identity, canModify, true);
 				listenTo(grpCtr);
 				return grpCtr.getInitialComponent();
 			});
@@ -477,7 +475,7 @@ public class UserAdminController extends BasicController implements Activateable
 			userTabP.addTab(ureq, translate(NLS_VIEW_EFF_STATEMENTS),  uureq -> {
 				boolean canModify = isAdminOf || isRolesManagerOf;
 				efficicencyCtrl = new CertificateAndEfficiencyStatementListController(uureq, getWindowControl(),
-						identity, true, canModify);
+						identity, true, canModify, true);
 				listenTo(efficicencyCtrl);
 				BreadcrumbedStackedPanel efficiencyPanel = new BreadcrumbedStackedPanel("statements", getTranslator(), efficicencyCtrl);
 				efficiencyPanel.pushController(translate(NLS_VIEW_EFF_STATEMENTS), efficicencyCtrl);

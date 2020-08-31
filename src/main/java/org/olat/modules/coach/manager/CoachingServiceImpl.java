@@ -28,6 +28,8 @@ import java.util.Map;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.IdentityRelationshipService;
+import org.olat.basesecurity.RelationRole;
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
@@ -67,13 +69,16 @@ public class CoachingServiceImpl implements CoachingService {
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private EfficiencyStatementManager efficiencyStatementManager;
+	@Autowired
+	private IdentityRelationshipService identityRelationsService;
 
 	@Override
 	public CoachingSecurity isCoach(Identity identity) {
 		boolean coach = coachingDao.isCoach(identity);
 		boolean teacher = lectureModule.isEnabled() && coachingDao.isTeacher(identity);
 		boolean masterCoach =  lectureModule.isEnabled() && coachingDao.isMasterCoach(identity);
-		return new CoachingSecurity(masterCoach, coach, teacher);
+		boolean isUserRelationSource = !identityRelationsService.getRelationsAsSource(identity).isEmpty();
+		return new CoachingSecurity(masterCoach, coach, teacher, isUserRelationSource);
 	}
 
 	@Override
@@ -90,6 +95,11 @@ public class CoachingServiceImpl implements CoachingService {
 	public List<StudentStatEntry> getUsersStatistics(SearchCoachedIdentityParams params,
 			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		return coachingDao.getUsersStatisticsNative(params, userPropertyHandlers, locale);
+	}
+
+	@Override
+	public List<StudentStatEntry> getUserStatistics(IdentityRef source, RelationRole relationRole, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		return coachingDao.getUserStatistics(source, relationRole, userPropertyHandlers, locale);
 	}
 
 	@Override

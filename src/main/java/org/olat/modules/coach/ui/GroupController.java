@@ -358,7 +358,7 @@ public class GroupController extends FormBasicController implements Activateable
 		});
 
 		statementCtrl = new UserDetailsController(ureq, bwControl, stackPanel,
-				statementEntry, assessedIdentity, details, entryIndex, model.getRowCount(), selectedTool);
+				statementEntry, assessedIdentity, details, entryIndex, model.getRowCount(), selectedTool, true, false);
 		listenTo(statementCtrl);
 		stackPanel.popUpToController(this);
 		stackPanel.pushController(display, statementCtrl);

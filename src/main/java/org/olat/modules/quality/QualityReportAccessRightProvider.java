@@ -39,6 +39,16 @@ public class QualityReportAccessRightProvider implements RelationRightProvider {
 	public static final String RELATION_RIGHT = "selectableQualityReportAccess";
 
 	@Override
+	public RelationRightProvider getParent() {
+		return null;
+	}
+
+	@Override
+	public int getPosition() {
+		return 0;
+	}
+	
+	@Override
 	public String getRight() {
 		return RELATION_RIGHT;
 	}

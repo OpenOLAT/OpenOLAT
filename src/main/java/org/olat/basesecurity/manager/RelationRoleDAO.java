@@ -104,7 +104,7 @@ public class RelationRoleDAO {
 		
 		List<RelationRoleToRight> currentRoleToRights = new ArrayList<>(relationRole.getRights());
 		List<RelationRight> currentRights = currentRoleToRights
-				.stream().map(RelationRoleToRight::getRight).collect(Collectors.toList());
+				.stream().map(RelationRoleToRight::getRelationRight).collect(Collectors.toList());
 		List<RelationRight> rightsToAdd = rights.stream()
 				.filter(r -> !currentRights.contains(r)).collect(Collectors.toList());
 
@@ -118,7 +118,7 @@ public class RelationRoleDAO {
 		}
 		
 		for(RelationRoleToRight currentRoleToRight:currentRoleToRights) {
-			if(!rights.contains(currentRoleToRight.getRight())) {
+			if(!rights.contains(currentRoleToRight.getRelationRight())) {
 				relationRole.getRights().remove(currentRoleToRight);
 				//dbInstance.getCurrentEntityManager().remove(currentRoleToRight);
 			}
@@ -134,7 +134,7 @@ public class RelationRoleDAO {
 	public RelationRole addRight(RelationRole role, RelationRight right) {
 		RelationRoleImpl relationRole = (RelationRoleImpl)role;
 		for(RelationRoleToRight roleToRight:relationRole.getRights()) {
-			if(roleToRight.getRight().equals(right)) {
+			if(roleToRight.getRelationRight().equals(right)) {
 				return relationRole; // already added
 			}
 		}

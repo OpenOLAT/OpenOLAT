@@ -70,7 +70,7 @@ public class RelationRoleVO {
 		List<String> rightNames = new ArrayList<>();
 		Set<RelationRoleToRight> roleToRights = role.getRights();
 		for( RelationRoleToRight roleToRight:roleToRights) {
-			rightNames.add(roleToRight.getRight().getRight());
+			rightNames.add(roleToRight.getRelationRight().getRight());
 		}
 		roleVo.setRights(rightNames);
 		return roleVo;

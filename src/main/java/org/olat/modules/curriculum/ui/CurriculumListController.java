@@ -76,7 +76,7 @@ public class CurriculumListController extends FormBasicController implements Act
 	private CurriculumService curriculumService;
 	
 	/**
-	 * This opens the list of the curriculum of the loged in user with standard permissions.
+	 * This opens the list of the curriculum of the logged in user with standard permissions.
 	 * 
 	 * @param ureq The user request
 	 * @param wControl The window control
@@ -106,6 +106,20 @@ public class CurriculumListController extends FormBasicController implements Act
 		
 		initForm(ureq);
 		loadModel();
+	}
+
+	/**
+	 * This opens the list of curriculums of the specified user
+	 *
+	 * @param ureq
+	 * @param wControl
+	 * @param assessedIdentity
+	 * @param stackedPanel
+	 */
+	public CurriculumListController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, BreadcrumbedStackedPanel stackedPanel) {
+		this(ureq, wControl, assessedIdentity);
+
+		this.stackPanel = stackedPanel;
 	}
 	
 	public String getName() {

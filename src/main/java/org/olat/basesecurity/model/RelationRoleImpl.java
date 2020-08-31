@@ -22,7 +22,6 @@ package org.olat.basesecurity.model;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -76,7 +75,7 @@ public class RelationRoleImpl implements RelationRole, Persistable {
 	private String externalRef;
 	@Column(name="g_managed_flags", nullable=true, insertable=true, updatable=true)
 	private String managedFlagsString;
-	
+
 	@OneToMany(targetEntity=RelationRoleToRightImpl.class, fetch=FetchType.LAZY,
 			orphanRemoval=true, cascade={CascadeType.PERSIST, CascadeType.REMOVE})
 	@JoinColumn(name="fk_role_id")

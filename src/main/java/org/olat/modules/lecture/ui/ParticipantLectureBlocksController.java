@@ -428,7 +428,7 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 	}
 	
 	private void doOpenCourse(UserRequest ureq) {
-		String businessPath = "[RepositoryEntry:" + entry.getKey() + "]";
-		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+		String businessPath = "[RepositoryEntry:" + entry.getKey() + "][Infos]";
+		NewControllerFactory.getInstance().	launch(businessPath, ureq, getWindowControl());
 	}
 }

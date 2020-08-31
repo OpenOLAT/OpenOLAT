@@ -106,6 +106,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	
 	private final boolean canModify;
 	private final boolean linkToCoachingTool;
+	private final boolean canLaunchCourse;
 	private final Identity assessedIdentity;
 	
 	@Autowired
@@ -124,21 +125,30 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	private AssessmentService assessmentService;
 	
 	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, ureq.getUserSession().getIdentity(), false, true);
+		this(ureq, wControl, ureq.getUserSession().getIdentity(), false, true, true);
 	}
 	
 	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl,
-			Identity assessedIdentity, boolean linkToCoachingTool, boolean canModify) {
+			Identity assessedIdentity, boolean linkToCoachingTool, boolean canModify, boolean canLaunchCourse) {
 		super(ureq, wControl, "cert_statement_list");
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		this.canModify = canModify;
 		this.assessedIdentity = assessedIdentity;
 		this.linkToCoachingTool = linkToCoachingTool;
+		this.canLaunchCourse = canLaunchCourse;
 		
 		initForm(ureq);
 		
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.registerFor(this, getIdentity(), CertificatesManager.ORES_CERTIFICATE_EVENT);
+	}
+	
+	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl,
+			Identity assessedIdentity, boolean useFieldSet) {
+		this(ureq, wControl, assessedIdentity, false, false, false);
+		
+		// Show different header in user relations
+		flc.contextPut("withFieldSet", useFieldSet);
 	}
 	
 	@Override
@@ -177,6 +187,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(linkToCoachingTool) {
+			flc.contextPut("withFieldSet", true);
 			coachingToolButton = uifactory.addFormLink("coaching.tool", formLayout, Link.BUTTON);
 		}
 		
@@ -191,9 +202,11 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.lastUserUpdate));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.certificate, new DownloadCertificateCellRenderer(assessedIdentity, getLocale())));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.recertification, new DateFlexiCellRenderer(getLocale())));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.launchcourse",
-				translate("table.header.launchcourse"), CMD_LAUNCH_COURSE));
-		
+		if (canLaunchCourse) {
+			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.launchcourse",
+					translate("table.header.launchcourse"), CMD_LAUNCH_COURSE));
+		}
+	
 		if(canModify) {
 			DefaultFlexiColumnModel deleteColumn = new DefaultFlexiColumnModel(Cols.deleteEfficiencyStatement.i18nHeaderKey(), Cols.deleteEfficiencyStatement.ordinal(), CMD_DELETE,
 					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.action.delete"), CMD_DELETE), null));

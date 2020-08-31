@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.olat.core.id.Identity;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -48,6 +49,10 @@ public class StudentStatEntry extends UserPropertiesRow {
 	
 	public StudentStatEntry(Long identityKey, List<UserPropertyHandler> userPropertyHandlers, String[] userProperties, Locale locale) {
 		super(identityKey, userPropertyHandlers, userProperties, locale);
+	}
+
+	public StudentStatEntry(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		super(identity, userPropertyHandlers, locale);
 	}
 	
 	public int getCountRepo() {

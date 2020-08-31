@@ -306,7 +306,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	@Override
 	public List<CurriculumRef> getMyActiveCurriculumRefs(Identity identity) {
 		List<Long> curriculumKeys = curriculumDao.getMyActiveCurriculumKeys(identity);
-		return curriculumKeys.stream().map(CurriculumRefImpl::new).collect(Collectors.toList());
+		return curriculumKeys.stream().distinct().map(CurriculumRefImpl::new).collect(Collectors.toList());
 	}
 
 	@Override
