@@ -210,11 +210,34 @@ public class AuthenticationDAO {
 		return authentications != null && !authentications.isEmpty();
 	}
 	
+	/**
+	 * The query fetch the identity.
+	 * 
+	 * @param identity The identity to search authentication for
+	 * @return A list of authentications
+	 */
 	public List<Authentication> getAuthentications(IdentityRef identity) {
 		StringBuilder sb = new StringBuilder(256);
-		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth ")
-		  .append("inner join fetch auth.identity as ident")
+		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
+		  .append(" inner join auth.identity as ident")
 		  .append(" where ident.key=:identityKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Authentication.class)
+				.setParameter("identityKey", identity.getKey())
+				.getResultList();
+	}
+	
+	
+	/**
+	 * The query doesn't fetch the identity.
+	 * 
+	 * @param identity The identity to search authentication for
+	 * @return A list of authentications
+	 */
+	public List<Authentication> getAuthenticationsNoFetch(IdentityRef identity) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
+		  .append(" where auth.identity.key=:identityKey");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Authentication.class)
 				.setParameter("identityKey", identity.getKey())
